@@ -77,11 +77,12 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.0.6",
+    "@tailwindcss/postcss": "^4.1.11",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "postcss": "^8.5",
-    "tailwindcss": "^3.4.17",
+    "tailwindcss": "^4.1.11",
     "typescript": "^5",
     "ultracite": "5.0.29"
   },
