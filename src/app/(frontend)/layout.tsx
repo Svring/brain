@@ -3,7 +3,7 @@ import { Nunito } from "next/font/google";
 import type React from "react";
 import "@/styles/globals.css";
 import { ThemeProvider } from "next-themes";
-import { QueryProvider } from "@/components/app/base/provider/query-provider";
+import { QueryProvider } from "@/components/app-page/base/provider/query-provider";
 import { AuthProvider } from "@/contexts/auth-context";
 import { getUser } from "@/payload/operations/users-operation";
 
