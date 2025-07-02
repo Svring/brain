@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
-import type React from "react";
-import "@/styles/globals.css";
 import { ThemeProvider } from "next-themes";
+import type React from "react";
 import { QueryProvider } from "@/components/app-page/base/provider/query-provider";
+import AppSidebar from "@/components/app-page/base/sidebar/app-sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/contexts/auth-context";
 import { getUser } from "@/payload/operations/users-operation";
+
+import "@/styles/globals.css";
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -34,7 +37,12 @@ export default async function RootLayout({
           enableSystem
         >
           <AuthProvider initialUser={user}>
-            <QueryProvider>{children}</QueryProvider>
+            <QueryProvider>
+              <SidebarProvider defaultOpen={false}>
+                <AppSidebar />
+                {children}
+              </SidebarProvider>
+            </QueryProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
