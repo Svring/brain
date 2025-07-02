@@ -126,7 +126,7 @@ function escapeSlash(key: string): string {
   return key.replace(/\//g, "~1");
 }
 
-export const patchCustomResourceAnnotation = createParallelAction(
+export const patchCustomResourceMetadata = createParallelAction(
   async (
     kubeconfig: string,
     group: string,
@@ -134,13 +134,14 @@ export const patchCustomResourceAnnotation = createParallelAction(
     namespace: string,
     plural: string,
     name: string,
-    annotationKey: string,
-    annotationValue: string
+    metadataType: "annotations" | "labels",
+    key: string,
+    value: string
   ) => {
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
 
-    const encodedAnnotationKey = escapeSlash(annotationKey);
+    const encodedKey = escapeSlash(key);
     const currentResourceResult =
       await clients.customApi.getNamespacedCustomObject({
         group,
@@ -151,19 +152,19 @@ export const patchCustomResourceAnnotation = createParallelAction(
       });
     const currentResource = JSON.parse(JSON.stringify(currentResourceResult));
 
-    const patchBody = currentResource.metadata?.annotations
+    const patchBody = currentResource.metadata?.[metadataType]
       ? [
           {
             op: "add",
-            path: `/metadata/annotations/${encodedAnnotationKey}`,
-            value: annotationValue,
+            path: `/metadata/${metadataType}/${encodedKey}`,
+            value,
           },
         ]
       : [
           {
             op: "add",
-            path: "/metadata/annotations",
-            value: { [annotationKey]: annotationValue },
+            path: `/metadata/${metadataType}`,
+            value: { [key]: value },
           },
         ];
 
@@ -177,15 +178,15 @@ export const patchCustomResourceAnnotation = createParallelAction(
     });
 
     return {
-      annotations: result.metadata?.annotations || {},
+      [metadataType]: result.metadata?.[metadataType] || {},
       success: true,
       name,
-      annotationKey,
+      key,
     };
   }
 );
 
-export const removeCustomResourceAnnotation = createParallelAction(
+export const removeCustomResourceMetadata = createParallelAction(
   async (
     kubeconfig: string,
     group: string,
@@ -193,14 +194,15 @@ export const removeCustomResourceAnnotation = createParallelAction(
     namespace: string,
     plural: string,
     name: string,
-    annotationKey: string
+    metadataType: "annotations" | "labels",
+    key: string
   ) => {
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
 
-    const encodedAnnotationKey = escapeSlash(annotationKey);
+    const encodedKey = escapeSlash(key);
     const patchBody = [
-      { op: "remove", path: `/metadata/annotations/${encodedAnnotationKey}` },
+      { op: "remove", path: `/metadata/${metadataType}/${encodedKey}` },
     ];
     await clients.customApi.patchNamespacedCustomObject({
       group,
@@ -214,92 +216,117 @@ export const removeCustomResourceAnnotation = createParallelAction(
     return {
       success: true,
       name,
-      annotationKey,
+      key,
     };
   }
 );
 
-export const patchCustomResourceLabel = createParallelAction(
+/**
+ * List deployments in a namespace.
+ * @param kubeconfig - The kubeconfig string.
+ * @param namespace - The namespace to list deployments in.
+ * @returns The list of deployments as returned by the Kubernetes client.
+ */
+export const listDeployments = createParallelAction(
+  async (kubeconfig: string, namespace: string) => {
+    const kc = createKubeConfig(kubeconfig);
+    const clients = createApiClients(kc);
+    const result = await clients.appsApi.listNamespacedDeployment({
+      namespace,
+    });
+    return JSON.parse(JSON.stringify(result));
+  }
+);
+
+/**
+ * Get a deployment by name in a namespace.
+ * @param kubeconfig - The kubeconfig string.
+ * @param namespace - The namespace of the deployment.
+ * @param name - The name of the deployment.
+ * @returns The deployment object as returned by the Kubernetes client.
+ */
+export const getDeployment = createParallelAction(
+  async (kubeconfig: string, namespace: string, name: string) => {
+    const kc = createKubeConfig(kubeconfig);
+    const clients = createApiClients(kc);
+    const result = await clients.appsApi.readNamespacedDeployment({
+      namespace,
+      name,
+    });
+    return JSON.parse(JSON.stringify(result));
+  }
+);
+
+export const patchDeploymentMetadata = createParallelAction(
   async (
     kubeconfig: string,
-    group: string,
-    version: string,
     namespace: string,
-    plural: string,
     name: string,
-    labelKey: string,
-    labelValue: string
+    metadataType: "annotations" | "labels",
+    key: string,
+    value: string
   ) => {
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
 
-    const encodedLabelKey = escapeSlash(labelKey);
-    const currentResourceResult =
-      await clients.customApi.getNamespacedCustomObject({
-        group,
-        version,
+    const encodedKey = escapeSlash(key);
+    const currentDeploymentResult =
+      await clients.appsApi.readNamespacedDeployment({
         namespace,
-        plural,
         name,
       });
-    const currentResource = JSON.parse(JSON.stringify(currentResourceResult));
+    const currentDeployment = JSON.parse(
+      JSON.stringify(currentDeploymentResult)
+    );
 
-    const patchBody = currentResource.metadata?.labels
+    const patchBody = currentDeployment.metadata?.[metadataType]
       ? [
           {
             op: "add",
-            path: `/metadata/labels/${encodedLabelKey}`,
-            value: labelValue,
+            path: `/metadata/${metadataType}/${encodedKey}`,
+            value,
           },
         ]
       : [
           {
             op: "add",
-            path: "/metadata/labels",
-            value: { [labelKey]: labelValue },
+            path: `/metadata/${metadataType}`,
+            value: { [key]: value },
           },
         ];
 
-    const result = await clients.customApi.patchNamespacedCustomObject({
-      group,
-      version,
+    const result = await clients.appsApi.patchNamespacedDeployment({
       namespace,
-      plural,
       name,
       body: patchBody,
     });
 
     return {
-      labels: result.metadata?.labels || {},
+      [metadataType]: result.metadata?.[metadataType] || {},
       success: true,
       name,
-      labelKey,
+      key,
     };
   }
 );
 
-export const removeCustomResourceLabel = createParallelAction(
+export const removeDeploymentMetadata = createParallelAction(
   async (
     kubeconfig: string,
-    group: string,
-    version: string,
     namespace: string,
-    plural: string,
     name: string,
-    labelKey: string
+    metadataType: "annotations" | "labels",
+    key: string
   ) => {
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
 
-    const encodedLabelKey = escapeSlash(labelKey);
+    const encodedKey = escapeSlash(key);
     const patchBody = [
-      { op: "remove", path: `/metadata/labels/${encodedLabelKey}` },
+      { op: "remove", path: `/metadata/${metadataType}/${encodedKey}` },
     ];
-    await clients.customApi.patchNamespacedCustomObject({
-      group,
-      version,
+    await clients.appsApi.patchNamespacedDeployment({
       namespace,
-      plural,
       name,
       body: patchBody,
     });
@@ -307,7 +334,7 @@ export const removeCustomResourceLabel = createParallelAction(
     return {
       success: true,
       name,
-      labelKey,
+      key,
     };
   }
 );
