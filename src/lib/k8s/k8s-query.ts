@@ -32,6 +32,7 @@ export const listCustomResourceOptions = (
       request.version,
       request.namespace,
       request.plural,
+      request.labelSelector,
     ],
     queryFn: () => {
       const decodedKc = getDecodedKubeconfig();
@@ -41,7 +42,8 @@ export const listCustomResourceOptions = (
           request.group,
           request.version,
           request.namespace,
-          request.plural
+          request.plural,
+          request.labelSelector
         )
       );
     },
@@ -95,10 +97,18 @@ export const listDeploymentsOptions = (
   postprocess: (data: unknown) => unknown = (d) => d
 ) =>
   queryOptions({
-    queryKey: ["k8s", "deployments", "list", request.namespace],
+    queryKey: [
+      "k8s",
+      "deployments",
+      "list",
+      request.namespace,
+      request.labelSelector,
+    ],
     queryFn: () => {
       const decodedKc = getDecodedKubeconfig();
-      return runParallelAction(listDeployments(decodedKc, request.namespace));
+      return runParallelAction(
+        listDeployments(decodedKc, request.namespace, request.labelSelector)
+      );
     },
     select: (data) => postprocess(data),
     enabled: !!request.namespace,
@@ -155,7 +165,13 @@ export const listAllResourcesOptions = (
   postprocess: (data: unknown) => unknown = (d) => d
 ) =>
   queryOptions({
-    queryKey: ["k8s", "all-resources", "list", request.namespace],
+    queryKey: [
+      "k8s",
+      "all-resources",
+      "list",
+      request.namespace,
+      request.labelSelector,
+    ],
     queryFn: async () => {
       const decodedKc = getDecodedKubeconfig();
       const resourcePromises = Object.entries(RESOURCES).map(([_, config]) =>
@@ -166,10 +182,17 @@ export const listAllResourcesOptions = (
                 config.group,
                 config.version,
                 request.namespace,
-                config.plural
+                config.plural,
+                request.labelSelector
               )
             )
-          : runParallelAction(listDeployments(decodedKc, request.namespace))
+          : runParallelAction(
+              listDeployments(
+                decodedKc,
+                request.namespace,
+                request.labelSelector
+              )
+            )
       );
 
       const results = await Promise.all(resourcePromises);

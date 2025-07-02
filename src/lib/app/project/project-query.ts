@@ -3,10 +3,8 @@
 import { queryOptions } from "@tanstack/react-query";
 import { listAllResourcesOptions } from "@/lib/k8s/k8s-query";
 import type { AnyKubernetesList, ResourceTarget } from "@/lib/k8s/schemas";
-import {
-  filterResourcesForProject,
-  groupResourcesByProject,
-} from "./project-transform";
+import { PROJECT_NAME_LABEL_KEY } from "./project-constant";
+import { groupResourcesByProject } from "./project-transform";
 import type {
   GetProjectRequest,
   ListProjectsRequest,
@@ -34,14 +32,21 @@ export const getProjectOptions = (
   request: GetProjectRequest,
   postprocess: (data: ResourceTarget[]) => ResourceTarget[] = (d) => d
 ) => {
-  // Use the existing listAllResourcesOptions with postprocessing
+  // Use label selector to filter resources at the API level
+  const labelSelector = `${PROJECT_NAME_LABEL_KEY}=${request.projectName}`;
+
   const baseOptions = listAllResourcesOptions(
-    { namespace: request.namespace },
-    (data) =>
-      filterResourcesForProject(
-        data as Record<string, AnyKubernetesList>,
-        request.projectName
-      )
+    {
+      namespace: request.namespace,
+      labelSelector,
+    },
+    (data) => {
+      const projectGroups = groupResourcesByProject(
+        data as Record<string, AnyKubernetesList>
+      );
+      // Return resources for the specific project, or empty array if not found
+      return projectGroups[request.projectName] || [];
+    }
   );
 
   return queryOptions({

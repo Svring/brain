@@ -38,6 +38,7 @@ function createApiClients(kc: KubeConfig): ApiClients {
  * @param version - The API version of the custom resource.
  * @param namespace - The namespace to list resources in.
  * @param plural - The plural name of the custom resource.
+ * @param labelSelector - Optional label selector to filter resources.
  * @returns The list of custom resources as returned by the Kubernetes client.
  */
 export const listCustomResource = createParallelAction(
@@ -46,7 +47,8 @@ export const listCustomResource = createParallelAction(
     group: string,
     version: string,
     namespace: string,
-    plural: string
+    plural: string,
+    labelSelector?: string
   ) => {
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
@@ -55,6 +57,7 @@ export const listCustomResource = createParallelAction(
       version,
       namespace,
       plural,
+      labelSelector,
     });
     return JSON.parse(JSON.stringify(res));
   }
@@ -225,14 +228,16 @@ export const removeCustomResourceMetadata = createParallelAction(
  * List deployments in a namespace.
  * @param kubeconfig - The kubeconfig string.
  * @param namespace - The namespace to list deployments in.
+ * @param labelSelector - Optional label selector to filter deployments.
  * @returns The list of deployments as returned by the Kubernetes client.
  */
 export const listDeployments = createParallelAction(
-  async (kubeconfig: string, namespace: string) => {
+  async (kubeconfig: string, namespace: string, labelSelector?: string) => {
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
     const result = await clients.appsApi.listNamespacedDeployment({
       namespace,
+      labelSelector,
     });
     return JSON.parse(JSON.stringify(result));
   }

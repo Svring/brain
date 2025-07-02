@@ -7,6 +7,7 @@ export const ListCustomResourceRequestSchema = z.object({
   version: z.string(),
   namespace: z.string(),
   plural: z.string(),
+  labelSelector: z.string().optional(),
 });
 
 export const GetCustomResourceRequestSchema = z.object({
@@ -19,6 +20,7 @@ export const GetCustomResourceRequestSchema = z.object({
 
 export const ListDeploymentsRequestSchema = z.object({
   namespace: z.string(),
+  labelSelector: z.string().optional(),
 });
 
 export const GetDeploymentRequestSchema = z.object({
@@ -28,6 +30,7 @@ export const GetDeploymentRequestSchema = z.object({
 
 export const ListAllResourcesRequestSchema = z.object({
   namespace: z.string(),
+  labelSelector: z.string().optional(),
 });
 
 // Input parameter schemas for mutations
