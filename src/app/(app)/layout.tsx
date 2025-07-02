@@ -1,8 +1,11 @@
-import type React from "react";
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
+import type React from "react";
 import "@/styles/globals.css";
 import { ThemeProvider } from "next-themes";
+import { QueryProvider } from "@/components/app/base/provider/query-provider";
+import { AuthProvider } from "@/contexts/auth-context";
+import { getUser } from "@/payload/operations/users-operation";
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -15,21 +18,24 @@ export const metadata: Metadata = {
   description: "Sealos Brain",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const user = await getUser();
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={nunito.className}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
-          enableSystem
           disableTransitionOnChange
+          enableSystem
         >
-          {children}
+          <AuthProvider initialUser={user}>
+            <QueryProvider>{children}</QueryProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

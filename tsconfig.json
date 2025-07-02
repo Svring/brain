@@ -29,7 +29,8 @@
       "@payload-config": [
         "./src/payload.config.ts"
       ]
-    }
+    },
+    "strictNullChecks": true
   },
   "include": [
     "next-env.d.ts",

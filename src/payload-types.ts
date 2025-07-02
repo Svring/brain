@@ -119,6 +119,12 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: string;
+  context?: string | null;
+  regionUrl?: string | null;
+  kubeconfig: string;
+  regionToken?: string | null;
+  appToken?: string | null;
+  devboxToken?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -211,6 +217,12 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  context?: T;
+  regionUrl?: T;
+  kubeconfig?: T;
+  regionToken?: T;
+  appToken?: T;
+  devboxToken?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;

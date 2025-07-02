@@ -1,13 +1,36 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig } from "payload";
 
 export const Users: CollectionConfig = {
-  slug: 'users',
+  slug: "users",
   admin: {
-    useAsTitle: 'email',
+    useAsTitle: "email",
   },
   auth: true,
   fields: [
-    // Email added by default
-    // Add more fields as needed
+    {
+      name: "context",
+      type: "text",
+    },
+    {
+      name: "regionUrl",
+      type: "text",
+    },
+    {
+      name: "kubeconfig",
+      type: "text",
+      required: true,
+    },
+    {
+      name: "regionToken",
+      type: "text",
+    },
+    {
+      name: "appToken",
+      type: "text",
+    },
+    {
+      name: "devboxToken",
+      type: "text",
+    },
   ],
-}
+};
