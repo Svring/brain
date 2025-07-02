@@ -9,13 +9,18 @@ import {
   listDeployments,
 } from "./k8s-api";
 import { RESOURCES } from "./k8s-constant";
-import { getDecodedKubeconfig, getUserKubeconfig } from "./k8s-utils";
+import { getDecodedKubeconfig } from "./k8s-utils";
+import type {
+  GetCustomResourceRequest,
+  GetDeploymentRequest,
+  ListAllResourcesRequest,
+  ListCustomResourceRequest,
+  ListDeploymentsRequest,
+  ResourceTarget,
+} from "./schemas";
 
 export const listCustomResourceOptions = (
-  group: string,
-  version: string,
-  namespace: string,
-  plural: string,
+  request: ListCustomResourceRequest,
   postprocess: (data: unknown) => unknown = (d) => d
 ) =>
   queryOptions({
@@ -23,31 +28,33 @@ export const listCustomResourceOptions = (
       "k8s",
       "custom-resource",
       "list",
-      group,
-      version,
-      namespace,
-      plural,
+      request.group,
+      request.version,
+      request.namespace,
+      request.plural,
     ],
     queryFn: () => {
-      const kc = getUserKubeconfig();
-      if (!kc) {
-        throw new Error("Kubeconfig not available");
-      }
-      const decodedKc = getDecodedKubeconfig(kc);
+      const decodedKc = getDecodedKubeconfig();
       return runParallelAction(
-        listCustomResource(decodedKc, group, version, namespace, plural)
+        listCustomResource(
+          decodedKc,
+          request.group,
+          request.version,
+          request.namespace,
+          request.plural
+        )
       );
     },
     select: (data) => postprocess(data),
-    enabled: !!group && !!version && !!namespace && !!plural,
+    enabled:
+      !!request.group &&
+      !!request.version &&
+      !!request.namespace &&
+      !!request.plural,
   });
 
 export const getCustomResourceOptions = (
-  group: string,
-  version: string,
-  namespace: string,
-  plural: string,
-  name: string,
+  request: GetCustomResourceRequest,
   postprocess: (data: unknown) => unknown = (d) => d
 ) =>
   queryOptions({
@@ -55,107 +62,121 @@ export const getCustomResourceOptions = (
       "k8s",
       "custom-resource",
       "get",
-      group,
-      version,
-      namespace,
-      plural,
-      name,
+      request.group,
+      request.version,
+      request.namespace,
+      request.plural,
+      request.name,
     ],
     queryFn: () => {
-      const kc = getUserKubeconfig();
-      if (!kc) {
-        throw new Error("Kubeconfig not available");
-      }
-      const decodedKc = getDecodedKubeconfig(kc);
+      const decodedKc = getDecodedKubeconfig();
       return runParallelAction(
-        getCustomResource(decodedKc, group, version, namespace, plural, name)
+        getCustomResource(
+          decodedKc,
+          request.group,
+          request.version,
+          request.namespace,
+          request.plural,
+          request.name
+        )
       );
     },
     select: (data) => postprocess(data),
-    enabled: !!group && !!version && !!namespace && !!plural && !!name,
+    enabled:
+      !!request.group &&
+      !!request.version &&
+      !!request.namespace &&
+      !!request.plural &&
+      !!request.name,
   });
 
 export const listDeploymentsOptions = (
-  namespace: string,
+  request: ListDeploymentsRequest,
   postprocess: (data: unknown) => unknown = (d) => d
 ) =>
   queryOptions({
-    queryKey: ["k8s", "deployments", "list", namespace],
+    queryKey: ["k8s", "deployments", "list", request.namespace],
     queryFn: () => {
-      const kc = getUserKubeconfig();
-      if (!kc) {
-        throw new Error("Kubeconfig not available");
-      }
-      const decodedKc = getDecodedKubeconfig(kc);
-      return runParallelAction(listDeployments(decodedKc, namespace));
+      const decodedKc = getDecodedKubeconfig();
+      return runParallelAction(listDeployments(decodedKc, request.namespace));
     },
     select: (data) => postprocess(data),
-    enabled: !!namespace,
+    enabled: !!request.namespace,
   });
 
 export const getDeploymentOptions = (
-  namespace: string,
-  name: string,
+  request: GetDeploymentRequest,
   postprocess: (data: unknown) => unknown = (d) => d
 ) =>
   queryOptions({
-    queryKey: ["k8s", "deployments", "get", namespace, name],
+    queryKey: ["k8s", "deployments", "get", request.namespace, request.name],
     queryFn: () => {
-      const kc = getUserKubeconfig();
-      if (!kc) {
-        throw new Error("Kubeconfig not available");
-      }
-      const decodedKc = getDecodedKubeconfig(kc);
-      return runParallelAction(getDeployment(decodedKc, namespace, name));
+      const decodedKc = getDecodedKubeconfig();
+      return runParallelAction(
+        getDeployment(decodedKc, request.namespace, request.name)
+      );
     },
     select: (data) => postprocess(data),
-    enabled: !!namespace && !!name,
+    enabled: !!request.namespace && !!request.name,
   });
 
+export const getResourceOptions = (
+  resource: ResourceTarget,
+  postprocess: (data: unknown) => unknown = (d) => d
+) => {
+  if (resource.type === "custom") {
+    return getCustomResourceOptions(
+      {
+        group: resource.group,
+        version: resource.version,
+        namespace: resource.namespace,
+        plural: resource.plural,
+        name: resource.name,
+      },
+      postprocess
+    );
+  }
+
+  if (resource.type === "deployment") {
+    return getDeploymentOptions(
+      {
+        namespace: resource.namespace,
+        name: resource.name,
+      },
+      postprocess
+    );
+  }
+
+  throw new Error(`Unknown resource type: ${resource satisfies never}`);
+};
+
 export const listAllResourcesOptions = (
-  namespace: string,
+  request: ListAllResourcesRequest,
   postprocess: (data: unknown) => unknown = (d) => d
 ) =>
   queryOptions({
-    queryKey: ["k8s", "all-resources", "list", namespace],
+    queryKey: ["k8s", "all-resources", "list", request.namespace],
     queryFn: async () => {
-      const kc = getUserKubeconfig();
-      if (!kc) {
-        throw new Error("Kubeconfig not available");
-      }
-      const decodedKc = getDecodedKubeconfig(kc);
-
-      // Dynamically create promises for all resource types
-      const resourcePromises = Object.entries(RESOURCES).map(([, config]) => {
-        if ("type" in config && config.type === "custom" && "group" in config) {
-          return runParallelAction(
-            listCustomResource(
-              decodedKc,
-              config.group,
-              config.version,
-              namespace,
-              config.plural
+      const decodedKc = getDecodedKubeconfig();
+      const resourcePromises = Object.entries(RESOURCES).map(([_, config]) =>
+        "group" in config
+          ? runParallelAction(
+              listCustomResource(
+                decodedKc,
+                config.group,
+                config.version,
+                request.namespace,
+                config.plural
+              )
             )
-          );
-        }
-        if ("type" in config && config.type === "deployment") {
-          return runParallelAction(listDeployments(decodedKc, namespace));
-        }
-        throw new Error("Unknown resource configuration");
-      });
+          : runParallelAction(listDeployments(decodedKc, request.namespace))
+      );
 
       const results = await Promise.all(resourcePromises);
-
-      // Create result object with resource names as keys
-      const resourceNames = Object.keys(RESOURCES);
-      const resourceData: Record<string, unknown> = {};
-
-      for (let i = 0; i < resourceNames.length; i++) {
-        resourceData[resourceNames[i]] = results[i];
-      }
-
-      return resourceData;
+      return Object.fromEntries(
+        Object.keys(RESOURCES).map((name, i) => [name, results[i]])
+      );
     },
-    select: (data) => postprocess(data),
-    enabled: !!namespace,
+    select: postprocess,
+    enabled: !!request.namespace,
   });

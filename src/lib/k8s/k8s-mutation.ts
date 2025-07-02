@@ -9,41 +9,31 @@ import {
   removeCustomResourceMetadata,
   removeDeploymentMetadata,
 } from "./k8s-api";
-import { getDecodedKubeconfig, getUserKubeconfig } from "./k8s-utils";
-import type { BatchPatchRequest, BatchRemoveRequest } from "./schemas";
+import { getDecodedKubeconfig } from "./k8s-utils";
+import type {
+  BatchPatchRequest,
+  BatchRemoveRequest,
+  PatchCustomResourceMetadataRequest,
+  PatchCustomResourceRequest,
+  PatchDeploymentMetadataRequest,
+  RemoveCustomResourceMetadataRequest,
+  RemoveDeploymentMetadataRequest,
+} from "./schemas";
 
 export function usePatchCustomResourceMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      group,
-      version,
-      namespace,
-      plural,
-      name,
-      patchBody,
-    }: {
-      group: string;
-      version: string;
-      namespace: string;
-      plural: string;
-      name: string;
-      patchBody: unknown[];
-    }) => {
-      const kc = getUserKubeconfig();
-      if (!kc) {
-        throw new Error("Kubeconfig not available");
-      }
-      const decodedKc = getDecodedKubeconfig(kc);
+    mutationFn: (request: PatchCustomResourceRequest) => {
+      const decodedKc = getDecodedKubeconfig();
       return runParallelAction(
         patchCustomResource(
           decodedKc,
-          group,
-          version,
-          namespace,
-          plural,
-          name,
-          patchBody
+          request.group,
+          request.version,
+          request.namespace,
+          request.plural,
+          request.name,
+          request.patchBody
         )
       );
     },
@@ -78,41 +68,19 @@ export function usePatchCustomResourceMutation() {
 export function usePatchCustomResourceMetadataMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      group,
-      version,
-      namespace,
-      plural,
-      name,
-      metadataType,
-      key,
-      value,
-    }: {
-      group: string;
-      version: string;
-      namespace: string;
-      plural: string;
-      name: string;
-      metadataType: "annotations" | "labels";
-      key: string;
-      value: string;
-    }) => {
-      const kc = getUserKubeconfig();
-      if (!kc) {
-        throw new Error("Kubeconfig not available");
-      }
-      const decodedKc = getDecodedKubeconfig(kc);
+    mutationFn: (request: PatchCustomResourceMetadataRequest) => {
+      const decodedKc = getDecodedKubeconfig();
       return runParallelAction(
         patchCustomResourceMetadata(
           decodedKc,
-          group,
-          version,
-          namespace,
-          plural,
-          name,
-          metadataType,
-          key,
-          value
+          request.group,
+          request.version,
+          request.namespace,
+          request.plural,
+          request.name,
+          request.metadataType,
+          request.key,
+          request.value
         )
       );
     },
@@ -136,38 +104,18 @@ export function usePatchCustomResourceMetadataMutation() {
 export function useRemoveCustomResourceMetadataMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      group,
-      version,
-      namespace,
-      plural,
-      name,
-      metadataType,
-      key,
-    }: {
-      group: string;
-      version: string;
-      namespace: string;
-      plural: string;
-      name: string;
-      metadataType: "annotations" | "labels";
-      key: string;
-    }) => {
-      const kc = getUserKubeconfig();
-      if (!kc) {
-        throw new Error("Kubeconfig not available");
-      }
-      const decodedKc = getDecodedKubeconfig(kc);
+    mutationFn: (request: RemoveCustomResourceMetadataRequest) => {
+      const decodedKc = getDecodedKubeconfig();
       return runParallelAction(
         removeCustomResourceMetadata(
           decodedKc,
-          group,
-          version,
-          namespace,
-          plural,
-          name,
-          metadataType,
-          key
+          request.group,
+          request.version,
+          request.namespace,
+          request.plural,
+          request.name,
+          request.metadataType,
+          request.key
         )
       );
     },
@@ -191,32 +139,16 @@ export function useRemoveCustomResourceMetadataMutation() {
 export function usePatchDeploymentMetadataMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      namespace,
-      name,
-      metadataType,
-      key,
-      value,
-    }: {
-      namespace: string;
-      name: string;
-      metadataType: "annotations" | "labels";
-      key: string;
-      value: string;
-    }) => {
-      const kc = getUserKubeconfig();
-      if (!kc) {
-        throw new Error("Kubeconfig not available");
-      }
-      const decodedKc = getDecodedKubeconfig(kc);
+    mutationFn: (request: PatchDeploymentMetadataRequest) => {
+      const decodedKc = getDecodedKubeconfig();
       return runParallelAction(
         patchDeploymentMetadata(
           decodedKc,
-          namespace,
-          name,
-          metadataType,
-          key,
-          value
+          request.namespace,
+          request.name,
+          request.metadataType,
+          request.key,
+          request.value
         )
       );
     },
@@ -240,24 +172,16 @@ export function usePatchDeploymentMetadataMutation() {
 export function useRemoveDeploymentMetadataMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      namespace,
-      name,
-      metadataType,
-      key,
-    }: {
-      namespace: string;
-      name: string;
-      metadataType: "annotations" | "labels";
-      key: string;
-    }) => {
-      const kc = getUserKubeconfig();
-      if (!kc) {
-        throw new Error("Kubeconfig not available");
-      }
-      const decodedKc = getDecodedKubeconfig(kc);
+    mutationFn: (request: RemoveDeploymentMetadataRequest) => {
+      const decodedKc = getDecodedKubeconfig();
       return runParallelAction(
-        removeDeploymentMetadata(decodedKc, namespace, name, metadataType, key)
+        removeDeploymentMetadata(
+          decodedKc,
+          request.namespace,
+          request.name,
+          request.metadataType,
+          request.key
+        )
       );
     },
     onSuccess: (_data, variables) => {
@@ -280,20 +204,11 @@ export function useRemoveDeploymentMetadataMutation() {
 export function useBatchPatchResourcesMetadataMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({
-      resources,
-      metadataType,
-      key,
-      value,
-    }: BatchPatchRequest) => {
-      const kc = getUserKubeconfig();
-      if (!kc) {
-        throw new Error("Kubeconfig not available");
-      }
-      const decodedKc = getDecodedKubeconfig(kc);
+    mutationFn: async (request: BatchPatchRequest) => {
+      const decodedKc = getDecodedKubeconfig();
 
       // Execute all mutations in parallel
-      const promises = resources.map((resource) => {
+      const promises = request.resources.map((resource) => {
         if ("type" in resource && resource.type === "custom") {
           return runParallelAction(
             patchCustomResourceMetadata(
@@ -303,9 +218,9 @@ export function useBatchPatchResourcesMetadataMutation() {
               resource.namespace,
               resource.plural,
               resource.name,
-              metadataType,
-              key,
-              value
+              request.metadataType,
+              request.key,
+              request.value
             )
           );
         }
@@ -315,9 +230,9 @@ export function useBatchPatchResourcesMetadataMutation() {
               decodedKc,
               resource.namespace,
               resource.name,
-              metadataType,
-              key,
-              value
+              request.metadataType,
+              request.key,
+              request.value
             )
           );
         }
@@ -328,7 +243,7 @@ export function useBatchPatchResourcesMetadataMutation() {
       return {
         success: true,
         results,
-        resourceCount: resources.length,
+        resourceCount: request.resources.length,
       };
     },
     onSuccess: (_data, variables) => {
@@ -390,19 +305,11 @@ export function useBatchPatchResourcesMetadataMutation() {
 export function useBatchRemoveResourcesMetadataMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({
-      resources,
-      metadataType,
-      key,
-    }: BatchRemoveRequest) => {
-      const kc = getUserKubeconfig();
-      if (!kc) {
-        throw new Error("Kubeconfig not available");
-      }
-      const decodedKc = getDecodedKubeconfig(kc);
+    mutationFn: async (request: BatchRemoveRequest) => {
+      const decodedKc = getDecodedKubeconfig();
 
       // Execute all mutations in parallel
-      const promises = resources.map((resource) => {
+      const promises = request.resources.map((resource) => {
         if ("type" in resource && resource.type === "custom") {
           return runParallelAction(
             removeCustomResourceMetadata(
@@ -412,8 +319,8 @@ export function useBatchRemoveResourcesMetadataMutation() {
               resource.namespace,
               resource.plural,
               resource.name,
-              metadataType,
-              key
+              request.metadataType,
+              request.key
             )
           );
         }
@@ -423,8 +330,8 @@ export function useBatchRemoveResourcesMetadataMutation() {
               decodedKc,
               resource.namespace,
               resource.name,
-              metadataType,
-              key
+              request.metadataType,
+              request.key
             )
           );
         }
@@ -435,7 +342,7 @@ export function useBatchRemoveResourcesMetadataMutation() {
       return {
         success: true,
         results,
-        resourceCount: resources.length,
+        resourceCount: request.resources.length,
       };
     },
     onSuccess: (_data, variables) => {
