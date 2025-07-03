@@ -13,9 +13,9 @@ import {
   releaseDevbox,
   removeDevboxPort,
 } from "./devbox-open-api";
-import { getDevboxAPIContext } from "./devbox-utils";
 import type {
   AppFormConfig,
+  DevboxApiContext,
   DevboxCreateRequest,
   DevboxDeployRequest,
   DevboxLifecycleRequest,
@@ -23,22 +23,22 @@ import type {
   DevboxReleaseRequest,
 } from "./schemas";
 
-export function useCreateDevboxMutation() {
+export function useCreateDevboxMutation(context: DevboxApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: DevboxCreateRequest) =>
-      runParallelAction(createDevbox(request, getDevboxAPIContext())),
+      runParallelAction(createDevbox(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sealos", "devbox", "list"] });
     },
   });
 }
 
-export function useManageDevboxLifecycleMutation() {
+export function useManageDevboxLifecycleMutation(context: DevboxApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: DevboxLifecycleRequest) =>
-      runParallelAction(manageDevboxLifecycle(request, getDevboxAPIContext())),
+      runParallelAction(manageDevboxLifecycle(request, context)),
     onSuccess: (_data, variables) => {
       if (
         variables &&
@@ -54,22 +54,22 @@ export function useManageDevboxLifecycleMutation() {
   });
 }
 
-export function useDeleteDevboxMutation() {
+export function useDeleteDevboxMutation(context: DevboxApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (devboxName: string) =>
-      runParallelAction(deleteDevbox(devboxName, getDevboxAPIContext())),
+      runParallelAction(deleteDevbox(devboxName, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sealos", "devbox", "list"] });
     },
   });
 }
 
-export function useReleaseDevboxMutation() {
+export function useReleaseDevboxMutation(context: DevboxApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: DevboxReleaseRequest) =>
-      runParallelAction(releaseDevbox(request, getDevboxAPIContext())),
+      runParallelAction(releaseDevbox(request, context)),
     onSuccess: (_data, variables) => {
       if (
         variables &&
@@ -84,11 +84,11 @@ export function useReleaseDevboxMutation() {
   });
 }
 
-export function useDeployDevboxMutation() {
+export function useDeployDevboxMutation(context: DevboxApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: DevboxDeployRequest) =>
-      runParallelAction(deployDevbox(request, getDevboxAPIContext())),
+      runParallelAction(deployDevbox(request, context)),
     onSuccess: (_data, variables) => {
       if (
         variables &&
@@ -103,11 +103,11 @@ export function useDeployDevboxMutation() {
   });
 }
 
-export function useCreateDevboxPortMutation() {
+export function useCreateDevboxPortMutation(context: DevboxApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: DevboxPortCreateRequest) =>
-      runParallelAction(createDevboxPort(request, getDevboxAPIContext())),
+      runParallelAction(createDevboxPort(request, context)),
     onSuccess: (_data, variables) => {
       if (
         variables &&
@@ -122,13 +122,11 @@ export function useCreateDevboxPortMutation() {
   });
 }
 
-export function useRemoveDevboxPortMutation() {
+export function useRemoveDevboxPortMutation(context: DevboxApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ devboxName, port }: { devboxName: string; port: number }) =>
-      runParallelAction(
-        removeDevboxPort(devboxName, port, getDevboxAPIContext())
-      ),
+      runParallelAction(removeDevboxPort(devboxName, port, context)),
     onSuccess: (_data, variables) => {
       if (
         variables &&
@@ -143,22 +141,22 @@ export function useRemoveDevboxPortMutation() {
   });
 }
 
-export function useCreateAppMutation() {
+export function useCreateAppMutation(context: DevboxApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (appForm: AppFormConfig) =>
-      runParallelAction(createApp(appForm, getDevboxAPIContext())),
+      runParallelAction(createApp(appForm, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sealos", "app", "list"] });
     },
   });
 }
 
-export function useDeleteAppMutation() {
+export function useDeleteAppMutation(context: DevboxApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (appName: string) =>
-      runParallelAction(deleteApp(appName, getDevboxAPIContext())),
+      runParallelAction(deleteApp(appName, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sealos", "app", "list"] });
     },

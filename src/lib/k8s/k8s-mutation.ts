@@ -9,10 +9,10 @@ import {
   removeCustomResourceMetadata,
   removeDeploymentMetadata,
 } from "./k8s-api";
-import { getDecodedKubeconfig } from "./k8s-utils";
 import type {
   BatchPatchRequest,
   BatchRemoveRequest,
+  K8sApiContext,
   PatchCustomResourceMetadataRequest,
   PatchCustomResourceRequest,
   PatchDeploymentMetadataRequest,
@@ -20,17 +20,16 @@ import type {
   RemoveDeploymentMetadataRequest,
 } from "./schemas";
 
-export function usePatchCustomResourceMutation() {
+export function usePatchCustomResourceMutation(context: K8sApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: PatchCustomResourceRequest) => {
-      const decodedKc = getDecodedKubeconfig();
       return runParallelAction(
         patchCustomResource(
-          decodedKc,
+          context.kubeconfig,
           request.group,
           request.version,
-          request.namespace,
+          context.namespace,
           request.plural,
           request.name,
           request.patchBody
@@ -45,7 +44,7 @@ export function usePatchCustomResourceMutation() {
           "get",
           variables.group,
           variables.version,
-          variables.namespace,
+          context.namespace,
           variables.plural,
           variables.name,
         ],
@@ -57,7 +56,7 @@ export function usePatchCustomResourceMutation() {
           "list",
           variables.group,
           variables.version,
-          variables.namespace,
+          context.namespace,
           variables.plural,
         ],
       });
@@ -65,17 +64,16 @@ export function usePatchCustomResourceMutation() {
   });
 }
 
-export function usePatchCustomResourceMetadataMutation() {
+export function usePatchCustomResourceMetadataMutation(context: K8sApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: PatchCustomResourceMetadataRequest) => {
-      const decodedKc = getDecodedKubeconfig();
       return runParallelAction(
         patchCustomResourceMetadata(
-          decodedKc,
+          context.kubeconfig,
           request.group,
           request.version,
-          request.namespace,
+          context.namespace,
           request.plural,
           request.name,
           request.metadataType,
@@ -92,7 +90,7 @@ export function usePatchCustomResourceMetadataMutation() {
           "get",
           variables.group,
           variables.version,
-          variables.namespace,
+          context.namespace,
           variables.plural,
           variables.name,
         ],
@@ -101,17 +99,18 @@ export function usePatchCustomResourceMetadataMutation() {
   });
 }
 
-export function useRemoveCustomResourceMetadataMutation() {
+export function useRemoveCustomResourceMetadataMutation(
+  context: K8sApiContext
+) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: RemoveCustomResourceMetadataRequest) => {
-      const decodedKc = getDecodedKubeconfig();
       return runParallelAction(
         removeCustomResourceMetadata(
-          decodedKc,
+          context.kubeconfig,
           request.group,
           request.version,
-          request.namespace,
+          context.namespace,
           request.plural,
           request.name,
           request.metadataType,
@@ -127,7 +126,7 @@ export function useRemoveCustomResourceMetadataMutation() {
           "get",
           variables.group,
           variables.version,
-          variables.namespace,
+          context.namespace,
           variables.plural,
           variables.name,
         ],
@@ -136,15 +135,14 @@ export function useRemoveCustomResourceMetadataMutation() {
   });
 }
 
-export function usePatchDeploymentMetadataMutation() {
+export function usePatchDeploymentMetadataMutation(context: K8sApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: PatchDeploymentMetadataRequest) => {
-      const decodedKc = getDecodedKubeconfig();
       return runParallelAction(
         patchDeploymentMetadata(
-          decodedKc,
-          request.namespace,
+          context.kubeconfig,
+          context.namespace,
           request.name,
           request.metadataType,
           request.key,
@@ -158,26 +156,25 @@ export function usePatchDeploymentMetadataMutation() {
           "k8s",
           "deployments",
           "get",
-          variables.namespace,
+          context.namespace,
           variables.name,
         ],
       });
       queryClient.invalidateQueries({
-        queryKey: ["k8s", "deployments", "list", variables.namespace],
+        queryKey: ["k8s", "deployments", "list", context.namespace],
       });
     },
   });
 }
 
-export function useRemoveDeploymentMetadataMutation() {
+export function useRemoveDeploymentMetadataMutation(context: K8sApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: RemoveDeploymentMetadataRequest) => {
-      const decodedKc = getDecodedKubeconfig();
       return runParallelAction(
         removeDeploymentMetadata(
-          decodedKc,
-          request.namespace,
+          context.kubeconfig,
+          context.namespace,
           request.name,
           request.metadataType,
           request.key
@@ -190,32 +187,30 @@ export function useRemoveDeploymentMetadataMutation() {
           "k8s",
           "deployments",
           "get",
-          variables.namespace,
+          context.namespace,
           variables.name,
         ],
       });
       queryClient.invalidateQueries({
-        queryKey: ["k8s", "deployments", "list", variables.namespace],
+        queryKey: ["k8s", "deployments", "list", context.namespace],
       });
     },
   });
 }
 
-export function useBatchPatchResourcesMetadataMutation() {
+export function useBatchPatchResourcesMetadataMutation(context: K8sApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (request: BatchPatchRequest) => {
-      const decodedKc = getDecodedKubeconfig();
-
       // Execute all mutations in parallel
       const promises = request.resources.map((resource) => {
         if ("type" in resource && resource.type === "custom") {
           return runParallelAction(
             patchCustomResourceMetadata(
-              decodedKc,
+              context.kubeconfig,
               resource.group,
               resource.version,
-              resource.namespace,
+              context.namespace,
               resource.plural,
               resource.name,
               request.metadataType,
@@ -227,8 +222,8 @@ export function useBatchPatchResourcesMetadataMutation() {
         if ("type" in resource && resource.type === "deployment") {
           return runParallelAction(
             patchDeploymentMetadata(
-              decodedKc,
-              resource.namespace,
+              context.kubeconfig,
+              context.namespace,
               resource.name,
               request.metadataType,
               request.key,
@@ -257,7 +252,7 @@ export function useBatchPatchResourcesMetadataMutation() {
               "get",
               resource.group,
               resource.version,
-              resource.namespace,
+              context.namespace,
               resource.plural,
               resource.name,
             ],
@@ -269,7 +264,7 @@ export function useBatchPatchResourcesMetadataMutation() {
               "list",
               resource.group,
               resource.version,
-              resource.namespace,
+              context.namespace,
               resource.plural,
             ],
           });
@@ -279,44 +274,39 @@ export function useBatchPatchResourcesMetadataMutation() {
               "k8s",
               "deployments",
               "get",
-              resource.namespace,
+              context.namespace,
               resource.name,
             ],
           });
           queryClient.invalidateQueries({
-            queryKey: ["k8s", "deployments", "list", resource.namespace],
+            queryKey: ["k8s", "deployments", "list", context.namespace],
           });
         }
       }
 
       // Also invalidate the all-resources query for affected namespaces
-      const namespaces = [
-        ...new Set(variables.resources.map((r) => r.namespace)),
-      ];
-      for (const namespace of namespaces) {
-        queryClient.invalidateQueries({
-          queryKey: ["k8s", "all-resources", "list", namespace],
-        });
-      }
+      queryClient.invalidateQueries({
+        queryKey: ["k8s", "all-resources", "list", context.namespace],
+      });
     },
   });
 }
 
-export function useBatchRemoveResourcesMetadataMutation() {
+export function useBatchRemoveResourcesMetadataMutation(
+  context: K8sApiContext
+) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (request: BatchRemoveRequest) => {
-      const decodedKc = getDecodedKubeconfig();
-
       // Execute all mutations in parallel
       const promises = request.resources.map((resource) => {
         if ("type" in resource && resource.type === "custom") {
           return runParallelAction(
             removeCustomResourceMetadata(
-              decodedKc,
+              context.kubeconfig,
               resource.group,
               resource.version,
-              resource.namespace,
+              context.namespace,
               resource.plural,
               resource.name,
               request.metadataType,
@@ -327,8 +317,8 @@ export function useBatchRemoveResourcesMetadataMutation() {
         if ("type" in resource && resource.type === "deployment") {
           return runParallelAction(
             removeDeploymentMetadata(
-              decodedKc,
-              resource.namespace,
+              context.kubeconfig,
+              context.namespace,
               resource.name,
               request.metadataType,
               request.key
@@ -356,7 +346,7 @@ export function useBatchRemoveResourcesMetadataMutation() {
               "get",
               resource.group,
               resource.version,
-              resource.namespace,
+              context.namespace,
               resource.plural,
               resource.name,
             ],
@@ -368,7 +358,7 @@ export function useBatchRemoveResourcesMetadataMutation() {
               "list",
               resource.group,
               resource.version,
-              resource.namespace,
+              context.namespace,
               resource.plural,
             ],
           });
@@ -378,25 +368,20 @@ export function useBatchRemoveResourcesMetadataMutation() {
               "k8s",
               "deployments",
               "get",
-              resource.namespace,
+              context.namespace,
               resource.name,
             ],
           });
           queryClient.invalidateQueries({
-            queryKey: ["k8s", "deployments", "list", resource.namespace],
+            queryKey: ["k8s", "deployments", "list", context.namespace],
           });
         }
       }
 
       // Also invalidate the all-resources query for affected namespaces
-      const namespaces = [
-        ...new Set(variables.resources.map((r) => r.namespace)),
-      ];
-      for (const namespace of namespaces) {
-        queryClient.invalidateQueries({
-          queryKey: ["k8s", "all-resources", "list", namespace],
-        });
-      }
+      queryClient.invalidateQueries({
+        queryKey: ["k8s", "all-resources", "list", context.namespace],
+      });
     },
   });
 }

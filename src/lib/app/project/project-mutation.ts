@@ -5,15 +5,15 @@ import {
   useBatchPatchResourcesMetadataMutation,
   useBatchRemoveResourcesMetadataMutation,
 } from "@/lib/k8s/k8s-mutation";
-import type { ResourceTarget } from "@/lib/k8s/schemas";
+import type { K8sApiContext, ResourceTarget } from "@/lib/k8s/schemas";
 import { PROJECT_NAME_LABEL_KEY } from "./project-constant";
 
 /**
  * Hook to add project name label to multiple resources
  */
-export function useAddProjectLabelToResourcesMutation() {
+export function useAddProjectLabelToResourcesMutation(context: K8sApiContext) {
   const queryClient = useQueryClient();
-  const batchPatchMutation = useBatchPatchResourcesMetadataMutation();
+  const batchPatchMutation = useBatchPatchResourcesMetadataMutation(context);
 
   return useMutation({
     mutationFn: ({
@@ -30,19 +30,14 @@ export function useAddProjectLabelToResourcesMutation() {
         value: projectName,
       });
     },
-    onSuccess: (_data, variables) => {
+    onSuccess: () => {
       // Invalidate project-related queries
-      const namespaces = [
-        ...new Set(variables.resources.map((r) => r.namespace)),
-      ];
-      for (const namespace of namespaces) {
-        queryClient.invalidateQueries({
-          queryKey: ["project", "list", namespace],
-        });
-        queryClient.invalidateQueries({
-          queryKey: ["project", "get", namespace],
-        });
-      }
+      queryClient.invalidateQueries({
+        queryKey: ["project", "list", context.namespace],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["project", "get", context.namespace],
+      });
     },
   });
 }
@@ -50,9 +45,11 @@ export function useAddProjectLabelToResourcesMutation() {
 /**
  * Hook to remove project name label from multiple resources
  */
-export function useRemoveProjectLabelFromResourcesMutation() {
+export function useRemoveProjectLabelFromResourcesMutation(
+  context: K8sApiContext
+) {
   const queryClient = useQueryClient();
-  const batchRemoveMutation = useBatchRemoveResourcesMetadataMutation();
+  const batchRemoveMutation = useBatchRemoveResourcesMetadataMutation(context);
 
   return useMutation({
     mutationFn: ({ resources }: { resources: ResourceTarget[] }) => {
@@ -62,19 +59,14 @@ export function useRemoveProjectLabelFromResourcesMutation() {
         key: PROJECT_NAME_LABEL_KEY,
       });
     },
-    onSuccess: (_data, variables) => {
+    onSuccess: () => {
       // Invalidate project-related queries
-      const namespaces = [
-        ...new Set(variables.resources.map((r) => r.namespace)),
-      ];
-      for (const namespace of namespaces) {
-        queryClient.invalidateQueries({
-          queryKey: ["project", "list", namespace],
-        });
-        queryClient.invalidateQueries({
-          queryKey: ["project", "get", namespace],
-        });
-      }
+      queryClient.invalidateQueries({
+        queryKey: ["project", "list", context.namespace],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["project", "get", context.namespace],
+      });
     },
   });
 }

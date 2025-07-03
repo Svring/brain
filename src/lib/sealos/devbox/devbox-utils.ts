@@ -1,14 +1,4 @@
 "use client";
 
-import { use } from "react";
-import { AuthContext } from "@/contexts/auth-context";
-import { DevboxApiContextSchema } from "./schemas";
-
-export const getDevboxAPIContext = () => {
-  const { user } = use(AuthContext);
-  return DevboxApiContextSchema.parse({
-    baseURL: `${user?.regionUrl}`,
-    authorization: `${user?.kubeconfig}`,
-    authorizationBearer: `${user?.devboxToken}`,
-  });
-};
+// This file can be used for devbox utility functions that don't involve React context
+// Currently empty as getDevboxAPIContext has been replaced with direct context creation
