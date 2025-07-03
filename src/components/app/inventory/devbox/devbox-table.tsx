@@ -1,6 +1,5 @@
 "use client";
 
-import { useQueries, useQuery } from "@tanstack/react-query";
 import {
   type ColumnFiltersState,
   flexRender,
@@ -12,7 +11,7 @@ import {
   useReactTable,
   type VisibilityState,
 } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -23,17 +22,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  getDevboxOptions,
-  listDevboxOptions,
-} from "@/lib/sealos/devbox/devbox-query";
-import {
-  transformDevboxInfoToTableRow,
-  transformDevboxListToNameList,
-} from "@/lib/sealos/devbox/devbox-transform";
-import { getDevboxAPIContext } from "@/lib/sealos/devbox/devbox-utils";
+import { getDevboxTableData } from "@/lib/app/inventory/inventory-query";
 import { devboxColumns } from "./devbox-column";
-import type { DevboxColumn } from "./devbox-table-schema";
 
 export function DevboxTable() {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -41,32 +31,10 @@ export function DevboxTable() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
 
-  // Read context at component level
-  const devboxContext = getDevboxAPIContext();
-
-  const { data: devboxNames, isLoading: listLoading } = useQuery({
-    ...listDevboxOptions(devboxContext, transformDevboxListToNameList),
-  });
-
-  // Create individual queries for each devbox
-  const devboxQueries = useQueries({
-    queries: ((devboxNames as string[]) ?? []).map((name: string) => ({
-      ...getDevboxOptions(name, devboxContext, transformDevboxInfoToTableRow),
-      enabled: !!name,
-    })),
-  });
-
-  // Transform query results into table rows
-  const devboxRows = useMemo(() => {
-    return devboxQueries
-      .map((query) => query.data)
-      .filter((data): data is DevboxColumn => !!data);
-  }, [devboxQueries]);
-
-  const isRowsLoading = devboxQueries.some((query) => query.isLoading);
+  const { rows, isLoading, isError } = getDevboxTableData();
 
   const table = useReactTable({
-    data: devboxRows,
+    data: rows,
     columns: devboxColumns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -84,10 +52,18 @@ export function DevboxTable() {
     },
   });
 
-  if (listLoading || isRowsLoading) {
+  if (isLoading) {
     return (
       <div className="flex h-32 items-center justify-center">
         <div className="text-muted-foreground">Loading devboxes...</div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex h-32 items-center justify-center">
+        <div className="text-destructive">Error loading devboxes</div>
       </div>
     );
   }
