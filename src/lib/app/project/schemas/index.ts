@@ -1,13 +1,8 @@
 import { z } from "zod";
 import { ResourceTargetSchema } from "@/lib/k8s/schemas";
 
-// Request schemas for project queries
-export const ListProjectsRequestSchema = z.object({
-  namespace: z.string(),
-});
-
+// Request schemas for project queries (namespace is in K8sApiContext)
 export const GetProjectRequestSchema = z.object({
-  namespace: z.string(),
   projectName: z.string(),
 });
 
@@ -18,6 +13,5 @@ export const ProjectResourcesSchema = z.record(
 );
 
 // Inferred types
-export type ListProjectsRequest = z.infer<typeof ListProjectsRequestSchema>;
 export type GetProjectRequest = z.infer<typeof GetProjectRequestSchema>;
 export type ProjectResources = z.infer<typeof ProjectResourcesSchema>;

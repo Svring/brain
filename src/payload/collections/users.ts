@@ -12,6 +12,11 @@ export const Users: CollectionConfig = {
       type: "text",
     },
     {
+      name: "namespace",
+      type: "text",
+      required: true,
+    },
+    {
       name: "regionUrl",
       type: "text",
     },

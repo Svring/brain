@@ -1,1 +1,1 @@
-export const PROJECT_NAME_LABEL_KEY = "orca/project-name";
+export const PROJECT_NAME_LABEL_KEY = "cloud.sealos.io/deploy-on-sealos";

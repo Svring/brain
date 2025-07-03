@@ -18,6 +18,11 @@ export function getDecodedKubeconfig(): string {
   return decodeURIComponent(kc);
 }
 
+export function getCurrentNamespace(): string | undefined {
+  const { user } = use(AuthContext);
+  return user?.namespace;
+}
+
 // Helper function to convert resource to ResourceTarget
 export const convertToResourceTarget = (
   resource: AnyKubernetesResource,

@@ -1,3 +1,13 @@
+import { z } from "zod";
+
+// API Context schema for k8s queries
+export const K8sApiContextSchema = z.object({
+  namespace: z.string(),
+  kubeconfig: z.string(),
+});
+
+export type K8sApiContext = z.infer<typeof K8sApiContextSchema>;
+
 // Re-export all schemas and types from split files
 
 export * from "./custom-resource-schemas";
@@ -7,7 +17,6 @@ export * from "./request-schemas";
 export * from "./resource-target-schemas";
 
 // Union schemas for all resources
-import { z } from "zod";
 import {
   CustomResourceListSchema,
   CustomResourceSchema,

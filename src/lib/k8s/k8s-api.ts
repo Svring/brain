@@ -422,3 +422,18 @@ export const getIngress = createParallelAction(
     return JSON.parse(JSON.stringify(result));
   }
 );
+
+/**
+ * Get the current namespace from a kubeconfig string.
+ * @param kubeconfig - The kubeconfig string.
+ * @returns The current namespace, or 'default' if not set.
+ */
+export const getCurrentNamespaceFromKubeconfig = createParallelAction(
+  async (kubeconfig: string) => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const kc = createKubeConfig(kubeconfig);
+    const currentContext = kc.getCurrentContext();
+    const contextObj = kc.getContextObject(currentContext);
+    return contextObj?.namespace;
+  }
+);

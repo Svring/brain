@@ -2,15 +2,22 @@
 
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import { SpotlightCard } from "@/components/app/base/spotlight-card";
 import { DevboxTable } from "@/components/app/inventory/devbox/devbox-table";
+import { ProjectCard } from "@/components/app/project/project-card";
 import { Button } from "@/components/ui/button";
+import { useProjects } from "@/hooks/app/project";
 import { cn } from "@/lib/utils";
 
 type ActiveTab = "project" | "inventory";
 
 export default function Page() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("project");
+
+  const {
+    data: projects,
+    isLoading: projectsLoading,
+    isError: projectsError,
+  } = useProjects();
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center p-8">
@@ -58,12 +65,37 @@ export default function Page() {
       <div className="w-4xl">
         {activeTab === "project" && (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-            <SpotlightCard key="card-1">Card 1</SpotlightCard>
-            <SpotlightCard key="card-2">Card 2</SpotlightCard>
-            <SpotlightCard key="card-3">Card 3</SpotlightCard>
-            <SpotlightCard key="card-4">Card 4</SpotlightCard>
-            <SpotlightCard key="card-5">Card 5</SpotlightCard>
-            <SpotlightCard key="card-6">Card 6</SpotlightCard>
+            {projectsLoading && (
+              <div className="col-span-full flex h-32 items-center justify-center">
+                <div className="text-muted-foreground">Loading projects...</div>
+              </div>
+            )}
+
+            {projectsError && (
+              <div className="col-span-full flex h-32 items-center justify-center">
+                <div className="text-destructive">Error loading projects</div>
+              </div>
+            )}
+
+            {projects &&
+            !projectsLoading &&
+            !projectsError &&
+            Object.keys(projects).length === 0 ? (
+              <div className="col-span-full flex h-32 items-center justify-center">
+                <div className="text-muted-foreground">No projects found</div>
+              </div>
+            ) : (
+              Object.entries(projects || {}).map(([projectName, resources]) => (
+                <ProjectCard
+                  key={projectName}
+                  onClick={() => {
+                    // TODO: Navigate to project detail page
+                  }}
+                  projectName={projectName}
+                  resourceCount={resources.length}
+                />
+              ))
+            )}
           </div>
         )}
 

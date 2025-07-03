@@ -12,7 +12,8 @@ import { getDevboxAPIContext } from "@/lib/sealos/devbox/devbox-utils";
 import { transformDevboxToTableRow } from "./inventory-transform";
 
 export function getDevboxTableData() {
-  const devboxContext = getDevboxAPIContext();
+  // Memoize the context to prevent infinite re-renders
+  const devboxContext = useMemo(() => getDevboxAPIContext(), []);
 
   // Fetch the list of devbox names
   const { data: devboxNames, isLoading: listLoading } = useQuery({

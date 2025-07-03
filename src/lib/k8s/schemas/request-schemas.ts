@@ -1,11 +1,10 @@
 import { z } from "zod";
 import { ResourceTargetSchema } from "./resource-target-schemas";
 
-// Input parameter schemas for queries
+// Input parameter schemas for queries (namespace is in context)
 export const ListCustomResourceRequestSchema = z.object({
   group: z.string(),
   version: z.string(),
-  namespace: z.string(),
   plural: z.string(),
   labelSelector: z.string().optional(),
 });
@@ -13,51 +12,42 @@ export const ListCustomResourceRequestSchema = z.object({
 export const GetCustomResourceRequestSchema = z.object({
   group: z.string(),
   version: z.string(),
-  namespace: z.string(),
   plural: z.string(),
   name: z.string(),
 });
 
 export const ListDeploymentsRequestSchema = z.object({
-  namespace: z.string(),
   labelSelector: z.string().optional(),
 });
 
 export const GetDeploymentRequestSchema = z.object({
-  namespace: z.string(),
   name: z.string(),
 });
 
 export const ListServicesRequestSchema = z.object({
-  namespace: z.string(),
   labelSelector: z.string().optional(),
 });
 
 export const GetServiceRequestSchema = z.object({
-  namespace: z.string(),
   name: z.string(),
 });
 
 export const ListIngressesRequestSchema = z.object({
-  namespace: z.string(),
   labelSelector: z.string().optional(),
 });
 
 export const GetIngressRequestSchema = z.object({
-  namespace: z.string(),
   name: z.string(),
 });
 
 export const ListAllResourcesRequestSchema = z.object({
-  namespace: z.string(),
   labelSelector: z.string().optional(),
 });
 
-// Input parameter schemas for mutations
+// Input parameter schemas for mutations (namespace is in context)
 export const PatchCustomResourceRequestSchema = z.object({
   group: z.string(),
   version: z.string(),
-  namespace: z.string(),
   plural: z.string(),
   name: z.string(),
   patchBody: z.array(z.unknown()),
@@ -66,7 +56,6 @@ export const PatchCustomResourceRequestSchema = z.object({
 export const PatchCustomResourceMetadataRequestSchema = z.object({
   group: z.string(),
   version: z.string(),
-  namespace: z.string(),
   plural: z.string(),
   name: z.string(),
   metadataType: z.enum(["annotations", "labels"]),
@@ -77,7 +66,6 @@ export const PatchCustomResourceMetadataRequestSchema = z.object({
 export const RemoveCustomResourceMetadataRequestSchema = z.object({
   group: z.string(),
   version: z.string(),
-  namespace: z.string(),
   plural: z.string(),
   name: z.string(),
   metadataType: z.enum(["annotations", "labels"]),
@@ -85,7 +73,6 @@ export const RemoveCustomResourceMetadataRequestSchema = z.object({
 });
 
 export const PatchDeploymentMetadataRequestSchema = z.object({
-  namespace: z.string(),
   name: z.string(),
   metadataType: z.enum(["annotations", "labels"]),
   key: z.string(),
@@ -93,7 +80,6 @@ export const PatchDeploymentMetadataRequestSchema = z.object({
 });
 
 export const RemoveDeploymentMetadataRequestSchema = z.object({
-  namespace: z.string(),
   name: z.string(),
   metadataType: z.enum(["annotations", "labels"]),
   key: z.string(),

@@ -120,6 +120,7 @@ export interface UserAuthOperations {
 export interface User {
   id: string;
   context?: string | null;
+  namespace: string;
   regionUrl?: string | null;
   kubeconfig: string;
   regionToken?: string | null;
@@ -218,6 +219,7 @@ export interface PayloadMigration {
  */
 export interface UsersSelect<T extends boolean = true> {
   context?: T;
+  namespace?: T;
   regionUrl?: T;
   kubeconfig?: T;
   regionToken?: T;

@@ -35,6 +35,12 @@ export const RESOURCES = {
     version: "v1alpha1",
     plural: "clusters",
   } as CustomResourceConfig,
+  instance: {
+    type: ResourceType.CUSTOM,
+    group: "app.sealos.io",
+    version: "v1",
+    plural: "instances",
+  } as CustomResourceConfig,
   deployment: {
     type: ResourceType.DEPLOYMENT,
     apiVersion: "apps/v1",

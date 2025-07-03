@@ -13,12 +13,12 @@ import {
   listServices,
 } from "./k8s-api";
 import { RESOURCES } from "./k8s-constant";
-import { getDecodedKubeconfig } from "./k8s-utils";
 import type {
   GetCustomResourceRequest,
   GetDeploymentRequest,
   GetIngressRequest,
   GetServiceRequest,
+  K8sApiContext,
   ListAllResourcesRequest,
   ListCustomResourceRequest,
   ListDeploymentsRequest,
@@ -29,6 +29,7 @@ import type {
 
 export const listCustomResourceOptions = (
   request: ListCustomResourceRequest,
+  context: K8sApiContext,
   postprocess?: (data: unknown) => unknown
 ) =>
   queryOptions({
@@ -38,18 +39,17 @@ export const listCustomResourceOptions = (
       "list",
       request.group,
       request.version,
-      request.namespace,
+      context.namespace,
       request.plural,
       request.labelSelector,
     ],
     queryFn: () => {
-      const decodedKc = getDecodedKubeconfig();
       return runParallelAction(
         listCustomResource(
-          decodedKc,
+          context.kubeconfig,
           request.group,
           request.version,
-          request.namespace,
+          context.namespace,
           request.plural,
           request.labelSelector
         )
@@ -59,12 +59,13 @@ export const listCustomResourceOptions = (
     enabled:
       !!request.group &&
       !!request.version &&
-      !!request.namespace &&
+      !!context.namespace &&
       !!request.plural,
   });
 
 export const getCustomResourceOptions = (
   request: GetCustomResourceRequest,
+  context: K8sApiContext,
   postprocess?: (data: unknown) => unknown
 ) =>
   queryOptions({
@@ -74,18 +75,17 @@ export const getCustomResourceOptions = (
       "get",
       request.group,
       request.version,
-      request.namespace,
+      context.namespace,
       request.plural,
       request.name,
     ],
     queryFn: () => {
-      const decodedKc = getDecodedKubeconfig();
       return runParallelAction(
         getCustomResource(
-          decodedKc,
+          context.kubeconfig,
           request.group,
           request.version,
-          request.namespace,
+          context.namespace,
           request.plural,
           request.name
         )
@@ -95,13 +95,14 @@ export const getCustomResourceOptions = (
     enabled:
       !!request.group &&
       !!request.version &&
-      !!request.namespace &&
+      !!context.namespace &&
       !!request.plural &&
       !!request.name,
   });
 
 export const listDeploymentsOptions = (
   request: ListDeploymentsRequest,
+  context: K8sApiContext,
   postprocess?: (data: unknown) => unknown
 ) =>
   queryOptions({
@@ -109,37 +110,41 @@ export const listDeploymentsOptions = (
       "k8s",
       "deployments",
       "list",
-      request.namespace,
+      context.namespace,
       request.labelSelector,
     ],
     queryFn: () => {
-      const decodedKc = getDecodedKubeconfig();
       return runParallelAction(
-        listDeployments(decodedKc, request.namespace, request.labelSelector)
+        listDeployments(
+          context.kubeconfig,
+          context.namespace,
+          request.labelSelector
+        )
       );
     },
     select: (data) => postprocess?.(data) ?? data,
-    enabled: !!request.namespace,
+    enabled: !!context.namespace,
   });
 
 export const getDeploymentOptions = (
   request: GetDeploymentRequest,
+  context: K8sApiContext,
   postprocess?: (data: unknown) => unknown
 ) =>
   queryOptions({
-    queryKey: ["k8s", "deployments", "get", request.namespace, request.name],
+    queryKey: ["k8s", "deployments", "get", context.namespace, request.name],
     queryFn: () => {
-      const decodedKc = getDecodedKubeconfig();
       return runParallelAction(
-        getDeployment(decodedKc, request.namespace, request.name)
+        getDeployment(context.kubeconfig, context.namespace, request.name)
       );
     },
     select: (data) => postprocess?.(data) ?? data,
-    enabled: !!request.namespace && !!request.name,
+    enabled: !!context.namespace && !!request.name,
   });
 
 export const listServicesOptions = (
   request: ListServicesRequest,
+  context: K8sApiContext,
   postprocess?: (data: unknown) => unknown
 ) =>
   queryOptions({
@@ -147,37 +152,41 @@ export const listServicesOptions = (
       "k8s",
       "services",
       "list",
-      request.namespace,
+      context.namespace,
       request.labelSelector,
     ],
     queryFn: () => {
-      const decodedKc = getDecodedKubeconfig();
       return runParallelAction(
-        listServices(decodedKc, request.namespace, request.labelSelector)
+        listServices(
+          context.kubeconfig,
+          context.namespace,
+          request.labelSelector
+        )
       );
     },
     select: (data) => postprocess?.(data) ?? data,
-    enabled: !!request.namespace,
+    enabled: !!context.namespace,
   });
 
 export const getServiceOptions = (
   request: GetServiceRequest,
+  context: K8sApiContext,
   postprocess?: (data: unknown) => unknown
 ) =>
   queryOptions({
-    queryKey: ["k8s", "services", "get", request.namespace, request.name],
+    queryKey: ["k8s", "services", "get", context.namespace, request.name],
     queryFn: () => {
-      const decodedKc = getDecodedKubeconfig();
       return runParallelAction(
-        getService(decodedKc, request.namespace, request.name)
+        getService(context.kubeconfig, context.namespace, request.name)
       );
     },
     select: (data) => postprocess?.(data) ?? data,
-    enabled: !!request.namespace && !!request.name,
+    enabled: !!context.namespace && !!request.name,
   });
 
 export const listIngressesOptions = (
   request: ListIngressesRequest,
+  context: K8sApiContext,
   postprocess?: (data: unknown) => unknown
 ) =>
   queryOptions({
@@ -185,37 +194,41 @@ export const listIngressesOptions = (
       "k8s",
       "ingresses",
       "list",
-      request.namespace,
+      context.namespace,
       request.labelSelector,
     ],
     queryFn: () => {
-      const decodedKc = getDecodedKubeconfig();
       return runParallelAction(
-        listIngresses(decodedKc, request.namespace, request.labelSelector)
+        listIngresses(
+          context.kubeconfig,
+          context.namespace,
+          request.labelSelector
+        )
       );
     },
     select: (data) => postprocess?.(data) ?? data,
-    enabled: !!request.namespace,
+    enabled: !!context.namespace,
   });
 
 export const getIngressOptions = (
   request: GetIngressRequest,
+  context: K8sApiContext,
   postprocess?: (data: unknown) => unknown
 ) =>
   queryOptions({
-    queryKey: ["k8s", "ingresses", "get", request.namespace, request.name],
+    queryKey: ["k8s", "ingresses", "get", context.namespace, request.name],
     queryFn: () => {
-      const decodedKc = getDecodedKubeconfig();
       return runParallelAction(
-        getIngress(decodedKc, request.namespace, request.name)
+        getIngress(context.kubeconfig, context.namespace, request.name)
       );
     },
     select: (data) => postprocess?.(data) ?? data,
-    enabled: !!request.namespace && !!request.name,
+    enabled: !!context.namespace && !!request.name,
   });
 
 export const getResourceOptions = (
   resource: ResourceTarget,
+  context: K8sApiContext,
   postprocess?: (data: unknown) => unknown
 ) => {
   if (resource.type === "custom") {
@@ -223,10 +236,10 @@ export const getResourceOptions = (
       {
         group: resource.group,
         version: resource.version,
-        namespace: resource.namespace,
         plural: resource.plural,
         name: resource.name,
       },
+      context,
       postprocess ?? ((d) => d)
     );
   }
@@ -234,9 +247,9 @@ export const getResourceOptions = (
   if (resource.type === "deployment") {
     return getDeploymentOptions(
       {
-        namespace: resource.namespace,
         name: resource.name,
       },
+      context,
       postprocess ?? ((d) => d)
     );
   }
@@ -246,6 +259,7 @@ export const getResourceOptions = (
 
 export const listAllResourcesOptions = (
   request: ListAllResourcesRequest,
+  context: K8sApiContext,
   postprocess?: (data: unknown) => unknown
 ) =>
   queryOptions({
@@ -253,27 +267,26 @@ export const listAllResourcesOptions = (
       "k8s",
       "all-resources",
       "list",
-      request.namespace,
+      context.namespace,
       request.labelSelector,
     ],
     queryFn: async () => {
-      const decodedKc = getDecodedKubeconfig();
       const resourcePromises = Object.entries(RESOURCES).map(([_, config]) =>
         "group" in config
           ? runParallelAction(
               listCustomResource(
-                decodedKc,
+                context.kubeconfig,
                 config.group,
                 config.version,
-                request.namespace,
+                context.namespace,
                 config.plural,
                 request.labelSelector
               )
             )
           : runParallelAction(
               listDeployments(
-                decodedKc,
-                request.namespace,
+                context.kubeconfig,
+                context.namespace,
                 request.labelSelector
               )
             )
@@ -285,5 +298,5 @@ export const listAllResourcesOptions = (
       );
     },
     select: postprocess ?? ((d) => d),
-    enabled: !!request.namespace,
+    enabled: !!context.namespace,
   });
