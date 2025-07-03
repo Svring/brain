@@ -29,7 +29,7 @@ import type {
 
 export const listCustomResourceOptions = (
   request: ListCustomResourceRequest,
-  postprocess: (data: unknown) => unknown = (d) => d
+  postprocess?: (data: unknown) => unknown
 ) =>
   queryOptions({
     queryKey: [
@@ -55,7 +55,7 @@ export const listCustomResourceOptions = (
         )
       );
     },
-    select: (data) => postprocess(data),
+    select: (data) => postprocess?.(data) ?? data,
     enabled:
       !!request.group &&
       !!request.version &&
@@ -65,7 +65,7 @@ export const listCustomResourceOptions = (
 
 export const getCustomResourceOptions = (
   request: GetCustomResourceRequest,
-  postprocess: (data: unknown) => unknown = (d) => d
+  postprocess?: (data: unknown) => unknown
 ) =>
   queryOptions({
     queryKey: [
@@ -91,7 +91,7 @@ export const getCustomResourceOptions = (
         )
       );
     },
-    select: (data) => postprocess(data),
+    select: (data) => postprocess?.(data) ?? data,
     enabled:
       !!request.group &&
       !!request.version &&
@@ -102,7 +102,7 @@ export const getCustomResourceOptions = (
 
 export const listDeploymentsOptions = (
   request: ListDeploymentsRequest,
-  postprocess: (data: unknown) => unknown = (d) => d
+  postprocess?: (data: unknown) => unknown
 ) =>
   queryOptions({
     queryKey: [
@@ -118,13 +118,13 @@ export const listDeploymentsOptions = (
         listDeployments(decodedKc, request.namespace, request.labelSelector)
       );
     },
-    select: (data) => postprocess(data),
+    select: (data) => postprocess?.(data) ?? data,
     enabled: !!request.namespace,
   });
 
 export const getDeploymentOptions = (
   request: GetDeploymentRequest,
-  postprocess: (data: unknown) => unknown = (d) => d
+  postprocess?: (data: unknown) => unknown
 ) =>
   queryOptions({
     queryKey: ["k8s", "deployments", "get", request.namespace, request.name],
@@ -134,13 +134,13 @@ export const getDeploymentOptions = (
         getDeployment(decodedKc, request.namespace, request.name)
       );
     },
-    select: (data) => postprocess(data),
+    select: (data) => postprocess?.(data) ?? data,
     enabled: !!request.namespace && !!request.name,
   });
 
 export const listServicesOptions = (
   request: ListServicesRequest,
-  postprocess: (data: unknown) => unknown = (d) => d
+  postprocess?: (data: unknown) => unknown
 ) =>
   queryOptions({
     queryKey: [
@@ -156,13 +156,13 @@ export const listServicesOptions = (
         listServices(decodedKc, request.namespace, request.labelSelector)
       );
     },
-    select: (data) => postprocess(data),
+    select: (data) => postprocess?.(data) ?? data,
     enabled: !!request.namespace,
   });
 
 export const getServiceOptions = (
   request: GetServiceRequest,
-  postprocess: (data: unknown) => unknown = (d) => d
+  postprocess?: (data: unknown) => unknown
 ) =>
   queryOptions({
     queryKey: ["k8s", "services", "get", request.namespace, request.name],
@@ -172,13 +172,13 @@ export const getServiceOptions = (
         getService(decodedKc, request.namespace, request.name)
       );
     },
-    select: (data) => postprocess(data),
+    select: (data) => postprocess?.(data) ?? data,
     enabled: !!request.namespace && !!request.name,
   });
 
 export const listIngressesOptions = (
   request: ListIngressesRequest,
-  postprocess: (data: unknown) => unknown = (d) => d
+  postprocess?: (data: unknown) => unknown
 ) =>
   queryOptions({
     queryKey: [
@@ -194,13 +194,13 @@ export const listIngressesOptions = (
         listIngresses(decodedKc, request.namespace, request.labelSelector)
       );
     },
-    select: (data) => postprocess(data),
+    select: (data) => postprocess?.(data) ?? data,
     enabled: !!request.namespace,
   });
 
 export const getIngressOptions = (
   request: GetIngressRequest,
-  postprocess: (data: unknown) => unknown = (d) => d
+  postprocess?: (data: unknown) => unknown
 ) =>
   queryOptions({
     queryKey: ["k8s", "ingresses", "get", request.namespace, request.name],
@@ -210,13 +210,13 @@ export const getIngressOptions = (
         getIngress(decodedKc, request.namespace, request.name)
       );
     },
-    select: (data) => postprocess(data),
+    select: (data) => postprocess?.(data) ?? data,
     enabled: !!request.namespace && !!request.name,
   });
 
 export const getResourceOptions = (
   resource: ResourceTarget,
-  postprocess: (data: unknown) => unknown = (d) => d
+  postprocess?: (data: unknown) => unknown
 ) => {
   if (resource.type === "custom") {
     return getCustomResourceOptions(
@@ -227,7 +227,7 @@ export const getResourceOptions = (
         plural: resource.plural,
         name: resource.name,
       },
-      postprocess
+      postprocess ?? ((d) => d)
     );
   }
 
@@ -237,7 +237,7 @@ export const getResourceOptions = (
         namespace: resource.namespace,
         name: resource.name,
       },
-      postprocess
+      postprocess ?? ((d) => d)
     );
   }
 
@@ -246,7 +246,7 @@ export const getResourceOptions = (
 
 export const listAllResourcesOptions = (
   request: ListAllResourcesRequest,
-  postprocess: (data: unknown) => unknown = (d) => d
+  postprocess?: (data: unknown) => unknown
 ) =>
   queryOptions({
     queryKey: [
@@ -284,6 +284,6 @@ export const listAllResourcesOptions = (
         Object.keys(RESOURCES).map((name, i) => [name, results[i]])
       );
     },
-    select: postprocess,
+    select: postprocess ?? ((d) => d),
     enabled: !!request.namespace,
   });

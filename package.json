@@ -44,6 +44,7 @@
     "@radix-ui/react-tooltip": "1.1.6",
     "@tanstack/react-query": "^5.81.5",
     "@tanstack/react-query-devtools": "^5.81.5",
+    "@tanstack/react-table": "^8.21.3",
     "@xyflow/react": "^12.8.1",
     "autoprefixer": "^10.4.20",
     "axios": "^1.10.0",

@@ -54,7 +54,7 @@ import {
 // Helper to create axios instance per request
 function createApi(context: DevboxApiContext) {
   return axios.create({
-    baseURL: context.baseURL,
+    baseURL: `https://devbox.${context.baseURL}`,
     headers: {
       "Content-Type": "application/json",
       ...(context.authorization

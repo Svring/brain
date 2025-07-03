@@ -13,7 +13,7 @@ import { DEVBOX_MANAGER_LABEL } from "./devbox-constant";
 export const listDevboxServicesOptions = (
   namespace: string,
   devboxName: string,
-  postprocess: (data: unknown) => unknown = (d) => d
+  postprocess?: (data: unknown) => unknown
 ) =>
   listServicesOptions(
     {
@@ -33,7 +33,7 @@ export const listDevboxServicesOptions = (
 export const listDevboxIngressesOptions = (
   namespace: string,
   devboxName: string,
-  postprocess: (data: unknown) => unknown = (d) => d
+  postprocess?: (data: unknown) => unknown
 ) =>
   listIngressesOptions(
     {

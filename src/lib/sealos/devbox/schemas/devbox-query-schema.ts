@@ -39,6 +39,7 @@ export const DevboxGetResponseSchema = z.object({
 export const DevboxListItemSchema = z.object({
   name: z.string(),
   id: z.string(),
+  createTime: z.string(),
 });
 
 export const DevboxListResponseSchema = z.object({

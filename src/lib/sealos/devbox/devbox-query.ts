@@ -10,71 +10,81 @@ import {
   getDevboxList,
   getDevboxReleases,
 } from "./devbox-open-api";
-import { getDevboxAPIContext } from "./devbox-utils";
+import type {
+  DevboxApiContext,
+  DevboxGetResponse,
+  DevboxListResponse,
+  DevboxReleasesResponse,
+  GetAppByNameResponse,
+  GetAppPodsResponse,
+  GetAppsResponse,
+} from "./schemas";
 
 export const listDevboxOptions = (
-  postprocess: (data: unknown) => unknown = (d) => d
+  context: DevboxApiContext,
+  postprocess?: (data: DevboxListResponse) => unknown
 ) =>
   queryOptions({
     queryKey: ["sealos", "devbox", "list"],
-    queryFn: () => runParallelAction(getDevboxList(getDevboxAPIContext())),
-    select: (data) => postprocess(data),
+    queryFn: () => runParallelAction(getDevboxList(context)),
+    select: (data) => postprocess?.(data) ?? data,
   });
 
 export const getDevboxOptions = (
   devboxName: string,
-  postprocess: (data: unknown) => unknown = (d) => d
+  context: DevboxApiContext,
+  postprocess?: (data: DevboxGetResponse) => unknown
 ) =>
   queryOptions({
     queryKey: ["sealos", "devbox", "get", devboxName],
-    queryFn: () =>
-      runParallelAction(getDevboxByName(devboxName, getDevboxAPIContext())),
-    select: (data) => postprocess(data),
+    queryFn: () => runParallelAction(getDevboxByName(devboxName, context)),
+    select: (data) => postprocess?.(data) ?? data,
     enabled: !!devboxName,
   });
 
 export const getDevboxReleasesOptions = (
   devboxName: string,
-  postprocess: (data: unknown) => unknown = (d) => d
+  context: DevboxApiContext,
+  postprocess?: (data: DevboxReleasesResponse) => unknown
 ) =>
   queryOptions({
     queryKey: ["sealos", "devbox", "releases", devboxName],
-    queryFn: () =>
-      runParallelAction(getDevboxReleases(devboxName, getDevboxAPIContext())),
-    select: (data) => postprocess(data),
+    queryFn: () => runParallelAction(getDevboxReleases(devboxName, context)),
+    select: (data) => postprocess?.(data) ?? data,
     enabled: !!devboxName,
   });
 
 export const listAppsOptions = (
-  postprocess: (data: unknown) => unknown = (d) => d
+  context: DevboxApiContext,
+  postprocess?: (data: GetAppsResponse) => unknown
 ) =>
   queryOptions({
     queryKey: ["sealos", "app", "list"],
-    queryFn: () => runParallelAction(getApps(getDevboxAPIContext())),
-    select: (data) => postprocess(data),
+    queryFn: () => runParallelAction(getApps(context)),
+    select: (data) => postprocess?.(data) ?? data,
   });
 
 export const getAppOptions = (
   appName: string,
-  postprocess: (data: unknown) => unknown = (d) => d
+  context: DevboxApiContext,
+  postprocess?: (data: GetAppByNameResponse) => unknown
 ) =>
   queryOptions({
     queryKey: ["sealos", "app", "get", appName],
-    queryFn: () =>
-      runParallelAction(getAppByName(appName, getDevboxAPIContext())),
-    select: (data) => postprocess(data),
+    queryFn: () => runParallelAction(getAppByName(appName, context)),
+    select: (data) => postprocess?.(data) ?? data,
     enabled: !!appName,
   });
 
 export const getAppPodsOptions = (
   appName: string,
-  postprocess: (data: unknown) => unknown = (d) => d
+  context: DevboxApiContext,
+  postprocess?: (data: GetAppPodsResponse) => unknown
 ) =>
   queryOptions({
     queryKey: ["sealos", "app", "pods", appName],
-    queryFn: () =>
-      runParallelAction(getAppPods(appName, getDevboxAPIContext())),
-    select: (data) => postprocess(data),
+    queryFn: () => runParallelAction(getAppPods(appName, context)),
+    select: (data) => postprocess?.(data) ?? data,
     enabled: !!appName,
   });
 
