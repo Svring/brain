@@ -9,7 +9,7 @@ import {
   getDevboxByName,
   getDevboxList,
   getDevboxReleases,
-} from "./devbox-api";
+} from "./devbox-open-api";
 import { getDevboxAPIContext } from "./devbox-utils";
 
 export const listDevboxOptions = (
@@ -77,3 +77,8 @@ export const getAppPodsOptions = (
     select: (data) => postprocess(data),
     enabled: !!appName,
   });
+
+export {
+  listDevboxIngressesOptions,
+  listDevboxServicesOptions,
+} from "./devbox-k8s-api";

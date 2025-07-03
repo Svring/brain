@@ -6,6 +6,7 @@ import {
   CoreV1Api,
   CustomObjectsApi,
   KubeConfig,
+  NetworkingV1Api,
 } from "@kubernetes/client-node";
 import { createParallelAction } from "next-server-actions-parallel";
 
@@ -14,6 +15,7 @@ type ApiClients = {
   appsApi: AppsV1Api;
   batchApi: BatchV1Api;
   coreApi: CoreV1Api;
+  networkingApi: NetworkingV1Api;
 };
 
 function createKubeConfig(kubeconfig: string): KubeConfig {
@@ -28,6 +30,7 @@ function createApiClients(kc: KubeConfig): ApiClients {
     appsApi: kc.makeApiClient(AppsV1Api),
     batchApi: kc.makeApiClient(BatchV1Api),
     coreApi: kc.makeApiClient(CoreV1Api),
+    networkingApi: kc.makeApiClient(NetworkingV1Api),
   };
 }
 
@@ -341,5 +344,81 @@ export const removeDeploymentMetadata = createParallelAction(
       name,
       key,
     };
+  }
+);
+
+/**
+ * List services in a namespace.
+ * @param kubeconfig - The kubeconfig string.
+ * @param namespace - The namespace to list services in.
+ * @param labelSelector - Optional label selector to filter services.
+ * @returns The list of services as returned by the Kubernetes client.
+ */
+export const listServices = createParallelAction(
+  async (kubeconfig: string, namespace: string, labelSelector?: string) => {
+    const kc = createKubeConfig(kubeconfig);
+    const clients = createApiClients(kc);
+    const result = await clients.coreApi.listNamespacedService({
+      namespace,
+      labelSelector,
+    });
+    return JSON.parse(JSON.stringify(result));
+  }
+);
+
+/**
+ * Get a service by name in a namespace.
+ * @param kubeconfig - The kubeconfig string.
+ * @param namespace - The namespace of the service.
+ * @param name - The name of the service.
+ * @returns The service object as returned by the Kubernetes client.
+ */
+export const getService = createParallelAction(
+  async (kubeconfig: string, namespace: string, name: string) => {
+    const kc = createKubeConfig(kubeconfig);
+    const clients = createApiClients(kc);
+    const result = await clients.coreApi.readNamespacedService({
+      namespace,
+      name,
+    });
+    return JSON.parse(JSON.stringify(result));
+  }
+);
+
+/**
+ * List ingresses in a namespace.
+ * @param kubeconfig - The kubeconfig string.
+ * @param namespace - The namespace to list ingresses in.
+ * @param labelSelector - Optional label selector to filter ingresses.
+ * @returns The list of ingresses as returned by the Kubernetes client.
+ */
+export const listIngresses = createParallelAction(
+  async (kubeconfig: string, namespace: string, labelSelector?: string) => {
+    const kc = createKubeConfig(kubeconfig);
+    const clients = createApiClients(kc);
+    const result = await clients.networkingApi.listNamespacedIngress({
+      namespace,
+      labelSelector,
+    });
+    return JSON.parse(JSON.stringify(result));
+  }
+);
+
+/**
+ * Get an ingress by name in a namespace.
+ * @param kubeconfig - The kubeconfig string.
+ * @param namespace - The namespace of the ingress.
+ * @param name - The name of the ingress.
+ * @returns The ingress object as returned by the Kubernetes client.
+ */
+export const getIngress = createParallelAction(
+  async (kubeconfig: string, namespace: string, name: string) => {
+    const kc = createKubeConfig(kubeconfig);
+    const clients = createApiClients(kc);
+    const result = await clients.networkingApi.readNamespacedIngress({
+      namespace,
+      name,
+    });
+    return JSON.parse(JSON.stringify(result));
   }
 );

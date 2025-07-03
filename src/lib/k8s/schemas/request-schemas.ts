@@ -28,6 +28,26 @@ export const GetDeploymentRequestSchema = z.object({
   name: z.string(),
 });
 
+export const ListServicesRequestSchema = z.object({
+  namespace: z.string(),
+  labelSelector: z.string().optional(),
+});
+
+export const GetServiceRequestSchema = z.object({
+  namespace: z.string(),
+  name: z.string(),
+});
+
+export const ListIngressesRequestSchema = z.object({
+  namespace: z.string(),
+  labelSelector: z.string().optional(),
+});
+
+export const GetIngressRequestSchema = z.object({
+  namespace: z.string(),
+  name: z.string(),
+});
+
 export const ListAllResourcesRequestSchema = z.object({
   namespace: z.string(),
   labelSelector: z.string().optional(),
@@ -104,6 +124,10 @@ export type ListDeploymentsRequest = z.infer<
   typeof ListDeploymentsRequestSchema
 >;
 export type GetDeploymentRequest = z.infer<typeof GetDeploymentRequestSchema>;
+export type ListServicesRequest = z.infer<typeof ListServicesRequestSchema>;
+export type GetServiceRequest = z.infer<typeof GetServiceRequestSchema>;
+export type ListIngressesRequest = z.infer<typeof ListIngressesRequestSchema>;
+export type GetIngressRequest = z.infer<typeof GetIngressRequestSchema>;
 export type ListAllResourcesRequest = z.infer<
   typeof ListAllResourcesRequestSchema
 >;

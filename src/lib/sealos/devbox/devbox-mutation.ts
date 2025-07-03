@@ -12,7 +12,7 @@ import {
   manageDevboxLifecycle,
   releaseDevbox,
   removeDevboxPort,
-} from "./devbox-api";
+} from "./devbox-open-api";
 import { getDevboxAPIContext } from "./devbox-utils";
 import type {
   AppFormConfig,

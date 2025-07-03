@@ -1,10 +1,10 @@
 "use client";
 
-import { Drama, PanelLeft } from "lucide-react";
+import { PanelLeft } from "lucide-react";
 import {
   MainSection,
   type NavigationItem,
-} from "@/components/app-page/base/sidebar/sidebar-section";
+} from "@/components/app/base/sidebar/sidebar-section";
 // React and third-party imports
 // UI Components
 import {
@@ -20,14 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 
 // Constants
-const NAVIGATION_ITEMS: NavigationItem[] = [
-  {
-    title: "Drama",
-    icon: Drama,
-    group: "overview",
-    path: "/drama",
-  },
-];
+const NAVIGATION_ITEMS: NavigationItem[] = [];
 
 export default function AppSidebar() {
   const { toggleSidebar } = useSidebar();

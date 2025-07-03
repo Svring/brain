@@ -5,17 +5,25 @@ import { runParallelAction } from "next-server-actions-parallel";
 import {
   getCustomResource,
   getDeployment,
+  getIngress,
+  getService,
   listCustomResource,
   listDeployments,
+  listIngresses,
+  listServices,
 } from "./k8s-api";
 import { RESOURCES } from "./k8s-constant";
 import { getDecodedKubeconfig } from "./k8s-utils";
 import type {
   GetCustomResourceRequest,
   GetDeploymentRequest,
+  GetIngressRequest,
+  GetServiceRequest,
   ListAllResourcesRequest,
   ListCustomResourceRequest,
   ListDeploymentsRequest,
+  ListIngressesRequest,
+  ListServicesRequest,
   ResourceTarget,
 } from "./schemas";
 
@@ -124,6 +132,82 @@ export const getDeploymentOptions = (
       const decodedKc = getDecodedKubeconfig();
       return runParallelAction(
         getDeployment(decodedKc, request.namespace, request.name)
+      );
+    },
+    select: (data) => postprocess(data),
+    enabled: !!request.namespace && !!request.name,
+  });
+
+export const listServicesOptions = (
+  request: ListServicesRequest,
+  postprocess: (data: unknown) => unknown = (d) => d
+) =>
+  queryOptions({
+    queryKey: [
+      "k8s",
+      "services",
+      "list",
+      request.namespace,
+      request.labelSelector,
+    ],
+    queryFn: () => {
+      const decodedKc = getDecodedKubeconfig();
+      return runParallelAction(
+        listServices(decodedKc, request.namespace, request.labelSelector)
+      );
+    },
+    select: (data) => postprocess(data),
+    enabled: !!request.namespace,
+  });
+
+export const getServiceOptions = (
+  request: GetServiceRequest,
+  postprocess: (data: unknown) => unknown = (d) => d
+) =>
+  queryOptions({
+    queryKey: ["k8s", "services", "get", request.namespace, request.name],
+    queryFn: () => {
+      const decodedKc = getDecodedKubeconfig();
+      return runParallelAction(
+        getService(decodedKc, request.namespace, request.name)
+      );
+    },
+    select: (data) => postprocess(data),
+    enabled: !!request.namespace && !!request.name,
+  });
+
+export const listIngressesOptions = (
+  request: ListIngressesRequest,
+  postprocess: (data: unknown) => unknown = (d) => d
+) =>
+  queryOptions({
+    queryKey: [
+      "k8s",
+      "ingresses",
+      "list",
+      request.namespace,
+      request.labelSelector,
+    ],
+    queryFn: () => {
+      const decodedKc = getDecodedKubeconfig();
+      return runParallelAction(
+        listIngresses(decodedKc, request.namespace, request.labelSelector)
+      );
+    },
+    select: (data) => postprocess(data),
+    enabled: !!request.namespace,
+  });
+
+export const getIngressOptions = (
+  request: GetIngressRequest,
+  postprocess: (data: unknown) => unknown = (d) => d
+) =>
+  queryOptions({
+    queryKey: ["k8s", "ingresses", "get", request.namespace, request.name],
+    queryFn: () => {
+      const decodedKc = getDecodedKubeconfig();
+      return runParallelAction(
+        getIngress(decodedKc, request.namespace, request.name)
       );
     },
     select: (data) => postprocess(data),
