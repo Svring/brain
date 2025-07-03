@@ -9,24 +9,33 @@ import type {
 } from "@/lib/k8s/schemas";
 import { PROJECT_NAME_LABEL_KEY } from "./project-constant";
 import { groupResourcesByProject } from "./project-transform";
-import type { GetProjectRequest, ProjectResources } from "./schemas";
+import type {
+  GetProjectRequest,
+  ListProjectsRequest,
+  ProjectResources,
+} from "./schemas";
 
 export const listProjectOptions = (
+  request: ListProjectsRequest,
   context: K8sApiContext,
   postprocess?: (data: ProjectResources) => ProjectResources
 ) => {
-  // Use the existing listAllResourcesOptions with postprocessing
+  // Use the existing listAllResourcesOptions without postprocessing
   const baseOptions = listAllResourcesOptions(
-    { labelSelector: undefined },
-    context,
-    (data) => groupResourcesByProject(data as Record<string, AnyKubernetesList>)
+    { labelSelector: request.labelSelector },
+    context
   );
 
   return queryOptions({
     ...baseOptions,
-    queryKey: ["project", "list", context.namespace],
-    select: (data) =>
-      postprocess?.(data as ProjectResources) ?? (data as ProjectResources),
+    queryKey: ["project", "list", context.namespace, request.labelSelector],
+    select: (data) => {
+      // Transform the raw data to grouped projects
+      const groupedProjects = groupResourcesByProject(
+        data as Record<string, AnyKubernetesList>
+      );
+      return postprocess?.(groupedProjects) ?? groupedProjects;
+    },
   });
 };
 
@@ -42,21 +51,21 @@ export const getProjectOptions = (
     {
       labelSelector,
     },
-    context,
-    (data) => {
-      const projectGroups = groupResourcesByProject(
-        data as Record<string, AnyKubernetesList>
-      );
-      // Return resources for the specific project, or empty array if not found
-      return projectGroups[request.projectName] || [];
-    }
+    context
   );
 
   return queryOptions({
     ...baseOptions,
     queryKey: ["project", "get", context.namespace, request.projectName],
-    select: (data) =>
-      postprocess?.(data as ResourceTarget[]) ?? (data as ResourceTarget[]),
+    select: (data) => {
+      // Transform the raw data to grouped projects, then extract the specific project
+      const projectGroups = groupResourcesByProject(
+        data as Record<string, AnyKubernetesList>
+      );
+      // Return resources for the specific project, or empty array if not found
+      const projectResources = projectGroups[request.projectName] || [];
+      return postprocess?.(projectResources) ?? projectResources;
+    },
     enabled: !!context.namespace && !!request.projectName,
   });
 };
