@@ -1,28 +1,32 @@
 "use client";
 
 import { queryOptions } from "@tanstack/react-query";
-import { listAllResourcesOptions } from "@/lib/k8s/k8s-query";
+import { RESOURCES } from "@/lib/k8s/k8s-constant";
+import {
+  getCustomResourceOptions,
+  listCustomResourceOptions,
+} from "@/lib/k8s/k8s-query";
 import type {
-  AnyKubernetesList,
+  InstanceList,
+  InstanceResource,
   K8sApiContext,
-  ResourceTarget,
 } from "@/lib/k8s/schemas";
-import { PROJECT_NAME_LABEL_KEY } from "./project-constant";
-import { groupResourcesByProject } from "./project-transform";
-import type {
-  GetProjectRequest,
-  ListProjectsRequest,
-  ProjectResources,
-} from "./schemas";
+import type { GetProjectRequest, ListProjectsRequest } from "./schemas";
 
 export const listProjectOptions = (
   request: ListProjectsRequest,
   context: K8sApiContext,
-  postprocess?: (data: ProjectResources) => ProjectResources
+  postprocess?: (data: InstanceList) => InstanceList
 ) => {
-  // Use the existing listAllResourcesOptions without postprocessing
-  const baseOptions = listAllResourcesOptions(
-    { labelSelector: request.labelSelector },
+  const instanceConfig = RESOURCES.instance;
+
+  const baseOptions = listCustomResourceOptions(
+    {
+      group: instanceConfig.group,
+      version: instanceConfig.version,
+      plural: instanceConfig.plural,
+      labelSelector: request.labelSelector,
+    },
     context
   );
 
@@ -30,11 +34,8 @@ export const listProjectOptions = (
     ...baseOptions,
     queryKey: ["project", "list", context.namespace, request.labelSelector],
     select: (data) => {
-      // Transform the raw data to grouped projects
-      const groupedProjects = groupResourcesByProject(
-        data as Record<string, AnyKubernetesList>
-      );
-      return postprocess?.(groupedProjects) ?? groupedProjects;
+      const instanceList = data as InstanceList;
+      return postprocess?.(instanceList) ?? instanceList;
     },
   });
 };
@@ -42,14 +43,16 @@ export const listProjectOptions = (
 export const getProjectOptions = (
   request: GetProjectRequest,
   context: K8sApiContext,
-  postprocess?: (data: ResourceTarget[]) => ResourceTarget[]
+  postprocess?: (data: InstanceResource) => InstanceResource
 ) => {
-  // Use label selector to filter resources at the API level
-  const labelSelector = `${PROJECT_NAME_LABEL_KEY}=${request.projectName}`;
+  const instanceConfig = RESOURCES.instance;
 
-  const baseOptions = listAllResourcesOptions(
+  const baseOptions = getCustomResourceOptions(
     {
-      labelSelector,
+      group: instanceConfig.group,
+      version: instanceConfig.version,
+      plural: instanceConfig.plural,
+      name: request.projectName,
     },
     context
   );
@@ -58,13 +61,8 @@ export const getProjectOptions = (
     ...baseOptions,
     queryKey: ["project", "get", context.namespace, request.projectName],
     select: (data) => {
-      // Transform the raw data to grouped projects, then extract the specific project
-      const projectGroups = groupResourcesByProject(
-        data as Record<string, AnyKubernetesList>
-      );
-      // Return resources for the specific project, or empty array if not found
-      const projectResources = projectGroups[request.projectName] || [];
-      return postprocess?.(projectResources) ?? projectResources;
+      const instance = data as InstanceResource;
+      return postprocess?.(instance) ?? instance;
     },
     enabled: !!context.namespace && !!request.projectName,
   });

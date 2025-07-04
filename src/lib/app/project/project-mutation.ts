@@ -1,11 +1,17 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { RESOURCES } from "@/lib/k8s/k8s-constant";
 import {
   useBatchPatchResourcesMetadataMutation,
   useBatchRemoveResourcesMetadataMutation,
+  usePatchCustomResourceMutation,
 } from "@/lib/k8s/k8s-mutation";
-import type { K8sApiContext, ResourceTarget } from "@/lib/k8s/schemas";
+import type {
+  K8sApiContext,
+  PatchCustomResourceRequest,
+  ResourceTarget,
+} from "@/lib/k8s/schemas";
 import { PROJECT_NAME_LABEL_KEY } from "./project-constant";
 
 /**
@@ -67,6 +73,37 @@ export function useRemoveProjectLabelFromResourcesMutation(
       queryClient.invalidateQueries({
         queryKey: ["project", "get", context.namespace],
       });
+    },
+  });
+}
+
+/**
+ * Hook to patch an Instance custom resource in k8s
+ */
+export function usePatchInstanceResourceMutation(context: K8sApiContext) {
+  const patchMutation = usePatchCustomResourceMutation(context);
+
+  return useMutation({
+    mutationFn: ({
+      name,
+      patchBody,
+    }: {
+      name: string;
+      patchBody: unknown[];
+    }) => {
+      const instanceConfig = RESOURCES.instance;
+      const request: PatchCustomResourceRequest = {
+        group: instanceConfig.group,
+        version: instanceConfig.version,
+        plural: instanceConfig.plural,
+        name,
+        patchBody,
+      };
+      return patchMutation.mutateAsync(request);
+    },
+    onSuccess: () => {
+      // Invalidate instance-related queries if needed
+      // (Handled by usePatchCustomResourceMutation's onSuccess)
     },
   });
 }

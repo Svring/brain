@@ -80,19 +80,19 @@ export default function Page() {
             {projects &&
             !projectsLoading &&
             !projectsError &&
-            Object.keys(projects).length === 0 ? (
+            projects.items.length === 0 ? (
               <div className="col-span-full flex h-32 items-center justify-center">
                 <div className="text-muted-foreground">No projects found</div>
               </div>
             ) : (
-              Object.entries(projects || {}).map(([projectName, resources]) => (
+              projects?.items.map((project) => (
                 <ProjectCard
-                  key={projectName}
+                  key={project.metadata.name}
                   onClick={() => {
                     // TODO: Navigate to project detail page
                   }}
-                  projectName={projectName}
-                  resourceCount={resources.length}
+                  projectName={project.spec.title || project.metadata.name}
+                  resourceCount={1} // Each instance represents one project
                 />
               ))
             )}

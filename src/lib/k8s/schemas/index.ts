@@ -12,6 +12,7 @@ export type K8sApiContext = z.infer<typeof K8sApiContextSchema>;
 
 export * from "./custom-resource-schemas";
 export * from "./deployment-schemas";
+export * from "./instance-schemas";
 export * from "./kubernetes-resource-schemas";
 export * from "./request-schemas";
 export * from "./resource-target-schemas";
@@ -25,15 +26,18 @@ import {
   DeploymentListSchema,
   DeploymentResourceSchema,
 } from "./deployment-schemas";
+import { InstanceListSchema, InstanceResourceSchema } from "./instance-schemas";
 
 export const AnyKubernetesResourceSchema = z.union([
   DeploymentResourceSchema,
   CustomResourceSchema,
+  InstanceResourceSchema,
 ]);
 
 export const AnyKubernetesListSchema = z.union([
   DeploymentListSchema,
   CustomResourceListSchema,
+  InstanceListSchema,
 ]);
 
 // Inferred types for union schemas
