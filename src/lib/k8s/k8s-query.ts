@@ -36,8 +36,8 @@ const listCustomResourceOptions = (
       resource.plural,
       resource.labelSelector,
     ],
-    queryFn: () => {
-      return runParallelAction(
+    queryFn: async () => {
+      return await runParallelAction(
         listCustomResources(
           context.kubeconfig,
           resource.group,
@@ -72,8 +72,8 @@ const getCustomResourceOptions = (
       request.plural,
       request.name,
     ],
-    queryFn: () => {
-      return runParallelAction(
+    queryFn: async () => {
+      return await runParallelAction(
         getCustomResource(
           context.kubeconfig,
           request.group,
@@ -107,8 +107,8 @@ const listBuiltinResourceOptions = (
       context.namespace,
       resource.labelSelector,
     ],
-    queryFn: () => {
-      return runParallelAction(
+    queryFn: async () => {
+      return await runParallelAction(
         listBuiltinResources(
           context.kubeconfig,
           context.namespace,
@@ -135,8 +135,8 @@ const getBuiltinResourceOptions = (
       context.namespace,
       request.name,
     ],
-    queryFn: () => {
-      return runParallelAction(
+    queryFn: async () => {
+      return await runParallelAction(
         getBuiltinResource(
           context.kubeconfig,
           context.namespace,

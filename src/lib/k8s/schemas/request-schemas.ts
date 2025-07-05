@@ -60,37 +60,16 @@ export const PatchCustomResourceRequestSchema = z.object({
   patchBody: z.array(z.unknown()),
 });
 
-export const PatchCustomResourceMetadataRequestSchema = z.object({
-  group: z.string(),
-  version: z.string(),
-  plural: z.string(),
-  name: z.string(),
+// Unified resource mutation schemas using ResourceTarget
+export const PatchResourceMetadataRequestSchema = z.object({
+  resource: ResourceTargetSchema,
   metadataType: z.enum(["annotations", "labels"]),
   key: z.string(),
   value: z.string(),
 });
 
-export const RemoveCustomResourceMetadataRequestSchema = z.object({
-  group: z.string(),
-  version: z.string(),
-  plural: z.string(),
-  name: z.string(),
-  metadataType: z.enum(["annotations", "labels"]),
-  key: z.string(),
-});
-
-// Generalized builtin resource mutation schemas
-export const PatchBuiltinResourceMetadataRequestSchema = z.object({
-  resourceType: BuiltinResourceKindSchema,
-  name: z.string(),
-  metadataType: z.enum(["annotations", "labels"]),
-  key: z.string(),
-  value: z.string(),
-});
-
-export const RemoveBuiltinResourceMetadataRequestSchema = z.object({
-  resourceType: BuiltinResourceKindSchema,
-  name: z.string(),
+export const RemoveResourceMetadataRequestSchema = z.object({
+  resource: ResourceTargetSchema,
   metadataType: z.enum(["annotations", "labels"]),
   key: z.string(),
 });
@@ -124,12 +103,6 @@ export type ListBuiltinResourceRequest = z.infer<
 export type GetBuiltinResourceRequest = z.infer<
   typeof GetBuiltinResourceRequestSchema
 >;
-export type PatchBuiltinResourceMetadataRequest = z.infer<
-  typeof PatchBuiltinResourceMetadataRequestSchema
->;
-export type RemoveBuiltinResourceMetadataRequest = z.infer<
-  typeof RemoveBuiltinResourceMetadataRequestSchema
->;
 
 // Legacy specific resource types (for backwards compatibility)
 export type ListServicesRequest = z.infer<typeof ListServicesRequestSchema>;
@@ -142,11 +115,11 @@ export type ListAllResourcesRequest = z.infer<
 export type PatchCustomResourceRequest = z.infer<
   typeof PatchCustomResourceRequestSchema
 >;
-export type PatchCustomResourceMetadataRequest = z.infer<
-  typeof PatchCustomResourceMetadataRequestSchema
+export type PatchResourceMetadataRequest = z.infer<
+  typeof PatchResourceMetadataRequestSchema
 >;
-export type RemoveCustomResourceMetadataRequest = z.infer<
-  typeof RemoveCustomResourceMetadataRequestSchema
+export type RemoveResourceMetadataRequest = z.infer<
+  typeof RemoveResourceMetadataRequestSchema
 >;
 export type BatchPatchRequest = z.infer<typeof BatchPatchRequestSchema>;
 export type BatchRemoveRequest = z.infer<typeof BatchRemoveRequestSchema>;

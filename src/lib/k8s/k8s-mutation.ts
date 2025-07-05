@@ -4,7 +4,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { runParallelAction } from "next-server-actions-parallel";
 import {
   patchBuiltinResourceMetadata,
-  patchCustomResource,
   patchCustomResourceMetadata,
   removeBuiltinResourceMetadata,
   removeCustomResourceMetadata,
@@ -13,207 +12,174 @@ import type {
   BatchPatchRequest,
   BatchRemoveRequest,
   K8sApiContext,
-  PatchBuiltinResourceMetadataRequest,
-  PatchCustomResourceMetadataRequest,
-  PatchCustomResourceRequest,
-  RemoveBuiltinResourceMetadataRequest,
-  RemoveCustomResourceMetadataRequest,
+  PatchResourceMetadataRequest,
+  RemoveResourceMetadataRequest,
 } from "./schemas";
 
-export function usePatchCustomResourceMutation(context: K8sApiContext) {
+export function usePatchResourceMetadataMutation(context: K8sApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (request: PatchCustomResourceRequest) => {
-      return runParallelAction(
-        patchCustomResource(
-          context.kubeconfig,
-          request.group,
-          request.version,
-          context.namespace,
-          request.plural,
-          request.name,
-          request.patchBody
-        )
-      );
-    },
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: [
-          "k8s",
-          "custom-resource",
-          "get",
-          variables.group,
-          variables.version,
-          context.namespace,
-          variables.plural,
-          variables.name,
-        ],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [
-          "k8s",
-          "custom-resource",
-          "list",
-          variables.group,
-          variables.version,
-          context.namespace,
-          variables.plural,
-        ],
-      });
-    },
-  });
-}
+    mutationFn: async (request: PatchResourceMetadataRequest) => {
+      if (request.resource.type === "custom") {
+        const result = await runParallelAction(
+          patchCustomResourceMetadata(
+            context.kubeconfig,
+            request.resource.group,
+            request.resource.version,
+            context.namespace,
+            request.resource.plural,
+            request.resource.name,
+            request.metadataType,
+            request.key,
+            request.value
+          )
+        );
+        return result;
+      }
 
-export function usePatchCustomResourceMetadataMutation(context: K8sApiContext) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (request: PatchCustomResourceMetadataRequest) => {
-      return runParallelAction(
-        patchCustomResourceMetadata(
-          context.kubeconfig,
-          request.group,
-          request.version,
-          context.namespace,
-          request.plural,
-          request.name,
-          request.metadataType,
-          request.key,
-          request.value
-        )
-      );
-    },
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: [
-          "k8s",
-          "custom-resource",
-          "get",
-          variables.group,
-          variables.version,
-          context.namespace,
-          variables.plural,
-          variables.name,
-        ],
-      });
-    },
-  });
-}
-
-export function useRemoveCustomResourceMetadataMutation(
-  context: K8sApiContext
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (request: RemoveCustomResourceMetadataRequest) => {
-      return runParallelAction(
-        removeCustomResourceMetadata(
-          context.kubeconfig,
-          request.group,
-          request.version,
-          context.namespace,
-          request.plural,
-          request.name,
-          request.metadataType,
-          request.key
-        )
-      );
-    },
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: [
-          "k8s",
-          "custom-resource",
-          "get",
-          variables.group,
-          variables.version,
-          context.namespace,
-          variables.plural,
-          variables.name,
-        ],
-      });
-    },
-  });
-}
-
-export function usePatchBuiltinResourceMetadataMutation(
-  context: K8sApiContext
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (request: PatchBuiltinResourceMetadataRequest) => {
-      return runParallelAction(
+      // Handle builtin resources
+      const result = await runParallelAction(
         patchBuiltinResourceMetadata(
           context.kubeconfig,
           context.namespace,
-          request.resourceType,
-          request.name,
+          request.resource.type,
+          request.resource.name,
           request.metadataType,
           request.key,
           request.value
         )
       );
+      return result;
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: [
-          "k8s",
-          "builtin-resource",
-          "get",
-          variables.resourceType,
-          context.namespace,
-          variables.name,
-        ],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [
-          "k8s",
-          "builtin-resource",
-          "list",
-          variables.resourceType,
-          context.namespace,
-        ],
-      });
+      if (variables.resource.type === "custom") {
+        queryClient.invalidateQueries({
+          queryKey: [
+            "k8s",
+            "custom-resource",
+            "get",
+            variables.resource.group,
+            variables.resource.version,
+            context.namespace,
+            variables.resource.plural,
+            variables.resource.name,
+          ],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [
+            "k8s",
+            "custom-resource",
+            "list",
+            variables.resource.group,
+            variables.resource.version,
+            context.namespace,
+            variables.resource.plural,
+          ],
+        });
+      } else {
+        queryClient.invalidateQueries({
+          queryKey: [
+            "k8s",
+            "builtin-resource",
+            "get",
+            variables.resource.type,
+            context.namespace,
+            variables.resource.name,
+          ],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [
+            "k8s",
+            "builtin-resource",
+            "list",
+            variables.resource.type,
+            context.namespace,
+          ],
+        });
+      }
     },
   });
 }
 
-export function useRemoveBuiltinResourceMetadataMutation(
-  context: K8sApiContext
-) {
+export function useRemoveResourceMetadataMutation(context: K8sApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (request: RemoveBuiltinResourceMetadataRequest) => {
-      return runParallelAction(
+    mutationFn: async (request: RemoveResourceMetadataRequest) => {
+      if (request.resource.type === "custom") {
+        const result = await runParallelAction(
+          removeCustomResourceMetadata(
+            context.kubeconfig,
+            request.resource.group,
+            request.resource.version,
+            context.namespace,
+            request.resource.plural,
+            request.resource.name,
+            request.metadataType,
+            request.key
+          )
+        );
+        return result;
+      }
+
+      // Handle builtin resources
+      const result = await runParallelAction(
         removeBuiltinResourceMetadata(
           context.kubeconfig,
           context.namespace,
-          request.resourceType,
-          request.name,
+          request.resource.type,
+          request.resource.name,
           request.metadataType,
           request.key
         )
       );
+      return result;
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: [
-          "k8s",
-          "builtin-resource",
-          "get",
-          variables.resourceType,
-          context.namespace,
-          variables.name,
-        ],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [
-          "k8s",
-          "builtin-resource",
-          "list",
-          variables.resourceType,
-          context.namespace,
-        ],
-      });
+      if (variables.resource.type === "custom") {
+        queryClient.invalidateQueries({
+          queryKey: [
+            "k8s",
+            "custom-resource",
+            "get",
+            variables.resource.group,
+            variables.resource.version,
+            context.namespace,
+            variables.resource.plural,
+            variables.resource.name,
+          ],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [
+            "k8s",
+            "custom-resource",
+            "list",
+            variables.resource.group,
+            variables.resource.version,
+            context.namespace,
+            variables.resource.plural,
+          ],
+        });
+      } else {
+        queryClient.invalidateQueries({
+          queryKey: [
+            "k8s",
+            "builtin-resource",
+            "get",
+            variables.resource.type,
+            context.namespace,
+            variables.resource.name,
+          ],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [
+            "k8s",
+            "builtin-resource",
+            "list",
+            variables.resource.type,
+            context.namespace,
+          ],
+        });
+      }
     },
   });
 }
