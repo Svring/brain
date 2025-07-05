@@ -3,21 +3,21 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { runParallelAction } from "next-server-actions-parallel";
 import {
+  patchBuiltinResourceMetadata,
   patchCustomResource,
   patchCustomResourceMetadata,
-  patchDeploymentMetadata,
+  removeBuiltinResourceMetadata,
   removeCustomResourceMetadata,
-  removeDeploymentMetadata,
 } from "./k8s-api";
 import type {
   BatchPatchRequest,
   BatchRemoveRequest,
   K8sApiContext,
+  PatchBuiltinResourceMetadataRequest,
   PatchCustomResourceMetadataRequest,
   PatchCustomResourceRequest,
-  PatchDeploymentMetadataRequest,
+  RemoveBuiltinResourceMetadataRequest,
   RemoveCustomResourceMetadataRequest,
-  RemoveDeploymentMetadataRequest,
 } from "./schemas";
 
 export function usePatchCustomResourceMutation(context: K8sApiContext) {
@@ -135,14 +135,17 @@ export function useRemoveCustomResourceMetadataMutation(
   });
 }
 
-export function usePatchDeploymentMetadataMutation(context: K8sApiContext) {
+export function usePatchBuiltinResourceMetadataMutation(
+  context: K8sApiContext
+) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (request: PatchDeploymentMetadataRequest) => {
+    mutationFn: (request: PatchBuiltinResourceMetadataRequest) => {
       return runParallelAction(
-        patchDeploymentMetadata(
+        patchBuiltinResourceMetadata(
           context.kubeconfig,
           context.namespace,
+          request.resourceType,
           request.name,
           request.metadataType,
           request.key,
@@ -154,27 +157,37 @@ export function usePatchDeploymentMetadataMutation(context: K8sApiContext) {
       queryClient.invalidateQueries({
         queryKey: [
           "k8s",
-          "deployments",
+          "builtin-resource",
           "get",
+          variables.resourceType,
           context.namespace,
           variables.name,
         ],
       });
       queryClient.invalidateQueries({
-        queryKey: ["k8s", "deployments", "list", context.namespace],
+        queryKey: [
+          "k8s",
+          "builtin-resource",
+          "list",
+          variables.resourceType,
+          context.namespace,
+        ],
       });
     },
   });
 }
 
-export function useRemoveDeploymentMetadataMutation(context: K8sApiContext) {
+export function useRemoveBuiltinResourceMetadataMutation(
+  context: K8sApiContext
+) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (request: RemoveDeploymentMetadataRequest) => {
+    mutationFn: (request: RemoveBuiltinResourceMetadataRequest) => {
       return runParallelAction(
-        removeDeploymentMetadata(
+        removeBuiltinResourceMetadata(
           context.kubeconfig,
           context.namespace,
+          request.resourceType,
           request.name,
           request.metadataType,
           request.key
@@ -185,14 +198,21 @@ export function useRemoveDeploymentMetadataMutation(context: K8sApiContext) {
       queryClient.invalidateQueries({
         queryKey: [
           "k8s",
-          "deployments",
+          "builtin-resource",
           "get",
+          variables.resourceType,
           context.namespace,
           variables.name,
         ],
       });
       queryClient.invalidateQueries({
-        queryKey: ["k8s", "deployments", "list", context.namespace],
+        queryKey: [
+          "k8s",
+          "builtin-resource",
+          "list",
+          variables.resourceType,
+          context.namespace,
+        ],
       });
     },
   });
@@ -219,19 +239,18 @@ export function useBatchPatchResourcesMetadataMutation(context: K8sApiContext) {
             )
           );
         }
-        if ("type" in resource && resource.type === "deployment") {
-          return runParallelAction(
-            patchDeploymentMetadata(
-              context.kubeconfig,
-              context.namespace,
-              resource.name,
-              request.metadataType,
-              request.key,
-              request.value
-            )
-          );
-        }
-        throw new Error("Unknown resource type");
+        // Handle all builtin resource types
+        return runParallelAction(
+          patchBuiltinResourceMetadata(
+            context.kubeconfig,
+            context.namespace,
+            resource.type,
+            resource.name,
+            request.metadataType,
+            request.key,
+            request.value
+          )
+        );
       });
 
       const results = await Promise.all(promises);
@@ -269,17 +288,25 @@ export function useBatchPatchResourcesMetadataMutation(context: K8sApiContext) {
             ],
           });
         } else {
+          // Handle all builtin resource types
           queryClient.invalidateQueries({
             queryKey: [
               "k8s",
-              "deployments",
+              "builtin-resource",
               "get",
+              resource.type,
               context.namespace,
               resource.name,
             ],
           });
           queryClient.invalidateQueries({
-            queryKey: ["k8s", "deployments", "list", context.namespace],
+            queryKey: [
+              "k8s",
+              "builtin-resource",
+              "list",
+              resource.type,
+              context.namespace,
+            ],
           });
         }
       }
@@ -314,18 +341,17 @@ export function useBatchRemoveResourcesMetadataMutation(
             )
           );
         }
-        if ("type" in resource && resource.type === "deployment") {
-          return runParallelAction(
-            removeDeploymentMetadata(
-              context.kubeconfig,
-              context.namespace,
-              resource.name,
-              request.metadataType,
-              request.key
-            )
-          );
-        }
-        throw new Error("Unknown resource type");
+        // Handle all builtin resource types
+        return runParallelAction(
+          removeBuiltinResourceMetadata(
+            context.kubeconfig,
+            context.namespace,
+            resource.type,
+            resource.name,
+            request.metadataType,
+            request.key
+          )
+        );
       });
 
       const results = await Promise.all(promises);
@@ -363,17 +389,25 @@ export function useBatchRemoveResourcesMetadataMutation(
             ],
           });
         } else {
+          // Handle all builtin resource types
           queryClient.invalidateQueries({
             queryKey: [
               "k8s",
-              "deployments",
+              "builtin-resource",
               "get",
+              resource.type,
               context.namespace,
               resource.name,
             ],
           });
           queryClient.invalidateQueries({
-            queryKey: ["k8s", "deployments", "list", context.namespace],
+            queryKey: [
+              "k8s",
+              "builtin-resource",
+              "list",
+              resource.type,
+              context.namespace,
+            ],
           });
         }
       }

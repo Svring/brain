@@ -11,10 +11,9 @@ import type {
   InstanceResource,
   K8sApiContext,
 } from "@/lib/k8s/schemas";
-import type { GetProjectRequest, ListProjectsRequest } from "./schemas";
+import type { GetProjectRequest } from "./schemas";
 
-export const listProjectOptions = (
-  request: ListProjectsRequest,
+export const listProjectsOptions = (
   context: K8sApiContext,
   postprocess?: (data: InstanceList) => InstanceList
 ) => {
@@ -25,14 +24,13 @@ export const listProjectOptions = (
       group: instanceConfig.group,
       version: instanceConfig.version,
       plural: instanceConfig.plural,
-      labelSelector: request.labelSelector,
     },
     context
   );
 
   return queryOptions({
     ...baseOptions,
-    queryKey: ["project", "list", context.namespace, request.labelSelector],
+    queryKey: ["project", "list", context.namespace],
     select: (data) => {
       const instanceList = data as InstanceList;
       return postprocess?.(instanceList) ?? instanceList;

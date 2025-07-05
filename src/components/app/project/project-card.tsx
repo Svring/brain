@@ -1,36 +1,14 @@
 import type React from "react";
-import { SpotlightCard } from "@/components/app/base/spotlight-card";
+import type { ResourceTarget } from "@/lib/k8s/schemas";
 
 interface ProjectCardProps {
   projectName: string;
-  resourceCount?: number;
-  onClick?: () => void;
+  resources: ResourceTarget[];
 }
 
 export const ProjectCard: React.FC<ProjectCardProps> = ({
   projectName,
-  resourceCount = 0,
-  onClick,
+  resources,
 }) => {
-  return (
-    <button
-      className="cursor-pointer border-none bg-transparent p-0 transition-transform hover:scale-105"
-      onClick={onClick}
-      type="button"
-    >
-      <SpotlightCard>
-        <div className="flex flex-col gap-2">
-          <h3
-            className="truncate font-semibold text-heading-text text-lg"
-            title={projectName}
-          >
-            {projectName}
-          </h3>
-          <p className="text-paragraph-text text-sm">
-            {resourceCount} {resourceCount === 1 ? "resource" : "resources"}
-          </p>
-        </div>
-      </SpotlightCard>
-    </button>
-  );
+  return <div>123</div>;
 };

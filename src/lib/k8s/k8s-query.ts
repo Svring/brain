@@ -3,25 +3,25 @@
 import { queryOptions } from "@tanstack/react-query";
 import { runParallelAction } from "next-server-actions-parallel";
 import {
+  getBuiltinResource,
   getCustomResource,
-  getDeployment,
   getIngress,
   getService,
-  listCustomResource,
-  listDeployments,
+  listBuiltinResources,
+  listCustomResources,
   listIngresses,
   listServices,
 } from "./k8s-api";
 import { RESOURCES } from "./k8s-constant";
 import type {
+  GetBuiltinResourceRequest,
   GetCustomResourceRequest,
-  GetDeploymentRequest,
   GetIngressRequest,
   GetServiceRequest,
   K8sApiContext,
   ListAllResourcesRequest,
+  ListBuiltinResourceRequest,
   ListCustomResourceRequest,
-  ListDeploymentsRequest,
   ListIngressesRequest,
   ListServicesRequest,
   ResourceTarget,
@@ -35,7 +35,7 @@ export const listCustomResourceOptions = (
   queryOptions({
     queryKey: [
       "k8s",
-      "custom-resource",
+      "custom-resources",
       "list",
       request.group,
       request.version,
@@ -45,7 +45,7 @@ export const listCustomResourceOptions = (
     ],
     queryFn: () => {
       return runParallelAction(
-        listCustomResource(
+        listCustomResources(
           context.kubeconfig,
           request.group,
           request.version,
@@ -98,48 +98,6 @@ export const getCustomResourceOptions = (
       !!context.namespace &&
       !!request.plural &&
       !!request.name,
-  });
-
-export const listDeploymentsOptions = (
-  request: ListDeploymentsRequest,
-  context: K8sApiContext,
-  postprocess?: (data: unknown) => unknown
-) =>
-  queryOptions({
-    queryKey: [
-      "k8s",
-      "deployments",
-      "list",
-      context.namespace,
-      request.labelSelector,
-    ],
-    queryFn: () => {
-      return runParallelAction(
-        listDeployments(
-          context.kubeconfig,
-          context.namespace,
-          request.labelSelector
-        )
-      );
-    },
-    select: (data) => postprocess?.(data) ?? data,
-    enabled: !!context.namespace,
-  });
-
-export const getDeploymentOptions = (
-  request: GetDeploymentRequest,
-  context: K8sApiContext,
-  postprocess?: (data: unknown) => unknown
-) =>
-  queryOptions({
-    queryKey: ["k8s", "deployments", "get", context.namespace, request.name],
-    queryFn: () => {
-      return runParallelAction(
-        getDeployment(context.kubeconfig, context.namespace, request.name)
-      );
-    },
-    select: (data) => postprocess?.(data) ?? data,
-    enabled: !!context.namespace && !!request.name,
   });
 
 export const listServicesOptions = (
@@ -226,6 +184,62 @@ export const getIngressOptions = (
     enabled: !!context.namespace && !!request.name,
   });
 
+export const listBuiltinResourceOptions = (
+  request: ListBuiltinResourceRequest,
+  context: K8sApiContext,
+  postprocess?: (data: unknown) => unknown
+) =>
+  queryOptions({
+    queryKey: [
+      "k8s",
+      "builtin-resources",
+      "list",
+      request.resourceType,
+      context.namespace,
+      request.labelSelector,
+    ],
+    queryFn: () => {
+      return runParallelAction(
+        listBuiltinResources(
+          context.kubeconfig,
+          context.namespace,
+          request.resourceType,
+          request.labelSelector
+        )
+      );
+    },
+    select: (data) => postprocess?.(data) ?? data,
+    enabled: !!request.resourceType && !!context.namespace,
+  });
+
+export const getBuiltinResourceOptions = (
+  request: GetBuiltinResourceRequest,
+  context: K8sApiContext,
+  postprocess?: (data: unknown) => unknown
+) =>
+  queryOptions({
+    queryKey: [
+      "k8s",
+      "builtin-resource",
+      "get",
+      request.resourceType,
+      context.namespace,
+      request.name,
+    ],
+    queryFn: () => {
+      return runParallelAction(
+        getBuiltinResource(
+          context.kubeconfig,
+          context.namespace,
+          request.resourceType,
+          request.name
+        )
+      );
+    },
+    select: (data) => postprocess?.(data) ?? data,
+    enabled: !!request.resourceType && !!context.namespace && !!request.name,
+  });
+
 export const getResourceOptions = (
   resource: ResourceTarget,
   context: K8sApiContext,
@@ -244,17 +258,15 @@ export const getResourceOptions = (
     );
   }
 
-  if (resource.type === "deployment") {
-    return getDeploymentOptions(
-      {
-        name: resource.name,
-      },
-      context,
-      postprocess ?? ((d) => d)
-    );
-  }
-
-  throw new Error(`Unknown resource type: ${resource satisfies never}`);
+  // Handle all builtin resource types
+  return getBuiltinResourceOptions(
+    {
+      resourceType: resource.type,
+      name: resource.name,
+    },
+    context,
+    postprocess ?? ((d) => d)
+  );
 };
 
 export const listAllResourcesOptions = (
@@ -271,26 +283,29 @@ export const listAllResourcesOptions = (
       request.labelSelector,
     ],
     queryFn: async () => {
-      const resourcePromises = Object.entries(RESOURCES).map(([_, config]) =>
-        "group" in config
-          ? runParallelAction(
-              listCustomResource(
-                context.kubeconfig,
-                config.group,
-                config.version,
-                context.namespace,
-                config.plural,
-                request.labelSelector
-              )
+      const resourcePromises = Object.entries(RESOURCES).map(([_, config]) => {
+        if (config.type === "custom") {
+          return runParallelAction(
+            listCustomResources(
+              context.kubeconfig,
+              config.group,
+              config.version,
+              context.namespace,
+              config.plural,
+              request.labelSelector
             )
-          : runParallelAction(
-              listDeployments(
-                context.kubeconfig,
-                context.namespace,
-                request.labelSelector
-              )
-            )
-      );
+          );
+        }
+        // All resources are now either custom or builtin
+        return runParallelAction(
+          listBuiltinResources(
+            context.kubeconfig,
+            context.namespace,
+            config.resourceType,
+            request.labelSelector
+          )
+        );
+      });
 
       const results = await Promise.all(resourcePromises);
       return Object.fromEntries(

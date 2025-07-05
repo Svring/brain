@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { ResourceTargetSchema } from "./resource-target-schemas";
+import {
+  BuiltinResourceKindSchema,
+  ResourceTargetSchema,
+} from "./resource-schemas/resource-target-schemas";
 
 // Input parameter schemas for queries (namespace is in context)
 export const ListCustomResourceRequestSchema = z.object({
@@ -16,14 +19,18 @@ export const GetCustomResourceRequestSchema = z.object({
   name: z.string(),
 });
 
-export const ListDeploymentsRequestSchema = z.object({
+// Generalized builtin resource schemas
+export const ListBuiltinResourceRequestSchema = z.object({
+  resourceType: BuiltinResourceKindSchema,
   labelSelector: z.string().optional(),
 });
 
-export const GetDeploymentRequestSchema = z.object({
+export const GetBuiltinResourceRequestSchema = z.object({
+  resourceType: BuiltinResourceKindSchema,
   name: z.string(),
 });
 
+// Legacy specific resource schemas (for backwards compatibility)
 export const ListServicesRequestSchema = z.object({
   labelSelector: z.string().optional(),
 });
@@ -72,14 +79,17 @@ export const RemoveCustomResourceMetadataRequestSchema = z.object({
   key: z.string(),
 });
 
-export const PatchDeploymentMetadataRequestSchema = z.object({
+// Generalized builtin resource mutation schemas
+export const PatchBuiltinResourceMetadataRequestSchema = z.object({
+  resourceType: BuiltinResourceKindSchema,
   name: z.string(),
   metadataType: z.enum(["annotations", "labels"]),
   key: z.string(),
   value: z.string(),
 });
 
-export const RemoveDeploymentMetadataRequestSchema = z.object({
+export const RemoveBuiltinResourceMetadataRequestSchema = z.object({
+  resourceType: BuiltinResourceKindSchema,
   name: z.string(),
   metadataType: z.enum(["annotations", "labels"]),
   key: z.string(),
@@ -106,10 +116,22 @@ export type ListCustomResourceRequest = z.infer<
 export type GetCustomResourceRequest = z.infer<
   typeof GetCustomResourceRequestSchema
 >;
-export type ListDeploymentsRequest = z.infer<
-  typeof ListDeploymentsRequestSchema
+
+// Generalized builtin resource types
+export type ListBuiltinResourceRequest = z.infer<
+  typeof ListBuiltinResourceRequestSchema
 >;
-export type GetDeploymentRequest = z.infer<typeof GetDeploymentRequestSchema>;
+export type GetBuiltinResourceRequest = z.infer<
+  typeof GetBuiltinResourceRequestSchema
+>;
+export type PatchBuiltinResourceMetadataRequest = z.infer<
+  typeof PatchBuiltinResourceMetadataRequestSchema
+>;
+export type RemoveBuiltinResourceMetadataRequest = z.infer<
+  typeof RemoveBuiltinResourceMetadataRequestSchema
+>;
+
+// Legacy specific resource types (for backwards compatibility)
 export type ListServicesRequest = z.infer<typeof ListServicesRequestSchema>;
 export type GetServiceRequest = z.infer<typeof GetServiceRequestSchema>;
 export type ListIngressesRequest = z.infer<typeof ListIngressesRequestSchema>;
@@ -125,12 +147,6 @@ export type PatchCustomResourceMetadataRequest = z.infer<
 >;
 export type RemoveCustomResourceMetadataRequest = z.infer<
   typeof RemoveCustomResourceMetadataRequestSchema
->;
-export type PatchDeploymentMetadataRequest = z.infer<
-  typeof PatchDeploymentMetadataRequestSchema
->;
-export type RemoveDeploymentMetadataRequest = z.infer<
-  typeof RemoveDeploymentMetadataRequestSchema
 >;
 export type BatchPatchRequest = z.infer<typeof BatchPatchRequestSchema>;
 export type BatchRemoveRequest = z.infer<typeof BatchRemoveRequestSchema>;

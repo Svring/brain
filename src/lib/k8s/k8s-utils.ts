@@ -43,9 +43,9 @@ export const convertToResourceTarget = (
     };
   }
 
-  if (config.type === "deployment") {
+  if (config.type === "builtin") {
     return {
-      type: "deployment",
+      type: config.resourceType,
       namespace: resource.metadata.namespace,
       name: resource.metadata.name,
     };

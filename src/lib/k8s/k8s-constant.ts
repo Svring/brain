@@ -1,6 +1,6 @@
 export const ResourceType = {
   CUSTOM: "custom",
-  DEPLOYMENT: "deployment",
+  BUILTIN: "builtin",
 } as const;
 
 export type ResourceTypeValue =
@@ -14,15 +14,24 @@ export interface CustomResourceConfig {
   plural: string;
 }
 
-export interface DeploymentResourceConfig {
-  type: typeof ResourceType.DEPLOYMENT;
-  apiVersion: string;
-  kind: string;
+export interface BuiltinResourceConfig {
+  type: typeof ResourceType.BUILTIN;
+  resourceType:
+    | "deployment"
+    | "service"
+    | "ingress"
+    | "statefulset"
+    | "daemonset"
+    | "configmap"
+    | "secret"
+    | "pod"
+    | "pvc";
 }
 
-export type ResourceConfig = CustomResourceConfig | DeploymentResourceConfig;
+export type ResourceConfig = CustomResourceConfig | BuiltinResourceConfig;
 
 export const RESOURCES = {
+  // Custom Resources
   devbox: {
     type: ResourceType.CUSTOM,
     group: "devbox.sealos.io",
@@ -41,9 +50,48 @@ export const RESOURCES = {
     version: "v1",
     plural: "instances",
   } as CustomResourceConfig,
+  objectstoragebucket: {
+    type: ResourceType.CUSTOM,
+    group: "objectstorage.sealos.io",
+    version: "v1",
+    plural: "objectstoragebuckets",
+  } as CustomResourceConfig,
+
+  // Builtin Resources
   deployment: {
-    type: ResourceType.DEPLOYMENT,
-    apiVersion: "apps/v1",
-    kind: "Deployment",
-  } as DeploymentResourceConfig,
+    type: ResourceType.BUILTIN,
+    resourceType: "deployment",
+  } as BuiltinResourceConfig,
+  service: {
+    type: ResourceType.BUILTIN,
+    resourceType: "service",
+  } as BuiltinResourceConfig,
+  ingress: {
+    type: ResourceType.BUILTIN,
+    resourceType: "ingress",
+  } as BuiltinResourceConfig,
+  statefulset: {
+    type: ResourceType.BUILTIN,
+    resourceType: "statefulset",
+  } as BuiltinResourceConfig,
+  daemonset: {
+    type: ResourceType.BUILTIN,
+    resourceType: "daemonset",
+  } as BuiltinResourceConfig,
+  configmap: {
+    type: ResourceType.BUILTIN,
+    resourceType: "configmap",
+  } as BuiltinResourceConfig,
+  secret: {
+    type: ResourceType.BUILTIN,
+    resourceType: "secret",
+  } as BuiltinResourceConfig,
+  pod: {
+    type: ResourceType.BUILTIN,
+    resourceType: "pod",
+  } as BuiltinResourceConfig,
+  pvc: {
+    type: ResourceType.BUILTIN,
+    resourceType: "pvc",
+  } as BuiltinResourceConfig,
 } as const;

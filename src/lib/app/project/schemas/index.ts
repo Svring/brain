@@ -6,14 +6,7 @@ export const GetProjectRequestSchema = z.object({
   projectName: z.string(),
 });
 
-export const ListProjectsRequestSchema = z.object({
-  labelSelector: z.string().optional(),
-});
-
-// Inferred types
 export type GetProjectRequest = z.infer<typeof GetProjectRequestSchema>;
-export type ListProjectsRequest = z.infer<typeof ListProjectsRequestSchema>;
 
-// Project types are now based on Instance resources
 export type ProjectList = InstanceList;
 export type Project = InstanceResource;
