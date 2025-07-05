@@ -5,30 +5,23 @@ import { runParallelAction } from "next-server-actions-parallel";
 import {
   getBuiltinResource,
   getCustomResource,
-  getIngress,
-  getService,
   listBuiltinResources,
   listCustomResources,
-  listIngresses,
-  listServices,
 } from "./k8s-api";
 import { RESOURCES } from "./k8s-constant";
 import type {
+  BuiltinResourceTypeTarget,
+  CustomResourceTypeTarget,
   GetBuiltinResourceRequest,
   GetCustomResourceRequest,
-  GetIngressRequest,
-  GetServiceRequest,
   K8sApiContext,
   ListAllResourcesRequest,
-  ListBuiltinResourceRequest,
-  ListCustomResourceRequest,
-  ListIngressesRequest,
-  ListServicesRequest,
   ResourceTarget,
+  ResourceTypeTarget,
 } from "./schemas";
 
-export const listCustomResourceOptions = (
-  request: ListCustomResourceRequest,
+const listCustomResourceOptions = (
+  resource: CustomResourceTypeTarget,
   context: K8sApiContext,
   postprocess?: (data: unknown) => unknown
 ) =>
@@ -37,33 +30,33 @@ export const listCustomResourceOptions = (
       "k8s",
       "custom-resources",
       "list",
-      request.group,
-      request.version,
+      resource.group,
+      resource.version,
       context.namespace,
-      request.plural,
-      request.labelSelector,
+      resource.plural,
+      resource.labelSelector,
     ],
     queryFn: () => {
       return runParallelAction(
         listCustomResources(
           context.kubeconfig,
-          request.group,
-          request.version,
+          resource.group,
+          resource.version,
           context.namespace,
-          request.plural,
-          request.labelSelector
+          resource.plural,
+          resource.labelSelector
         )
       );
     },
     select: (data) => postprocess?.(data) ?? data,
     enabled:
-      !!request.group &&
-      !!request.version &&
+      !!resource.group &&
+      !!resource.version &&
       !!context.namespace &&
-      !!request.plural,
+      !!resource.plural,
   });
 
-export const getCustomResourceOptions = (
+const getCustomResourceOptions = (
   request: GetCustomResourceRequest,
   context: K8sApiContext,
   postprocess?: (data: unknown) => unknown
@@ -100,92 +93,8 @@ export const getCustomResourceOptions = (
       !!request.name,
   });
 
-export const listServicesOptions = (
-  request: ListServicesRequest,
-  context: K8sApiContext,
-  postprocess?: (data: unknown) => unknown
-) =>
-  queryOptions({
-    queryKey: [
-      "k8s",
-      "services",
-      "list",
-      context.namespace,
-      request.labelSelector,
-    ],
-    queryFn: () => {
-      return runParallelAction(
-        listServices(
-          context.kubeconfig,
-          context.namespace,
-          request.labelSelector
-        )
-      );
-    },
-    select: (data) => postprocess?.(data) ?? data,
-    enabled: !!context.namespace,
-  });
-
-export const getServiceOptions = (
-  request: GetServiceRequest,
-  context: K8sApiContext,
-  postprocess?: (data: unknown) => unknown
-) =>
-  queryOptions({
-    queryKey: ["k8s", "services", "get", context.namespace, request.name],
-    queryFn: () => {
-      return runParallelAction(
-        getService(context.kubeconfig, context.namespace, request.name)
-      );
-    },
-    select: (data) => postprocess?.(data) ?? data,
-    enabled: !!context.namespace && !!request.name,
-  });
-
-export const listIngressesOptions = (
-  request: ListIngressesRequest,
-  context: K8sApiContext,
-  postprocess?: (data: unknown) => unknown
-) =>
-  queryOptions({
-    queryKey: [
-      "k8s",
-      "ingresses",
-      "list",
-      context.namespace,
-      request.labelSelector,
-    ],
-    queryFn: () => {
-      return runParallelAction(
-        listIngresses(
-          context.kubeconfig,
-          context.namespace,
-          request.labelSelector
-        )
-      );
-    },
-    select: (data) => postprocess?.(data) ?? data,
-    enabled: !!context.namespace,
-  });
-
-export const getIngressOptions = (
-  request: GetIngressRequest,
-  context: K8sApiContext,
-  postprocess?: (data: unknown) => unknown
-) =>
-  queryOptions({
-    queryKey: ["k8s", "ingresses", "get", context.namespace, request.name],
-    queryFn: () => {
-      return runParallelAction(
-        getIngress(context.kubeconfig, context.namespace, request.name)
-      );
-    },
-    select: (data) => postprocess?.(data) ?? data,
-    enabled: !!context.namespace && !!request.name,
-  });
-
-export const listBuiltinResourceOptions = (
-  request: ListBuiltinResourceRequest,
+const listBuiltinResourceOptions = (
+  resource: BuiltinResourceTypeTarget,
   context: K8sApiContext,
   postprocess?: (data: unknown) => unknown
 ) =>
@@ -194,25 +103,25 @@ export const listBuiltinResourceOptions = (
       "k8s",
       "builtin-resources",
       "list",
-      request.resourceType,
+      resource.type,
       context.namespace,
-      request.labelSelector,
+      resource.labelSelector,
     ],
     queryFn: () => {
       return runParallelAction(
         listBuiltinResources(
           context.kubeconfig,
           context.namespace,
-          request.resourceType,
-          request.labelSelector
+          resource.type,
+          resource.labelSelector
         )
       );
     },
     select: (data) => postprocess?.(data) ?? data,
-    enabled: !!request.resourceType && !!context.namespace,
+    enabled: !!resource.type && !!context.namespace,
   });
 
-export const getBuiltinResourceOptions = (
+const getBuiltinResourceOptions = (
   request: GetBuiltinResourceRequest,
   context: K8sApiContext,
   postprocess?: (data: unknown) => unknown
@@ -258,11 +167,42 @@ export const getResourceOptions = (
     );
   }
 
-  // Handle all builtin resource types
   return getBuiltinResourceOptions(
     {
       resourceType: resource.type,
       name: resource.name,
+    },
+    context,
+    postprocess ?? ((d) => d)
+  );
+};
+
+export const listResourcesOptions = (
+  resource: ResourceTypeTarget,
+  context: K8sApiContext,
+  postprocess?: (data: unknown) => unknown
+) => {
+  if (resource.type === "custom") {
+    return listCustomResourceOptions(
+      {
+        type: "custom",
+        group: resource.group,
+        version: resource.version,
+        namespace: resource.namespace,
+        plural: resource.plural,
+        labelSelector: resource.labelSelector,
+      },
+      context,
+      postprocess ?? ((d) => d)
+    );
+  }
+
+  // Builtin resource list
+  return listBuiltinResourceOptions(
+    {
+      type: resource.type,
+      namespace: resource.namespace,
+      labelSelector: resource.labelSelector,
     },
     context,
     postprocess ?? ((d) => d)
