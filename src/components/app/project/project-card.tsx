@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import Link from "next/link";
 import type React from "react";
 import { useProjectResources } from "@/hooks/app/project";
 import { convertAllResourcesToTargets } from "@/lib/k8s/k8s-utils";
@@ -18,16 +19,21 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   resources,
 }) => {
   return (
-    <motion.div
-      className="min-h-[160px] cursor-pointer rounded-lg border bg-background p-4 shadow-sm"
-      transition={{ duration: 0.15, ease: "easeInOut" }}
-      whileHover={{ y: -5 }}
+    <Link
+      className="block h-full w-full"
+      href={`/project/${encodeURIComponent(projectName)}`}
     >
-      <h3 className="mb-2 text-foreground">{projectName}</h3>
-      <p className="text-md text-muted-foreground">
-        {resources.length} resources
-      </p>
-    </motion.div>
+      <motion.div
+        className="flex min-h-[160px] w-full cursor-pointer flex-col rounded-lg border bg-background p-4 text-left shadow-sm"
+        transition={{ duration: 0.15, ease: "easeInOut" }}
+        whileHover={{ y: -5 }}
+      >
+        <h3 className="mb-2 text-foreground">{projectName}</h3>
+        <p className="text-md text-muted-foreground">
+          {resources.length} resources
+        </p>
+      </motion.div>
+    </Link>
   );
 };
 
