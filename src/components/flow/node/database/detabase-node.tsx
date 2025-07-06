@@ -3,19 +3,19 @@
 import Image from "next/image";
 import BaseNode from "../base-node";
 
-interface DevboxNodeProps {
+interface DatabaseNodeProps {
   name: string;
   type: string;
-  state: "Running" | "Stopped" | "Unknown" | "Creating";
+  state: "Running" | "Stopped" | "Unknown" | "Creating" | "Failed";
   icon: string;
 }
 
-export default function DevboxNode({
+export default function DatabaseNode({
   name,
   type,
   state,
   icon,
-}: DevboxNodeProps) {
+}: DatabaseNodeProps) {
   return (
     <BaseNode>
       <div className="flex h-full flex-col justify-between">

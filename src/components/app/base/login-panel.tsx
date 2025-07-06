@@ -168,7 +168,7 @@ export default function Login01() {
       <div className="flex flex-1 flex-col justify-center px-4 py-10 lg:px-6">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
           <h2 className="text-center font-semibold text-foreground text-xl">
-            Log in or create account
+            Authentication
           </h2>
           <form className="mt-6" method="post" onSubmit={onSubmit}>
             <Label className="font-medium text-foreground" htmlFor="email">

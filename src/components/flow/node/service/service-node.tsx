@@ -1,36 +1,21 @@
 "use client";
 
-import Image from "next/image";
 import BaseNode from "../base-node";
 
-interface DevboxNodeProps {
+interface ServiceNodeProps {
   name: string;
-  type: string;
-  state: "Running" | "Stopped" | "Unknown" | "Creating";
-  icon: string;
+  state: "Running" | "Stopped" | "Unknown";
 }
 
-export default function DevboxNode({
-  name,
-  type,
-  state,
-  icon,
-}: DevboxNodeProps) {
+export default function ServiceNode({ name, state }: ServiceNodeProps) {
   return (
     <BaseNode>
       <div className="flex h-full flex-col justify-between">
         {/* Name */}
         <div className="flex items-center gap-2 truncate font-medium">
-          <Image
-            alt="Icon"
-            className="rounded-lg object-contain"
-            height={40}
-            src={icon}
-            width={40}
-          />
           <div className="flex flex-col items-start">
             <span className="truncate text-muted-foreground text-sm">
-              {type}
+              Service
             </span>
             <span className="w-40 overflow-hidden text-ellipsis text-left font-bold text-foreground text-md">
               {name}

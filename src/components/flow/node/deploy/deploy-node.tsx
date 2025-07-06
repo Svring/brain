@@ -3,19 +3,13 @@
 import Image from "next/image";
 import BaseNode from "../base-node";
 
-interface DevboxNodeProps {
+interface DeployNodeProps {
   name: string;
-  type: string;
-  state: "Running" | "Stopped" | "Unknown" | "Creating";
+  state: "Running" | "Stopped" | "Unknown";
   icon: string;
 }
 
-export default function DevboxNode({
-  name,
-  type,
-  state,
-  icon,
-}: DevboxNodeProps) {
+export default function DeployNode({ name, state, icon }: DeployNodeProps) {
   return (
     <BaseNode>
       <div className="flex h-full flex-col justify-between">
@@ -30,7 +24,7 @@ export default function DevboxNode({
           />
           <div className="flex flex-col items-start">
             <span className="truncate text-muted-foreground text-sm">
-              {type}
+              Deploy
             </span>
             <span className="w-40 overflow-hidden text-ellipsis text-left font-bold text-foreground text-md">
               {name}
