@@ -5,7 +5,7 @@ import { ArrowLeft, Plus } from "lucide-react";
 import Link from "next/link";
 import { use } from "react";
 import { MenuBar } from "@/components/app/project/menu-bar";
-import { useProjectResources } from "@/hooks/app/project";
+import { useProjectResources } from "@/hooks/app/project/use-project-resources";
 
 import "@xyflow/react/dist/style.css";
 

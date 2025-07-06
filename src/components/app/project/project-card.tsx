@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import Link from "next/link";
 import type React from "react";
-import { useProjectResources } from "@/hooks/app/project";
+import { useProjectResources } from "@/hooks/app/project/use-project-resources";
 import { convertAllResourcesToTargets } from "@/lib/k8s/k8s-utils";
 import type { AnyKubernetesResource, ResourceTarget } from "@/lib/k8s/schemas";
 

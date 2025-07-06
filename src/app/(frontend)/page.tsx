@@ -3,7 +3,7 @@
 import { Plus } from "lucide-react";
 import { ProjectCard } from "@/components/app/project/project-card";
 import { Button } from "@/components/ui/button";
-import { useProjects } from "@/hooks/app/project";
+import { useProjects } from "@/hooks/app/project/use-projects";
 
 export default function Page() {
   const {

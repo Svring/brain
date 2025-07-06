@@ -214,25 +214,6 @@ export const removeCustomResourceMetadata = createParallelAction(
 );
 
 /**
- * List deployments in a namespace.
- * @param kubeconfig - The kubeconfig string.
- * @param namespace - The namespace to list deployments in.
- * @param labelSelector - Optional label selector to filter deployments.
- * @returns The list of deployments as returned by the Kubernetes client.
- */
-export const listDeployments = createParallelAction(
-  async (kubeconfig: string, namespace: string, labelSelector?: string) => {
-    const kc = createKubeConfig(kubeconfig);
-    const clients = createApiClients(kc);
-    const result = await clients.appsApi.listNamespacedDeployment({
-      namespace,
-      labelSelector,
-    });
-    return JSON.parse(JSON.stringify(result));
-  }
-);
-
-/**
  * Get a deployment by name in a namespace.
  * @param kubeconfig - The kubeconfig string.
  * @param namespace - The namespace of the deployment.
@@ -334,25 +315,6 @@ export const removeDeploymentMetadata = createParallelAction(
 );
 
 /**
- * List services in a namespace.
- * @param kubeconfig - The kubeconfig string.
- * @param namespace - The namespace to list services in.
- * @param labelSelector - Optional label selector to filter services.
- * @returns The list of services as returned by the Kubernetes client.
- */
-export const listServices = createParallelAction(
-  async (kubeconfig: string, namespace: string, labelSelector?: string) => {
-    const kc = createKubeConfig(kubeconfig);
-    const clients = createApiClients(kc);
-    const result = await clients.coreApi.listNamespacedService({
-      namespace,
-      labelSelector,
-    });
-    return JSON.parse(JSON.stringify(result));
-  }
-);
-
-/**
  * Get a service by name in a namespace.
  * @param kubeconfig - The kubeconfig string.
  * @param namespace - The namespace of the service.
@@ -366,25 +328,6 @@ export const getService = createParallelAction(
     const result = await clients.coreApi.readNamespacedService({
       namespace,
       name,
-    });
-    return JSON.parse(JSON.stringify(result));
-  }
-);
-
-/**
- * List ingresses in a namespace.
- * @param kubeconfig - The kubeconfig string.
- * @param namespace - The namespace to list ingresses in.
- * @param labelSelector - Optional label selector to filter ingresses.
- * @returns The list of ingresses as returned by the Kubernetes client.
- */
-export const listIngresses = createParallelAction(
-  async (kubeconfig: string, namespace: string, labelSelector?: string) => {
-    const kc = createKubeConfig(kubeconfig);
-    const clients = createApiClients(kc);
-    const result = await clients.networkingApi.listNamespacedIngress({
-      namespace,
-      labelSelector,
     });
     return JSON.parse(JSON.stringify(result));
   }
@@ -434,29 +377,73 @@ export const listBuiltinResources = createParallelAction(
     resourceType: string,
     labelSelector?: string
   ) => {
+    const kc = createKubeConfig(kubeconfig);
+    const clients = createApiClients(kc);
+
     switch (resourceType) {
-      case "deployment":
-        return await listDeployments(kubeconfig, namespace, labelSelector);
-      case "service":
-        return await listServices(kubeconfig, namespace, labelSelector);
-      case "ingress":
-        return await listIngresses(kubeconfig, namespace, labelSelector);
-      case "statefulset":
-        return await listStatefulSets(kubeconfig, namespace, labelSelector);
-      case "daemonset":
-        return await listDaemonSets(kubeconfig, namespace, labelSelector);
-      case "configmap":
-        return await listConfigMaps(kubeconfig, namespace, labelSelector);
-      case "secret":
-        return await listSecrets(kubeconfig, namespace, labelSelector);
-      case "pod":
-        return await listPods(kubeconfig, namespace, labelSelector);
-      case "pvc":
-        return await listPersistentVolumeClaims(
-          kubeconfig,
+      case "deployment": {
+        const res = await clients.appsApi.listNamespacedDeployment({
           namespace,
-          labelSelector
-        );
+          labelSelector,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "service": {
+        const res = await clients.coreApi.listNamespacedService({
+          namespace,
+          labelSelector,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "ingress": {
+        const res = await clients.networkingApi.listNamespacedIngress({
+          namespace,
+          labelSelector,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "statefulset": {
+        const res = await clients.appsApi.listNamespacedStatefulSet({
+          namespace,
+          labelSelector,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "daemonset": {
+        const res = await clients.appsApi.listNamespacedDaemonSet({
+          namespace,
+          labelSelector,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "configmap": {
+        const res = await clients.coreApi.listNamespacedConfigMap({
+          namespace,
+          labelSelector,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "secret": {
+        const res = await clients.coreApi.listNamespacedSecret({
+          namespace,
+          labelSelector,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "pod": {
+        const res = await clients.coreApi.listNamespacedPod({
+          namespace,
+          labelSelector,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "pvc": {
+        const res = await clients.coreApi.listNamespacedPersistentVolumeClaim({
+          namespace,
+          labelSelector,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
       default:
         throw new Error(`Unsupported builtin resource type: ${resourceType}`);
     }
@@ -593,21 +580,6 @@ export const removeBuiltinResourceMetadata = createParallelAction(
 );
 
 /**
- * List statefulsets in a namespace.
- */
-export const listStatefulSets = createParallelAction(
-  async (kubeconfig: string, namespace: string, labelSelector?: string) => {
-    const kc = createKubeConfig(kubeconfig);
-    const clients = createApiClients(kc);
-    const result = await clients.appsApi.listNamespacedStatefulSet({
-      namespace,
-      labelSelector,
-    });
-    return JSON.parse(JSON.stringify(result));
-  }
-);
-
-/**
  * Get a statefulset by name in a namespace.
  */
 export const getStatefulSet = createParallelAction(
@@ -617,21 +589,6 @@ export const getStatefulSet = createParallelAction(
     const result = await clients.appsApi.readNamespacedStatefulSet({
       namespace,
       name,
-    });
-    return JSON.parse(JSON.stringify(result));
-  }
-);
-
-/**
- * List daemonsets in a namespace.
- */
-export const listDaemonSets = createParallelAction(
-  async (kubeconfig: string, namespace: string, labelSelector?: string) => {
-    const kc = createKubeConfig(kubeconfig);
-    const clients = createApiClients(kc);
-    const result = await clients.appsApi.listNamespacedDaemonSet({
-      namespace,
-      labelSelector,
     });
     return JSON.parse(JSON.stringify(result));
   }
@@ -653,21 +610,6 @@ export const getDaemonSet = createParallelAction(
 );
 
 /**
- * List configmaps in a namespace.
- */
-export const listConfigMaps = createParallelAction(
-  async (kubeconfig: string, namespace: string, labelSelector?: string) => {
-    const kc = createKubeConfig(kubeconfig);
-    const clients = createApiClients(kc);
-    const result = await clients.coreApi.listNamespacedConfigMap({
-      namespace,
-      labelSelector,
-    });
-    return JSON.parse(JSON.stringify(result));
-  }
-);
-
-/**
  * Get a configmap by name in a namespace.
  */
 export const getConfigMap = createParallelAction(
@@ -677,21 +619,6 @@ export const getConfigMap = createParallelAction(
     const result = await clients.coreApi.readNamespacedConfigMap({
       namespace,
       name,
-    });
-    return JSON.parse(JSON.stringify(result));
-  }
-);
-
-/**
- * List secrets in a namespace.
- */
-export const listSecrets = createParallelAction(
-  async (kubeconfig: string, namespace: string, labelSelector?: string) => {
-    const kc = createKubeConfig(kubeconfig);
-    const clients = createApiClients(kc);
-    const result = await clients.coreApi.listNamespacedSecret({
-      namespace,
-      labelSelector,
     });
     return JSON.parse(JSON.stringify(result));
   }
@@ -713,21 +640,6 @@ export const getSecret = createParallelAction(
 );
 
 /**
- * List pods in a namespace.
- */
-export const listPods = createParallelAction(
-  async (kubeconfig: string, namespace: string, labelSelector?: string) => {
-    const kc = createKubeConfig(kubeconfig);
-    const clients = createApiClients(kc);
-    const result = await clients.coreApi.listNamespacedPod({
-      namespace,
-      labelSelector,
-    });
-    return JSON.parse(JSON.stringify(result));
-  }
-);
-
-/**
  * Get a pod by name in a namespace.
  */
 export const getPod = createParallelAction(
@@ -737,21 +649,6 @@ export const getPod = createParallelAction(
     const result = await clients.coreApi.readNamespacedPod({
       namespace,
       name,
-    });
-    return JSON.parse(JSON.stringify(result));
-  }
-);
-
-/**
- * List persistent volume claims in a namespace.
- */
-export const listPersistentVolumeClaims = createParallelAction(
-  async (kubeconfig: string, namespace: string, labelSelector?: string) => {
-    const kc = createKubeConfig(kubeconfig);
-    const clients = createApiClients(kc);
-    const result = await clients.coreApi.listNamespacedPersistentVolumeClaim({
-      namespace,
-      labelSelector,
     });
     return JSON.parse(JSON.stringify(result));
   }
