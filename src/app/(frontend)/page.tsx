@@ -64,7 +64,7 @@ export default function Page() {
       {/* Content */}
       <div className="w-4xl">
         {activeTab === "project" && (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+          <div className="grid grid-cols-3 gap-6">
             {projectsLoading && (
               <div className="col-span-full flex h-32 items-center justify-center">
                 <div className="text-muted-foreground">Loading projects...</div>
@@ -88,11 +88,7 @@ export default function Page() {
               projects?.items.map((project) => (
                 <ProjectCard
                   key={project.metadata.name}
-                  onClick={() => {
-                    // TODO: Navigate to project detail page
-                  }}
-                  projectName={project.spec.title || project.metadata.name}
-                  resourceCount={1} // Each instance represents one project
+                  projectName={project.metadata.name}
                 />
               ))
             )}

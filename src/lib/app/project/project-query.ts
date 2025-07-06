@@ -2,16 +2,24 @@
 
 import { queryOptions } from "@tanstack/react-query";
 import { RESOURCES } from "@/lib/k8s/k8s-constant";
-import { getResourceOptions, listResourcesOptions } from "@/lib/k8s/k8s-query";
+import {
+  getResourceOptions,
+  listAllResourcesOptions,
+  listResourcesOptions,
+} from "@/lib/k8s/k8s-query";
+import { convertAllResourcesToTargets } from "@/lib/k8s/k8s-utils";
 import type {
+  AnyKubernetesResource,
   InstanceList,
   InstanceResource,
   K8sApiContext,
+  ResourceTarget,
 } from "@/lib/k8s/schemas";
 import {
   ResourceTargetSchema,
   ResourceTypeTargetSchema,
 } from "@/lib/k8s/schemas";
+import { PROJECT_NAME_LABEL_KEY } from "./project-constant";
 import type { GetProjectRequest } from "./schemas";
 
 export const listProjectsOptions = (
@@ -34,7 +42,6 @@ export const listProjectsOptions = (
     ...baseOptions,
     queryKey: ["project", "list", context.namespace],
     select: (data) => {
-      // listResourcesOptions may return the result inside a single-element array
       const resolved = Array.isArray(data) ? (data[0] as unknown) : data;
       const instanceList = resolved as InstanceList;
       return postprocess?.(instanceList) ?? instanceList;
@@ -69,5 +76,27 @@ export const getProjectOptions = (
       return postprocess?.(instance) ?? instance;
     },
     enabled: !!context.namespace && !!request.projectName,
+  });
+};
+
+export const getProjectResourcesOptions = (
+  projectName: string,
+  context: K8sApiContext,
+  postprocess?: (data: ResourceTarget[]) => ResourceTarget[]
+) => {
+  const labelSelector = `${PROJECT_NAME_LABEL_KEY}=${projectName}`;
+
+  const baseOptions = listAllResourcesOptions({ labelSelector }, context);
+
+  return queryOptions({
+    ...baseOptions,
+    queryKey: ["project", "resources", context.namespace, projectName],
+    select: (data) => {
+      const resources = convertAllResourcesToTargets(
+        data as Record<string, { items: AnyKubernetesResource[] }>
+      );
+      return postprocess?.(resources) ?? resources;
+    },
+    enabled: !!context.namespace && !!projectName,
   });
 };

@@ -1,4 +1,6 @@
+import { motion } from "motion/react";
 import type React from "react";
+import { useProjectResources } from "@/hooks/app/project";
 import type { ResourceTarget } from "@/lib/k8s/schemas";
 
 interface ProjectCardProps {
@@ -6,9 +8,59 @@ interface ProjectCardProps {
   resources: ResourceTarget[];
 }
 
-export const ProjectCard: React.FC<ProjectCardProps> = ({
+interface ProjectCardWrapperProps {
+  projectName: string;
+}
+
+const ProjectCard: React.FC<ProjectCardProps> = ({
   projectName,
   resources,
 }) => {
-  return <div>123</div>;
+  return (
+    <motion.div
+      className="min-h-[160px] cursor-pointer rounded-lg border bg-background p-4 shadow-sm"
+      transition={{ duration: 0.15, ease: "easeInOut" }}
+      whileHover={{ y: -5 }}
+    >
+      <h3 className="mb-2 text-foreground">{projectName}</h3>
+      <p className="text-md text-muted-foreground">
+        {resources.length} resources
+      </p>
+    </motion.div>
+  );
 };
+
+export const ProjectCardWrapper: React.FC<ProjectCardWrapperProps> = ({
+  projectName,
+}) => {
+  const {
+    data: resources = [],
+    isLoading,
+    isError,
+  } = useProjectResources(projectName);
+
+  if (isLoading) {
+    return (
+      <div className="rounded-lg border bg-background p-4 shadow-sm">
+        <div className="mb-2 h-6 w-3/4 animate-pulse rounded bg-muted" />
+        <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-white p-4 shadow-sm">
+        <h3 className="mb-2 font-semibold text-gray-900 text-lg">
+          {projectName}
+        </h3>
+        <p className="text-red-600 text-sm">Error loading resources</p>
+      </div>
+    );
+  }
+
+  return <ProjectCard projectName={projectName} resources={resources} />;
+};
+
+// Export the wrapper as the default export
+export { ProjectCardWrapper as ProjectCard };

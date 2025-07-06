@@ -10,6 +10,7 @@ import { getUser } from "@/payload/operations/users-operation";
 
 import "@/styles/globals.css";
 import "@xyflow/react/dist/style.css";
+import LoginPanel from "@/components/app/base/login-panel";
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -28,9 +29,29 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const user = await getUser();
+
+  if (!user) {
+    return (
+      <html lang="en">
+        <body
+          className={`${nunito.variable} h-screen w-screen font-nunito antialiased`}
+        >
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            disableTransitionOnChange
+            enableSystem
+          >
+            <LoginPanel />
+          </ThemeProvider>
+        </body>
+      </html>
+    );
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={nunito.className}>
+      <body className={nunito.variable}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

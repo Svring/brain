@@ -3,6 +3,7 @@
 import { use } from "react";
 import { AuthContext } from "@/contexts/auth-context";
 import type { ResourceConfig } from "./k8s-constant";
+import { RESOURCES } from "./k8s-constant";
 import type { AnyKubernetesResource, ResourceTarget } from "./schemas";
 
 function getUserKubeconfig(): string | undefined {
@@ -52,4 +53,23 @@ export const convertToResourceTarget = (
   }
 
   return null;
+};
+
+// Helper function to convert all resources to ResourceTarget format
+export const convertAllResourcesToTargets = (
+  data: Record<string, { items: AnyKubernetesResource[] }>
+): ResourceTarget[] => {
+  const resources: ResourceTarget[] = [];
+  for (const [resourceName, resourceData] of Object.entries(data)) {
+    const config = RESOURCES[resourceName as keyof typeof RESOURCES];
+    if (config && resourceData?.items) {
+      for (const resource of resourceData.items) {
+        const target = convertToResourceTarget(resource, config);
+        if (target) {
+          resources.push(target);
+        }
+      }
+    }
+  }
+  return resources;
 };

@@ -37,7 +37,7 @@ const listCustomResourceOptions = (
       resource.labelSelector,
     ],
     queryFn: async () => {
-      return await runParallelAction(
+      const result = await runParallelAction(
         listCustomResources(
           context.kubeconfig,
           resource.group,
@@ -47,6 +47,7 @@ const listCustomResourceOptions = (
           resource.labelSelector
         )
       );
+      return result;
     },
     select: (data) => postprocess?.(data) ?? data,
     enabled:
@@ -73,7 +74,7 @@ const getCustomResourceOptions = (
       request.name,
     ],
     queryFn: async () => {
-      return await runParallelAction(
+      const result = await runParallelAction(
         getCustomResource(
           context.kubeconfig,
           request.group,
@@ -83,6 +84,7 @@ const getCustomResourceOptions = (
           request.name
         )
       );
+      return result;
     },
     select: (data) => postprocess?.(data) ?? data,
     enabled:
@@ -108,7 +110,7 @@ const listBuiltinResourceOptions = (
       resource.labelSelector,
     ],
     queryFn: async () => {
-      return await runParallelAction(
+      const result = await runParallelAction(
         listBuiltinResources(
           context.kubeconfig,
           context.namespace,
@@ -116,6 +118,7 @@ const listBuiltinResourceOptions = (
           resource.labelSelector
         )
       );
+      return result;
     },
     select: (data) => postprocess?.(data) ?? data,
     enabled: !!resource.type && !!context.namespace,
@@ -136,7 +139,7 @@ const getBuiltinResourceOptions = (
       request.name,
     ],
     queryFn: async () => {
-      return await runParallelAction(
+      const result = await runParallelAction(
         getBuiltinResource(
           context.kubeconfig,
           context.namespace,
@@ -144,6 +147,7 @@ const getBuiltinResourceOptions = (
           request.name
         )
       );
+      return result;
     },
     select: (data) => postprocess?.(data) ?? data,
     enabled: !!request.resourceType && !!context.namespace && !!request.name,
