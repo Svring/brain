@@ -24,6 +24,21 @@ export function getCurrentNamespace(): string | undefined {
   return user?.namespace;
 }
 
+// Filter function to remove resource types with empty items arrays
+export const filterEmptyResources = (
+  data: Record<string, { items: AnyKubernetesResource[] }>
+): Record<string, { items: AnyKubernetesResource[] }> => {
+  const filtered: Record<string, { items: AnyKubernetesResource[] }> = {};
+
+  for (const [resourceType, resourceData] of Object.entries(data)) {
+    if (resourceData?.items && resourceData.items.length > 0) {
+      filtered[resourceType] = resourceData;
+    }
+  }
+
+  return filtered;
+};
+
 // Helper function to convert resource to ResourceTarget
 export const convertToResourceTarget = (
   resource: AnyKubernetesResource,

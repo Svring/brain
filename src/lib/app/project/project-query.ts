@@ -76,10 +76,9 @@ export const getProjectOptions = (
   });
 };
 
-export const getProjectResourcesOptions = <T = unknown>(
+export const getProjectResourcesOptions = (
   projectName: string,
-  context: K8sApiContext,
-  postprocess?: (data: unknown) => T
+  context: K8sApiContext
 ) => {
   const labelSelector = `${PROJECT_NAME_LABEL_KEY}=${projectName}`;
 
@@ -88,9 +87,6 @@ export const getProjectResourcesOptions = <T = unknown>(
   return queryOptions({
     ...baseOptions,
     queryKey: ["project", "resources", context.namespace, projectName],
-    select: (data) => {
-      return postprocess?.(data) ?? (data as T);
-    },
     enabled: !!context.namespace && !!projectName,
   });
 };

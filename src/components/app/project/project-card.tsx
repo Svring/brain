@@ -3,7 +3,7 @@ import Link from "next/link";
 import type React from "react";
 import { useProjectResources } from "@/hooks/app/project/use-project-resources";
 import { convertAllResourcesToTargets } from "@/lib/k8s/k8s-utils";
-import type { AnyKubernetesResource, ResourceTarget } from "@/lib/k8s/schemas";
+import type { ResourceTarget } from "@/lib/k8s/schemas";
 
 interface ProjectCardProps {
   projectName: string;
@@ -40,18 +40,16 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 export const ProjectCardWrapper: React.FC<ProjectCardWrapperProps> = ({
   projectName,
 }) => {
-  // Create a wrapper function that handles the type casting
-  const processResources = (data: unknown): ResourceTarget[] => {
-    return convertAllResourcesToTargets(
-      data as Record<string, { items: AnyKubernetesResource[] }>
-    );
-  };
-
   const {
-    data: resources = [],
+    data: resourcesData,
     isLoading,
     isError,
-  } = useProjectResources(projectName, processResources);
+  } = useProjectResources(projectName);
+
+  // Transform the filtered resources to ResourceTarget format
+  const resources = resourcesData
+    ? convertAllResourcesToTargets(resourcesData)
+    : [];
 
   if (isLoading) {
     return (

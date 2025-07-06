@@ -52,6 +52,7 @@ function ProjectFloatingUI() {
 
 function ProjectFlow({ projectName }: { projectName: string }) {
   const { data: resources } = useProjectResources(projectName);
+  console.log(resources);
 
   return (
     <ReactFlow
