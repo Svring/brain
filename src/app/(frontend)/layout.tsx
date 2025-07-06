@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import type React from "react";
+import LoginPanel from "@/components/app/base/login-panel";
 import { QueryProvider } from "@/components/app/base/provider/query-provider";
 import AppSidebar from "@/components/app/base/sidebar/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -10,7 +11,6 @@ import { getUser } from "@/payload/operations/users-operation";
 
 import "@/styles/globals.css";
 import "@xyflow/react/dist/style.css";
-import LoginPanel from "@/components/app/base/login-panel";
 
 const nunito = Nunito({
   subsets: ["latin"],

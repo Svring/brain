@@ -1,7 +1,8 @@
 import { motion } from "motion/react";
 import type React from "react";
 import { useProjectResources } from "@/hooks/app/project";
-import type { ResourceTarget } from "@/lib/k8s/schemas";
+import { convertAllResourcesToTargets } from "@/lib/k8s/k8s-utils";
+import type { AnyKubernetesResource, ResourceTarget } from "@/lib/k8s/schemas";
 
 interface ProjectCardProps {
   projectName: string;
@@ -33,11 +34,18 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 export const ProjectCardWrapper: React.FC<ProjectCardWrapperProps> = ({
   projectName,
 }) => {
+  // Create a wrapper function that handles the type casting
+  const processResources = (data: unknown): ResourceTarget[] => {
+    return convertAllResourcesToTargets(
+      data as Record<string, { items: AnyKubernetesResource[] }>
+    );
+  };
+
   const {
     data: resources = [],
     isLoading,
     isError,
-  } = useProjectResources(projectName);
+  } = useProjectResources(projectName, processResources);
 
   if (isLoading) {
     return (

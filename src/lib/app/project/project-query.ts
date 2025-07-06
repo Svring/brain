@@ -7,13 +7,10 @@ import {
   listAllResourcesOptions,
   listResourcesOptions,
 } from "@/lib/k8s/k8s-query";
-import { convertAllResourcesToTargets } from "@/lib/k8s/k8s-utils";
 import type {
-  AnyKubernetesResource,
   InstanceList,
   InstanceResource,
   K8sApiContext,
-  ResourceTarget,
 } from "@/lib/k8s/schemas";
 import {
   ResourceTargetSchema,
@@ -79,10 +76,10 @@ export const getProjectOptions = (
   });
 };
 
-export const getProjectResourcesOptions = (
+export const getProjectResourcesOptions = <T = unknown>(
   projectName: string,
   context: K8sApiContext,
-  postprocess?: (data: ResourceTarget[]) => ResourceTarget[]
+  postprocess?: (data: unknown) => T
 ) => {
   const labelSelector = `${PROJECT_NAME_LABEL_KEY}=${projectName}`;
 
@@ -92,10 +89,7 @@ export const getProjectResourcesOptions = (
     ...baseOptions,
     queryKey: ["project", "resources", context.namespace, projectName],
     select: (data) => {
-      const resources = convertAllResourcesToTargets(
-        data as Record<string, { items: AnyKubernetesResource[] }>
-      );
-      return postprocess?.(resources) ?? resources;
+      return postprocess?.(data) ?? (data as T);
     },
     enabled: !!context.namespace && !!projectName,
   });
