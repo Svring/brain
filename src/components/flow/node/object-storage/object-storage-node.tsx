@@ -1,31 +1,21 @@
 "use client";
 
-import Image from "next/image";
 import BaseNode from "../base-node";
 
 interface ObjectStorageNodeProps {
   name: string;
   policy: string;
-  icon: string;
 }
 
 export default function ObjectStorageNode({
   name,
   policy,
-  icon,
 }: ObjectStorageNodeProps) {
   return (
     <BaseNode>
       <div className="flex h-full flex-col justify-between">
         {/* Name */}
         <div className="flex items-center gap-2 truncate font-medium">
-          <Image
-            alt="Icon"
-            className="rounded-lg object-contain"
-            height={40}
-            src={icon}
-            width={40}
-          />
           <div className="flex flex-col items-start">
             <span className="truncate text-muted-foreground text-sm">
               Object Storage

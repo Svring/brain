@@ -4,10 +4,15 @@ import BaseNode from "../base-node";
 
 interface StatefulSetNodeProps {
   name: string;
-  state: "Running" | "Stopped" | "Unknown";
+  readyReplicas: number;
+  replicas: number;
 }
 
-export default function StatefulSetNode({ name, state }: StatefulSetNodeProps) {
+export default function StatefulSetNode({
+  name,
+  readyReplicas,
+  replicas,
+}: StatefulSetNodeProps) {
   return (
     <BaseNode>
       <div className="flex h-full flex-col justify-between">
@@ -25,7 +30,9 @@ export default function StatefulSetNode({ name, state }: StatefulSetNodeProps) {
 
         {/* State badge */}
         <div className="mt-auto flex justify-start">
-          <span className="rounded px-2 py-0.5 text-xs">{state}</span>
+          <span className="rounded px-2 py-0.5 text-xs">
+            {readyReplicas} / {replicas}
+          </span>
         </div>
       </div>
     </BaseNode>

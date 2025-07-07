@@ -1,11 +1,13 @@
 "use client";
 
 import { Background, BackgroundVariant, ReactFlow } from "@xyflow/react";
+import _ from "lodash";
 import { ArrowLeft, Plus } from "lucide-react";
 import Link from "next/link";
-import { use } from "react";
+import React, { use } from "react";
 import { MenuBar } from "@/components/app/project/menu-bar";
 import { useProjectResources } from "@/hooks/app/project/use-project-resources";
+import { processProjectConnections } from "@/lib/app/project/project-utils";
 
 import "@xyflow/react/dist/style.css";
 
@@ -52,7 +54,17 @@ function ProjectFloatingUI() {
 
 function ProjectFlow({ projectName }: { projectName: string }) {
   const { data: resources } = useProjectResources(projectName);
-  console.log(resources);
+
+  // Log env variables of deployments and statefulsets whenever resources change
+  React.useEffect(() => {
+    if (!resources) {
+      return;
+    }
+
+    const connections = processProjectConnections(resources);
+    // eslint-disable-next-line no-console
+    console.log("Project connections:", connections);
+  }, [resources]);
 
   return (
     <ReactFlow
