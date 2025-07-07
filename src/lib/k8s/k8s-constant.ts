@@ -9,6 +9,7 @@ export type ResourceTypeValue =
 // Types for resource configurations
 export interface CustomResourceConfig {
   type: typeof ResourceType.CUSTOM;
+  resourceType: string;
   group: string;
   version: string;
   plural: string;
@@ -34,24 +35,28 @@ export const RESOURCES = {
   // Custom Resources
   devbox: {
     type: ResourceType.CUSTOM,
+    resourceType: "devbox",
     group: "devbox.sealos.io",
     version: "v1alpha1",
     plural: "devboxes",
   } as CustomResourceConfig,
   cluster: {
     type: ResourceType.CUSTOM,
+    resourceType: "cluster",
     group: "apps.kubeblocks.io",
     version: "v1alpha1",
     plural: "clusters",
   } as CustomResourceConfig,
   instance: {
     type: ResourceType.CUSTOM,
+    resourceType: "instance",
     group: "app.sealos.io",
     version: "v1",
     plural: "instances",
   } as CustomResourceConfig,
   objectstoragebucket: {
     type: ResourceType.CUSTOM,
+    resourceType: "objectstoragebucket",
     group: "objectstorage.sealos.io",
     version: "v1",
     plural: "objectstoragebuckets",

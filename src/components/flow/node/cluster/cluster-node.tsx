@@ -2,12 +2,12 @@
 
 import BaseNode from "../base-node";
 
-interface DatabaseNodeProps {
+interface ClusterNodeProps {
   name: string;
   state: string;
 }
 
-export default function DatabaseNode({ name, state }: DatabaseNodeProps) {
+export default function ClusterNode({ name, state }: ClusterNodeProps) {
   return (
     <BaseNode>
       <div className="flex h-full flex-col justify-between">
@@ -15,7 +15,7 @@ export default function DatabaseNode({ name, state }: DatabaseNodeProps) {
         <div className="flex items-center gap-2 truncate font-medium">
           <div className="flex flex-col items-start">
             <span className="truncate text-muted-foreground text-sm">
-              Database
+              Cluster
             </span>
             <span className="w-40 overflow-hidden text-ellipsis text-left font-bold text-foreground text-md">
               {name}

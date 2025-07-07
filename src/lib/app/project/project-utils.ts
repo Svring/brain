@@ -1,10 +1,9 @@
-import _ from "lodash";
 import {
+  type ConnectionsByKind,
   collectEnvByWorkload,
   extractEnvironmentVariables,
   extractResourceNames,
   mergeConnectFromByWorkload,
-  refineConnectFromByWorkload,
 } from "@/lib/k8s/k8s-utils";
 import type { AnyKubernetesResource } from "@/lib/k8s/schemas";
 import { PROJECT_NAME_LABEL_KEY } from "./project-constant";
@@ -20,26 +19,25 @@ export const getProjectNameFromResource = (
  * Process project resources to extract connection information.
  *
  * @param resources Record of resource lists keyed by resource kind
- * @returns Refined connection information per workload
+ * @returns Connection information per workload grouped by kind
  */
 export const processProjectConnections = (
   resources: Record<string, { items: AnyKubernetesResource[] }>
-): Record<string, { connectFrom: string[]; others: string[] }> => {
+): ConnectionsByKind => {
   // Extract environment variables from workloads
   const envRecord = extractEnvironmentVariables(resources);
 
   // Aggregate per workload refs/values
-  const summaryByWorkload = collectEnvByWorkload(envRecord);
+  const envSummaryNested = collectEnvByWorkload(envRecord);
 
-  // Extract resource names as candidates
+  // Extract resource names as candidates grouped by kind
   const resourceNamesRecord = extractResourceNames(resources);
-  const candidateNames = _.flatMap(resourceNamesRecord);
 
-  // Merge connections from refs and values
-  const merged = mergeConnectFromByWorkload(summaryByWorkload, candidateNames);
+  // Merge connections from refs and values preserving kind information
+  const merged = mergeConnectFromByWorkload(
+    envSummaryNested,
+    resourceNamesRecord
+  );
 
-  // Refine connections (remove self-references and pod suffixes)
-  const refined = refineConnectFromByWorkload(merged);
-
-  return refined;
+  return merged;
 };

@@ -1,4 +1,4 @@
-import DatabaseNode from "./database/detabase-node";
+import ClusterNode from "./cluster/cluster-node";
 import DeployNode from "./deploy/deploy-node";
 import DevboxNode from "./devbox/devbox-node";
 import IngressNode from "./ingress/ingress-node";
@@ -9,13 +9,13 @@ import StatefulSetNode from "./statefulset/statefulset-node";
 
 const nodeTypes = {
   devbox: DevboxNode,
-  database: DatabaseNode,
-  deploy: DeployNode,
+  cluster: ClusterNode,
+  deployment: DeployNode,
   ingress: IngressNode,
-  objectStorage: ObjectStorageNode,
-  persistentVolume: PersistentVolumeNode,
+  objectstoragebucket: ObjectStorageNode,
+  pvc: PersistentVolumeNode,
   service: ServiceNode,
-  statefulSet: StatefulSetNode,
+  statefulset: StatefulSetNode,
 };
 
 export default nodeTypes;

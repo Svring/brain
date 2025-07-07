@@ -91,7 +91,7 @@ export const convertAllResourcesToTargets = (
 };
 
 // -------------------------------------------
-// Environment variable extraction helpers
+// Simplified Environment variable extraction
 // -------------------------------------------
 
 export interface EnvironmentVariable {
@@ -113,16 +113,17 @@ const getContainerEnvs = (
 
 /**
  * Extract environment variables from StatefulSet and Deployment resources.
- *
- * @param resources - Record of resource lists keyed by resource kind in lowercase (e.g. "statefulset", "deployment").
- * @returns Record where key is workload name and value is array of env vars.
+ * Returns a simplified structure for easier processing.
  */
 export const extractEnvironmentVariables = (
   resources: Record<string, { items: AnyKubernetesResource[] }>
-): Record<string, EnvironmentVariable[]> => {
-  const envRecord: Record<string, EnvironmentVariable[]> = {};
+): Record<string, Record<string, EnvironmentVariable[]>> => {
+  const envRecord: Record<string, Record<string, EnvironmentVariable[]>> = {};
 
-  const processWorkload = (workload: AnyKubernetesResource): void => {
+  const processWorkload = (
+    workload: AnyKubernetesResource,
+    kind: string
+  ): void => {
     const name = workload?.metadata?.name;
     if (!name) {
       return;
@@ -138,38 +139,33 @@ export const extractEnvironmentVariables = (
     );
     const allEnvs = [...containersEnv, ...initContainersEnv];
 
-    if (!_.isEmpty(allEnvs)) {
-      envRecord[name] = allEnvs;
+    if (_.isEmpty(allEnvs)) {
+      return;
     }
+
+    if (!envRecord[kind]) {
+      envRecord[kind] = {};
+    }
+    envRecord[kind][name] = allEnvs;
   };
 
   if (resources.statefulset?.items) {
-    _.forEach(resources.statefulset.items, processWorkload);
+    for (const w of resources.statefulset.items) {
+      processWorkload(w, "statefulset");
+    }
   }
 
   if (resources.deployment?.items) {
-    _.forEach(resources.deployment.items, processWorkload);
+    for (const w of resources.deployment.items) {
+      processWorkload(w, "deployment");
+    }
   }
 
   return envRecord;
 };
 
 /**
- * Apply `collectEnv` to each workload's env array.
- *
- * @param envsByWorkload Record<string, EnvironmentVariable[]>
- * @returns Record<string, { refs: string[]; values: string[] }>
- */
-export const collectEnvByWorkload = (
-  envsByWorkload: Record<string, EnvironmentVariable[]>
-): Record<string, { refs: string[]; values: string[] }> =>
-  _.mapValues(envsByWorkload, (envArray) => collectEnv(envArray));
-
-/**
  * Collect literal env values and referenced secret/configMap names.
- *
- * @param envs Array of EnvironmentVariable objects.
- * @returns Record with `refs` (names from secretKeyRef/configMapKeyRef) and `values` (literal values).
  */
 export const collectEnv = (
   envs: EnvironmentVariable[]
@@ -203,153 +199,97 @@ export const collectEnv = (
   };
 };
 
-export const processEnvRefs = (
-  refs: string[],
-  candidates: string[]
-): { connectFrom: string[]; others: string[] } => {
-  const connectFrom = _.uniq(
-    _.filter(candidates, (candidate) =>
-      _.some(refs, (ref) => ref.includes(candidate))
-    )
-  );
-  const others = _.uniq(
-    _.filter(
-      candidates,
-      (candidate) => !_.some(refs, (ref) => ref.includes(candidate))
-    )
-  );
-  return { connectFrom, others };
-};
-
 /**
- * Process env values: if any string in additional array matches (whole or part) any env value, add it to 'connectFrom'.
- * @param values Array of env values (strings)
- * @param candidates Array of strings to match
- * @returns { connectFrom: string[]; others: string[] }
+ * Apply `collectEnv` to each workload's env array.
  */
-export const processEnvValues = (
-  values: string[],
-  candidates: string[]
-): { connectFrom: string[]; others: string[] } => {
-  const connectFrom = _.uniq(
-    _.filter(candidates, (candidate) =>
-      _.some(values, (val) => val.includes(candidate))
-    )
-  );
-  const others = _.uniq(
-    _.filter(
-      candidates,
-      (candidate) => !_.some(values, (val) => val.includes(candidate))
-    )
-  );
-  return { connectFrom, others };
+export const collectEnvByWorkload = (
+  envsByKind: Record<string, Record<string, EnvironmentVariable[]>>
+): Record<string, Record<string, { refs: string[]; values: string[] }>> => {
+  const result: Record<
+    string,
+    Record<string, { refs: string[]; values: string[] }>
+  > = {};
+
+  for (const [kind, workloads] of Object.entries(envsByKind)) {
+    const transformed: Record<string, { refs: string[]; values: string[] }> =
+      {};
+    for (const [name, envArray] of Object.entries(workloads)) {
+      transformed[name] = collectEnv(envArray);
+    }
+    result[kind] = transformed;
+  }
+
+  return result;
 };
 
 /**
  * Extract the `metadata.name` from Kubernetes resources grouped by kind.
- *
- * @param resources Record keyed by kind (lowercase string) with `{ items: AnyKubernetesResource[] }`.
- * @returns Record where keys are the same kinds and values are unique arrays of resource names.
  */
 export const extractResourceNames = (
   resources: Record<string, { items: AnyKubernetesResource[] }>
-): Record<string, string[]> =>
-  _.mapValues(resources, (value) =>
-    _.uniq(
+): Record<string, string[]> => {
+  const result: Record<string, string[]> = {};
+
+  for (const [kind, value] of Object.entries(resources)) {
+    result[kind] = _.uniq(
       _.compact(
         _.map(
           value?.items ?? [],
           (item) => item?.metadata?.name as string | undefined
         )
       )
-    )
-  );
+    );
+  }
+
+  return result;
+};
+
+// -------------------------------------------
+// Connection Processing with Kind Information
+// -------------------------------------------
+
+// Helper types for connection processing
+export type KindMap = Record<string, string[]>;
+
+export interface WorkloadConnections {
+  connectFrom: KindMap;
+  others: KindMap;
+}
+
+export type ConnectionsByKind = Record<
+  string,
+  Record<string, WorkloadConnections>
+>;
 
 /**
- * Apply `processEnvRefs` to each workload's refs array.
- *
- * @param envSummary Record<string, { refs: string[]; values: string[] }>
- * @param candidates Array of strings used for value matching.
- * @returns Record<string, { connectFrom: string[]; others: string[] }>
- */
-export const processEnvRefsByWorkload = (
-  envSummary: Record<string, { refs: string[]; values: string[] }>,
-  candidates: string[]
-): Record<string, { connectFrom: string[]; others: string[] }> =>
-  _.mapValues(envSummary, ({ refs }) => processEnvRefs(refs, candidates));
-
-/**
- * Apply `processEnvValues` to each workload's values array with a common candidate list.
- *
- * @param envSummary Record<string, { refs: string[]; values: string[] }>
- * @param candidates Array of strings to match against env values.
- * @returns Record<string, { connectFrom: string[]; others: string[] }>
- */
-export const processEnvValuesByWorkload = (
-  envSummary: Record<string, { refs: string[]; values: string[] }>,
-  candidates: string[]
-): Record<string, { connectFrom: string[]; others: string[] }> =>
-  _.mapValues(envSummary, ({ values }) => processEnvValues(values, candidates));
-
-const POD_SUFFIX_REGEX = /-\d+$/;
-
-/**
- * Refine `connectFrom` arrays per workload.
- * Rules:
- * 1. Remove entries whose value equals the workload key itself.
- * 2. Remove entries that only differ by a trailing numeric pod suffix (e.g. "-0", "-1")
- *    when the base name (without the suffix) already exists in the same `connectFrom` list
- *    or equals the workload key.
- */
-export const refineConnectFromByWorkload = (
-  records: Record<string, { connectFrom: string[]; others: string[] }>
-): Record<string, { connectFrom: string[]; others: string[] }> =>
-  _.mapValues(records, (value, key) => {
-    // 1. Remove self-references
-    let filtered = _.filter(value.connectFrom, (name) => name !== key);
-
-    // 2. Remove pod-suffix variants if base already present or equals key
-    const existingSet = new Set(filtered);
-    filtered = _.filter(filtered, (name) => {
-      const base = name.replace(POD_SUFFIX_REGEX, "");
-      if (base !== name) {
-        return !(existingSet.has(base) || base === key);
-      }
-      return true;
-    });
-
-    return {
-      ...value,
-      connectFrom: _.uniq(filtered),
-    };
-  });
-
-/**
- * Combine results of `processEnvRefsByWorkload` and `processEnvValuesByWorkload`.
- *
- * @param envSummary Record<string, { refs: string[]; values: string[] }>
- * @param candidates Array of strings used for value matching.
- * @returns Record<string, { connectFrom: string[]; others: string[] }>
+ * Connection processing that preserves kind information
+ * Returns connections grouped by resource kind
  */
 export const mergeConnectFromByWorkload = (
-  envSummary: Record<string, { refs: string[]; values: string[] }>,
-  candidates: string[]
-): Record<string, { connectFrom: string[]; others: string[] }> => {
-  const fromRefs = processEnvRefsByWorkload(envSummary, candidates);
-  const fromValues = processEnvValuesByWorkload(envSummary, candidates);
+  envSummary: Record<
+    string,
+    Record<string, { refs: string[]; values: string[] }>
+  >,
+  candidatesByKind: Record<string, string[]>
+): ConnectionsByKind =>
+  _.mapValues(envSummary, (workloads) =>
+    _.mapValues(workloads, ({ refs, values }) => {
+      const isMatch = (candidate: string) =>
+        refs.some((r) => r.includes(candidate)) ||
+        values.some((v) => v.includes(candidate));
 
-  const keys = _.union(Object.keys(fromRefs), Object.keys(fromValues));
+      const connectFrom = _.pickBy(
+        _.mapValues(candidatesByKind, (names) => names.filter(isMatch)),
+        (arr) => (arr as string[]).length > 0
+      ) as KindMap;
 
-  return keys.reduce<
-    Record<string, { connectFrom: string[]; others: string[] }>
-  >((acc, key) => {
-    const refsPart = fromRefs[key] ?? { connectFrom: [], others: [] };
-    const valsPart = fromValues[key] ?? { connectFrom: [], others: [] };
+      const others = _.pickBy(
+        _.mapValues(candidatesByKind, (names) =>
+          names.filter((name) => !isMatch(name))
+        ),
+        (arr) => (arr as string[]).length > 0
+      ) as KindMap;
 
-    acc[key] = {
-      connectFrom: _.uniq([...refsPart.connectFrom, ...valsPart.connectFrom]),
-      others: _.uniq([...refsPart.others, ...valsPart.others]),
-    };
-    return acc;
-  }, {});
-};
+      return { connectFrom, others } as WorkloadConnections;
+    })
+  ) as ConnectionsByKind;
