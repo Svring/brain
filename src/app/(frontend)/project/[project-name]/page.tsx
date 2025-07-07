@@ -3,6 +3,7 @@
 import {
   Background,
   BackgroundVariant,
+  ConnectionLineType,
   type Edge,
   type Node,
   ReactFlow,
@@ -18,6 +19,7 @@ import { convertConnectionsToEdges } from "@/lib/flow/edges/flow-edges-utils";
 import { convertResourcesToNodes } from "@/lib/flow/nodes/flow-nodes-utils";
 
 import "@xyflow/react/dist/style.css";
+import { assignNodePositions } from "@/lib/flow/layout/flow-layout-utils";
 
 function ProjectFloatingUI() {
   return (
@@ -75,15 +77,20 @@ function ProjectFlow({ projectName }: { projectName: string }) {
     // eslint-disable-next-line no-console
     console.log("Project connections:", connections);
     const newNodes = convertResourcesToNodes(resources);
-    setNodes(newNodes);
     console.log("Nodes:", newNodes);
     const newEdges = convertConnectionsToEdges(connections);
     console.log("Edges:", newEdges);
+    const positionedNodes = assignNodePositions(newNodes, newEdges, {
+      direction: "BT",
+    });
+    console.log("Positioned nodes:", positionedNodes);
+    setNodes(positionedNodes);
     setEdges(newEdges);
   }, [resources]);
 
   return (
     <ReactFlow
+      connectionLineType={ConnectionLineType.SmoothStep}
       edges={edges}
       fitView
       fitViewOptions={{

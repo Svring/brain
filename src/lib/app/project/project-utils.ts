@@ -4,6 +4,7 @@ import {
   extractEnvironmentVariables,
   extractResourceNames,
   mergeConnectFromByWorkload,
+  processIngressConnections,
 } from "@/lib/k8s/k8s-utils";
 import type { AnyKubernetesResource } from "@/lib/k8s/schemas";
 import { PROJECT_NAME_LABEL_KEY } from "./project-constant";
@@ -16,6 +17,16 @@ export const getProjectNameFromResource = (
 };
 
 /**
+ * Remove ingress resources from workload connection candidates
+ */
+const excludeIngressFromCandidates = (
+  resourceNamesRecord: Record<string, string[]>
+): Record<string, string[]> => {
+  const { ingress: _, ...filtered } = resourceNamesRecord;
+  return filtered;
+};
+
+/**
  * Process project resources to extract connection information.
  *
  * @param resources Record of resource lists keyed by resource kind
@@ -24,20 +35,30 @@ export const getProjectNameFromResource = (
 export const processProjectConnections = (
   resources: Record<string, { items: AnyKubernetesResource[] }>
 ): ConnectionsByKind => {
-  // Extract environment variables from workloads
-  const envRecord = extractEnvironmentVariables(resources);
+  // Step 1: Process ingress connections first
+  const ingressConnections = processIngressConnections(resources);
 
-  // Aggregate per workload refs/values
+  // Step 2: Process environment-based connections for workloads
+  const envRecord = extractEnvironmentVariables(resources);
   const envSummaryNested = collectEnvByWorkload(envRecord);
 
-  // Extract resource names as candidates grouped by kind
+  // Step 3: Extract resource names but exclude ingress from workload candidates
   const resourceNamesRecord = extractResourceNames(resources);
+  const filteredCandidates = excludeIngressFromCandidates(resourceNamesRecord);
 
-  // Merge connections from refs and values preserving kind information
-  const merged = mergeConnectFromByWorkload(
+  // Step 4: Merge environment-based connections
+  const envConnections = mergeConnectFromByWorkload(
     envSummaryNested,
-    resourceNamesRecord
+    filteredCandidates
   );
 
-  return merged;
+  // Step 5: Combine ingress connections with environment-based connections
+  const combinedConnections: ConnectionsByKind = { ...envConnections };
+
+  // Add ingress connections
+  if (ingressConnections.ingress) {
+    combinedConnections.ingress = ingressConnections.ingress;
+  }
+
+  return combinedConnections;
 };

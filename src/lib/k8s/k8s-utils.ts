@@ -293,3 +293,109 @@ export const mergeConnectFromByWorkload = (
       return { connectFrom, others } as WorkloadConnections;
     })
   ) as ConnectionsByKind;
+
+/**
+ * Extract service names from an Ingress resource.
+ * Services are found in spec.rules[].http.paths[].backend.service.name
+ */
+export const getServiceNamesFromIngress = (
+  ingress: AnyKubernetesResource
+): string[] => {
+  const serviceNames: string[] = [];
+
+  try {
+    // @ts-expect-error — spec is loosely typed for generic Kubernetes resources
+    const rules = ingress?.spec?.rules || [];
+
+    for (const rule of rules) {
+      const paths = rule?.http?.paths || [];
+
+      for (const path of paths) {
+        const serviceName = path?.backend?.service?.name;
+        if (serviceName && typeof serviceName === "string") {
+          serviceNames.push(serviceName);
+        }
+      }
+    }
+  } catch {
+    // Silently handle any parsing errors
+    return [];
+  }
+
+  return _.uniq(serviceNames);
+};
+
+/**
+ * Extract workload names by kind for matching with services
+ */
+export const getWorkloadsByKind = (
+  resources: Record<string, { items: AnyKubernetesResource[] }>
+): Record<string, string[]> => {
+  const workloadKinds = ["deployment", "statefulset"];
+  const result: Record<string, string[]> = {};
+
+  for (const kind of workloadKinds) {
+    result[kind] = (resources[kind]?.items || [])
+      .map((item) => item.metadata.name)
+      .filter(Boolean);
+  }
+
+  return result;
+};
+
+/**
+ * Match service names to workload names and return connections
+ */
+export const matchServicesToWorkloads = (
+  serviceNames: string[],
+  workloadsByKind: Record<string, string[]>
+): Record<string, string[]> => {
+  const connectFrom: Record<string, string[]> = {};
+
+  for (const serviceName of serviceNames) {
+    for (const [kind, names] of Object.entries(workloadsByKind)) {
+      const matches = names.filter((name) => name === serviceName);
+      if (matches.length > 0) {
+        connectFrom[kind] = (connectFrom[kind] || []).concat(matches);
+      }
+    }
+  }
+
+  return connectFrom;
+};
+
+/**
+ * Process ingress resources to establish connections to workload resources
+ * based on service names found in ingress rules.
+ */
+export const processIngressConnections = (
+  resources: Record<string, { items: AnyKubernetesResource[] }>
+): ConnectionsByKind => {
+  const ingressResources = resources.ingress?.items || [];
+  if (ingressResources.length === 0) {
+    return {};
+  }
+
+  const workloadsByKind = getWorkloadsByKind(resources);
+  const ingressConnections: Record<
+    string,
+    { connectFrom: Record<string, string[]>; others: Record<string, string[]> }
+  > = {};
+
+  for (const ingress of ingressResources) {
+    const ingressName = ingress.metadata.name;
+    if (!ingressName) {
+      continue;
+    }
+
+    const serviceNames = getServiceNamesFromIngress(ingress);
+    const connectFrom = matchServicesToWorkloads(serviceNames, workloadsByKind);
+
+    ingressConnections[ingressName] = {
+      connectFrom,
+      others: {},
+    };
+  }
+
+  return { ingress: ingressConnections };
+};
