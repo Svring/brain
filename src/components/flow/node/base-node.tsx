@@ -7,9 +7,9 @@ interface BaseNodeProps {
 export default function BaseNode({ children }: BaseNodeProps) {
   return (
     <div className="flex h-40 w-60 flex-col rounded-lg border border-border bg-background p-4">
-      <Handle position={Position.Top} type="target" />
+      <Handle position={Position.Top} type="source" />
       {children}
-      <Handle position={Position.Bottom} type="source" />
+      <Handle position={Position.Bottom} type="target" />
     </div>
   );
 }

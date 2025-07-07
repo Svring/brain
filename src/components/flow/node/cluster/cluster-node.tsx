@@ -7,7 +7,9 @@ interface ClusterNodeProps {
   state: string;
 }
 
-export default function ClusterNode({ name, state }: ClusterNodeProps) {
+export default function ClusterNode({ data }: { data: ClusterNodeProps }) {
+  const { name, state } = data;
+
   return (
     <BaseNode>
       <div className="flex h-full flex-col justify-between">

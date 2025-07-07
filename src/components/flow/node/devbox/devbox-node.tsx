@@ -10,12 +10,9 @@ interface DevboxNodeProps {
   icon: string;
 }
 
-export default function DevboxNode({
-  name,
-  type,
-  state,
-  icon,
-}: DevboxNodeProps) {
+export default function DevboxNode({ data }: { data: DevboxNodeProps }) {
+  const { name, type, state, icon } = data;
+
   return (
     <BaseNode>
       <div className="flex h-full flex-col justify-between">

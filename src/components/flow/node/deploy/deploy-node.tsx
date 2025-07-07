@@ -8,11 +8,9 @@ interface DeployNodeProps {
   replicas: number;
 }
 
-export default function DeployNode({
-  name,
-  readyReplicas,
-  replicas,
-}: DeployNodeProps) {
+export default function DeployNode({ data }: { data: DeployNodeProps }) {
+  const { name, readyReplicas, replicas } = data;
+
   return (
     <BaseNode>
       <div className="flex h-full flex-col justify-between">

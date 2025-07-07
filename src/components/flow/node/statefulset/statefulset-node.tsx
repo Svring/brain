@@ -9,10 +9,12 @@ interface StatefulSetNodeProps {
 }
 
 export default function StatefulSetNode({
-  name,
-  readyReplicas,
-  replicas,
-}: StatefulSetNodeProps) {
+  data,
+}: {
+  data: StatefulSetNodeProps;
+}) {
+  const { name, readyReplicas, replicas } = data;
+
   return (
     <BaseNode>
       <div className="flex h-full flex-col justify-between">

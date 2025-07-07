@@ -8,9 +8,12 @@ interface ObjectStorageNodeProps {
 }
 
 export default function ObjectStorageNode({
-  name,
-  policy,
-}: ObjectStorageNodeProps) {
+  data,
+}: {
+  data: ObjectStorageNodeProps;
+}) {
+  const { name, policy } = data;
+
   return (
     <BaseNode>
       <div className="flex h-full flex-col justify-between">

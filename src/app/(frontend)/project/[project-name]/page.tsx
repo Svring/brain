@@ -1,12 +1,20 @@
 "use client";
 
-import { Background, BackgroundVariant, ReactFlow } from "@xyflow/react";
+import {
+  Background,
+  BackgroundVariant,
+  type Edge,
+  type Node,
+  ReactFlow,
+} from "@xyflow/react";
 import { ArrowLeft, Plus } from "lucide-react";
 import Link from "next/link";
-import React, { use } from "react";
+import React, { use, useState } from "react";
 import { MenuBar } from "@/components/app/project/menu-bar";
+import nodeTypes from "@/components/flow/node/node-types";
 import { useProjectResources } from "@/hooks/app/project/use-project-resources";
 import { processProjectConnections } from "@/lib/app/project/project-utils";
+import { convertConnectionsToEdges } from "@/lib/flow/edges/flow-edges-utils";
 import { convertResourcesToNodes } from "@/lib/flow/nodes/flow-nodes-utils";
 
 import "@xyflow/react/dist/style.css";
@@ -54,6 +62,8 @@ function ProjectFloatingUI() {
 
 function ProjectFlow({ projectName }: { projectName: string }) {
   const { data: resources } = useProjectResources(projectName);
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
 
   // Log env variables of deployments and statefulsets whenever resources change
   React.useEffect(() => {
@@ -64,12 +74,17 @@ function ProjectFlow({ projectName }: { projectName: string }) {
     const connections = processProjectConnections(resources);
     // eslint-disable-next-line no-console
     console.log("Project connections:", connections);
-    const nodes = convertResourcesToNodes(resources);
-    console.log("Nodes:", nodes);
+    const newNodes = convertResourcesToNodes(resources);
+    setNodes(newNodes);
+    console.log("Nodes:", newNodes);
+    const newEdges = convertConnectionsToEdges(connections);
+    console.log("Edges:", newEdges);
+    setEdges(newEdges);
   }, [resources]);
 
   return (
     <ReactFlow
+      edges={edges}
       fitView
       fitViewOptions={{
         padding: 0.1,
@@ -77,6 +92,8 @@ function ProjectFlow({ projectName }: { projectName: string }) {
         minZoom: 0.1,
         maxZoom: 1.0,
       }}
+      nodes={nodes}
+      nodeTypes={nodeTypes}
       panOnScroll
     >
       <Background gap={60} size={1} variant={BackgroundVariant.Dots} />

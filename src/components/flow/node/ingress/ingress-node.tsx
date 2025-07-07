@@ -7,7 +7,9 @@ interface IngressNodeProps {
   host: string;
 }
 
-export default function IngressNode({ name, host }: IngressNodeProps) {
+export default function IngressNode({ data }: { data: IngressNodeProps }) {
+  const { name, host } = data;
+
   return (
     <BaseNode>
       <div className="flex h-full flex-col justify-between">

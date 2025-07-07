@@ -7,7 +7,9 @@ interface ServiceNodeProps {
   state: "Running" | "Stopped" | "Unknown";
 }
 
-export default function ServiceNode({ name, state }: ServiceNodeProps) {
+export default function ServiceNode({ data }: { data: ServiceNodeProps }) {
+  const { name, state } = data;
+
   return (
     <BaseNode>
       <div className="flex h-full flex-col justify-between">

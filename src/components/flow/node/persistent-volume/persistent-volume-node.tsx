@@ -8,9 +8,12 @@ interface PersistentVolumeNodeProps {
 }
 
 export default function PersistentVolumeNode({
-  name,
-  volume,
-}: PersistentVolumeNodeProps) {
+  data,
+}: {
+  data: PersistentVolumeNodeProps;
+}) {
+  const { name, volume } = data;
+
   return (
     <BaseNode>
       <div className="flex h-full flex-col justify-between">
