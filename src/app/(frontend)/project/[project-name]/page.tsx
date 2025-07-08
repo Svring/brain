@@ -7,10 +7,12 @@ import {
   type Edge,
   type Node,
   ReactFlow,
+  useEdgesState,
+  useNodesState,
 } from "@xyflow/react";
 import { ArrowLeft, Plus } from "lucide-react";
 import Link from "next/link";
-import React, { use, useState } from "react";
+import React, { use } from "react";
 import { MenuBar } from "@/components/app/project/menu-bar";
 import nodeTypes from "@/components/flow/node/node-types";
 import { useProjectResources } from "@/hooks/app/project/use-project-resources";
@@ -64,8 +66,8 @@ function ProjectFloatingUI() {
 
 function ProjectFlow({ projectName }: { projectName: string }) {
   const { data: resources } = useProjectResources(projectName);
-  const [nodes, setNodes] = useState<Node[]>([]);
-  const [edges, setEdges] = useState<Edge[]>([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
   // Log env variables of deployments and statefulsets whenever resources change
   React.useEffect(() => {
@@ -74,19 +76,14 @@ function ProjectFlow({ projectName }: { projectName: string }) {
     }
 
     const connections = processProjectConnections(resources);
-    // eslint-disable-next-line no-console
-    console.log("Project connections:", connections);
     const newNodes = convertResourcesToNodes(resources);
-    console.log("Nodes:", newNodes);
     const newEdges = convertConnectionsToEdges(connections);
-    console.log("Edges:", newEdges);
     const positionedNodes = assignNodePositions(newNodes, newEdges, {
       direction: "BT",
     });
-    console.log("Positioned nodes:", positionedNodes);
     setNodes(positionedNodes);
     setEdges(newEdges);
-  }, [resources]);
+  }, [resources, setNodes, setEdges]);
 
   return (
     <ReactFlow
@@ -101,6 +98,8 @@ function ProjectFlow({ projectName }: { projectName: string }) {
       }}
       nodes={nodes}
       nodeTypes={nodeTypes}
+      onEdgesChange={onEdgesChange}
+      onNodesChange={onNodesChange}
       panOnScroll
     >
       <Background gap={60} size={1} variant={BackgroundVariant.Dots} />

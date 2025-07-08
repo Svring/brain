@@ -20,7 +20,7 @@ export default function DeployNode({ data }: { data: DeployNodeProps }) {
             <span className="truncate text-muted-foreground text-sm">
               Deploy
             </span>
-            <span className="w-40 overflow-hidden text-ellipsis text-left font-bold text-foreground text-md">
+            <span className="w-full overflow-hidden text-ellipsis text-left font-bold text-foreground text-md">
               {name}
             </span>
           </div>

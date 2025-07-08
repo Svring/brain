@@ -19,7 +19,7 @@ export default function ClusterNode({ data }: { data: ClusterNodeProps }) {
             <span className="truncate text-muted-foreground text-sm">
               Cluster
             </span>
-            <span className="w-40 overflow-hidden text-ellipsis text-left font-bold text-foreground text-md">
+            <span className="w-full overflow-hidden text-ellipsis text-left font-bold text-foreground text-md">
               {name}
             </span>
           </div>

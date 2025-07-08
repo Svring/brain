@@ -1,15 +1,16 @@
 import { Handle, Position } from "@xyflow/react";
+import { BaseNode } from "@/components/flow/components/base-node";
 
 interface BaseNodeProps {
   children: React.ReactNode;
 }
 
-export default function BaseNode({ children }: BaseNodeProps) {
+export default function BaseNodeWrapper({ children }: BaseNodeProps) {
   return (
-    <div className="flex h-40 w-60 flex-col rounded-lg border border-border bg-background p-4">
+    <BaseNode>
       <Handle position={Position.Top} type="source" />
       {children}
       <Handle position={Position.Bottom} type="target" />
-    </div>
+    </BaseNode>
   );
 }

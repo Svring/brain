@@ -11,9 +11,9 @@ export interface LayoutOptions {
 
 const DEFAULT_OPTIONS: Required<LayoutOptions> = {
   direction: "TB",
-  nodeWidth: 150,
+  nodeWidth: 200,
   nodeHeight: 100,
-  rankSep: 150,
+  rankSep: 100,
   nodeSep: 100,
 };
 

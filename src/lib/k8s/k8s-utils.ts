@@ -28,17 +28,8 @@ export function getCurrentNamespace(): string | undefined {
 // Filter function to remove resource types with empty items arrays
 export const filterEmptyResources = (
   data: Record<string, { items: AnyKubernetesResource[] }>
-): Record<string, { items: AnyKubernetesResource[] }> => {
-  const filtered: Record<string, { items: AnyKubernetesResource[] }> = {};
-
-  for (const [resourceType, resourceData] of Object.entries(data)) {
-    if (resourceData?.items && resourceData.items.length > 0) {
-      filtered[resourceType] = resourceData;
-    }
-  }
-
-  return filtered;
-};
+): Record<string, { items: AnyKubernetesResource[] }> =>
+  _.pickBy(data, (resourceData) => resourceData?.items?.length > 0);
 
 // Helper function to convert resource to ResourceTarget
 export const convertToResourceTarget = (
@@ -74,21 +65,17 @@ export const convertToResourceTarget = (
 // Helper function to convert all resources to ResourceTarget format
 export const convertAllResourcesToTargets = (
   data: Record<string, { items: AnyKubernetesResource[] }>
-): ResourceTarget[] => {
-  const resources: ResourceTarget[] = [];
-  for (const [resourceName, resourceData] of Object.entries(data)) {
-    const config = RESOURCES[resourceName as keyof typeof RESOURCES];
-    if (config && resourceData?.items) {
-      for (const resource of resourceData.items) {
-        const target = convertToResourceTarget(resource, config);
-        if (target) {
-          resources.push(target);
-        }
-      }
-    }
-  }
-  return resources;
-};
+): ResourceTarget[] =>
+  _.compact(
+    _.flatMap(data, (resourceData, resourceName) => {
+      const config = RESOURCES[resourceName as keyof typeof RESOURCES];
+      return config && resourceData?.items
+        ? _.map(resourceData.items, (resource) =>
+            convertToResourceTarget(resource, config)
+          )
+        : [];
+    })
+  );
 
 // -------------------------------------------
 // Simplified Environment variable extraction
@@ -103,13 +90,7 @@ export interface EnvironmentVariable {
 // Helper to aggregate envs from containers / initContainers
 const getContainerEnvs = (
   containers: Array<{ env?: EnvironmentVariable[] }> | undefined
-): EnvironmentVariable[] => {
-  if (!containers) {
-    return [];
-  }
-  // Flatten all env arrays from containers
-  return _.flatMap(containers, (c) => c.env ?? []);
-};
+): EnvironmentVariable[] => _.flatMap(containers, (c) => c.env ?? []);
 
 /**
  * Extract environment variables from StatefulSet and Deployment resources.
@@ -118,50 +99,30 @@ const getContainerEnvs = (
 export const extractEnvironmentVariables = (
   resources: Record<string, { items: AnyKubernetesResource[] }>
 ): Record<string, Record<string, EnvironmentVariable[]>> => {
-  const envRecord: Record<string, Record<string, EnvironmentVariable[]>> = {};
-
-  const processWorkload = (
-    workload: AnyKubernetesResource,
-    kind: string
-  ): void => {
+  const processWorkload = (workload: AnyKubernetesResource) => {
     const name = workload?.metadata?.name;
     if (!name) {
-      return;
+      return null;
     }
 
-    const containersEnv = getContainerEnvs(
+    const allEnvs = [
       // @ts-expect-error — spec is loosely typed for generic Kubernetes resources
-      workload?.spec?.template?.spec?.containers
-    );
-    const initContainersEnv = getContainerEnvs(
+      ...getContainerEnvs(workload?.spec?.template?.spec?.containers),
       // @ts-expect-error — spec is loosely typed for generic Kubernetes resources
-      workload?.spec?.template?.spec?.initContainers
-    );
-    const allEnvs = [...containersEnv, ...initContainersEnv];
+      ...getContainerEnvs(workload?.spec?.template?.spec?.initContainers),
+    ];
 
-    if (_.isEmpty(allEnvs)) {
-      return;
-    }
-
-    if (!envRecord[kind]) {
-      envRecord[kind] = {};
-    }
-    envRecord[kind][name] = allEnvs;
+    return _.isEmpty(allEnvs) ? null : { [name]: allEnvs };
   };
 
-  if (resources.statefulset?.items) {
-    for (const w of resources.statefulset.items) {
-      processWorkload(w, "statefulset");
-    }
-  }
-
-  if (resources.deployment?.items) {
-    for (const w of resources.deployment.items) {
-      processWorkload(w, "deployment");
-    }
-  }
-
-  return envRecord;
+  return _.pickBy(
+    _.mapValues(
+      _.pick(resources, ["statefulset", "deployment"]),
+      (resourceData) =>
+        _.assign({}, ..._.compact(_.map(resourceData?.items, processWorkload)))
+    ),
+    (workloads) => !_.isEmpty(workloads)
+  );
 };
 
 /**
@@ -170,32 +131,23 @@ export const extractEnvironmentVariables = (
 export const collectEnv = (
   envs: EnvironmentVariable[]
 ): { refs: string[]; values: string[] } => {
-  const refs: string[] = [];
-  const values: string[] = [];
-
-  _.forEach(envs, (env) => {
-    if (env.value !== undefined) {
-      values.push(env.value);
-      return;
-    }
-
-    if (env.valueFrom) {
-      const vf = env.valueFrom as {
-        secretKeyRef?: { name?: string };
-        configMapKeyRef?: { name?: string };
-      };
-      if (vf.secretKeyRef?.name) {
-        refs.push(vf.secretKeyRef.name);
-      }
-      if (vf.configMapKeyRef?.name) {
-        refs.push(vf.configMapKeyRef.name);
-      }
-    }
-  });
+  const { refs, values } = _.groupBy(envs, (env) =>
+    env.value !== undefined ? "values" : "refs"
+  );
 
   return {
-    refs: _.uniq(refs),
-    values: _.uniq(values),
+    refs: _.uniq(
+      _.compact(
+        _.flatMap(refs || [], (env) => {
+          const vf = env.valueFrom as {
+            secretKeyRef?: { name?: string };
+            configMapKeyRef?: { name?: string };
+          };
+          return _.compact([vf?.secretKeyRef?.name, vf?.configMapKeyRef?.name]);
+        })
+      )
+    ),
+    values: _.uniq(_.compact(_.map(values || [], "value"))),
   };
 };
 
@@ -204,45 +156,18 @@ export const collectEnv = (
  */
 export const collectEnvByWorkload = (
   envsByKind: Record<string, Record<string, EnvironmentVariable[]>>
-): Record<string, Record<string, { refs: string[]; values: string[] }>> => {
-  const result: Record<
-    string,
-    Record<string, { refs: string[]; values: string[] }>
-  > = {};
-
-  for (const [kind, workloads] of Object.entries(envsByKind)) {
-    const transformed: Record<string, { refs: string[]; values: string[] }> =
-      {};
-    for (const [name, envArray] of Object.entries(workloads)) {
-      transformed[name] = collectEnv(envArray);
-    }
-    result[kind] = transformed;
-  }
-
-  return result;
-};
+): Record<string, Record<string, { refs: string[]; values: string[] }>> =>
+  _.mapValues(envsByKind, (workloads) => _.mapValues(workloads, collectEnv));
 
 /**
  * Extract the `metadata.name` from Kubernetes resources grouped by kind.
  */
 export const extractResourceNames = (
   resources: Record<string, { items: AnyKubernetesResource[] }>
-): Record<string, string[]> => {
-  const result: Record<string, string[]> = {};
-
-  for (const [kind, value] of Object.entries(resources)) {
-    result[kind] = _.uniq(
-      _.compact(
-        _.map(
-          value?.items ?? [],
-          (item) => item?.metadata?.name as string | undefined
-        )
-      )
-    );
-  }
-
-  return result;
-};
+): Record<string, string[]> =>
+  _.mapValues(resources, (value) =>
+    _.uniq(_.compact(_.map(value?.items, "metadata.name")))
+  );
 
 // -------------------------------------------
 // Connection Processing with Kind Information
@@ -264,6 +189,7 @@ export type ConnectionsByKind = Record<
 /**
  * Connection processing that preserves kind information
  * Returns connections grouped by resource kind
+ * For each env value, only the longest matching candidate is included
  */
 export const mergeConnectFromByWorkload = (
   envSummary: Record<
@@ -274,18 +200,27 @@ export const mergeConnectFromByWorkload = (
 ): ConnectionsByKind =>
   _.mapValues(envSummary, (workloads) =>
     _.mapValues(workloads, ({ refs, values }) => {
-      const isMatch = (candidate: string) =>
-        refs.some((r) => r.includes(candidate)) ||
-        values.some((v) => v.includes(candidate));
+      const allMatches = _.uniq(
+        _.compact(
+          _.flatMap([...refs, ...values], (v) =>
+            _.maxBy(
+              _.filter(_.flatMap(candidatesByKind), (c) => v.includes(c)),
+              "length"
+            )
+          )
+        )
+      );
 
       const connectFrom = _.pickBy(
-        _.mapValues(candidatesByKind, (names) => names.filter(isMatch)),
+        _.mapValues(candidatesByKind, (names) =>
+          _.intersection(names, allMatches)
+        ),
         (arr) => (arr as string[]).length > 0
       ) as KindMap;
 
       const others = _.pickBy(
         _.mapValues(candidatesByKind, (names) =>
-          names.filter((name) => !isMatch(name))
+          _.difference(names, allMatches)
         ),
         (arr) => (arr as string[]).length > 0
       ) as KindMap;
@@ -295,107 +230,42 @@ export const mergeConnectFromByWorkload = (
   ) as ConnectionsByKind;
 
 /**
- * Extract service names from an Ingress resource.
- * Services are found in spec.rules[].http.paths[].backend.service.name
- */
-export const getServiceNamesFromIngress = (
-  ingress: AnyKubernetesResource
-): string[] => {
-  const serviceNames: string[] = [];
-
-  try {
-    // @ts-expect-error — spec is loosely typed for generic Kubernetes resources
-    const rules = ingress?.spec?.rules || [];
-
-    for (const rule of rules) {
-      const paths = rule?.http?.paths || [];
-
-      for (const path of paths) {
-        const serviceName = path?.backend?.service?.name;
-        if (serviceName && typeof serviceName === "string") {
-          serviceNames.push(serviceName);
-        }
-      }
-    }
-  } catch {
-    // Silently handle any parsing errors
-    return [];
-  }
-
-  return _.uniq(serviceNames);
-};
-
-/**
- * Extract workload names by kind for matching with services
- */
-export const getWorkloadsByKind = (
-  resources: Record<string, { items: AnyKubernetesResource[] }>
-): Record<string, string[]> => {
-  const workloadKinds = ["deployment", "statefulset"];
-  const result: Record<string, string[]> = {};
-
-  for (const kind of workloadKinds) {
-    result[kind] = (resources[kind]?.items || [])
-      .map((item) => item.metadata.name)
-      .filter(Boolean);
-  }
-
-  return result;
-};
-
-/**
- * Match service names to workload names and return connections
- */
-export const matchServicesToWorkloads = (
-  serviceNames: string[],
-  workloadsByKind: Record<string, string[]>
-): Record<string, string[]> => {
-  const connectFrom: Record<string, string[]> = {};
-
-  for (const serviceName of serviceNames) {
-    for (const [kind, names] of Object.entries(workloadsByKind)) {
-      const matches = names.filter((name) => name === serviceName);
-      if (matches.length > 0) {
-        connectFrom[kind] = (connectFrom[kind] || []).concat(matches);
-      }
-    }
-  }
-
-  return connectFrom;
-};
-
-/**
- * Process ingress resources to establish connections to workload resources
- * based on service names found in ingress rules.
+ * Process ingress resources to establish connections to workload resources.
+ * Ingress resources always have a workload resource with the same name.
  */
 export const processIngressConnections = (
   resources: Record<string, { items: AnyKubernetesResource[] }>
 ): ConnectionsByKind => {
   const ingressResources = resources.ingress?.items || [];
-  if (ingressResources.length === 0) {
+  if (_.isEmpty(ingressResources)) {
     return {};
   }
 
-  const workloadsByKind = getWorkloadsByKind(resources);
-  const ingressConnections: Record<
-    string,
-    { connectFrom: Record<string, string[]>; others: Record<string, string[]> }
-  > = {};
+  const workloadsByKind = _.mapValues(
+    _.pick(resources, ["deployment", "statefulset"]),
+    (resourceData) => _.compact(_.map(resourceData?.items, "metadata.name"))
+  );
 
-  for (const ingress of ingressResources) {
-    const ingressName = ingress.metadata.name;
-    if (!ingressName) {
-      continue;
-    }
+  return {
+    ingress: _.fromPairs(
+      _.compact(
+        _.map(ingressResources, (ingress) => {
+          const ingressName = ingress.metadata.name;
+          if (!ingressName) {
+            return null;
+          }
 
-    const serviceNames = getServiceNamesFromIngress(ingress);
-    const connectFrom = matchServicesToWorkloads(serviceNames, workloadsByKind);
+          // Find workload with same name as ingress
+          const connectFrom = _.pickBy(
+            _.mapValues(workloadsByKind, (names) =>
+              names.includes(ingressName) ? [ingressName] : []
+            ),
+            (matches) => matches.length > 0
+          );
 
-    ingressConnections[ingressName] = {
-      connectFrom,
-      others: {},
-    };
-  }
-
-  return { ingress: ingressConnections };
+          return [ingressName, { connectFrom, others: {} }];
+        })
+      )
+    ),
+  };
 };
