@@ -1,8 +1,10 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import CreateProject from "@/components/app/project/create-project";
 import { ProjectCard } from "@/components/app/project/project-card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useProjects } from "@/hooks/app/project/use-projects";
 
 export default function Page() {
@@ -22,13 +24,16 @@ export default function Page() {
               Projects
             </h1>
           </div>
-          <Button
-            aria-label="Add New"
-            className="inline-flex items-center justify-center text-foreground transition-colors focus:outline-none"
-            variant="ghost"
-          >
-            <Plus size={16} />
-          </Button>
+          <Dialog>
+            <DialogTrigger>
+              <Button variant="ghost">
+                <Plus size={8} />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="h-[90vh] max-h-none w-[90vw] max-w-none">
+              <CreateProject />
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
