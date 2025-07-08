@@ -33,7 +33,13 @@ export const convertConnectionsToEdges = (
         names.map((name) => {
           const source = `${sourceKind}-${name}`;
           const id = `${source}-${target}`; // deterministic unique id
-          return { id, source, target } as FlowEdge;
+          return {
+            id,
+            source,
+            target,
+            type: "step-edge",
+            animated: true,
+          } as FlowEdge;
         })
       );
     })

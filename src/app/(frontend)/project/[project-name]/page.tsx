@@ -14,6 +14,7 @@ import { ArrowLeft, Plus } from "lucide-react";
 import Link from "next/link";
 import React, { use } from "react";
 import { MenuBar } from "@/components/app/project/menu-bar";
+import edgeTypes from "@/components/flow/edge/edge-types";
 import nodeTypes from "@/components/flow/node/node-types";
 import { useProjectResources } from "@/hooks/app/project/use-project-resources";
 import { processProjectConnections } from "@/lib/app/project/project-utils";
@@ -89,6 +90,7 @@ function ProjectFlow({ projectName }: { projectName: string }) {
     <ReactFlow
       connectionLineType={ConnectionLineType.SmoothStep}
       edges={edges}
+      edgeTypes={edgeTypes}
       fitView
       fitViewOptions={{
         padding: 0.1,
