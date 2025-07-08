@@ -25,8 +25,10 @@ export function RegionSwitcher({
     namespace: string;
   }[];
 }) {
-  const { isMobile } = useSidebar();
+  const { isMobile, state } = useSidebar();
   const [activeRegion, setActiveRegion] = React.useState(regions[0]);
+
+  const isCollapsed = state === "collapsed";
 
   return (
     <SidebarMenu>
@@ -34,21 +36,28 @@ export function RegionSwitcher({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="group-data-[collapsible=icon]:justify-center"
               size="lg"
+              tooltip={{
+                children: `${activeRegion.name} (${activeRegion.namespace})`,
+              }}
             >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-foreground text-background">
                 <activeRegion.logo className="size-4" />
               </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">
-                  {activeRegion.name}
-                </span>
-                <span className="truncate text-xs">
-                  {activeRegion.namespace}
-                </span>
-              </div>
-              <ChevronsUpDown className="ml-auto" />
+              {!isCollapsed && (
+                <>
+                  <div className="grid flex-1 overflow-hidden text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">
+                      {activeRegion.name}
+                    </span>
+                    <span className="truncate text-xs">
+                      {activeRegion.namespace}
+                    </span>
+                  </div>
+                  <ChevronsUpDown className="ml-auto" />
+                </>
+              )}
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent

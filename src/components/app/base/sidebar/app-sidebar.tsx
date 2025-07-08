@@ -1,21 +1,18 @@
 "use client";
 
-import { PanelLeft } from "lucide-react";
+import { Drama } from "lucide-react";
+import { RegionSwitcher } from "@/components/app/base/sidebar/region-switcher";
 import {
   MainSection,
   type NavigationItem,
 } from "@/components/app/base/sidebar/sidebar-section";
-// React and third-party imports
-// UI Components
+import { UserCard } from "@/components/app/base/sidebar/user-card";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   SidebarRail,
-  useSidebar,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 
@@ -23,23 +20,25 @@ import { cn } from "@/lib/utils";
 const NAVIGATION_ITEMS: NavigationItem[] = [];
 
 export default function AppSidebar() {
-  const { toggleSidebar } = useSidebar();
-
   return (
-    <Sidebar collapsible="icon" variant="sidebar">
-      <SidebarHeader className={cn("bg-background")}>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton onClick={toggleSidebar}>
-              <PanelLeft className="h-4 w-4" />
-              <span>Sealos Brain</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+    <Sidebar className="rounded-lg" collapsible="icon" variant="floating">
+      <SidebarHeader className={cn("rounded-t-lg bg-background")}>
+        <RegionSwitcher
+          regions={[{ name: "sealos", logo: Drama, namespace: "sealos" }]}
+        />
       </SidebarHeader>
-      <SidebarContent className={cn("bg-background")}>
+      <SidebarContent className={cn("rounded-b-lg bg-background")}>
         <MainSection navigationItems={NAVIGATION_ITEMS} />
       </SidebarContent>
+      <SidebarFooter className={cn("rounded-b-lg bg-background")}>
+        <UserCard
+          user={{
+            name: "John Doe",
+            email: "john.doe@example.com",
+            avatar: "https://github.com/shadcn.png",
+          }}
+        />
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );

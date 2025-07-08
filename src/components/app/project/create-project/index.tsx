@@ -70,7 +70,13 @@ export default function CreateProject() {
     );
   }
 
-  const handleDeploy = (templateName: string) => {
+  const handleCreateEmptyProject = () => {
+    // TODO: Implement empty project creation
+    // For now, we'll just ignore this action
+    return;
+  };
+
+  const handleDeployTemplate = (templateName: string) => {
     // Future: Handle template deployment
     // TODO: Implement template deployment logic
     // For now, we'll just ignore the templateName parameter
@@ -81,14 +87,19 @@ export default function CreateProject() {
     <>
       {/* ===== Content ===== */}
       <Main className="h-full w-full" fixed>
-        <div>
-          <h1 className="font-bold text-2xl tracking-tight">
-            Create New Project
-          </h1>
-          <p className="text-muted-foreground">
-            Choose from available templates to create your project or create an
-            empty project
-          </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="font-bold text-2xl tracking-tight">
+              Create New Project
+            </h1>
+            <p className="text-muted-foreground">
+              Choose from available templates to create your project or create
+              an empty project
+            </p>
+          </div>
+          <Button onClick={handleCreateEmptyProject} variant="outline">
+            Create Empty Project
+          </Button>
         </div>
         <div className="my-4 flex items-end justify-between sm:my-0 sm:items-center">
           <div className="flex flex-col gap-4 sm:my-4 sm:flex-row">
@@ -138,7 +149,7 @@ export default function CreateProject() {
                   )}
                 </div>
                 <Button
-                  onClick={() => handleDeploy(template.metadata.name)}
+                  onClick={() => handleDeployTemplate(template.metadata.name)}
                   size="sm"
                   variant="outline"
                 >

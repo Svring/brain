@@ -24,7 +24,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-export function NavUser({
+export function UserCard({
   user,
 }: {
   user: {
@@ -33,7 +33,9 @@ export function NavUser({
     avatar: string;
   };
 }) {
-  const { isMobile } = useSidebar();
+  const { isMobile, state } = useSidebar();
+
+  const isCollapsed = state === "collapsed";
 
   return (
     <SidebarMenu>
@@ -41,18 +43,20 @@ export function NavUser({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center"
               size="lg"
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage alt={user.name} src={user.avatar} />
                 <AvatarFallback className="rounded-lg">SN</AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
-              </div>
-              <ChevronsUpDown className="ml-auto size-4" />
+              {!isCollapsed && (
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">{user.name}</span>
+                  <span className="truncate text-xs">{user.email}</span>
+                </div>
+              )}
+              {!isCollapsed && <ChevronsUpDown className="ml-auto size-4" />}
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
