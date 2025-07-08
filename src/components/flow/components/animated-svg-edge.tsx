@@ -1,11 +1,11 @@
-import React, { FC } from "react";
 import type { Edge, EdgeProps, Position } from "@xyflow/react";
 import {
   BaseEdge,
   getBezierPath,
-  getStraightPath,
   getSmoothStepPath,
+  getStraightPath,
 } from "@xyflow/react";
+import type { FC } from "react";
 
 export type AnimatedSvgEdge = Edge<{
   /**
@@ -107,7 +107,7 @@ type AnimatedSvg = FC<{ animateMotionProps: AnimateMotionProps }>;
 
 const shapes = {
   circle: ({ animateMotionProps }) => (
-    <circle r="5" fill="#ff0073">
+    <circle fill="#ff0073" r="5">
       <animateMotion {...animateMotionProps} />
     </circle>
   ),

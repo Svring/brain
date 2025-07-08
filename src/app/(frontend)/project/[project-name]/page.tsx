@@ -4,25 +4,18 @@ import {
   Background,
   BackgroundVariant,
   ConnectionLineType,
-  type Edge,
-  type Node,
   ReactFlow,
-  useEdgesState,
-  useNodesState,
 } from "@xyflow/react";
 import { ArrowLeft, Plus } from "lucide-react";
 import Link from "next/link";
-import React, { use } from "react";
+import { use } from "react";
 import { MenuBar } from "@/components/app/project/menu-bar";
 import edgeTypes from "@/components/flow/edge/edge-types";
 import nodeTypes from "@/components/flow/node/node-types";
 import { useProjectResources } from "@/hooks/app/project/use-project-resources";
-import { processProjectConnections } from "@/lib/app/project/project-utils";
-import { convertConnectionsToEdges } from "@/lib/flow/edges/flow-edges-utils";
-import { convertResourcesToNodes } from "@/lib/flow/nodes/flow-nodes-utils";
+import { useFlow } from "@/hooks/flow/use-flow";
 
 import "@xyflow/react/dist/style.css";
-import { assignNodePositions } from "@/lib/flow/layout/flow-layout-utils";
 
 function ProjectFloatingUI() {
   return (
@@ -67,24 +60,7 @@ function ProjectFloatingUI() {
 
 function ProjectFlow({ projectName }: { projectName: string }) {
   const { data: resources } = useProjectResources(projectName);
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-
-  // Log env variables of deployments and statefulsets whenever resources change
-  React.useEffect(() => {
-    if (!resources) {
-      return;
-    }
-
-    const connections = processProjectConnections(resources);
-    const newNodes = convertResourcesToNodes(resources);
-    const newEdges = convertConnectionsToEdges(connections);
-    const positionedNodes = assignNodePositions(newNodes, newEdges, {
-      direction: "BT",
-    });
-    setNodes(positionedNodes);
-    setEdges(newEdges);
-  }, [resources, setNodes, setEdges]);
+  const [nodes, onNodesChange, edges, onEdgesChange] = useFlow(resources);
 
   return (
     <ReactFlow
