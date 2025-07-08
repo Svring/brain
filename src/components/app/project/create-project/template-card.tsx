@@ -1,20 +1,34 @@
+import { Loader2 } from "lucide-react";
 import Image from "next/image";
+import { useContext, useMemo } from "react";
 import { Button } from "@/components/ui/button";
+import { AuthContext } from "@/contexts/auth-context";
+import { useToast } from "@/hooks/use-toast";
 import type { TemplateResource } from "@/lib/sealos/template/schemas/template-api-context-schemas";
+import { useCreateInstanceMutation } from "@/lib/sealos/template/template-mutation";
 
 export type TemplateCardProps = {
   template: TemplateResource;
-  onSelectCategory: (category: string) => void;
-  onDeploy: (templateName: string) => void;
+  setSelectedCategory: (category: string) => void;
   onViewDetails: (template: TemplateResource) => void;
 };
 
 export function TemplateCard({
   template,
-  onSelectCategory,
-  onDeploy,
+  setSelectedCategory,
   onViewDetails,
 }: TemplateCardProps) {
+  const { user } = useContext(AuthContext);
+  const { toast } = useToast();
+  const apiContext = useMemo(
+    () => ({
+      baseURL: user?.regionUrl || undefined,
+      authorization: user?.kubeconfig || undefined,
+    }),
+    [user]
+  );
+  const createInstanceMutation = useCreateInstanceMutation(apiContext);
+
   const handleClick = () => onViewDetails(template);
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -23,15 +37,44 @@ export function TemplateCard({
     }
   };
 
+  const handleDeploy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    createInstanceMutation.mutate(
+      { templateName: template.metadata.name },
+      {
+        onSuccess: () => {
+          toast({
+            title: "Template deployed successfully",
+            description: `${template.spec.title} has been deployed to your project.`,
+          });
+        },
+        onError: (error) => {
+          toast({
+            title: "Deployment failed",
+            description:
+              error.message || "Failed to deploy template. Please try again.",
+            variant: "destructive",
+          });
+        },
+      }
+    );
+  };
+
+  const handleCategoryClick = (e: React.MouseEvent, category: string) => {
+    e.stopPropagation();
+    setSelectedCategory(category);
+  };
+
   return (
     <button
-      className="cursor-pointer rounded-lg border p-4 transition-shadow hover:shadow-md"
+      className="group relative cursor-pointer rounded-lg border p-4 text-left transition-all hover:border-border/60 hover:shadow-md"
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       type="button"
     >
-      <div className="mb-8 flex items-center justify-between">
-        <div className="flex size-10 items-center justify-center rounded-lg bg-muted p-2">
+      {/* Header with icon and title */}
+      <div className="mb-3 flex items-center gap-3">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted p-2">
           {template.spec.icon ? (
             <Image
               alt={`${template.spec.title} icon`}
@@ -44,39 +87,52 @@ export function TemplateCard({
             <div className="size-6 rounded bg-gray-300" />
           )}
         </div>
+        <h2 className="font-semibold text-base leading-tight">
+          {template.spec.title}
+        </h2>
+      </div>
+
+      {/* Description aligned to the left */}
+      <div className="mb-4">
+        <p className="line-clamp-2 text-muted-foreground text-sm leading-relaxed">
+          {template.spec.description || "No description available"}
+        </p>
+      </div>
+
+      {/* Categories */}
+      {template.spec.categories && template.spec.categories.length > 0 && (
+        <div className="mb-4 flex flex-wrap gap-1">
+          {template.spec.categories.slice(0, 3).map((category: string) => (
+            <button
+              className="cursor-pointer rounded-full border-none bg-secondary px-2 py-1 text-secondary-foreground text-xs transition-colors hover:bg-secondary/80"
+              key={category}
+              onClick={(e) => handleCategoryClick(e, category)}
+              type="button"
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Deploy button */}
+      <div className="flex justify-end">
         <Button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDeploy(template.metadata.name);
-          }}
+          className="opacity-0 transition-opacity group-hover:opacity-100"
+          disabled={createInstanceMutation.isPending}
+          onClick={handleDeploy}
           size="sm"
           variant="outline"
         >
-          Deploy
+          {createInstanceMutation.isPending ? (
+            <>
+              <Loader2 className="mr-2 size-4 animate-spin" />
+              Deploying...
+            </>
+          ) : (
+            "Deploy"
+          )}
         </Button>
-      </div>
-      <div>
-        <h2 className="mb-1 font-semibold">{template.spec.title}</h2>
-        <p className="line-clamp-2 text-gray-500">
-          {template.spec.description || "No description available"}
-        </p>
-        {template.spec.categories && template.spec.categories.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1">
-            {template.spec.categories.slice(0, 3).map((category: string) => (
-              <button
-                className="cursor-pointer rounded-full border-none bg-gray-100 px-2 py-1 text-gray-700 text-xs hover:bg-gray-200"
-                key={category}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSelectCategory(category);
-                }}
-                type="button"
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
     </button>
   );

@@ -79,13 +79,6 @@ export default function CreateProject() {
     return;
   };
 
-  const handleDeployTemplate = (templateName: string) => {
-    // Future: Handle template deployment
-    // TODO: Implement template deployment logic
-    // For now, we'll just ignore the templateName parameter
-    return templateName;
-  };
-
   const handleViewDetails = (template: TemplateResource) => {
     setSelectedTemplate(template);
   };
@@ -99,7 +92,9 @@ export default function CreateProject() {
     return (
       <TemplateDetails
         onBack={handleBackToList}
-        onDeploy={handleDeployTemplate}
+        onDeploy={() => {
+          // TODO: Implement template deployment from details view
+        }}
         template={selectedTemplate}
       />
     );
@@ -154,9 +149,8 @@ export default function CreateProject() {
           {filteredTemplates.map((template: TemplateResource) => (
             <TemplateCard
               key={template.metadata.name}
-              onDeploy={handleDeployTemplate}
-              onSelectCategory={setSelectedCategory}
               onViewDetails={handleViewDetails}
+              setSelectedCategory={setSelectedCategory}
               template={template}
             />
           ))}

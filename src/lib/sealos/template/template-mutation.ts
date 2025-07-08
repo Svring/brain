@@ -13,8 +13,7 @@ export function useCreateInstanceMutation(context: InstanceApiContext) {
       runParallelAction(createInstance(request, context)),
     onSuccess: () => {
       // Invalidate project-related queries since creating an instance creates project resources
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
-      queryClient.invalidateQueries({ queryKey: ["sealos", "projects"] });
+      queryClient.invalidateQueries({ queryKey: ["project"] });
     },
   });
 }

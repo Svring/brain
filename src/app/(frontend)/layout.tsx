@@ -6,6 +6,7 @@ import LoginPanel from "@/components/app/base/login-panel";
 import { QueryProvider } from "@/components/app/base/provider/query-provider";
 import AppSidebar from "@/components/app/base/sidebar/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/auth-context";
 import { getUser } from "@/payload/operations/users-operation";
 
@@ -43,6 +44,7 @@ export default async function RootLayout({
             enableSystem
           >
             <LoginPanel />
+            <Toaster />
           </ThemeProvider>
         </body>
       </html>
@@ -66,6 +68,7 @@ export default async function RootLayout({
               </SidebarProvider>
             </QueryProvider>
           </AuthProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

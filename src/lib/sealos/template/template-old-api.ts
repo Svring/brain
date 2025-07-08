@@ -59,7 +59,7 @@ export const createInstance = createParallelAction(
     const validatedRequest = CreateInstanceRequestSchema.parse(request);
     const api = createApi(context);
     const response = await api.post(
-      "/v1alpha1/createInstance",
+      "/v1alpha/createInstance",
       validatedRequest
     );
     return CreateInstanceResponseSchema.parse(response.data);
