@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useMemo, useState } from "react";
 import { Main } from "@/components/layout/main";
 import { Button } from "@/components/ui/button";
@@ -17,11 +16,15 @@ import { useTemplates } from "@/hooks/app/project/use-templates";
 import type {
   ListTemplateResponse,
   TemplateResource,
-} from "@/lib/sealos/instance/schemas/instance-api-context-schemas";
+} from "@/lib/sealos/template/schemas/template-api-context-schemas";
+import { TemplateCard } from "./template-card";
+import { TemplateDetails } from "./template-details";
 
 export default function CreateProject() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<TemplateResource | null>(null);
 
   const { data: templatesResponse, isLoading, error } = useTemplates();
   const templates =
@@ -83,6 +86,25 @@ export default function CreateProject() {
     return templateName;
   };
 
+  const handleViewDetails = (template: TemplateResource) => {
+    setSelectedTemplate(template);
+  };
+
+  const handleBackToList = () => {
+    setSelectedTemplate(null);
+  };
+
+  // If a template is selected, show the details view
+  if (selectedTemplate) {
+    return (
+      <TemplateDetails
+        onBack={handleBackToList}
+        onDeploy={handleDeployTemplate}
+        template={selectedTemplate}
+      />
+    );
+  }
+
   return (
     <>
       {/* ===== Content ===== */}
@@ -128,63 +150,17 @@ export default function CreateProject() {
           </div>
         </div>
         <Separator className="shadow-sm" />
-        <ul className="faded-bottom no-scrollbar grid gap-4 overflow-auto pt-4 pb-16 md:grid-cols-2 lg:grid-cols-3">
+        <div className="faded-bottom no-scrollbar grid gap-4 overflow-auto pt-4 pb-16 md:grid-cols-2 lg:grid-cols-3">
           {filteredTemplates.map((template: TemplateResource) => (
-            <li
-              className="cursor-pointer rounded-lg border p-4 transition-shadow hover:shadow-md"
+            <TemplateCard
               key={template.metadata.name}
-            >
-              <div className="mb-8 flex items-center justify-between">
-                <div className="flex size-10 items-center justify-center rounded-lg bg-muted p-2">
-                  {template.spec.icon ? (
-                    <Image
-                      alt={`${template.spec.title} icon`}
-                      className="size-6"
-                      height={24}
-                      src={template.spec.icon}
-                      width={24}
-                    />
-                  ) : (
-                    <div className="size-6 rounded bg-gray-300" />
-                  )}
-                </div>
-                <Button
-                  onClick={() => handleDeployTemplate(template.metadata.name)}
-                  size="sm"
-                  variant="outline"
-                >
-                  Deploy
-                </Button>
-              </div>
-              <div>
-                <h2 className="mb-1 font-semibold">{template.spec.title}</h2>
-                <p className="line-clamp-2 text-gray-500">
-                  {template.spec.description || "No description available"}
-                </p>
-                {template.spec.categories &&
-                  template.spec.categories.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {template.spec.categories
-                        .slice(0, 3)
-                        .map((category: string) => (
-                          <button
-                            className="cursor-pointer rounded-full border-none bg-gray-100 px-2 py-1 text-gray-700 text-xs hover:bg-gray-200"
-                            key={category}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedCategory(category);
-                            }}
-                            type="button"
-                          >
-                            {category}
-                          </button>
-                        ))}
-                    </div>
-                  )}
-              </div>
-            </li>
+              onDeploy={handleDeployTemplate}
+              onSelectCategory={setSelectedCategory}
+              onViewDetails={handleViewDetails}
+              template={template}
+            />
           ))}
-        </ul>
+        </div>
         {filteredTemplates.length === 0 && (
           <div className="py-8 text-center text-gray-500">
             No templates found matching your criteria

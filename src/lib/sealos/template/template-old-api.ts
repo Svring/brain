@@ -5,8 +5,8 @@ import { createParallelAction } from "next-server-actions-parallel";
 import type {
   InstanceApiContext,
   ListTemplateResponse,
-} from "./schemas/instance-api-context-schemas";
-import { ListTemplateResponseSchema } from "./schemas/instance-api-context-schemas";
+} from "./schemas/template-api-context-schemas";
+import { ListTemplateResponseSchema } from "./schemas/template-api-context-schemas";
 
 function createApi(context: InstanceApiContext) {
   return axios.create({

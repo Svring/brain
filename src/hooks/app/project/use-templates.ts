@@ -3,8 +3,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { use, useMemo } from "react";
 import { AuthContext } from "@/contexts/auth-context";
-import { listTemplatesOptions } from "@/lib/sealos/instance/instance-query";
-import { InstanceApiContextSchema } from "@/lib/sealos/instance/schemas/instance-api-context-schemas";
+import { InstanceApiContextSchema } from "@/lib/sealos/template/schemas/template-api-context-schemas";
+import { listTemplatesOptions } from "@/lib/sealos/template/template-query";
 
 export function useTemplates() {
   const { user } = use(AuthContext);

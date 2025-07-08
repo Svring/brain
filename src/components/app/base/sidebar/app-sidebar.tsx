@@ -1,6 +1,7 @@
 "use client";
 
 import { Drama } from "lucide-react";
+import { useContext } from "react";
 import { RegionSwitcher } from "@/components/app/base/sidebar/region-switcher";
 import {
   MainSection,
@@ -14,17 +15,26 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { AuthContext } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
 
 // Constants
 const NAVIGATION_ITEMS: NavigationItem[] = [];
 
 export default function AppSidebar() {
+  const { user } = useContext(AuthContext);
+
   return (
     <Sidebar className="rounded-lg" collapsible="icon" variant="floating">
       <SidebarHeader className={cn("rounded-t-lg bg-background")}>
         <RegionSwitcher
-          regions={[{ name: "sealos", logo: Drama, namespace: "sealos" }]}
+          regions={[
+            {
+              name: user?.regionUrl ?? "",
+              logo: Drama,
+              namespace: user?.namespace ?? "",
+            },
+          ]}
         />
       </SidebarHeader>
       <SidebarContent className={cn("rounded-b-lg bg-background")}>
@@ -33,9 +43,9 @@ export default function AppSidebar() {
       <SidebarFooter className={cn("rounded-b-lg bg-background")}>
         <UserCard
           user={{
-            name: "John Doe",
-            email: "john.doe@example.com",
-            avatar: "https://github.com/shadcn.png",
+            name: "Hydrangea",
+            email: "hydrangea@sealos.io",
+            avatar: "https://github.com/svring.png",
           }}
         />
       </SidebarFooter>

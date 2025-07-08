@@ -2,11 +2,11 @@
 
 import { queryOptions } from "@tanstack/react-query";
 import { runParallelAction } from "next-server-actions-parallel";
-import { listTemplates } from "./instance-old-api";
 import type {
   InstanceApiContext,
   ListTemplateResponse,
-} from "./schemas/instance-api-context-schemas";
+} from "./schemas/template-api-context-schemas";
+import { listTemplates } from "./template-old-api";
 
 export const listTemplatesOptions = (
   context: InstanceApiContext,
