@@ -1,6 +1,6 @@
 "use client";
 
-import { CopilotPopup } from "@copilotkit/react-ui";
+import { CopilotSidebar } from "@copilotkit/react-ui";
 import { Plus } from "lucide-react";
 import CreateProject from "@/components/app/project/create-project";
 import { ProjectCard } from "@/components/app/project/project-card";
@@ -10,8 +10,9 @@ import { useAI } from "@/hooks/ai/use-ai";
 import { useProjects } from "@/hooks/app/project/use-projects";
 
 import "@copilotkit/react-ui/styles.css";
+import { AIProvider } from "@/components/app/base/provider/ai-provider";
 
-export default function Page() {
+function Page() {
   const {
     data: projects,
     isLoading: projectsLoading,
@@ -75,7 +76,7 @@ export default function Page() {
           )}
         </div>
       </div>
-      <CopilotPopup
+      <CopilotSidebar
         instructions={
           "You are assisting the user as best as you can. Answer in the best way possible given the data you have."
         }
@@ -85,5 +86,13 @@ export default function Page() {
         }}
       />
     </div>
+  );
+}
+
+export default function PageWrapper() {
+  return (
+    <AIProvider>
+      <Page />
+    </AIProvider>
   );
 }

@@ -37,5 +37,13 @@ export const Users: CollectionConfig = {
       name: "devboxToken",
       type: "text",
     },
+    {
+      name: "apiKey",
+      type: "text",
+    },
+    {
+      name: "baseUrl",
+      type: "text",
+    },
   ],
 };

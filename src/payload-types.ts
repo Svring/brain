@@ -126,6 +126,8 @@ export interface User {
   regionToken?: string | null;
   appToken?: string | null;
   devboxToken?: string | null;
+  apiKey?: string | null;
+  baseUrl?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -225,6 +227,8 @@ export interface UsersSelect<T extends boolean = true> {
   regionToken?: T;
   appToken?: T;
   devboxToken?: T;
+  apiKey?: T;
+  baseUrl?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;

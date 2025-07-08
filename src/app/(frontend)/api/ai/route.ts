@@ -2,7 +2,7 @@ import {
   CopilotRuntime,
   copilotRuntimeNextJSAppRouterEndpoint,
   ExperimentalEmptyAdapter,
-  langGraphPlatformEndpoint,
+  LangGraphAgent,
 } from "@copilotkit/runtime";
 import type { NextRequest } from "next/server";
 
@@ -10,18 +10,13 @@ import type { NextRequest } from "next/server";
 const serviceAdapter = new ExperimentalEmptyAdapter();
 
 const runtime = new CopilotRuntime({
-  remoteEndpoints: [
-    langGraphPlatformEndpoint({
+  agents: {
+    ai: new LangGraphAgent({
       deploymentUrl: process.env.LANGGRAPH_DEPLOYMENT_URL || "",
+      graphId: "ai",
       langsmithApiKey: process.env.LANGSMITH_API_KEY || "",
-      agents: [
-        {
-          name: "ai",
-          description: "agent.",
-        },
-      ],
     }),
-  ],
+  },
 });
 
 export const POST = async (req: NextRequest) => {
