@@ -7,7 +7,7 @@ import {
   ReactFlow,
 } from "@xyflow/react";
 import { ArrowLeft, Plus } from "lucide-react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { use } from "react";
 import { MenuBar } from "@/components/app/project/menu-bar";
 import edgeTypes from "@/components/flow/edge/edge-types";
@@ -18,6 +18,7 @@ import { useFlow } from "@/hooks/flow/use-flow";
 import "@xyflow/react/dist/style.css";
 
 function ProjectFloatingUI() {
+  const router = useRouter();
   return (
     <>
       {/* MenuBar in the upper left corner */}
@@ -28,16 +29,10 @@ function ProjectFloatingUI() {
             {
               icon: ArrowLeft,
               label: "Back to Home",
-              onClick: undefined,
+              onClick: () => router.push("/"),
               isToggle: false,
             },
           ]}
-        />
-        <Link
-          aria-label="Back to Home"
-          className="absolute inset-0 z-30 h-10 w-10"
-          href="/"
-          tabIndex={0}
         />
       </div>
       {/* MenuBar in the upper right corner */}
@@ -61,8 +56,6 @@ function ProjectFloatingUI() {
 function ProjectFlow({ projectName }: { projectName: string }) {
   const { data: resources } = useProjectResources(projectName);
   const [nodes, onNodesChange, edges, onEdgesChange] = useFlow(resources);
-
-  console.log(resources);
 
   return (
     <ReactFlow

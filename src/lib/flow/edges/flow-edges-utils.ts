@@ -37,7 +37,7 @@ export const convertConnectionsToEdges = (
             id,
             source,
             target,
-            type: "step-edge",
+            type: "step",
             animated: true,
           } as FlowEdge;
         })

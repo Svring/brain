@@ -1,11 +1,15 @@
 "use client";
 
+import { CopilotPopup } from "@copilotkit/react-ui";
 import { Plus } from "lucide-react";
 import CreateProject from "@/components/app/project/create-project";
 import { ProjectCard } from "@/components/app/project/project-card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { useAI } from "@/hooks/ai/use-ai";
 import { useProjects } from "@/hooks/app/project/use-projects";
+
+import "@copilotkit/react-ui/styles.css";
 
 export default function Page() {
   const {
@@ -13,6 +17,8 @@ export default function Page() {
     isLoading: projectsLoading,
     isError: projectsError,
   } = useProjects();
+
+  useAI();
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center p-8">
@@ -69,6 +75,15 @@ export default function Page() {
           )}
         </div>
       </div>
+      <CopilotPopup
+        instructions={
+          "You are assisting the user as best as you can. Answer in the best way possible given the data you have."
+        }
+        labels={{
+          title: "Popup Assistant",
+          initial: "Need any help?",
+        }}
+      />
     </div>
   );
 }

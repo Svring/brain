@@ -3,6 +3,7 @@ import { Nunito } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import type React from "react";
 import LoginPanel from "@/components/app/base/login-panel";
+import { AIProvider } from "@/components/app/base/provider/ai-provider";
 import { QueryProvider } from "@/components/app/base/provider/query-provider";
 import AppSidebar from "@/components/app/base/sidebar/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -11,12 +12,10 @@ import { AuthProvider } from "@/contexts/auth-context";
 import { getUser } from "@/payload/operations/users-operation";
 
 import "@/styles/globals.css";
-import "@xyflow/react/dist/style.css";
 
 const nunito = Nunito({
   subsets: ["latin"],
   variable: "--font-nunito",
-  weight: ["300", "400"],
 });
 
 export const metadata: Metadata = {
@@ -62,10 +61,12 @@ export default async function RootLayout({
         >
           <AuthProvider initialUser={user}>
             <QueryProvider>
-              <SidebarProvider defaultOpen={false}>
-                <AppSidebar />
-                {children}
-              </SidebarProvider>
+              <AIProvider>
+                <SidebarProvider defaultOpen={false}>
+                  <AppSidebar />
+                  {children}
+                </SidebarProvider>
+              </AIProvider>
             </QueryProvider>
           </AuthProvider>
           <Toaster />

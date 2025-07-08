@@ -1,7 +1,7 @@
 import StepEdge from "./step-edge";
 
 const edgeTypes = {
-  "step-edge": StepEdge,
+  step: StepEdge,
 };
 
 export default edgeTypes;
