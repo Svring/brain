@@ -88,6 +88,15 @@ export const BatchRemoveRequestSchema = z.object({
   key: z.string(),
 });
 
+// Delete operation schemas
+export const DeleteResourceRequestSchema = z.object({
+  resource: ResourceTargetSchema,
+});
+
+export const BatchDeleteRequestSchema = z.object({
+  resources: z.array(ResourceTargetSchema),
+});
+
 // Inferred types for input parameters
 export type ListCustomResourceRequest = z.infer<
   typeof ListCustomResourceRequestSchema
@@ -123,3 +132,7 @@ export type RemoveResourceMetadataRequest = z.infer<
 >;
 export type BatchPatchRequest = z.infer<typeof BatchPatchRequestSchema>;
 export type BatchRemoveRequest = z.infer<typeof BatchRemoveRequestSchema>;
+
+// Delete request types
+export type DeleteResourceRequest = z.infer<typeof DeleteResourceRequestSchema>;
+export type BatchDeleteRequest = z.infer<typeof BatchDeleteRequestSchema>;

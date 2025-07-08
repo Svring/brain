@@ -85,6 +85,31 @@ export const getCustomResource = createParallelAction(
 );
 
 /**
+ * Delete a custom resource by name in Kubernetes.
+ */
+export const deleteCustomResource = createParallelAction(
+  async (
+    kubeconfig: string,
+    group: string,
+    version: string,
+    namespace: string,
+    plural: string,
+    name: string
+  ) => {
+    const kc = createKubeConfig(kubeconfig);
+    const clients = createApiClients(kc);
+    const result = await clients.customApi.deleteNamespacedCustomObject({
+      group,
+      version,
+      namespace,
+      plural,
+      name,
+    });
+    return JSON.parse(JSON.stringify(result));
+  }
+);
+
+/**
  * Patch a custom resource in Kubernetes.
  */
 export const patchCustomResource = createParallelAction(
@@ -232,6 +257,26 @@ export const getDeployment = createParallelAction(
   }
 );
 
+/**
+ * Delete a deployment by name in a namespace.
+ * @param kubeconfig - The kubeconfig string.
+ * @param namespace - The namespace of the deployment.
+ * @param name - The name of the deployment.
+ * @returns The deletion result as returned by the Kubernetes client.
+ */
+export const deleteDeployment = createParallelAction(
+  async (kubeconfig: string, namespace: string, name: string) => {
+    const kc = createKubeConfig(kubeconfig);
+    const clients = createApiClients(kc);
+    const result = await clients.appsApi.deleteNamespacedDeployment({
+      namespace,
+      name,
+      propagationPolicy: "Foreground",
+    });
+    return JSON.parse(JSON.stringify(result));
+  }
+);
+
 export const patchDeploymentMetadata = createParallelAction(
   async (
     kubeconfig: string,
@@ -334,6 +379,25 @@ export const getService = createParallelAction(
 );
 
 /**
+ * Delete a service by name in a namespace.
+ * @param kubeconfig - The kubeconfig string.
+ * @param namespace - The namespace of the service.
+ * @param name - The name of the service.
+ * @returns The deletion result as returned by the Kubernetes client.
+ */
+export const deleteService = createParallelAction(
+  async (kubeconfig: string, namespace: string, name: string) => {
+    const kc = createKubeConfig(kubeconfig);
+    const clients = createApiClients(kc);
+    const result = await clients.coreApi.deleteNamespacedService({
+      namespace,
+      name,
+    });
+    return JSON.parse(JSON.stringify(result));
+  }
+);
+
+/**
  * Get an ingress by name in a namespace.
  * @param kubeconfig - The kubeconfig string.
  * @param namespace - The namespace of the ingress.
@@ -345,6 +409,25 @@ export const getIngress = createParallelAction(
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
     const result = await clients.networkingApi.readNamespacedIngress({
+      namespace,
+      name,
+    });
+    return JSON.parse(JSON.stringify(result));
+  }
+);
+
+/**
+ * Delete an ingress by name in a namespace.
+ * @param kubeconfig - The kubeconfig string.
+ * @param namespace - The namespace of the ingress.
+ * @param name - The name of the ingress.
+ * @returns The deletion result as returned by the Kubernetes client.
+ */
+export const deleteIngress = createParallelAction(
+  async (kubeconfig: string, namespace: string, name: string) => {
+    const kc = createKubeConfig(kubeconfig);
+    const clients = createApiClients(kc);
+    const result = await clients.networkingApi.deleteNamespacedIngress({
       namespace,
       name,
     });
@@ -460,25 +543,161 @@ export const getBuiltinResource = createParallelAction(
     resourceType: string,
     name: string
   ) => {
+    const kc = createKubeConfig(kubeconfig);
+    const clients = createApiClients(kc);
     switch (resourceType) {
-      case "deployment":
-        return await getDeployment(kubeconfig, namespace, name);
-      case "service":
-        return await getService(kubeconfig, namespace, name);
-      case "ingress":
-        return await getIngress(kubeconfig, namespace, name);
-      case "statefulset":
-        return await getStatefulSet(kubeconfig, namespace, name);
-      case "daemonset":
-        return await getDaemonSet(kubeconfig, namespace, name);
-      case "configmap":
-        return await getConfigMap(kubeconfig, namespace, name);
-      case "secret":
-        return await getSecret(kubeconfig, namespace, name);
-      case "pod":
-        return await getPod(kubeconfig, namespace, name);
-      case "pvc":
-        return await getPersistentVolumeClaim(kubeconfig, namespace, name);
+      case "deployment": {
+        const res = await clients.appsApi.readNamespacedDeployment({
+          namespace,
+          name,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "service": {
+        const res = await clients.coreApi.readNamespacedService({
+          namespace,
+          name,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "ingress": {
+        const res = await clients.networkingApi.readNamespacedIngress({
+          namespace,
+          name,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "statefulset": {
+        const res = await clients.appsApi.readNamespacedStatefulSet({
+          namespace,
+          name,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "daemonset": {
+        const res = await clients.appsApi.readNamespacedDaemonSet({
+          namespace,
+          name,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "configmap": {
+        const res = await clients.coreApi.readNamespacedConfigMap({
+          namespace,
+          name,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "secret": {
+        const res = await clients.coreApi.readNamespacedSecret({
+          namespace,
+          name,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "pod": {
+        const res = await clients.coreApi.readNamespacedPod({
+          namespace,
+          name,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "pvc": {
+        const res = await clients.coreApi.readNamespacedPersistentVolumeClaim({
+          namespace,
+          name,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      default:
+        throw new Error(`Unsupported builtin resource type: ${resourceType}`);
+    }
+  }
+);
+
+/**
+ * Generalized function to delete a builtin Kubernetes resource by name.
+ */
+export const deleteBuiltinResource = createParallelAction(
+  async (
+    kubeconfig: string,
+    namespace: string,
+    resourceType: string,
+    name: string
+  ) => {
+    const kc = createKubeConfig(kubeconfig);
+    const clients = createApiClients(kc);
+    switch (resourceType) {
+      case "deployment": {
+        const res = await clients.appsApi.deleteNamespacedDeployment({
+          namespace,
+          name,
+          propagationPolicy: "Foreground",
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "service": {
+        const res = await clients.coreApi.deleteNamespacedService({
+          namespace,
+          name,
+          propagationPolicy: "Foreground",
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "ingress": {
+        const res = await clients.networkingApi.deleteNamespacedIngress({
+          namespace,
+          name,
+          propagationPolicy: "Foreground",
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "statefulset": {
+        const res = await clients.appsApi.deleteNamespacedStatefulSet({
+          namespace,
+          name,
+          propagationPolicy: "Foreground",
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "daemonset": {
+        const res = await clients.appsApi.deleteNamespacedDaemonSet({
+          namespace,
+          name,
+          propagationPolicy: "Foreground",
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "configmap": {
+        const res = await clients.coreApi.deleteNamespacedConfigMap({
+          namespace,
+          name,
+          propagationPolicy: "Foreground",
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "secret": {
+        const res = await clients.coreApi.deleteNamespacedSecret({
+          namespace,
+          name,
+          propagationPolicy: "Foreground",
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "pod": {
+        const res = await clients.coreApi.deleteNamespacedPod({
+          namespace,
+          name,
+          propagationPolicy: "Foreground",
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "pvc": {
+        const res = await clients.coreApi.deleteNamespacedPersistentVolumeClaim(
+          { namespace, name, propagationPolicy: "Foreground" }
+        );
+        return JSON.parse(JSON.stringify(res));
+      }
       default:
         throw new Error(`Unsupported builtin resource type: ${resourceType}`);
     }
@@ -595,6 +814,21 @@ export const getStatefulSet = createParallelAction(
 );
 
 /**
+ * Delete a statefulset by name in a namespace.
+ */
+export const deleteStatefulSet = createParallelAction(
+  async (kubeconfig: string, namespace: string, name: string) => {
+    const kc = createKubeConfig(kubeconfig);
+    const clients = createApiClients(kc);
+    const result = await clients.appsApi.deleteNamespacedStatefulSet({
+      namespace,
+      name,
+    });
+    return JSON.parse(JSON.stringify(result));
+  }
+);
+
+/**
  * Get a daemonset by name in a namespace.
  */
 export const getDaemonSet = createParallelAction(
@@ -602,6 +836,21 @@ export const getDaemonSet = createParallelAction(
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
     const result = await clients.appsApi.readNamespacedDaemonSet({
+      namespace,
+      name,
+    });
+    return JSON.parse(JSON.stringify(result));
+  }
+);
+
+/**
+ * Delete a daemonset by name in a namespace.
+ */
+export const deleteDaemonSet = createParallelAction(
+  async (kubeconfig: string, namespace: string, name: string) => {
+    const kc = createKubeConfig(kubeconfig);
+    const clients = createApiClients(kc);
+    const result = await clients.appsApi.deleteNamespacedDaemonSet({
       namespace,
       name,
     });
@@ -625,6 +874,21 @@ export const getConfigMap = createParallelAction(
 );
 
 /**
+ * Delete a configmap by name in a namespace.
+ */
+export const deleteConfigMap = createParallelAction(
+  async (kubeconfig: string, namespace: string, name: string) => {
+    const kc = createKubeConfig(kubeconfig);
+    const clients = createApiClients(kc);
+    const result = await clients.coreApi.deleteNamespacedConfigMap({
+      namespace,
+      name,
+    });
+    return JSON.parse(JSON.stringify(result));
+  }
+);
+
+/**
  * Get a secret by name in a namespace.
  */
 export const getSecret = createParallelAction(
@@ -632,6 +896,21 @@ export const getSecret = createParallelAction(
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
     const result = await clients.coreApi.readNamespacedSecret({
+      namespace,
+      name,
+    });
+    return JSON.parse(JSON.stringify(result));
+  }
+);
+
+/**
+ * Delete a secret by name in a namespace.
+ */
+export const deleteSecret = createParallelAction(
+  async (kubeconfig: string, namespace: string, name: string) => {
+    const kc = createKubeConfig(kubeconfig);
+    const clients = createApiClients(kc);
+    const result = await clients.coreApi.deleteNamespacedSecret({
       namespace,
       name,
     });
@@ -655,6 +934,21 @@ export const getPod = createParallelAction(
 );
 
 /**
+ * Delete a pod by name in a namespace.
+ */
+export const deletePod = createParallelAction(
+  async (kubeconfig: string, namespace: string, name: string) => {
+    const kc = createKubeConfig(kubeconfig);
+    const clients = createApiClients(kc);
+    const result = await clients.coreApi.deleteNamespacedPod({
+      namespace,
+      name,
+    });
+    return JSON.parse(JSON.stringify(result));
+  }
+);
+
+/**
  * Get a persistent volume claim by name in a namespace.
  */
 export const getPersistentVolumeClaim = createParallelAction(
@@ -662,6 +956,21 @@ export const getPersistentVolumeClaim = createParallelAction(
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
     const result = await clients.coreApi.readNamespacedPersistentVolumeClaim({
+      namespace,
+      name,
+    });
+    return JSON.parse(JSON.stringify(result));
+  }
+);
+
+/**
+ * Delete a persistent volume claim by name in a namespace.
+ */
+export const deletePersistentVolumeClaim = createParallelAction(
+  async (kubeconfig: string, namespace: string, name: string) => {
+    const kc = createKubeConfig(kubeconfig);
+    const clients = createApiClients(kc);
+    const result = await clients.coreApi.deleteNamespacedPersistentVolumeClaim({
       namespace,
       name,
     });

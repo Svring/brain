@@ -62,6 +62,8 @@ function ProjectFlow({ projectName }: { projectName: string }) {
   const { data: resources } = useProjectResources(projectName);
   const [nodes, onNodesChange, edges, onEdgesChange] = useFlow(resources);
 
+  console.log(resources);
+
   return (
     <ReactFlow
       connectionLineType={ConnectionLineType.SmoothStep}
