@@ -9,6 +9,7 @@ import AppSidebar from "@/components/app/base/sidebar/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/auth-context";
+import { ProjectProvider } from "@/contexts/project-context";
 import { getUser } from "@/payload/operations/users-operation";
 
 import "@/styles/globals.css";
@@ -62,10 +63,12 @@ export default async function RootLayout({
           <AuthProvider initialUser={user}>
             {/* <AIProvider> */}
             <QueryProvider>
-              <SidebarProvider defaultOpen={false}>
-                <AppSidebar />
-                {children}
-              </SidebarProvider>
+              <ProjectProvider initialProjectName={null}>
+                <SidebarProvider defaultOpen={false}>
+                  <AppSidebar />
+                  {children}
+                </SidebarProvider>
+              </ProjectProvider>
             </QueryProvider>
             {/* </AIProvider> */}
           </AuthProvider>

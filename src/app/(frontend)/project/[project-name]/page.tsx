@@ -8,17 +8,28 @@ import {
 } from "@xyflow/react";
 import { ArrowLeft, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { use } from "react";
+import { use, useState } from "react";
+import { AddResourceTabs } from "@/components/app/project/add-resource/add-resource-tabs";
 import { MenuBar } from "@/components/app/project/menu-bar";
 import edgeTypes from "@/components/flow/edge/edge-types";
 import nodeTypes from "@/components/flow/node/node-types";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { useProjectResources } from "@/hooks/app/project/use-project-resources";
 import { useFlow } from "@/hooks/flow/use-flow";
 
 import "@xyflow/react/dist/style.css";
+import { ProjectContext } from "@/contexts/project-context";
 
 function ProjectFloatingUI() {
   const router = useRouter();
+  const [open, setOpen] = useState(false);
+
   return (
     <>
       {/* MenuBar in the upper left corner */}
@@ -43,12 +54,25 @@ function ProjectFloatingUI() {
             {
               icon: Plus,
               label: "Add New",
-              onClick: undefined,
+              onClick: () => setOpen(true),
               isToggle: false,
             },
           ]}
         />
       </div>
+      <Sheet onOpenChange={setOpen} open={open}>
+        <SheetContent className="!w-[40vw] !max-w-none fade-in-0 slide-in-from-right-2 !duration-500 animate-in">
+          <SheetHeader>
+            <SheetTitle>Add Resource</SheetTitle>
+            <SheetDescription>
+              Add a new resource to your project or import an existing one.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="mt-6">
+            <AddResourceTabs />
+          </div>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }
@@ -86,6 +110,8 @@ export default function Page({
   params: Promise<{ "project-name": string }>;
 }) {
   const { "project-name": projectName } = use(params);
+  const { setProjectName } = use(ProjectContext);
+  setProjectName(projectName);
   return (
     <div className="relative h-screen w-full">
       <ProjectFloatingUI />

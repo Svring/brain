@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { runParallelAction } from "next-server-actions-parallel";
+import { toast } from "sonner";
 import {
   deleteCustomResource,
   listBuiltinResources,
@@ -56,12 +57,10 @@ export function useAddProjectLabelToResourcesMutation(context: K8sApiContext) {
       });
     },
     onSuccess: () => {
+      toast.success("Project name label added to resources");
       // Invalidate project-related queries
       queryClient.invalidateQueries({
-        queryKey: ["project", "list", context.namespace],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["project", "get", context.namespace],
+        queryKey: ["project"],
       });
     },
   });

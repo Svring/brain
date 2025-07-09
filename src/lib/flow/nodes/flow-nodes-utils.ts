@@ -3,6 +3,7 @@ import type { AnyKubernetesResource } from "@/lib/k8s/schemas";
 
 import { convertResourceToNode as convertClusterResourceToNode } from "./cluster/flow-cluster-utils";
 import { convertResourceToNode as convertDeploymentResourceToNode } from "./deployment/flow-deployment-utils";
+import { convertResourceToNode as convertDevboxResourceToNode } from "./devbox/flow-devbox-utils";
 import { convertResourceToNode as convertIngressResourceToNode } from "./ingress/flow-ingress-utils";
 import { convertResourceToNode as convertObjectStorageBucketResourceToNode } from "./objectstoragebucket/flow-objectstoragebucket-utils";
 import { convertResourceToNode as convertStatefulSetResourceToNode } from "./statefulset/flow-statefulset-utils";
@@ -31,6 +32,10 @@ const CONVERTERS: Record<string, { nodeType: string; convert: ConverterFn }> = {
   objectstoragebucket: {
     nodeType: "objectstoragebucket",
     convert: convertObjectStorageBucketResourceToNode as unknown as ConverterFn,
+  },
+  devbox: {
+    nodeType: "devbox",
+    convert: convertDevboxResourceToNode as unknown as ConverterFn,
   },
 };
 

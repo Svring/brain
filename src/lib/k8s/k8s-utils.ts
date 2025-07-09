@@ -5,7 +5,12 @@ import { use } from "react";
 import { AuthContext } from "@/contexts/auth-context";
 import type { ResourceConfig } from "./k8s-constant";
 import { RESOURCES } from "./k8s-constant";
-import type { AnyKubernetesResource, ResourceTarget } from "./schemas";
+import type {
+  AnyKubernetesResource,
+  K8sApiContext,
+  ResourceTarget,
+} from "./schemas";
+import { K8sApiContextSchema } from "./schemas";
 
 function getUserKubeconfig(): string | undefined {
   const { user } = use(AuthContext);
@@ -269,3 +274,13 @@ export const processIngressConnections = (
     ),
   };
 };
+
+/**
+ * Helper function to create K8s API context from user data
+ */
+export function createK8sContext(): K8sApiContext {
+  return K8sApiContextSchema.parse({
+    namespace: getCurrentNamespace(),
+    kubeconfig: getDecodedKubeconfig(),
+  });
+}

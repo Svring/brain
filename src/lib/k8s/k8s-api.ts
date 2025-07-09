@@ -180,6 +180,19 @@ function escapeSlash(key: string): string {
   return key.replace(/\//g, "~1");
 }
 
+// Helper function to add missing apiVersion and kind to builtin resources
+function addMissingFields(items: unknown[], apiVersion: string, kind: string) {
+  return {
+    apiVersion: `${apiVersion}List`,
+    kind: `${kind}List`,
+    items: items.map((item) => ({
+      apiVersion,
+      kind,
+      ...(item as Record<string, unknown>),
+    })),
+  };
+}
+
 export const patchCustomResourceMetadata = createParallelAction(
   async (
     kubeconfig: string,
@@ -596,63 +609,80 @@ export const listBuiltinResources = createParallelAction(
           namespace,
           labelSelector,
         });
-        return JSON.parse(JSON.stringify(res));
+        const parsed = JSON.parse(JSON.stringify(res));
+        return addMissingFields(parsed.items || [], "apps/v1", "Deployment");
       }
       case "service": {
         const res = await clients.coreApi.listNamespacedService({
           namespace,
           labelSelector,
         });
-        return JSON.parse(JSON.stringify(res));
+        const parsed = JSON.parse(JSON.stringify(res));
+        return addMissingFields(parsed.items || [], "v1", "Service");
       }
       case "ingress": {
         const res = await clients.networkingApi.listNamespacedIngress({
           namespace,
           labelSelector,
         });
-        return JSON.parse(JSON.stringify(res));
+        const parsed = JSON.parse(JSON.stringify(res));
+        return addMissingFields(
+          parsed.items || [],
+          "networking.k8s.io/v1",
+          "Ingress"
+        );
       }
       case "statefulset": {
         const res = await clients.appsApi.listNamespacedStatefulSet({
           namespace,
           labelSelector,
         });
-        return JSON.parse(JSON.stringify(res));
+        const parsed = JSON.parse(JSON.stringify(res));
+        return addMissingFields(parsed.items || [], "apps/v1", "StatefulSet");
       }
       case "daemonset": {
         const res = await clients.appsApi.listNamespacedDaemonSet({
           namespace,
           labelSelector,
         });
-        return JSON.parse(JSON.stringify(res));
+        const parsed = JSON.parse(JSON.stringify(res));
+        return addMissingFields(parsed.items || [], "apps/v1", "DaemonSet");
       }
       case "configmap": {
         const res = await clients.coreApi.listNamespacedConfigMap({
           namespace,
           labelSelector,
         });
-        return JSON.parse(JSON.stringify(res));
+        const parsed = JSON.parse(JSON.stringify(res));
+        return addMissingFields(parsed.items || [], "v1", "ConfigMap");
       }
       case "secret": {
         const res = await clients.coreApi.listNamespacedSecret({
           namespace,
           labelSelector,
         });
-        return JSON.parse(JSON.stringify(res));
+        const parsed = JSON.parse(JSON.stringify(res));
+        return addMissingFields(parsed.items || [], "v1", "Secret");
       }
       case "pod": {
         const res = await clients.coreApi.listNamespacedPod({
           namespace,
           labelSelector,
         });
-        return JSON.parse(JSON.stringify(res));
+        const parsed = JSON.parse(JSON.stringify(res));
+        return addMissingFields(parsed.items || [], "v1", "Pod");
       }
       case "pvc": {
         const res = await clients.coreApi.listNamespacedPersistentVolumeClaim({
           namespace,
           labelSelector,
         });
-        return JSON.parse(JSON.stringify(res));
+        const parsed = JSON.parse(JSON.stringify(res));
+        return addMissingFields(
+          parsed.items || [],
+          "v1",
+          "PersistentVolumeClaim"
+        );
       }
       case "horizontalpodautoscaler": {
         const res =
@@ -660,42 +690,60 @@ export const listBuiltinResources = createParallelAction(
             namespace,
             labelSelector,
           });
-        return JSON.parse(JSON.stringify(res));
+        const parsed = JSON.parse(JSON.stringify(res));
+        return addMissingFields(
+          parsed.items || [],
+          "autoscaling/v2",
+          "HorizontalPodAutoscaler"
+        );
       }
       case "role": {
         const res = await clients.rbacApi.listNamespacedRole({
           namespace,
           labelSelector,
         });
-        return JSON.parse(JSON.stringify(res));
+        const parsed = JSON.parse(JSON.stringify(res));
+        return addMissingFields(
+          parsed.items || [],
+          "rbac.authorization.k8s.io/v1",
+          "Role"
+        );
       }
       case "rolebinding": {
         const res = await clients.rbacApi.listNamespacedRoleBinding({
           namespace,
           labelSelector,
         });
-        return JSON.parse(JSON.stringify(res));
+        const parsed = JSON.parse(JSON.stringify(res));
+        return addMissingFields(
+          parsed.items || [],
+          "rbac.authorization.k8s.io/v1",
+          "RoleBinding"
+        );
       }
       case "serviceaccount": {
         const res = await clients.coreApi.listNamespacedServiceAccount({
           namespace,
           labelSelector,
         });
-        return JSON.parse(JSON.stringify(res));
+        const parsed = JSON.parse(JSON.stringify(res));
+        return addMissingFields(parsed.items || [], "v1", "ServiceAccount");
       }
       case "job": {
         const res = await clients.batchApi.listNamespacedJob({
           namespace,
           labelSelector,
         });
-        return JSON.parse(JSON.stringify(res));
+        const parsed = JSON.parse(JSON.stringify(res));
+        return addMissingFields(parsed.items || [], "batch/v1", "Job");
       }
       case "cronjob": {
         const res = await clients.batchApi.listNamespacedCronJob({
           namespace,
           labelSelector,
         });
-        return JSON.parse(JSON.stringify(res));
+        const parsed = JSON.parse(JSON.stringify(res));
+        return addMissingFields(parsed.items || [], "batch/v1", "CronJob");
       }
       default:
         throw new Error(`Unsupported builtin resource type: ${resourceType}`);

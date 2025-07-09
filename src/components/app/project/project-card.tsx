@@ -1,16 +1,16 @@
 "use client";
 
-import { motion } from "motion/react";
 import { MoreHorizontal, Trash2 } from "lucide-react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import type React from "react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useDeleteProjectResourcesMutation } from "@/lib/app/project/project-mutation";
 import { getCurrentNamespace, getDecodedKubeconfig } from "@/lib/k8s/k8s-utils";
@@ -71,13 +71,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ projectName }) => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                variant="ghost"
-                size="sm"
                 className="h-8 w-8 p-0 hover:bg-muted"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                 }}
+                size="sm"
+                variant="ghost"
               >
                 <MoreHorizontal className="h-4 w-4" />
                 <span className="sr-only">Open menu</span>
@@ -85,11 +85,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ projectName }) => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem
-                onClick={handleDelete}
                 className="text-destructive focus:text-destructive"
                 disabled={deleteProjectMutation.isPending}
+                onClick={handleDelete}
               >
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Trash2 className="mr-2 h-4 w-4" />
                 {deleteProjectMutation.isPending ? "Deleting..." : "Delete"}
               </DropdownMenuItem>
             </DropdownMenuContent>
