@@ -2,6 +2,7 @@
 
 import { Plus } from "lucide-react";
 import dynamic from "next/dynamic";
+import { useState } from "react";
 import ProjectCard from "@/components/app/project/project-card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -16,6 +17,7 @@ const CopilotSidebar = dynamic(() =>
 );
 
 export default function Page() {
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const {
     data: projects,
     isLoading: projectsLoading,
@@ -23,6 +25,10 @@ export default function Page() {
   } = useProjects();
 
   useAI();
+
+  const handleCloseDialog = () => {
+    setIsCreateDialogOpen(false);
+  };
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center p-8">
@@ -34,14 +40,17 @@ export default function Page() {
               Projects
             </h1>
           </div>
-          <Dialog>
-            <DialogTrigger>
+          <Dialog
+            onOpenChange={setIsCreateDialogOpen}
+            open={isCreateDialogOpen}
+          >
+            <DialogTrigger asChild>
               <Button variant="ghost">
                 <Plus size={8} />
               </Button>
             </DialogTrigger>
             <DialogContent className="h-[90vh] max-h-none w-[90vw] max-w-none">
-              <CreateProject />
+              <CreateProject onClose={handleCloseDialog} />
             </DialogContent>
           </Dialog>
         </div>

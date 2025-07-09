@@ -11,12 +11,14 @@ export type TemplateCardProps = {
   template: TemplateResource;
   setSelectedCategory: (category: string) => void;
   onViewDetails: (template: TemplateResource) => void;
+  onTemplateDeployed: () => void;
 };
 
 export function TemplateCard({
   template,
   setSelectedCategory,
   onViewDetails,
+  onTemplateDeployed,
 }: TemplateCardProps) {
   const { user } = useContext(AuthContext);
   const { toast } = useToast();
@@ -47,6 +49,7 @@ export function TemplateCard({
             title: "Template deployed successfully",
             description: `${template.spec.title} has been deployed to your project.`,
           });
+          onTemplateDeployed();
         },
         onError: (error) => {
           toast({

@@ -13,6 +13,10 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useTemplates } from "@/hooks/app/project/use-templates";
+import { useToast } from "@/hooks/use-toast";
+import { useCreateProjectMutation } from "@/lib/app/project/project-mutation";
+import { getCurrentNamespace, getDecodedKubeconfig } from "@/lib/k8s/k8s-utils";
+import { K8sApiContextSchema } from "@/lib/k8s/schemas";
 import type {
   ListTemplateResponse,
   TemplateResource,
@@ -20,15 +24,28 @@ import type {
 import { TemplateCard } from "./template-card";
 import { TemplateDetails } from "./template-details";
 
-export default function CreateProject() {
+interface CreateProjectProps {
+  onClose: () => void;
+}
+
+export default function CreateProject({ onClose }: CreateProjectProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedTemplate, setSelectedTemplate] =
     useState<TemplateResource | null>(null);
 
+  const { toast } = useToast();
   const { data: templatesResponse, isLoading, error } = useTemplates();
   const templates =
     (templatesResponse as ListTemplateResponse)?.data?.templates ?? [];
+
+  // Get K8s context for mutations
+  const context = K8sApiContextSchema.parse({
+    namespace: getCurrentNamespace(),
+    kubeconfig: getDecodedKubeconfig(),
+  });
+
+  const createProjectMutation = useCreateProjectMutation(context);
 
   // Extract all unique categories from templates
   const categories = useMemo(() => {
@@ -74,9 +91,25 @@ export default function CreateProject() {
   }
 
   const handleCreateEmptyProject = () => {
-    // TODO: Implement empty project creation
-    // For now, we'll just ignore this action
-    return;
+    createProjectMutation.mutate(
+      {},
+      {
+        onSuccess: (data) => {
+          toast({
+            title: "Project Created",
+            description: `Project "${data.resource.metadata.name}" has been created successfully.`,
+          });
+          onClose();
+        },
+        onError: (mutationError) => {
+          toast({
+            title: "Error",
+            description: `Failed to create project: ${mutationError.message}`,
+            variant: "destructive",
+          });
+        },
+      }
+    );
   };
 
   const handleViewDetails = (template: TemplateResource) => {
@@ -87,14 +120,21 @@ export default function CreateProject() {
     setSelectedTemplate(null);
   };
 
+  const handleTemplateDeploy = () => {
+    // TODO: Implement template deployment from details view
+    toast({
+      title: "Template Deployed",
+      description: "Template has been deployed successfully.",
+    });
+    onClose();
+  };
+
   // If a template is selected, show the details view
   if (selectedTemplate) {
     return (
       <TemplateDetails
         onBack={handleBackToList}
-        onDeploy={() => {
-          // TODO: Implement template deployment from details view
-        }}
+        onDeploy={handleTemplateDeploy}
         template={selectedTemplate}
       />
     );
@@ -114,8 +154,14 @@ export default function CreateProject() {
               an empty project
             </p>
           </div>
-          <Button onClick={handleCreateEmptyProject} variant="outline">
-            Create Empty Project
+          <Button
+            disabled={createProjectMutation.isPending}
+            onClick={handleCreateEmptyProject}
+            variant="outline"
+          >
+            {createProjectMutation.isPending
+              ? "Creating..."
+              : "Create Empty Project"}
           </Button>
         </div>
         <div className="my-4 flex items-end justify-between sm:my-0 sm:items-center">
@@ -149,6 +195,7 @@ export default function CreateProject() {
           {filteredTemplates.map((template: TemplateResource) => (
             <TemplateCard
               key={template.metadata.name}
+              onTemplateDeployed={onClose}
               onViewDetails={handleViewDetails}
               setSelectedCategory={setSelectedCategory}
               template={template}

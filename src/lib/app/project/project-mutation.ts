@@ -3,31 +3,34 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { runParallelAction } from "next-server-actions-parallel";
 import {
-  useBatchPatchResourcesMetadataMutation,
-  useBatchRemoveResourcesMetadataMutation,
-  useDeleteInstanceRelatedMutation,
-  useDeleteClusterRelatedMutation,
-  useDeleteResourceMutation,
-} from "@/lib/k8s/k8s-mutation";
-import {
-  listCustomResources,
-  listBuiltinResources,
   deleteCustomResource,
+  listBuiltinResources,
+  listCustomResources,
 } from "@/lib/k8s/k8s-api";
 import { RESOURCES } from "@/lib/k8s/k8s-constant";
+import {
+  useBatchPatchResourcesMetadataMutation,
+  useBatchRemoveResourcesMetadataMutation,
+  useCreateInstanceMutation,
+  useDeleteClusterRelatedMutation,
+  useDeleteInstanceRelatedMutation,
+  useDeleteResourceMutation,
+} from "@/lib/k8s/k8s-mutation";
 import { filterEmptyResources } from "@/lib/k8s/k8s-utils";
 import type {
+  AnyKubernetesResource,
   K8sApiContext,
   ResourceTarget,
-  AnyKubernetesResource,
 } from "@/lib/k8s/schemas";
 import { PROJECT_NAME_LABEL_KEY } from "./project-constant";
 import {
+  generateNewProjectName,
+  generateProjectYaml,
   getClusterNamesFromProjectResources,
-  getInstanceNamesFromProjectResources,
   getDeploymentNamesFromProjectResources,
-  getStatefulSetNamesFromProjectResources,
+  getInstanceNamesFromProjectResources,
   getOtherResourceNamesFromProjectResources,
+  getStatefulSetNamesFromProjectResources,
 } from "./project-utils";
 
 /**
@@ -197,11 +200,7 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
 
   return useMutation({
     mutationFn: async ({ projectName }: { projectName: string }) => {
-      console.log(`🗑️ Starting deletion of project: ${projectName}`);
-      console.log(`📍 Namespace: ${context.namespace}`);
-
       // Step 1: Fetch project resources to identify all resources
-      console.log(`📋 Fetching project resources...`);
       const labelSelector = `${PROJECT_NAME_LABEL_KEY}=${projectName}`;
 
       let projectResources: Record<string, { items: AnyKubernetesResource[] }>;
@@ -242,7 +241,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
           rawResources as Record<string, { items: AnyKubernetesResource[] }>
         );
       } catch (error) {
-        console.error(`❌ Failed to fetch project resources:`, error);
         throw new Error(`Failed to fetch project resources: ${error}`);
       }
 
@@ -257,27 +255,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
         getStatefulSetNamesFromProjectResources(projectResources);
       const otherResources =
         getOtherResourceNamesFromProjectResources(projectResources);
-
-      console.log(`🔍 Found resources in project:`);
-      console.log(
-        `  • Clusters: ${clusterNames.length} (${clusterNames.join(", ")})`
-      );
-      console.log(
-        `  • Instances: ${instanceNames.length} (${instanceNames.join(", ")})`
-      );
-      console.log(
-        `  • Deployments: ${deploymentNames.length} (${deploymentNames.join(
-          ", "
-        )})`
-      );
-      console.log(
-        `  • StatefulSets: ${statefulSetNames.length} (${statefulSetNames.join(
-          ", "
-        )})`
-      );
-      console.log(
-        `  • Other resources: ${Object.keys(otherResources).length} types`
-      );
 
       // Step 3: Execute deletions in parallel
       const deletionPromises: Promise<any>[] = [];
@@ -369,7 +346,7 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
 
               if (
                 supportedBuiltinTypes.includes(
-                  resourceConfig.resourceType as any
+                  resourceConfig.resourceType as (typeof supportedBuiltinTypes)[number]
                 )
               ) {
                 deletionPromises.push(
@@ -380,10 +357,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
                       name: resourceName,
                     },
                   })
-                );
-              } else {
-                console.log(
-                  `⚠️ Skipping unsupported resource type: ${resourceConfig.resourceType} (${resourceName})`
                 );
               }
             }
@@ -419,9 +392,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
               : "Unknown error"
           )
           .join(", ");
-        console.error(
-          `❌ Failed to delete project resources: ${errorMessages}`
-        );
         throw new Error(`Failed to delete project resources: ${errorMessages}`);
       }
 
@@ -435,9 +405,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
         if (result.status === "fulfilled") {
           const instanceData = result.value;
           const instanceName = instanceNames[index];
-          console.log(
-            `📊 Instance-related resources deletion results for "${instanceName}":`
-          );
 
           // Count dependent resources (Phase 1)
           const dependentResourceTypes = [
@@ -473,21 +440,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
                   const key = `${resourceType} (${instanceName})`;
                   deletionSummary[key] = count;
                   totalDeleted += count;
-                  console.log(`  ✅ ${resourceType}: ${count} deleted`);
-                }
-              } else if (result.status === "rejected") {
-                const error = result.reason;
-                const is404 =
-                  error?.code === 404 ||
-                  error?.response?.status === 404 ||
-                  error?.message?.includes("404") ||
-                  error?.message?.includes("not found") ||
-                  (error?.body &&
-                    typeof error.body === "string" &&
-                    error.body.includes('"code":404'));
-
-                if (!is404) {
-                  console.log(`  ⚠️ ${resourceType}: failed to delete`);
                 }
               }
             }
@@ -504,21 +456,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
                   const key = `${resourceType} (${instanceName})`;
                   deletionSummary[key] = 1;
                   totalDeleted += 1;
-                  console.log(`  ✅ ${resourceType}: 1 deleted`);
-                }
-              } else if (result.status === "rejected") {
-                const error = result.reason;
-                const is404 =
-                  error?.code === 404 ||
-                  error?.response?.status === 404 ||
-                  error?.message?.includes("404") ||
-                  error?.message?.includes("not found") ||
-                  (error?.body &&
-                    typeof error.body === "string" &&
-                    error.body.includes('"code":404'));
-
-                if (!is404) {
-                  console.log(`  ⚠️ ${resourceType}: failed to delete`);
                 }
               }
             }
@@ -535,9 +472,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
         if (result && result.status === "fulfilled") {
           const clusterData = result.value;
           const clusterName = clusterNames[index];
-          console.log(
-            `📊 Cluster-related resources deletion results for "${clusterName}":`
-          );
 
           // Count backups
           if (
@@ -548,7 +482,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
             const key = `kubeblocks backups (${clusterName})`;
             deletionSummary[key] = count;
             totalDeleted += count;
-            console.log(`  ✅ kubeblocks backups: ${count} deleted`);
           }
 
           // Count export service
@@ -563,7 +496,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
                 const key = `export service (${clusterName})`;
                 deletionSummary[key] = 1;
                 totalDeleted += 1;
-                console.log(`  ✅ export service: 1 deleted`);
               }
             }
           }
@@ -580,21 +512,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
                     const key = `${resourceType} (${clusterName})`;
                     deletionSummary[key] = 1;
                     totalDeleted += 1;
-                    console.log(`  ✅ ${resourceType}: 1 deleted`);
-                  }
-                } else if (result.status === "rejected") {
-                  const error = result.reason;
-                  const is404 =
-                    error?.code === 404 ||
-                    error?.response?.status === 404 ||
-                    error?.message?.includes("404") ||
-                    error?.message?.includes("not found") ||
-                    (error?.body &&
-                      typeof error.body === "string" &&
-                      error.body.includes('"code":404'));
-
-                  if (!is404) {
-                    console.log(`  ⚠️ ${resourceType}: failed to delete`);
                   }
                 }
               }
@@ -608,7 +525,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
               const key = `kubeblocks cluster (${clusterName})`;
               deletionSummary[key] = 1;
               totalDeleted += 1;
-              console.log(`  ✅ kubeblocks cluster: 1 deleted`);
             }
           }
         }
@@ -617,16 +533,9 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
       // Count direct resource deletions
       let resultIndex = instanceNames.length + clusterNames.length;
 
-      console.log(
-        `📊 Direct resource deletion counting starts at index ${resultIndex} of ${results.length} total results`
-      );
-
       // Count deployments
       for (const deploymentName of deploymentNames) {
         if (resultIndex >= results.length) {
-          console.log(
-            `⚠️ Result index ${resultIndex} is out of bounds for deployment ${deploymentName}`
-          );
           break;
         }
         const result = results[resultIndex++];
@@ -634,7 +543,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
           const key = `deployment (${deploymentName})`;
           deletionSummary[key] = 1;
           totalDeleted += 1;
-          console.log(`  ✅ deployment ${deploymentName}: 1 deleted`);
         } else if (result && result.status === "rejected") {
           const error = result.reason;
           const is404 =
@@ -647,15 +555,9 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
               error.body.includes('"code":404'));
 
           if (is404) {
-            console.log(
-              `  ℹ️ deployment ${deploymentName}: not found (already deleted or never existed)`
-            );
+            //
           } else {
-            console.log(
-              `  ⚠️ deployment ${deploymentName}: failed to delete - ${
-                error?.message || "Unknown error"
-              }`
-            );
+            //
           }
         }
       }
@@ -663,9 +565,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
       // Count statefulsets
       for (const statefulSetName of statefulSetNames) {
         if (resultIndex >= results.length) {
-          console.log(
-            `⚠️ Result index ${resultIndex} is out of bounds for statefulset ${statefulSetName}`
-          );
           break;
         }
         const result = results[resultIndex++];
@@ -673,7 +572,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
           const key = `statefulset (${statefulSetName})`;
           deletionSummary[key] = 1;
           totalDeleted += 1;
-          console.log(`  ✅ statefulset ${statefulSetName}: 1 deleted`);
         } else if (result && result.status === "rejected") {
           const error = result.reason;
           const is404 =
@@ -686,15 +584,9 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
               error.body.includes('"code":404'));
 
           if (is404) {
-            console.log(
-              `  ℹ️ statefulset ${statefulSetName}: not found (already deleted or never existed)`
-            );
+            //
           } else {
-            console.log(
-              `  ⚠️ statefulset ${statefulSetName}: failed to delete - ${
-                error?.message || "Unknown error"
-              }`
-            );
+            //
           }
         }
       }
@@ -705,9 +597,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
       )) {
         for (const resourceName of resourceNames) {
           if (resultIndex >= results.length) {
-            console.log(
-              `⚠️ Result index ${resultIndex} is out of bounds for ${resourceType} ${resourceName}`
-            );
             break;
           }
           const result = results[resultIndex++];
@@ -715,7 +604,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
             const key = `${resourceType} (${resourceName})`;
             deletionSummary[key] = 1;
             totalDeleted += 1;
-            console.log(`  ✅ ${resourceType} ${resourceName}: 1 deleted`);
           } else if (result && result.status === "rejected") {
             const error = result.reason;
             const is404 =
@@ -728,22 +616,15 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
                 error.body.includes('"code":404'));
 
             if (is404) {
-              console.log(
-                `  ℹ️ ${resourceType} ${resourceName}: not found (already deleted or never existed)`
-              );
+              //
             } else {
-              console.log(
-                `  ⚠️ ${resourceType} ${resourceName}: failed to delete - ${
-                  error?.message || "Unknown error"
-                }`
-              );
+              //
             }
           }
         }
       }
 
       // Step 4: Delete the main instance resource with project name after all related resources are deleted
-      console.log(`📋 Deleting main instance resource: ${projectName}`);
       try {
         const instanceConfig = RESOURCES.instance;
         const instanceDeletionResult = await runParallelAction(
@@ -763,7 +644,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
         ) {
           deletionSummary["main instance resource"] = 1;
           totalDeleted += 1;
-          console.log(`  ✅ main instance resource: 1 deleted`);
         }
       } catch (error: any) {
         // Only log non-404 errors since the instance might not exist
@@ -776,41 +656,28 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
             typeof error.body === "string" &&
             error.body.includes('"code":404'));
 
-        if (!is404) {
-          console.log(
-            `  ⚠️ main instance resource: failed to delete - ${error.message}`
-          );
+        if (is404) {
+          //
         } else {
-          console.log(
-            `  ℹ️ main instance resource: not found (may have been already deleted)`
-          );
+          //
         }
       }
 
       // Final summary
-      console.log(`\n📋 Deletion Summary for project "${projectName}":`);
-      console.log(`🔢 Total resources deleted: ${totalDeleted}`);
-      console.log(`🗄️ Instances processed: ${instanceNames.length}`);
-      console.log(`🗄️ Clusters processed: ${clusterNames.length}`);
-      console.log(`🗄️ Deployments processed: ${deploymentNames.length}`);
-      console.log(`🗄️ StatefulSets processed: ${statefulSetNames.length}`);
-      console.log(
-        `🗄️ Other resource types processed: ${
-          Object.keys(otherResources).length
-        }`
-      );
-
-      if (Object.keys(deletionSummary).length > 0) {
-        console.log("📝 Breakdown by resource type:");
-        Object.entries(deletionSummary).forEach(([type, count]) => {
-          console.log(`  • ${type}: ${count}`);
-        });
-      }
-
       if (totalDeleted === 0) {
-        console.log(
-          "ℹ️ No resources were found to delete (project may have been empty or already deleted)"
-        );
+        return {
+          success: true,
+          projectName,
+          instanceNames,
+          clusterNames,
+          deploymentNames,
+          statefulSetNames,
+          otherResources,
+          mainInstanceResourceDeleted:
+            !!deletionSummary["main instance resource"],
+          totalDeleted,
+          deletionSummary,
+        };
       }
 
       return {
@@ -828,11 +695,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
       };
     },
     onSuccess: (data) => {
-      // Log final success message
-      console.log(
-        `✅ Successfully deleted project "${data.projectName}" with ${data.totalDeleted} resources`
-      );
-
       // Invalidate project-related queries
       queryClient.invalidateQueries({
         queryKey: ["project", "list", context.namespace],
@@ -853,10 +715,33 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
       });
     },
     onError: (error, variables) => {
-      console.error(
-        `❌ Failed to delete project "${variables.projectName}":`,
-        error
+      //
+    },
+  });
+}
+
+/**
+ * Hook to create a new project instance
+ */
+export function useCreateProjectMutation(context: K8sApiContext) {
+  const createInstanceMutation = useCreateInstanceMutation(context);
+
+  return useMutation({
+    mutationFn: async ({ projectName }: { projectName?: string }) => {
+      const finalProjectName = projectName || generateNewProjectName();
+      const projectYaml = generateProjectYaml(
+        finalProjectName,
+        context.namespace
       );
+
+      return createInstanceMutation.mutateAsync({ yamlContent: projectYaml });
+    },
+    onSuccess: (data) => {
+      // The useCreateInstanceMutation already handles query invalidation
+      return data;
+    },
+    onError: (error) => {
+      throw error;
     },
   });
 }

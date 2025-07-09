@@ -1,3 +1,7 @@
+"use client";
+
+import _ from "lodash";
+import { customAlphabet } from "nanoid";
 import {
   type ConnectionsByKind,
   collectEnvByWorkload,
@@ -26,10 +30,10 @@ export const getClusterNamesFromProjectResources = (
   resources: Record<string, { items: AnyKubernetesResource[] }>
 ): string[] => {
   const clusterResources = resources.cluster?.items || [];
-
-  return clusterResources
-    .map((cluster) => cluster.metadata.name)
-    .filter((name): name is string => Boolean(name));
+  return _.filter(
+    _.map(clusterResources, (cluster) => cluster.metadata.name),
+    (name): name is string => Boolean(name)
+  );
 };
 
 /**
@@ -42,10 +46,10 @@ export const getInstanceNamesFromProjectResources = (
   resources: Record<string, { items: AnyKubernetesResource[] }>
 ): string[] => {
   const instanceResources = resources.instance?.items || [];
-
-  return instanceResources
-    .map((instance) => instance.metadata.name)
-    .filter((name): name is string => Boolean(name));
+  return _.filter(
+    _.map(instanceResources, (instance) => instance.metadata.name),
+    (name): name is string => Boolean(name)
+  );
 };
 
 /**
@@ -58,10 +62,10 @@ export const getDeploymentNamesFromProjectResources = (
   resources: Record<string, { items: AnyKubernetesResource[] }>
 ): string[] => {
   const deploymentResources = resources.deployment?.items || [];
-
-  return deploymentResources
-    .map((deployment) => deployment.metadata.name)
-    .filter((name): name is string => Boolean(name));
+  return _.filter(
+    _.map(deploymentResources, (deployment) => deployment.metadata.name),
+    (name): name is string => Boolean(name)
+  );
 };
 
 /**
@@ -74,10 +78,10 @@ export const getStatefulSetNamesFromProjectResources = (
   resources: Record<string, { items: AnyKubernetesResource[] }>
 ): string[] => {
   const statefulSetResources = resources.statefulset?.items || [];
-
-  return statefulSetResources
-    .map((statefulSet) => statefulSet.metadata.name)
-    .filter((name): name is string => Boolean(name));
+  return _.filter(
+    _.map(statefulSetResources, (statefulSet) => statefulSet.metadata.name),
+    (name): name is string => Boolean(name)
+  );
 };
 
 /**
@@ -95,17 +99,18 @@ export const getOtherResourceNamesFromProjectResources = (
     "deployment",
     "statefulset",
   ]);
-  const otherResources: Record<string, string[]> = {};
-
-  Object.entries(resources).forEach(([resourceType, resourceList]) => {
-    if (!excludedTypes.has(resourceType) && resourceList.items.length > 0) {
-      otherResources[resourceType] = resourceList.items
-        .map((resource) => resource.metadata.name)
-        .filter((name): name is string => Boolean(name));
-    }
-  });
-
-  return otherResources;
+  return _.transform(
+    resources,
+    (result, resourceList, resourceType) => {
+      if (!excludedTypes.has(resourceType) && resourceList.items.length > 0) {
+        result[resourceType] = _.filter(
+          _.map(resourceList.items, (resource) => resource.metadata.name),
+          (name): name is string => Boolean(name)
+        );
+      }
+    },
+    {} as Record<string, string[]>
+  );
 };
 
 /**
@@ -114,7 +119,7 @@ export const getOtherResourceNamesFromProjectResources = (
 const excludeIngressFromCandidates = (
   resourceNamesRecord: Record<string, string[]>
 ): Record<string, string[]> => {
-  const { ingress: _, ...filtered } = resourceNamesRecord;
+  const { ingress: _ingress, ...filtered } = resourceNamesRecord;
   return filtered;
 };
 
@@ -153,4 +158,37 @@ export const processProjectConnections = (
   }
 
   return combinedConnections;
+};
+
+/**
+ * Generate a new project name in the format 'project-nanoid(7)'.
+ * @returns {string} The generated project name.
+ */
+export const generateNewProjectName = (): string => {
+  const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 7);
+  return `project-${nanoid()}`;
+};
+
+/**
+ * Generate YAML content for creating a new project instance.
+ * @param projectName - The name of the project
+ * @param namespace - The namespace where the project will be created
+ * @returns {string} The YAML content for the project instance
+ */
+export const generateProjectYaml = (
+  projectName: string,
+  namespace: string
+): string => {
+  return `apiVersion: app.sealos.io/v1
+kind: Instance
+metadata:
+  name: ${projectName}
+  namespace: ${namespace}
+spec:
+  templateType: inline
+  defaults:
+    app_name:
+      type: string
+      value: ${projectName}
+  title: ${projectName}`;
 };

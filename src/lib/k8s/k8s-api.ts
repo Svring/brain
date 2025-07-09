@@ -10,6 +10,7 @@ import {
   NetworkingV1Api,
   RbacAuthorizationV1Api,
 } from "@kubernetes/client-node";
+import { load } from "js-yaml";
 import { createParallelAction } from "next-server-actions-parallel";
 
 type ApiClients = {
@@ -1375,5 +1376,80 @@ export const deleteCustomResourcesByLabelSelector = createParallelAction(
         error: result.status === "rejected" ? result.reason : null,
       })),
     };
+  }
+);
+
+/**
+ * Apply YAML for instance kind custom resources.
+ * This function parses YAML content and creates or updates the instance custom resource.
+ */
+export const applyInstanceYaml = createParallelAction(
+  async (kubeconfig: string, yamlContent: string) => {
+    const kc = createKubeConfig(kubeconfig);
+    const clients = createApiClients(kc);
+
+    // Parse YAML content
+    const resource = load(yamlContent);
+    const resourceObj = resource as Record<string, unknown>;
+    const metadata = resourceObj.metadata as Record<string, unknown>;
+    const { name, namespace } = metadata;
+
+    try {
+      // Try to get the existing resource
+      await clients.customApi.getNamespacedCustomObject({
+        group: "app.sealos.io",
+        version: "v1",
+        namespace: namespace as string,
+        plural: "instances",
+        name: name as string,
+      });
+
+      // If found, update it
+      const result = await clients.customApi.replaceNamespacedCustomObject({
+        group: "app.sealos.io",
+        version: "v1",
+        namespace: namespace as string,
+        plural: "instances",
+        name: name as string,
+        body: resource,
+      });
+
+      return {
+        action: "updated",
+        resource: JSON.parse(JSON.stringify(result)),
+      };
+    } catch (err: unknown) {
+      // Check if it's a 404 error (resource not found)
+      const error = err as {
+        code?: number;
+        body?: string;
+        statusCode?: number;
+      };
+      const is404 =
+        error?.code === 404 ||
+        error?.statusCode === 404 ||
+        (error?.body &&
+          typeof error.body === "string" &&
+          error.body.includes('"code":404'));
+
+      if (is404) {
+        // Resource doesn't exist, create it
+        const result = await clients.customApi.createNamespacedCustomObject({
+          group: "app.sealos.io",
+          version: "v1",
+          namespace: namespace as string,
+          plural: "instances",
+          body: resource,
+        });
+
+        return {
+          action: "created",
+          resource: JSON.parse(JSON.stringify(result)),
+        };
+      }
+
+      // Re-throw other errors
+      throw err;
+    }
   }
 );

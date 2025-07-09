@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { runParallelAction } from "next-server-actions-parallel";
 import {
+  applyInstanceYaml,
   deleteBuiltinResource,
   deleteBuiltinResourcesByLabelSelector,
   deleteCustomResource,
@@ -14,9 +15,9 @@ import {
 } from "./k8s-api";
 import {
   CERT_MANAGER_RESOURCES,
-  PROJECT_LABELS,
-  KUBEBLOCKS_RESOURCES,
   CLUSTER_LABELS,
+  KUBEBLOCKS_RESOURCES,
+  PROJECT_LABELS,
 } from "./k8s-constant";
 import type {
   BatchDeleteRequest,
@@ -868,6 +869,42 @@ export function useDeleteInstanceRelatedMutation(context: K8sApiContext) {
           context.namespace,
           "apps",
         ],
+      });
+    },
+  });
+}
+
+export function useCreateInstanceMutation(context: K8sApiContext) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ yamlContent }: { yamlContent: string }) => {
+      const result = await runParallelAction(
+        applyInstanceYaml(context.kubeconfig, yamlContent)
+      );
+      return result;
+    },
+    onSuccess: () => {
+      // Invalidate instance-related queries
+      queryClient.invalidateQueries({
+        queryKey: [
+          "k8s",
+          "custom-resource",
+          "list",
+          "app.sealos.io",
+          "v1",
+          context.namespace,
+          "instances",
+        ],
+      });
+
+      // Invalidate all-resources query
+      queryClient.invalidateQueries({
+        queryKey: ["k8s", "all-resources", "list", context.namespace],
+      });
+
+      // Invalidate project-related queries
+      queryClient.invalidateQueries({
+        queryKey: ["project", "list", context.namespace],
       });
     },
   });
