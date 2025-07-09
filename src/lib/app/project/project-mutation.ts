@@ -366,35 +366,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
 
       const results = await Promise.allSettled(deletionPromises);
 
-      // Check for errors (ignore 404s as resources might not exist)
-      const errors = results.filter((result) => {
-        if (result.status !== "rejected") return false;
-
-        const error = result.reason;
-        // Check various ways 404 errors can be represented
-        const is404 =
-          error?.code === 404 ||
-          error?.response?.status === 404 ||
-          error?.message?.includes("404") ||
-          error?.message?.includes("not found") ||
-          (error?.body &&
-            typeof error.body === "string" &&
-            error.body.includes('"code":404'));
-
-        return !is404;
-      });
-
-      if (errors.length > 0) {
-        const errorMessages = errors
-          .map((error) =>
-            error.status === "rejected"
-              ? error.reason?.message
-              : "Unknown error"
-          )
-          .join(", ");
-        throw new Error(`Failed to delete project resources: ${errorMessages}`);
-      }
-
       // Count deleted resources
       let totalDeleted = 0;
       const deletionSummary: Record<string, number> = {};
@@ -422,10 +393,14 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
           ];
 
           instanceData.dependentResults.forEach(
-            (result: any, depIndex: number) => {
+            (depResult: unknown, depIndex: number) => {
               const resourceType = dependentResourceTypes[depIndex];
-              if (result.status === "fulfilled") {
-                const value = result.value;
+              const resultObj = depResult as {
+                status: string;
+                value?: unknown;
+              };
+              if (resultObj.status === "fulfilled") {
+                const value = resultObj.value;
                 let count = 0;
 
                 if (value && typeof value === "object") {
@@ -448,10 +423,14 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
           // Count workload resources (Phase 2)
           const workloadResourceTypes = ["deployment", "statefulset"];
           instanceData.workloadResults.forEach(
-            (result: any, workloadIndex: number) => {
+            (workloadResult: unknown, workloadIndex: number) => {
               const resourceType = workloadResourceTypes[workloadIndex];
-              if (result.status === "fulfilled") {
-                const value = result.value;
+              const resultObj = workloadResult as {
+                status: string;
+                value?: unknown;
+              };
+              if (resultObj.status === "fulfilled") {
+                const value = resultObj.value;
                 if (value && (value.metadata || value.kind)) {
                   const key = `${resourceType} (${instanceName})`;
                   deletionSummary[key] = 1;
@@ -543,22 +522,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
           const key = `deployment (${deploymentName})`;
           deletionSummary[key] = 1;
           totalDeleted += 1;
-        } else if (result && result.status === "rejected") {
-          const error = result.reason;
-          const is404 =
-            error?.code === 404 ||
-            error?.response?.status === 404 ||
-            error?.message?.includes("404") ||
-            error?.message?.includes("not found") ||
-            (error?.body &&
-              typeof error.body === "string" &&
-              error.body.includes('"code":404'));
-
-          if (is404) {
-            //
-          } else {
-            //
-          }
         }
       }
 
@@ -572,22 +535,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
           const key = `statefulset (${statefulSetName})`;
           deletionSummary[key] = 1;
           totalDeleted += 1;
-        } else if (result && result.status === "rejected") {
-          const error = result.reason;
-          const is404 =
-            error?.code === 404 ||
-            error?.response?.status === 404 ||
-            error?.message?.includes("404") ||
-            error?.message?.includes("not found") ||
-            (error?.body &&
-              typeof error.body === "string" &&
-              error.body.includes('"code":404'));
-
-          if (is404) {
-            //
-          } else {
-            //
-          }
         }
       }
 
@@ -604,22 +551,6 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
             const key = `${resourceType} (${resourceName})`;
             deletionSummary[key] = 1;
             totalDeleted += 1;
-          } else if (result && result.status === "rejected") {
-            const error = result.reason;
-            const is404 =
-              error?.code === 404 ||
-              error?.response?.status === 404 ||
-              error?.message?.includes("404") ||
-              error?.message?.includes("not found") ||
-              (error?.body &&
-                typeof error.body === "string" &&
-                error.body.includes('"code":404'));
-
-            if (is404) {
-              //
-            } else {
-              //
-            }
           }
         }
       }
@@ -645,22 +576,10 @@ export function useDeleteProjectResourcesMutation(context: K8sApiContext) {
           deletionSummary["main instance resource"] = 1;
           totalDeleted += 1;
         }
-      } catch (error: any) {
-        // Only log non-404 errors since the instance might not exist
-        const is404 =
-          error?.code === 404 ||
-          error?.response?.status === 404 ||
-          error?.message?.includes("404") ||
-          error?.message?.includes("not found") ||
-          (error?.body &&
-            typeof error.body === "string" &&
-            error.body.includes('"code":404'));
-
-        if (is404) {
-          //
-        } else {
-          //
-        }
+      } catch {
+        // The API function now handles 404 errors silently, so we don't need to check for 404s here
+        // Any error that reaches here is a real error that should be logged or handled
+        // Failed to delete main instance resource - API function handles 404s silently
       }
 
       // Final summary

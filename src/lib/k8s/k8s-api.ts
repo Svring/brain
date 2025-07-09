@@ -105,14 +105,44 @@ export const deleteCustomResource = createParallelAction(
   ) => {
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
-    const result = await clients.customApi.deleteNamespacedCustomObject({
-      group,
-      version,
-      namespace,
-      plural,
-      name,
-    });
-    return JSON.parse(JSON.stringify(result));
+
+    try {
+      const result = await clients.customApi.deleteNamespacedCustomObject({
+        group,
+        version,
+        namespace,
+        plural,
+        name,
+      });
+      return JSON.parse(JSON.stringify(result));
+    } catch (error: unknown) {
+      // Check if it's a 404 error (resource not found)
+      const errorObj = error as {
+        code?: number;
+        response?: { status?: number };
+        statusCode?: number;
+        message?: string;
+        body?: string;
+      };
+
+      const is404 =
+        errorObj?.code === 404 ||
+        errorObj?.response?.status === 404 ||
+        errorObj?.statusCode === 404 ||
+        errorObj?.message?.includes("404") ||
+        errorObj?.message?.includes("not found") ||
+        (errorObj?.body &&
+          typeof errorObj.body === "string" &&
+          errorObj.body.includes('"code":404'));
+
+      if (is404) {
+        // Resource not found, return success indicator
+        return { success: true, notFound: true };
+      }
+
+      // Re-throw other errors
+      throw error;
+    }
   }
 );
 
@@ -275,12 +305,42 @@ export const deleteDeployment = createParallelAction(
   async (kubeconfig: string, namespace: string, name: string) => {
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
-    const result = await clients.appsApi.deleteNamespacedDeployment({
-      namespace,
-      name,
-      propagationPolicy: "Foreground",
-    });
-    return JSON.parse(JSON.stringify(result));
+
+    try {
+      const result = await clients.appsApi.deleteNamespacedDeployment({
+        namespace,
+        name,
+        propagationPolicy: "Foreground",
+      });
+      return JSON.parse(JSON.stringify(result));
+    } catch (error: unknown) {
+      // Check if it's a 404 error (resource not found)
+      const errorObj = error as {
+        code?: number;
+        response?: { status?: number };
+        statusCode?: number;
+        message?: string;
+        body?: string;
+      };
+
+      const is404 =
+        errorObj?.code === 404 ||
+        errorObj?.response?.status === 404 ||
+        errorObj?.statusCode === 404 ||
+        errorObj?.message?.includes("404") ||
+        errorObj?.message?.includes("not found") ||
+        (errorObj?.body &&
+          typeof errorObj.body === "string" &&
+          errorObj.body.includes('"code":404'));
+
+      if (is404) {
+        // Resource not found, return success indicator
+        return { success: true, notFound: true };
+      }
+
+      // Re-throw other errors
+      throw error;
+    }
   }
 );
 
@@ -396,11 +456,41 @@ export const deleteService = createParallelAction(
   async (kubeconfig: string, namespace: string, name: string) => {
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
-    const result = await clients.coreApi.deleteNamespacedService({
-      namespace,
-      name,
-    });
-    return JSON.parse(JSON.stringify(result));
+
+    try {
+      const result = await clients.coreApi.deleteNamespacedService({
+        namespace,
+        name,
+      });
+      return JSON.parse(JSON.stringify(result));
+    } catch (error: unknown) {
+      // Check if it's a 404 error (resource not found)
+      const errorObj = error as {
+        code?: number;
+        response?: { status?: number };
+        statusCode?: number;
+        message?: string;
+        body?: string;
+      };
+
+      const is404 =
+        errorObj?.code === 404 ||
+        errorObj?.response?.status === 404 ||
+        errorObj?.statusCode === 404 ||
+        errorObj?.message?.includes("404") ||
+        errorObj?.message?.includes("not found") ||
+        (errorObj?.body &&
+          typeof errorObj.body === "string" &&
+          errorObj.body.includes('"code":404'));
+
+      if (is404) {
+        // Resource not found, return success indicator
+        return { success: true, notFound: true };
+      }
+
+      // Re-throw other errors
+      throw error;
+    }
   }
 );
 
@@ -434,11 +524,41 @@ export const deleteIngress = createParallelAction(
   async (kubeconfig: string, namespace: string, name: string) => {
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
-    const result = await clients.networkingApi.deleteNamespacedIngress({
-      namespace,
-      name,
-    });
-    return JSON.parse(JSON.stringify(result));
+
+    try {
+      const result = await clients.networkingApi.deleteNamespacedIngress({
+        namespace,
+        name,
+      });
+      return JSON.parse(JSON.stringify(result));
+    } catch (error: unknown) {
+      // Check if it's a 404 error (resource not found)
+      const errorObj = error as {
+        code?: number;
+        response?: { status?: number };
+        statusCode?: number;
+        message?: string;
+        body?: string;
+      };
+
+      const is404 =
+        errorObj?.code === 404 ||
+        errorObj?.response?.status === 404 ||
+        errorObj?.statusCode === 404 ||
+        errorObj?.message?.includes("404") ||
+        errorObj?.message?.includes("not found") ||
+        (errorObj?.body &&
+          typeof errorObj.body === "string" &&
+          errorObj.body.includes('"code":404'));
+
+      if (is404) {
+        // Resource not found, return success indicator
+        return { success: true, notFound: true };
+      }
+
+      // Re-throw other errors
+      throw error;
+    }
   }
 );
 
@@ -720,128 +840,163 @@ export const deleteBuiltinResource = createParallelAction(
   ) => {
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
-    switch (resourceType) {
-      case "deployment": {
-        const res = await clients.appsApi.deleteNamespacedDeployment({
-          namespace,
-          name,
-          propagationPolicy: "Foreground",
-        });
-        return JSON.parse(JSON.stringify(res));
-      }
-      case "service": {
-        const res = await clients.coreApi.deleteNamespacedService({
-          namespace,
-          name,
-          propagationPolicy: "Foreground",
-        });
-        return JSON.parse(JSON.stringify(res));
-      }
-      case "ingress": {
-        const res = await clients.networkingApi.deleteNamespacedIngress({
-          namespace,
-          name,
-          propagationPolicy: "Foreground",
-        });
-        return JSON.parse(JSON.stringify(res));
-      }
-      case "statefulset": {
-        const res = await clients.appsApi.deleteNamespacedStatefulSet({
-          namespace,
-          name,
-          propagationPolicy: "Foreground",
-        });
-        return JSON.parse(JSON.stringify(res));
-      }
-      case "daemonset": {
-        const res = await clients.appsApi.deleteNamespacedDaemonSet({
-          namespace,
-          name,
-          propagationPolicy: "Foreground",
-        });
-        return JSON.parse(JSON.stringify(res));
-      }
-      case "configmap": {
-        const res = await clients.coreApi.deleteNamespacedConfigMap({
-          namespace,
-          name,
-          propagationPolicy: "Foreground",
-        });
-        return JSON.parse(JSON.stringify(res));
-      }
-      case "secret": {
-        const res = await clients.coreApi.deleteNamespacedSecret({
-          namespace,
-          name,
-          propagationPolicy: "Foreground",
-        });
-        return JSON.parse(JSON.stringify(res));
-      }
-      case "pod": {
-        const res = await clients.coreApi.deleteNamespacedPod({
-          namespace,
-          name,
-          propagationPolicy: "Foreground",
-        });
-        return JSON.parse(JSON.stringify(res));
-      }
-      case "pvc": {
-        const res = await clients.coreApi.deleteNamespacedPersistentVolumeClaim(
-          { namespace, name, propagationPolicy: "Foreground" }
-        );
-        return JSON.parse(JSON.stringify(res));
-      }
-      case "horizontalpodautoscaler": {
-        const res =
-          await clients.autoscalingApi.deleteNamespacedHorizontalPodAutoscaler({
+
+    try {
+      switch (resourceType) {
+        case "deployment": {
+          const res = await clients.appsApi.deleteNamespacedDeployment({
             namespace,
             name,
             propagationPolicy: "Foreground",
           });
-        return JSON.parse(JSON.stringify(res));
+          return JSON.parse(JSON.stringify(res));
+        }
+        case "service": {
+          const res = await clients.coreApi.deleteNamespacedService({
+            namespace,
+            name,
+            propagationPolicy: "Foreground",
+          });
+          return JSON.parse(JSON.stringify(res));
+        }
+        case "ingress": {
+          const res = await clients.networkingApi.deleteNamespacedIngress({
+            namespace,
+            name,
+            propagationPolicy: "Foreground",
+          });
+          return JSON.parse(JSON.stringify(res));
+        }
+        case "statefulset": {
+          const res = await clients.appsApi.deleteNamespacedStatefulSet({
+            namespace,
+            name,
+            propagationPolicy: "Foreground",
+          });
+          return JSON.parse(JSON.stringify(res));
+        }
+        case "daemonset": {
+          const res = await clients.appsApi.deleteNamespacedDaemonSet({
+            namespace,
+            name,
+            propagationPolicy: "Foreground",
+          });
+          return JSON.parse(JSON.stringify(res));
+        }
+        case "configmap": {
+          const res = await clients.coreApi.deleteNamespacedConfigMap({
+            namespace,
+            name,
+            propagationPolicy: "Foreground",
+          });
+          return JSON.parse(JSON.stringify(res));
+        }
+        case "secret": {
+          const res = await clients.coreApi.deleteNamespacedSecret({
+            namespace,
+            name,
+            propagationPolicy: "Foreground",
+          });
+          return JSON.parse(JSON.stringify(res));
+        }
+        case "pod": {
+          const res = await clients.coreApi.deleteNamespacedPod({
+            namespace,
+            name,
+            propagationPolicy: "Foreground",
+          });
+          return JSON.parse(JSON.stringify(res));
+        }
+        case "pvc": {
+          const res =
+            await clients.coreApi.deleteNamespacedPersistentVolumeClaim({
+              namespace,
+              name,
+              propagationPolicy: "Foreground",
+            });
+          return JSON.parse(JSON.stringify(res));
+        }
+        case "horizontalpodautoscaler": {
+          const res =
+            await clients.autoscalingApi.deleteNamespacedHorizontalPodAutoscaler(
+              {
+                namespace,
+                name,
+                propagationPolicy: "Foreground",
+              }
+            );
+          return JSON.parse(JSON.stringify(res));
+        }
+        case "role": {
+          const res = await clients.rbacApi.deleteNamespacedRole({
+            namespace,
+            name,
+            propagationPolicy: "Foreground",
+          });
+          return JSON.parse(JSON.stringify(res));
+        }
+        case "rolebinding": {
+          const res = await clients.rbacApi.deleteNamespacedRoleBinding({
+            namespace,
+            name,
+            propagationPolicy: "Foreground",
+          });
+          return JSON.parse(JSON.stringify(res));
+        }
+        case "serviceaccount": {
+          const res = await clients.coreApi.deleteNamespacedServiceAccount({
+            namespace,
+            name,
+            propagationPolicy: "Foreground",
+          });
+          return JSON.parse(JSON.stringify(res));
+        }
+        case "job": {
+          const res = await clients.batchApi.deleteNamespacedJob({
+            namespace,
+            name,
+            propagationPolicy: "Foreground",
+          });
+          return JSON.parse(JSON.stringify(res));
+        }
+        case "cronjob": {
+          const res = await clients.batchApi.deleteNamespacedCronJob({
+            namespace,
+            name,
+            propagationPolicy: "Foreground",
+          });
+          return JSON.parse(JSON.stringify(res));
+        }
+        default:
+          throw new Error(`Unsupported builtin resource type: ${resourceType}`);
       }
-      case "role": {
-        const res = await clients.rbacApi.deleteNamespacedRole({
-          namespace,
-          name,
-          propagationPolicy: "Foreground",
-        });
-        return JSON.parse(JSON.stringify(res));
+    } catch (error: unknown) {
+      // Check if it's a 404 error (resource not found)
+      const errorObj = error as {
+        code?: number;
+        response?: { status?: number };
+        statusCode?: number;
+        message?: string;
+        body?: string;
+      };
+
+      const is404 =
+        errorObj?.code === 404 ||
+        errorObj?.response?.status === 404 ||
+        errorObj?.statusCode === 404 ||
+        errorObj?.message?.includes("404") ||
+        errorObj?.message?.includes("not found") ||
+        (errorObj?.body &&
+          typeof errorObj.body === "string" &&
+          errorObj.body.includes('"code":404'));
+
+      if (is404) {
+        // Resource not found, return success indicator
+        return { success: true, notFound: true };
       }
-      case "rolebinding": {
-        const res = await clients.rbacApi.deleteNamespacedRoleBinding({
-          namespace,
-          name,
-          propagationPolicy: "Foreground",
-        });
-        return JSON.parse(JSON.stringify(res));
-      }
-      case "serviceaccount": {
-        const res = await clients.coreApi.deleteNamespacedServiceAccount({
-          namespace,
-          name,
-          propagationPolicy: "Foreground",
-        });
-        return JSON.parse(JSON.stringify(res));
-      }
-      case "job": {
-        const res = await clients.batchApi.deleteNamespacedJob({
-          namespace,
-          name,
-          propagationPolicy: "Foreground",
-        });
-        return JSON.parse(JSON.stringify(res));
-      }
-      case "cronjob": {
-        const res = await clients.batchApi.deleteNamespacedCronJob({
-          namespace,
-          name,
-          propagationPolicy: "Foreground",
-        });
-        return JSON.parse(JSON.stringify(res));
-      }
-      default:
-        throw new Error(`Unsupported builtin resource type: ${resourceType}`);
+
+      // Re-throw other errors
+      throw error;
     }
   }
 );
@@ -962,11 +1117,41 @@ export const deleteStatefulSet = createParallelAction(
   async (kubeconfig: string, namespace: string, name: string) => {
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
-    const result = await clients.appsApi.deleteNamespacedStatefulSet({
-      namespace,
-      name,
-    });
-    return JSON.parse(JSON.stringify(result));
+
+    try {
+      const result = await clients.appsApi.deleteNamespacedStatefulSet({
+        namespace,
+        name,
+      });
+      return JSON.parse(JSON.stringify(result));
+    } catch (error: unknown) {
+      // Check if it's a 404 error (resource not found)
+      const errorObj = error as {
+        code?: number;
+        response?: { status?: number };
+        statusCode?: number;
+        message?: string;
+        body?: string;
+      };
+
+      const is404 =
+        errorObj?.code === 404 ||
+        errorObj?.response?.status === 404 ||
+        errorObj?.statusCode === 404 ||
+        errorObj?.message?.includes("404") ||
+        errorObj?.message?.includes("not found") ||
+        (errorObj?.body &&
+          typeof errorObj.body === "string" &&
+          errorObj.body.includes('"code":404'));
+
+      if (is404) {
+        // Resource not found, return success indicator
+        return { success: true, notFound: true };
+      }
+
+      // Re-throw other errors
+      throw error;
+    }
   }
 );
 
@@ -992,11 +1177,41 @@ export const deleteDaemonSet = createParallelAction(
   async (kubeconfig: string, namespace: string, name: string) => {
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
-    const result = await clients.appsApi.deleteNamespacedDaemonSet({
-      namespace,
-      name,
-    });
-    return JSON.parse(JSON.stringify(result));
+
+    try {
+      const result = await clients.appsApi.deleteNamespacedDaemonSet({
+        namespace,
+        name,
+      });
+      return JSON.parse(JSON.stringify(result));
+    } catch (error: unknown) {
+      // Check if it's a 404 error (resource not found)
+      const errorObj = error as {
+        code?: number;
+        response?: { status?: number };
+        statusCode?: number;
+        message?: string;
+        body?: string;
+      };
+
+      const is404 =
+        errorObj?.code === 404 ||
+        errorObj?.response?.status === 404 ||
+        errorObj?.statusCode === 404 ||
+        errorObj?.message?.includes("404") ||
+        errorObj?.message?.includes("not found") ||
+        (errorObj?.body &&
+          typeof errorObj.body === "string" &&
+          errorObj.body.includes('"code":404'));
+
+      if (is404) {
+        // Resource not found, return success indicator
+        return { success: true, notFound: true };
+      }
+
+      // Re-throw other errors
+      throw error;
+    }
   }
 );
 
@@ -1022,11 +1237,41 @@ export const deleteConfigMap = createParallelAction(
   async (kubeconfig: string, namespace: string, name: string) => {
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
-    const result = await clients.coreApi.deleteNamespacedConfigMap({
-      namespace,
-      name,
-    });
-    return JSON.parse(JSON.stringify(result));
+
+    try {
+      const result = await clients.coreApi.deleteNamespacedConfigMap({
+        namespace,
+        name,
+      });
+      return JSON.parse(JSON.stringify(result));
+    } catch (error: unknown) {
+      // Check if it's a 404 error (resource not found)
+      const errorObj = error as {
+        code?: number;
+        response?: { status?: number };
+        statusCode?: number;
+        message?: string;
+        body?: string;
+      };
+
+      const is404 =
+        errorObj?.code === 404 ||
+        errorObj?.response?.status === 404 ||
+        errorObj?.statusCode === 404 ||
+        errorObj?.message?.includes("404") ||
+        errorObj?.message?.includes("not found") ||
+        (errorObj?.body &&
+          typeof errorObj.body === "string" &&
+          errorObj.body.includes('"code":404'));
+
+      if (is404) {
+        // Resource not found, return success indicator
+        return { success: true, notFound: true };
+      }
+
+      // Re-throw other errors
+      throw error;
+    }
   }
 );
 
@@ -1052,11 +1297,41 @@ export const deleteSecret = createParallelAction(
   async (kubeconfig: string, namespace: string, name: string) => {
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
-    const result = await clients.coreApi.deleteNamespacedSecret({
-      namespace,
-      name,
-    });
-    return JSON.parse(JSON.stringify(result));
+
+    try {
+      const result = await clients.coreApi.deleteNamespacedSecret({
+        namespace,
+        name,
+      });
+      return JSON.parse(JSON.stringify(result));
+    } catch (error: unknown) {
+      // Check if it's a 404 error (resource not found)
+      const errorObj = error as {
+        code?: number;
+        response?: { status?: number };
+        statusCode?: number;
+        message?: string;
+        body?: string;
+      };
+
+      const is404 =
+        errorObj?.code === 404 ||
+        errorObj?.response?.status === 404 ||
+        errorObj?.statusCode === 404 ||
+        errorObj?.message?.includes("404") ||
+        errorObj?.message?.includes("not found") ||
+        (errorObj?.body &&
+          typeof errorObj.body === "string" &&
+          errorObj.body.includes('"code":404'));
+
+      if (is404) {
+        // Resource not found, return success indicator
+        return { success: true, notFound: true };
+      }
+
+      // Re-throw other errors
+      throw error;
+    }
   }
 );
 
@@ -1082,11 +1357,41 @@ export const deletePod = createParallelAction(
   async (kubeconfig: string, namespace: string, name: string) => {
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
-    const result = await clients.coreApi.deleteNamespacedPod({
-      namespace,
-      name,
-    });
-    return JSON.parse(JSON.stringify(result));
+
+    try {
+      const result = await clients.coreApi.deleteNamespacedPod({
+        namespace,
+        name,
+      });
+      return JSON.parse(JSON.stringify(result));
+    } catch (error: unknown) {
+      // Check if it's a 404 error (resource not found)
+      const errorObj = error as {
+        code?: number;
+        response?: { status?: number };
+        statusCode?: number;
+        message?: string;
+        body?: string;
+      };
+
+      const is404 =
+        errorObj?.code === 404 ||
+        errorObj?.response?.status === 404 ||
+        errorObj?.statusCode === 404 ||
+        errorObj?.message?.includes("404") ||
+        errorObj?.message?.includes("not found") ||
+        (errorObj?.body &&
+          typeof errorObj.body === "string" &&
+          errorObj.body.includes('"code":404'));
+
+      if (is404) {
+        // Resource not found, return success indicator
+        return { success: true, notFound: true };
+      }
+
+      // Re-throw other errors
+      throw error;
+    }
   }
 );
 
@@ -1112,11 +1417,42 @@ export const deletePersistentVolumeClaim = createParallelAction(
   async (kubeconfig: string, namespace: string, name: string) => {
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
-    const result = await clients.coreApi.deleteNamespacedPersistentVolumeClaim({
-      namespace,
-      name,
-    });
-    return JSON.parse(JSON.stringify(result));
+
+    try {
+      const result =
+        await clients.coreApi.deleteNamespacedPersistentVolumeClaim({
+          namespace,
+          name,
+        });
+      return JSON.parse(JSON.stringify(result));
+    } catch (error: unknown) {
+      // Check if it's a 404 error (resource not found)
+      const errorObj = error as {
+        code?: number;
+        response?: { status?: number };
+        statusCode?: number;
+        message?: string;
+        body?: string;
+      };
+
+      const is404 =
+        errorObj?.code === 404 ||
+        errorObj?.response?.status === 404 ||
+        errorObj?.statusCode === 404 ||
+        errorObj?.message?.includes("404") ||
+        errorObj?.message?.includes("not found") ||
+        (errorObj?.body &&
+          typeof errorObj.body === "string" &&
+          errorObj.body.includes('"code":404'));
+
+      if (is404) {
+        // Resource not found, return success indicator
+        return { success: true, notFound: true };
+      }
+
+      // Re-throw other errors
+      throw error;
+    }
   }
 );
 
@@ -1295,36 +1631,65 @@ export const deleteBuiltinResourcesByLabelSelector = createParallelAction(
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
 
-    switch (resourceType) {
-      case "service": {
-        const res = await clients.coreApi.deleteCollectionNamespacedService({
-          namespace,
-          labelSelector,
-        });
-        return JSON.parse(JSON.stringify(res));
-      }
-      case "ingress": {
-        const res =
-          await clients.networkingApi.deleteCollectionNamespacedIngress({
+    try {
+      switch (resourceType) {
+        case "service": {
+          const res = await clients.coreApi.deleteCollectionNamespacedService({
             namespace,
             labelSelector,
           });
-        return JSON.parse(JSON.stringify(res));
-      }
-      case "pvc": {
-        const res =
-          await clients.coreApi.deleteCollectionNamespacedPersistentVolumeClaim(
-            {
+          return JSON.parse(JSON.stringify(res));
+        }
+        case "ingress": {
+          const res =
+            await clients.networkingApi.deleteCollectionNamespacedIngress({
               namespace,
               labelSelector,
-            }
+            });
+          return JSON.parse(JSON.stringify(res));
+        }
+        case "pvc": {
+          const res =
+            await clients.coreApi.deleteCollectionNamespacedPersistentVolumeClaim(
+              {
+                namespace,
+                labelSelector,
+              }
+            );
+          return JSON.parse(JSON.stringify(res));
+        }
+        default:
+          throw new Error(
+            `Bulk deletion not supported for resource type: ${resourceType}`
           );
-        return JSON.parse(JSON.stringify(res));
       }
-      default:
-        throw new Error(
-          `Bulk deletion not supported for resource type: ${resourceType}`
-        );
+    } catch (error: unknown) {
+      // Check if it's a 404 error (resource not found)
+      const errorObj = error as {
+        code?: number;
+        response?: { status?: number };
+        statusCode?: number;
+        message?: string;
+        body?: string;
+      };
+
+      const is404 =
+        errorObj?.code === 404 ||
+        errorObj?.response?.status === 404 ||
+        errorObj?.statusCode === 404 ||
+        errorObj?.message?.includes("404") ||
+        errorObj?.message?.includes("not found") ||
+        (errorObj?.body &&
+          typeof errorObj.body === "string" &&
+          errorObj.body.includes('"code":404'));
+
+      if (is404) {
+        // Resource not found, return success indicator
+        return { success: true, notFound: true };
+      }
+
+      // Re-throw other errors
+      throw error;
     }
   }
 );
@@ -1344,38 +1709,101 @@ export const deleteCustomResourcesByLabelSelector = createParallelAction(
     const kc = createKubeConfig(kubeconfig);
     const clients = createApiClients(kc);
 
-    // First, list all resources matching the label selector
-    const listResult = await clients.customApi.listNamespacedCustomObject({
-      group,
-      version,
-      namespace,
-      plural,
-      labelSelector,
-    });
-
-    const resources = JSON.parse(JSON.stringify(listResult));
-    const items = resources.items || [];
-
-    // Delete each resource individually
-    const deletePromises = items.map((item: { metadata: { name: string } }) =>
-      clients.customApi.deleteNamespacedCustomObject({
+    try {
+      // First, list all resources matching the label selector
+      const listResult = await clients.customApi.listNamespacedCustomObject({
         group,
         version,
         namespace,
         plural,
-        name: item.metadata.name,
-      })
-    );
+        labelSelector,
+      });
 
-    const results = await Promise.allSettled(deletePromises);
-    return {
-      success: true,
-      deletedCount: items.length,
-      results: results.map((result) => ({
-        success: result.status === "fulfilled",
-        error: result.status === "rejected" ? result.reason : null,
-      })),
-    };
+      const resources = JSON.parse(JSON.stringify(listResult));
+      const items = resources.items || [];
+
+      // Delete each resource individually
+      const deletePromises = items.map((item: { metadata: { name: string } }) =>
+        clients.customApi
+          .deleteNamespacedCustomObject({
+            group,
+            version,
+            namespace,
+            plural,
+            name: item.metadata.name,
+          })
+          .catch((error: unknown) => {
+            // Check if it's a 404 error (resource not found)
+            const errorObj = error as {
+              code?: number;
+              response?: { status?: number };
+              statusCode?: number;
+              message?: string;
+              body?: string;
+            };
+
+            const is404 =
+              errorObj?.code === 404 ||
+              errorObj?.response?.status === 404 ||
+              errorObj?.statusCode === 404 ||
+              errorObj?.message?.includes("404") ||
+              errorObj?.message?.includes("not found") ||
+              (errorObj?.body &&
+                typeof errorObj.body === "string" &&
+                errorObj.body.includes('"code":404'));
+
+            if (is404) {
+              // Resource not found, return success indicator
+              return { success: true, notFound: true };
+            }
+
+            // Re-throw other errors
+            throw error;
+          })
+      );
+
+      const results = await Promise.allSettled(deletePromises);
+      return {
+        success: true,
+        deletedCount: items.length,
+        results: results.map((result) => ({
+          success: result.status === "fulfilled",
+          error: result.status === "rejected" ? result.reason : null,
+        })),
+      };
+    } catch (error: unknown) {
+      // Check if it's a 404 error (resource not found)
+      const errorObj = error as {
+        code?: number;
+        response?: { status?: number };
+        statusCode?: number;
+        message?: string;
+        body?: string;
+      };
+
+      const is404 =
+        errorObj?.code === 404 ||
+        errorObj?.response?.status === 404 ||
+        errorObj?.statusCode === 404 ||
+        errorObj?.message?.includes("404") ||
+        errorObj?.message?.includes("not found") ||
+        (errorObj?.body &&
+          typeof errorObj.body === "string" &&
+          errorObj.body.includes('"code":404'));
+
+      if (is404) {
+        // Resource not found, return success indicator
+        return {
+          success: true,
+          deletedCount: 0,
+          results: [],
+          notFound: true,
+        };
+      }
+
+      // Re-throw other errors
+      throw error;
+    }
   }
 );
 
@@ -1425,12 +1853,20 @@ export const applyInstanceYaml = createParallelAction(
         body?: string;
         statusCode?: number;
       };
+      const errorObj = error as {
+        code?: number;
+        response?: { status?: number };
+        statusCode?: number;
+        message?: string;
+        body?: string;
+      };
+
       const is404 =
-        error?.code === 404 ||
-        error?.statusCode === 404 ||
-        (error?.body &&
-          typeof error.body === "string" &&
-          error.body.includes('"code":404'));
+        errorObj?.code === 404 ||
+        errorObj?.statusCode === 404 ||
+        (errorObj?.body &&
+          typeof errorObj.body === "string" &&
+          errorObj.body.includes('"code":404'));
 
       if (is404) {
         // Resource doesn't exist, create it

@@ -1,20 +1,26 @@
 "use client";
 
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Plus } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import ProjectCard from "@/components/app/project/project-card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import useAI from "@/hooks/ai/use-ai";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+// import useAI from "@/hooks/ai/use-ai";
 import useProjects from "@/hooks/app/project/use-projects";
 
 const CreateProject = dynamic(
   () => import("@/components/app/project/create-project")
 );
-const CopilotSidebar = dynamic(() =>
-  import("@copilotkit/react-ui").then((mod) => mod.CopilotSidebar)
-);
+// const CopilotSidebar = dynamic(() =>
+//   import("@copilotkit/react-ui").then((mod) => mod.CopilotSidebar)
+// );
 
 export default function Page() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -24,7 +30,7 @@ export default function Page() {
     isError: projectsError,
   } = useProjects();
 
-  useAI();
+  // useAI();
 
   const handleCloseDialog = () => {
     setIsCreateDialogOpen(false);
@@ -44,6 +50,9 @@ export default function Page() {
             onOpenChange={setIsCreateDialogOpen}
             open={isCreateDialogOpen}
           >
+            <VisuallyHidden>
+              <DialogTitle>Create Project</DialogTitle>
+            </VisuallyHidden>
             <DialogTrigger asChild>
               <Button variant="ghost">
                 <Plus size={8} />
@@ -88,7 +97,7 @@ export default function Page() {
           )}
         </div>
       </div>
-      <CopilotSidebar
+      {/* <CopilotSidebar
         instructions={
           "You are assisting the user as best as you can. Answer in the best way possible given the data you have."
         }
@@ -96,7 +105,7 @@ export default function Page() {
           title: "Popup Assistant",
           initial: "Need any help?",
         }}
-      />
+      /> */}
     </div>
   );
 }

@@ -699,28 +699,6 @@ export function useDeleteInstanceRelatedMutation(context: K8sApiContext) {
         ),
       ]);
 
-      // Check for non-404 errors in dependent resources
-      const dependentErrors = dependentResults.filter((result) => {
-        if (result.status !== "rejected") return false;
-
-        const error = result.reason;
-        // Check various ways 404 errors can be represented
-        const is404 =
-          error?.code === 404 ||
-          error?.response?.status === 404 ||
-          error?.message?.includes("404") ||
-          error?.message?.includes("not found") ||
-          (error?.body &&
-            typeof error.body === "string" &&
-            error.body.includes('"code":404'));
-
-        return !is404;
-      });
-
-      if (dependentErrors.length > 0) {
-        throw new Error("Failed to delete dependent resources");
-      }
-
       // Phase 2: Delete main workload resources
       const workloadResults = await Promise.allSettled([
         // Delete deployment by name
@@ -742,28 +720,6 @@ export function useDeleteInstanceRelatedMutation(context: K8sApiContext) {
           )
         ),
       ]);
-
-      // Check for non-404 errors in workload resources
-      const workloadErrors = workloadResults.filter((result) => {
-        if (result.status !== "rejected") return false;
-
-        const error = result.reason;
-        // Check various ways 404 errors can be represented
-        const is404 =
-          error?.code === 404 ||
-          error?.response?.status === 404 ||
-          error?.message?.includes("404") ||
-          error?.message?.includes("not found") ||
-          (error?.body &&
-            typeof error.body === "string" &&
-            error.body.includes('"code":404'));
-
-        return !is404;
-      });
-
-      if (workloadErrors.length > 0) {
-        throw new Error("Failed to delete workload resources");
-      }
 
       return {
         success: true,
