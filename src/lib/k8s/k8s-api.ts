@@ -2,20 +2,24 @@
 
 import {
   AppsV1Api,
+  AutoscalingV2Api,
   BatchV1Api,
   CoreV1Api,
   CustomObjectsApi,
   KubeConfig,
   NetworkingV1Api,
+  RbacAuthorizationV1Api,
 } from "@kubernetes/client-node";
 import { createParallelAction } from "next-server-actions-parallel";
 
 type ApiClients = {
   customApi: CustomObjectsApi;
   appsApi: AppsV1Api;
+  autoscalingApi: AutoscalingV2Api;
   batchApi: BatchV1Api;
   coreApi: CoreV1Api;
   networkingApi: NetworkingV1Api;
+  rbacApi: RbacAuthorizationV1Api;
 };
 
 function createKubeConfig(kubeconfig: string): KubeConfig {
@@ -28,9 +32,11 @@ function createApiClients(kc: KubeConfig): ApiClients {
   return {
     customApi: kc.makeApiClient(CustomObjectsApi),
     appsApi: kc.makeApiClient(AppsV1Api),
+    autoscalingApi: kc.makeApiClient(AutoscalingV2Api),
     batchApi: kc.makeApiClient(BatchV1Api),
     coreApi: kc.makeApiClient(CoreV1Api),
     networkingApi: kc.makeApiClient(NetworkingV1Api),
+    rbacApi: kc.makeApiClient(RbacAuthorizationV1Api),
   };
 }
 
@@ -527,6 +533,49 @@ export const listBuiltinResources = createParallelAction(
         });
         return JSON.parse(JSON.stringify(res));
       }
+      case "horizontalpodautoscaler": {
+        const res =
+          await clients.autoscalingApi.listNamespacedHorizontalPodAutoscaler({
+            namespace,
+            labelSelector,
+          });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "role": {
+        const res = await clients.rbacApi.listNamespacedRole({
+          namespace,
+          labelSelector,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "rolebinding": {
+        const res = await clients.rbacApi.listNamespacedRoleBinding({
+          namespace,
+          labelSelector,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "serviceaccount": {
+        const res = await clients.coreApi.listNamespacedServiceAccount({
+          namespace,
+          labelSelector,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "job": {
+        const res = await clients.batchApi.listNamespacedJob({
+          namespace,
+          labelSelector,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "cronjob": {
+        const res = await clients.batchApi.listNamespacedCronJob({
+          namespace,
+          labelSelector,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
       default:
         throw new Error(`Unsupported builtin resource type: ${resourceType}`);
     }
@@ -604,6 +653,49 @@ export const getBuiltinResource = createParallelAction(
       }
       case "pvc": {
         const res = await clients.coreApi.readNamespacedPersistentVolumeClaim({
+          namespace,
+          name,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "horizontalpodautoscaler": {
+        const res =
+          await clients.autoscalingApi.readNamespacedHorizontalPodAutoscaler({
+            namespace,
+            name,
+          });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "role": {
+        const res = await clients.rbacApi.readNamespacedRole({
+          namespace,
+          name,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "rolebinding": {
+        const res = await clients.rbacApi.readNamespacedRoleBinding({
+          namespace,
+          name,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "serviceaccount": {
+        const res = await clients.coreApi.readNamespacedServiceAccount({
+          namespace,
+          name,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "job": {
+        const res = await clients.batchApi.readNamespacedJob({
+          namespace,
+          name,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "cronjob": {
+        const res = await clients.batchApi.readNamespacedCronJob({
           namespace,
           name,
         });
@@ -696,6 +788,55 @@ export const deleteBuiltinResource = createParallelAction(
         const res = await clients.coreApi.deleteNamespacedPersistentVolumeClaim(
           { namespace, name, propagationPolicy: "Foreground" }
         );
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "horizontalpodautoscaler": {
+        const res =
+          await clients.autoscalingApi.deleteNamespacedHorizontalPodAutoscaler({
+            namespace,
+            name,
+            propagationPolicy: "Foreground",
+          });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "role": {
+        const res = await clients.rbacApi.deleteNamespacedRole({
+          namespace,
+          name,
+          propagationPolicy: "Foreground",
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "rolebinding": {
+        const res = await clients.rbacApi.deleteNamespacedRoleBinding({
+          namespace,
+          name,
+          propagationPolicy: "Foreground",
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "serviceaccount": {
+        const res = await clients.coreApi.deleteNamespacedServiceAccount({
+          namespace,
+          name,
+          propagationPolicy: "Foreground",
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "job": {
+        const res = await clients.batchApi.deleteNamespacedJob({
+          namespace,
+          name,
+          propagationPolicy: "Foreground",
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "cronjob": {
+        const res = await clients.batchApi.deleteNamespacedCronJob({
+          namespace,
+          name,
+          propagationPolicy: "Foreground",
+        });
         return JSON.parse(JSON.stringify(res));
       }
       default:
@@ -1136,6 +1277,103 @@ export const removeDaemonSetMetadata = createParallelAction(
       success: true,
       name,
       key,
+    };
+  }
+);
+
+/**
+ * Delete resources by label selector for builtin resources.
+ */
+export const deleteBuiltinResourcesByLabelSelector = createParallelAction(
+  async (
+    kubeconfig: string,
+    namespace: string,
+    resourceType: string,
+    labelSelector: string
+  ) => {
+    const kc = createKubeConfig(kubeconfig);
+    const clients = createApiClients(kc);
+
+    switch (resourceType) {
+      case "service": {
+        const res = await clients.coreApi.deleteCollectionNamespacedService({
+          namespace,
+          labelSelector,
+        });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "ingress": {
+        const res =
+          await clients.networkingApi.deleteCollectionNamespacedIngress({
+            namespace,
+            labelSelector,
+          });
+        return JSON.parse(JSON.stringify(res));
+      }
+      case "pvc": {
+        const res =
+          await clients.coreApi.deleteCollectionNamespacedPersistentVolumeClaim(
+            {
+              namespace,
+              labelSelector,
+            }
+          );
+        return JSON.parse(JSON.stringify(res));
+      }
+      default:
+        throw new Error(
+          `Bulk deletion not supported for resource type: ${resourceType}`
+        );
+    }
+  }
+);
+
+/**
+ * Delete custom resources by label selector and then delete each individually.
+ */
+export const deleteCustomResourcesByLabelSelector = createParallelAction(
+  async (
+    kubeconfig: string,
+    group: string,
+    version: string,
+    namespace: string,
+    plural: string,
+    labelSelector: string
+  ) => {
+    const kc = createKubeConfig(kubeconfig);
+    const clients = createApiClients(kc);
+
+    // First, list all resources matching the label selector
+    const listResult = await clients.customApi.listNamespacedCustomObject({
+      group,
+      version,
+      namespace,
+      plural,
+      labelSelector,
+    });
+
+    const resources = JSON.parse(JSON.stringify(listResult));
+    const items = resources.items || [];
+
+    // Delete each resource individually
+    const deletePromises = items.map((item: { metadata: { name: string } }) =>
+      clients.customApi.deleteNamespacedCustomObject({
+        group,
+        version,
+        namespace,
+        plural,
+        name: item.metadata.name,
+      })
+    );
+
+    const results = await Promise.allSettled(deletePromises);
+    return {
+      success: true,
+      deletedCount: items.length,
+      results: results.map((result) => ({
+        success: result.status === "fulfilled",
+        error: result.status === "rejected" ? result.reason : null,
+      })),
     };
   }
 );

@@ -17,6 +17,98 @@ export const getProjectNameFromResource = (
 };
 
 /**
+ * Extract cluster names from project resources.
+ *
+ * @param resources Record of resource lists keyed by resource kind (from getProjectResourcesOptions)
+ * @returns Array of cluster names that belong to the project
+ */
+export const getClusterNamesFromProjectResources = (
+  resources: Record<string, { items: AnyKubernetesResource[] }>
+): string[] => {
+  const clusterResources = resources.cluster?.items || [];
+
+  return clusterResources
+    .map((cluster) => cluster.metadata.name)
+    .filter((name): name is string => Boolean(name));
+};
+
+/**
+ * Extract instance names from project resources.
+ *
+ * @param resources Record of resource lists keyed by resource kind (from getProjectResourcesOptions)
+ * @returns Array of instance names that belong to the project
+ */
+export const getInstanceNamesFromProjectResources = (
+  resources: Record<string, { items: AnyKubernetesResource[] }>
+): string[] => {
+  const instanceResources = resources.instance?.items || [];
+
+  return instanceResources
+    .map((instance) => instance.metadata.name)
+    .filter((name): name is string => Boolean(name));
+};
+
+/**
+ * Extract deployment names from project resources.
+ *
+ * @param resources Record of resource lists keyed by resource kind (from getProjectResourcesOptions)
+ * @returns Array of deployment names that belong to the project
+ */
+export const getDeploymentNamesFromProjectResources = (
+  resources: Record<string, { items: AnyKubernetesResource[] }>
+): string[] => {
+  const deploymentResources = resources.deployment?.items || [];
+
+  return deploymentResources
+    .map((deployment) => deployment.metadata.name)
+    .filter((name): name is string => Boolean(name));
+};
+
+/**
+ * Extract statefulset names from project resources.
+ *
+ * @param resources Record of resource lists keyed by resource kind (from getProjectResourcesOptions)
+ * @returns Array of statefulset names that belong to the project
+ */
+export const getStatefulSetNamesFromProjectResources = (
+  resources: Record<string, { items: AnyKubernetesResource[] }>
+): string[] => {
+  const statefulSetResources = resources.statefulset?.items || [];
+
+  return statefulSetResources
+    .map((statefulSet) => statefulSet.metadata.name)
+    .filter((name): name is string => Boolean(name));
+};
+
+/**
+ * Extract other resource names from project resources (excluding clusters, instances, deployments, and statefulsets).
+ *
+ * @param resources Record of resource lists keyed by resource kind (from getProjectResourcesOptions)
+ * @returns Record of resource type to array of resource names
+ */
+export const getOtherResourceNamesFromProjectResources = (
+  resources: Record<string, { items: AnyKubernetesResource[] }>
+): Record<string, string[]> => {
+  const excludedTypes = new Set([
+    "cluster",
+    "instance",
+    "deployment",
+    "statefulset",
+  ]);
+  const otherResources: Record<string, string[]> = {};
+
+  Object.entries(resources).forEach(([resourceType, resourceList]) => {
+    if (!excludedTypes.has(resourceType) && resourceList.items.length > 0) {
+      otherResources[resourceType] = resourceList.items
+        .map((resource) => resource.metadata.name)
+        .filter((name): name is string => Boolean(name));
+    }
+  });
+
+  return otherResources;
+};
+
+/**
  * Remove ingress resources from workload connection candidates
  */
 const excludeIngressFromCandidates = (

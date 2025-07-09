@@ -1,18 +1,21 @@
 "use client";
 
-import { CopilotSidebar } from "@copilotkit/react-ui";
 import { Plus } from "lucide-react";
-import CreateProject from "@/components/app/project/create-project";
-import { ProjectCard } from "@/components/app/project/project-card";
+import dynamic from "next/dynamic";
+import ProjectCard from "@/components/app/project/project-card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { useAI } from "@/hooks/ai/use-ai";
-import { useProjects } from "@/hooks/app/project/use-projects";
+import useAI from "@/hooks/ai/use-ai";
+import useProjects from "@/hooks/app/project/use-projects";
 
-import "@copilotkit/react-ui/styles.css";
-import { AIProvider } from "@/components/app/base/provider/ai-provider";
+const CreateProject = dynamic(
+  () => import("@/components/app/project/create-project")
+);
+const CopilotSidebar = dynamic(() =>
+  import("@copilotkit/react-ui").then((mod) => mod.CopilotSidebar)
+);
 
-function Page() {
+export default function Page() {
   const {
     data: projects,
     isLoading: projectsLoading,
@@ -86,13 +89,5 @@ function Page() {
         }}
       />
     </div>
-  );
-}
-
-export default function PageWrapper() {
-  return (
-    <AIProvider>
-      <Page />
-    </AIProvider>
   );
 }

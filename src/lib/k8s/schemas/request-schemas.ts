@@ -97,6 +97,16 @@ export const BatchDeleteRequestSchema = z.object({
   resources: z.array(ResourceTargetSchema),
 });
 
+// Delete project request schema
+export const DeleteInstanceRelatedRequestSchema = z.object({
+  instanceName: z.string(),
+});
+
+// Delete cluster request schema
+export const DeleteClusterRelatedRequestSchema = z.object({
+  instanceName: z.string(),
+});
+
 // Inferred types for input parameters
 export type ListCustomResourceRequest = z.infer<
   typeof ListCustomResourceRequestSchema
@@ -136,3 +146,9 @@ export type BatchRemoveRequest = z.infer<typeof BatchRemoveRequestSchema>;
 // Delete request types
 export type DeleteResourceRequest = z.infer<typeof DeleteResourceRequestSchema>;
 export type BatchDeleteRequest = z.infer<typeof BatchDeleteRequestSchema>;
+export type DeleteInstanceRelatedRequest = z.infer<
+  typeof DeleteInstanceRelatedRequestSchema
+>;
+export type DeleteClusterRelatedRequest = z.infer<
+  typeof DeleteClusterRelatedRequestSchema
+>;

@@ -5,7 +5,7 @@ import { use } from "react";
 import type { AIState } from "@/components/app/base/provider/ai-provider";
 import { AuthContext } from "@/contexts/auth-context";
 
-export function useAI() {
+export default function useAI() {
   const { user } = use(AuthContext);
 
   useCoAgent<AIState>({

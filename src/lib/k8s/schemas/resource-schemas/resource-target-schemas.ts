@@ -21,6 +21,12 @@ export const BuiltinResourceKindSchema = z.enum([
   "secret",
   "pod",
   "pvc",
+  "horizontalpodautoscaler",
+  "role",
+  "rolebinding",
+  "serviceaccount",
+  "job",
+  "cronjob",
 ]);
 
 export const BuiltinResourceTargetSchema = z.object({
