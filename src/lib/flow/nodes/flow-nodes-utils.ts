@@ -1,12 +1,12 @@
 import type { Node } from "@xyflow/react";
 import type { AnyKubernetesResource } from "@/lib/k8s/schemas";
 
-import { convertResourceToNode as convertClusterResourceToNode } from "./cluster/flow-cluster-utils";
-import { convertResourceToNode as convertDeploymentResourceToNode } from "./deployment/flow-deployment-utils";
-import { convertResourceToNode as convertDevboxResourceToNode } from "./devbox/flow-devbox-utils";
-import { convertResourceToNode as convertIngressResourceToNode } from "./ingress/flow-ingress-utils";
-import { convertResourceToNode as convertObjectStorageBucketResourceToNode } from "./objectstoragebucket/flow-objectstoragebucket-utils";
-import { convertResourceToNode as convertStatefulSetResourceToNode } from "./statefulset/flow-statefulset-utils";
+import { convertResourceToNode as convertClusterResourceToNode } from "./resource-nodes/cluster/flow-cluster-utils";
+import { convertResourceToNode as convertDeploymentResourceToNode } from "./resource-nodes/deployment/flow-deployment-utils";
+import { convertResourceToNode as convertDevboxResourceToNode } from "./resource-nodes/devbox/flow-devbox-utils";
+import { convertResourceToNode as convertIngressResourceToNode } from "./resource-nodes/ingress/flow-ingress-utils";
+import { convertResourceToNode as convertObjectStorageBucketResourceToNode } from "./resource-nodes/objectstoragebucket/flow-objectstoragebucket-utils";
+import { convertResourceToNode as convertStatefulSetResourceToNode } from "./resource-nodes/statefulset/flow-statefulset-utils";
 
 type NodeData = Record<string, unknown>;
 type ConverterFn = (resource: AnyKubernetesResource) => NodeData;
