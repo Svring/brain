@@ -7,14 +7,14 @@ import {
   getCustomResource,
   listBuiltinResources,
   listCustomResources,
+  listAllResources,
 } from "../k8s-api/k8s-api-query";
 import { K8sApiContext } from "../k8s-api/k8s-api-schemas/context-schemas";
 import {
   BuiltinResourceTarget,
   CustomResourceTarget,
 } from "../k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { BUILTIN_RESOURCES } from "../k8s-constant/k8s-constant-builtin-resource";
-import { CUSTOM_RESOURCES } from "../k8s-constant/k8s-constant-custom-resource";
+// Note: BUILTIN_RESOURCES and CUSTOM_RESOURCES are now used in k8s-api-query
 
 /**
  * Query options for listing custom resources
@@ -178,41 +178,11 @@ export const listAllResourcesOptions = (
       labelSelector,
     ],
     queryFn: async () => {
-      // Get all builtin resources
-      const builtinPromises = Object.entries(BUILTIN_RESOURCES).map(
-        ([name, config]) =>
-          runParallelAction(
-            listBuiltinResources(context, {
-              type: "builtin",
-              resourceType: config.resourceType,
-              labelSelector,
-            })
-          ).then((result) => [name, result])
+      const result = await runParallelAction(
+        listAllResources(context, labelSelector)
       );
-
-      // Get all custom resources
-      const customPromises = Object.entries(CUSTOM_RESOURCES).map(
-        ([name, config]) =>
-          runParallelAction(
-            listCustomResources(context, {
-              type: "custom",
-              group: config.group,
-              version: config.version,
-              plural: config.plural,
-              labelSelector,
-            })
-          ).then((result) => [name, result])
-      );
-
-      const [builtinResults, customResults] = await Promise.all([
-        Promise.all(builtinPromises),
-        Promise.all(customPromises),
-      ]);
-
-      return {
-        builtin: Object.fromEntries(builtinResults),
-        custom: Object.fromEntries(customResults),
-      };
+      return result;
     },
     enabled: !!context.namespace && !!context.kubeconfig,
+    staleTime: 1000 * 30,
   });

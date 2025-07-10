@@ -19,13 +19,16 @@ import {
   BuiltinResourceGetResponse,
   CustomResourceGetResponse,
 } from "./k8s-api-schemas/req-res-schemas/res-get-schemas";
+import { BUILTIN_RESOURCES } from "../k8s-constant/k8s-constant-builtin-resource";
+import { CUSTOM_RESOURCES } from "../k8s-constant/k8s-constant-custom-resource";
+import _ from "lodash";
 
 /**
  * List custom resources in Kubernetes.
  */
 export const listCustomResources = createParallelAction(
   async (context: K8sApiContext, target: CustomResourceTarget) => {
-    const { clients } = getApiClients(context.kubeconfig);
+    const { clients } = await getApiClients(context.kubeconfig);
     const customResourceListResponse =
       await invokeApiMethod<CustomResourceListResponse>(
         clients.customApi,
@@ -47,7 +50,7 @@ export const listCustomResources = createParallelAction(
  */
 export const getCustomResource = createParallelAction(
   async (context: K8sApiContext, target: CustomResourceTarget) => {
-    const { clients } = getApiClients(context.kubeconfig);
+    const { clients } = await getApiClients(context.kubeconfig);
     const customResourceGetResponse =
       await invokeApiMethod<CustomResourceGetResponse>(
         clients.customApi,
@@ -69,7 +72,7 @@ export const getCustomResource = createParallelAction(
  */
 export const listBuiltinResources = createParallelAction(
   async (context: K8sApiContext, target: BuiltinResourceTarget) => {
-    const { client, resourceConfig } = getBuiltinApiClient(
+    const { client, resourceConfig } = await getBuiltinApiClient(
       context.kubeconfig,
       target.resourceType
     );
@@ -93,7 +96,7 @@ export const listBuiltinResources = createParallelAction(
  */
 export const getBuiltinResource = createParallelAction(
   async (context: K8sApiContext, target: BuiltinResourceTarget) => {
-    const { client, resourceConfig } = getBuiltinApiClient(
+    const { client, resourceConfig } = await getBuiltinApiClient(
       context.kubeconfig,
       target.resourceType
     );
@@ -109,5 +112,43 @@ export const getBuiltinResource = createParallelAction(
       );
 
     return builtinResourceGetResponse;
+  }
+);
+
+/**
+ * List all resources (both custom and builtin) in parallel.
+ */
+export const listAllResources = createParallelAction(
+  async (context: K8sApiContext, labelSelector?: string) => {
+    // Prepare builtin resource promises
+    const builtinPromises = _.map(BUILTIN_RESOURCES, (config, name) =>
+      listBuiltinResources(context, {
+        type: "builtin",
+        resourceType: config.resourceType,
+        labelSelector,
+      }).then((result) => [name, result])
+    );
+
+    // Prepare custom resource promises
+    const customPromises = _.map(CUSTOM_RESOURCES, (config, name) =>
+      listCustomResources(context, {
+        type: "custom",
+        group: config.group,
+        version: config.version,
+        plural: config.plural,
+        labelSelector,
+      }).then((result) => [name, result])
+    );
+
+    // Execute all promises in parallel
+    const [builtinResults, customResults] = await Promise.all([
+      Promise.all(builtinPromises),
+      Promise.all(customPromises),
+    ]);
+
+    return {
+      builtin: _.fromPairs(builtinResults),
+      custom: _.fromPairs(customResults),
+    };
   }
 );

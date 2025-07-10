@@ -16,6 +16,10 @@ import {
 } from "../k8s-constant/k8s-constant-builtin-resource";
 import { K8sApiClients } from "../k8s-constant/k8s-constant-client";
 import _ from "lodash";
+import { QueryClient } from "@tanstack/react-query";
+import { CustomResourceTarget } from "./k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { BuiltinResourceTarget } from "./k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { K8sApiContext } from "./k8s-api-schemas/context-schemas";
 
 /**
  * Get the current namespace from a kubeconfig string.
@@ -36,11 +40,16 @@ export async function getCurrentNamespace(
 /**
  * Helper to add missing apiVersion and kind to builtin resource lists.
  */
-export function addMissingFields<T extends Record<string, unknown>>(
+export async function addMissingFields<T extends Record<string, unknown>>(
   items: T[],
   apiVersion: string,
   kind: string
-) {
+): Promise<{
+  apiVersion: string;
+  kind: string;
+  items: T[];
+}> {
+  await new Promise((resolve) => setTimeout(resolve, 0));
   return {
     apiVersion: `${apiVersion}List`,
     kind: `${kind}List`,
@@ -55,10 +64,9 @@ export function addMissingFields<T extends Record<string, unknown>>(
 const clientCache: Record<string, { kc: KubeConfig; clients: K8sApiClients }> =
   {};
 
-export function getApiClients(kubeconfig: string): {
-  kc: KubeConfig;
-  clients: K8sApiClients;
-} {
+export async function getApiClients(
+  kubeconfig: string
+): Promise<{ kc: KubeConfig; clients: K8sApiClients }> {
   if (_.has(clientCache, kubeconfig)) {
     return _.get(clientCache, kubeconfig);
   }
@@ -117,14 +125,14 @@ export async function invokeApiMethod<T>(
 /**
  * Get the correct API client for a builtin resource type, given kubeconfig and resourceType.
  */
-export function getBuiltinApiClient(
+export async function getBuiltinApiClient(
   kubeconfig: string,
   resourceType: string
-): {
+): Promise<{
   client: K8sApiClients[keyof K8sApiClients];
   resourceConfig: BuiltinResourceConfig;
-} {
-  const { clients } = getApiClients(kubeconfig);
+}> {
+  const { clients } = await getApiClients(kubeconfig);
   const resourceConfig = BUILTIN_RESOURCES[
     resourceType
   ] as BuiltinResourceConfig;
@@ -140,18 +148,28 @@ export function getBuiltinApiClient(
 /**
  * Helper function to escape slashes in keys for JSON Patch paths
  */
-export function escapeSlash(key: string): string {
+export async function escapeSlash(key: string): Promise<string> {
+  await new Promise((resolve) => setTimeout(resolve, 0));
   return key.replace(/\//g, "~1");
 }
 
 /**
  * Helper function to invalidate resource queries for both custom and builtin resources
+ * Note: This function should only be called from client-side code where QueryClient is available
  */
-export function invalidateResourceQueries(
-  queryClient: any,
-  context: { namespace: string },
-  target: any
-) {
+export async function invalidateResourceQueries(
+  queryClient: QueryClient,
+  context: K8sApiContext,
+  target: CustomResourceTarget | BuiltinResourceTarget
+): Promise<void> {
+  // Check if we're on the server side and skip invalidation
+  if (typeof window === "undefined") {
+    console.log(
+      "🔄 [invalidateResourceQueries] Skipping query invalidation on server side"
+    );
+    return;
+  }
+
   if (target.type === "custom") {
     // Invalidate custom resource queries
     queryClient.invalidateQueries({

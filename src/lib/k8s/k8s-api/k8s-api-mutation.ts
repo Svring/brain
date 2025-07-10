@@ -27,14 +27,17 @@ import {
   BuiltinResourcePatchResponse,
   CustomResourcePatchResponse,
 } from "./k8s-api-schemas/req-res-schemas/res-patch-schemas";
-import { CustomResourceListResponse } from "./k8s-api-schemas/req-res-schemas/res-list-schemas";
+import {
+  CustomResourceListResponse,
+  BuiltinResourceListResponse,
+} from "./k8s-api-schemas/req-res-schemas/res-list-schemas";
 
 /**
  * Delete a custom resource by name in Kubernetes.
  */
 export const deleteCustomResource = createParallelAction(
   async (context: K8sApiContext, target: CustomResourceTarget) => {
-    const { clients } = getApiClients(context.kubeconfig);
+    const { clients } = await getApiClients(context.kubeconfig);
 
     if (_.isNil(target.name)) {
       throw new Error("Resource name is required for deletion");
@@ -51,7 +54,7 @@ export const deleteCustomResource = createParallelAction(
         name: target.name,
       }
     );
-    return result;
+    return JSON.parse(JSON.stringify(result));
   }
 );
 
@@ -60,7 +63,7 @@ export const deleteCustomResource = createParallelAction(
  */
 export const deleteBuiltinResource = createParallelAction(
   async (context: K8sApiContext, target: BuiltinResourceTarget) => {
-    const { client, resourceConfig } = getBuiltinApiClient(
+    const { client, resourceConfig } = await getBuiltinApiClient(
       context.kubeconfig,
       target.resourceType
     );
@@ -78,7 +81,7 @@ export const deleteBuiltinResource = createParallelAction(
         propagationPolicy: "Foreground",
       }
     );
-    return result;
+    return JSON.parse(JSON.stringify(result));
   }
 );
 
@@ -93,7 +96,7 @@ export const patchCustomResourceMetadata = createParallelAction(
     key: string,
     value: string
   ) => {
-    const { clients } = getApiClients(context.kubeconfig);
+    const { clients } = await getApiClients(context.kubeconfig);
 
     if (_.isNil(target.name)) {
       throw new Error("Resource name is required for metadata patching");
@@ -141,7 +144,7 @@ export const patchCustomResourceMetadata = createParallelAction(
       }
     );
 
-    return result;
+    return JSON.parse(JSON.stringify(result));
   }
 );
 
@@ -155,7 +158,7 @@ export const removeCustomResourceMetadata = createParallelAction(
     metadataType: "annotations" | "labels",
     key: string
   ) => {
-    const { clients } = getApiClients(context.kubeconfig);
+    const { clients } = await getApiClients(context.kubeconfig);
 
     if (_.isNil(target.name)) {
       throw new Error("Resource name is required for metadata removal");
@@ -178,7 +181,7 @@ export const removeCustomResourceMetadata = createParallelAction(
       }
     );
 
-    return result;
+    return JSON.parse(JSON.stringify(result));
   }
 );
 
@@ -193,7 +196,7 @@ export const patchBuiltinResourceMetadata = createParallelAction(
     key: string,
     value: string
   ) => {
-    const { client, resourceConfig } = getBuiltinApiClient(
+    const { client, resourceConfig } = await getBuiltinApiClient(
       context.kubeconfig,
       target.resourceType
     );
@@ -238,7 +241,7 @@ export const patchBuiltinResourceMetadata = createParallelAction(
       }
     );
 
-    return result;
+    return JSON.parse(JSON.stringify(result));
   }
 );
 
@@ -252,7 +255,7 @@ export const removeBuiltinResourceMetadata = createParallelAction(
     metadataType: "annotations" | "labels",
     key: string
   ) => {
-    const { client, resourceConfig } = getBuiltinApiClient(
+    const { client, resourceConfig } = await getBuiltinApiClient(
       context.kubeconfig,
       target.resourceType
     );
@@ -278,7 +281,7 @@ export const removeBuiltinResourceMetadata = createParallelAction(
       }
     );
 
-    return result;
+    return JSON.parse(JSON.stringify(result));
   }
 );
 
@@ -290,15 +293,79 @@ export const deleteBuiltinResourcesByLabelSelector = createParallelAction(
     context: K8sApiContext,
     target: BuiltinResourceTarget & { labelSelector: string }
   ) => {
-    const { client, resourceConfig } = getBuiltinApiClient(
+    const { client, resourceConfig } = await getBuiltinApiClient(
       context.kubeconfig,
       target.resourceType
     );
 
     if (_.isNil(resourceConfig.deleteCollectionMethod)) {
-      throw new Error(
-        `Bulk deletion not supported for resource type: ${target.resourceType}`
+      // Fall back to individual deletion for resources that don't support bulk deletion
+      // First, list all resources matching the label selector
+      const listResult = await invokeApiMethod<BuiltinResourceListResponse>(
+        client,
+        resourceConfig.listMethod,
+        {
+          namespace: context.namespace,
+          labelSelector: target.labelSelector,
+        }
       );
+
+      const items = listResult.items || [];
+
+      if (_.isEmpty(items)) {
+        return { deletedCount: 0, results: [] };
+      }
+
+      // Delete each resource individually with parallel processing
+      const deletePromises = items.map((item: any, index: number) => {
+        const resourceName = item.metadata?.name || "unknown";
+
+        return invokeApiMethod<BuiltinResourceDeleteResponse>(
+          client,
+          resourceConfig.deleteMethod,
+          {
+            namespace: context.namespace,
+            name: resourceName,
+            propagationPolicy: "Foreground",
+          }
+        )
+          .then((result) => {
+            return JSON.parse(JSON.stringify(result));
+          })
+          .catch((error) => {
+            throw error;
+          });
+      });
+
+      const results = await Promise.allSettled(deletePromises);
+      const deletedCount = results.filter(
+        (r: any) => r.status === "fulfilled"
+      ).length;
+      const failedCount = results.filter(
+        (r: any) => r.status === "rejected"
+      ).length;
+
+      // Convert results to plain objects to avoid serialization issues
+      const plainResults = results.map((result) => {
+        if (result.status === "fulfilled") {
+          return {
+            status: "fulfilled",
+            value: result.value
+              ? JSON.parse(JSON.stringify(result.value))
+              : null,
+          };
+        } else {
+          return {
+            status: "rejected",
+            reason: {
+              message: result.reason?.message || "Unknown error",
+              name: result.reason?.name || "Error",
+            },
+          };
+        }
+      });
+
+      return { deletedCount, results: plainResults };
     }
 
     const result = await invokeApiMethod<BuiltinResourceDeleteResponse>(
@@ -309,7 +376,8 @@ export const deleteBuiltinResourcesByLabelSelector = createParallelAction(
         labelSelector: target.labelSelector,
       }
     );
-    return result;
+
+    return JSON.parse(JSON.stringify(result));
   }
 );
 
@@ -318,7 +386,7 @@ export const deleteBuiltinResourcesByLabelSelector = createParallelAction(
  */
 export const deleteCustomResourcesByLabelSelector = createParallelAction(
   async (context: K8sApiContext, target: CustomResourceTarget) => {
-    const { clients } = getApiClients(context.kubeconfig);
+    const { clients } = await getApiClients(context.kubeconfig);
 
     // First, list all resources matching the label selector
     const listResult = await invokeApiMethod<CustomResourceListResponse>(
@@ -340,8 +408,10 @@ export const deleteCustomResourcesByLabelSelector = createParallelAction(
     }
 
     // Delete each resource individually with parallel processing
-    const deletePromises = items.map((item) =>
-      invokeApiMethod<CustomResourceDeleteResponse>(
+    const deletePromises = items.map((item: any) => {
+      const resourceName = item.metadata?.name || "unknown";
+
+      return invokeApiMethod<CustomResourceDeleteResponse>(
         clients.customApi,
         "deleteNamespacedCustomObject",
         {
@@ -349,12 +419,44 @@ export const deleteCustomResourcesByLabelSelector = createParallelAction(
           version: target.version,
           namespace: context.namespace,
           plural: target.plural,
-          name: item.metadata.name,
+          name: resourceName,
         }
       )
-    );
+        .then((result) => {
+          return JSON.parse(JSON.stringify(result));
+        })
+        .catch((error) => {
+          throw error;
+        });
+    });
 
-    return await Promise.allSettled(deletePromises);
+    const results = await Promise.allSettled(deletePromises);
+    const deletedCount = results.filter(
+      (r: any) => r.status === "fulfilled"
+    ).length;
+    const failedCount = results.filter(
+      (r: any) => r.status === "rejected"
+    ).length;
+
+    // Convert results to plain objects to avoid serialization issues
+    const plainResults = results.map((result) => {
+      if (result.status === "fulfilled") {
+        return {
+          status: "fulfilled",
+          value: result.value ? JSON.parse(JSON.stringify(result.value)) : null,
+        };
+      } else {
+        return {
+          status: "rejected",
+          reason: {
+            message: result.reason?.message || "Unknown error",
+            name: result.reason?.name || "Error",
+          },
+        };
+      }
+    });
+
+    return plainResults;
   }
 );
 
@@ -364,7 +466,7 @@ export const deleteCustomResourcesByLabelSelector = createParallelAction(
  */
 export const applyInstanceYaml = createParallelAction(
   async (context: K8sApiContext, yamlContent: string) => {
-    const { clients } = getApiClients(context.kubeconfig);
+    const { clients } = await getApiClients(context.kubeconfig);
 
     // Parse YAML content
     const resource = load(yamlContent) as Record<string, unknown>;
@@ -402,7 +504,7 @@ export const applyInstanceYaml = createParallelAction(
         }
       );
 
-      return result;
+      return JSON.parse(JSON.stringify(result));
     } catch (error: unknown) {
       // Assume resource doesn't exist, create it
       const result = await invokeApiMethod<CustomResourcePatchResponse>(
@@ -417,7 +519,7 @@ export const applyInstanceYaml = createParallelAction(
         }
       );
 
-      return result;
+      return JSON.parse(JSON.stringify(result));
     }
   }
 );
@@ -431,7 +533,7 @@ export const patchCustomResource = createParallelAction(
     target: CustomResourceTarget,
     patchBody: Operation[]
   ) => {
-    const { clients } = getApiClients(context.kubeconfig);
+    const { clients } = await getApiClients(context.kubeconfig);
 
     if (_.isNil(target.name)) {
       throw new Error("Resource name is required for patching");
@@ -450,6 +552,6 @@ export const patchCustomResource = createParallelAction(
       }
     );
 
-    return result;
+    return JSON.parse(JSON.stringify(result));
   }
 );

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { useDeleteProjectResourcesMutation } from "@/lib/app/project/project-mutation";
+import { useDeleteProjectMutation } from "@/lib/app/project/project-method/project-mutation";
 import { getCurrentNamespace, getDecodedKubeconfig } from "@/lib/k8s/k8s-utils";
 import { K8sApiContextSchema } from "@/lib/k8s/schemas";
 
@@ -29,7 +30,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ projectName }) => {
     kubeconfig: getDecodedKubeconfig(),
   });
 
-  const deleteProjectMutation = useDeleteProjectResourcesMutation(context);
+  const deleteProjectMutation = useDeleteProjectMutation(context);
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -39,9 +40,15 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ projectName }) => {
       { projectName },
       {
         onSuccess: (data) => {
+          console.log("delete project success", data);
+          const totalDeleted =
+            (data.builtinDeletions || 0) +
+            (data.customDeletions || 0) +
+            (data.instanceDeletions || 0) +
+            (data.clusterDeletions || 0);
           toast({
             title: "Project deleted",
-            description: `${projectName} has been deleted successfully. ${data.totalDeleted} resources were removed.`,
+            description: `${projectName} has been deleted successfully. ${totalDeleted} resources were removed.`,
           });
         },
         onError: (error) => {
