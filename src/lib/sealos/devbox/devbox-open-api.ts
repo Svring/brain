@@ -52,9 +52,25 @@ import {
 } from "./schemas";
 
 // Helper to create axios instance per request
-function createApi(context: DevboxApiContext) {
+function createDevboxApi(context: DevboxApiContext) {
   return axios.create({
-    baseURL: `https://devbox.${context.baseURL}`,
+    baseURL: `https://devbox.${context.baseURL}/api/v1/DevBox`,
+    headers: {
+      "Content-Type": "application/json",
+      ...(context.authorization
+        ? { Authorization: context.authorization }
+        : {}),
+      ...(context.authorizationBearer
+        ? { "Authorization-Bearer": context.authorizationBearer }
+        : {}),
+    },
+  });
+}
+
+// Helper to create axios instance for Application APIs
+function createAppApi(context: DevboxApiContext) {
+  return axios.create({
+    baseURL: `https://devbox.${context.baseURL}/api/v1`,
     headers: {
       "Content-Type": "application/json",
       ...(context.authorization
@@ -74,8 +90,8 @@ export const createDevbox = createParallelAction(
     context: DevboxApiContext
   ): Promise<DevboxCreateResponse> => {
     const validatedRequest = DevboxCreateRequestSchema.parse(request);
-    const api = createApi(context);
-    const response = await api.post("/api/v1/DevBox/create", validatedRequest);
+    const api = createDevboxApi(context);
+    const response = await api.post("/create", validatedRequest);
     return DevboxCreateResponseSchema.parse(response.data);
   }
 );
@@ -86,11 +102,8 @@ export const manageDevboxLifecycle = createParallelAction(
     context: DevboxApiContext
   ): Promise<DevboxLifecycleResponse> => {
     const validatedRequest = DevboxLifecycleRequestSchema.parse(request);
-    const api = createApi(context);
-    const response = await api.post(
-      "/api/v1/DevBox/lifecycle",
-      validatedRequest
-    );
+    const api = createDevboxApi(context);
+    const response = await api.post("/lifecycle", validatedRequest);
     return DevboxLifecycleResponseSchema.parse(response.data);
   }
 );
@@ -100,8 +113,8 @@ export const deleteDevbox = createParallelAction(
     devboxName: string,
     context: DevboxApiContext
   ): Promise<DevboxDeleteResponse> => {
-    const api = createApi(context);
-    const response = await api.delete("/api/v1/DevBox/delete", {
+    const api = createDevboxApi(context);
+    const response = await api.delete("/delete", {
       params: { devboxName },
     });
     return DevboxDeleteResponseSchema.parse(response.data);
@@ -115,8 +128,8 @@ export const releaseDevbox = createParallelAction(
     context: DevboxApiContext
   ): Promise<DevboxReleaseResponse> => {
     const validatedRequest = DevboxReleaseRequestSchema.parse(request);
-    const api = createApi(context);
-    const response = await api.post("/api/v1/DevBox/release", validatedRequest);
+    const api = createDevboxApi(context);
+    const response = await api.post("/release", validatedRequest);
     return DevboxReleaseResponseSchema.parse(response.data);
   }
 );
@@ -126,8 +139,8 @@ export const getDevboxReleases = createParallelAction(
     devboxName: string,
     context: DevboxApiContext
   ): Promise<DevboxReleasesResponse> => {
-    const api = createApi(context);
-    const response = await api.get("/api/v1/DevBox/releases", {
+    const api = createDevboxApi(context);
+    const response = await api.get("/releases", {
       params: { devboxName },
     });
     return DevboxReleasesResponseSchema.parse(response.data);
@@ -140,8 +153,8 @@ export const deployDevbox = createParallelAction(
     context: DevboxApiContext
   ): Promise<DevboxDeployResponse> => {
     const validatedRequest = DevboxDeployRequestSchema.parse(request);
-    const api = createApi(context);
-    const response = await api.post("/api/deployDevbox", validatedRequest);
+    const api = createDevboxApi(context);
+    const response = await api.post("/deployDevbox", validatedRequest);
     return DevboxDeployResponseSchema.parse(response.data);
   }
 );
@@ -152,8 +165,8 @@ export const getDevboxByName = createParallelAction(
     devboxName: string,
     context: DevboxApiContext
   ): Promise<DevboxGetResponse> => {
-    const api = createApi(context);
-    const response = await api.get("/api/v1/DevBox/get", {
+    const api = createDevboxApi(context);
+    const response = await api.get("/get", {
       params: { devboxName },
     });
     return DevboxGetResponseSchema.parse(response.data);
@@ -162,8 +175,8 @@ export const getDevboxByName = createParallelAction(
 
 export const getDevboxList = createParallelAction(
   async (context: DevboxApiContext): Promise<DevboxListResponse> => {
-    const api = createApi(context);
-    const response = await api.get("/api/v1/DevBox/list");
+    const api = createDevboxApi(context);
+    const response = await api.get("/list");
     return DevboxListResponseSchema.parse(response.data);
   }
 );
@@ -175,11 +188,8 @@ export const createDevboxPort = createParallelAction(
     context: DevboxApiContext
   ): Promise<DevboxPortCreateResponse> => {
     const validatedRequest = DevboxPortCreateRequestSchema.parse(request);
-    const api = createApi(context);
-    const response = await api.post(
-      "/api/v1/DevBox/ports/create",
-      validatedRequest
-    );
+    const api = createDevboxApi(context);
+    const response = await api.post("/ports/create", validatedRequest);
     return DevboxPortCreateResponseSchema.parse(response.data);
   }
 );
@@ -190,8 +200,8 @@ export const removeDevboxPort = createParallelAction(
     port: number,
     context: DevboxApiContext
   ): Promise<DevboxPortRemoveResponse> => {
-    const api = createApi(context);
-    const response = await api.post("/api/v1/DevBox/ports/remove", {
+    const api = createDevboxApi(context);
+    const response = await api.post("/ports/remove", {
       devboxName,
       port,
     });
@@ -209,16 +219,16 @@ export const createApp = createParallelAction(
     const validatedRequest = CreateAppRequestSchema.parse({
       appForm: validatedAppForm,
     });
-    const api = createApi(context);
-    const response = await api.post("/api/v1/createApp", validatedRequest);
+    const api = createAppApi(context);
+    const response = await api.post("/createApp", validatedRequest);
     return CreateAppResponseSchema.parse(response.data);
   }
 );
 
 export const getApps = createParallelAction(
   async (context: DevboxApiContext): Promise<GetAppsResponse> => {
-    const api = createApi(context);
-    const response = await api.get("/api/v1/getApps");
+    const api = createAppApi(context);
+    const response = await api.get("/getApps");
     return GetAppsResponseSchema.parse(response.data);
   }
 );
@@ -228,8 +238,8 @@ export const getAppByName = createParallelAction(
     appName: string,
     context: DevboxApiContext
   ): Promise<GetAppByNameResponse> => {
-    const api = createApi(context);
-    const response = await api.get("/api/v1/getAppByAppName", {
+    const api = createAppApi(context);
+    const response = await api.get("/getAppByAppName", {
       params: { appName },
     });
     return GetAppByNameResponseSchema.parse(response.data);
@@ -241,8 +251,8 @@ export const deleteApp = createParallelAction(
     name: string,
     context: DevboxApiContext
   ): Promise<DeleteAppResponse> => {
-    const api = createApi(context);
-    const response = await api.delete("/api/v1/delAppByName", {
+    const api = createAppApi(context);
+    const response = await api.delete("/delAppByName", {
       params: { name },
     });
     return DeleteAppResponseSchema.parse(response.data);
@@ -254,8 +264,8 @@ export const getAppPods = createParallelAction(
     name: string,
     context: DevboxApiContext
   ): Promise<GetAppPodsResponse> => {
-    const api = createApi(context);
-    const response = await api.get("/api/v1/getAppPodsByAppName", {
+    const api = createAppApi(context);
+    const response = await api.get("/getAppPodsByAppName", {
       params: { name },
     });
     return GetAppPodsResponseSchema.parse(response.data);
