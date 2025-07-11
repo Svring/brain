@@ -1,10 +1,12 @@
 "use client";
 
 import BaseNode from "../base-node";
+import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface ObjectStorageNodeProps {
   name: string;
   policy: string;
+  target: CustomResourceTarget;
 }
 
 export default function ObjectStorageNode({
@@ -12,10 +14,10 @@ export default function ObjectStorageNode({
 }: {
   data: ObjectStorageNodeProps;
 }) {
-  const { name, policy } = data;
+  const { name, policy, target } = data;
 
   return (
-    <BaseNode>
+    <BaseNode target={target}>
       <div className="flex h-full flex-col justify-between">
         {/* Name */}
         <div className="flex items-center gap-2 truncate font-medium">

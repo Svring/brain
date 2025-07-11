@@ -1,16 +1,42 @@
 import { Handle, Position } from "@xyflow/react";
 import { BaseNode } from "@/components/flow/components/base-node";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import { useDeleteResourceMutation } from "@/lib/k8s/k8s-method/k8s-mutation";
+import { useRemoveFromProjectMutation } from "@/lib/app/project/project-method/project-mutation";
+import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
+import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface BaseNodeProps {
   children: React.ReactNode;
+  target: CustomResourceTarget | BuiltinResourceTarget;
 }
 
-export default function BaseNodeWrapper({ children }: BaseNodeProps) {
+export default function BaseNodeWrapper({ children, target }: BaseNodeProps) {
+  const context = createK8sContext();
+  const removeFromProjectMutation = useRemoveFromProjectMutation(context);
+  const deleteResourceMutation = useDeleteResourceMutation(context);
+
   return (
-    <BaseNode>
-      <Handle position={Position.Top} type="source" />
-      {children}
-      <Handle position={Position.Bottom} type="target" />
-    </BaseNode>
+    <ContextMenu>
+      <ContextMenuTrigger>
+        <BaseNode>
+          <Handle position={Position.Top} type="source" />
+          {children}
+          <Handle position={Position.Bottom} type="target" />
+        </BaseNode>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem onClick={() => {}}>
+          Remove from project
+        </ContextMenuItem>
+        <ContextMenuItem onClick={() => {}}>Delete resource</ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
   );
 }

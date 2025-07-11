@@ -6,8 +6,9 @@ import ObjectStorageNode from "./object-storage/object-storage-node";
 import PersistentVolumeNode from "./persistent-volume/persistent-volume-node";
 import ServiceNode from "./service/service-node";
 import StatefulSetNode from "./statefulset/statefulset-node";
+import { NodeTypes } from "@xyflow/react";
 
-const nodeTypes = {
+const nodeTypes: NodeTypes = {
   devbox: DevboxNode,
   cluster: ClusterNode,
   deployment: DeployNode,

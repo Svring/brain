@@ -9,6 +9,9 @@ import type {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "../k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { K8sResource } from "../k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
+import { BuiltinResourceConfig } from "../k8s-constant/k8s-constant-builtin-resource";
+import { CustomResourceConfig } from "../k8s-constant/k8s-constant-custom-resource";
 
 function getUserKubeconfig(): string | undefined {
   const { user } = use(AuthContext);
@@ -72,6 +75,35 @@ export function filterEmptyResources<T extends { items: unknown[] }>(data: {
     custom: filteredCustom,
   };
 }
+
+export const convertToResourceTarget = (
+  resource: K8sResource,
+  config: BuiltinResourceConfig | CustomResourceConfig
+): CustomResourceTarget | BuiltinResourceTarget => {
+  if (!resource.metadata.name) {
+    throw new Error("Resource name is required");
+  }
+
+  if (config.type === "custom") {
+    return {
+      type: "custom",
+      group: config.group,
+      version: config.version,
+      plural: config.plural,
+      name: resource.metadata.name,
+    };
+  }
+
+  if (config.type === "builtin") {
+    return {
+      type: "builtin",
+      resourceType: config.resourceType,
+      name: resource.metadata.name,
+    };
+  }
+
+  throw new Error("Invalid resource type");
+};
 
 /**
  * Helper function to invalidate resource queries for both custom and builtin resources

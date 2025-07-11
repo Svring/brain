@@ -1,11 +1,13 @@
 "use client";
 
 import BaseNode from "../base-node";
+import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface StatefulSetNodeProps {
   name: string;
   readyReplicas: number;
   replicas: number;
+  target: BuiltinResourceTarget;
 }
 
 export default function StatefulSetNode({
@@ -13,10 +15,10 @@ export default function StatefulSetNode({
 }: {
   data: StatefulSetNodeProps;
 }) {
-  const { name, readyReplicas, replicas } = data;
+  const { name, readyReplicas, replicas, target } = data;
 
   return (
-    <BaseNode>
+    <BaseNode target={target}>
       <div className="flex h-full flex-col justify-between">
         {/* Name */}
         <div className="flex items-center gap-2 truncate font-medium">

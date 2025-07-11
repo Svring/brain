@@ -1,17 +1,19 @@
 "use client";
 
 import BaseNode from "../base-node";
+import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface ServiceNodeProps {
   name: string;
   state: "Running" | "Stopped" | "Unknown";
+  target: BuiltinResourceTarget;
 }
 
 export default function ServiceNode({ data }: { data: ServiceNodeProps }) {
-  const { name, state } = data;
+  const { name, state, target } = data;
 
   return (
-    <BaseNode>
+    <BaseNode target={target}>
       <div className="flex h-full flex-col justify-between">
         {/* Name */}
         <div className="flex items-center gap-2 truncate font-medium">
