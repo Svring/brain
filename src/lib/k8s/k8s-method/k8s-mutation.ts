@@ -19,12 +19,11 @@ import {
   CustomResourceTarget,
 } from "../k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { CUSTOM_RESOURCES } from "../k8s-constant/k8s-constant-custom-resource";
-import { invalidateResourceQueries } from "../k8s-api/k8s-api-utils";
+import { invalidateResourceQueries } from "./k8s-utils";
 import {
   PROJECT_RELATE_RESOURCE_LABELS,
   CLUSTER_RELATE_RESOURCE_LABELS,
 } from "../k8s-constant/k8s-constant-label";
-import { listAllResources } from "../k8s-api/k8s-api-query";
 
 /**
  * Mutation for patching resource metadata (annotations or labels)

@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/sheet";
 import { useProjectResources } from "@/hooks/app/project/use-project-resources";
 import { useFlow } from "@/hooks/flow/use-flow";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 import "@xyflow/react/dist/style.css";
 import { ProjectContext } from "@/contexts/project-context";
@@ -61,14 +62,14 @@ function ProjectFloatingUI() {
         />
       </div>
       <Sheet onOpenChange={setOpen} open={open}>
-        <SheetContent className="!w-[40vw] !max-w-none fade-in-0 slide-in-from-right-2 !duration-500 animate-in">
-          <SheetHeader>
+        <SheetContent className="!w-[40vw] !max-w-none fade-in-0 !duration-500 animate-in flex flex-col">
+          <SheetHeader className="flex-shrink-0">
             <SheetTitle>Add Resource</SheetTitle>
-            <SheetDescription>
-              Add a new resource to your project or import an existing one.
-            </SheetDescription>
+            <VisuallyHidden>
+              <SheetDescription></SheetDescription>
+            </VisuallyHidden>
           </SheetHeader>
-          <div className="mt-6">
+          <div className="flex-1 min-h-0 overflow-hidden">
             <AddResourceTabs />
           </div>
         </SheetContent>

@@ -4,6 +4,11 @@ import { use } from "react";
 import { AuthContext } from "@/contexts/auth-context";
 import type { K8sApiContext } from "../k8s-api/k8s-api-schemas/context-schemas";
 import { K8sApiContextSchema } from "../k8s-api/k8s-api-schemas/context-schemas";
+import type { QueryClient } from "@tanstack/react-query";
+import type {
+  CustomResourceTarget,
+  BuiltinResourceTarget,
+} from "../k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 function getUserKubeconfig(): string | undefined {
   const { user } = use(AuthContext);
@@ -66,4 +71,67 @@ export function filterEmptyResources<T extends { items: unknown[] }>(data: {
     builtin: filteredBuiltin,
     custom: filteredCustom,
   };
+}
+
+/**
+ * Helper function to invalidate resource queries for both custom and builtin resources
+ * Note: This function should only be called from client-side code where QueryClient is available
+ */
+export async function invalidateResourceQueries(
+  queryClient: QueryClient,
+  context: K8sApiContext,
+  target: CustomResourceTarget | BuiltinResourceTarget
+): Promise<void> {
+  if (target.type === "custom") {
+    // Invalidate custom resource queries
+    queryClient.invalidateQueries({
+      queryKey: [
+        "k8s",
+        "custom-resource",
+        "get",
+        target.group,
+        target.version,
+        context.namespace,
+        target.plural,
+        target.name,
+      ],
+    });
+    queryClient.invalidateQueries({
+      queryKey: [
+        "k8s",
+        "custom-resources",
+        "list",
+        target.group,
+        target.version,
+        context.namespace,
+        target.plural,
+      ],
+    });
+  } else {
+    // Invalidate builtin resource queries
+    queryClient.invalidateQueries({
+      queryKey: [
+        "k8s",
+        "builtin-resource",
+        "get",
+        target.resourceType,
+        context.namespace,
+        target.name,
+      ],
+    });
+    queryClient.invalidateQueries({
+      queryKey: [
+        "k8s",
+        "builtin-resources",
+        "list",
+        target.resourceType,
+        context.namespace,
+      ],
+    });
+  }
+
+  // Invalidate all-resources query
+  queryClient.invalidateQueries({
+    queryKey: ["k8s", "all-resources", "list", context.namespace],
+  });
 }

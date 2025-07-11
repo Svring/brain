@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import type { InventoryByResourceType } from "@/hooks/app/inventory/use-inventories";
 import type { AnyKubernetesResource } from "@/lib/k8s/schemas";
 import { InventoryRow } from "./inventory-row";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface InventoryTableProps {
   data: InventoryByResourceType;
@@ -34,19 +35,21 @@ export function InventoryTable({ data }: InventoryTableProps) {
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="h-full flex flex-col">
       <div className="mb-4 flex-shrink-0 text-muted-foreground text-sm">
         Found {flattenedResources.length} resource
         {flattenedResources.length !== 1 ? "s" : ""}
       </div>
-      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-2">
-        {flattenedResources.map((resource, index) => (
-          <InventoryRow
-            key={`${resource.kind}-${resource.metadata?.name}-${index}`}
-            resource={resource}
-          />
-        ))}
-      </div>
+      <ScrollArea className="flex-1">
+        <div className="space-y-2 pr-2">
+          {flattenedResources.map((resource, index) => (
+            <InventoryRow
+              key={`${resource.kind}-${resource.metadata?.name}-${index}`}
+              resource={resource}
+            />
+          ))}
+        </div>
+      </ScrollArea>
     </div>
   );
 }

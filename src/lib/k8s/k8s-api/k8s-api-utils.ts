@@ -116,6 +116,13 @@ export async function invokeApiMethod<T>(
 
   const result = await _.attempt(async () => method.call(client, ...args));
   if (_.isError(result)) {
+    // Handle 404 errors for delete operations - treat as successful since the resource is already gone
+    if (
+      methodName.toLowerCase().includes("delete") &&
+      result.message.includes("404")
+    ) {
+      return {} as T;
+    }
     throw new Error(`Failed to invoke ${methodName}: ${result.message}`);
   }
 
@@ -151,75 +158,4 @@ export async function getBuiltinApiClient(
 export async function escapeSlash(key: string): Promise<string> {
   await new Promise((resolve) => setTimeout(resolve, 0));
   return key.replace(/\//g, "~1");
-}
-
-/**
- * Helper function to invalidate resource queries for both custom and builtin resources
- * Note: This function should only be called from client-side code where QueryClient is available
- */
-export async function invalidateResourceQueries(
-  queryClient: QueryClient,
-  context: K8sApiContext,
-  target: CustomResourceTarget | BuiltinResourceTarget
-): Promise<void> {
-  // Check if we're on the server side and skip invalidation
-  if (typeof window === "undefined") {
-    console.log(
-      "🔄 [invalidateResourceQueries] Skipping query invalidation on server side"
-    );
-    return;
-  }
-
-  if (target.type === "custom") {
-    // Invalidate custom resource queries
-    queryClient.invalidateQueries({
-      queryKey: [
-        "k8s",
-        "custom-resource",
-        "get",
-        target.group,
-        target.version,
-        context.namespace,
-        target.plural,
-        target.name,
-      ],
-    });
-    queryClient.invalidateQueries({
-      queryKey: [
-        "k8s",
-        "custom-resources",
-        "list",
-        target.group,
-        target.version,
-        context.namespace,
-        target.plural,
-      ],
-    });
-  } else {
-    // Invalidate builtin resource queries
-    queryClient.invalidateQueries({
-      queryKey: [
-        "k8s",
-        "builtin-resource",
-        "get",
-        target.resourceType,
-        context.namespace,
-        target.name,
-      ],
-    });
-    queryClient.invalidateQueries({
-      queryKey: [
-        "k8s",
-        "builtin-resources",
-        "list",
-        target.resourceType,
-        context.namespace,
-      ],
-    });
-  }
-
-  // Invalidate all-resources query
-  queryClient.invalidateQueries({
-    queryKey: ["k8s", "all-resources", "list", context.namespace],
-  });
 }
