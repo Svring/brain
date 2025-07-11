@@ -20,7 +20,7 @@ const DEFAULT_OPTIONS: Required<LayoutOptions> = {
 /**
  * Assigns positions to nodes based on their edge relationships using a hierarchical layout.
  */
-export const assignNodePositions = (
+export const applyLayout = (
   nodes: Node[],
   edges: Edge[],
   options: LayoutOptions = {}

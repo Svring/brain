@@ -37,7 +37,7 @@ export default function AppSidebar() {
           ]}
         />
       </SidebarHeader>
-      <SidebarContent className={cn("rounded-b-lg bg-background")}>
+      <SidebarContent className={cn("bg-background")}>
         <MainSection navigationItems={NAVIGATION_ITEMS} />
       </SidebarContent>
       <SidebarFooter className={cn("rounded-b-lg bg-background")}>

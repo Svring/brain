@@ -7,7 +7,7 @@ import {
 import { useEffect } from "react";
 import { processProjectConnections } from "@/lib/app/project/project-utils";
 import { convertConnectionsToEdges } from "@/lib/flow/edges/flow-edges-utils";
-import { assignNodePositions } from "@/lib/flow/layout/flow-layout-utils";
+import { applyLayout } from "@/lib/flow/layout/flow-layout-utils";
 import { convertResourcesToNodes } from "@/lib/flow/nodes/flow-nodes-utils";
 import type { ListAllResourcesResponse } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
 import _ from "lodash";
@@ -26,13 +26,12 @@ export function useFlow(resources: ListAllResourcesResponse | undefined) {
       return;
     }
 
-    // const resource = _.merge(resources.builtin, resources.custom);
-    const resource = resources.builtin;
+    const resource = _.merge({}, resources.custom, resources.builtin);
 
     const connections = processProjectConnections(resource);
     const newNodes = convertResourcesToNodes(resource);
     const newEdges = convertConnectionsToEdges(connections);
-    const positionedNodes = assignNodePositions(newNodes, newEdges, {
+    const positionedNodes = applyLayout(newNodes, newEdges, {
       direction: "BT",
     });
     setNodes(positionedNodes);

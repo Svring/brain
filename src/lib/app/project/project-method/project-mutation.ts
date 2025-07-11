@@ -108,7 +108,7 @@ export const useAddToProjectMutation = (context: K8sApiContext) => {
       toast.success("Project name label added to resources");
       // Invalidate project-related queries
       queryClient.invalidateQueries({
-        queryKey: ["project"],
+        queryKey: ["project", "resources", context.namespace],
       });
     },
   });
@@ -137,10 +137,7 @@ export const useRemoveFromProjectMutation = (context: K8sApiContext) => {
       toast.success("Project name label removed from resources");
       // Invalidate project-related queries
       queryClient.invalidateQueries({
-        queryKey: ["project", "list", context.namespace],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["project", "get", context.namespace],
+        queryKey: ["project", "resources", context.namespace],
       });
     },
   });
