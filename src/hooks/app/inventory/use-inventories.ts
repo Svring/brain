@@ -11,15 +11,16 @@ import {
   listStatefulSetsInventoryOptions,
 } from "@/lib/app/inventory/inventory-query";
 import { createK8sContext } from "@/lib/k8s/k8s-utils";
-import type { AnyKubernetesResource } from "@/lib/k8s/schemas";
+import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
+import { filterResourcesWithoutProject } from "@/lib/app/project/project-method/project-utils";
 
 export interface InventoryByResourceType {
-  devboxes: AnyKubernetesResource[];
-  clusters: AnyKubernetesResource[];
-  objectstorages: AnyKubernetesResource[];
-  deployments: AnyKubernetesResource[];
-  statefulsets: AnyKubernetesResource[];
-  cronjobs: AnyKubernetesResource[];
+  devboxes: K8sResource[];
+  clusters: K8sResource[];
+  objectstorages: K8sResource[];
+  deployments: K8sResource[];
+  // statefulsets: K8sResource[];
+  // cronjobs: K8sResource[];
 }
 
 export interface UseInventoriesResult {
@@ -43,36 +44,78 @@ export function useInventories(): UseInventoriesResult {
           context || { namespace: "", kubeconfig: "" }
         ),
         enabled: !!context,
+        select: (data: any) => {
+          if (!data || !data.items) return data;
+          return {
+            ...data,
+            items: filterResourcesWithoutProject(data.items),
+          };
+        },
       },
       {
         ...listClustersInventoryOptions(
           context || { namespace: "", kubeconfig: "" }
         ),
         enabled: !!context,
+        select: (data: any) => {
+          if (!data || !data.items) return data;
+          return {
+            ...data,
+            items: filterResourcesWithoutProject(data.items),
+          };
+        },
       },
       {
         ...listObjectStoragesInventoryOptions(
           context || { namespace: "", kubeconfig: "" }
         ),
         enabled: !!context,
+        select: (data: any) => {
+          if (!data || !data.items) return data;
+          return {
+            ...data,
+            items: filterResourcesWithoutProject(data.items),
+          };
+        },
       },
       {
         ...listDeploymentsInventoryOptions(
           context || { namespace: "", kubeconfig: "" }
         ),
         enabled: !!context,
+        select: (data: any) => {
+          if (!data || !data.items) return data;
+          return {
+            ...data,
+            items: filterResourcesWithoutProject(data.items),
+          };
+        },
       },
       {
         ...listStatefulSetsInventoryOptions(
           context || { namespace: "", kubeconfig: "" }
         ),
         enabled: !!context,
+        select: (data: any) => {
+          if (!data || !data.items) return data;
+          return {
+            ...data,
+            items: filterResourcesWithoutProject(data.items),
+          };
+        },
       },
       {
         ...listCronJobsInventoryOptions(
           context || { namespace: "", kubeconfig: "" }
         ),
         enabled: !!context,
+        select: (data: any) => {
+          if (!data || !data.items) return data;
+          return {
+            ...data,
+            items: filterResourcesWithoutProject(data.items),
+          };
+        },
       },
     ],
   });
@@ -88,7 +131,7 @@ export function useInventories(): UseInventoriesResult {
       cronjobsQuery,
     ] = inventoryQueries;
 
-    const extractItems = (queryData: unknown): AnyKubernetesResource[] => {
+    const extractItems = (queryData: unknown): K8sResource[] => {
       if (!queryData) {
         return [];
       }
@@ -112,8 +155,8 @@ export function useInventories(): UseInventoriesResult {
       clusters: extractItems(clustersQuery.data),
       objectstorages: extractItems(objectstoragesQuery.data),
       deployments: extractItems(deploymentsQuery.data),
-      statefulsets: extractItems(statefulsetsQuery.data),
-      cronjobs: extractItems(cronjobsQuery.data),
+      // statefulsets: extractItems(statefulsetsQuery.data),
+      // cronjobs: extractItems(cronjobsQuery.data),
     };
   }, [inventoryQueries]);
 
