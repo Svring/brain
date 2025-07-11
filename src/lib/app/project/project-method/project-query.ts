@@ -9,6 +9,7 @@ import {
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
 import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 import { PROJECT_NAME_LABEL_KEY } from "@/lib/k8s/k8s-constant/k8s-constant-label";
+import { filterEmptyResources } from "@/lib/k8s/k8s-method/k8s-utils";
 
 /**
  * Query options for listing all projects (instances)
@@ -67,6 +68,7 @@ export const getProjectResourcesOptions = (
   return queryOptions({
     ...baseOptions,
     queryKey: ["project", "resources", context.namespace, projectName],
+    select: (data) => filterEmptyResources(data),
     enabled: !!context.namespace && !!projectName,
   });
 };

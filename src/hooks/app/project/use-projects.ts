@@ -2,15 +2,11 @@
 
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
-import { listProjectsOptions } from "@/lib/app/project/project-query";
-import type { ProjectList } from "@/lib/app/project/schemas";
-import { createK8sContext } from "@/lib/k8s/k8s-utils";
+import { listProjectsOptions } from "@/lib/app/project/project-method/project-query";
+import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
+import { CustomResourceListResponse } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
 
-export default function useProjects(): UseQueryResult<ProjectList, Error> {
-  const context = createK8sContext();
+const useProjects = (): UseQueryResult<CustomResourceListResponse, Error> =>
+  useQuery(listProjectsOptions(createK8sContext()));
 
-  return useQuery({
-    ...listProjectsOptions(context),
-    enabled: !!context,
-  });
-}
+export default useProjects;

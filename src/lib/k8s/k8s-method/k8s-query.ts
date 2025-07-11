@@ -7,14 +7,59 @@ import {
   getCustomResource,
   listBuiltinResources,
   listCustomResources,
-  listAllResources,
 } from "../k8s-api/k8s-api-query";
 import { K8sApiContext } from "../k8s-api/k8s-api-schemas/context-schemas";
 import {
   BuiltinResourceTarget,
   CustomResourceTarget,
 } from "../k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-// Note: BUILTIN_RESOURCES and CUSTOM_RESOURCES are now used in k8s-api-query
+import { ListAllResourcesResponseSchema } from "../k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
+import { BUILTIN_RESOURCES } from "../k8s-constant/k8s-constant-builtin-resource";
+import { CUSTOM_RESOURCES } from "../k8s-constant/k8s-constant-custom-resource";
+import _ from "lodash";
+
+/**
+ * List all resources (both custom and builtin) in parallel.
+ */
+const listAllResources = async (
+  context: K8sApiContext,
+  labelSelector?: string
+) => {
+  // Prepare builtin resource promises
+  const builtinPromises = _.map(BUILTIN_RESOURCES, (config, name) =>
+    runParallelAction(
+      listBuiltinResources(context, {
+        type: "builtin",
+        resourceType: config.resourceType,
+        labelSelector,
+      })
+    ).then((result) => [name, result])
+  );
+
+  // Prepare custom resource promises
+  const customPromises = _.map(CUSTOM_RESOURCES, (config, name) =>
+    runParallelAction(
+      listCustomResources(context, {
+        type: "custom",
+        group: config.group,
+        version: config.version,
+        plural: config.plural,
+        labelSelector,
+      })
+    ).then((result) => [name, result])
+  );
+
+  // Execute all promises in parallel
+  const [builtinResults, customResults] = await Promise.all([
+    Promise.all(builtinPromises),
+    Promise.all(customPromises),
+  ]);
+
+  return ListAllResourcesResponseSchema.parse({
+    builtin: _.fromPairs(builtinResults),
+    custom: _.fromPairs(customResults),
+  });
+};
 
 /**
  * Query options for listing custom resources
@@ -178,9 +223,7 @@ export const listAllResourcesOptions = (
       labelSelector,
     ],
     queryFn: async () => {
-      const result = await runParallelAction(
-        listAllResources(context, labelSelector)
-      );
+      const result = await listAllResources(context, labelSelector);
       return result;
     },
     enabled: !!context.namespace && !!context.kubeconfig,

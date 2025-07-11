@@ -33,7 +33,7 @@ function ProjectFloatingUI() {
   return (
     <>
       {/* MenuBar in the upper left corner */}
-      <div className="absolute top-4 left-4 z-20">
+      <div className="absolute top-2 left-2 z-20">
         <MenuBar
           activeIndex={null}
           items={[
@@ -47,7 +47,7 @@ function ProjectFloatingUI() {
         />
       </div>
       {/* MenuBar in the upper right corner */}
-      <div className="absolute top-4 right-4 z-20">
+      <div className="absolute top-2 right-2 z-20">
         <MenuBar
           activeIndex={null}
           items={[

@@ -5,6 +5,7 @@ import {
   getApiClients,
   invokeApiMethod,
   getBuiltinApiClient,
+  addMissingFields,
 } from "./k8s-api-utils";
 import { K8sApiContext } from "./k8s-api-schemas/context-schemas";
 import {
@@ -14,14 +15,15 @@ import {
 import {
   BuiltinResourceListResponse,
   CustomResourceListResponse,
+  BuiltinResourceListResponseSchema,
+  CustomResourceListResponseSchema,
 } from "./k8s-api-schemas/req-res-schemas/res-list-schemas";
 import {
   BuiltinResourceGetResponse,
   CustomResourceGetResponse,
+  BuiltinResourceGetResponseSchema,
+  CustomResourceGetResponseSchema,
 } from "./k8s-api-schemas/req-res-schemas/res-get-schemas";
-import { BUILTIN_RESOURCES } from "../k8s-constant/k8s-constant-builtin-resource";
-import { CUSTOM_RESOURCES } from "../k8s-constant/k8s-constant-custom-resource";
-import _ from "lodash";
 
 /**
  * List custom resources in Kubernetes.
@@ -41,7 +43,9 @@ export const listCustomResources = createParallelAction(
           labelSelector: target.labelSelector,
         }
       );
-    return customResourceListResponse;
+    return CustomResourceListResponseSchema.parse(
+      JSON.parse(JSON.stringify(customResourceListResponse))
+    );
   }
 );
 
@@ -63,7 +67,9 @@ export const getCustomResource = createParallelAction(
           name: target.name,
         }
       );
-    return customResourceGetResponse;
+    return CustomResourceGetResponseSchema.parse(
+      JSON.parse(JSON.stringify(customResourceGetResponse))
+    );
   }
 );
 
@@ -87,7 +93,17 @@ export const listBuiltinResources = createParallelAction(
         }
       );
 
-    return builtinResourceListResponse;
+    return BuiltinResourceListResponseSchema.parse(
+      JSON.parse(
+        JSON.stringify(
+          await addMissingFields(
+            builtinResourceListResponse.items,
+            resourceConfig.apiVersion,
+            resourceConfig.kind
+          )
+        )
+      )
+    );
   }
 );
 
@@ -111,44 +127,8 @@ export const getBuiltinResource = createParallelAction(
         }
       );
 
-    return builtinResourceGetResponse;
-  }
-);
-
-/**
- * List all resources (both custom and builtin) in parallel.
- */
-export const listAllResources = createParallelAction(
-  async (context: K8sApiContext, labelSelector?: string) => {
-    // Prepare builtin resource promises
-    const builtinPromises = _.map(BUILTIN_RESOURCES, (config, name) =>
-      listBuiltinResources(context, {
-        type: "builtin",
-        resourceType: config.resourceType,
-        labelSelector,
-      }).then((result) => [name, result])
+    return BuiltinResourceGetResponseSchema.parse(
+      JSON.parse(JSON.stringify(builtinResourceGetResponse))
     );
-
-    // Prepare custom resource promises
-    const customPromises = _.map(CUSTOM_RESOURCES, (config, name) =>
-      listCustomResources(context, {
-        type: "custom",
-        group: config.group,
-        version: config.version,
-        plural: config.plural,
-        labelSelector,
-      }).then((result) => [name, result])
-    );
-
-    // Execute all promises in parallel
-    const [builtinResults, customResults] = await Promise.all([
-      Promise.all(builtinPromises),
-      Promise.all(customPromises),
-    ]);
-
-    return {
-      builtin: _.fromPairs(builtinResults),
-      custom: _.fromPairs(customResults),
-    };
   }
 );

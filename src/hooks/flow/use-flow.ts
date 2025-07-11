@@ -9,16 +9,15 @@ import { processProjectConnections } from "@/lib/app/project/project-utils";
 import { convertConnectionsToEdges } from "@/lib/flow/edges/flow-edges-utils";
 import { assignNodePositions } from "@/lib/flow/layout/flow-layout-utils";
 import { convertResourcesToNodes } from "@/lib/flow/nodes/flow-nodes-utils";
-import type { AnyKubernetesResource } from "@/lib/k8s/schemas";
+import type { ListAllResourcesResponse } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
+import _ from "lodash";
 
 /**
  * Custom hook to process project resources into flow nodes and edges state.
  * @param resources Project resources object (from useProjectResources)
  * @returns [nodes, setNodes, onNodesChange, edges, setEdges, onEdgesChange]
  */
-export function useFlow(
-  resources: Record<string, { items: AnyKubernetesResource[] }> | undefined
-) {
+export function useFlow(resources: ListAllResourcesResponse | undefined) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
@@ -26,8 +25,12 @@ export function useFlow(
     if (!resources) {
       return;
     }
-    const connections = processProjectConnections(resources);
-    const newNodes = convertResourcesToNodes(resources);
+
+    // const resource = _.merge(resources.builtin, resources.custom);
+    const resource = resources.builtin;
+
+    const connections = processProjectConnections(resource);
+    const newNodes = convertResourcesToNodes(resource);
     const newEdges = convertConnectionsToEdges(connections);
     const positionedNodes = assignNodePositions(newNodes, newEdges, {
       direction: "BT",

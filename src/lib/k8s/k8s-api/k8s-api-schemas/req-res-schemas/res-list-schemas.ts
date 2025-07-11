@@ -36,7 +36,12 @@ export const K8sListResponseSchema = z.object({
   items: z.array(K8sResourceSchema),
 });
 
-// Type exports
+// Schema for the result of listAllResources
+export const ListAllResourcesResponseSchema = z.object({
+  builtin: z.record(BuiltinResourceListResponseSchema),
+  custom: z.record(CustomResourceListResponseSchema),
+});
+
 export type CustomResourceListResponse = z.infer<
   typeof CustomResourceListResponseSchema
 >;
@@ -44,3 +49,6 @@ export type BuiltinResourceListResponse = z.infer<
   typeof BuiltinResourceListResponseSchema
 >;
 export type K8sListResponse = z.infer<typeof K8sListResponseSchema>;
+export type ListAllResourcesResponse = z.infer<
+  typeof ListAllResourcesResponseSchema
+>;

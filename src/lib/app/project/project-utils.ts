@@ -10,12 +10,12 @@ import {
   mergeConnectFromByWorkload,
   processIngressConnections,
 } from "@/lib/k8s/k8s-utils";
-import type { AnyKubernetesResource } from "@/lib/k8s/schemas";
 import { PROJECT_NAME_LABEL_KEY } from "./project-constant";
+import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 
 // Helper function to extract project name from resource metadata
 export const getProjectNameFromResource = (
-  resource: AnyKubernetesResource
+  resource: K8sResource
 ): string | null => {
   return resource.metadata.labels?.[PROJECT_NAME_LABEL_KEY] ?? null;
 };
@@ -27,7 +27,7 @@ export const getProjectNameFromResource = (
  * @returns Array of cluster names that belong to the project
  */
 export const getClusterNamesFromProjectResources = (
-  resources: Record<string, { items: AnyKubernetesResource[] }>
+  resources: Record<string, { items: K8sResource[] }>
 ): string[] => {
   const clusterResources = resources.cluster?.items || [];
   return _.filter(
@@ -43,7 +43,7 @@ export const getClusterNamesFromProjectResources = (
  * @returns Array of instance names that belong to the project
  */
 export const getInstanceNamesFromProjectResources = (
-  resources: Record<string, { items: AnyKubernetesResource[] }>
+  resources: Record<string, { items: K8sResource[] }>
 ): string[] => {
   const instanceResources = resources.instance?.items || [];
   return _.filter(
@@ -59,7 +59,7 @@ export const getInstanceNamesFromProjectResources = (
  * @returns Array of deployment names that belong to the project
  */
 export const getDeploymentNamesFromProjectResources = (
-  resources: Record<string, { items: AnyKubernetesResource[] }>
+  resources: Record<string, { items: K8sResource[] }>
 ): string[] => {
   const deploymentResources = resources.deployment?.items || [];
   return _.filter(
@@ -75,7 +75,7 @@ export const getDeploymentNamesFromProjectResources = (
  * @returns Array of statefulset names that belong to the project
  */
 export const getStatefulSetNamesFromProjectResources = (
-  resources: Record<string, { items: AnyKubernetesResource[] }>
+  resources: Record<string, { items: K8sResource[] }>
 ): string[] => {
   const statefulSetResources = resources.statefulset?.items || [];
   return _.filter(
@@ -91,7 +91,7 @@ export const getStatefulSetNamesFromProjectResources = (
  * @returns Record of resource type to array of resource names
  */
 export const getOtherResourceNamesFromProjectResources = (
-  resources: Record<string, { items: AnyKubernetesResource[] }>
+  resources: Record<string, { items: K8sResource[] }>
 ): Record<string, string[]> => {
   const excludedTypes = new Set([
     "cluster",
@@ -130,7 +130,7 @@ const excludeIngressFromCandidates = (
  * @returns Connection information per workload grouped by kind
  */
 export const processProjectConnections = (
-  resources: Record<string, { items: AnyKubernetesResource[] }>
+  resources: Record<string, { items: K8sResource[] }>
 ): ConnectionsByKind => {
   // Step 1: Process ingress connections first
   const ingressConnections = processIngressConnections(resources);
