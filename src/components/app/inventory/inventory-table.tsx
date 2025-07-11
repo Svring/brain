@@ -20,8 +20,8 @@ export function InventoryTable({ data }: InventoryTableProps) {
     resources.push(...data.clusters);
     resources.push(...data.objectstorages);
     resources.push(...data.deployments);
-    resources.push(...data.statefulsets);
-    resources.push(...data.cronjobs);
+    // resources.push(...data.statefulsets);
+    // resources.push(...data.cronjobs);
 
     return resources;
   }, [data]);

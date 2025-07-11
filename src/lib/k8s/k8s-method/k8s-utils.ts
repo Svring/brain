@@ -10,8 +10,14 @@ import type {
   BuiltinResourceTarget,
 } from "../k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { K8sResource } from "../k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
-import { BuiltinResourceConfig } from "../k8s-constant/k8s-constant-builtin-resource";
-import { CustomResourceConfig } from "../k8s-constant/k8s-constant-custom-resource";
+import {
+  BUILTIN_RESOURCES,
+  BuiltinResourceConfig,
+} from "@/lib/k8s/k8s-constant/k8s-constant-builtin-resource";
+import {
+  CUSTOM_RESOURCES,
+  CustomResourceConfig,
+} from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 
 function getUserKubeconfig(): string | undefined {
   const { user } = use(AuthContext);
@@ -166,4 +172,15 @@ export async function invalidateResourceQueries(
   queryClient.invalidateQueries({
     queryKey: ["k8s", "all-resources", "list", context.namespace],
   });
+}
+
+/**
+ * Get the resource config for a given kind (case-insensitive).
+ * Prefers builtin resources if both exist.
+ */
+export function getResourceConfigFromKind(kind: string) {
+  const lowerKind = kind.toLowerCase();
+  return (
+    BUILTIN_RESOURCES[lowerKind] || CUSTOM_RESOURCES[lowerKind] || undefined
+  );
 }

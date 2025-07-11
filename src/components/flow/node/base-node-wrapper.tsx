@@ -32,10 +32,24 @@ export default function BaseNodeWrapper({ children, target }: BaseNodeProps) {
         </BaseNode>
       </ContextMenuTrigger>
       <ContextMenuContent>
-        <ContextMenuItem onClick={() => {}}>
+        <ContextMenuItem
+          onClick={() =>
+            removeFromProjectMutation.mutate({
+              resources: [target],
+            })
+          }
+        >
           Remove from project
         </ContextMenuItem>
-        <ContextMenuItem onClick={() => {}}>Delete resource</ContextMenuItem>
+        <ContextMenuItem
+          onClick={() =>
+            deleteResourceMutation.mutate({
+              target: target,
+            })
+          }
+        >
+          Delete resource
+        </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
   );

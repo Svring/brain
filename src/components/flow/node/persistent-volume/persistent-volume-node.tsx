@@ -1,6 +1,6 @@
 "use client";
 
-import BaseNode from "../base-node";
+import BaseNode from "../base-node-wrapper";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface PersistentVolumeNodeProps {

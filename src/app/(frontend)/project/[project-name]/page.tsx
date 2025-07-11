@@ -24,12 +24,19 @@ import { useProjectResources } from "@/hooks/app/project/use-project-resources";
 import { useFlow } from "@/hooks/flow/use-flow";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ProjectContext } from "@/contexts/project-context";
+import { DndProvider } from "@/components/flow/dnd/dnd-provider";
 
 import "@xyflow/react/dist/style.css";
+import { useDroppable } from "@dnd-kit/core";
+import { FlowProvider } from "@/contexts/flow-context";
 
 function ProjectFloatingUI() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+
+  const { setNodeRef } = useDroppable({
+    id: "project-floating-ui",
+  });
 
   return (
     <>
@@ -69,7 +76,7 @@ function ProjectFloatingUI() {
               <SheetDescription></SheetDescription>
             </VisuallyHidden>
           </SheetHeader>
-          <div className="flex-1 min-h-0 overflow-hidden">
+          <div ref={setNodeRef} className="flex-1 min-h-0 overflow-hidden">
             <AddResourceTabs />
           </div>
         </SheetContent>
@@ -82,8 +89,13 @@ function ProjectFlow({ projectName }: { projectName: string }) {
   const { data: resources } = useProjectResources(projectName);
   const [nodes, onNodesChange, edges, onEdgesChange] = useFlow(resources);
 
+  const { setNodeRef } = useDroppable({
+    id: "project-flow",
+  });
+
   return (
     <ReactFlow
+      ref={setNodeRef}
       connectionLineType={ConnectionLineType.SmoothStep}
       edges={edges}
       edgeTypes={edgeTypes}
@@ -113,10 +125,15 @@ export default function Page({
   const { "project-name": projectName } = use(params);
   const { setProjectName } = use(ProjectContext);
   setProjectName(projectName);
+
   return (
-    <div className="relative h-screen w-full">
-      <ProjectFloatingUI />
-      <ProjectFlow projectName={projectName} />
-    </div>
+    <FlowProvider>
+      <DndProvider>
+        <div className="relative h-screen w-full">
+          <ProjectFloatingUI />
+          <ProjectFlow projectName={projectName} />
+        </div>
+      </DndProvider>
+    </FlowProvider>
   );
 }
