@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { createParallelAction } from "next-server-actions-parallel";
-import { ClusterApiContext } from "./schemas/cluster-api-conetxt-schemas";
+import { ClusterApiContext } from "./schemas/cluster-api-context-schemas";
 import {
   ClusterCreateRequest,
   ClusterCreateRequestSchema,

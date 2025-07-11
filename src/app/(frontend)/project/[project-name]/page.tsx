@@ -85,14 +85,16 @@ function ProjectFloatingUI() {
   );
 }
 
-function ProjectFlow({ projectName }: { projectName: string }) {
-  const { data: resources } = useProjectResources(projectName);
+function ProjectFlow() {
+  const { projectName: currentProjectName } = use(ProjectContext);
+
+  const { data: resources } = useProjectResources(currentProjectName ?? "");
   const [nodes, onNodesChange, edges, onEdgesChange] = useFlow(resources);
 
   const { setNodeRef } = useDroppable({
     id: "project-flow",
     data: {
-      projectName,
+      projectName: currentProjectName,
     },
   });
 
@@ -134,7 +136,7 @@ export default function Page({
       <DndProvider>
         <div className="relative h-screen w-full">
           <ProjectFloatingUI />
-          <ProjectFlow projectName={projectName} />
+          <ProjectFlow />
         </div>
       </DndProvider>
     </FlowProvider>

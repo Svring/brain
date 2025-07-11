@@ -8,7 +8,7 @@ import {
   pauseCluster,
   deleteCluster,
 } from "./cluster-old-api";
-import type { ClusterApiContext } from "./schemas/cluster-api-conetxt-schemas";
+import type { ClusterApiContext } from "./schemas/cluster-api-context-schemas";
 import type {
   ClusterCreateRequest,
   ClusterCreateResponse,
