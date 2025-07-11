@@ -119,7 +119,7 @@ export const patchCustomResourceMetadata = createParallelAction(
       ? [
           {
             op: "add",
-            path: `/metadata/${metadataType}/${escapeSlash(key)}`,
+            path: `/metadata/${metadataType}/${await escapeSlash(key)}`,
             value,
           },
         ]
@@ -165,7 +165,10 @@ export const removeCustomResourceMetadata = createParallelAction(
     }
 
     const patchBody = [
-      { op: "remove", path: `/metadata/${metadataType}/${escapeSlash(key)}` },
+      {
+        op: "remove",
+        path: `/metadata/${metadataType}/${await escapeSlash(key)}`,
+      },
     ];
 
     const result = await invokeApiMethod<CustomResourcePatchResponse>(
@@ -219,7 +222,7 @@ export const patchBuiltinResourceMetadata = createParallelAction(
       ? [
           {
             op: "add",
-            path: `/metadata/${metadataType}/${escapeSlash(key)}`,
+            path: `/metadata/${metadataType}/${await escapeSlash(key)}`,
             value,
           },
         ]
@@ -267,7 +270,7 @@ export const removeBuiltinResourceMetadata = createParallelAction(
     const patchBody = [
       {
         op: "remove",
-        path: `/metadata/${metadataType}/${escapeSlash(key)}`,
+        path: `/metadata/${metadataType}/${await escapeSlash(key)}`,
       },
     ];
 

@@ -156,6 +156,5 @@ export async function getBuiltinApiClient(
  * Helper function to escape slashes in keys for JSON Patch paths
  */
 export async function escapeSlash(key: string): Promise<string> {
-  await new Promise((resolve) => setTimeout(resolve, 0));
   return key.replace(/\//g, "~1");
 }

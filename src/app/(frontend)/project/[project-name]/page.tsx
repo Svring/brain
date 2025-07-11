@@ -91,6 +91,9 @@ function ProjectFlow({ projectName }: { projectName: string }) {
 
   const { setNodeRef } = useDroppable({
     id: "project-flow",
+    data: {
+      projectName,
+    },
   });
 
   return (
