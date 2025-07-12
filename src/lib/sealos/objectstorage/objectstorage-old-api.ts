@@ -1,3 +1,5 @@
+"use server";
+
 import axios from "axios";
 import { ObjectStorageApiContext } from "./schemas/objectstorage-api-context-schemas";
 import { createParallelAction } from "next-server-actions-parallel";

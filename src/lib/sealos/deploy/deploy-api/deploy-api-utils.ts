@@ -1,19 +1,20 @@
-import { nanoid } from "nanoid";
+"use server";
+
 import yaml from "js-yaml";
-import { use } from "react";
-import { AuthContext } from "@/contexts/auth-context/auth-context";
-import { DeployApiContextSchema } from "./schemas/deploy-api-context-schemas";
+import { nanoid } from "nanoid";
 import type {
   InputParameters,
   K8sManifestGeneration,
-} from "./schemas/deploy-manifest-schemas";
+} from "../schemas/deploy-manifest-schemas";
 
-export function generateServiceJson(params: InputParameters) {
+async function generateServiceJson(params: InputParameters) {
   const { name, ports } = params;
   const servicePorts = ports.map((port) => ({
     port: port.number,
     targetPort: port.number,
-    name: nanoid(12),
+    name: nanoid(12)
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, ""),
     protocol: "TCP",
   }));
   return {
@@ -34,13 +35,15 @@ export function generateServiceJson(params: InputParameters) {
   };
 }
 
-export function generateDeployJson(params: InputParameters) {
+async function generateDeployJson(params: InputParameters) {
   const { name, image, env, ports } = params;
   const timestamp = "20250711170300"; // Hardcoded as per example
   const servicePorts = ports.map((port) => ({
     port: port.number,
     targetPort: port.number,
-    name: nanoid(12),
+    name: nanoid(12)
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, ""),
     protocol: "TCP",
   }));
   const envEntries = Object.entries(env).map(([key, value]) => ({
@@ -112,13 +115,17 @@ export function generateDeployJson(params: InputParameters) {
   };
 }
 
-export function generateIngressJson(params: InputParameters) {
+async function generateIngressJson(params: InputParameters) {
   const { name, ports } = params;
   const manifests: any[] = [];
   ports.forEach((port) => {
     if (port.publicAccess) {
-      const domainId = nanoid(12);
-      const ingressName = `network-${nanoid(12)}`;
+      const domainId = nanoid(12)
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
+      const ingressName = `network-${nanoid(12)
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "")}`;
       manifests.push({
         apiVersion: "networking.k8s.io/v1",
         kind: "Ingress",
@@ -174,44 +181,30 @@ export function generateIngressJson(params: InputParameters) {
   return manifests;
 }
 
-export function generateServiceYaml(params: InputParameters): string {
-  return yaml.dump(generateServiceJson(params));
+async function generateServiceYaml(params: InputParameters): Promise<string> {
+  const manifests = await generateServiceJson(params);
+  return yaml.dump(manifests);
 }
 
-export function generateDeployYaml(params: InputParameters): string {
-  return yaml.dump(generateDeployJson(params));
+async function generateDeployYaml(params: InputParameters): Promise<string> {
+  const manifests = await generateDeployJson(params);
+  return yaml.dump(manifests);
 }
 
-export function generateIngressYaml(params: InputParameters): string {
-  return generateIngressJson(params)
-    .map((obj) => yaml.dump(obj))
-    .join("---\n");
+async function generateIngressYaml(params: InputParameters): Promise<string> {
+  const manifests = await generateIngressJson(params);
+  return manifests.map((obj) => yaml.dump(obj)).join("---\n");
 }
 
-export function createDeployContext() {
-  const { user } = use(AuthContext);
-  if (!user) {
-    throw new Error("User not found");
-  }
-  return DeployApiContextSchema.parse({
-    baseURL: user.regionUrl,
-    authorization: user.kubeconfig,
-  });
-}
-
-export function generateDeployName() {
-  return `deploy-${nanoid(12)}`;
-}
-
-function generateK8sManifests(params: InputParameters): K8sManifestGeneration {
-  const serviceYaml = generateServiceYaml(params);
-  const deployYaml = generateDeployYaml(params);
-  const ingressYaml = generateIngressYaml(params);
+export async function generateK8sManifests(
+  params: InputParameters
+): Promise<K8sManifestGeneration> {
+  const serviceYaml = await generateServiceYaml(params);
+  const deployYaml = await generateDeployYaml(params);
+  const ingressYaml = await generateIngressYaml(params);
   const yamlList = [serviceYaml, deployYaml];
   if (ingressYaml.trim() !== "") {
     yamlList.push(ingressYaml);
   }
   return { yamlList };
 }
-
-export default generateK8sManifests;

@@ -1,31 +1,33 @@
+"use server";
+
 import axios from "axios";
-import { DeployApiContext } from "./schemas/deploy-api-context-schemas";
+import { DeployApiContext } from "../schemas/deploy-api-context-schemas";
 import { createParallelAction } from "next-server-actions-parallel";
 import {
   DeployCreateRequest,
   DeployCreateResponse,
   DeployCreateRequestSchema,
   DeployCreateResponseSchema,
-} from "./schemas/req-res-schemas/req-res-create-schemas";
+} from "../schemas/req-res-schemas/req-res-create-schemas";
 import {
   DeployPauseRequest,
   DeployPauseResponse,
   DeployPauseRequestSchema,
   DeployPauseResponseSchema,
-} from "./schemas/req-res-schemas/req-res-pause-schemas";
+} from "../schemas/req-res-schemas/req-res-pause-schemas";
 import {
   DeployStartRequest,
   DeployStartResponse,
   DeployStartRequestSchema,
   DeployStartResponseSchema,
-} from "./schemas/req-res-schemas/req-res-start-schemas";
+} from "../schemas/req-res-schemas/req-res-start-schemas";
 import {
   DeployDeleteRequest,
   DeployDeleteResponse,
   DeployDeleteRequestSchema,
   DeployDeleteResponseSchema,
-} from "./schemas/req-res-schemas/req-res-delete-schemas";
-import generateK8sManifests from "./deploy-utils";
+} from "../schemas/req-res-schemas/req-res-delete-schemas";
+import { generateK8sManifests } from "./deploy-api-utils";
 
 function createDeployApi(context: DeployApiContext) {
   return axios.create({
@@ -45,7 +47,7 @@ export const createDeploy = createParallelAction(
     context: DeployApiContext
   ): Promise<DeployCreateResponse> => {
     const validatedRequest = DeployCreateRequestSchema.parse(request);
-    const manifests = generateK8sManifests(validatedRequest);
+    const manifests = await generateK8sManifests(validatedRequest);
     const api = createDeployApi(context);
     const response = await api.post("/applyApp", manifests);
     return DeployCreateResponseSchema.parse(response.data);
