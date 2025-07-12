@@ -9,7 +9,7 @@ import {
   getDevboxByName,
   getDevboxList,
   getDevboxReleases,
-} from "./devbox-open-api";
+} from "../devbox-api/devbox-open-api";
 import type {
   DevboxApiContext,
   DevboxGetResponse,
@@ -18,7 +18,7 @@ import type {
   GetAppByNameResponse,
   GetAppPodsResponse,
   GetAppsResponse,
-} from "./schemas";
+} from "../schemas";
 
 export const listDevboxOptions = (
   context: DevboxApiContext,
@@ -91,4 +91,4 @@ export const getAppPodsOptions = (
 export {
   listDevboxIngressesOptions,
   listDevboxServicesOptions,
-} from "./devbox-k8s-api";
+} from "../devbox-api/devbox-k8s-api";

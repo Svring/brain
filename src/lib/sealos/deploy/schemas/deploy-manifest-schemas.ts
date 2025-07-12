@@ -93,5 +93,7 @@ const K8sManifestSchema = z.object({
 // Combined schema for the entire structure
 export const K8sManifestGenerationSchema = K8sManifestSchema;
 
+export { InputParametersSchema };
+
 export type K8sManifestGeneration = z.infer<typeof K8sManifestGenerationSchema>;
 export type InputParameters = z.infer<typeof InputParametersSchema>;

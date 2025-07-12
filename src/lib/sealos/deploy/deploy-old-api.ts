@@ -25,6 +25,7 @@ import {
   DeployDeleteRequestSchema,
   DeployDeleteResponseSchema,
 } from "./schemas/req-res-schemas/req-res-delete-schemas";
+import generateK8sManifests from "./deploy-utils";
 
 function createDeployApi(context: DeployApiContext) {
   return axios.create({
@@ -44,8 +45,9 @@ export const createDeploy = createParallelAction(
     context: DeployApiContext
   ): Promise<DeployCreateResponse> => {
     const validatedRequest = DeployCreateRequestSchema.parse(request);
+    const manifests = generateK8sManifests(validatedRequest);
     const api = createDeployApi(context);
-    const response = await api.post("/applyApp", validatedRequest);
+    const response = await api.post("/applyApp", manifests);
     return DeployCreateResponseSchema.parse(response.data);
   }
 );

@@ -12,7 +12,7 @@ import {
   manageDevboxLifecycle,
   releaseDevbox,
   removeDevboxPort,
-} from "./devbox-open-api";
+} from "../devbox-api/devbox-open-api";
 import type {
   AppFormConfig,
   DevboxApiContext,
@@ -21,7 +21,7 @@ import type {
   DevboxLifecycleRequest,
   DevboxPortCreateRequest,
   DevboxReleaseRequest,
-} from "./schemas";
+} from "../schemas";
 
 export function useCreateDevboxMutation(context: DevboxApiContext) {
   const queryClient = useQueryClient();

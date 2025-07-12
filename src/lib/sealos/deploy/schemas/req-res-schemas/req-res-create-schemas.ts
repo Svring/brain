@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { K8sManifestGenerationSchema } from "../deploy-manifest-schemas";
+import { InputParametersSchema } from "../deploy-manifest-schemas";
 
-// Request schema: identical to K8sManifestSchema
-export const DeployCreateRequestSchema = K8sManifestGenerationSchema;
+// Request schema: identical to InputParametersSchema
+export const DeployCreateRequestSchema = InputParametersSchema;
 
 // Response schema: matches the provided response structure
 export const DeployCreateResponseSchema = z.object({

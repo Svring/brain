@@ -11,8 +11,8 @@ import { ResourceTypeTargetSchema } from "@/lib/k8s/schemas";
 import {
   getDevboxOptions,
   listDevboxOptions,
-} from "@/lib/sealos/devbox/devbox-query";
-import { transformDevboxListToNameList } from "@/lib/sealos/devbox/devbox-transform";
+} from "@/lib/sealos/devbox/devbox-method/devbox-query";
+import { transformDevboxListToNameList } from "@/lib/sealos/devbox/devbox-utils";
 import { DevboxApiContextSchema } from "@/lib/sealos/devbox/schemas";
 import { transformDevboxToTableRow } from "./inventory-transform";
 
