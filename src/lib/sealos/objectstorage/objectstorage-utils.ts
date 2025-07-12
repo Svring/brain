@@ -17,5 +17,7 @@ export function createObjectStorageContext() {
 }
 
 export function generateObjectStorageName() {
-  return `bucket-${nanoid(12)}`;
+  return `bucket-${nanoid(12)
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "")}`;
 }

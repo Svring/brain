@@ -23,5 +23,7 @@ export const transformDevboxListToNameList = (
 };
 
 export function generateDevboxName() {
-  return `devbox-${nanoid(12)}`;
+  return `devbox-${nanoid(12)
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "")}`;
 }

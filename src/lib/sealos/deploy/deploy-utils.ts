@@ -200,7 +200,9 @@ export function createDeployContext() {
 }
 
 export function generateDeployName() {
-  return `deploy-${nanoid(12)}`;
+  return `deploy-${nanoid(12)
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "")}`;
 }
 
 function generateK8sManifests(params: InputParameters): K8sManifestGeneration {

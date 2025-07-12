@@ -17,5 +17,7 @@ export function createClusterContext() {
 }
 
 export function generateClusterName() {
-  return `cluster-${nanoid(12)}`;
+  return `cluster-${nanoid(12)
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "")}`;
 }
