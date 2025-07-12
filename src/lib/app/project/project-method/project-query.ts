@@ -26,7 +26,7 @@ export const listProjectsOptions = (context: K8sApiContext) => {
 
   return queryOptions({
     ...baseOptions,
-    queryKey: ["project", "list", context.namespace],
+    queryKey: ["projects", context.namespace],
   });
 };
 

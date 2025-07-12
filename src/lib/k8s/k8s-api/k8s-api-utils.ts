@@ -16,10 +16,6 @@ import {
 } from "../k8s-constant/k8s-constant-builtin-resource";
 import { K8sApiClients } from "../k8s-constant/k8s-constant-client";
 import _ from "lodash";
-import { QueryClient } from "@tanstack/react-query";
-import { CustomResourceTarget } from "./k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { BuiltinResourceTarget } from "./k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { K8sApiContext } from "./k8s-api-schemas/context-schemas";
 
 /**
  * Get the current namespace from a kubeconfig string.
@@ -29,7 +25,6 @@ import { K8sApiContext } from "./k8s-api-schemas/context-schemas";
 export async function getCurrentNamespace(
   kubeconfig: string
 ): Promise<string | undefined> {
-  await new Promise((resolve) => setTimeout(resolve, 0));
   const kc = new KubeConfig();
   kc.loadFromString(kubeconfig);
   const currentContext = kc.getCurrentContext();
