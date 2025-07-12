@@ -12,16 +12,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-// import useAI from "@/hooks/ai/use-ai";
+import useAI from "@/hooks/ai/use-ai";
 import useProjects from "@/hooks/app/project/use-projects";
 import { TextShimmer } from "@/components/app/project/text-shimmer";
 
 const CreateProject = dynamic(
   () => import("@/components/app/project/create-project")
 );
-// const CopilotSidebar = dynamic(() =>
-//   import("@copilotkit/react-ui").then((mod) => mod.CopilotSidebar)
-// );
+const CopilotSidebar = dynamic(() =>
+  import("@copilotkit/react-ui").then((mod) => mod.CopilotSidebar)
+);
 
 export default function Page() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -31,7 +31,7 @@ export default function Page() {
     isError: projectsError,
   } = useProjects();
 
-  // useAI();
+  useAI();
 
   const handleCloseDialog = () => {
     setIsCreateDialogOpen(false);
@@ -100,7 +100,7 @@ export default function Page() {
           )}
         </div>
       </div>
-      {/* <CopilotSidebar
+      <CopilotSidebar
         instructions={
           "You are assisting the user as best as you can. Answer in the best way possible given the data you have."
         }
@@ -108,7 +108,7 @@ export default function Page() {
           title: "Popup Assistant",
           initial: "Need any help?",
         }}
-      /> */}
+      />
     </div>
   );
 }

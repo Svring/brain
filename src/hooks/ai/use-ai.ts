@@ -10,13 +10,11 @@ export default function useAI() {
 
   useCoAgent<AIState>({
     name: "ai",
-    config: {
-      configurable: {
-        base_url: user?.baseUrl,
-        api_key: user?.apiKey,
-        system_prompt: "ask me who I am",
-      },
-      recursion_limit: 50,
+    initialState: {
+      base_url: user?.baseUrl,
+      api_key: user?.apiKey,
+      model: "gpt-4o-mini",
+      system_prompt: "you are sealos brain.",
     },
   });
 }
