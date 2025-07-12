@@ -25,6 +25,7 @@ import { useFlow } from "@/hooks/flow/use-flow";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ProjectContext } from "@/contexts/project-context";
 import { DndProvider } from "@/components/flow/dnd/dnd-provider";
+import { TextShimmer } from "@/components/app/project/text-shimmer";
 
 import "@xyflow/react/dist/style.css";
 import { useDroppable } from "@dnd-kit/core";
@@ -88,7 +89,9 @@ function ProjectFloatingUI() {
 function ProjectFlow() {
   const { projectName: currentProjectName } = use(ProjectContext);
 
-  const { data: resources } = useProjectResources(currentProjectName ?? "");
+  const { data: resources, isLoading } = useProjectResources(
+    currentProjectName ?? ""
+  );
   const [nodes, onNodesChange, edges, onEdgesChange] = useFlow(resources);
 
   const { setNodeRef } = useDroppable({
@@ -97,6 +100,16 @@ function ProjectFlow() {
       projectName: currentProjectName,
     },
   });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full w-full">
+        <TextShimmer className="font-mono text-md" duration={1.2}>
+          Loading project resources...
+        </TextShimmer>
+      </div>
+    );
+  }
 
   return (
     <ReactFlow

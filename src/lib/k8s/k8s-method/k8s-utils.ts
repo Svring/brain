@@ -123,16 +123,7 @@ export async function invalidateResourceQueries(
   if (target.type === "custom") {
     // Invalidate custom resource queries
     queryClient.invalidateQueries({
-      queryKey: [
-        "k8s",
-        "custom-resource",
-        "get",
-        target.group,
-        target.version,
-        context.namespace,
-        target.plural,
-        target.name,
-      ],
+      queryKey: ["project", "resources"],
     });
     queryClient.invalidateQueries({
       queryKey: [
@@ -148,14 +139,7 @@ export async function invalidateResourceQueries(
   } else {
     // Invalidate builtin resource queries
     queryClient.invalidateQueries({
-      queryKey: [
-        "k8s",
-        "builtin-resource",
-        "get",
-        target.resourceType,
-        context.namespace,
-        target.name,
-      ],
+      queryKey: ["project", "resources"],
     });
     queryClient.invalidateQueries({
       queryKey: [

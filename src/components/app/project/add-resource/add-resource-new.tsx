@@ -9,6 +9,10 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 import React from "react";
+import AddDevbox from "./resources/add-devbox";
+import AddCluster from "./resources/add-cluster";
+import AddDeploy from "./resources/add-deploy";
+import AddObjectStorage from "./resources/add-objectstorage";
 
 // Define the resource options you want to show
 const RESOURCE_OPTIONS = [
@@ -45,10 +49,19 @@ export function AddResourceNew() {
         <AccordionItem key={option.key} value={option.key}>
           <AccordionTrigger>{option.label}</AccordionTrigger>
           <AccordionContent>
-            {/* Placeholder for resource-specific form or info */}
-            <div className="p-4 text-muted-foreground">
-              {option.label} creation form will go here.
-            </div>
+            {option.key === "devbox" ? (
+              <AddDevbox />
+            ) : option.key === "cluster" ? (
+              <AddCluster />
+            ) : option.key === "deployment" ? (
+              <AddDeploy />
+            ) : option.key === "objectstoragebucket" ? (
+              <AddObjectStorage />
+            ) : (
+              <div className="p-4 text-muted-foreground">
+                {option.label} creation form will go here.
+              </div>
+            )}
           </AccordionContent>
         </AccordionItem>
       ))}

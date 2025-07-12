@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 // import useAI from "@/hooks/ai/use-ai";
 import useProjects from "@/hooks/app/project/use-projects";
+import { TextShimmer } from "@/components/app/project/text-shimmer";
 
 const CreateProject = dynamic(
   () => import("@/components/app/project/create-project")
@@ -70,7 +71,9 @@ export default function Page() {
         <div className="grid grid-cols-3 gap-6">
           {projectsLoading && (
             <div className="col-span-full flex h-32 items-center justify-center">
-              <div className="text-muted-foreground">Loading projects...</div>
+              <TextShimmer className="font-mono text-md" duration={1.2}>
+                Loading projects...
+              </TextShimmer>
             </div>
           )}
 

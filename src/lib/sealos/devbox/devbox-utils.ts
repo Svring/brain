@@ -2,15 +2,10 @@
 
 import type { DevboxListResponse } from "./schemas";
 import { DevboxApiContextSchema } from "./schemas";
-import { use } from "react";
-import { AuthContext } from "@/contexts/auth-context/auth-context";
+import { User } from "@/payload-types";
 import { nanoid } from "nanoid";
 
-export function createDevboxContext() {
-  const { user } = use(AuthContext);
-  if (!user) {
-    throw new Error("User not found");
-  }
+export function createDevboxContext(user: User) {
   return DevboxApiContextSchema.parse({
     baseURL: user.regionUrl,
     authorization: user.kubeconfig,
