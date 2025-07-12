@@ -2,7 +2,7 @@ import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useContext, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { AuthContext } from "@/contexts/auth-context";
+import { AuthContext } from "@/contexts/auth-context/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import type { TemplateResource } from "@/lib/sealos/template/schemas/template-api-context-schemas";
 import { useCreateInstanceMutation } from "@/lib/sealos/template/template-mutation";

@@ -2,7 +2,7 @@
 
 import _ from "lodash";
 import { use } from "react";
-import { AuthContext } from "@/contexts/auth-context";
+import { AuthContext } from "@/contexts/auth-context/auth-context";
 import type { ResourceConfig } from "./k8s-constant";
 import { RESOURCES } from "./k8s-constant";
 import type {

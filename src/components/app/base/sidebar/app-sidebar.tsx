@@ -15,7 +15,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { AuthContext } from "@/contexts/auth-context";
+import { AuthContext } from "@/contexts/auth-context/auth-context";
 import { cn } from "@/lib/utils";
 
 // Constants
