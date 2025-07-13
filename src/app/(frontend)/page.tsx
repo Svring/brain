@@ -15,6 +15,11 @@ import useAI from "@/hooks/ai/use-ai";
 import useProjects from "@/hooks/app/project/use-projects";
 import { TextShimmer } from "@/components/app/project/text-shimmer";
 import { useDisclosure } from "@reactuses/core";
+import { CopilotButton } from "@/components/ai/copilot-button";
+import { CopilotWindow } from "@/components/ai/copilot-window";
+import { CopilotHeader } from "@/components/ai/copilot-header";
+import { CopilotInput } from "@/components/ai/copilot-input";
+import { CopilotMessages } from "@/components/ai/copilot-messages";
 
 const CreateProject = dynamic(
   () => import("@/components/app/project/create-project")
@@ -102,6 +107,11 @@ export default function Page() {
           title: "Popup Assistant",
           initial: "Need any help?",
         }}
+        Button={CopilotButton}
+        Window={CopilotWindow}
+        Header={CopilotHeader}
+        Input={CopilotInput}
+        Messages={CopilotMessages}
       />
     </div>
   );
