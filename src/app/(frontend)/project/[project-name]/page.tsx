@@ -9,6 +9,7 @@ import {
 import { ArrowLeft, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
+import dynamic from "next/dynamic";
 import { AddResourceTabs } from "@/components/app/project/add-resource/add-resource-tabs";
 import { MenuBar } from "@/components/app/project/menu-bar";
 import edgeTypes from "@/components/flow/edge/edge-types";
@@ -26,10 +27,20 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ProjectContext } from "@/contexts/project-context";
 import { DndProvider } from "@/components/flow/dnd/dnd-provider";
 import { TextShimmer } from "@/components/app/project/text-shimmer";
+import useAI from "@/hooks/ai/use-ai";
+import { CopilotButton } from "@/components/ai/copilot-button";
+import { CopilotWindow } from "@/components/ai/copilot-window";
+import { CopilotHeader } from "@/components/ai/copilot-header";
+import { CopilotInput } from "@/components/ai/copilot-input";
+import { CopilotMessages } from "@/components/ai/copilot-messages";
 
 import "@xyflow/react/dist/style.css";
 import { useDroppable } from "@dnd-kit/core";
 import { FlowProvider } from "@/contexts/flow-context";
+
+const CopilotSidebar = dynamic(() =>
+  import("@copilotkit/react-ui").then((mod) => mod.CopilotSidebar)
+);
 
 function ProjectFloatingUI() {
   const router = useRouter();
@@ -146,12 +157,21 @@ export default function Page({
   const { setProjectName } = use(ProjectContext);
   setProjectName(projectName);
 
+  useAI();
+
   return (
     <FlowProvider>
       <DndProvider>
         <div className="relative h-screen w-full">
           <ProjectFloatingUI />
           <ProjectFlow />
+          <CopilotSidebar
+            Button={CopilotButton}
+            Window={CopilotWindow}
+            Header={CopilotHeader}
+            Input={CopilotInput}
+            Messages={CopilotMessages}
+          />
         </div>
       </DndProvider>
     </FlowProvider>

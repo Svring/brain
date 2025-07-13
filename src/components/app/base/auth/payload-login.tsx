@@ -121,8 +121,6 @@ export default function PayloadLogin() {
       }),
     });
 
-    console.log("res", res);
-
     const data = await res.json();
     if (!res.ok || data.error) {
       setError(data.message || "Login failed");
