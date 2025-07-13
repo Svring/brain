@@ -7,7 +7,9 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-const Sheet = SheetPrimitive.Root;
+const Sheet = (props: React.ComponentProps<typeof SheetPrimitive.Root>) => (
+  <SheetPrimitive.Root modal={false} {...props} />
+);
 
 const SheetTrigger = SheetPrimitive.Trigger;
 
@@ -49,29 +51,63 @@ const sheetVariants = cva(
   }
 );
 
+interface SheetRailProps extends React.ComponentProps<"button"> {
+  onClose?: () => void;
+}
+const SheetRail = React.forwardRef<HTMLButtonElement, SheetRailProps>(
+  ({ className, onClose, ...props }, ref) => (
+    <button
+      aria-label="Close Sheet"
+      className={cn(
+        "absolute -left-4 top-0 z-50 h-full w-4 bg-transparent transition-colors group/rail cursor-e-resize",
+        className
+      )}
+      onClick={onClose}
+      ref={ref}
+      tabIndex={0}
+      title="Close Sheet"
+      {...props}
+    >
+      <span
+        className={cn(
+          "pointer-events-none absolute left-1/2 top-0 h-full w-0.5 -translate-x-1/2 rounded bg-muted opacity-0 transition-opacity group-hover/rail:opacity-100"
+        )}
+      />
+    </button>
+  )
+);
+SheetRail.displayName = "SheetRail";
+
 interface SheetContentProps
   extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
-    VariantProps<typeof sheetVariants> {}
+    VariantProps<typeof sheetVariants> {
+  onClose?: () => void;
+}
 
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
->(({ side = "right", className, children, ...props }, ref) => (
-  <SheetPortal>
-    {/* <SheetOverlay /> */}
-    <SheetPrimitive.Content
-      className={cn(sheetVariants({ side }), className)}
-      ref={ref}
-      {...props}
-    >
-      {children}
-      <SheetPrimitive.Close className="absolute top-4 right-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
-      </SheetPrimitive.Close>
-    </SheetPrimitive.Content>
-  </SheetPortal>
-));
+>(({ side = "right", className, children, onClose, ...props }, ref) => {
+  return (
+    <SheetPortal>
+      {/* <SheetOverlay /> */}
+      <SheetPrimitive.Content
+        className={cn(sheetVariants({ side }), className)}
+        ref={ref}
+        onPointerDownOutside={(event) => event.preventDefault()}
+        onInteractOutside={(event) => event.preventDefault()}
+        {...props}
+      >
+        <SheetRail onClose={onClose} />
+        {children}
+        <SheetPrimitive.Close className="absolute top-4 right-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </SheetPrimitive.Close>
+      </SheetPrimitive.Content>
+    </SheetPortal>
+  );
+});
 SheetContent.displayName = SheetPrimitive.Content.displayName;
 
 const SheetHeader = ({
@@ -137,4 +173,5 @@ export {
   SheetFooter,
   SheetTitle,
   SheetDescription,
+  SheetRail,
 };

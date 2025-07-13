@@ -280,7 +280,7 @@ export function TemplateInputDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-md max-h-[60vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Configure {template.spec.title}</DialogTitle>
           <DialogDescription>
