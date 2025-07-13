@@ -13,7 +13,7 @@ const DEFAULT_OPTIONS: Required<LayoutOptions> = {
   direction: "TB",
   nodeWidth: 200,
   nodeHeight: 100,
-  rankSep: 100,
+  rankSep: 150,
   nodeSep: 100,
 };
 

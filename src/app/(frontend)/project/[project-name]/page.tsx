@@ -129,6 +129,8 @@ function ProjectFlow() {
       onEdgesChange={onEdgesChange}
       onNodesChange={onNodesChange}
       panOnScroll
+      snapToGrid
+      snapGrid={[20, 20]}
     >
       <Background gap={60} size={1} variant={BackgroundVariant.Dots} />
     </ReactFlow>

@@ -15,9 +15,14 @@ import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-
 interface BaseNodeProps {
   children: React.ReactNode;
   target: CustomResourceTarget | BuiltinResourceTarget;
+  className?: string;
 }
 
-export default function BaseNodeWrapper({ children, target }: BaseNodeProps) {
+export default function BaseNodeWrapper({
+  children,
+  target,
+  className,
+}: BaseNodeProps) {
   const context = createK8sContext();
   const removeFromProjectMutation = useRemoveFromProjectMutation(context);
   const deleteResourceMutation = useDeleteResourceMutation(context);
@@ -25,7 +30,7 @@ export default function BaseNodeWrapper({ children, target }: BaseNodeProps) {
   return (
     <ContextMenu>
       <ContextMenuTrigger>
-        <BaseNode>
+        <BaseNode className={className}>
           <Handle position={Position.Top} type="source" />
           {children}
           <Handle position={Position.Bottom} type="target" />

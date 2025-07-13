@@ -2,6 +2,8 @@
 
 import BaseNode from "../base-node-wrapper";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 
 interface ClusterNodeProps {
   name: string;
@@ -18,18 +20,39 @@ export default function ClusterNode({ data }: { data: ClusterNodeProps }) {
         {/* Name */}
         <div className="flex items-center gap-2 truncate font-medium">
           <div className="flex flex-col items-start">
-            <span className="truncate text-muted-foreground text-sm">
-              Cluster
-            </span>
-            <span className="w-full overflow-hidden text-ellipsis text-left font-bold text-foreground text-md">
-              {name}
+            <span className="flex items-center gap-2">
+              <Image
+                src="https://dbprovider.bja.sealos.run/logo.svg"
+                alt="Cluster Icon"
+                width={24}
+                height={24}
+                className="rounded-lg border border-muted bg-white h-9 w-9"
+                priority
+              />
+              <span className="flex flex-col">
+                <span className="text-xs text-muted-foreground leading-none">
+                  Cluster
+                </span>
+                <span className="text-lg font-bold text-foreground leading-tight w-40 overflow-hidden text-ellipsis text-left">
+                  {name}
+                </span>
+              </span>
             </span>
           </div>
         </div>
 
         {/* State badge */}
         <div className="mt-auto flex justify-start">
-          <span className="rounded px-2 py-0.5 text-xs">{state}</span>
+          <Badge
+            variant="outline"
+            className={
+              typeof state === "string" && state.toLowerCase() === "running"
+                ? "border-green-600 text-green-700"
+                : ""
+            }
+          >
+            {state}
+          </Badge>
         </div>
       </div>
     </BaseNode>

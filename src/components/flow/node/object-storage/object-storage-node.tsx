@@ -2,6 +2,8 @@
 
 import BaseNode from "../base-node-wrapper";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 
 interface ObjectStorageNodeProps {
   name: string;
@@ -22,18 +24,30 @@ export default function ObjectStorageNode({
         {/* Name */}
         <div className="flex items-center gap-2 truncate font-medium">
           <div className="flex flex-col items-start">
-            <span className="truncate text-muted-foreground text-sm">
-              Object Storage
-            </span>
-            <span className="w-full overflow-hidden text-ellipsis text-left font-bold text-foreground text-md">
-              {name}
+            <span className="flex items-center gap-2">
+              <Image
+                src="https://objectstorageapi.hzh.sealos.run/cyhipdvv-logos/objectstorage.svg"
+                alt="Object Storage Icon"
+                width={24}
+                height={24}
+                className="rounded-lg border border-muted bg-white h-9 w-9"
+                priority
+              />
+              <span className="flex flex-col">
+                <span className="text-xs text-muted-foreground leading-none">
+                  Object Storage
+                </span>
+                <span className="text-lg font-bold text-foreground leading-tight w-40 overflow-hidden text-ellipsis text-left">
+                  {name}
+                </span>
+              </span>
             </span>
           </div>
         </div>
 
         {/* Policy badge */}
         <div className="mt-auto flex justify-start">
-          <span className="rounded px-2 py-0.5 text-xs">{policy}</span>
+          <Badge variant="outline">{policy}</Badge>
         </div>
       </div>
     </BaseNode>

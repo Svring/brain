@@ -1,6 +1,6 @@
 "use client";
 
-import { Drama } from "lucide-react";
+import { Globe } from "lucide-react";
 import { useContext } from "react";
 import { RegionSwitcher } from "@/components/app/base/sidebar/region-switcher";
 import {
@@ -31,7 +31,7 @@ export default function AppSidebar() {
           regions={[
             {
               name: user?.regionUrl ?? "",
-              logo: Drama,
+              logo: Globe,
               namespace: user?.namespace ?? "",
             },
           ]}
@@ -43,9 +43,9 @@ export default function AppSidebar() {
       <SidebarFooter className={cn("rounded-b-lg bg-background")}>
         <UserCard
           user={{
-            name: "Hydrangea",
-            email: "hydrangea@sealos.io",
-            avatar: "https://github.com/svring.png",
+            name: "Brain",
+            email: "brain@sealos.io",
+            avatar: "https://github.com/vercel.png",
           }}
         />
       </SidebarFooter>

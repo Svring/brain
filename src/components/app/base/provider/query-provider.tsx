@@ -14,7 +14,7 @@ export const QueryProvider = ({
   dehydratedState,
 }: {
   children: React.ReactNode;
-  dehydratedState: DehydratedState;
+  dehydratedState: DehydratedState | null;
 }) => {
   const [queryClient] = React.useState(
     () =>
@@ -31,7 +31,9 @@ export const QueryProvider = ({
 
   return (
     <QueryClientProvider client={queryClient}>
-      <HydrationBoundary state={dehydratedState}>{children}</HydrationBoundary>
+      <HydrationBoundary state={dehydratedState || undefined}>
+        {children}
+      </HydrationBoundary>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

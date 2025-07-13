@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import type React from "react";
-import LoginPanel from "@/components/app/base/login-panel";
+import AuthWrapper from "@/components/app/base/auth-wrapper";
 import { AIProvider } from "@/components/app/base/provider/ai-provider";
 import { QueryProvider } from "@/components/app/base/provider/query-provider";
 import AppSidebar from "@/components/app/base/sidebar/app-sidebar";
@@ -49,47 +49,32 @@ export default async function RootLayout({
 }) {
   const user = await getUser();
 
-  if (!user) {
-    return (
-      <html lang="en">
-        <body
-          className={`${nunito.variable} h-screen w-screen font-nunito antialiased`}
-        >
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            disableTransitionOnChange
-            enableSystem
-          >
-            <LoginPanel />
-          </ThemeProvider>
-        </body>
-      </html>
-    );
+  // Only prefetch data if we have a server-side user
+  let dehydratedState = null;
+  if (user) {
+    const queryClient = new QueryClient();
+    await queryClient.prefetchQuery({
+      queryKey: ["projects", user.namespace],
+      queryFn: () =>
+        fetchProjects(
+          K8sApiContextSchema.parse({
+            kubeconfig: user.kubeconfig,
+            namespace: user.namespace,
+          }),
+          {
+            type: "custom",
+            group: CUSTOM_RESOURCES.instance.group,
+            version: CUSTOM_RESOURCES.instance.version,
+            plural: CUSTOM_RESOURCES.instance.plural,
+          }
+        ),
+    });
+    dehydratedState = dehydrate(queryClient);
   }
-
-  const queryClient = new QueryClient();
-  await queryClient.prefetchQuery({
-    queryKey: ["projects", user.namespace],
-    queryFn: () =>
-      fetchProjects(
-        K8sApiContextSchema.parse({
-          kubeconfig: user.kubeconfig,
-          namespace: user.namespace,
-        }),
-        {
-          type: "custom",
-          group: CUSTOM_RESOURCES.instance.group,
-          version: CUSTOM_RESOURCES.instance.version,
-          plural: CUSTOM_RESOURCES.instance.plural,
-        }
-      ),
-  });
-  const dehydratedState = dehydrate(queryClient);
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={nunito.variable}>
+      <body className={`${nunito.variable} font-nunito antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -99,12 +84,14 @@ export default async function RootLayout({
           <AuthProvider initialUser={user}>
             <AIProvider>
               <QueryProvider dehydratedState={dehydratedState}>
-                <ProjectProvider initialProjectName={null}>
-                  <SidebarProvider defaultOpen={false}>
-                    <AppSidebar />
-                    {children}
-                  </SidebarProvider>
-                </ProjectProvider>
+                <AuthWrapper>
+                  <ProjectProvider initialProjectName={null}>
+                    <SidebarProvider defaultOpen={false}>
+                      <AppSidebar />
+                      {children}
+                    </SidebarProvider>
+                  </ProjectProvider>
+                </AuthWrapper>
               </QueryProvider>
             </AIProvider>
           </AuthProvider>

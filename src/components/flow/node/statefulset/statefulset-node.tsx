@@ -2,6 +2,8 @@
 
 import BaseNode from "../base-node-wrapper";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 
 interface StatefulSetNodeProps {
   name: string;
@@ -23,20 +25,41 @@ export default function StatefulSetNode({
         {/* Name */}
         <div className="flex items-center gap-2 truncate font-medium">
           <div className="flex flex-col items-start">
-            <span className="truncate text-muted-foreground text-sm">
-              Stateful Set
-            </span>
-            <span className="w-40 overflow-hidden text-ellipsis text-left font-bold text-foreground text-md">
-              {name}
+            <span className="flex items-center gap-2">
+              <Image
+                src="https://applaunchpad.bja.sealos.run/logo.svg"
+                alt="StatefulSet Icon"
+                width={24}
+                height={24}
+                className="rounded-lg border border-muted bg-white h-9 w-9"
+                priority
+              />
+              <span className="flex flex-col">
+                <span className="text-xs text-muted-foreground leading-none">
+                  Stateful Set
+                </span>
+                <span className="text-lg font-bold text-foreground leading-tight w-40 overflow-hidden text-ellipsis text-left">
+                  {name}
+                </span>
+              </span>
             </span>
           </div>
         </div>
 
         {/* State badge */}
         <div className="mt-auto flex justify-start">
-          <span className="rounded px-2 py-0.5 text-xs">
-            {readyReplicas} / {replicas}
-          </span>
+          <Badge
+            variant="outline"
+            className={
+              readyReplicas === replicas && replicas > 0
+                ? "border-green-600 text-green-700"
+                : ""
+            }
+          >
+            {readyReplicas === replicas && replicas > 0
+              ? "Running"
+              : "Preparing"}
+          </Badge>
         </div>
       </div>
     </BaseNode>
