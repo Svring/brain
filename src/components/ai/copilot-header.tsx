@@ -1,21 +1,28 @@
 import { HeaderProps, useChatContext } from "@copilotkit/react-ui";
-import { X } from "lucide-react";
+import { useCopilotChat } from "@copilotkit/react-core";
+import { Plus } from "lucide-react";
 
 export function CopilotHeader({}: HeaderProps) {
   const { setOpen } = useChatContext();
+  const { reset } = useCopilotChat();
 
   return (
-    <div className="">
-      {/* <div className="flex-1" />
-      <div className="w-24 flex justify-end bg-background">
-        <button
-          onClick={() => setOpen(false)}
-          aria-label="Close"
-          className="bg-background"
-        >
-          <X size={16} className="text-foreground" />
-        </button>
-      </div> */}
+    <div className="flex items-center gap-1 border-border border-b p-2 justify-between">
+      <div />
+      {/* <button
+        type="button"
+        onClick={() => reset()}
+        className="ml-auto"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            reset();
+          }
+        }}
+        tabIndex={0}
+        aria-label="New Chat"
+      >
+        <Plus size={20} className="text-foreground" />
+      </button> */}
     </div>
   );
 }

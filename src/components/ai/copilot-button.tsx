@@ -1,6 +1,6 @@
 import { StarBorder } from "@/components/ui/star-border";
 import { ButtonProps, useChatContext } from "@copilotkit/react-ui";
-import { Cat } from "lucide-react";
+import { Bird } from "lucide-react";
 import { motion } from "framer-motion";
 
 export function CopilotButton({}: ButtonProps) {
@@ -40,7 +40,7 @@ export function CopilotButton({}: ButtonProps) {
               damping: 25,
             }}
           >
-            <Cat size={24} />
+            <Bird size={24} />
           </motion.div>
         </StarBorder>
       </motion.button>
