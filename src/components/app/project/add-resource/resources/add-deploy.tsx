@@ -1,47 +1,44 @@
 "use client";
 
 import { useState } from "react";
-import type { DeployCreateRequest } from "@/lib/sealos/deploy/schemas/req-res-schemas/req-res-create-schemas";
 import { Button } from "@/components/ui/button";
-import {
-  createDeployContext,
-  generateDeployName,
-} from "@/lib/sealos/deploy/deploy-utils";
-// AuthContext not required
-import { useCreateDeployMutation } from "@/lib/sealos/deploy/deploy-mutation";
+import { createDeployContext } from "@/lib/sealos/deploy/deploy-utils";
+import { useCreateDeployAction } from "@/lib/sealos/deploy/deploy-action/deploy-action";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-// Plus icon removed; not needed
+import { useToggle } from "@reactuses/core";
+import { toast } from "sonner";
 
 export default function AddDeploy() {
   const [image, setImage] = useState("");
   const [port, setPort] = useState<number>(80);
-  const [created, setCreated] = useState<boolean>(false);
+  const [loading, toggleLoading] = useToggle(false);
 
   // Create the context and mutation hook
   const deployContext = createDeployContext();
-  const createDeployMutation = useCreateDeployMutation(deployContext);
-
-  // no handlers needed for arrays
+  const createDeployAction = useCreateDeployAction(deployContext);
 
   const handleCreate = () => {
     if (!image) return;
 
-    const request: DeployCreateRequest = {
-      name: generateDeployName(),
-      image,
-      env: {},
-      ports: [{ number: port, publicAccess: true }],
-    };
-
-    createDeployMutation.mutate(request, {
-      onSuccess: () => {
-        setCreated(true);
+    toggleLoading(true);
+    createDeployAction.mutate(
+      {
+        image,
+        ports: [{ number: port, publicAccess: true }],
       },
-      onError: (error) => {
-        console.error("Failed to create deployment:", error);
-      },
-    });
+      {
+        onSuccess: () => {
+          toggleLoading(false);
+          toast.success("Deployment created successfully");
+        },
+        onError: (error: unknown) => {
+          console.error("Failed to create deployment:", error);
+          toggleLoading(false);
+          toast.error("Failed to create deployment");
+        },
+      }
+    );
   };
 
   return (
@@ -82,13 +79,9 @@ export default function AddDeploy() {
       <Button
         className="mt-4 w-full"
         onClick={handleCreate}
-        disabled={createDeployMutation.isPending || !image || created}
+        disabled={loading || !image}
       >
-        {created
-          ? "Created"
-          : createDeployMutation.isPending
-          ? "Creating..."
-          : "Create Deployment"}
+        {loading ? "Creating..." : "Create Deployment"}
       </Button>
     </div>
   );

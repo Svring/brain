@@ -34,7 +34,7 @@ export const QueryProvider = ({
       <HydrationBoundary state={dehydratedState || undefined}>
         {children}
       </HydrationBoundary>
-      <ReactQueryDevtools initialIsOpen={false} />
+      <ReactQueryDevtools buttonPosition="bottom-left" initialIsOpen={false} />
     </QueryClientProvider>
   );
 };

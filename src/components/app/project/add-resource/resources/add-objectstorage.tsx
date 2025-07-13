@@ -1,43 +1,40 @@
 "use client";
 
-import { use, useState } from "react";
-import type { ObjectStorageCreateRequest } from "@/lib/sealos/objectstorage/schemas/req-res-schemas/req-res-create-schemas";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  createObjectStorageContext,
-  generateObjectStorageName,
-} from "@/lib/sealos/objectstorage/objectstorage-utils";
-import { AuthContext } from "@/contexts/auth-context/auth-context";
-import { useCreateObjectStorageMutation } from "@/lib/sealos/objectstorage/objectstorage-mutation";
+import { createObjectStorageContext } from "@/lib/sealos/objectstorage/objectstorage-utils";
+import { useCreateObjectStorageAction } from "@/lib/sealos/objectstorage/objectstorage-action/objectstorage-action";
+import { useToggle } from "@reactuses/core";
+import { toast } from "sonner";
 
 // Remove unused imports
 
 // Remove bucket policy options; default will be private.
 
 export default function AddObjectStorage() {
-  const { user } = use(AuthContext);
-  const [created, setCreated] = useState<boolean>(false);
+  const [loading, toggleLoading] = useToggle(false);
 
   // Create the context and mutation hook
   const objectStorageContext = createObjectStorageContext();
-  const createObjectStorageMutation =
-    useCreateObjectStorageMutation(objectStorageContext);
+  const createObjectStorageAction =
+    useCreateObjectStorageAction(objectStorageContext);
 
   const handleCreate = () => {
-    // No parameter inputs - using defaults
-    const request: ObjectStorageCreateRequest = {
-      bucketName: generateObjectStorageName(),
-      bucketPolicy: "private",
-    };
-
-    createObjectStorageMutation.mutate(request, {
-      onSuccess: () => {
-        setCreated(true);
-      },
-      onError: (error) => {
-        console.error("Failed to create object storage:", error);
-      },
-    });
+    toggleLoading(true);
+    createObjectStorageAction.mutate(
+      {}, // Use all defaults
+      {
+        onSuccess: () => {
+          toggleLoading(false);
+          toast.success("Object storage created successfully");
+        },
+        onError: (error: unknown) => {
+          console.error("Failed to create object storage:", error);
+          toggleLoading(false);
+          toast.error("Failed to create object storage");
+        },
+      }
+    );
   };
 
   // No policy selection needed
@@ -50,16 +47,8 @@ export default function AddObjectStorage() {
 
       {/* No parameter inputs - using defaults */}
 
-      <Button
-        className="mt-4 w-full"
-        onClick={handleCreate}
-        disabled={createObjectStorageMutation.isPending || created}
-      >
-        {created
-          ? "Created"
-          : createObjectStorageMutation.isPending
-          ? "Creating..."
-          : "Create Object Storage"}
+      <Button className="mt-4 w-full" onClick={handleCreate} disabled={loading}>
+        {loading ? "Creating..." : "Create Object Storage"}
       </Button>
     </div>
   );

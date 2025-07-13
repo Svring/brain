@@ -1,9 +1,8 @@
 "use client";
 
-import { use, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { createClusterContext } from "@/lib/sealos/cluster/cluster-utils";
-import { AuthContext } from "@/contexts/auth-context/auth-context";
 import { useCreateClusterAction } from "@/lib/sealos/cluster/cluster-action/cluster-action";
 import {
   CLUSTER_TYPE_VERSION_MAP,
@@ -11,11 +10,11 @@ import {
 } from "@/lib/sealos/cluster/cluster-constant";
 import { Label } from "@/components/ui/label";
 import { useToggle } from "@reactuses/core";
+import { toast } from "sonner";
 
 type ClusterType = keyof typeof CLUSTER_TYPE_VERSION_MAP;
 
 export default function AddCluster() {
-  const { user } = use(AuthContext);
   const [selectedType, setSelectedType] = useState<ClusterType>("postgresql");
   const [selectedVersion, setSelectedVersion] = useState<string>(""); // for internal default selection
   const [loading, toggleLoading] = useToggle(false);
@@ -50,10 +49,12 @@ export default function AddCluster() {
       {
         onSuccess: () => {
           toggleLoading(false);
+          toast.success("Cluster created successfully");
         },
         onError: (error: unknown) => {
           console.error("Failed to create cluster:", error);
           toggleLoading(false);
+          toast.error("Failed to create cluster");
         },
       }
     );

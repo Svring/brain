@@ -8,6 +8,7 @@ import { createDevboxContext } from "@/lib/sealos/devbox/devbox-utils";
 import { useCreateDevboxAction } from "@/lib/sealos/devbox/devbox-action/devbox-action";
 import { DEVBOX_RUNTIME_ICON_MAP } from "@/lib/sealos/devbox/devbox-constant";
 import { useToggle } from "@reactuses/core";
+import { toast } from "sonner";
 
 const RUNTIME_OPTIONS = RuntimeNameSchema.options;
 
@@ -28,10 +29,12 @@ export default function AddDevbox() {
       {
         onSuccess: () => {
           toggleLoading(false);
+          toast.success("Devbox created successfully");
         },
         onError: (error) => {
           console.error("Failed to create devbox:", error);
           toggleLoading(false);
+          toast.error("Failed to create devbox");
         },
       }
     );
