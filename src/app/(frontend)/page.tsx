@@ -3,7 +3,6 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Plus } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useState } from "react";
 import ProjectCard from "@/components/app/project/project-card";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +14,7 @@ import {
 import useAI from "@/hooks/ai/use-ai";
 import useProjects from "@/hooks/app/project/use-projects";
 import { TextShimmer } from "@/components/app/project/text-shimmer";
+import { useDisclosure } from "@reactuses/core";
 
 const CreateProject = dynamic(
   () => import("@/components/app/project/create-project")
@@ -24,7 +24,8 @@ const CopilotSidebar = dynamic(() =>
 );
 
 export default function Page() {
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const { isOpen, onClose, onOpenChange } = useDisclosure();
+
   const {
     data: projects,
     isLoading: projectsLoading,
@@ -32,10 +33,6 @@ export default function Page() {
   } = useProjects();
 
   useAI();
-
-  const handleCloseDialog = () => {
-    setIsCreateDialogOpen(false);
-  };
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center p-8">
@@ -47,10 +44,7 @@ export default function Page() {
               Projects
             </h1>
           </div>
-          <Dialog
-            onOpenChange={setIsCreateDialogOpen}
-            open={isCreateDialogOpen}
-          >
+          <Dialog onOpenChange={onOpenChange} open={isOpen}>
             <VisuallyHidden>
               <DialogTitle>Create Project</DialogTitle>
             </VisuallyHidden>
@@ -60,7 +54,7 @@ export default function Page() {
               </Button>
             </DialogTrigger>
             <DialogContent className="h-[90vh] max-h-none w-[90vw] max-w-none">
-              <CreateProject onClose={handleCloseDialog} />
+              <CreateProject onClose={onClose} />
             </DialogContent>
           </Dialog>
         </div>

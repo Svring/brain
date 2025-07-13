@@ -29,3 +29,5 @@ next-env.d.ts
 .cursor
 .vscode
 biome.jsonc
+
+.dockerignore

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -51,12 +51,14 @@
     "@radix-ui/react-toggle-group": "1.1.1",
     "@radix-ui/react-tooltip": "1.1.6",
     "@radix-ui/react-visually-hidden": "^1.2.3",
+    "@reactuses/core": "^6.0.5",
     "@tanstack/react-query": "^5.81.5",
     "@tanstack/react-query-devtools": "^5.81.5",
     "@tanstack/react-table": "^8.21.3",
     "@types/js-yaml": "^4.0.9",
     "@types/lodash": "^4.17.20",
     "@xyflow/react": "^12.8.1",
+    "@zjy365/sealos-desktop-sdk": "^0.1.16",
     "autoprefixer": "^10.4.20",
     "axios": "^1.10.0",
     "class-validator": "^0.14.2",
