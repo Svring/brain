@@ -264,7 +264,7 @@ export const useDeleteProjectMutation = (context: K8sApiContext) => {
 
       // Invalidate project-related queries
       queryClient.invalidateQueries({
-        queryKey: ["project", "list", context.namespace],
+        queryKey: ["projects"],
       });
       queryClient.invalidateQueries({
         queryKey: ["project", "get", context.namespace],
