@@ -35,6 +35,7 @@ export function useCreateClusterMutation(context: ClusterApiContext) {
       queryClient.invalidateQueries({
         queryKey: ["sealos", "cluster", "list"],
       });
+      queryClient.invalidateQueries({ queryKey: ["inventory", "clusters"] });
     },
   });
 }
@@ -89,6 +90,7 @@ export function useDeleteClusterMutation(context: ClusterApiContext) {
       queryClient.invalidateQueries({
         queryKey: ["sealos", "cluster", "list"],
       });
+      queryClient.invalidateQueries({ queryKey: ["inventory", "clusters"] });
     },
   });
 }

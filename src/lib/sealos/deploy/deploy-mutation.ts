@@ -14,6 +14,7 @@ export function useCreateDeployMutation(context: DeployApiContext) {
       runParallelAction(createDeploy(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sealos", "deploy", "list"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory", "deployments"] });
     },
   });
 }
@@ -25,6 +26,7 @@ export function useDeleteDeployMutation(context: DeployApiContext) {
       runParallelAction(deleteDeploy(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sealos", "deploy", "list"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory", "deployments"] });
     },
   });
 }

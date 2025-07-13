@@ -2,6 +2,7 @@
 
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,11 +13,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { TemplateResource } from "@/lib/sealos/template/schemas/template-api-context-schemas";
+import { TemplateInputDialog } from "./template-input-dialog";
 
 export type TemplateDetailsProps = {
   template: TemplateResource;
   onBack: () => void;
-  onDeploy: (templateName: string) => void;
+  onDeploy: (
+    templateName: string,
+    templateForm?: Record<string, string>
+  ) => void;
 };
 
 export function TemplateDetails({
@@ -24,6 +29,25 @@ export function TemplateDetails({
   onBack,
   onDeploy,
 }: TemplateDetailsProps) {
+  const [showInputDialog, setShowInputDialog] = useState(false);
+
+  // Check if template has inputs
+  const hasInputs =
+    template.spec.inputs && Object.keys(template.spec.inputs).length > 0;
+
+  const handleDeploy = () => {
+    if (hasInputs) {
+      setShowInputDialog(true);
+    } else {
+      onDeploy(template.metadata.name);
+    }
+  };
+
+  const handleDeployWithForm = (templateForm: Record<string, string>) => {
+    onDeploy(template.metadata.name, templateForm);
+    setShowInputDialog(false);
+  };
+
   return (
     <div className="flex h-full max-h-full flex-col overflow-hidden">
       {/* Header */}
@@ -66,11 +90,8 @@ export function TemplateDetails({
                         </CardDescription>
                       )}
                     </div>
-                    <Button
-                      onClick={() => onDeploy(template.metadata.name)}
-                      size="lg"
-                    >
-                      Deploy Template
+                    <Button onClick={handleDeploy} size="lg">
+                      {hasInputs ? "Configure & Deploy" : "Deploy Template"}
                     </Button>
                   </div>
 
@@ -220,6 +241,17 @@ export function TemplateDetails({
           )}
         </div>
       </div>
+
+      {/* Template Input Dialog */}
+      {hasInputs && (
+        <TemplateInputDialog
+          template={template}
+          isOpen={showInputDialog}
+          onClose={() => setShowInputDialog(false)}
+          onSubmit={handleDeployWithForm}
+          isLoading={false}
+        />
+      )}
     </div>
   );
 }

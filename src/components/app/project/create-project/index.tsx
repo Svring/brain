@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import { Main } from "@/components/layout/main";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { AuthContext } from "@/contexts/auth-context/auth-context";
 import { useTemplates } from "@/hooks/app/project/use-templates";
 import { useToast } from "@/hooks/use-toast";
 import { useCreateProjectMutation } from "@/lib/app/project/project-mutation";
@@ -21,6 +22,7 @@ import type {
   ListTemplateResponse,
   TemplateResource,
 } from "@/lib/sealos/template/schemas/template-api-context-schemas";
+import { useCreateInstanceMutation } from "@/lib/sealos/template/template-mutation";
 import { TemplateCard } from "./template-card";
 import { TemplateDetails } from "./template-details";
 
@@ -34,6 +36,7 @@ export default function CreateProject({ onClose }: CreateProjectProps) {
   const [selectedTemplate, setSelectedTemplate] =
     useState<TemplateResource | null>(null);
 
+  const { user } = useContext(AuthContext);
   const { toast } = useToast();
   const { data: templatesResponse, isLoading, error } = useTemplates();
   const templates =
@@ -46,6 +49,17 @@ export default function CreateProject({ onClose }: CreateProjectProps) {
   });
 
   const createProjectMutation = useCreateProjectMutation(context);
+
+  // Get template API context
+  const templateApiContext = useMemo(
+    () => ({
+      baseURL: user?.regionUrl || undefined,
+      authorization: user?.kubeconfig || undefined,
+    }),
+    [user]
+  );
+
+  const createInstanceMutation = useCreateInstanceMutation(templateApiContext);
 
   // Extract all unique categories from templates
   const categories = useMemo(() => {
@@ -120,13 +134,33 @@ export default function CreateProject({ onClose }: CreateProjectProps) {
     setSelectedTemplate(null);
   };
 
-  const handleTemplateDeploy = () => {
-    // TODO: Implement template deployment from details view
-    toast({
-      title: "Template Deployed",
-      description: "Template has been deployed successfully.",
-    });
-    onClose();
+  const handleTemplateDeploy = (
+    templateName: string,
+    templateForm?: Record<string, string>
+  ) => {
+    createInstanceMutation.mutate(
+      {
+        templateName,
+        templateForm,
+      },
+      {
+        onSuccess: () => {
+          toast({
+            title: "Template deployed successfully",
+            description: `Template has been deployed to your project.`,
+          });
+          onClose();
+        },
+        onError: (error) => {
+          toast({
+            title: "Deployment failed",
+            description:
+              error.message || "Failed to deploy template. Please try again.",
+            variant: "destructive",
+          });
+        },
+      }
+    );
   };
 
   // If a template is selected, show the details view

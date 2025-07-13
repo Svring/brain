@@ -21,6 +21,9 @@ export function useCreateObjectStorageMutation(
       queryClient.invalidateQueries({
         queryKey: ["sealos", "objectstorage", "list"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["inventory", "objectstorages"],
+      });
     },
   });
 }
@@ -35,6 +38,9 @@ export function useDeleteObjectStorageMutation(
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["sealos", "objectstorage", "list"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["inventory", "objectstorages"],
       });
     },
   });

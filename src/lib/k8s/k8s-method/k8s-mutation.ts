@@ -83,6 +83,9 @@ export function useRemoveResourceMetadataMutation(context: K8sApiContext) {
     },
     onSuccess: (_data, variables) => {
       invalidateResourceQueries(queryClient, context, variables.target);
+      queryClient.invalidateQueries({
+        queryKey: ["inventory"],
+      });
     },
   });
 }
@@ -105,6 +108,9 @@ export function useDeleteResourceMutation(context: K8sApiContext) {
     },
     onSuccess: (_data, variables) => {
       invalidateResourceQueries(queryClient, context, variables.target);
+      queryClient.invalidateQueries({
+        queryKey: ["inventory"],
+      });
     },
   });
 }

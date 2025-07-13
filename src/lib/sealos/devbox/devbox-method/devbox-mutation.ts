@@ -30,6 +30,7 @@ export function useCreateDevboxMutation(context: DevboxApiContext) {
       runParallelAction(createDevbox(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sealos", "devbox", "list"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory", "devboxes"] });
     },
   });
 }
@@ -98,6 +99,7 @@ export function useDeployDevboxMutation(context: DevboxApiContext) {
         queryClient.invalidateQueries({
           queryKey: ["sealos", "devbox", "get", variables.devboxName],
         });
+        queryClient.invalidateQueries({ queryKey: ["inventory", "devboxes"] });
       }
     },
   });

@@ -110,6 +110,9 @@ export const useAddToProjectMutation = (context: K8sApiContext) => {
       queryClient.invalidateQueries({
         queryKey: ["project", "resources", context.namespace],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["inventory"],
+      });
     },
   });
 };
@@ -138,6 +141,9 @@ export const useRemoveFromProjectMutation = (context: K8sApiContext) => {
       // Invalidate project-related queries
       queryClient.invalidateQueries({
         queryKey: ["project", "resources", context.namespace],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["inventory"],
       });
     },
   });
