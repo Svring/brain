@@ -1,47 +1,40 @@
 "use client";
 
-import { use, useState } from "react";
-import type {
-  DevboxCreateRequest,
-  RuntimeName,
-} from "@/lib/sealos/devbox/schemas/devbox-lifecycle-schema";
+import { useState } from "react";
+import type { RuntimeName } from "@/lib/sealos/devbox/schemas/devbox-lifecycle-schema";
 import { RuntimeNameSchema } from "@/lib/sealos/devbox/schemas/devbox-lifecycle-schema";
 import { Button } from "@/components/ui/button";
-import {
-  createDevboxContext,
-  generateDevboxName,
-} from "@/lib/sealos/devbox/devbox-utils";
-import { AuthContext } from "@/contexts/auth-context/auth-context";
-import { useCreateDevboxMutation } from "@/lib/sealos/devbox/devbox-method/devbox-mutation";
+import { createDevboxContext } from "@/lib/sealos/devbox/devbox-utils";
+import { useCreateDevboxAction } from "@/lib/sealos/devbox/devbox-action/devbox-action";
 import { DEVBOX_RUNTIME_ICON_MAP } from "@/lib/sealos/devbox/devbox-constant";
+import { useToggle } from "@reactuses/core";
 
 const RUNTIME_OPTIONS = RuntimeNameSchema.options;
 
 export default function AddDevbox() {
-  const { user } = use(AuthContext);
   const [selected, setSelected] = useState<RuntimeName>(RUNTIME_OPTIONS[0]);
-  const [created, setCreated] = useState<boolean>(false);
+  const [loading, toggleLoading] = useToggle(false);
 
   // Create the context and mutation hook
-  const devboxContext = createDevboxContext(user!);
-  const createDevboxMutation = useCreateDevboxMutation(devboxContext);
+  const devboxContext = createDevboxContext();
+  const createDevboxAction = useCreateDevboxAction(devboxContext);
 
   const handleCreate = () => {
-    const req: DevboxCreateRequest = {
-      name: generateDevboxName(),
-      runtimeName: selected,
-      cpu: 2000,
-      memory: 4096,
-    };
-
-    createDevboxMutation.mutate(req, {
-      onSuccess: () => {
-        setCreated(true);
+    toggleLoading(true);
+    createDevboxAction.mutate(
+      {
+        runtimeName: selected,
       },
-      onError: (error) => {
-        console.error("Failed to create devbox:", error);
-      },
-    });
+      {
+        onSuccess: () => {
+          toggleLoading(false);
+        },
+        onError: (error) => {
+          console.error("Failed to create devbox:", error);
+          toggleLoading(false);
+        },
+      }
+    );
   };
 
   return (
@@ -70,16 +63,8 @@ export default function AddDevbox() {
           ))}
         </div>
       </div>
-      <Button
-        className="mt-2"
-        onClick={handleCreate}
-        disabled={createDevboxMutation.isPending || created}
-      >
-        {created
-          ? "Created"
-          : createDevboxMutation.isPending
-          ? "Creating..."
-          : "Create DevBox"}
+      <Button className="mt-2" onClick={handleCreate} disabled={loading}>
+        {loading ? "Creating..." : "Create DevBox"}
       </Button>
     </div>
   );

@@ -44,7 +44,7 @@ const RESOURCE_OPTIONS = [
 
 export function AddResourceNew() {
   return (
-    <Accordion type="multiple" className="h-full">
+    <Accordion type="single" className="h-full">
       {RESOURCE_OPTIONS.map((option) => (
         <AccordionItem key={option.key} value={option.key}>
           <AccordionTrigger>{option.label}</AccordionTrigger>

@@ -1,34 +1,28 @@
 "use client";
 
 import { use, useState } from "react";
-import type {
-  ClusterCreateRequest,
-  DbForm,
-} from "@/lib/sealos/cluster/schemas/req-res-schemas/req-res-create-schemas";
 import { Button } from "@/components/ui/button";
-import {
-  createClusterContext,
-  generateClusterName,
-} from "@/lib/sealos/cluster/cluster-utils";
+import { createClusterContext } from "@/lib/sealos/cluster/cluster-utils";
 import { AuthContext } from "@/contexts/auth-context/auth-context";
-import { useCreateClusterMutation } from "@/lib/sealos/cluster/cluster-mutation";
+import { useCreateClusterAction } from "@/lib/sealos/cluster/cluster-action/cluster-action";
 import {
   CLUSTER_TYPE_VERSION_MAP,
   CLUSTER_TYPE_ICON_MAP,
 } from "@/lib/sealos/cluster/cluster-constant";
 import { Label } from "@/components/ui/label";
+import { useToggle } from "@reactuses/core";
 
 type ClusterType = keyof typeof CLUSTER_TYPE_VERSION_MAP;
 
 export default function AddCluster() {
   const { user } = use(AuthContext);
   const [selectedType, setSelectedType] = useState<ClusterType>("postgresql");
-  const [created, setCreated] = useState<boolean>(false);
   const [selectedVersion, setSelectedVersion] = useState<string>(""); // for internal default selection
+  const [loading, toggleLoading] = useToggle(false);
 
   // Create the context and mutation hook
   const clusterContext = createClusterContext();
-  const createClusterMutation = useCreateClusterMutation(clusterContext);
+  const createClusterAction = useCreateClusterAction(clusterContext);
 
   // Get available versions for selected type
   const availableVersions = CLUSTER_TYPE_VERSION_MAP[selectedType];
@@ -47,40 +41,22 @@ export default function AddCluster() {
   const handleCreate = () => {
     if (!selectedVersion) return;
 
-    const dbForm: DbForm = {
-      dbType: selectedType,
-      dbVersion: selectedVersion,
-      dbName: generateClusterName(),
-      replicas: 1,
-      cpu: 1000,
-      memory: 2048,
-      storage: 10,
-      labels: {},
-      autoBackup: {
-        start: false,
-        type: "day",
-        week: [],
-        hour: "0",
-        minute: "0",
-        saveTime: 7,
-        saveType: "d",
+    toggleLoading(true);
+    createClusterAction.mutate(
+      {
+        dbType: selectedType,
+        dbVersion: selectedVersion,
       },
-      terminationPolicy: "Delete",
-    };
-
-    const request: ClusterCreateRequest = {
-      dbForm,
-      isEdit: false,
-    };
-
-    createClusterMutation.mutate(request, {
-      onSuccess: () => {
-        setCreated(true);
-      },
-      onError: (error) => {
-        console.error("Failed to create cluster:", error);
-      },
-    });
+      {
+        onSuccess: () => {
+          toggleLoading(false);
+        },
+        onError: (error: unknown) => {
+          console.error("Failed to create cluster:", error);
+          toggleLoading(false);
+        },
+      }
+    );
   };
 
   return (
@@ -120,16 +96,8 @@ export default function AddCluster() {
 
       {/* No additional resource configuration */}
 
-      <Button
-        className="mt-4 w-full"
-        onClick={handleCreate}
-        disabled={createClusterMutation.isPending || created}
-      >
-        {created
-          ? "Created"
-          : createClusterMutation.isPending
-          ? "Creating..."
-          : "Create Cluster"}
+      <Button className="mt-4 w-full" onClick={handleCreate} disabled={loading}>
+        {loading ? "Creating..." : "Create Cluster"}
       </Button>
     </div>
   );
