@@ -34,6 +34,7 @@ interface AuthContextValue {
   user: User | null;
   session: SessionV1 | null;
   auth: Auth | null;
+  isLoading: boolean;
   setUser: (user: User | null) => void;
   setSession: (session: SessionV1 | null) => void;
   setAuth: (auth: Auth | null) => void;
@@ -43,6 +44,7 @@ export const AuthContext = createContext<AuthContextValue>({
   user: null,
   session: null,
   auth: null,
+  isLoading: true,
   setUser: () => {
     throw new Error("setUser called outside AuthProvider");
   },
@@ -64,6 +66,7 @@ export const AuthProvider = ({
   const [user, setUser] = useState<User | null>(payloadUser);
   const [session, setSession] = useState<SessionV1 | null>(null);
   const [auth, setAuth] = useState<Auth | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [sealosBrainAuth, setSealosBrainAuth] = useLocalStorage(
     "sealos-brain-auth",
     ""
@@ -120,6 +123,7 @@ export const AuthProvider = ({
       const authFromStorage = parseAuthFromStorage();
       if (authFromStorage) {
         setAuth(authFromStorage);
+        setIsLoading(false);
         return;
       }
       // If payloadUser is present, fill auth from User fields
@@ -133,6 +137,7 @@ export const AuthProvider = ({
           apiKey: payloadUser.apiKey || "",
         });
       }
+      setIsLoading(false);
       return;
     }
 
@@ -145,6 +150,7 @@ export const AuthProvider = ({
       // Log when session is nil
       // eslint-disable-next-line no-console
       console.log("[AuthContext] session is nil, aborting auth extraction.");
+      setIsLoading(false);
       return;
     }
 
@@ -157,6 +163,7 @@ export const AuthProvider = ({
         authFromStorage
       );
       setAuth(authFromStorage);
+      setIsLoading(false);
       return;
     }
 
@@ -179,13 +186,22 @@ export const AuthProvider = ({
         authFromSession
       );
     }
+
+    // Always set loading to false at the end, regardless of success or failure
+    setIsLoading(false);
   });
 
   return (
     <AuthContext.Provider
-      value={{ user, session, auth, setUser, setSession, setAuth }}
+      value={{ user, session, auth, isLoading, setUser, setSession, setAuth }}
     >
-      {children}
+      {isLoading ? (
+        <div className="flex min-h-screen items-center justify-center">
+          <div>Loading authentication...</div>
+        </div>
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 };

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import type { ClusterResource } from "@/lib/k8s/schemas/resource-schemas/cluster-schemas";
 import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/cluster/cluster-constant";
+import { CLUSTER_DEFINITION_LABEL_KEY } from "@/lib/sealos/cluster/cluster-constant";
 
 interface ClusterNodeProps {
   name: string;
@@ -17,7 +18,7 @@ interface ClusterNodeProps {
 export default function ClusterNode({ data }: { data: ClusterNodeProps }) {
   const { name, state, target, resource } = data;
   const clusterType =
-    resource.metadata.labels?.["clusterdefinition.kubeblocks.io/name"] ?? "";
+    resource.metadata.labels?.[CLUSTER_DEFINITION_LABEL_KEY] ?? "";
 
   return (
     <BaseNode target={target}>
@@ -31,7 +32,7 @@ export default function ClusterNode({ data }: { data: ClusterNodeProps }) {
                 alt={clusterType}
                 width={24}
                 height={24}
-                className="rounded-lg border border-muted bg-white h-9 w-9"
+                className="rounded-lg h-9 w-9"
                 priority
               />
               <span className="flex flex-col">

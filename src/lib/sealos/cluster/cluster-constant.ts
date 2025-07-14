@@ -45,3 +45,7 @@ export const CLUSTER_TYPE_ICON_MAP: Record<string, string> = {
   milvus: "https://dbprovider.bja.sealos.run/images/milvus.svg",
   pulsar: "https://pulsar.apache.org/img/pulsar.svg",
 };
+
+// Cluster label key for cluster definition type
+export const CLUSTER_DEFINITION_LABEL_KEY =
+  "clusterdefinition.kubeblocks.io/name";
