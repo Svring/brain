@@ -14,17 +14,10 @@ import {
 import useProjects from "@/hooks/app/project/use-projects";
 import { TextShimmer } from "@/components/app/project/text-shimmer";
 import { useDisclosure } from "@reactuses/core";
-import { CopilotButton } from "@/components/ai/copilot-button";
-import { CopilotWindow } from "@/components/ai/copilot-window";
-import { CopilotHeader } from "@/components/ai/copilot-header";
-import { CopilotInput } from "@/components/ai/copilot-input";
-import { CopilotMessages } from "@/components/ai/copilot-messages";
+import { CopilotSidebarWrapper } from "@/components/ai/copilot-sidebar-wrapper";
 
 const CreateProject = dynamic(
   () => import("@/components/app/project/create-project")
-);
-const CopilotSidebar = dynamic(() =>
-  import("@copilotkit/react-ui").then((mod) => mod.CopilotSidebar)
 );
 
 export default function Page() {
@@ -96,13 +89,7 @@ export default function Page() {
           )}
         </div>
       </div>
-      <CopilotSidebar
-        Button={CopilotButton}
-        Window={CopilotWindow}
-        Header={CopilotHeader}
-        Input={CopilotInput}
-        Messages={CopilotMessages}
-      />
+      <CopilotSidebarWrapper />
     </div>
   );
 }

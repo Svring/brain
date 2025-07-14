@@ -1,8 +1,6 @@
 "use client";
 
 import { createContext, type ReactNode, useState, useEffect } from "react";
-import { useCoAgent } from "@copilotkit/react-core";
-import { AIState } from "@/components/app/base/provider/ai-provider";
 import useAI from "@/hooks/ai/use-ai";
 
 interface ProjectContextValue {
