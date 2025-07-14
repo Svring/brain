@@ -2,25 +2,27 @@
 
 import { createContext, type ReactNode, useState, useEffect } from "react";
 import useAI from "@/hooks/ai/use-ai";
+import { useCoAgentStateRender } from "@copilotkit/react-core";
+import { AIState } from "@/components/app/base/provider/ai-provider";
 
 interface ProjectContextValue {
   projects: string[];
-  projectName: string | null;
+  activeProject: string | null;
   activeNode: any;
   setProjects: (projects: string[]) => void;
-  setProjectName: (projectName: string | null) => void;
+  setActiveProject: (activeProject: string | null) => void;
   setActiveNode: (activeNode: any) => void;
 }
 
 export const ProjectContext = createContext<ProjectContextValue>({
   projects: [],
-  projectName: null,
+  activeProject: null,
   activeNode: null,
   setProjects: () => {
     throw new Error("setProjects called outside ProjectProvider");
   },
-  setProjectName: () => {
-    throw new Error("setProjectName called outside ProjectProvider");
+  setActiveProject: () => {
+    throw new Error("setActiveProject called outside ProjectProvider");
   },
   setActiveNode: () => {
     throw new Error("setActiveNode called outside ProjectProvider");
@@ -29,18 +31,52 @@ export const ProjectContext = createContext<ProjectContextValue>({
 
 export const ProjectProvider = ({
   children,
-  initialProjectName,
+  initialActiveProject,
 }: {
   children: ReactNode;
-  initialProjectName: string | null;
+  initialActiveProject: string | null;
 }) => {
-  const [projectName, setProjectName] = useState<string | null>(
-    initialProjectName
+  const [activeProject, setActiveProject] = useState<string | null>(
+    initialActiveProject
   );
   const [projects, setProjects] = useState<string[]>([]);
   const [activeNode, setActiveNode] = useState<any>(null);
 
   const { setState } = useAI();
+
+  useCoAgentStateRender<AIState>({
+    name: "ai",
+    render: ({ state }) => (
+      <div style={{ fontSize: 12, fontFamily: "monospace", padding: 8 }}>
+        <div>
+          <strong>Model:</strong> {state.model}
+        </div>
+        <div>
+          <strong>System Prompt:</strong> {state.system_prompt}
+        </div>
+        <div>
+          <strong>Base URL:</strong> {state.base_url}
+        </div>
+        <div>
+          <strong>API Key:</strong> {state.api_key ? "****" : "(none)"}
+        </div>
+        <div>
+          <strong>Active Project:</strong>{" "}
+          {state.project_context.activeProject ?? "(none)"}
+        </div>
+        <div>
+          <strong>Projects:</strong>{" "}
+          {state.project_context.projects.join(", ") || "(none)"}
+        </div>
+        <div>
+          <strong>Active Node:</strong>{" "}
+          {state.project_context.activeNode
+            ? JSON.stringify(state.project_context.activeNode)
+            : "(none)"}
+        </div>
+      </div>
+    ),
+  });
 
   // Update CoAgent state whenever project context changes
   useEffect(() => {
@@ -53,7 +89,7 @@ export const ProjectProvider = ({
           system_prompt: "",
           project_context: {
             projects,
-            projectName,
+            activeProject,
             activeNode,
           },
         };
@@ -62,18 +98,18 @@ export const ProjectProvider = ({
         ...prevState,
         project_context: {
           projects,
-          projectName,
+          activeProject,
           activeNode,
         },
       };
     });
-  }, [projects, projectName, activeNode]);
+  }, [projects, activeProject, activeNode]);
 
   return (
     <ProjectContext.Provider
       value={{
-        projectName,
-        setProjectName,
+        activeProject,
+        setActiveProject,
         projects,
         setProjects,
         activeNode,

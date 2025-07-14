@@ -31,7 +31,7 @@ import { CopilotSidebarWrapper } from "@/components/ai/copilot-sidebar-wrapper";
 import "@xyflow/react/dist/style.css";
 import { useDroppable } from "@dnd-kit/core";
 import { FlowProvider } from "@/contexts/flow-context";
-import { useUnmount } from "@reactuses/core";
+import { useUnmount, useMount } from "@reactuses/core";
 
 function ProjectFloatingUI() {
   const router = useRouter();
@@ -92,17 +92,16 @@ function ProjectFloatingUI() {
 }
 
 function ProjectFlow() {
-  const { projectName: currentProjectName } = use(ProjectContext);
-
+  const { activeProject } = use(ProjectContext);
   const { data: resources, isLoading } = useProjectResources(
-    currentProjectName ?? ""
+    activeProject ?? ""
   );
   const [nodes, onNodesChange, edges, onEdgesChange] = useFlow(resources);
 
   const { setNodeRef } = useDroppable({
     id: "project-flow",
     data: {
-      projectName: currentProjectName,
+      projectName: activeProject ?? "",
     },
   });
 
@@ -148,11 +147,15 @@ export default function Page({
   params: Promise<{ "project-name": string }>;
 }) {
   const { "project-name": projectName } = use(params);
-  const { setProjectName } = use(ProjectContext);
-  setProjectName(projectName);
+  const { setActiveProject, setActiveNode } = use(ProjectContext);
+
+  useMount(() => {
+    setActiveProject(projectName);
+  });
 
   useUnmount(() => {
-    setProjectName(null);
+    setActiveProject(null);
+    setActiveNode(null);
   });
 
   return (

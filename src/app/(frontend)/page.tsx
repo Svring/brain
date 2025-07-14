@@ -72,20 +72,21 @@ export default function Page() {
             </div>
           )}
 
-          {projects &&
-          !projectsLoading &&
-          !projectsError &&
-          projects.items.length === 0 ? (
-            <div className="col-span-full flex h-32 items-center justify-center">
-              <div className="text-muted-foreground">No projects found</div>
-            </div>
-          ) : (
-            projects?.items.map((project) => (
-              <ProjectCard
-                key={project.metadata.name}
-                projectName={project.metadata.name}
-              />
-            ))
+          {!projectsError && (
+            <>
+              {projects && !projectsLoading && projects.items.length === 0 ? (
+                <div className="col-span-full flex h-32 items-center justify-center">
+                  <div className="text-muted-foreground">No projects found</div>
+                </div>
+              ) : (
+                projects?.items.map((project) => (
+                  <ProjectCard
+                    key={project.metadata.name}
+                    projectName={project.metadata.name}
+                  />
+                ))
+              )}
+            </>
           )}
         </div>
       </div>

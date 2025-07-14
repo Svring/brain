@@ -114,7 +114,9 @@ export async function invokeApiMethod<T>(
     // Handle 404 errors for delete operations - treat as successful since the resource is already gone
     if (
       methodName.toLowerCase().includes("delete") &&
-      result.message.includes("404")
+      (result.message.includes("404") ||
+        result.message.includes("HTTP-Code: 404") ||
+        result.message.includes("not found"))
     ) {
       return {} as T;
     }

@@ -1,3 +1,5 @@
+"use client";
+
 import { Handle, Position } from "@xyflow/react";
 import { BaseNode } from "@/components/flow/components/base-node";
 import {
@@ -6,11 +8,13 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { ProjectContext } from "@/contexts/project-context";
 import { useDeleteResourceMutation } from "@/lib/k8s/k8s-method/k8s-mutation";
 import { useRemoveFromProjectMutation } from "@/lib/app/project/project-method/project-mutation";
 import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { use } from "react";
 
 interface BaseNodeProps {
   children: React.ReactNode;
@@ -23,6 +27,7 @@ export default function BaseNodeWrapper({
   target,
   className,
 }: BaseNodeProps) {
+  const { setActiveNode } = use(ProjectContext);
   const context = createK8sContext();
   const removeFromProjectMutation = useRemoveFromProjectMutation(context);
   const deleteResourceMutation = useDeleteResourceMutation(context);
@@ -30,7 +35,12 @@ export default function BaseNodeWrapper({
   return (
     <ContextMenu>
       <ContextMenuTrigger>
-        <BaseNode className={className}>
+        <BaseNode
+          onClick={() => {
+            setActiveNode(target);
+          }}
+          className={className}
+        >
           <Handle position={Position.Top} type="source" />
           {children}
           <Handle position={Position.Bottom} type="target" />

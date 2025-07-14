@@ -11,7 +11,7 @@ export type AIState = {
   system_prompt: string;
   project_context: {
     projects: string[];
-    projectName: string | null;
+    activeProject: string | null;
     activeNode: any;
   };
 };
