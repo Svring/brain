@@ -15,6 +15,9 @@ import {
   X,
 } from "lucide-react";
 import React from "react";
+import SpeechRecognition, {
+  useSpeechRecognition,
+} from "react-speech-recognition";
 
 // Utility function for className merging
 const cn = (...classes: (string | undefined | null | false)[]) =>
@@ -191,7 +194,7 @@ Button.displayName = "Button";
 interface VoiceRecorderProps {
   isRecording: boolean;
   onStartRecording: () => void;
-  onStopRecording: (duration: number) => void;
+  onStopRecording: (transcript: string, duration: number) => void;
   visualizerBars?: number;
 }
 const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
@@ -202,23 +205,46 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 }) => {
   const [time, setTime] = React.useState(0);
   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const {
+    transcript,
+    listening,
+    resetTranscript,
+    browserSupportsSpeechRecognition,
+  } = useSpeechRecognition();
 
   React.useEffect(() => {
-    if (isRecording) {
+    if (isRecording && browserSupportsSpeechRecognition) {
       onStartRecording();
+      resetTranscript();
+      SpeechRecognition.startListening({ continuous: true });
       timerRef.current = setInterval(() => setTime((t) => t + 1), 1000);
     } else {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
-      onStopRecording(time);
-      setTime(0);
+      if (listening) {
+        SpeechRecognition.stopListening();
+      }
+      if (!isRecording && time > 0) {
+        onStopRecording(transcript, time);
+        setTime(0);
+      }
     }
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (listening) SpeechRecognition.stopListening();
     };
-  }, [isRecording, time, onStartRecording, onStopRecording]);
+  }, [
+    isRecording,
+    browserSupportsSpeechRecognition,
+    listening,
+    transcript,
+    time,
+    onStartRecording,
+    onStopRecording,
+    resetTranscript,
+  ]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -227,6 +253,21 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       .toString()
       .padStart(2, "0")}`;
   };
+
+  if (!browserSupportsSpeechRecognition) {
+    return (
+      <div
+        className={cn(
+          "flex w-full flex-col items-center justify-center py-3 transition-all duration-300",
+          isRecording ? "opacity-100" : "h-0 opacity-0"
+        )}
+      >
+        <div className="text-sm text-red-400">
+          Browser doesn't support speech recognition
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -241,6 +282,14 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
           {formatTime(time)}
         </span>
       </div>
+
+      {/* Show live transcript */}
+      {transcript && (
+        <div className="mb-2 max-w-full px-4 text-center text-sm text-white/70">
+          {transcript}
+        </div>
+      )}
+
       <div className="flex h-10 w-full items-center justify-center gap-0.5 px-4">
         {[...Array(visualizerBars)].map((_, i) => (
           <div
@@ -527,6 +576,9 @@ export const PromptInputBox = React.forwardRef(
     // For tracking previous loading state
     const prevLoading = React.useRef(isLoading);
 
+    // Speech recognition support check
+    const { browserSupportsSpeechRecognition } = useSpeechRecognition();
+
     // Focus when loading finishes
     React.useEffect(() => {
       if (prevLoading.current && !isLoading) {
@@ -636,10 +688,15 @@ export const PromptInputBox = React.forwardRef(
 
     const handleStartRecording = () => console.log("Started recording");
 
-    const handleStopRecording = (duration: number) => {
+    const handleStopRecording = (transcript: string, duration: number) => {
       console.log(`Stopped recording after ${duration} seconds`);
       setIsRecording(false);
-      onSend(`[Voice message - ${duration} seconds]`, []);
+      // If we have a transcript, use it as the input; otherwise, send a voice message indicator
+      if (transcript.trim()) {
+        setInput(transcript);
+      } else {
+        onSend(`[Voice message - ${duration} seconds]`, []);
+      }
     };
 
     const hasContent = input.trim() !== "" || files.length > 0;
@@ -874,6 +931,8 @@ export const PromptInputBox = React.forwardRef(
                   ? "Stop recording"
                   : hasContent
                   ? "Send message"
+                  : !browserSupportsSpeechRecognition
+                  ? "Voice not supported"
                   : "Voice message"
               }
             >
@@ -884,13 +943,19 @@ export const PromptInputBox = React.forwardRef(
                     ? "bg-transparent text-red-500 hover:bg-gray-600/30 hover:text-red-400"
                     : hasContent
                     ? "bg-white text-[#1F2023] hover:bg-white/80"
+                    : !browserSupportsSpeechRecognition
+                    ? "bg-transparent text-gray-500 cursor-not-allowed"
                     : "bg-transparent text-[#9CA3AF] hover:bg-gray-600/30 hover:text-[#D1D5DB]"
                 )}
-                disabled={isLoading && !hasContent}
+                disabled={
+                  (isLoading && !hasContent) ||
+                  (!hasContent && !browserSupportsSpeechRecognition)
+                }
                 onClick={() => {
                   if (isRecording) setIsRecording(false);
                   else if (hasContent) handleSubmit();
-                  else setIsRecording(true);
+                  else if (browserSupportsSpeechRecognition)
+                    setIsRecording(true);
                 }}
                 size="icon"
                 variant="default"

@@ -11,7 +11,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import useAI from "@/hooks/ai/use-ai";
 import useProjects from "@/hooks/app/project/use-projects";
 import { TextShimmer } from "@/components/app/project/text-shimmer";
 import { useDisclosure } from "@reactuses/core";
@@ -36,8 +35,6 @@ export default function Page() {
     isLoading: projectsLoading,
     isError: projectsError,
   } = useProjects();
-
-  useAI();
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center p-8">

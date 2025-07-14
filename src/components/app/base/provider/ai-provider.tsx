@@ -9,6 +9,11 @@ export type AIState = {
   api_key: string;
   model: string;
   system_prompt: string;
+  project_context: {
+    projects: string[];
+    projectName: string | null;
+    activeNode: any;
+  };
 };
 
 export function AIProvider({ children }: AIProviderProps) {

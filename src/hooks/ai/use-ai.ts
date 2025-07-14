@@ -8,7 +8,7 @@ import { AuthContext } from "@/contexts/auth-context/auth-context";
 export default function useAI() {
   const { user } = use(AuthContext);
 
-  useCoAgent<AIState>({
+  return useCoAgent<AIState>({
     name: "ai",
     initialState: {
       base_url: user?.baseUrl,

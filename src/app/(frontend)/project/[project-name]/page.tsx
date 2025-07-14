@@ -27,7 +27,6 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ProjectContext } from "@/contexts/project-context";
 import { DndProvider } from "@/components/flow/dnd/dnd-provider";
 import { TextShimmer } from "@/components/app/project/text-shimmer";
-import useAI from "@/hooks/ai/use-ai";
 import { CopilotButton } from "@/components/ai/copilot-button";
 import { CopilotWindow } from "@/components/ai/copilot-window";
 import { CopilotHeader } from "@/components/ai/copilot-header";
@@ -37,6 +36,7 @@ import { CopilotMessages } from "@/components/ai/copilot-messages";
 import "@xyflow/react/dist/style.css";
 import { useDroppable } from "@dnd-kit/core";
 import { FlowProvider } from "@/contexts/flow-context";
+import { useUnmount } from "@reactuses/core";
 
 const CopilotSidebar = dynamic(() =>
   import("@copilotkit/react-ui").then((mod) => mod.CopilotSidebar)
@@ -160,7 +160,9 @@ export default function Page({
   const { setProjectName } = use(ProjectContext);
   setProjectName(projectName);
 
-  useAI();
+  useUnmount(() => {
+    setProjectName(null);
+  });
 
   return (
     <FlowProvider>
