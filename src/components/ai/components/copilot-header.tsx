@@ -7,7 +7,7 @@ export function CopilotHeader({}: HeaderProps) {
   const { reset } = useCopilotChat();
 
   return (
-    <div className="flex items-center gap-1 border-border border-b p-2 justify-between">
+    <div className="">
       <div />
       {/* <button
         type="button"

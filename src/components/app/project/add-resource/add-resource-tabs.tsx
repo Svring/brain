@@ -3,16 +3,12 @@
 import { useInventories } from "@/hooks/app/inventory/use-inventories";
 import { InventoryRow } from "@/components/app/inventory/inventory-row";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from "@/components/ui/accordion";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AddDevbox from "./resources/add-devbox";
 import AddCluster from "./resources/add-cluster";
 import AddDeploy from "./resources/add-deploy";
 import AddObjectStorage from "./resources/add-objectstorage";
+import { AddResourceDropZone } from "./add-resource-drop-zone";
 import { useMemo } from "react";
 import type { AnyKubernetesResource } from "@/lib/k8s/schemas";
 
@@ -44,7 +40,7 @@ const RESOURCE_OPTIONS = [
   },
 ];
 
-function ResourceAccordionContent({
+function ResourceTabContent({
   createComponent: CreateComponent,
   resources,
 }: {
@@ -109,31 +105,51 @@ export function AddResourceTabs() {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <ScrollArea className="flex-1">
-        <Accordion type="single" className="w-full">
-          {RESOURCE_OPTIONS.map((option) => {
-            const resources = option.getResources(inventories.data);
-            return (
-              <AccordionItem key={option.key} value={option.key}>
-                <AccordionTrigger className="hover:no-underline">
-                  <div className="flex items-center justify-between w-full pr-4">
-                    <span>{option.label}</span>
-                    <span className="text-sm text-muted-foreground">
-                      {resources.length} existing
-                    </span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <ResourceAccordionContent
+      {/* Drop Zone at the top */}
+      <div className="flex-shrink-0 mb-4">
+        <AddResourceDropZone />
+      </div>
+
+      {/* Resource Tabs */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <Tabs defaultValue="devbox" className="h-full flex flex-col">
+          <TabsList className="grid w-full grid-cols-4">
+            {RESOURCE_OPTIONS.map((option) => {
+              const resources = option.getResources(inventories.data);
+              return (
+                <TabsTrigger
+                  key={option.key}
+                  value={option.key}
+                  className="flex flex-col items-center gap-1 h-auto py-2"
+                >
+                  <span className="text-sm font-medium">{option.label}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {resources.length} existing
+                  </span>
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+
+          <div className="flex-1 min-h-0 overflow-hidden mt-4">
+            {RESOURCE_OPTIONS.map((option) => {
+              const resources = option.getResources(inventories.data);
+              return (
+                <TabsContent
+                  key={option.key}
+                  value={option.key}
+                  className="h-full mt-0"
+                >
+                  <ResourceTabContent
                     createComponent={option.createComponent}
                     resources={resources}
                   />
-                </AccordionContent>
-              </AccordionItem>
-            );
-          })}
-        </Accordion>
-      </ScrollArea>
+                </TabsContent>
+              );
+            })}
+          </div>
+        </Tabs>
+      </div>
     </div>
   );
 }

@@ -29,17 +29,13 @@ import { TextShimmer } from "@/components/app/project/text-shimmer";
 import { CopilotSidebarWrapper } from "@/components/ai/copilot-sidebar-wrapper";
 
 import "@xyflow/react/dist/style.css";
-import { useDroppable } from "@dnd-kit/core";
+import { Droppable } from "@/components/flow/dnd/droppable";
 import { FlowProvider } from "@/contexts/flow-context";
 import { useUnmount, useMount } from "@reactuses/core";
 
 function ProjectFloatingUI() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-
-  const { setNodeRef } = useDroppable({
-    id: "project-floating-ui",
-  });
 
   return (
     <>
@@ -82,9 +78,12 @@ function ProjectFloatingUI() {
               <SheetDescription></SheetDescription>
             </VisuallyHidden>
           </SheetHeader>
-          <div ref={setNodeRef} className="flex-1 min-h-0 overflow-hidden">
+          <Droppable
+            id="project-floating-ui"
+            className="flex-1 min-h-0 overflow-hidden"
+          >
             <AddResourceTabs />
-          </div>
+          </Droppable>
         </SheetContent>
       </Sheet>
     </>
@@ -98,13 +97,6 @@ function ProjectFlow() {
   );
   const [nodes, onNodesChange, edges, onEdgesChange] = useFlow(resources);
 
-  const { setNodeRef } = useDroppable({
-    id: "project-flow",
-    data: {
-      projectName: activeProject ?? "",
-    },
-  });
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full w-full">
@@ -116,28 +108,35 @@ function ProjectFlow() {
   }
 
   return (
-    <ReactFlow
-      ref={setNodeRef}
-      connectionLineType={ConnectionLineType.SmoothStep}
-      edges={edges}
-      edgeTypes={edgeTypes}
-      fitView
-      fitViewOptions={{
-        padding: 0.1,
-        includeHiddenNodes: false,
-        minZoom: 0.1,
-        maxZoom: 1.0,
+    <Droppable
+      id="project-flow"
+      className="w-full h-full"
+      data={{
+        projectName: activeProject ?? "",
       }}
-      nodes={nodes}
-      nodeTypes={nodeTypes}
-      onEdgesChange={onEdgesChange}
-      onNodesChange={onNodesChange}
-      panOnScroll
-      snapToGrid
-      snapGrid={[20, 20]}
     >
-      <Background gap={60} size={1} variant={BackgroundVariant.Dots} />
-    </ReactFlow>
+      <ReactFlow
+        connectionLineType={ConnectionLineType.SmoothStep}
+        edges={edges}
+        edgeTypes={edgeTypes}
+        fitView
+        fitViewOptions={{
+          padding: 0.1,
+          includeHiddenNodes: false,
+          minZoom: 0.1,
+          maxZoom: 1.0,
+        }}
+        nodes={nodes}
+        nodeTypes={nodeTypes}
+        onEdgesChange={onEdgesChange}
+        onNodesChange={onNodesChange}
+        panOnScroll
+        snapToGrid
+        snapGrid={[20, 20]}
+      >
+        <Background gap={60} size={1} variant={BackgroundVariant.Dots} />
+      </ReactFlow>
+    </Droppable>
   );
 }
 

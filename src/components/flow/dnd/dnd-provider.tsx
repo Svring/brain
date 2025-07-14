@@ -11,14 +11,33 @@ export function DndProvider({ children }: { children: ReactNode }) {
   const addToProjectMutation = useAddToProjectMutation(createK8sContext());
 
   function handleDragEnd(event: any) {
-    if (!_.isNil(event.over?.data.current?.projectName)) {
+    const { active, over } = event;
+
+    if (!over) return;
+
+    // Handle drop on project flow (existing functionality)
+    if (over.data.current?.projectName && active.data.current?.resourceTarget) {
       addToProjectMutation.mutate({
-        resources: [event.active.data.current?.resourceTarget],
-        projectName: event.over?.data.current?.projectName,
+        resources: [active.data.current.resourceTarget],
+        projectName: over.data.current.projectName,
       });
       toast.success(
-        `Resource added to project ${event.over?.data.current?.projectName}`
+        `Resource added to project ${over.data.current.projectName}`
       );
+      return;
+    }
+
+    // Handle drop on resource drop zone
+    if (
+      over.id === "resource-drop-zone" &&
+      active.data.current?.resourceTarget
+    ) {
+      // The drop zone component will handle this via its own onDrop callback
+      // We just need to trigger the callback if it exists
+      if (over.data.current?.onDrop) {
+        over.data.current.onDrop(event);
+      }
+      return;
     }
   }
 
