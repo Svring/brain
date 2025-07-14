@@ -1,88 +1,54 @@
 "use client";
 
-import { createContext, type ReactNode, useState, useEffect } from "react";
+import { createContext, type ReactNode, useState } from "react";
 import type { User } from "@/payload-types";
-import { useLocalStorage } from "@reactuses/core";
+import {
+  createSealosApp,
+  SessionV1,
+  sealosApp,
+} from "@zjy365/sealos-desktop-sdk/app";
+import { useMount } from "@reactuses/core";
 
 interface AuthContextValue {
   user: User | null;
+  auth: SessionV1 | null;
   setUser: (user: User | null) => void;
+  setAuth: (auth: SessionV1 | null) => void;
 }
 
 export const AuthContext = createContext<AuthContextValue>({
   user: null,
+  auth: null,
   setUser: () => {
     throw new Error("setUser called outside AuthProvider");
   },
+  setAuth: () => {
+    throw new Error("setAuth called outside AuthProvider");
+  },
 });
-
-interface ManualAuthData {
-  kubeconfig: string;
-  regionToken: string;
-  appToken: string;
-  devboxToken: string;
-}
-
-// Utility function to get manual auth data from localStorage
-const getManualAuthData = (): User | null => {
-  if (typeof window === "undefined") return null;
-
-  try {
-    const storedData = localStorage.getItem("sealos-brain-auth");
-    if (!storedData) return null;
-
-    const authData: ManualAuthData = JSON.parse(storedData);
-
-    // Convert manual auth data to User format
-    return {
-      id: `manual-${Date.now()}`,
-      email: "dev@sealos.io", // Default email for manual auth
-      context: null,
-      namespace: "default", // Default namespace for manual auth
-      regionUrl: null,
-      kubeconfig: authData.kubeconfig,
-      regionToken: authData.regionToken,
-      appToken: authData.appToken,
-      devboxToken: authData.devboxToken,
-      apiKey: null,
-      baseUrl: null,
-      updatedAt: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      resetPasswordToken: null,
-      resetPasswordExpiration: null,
-      salt: null,
-      hash: null,
-      loginAttempts: null,
-      lockUntil: null,
-      password: null,
-    };
-  } catch (error) {
-    console.error("Failed to parse manual auth data:", error);
-    return null;
-  }
-};
 
 export const AuthProvider = ({
   children,
-  initialUser,
+  payloadUser,
 }: {
   children: ReactNode;
-  initialUser: User | null;
+  payloadUser: User | null;
 }) => {
-  const [user, setUser] = useState<User | null>(initialUser);
+  const [user, setUser] = useState<User | null>(payloadUser);
+  const [auth, setAuth] = useState<SessionV1 | null>(null);
 
-  useEffect(() => {
-    // If no initial user from server, check localStorage for manual auth data
-    if (!initialUser) {
-      const manualUser = getManualAuthData();
-      if (manualUser) {
-        setUser(manualUser);
-      }
+  useMount(() => {
+    const isProduction = process.env.NODE_ENV === "production";
+    if (isProduction) {
+      createSealosApp();
+      sealosApp.getSession().then((session) => {
+        setAuth(session);
+      });
     }
-  }, [initialUser]);
+  });
 
   return (
-    <AuthContext.Provider value={{ user, setUser }}>
+    <AuthContext.Provider value={{ user, auth, setUser, setAuth }}>
       {children}
     </AuthContext.Provider>
   );

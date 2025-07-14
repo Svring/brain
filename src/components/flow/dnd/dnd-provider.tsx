@@ -4,7 +4,6 @@ import { type ReactNode } from "react";
 import { DndContext, DragOverlay } from "@dnd-kit/core";
 import { useAddToProjectMutation } from "@/lib/app/project/project-method/project-mutation";
 import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
-import _ from "lodash";
 import { toast } from "sonner";
 
 export function DndProvider({ children }: { children: ReactNode }) {

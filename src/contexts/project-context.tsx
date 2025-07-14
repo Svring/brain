@@ -2,8 +2,6 @@
 
 import { createContext, type ReactNode, useState, useEffect } from "react";
 import useAI from "@/hooks/ai/use-ai";
-import { useCoAgentStateRender } from "@copilotkit/react-core";
-import { AIState } from "@/components/app/base/provider/ai-provider";
 
 interface ProjectContextValue {
   projects: string[];
@@ -43,40 +41,6 @@ export const ProjectProvider = ({
   const [activeNode, setActiveNode] = useState<any>(null);
 
   const { setState } = useAI();
-
-  useCoAgentStateRender<AIState>({
-    name: "ai",
-    render: ({ state }) => (
-      <div style={{ fontSize: 12, fontFamily: "monospace", padding: 8 }}>
-        <div>
-          <strong>Model:</strong> {state.model}
-        </div>
-        <div>
-          <strong>System Prompt:</strong> {state.system_prompt}
-        </div>
-        <div>
-          <strong>Base URL:</strong> {state.base_url}
-        </div>
-        <div>
-          <strong>API Key:</strong> {state.api_key ? "****" : "(none)"}
-        </div>
-        <div>
-          <strong>Active Project:</strong>{" "}
-          {state.project_context.activeProject ?? "(none)"}
-        </div>
-        <div>
-          <strong>Projects:</strong>{" "}
-          {state.project_context.projects.join(", ") || "(none)"}
-        </div>
-        <div>
-          <strong>Active Node:</strong>{" "}
-          {state.project_context.activeNode
-            ? JSON.stringify(state.project_context.activeNode)
-            : "(none)"}
-        </div>
-      </div>
-    ),
-  });
 
   // Update CoAgent state whenever project context changes
   useEffect(() => {
