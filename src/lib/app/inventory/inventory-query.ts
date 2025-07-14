@@ -3,7 +3,7 @@
 import { queryOptions, useQueries, useQuery } from "@tanstack/react-query";
 import { use, useMemo } from "react";
 import type { DevboxColumn } from "@/components/app/inventory/devbox/devbox-table-schema";
-import { useAuthContext } from "@/contexts/auth-context/auth-context";
+import { useAuthContext } from "@/contexts/auth-context";
 import { RESOURCES } from "@/lib/k8s/k8s-constant";
 import { listResourcesOptions } from "@/lib/k8s/k8s-query";
 import type { K8sApiContext } from "@/lib/k8s/schemas";

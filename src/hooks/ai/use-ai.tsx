@@ -2,7 +2,7 @@
 
 import { useCoAgent, useCoAgentStateRender } from "@copilotkit/react-core";
 import type { AIState } from "@/components/app/base/provider/ai-provider";
-import { useAuthContext } from "@/contexts/auth-context/auth-context";
+import { useAuthContext } from "@/contexts/auth-context";
 
 export default function useAI() {
   const { auth } = useAuthContext();

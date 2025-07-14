@@ -24,7 +24,7 @@ import type {
 import { useCreateInstanceMutation } from "@/lib/sealos/template/template-mutation";
 import { TemplateCard } from "./template-card";
 import { TemplateDetails } from "./template-details";
-import { useAuthContext } from "@/contexts/auth-context/auth-context";
+import { useAuthContext } from "@/contexts/auth-context";
 
 interface CreateProjectProps {
   onClose: () => void;
