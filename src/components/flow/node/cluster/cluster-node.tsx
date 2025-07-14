@@ -4,15 +4,20 @@ import BaseNode from "../base-node-wrapper";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import type { ClusterResource } from "@/lib/k8s/schemas/resource-schemas/cluster-schemas";
+import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/cluster/cluster-constant";
 
 interface ClusterNodeProps {
   name: string;
   state: string;
   target: CustomResourceTarget;
+  resource: ClusterResource;
 }
 
 export default function ClusterNode({ data }: { data: ClusterNodeProps }) {
-  const { name, state, target } = data;
+  const { name, state, target, resource } = data;
+  const clusterType =
+    resource.metadata.labels?.["clusterdefinition.kubeblocks.io/name"] ?? "";
 
   return (
     <BaseNode target={target}>
@@ -22,8 +27,8 @@ export default function ClusterNode({ data }: { data: ClusterNodeProps }) {
           <div className="flex flex-col items-start">
             <span className="flex items-center gap-2">
               <Image
-                src="https://dbprovider.bja.sealos.run/logo.svg"
-                alt="Cluster Icon"
+                src={CLUSTER_TYPE_ICON_MAP[clusterType] ?? ""}
+                alt={clusterType}
                 width={24}
                 height={24}
                 className="rounded-lg border border-muted bg-white h-9 w-9"

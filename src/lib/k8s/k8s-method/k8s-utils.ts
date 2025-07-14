@@ -1,7 +1,6 @@
 "use client";
 
-import { use } from "react";
-import { AuthContext } from "@/contexts/auth-context/auth-context";
+import { useAuthContext } from "@/contexts/auth-context/auth-context";
 import type { K8sApiContext } from "../k8s-api/k8s-api-schemas/context-schemas";
 import { K8sApiContextSchema } from "../k8s-api/k8s-api-schemas/context-schemas";
 import type { QueryClient } from "@tanstack/react-query";
@@ -20,11 +19,11 @@ import {
 } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 
 function getUserKubeconfig(): string | undefined {
-  const { user } = use(AuthContext);
-  return user?.kubeconfig;
+  const { auth } = useAuthContext();
+  return auth?.kubeconfig;
 }
 
-export function getDecodedKubeconfig(): string {
+export function getDecodedKubeconfig(): string | undefined {
   const kc = getUserKubeconfig();
   if (!kc) {
     throw new Error("Kubeconfig not available");
@@ -33,8 +32,8 @@ export function getDecodedKubeconfig(): string {
 }
 
 export function getCurrentNamespace(): string | undefined {
-  const { user } = use(AuthContext);
-  return user?.namespace;
+  const { auth } = useAuthContext();
+  return auth?.namespace;
 }
 
 /**

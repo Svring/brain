@@ -1,8 +1,6 @@
 "use client";
 
 import _ from "lodash";
-import { use } from "react";
-import { AuthContext } from "@/contexts/auth-context/auth-context";
 import type { ResourceConfig } from "./k8s-constant";
 import { RESOURCES } from "./k8s-constant";
 import type {
@@ -11,10 +9,11 @@ import type {
   ResourceTarget,
 } from "./schemas";
 import { K8sApiContextSchema } from "./schemas";
+import { useAuthContext } from "@/contexts/auth-context/auth-context";
 
 function getUserKubeconfig(): string | undefined {
-  const { user } = use(AuthContext);
-  return user?.kubeconfig;
+  const { auth } = useAuthContext();
+  return auth?.kubeconfig;
 }
 
 export function getDecodedKubeconfig(): string {
@@ -26,8 +25,8 @@ export function getDecodedKubeconfig(): string {
 }
 
 export function getCurrentNamespace(): string | undefined {
-  const { user } = use(AuthContext);
-  return user?.namespace;
+  const { auth } = useAuthContext();
+  return auth?.namespace;
 }
 
 // Filter function to remove resource types with empty items arrays

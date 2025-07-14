@@ -3,7 +3,7 @@
 import { queryOptions, useQueries, useQuery } from "@tanstack/react-query";
 import { use, useMemo } from "react";
 import type { DevboxColumn } from "@/components/app/inventory/devbox/devbox-table-schema";
-import { AuthContext } from "@/contexts/auth-context/auth-context";
+import { useAuthContext } from "@/contexts/auth-context/auth-context";
 import { RESOURCES } from "@/lib/k8s/k8s-constant";
 import { listResourcesOptions } from "@/lib/k8s/k8s-query";
 import type { K8sApiContext } from "@/lib/k8s/schemas";
@@ -18,19 +18,19 @@ import { transformDevboxToTableRow } from "./inventory-transform";
 
 // Existing devbox table data function (for other uses)
 export function getDevboxTableData() {
-  const { user } = use(AuthContext);
+  const { auth } = useAuthContext();
 
-  // Create devbox context from user data
+  // Create devbox context from auth data
   const devboxContext = useMemo(() => {
-    if (!(user?.regionUrl && user?.kubeconfig && user?.devboxToken)) {
+    if (!(auth?.regionUrl && auth?.kubeconfig && auth?.appToken)) {
       return null;
     }
     return DevboxApiContextSchema.parse({
-      baseURL: user.regionUrl,
-      authorization: user.kubeconfig,
-      authorizationBearer: user.devboxToken,
+      baseURL: auth.regionUrl,
+      authorization: auth.kubeconfig,
+      authorizationBearer: auth.appToken,
     });
-  }, [user?.regionUrl, user?.kubeconfig, user?.devboxToken]);
+  }, [auth?.regionUrl, auth?.kubeconfig, auth?.appToken]);
 
   // Fetch the list of devbox names
   const listQueryOptions = devboxContext

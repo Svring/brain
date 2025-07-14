@@ -2,20 +2,18 @@
 
 import type { DevboxListResponse } from "./schemas";
 import { DevboxApiContextSchema } from "./schemas";
-import { User } from "@/payload-types";
 import { nanoid } from "nanoid";
-import { use } from "react";
-import { AuthContext } from "@/contexts/auth-context/auth-context";
+import { useAuthContext } from "@/contexts/auth-context/auth-context";
 
 export function createDevboxContext() {
-  const { user } = use(AuthContext);
-  if (!user) {
+  const { auth } = useAuthContext();
+  if (!auth) {
     throw new Error("User not found");
   }
   return DevboxApiContextSchema.parse({
-    baseURL: user.regionUrl,
-    authorization: user.kubeconfig,
-    authorizationBearer: user.devboxToken,
+    baseURL: auth.regionUrl,
+    authorization: auth.kubeconfig,
+    authorizationBearer: auth.appToken,
   });
 }
 

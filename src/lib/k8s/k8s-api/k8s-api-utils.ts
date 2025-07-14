@@ -33,6 +33,42 @@ export async function getCurrentNamespace(
 }
 
 /**
+ * Extract the region URL from a kubeconfig string.
+ * @param kubeconfig - The kubeconfig string.
+ * @returns The region URL (hostname without port), or undefined if not found.
+ * @example
+ * // For server: "https://bja.sealos.run:6443"
+ * // Returns: "bja.sealos.run"
+ */
+export async function getRegionUrlFromKubeconfig(
+  kubeconfig: string
+): Promise<string | undefined> {
+  try {
+    const kc = new KubeConfig();
+    kc.loadFromString(kubeconfig);
+
+    const currentContext = kc.getCurrentContext();
+    const contextObj = kc.getContextObject(currentContext);
+
+    if (!contextObj?.cluster) {
+      return undefined;
+    }
+
+    const clusterObj = kc.getCluster(contextObj.cluster);
+    if (!clusterObj?.server) {
+      return undefined;
+    }
+
+    // Parse the server URL to extract hostname
+    const url = new URL(clusterObj.server);
+    return url.hostname;
+  } catch (error) {
+    console.error("Failed to extract region URL from kubeconfig:", error);
+    return undefined;
+  }
+}
+
+/**
  * Helper to add missing apiVersion and kind to builtin resource lists.
  */
 export async function addMissingFields<T extends Record<string, unknown>>(

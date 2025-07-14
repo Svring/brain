@@ -1,8 +1,8 @@
 import { Loader2 } from "lucide-react";
 import Image from "next/image";
-import { useContext, useMemo, useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { AuthContext } from "@/contexts/auth-context/auth-context";
+import { useAuthContext } from "@/contexts/auth-context/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import type { TemplateResource } from "@/lib/sealos/template/schemas/template-api-context-schemas";
 import { useCreateInstanceMutation } from "@/lib/sealos/template/template-mutation";
@@ -21,16 +21,16 @@ export function TemplateCard({
   onViewDetails,
   onTemplateDeployed,
 }: TemplateCardProps) {
-  const { user } = useContext(AuthContext);
+  const { auth } = useAuthContext();
   const { toast } = useToast();
   const [showInputDialog, setShowInputDialog] = useState(false);
 
   const apiContext = useMemo(
     () => ({
-      baseURL: user?.regionUrl || undefined,
-      authorization: user?.kubeconfig || undefined,
+      baseURL: auth?.regionUrl || undefined,
+      authorization: auth?.kubeconfig || undefined,
     }),
-    [user]
+    [auth?.regionUrl, auth?.kubeconfig]
   );
   const createInstanceMutation = useCreateInstanceMutation(apiContext);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Main } from "@/components/layout/main";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { AuthContext } from "@/contexts/auth-context/auth-context";
 import { useTemplates } from "@/hooks/app/project/use-templates";
 import { useToast } from "@/hooks/use-toast";
 import { useCreateProjectMutation } from "@/lib/app/project/project-mutation";
@@ -25,6 +24,7 @@ import type {
 import { useCreateInstanceMutation } from "@/lib/sealos/template/template-mutation";
 import { TemplateCard } from "./template-card";
 import { TemplateDetails } from "./template-details";
+import { useAuthContext } from "@/contexts/auth-context/auth-context";
 
 interface CreateProjectProps {
   onClose: () => void;
@@ -36,7 +36,7 @@ export default function CreateProject({ onClose }: CreateProjectProps) {
   const [selectedTemplate, setSelectedTemplate] =
     useState<TemplateResource | null>(null);
 
-  const { user } = useContext(AuthContext);
+  const { auth } = useAuthContext();
   const { toast } = useToast();
   const { data: templatesResponse, isLoading, error } = useTemplates();
   const templates =
@@ -53,10 +53,10 @@ export default function CreateProject({ onClose }: CreateProjectProps) {
   // Get template API context
   const templateApiContext = useMemo(
     () => ({
-      baseURL: user?.regionUrl || undefined,
-      authorization: user?.kubeconfig || undefined,
+      baseURL: auth?.regionUrl || undefined,
+      authorization: auth?.kubeconfig || undefined,
     }),
-    [user]
+    [auth]
   );
 
   const createInstanceMutation = useCreateInstanceMutation(templateApiContext);

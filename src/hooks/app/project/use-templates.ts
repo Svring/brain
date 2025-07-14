@@ -1,24 +1,24 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { use, useMemo } from "react";
-import { AuthContext } from "@/contexts/auth-context/auth-context";
+import { useMemo } from "react";
+import { useAuthContext } from "@/contexts/auth-context/auth-context";
 import { InstanceApiContextSchema } from "@/lib/sealos/template/schemas/template-api-context-schemas";
 import { listTemplatesOptions } from "@/lib/sealos/template/template-query";
 
 export function useTemplates() {
-  const { user } = use(AuthContext);
+  const { auth } = useAuthContext();
 
-  // Create instance API context from user data
+  // Create instance API context from auth data
   const instanceContext = useMemo(() => {
-    if (!(user?.regionUrl && user?.kubeconfig)) {
+    if (!(auth?.regionUrl && auth?.kubeconfig)) {
       return null;
     }
     return InstanceApiContextSchema.parse({
-      baseURL: user.regionUrl,
-      authorization: user.kubeconfig,
+      baseURL: auth.regionUrl,
+      authorization: auth.kubeconfig,
     });
-  }, [user?.regionUrl, user?.kubeconfig]);
+  }, [auth?.regionUrl, auth?.kubeconfig]);
 
   const queryOptions = instanceContext
     ? listTemplatesOptions(instanceContext)

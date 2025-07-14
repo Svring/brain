@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import type React from "react";
-import AuthWrapper from "@/components/app/base/auth-wrapper";
 import { AIProvider } from "@/components/app/base/provider/ai-provider";
 import { QueryProvider } from "@/components/app/base/provider/query-provider";
 import AppSidebar from "@/components/app/base/sidebar/app-sidebar";
@@ -34,7 +33,20 @@ export default async function RootLayout({
   const isDevelopment = process.env.NODE_ENV === "development";
   const user = isDevelopment ? await getUser() : null;
   if (isDevelopment && !user) {
-    return <Login />;
+    return (
+      <html lang="en" suppressHydrationWarning>
+        <body className={`${nunito.variable} font-nunito antialiased`}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            disableTransitionOnChange
+            enableSystem
+          >
+            <Login />
+          </ThemeProvider>
+        </body>
+      </html>
+    );
   }
 
   return (
@@ -42,21 +54,19 @@ export default async function RootLayout({
       <body className={`${nunito.variable} font-nunito antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           disableTransitionOnChange
           enableSystem
         >
           <AuthProvider payloadUser={user}>
             <AIProvider>
               <QueryProvider>
-                <AuthWrapper>
-                  <ProjectProvider initialActiveProject={null}>
-                    <SidebarProvider defaultOpen={false}>
-                      <AppSidebar />
-                      {children}
-                    </SidebarProvider>
-                  </ProjectProvider>
-                </AuthWrapper>
+                <ProjectProvider initialActiveProject={null}>
+                  <SidebarProvider defaultOpen={false}>
+                    <AppSidebar />
+                    {children}
+                  </SidebarProvider>
+                </ProjectProvider>
               </QueryProvider>
             </AIProvider>
           </AuthProvider>

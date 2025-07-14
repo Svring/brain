@@ -8,5 +8,6 @@ export function convertResourceToNode(resource: ClusterResource) {
     name: resource.metadata.name,
     state: resource.status?.phase ?? "Unknown",
     target: convertToResourceTarget(resource, CUSTOM_RESOURCES.cluster),
+    resource,
   };
 }

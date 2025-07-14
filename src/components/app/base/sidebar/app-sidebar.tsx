@@ -1,7 +1,7 @@
 "use client";
 
 import { Globe } from "lucide-react";
-import { useContext } from "react";
+import { useAuthContext } from "@/contexts/auth-context/auth-context";
 import { RegionSwitcher } from "@/components/app/base/sidebar/region-switcher";
 import {
   MainSection,
@@ -15,14 +15,13 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { AuthContext } from "@/contexts/auth-context/auth-context";
 import { cn } from "@/lib/utils";
 
 // Constants
 const NAVIGATION_ITEMS: NavigationItem[] = [];
 
 export default function AppSidebar() {
-  const { user } = useContext(AuthContext);
+  const { auth } = useAuthContext();
 
   return (
     <Sidebar className="rounded-lg" collapsible="icon" variant="floating">
@@ -30,9 +29,9 @@ export default function AppSidebar() {
         <RegionSwitcher
           regions={[
             {
-              name: user?.regionUrl ?? "",
+              name: auth?.regionUrl ?? "",
               logo: Globe,
-              namespace: user?.namespace ?? "",
+              namespace: auth?.namespace ?? "",
             },
           ]}
         />
