@@ -1,18 +1,18 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, MapPin, GripVertical } from "lucide-react";
+import { motion } from "framer-motion";
+import { ChevronLeft, GripVertical } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Draggable } from "@/components/flow/dnd/draggable";
-import SortableItem from "@/components/flow/dnd/sortable/sortable";
-import SortableProvider from "@/components/flow/dnd/sortable/sortable-provider";
 import { DndContext, closestCenter, DragOverlay } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
   arrayMove,
 } from "@dnd-kit/sortable";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   convertToResourceTarget,
   getResourceConfigFromKind,
@@ -69,24 +69,6 @@ const logoVariants = {
       type: "spring" as const,
       stiffness: 400,
       damping: 25,
-    },
-  },
-};
-
-const detailVariants = {
-  hidden: {
-    opacity: 0,
-    height: 0,
-    y: -10,
-  },
-  visible: {
-    opacity: 1,
-    height: "auto",
-    y: 0,
-    transition: {
-      type: "spring" as const,
-      stiffness: 300,
-      damping: 30,
     },
   },
 };
@@ -208,22 +190,71 @@ function ResourceCard({
   const details = getResourceDetails(resource);
   const id = getResourceId(resource);
 
+  if (isDragOverlay) {
+    const cardContent = (
+      <div className="space-y-0">
+        {/* overlay uses same markup */}
+        <div
+          className={`border rounded-lg py-1.5 px-3 bg-background shadow-lg`}
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-0.5 rounded">
+              <GripVertical className="w-3 h-3 text-muted-foreground" />
+            </div>
+            {/* Icon */}
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0">
+              {icon && (
+                <Image src={icon} alt={`${kind} Icon`} width={20} height={20} />
+              )}
+            </div>
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <h3 className="font-semibold text-foreground text-sm truncate">
+                {name}
+              </h3>
+              <Badge variant="outline" className="text-xs flex-shrink-0">
+                {kind}
+              </Badge>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+
+    return (
+      <Draggable
+        id={id}
+        data={{
+          resourceTarget: convertToResourceTarget(resource, resourceConfig),
+        }}
+      >
+        {cardContent}
+      </Draggable>
+    );
+  }
+
+  // Non-overlay sortable card
+
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  } as React.CSSProperties;
+
   const cardContent = (
-    <div className="space-y-0">
+    <div className="space-y-0" ref={setNodeRef} style={style} {...attributes}>
       <div
-        className={`border rounded-lg py-1.5 px-3 ${
-          isDragOverlay
-            ? "bg-background shadow-lg"
-            : isDragging
-            ? "opacity-50 bg-muted"
-            : "bg-background hover:bg-muted/50 transition-colors"
-        }`}
+        className={`border rounded-lg py-1.5 px-3 transition-colors ${
+          isDragging ? "opacity-50 bg-muted" : "bg-background hover:bg-muted/50"
+        } ${isExpanded ? "rounded-b-none" : ""}`}
       >
         <div className="flex items-center gap-3">
           {/* Drag Handle - only this part is draggable */}
           <div
             className="cursor-grab active:cursor-grabbing p-0.5 hover:bg-muted rounded drag-handle"
             data-drag-handle="true"
+            {...listeners}
           >
             <GripVertical className="w-3 h-3 text-muted-foreground" />
           </div>
@@ -292,60 +323,29 @@ function ResourceCard({
         </div>
       </div>
 
-      {/* Detail Panel */}
-      {!isDragOverlay && (
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              variants={detailVariants}
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              className="border border-t-0 rounded-b-lg bg-muted/30 px-3 py-2 space-y-1"
-            >
-              {Object.entries(details).map(([key, value]) => (
-                <div key={key} className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">{key}:</span>
-                  <span className="font-medium">{value}</span>
-                </div>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+      {/* Detail Panel (no animation) */}
+      {isExpanded && (
+        <div className="border border-t-0 rounded-b-lg bg-muted/30 px-3 py-2 space-y-1 overflow-hidden">
+          {Object.entries(details).map(([key, value]) => (
+            <div key={key} className="flex justify-between text-xs">
+              <span className="text-muted-foreground">{key}:</span>
+              <span className="font-medium">{value}</span>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
 
-  if (isDragOverlay) {
-    return (
-      <Draggable
-        id={id}
-        data={{
-          resourceTarget: convertToResourceTarget(resource, resourceConfig),
-        }}
-      >
-        {cardContent}
-      </Draggable>
-    );
-  }
-
   return (
-    <SortableItem
-      id={id}
-      data={{
-        resourceTarget: convertToResourceTarget(resource, resourceConfig),
-      }}
-      dragHandle=".drag-handle"
+    <motion.div
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
+      className="mb-1.5"
     >
-      <motion.div
-        variants={cardVariants}
-        initial="hidden"
-        animate="visible"
-        className="mb-1.5"
-      >
-        {cardContent}
-      </motion.div>
-    </SortableItem>
+      {cardContent}
+    </motion.div>
   );
 }
 

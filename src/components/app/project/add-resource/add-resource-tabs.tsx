@@ -23,6 +23,7 @@ import {
   Server,
   Package,
   HardDrive,
+  ChevronLeft,
 } from "lucide-react";
 import AddDevbox from "./resources/add-devbox";
 import AddCluster from "./resources/add-cluster";
@@ -205,7 +206,7 @@ export function AddResourceTabs() {
         {/* Create Resource Section (bordered, buttons next to label) */}
         <div className="flex-shrink-0 px-4 pt-0 pb-2">
           <Collapsible open={isCreationOpen} onOpenChange={setIsCreationOpen}>
-            <div className="py-3 border rounded-lg flex items-center justify-between bg-background">
+            <div className="py-1 px-3 border rounded-lg flex items-center justify-between bg-background hover:bg-muted/50 transition-colors cursor-pointer">
               <span className="text-sm font-medium text-muted-foreground flex items-center">
                 New:
                 <span className="flex items-center gap-1 ml-2">
@@ -221,7 +222,10 @@ export function AddResourceTabs() {
                             : "ghost"
                         }
                         size="sm"
-                        onClick={() => handleCreationOptionClick(option.key)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCreationOptionClick(option.key);
+                        }}
                         className="h-7 px-2 text-xs"
                       >
                         <IconComponent className="w-3 h-3 mr-1" />
@@ -231,10 +235,18 @@ export function AddResourceTabs() {
                   })}
                 </span>
               </span>
+              {/* Expand/Collapse Arrow */}
+              <span
+                className={`p-1 hover:bg-muted rounded transition-transform ${
+                  isCreationOpen ? "-rotate-90" : ""
+                }`}
+              >
+                <ChevronLeft className="w-4 h-4 text-muted-foreground" />
+              </span>
             </div>
             <CollapsibleContent>
-              {selectedCreationComponent && (
-                <div className="pt-2">
+              {selectedCreationComponent && isCreationOpen && (
+                <div className="border border-t-0 rounded-b-lg bg-muted/20 p-4 overflow-hidden">
                   {(() => {
                     const Component = selectedCreationComponent;
                     return <Component />;
@@ -250,7 +262,7 @@ export function AddResourceTabs() {
           {/* Resource count */}
           {/* Scrollable resource list with hidden scrollbar */}
           <div className="flex-1 min-h-0 overflow-hidden">
-            <div className="h-full overflow-y-auto pr-2 scrollbar-hide">
+            <div className="h-full overflow-y-auto scrollbar-hide">
               <ResourceCards resources={filteredResources} />
             </div>
           </div>

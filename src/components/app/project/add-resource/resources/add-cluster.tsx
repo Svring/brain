@@ -62,9 +62,9 @@ export default function AddCluster() {
 
   return (
     <div className="space-y-4">
-      {/* Database Type */}
-      <div className="flex flex-col gap-2">
-        <div className="flex flex-wrap gap-2">
+      <div className="space-y-3">
+        <Label className="text-sm font-medium">Select Database Type</Label>
+        <div className="grid grid-cols-3 gap-3">
           {Object.keys(CLUSTER_TYPE_VERSION_MAP).map((type) => (
             <Button
               key={type}
@@ -72,20 +72,18 @@ export default function AddCluster() {
               variant={selectedType === type ? "default" : "outline"}
               onClick={() => handleTypeChange(type as ClusterType)}
               type="button"
-              className="flex flex-col items-center justify-center gap-1 w-20 h-20 p-2"
+              className="flex flex-col items-center justify-center gap-2 h-20 p-3 text-center"
             >
-              <div
-                className="rounded-lg p-1 flex items-center justify-center mb-1"
-                style={{ width: 36, height: 36 }}
-              >
+              <div className="w-7 h-7 flex items-center justify-center">
                 <img
                   src={CLUSTER_TYPE_ICON_MAP[type]}
                   alt={`${type} icon`}
-                  width={32}
-                  height={32}
+                  width={28}
+                  height={28}
+                  className="rounded"
                 />
               </div>
-              <span className="text-xs text-center break-words capitalize">
+              <span className="text-xs font-medium leading-tight break-words capitalize">
                 {type}
               </span>
             </Button>
@@ -93,13 +91,16 @@ export default function AddCluster() {
         </div>
       </div>
 
-      {/* Database Version is auto-selected */}
-
-      {/* No additional resource configuration */}
-
-      <Button className="mt-4 w-full" onClick={handleCreate} disabled={loading}>
-        {loading ? "Creating..." : "Create Cluster"}
-      </Button>
+      <div className="pt-2 border-t">
+        <Button
+          className="w-full"
+          onClick={handleCreate}
+          disabled={loading}
+          size="sm"
+        >
+          {loading ? "Creating..." : "Create Cluster"}
+        </Button>
+      </div>
     </div>
   );
 }
