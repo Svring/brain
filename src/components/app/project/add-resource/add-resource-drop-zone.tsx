@@ -1,14 +1,10 @@
 "use client";
 
-import { useState, use } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Droppable } from "@/components/flow/dnd/droppable";
-import { Draggable } from "@/components/flow/dnd/draggable";
 import { X, Plus, Package } from "lucide-react";
-import { useAddToProjectMutation } from "@/lib/app/project/project-method/project-mutation";
-import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
-import { ProjectContext } from "@/contexts/project-context";
 import { toast } from "sonner";
 import {
   CustomResourceTarget,
@@ -28,13 +24,10 @@ export function AddResourceDropZone() {
   const [collectedResources, setCollectedResources] = useState<
     CollectedResource[]
   >([]);
-  const { activeProject } = use(ProjectContext);
-
-  const k8sContext = createK8sContext();
-  const addToProjectMutation = useAddToProjectMutation(k8sContext);
 
   const handleDrop = (event: any) => {
     const droppedData = event.active?.data?.current;
+    console.log("droppedData", droppedData);
     if (!droppedData?.resourceTarget) return;
 
     const resourceTarget = droppedData.resourceTarget as ResourceTarget;
@@ -76,23 +69,6 @@ export function AddResourceDropZone() {
     setCollectedResources([]);
   };
 
-  const addAllToProject = async () => {
-    if (!activeProject || collectedResources.length === 0) return;
-
-    try {
-      await addToProjectMutation.mutateAsync({
-        resources: collectedResources.map((r) => r.resourceTarget),
-        projectName: activeProject,
-      });
-
-      // Clear the drop zone after successful addition
-      setCollectedResources([]);
-      toast.success(`Added ${collectedResources.length} resources to project`);
-    } catch (error) {
-      toast.error("Failed to add resources to project");
-    }
-  };
-
   return (
     <div className="space-y-4">
       {/* Drop Zone */}
@@ -101,83 +77,42 @@ export function AddResourceDropZone() {
         data={{ onDrop: handleDrop }}
         className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 min-h-[120px] transition-colors"
       >
-        <div className="flex flex-col items-center justify-center h-full">
-          <Package className="h-8 w-8 text-muted-foreground mb-2" />
-          <p className="text-sm text-muted-foreground text-center">
-            Drag resources here to collect them
-          </p>
-          <p className="text-xs text-muted-foreground/70 text-center mt-1">
-            {collectedResources.length} resource
-            {collectedResources.length !== 1 ? "s" : ""} collected
-          </p>
-        </div>
-      </Droppable>
-
-      {/* Collected Resources */}
-      {collectedResources.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h4 className="font-medium text-sm">Collected Resources</h4>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={clearAll}
-              className="text-xs"
-            >
-              Clear All
-            </Button>
+        {/* Show instructions only if no resources are collected */}
+        {collectedResources.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-full">
+            <Package className="h-8 w-8 text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground text-center">
+              Drag resources here to collect them
+            </p>
+            <p className="text-xs text-muted-foreground/70 text-center mt-1">
+              0 resources collected
+            </p>
           </div>
-
-          <div className="flex flex-wrap gap-2">
+        )}
+        {/* Collected resource bars inside the drop zone */}
+        {collectedResources.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-0">
             {collectedResources.map((resource) => (
               <div
                 key={resource.id}
-                className="flex items-center gap-2 bg-muted/50 rounded-lg p-2 text-sm"
+                className="flex items-center gap-2 border rounded-lg p-1 text-xs transition-all duration-100 ease-out opacity-0 translate-y-2 animate-fadein"
               >
-                <Badge variant="secondary" className="text-xs">
-                  {resource.kind}
-                </Badge>
+                <span className="text-xs">{resource.kind}: </span>
                 <span className="font-medium">{resource.displayName}</span>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => removeResource(resource.id)}
-                  className="h-4 w-4 p-0 hover:bg-destructive/10"
+                  className="h-2 w-2 p-0 hover:bg-destructive/10"
+                  aria-label={`Remove ${resource.displayName}`}
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-2 w-2" />
                 </Button>
               </div>
             ))}
           </div>
-
-          {/* Draggable Batch Add Button */}
-          <Draggable
-            id="batch-add-resources"
-            data={{
-              type: "batch-add",
-              resources: collectedResources.map((r) => r.resourceTarget),
-              projectName: activeProject,
-            }}
-          >
-            <Button
-              className="w-full"
-              disabled={
-                !activeProject ||
-                collectedResources.length === 0 ||
-                addToProjectMutation.isPending
-              }
-              onClick={addAllToProject}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              {addToProjectMutation.isPending
-                ? "Adding..."
-                : `Add ${collectedResources.length} Resource${
-                    collectedResources.length !== 1 ? "s" : ""
-                  } to Project`}
-            </Button>
-          </Draggable>
-        </div>
-      )}
+        )}
+      </Droppable>
     </div>
   );
 }

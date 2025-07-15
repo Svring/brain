@@ -1,3 +1,5 @@
+"use client";
+
 import {
   BadgeCheck,
   Bell,
@@ -23,6 +25,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useToast } from "@/hooks/use-toast";
 
 export function UserCard({
   user,
@@ -34,8 +37,41 @@ export function UserCard({
   };
 }) {
   const { isMobile, state } = useSidebar();
+  const { toast } = useToast();
 
   const isCollapsed = state === "collapsed";
+
+  // Add logout handler
+  const handleLogout = async () => {
+    try {
+      // Use client-side fetch to logout via Payload's REST API
+      const response = await fetch("/api/users/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // Important for cookie handling
+      });
+
+      if (!response.ok) {
+        throw new Error("Logout failed");
+      }
+
+      toast({
+        title: "Logged out",
+        description: "You have been logged out successfully.",
+      });
+
+      // Reload the page to reflect logged-out state
+      window.location.reload();
+    } catch (error) {
+      toast({
+        title: "Logout error",
+        description: error instanceof Error ? error.message : "Unknown error.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <SidebarMenu>
@@ -106,7 +142,7 @@ export function UserCard({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut />
               Log out
             </DropdownMenuItem>

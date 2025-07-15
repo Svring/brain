@@ -8,7 +8,7 @@ import {
 } from "@xyflow/react";
 import { ArrowLeft, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { use, useState } from "react";
+import { Suspense, use, useState } from "react";
 import { AddResourceTabs } from "@/components/app/project/add-resource/add-resource-tabs";
 import { MenuBar } from "@/components/app/project/components/menu-bar";
 import edgeTypes from "@/components/flow/edge/edge-types";
@@ -31,7 +31,7 @@ import { CopilotSidebarWrapper } from "@/components/ai/copilot-sidebar-wrapper";
 import "@xyflow/react/dist/style.css";
 import { Droppable } from "@/components/flow/dnd/droppable";
 import { FlowProvider } from "@/contexts/flow-context";
-import { useUnmount, useMount } from "@reactuses/core";
+import { useUnmount } from "@reactuses/core";
 
 function ProjectFloatingUI() {
   const router = useRouter();
@@ -92,6 +92,7 @@ function ProjectFloatingUI() {
 
 function ProjectFlow() {
   const { activeProject } = use(ProjectContext);
+  console.log("activeProject", activeProject);
   const { data: resources, isLoading } = useProjectResources(
     activeProject ?? ""
   );
@@ -146,16 +147,18 @@ export default function Page({
   params: Promise<{ "project-name": string }>;
 }) {
   const { "project-name": projectName } = use(params);
-  const { setActiveProject, setActiveNode } = use(ProjectContext);
-
-  useMount(() => {
-    setActiveProject(projectName);
-  });
+  const { activeProject, setActiveProject, setActiveNode } =
+    use(ProjectContext);
 
   useUnmount(() => {
     setActiveProject(null);
     setActiveNode(null);
   });
+
+  if (activeProject !== projectName) {
+    setActiveProject(projectName);
+    return null;
+  }
 
   return (
     <FlowProvider>

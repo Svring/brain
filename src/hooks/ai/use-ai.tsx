@@ -25,15 +25,15 @@ export default function useAI() {
         </div>
         <div>
           <strong>Active Project:</strong>{" "}
-          {state.project_context.activeProject ?? "(none)"}
+          {state.project_context?.activeProject ?? "(none)"}
         </div>
         <div>
           <strong>Projects:</strong>{" "}
-          {state.project_context.projects.join(", ") || "(none)"}
+          {state.project_context?.projects?.join(", ") || "(none)"}
         </div>
         <div>
           <strong>Active Node:</strong>{" "}
-          {state.project_context.activeNode
+          {state.project_context?.activeNode
             ? JSON.stringify(state.project_context.activeNode)
             : "(none)"}
         </div>
@@ -48,6 +48,11 @@ export default function useAI() {
       api_key: auth?.apiKey,
       model: "gpt-4o-mini",
       system_prompt: "you are sealos brain.",
+      project_context: {
+        projects: [],
+        activeProject: null,
+        activeNode: null,
+      },
     },
   });
 }

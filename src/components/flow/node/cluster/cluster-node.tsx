@@ -37,7 +37,7 @@ export default function ClusterNode({ data }: { data: ClusterNodeProps }) {
               />
               <span className="flex flex-col">
                 <span className="text-xs text-muted-foreground leading-none">
-                  Cluster
+                  Database
                 </span>
                 <span className="text-lg font-bold text-foreground leading-tight w-40 overflow-hidden text-ellipsis text-left">
                   {name}

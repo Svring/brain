@@ -11,41 +11,64 @@ export function DndProvider({ children }: { children: ReactNode }) {
 
   function handleDragEnd(event: any) {
     const { active, over } = event;
+    console.log("handleDragEnd", active, over);
 
+    // If no drop target, bail early
     if (!over) return;
 
-    // Handle drop on project flow (existing functionality)
-    if (over.data.current?.projectName && active.data.current?.resourceTarget) {
-      addToProjectMutation.mutate({
-        resources: [active.data.current.resourceTarget],
-        projectName: over.data.current.projectName,
-      });
-      toast.success(
-        `Resource added to project ${over.data.current.projectName}`
-      );
-      return;
-    }
-
-    // Handle drop on resource drop zone
-    if (
-      over.id === "resource-drop-zone" &&
-      active.data.current?.resourceTarget
-    ) {
-      // The drop zone component will handle this via its own onDrop callback
-      // We just need to trigger the callback if it exists
-      if (over.data.current?.onDrop) {
+    // ------------------------------------------------------------------
+    // Resource Drop-Zone (collecting resources before batch add)
+    // ------------------------------------------------------------------
+    if (over.id === "resource-drop-zone") {
+      // Let the drop-zone manage its own state via provided onDrop callback.
+      if (typeof over.data.current?.onDrop === "function") {
         over.data.current.onDrop(event);
       }
-      return;
+      return; // handled
     }
+
+    // ------------------------------------------------------------------
+    // Project Flow – add resource(s) to project graph
+    // ------------------------------------------------------------------
+
+    // projectName is stored on the droppable (project-flow) or, for batch-add
+    // button, may come from the draggable itself.
+    const projectName =
+      over.data.current?.projectName ?? active.data.current?.projectName;
+
+    if (!projectName) return; // not a project target
+
+    // Figure out which resources were dropped.
+    let resources: any[] = [];
+
+    // Batch add (array of resources)
+    if (Array.isArray(active.data.current?.resources)) {
+      resources = active.data.current.resources;
+    }
+
+    // Single resourceTarget
+    if (active.data.current?.resourceTarget) {
+      resources = [active.data.current.resourceTarget];
+    }
+
+    if (resources.length === 0) return; // nothing to add
+
+    addToProjectMutation.mutate(
+      {
+        resources,
+        projectName,
+      },
+      {
+        onSuccess: () =>
+          toast.success(
+            `Added ${resources.length} resource$${
+              resources.length === 1 ? "" : "s"
+            } to project ${projectName}`
+          ),
+        onError: () => toast.error("Failed to add resources to project"),
+      }
+    );
   }
 
-  return (
-    <DndContext onDragEnd={handleDragEnd}>
-      {children}
-      <DragOverlay>
-        <div className="flex min-h-0 items-center justify-between rounded border px-3 py-1.5 text-sm bg-background shadow-lg"></div>
-      </DragOverlay>
-    </DndContext>
-  );
+  return <DndContext onDragEnd={handleDragEnd}>{children}</DndContext>;
 }

@@ -2,10 +2,10 @@
 
 import { motion } from "framer-motion";
 import { ChevronLeft, GripVertical } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Draggable } from "@/components/flow/dnd/draggable";
-import { DndContext, closestCenter, DragOverlay } from "@dnd-kit/core";
+import { DragOverlay, useDndMonitor } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -165,8 +165,17 @@ function getResourceId(
 ) {
   const name = resource.metadata?.name || "unknown";
   const kind = resource.kind || "unknown";
-  const uid = resource.metadata?.uid || Math.random().toString();
-  return `${kind}-${name}-${uid}`;
+  /*
+   * Prefer the Kubernetes UID when available because it is guaranteed
+   * to be unique and stable.  When it is not present (e.g. for mock
+   * resources coming from inventories), fall back to a deterministic
+   * id based on kind + name so that the key remains **stable across
+   * renders**.  Avoid using Math.random() because that generates a new
+   * value on every render and causes React to think the element was
+   * unmounted, which made the card "disappear" after dragging.
+   */
+  const uid = resource.metadata?.uid;
+  return uid ? `${kind}-${name}-${uid}` : `${kind}-${name}`;
 }
 
 function ResourceCard({
@@ -191,12 +200,9 @@ function ResourceCard({
   const id = getResourceId(resource);
 
   if (isDragOverlay) {
-    const cardContent = (
-      <div className="space-y-0">
-        {/* overlay uses same markup */}
-        <div
-          className={`border rounded-lg py-1.5 px-3 bg-background shadow-lg`}
-        >
+    return (
+      <div className="space-y-0 pointer-events-none">
+        <div className="border rounded-lg py-1.5 px-3 bg-background shadow-lg">
           <div className="flex items-center gap-3">
             <div className="p-0.5 rounded">
               <GripVertical className="w-3 h-3 text-muted-foreground" />
@@ -219,23 +225,17 @@ function ResourceCard({
         </div>
       </div>
     );
-
-    return (
-      <Draggable
-        id={id}
-        data={{
-          resourceTarget: convertToResourceTarget(resource, resourceConfig),
-        }}
-      >
-        {cardContent}
-      </Draggable>
-    );
   }
 
   // Non-overlay sortable card
 
   const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id });
+    useSortable({
+      id,
+      data: {
+        resourceTarget: convertToResourceTarget(resource, resourceConfig),
+      },
+    });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -358,9 +358,9 @@ export function ResourceCards({ resources }: ResourceCardsProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   // Update ordered resources when props change
-  useState(() => {
+  useEffect(() => {
     setOrderedResources(resources);
-  });
+  }, [resources]);
 
   if (resources.length === 0) {
     return (
@@ -372,6 +372,7 @@ export function ResourceCards({ resources }: ResourceCardsProps) {
 
   const sortableIds = orderedResources.map(getResourceId);
 
+  // --- Drag Handlers -----------------------------------------------------
   function handleDragStart(event: any) {
     const { active } = event;
     const resource = orderedResources.find(
@@ -383,21 +384,23 @@ export function ResourceCards({ resources }: ResourceCardsProps) {
 
   function handleDragEnd(event: any) {
     const { active, over } = event;
+    // Always reset drag state first
     setActiveResource(null);
     setDraggedId(null);
 
+    // Only handle sortable operations within this list
     if (!over) return;
 
-    // Handle drop on resource drop zone (existing functionality)
-    if (
-      over.id === "resource-drop-zone" &&
-      active.data.current?.resourceTarget
-    ) {
-      // This will be handled by the DndProvider in the parent
-      return;
-    }
+    // Check if this is a sortable operation (both active and over are in our list)
+    const isActiveInList = orderedResources.some(
+      (r) => getResourceId(r) === active.id
+    );
+    const isOverInList = orderedResources.some(
+      (r) => getResourceId(r) === over.id
+    );
 
-    if (active.id !== over.id) {
+    // Only proceed with reordering if both items are in our list
+    if (isActiveInList && isOverInList && active.id !== over.id) {
       const oldIndex = orderedResources.findIndex(
         (r) => getResourceId(r) === active.id
       );
@@ -410,6 +413,26 @@ export function ResourceCards({ resources }: ResourceCardsProps) {
       }
     }
   }
+
+  // ----------------------------------------------------------------------
+  // Register drag monitor to track drag state for visual feedback
+  // ----------------------------------------------------------------------
+  useDndMonitor({
+    onDragStart: (event) => {
+      // Only track drag start if it's one of our resources
+      const resource = orderedResources.find(
+        (r) => getResourceId(r) === event.active.id
+      );
+      if (resource) {
+        setActiveResource(resource);
+        setDraggedId(String(event.active.id));
+      }
+    },
+    onDragEnd: (event) => {
+      // Reset drag state and handle sortable operations
+      handleDragEnd(event);
+    },
+  });
 
   function toggleExpand(resourceId: string) {
     setExpandedIds((prev) => {
@@ -425,52 +448,46 @@ export function ResourceCards({ resources }: ResourceCardsProps) {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <DndContext
-        collisionDetection={closestCenter}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
+      <SortableContext
+        items={sortableIds}
+        strategy={verticalListSortingStrategy}
       >
-        <SortableContext
-          items={sortableIds}
-          strategy={verticalListSortingStrategy}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
         >
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            {orderedResources.map((resource, index) => {
-              const resourceId = getResourceId(resource);
-              return (
-                <motion.div
-                  key={resourceId}
-                  initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 30,
-                    delay: index * 0.1 + 0.3,
-                    mass: 0.8,
-                  }}
-                >
-                  <ResourceCard
-                    resource={resource}
-                    isDragging={draggedId === resourceId}
-                    isExpanded={expandedIds.has(resourceId)}
-                    onToggleExpand={() => toggleExpand(resourceId)}
-                  />
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </SortableContext>
-        <DragOverlay>
-          {activeResource ? (
-            <ResourceCard resource={activeResource} isDragOverlay />
-          ) : null}
-        </DragOverlay>
-      </DndContext>
+          {orderedResources.map((resource, index) => {
+            const resourceId = getResourceId(resource);
+            return (
+              <motion.div
+                key={resourceId}
+                initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 30,
+                  delay: index * 0.1 + 0.3,
+                  mass: 0.8,
+                }}
+              >
+                <ResourceCard
+                  resource={resource}
+                  isDragging={draggedId === resourceId}
+                  isExpanded={expandedIds.has(resourceId)}
+                  onToggleExpand={() => toggleExpand(resourceId)}
+                />
+              </motion.div>
+            );
+          })}
+        </motion.div>
+      </SortableContext>
+      <DragOverlay>
+        {activeResource ? (
+          <ResourceCard resource={activeResource} isDragOverlay />
+        ) : null}
+      </DragOverlay>
     </div>
   );
 }

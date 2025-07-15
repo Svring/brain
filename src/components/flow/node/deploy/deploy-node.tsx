@@ -32,7 +32,7 @@ export default function DeployNode({ data }: { data: DeployNodeProps }) {
               />
               <span className="flex flex-col">
                 <span className="text-xs text-muted-foreground leading-none">
-                  Deploy
+                  App Launchpad
                 </span>
                 <span className="text-lg font-bold text-foreground leading-tight w-40 overflow-hidden text-ellipsis text-left">
                   {name}
