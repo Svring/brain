@@ -3,7 +3,7 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Plus } from "lucide-react";
 import dynamic from "next/dynamic";
-import ProjectCard from "@/components/app/project/project-card";
+import ProjectCard from "@/components/app/project/components/project-card";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,7 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import useProjects from "@/hooks/app/project/use-projects";
-import { TextShimmer } from "@/components/app/project/text-shimmer";
+import { TextShimmer } from "@/components/app/project/components/text-shimmer";
 import { useDisclosure } from "@reactuses/core";
 import { CopilotSidebarWrapper } from "@/components/ai/copilot-sidebar-wrapper";
 

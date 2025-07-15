@@ -10,7 +10,7 @@ import { ArrowLeft, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
 import { AddResourceTabs } from "@/components/app/project/add-resource/add-resource-tabs";
-import { MenuBar } from "@/components/app/project/menu-bar";
+import { MenuBar } from "@/components/app/project/components/menu-bar";
 import edgeTypes from "@/components/flow/edge/edge-types";
 import nodeTypes from "@/components/flow/node/node-types";
 import {
@@ -25,7 +25,7 @@ import { useFlow } from "@/hooks/flow/use-flow";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ProjectContext } from "@/contexts/project-context";
 import { DndProvider } from "@/components/flow/dnd/dnd-provider";
-import { TextShimmer } from "@/components/app/project/text-shimmer";
+import { TextShimmer } from "@/components/app/project/components/text-shimmer";
 import { CopilotSidebarWrapper } from "@/components/ai/copilot-sidebar-wrapper";
 
 import "@xyflow/react/dist/style.css";
