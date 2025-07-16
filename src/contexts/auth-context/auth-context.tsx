@@ -3,10 +3,10 @@
 import { createContext, type ReactNode, use } from "react";
 import type { User } from "@/payload-types";
 import { useMachine } from "@xstate/react";
-import { authMachine } from "@/machines/auth-machine";
+import { authMachine } from "@/contexts/auth-context/auth-machine";
 import { authenticateDev, authenticateProd } from "@/lib/app/auth/auth-utils";
 import { useMount } from "@reactuses/core";
-import type { Auth } from "@/machines/auth-machine";
+import type { Auth } from "@/contexts/auth-context/auth-machine";
 
 interface AuthContextValue {
   auth: Auth | null;

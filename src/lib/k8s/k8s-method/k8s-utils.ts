@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuthContext } from "@/contexts/auth-context";
+import { useAuthContext } from "@/contexts/auth-context/auth-context";
 import type { K8sApiContext } from "../k8s-api/k8s-api-schemas/context-schemas";
 import { K8sApiContextSchema } from "../k8s-api/k8s-api-schemas/context-schemas";
 import type { QueryClient } from "@tanstack/react-query";

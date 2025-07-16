@@ -2,7 +2,7 @@
 
 import { createContext, type ReactNode, useContext } from "react";
 import { useMachine } from "@xstate/react";
-import { projectMachine } from "@/machines/project-machine";
+import { projectMachine } from "@/contexts/project-context/project-machine";
 import { createBrowserInspector } from "@statelyai/inspect";
 
 const inspector = createBrowserInspector();

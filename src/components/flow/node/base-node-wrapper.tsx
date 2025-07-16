@@ -8,7 +8,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { ProjectContext } from "@/contexts/project-context";
+import { ProjectContext } from "@/contexts/project-context/project-context";
 import { useDeleteResourceMutation } from "@/lib/k8s/k8s-method/k8s-mutation";
 import { useRemoveFromProjectMutation } from "@/lib/app/project/project-method/project-mutation";
 import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";

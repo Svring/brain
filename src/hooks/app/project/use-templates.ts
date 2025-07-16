@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { useAuthContext } from "@/contexts/auth-context";
+import { useAuthContext } from "@/contexts/auth-context/auth-context";
 import { InstanceApiContextSchema } from "@/lib/sealos/template/schemas/template-api-context-schemas";
 import { listTemplatesOptions } from "@/lib/sealos/template/template-query";
 

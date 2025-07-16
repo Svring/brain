@@ -6,7 +6,7 @@ import { getProjectResourcesOptions } from "@/lib/app/project/project-method/pro
 import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
 import { ListAllResourcesResponse } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
 import { useEffect } from "react";
-import { useProjectContext } from "@/contexts/project-context";
+import { useProjectContext } from "@/contexts/project-context/project-context";
 
 export function useProjectResources(
   projectName: string

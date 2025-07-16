@@ -9,7 +9,7 @@ import type {
   ResourceTarget,
 } from "./schemas";
 import { K8sApiContextSchema } from "./schemas";
-import { useAuthContext } from "@/contexts/auth-context";
+import { useAuthContext } from "@/contexts/auth-context/auth-context";
 
 function getUserKubeconfig(): string | undefined {
   const { auth } = useAuthContext();

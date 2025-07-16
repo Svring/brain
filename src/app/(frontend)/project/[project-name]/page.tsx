@@ -8,7 +8,7 @@ import {
 } from "@xyflow/react";
 import { ArrowLeft, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Suspense, use, useState, useEffect } from "react";
+import { use, useState, useEffect } from "react";
 import { AddResourceTabs } from "@/components/app/project/add-resource/add-resource-tabs";
 import { MenuBar } from "@/components/app/project/components/menu-bar";
 import edgeTypes from "@/components/flow/edge/edge-types";
@@ -23,16 +23,13 @@ import {
 import { useProjectResources } from "@/hooks/app/project/use-project-resources";
 import { useFlow } from "@/hooks/flow/use-flow";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { ProjectContext } from "@/contexts/project-context";
 import { DndProvider } from "@/components/flow/dnd/dnd-provider";
 import { TextShimmer } from "@/components/app/project/components/text-shimmer";
 import { CopilotSidebarWrapper } from "@/components/ai/copilot-sidebar-wrapper";
 
 import "@xyflow/react/dist/style.css";
 import { Droppable } from "@/components/flow/dnd/droppable";
-import { FlowProvider } from "@/contexts/flow-context";
-import { useUnmount } from "@reactuses/core";
-import { useProjectContext } from "@/contexts/project-context";
+import { useProjectContext } from "@/contexts/project-context/project-context";
 
 function ProjectFloatingUI() {
   const router = useRouter();
@@ -156,14 +153,12 @@ export default function Page({
   }, [projectName, send]);
 
   return (
-    <FlowProvider>
-      <DndProvider>
-        <div className="relative h-screen w-full">
-          <ProjectFloatingUI />
-          <ProjectFlow projectName={projectName} />
-          <CopilotSidebarWrapper />
-        </div>
-      </DndProvider>
-    </FlowProvider>
+    <DndProvider>
+      <div className="relative h-screen w-full">
+        <ProjectFloatingUI />
+        <ProjectFlow projectName={projectName} />
+        <CopilotSidebarWrapper />
+      </div>
+    </DndProvider>
   );
 }

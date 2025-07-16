@@ -7,8 +7,8 @@ import { QueryProvider } from "@/components/app/base/provider/query-provider";
 import AppSidebar from "@/components/app/base/sidebar/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "@/contexts/auth-context";
-import { ProjectProvider } from "@/contexts/project-context";
+import { AuthProvider } from "@/contexts/auth-context/auth-context";
+import { ProjectProvider } from "@/contexts/project-context/project-context";
 import { getUser } from "@/payload/operations/users-operation";
 import Login from "@/components/app/base/auth/login";
 
