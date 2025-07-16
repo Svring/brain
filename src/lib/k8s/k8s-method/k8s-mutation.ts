@@ -498,6 +498,7 @@ export function useDeleteClusterRelatedMutation(context: K8sApiContext) {
       const labelSelector = `${CLUSTER_RELATE_RESOURCE_LABELS.APP_KUBERNETES_INSTANCE}=${instanceName}`;
 
       // Phase 1: Delete backups if available
+      // NOTE: no reference for backup
       const backupResults = CUSTOM_RESOURCES.backups
         ? await runParallelAction(
             deleteCustomResourcesByLabelSelector(context, {
@@ -511,6 +512,7 @@ export function useDeleteClusterRelatedMutation(context: K8sApiContext) {
         : { success: true, deletedCount: 0, results: [] };
 
       // Phase 2: Delete export service
+      // FIXME: All services have reference to statefulset owner, so this could be removed.
       const exportServiceResult = await Promise.allSettled([
         runParallelAction(
           deleteBuiltinResource(context, {

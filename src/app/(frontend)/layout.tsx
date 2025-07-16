@@ -30,7 +30,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const isDevelopment = process.env.NODE_ENV === "development";
+  const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
   const user = isDevelopment ? await getUser() : null;
   if (isDevelopment && !user) {
     return (

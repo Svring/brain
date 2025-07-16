@@ -52,17 +52,19 @@ export const AuthProvider = ({
     payloadUser,
   });
 
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div>Loading authentication...</div>
+      </div>
+    );
+  }
+
   return (
     <AuthContext.Provider
       value={{ user, session, auth, isLoading, setUser, setSession, setAuth }}
     >
-      {isLoading ? (
-        <div className="flex min-h-screen items-center justify-center">
-          <div>Loading authentication...</div>
-        </div>
-      ) : (
-        children
-      )}
+      {children}
     </AuthContext.Provider>
   );
 };

@@ -32,7 +32,7 @@ export async function extractAuthFromSession(
   return _.every([namespace, regionUrl], _.isString)
     ? {
         namespace: namespace!,
-        kubeconfig: session.kubeconfig,
+        kubeconfig: encodeURIComponent(session.kubeconfig),
         regionUrl: regionUrl!,
         appToken: _.isString(session.token) ? session.token : "",
         baseUrl: "",

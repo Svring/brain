@@ -35,7 +35,7 @@ export function useAuth(options: UseAuthOptions = {}) {
   }, [auth, setSealosBrainAuth]);
 
   const initializeAuth = async () => {
-    const isProduction = process.env.NODE_ENV === "production";
+    const isProduction = process.env.NEXT_PUBLIC_MODE === "production";
 
     // Development mode: only use localStorage
     if (!isProduction) {
