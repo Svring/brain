@@ -5,18 +5,19 @@ import { useQuery } from "@tanstack/react-query";
 import { listProjectsOptions } from "@/lib/app/project/project-method/project-query";
 import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceListResponse } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
-import { use, useEffect } from "react";
-import { ProjectContext } from "@/contexts/project-context";
+import { useEffect } from "react";
+import { useProjectContext } from "@/contexts/project-context";
 
 const useProjects = (): UseQueryResult<CustomResourceListResponse, Error> => {
-  const { setProjects } = use(ProjectContext);
+  const { send } = useProjectContext();
   const queryResult = useQuery(listProjectsOptions(createK8sContext()));
 
   useEffect(() => {
-    const projects =
-      queryResult.data?.items.map((item) => item.metadata.name) || [];
-    setProjects(projects);
-  }, [queryResult.data, setProjects]);
+    if (queryResult.data) {
+      const projects = queryResult.data?.items || [];
+      send({ type: "SET_HOMEPAGE_DATA", projects });
+    }
+  }, [queryResult.data, send]);
 
   return queryResult;
 };

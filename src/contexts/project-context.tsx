@@ -1,86 +1,37 @@
 "use client";
 
-import { createContext, type ReactNode, useState, useEffect } from "react";
-import useAI from "@/hooks/ai/use-ai";
+import { createContext, type ReactNode, useContext } from "react";
+import { useMachine } from "@xstate/react";
+import { projectMachine } from "@/machines/project-machine";
+import { createBrowserInspector } from "@statelyai/inspect";
+
+const inspector = createBrowserInspector();
 
 interface ProjectContextValue {
-  projects: string[];
-  activeProject: string | null;
-  activeNode: any;
-  setProjects: (projects: string[]) => void;
-  setActiveProject: (activeProject: string | null) => void;
-  setActiveNode: (activeNode: any) => void;
+  state: any;
+  send: any;
+  actorRef: any;
 }
 
-export const ProjectContext = createContext<ProjectContextValue>({
-  projects: [],
-  activeProject: null,
-  activeNode: null,
-  setProjects: () => {
-    throw new Error("setProjects called outside ProjectProvider");
-  },
-  setActiveProject: () => {
-    throw new Error("setActiveProject called outside ProjectProvider");
-  },
-  setActiveNode: () => {
-    throw new Error("setActiveNode called outside ProjectProvider");
-  },
-});
+export const ProjectContext = createContext<ProjectContextValue | undefined>(
+  undefined
+);
 
-export const ProjectProvider = ({
-  children,
-  initialActiveProject,
-}: {
-  children: ReactNode;
-  initialActiveProject: string | null;
-}) => {
-  const [activeProject, setActiveProject] = useState<string | null>(
-    initialActiveProject
-  );
-  const [projects, setProjects] = useState<string[]>([]);
-  const [activeNode, setActiveNode] = useState<any>(null);
-
-  const { setState } = useAI();
-
-  // Update CoAgent state whenever project context changes
-  useEffect(() => {
-    setState((prevState) => {
-      if (!prevState) {
-        return {
-          base_url: "",
-          api_key: "",
-          model: "",
-          system_prompt: "",
-          project_context: {
-            projects,
-            activeProject,
-            activeNode,
-          },
-        };
-      }
-      return {
-        ...prevState,
-        project_context: {
-          projects,
-          activeProject,
-          activeNode,
-        },
-      };
-    });
-  }, [projects, activeProject, activeNode]);
+export const ProjectProvider = ({ children }: { children: ReactNode }) => {
+  const [state, send, actorRef] = useMachine(projectMachine, {
+    inspect: inspector.inspect,
+  });
 
   return (
-    <ProjectContext.Provider
-      value={{
-        activeProject,
-        setActiveProject,
-        projects,
-        setProjects,
-        activeNode,
-        setActiveNode,
-      }}
-    >
+    <ProjectContext.Provider value={{ state, send, actorRef }}>
       {children}
     </ProjectContext.Provider>
   );
 };
+
+export function useProjectContext() {
+  const ctx = useContext(ProjectContext);
+  if (!ctx)
+    throw new Error("useProjectContext must be used within ProjectProvider");
+  return ctx;
+}

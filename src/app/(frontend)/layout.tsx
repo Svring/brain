@@ -61,7 +61,7 @@ export default async function RootLayout({
           <AuthProvider payloadUser={payloadUser}>
             <AIProvider>
               <QueryProvider>
-                <ProjectProvider initialActiveProject={null}>
+                <ProjectProvider>
                   <SidebarProvider defaultOpen={false}>
                     <AppSidebar />
                     {children}

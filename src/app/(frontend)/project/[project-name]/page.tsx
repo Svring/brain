@@ -8,7 +8,7 @@ import {
 } from "@xyflow/react";
 import { ArrowLeft, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Suspense, use, useState } from "react";
+import { Suspense, use, useState, useEffect } from "react";
 import { AddResourceTabs } from "@/components/app/project/add-resource/add-resource-tabs";
 import { MenuBar } from "@/components/app/project/components/menu-bar";
 import edgeTypes from "@/components/flow/edge/edge-types";
@@ -32,6 +32,7 @@ import "@xyflow/react/dist/style.css";
 import { Droppable } from "@/components/flow/dnd/droppable";
 import { FlowProvider } from "@/contexts/flow-context";
 import { useUnmount } from "@reactuses/core";
+import { useProjectContext } from "@/contexts/project-context";
 
 function ProjectFloatingUI() {
   const router = useRouter();
@@ -90,12 +91,9 @@ function ProjectFloatingUI() {
   );
 }
 
-function ProjectFlow() {
-  const { activeProject } = use(ProjectContext);
-  console.log("activeProject", activeProject);
-  const { data: resources, isLoading } = useProjectResources(
-    activeProject ?? ""
-  );
+function ProjectFlow({ projectName }: { projectName: string }) {
+  const { data: resources, isLoading } = useProjectResources(projectName);
+
   const [nodes, onNodesChange, edges, onEdgesChange] = useFlow(resources);
 
   if (isLoading) {
@@ -113,7 +111,7 @@ function ProjectFlow() {
       id="project-flow"
       className="w-full h-full"
       data={{
-        projectName: activeProject ?? "",
+        projectName: projectName ?? "",
       }}
     >
       <ReactFlow
@@ -147,25 +145,22 @@ export default function Page({
   params: Promise<{ "project-name": string }>;
 }) {
   const { "project-name": projectName } = use(params);
-  const { activeProject, setActiveProject, setActiveNode } =
-    use(ProjectContext);
+  const { send } = useProjectContext();
 
-  useUnmount(() => {
-    setActiveProject(null);
-    setActiveNode(null);
-  });
-
-  if (activeProject !== projectName) {
-    setActiveProject(projectName);
-    return null;
-  }
+  // Set project name in machine context on mount
+  useEffect(() => {
+    send({ type: "ENTER_PROJECT" });
+    return () => {
+      send({ type: "EXIT_PROJECT" });
+    };
+  }, [projectName, send]);
 
   return (
     <FlowProvider>
       <DndProvider>
         <div className="relative h-screen w-full">
           <ProjectFloatingUI />
-          <ProjectFlow />
+          <ProjectFlow projectName={projectName} />
           <CopilotSidebarWrapper />
         </div>
       </DndProvider>
