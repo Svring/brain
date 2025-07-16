@@ -268,18 +268,3 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Safari and Chrome */
 }
-
-/* Fast fade-in animation for resource cards */
-@keyframes fadein {
-  from {
-    opacity: 0;
-    transform: translateY(0.5rem);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-.animate-fadein {
-  animation: fadein 0.12s ease-out forwards;
-}

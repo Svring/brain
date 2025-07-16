@@ -1,8 +1,7 @@
 "use client";
 
-import { createContext, type ReactNode, useState, useContext } from "react";
+import { createContext, type ReactNode, use } from "react";
 import type { User } from "@/payload-types";
-import { SessionV1 } from "@zjy365/sealos-desktop-sdk/app";
 import { useAuth } from "@/hooks/app/auth/use-auth";
 
 export interface Auth {
@@ -15,29 +14,13 @@ export interface Auth {
 }
 
 interface AuthContextValue {
-  user: User | null;
-  session: SessionV1 | null;
   auth: Auth | null;
-  isLoading: boolean;
-  setUser: (user: User | null) => void;
-  setSession: (session: SessionV1 | null) => void;
-  setAuth: (auth: Auth | null) => void;
+  authenticating: boolean;
 }
 
 const AuthContext = createContext<AuthContextValue>({
-  user: null,
-  session: null,
   auth: null,
-  isLoading: true,
-  setUser: () => {
-    throw new Error("setUser called outside AuthProvider");
-  },
-  setSession: () => {
-    throw new Error("setSession called outside AuthProvider");
-  },
-  setAuth: () => {
-    throw new Error("setAuth called outside AuthProvider");
-  },
+  authenticating: true,
 });
 
 export const AuthProvider = ({
@@ -47,29 +30,24 @@ export const AuthProvider = ({
   children: ReactNode;
   payloadUser: User | null;
 }) => {
-  const [user, setUser] = useState<User | null>(payloadUser);
-  const { session, auth, isLoading, setSession, setAuth } = useAuth({
-    payloadUser,
-  });
+  const { auth, authenticating } = useAuth({ payloadUser });
 
-  if (isLoading) {
+  if (authenticating) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div>Loading authentication...</div>
+        <div>Authenticating...</div>
       </div>
     );
   }
 
   return (
-    <AuthContext.Provider
-      value={{ user, session, auth, isLoading, setUser, setSession, setAuth }}
-    >
+    <AuthContext.Provider value={{ auth, authenticating }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
 export function useAuthContext() {
-  const { auth } = useContext(AuthContext);
+  const { auth } = use(AuthContext);
   return { auth };
 }

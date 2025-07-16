@@ -95,7 +95,7 @@ export function AddResourceDropZone() {
             {collectedResources.map((resource) => (
               <div
                 key={resource.id}
-                className="flex items-center gap-2 border rounded-lg p-1 text-xs transition-all duration-100 ease-out opacity-0 translate-y-2 animate-fadein"
+                className="flex items-center gap-2 border  rounded-lg p-1 text-xs"
               >
                 <span className="text-xs">{resource.kind}: </span>
                 <span className="font-medium">{resource.displayName}</span>

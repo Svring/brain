@@ -31,8 +31,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
-  const user = isDevelopment ? await getUser() : null;
-  if (isDevelopment && !user) {
+  const payloadUser = isDevelopment ? await getUser() : null;
+  if (isDevelopment && !payloadUser) {
     return (
       <html lang="en" suppressHydrationWarning>
         <body className={`${nunito.variable} font-nunito antialiased`}>
@@ -58,7 +58,7 @@ export default async function RootLayout({
           disableTransitionOnChange
           enableSystem
         >
-          <AuthProvider payloadUser={user}>
+          <AuthProvider payloadUser={payloadUser}>
             <AIProvider>
               <QueryProvider>
                 <ProjectProvider initialActiveProject={null}>

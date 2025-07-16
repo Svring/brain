@@ -31,6 +31,7 @@ export const Users: CollectionConfig = {
     {
       name: "appToken",
       type: "text",
+      required: true,
     },
     {
       name: "devboxToken",
@@ -39,10 +40,12 @@ export const Users: CollectionConfig = {
     {
       name: "apiKey",
       type: "text",
+      required: true,
     },
     {
       name: "baseUrl",
       type: "text",
+      required: true,
     },
   ],
 };

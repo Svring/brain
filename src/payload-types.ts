@@ -121,10 +121,10 @@ export interface User {
   regionUrl: string;
   kubeconfig: string;
   regionToken?: string | null;
-  appToken?: string | null;
+  appToken: string;
   devboxToken?: string | null;
-  apiKey?: string | null;
-  baseUrl?: string | null;
+  apiKey: string;
+  baseUrl: string;
   updatedAt: string;
   createdAt: string;
   email?: string | null;
