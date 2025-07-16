@@ -2,26 +2,18 @@
 
 import { createContext, type ReactNode, use } from "react";
 import type { User } from "@/payload-types";
-import { useAuth } from "@/hooks/app/auth/use-auth";
-
-export interface Auth {
-  namespace: string;
-  kubeconfig: string;
-  regionUrl: string;
-  appToken: string;
-  baseUrl: string;
-  apiKey: string;
-}
+import { useMachine } from "@xstate/react";
+import { authMachine } from "@/machines/auth-machine";
+import { authenticateDev, authenticateProd } from "@/lib/app/auth/auth-utils";
+import { useMount } from "@reactuses/core";
+import type { Auth } from "@/machines/auth-machine";
 
 interface AuthContextValue {
   auth: Auth | null;
-  authenticating: boolean;
+  actorRef: any;
 }
 
-const AuthContext = createContext<AuthContextValue>({
-  auth: null,
-  authenticating: true,
-});
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export const AuthProvider = ({
   children,
@@ -30,9 +22,18 @@ export const AuthProvider = ({
   children: ReactNode;
   payloadUser: User | null;
 }) => {
-  const { auth, authenticating } = useAuth({ payloadUser });
+  const [state, send, actorRef] = useMachine(authMachine);
 
-  if (authenticating) {
+  useMount(() => {
+    const isProduction = state.context.mode === "production";
+    if (isProduction) {
+      authenticateProd(send);
+    } else {
+      authenticateDev(payloadUser!, send);
+    }
+  });
+
+  if (state.matches("authenticating")) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div>Authenticating...</div>
@@ -41,13 +42,22 @@ export const AuthProvider = ({
   }
 
   return (
-    <AuthContext.Provider value={{ auth, authenticating }}>
+    <AuthContext.Provider
+      value={{
+        auth: state.context.auth,
+        actorRef,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
 export function useAuthContext() {
-  const { auth } = use(AuthContext);
-  return { auth };
+  const ctx = use(AuthContext);
+  if (!ctx) throw new Error("useAuthContext must be used within AuthProvider");
+  return {
+    auth: ctx.auth,
+    actorRef: ctx.actorRef,
+  };
 }
