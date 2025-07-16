@@ -17,8 +17,10 @@ import {
   type CreateInstanceResponse,
   CreateInstanceResponseSchema,
 } from "./schemas/template-create-instance-schemas";
+import https from "https";
 
 function createApi(context: InstanceApiContext) {
+  const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
   return axios.create({
     baseURL: `https://template.${context.baseURL}/api`,
     headers: {
@@ -27,6 +29,9 @@ function createApi(context: InstanceApiContext) {
         ? { Authorization: context.authorization }
         : {}),
     },
+    httpsAgent: isDevelopment
+      ? new https.Agent({ rejectUnauthorized: false })
+      : undefined,
   });
 }
 

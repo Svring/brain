@@ -11,7 +11,6 @@ const serviceAdapter = new ExperimentalEmptyAdapter();
 
 const runtime = new CopilotRuntime({
   agents: {
-    // @ts-expect-error: Suppress type error due to LangGraphAgent type incompatibility
     ai: new LangGraphAgent({
       deploymentUrl: process.env.LANGGRAPH_DEPLOYMENT_URL || "",
       graphId: "ai",

@@ -28,8 +28,10 @@ import {
   DeployDeleteResponseSchema,
 } from "../schemas/req-res-schemas/req-res-delete-schemas";
 import { generateK8sManifests } from "./deploy-api-utils";
+import https from "https";
 
 function createDeployApi(context: DeployApiContext) {
+  const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
   return axios.create({
     baseURL: `https://applaunchpad.${context.baseURL}/api`,
     headers: {
@@ -38,6 +40,9 @@ function createDeployApi(context: DeployApiContext) {
         ? { Authorization: context.authorization }
         : {}),
     },
+    httpsAgent: isDevelopment
+      ? new https.Agent({ rejectUnauthorized: false })
+      : undefined,
   });
 }
 

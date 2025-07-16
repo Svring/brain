@@ -27,9 +27,11 @@ import {
   ClusterDeleteResponse,
   ClusterDeleteResponseSchema,
 } from "./schemas/req-res-schemas/req-res-delete-schemas";
+import https from "https";
 
 // Helper to create axios instance per request
 function createClusterApi(context: ClusterApiContext) {
+  const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
   return axios.create({
     baseURL: `https://dbprovider.${context.baseURL}/api`,
     headers: {
@@ -38,6 +40,9 @@ function createClusterApi(context: ClusterApiContext) {
         ? { Authorization: context.authorization }
         : {}),
     },
+    httpsAgent: isDevelopment
+      ? new https.Agent({ rejectUnauthorized: false })
+      : undefined,
   });
 }
 

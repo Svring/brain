@@ -97,20 +97,18 @@ export interface Config {
 }
 export interface UserAuthOperations {
   forgotPassword: {
-    email: string;
-    password: string;
+    username: string;
   };
   login: {
-    email: string;
     password: string;
+    username: string;
   };
   registerFirstUser: {
-    email: string;
     password: string;
+    username: string;
   };
   unlock: {
-    email: string;
-    password: string;
+    username: string;
   };
 }
 /**
@@ -119,9 +117,8 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: string;
-  context?: string | null;
   namespace: string;
-  regionUrl?: string | null;
+  regionUrl: string;
   kubeconfig: string;
   regionToken?: string | null;
   appToken?: string | null;
@@ -130,7 +127,8 @@ export interface User {
   baseUrl?: string | null;
   updatedAt: string;
   createdAt: string;
-  email: string;
+  email?: string | null;
+  username: string;
   resetPasswordToken?: string | null;
   resetPasswordExpiration?: string | null;
   salt?: string | null;
@@ -220,7 +218,6 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
-  context?: T;
   namespace?: T;
   regionUrl?: T;
   kubeconfig?: T;
@@ -232,6 +229,7 @@ export interface UsersSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   email?: T;
+  username?: T;
   resetPasswordToken?: T;
   resetPasswordExpiration?: T;
   salt?: T;

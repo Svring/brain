@@ -13,8 +13,10 @@ import {
   AiProxyTokenListResponse,
 } from "./schemas/req-res-schemas/req-res-list-schemas";
 import { AiProxyApiContext } from "./schemas/ai-proxy-api-context";
+import https from "https";
 
 export function createAiProxyApi(context: AiProxyApiContext): AxiosInstance {
+  const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
   return axios.create({
     baseURL: `https://aiproxy-web.${context.baseURL}/api`,
     headers: {
@@ -23,6 +25,9 @@ export function createAiProxyApi(context: AiProxyApiContext): AxiosInstance {
         ? { Authorization: context.authorization }
         : {}),
     },
+    httpsAgent: isDevelopment
+      ? new https.Agent({ rejectUnauthorized: false })
+      : undefined,
   });
 }
 

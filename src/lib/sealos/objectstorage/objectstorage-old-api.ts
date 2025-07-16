@@ -15,8 +15,10 @@ import {
   ObjectStorageDeleteRequestSchema,
   ObjectStorageDeleteResponseSchema,
 } from "./schemas/req-res-schemas/req-res-delete-schemas";
+import https from "https";
 
 function createObjectStorageApi(context: ObjectStorageApiContext) {
+  const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
   return axios.create({
     baseURL: `https://objectstorage.${context.baseURL}/api/bucket`,
     headers: {
@@ -25,6 +27,9 @@ function createObjectStorageApi(context: ObjectStorageApiContext) {
         ? { Authorization: context.authorization }
         : {}),
     },
+    httpsAgent: isDevelopment
+      ? new https.Agent({ rejectUnauthorized: false })
+      : undefined,
   });
 }
 

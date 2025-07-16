@@ -3,14 +3,12 @@ import type { CollectionConfig } from "payload";
 export const Users: CollectionConfig = {
   slug: "users",
   admin: {
-    useAsTitle: "email",
+    useAsTitle: "username",
   },
-  auth: true,
+  auth: {
+    loginWithUsername: true,
+  },
   fields: [
-    {
-      name: "context",
-      type: "text",
-    },
     {
       name: "namespace",
       type: "text",
@@ -19,6 +17,7 @@ export const Users: CollectionConfig = {
     {
       name: "regionUrl",
       type: "text",
+      required: true,
     },
     {
       name: "kubeconfig",

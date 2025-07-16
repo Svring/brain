@@ -50,9 +50,11 @@ import {
   GetAppPodsResponseSchema,
   GetAppsResponseSchema,
 } from "../schemas";
+import https from "https";
 
 // Helper to create axios instance per request
 function createDevboxApi(context: DevboxApiContext) {
+  const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
   return axios.create({
     baseURL: `https://devbox.${context.baseURL}/api/v1/DevBox`,
     headers: {
@@ -64,6 +66,9 @@ function createDevboxApi(context: DevboxApiContext) {
         ? { "Authorization-Bearer": context.authorizationBearer }
         : {}),
     },
+    httpsAgent: isDevelopment
+      ? new https.Agent({ rejectUnauthorized: false })
+      : undefined,
   });
 }
 

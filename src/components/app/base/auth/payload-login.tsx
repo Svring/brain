@@ -98,7 +98,7 @@ function Label({
 }
 
 export default function PayloadLogin() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -116,7 +116,7 @@ export default function PayloadLogin() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        email,
+        username,
         password,
       }),
     });
@@ -136,19 +136,18 @@ export default function PayloadLogin() {
   return (
     <div className="space-y-4 w-full h-full">
       <form method="post" onSubmit={onSubmit}>
-        <Label className="font-medium text-foreground" htmlFor="email">
-          Email
+        <Label className="font-medium text-foreground" htmlFor="username">
+          Username
         </Label>
         <Input
           autoComplete="email"
           className="mt-2"
-          id="email"
-          name="email"
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="john@company.com"
+          id="username"
+          name="username"
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="35"
           required
-          type="email"
-          value={email}
+          value={username}
         />
         <Label className="mt-4 font-medium text-foreground" htmlFor="password">
           Password
