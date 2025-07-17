@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type FloatingActionMenuProps = {

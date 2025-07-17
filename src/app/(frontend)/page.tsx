@@ -64,7 +64,7 @@ export default function Page() {
               </VisuallyHidden>
               <DialogTrigger asChild>
                 <Button variant="ghost">
-                  <Plus size={8} />
+                  <Plus />
                 </Button>
               </DialogTrigger>
               <DialogContent className="h-[90vh] max-h-none w-[90vw] max-w-none">
