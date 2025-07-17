@@ -2,14 +2,12 @@
 
 import _ from "lodash";
 import { customAlphabet } from "nanoid";
-import {
-  type ConnectionsByKind,
-  collectEnvByWorkload,
-  extractEnvironmentVariables,
-  extractResourceNames,
-  mergeConnectFromByWorkload,
-  processIngressConnections,
-} from "@/lib/k8s/k8s-utils";
+
+// Re-export the refined algorithm from the env-reliance module to keep the
+// original public surface untouched for now. Consumers can gradually migrate
+// to the new import path but don't have to do so immediately.
+export { processProjectConnections } from "@/lib/algorithm/reliance/env-reliance";
+
 import { PROJECT_NAME_LABEL_KEY } from "./project-constant";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 
@@ -113,52 +111,8 @@ export const getOtherResourceNamesFromProjectResources = (
   );
 };
 
-/**
- * Remove ingress resources from workload connection candidates
- */
-const excludeIngressFromCandidates = (
-  resourceNamesRecord: Record<string, string[]>
-): Record<string, string[]> => {
-  const { ingress: _ingress, ...filtered } = resourceNamesRecord;
-  return filtered;
-};
-
-/**
- * Process project resources to extract connection information.
- *
- * @param resources Record of resource lists keyed by resource kind
- * @returns Connection information per workload grouped by kind
- */
-export const processProjectConnections = (
-  resources: Record<string, { items: K8sResource[] }>
-): ConnectionsByKind => {
-  // Step 1: Process ingress connections first
-  const ingressConnections = processIngressConnections(resources);
-
-  // Step 2: Process environment-based connections for workloads
-  const envRecord = extractEnvironmentVariables(resources);
-  const envSummaryNested = collectEnvByWorkload(envRecord);
-
-  // Step 3: Extract resource names but exclude ingress from workload candidates
-  const resourceNamesRecord = extractResourceNames(resources);
-  const filteredCandidates = excludeIngressFromCandidates(resourceNamesRecord);
-
-  // Step 4: Merge environment-based connections
-  const envConnections = mergeConnectFromByWorkload(
-    envSummaryNested,
-    filteredCandidates
-  );
-
-  // Step 5: Combine ingress connections with environment-based connections
-  const combinedConnections: ConnectionsByKind = { ...envConnections };
-
-  // Add ingress connections
-  if (ingressConnections.ingress) {
-    combinedConnections.ingress = ingressConnections.ingress;
-  }
-
-  return combinedConnections;
-};
+// Removed local implementation of `processProjectConnections` which has been
+// migrated to `@/lib/algorithm/reliance/env-reliance` for better cohesion.
 
 /**
  * Generate a new project name in the format 'project-nanoid(7)'.

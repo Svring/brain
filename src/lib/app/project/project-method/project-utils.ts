@@ -24,6 +24,8 @@ kind: Instance
 metadata:
   name: ${projectName}
   namespace: ${namespace}
+  labels:
+    ${PROJECT_NAME_LABEL_KEY}: ${projectName}
 spec:
   templateType: inline
   defaults:

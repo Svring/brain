@@ -24,17 +24,18 @@ export default function useAI() {
           <strong>API Key:</strong> {state.api_key ? "****" : "(none)"}
         </div>
         <div>
-          <strong>Active Project:</strong>{" "}
-          {state.project_context?.activeProject ?? "(none)"}
-        </div>
-        <div>
           <strong>Projects:</strong>{" "}
-          {state.project_context?.projects?.join(", ") || "(none)"}
+          {state.project_context?.homepageData?.projects?.join(", ") ||
+            "(none)"}
         </div>
         <div>
-          <strong>Active Node:</strong>{" "}
-          {state.project_context?.activeNode
-            ? JSON.stringify(state.project_context.activeNode)
+          <strong>Project:</strong>{" "}
+          {state.project_context?.flowGraphData?.project ?? "(none)"}
+        </div>
+        <div>
+          <strong>Resources:</strong>{" "}
+          {state.project_context?.flowGraphData?.resources
+            ? JSON.stringify(state.project_context.flowGraphData.resources)
             : "(none)"}
         </div>
       </div>

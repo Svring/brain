@@ -34,25 +34,37 @@ export const projectMachine = createMachine({
   },
   states: {
     homepage: {
+      entry: () => {
+        console.log("homepage entry");
+      },
       on: {
         ENTER_PROJECT: "flowGraph",
         SET_HOMEPAGE_DATA: {
           actions: assign({
-            homepageData: {
-              projects: (_: any, event: any) => event.projects,
+            homepageData: (context: any) => {
+              return {
+                ...context.homepageData,
+                projects: context.event.projects,
+              };
             },
           }),
         },
       },
     },
     flowGraph: {
+      entry: () => {
+        console.log("flowGraph entry");
+      },
       on: {
         EXIT_PROJECT: "homepage",
         SET_FLOW_GRAPH_DATA: {
           actions: assign({
-            flowGraphData: {
-              project: (_: any, event: any) => event.project,
-              resources: (_: any, event: any) => event.resources,
+            flowGraphData: (context: any) => {
+              return {
+                ...context.flowGraphData,
+                project: context.event.project,
+                resources: context.event.resources,
+              };
             },
           }),
         },

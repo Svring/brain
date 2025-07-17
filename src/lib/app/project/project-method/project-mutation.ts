@@ -175,6 +175,7 @@ export const useCreateProjectMutation = (context: K8sApiContext) => {
       return data;
     },
     onError: (error) => {
+      console.log("error", error);
       toast.error("Failed to create project");
       throw error;
     },

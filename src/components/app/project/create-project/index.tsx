@@ -14,7 +14,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useTemplates } from "@/hooks/app/project/use-templates";
 import { useToast } from "@/hooks/use-toast";
-import { useCreateProjectMutation } from "@/lib/app/project/project-mutation";
+import { useCreateProjectMutation } from "@/lib/app/project/project-method/project-mutation";
 import { getCurrentNamespace, getDecodedKubeconfig } from "@/lib/k8s/k8s-utils";
 import { K8sApiContextSchema } from "@/lib/k8s/schemas";
 import type {
@@ -109,9 +109,10 @@ export default function CreateProject({ onClose }: CreateProjectProps) {
       {},
       {
         onSuccess: (data) => {
+          console.log("data", data);
           toast({
             title: "Project Created",
-            description: `Project "${data.resource.metadata.name}" has been created successfully.`,
+            description: `Project "${data.metadata.name}" has been created successfully.`,
           });
           onClose();
         },

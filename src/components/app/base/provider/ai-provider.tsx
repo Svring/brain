@@ -10,9 +10,13 @@ export type AIState = {
   model: string;
   system_prompt: string;
   project_context: {
-    projects: string[];
-    activeProject: string | null;
-    activeNode: any;
+    homepageData: {
+      projects: any;
+    };
+    flowGraphData: {
+      project: any;
+      resources: any;
+    };
   };
 };
 
