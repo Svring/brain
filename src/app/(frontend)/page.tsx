@@ -3,8 +3,10 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Plus } from "lucide-react";
 import dynamic from "next/dynamic";
+import { useState, useMemo } from "react";
 import ProjectCard from "@/components/app/project/components/project-card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -22,12 +24,21 @@ const CreateProject = dynamic(
 
 export default function Page() {
   const { isOpen, onClose, onOpenChange } = useDisclosure();
-
+  const [searchTerm, setSearchTerm] = useState("");
   const {
     data: projects,
     isLoading: projectsLoading,
     isError: projectsError,
   } = useProjects();
+
+  // Filter projects based on search term
+  const filteredProjects = useMemo(() => {
+    if (!projects?.items) return [];
+
+    return projects.items.filter((project) =>
+      project.metadata.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [projects?.items, searchTerm]);
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center p-8">
@@ -39,19 +50,28 @@ export default function Page() {
               Projects
             </h1>
           </div>
-          <Dialog onOpenChange={onOpenChange} open={isOpen}>
-            <VisuallyHidden>
-              <DialogTitle>Create Project</DialogTitle>
-            </VisuallyHidden>
-            <DialogTrigger asChild>
-              <Button variant="ghost">
-                <Plus size={8} />
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="h-[90vh] max-h-none w-[90vw] max-w-none">
-              <CreateProject onClose={onClose} />
-            </DialogContent>
-          </Dialog>
+          {/* Search bar and plus button in the same row */}
+          <div className="flex items-center gap-3">
+            <Input
+              className="h-9 w-full max-w-md"
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search projects..."
+              value={searchTerm}
+            />
+            <Dialog onOpenChange={onOpenChange} open={isOpen}>
+              <VisuallyHidden>
+                <DialogTitle>Create Project</DialogTitle>
+              </VisuallyHidden>
+              <DialogTrigger asChild>
+                <Button variant="ghost">
+                  <Plus size={8} />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="h-[90vh] max-h-none w-[90vw] max-w-none">
+                <CreateProject onClose={onClose} />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
       </div>
 
@@ -74,12 +94,16 @@ export default function Page() {
 
           {!projectsError && (
             <>
-              {projects && !projectsLoading && projects.items.length === 0 ? (
+              {filteredProjects.length === 0 ? (
                 <div className="col-span-full flex h-32 items-center justify-center">
-                  <div className="text-muted-foreground">No projects found</div>
+                  <div className="text-muted-foreground">
+                    {searchTerm
+                      ? "No projects found matching your search"
+                      : "No projects found"}
+                  </div>
                 </div>
               ) : (
-                projects?.items.map((project) => (
+                filteredProjects.map((project) => (
                   <ProjectCard
                     key={project.metadata.name}
                     projectName={project.metadata.name}

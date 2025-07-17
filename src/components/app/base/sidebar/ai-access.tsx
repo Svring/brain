@@ -1,6 +1,6 @@
 "use client";
 
-import { Key } from "lucide-react";
+import { Key, Trash2 } from "lucide-react";
 import { useAuthContext } from "@/contexts/auth-context/auth-context";
 import {
   Dialog,
@@ -17,12 +17,43 @@ import {
 } from "@/components/ui/sidebar";
 import { useDisclosure, useLocalStorage } from "@reactuses/core";
 import { useEffect, useCallback } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
+  useCreateAiProxyTokenMutation,
+  useDeleteAiProxyTokenMutation,
+} from "@/lib/sealos/ai-proxy/ai-proxy-mutation";
+import { listAiProxyTokensOptions } from "@/lib/sealos/ai-proxy/ai-proxy-query";
+import { createAiProxyContext } from "@/lib/sealos/ai-proxy/ai-proxy-utils";
+import { useQuery } from "@tanstack/react-query";
 
 export default function AIAccess() {
   const { auth, state, send } = useAuthContext();
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
   const [apiKey, setApiKey] = useLocalStorage("apiKey", "");
   const [baseUrl, setBaseUrl] = useLocalStorage("baseUrl", "");
+
+  // AI Proxy context and queries
+  const aiProxyContext = auth ? createAiProxyContext() : null;
+  const { data: tokens } = useQuery({
+    ...listAiProxyTokensOptions(aiProxyContext!),
+    enabled: !!aiProxyContext,
+  });
+  const createTokenMutation = useCreateAiProxyTokenMutation(aiProxyContext!);
+  const deleteTokenMutation = useDeleteAiProxyTokenMutation(aiProxyContext!);
+
+  const handleCreateToken = () => {
+    createTokenMutation.mutate({
+      name: "brain",
+    });
+  };
+
+  const handleDeleteToken = (tokenId: number) => {
+    if (confirm("Are you sure you want to delete this token?")) {
+      deleteTokenMutation.mutate({ id: tokenId });
+    }
+  };
 
   // Revised effect: prioritize auth context, then storage, then dialog
   useEffect(() => {
@@ -105,10 +136,61 @@ export default function AIAccess() {
               onChange={(e) => setBaseUrl(e.target.value)}
               required
             />
-            <button type="submit" className="w-full btn btn-primary">
+            <Button type="submit" className="w-full">
               Submit
-            </button>
+            </Button>
           </form>
+
+          <Separator className="my-4" />
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-medium">AI Proxy Tokens</h4>
+              <Button
+                size="sm"
+                onClick={handleCreateToken}
+                disabled={createTokenMutation.isPending}
+              >
+                {createTokenMutation.isPending ? "Creating..." : "Create Token"}
+              </Button>
+            </div>
+
+            {tokens?.data?.tokens && tokens.data.tokens.length > 0 ? (
+              <div className="space-y-2">
+                {tokens.data.tokens.map((token) => (
+                  <div
+                    key={token.name}
+                    className="flex items-center justify-between p-2 border rounded"
+                  >
+                    <div>
+                      <div className="font-medium text-sm">{token.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        Created:{" "}
+                        {new Date(token.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="text-xs">
+                        {token.status}
+                      </Badge>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDeleteToken(token.id)}
+                        disabled={deleteTokenMutation.isPending}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center text-sm text-muted-foreground py-4">
+                No tokens found
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
       <SidebarMenu>
@@ -118,8 +200,8 @@ export default function AIAccess() {
             onClick={onOpen}
             aria-label="Edit API Credentials"
           >
-            <Key className="mr-2" />
-            <span className="text-sm">API Credentials</span>
+            <Key className="mr-1" />
+            <span className="">API Credentials</span>
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
