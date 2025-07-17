@@ -1,6 +1,7 @@
 "use client";
 
 import BaseNode from "../base-node-wrapper";
+import { NodeToolbar, Position } from "@xyflow/react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";

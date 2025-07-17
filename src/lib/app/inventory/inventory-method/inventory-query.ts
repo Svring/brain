@@ -16,14 +16,14 @@ import {
 export const listDevboxesInventoryOptions = (context: K8sApiContext) => {
   const devboxResourceConfig = CUSTOM_RESOURCES.devbox;
 
-  const resourceTypeTarget = CustomResourceTargetSchema.parse({
+  const resourceTarget = CustomResourceTargetSchema.parse({
     type: "custom",
     group: devboxResourceConfig.group,
     version: devboxResourceConfig.version,
     plural: devboxResourceConfig.plural,
   });
 
-  const baseOptions = listResourcesOptions(context, resourceTypeTarget);
+  const baseOptions = listResourcesOptions(context, resourceTarget);
 
   return queryOptions({
     ...baseOptions,
@@ -40,14 +40,14 @@ export const listDevboxesInventoryOptions = (context: K8sApiContext) => {
 export const listClustersInventoryOptions = (context: K8sApiContext) => {
   const clusterConfig = CUSTOM_RESOURCES.cluster;
 
-  const resourceTypeTarget = CustomResourceTargetSchema.parse({
+  const resourceTarget = CustomResourceTargetSchema.parse({
     type: "custom",
     group: clusterConfig.group,
     version: clusterConfig.version,
     plural: clusterConfig.plural,
   });
 
-  const baseOptions = listResourcesOptions(context, resourceTypeTarget);
+  const baseOptions = listResourcesOptions(context, resourceTarget);
 
   return queryOptions({
     ...baseOptions,
@@ -64,14 +64,14 @@ export const listClustersInventoryOptions = (context: K8sApiContext) => {
 export const listObjectStoragesInventoryOptions = (context: K8sApiContext) => {
   const objectStorageConfig = CUSTOM_RESOURCES.objectstoragebucket;
 
-  const resourceTypeTarget = CustomResourceTargetSchema.parse({
+  const resourceTarget = CustomResourceTargetSchema.parse({
     type: "custom",
     group: objectStorageConfig.group,
     version: objectStorageConfig.version,
     plural: objectStorageConfig.plural,
   });
 
-  const baseOptions = listResourcesOptions(context, resourceTypeTarget);
+  const baseOptions = listResourcesOptions(context, resourceTarget);
 
   return queryOptions({
     ...baseOptions,
@@ -88,12 +88,12 @@ export const listObjectStoragesInventoryOptions = (context: K8sApiContext) => {
 export const listDeploymentsInventoryOptions = (context: K8sApiContext) => {
   const deploymentConfig = BUILTIN_RESOURCES.deployment;
 
-  const resourceTypeTarget = BuiltinResourceTargetSchema.parse({
+  const resourceTarget = BuiltinResourceTargetSchema.parse({
     type: "builtin",
     resourceType: deploymentConfig.resourceType,
   });
 
-  const baseOptions = listResourcesOptions(context, resourceTypeTarget);
+  const baseOptions = listResourcesOptions(context, resourceTarget);
 
   return queryOptions({
     ...baseOptions,
@@ -110,12 +110,12 @@ export const listDeploymentsInventoryOptions = (context: K8sApiContext) => {
 export const listStatefulSetsInventoryOptions = (context: K8sApiContext) => {
   const statefulSetConfig = BUILTIN_RESOURCES.statefulset;
 
-  const resourceTypeTarget = BuiltinResourceTargetSchema.parse({
+  const resourceTarget = BuiltinResourceTargetSchema.parse({
     type: "builtin",
     resourceType: statefulSetConfig.resourceType,
   });
 
-  const baseOptions = listResourcesOptions(context, resourceTypeTarget);
+  const baseOptions = listResourcesOptions(context, resourceTarget);
 
   return queryOptions({
     ...baseOptions,
@@ -132,12 +132,12 @@ export const listStatefulSetsInventoryOptions = (context: K8sApiContext) => {
 export const listCronJobsInventoryOptions = (context: K8sApiContext) => {
   const cronJobConfig = BUILTIN_RESOURCES.cronjob;
 
-  const resourceTypeTarget = BuiltinResourceTargetSchema.parse({
+  const resourceTarget = BuiltinResourceTargetSchema.parse({
     type: "builtin",
     resourceType: cronJobConfig.resourceType,
   });
 
-  const baseOptions = listResourcesOptions(context, resourceTypeTarget);
+  const baseOptions = listResourcesOptions(context, resourceTarget);
 
   return queryOptions({
     ...baseOptions,
