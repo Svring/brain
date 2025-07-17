@@ -29,6 +29,11 @@ import { CopilotSidebarWrapper } from "@/components/ai/copilot-sidebar-wrapper";
 
 import "@xyflow/react/dist/style.css";
 import { Droppable } from "@/components/flow/dnd/droppable";
+import { DragEndEvent } from "@dnd-kit/core";
+import { useAddToProjectMutation } from "@/lib/app/project/project-method/project-mutation";
+import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
+import { toast } from "sonner";
+import _ from "lodash";
 import { useProjectContext } from "@/contexts/project-context/project-context";
 
 function ProjectFloatingUI() {
@@ -93,6 +98,30 @@ function ProjectFlow({ projectName }: { projectName: string }) {
 
   const [nodes, onNodesChange, edges, onEdgesChange] = useFlow(resources);
 
+  const addToProjectMutation = useAddToProjectMutation(createK8sContext());
+
+  const handleDrop = (event: DragEndEvent) => {
+    const { active } = event;
+    const resources = _.castArray(
+      _.get(active, "data.current.resources") ??
+        _.get(active, "data.current.resourceTarget", [])
+    );
+    if (_.isEmpty(resources)) return;
+
+    addToProjectMutation.mutate(
+      { resources, projectName },
+      {
+        onSuccess: () =>
+          toast.success(
+            `Added ${resources.length} resource${
+              resources.length === 1 ? "" : "s"
+            } to project ${projectName}`
+          ),
+        onError: () => toast.error("Failed to add resources to project"),
+      }
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full w-full">
@@ -109,6 +138,7 @@ function ProjectFlow({ projectName }: { projectName: string }) {
       className="w-full h-full"
       data={{
         projectName: projectName ?? "",
+        onDrop: handleDrop,
       }}
     >
       <ReactFlow

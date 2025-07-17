@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Droppable } from "@/components/flow/dnd/droppable";
+import { Draggable } from "@/components/flow/dnd/draggable";
+import { GripVertical } from "lucide-react";
 import { X, Package } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -13,10 +15,35 @@ import _ from "lodash";
 
 type ResourceTarget = CustomResourceTarget | BuiltinResourceTarget;
 
+interface AddResourceDropZoneProps {
+  onResourcesAdded?: () => void;
+}
+
 export function AddResourceDropZone() {
   const [collectedResources, setCollectedResources] = useState<
     ResourceTarget[]
   >([]);
+
+  const clearResources = () => {
+    setCollectedResources([]);
+  };
+
+  // Listen for clear event from DndProvider
+  useEffect(() => {
+    const handleClearResources = () => {
+      setCollectedResources([]);
+    };
+
+    const element = document.querySelector(
+      '[data-drop-zone-id="add-resource-drop-zone"]'
+    );
+    if (element) {
+      element.addEventListener("clearResources", handleClearResources);
+      return () => {
+        element.removeEventListener("clearResources", handleClearResources);
+      };
+    }
+  }, []);
 
   const handleDrop = (event: any) => {
     const resourceTarget = _.get(
@@ -61,8 +88,19 @@ export function AddResourceDropZone() {
     type: _.get(resource, "resourceType", "unknown"),
   });
 
-  return (
+  const InnerZone = (
     <div className="space-y-4">
+      {/* Handle shown only when resources present */}
+      {collectedResources.length > 0 && (
+        <div className="flex items-center gap-2 mb-2">
+          <div className="cursor-grab select-none p-1">
+            <GripVertical className="w-3 h-3 text-muted-foreground" />
+          </div>
+          <span className="text-xs text-muted-foreground">
+            Drag to add all resources
+          </span>
+        </div>
+      )}
       <Droppable
         id="resource-drop-zone"
         data={{ onDrop: handleDrop }}
@@ -93,10 +131,10 @@ export function AddResourceDropZone() {
                     variant="ghost"
                     size="sm"
                     onClick={() => removeResource(index)}
-                    className="h-2 w-2 p-0 hover:bg-destructive/10"
+                    className="h-4 w-4 p-0 hover:bg-destructive/10 flex-shrink-0"
                     aria-label={`Remove ${name}`}
                   >
-                    <X className="h-2 w-2" />
+                    <X className="h-3 w-3" />
                   </Button>
                 </div>
               );
@@ -105,5 +143,20 @@ export function AddResourceDropZone() {
         )}
       </Droppable>
     </div>
+  );
+
+  return (
+    <>
+      {collectedResources.length > 0 ? (
+        <Draggable
+          id="add-resource-drop-zone"
+          data={{ resources: collectedResources }}
+        >
+          <div data-drop-zone-id="add-resource-drop-zone">{InnerZone}</div>
+        </Draggable>
+      ) : (
+        <div data-drop-zone-id="add-resource-drop-zone">{InnerZone}</div>
+      )}
+    </>
   );
 }

@@ -209,7 +209,7 @@ export function AddResourceTabs() {
             <div className="py-1 px-3 border rounded-lg flex items-center justify-between bg-background hover:bg-muted/50 transition-colors cursor-pointer">
               <span className="text-sm font-medium text-muted-foreground flex items-center">
                 New:
-                <span className="flex items-center gap-1 ml-2">
+                <span className="flex items-center flex-1 ml-2 gap-1">
                   {CREATION_OPTIONS.map((option) => {
                     const IconComponent = option.icon;
                     return (
@@ -226,7 +226,7 @@ export function AddResourceTabs() {
                           e.stopPropagation();
                           handleCreationOptionClick(option.key);
                         }}
-                        className="h-7 px-2 text-xs"
+                        className="h-7 px-2 text-xs flex-1"
                       >
                         <IconComponent className="w-3 h-3 mr-1" />
                         {option.label}
@@ -236,13 +236,13 @@ export function AddResourceTabs() {
                 </span>
               </span>
               {/* Expand/Collapse Arrow */}
-              <span
+              {/* <span
                 className={`p-1 hover:bg-muted rounded transition-transform ${
                   isCreationOpen ? "-rotate-90" : ""
                 }`}
               >
                 <ChevronLeft className="w-4 h-4 text-muted-foreground" />
-              </span>
+              </span> */}
             </div>
             <CollapsibleContent>
               {selectedCreationComponent && isCreationOpen && (

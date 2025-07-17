@@ -1,11 +1,10 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { ChevronLeft, GripVertical } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Draggable } from "@/components/flow/dnd/draggable";
-import { DragOverlay, useDndMonitor } from "@dnd-kit/core";
+import { useDndMonitor } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -39,38 +38,6 @@ const RESOURCE_ICON_MAP: Record<string, string> = {
   ingress: "/icons/kubernetes/ingress.svg", // Fallback
   statefulset: "https://applaunchpad.bja.sealos.run/logo.svg",
   pvc: "/icons/kubernetes/pvc.svg", // Fallback
-};
-
-// Animation variants with proper typing
-const cardVariants = {
-  hidden: {
-    opacity: 0,
-    y: 20,
-    scale: 0.95,
-  },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      type: "spring" as const,
-      stiffness: 300,
-      damping: 30,
-      mass: 0.8,
-    },
-  },
-};
-
-const logoVariants = {
-  hover: {
-    scale: 1.1,
-    rotate: 5,
-    transition: {
-      type: "spring" as const,
-      stiffness: 400,
-      damping: 25,
-    },
-  },
 };
 
 function getResourceIcon(
@@ -234,6 +201,8 @@ function ResourceCard({
       id,
       data: {
         resourceTarget: convertToResourceTarget(resource, resourceConfig),
+        resourceName: name,
+        resourceKind: kind,
       },
     });
 
@@ -260,11 +229,7 @@ function ResourceCard({
           </div>
 
           {/* Icon */}
-          <motion.div
-            variants={logoVariants}
-            whileHover="hover"
-            className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-          >
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0">
             {icon ? (
               <Image
                 src={icon}
@@ -283,7 +248,7 @@ function ResourceCard({
             <span className="text-foreground text-xs font-medium hidden">
               {kind.charAt(0)}
             </span>
-          </motion.div>
+          </div>
 
           {/* Content - clickable area */}
           <div
@@ -296,29 +261,27 @@ function ResourceCard({
             <Badge variant="outline" className="text-xs flex-shrink-0">
               {kind}
             </Badge>
-            <motion.span
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
+            <span
               className="px-2 py-0.5 rounded-full text-xs font-medium transition-all duration-200 text-gray-700 flex-shrink-0"
               style={{ backgroundColor: "#D4DADB" }}
             >
               {status}
-            </motion.span>
+            </span>
           </div>
 
           {/* Expand/Collapse Arrow */}
           {!isDragOverlay && onToggleExpand && (
-            <motion.div
-              animate={{ rotate: isExpanded ? -90 : 0 }}
-              transition={{ duration: 0.2 }}
-              className="cursor-pointer p-1 hover:bg-muted rounded"
+            <div
+              className={`cursor-pointer p-1 hover:bg-muted rounded transition-transform duration-200 ${
+                isExpanded ? "rotate-[-90deg]" : ""
+              }`}
               onClick={(e) => {
                 e.stopPropagation();
                 onToggleExpand();
               }}
             >
               <ChevronLeft className="w-4 h-4 text-muted-foreground" />
-            </motion.div>
+            </div>
           )}
         </div>
       </div>
@@ -337,23 +300,11 @@ function ResourceCard({
     </div>
   );
 
-  return (
-    <motion.div
-      variants={cardVariants}
-      initial="hidden"
-      animate="visible"
-      className="mb-1.5"
-    >
-      {cardContent}
-    </motion.div>
-  );
+  return <div className="mb-1.5">{cardContent}</div>;
 }
 
 export function ResourceCards({ resources }: ResourceCardsProps) {
   const [orderedResources, setOrderedResources] = useState(resources);
-  const [activeResource, setActiveResource] = useState<
-    (AnyKubernetesResource & { resourceType: string }) | null
-  >(null);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
@@ -375,17 +326,12 @@ export function ResourceCards({ resources }: ResourceCardsProps) {
   // --- Drag Handlers -----------------------------------------------------
   function handleDragStart(event: any) {
     const { active } = event;
-    const resource = orderedResources.find(
-      (r) => getResourceId(r) === active.id
-    );
-    setActiveResource(resource || null);
     setDraggedId(active.id);
   }
 
   function handleDragEnd(event: any) {
     const { active, over } = event;
     // Always reset drag state first
-    setActiveResource(null);
     setDraggedId(null);
 
     // Only handle sortable operations within this list
@@ -420,11 +366,7 @@ export function ResourceCards({ resources }: ResourceCardsProps) {
   useDndMonitor({
     onDragStart: (event) => {
       // Only track drag start if it's one of our resources
-      const resource = orderedResources.find(
-        (r) => getResourceId(r) === event.active.id
-      );
-      if (resource) {
-        setActiveResource(resource);
+      if (orderedResources.some((r) => getResourceId(r) === event.active.id)) {
         setDraggedId(String(event.active.id));
       }
     },
@@ -452,42 +394,22 @@ export function ResourceCards({ resources }: ResourceCardsProps) {
         items={sortableIds}
         strategy={verticalListSortingStrategy}
       >
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
+        <div>
           {orderedResources.map((resource, index) => {
             const resourceId = getResourceId(resource);
             return (
-              <motion.div
-                key={resourceId}
-                initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 30,
-                  delay: index * 0.1 + 0.3,
-                  mass: 0.8,
-                }}
-              >
+              <div key={resourceId}>
                 <ResourceCard
                   resource={resource}
                   isDragging={draggedId === resourceId}
                   isExpanded={expandedIds.has(resourceId)}
                   onToggleExpand={() => toggleExpand(resourceId)}
                 />
-              </motion.div>
+              </div>
             );
           })}
-        </motion.div>
+        </div>
       </SortableContext>
-      <DragOverlay>
-        {activeResource ? (
-          <ResourceCard resource={activeResource} isDragOverlay />
-        ) : null}
-      </DragOverlay>
     </div>
   );
 }
