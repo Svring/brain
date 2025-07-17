@@ -12,9 +12,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
-import { useDeleteProjectResourcesMutation } from "@/lib/app/project/project-mutation";
 import { useDeleteProjectMutation } from "@/lib/app/project/project-method/project-mutation";
-import { getCurrentNamespace, getDecodedKubeconfig } from "@/lib/k8s/k8s-utils";
+import {
+  getCurrentNamespace,
+  getDecodedKubeconfig,
+} from "@/lib/k8s/k8s-method/k8s-utils";
 import { K8sApiContextSchema } from "@/lib/k8s/schemas";
 
 interface ProjectCardProps {

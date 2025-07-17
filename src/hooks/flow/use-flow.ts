@@ -5,7 +5,7 @@ import {
   useNodesState,
 } from "@xyflow/react";
 import { useEffect } from "react";
-import { processProjectConnections } from "@/lib/app/project/project-utils";
+import { inferRelianceFromEnv } from "@/lib/app/project/project-method/project-utils";
 import { convertConnectionsToEdges } from "@/lib/flow/edges/flow-edges-utils";
 import { applyLayout } from "@/lib/flow/layout/flow-layout-utils";
 import { convertResourcesToNodes } from "@/lib/flow/nodes/flow-nodes-utils";
@@ -28,7 +28,7 @@ export function useFlow(resources: ListAllResourcesResponse | undefined) {
 
     const resource = _.merge({}, resources.custom, resources.builtin);
 
-    const connections = processProjectConnections(resource);
+    const connections = inferRelianceFromEnv(resource);
     const newNodes = convertResourcesToNodes(resource);
     const newEdges = convertConnectionsToEdges(connections);
     const positionedNodes = applyLayout(newNodes, newEdges, {
