@@ -18,7 +18,6 @@ const useProjects = (): UseQueryResult<CustomResourceListResponse, Error> => {
       const projects = _.map(queryResult.data?.items, (project) => {
         return {
           name: project.metadata.name,
-          namespace: project.metadata.namespace,
         };
       });
       send({ type: "SET_HOMEPAGE_DATA", projects });

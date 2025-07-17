@@ -34,9 +34,6 @@ export const projectMachine = createMachine({
   },
   states: {
     homepage: {
-      entry: () => {
-        console.log("homepage entry");
-      },
       on: {
         ENTER_PROJECT: "flowGraph",
         SET_HOMEPAGE_DATA: {
@@ -52,9 +49,6 @@ export const projectMachine = createMachine({
       },
     },
     flowGraph: {
-      entry: () => {
-        console.log("flowGraph entry");
-      },
       on: {
         EXIT_PROJECT: "homepage",
         SET_FLOW_GRAPH_DATA: {

@@ -94,22 +94,13 @@ export default function Page() {
 
           {!projectsError && (
             <>
-              {filteredProjects.length === 0 ? (
-                <div className="col-span-full flex h-32 items-center justify-center">
-                  <div className="text-muted-foreground">
-                    {searchTerm
-                      ? "No projects found matching your search"
-                      : "No projects found"}
-                  </div>
-                </div>
-              ) : (
+              {filteredProjects.length !== 0 &&
                 filteredProjects.map((project) => (
                   <ProjectCard
                     key={project.metadata.name}
                     projectName={project.metadata.name}
                   />
-                ))
-              )}
+                ))}
             </>
           )}
         </div>

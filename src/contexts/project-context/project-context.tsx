@@ -27,21 +27,23 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
   const { state: aiState, setState: setAIState } = useAI();
 
   useEffect(() => {
-    setAIState({
-      ...aiState,
-      project_context: {
-        ...aiState.project_context,
-        homepageData: {
-          ...aiState.project_context.homepageData,
-          projects: state.context.homepageData.projects,
-        },
-        flowGraphData: {
-          ...aiState.project_context.flowGraphData,
-          project: state.context.flowGraphData.project,
-          resources: state.context.flowGraphData.resources,
-        },
-      },
-    });
+    const newState = _.cloneDeep(aiState);
+    _.set(
+      newState,
+      "project_context.homepageData.projects",
+      state.context.homepageData.projects
+    );
+    _.set(
+      newState,
+      "project_context.flowGraphData.project",
+      state.context.flowGraphData.project
+    );
+    _.set(
+      newState,
+      "project_context.flowGraphData.resources",
+      state.context.flowGraphData.resources
+    );
+    setAIState(newState);
   }, [state]);
 
   return (

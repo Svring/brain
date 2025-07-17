@@ -25,8 +25,9 @@ export default function useAI() {
         </div>
         <div>
           <strong>Projects:</strong>{" "}
-          {state.project_context?.homepageData?.projects?.join(", ") ||
-            "(none)"}
+          {state.project_context?.homepageData?.projects
+            ? JSON.stringify(state.project_context.homepageData.projects)
+            : "(none)"}
         </div>
         <div>
           <strong>Project:</strong>{" "}
@@ -50,9 +51,13 @@ export default function useAI() {
       model: "gpt-4o-mini",
       system_prompt: "you are sealos brain.",
       project_context: {
-        projects: [],
-        activeProject: null,
-        activeNode: null,
+        homepageData: {
+          projects: [],
+        },
+        flowGraphData: {
+          project: null,
+          resources: null,
+        },
       },
     },
   });
