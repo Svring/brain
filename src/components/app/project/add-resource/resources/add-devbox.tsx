@@ -47,7 +47,7 @@ export default function AddDevbox() {
         <Label className="text-sm font-medium">
           Select Runtime Environment
         </Label>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(72px,1fr))] gap-3">
           {RUNTIME_OPTIONS.map((runtime) => (
             <Button
               key={runtime}
@@ -55,7 +55,7 @@ export default function AddDevbox() {
               variant={selected === runtime ? "default" : "outline"}
               onClick={() => setSelected(runtime as RuntimeName)}
               type="button"
-              className="flex flex-col items-center justify-center gap-2 h-20 p-3 text-center"
+              className="flex flex-col items-center justify-center gap-2 h-auto aspect-square p-3 text-center"
             >
               <img
                 src={DEVBOX_RUNTIME_ICON_MAP[runtime]}

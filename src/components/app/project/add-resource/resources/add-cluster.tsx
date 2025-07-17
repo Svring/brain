@@ -64,7 +64,7 @@ export default function AddCluster() {
     <div className="space-y-4">
       <div className="space-y-3">
         <Label className="text-sm font-medium">Select Database Type</Label>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(72px,1fr))] gap-3">
           {Object.keys(CLUSTER_TYPE_VERSION_MAP).map((type) => (
             <Button
               key={type}
@@ -72,7 +72,7 @@ export default function AddCluster() {
               variant={selectedType === type ? "default" : "outline"}
               onClick={() => handleTypeChange(type as ClusterType)}
               type="button"
-              className="flex flex-col items-center justify-center gap-2 h-20 p-3 text-center"
+              className="flex flex-col items-center justify-center gap-2 h-auto aspect-square p-3 text-center"
             >
               <div className="w-7 h-7 flex items-center justify-center">
                 <img

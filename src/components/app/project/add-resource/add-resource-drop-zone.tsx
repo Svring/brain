@@ -89,23 +89,23 @@ export function AddResourceDropZone() {
   });
 
   const InnerZone = (
-    <div className="space-y-4">
-      {/* Handle shown only when resources present */}
-      {collectedResources.length > 0 && (
-        <div className="flex items-center gap-2 mb-2">
-          <div className="cursor-grab select-none p-1">
-            <GripVertical className="w-3 h-3 text-muted-foreground" />
-          </div>
-          <span className="text-xs text-muted-foreground">
-            Drag to add all resources
-          </span>
-        </div>
-      )}
+    <div className="relative">
       <Droppable
         id="resource-drop-zone"
         data={{ onDrop: handleDrop }}
         className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 min-h-[120px] transition-colors"
       >
+        {/* Handle shown only when resources present */}
+        {collectedResources.length > 0 && (
+          <Draggable
+            id="add-resource-drop-zone"
+            data={{ resources: collectedResources }}
+          >
+            <div className="absolute -left-2 cursor-grab select-none p-1 bg-background shadow-sm">
+              <GripVertical className="w-4 h-4 text-muted-foreground" />
+            </div>
+          </Draggable>
+        )}
         {_.isEmpty(collectedResources) ? (
           <div className="flex flex-col items-center justify-center h-full">
             <Package className="h-8 w-8 text-muted-foreground mb-2" />
@@ -123,9 +123,9 @@ export function AddResourceDropZone() {
               return (
                 <div
                   key={`${type}-${name}-${index}`}
-                  className="flex items-center gap-2 border rounded-lg p-1 text-xs"
+                  className="flex items-center gap-2 border rounded-md p-1 text-xs"
                 >
-                  <span className="text-xs">{type}: </span>
+                  {/* <span className="text-xs">{type}: </span> */}
                   <span className="font-medium">{name}</span>
                   <Button
                     variant="ghost"
@@ -145,18 +145,5 @@ export function AddResourceDropZone() {
     </div>
   );
 
-  return (
-    <>
-      {collectedResources.length > 0 ? (
-        <Draggable
-          id="add-resource-drop-zone"
-          data={{ resources: collectedResources }}
-        >
-          <div data-drop-zone-id="add-resource-drop-zone">{InnerZone}</div>
-        </Draggable>
-      ) : (
-        <div data-drop-zone-id="add-resource-drop-zone">{InnerZone}</div>
-      )}
-    </>
-  );
+  return <div data-drop-zone-id="add-resource-drop-zone">{InnerZone}</div>;
 }

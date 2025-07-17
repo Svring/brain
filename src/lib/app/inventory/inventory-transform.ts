@@ -13,7 +13,7 @@ export const transformDevboxToTableRow = (
     template: info.imageName,
     status: info.status,
     createdAt: new Date(info.createTime).toLocaleDateString(),
-    cost: "$0.00", // TODO: replace with real cost calculation
+    cost: "$0.00",
     project: "",
   };
 };

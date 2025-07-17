@@ -4,7 +4,7 @@ import { type ReactNode } from "react";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import _ from "lodash";
 import { DragOverlay, useDndMonitor } from "@dnd-kit/core";
-import { GripVertical } from "lucide-react";
+import { Box, Boxes, GripVertical } from "lucide-react";
 import { useState } from "react";
 
 export function DndProvider({ children }: { children: ReactNode }) {
@@ -39,6 +39,7 @@ export function DndProvider({ children }: { children: ReactNode }) {
     setActiveDrag(null);
   };
 
+  // TODO: optimize the ui of draggable
   return (
     <DndContext
       onDragStart={handleDragStart}
@@ -51,31 +52,17 @@ export function DndProvider({ children }: { children: ReactNode }) {
         {activeDrag ? (
           // If dragging collection of resources (from drop zone)
           _.isArray(activeDrag.resources) ? (
-            <div className="border rounded-lg py-2 px-4 bg-background shadow-lg flex items-center gap-3 text-sm pointer-events-none min-w-[200px]">
-              <GripVertical className="w-3 h-3 text-muted-foreground" />
-              <span className="font-medium">
-                {activeDrag.resources.length} resource
-                {activeDrag.resources.length === 1 ? "" : "s"}
-              </span>
+            <div className="w-10 h-10 border rounded-lg bg-background shadow-lg flex items-center justify-center pointer-events-none">
+              <div className="w-8 h-8 rounded flex items-center justify-center">
+                <Boxes />
+              </div>
             </div>
           ) : // Else dragging single resource card
           activeDrag.resourceName ? (
-            <div className="border rounded-lg py-2 px-4 bg-background shadow-lg flex items-center gap-3 text-sm pointer-events-none min-w-[250px]">
-              <GripVertical className="w-3 h-3 text-muted-foreground" />
-              {/* Resource icon placeholder */}
-              <div className="w-6 h-6 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                <span className="text-xs font-medium text-muted-foreground">
-                  {activeDrag.resourceKind?.charAt(0) || "R"}
-                </span>
+            <div className="w-10 h-10 border rounded-lg bg-background shadow-lg flex items-center justify-center pointer-events-none">
+              <div className="w-8 h-8 rounded flex items-center justify-center">
+                <Box />
               </div>
-              <span className="font-medium truncate flex-1">
-                {activeDrag.resourceName}
-              </span>
-              {activeDrag.resourceKind && (
-                <span className="text-muted-foreground text-xs bg-muted px-2 py-1 rounded">
-                  {activeDrag.resourceKind}
-                </span>
-              )}
             </div>
           ) : null
         ) : null}
