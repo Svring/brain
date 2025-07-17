@@ -9,7 +9,7 @@ import {
   getCurrentNamespace,
   getRegionUrlFromKubeconfig,
 } from "@/lib/k8s/k8s-api/k8s-api-utils";
-import type { Auth } from "@/contexts/auth-context/auth-context";
+import type { Auth } from "@/contexts/auth-context/auth-machine";
 import type { User } from "@/payload-types";
 
 export async function extractAuthFromSession(
