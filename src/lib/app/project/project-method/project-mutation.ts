@@ -153,6 +153,7 @@ export const useRemoveFromProjectMutation = (context: K8sApiContext) => {
  * Hook to create a new project instance
  */
 export const useCreateProjectMutation = (context: K8sApiContext) => {
+  const queryClient = useQueryClient();
   const createInstanceMutation = useApplyInstanceYamlMutation(context);
 
   return useMutation({
@@ -168,6 +169,9 @@ export const useCreateProjectMutation = (context: K8sApiContext) => {
     onSuccess: (data) => {
       toast.success("Project created successfully");
       // The useApplyInstanceYamlMutation already handles query invalidation
+      queryClient.invalidateQueries({
+        queryKey: ["projects", context.namespace],
+      });
       return data;
     },
     onError: (error) => {
@@ -270,7 +274,7 @@ export const useDeleteProjectMutation = (context: K8sApiContext) => {
 
       // Invalidate project-related queries
       queryClient.invalidateQueries({
-        queryKey: ["projects"],
+        queryKey: ["projects", context.namespace],
       });
       queryClient.invalidateQueries({
         queryKey: ["project", "get", context.namespace],

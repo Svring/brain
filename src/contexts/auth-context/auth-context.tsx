@@ -7,10 +7,16 @@ import { authMachine } from "@/contexts/auth-context/auth-machine";
 import { authenticateDev, authenticateProd } from "@/lib/app/auth/auth-utils";
 import { useMount } from "@reactuses/core";
 import type { Auth } from "@/contexts/auth-context/auth-machine";
+import type { StateFrom, EventFrom, ActorRefFrom } from "xstate";
+import { createBrowserInspector } from "@statelyai/inspect";
+
+const inspector = createBrowserInspector();
 
 interface AuthContextValue {
   auth: Auth | null;
-  actorRef: any;
+  state: StateFrom<typeof authMachine>;
+  send: (event: EventFrom<typeof authMachine>) => void;
+  actorRef: ActorRefFrom<typeof authMachine>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -22,7 +28,9 @@ export const AuthProvider = ({
   children: ReactNode;
   payloadUser: User | null;
 }) => {
-  const [state, send, actorRef] = useMachine(authMachine);
+  const [state, send, actorRef] = useMachine(authMachine, {
+    inspect: inspector.inspect,
+  });
 
   useMount(() => {
     const isProduction = state.context.mode === "production";
@@ -45,6 +53,8 @@ export const AuthProvider = ({
     <AuthContext.Provider
       value={{
         auth: state.context.auth,
+        state,
+        send,
         actorRef,
       }}
     >
@@ -56,7 +66,5 @@ export const AuthProvider = ({
 export function useAuthContext() {
   const ctx = use(AuthContext);
   if (!ctx) throw new Error("useAuthContext must be used within AuthProvider");
-  return {
-    auth: ctx.auth,
-  };
+  return ctx;
 }

@@ -11,10 +11,9 @@ import { useProjectContext } from "@/contexts/project-context/project-context";
 export function useProjectResources(
   projectName: string
 ): UseQueryResult<ListAllResourcesResponse, Error> {
-  const context = createK8sContext();
   const { send } = useProjectContext();
   const queryResult = useQuery(
-    getProjectResourcesOptions(context, projectName)
+    getProjectResourcesOptions(createK8sContext(), projectName)
   );
 
   useEffect(() => {
