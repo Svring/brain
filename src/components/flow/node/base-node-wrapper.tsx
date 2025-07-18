@@ -10,25 +10,36 @@ import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useRef, useState, useEffect } from "react";
 import FloatingActionMenu from "@/components/flow/components/floating-action-menu";
-import { Trash2 } from "lucide-react";
+import { Trash2, ArrowLeft } from "lucide-react";
+// import { useChatContext } from "@copilotkit/react-ui";
+import { useProjectResources } from "@/hooks/app/project/use-project-resources";
+import { useProjectContext } from "@/contexts/project-context/project-context";
 
 interface BaseNodeProps {
   children: React.ReactNode;
   target: CustomResourceTarget | BuiltinResourceTarget;
   className?: string;
+  showDefaultMenu?: boolean;
   floatingMenuOptions?: {
     label: string;
     onClick: () => void;
     Icon?: React.ReactNode;
   }[];
+  onShowConnectionMenu?: (show: boolean) => void;
 }
 
 export default function BaseNodeWrapper({
   children,
   target,
   className,
+  showDefaultMenu = true,
   floatingMenuOptions,
+  onShowConnectionMenu,
 }: BaseNodeProps) {
+  // const { setOpen } = useChatContext();
+  const { state } = useProjectContext();
+  const projectName = state.project;
+  const projectResourcesQuery = useProjectResources(projectName);
   const context = createK8sContext();
   const removeFromProjectMutation = useRemoveFromProjectMutation(context);
   const deleteResourceMutation = useDeleteResourceMutation(context);
@@ -37,6 +48,7 @@ export default function BaseNodeWrapper({
   const [isNodeHovered, setIsNodeHovered] = useState(false);
   const [isMenuHovered, setIsMenuHovered] = useState(false);
   const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const [showConnectionMenu, setShowConnectionMenu] = useState(false);
 
   // Timeout reference to control delayed hiding
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -48,6 +60,11 @@ export default function BaseNodeWrapper({
   // Custom hover handlers for menu
   const handleMenuMouseEnter = () => setIsMenuHovered(true);
   const handleMenuMouseLeave = () => setIsMenuHovered(false);
+
+  // Handle node click to open chat sidebar
+  const handleNodeClick = () => {
+    // setOpen(true);
+  };
 
   // Effect to manage menu visibility
   useEffect(() => {
@@ -92,7 +109,49 @@ export default function BaseNodeWrapper({
     },
   ];
 
-  const menuOptions = [...(floatingMenuOptions ?? []), ...defaultMenuOptions];
+  const connectionMenuOptions = [
+    {
+      label: "Back",
+      onClick: () => {
+        setShowConnectionMenu(false);
+        onShowConnectionMenu?.(false);
+      },
+      Icon: <ArrowLeft className="w-4 h-4" />,
+    },
+    // Flatten builtin resources and filter
+    ...Object.values(projectResourcesQuery.data?.builtin || {})
+      .flatMap((resourceList) => resourceList.items || [])
+      .filter(
+        (resource) => resource.kind === "DevBox" || resource.kind === "Deploy"
+      )
+      .map((resource) => ({
+        label: `${resource.kind}: ${resource.metadata.name}`,
+        onClick: () => {
+          // This will be filled in after user provides the connection function
+          console.log(`Connect to ${resource.kind}: ${resource.metadata.name}`);
+        },
+      })),
+    // Flatten custom resources and filter
+    ...Object.values(projectResourcesQuery.data?.custom || {})
+      .flatMap((resourceList) => resourceList.items || [])
+      .filter(
+        (resource) => resource.kind === "DevBox" || resource.kind === "Deploy"
+      )
+      .map((resource) => ({
+        label: `${resource.kind}: ${resource.metadata.name}`,
+        onClick: () => {
+          // This will be filled in after user provides the connection function
+          console.log(`Connect to ${resource.kind}: ${resource.metadata.name}`);
+        },
+      })),
+  ];
+
+  const menuOptions = showConnectionMenu
+    ? connectionMenuOptions
+    : [
+        ...(floatingMenuOptions ?? []),
+        ...(showDefaultMenu ? defaultMenuOptions : []),
+      ];
 
   return (
     <ContextMenu>
@@ -102,6 +161,7 @@ export default function BaseNodeWrapper({
           ref={nodeRef}
           onMouseEnter={handleNodeMouseEnter}
           onMouseLeave={handleNodeMouseLeave}
+          onClick={handleNodeClick}
         >
           <Handle position={Position.Top} type="source" />
           {children}

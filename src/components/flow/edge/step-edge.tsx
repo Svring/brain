@@ -4,8 +4,10 @@ import {
   getSmoothStepPath,
   Position,
 } from "@xyflow/react";
+// import { useChatContext } from "@copilotkit/react-ui";
 
 export default function StepEdge(props: EdgeProps) {
+  // const { setOpen } = useChatContext();
   const { id, sourceX, sourceY, targetX, targetY, markerEnd, style, data } =
     props;
 
@@ -19,6 +21,7 @@ export default function StepEdge(props: EdgeProps) {
   });
 
   const handleClick = (event: React.MouseEvent) => {
+    // setOpen(true);
     if (data?.onClick && typeof data.onClick === "function") {
       data.onClick(event);
     }

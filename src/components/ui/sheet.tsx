@@ -42,7 +42,7 @@ const sheetVariants = cva(
           "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom left-4 right-4 bottom-4 border rounded-t-lg",
         left: "data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left top-4 bottom-4 left-4 w-3/4 border rounded-r-lg",
         right:
-          "data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right top-2 bottom-2 right-2 w-3/4 border rounded-lg",
+          "data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right top-0 bottom-0 right-0 w-[40%] rounded-l-lg border-l",
       },
     },
     defaultVariants: {

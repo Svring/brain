@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import BaseNode from "../base-node-wrapper";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import { Link } from "lucide-react";
 
 interface ObjectStorageNodeProps {
   name: string;
@@ -17,9 +19,23 @@ export default function ObjectStorageNode({
   data: ObjectStorageNodeProps;
 }) {
   const { name, policy, target } = data;
+  const [showConnectionMenu, setShowConnectionMenu] = useState(false);
+
+  const floatingMenuOptions = [
+    {
+      label: "Add connection",
+      onClick: () => setShowConnectionMenu(true),
+      Icon: <Link className="w-4 h-4" />,
+    },
+  ];
 
   return (
-    <BaseNode target={target}>
+    <BaseNode 
+      target={target}
+      showDefaultMenu={!showConnectionMenu}
+      floatingMenuOptions={floatingMenuOptions}
+      onShowConnectionMenu={setShowConnectionMenu}
+    >
       <div className="flex h-full flex-col justify-between">
         {/* Name */}
         <div className="flex items-center gap-2 truncate font-medium">

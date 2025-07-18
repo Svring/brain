@@ -18,6 +18,9 @@ import {
   CustomResourceConfig,
 } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 
+import _ from "lodash";
+import { ListAllResourcesResponse } from "../k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
+
 function getUserKubeconfig(): string | undefined {
   const { auth } = useAuthContext();
   return auth?.kubeconfig;
@@ -44,6 +47,124 @@ export function createK8sContext(): K8sApiContext {
     namespace: getCurrentNamespace(),
     kubeconfig: getDecodedKubeconfig(),
   });
+}
+
+/**
+ * Simplified resource annotation interface
+ */
+export interface BrainResourcesSimplified {
+  custom: { kind: string; name: string }[];
+  builtin: { kind: string; name: string }[];
+}
+
+/**
+ * Convert full ListAllResourcesResponse to simplified annotation format
+ */
+export function convertResourcesToAnnotation(
+  resources: ListAllResourcesResponse
+): BrainResourcesSimplified {
+  return {
+    builtin: _.flatMap(resources.builtin, (resourceList) =>
+      _.map(resourceList.items, (item) => ({
+        kind: item.kind!,
+        name: item.metadata.name!,
+      }))
+    ),
+    custom: _.flatMap(resources.custom, (resourceList) =>
+      _.map(resourceList.items, (item) => ({
+        kind: item.kind!,
+        name: item.metadata.name!,
+      }))
+    ),
+  };
+}
+
+/**
+ * Convert simplified annotation format back to full ListAllResourcesResponse
+ * This function fetches all resources of each kind that has the project label
+ */
+export async function convertAnnotationToResources(
+  annotation: BrainResourcesSimplified,
+  context: K8sApiContext,
+  projectName: string
+): Promise<ListAllResourcesResponse> {
+  const { runParallelAction } = await import("next-server-actions-parallel");
+  const { listBuiltinResources, listCustomResources } = await import(
+    "../k8s-api/k8s-api-query"
+  );
+  const { PROJECT_NAME_LABEL_KEY } = await import(
+    "../k8s-constant/k8s-constant-label"
+  );
+
+  const labelSelector = `${PROJECT_NAME_LABEL_KEY}=${projectName}`;
+
+  // Get unique kinds from annotation
+  const builtinKinds = _.uniqBy(annotation.builtin, "kind");
+  const customKinds = _.uniqBy(annotation.custom, "kind");
+
+  // Fetch all builtin resources by kind with project label
+  const builtinPromises = builtinKinds.map(async (resource) => {
+    const resourceKey = Object.keys(BUILTIN_RESOURCES).find(
+      (k) => k.toLowerCase() === resource.kind.toLowerCase()
+    );
+    if (!resourceKey) return [resource.kind.toLowerCase(), { items: [] }];
+    const resourceConfig = BUILTIN_RESOURCES[resourceKey];
+
+    try {
+      const result = await runParallelAction(
+        listBuiltinResources(context, {
+          type: "builtin",
+          resourceType: resourceConfig.resourceType,
+          labelSelector,
+        })
+      );
+      return [resourceKey, result];
+    } catch (error) {
+      console.warn(
+        `Failed to fetch builtin resources of kind ${resource.kind}:`,
+        error
+      );
+      return [resourceKey, { items: [] }];
+    }
+  });
+
+  // Fetch all custom resources by kind with project label
+  const customPromises = customKinds.map(async (resource) => {
+    const resourceKey = Object.keys(CUSTOM_RESOURCES).find(
+      (k) => k.toLowerCase() === resource.kind.toLowerCase()
+    );
+    if (!resourceKey) return [resource.kind.toLowerCase(), { items: [] }];
+    const resourceConfig = CUSTOM_RESOURCES[resourceKey];
+
+    try {
+      const result = await runParallelAction(
+        listCustomResources(context, {
+          type: "custom",
+          group: resourceConfig.group,
+          version: resourceConfig.version,
+          plural: resourceConfig.plural,
+          labelSelector,
+        })
+      );
+      return [resourceKey, result];
+    } catch (error) {
+      console.warn(
+        `Failed to fetch custom resources of kind ${resource.kind}:`,
+        error
+      );
+      return [resourceKey, { items: [] }];
+    }
+  });
+
+  const [builtinResults, customResults] = await Promise.all([
+    Promise.all(builtinPromises),
+    Promise.all(customPromises),
+  ]);
+
+  return {
+    builtin: _.fromPairs(builtinResults),
+    custom: _.fromPairs(customResults),
+  };
 }
 
 /**

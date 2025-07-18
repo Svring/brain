@@ -9,7 +9,7 @@ export function CopilotWindow({ children }: WindowProps) {
       {open && (
         <div className="fixed inset-0 z-50" onClick={() => setOpen(false)}>
           <motion.div
-            className="fixed bottom-20 right-4 bg-background rounded-lg shadow-xl w-sm h-[90vh] overflow-auto border"
+            className="fixed top-0 right-0 w-[40%] h-screen overflow-auto bg-background border-l rounded-l-lg shadow-xl"
             onClick={(e) => e.stopPropagation()}
             initial={{ x: "100%", opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}

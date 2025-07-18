@@ -27,6 +27,12 @@ import {
   DeployDeleteRequestSchema,
   DeployDeleteResponseSchema,
 } from "../schemas/req-res-schemas/req-res-delete-schemas";
+import {
+  DeployCheckReadyRequest,
+  DeployCheckReadyResponse,
+  DeployCheckReadyRequestSchema,
+  DeployCheckReadyResponseSchema,
+} from "../schemas/req-res-schemas/req-res-check-ready-schemas";
 import { generateK8sManifests } from "./deploy-api-utils";
 import https from "https";
 
@@ -98,5 +104,19 @@ export const deleteDeploy = createParallelAction(
       params: { name: validatedRequest.name },
     });
     return DeployDeleteResponseSchema.parse(response.data);
+  }
+);
+
+export const checkReadyDeploy = createParallelAction(
+  async (
+    request: DeployCheckReadyRequest,
+    context: DeployApiContext
+  ): Promise<DeployCheckReadyResponse> => {
+    const validatedRequest = DeployCheckReadyRequestSchema.parse(request);
+    const api = createDeployApi(context);
+    const response = await api.get("/checkReady", {
+      params: { appName: validatedRequest.appName },
+    });
+    return DeployCheckReadyResponseSchema.parse(response.data);
   }
 );

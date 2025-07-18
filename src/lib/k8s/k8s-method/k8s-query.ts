@@ -1,5 +1,6 @@
 "use client";
 
+import { z } from "zod";
 import { queryOptions } from "@tanstack/react-query";
 import { runParallelAction } from "next-server-actions-parallel";
 import {
@@ -16,6 +17,10 @@ import {
 import { ListAllResourcesResponseSchema } from "../k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
 import { BUILTIN_RESOURCES } from "../k8s-constant/k8s-constant-builtin-resource";
 import { CUSTOM_RESOURCES } from "../k8s-constant/k8s-constant-custom-resource";
+import {
+  BrainResourcesSimplified,
+  convertAnnotationToResources,
+} from "./k8s-utils";
 import _ from "lodash";
 
 /**
@@ -229,3 +234,102 @@ export const listAllResourcesOptions = (
     enabled: !!context.namespace && !!context.kubeconfig,
     staleTime: 1000 * 30,
   });
+
+/**
+ * Query options for fetching specific resources based on annotation data
+ * This is an optimized version that only fetches the resources listed in the annotation
+ */
+export const listAnnotationBasedResourcesOptions = (
+  context: K8sApiContext,
+  annotation: BrainResourcesSimplified,
+  projectName: string
+) =>
+  queryOptions({
+    queryKey: [
+      "k8s",
+      "annotation-based-resources",
+      "list",
+      context.namespace,
+      projectName,
+      JSON.stringify(annotation),
+    ],
+    queryFn: async () => {
+      const result = await convertAnnotationToResources(
+        annotation,
+        context,
+        projectName
+      );
+      return result;
+    },
+    enabled:
+      !!context.namespace &&
+      !!context.kubeconfig &&
+      !!annotation &&
+      !!projectName,
+    staleTime: 1000 * 30,
+  });
+
+/**
+ * Query options for getting a secret by name
+ * Secrets are builtin Kubernetes resources
+ */
+export const getSecretOptions = (context: K8sApiContext, secretName: string) =>
+  queryOptions({
+    queryKey: ["k8s", "secret", "get", context.namespace, secretName],
+    queryFn: async () => {
+      const result = await runParallelAction(
+        getBuiltinResource(context, {
+          type: "builtin",
+          resourceType: "secrets",
+          name: secretName,
+        })
+      );
+      return result;
+    },
+    enabled: !!context.namespace && !!context.kubeconfig && !!secretName,
+    staleTime: 1000 * 60, // Cache secrets for 1 minute
+  });
+
+/**
+ * Generate cluster secret name based on cluster name
+ * Convention: {clusterName}-conn-credential
+ */
+export const generateClusterSecretName = (clusterName: string): string => {
+  return `${clusterName}-conn-credential`;
+};
+
+/**
+ * Generate object storage secret name based on object storage name and namespace
+ * Convention: object-storage-key-{namespace}-{objectStorageName}
+ */
+export const generateObjectStorageSecretName = (
+  objectStorageName: string,
+  namespace: string
+): string => {
+  return `object-storage-key-${namespace}-${objectStorageName}`;
+};
+
+/**
+ * Query options for getting a cluster's connection credential secret
+ */
+export const getClusterSecretOptions = (
+  context: K8sApiContext,
+  clusterName: string
+) => {
+  const secretName = generateClusterSecretName(clusterName);
+  return getSecretOptions(context, secretName);
+};
+
+/**
+ * Query options for getting an object storage's key secret
+ */
+export const getObjectStorageSecretOptions = (
+  context: K8sApiContext,
+  objectStorageName: string
+) => {
+  const secretName = generateObjectStorageSecretName(
+    objectStorageName,
+    context.namespace
+  );
+  return getSecretOptions(context, secretName);
+};

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import BaseNode from "../base-node-wrapper";
 import { NodeToolbar, Position } from "@xyflow/react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
@@ -8,6 +9,7 @@ import Image from "next/image";
 import type { ClusterResource } from "@/lib/k8s/schemas/resource-schemas/cluster-schemas";
 import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/cluster/cluster-constant";
 import { CLUSTER_DEFINITION_LABEL_KEY } from "@/lib/sealos/cluster/cluster-constant";
+import { Link } from "lucide-react";
 
 interface ClusterNodeProps {
   name: string;
@@ -18,11 +20,25 @@ interface ClusterNodeProps {
 
 export default function ClusterNode({ data }: { data: ClusterNodeProps }) {
   const { name, state, target, resource } = data;
+  const [showConnectionMenu, setShowConnectionMenu] = useState(false);
   const clusterType =
     resource.metadata.labels?.[CLUSTER_DEFINITION_LABEL_KEY] ?? "";
 
+  const floatingMenuOptions = [
+    {
+      label: "Add connection",
+      onClick: () => setShowConnectionMenu(true),
+      Icon: <Link className="w-4 h-4" />,
+    },
+  ];
+
   return (
-    <BaseNode target={target}>
+    <BaseNode 
+      target={target}
+      showDefaultMenu={!showConnectionMenu}
+      floatingMenuOptions={floatingMenuOptions}
+      onShowConnectionMenu={setShowConnectionMenu}
+    >
       <div className="flex h-full flex-col justify-between">
         {/* Name */}
         <div className="flex items-center gap-2 truncate font-medium">

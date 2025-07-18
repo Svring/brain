@@ -94,9 +94,10 @@ function ProjectFloatingUI() {
 }
 
 function ProjectFlow({ projectName }: { projectName: string }) {
-  const { data: resources, isLoading } = useProjectResources(projectName);
+  const { data, isLoading } = useProjectResources(projectName);
+  console.log("data", data);
 
-  const [nodes, onNodesChange, edges, onEdgesChange] = useFlow(resources);
+  const [nodes, onNodesChange, edges, onEdgesChange] = useFlow(data);
 
   const addToProjectMutation = useAddToProjectMutation(createK8sContext());
 

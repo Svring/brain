@@ -87,8 +87,3 @@ export const getAppPodsOptions = (
     select: (data) => postprocess?.(data) ?? data,
     enabled: !!appName,
   });
-
-export {
-  listDevboxIngressesOptions,
-  listDevboxServicesOptions,
-} from "../devbox-api/devbox-k8s-api";
