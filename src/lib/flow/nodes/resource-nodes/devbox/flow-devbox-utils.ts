@@ -7,5 +7,6 @@ export function convertResourceToNode(resource: AnyKubernetesResource) {
   return {
     name: resource.metadata.name,
     target: convertToResourceTarget(resource, CUSTOM_RESOURCES.devbox),
+    resource, // Pass full resource for additional data access
   };
 }

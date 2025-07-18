@@ -12,11 +12,18 @@ import {
   removeBuiltinResourceMetadata,
   removeCustomResourceMetadata,
   applyInstanceYaml,
+  patchBuiltinResource,
+  patchCustomResource,
 } from "../k8s-api/k8s-api-mutation";
+import {
+  getCustomResource,
+  getBuiltinResource,
+} from "../k8s-api/k8s-api-query";
 import { K8sApiContext } from "../k8s-api/k8s-api-schemas/context-schemas";
 import {
   BuiltinResourceTarget,
   CustomResourceTarget,
+  ResourceTarget,
 } from "../k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { CUSTOM_RESOURCES } from "../k8s-constant/k8s-constant-custom-resource";
 import { invalidateResourceQueries } from "./k8s-utils";
@@ -731,6 +738,152 @@ export function useDeleteAllResourcesByLabelSelectorMutation(
       queryClient.invalidateQueries({
         queryKey: ["k8s"],
       });
+    },
+  });
+}
+
+/**
+ * Environment variable types for Kubernetes resources
+ */
+export interface EnvVarValue {
+  type: "value";
+  key: string;
+  value: string;
+}
+
+export interface EnvVarSecretRef {
+  type: "secretKeyRef";
+  key: string;
+  secretName: string;
+  secretKey: string;
+}
+
+export type EnvVar = EnvVarValue | EnvVarSecretRef;
+
+/**
+ * Mutation for adding environment variables to a Kubernetes resource
+ * Supports both direct values and secret references
+ */
+export function useAddEnvToResourceMutation(context: K8sApiContext) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      target,
+      envVars,
+    }: {
+      target: ResourceTarget;
+      envVars: EnvVar[];
+    }) => {
+      // Get the current resource to patch
+      const currentResource = (await (target.type === "custom"
+        ? runParallelAction(
+            getCustomResource(context, target as CustomResourceTarget)
+          )
+        : runParallelAction(
+            getBuiltinResource(context, target as BuiltinResourceTarget)
+          ))) as any;
+
+      if (!currentResource) {
+        throw new Error("Resource not found");
+      }
+
+      // Find the container spec path based on resource type
+      let containerPath: string;
+      if (currentResource.kind === "Deployment") {
+        containerPath = "/spec/template/spec/containers";
+      } else if (currentResource.kind === "StatefulSet") {
+        containerPath = "/spec/template/spec/containers";
+      } else if (currentResource.kind === "DaemonSet") {
+        containerPath = "/spec/template/spec/containers";
+      } else if (currentResource.kind === "Job") {
+        containerPath = "/spec/template/spec/containers";
+      } else if (currentResource.kind === "CronJob") {
+        containerPath = "/spec/jobTemplate/spec/template/spec/containers";
+      } else {
+        throw new Error(`Unsupported resource type: ${currentResource.kind}`);
+      }
+
+      // Build the patch operations
+      const patchOps: any[] = [];
+
+      // For each environment variable, add it to all containers
+      const containers =
+        currentResource.spec?.template?.spec?.containers ||
+        currentResource.spec?.jobTemplate?.spec?.template?.spec?.containers ||
+        [];
+
+      containers.forEach((container: any, containerIndex: number) => {
+        const envPath = `${containerPath}/${containerIndex}/env`;
+        const currentEnv = container.env || [];
+
+        envVars.forEach((envVar) => {
+          // Check if env var already exists
+          const existingIndex = currentEnv.findIndex(
+            (e: any) => e.name === envVar.key
+          );
+
+          const envVarSpec = {
+            name: envVar.key,
+            ...(envVar.type === "value"
+              ? { value: envVar.value }
+              : {
+                  valueFrom: {
+                    secretKeyRef: {
+                      name: envVar.secretName,
+                      key: envVar.secretKey,
+                    },
+                  },
+                }),
+          };
+
+          if (existingIndex >= 0) {
+            // Replace existing env var
+            patchOps.push({
+              op: "replace",
+              path: `${envPath}/${existingIndex}`,
+              value: envVarSpec,
+            });
+          } else {
+            // Add new env var
+            patchOps.push({
+              op: "add",
+              path: `${envPath}/-`,
+              value: envVarSpec,
+            });
+          }
+        });
+
+        // Ensure env array exists if it doesn't
+        if (!container.env) {
+          patchOps.unshift({
+            op: "add",
+            path: `${containerPath}/${containerIndex}/env`,
+            value: [],
+          });
+        }
+      });
+
+      // Apply the patch
+      const result = await (target.type === "custom"
+        ? runParallelAction(
+            patchCustomResource(
+              context,
+              target as CustomResourceTarget,
+              patchOps
+            )
+          )
+        : runParallelAction(
+            patchBuiltinResource(
+              context,
+              target as BuiltinResourceTarget,
+              patchOps
+            )
+          ));
+
+      return result;
+    },
+    onSuccess: (_data, variables) => {
+      invalidateResourceQueries(queryClient, context, variables.target);
     },
   });
 }

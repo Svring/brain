@@ -558,3 +558,35 @@ export const patchCustomResource = createParallelAction(
     return JSON.parse(JSON.stringify(result));
   }
 );
+
+/**
+ * Patch a builtin resource with arbitrary patch operations.
+ */
+export const patchBuiltinResource = createParallelAction(
+  async (
+    context: K8sApiContext,
+    target: BuiltinResourceTarget,
+    patchBody: Operation[]
+  ) => {
+    const { client, resourceConfig } = await getBuiltinApiClient(
+      context.kubeconfig,
+      target.resourceType
+    );
+
+    if (_.isNil(target.name)) {
+      throw new Error("Resource name is required for patching");
+    }
+
+    const result = await invokeApiMethod<BuiltinResourcePatchResponse>(
+      client,
+      resourceConfig.patchMethod,
+      {
+        namespace: context.namespace,
+        name: target.name,
+        body: patchBody,
+      }
+    );
+
+    return JSON.parse(JSON.stringify(result));
+  }
+);

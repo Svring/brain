@@ -1,18 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import BaseNode from "../base-node-wrapper";
 import { cn } from "@/lib/utils";
 import { checkReadyDeploy } from "@/lib/sealos/deploy/deploy-api/deploy-old-api";
 import { createDeployContext } from "@/lib/sealos/deploy/deploy-utils";
 import { runParallelAction } from "next-server-actions-parallel";
+import type { IngressResource } from "@/lib/k8s/schemas/resource-schemas/ingress-schemas";
 
 interface IngressNodeProps {
   name: string;
   host: string;
   target: BuiltinResourceTarget;
-  appName?: string; // The deploy app name for checkReady API
+  resource: IngressResource; // Full resource for accessing labels and metadata
+  appName?: string; // Optional, extracted from labels
+  devboxName?: string; // Optional, extracted from labels
 }
 
 interface IngressNodeComponentProps {
@@ -30,52 +33,32 @@ export default function IngressNode({
   data,
   className,
 }: IngressNodeComponentProps) {
-  const { host, target, appName } = data;
+  const { host, target, appName, devboxName, resource } = data;
   const [readyStatus, setReadyStatus] = useState<ReadyStatus | null>(null);
   const [isChecking, setIsChecking] = useState(false);
 
-  useEffect(() => {
-    if (!appName) {
-      // Fallback to old host checking if no appName provided
-      checkHostAvailability();
-      const interval = setInterval(checkHostAvailability, 30000);
-      return () => clearInterval(interval);
-    }
+  // Create context at component level and memoize it
+  const deployContext = useMemo(() => {
+    return appName ? createDeployContext() : null;
+  }, [appName]);
 
-    // Use the new checkReady API
+  useEffect(() => {
+    // Only check ready status for apps (not devboxes)
+    if (!appName || !deployContext) return;
+
+    // Use the checkReady API for apps
     checkAppReady();
     const interval = setInterval(checkAppReady, 30000);
     return () => clearInterval(interval);
-  }, [host, appName]);
-
-  const checkHostAvailability = async () => {
-    if (!host) return;
-
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-      await fetch(`http://${host}`, {
-        method: "HEAD",
-        mode: "no-cors",
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-      setReadyStatus({ ready: true, url: `http://${host}` });
-    } catch (error) {
-      setReadyStatus({ ready: false, error: "fetch error" });
-    }
-  };
+  }, [appName, deployContext]);
 
   const checkAppReady = async () => {
-    if (!appName || isChecking) return;
+    if (!appName || !deployContext || isChecking) return;
 
     setIsChecking(true);
     try {
-      const context = createDeployContext();
       const response = await runParallelAction(
-        checkReadyDeploy({ appName }, context)
+        checkReadyDeploy({ appName }, deployContext)
       );
 
       if (response.data && response.data.length > 0) {
@@ -85,6 +68,8 @@ export default function IngressNode({
           url: status.url,
           error: status.error,
         });
+      } else {
+        setReadyStatus({ ready: false, error: "No status data" });
       }
     } catch (error) {
       console.warn("Failed to check app ready status:", error);
@@ -98,7 +83,17 @@ export default function IngressNode({
     if (readyStatus?.url) {
       return readyStatus.url;
     }
-    return host ? `http://${host}` : null;
+    return host ? `https://${host}` : null;
+  };
+
+  const getDisplayText = () => {
+    if (devboxName) {
+      return "Devbox Access";
+    }
+    if (appName) {
+      return "Public Access";
+    }
+    return "External Access";
   };
 
   const displayUrl = getDisplayUrl();
@@ -143,7 +138,7 @@ export default function IngressNode({
               : undefined
           }
         >
-          Public Access
+          {getDisplayText()}
           {isChecking && " (checking...)"}
           {readyStatus?.error && ` (${readyStatus.error})`}
         </span>
