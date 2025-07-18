@@ -6,7 +6,7 @@ import {
   ConnectionLineType,
   ReactFlow,
 } from "@xyflow/react";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useState, useEffect } from "react";
 import { AddResourceTabs } from "@/components/app/project/add-resource/add-resource-tabs";
@@ -30,15 +30,37 @@ import { CopilotSidebarWrapper } from "@/components/ai/copilot-sidebar-wrapper";
 import "@xyflow/react/dist/style.css";
 import { Droppable } from "@/components/flow/dnd/droppable";
 import { DragEndEvent } from "@dnd-kit/core";
-import { useAddToProjectMutation } from "@/lib/app/project/project-method/project-mutation";
+import {
+  useAddToProjectMutation,
+  useRemoveProjectAnnotationMutation,
+} from "@/lib/app/project/project-method/project-mutation";
 import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
 import { toast } from "sonner";
 import _ from "lodash";
 import { useProjectContext } from "@/contexts/project-context/project-context";
 
-function ProjectFloatingUI() {
+function ProjectFloatingUI({ projectName }: { projectName: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const removeProjectAnnotationMutation = useRemoveProjectAnnotationMutation(
+    createK8sContext()
+  );
+
+  const handleRefresh = async () => {
+    if (isRefreshing) return;
+
+    setIsRefreshing(true);
+    try {
+      await removeProjectAnnotationMutation.mutateAsync({ projectName });
+      toast.success("Project resources refreshed successfully");
+    } catch (error) {
+      toast.error("Failed to refresh project resources");
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   return (
     <>
@@ -61,6 +83,14 @@ function ProjectFloatingUI() {
         <MenuBar
           activeIndex={null}
           items={[
+            {
+              icon: isRefreshing
+                ? () => <RefreshCw className="animate-spin" />
+                : RefreshCw,
+              label: "Refresh",
+              onClick: handleRefresh,
+              isToggle: false,
+            },
             {
               icon: Plus,
               label: "Add New",
@@ -185,7 +215,7 @@ export default function Page({
   return (
     <DndProvider>
       <div className="relative h-screen w-full">
-        <ProjectFloatingUI />
+        <ProjectFloatingUI projectName={projectName} />
         <ProjectFlow projectName={projectName} />
         <CopilotSidebarWrapper />
       </div>

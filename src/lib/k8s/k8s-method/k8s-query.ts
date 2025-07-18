@@ -280,14 +280,13 @@ export const getSecretOptions = (context: K8sApiContext, secretName: string) =>
       const result = await runParallelAction(
         getBuiltinResource(context, {
           type: "builtin",
-          resourceType: "secrets",
+          resourceType: "secret",
           name: secretName,
         })
       );
       return result;
     },
     enabled: !!context.namespace && !!context.kubeconfig && !!secretName,
-    staleTime: 1000 * 60, // Cache secrets for 1 minute
   });
 
 /**
@@ -306,7 +305,7 @@ export const generateObjectStorageSecretName = (
   objectStorageName: string,
   namespace: string
 ): string => {
-  return `object-storage-key-${namespace}-${objectStorageName}`;
+  return `object-storage-key-${namespace.slice(3)}-${objectStorageName}`;
 };
 
 /**

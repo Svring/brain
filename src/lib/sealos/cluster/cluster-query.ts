@@ -11,12 +11,9 @@ import type { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-sc
  * @param context - Optional K8s context, will create one if not provided
  * @returns Query result containing the cluster secret
  */
-export function useClusterSecret(
-  clusterName: string,
-  context?: K8sApiContext
-) {
+export function useClusterSecret(clusterName: string, context?: K8sApiContext) {
   const k8sContext = context || createK8sContext();
-  
+
   return useQuery({
     ...getClusterSecretOptions(k8sContext, clusterName),
     enabled: !!clusterName && !!k8sContext.namespace && !!k8sContext.kubeconfig,

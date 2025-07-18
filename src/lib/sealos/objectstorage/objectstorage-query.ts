@@ -16,10 +16,11 @@ export function useObjectStorageSecret(
   context?: K8sApiContext
 ) {
   const k8sContext = context || createK8sContext();
-  
+
   return useQuery({
     ...getObjectStorageSecretOptions(k8sContext, objectStorageName),
-    enabled: !!objectStorageName && !!k8sContext.namespace && !!k8sContext.kubeconfig,
+    enabled:
+      !!objectStorageName && !!k8sContext.namespace && !!k8sContext.kubeconfig,
   });
 }
 

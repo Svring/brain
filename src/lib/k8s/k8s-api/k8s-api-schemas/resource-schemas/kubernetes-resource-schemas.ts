@@ -33,6 +33,7 @@ export const K8sResourceSchema = z.object({
   metadata: K8sMetadataSchema,
   spec: z.record(z.unknown()).optional(),
   status: z.record(z.unknown()).optional(),
+  data: z.record(z.unknown()).optional(),
 });
 
 // Type exports

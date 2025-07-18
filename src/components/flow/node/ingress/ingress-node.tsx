@@ -108,6 +108,7 @@ export default function IngressNode({
         isReady === false && "border-2 border-red-500",
         isChecking && "opacity-70"
       )}
+      showDefaultMenu={false}
     >
       <div className="flex items-center justify-center w-full h-full px-2">
         <span

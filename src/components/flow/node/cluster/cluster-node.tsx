@@ -10,6 +10,8 @@ import type { ClusterResource } from "@/lib/k8s/schemas/resource-schemas/cluster
 import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/cluster/cluster-constant";
 import { CLUSTER_DEFINITION_LABEL_KEY } from "@/lib/sealos/cluster/cluster-constant";
 import { Link } from "lucide-react";
+import { useClusterSecret } from "@/lib/sealos/cluster/cluster-query";
+import { extractClusterCredentials } from "@/lib/sealos/cluster/cluster-utils";
 
 interface ClusterNodeProps {
   name: string;
@@ -24,20 +26,29 @@ export default function ClusterNode({ data }: { data: ClusterNodeProps }) {
   const clusterType =
     resource.metadata.labels?.[CLUSTER_DEFINITION_LABEL_KEY] ?? "";
 
+  // Fetch cluster secret
+  const clusterSecretQuery = useClusterSecret(name);
+
+  const handleAddConnection = () => {
+    setShowConnectionMenu(true);
+  };
+
   const floatingMenuOptions = [
     {
       label: "Add connection",
-      onClick: () => setShowConnectionMenu(true),
+      onClick: handleAddConnection,
       Icon: <Link className="w-4 h-4" />,
     },
   ];
 
   return (
-    <BaseNode 
+    <BaseNode
       target={target}
       showDefaultMenu={!showConnectionMenu}
       floatingMenuOptions={floatingMenuOptions}
       onShowConnectionMenu={setShowConnectionMenu}
+      showConnectionMenu={showConnectionMenu}
+      clusterName={name}
     >
       <div className="flex h-full flex-col justify-between">
         {/* Name */}
