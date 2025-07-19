@@ -3,7 +3,7 @@ import { Nunito } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import type React from "react";
 import Login from "@/components/app/auth/login";
-import { AIProvider } from "@/components/app/provider/ai-provider";
+import { CopilotProvider } from "@/components/app/provider/copilot-provider";
 import { QueryProvider } from "@/components/app/provider/query-provider";
 import AppSidebar from "@/components/app/sidebar/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -59,7 +59,7 @@ export default async function RootLayout({
           enableSystem
         >
           <AuthProvider payloadUser={payloadUser}>
-            <AIProvider>
+            <CopilotProvider>
               <QueryProvider>
                 <ProjectProvider>
                   <SidebarProvider defaultOpen={false}>
@@ -68,7 +68,7 @@ export default async function RootLayout({
                   </SidebarProvider>
                 </ProjectProvider>
               </QueryProvider>
-            </AIProvider>
+            </CopilotProvider>
           </AuthProvider>
           <Toaster />
         </ThemeProvider>

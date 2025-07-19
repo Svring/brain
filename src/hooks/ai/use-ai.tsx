@@ -1,13 +1,13 @@
 "use client";
 
 import { useCoAgent, useCoAgentStateRender } from "@copilotkit/react-core";
-import type { AIState } from "@/components/app/provider/ai-provider";
+import type { AiState } from "@/contexts/ai-context/ai-machine";
 import { useAuthContext } from "@/contexts/auth-context/auth-context";
 
 export default function useAI() {
   const { auth } = useAuthContext();
 
-  useCoAgentStateRender<AIState>({
+  useCoAgentStateRender<AiState>({
     name: "ai",
     render: ({ state }) => (
       <div style={{ fontSize: 12, fontFamily: "monospace", padding: 8 }}>
@@ -43,7 +43,7 @@ export default function useAI() {
     ),
   });
 
-  return useCoAgent<AIState>({
+  return useCoAgent<AiState>({
     name: "ai",
     initialState: {
       base_url: auth?.baseUrl,

@@ -31,6 +31,16 @@ const nextConfig = {
 
     return config;
   },
+  experimental: {
+    // Forward browser logs to the terminal for easier debugging
+    browserDebugInfoInTerminal: true,
+ 
+    // Activate new client-side router improvements
+    clientSegmentCache: true,
+ 
+    // Explore route composition and segment overrides via DevTools
+    devtoolSegmentExplorer: true,
+  },
 };
 
 export default withPayload(nextConfig);

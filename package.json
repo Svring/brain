@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "next build --turbopack",
     "start": "next start",
     "lint": "next lint"
   },
@@ -79,7 +79,7 @@
     "lucide-react": "^0.454.0",
     "motion": "^12.23.0",
     "nanoid": "^5.1.5",
-    "next": "15.2.4",
+    "next": "^15.4.2",
     "next-server-actions-parallel": "^1.2.2",
     "next-themes": "latest",
     "payload": "3.41.0",

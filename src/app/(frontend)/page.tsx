@@ -16,8 +16,8 @@ import {
 import useProjects from "@/hooks/project/use-projects";
 import { TextShimmer } from "@/components/project/components/text-shimmer";
 import { useDisclosure } from "@reactuses/core";
-import { CopilotSidebarWrapper } from "@/components/ai/copilot-sidebar-wrapper";
 import CreateProject from "@/components/project/create-project/create-project";
+import AiCoin from "@/components/ai/headless/ai-coin";
 
 export default function Page() {
   const { isOpen, onClose, onOpenChange } = useDisclosure();
@@ -129,7 +129,8 @@ export default function Page() {
           )}
         </div>
       </div>
-      <CopilotSidebarWrapper />
+
+      <AiCoin />
     </div>
   );
 }

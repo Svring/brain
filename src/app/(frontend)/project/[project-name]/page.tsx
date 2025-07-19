@@ -25,7 +25,6 @@ import { useFlow } from "@/hooks/flow/use-flow";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { DndProvider } from "@/components/flow/dnd/dnd-provider";
 import { TextShimmer } from "@/components/project/components/text-shimmer";
-import { CopilotSidebarWrapper } from "@/components/ai/copilot-sidebar-wrapper";
 
 import "@xyflow/react/dist/style.css";
 import { Droppable } from "@/components/flow/dnd/droppable";
@@ -217,7 +216,6 @@ export default function Page({
       <div className="relative h-screen w-full">
         <ProjectFloatingUI projectName={projectName} />
         <ProjectFlow projectName={projectName} />
-        <CopilotSidebarWrapper />
       </div>
     </DndProvider>
   );

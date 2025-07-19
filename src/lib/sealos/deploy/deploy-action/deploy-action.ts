@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { useCreateDeployMutation } from "../deploy-mutation";
+import { useCreateDeployMutation } from "../deploy-method/deploy-mutation";
 import { generateDeployName } from "../deploy-utils";
 import type { DeployApiContext } from "../schemas/deploy-api-context-schemas";
 import type { DeployCreateRequest } from "../schemas/req-res-schemas/req-res-create-schemas";

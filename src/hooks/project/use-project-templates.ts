@@ -6,7 +6,7 @@ import { useAuthContext } from "@/contexts/auth-context/auth-context";
 import { InstanceApiContextSchema } from "@/lib/sealos/template/schemas/template-api-context-schemas";
 import { listTemplatesOptions } from "@/lib/sealos/template/template-method/template-query";
 
-export function useTemplates() {
+export function useProjectTemplates() {
   const { auth } = useAuthContext();
 
   // Create instance API context from auth data

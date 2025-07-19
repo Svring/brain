@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { useTemplates } from "@/hooks/project/use-templates";
+import { useProjectTemplates } from "@/hooks/project/use-project-templates";
 import { useToast } from "@/hooks/general/use-toast";
 import { useCreateProjectMutation } from "@/lib/project/project-method/project-mutation";
 import {
@@ -41,7 +41,7 @@ export default function CreateProject({ onClose }: CreateProjectProps) {
 
   const { auth } = useAuthContext();
   const { toast } = useToast();
-  const { data: templatesResponse, isLoading, error } = useTemplates();
+  const { data: templatesResponse, isLoading, error } = useProjectTemplates();
   const templates =
     (templatesResponse as ListTemplateResponse)?.data?.templates ?? [];
 
