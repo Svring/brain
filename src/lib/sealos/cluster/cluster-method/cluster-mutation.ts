@@ -7,24 +7,24 @@ import {
   startCluster,
   pauseCluster,
   deleteCluster,
-} from "./cluster-old-api";
-import type { ClusterApiContext } from "./schemas/cluster-api-context-schemas";
+} from "../cluster-api/cluster-old-api";
+import type { ClusterApiContext } from "../schemas/cluster-api-context-schemas";
 import type {
   ClusterCreateRequest,
   ClusterCreateResponse,
-} from "./schemas/req-res-schemas/req-res-create-schemas";
+} from "../schemas/req-res-schemas/req-res-create-schemas";
 import type {
   ClusterStartRequest,
   ClusterStartResponse,
-} from "./schemas/req-res-schemas/req-res-start-schemas";
+} from "../schemas/req-res-schemas/req-res-start-schemas";
 import type {
   ClusterPauseRequest,
   ClusterPauseResponse,
-} from "./schemas/req-res-schemas/req-res-pause-schemas";
+} from "../schemas/req-res-schemas/req-res-pause-schemas";
 import type {
   ClusterDeleteRequest,
   ClusterDeleteResponse,
-} from "./schemas/req-res-schemas/req-res-delete-schemas";
+} from "../schemas/req-res-schemas/req-res-delete-schemas";
 
 export function useCreateClusterMutation(context: ClusterApiContext) {
   const queryClient = useQueryClient();

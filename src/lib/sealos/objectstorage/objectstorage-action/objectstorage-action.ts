@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { useCreateObjectStorageMutation } from "../objectstorage-mutation";
+import { useCreateObjectStorageMutation } from "../objectstorage-method/objectstorage-mutation";
 import { generateObjectStorageName } from "../objectstorage-utils";
 import type { ObjectStorageApiContext } from "../schemas/objectstorage-api-context-schemas";
 import type { ObjectStorageCreateRequest } from "../schemas/req-res-schemas/req-res-create-schemas";

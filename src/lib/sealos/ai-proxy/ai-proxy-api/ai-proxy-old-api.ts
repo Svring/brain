@@ -7,19 +7,19 @@ import {
   AiProxyCreateTokenResponseSchema,
   AiProxyCreateTokenRequest,
   AiProxyCreateTokenResponse,
-} from "./schemas/req-res-schemas/req-res-create-schemas";
+} from "../schemas/req-res-schemas/req-res-create-schemas";
 import {
   AiProxyTokenListResponseSchema,
   AiProxyTokenListResponse,
-} from "./schemas/req-res-schemas/req-res-list-schemas";
-import { AiProxyApiContext } from "./schemas/ai-proxy-api-context";
+} from "../schemas/req-res-schemas/req-res-list-schemas";
+import { AiProxyApiContext } from "../schemas/ai-proxy-api-context";
 import https from "https";
 import {
   AiProxyDeleteTokenRequestSchema,
   AiProxyDeleteTokenResponseSchema,
   AiProxyDeleteTokenRequest,
   AiProxyDeleteTokenResponse,
-} from "./schemas/req-res-schemas/req-res-delete-schemas";
+} from "../schemas/req-res-schemas/req-res-delete-schemas";
 
 export async function createAiProxyApi(
   context: AiProxyApiContext

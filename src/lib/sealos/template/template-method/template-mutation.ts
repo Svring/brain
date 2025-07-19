@@ -2,9 +2,9 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { runParallelAction } from "next-server-actions-parallel";
-import type { InstanceApiContext } from "./schemas/template-api-context-schemas";
-import type { CreateInstanceRequest } from "./schemas/template-create-instance-schemas";
-import { createInstance } from "./template-old-api";
+import type { InstanceApiContext } from "../schemas/template-api-context-schemas";
+import type { CreateInstanceRequest } from "../schemas/template-create-instance-schemas";
+import { createInstance } from "../template-api/template-old-api";
 
 export function useCreateInstanceMutation(context: InstanceApiContext) {
   const queryClient = useQueryClient();

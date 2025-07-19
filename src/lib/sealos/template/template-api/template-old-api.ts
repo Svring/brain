@@ -6,17 +6,17 @@ import type {
   InstanceApiContext,
   ListTemplateResponse,
   TemplateSourceResponse,
-} from "./schemas/template-api-context-schemas";
+} from "../schemas/template-api-context-schemas";
 import {
   ListTemplateResponseSchema,
   TemplateSourceResponseSchema,
-} from "./schemas/template-api-context-schemas";
+} from "../schemas/template-api-context-schemas";
 import {
   type CreateInstanceRequest,
   CreateInstanceRequestSchema,
   type CreateInstanceResponse,
   CreateInstanceResponseSchema,
-} from "./schemas/template-create-instance-schemas";
+} from "../schemas/template-create-instance-schemas";
 import https from "https";
 
 function createApi(context: InstanceApiContext) {

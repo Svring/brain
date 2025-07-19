@@ -31,3 +31,6 @@ next-env.d.ts
 biome.jsonc
 
 .dockerignore
+
+.qodo
+.gitignore

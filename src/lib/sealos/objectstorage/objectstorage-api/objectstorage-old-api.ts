@@ -1,20 +1,20 @@
 "use server";
 
 import axios from "axios";
-import { ObjectStorageApiContext } from "./schemas/objectstorage-api-context-schemas";
+import { ObjectStorageApiContext } from "../schemas/objectstorage-api-context-schemas";
 import { createParallelAction } from "next-server-actions-parallel";
 import {
   ObjectStorageCreateRequest,
   ObjectStorageCreateResponse,
   ObjectStorageCreateRequestSchema,
   ObjectStorageCreateResponseSchema,
-} from "./schemas/req-res-schemas/req-res-create-schemas";
+} from "../schemas/req-res-schemas/req-res-create-schemas";
 import {
   ObjectStorageDeleteRequest,
   ObjectStorageDeleteResponse,
   ObjectStorageDeleteRequestSchema,
   ObjectStorageDeleteResponseSchema,
-} from "./schemas/req-res-schemas/req-res-delete-schemas";
+} from "../schemas/req-res-schemas/req-res-delete-schemas";
 import https from "https";
 
 function createObjectStorageApi(context: ObjectStorageApiContext) {

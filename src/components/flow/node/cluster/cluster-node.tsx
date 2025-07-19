@@ -10,7 +10,7 @@ import type { ClusterResource } from "@/lib/k8s/schemas/resource-schemas/cluster
 import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/cluster/cluster-constant";
 import { CLUSTER_DEFINITION_LABEL_KEY } from "@/lib/sealos/cluster/cluster-constant";
 import { Link } from "lucide-react";
-import { useClusterSecret } from "@/lib/sealos/cluster/cluster-query";
+import { useClusterSecret } from "@/lib/sealos/cluster/cluster-method/cluster-query";
 import { extractClusterCredentials } from "@/lib/sealos/cluster/cluster-utils";
 
 interface ClusterNodeProps {

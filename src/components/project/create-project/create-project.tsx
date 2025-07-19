@@ -24,7 +24,7 @@ import type {
   ListTemplateResponse,
   TemplateResource,
 } from "@/lib/sealos/template/schemas/template-api-context-schemas";
-import { useCreateInstanceMutation } from "@/lib/sealos/template/template-mutation";
+import { useCreateInstanceMutation } from "@/lib/sealos/template/template-method/template-mutation";
 import { TemplateCard } from "./template-card";
 import { TemplateDetails } from "./template-details";
 import { useAuthContext } from "@/contexts/auth-context/auth-context";

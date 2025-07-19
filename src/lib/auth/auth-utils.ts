@@ -14,7 +14,7 @@ import type { User } from "@/payload-types";
 import {
   getAiProxyTokens,
   createAiProxyToken,
-} from "@/lib/sealos/ai-proxy/ai-proxy-old-api";
+} from "@/lib/sealos/ai-proxy/ai-proxy-api/ai-proxy-old-api";
 import type { AiProxyApiContext } from "@/lib/sealos/ai-proxy/schemas/ai-proxy-api-context";
 import { runParallelAction } from "next-server-actions-parallel";
 

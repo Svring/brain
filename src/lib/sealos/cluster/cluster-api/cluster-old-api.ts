@@ -2,31 +2,31 @@
 
 import axios from "axios";
 import { createParallelAction } from "next-server-actions-parallel";
-import { ClusterApiContext } from "./schemas/cluster-api-context-schemas";
+import { ClusterApiContext } from "../schemas/cluster-api-context-schemas";
 import {
   ClusterCreateRequest,
   ClusterCreateRequestSchema,
   ClusterCreateResponse,
   ClusterCreateResponseSchema,
-} from "./schemas/req-res-schemas/req-res-create-schemas";
+} from "../schemas/req-res-schemas/req-res-create-schemas";
 import {
   ClusterStartRequest,
   ClusterStartRequestSchema,
   ClusterStartResponse,
   ClusterStartResponseSchema,
-} from "./schemas/req-res-schemas/req-res-start-schemas";
+} from "../schemas/req-res-schemas/req-res-start-schemas";
 import {
   ClusterPauseRequest,
   ClusterPauseRequestSchema,
   ClusterPauseResponse,
   ClusterPauseResponseSchema,
-} from "./schemas/req-res-schemas/req-res-pause-schemas";
+} from "../schemas/req-res-schemas/req-res-pause-schemas";
 import {
   ClusterDeleteRequest,
   ClusterDeleteRequestSchema,
   ClusterDeleteResponse,
   ClusterDeleteResponseSchema,
-} from "./schemas/req-res-schemas/req-res-delete-schemas";
+} from "../schemas/req-res-schemas/req-res-delete-schemas";
 import https from "https";
 
 // Helper to create axios instance per request

@@ -6,8 +6,11 @@ import type {
   InstanceApiContext,
   ListTemplateResponse,
   TemplateSourceResponse,
-} from "./schemas/template-api-context-schemas";
-import { getTemplateSource, listTemplates } from "./template-old-api";
+} from "../schemas/template-api-context-schemas";
+import {
+  getTemplateSource,
+  listTemplates,
+} from "../template-api/template-old-api";
 
 export const listTemplatesOptions = (
   context: InstanceApiContext,

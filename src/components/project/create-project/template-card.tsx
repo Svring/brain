@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuthContext } from "@/contexts/auth-context/auth-context";
 import { useToast } from "@/hooks/general/use-toast";
 import type { TemplateResource } from "@/lib/sealos/template/schemas/template-api-context-schemas";
-import { useCreateInstanceMutation } from "@/lib/sealos/template/template-mutation";
+import { useCreateInstanceMutation } from "@/lib/sealos/template/template-method/template-mutation";
 import { TemplateInputDialog } from "./template-input-dialog";
 
 export type TemplateCardProps = {

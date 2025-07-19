@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { useCreateClusterMutation } from "../cluster-mutation";
+import { useCreateClusterMutation } from "../cluster-method/cluster-mutation";
 import { generateClusterName } from "../cluster-utils";
 import type { ClusterApiContext } from "../schemas/cluster-api-context-schemas";
 import type {

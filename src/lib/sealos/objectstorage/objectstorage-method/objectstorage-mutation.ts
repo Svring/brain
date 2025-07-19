@@ -5,10 +5,10 @@ import { runParallelAction } from "next-server-actions-parallel";
 import {
   createObjectStorage,
   deleteObjectStorage,
-} from "./objectstorage-old-api";
-import type { ObjectStorageApiContext } from "./schemas/objectstorage-api-context-schemas";
-import type { ObjectStorageCreateRequest } from "./schemas/req-res-schemas/req-res-create-schemas";
-import type { ObjectStorageDeleteRequest } from "./schemas/req-res-schemas/req-res-delete-schemas";
+} from "../objectstorage-api/objectstorage-old-api";
+import type { ObjectStorageApiContext } from "../schemas/objectstorage-api-context-schemas";
+import type { ObjectStorageCreateRequest } from "../schemas/req-res-schemas/req-res-create-schemas";
+import type { ObjectStorageDeleteRequest } from "../schemas/req-res-schemas/req-res-delete-schemas";
 
 export function useCreateObjectStorageMutation(
   context: ObjectStorageApiContext

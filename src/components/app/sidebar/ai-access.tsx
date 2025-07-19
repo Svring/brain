@@ -25,8 +25,8 @@ import { Label } from "@/components/ui/label";
 import {
   useCreateAiProxyTokenMutation,
   useDeleteAiProxyTokenMutation,
-} from "@/lib/sealos/ai-proxy/ai-proxy-mutation";
-import { listAiProxyTokensOptions } from "@/lib/sealos/ai-proxy/ai-proxy-query";
+} from "@/lib/sealos/ai-proxy/ai-proxy-method/ai-proxy-mutation";
+import { listAiProxyTokensOptions } from "@/lib/sealos/ai-proxy/ai-proxy-method/ai-proxy-query";
 import { createAiProxyContext } from "@/lib/sealos/ai-proxy/ai-proxy-utils";
 import { useQuery } from "@tanstack/react-query";
 
@@ -59,9 +59,11 @@ export default function AIAccess() {
   };
 
   // Check if brain token is available and active
-  const brainToken = tokens?.data?.tokens?.find((token: any) => token.name === 'brain');
+  const brainToken = tokens?.data?.tokens?.find(
+    (token: any) => token.name === "brain"
+  );
   const isBrainActive = auth?.apiKey === brainToken?.key;
-  
+
   // Determine current auth mode based on active credentials
   useEffect(() => {
     if (isBrainActive) {
@@ -162,9 +164,12 @@ export default function AIAccess() {
               Choose your authentication method.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
-            <RadioGroup value={authMode} onValueChange={(value: "brain" | "custom") => setAuthMode(value)}>
+            <RadioGroup
+              value={authMode}
+              onValueChange={(value: "brain" | "custom") => setAuthMode(value)}
+            >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="brain" id="brain" />
                 <Label htmlFor="brain">Use Brain Token</Label>
@@ -206,7 +211,9 @@ export default function AIAccess() {
                       disabled={createTokenMutation.isPending}
                       className="w-full"
                     >
-                      {createTokenMutation.isPending ? "Creating..." : "Create Brain Token"}
+                      {createTokenMutation.isPending
+                        ? "Creating..."
+                        : "Create Brain Token"}
                     </Button>
                   </div>
                 )}

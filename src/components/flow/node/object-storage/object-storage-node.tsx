@@ -6,7 +6,7 @@ import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { Link } from "lucide-react";
-import { useObjectStorageSecret } from "@/lib/sealos/objectstorage/objectstorage-query";
+import { useObjectStorageSecret } from "@/lib/sealos/objectstorage/objectstorage-method/objectstorage-query";
 import { extractObjectStorageCredentials } from "@/lib/sealos/objectstorage/objectstorage-utils";
 
 interface ObjectStorageNodeProps {
