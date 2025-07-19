@@ -201,7 +201,7 @@ export function useListDevboxesAction(
   context: DevboxApiContext,
   postprocess?: (data: any) => unknown
 ) {
-  return useQuery(listDevboxOptions(context, postprocess));
+  return useQuery(listDevboxOptions(context, postprocess)());
 }
 
 /**
@@ -212,7 +212,7 @@ export function useGetDevboxAction(
   context: DevboxApiContext,
   postprocess?: (data: any) => unknown
 ) {
-  return useQuery(getDevboxOptions(devboxName, context, postprocess));
+  return useQuery(getDevboxOptions(context, postprocess)(devboxName));
 }
 
 /**
@@ -223,7 +223,7 @@ export function useGetDevboxReleasesAction(
   context: DevboxApiContext,
   postprocess?: (data: any) => unknown
 ) {
-  return useQuery(getDevboxReleasesOptions(devboxName, context, postprocess));
+  return useQuery(getDevboxReleasesOptions(context, postprocess)(devboxName));
 }
 
 /**
@@ -233,7 +233,7 @@ export function useListAppsAction(
   context: DevboxApiContext,
   postprocess?: (data: any) => unknown
 ) {
-  return useQuery(listAppsOptions(context, postprocess));
+  return useQuery(listAppsOptions(context, postprocess)());
 }
 
 /**
@@ -244,7 +244,7 @@ export function useGetAppAction(
   context: DevboxApiContext,
   postprocess?: (data: any) => unknown
 ) {
-  return useQuery(getAppOptions(appName, context, postprocess));
+  return useQuery(getAppOptions(context, postprocess)(appName));
 }
 
 /**
@@ -255,5 +255,5 @@ export function useGetAppPodsAction(
   context: DevboxApiContext,
   postprocess?: (data: any) => unknown
 ) {
-  return useQuery(getAppPodsOptions(appName, context, postprocess));
+  return useQuery(getAppPodsOptions(context, postprocess)(appName));
 }

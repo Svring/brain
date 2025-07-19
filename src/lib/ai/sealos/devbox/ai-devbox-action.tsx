@@ -1,25 +1,48 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { listDevboxOptions } from "@/lib/sealos/devbox/devbox-method/devbox-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  listDevboxOptions,
+  getDevboxOptions,
+} from "@/lib/sealos/devbox/devbox-method/devbox-query";
 import { useCopilotAction } from "@copilotkit/react-core";
 import { createDevboxContext } from "@/lib/sealos/devbox/devbox-utils";
-import { DevboxListCard } from "@/components/ai/action-cards/devbox-cards";
 
 export const listDevboxAction = () => {
   const context = createDevboxContext();
-  const { data } = useQuery(listDevboxOptions(context));
+  const { data } = useQuery(listDevboxOptions(context)());
 
   useCopilotAction({
     name: "listDevbox",
     description: "Get the list of devboxes",
     handler: () => data,
-    render: ({ status, result }) => {
-      return <DevboxListCard devboxList={result} />;
+  });
+};
+
+export const getDevboxAction = () => {
+  const context = createDevboxContext();
+  const queryClient = useQueryClient();
+  const getDevboxQueryOptions = getDevboxOptions(context);
+
+  useCopilotAction({
+    name: "getDevbox",
+    description: "Get the devbox",
+    parameters: [
+      {
+        name: "devboxName",
+        type: "string",
+        description:
+          "The name of the devbox to get. Can be a single devbox name or array of devbox names.",
+        required: true,
+      },
+    ],
+    handler: async ({ devboxName }) => {
+      return await queryClient.fetchQuery(getDevboxQueryOptions(devboxName));
     },
   });
 };
 
 export const activateDevboxActions = () => {
   listDevboxAction();
+  getDevboxAction();
 };

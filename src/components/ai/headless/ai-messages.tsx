@@ -1,11 +1,12 @@
-"use client";
+'use client';
 
-import { useCopilotChat } from "@copilotkit/react-core";
-import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Bot, User, Loader2, CheckCircle, AlertCircle } from "lucide-react";
-import { StateCard } from "../state-card";
-import { useAiContext } from "@/contexts/ai-context/ai-context";
+import { useCopilotChat } from '@copilotkit/react-core';
+import { cn } from '@/lib/utils';
+import { Bot, Loader2 } from 'lucide-react';
+import { StateCard } from '../state-card';
+import { useAiContext } from '@/contexts/ai-context/ai-context';
+import ReactJson from 'react-json-view';
+import { useMemo } from 'react';
 
 interface AiMessagesProps {
   className?: string;
@@ -23,34 +24,18 @@ function RenderTextMessage({
   isCurrentMessage,
   inProgress,
 }: MessageRendererProps) {
-  const isUser = message.role === "user";
+  const isUser = message.role === 'user';
   const isLoading = isCurrentMessage && inProgress && !isUser;
 
   return (
-    <div
-      className={cn(
-        "flex gap-3 max-w-[85%]",
-        isUser ? "ml-auto flex-row-reverse" : "mr-auto"
-      )}
-    >
-      <Avatar className="w-8 h-8 flex-shrink-0">
-        <AvatarFallback
-          className={cn(
-            "text-xs",
-            isUser ? "bg-primary text-primary-foreground" : "bg-muted"
-          )}
-        >
-          {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
-        </AvatarFallback>
-      </Avatar>
-
+    <div className={cn('max-w-[85%]', isUser ? 'ml-auto' : 'mr-auto')}>
       <div
         className={cn(
-          "rounded-lg px-4 py-2 text-sm break-words",
+          'rounded-lg px-4 py-2 text-sm break-words',
           isUser
-            ? "bg-primary text-primary-foreground"
-            : "bg-muted text-muted-foreground",
-          isLoading && "animate-pulse"
+            ? 'bg-primary text-primary-foreground'
+            : 'bg-muted text-foreground',
+          isLoading && 'animate-pulse'
         )}
       >
         <div className="whitespace-pre-wrap">{message.content}</div>
@@ -74,17 +59,11 @@ function RenderActionExecutionMessage({
   const isLoading = isCurrentMessage && inProgress;
 
   return (
-    <div className="flex gap-3 max-w-[85%] mr-auto">
-      <Avatar className="w-8 h-8 flex-shrink-0">
-        <AvatarFallback className="bg-blue-100 text-blue-600">
-          <Loader2 className="w-4 h-4" />
-        </AvatarFallback>
-      </Avatar>
-
+    <div className="max-w-[85%] mr-auto">
       <div className="rounded-lg px-4 py-2 text-sm bg-blue-50 text-blue-800 border border-blue-200">
         <div className="font-medium mb-1">Executing Action</div>
         <div className="text-xs opacity-75">
-          {message.name || "Running action..."}
+          {message.name || 'Running action...'}
         </div>
 
         {isLoading && (
@@ -100,38 +79,47 @@ function RenderActionExecutionMessage({
 
 function RenderResultMessage({ message }: MessageRendererProps) {
   const isSuccess = !message.error;
+  const resultData = message.result || message.error;
+
+  const dataToRender = useMemo(() => {
+    if (resultData === null || typeof resultData === 'undefined') {
+      return { result: 'No result' };
+    }
+    if (typeof resultData === 'string') {
+      try {
+        return JSON.parse(resultData);
+      } catch (e) {
+        return { result: resultData };
+      }
+    }
+    return resultData;
+  }, [resultData]);
 
   return (
-    <div className="flex gap-3 max-w-[85%] mr-auto">
-      <Avatar className="w-8 h-8 flex-shrink-0">
-        <AvatarFallback
-          className={cn(
-            isSuccess
-              ? "bg-green-100 text-green-600"
-              : "bg-red-100 text-red-600"
-          )}
-        >
-          {isSuccess ? (
-            <CheckCircle className="w-4 h-4" />
-          ) : (
-            <AlertCircle className="w-4 h-4" />
-          )}
-        </AvatarFallback>
-      </Avatar>
-
+    <div className="max-w-[85%] mr-auto">
       <div
         className={cn(
-          "rounded-lg px-4 py-2 text-sm border",
+          'rounded-lg px-4 py-2 text-sm border',
           isSuccess
-            ? "bg-green-50 text-green-800 border-green-200"
-            : "bg-red-50 text-red-800 border-red-200"
+            ? 'bg-green-50 text-green-800 border-green-200'
+            : 'bg-red-50 text-red-800 border-red-200'
         )}
       >
-        <div className="font-medium mb-1">
-          {isSuccess ? "Action Completed" : "Action Failed"}
+        <div className="font-medium mb-2">
+          {isSuccess ? 'Action Completed' : 'Action Failed'}
         </div>
-        <div className="text-xs opacity-75 whitespace-pre-wrap">
-          {message.result || message.error || "No result"}
+
+        <div className="bg-white/50 p-2 rounded text-xs">
+          <ReactJson
+            src={dataToRender}
+            theme="rjv-default"
+            name={false}
+            collapsed={1}
+            displayDataTypes={false}
+            displayObjectSize={false}
+            enableClipboard={false}
+            style={{ fontSize: '11px', backgroundColor: 'transparent' }}
+          />
         </div>
       </div>
     </div>
@@ -140,26 +128,15 @@ function RenderResultMessage({ message }: MessageRendererProps) {
 
 function RenderAgentStateMessage({ message }: MessageRendererProps) {
   const { state } = useAiContext();
-  
-  return (
-    <div className="flex gap-3 max-w-[95%] mr-auto">
-      <Avatar className="w-8 h-8 flex-shrink-0 mt-1">
-        <AvatarFallback className="bg-purple-100 text-purple-600">
-          <Bot className="w-4 h-4" />
-        </AvatarFallback>
-      </Avatar>
 
-      <div className="flex-1">
-        <div className="mb-2">
-          <div className="text-sm font-medium text-purple-800">Agent State Update</div>
-          {message.state && (
-            <div className="text-xs text-purple-600 mt-1">
-              {message.state}
-            </div>
-          )}
+  return (
+    <div className="max-w-[95%] mr-auto">
+      <div className="mb-2">
+        <div className="text-sm font-medium text-purple-800">
+          Agent State Update
         </div>
-        <StateCard state={state.context.state} className="max-w-md" />
       </div>
+      <StateCard state={state.context.state} className="max-w-md" />
     </div>
   );
 }
@@ -167,15 +144,45 @@ function RenderAgentStateMessage({ message }: MessageRendererProps) {
 export function AiMessages({ className }: AiMessagesProps) {
   const { visibleMessages, isLoading } = useCopilotChat();
 
+  const processedMessages = useMemo(() => {
+    const seenIds = new Set();
+    const resultForAction: { [key: string]: boolean } = {};
+
+    // First pass: find all result messages
+    visibleMessages.forEach((message) => {
+      if (message.isResultMessage()) {
+        resultForAction[message.actionExecutionId] = true;
+      }
+    });
+
+    // Second pass: filter messages
+    return visibleMessages.filter((message) => {
+      if (seenIds.has(message.id)) {
+        return false;
+      }
+      seenIds.add(message.id);
+
+      // If it's an action execution message, only show it if there's no result yet
+      if (
+        message.isActionExecutionMessage() &&
+        resultForAction[message.id]
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [visibleMessages]);
+
   return (
     <div
       className={cn(
-        "flex flex-col gap-4 h-full overflow-y-auto p-4",
+        'flex flex-col gap-4 h-full overflow-y-auto p-4',
         className
       )}
     >
-      {visibleMessages.map((message, index) => {
-        const isCurrentMessage = index === visibleMessages.length - 1;
+      {processedMessages.map((message, index) => {
+        const isCurrentMessage = index === processedMessages.length - 1;
         const commonProps = {
           message,
           index,
@@ -200,13 +207,9 @@ export function AiMessages({ className }: AiMessagesProps) {
       })}
 
       {/* Empty state */}
-      {visibleMessages.length === 0 && (
+      {processedMessages.length === 0 && (
         <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-          <Avatar className="w-12 h-12 mb-4">
-            <AvatarFallback className="bg-muted">
-              <Bot className="w-6 h-6" />
-            </AvatarFallback>
-          </Avatar>
+          <Bot className="w-12 h-12 mb-4 text-muted-foreground" />
           <div className="text-lg font-semibold mb-2">Hi! I'm Sealos Brain</div>
           <div className="text-sm">How can I help you today?</div>
         </div>

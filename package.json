@@ -87,6 +87,7 @@
     "react-day-picker": "8.10.1",
     "react-dom": "^19",
     "react-hook-form": "^7.54.1",
+    "react-json-view": "^1.21.3",
     "react-resizable-panels": "^2.1.7",
     "react-speech-recognition": "^4.0.1",
     "recharts": "2.15.0",
