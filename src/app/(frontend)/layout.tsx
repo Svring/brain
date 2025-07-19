@@ -9,8 +9,10 @@ import AppSidebar from "@/components/app/sidebar/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/auth-context/auth-context";
+import { AiProvider } from "@/contexts/ai-context/ai-context";
 import { ProjectProvider } from "@/contexts/project-context/project-context";
 import { getUser } from "@/payload/operations/users-operation";
+import type { User } from "@/payload-types";
 
 import "@/styles/globals.css";
 import "@copilotkit/react-ui/styles.css";
@@ -61,12 +63,14 @@ export default async function RootLayout({
           <AuthProvider payloadUser={payloadUser}>
             <CopilotProvider>
               <QueryProvider>
-                <ProjectProvider>
-                  <SidebarProvider defaultOpen={false}>
-                    <AppSidebar />
-                    {children}
-                  </SidebarProvider>
-                </ProjectProvider>
+                <AiProvider payloadUser={payloadUser}>
+                  <ProjectProvider>
+                    <SidebarProvider defaultOpen={false}>
+                      <AppSidebar />
+                      {children}
+                    </SidebarProvider>
+                  </ProjectProvider>
+                </AiProvider>
               </QueryProvider>
             </CopilotProvider>
           </AuthProvider>

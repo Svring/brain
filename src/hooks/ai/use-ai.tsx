@@ -2,63 +2,22 @@
 
 import { useCoAgent, useCoAgentStateRender } from "@copilotkit/react-core";
 import type { AiState } from "@/contexts/ai-context/ai-machine";
-import { useAuthContext } from "@/contexts/auth-context/auth-context";
+import { useAiContext } from "@/contexts/ai-context/ai-context";
+import { StateCard } from "@/components/ai/state-card";
+import { activateDevboxActions } from "@/lib/ai/sealos/devbox/ai-devbox-action";
 
 export default function useAI() {
-  const { auth } = useAuthContext();
+  const { aiState } = useAiContext();
+
+  activateDevboxActions();
 
   useCoAgentStateRender<AiState>({
     name: "ai",
-    render: ({ state }) => (
-      <div style={{ fontSize: 12, fontFamily: "monospace", padding: 8 }}>
-        <div>
-          <strong>Model:</strong> {state.model}
-        </div>
-        <div>
-          <strong>System Prompt:</strong> {state.system_prompt}
-        </div>
-        <div>
-          <strong>Base URL:</strong> {state.base_url}
-        </div>
-        <div>
-          <strong>API Key:</strong> {state.api_key ? "****" : "(none)"}
-        </div>
-        <div>
-          <strong>Projects:</strong>{" "}
-          {state.project_context?.homepageData?.projects
-            ? JSON.stringify(state.project_context.homepageData.projects)
-            : "(none)"}
-        </div>
-        <div>
-          <strong>Project:</strong>{" "}
-          {state.project_context?.flowGraphData?.project ?? "(none)"}
-        </div>
-        <div>
-          <strong>Resources:</strong>{" "}
-          {state.project_context?.flowGraphData?.resources
-            ? JSON.stringify(state.project_context.flowGraphData.resources)
-            : "(none)"}
-        </div>
-      </div>
-    ),
+    render: ({ state }) => <StateCard state={state} />,
   });
 
   return useCoAgent<AiState>({
     name: "ai",
-    initialState: {
-      base_url: auth?.baseUrl,
-      api_key: auth?.apiKey,
-      model: "qwen2-72b-instruct",
-      system_prompt: "you are sealos brain.",
-      project_context: {
-        homepageData: {
-          projects: [],
-        },
-        flowGraphData: {
-          project: null,
-          resources: null,
-        },
-      },
-    },
+    initialState: aiState,
   });
 }

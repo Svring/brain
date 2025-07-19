@@ -18,6 +18,7 @@ import { TextShimmer } from "@/components/project/components/text-shimmer";
 import { useDisclosure } from "@reactuses/core";
 import CreateProject from "@/components/project/create-project/create-project";
 import AiCoin from "@/components/ai/headless/ai-coin";
+import AiChatbox from "@/components/ai/headless/ai-chatbox";
 
 export default function Page() {
   const { isOpen, onClose, onOpenChange } = useDisclosure();
@@ -131,6 +132,7 @@ export default function Page() {
       </div>
 
       <AiCoin />
+      <AiChatbox />
     </div>
   );
 }

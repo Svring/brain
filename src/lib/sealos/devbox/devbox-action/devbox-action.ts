@@ -182,37 +182,6 @@ export function useRemoveDevboxPortAction(context: DevboxApiContext) {
 }
 
 /**
- * Custom hook for creating app with minimal parameters
- */
-// export function useCreateAppAction(context: DevboxApiContext) {
-//   const baseMutation = useCreateAppMutation(context);
-
-//   return useMutation({
-//     mutationFn: async (partialConfig: PartialAppFormConfig) => {
-//       const fullConfig: AppFormConfig = {
-//         name: partialConfig.name,
-//         cpu: partialConfig.cpu ?? 1000,
-//         memory: partialConfig.memory ?? 1024,
-//         replicas: partialConfig.replicas ?? 1,
-//         appName: partialConfig.appName ?? partialConfig.name,
-//         imageName: partialConfig.imageName ?? "",
-//         runCMD: partialConfig.runCMD ?? "",
-//         cmdParam: partialConfig.cmdParam ?? "",
-//         networks: partialConfig.networks ?? [],
-//         envs: partialConfig.envs ?? [],
-//         hpa: partialConfig.hpa,
-//         configMapList: partialConfig.configMapList ?? [],
-//         secretList: partialConfig.secretList ?? [],
-//         storeList: partialConfig.storeList ?? [],
-//         gpu: partialConfig.gpu,
-//       };
-
-//       return baseMutation.mutateAsync(fullConfig);
-//     },
-//   });
-// }
-
-/**
  * Simple action for deleting an app
  */
 export function useDeleteAppAction(context: DevboxApiContext) {

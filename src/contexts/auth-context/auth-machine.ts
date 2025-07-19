@@ -8,8 +8,6 @@ export interface Auth {
   kubeconfig: string;
   regionUrl: string;
   appToken: string;
-  baseUrl: string;
-  apiKey: string;
 }
 
 export interface AuthContext {

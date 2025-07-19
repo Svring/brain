@@ -2,13 +2,6 @@
 
 import { assign, createMachine } from "xstate";
 
-export interface AiConfig {
-  base_url: string;
-  api_key: string;
-  model: string;
-  system_prompt: string;
-}
-
 export interface AiState {
   base_url: string;
   api_key: string;
@@ -30,49 +23,119 @@ export interface AiChat {
 }
 
 export interface AiContext {
-  config: AiConfig;
   state: AiState;
   chat: AiChat;
+  error: string | null;
 }
 
 export type AiEvent =
   | { type: "CHAT_OPEN" }
   | { type: "CHAT_CLOSE" }
-  | { type: "SET_CONFIG" }
-  | { type: "SET_STATE" };
+  | { type: "SET_STATE"; state: Partial<AiState> }
+  | { type: "CREDENTIALS_LOADED" }
+  | { type: "FAIL"; error: string };
 
-export const AiMachine = createMachine({
+export const aiMachine = createMachine({
   types: {} as { context: AiContext; events: AiEvent },
   id: "ai",
-  initial: "idle",
+  initial: "initializing",
   context: {
-    config: {
-      base_url: "",
-      api_key: "",
-      model: "",
-      system_prompt: "",
-    },
     state: {
       base_url: "",
       api_key: "",
-      model: "",
-      system_prompt: "",
+      model: "gpt-4.1-mini",
+      system_prompt: "you are sealos brain.",
       project_context: {
         homepageData: {
           projects: [],
         },
         flowGraphData: {
-          project: {},
-          resources: [],
+          project: null,
+          resources: null,
         },
       },
     },
     chat: {
       open: false,
     },
+    error: null,
   },
   states: {
-    initializing: {},
-    active: {},
+    initializing: {
+      on: {
+        SET_STATE: {
+          actions: assign({
+            state: ({ context, event }) => ({
+              ...context.state,
+              ...event.state,
+            }),
+          }),
+        },
+        CREDENTIALS_LOADED: {
+          target: "active",
+        },
+        FAIL: {
+          target: "error",
+          actions: assign({
+            error: ({ event }) => event.error,
+          }),
+        },
+      },
+    },
+    active: {
+      on: {
+        CHAT_OPEN: {
+          actions: assign({
+            chat: ({ context }) => ({
+              ...context.chat,
+              open: true,
+            }),
+          }),
+        },
+        CHAT_CLOSE: {
+          actions: assign({
+            chat: ({ context }) => ({
+              ...context.chat,
+              open: false,
+            }),
+          }),
+        },
+        SET_STATE: {
+          actions: assign({
+            state: ({ context, event }) => ({
+              ...context.state,
+              ...event.state,
+            }),
+          }),
+        },
+        CREDENTIALS_LOADED: {
+          // Allow credential updates in active state
+        },
+        FAIL: {
+          target: "error",
+          actions: assign({
+            error: ({ event }) => event.error,
+          }),
+        },
+      },
+    },
+    error: {
+      on: {
+        SET_STATE: {
+          actions: assign({
+            state: ({ context, event }) => ({
+              ...context.state,
+              ...event.state,
+            }),
+          }),
+        },
+        CREDENTIALS_LOADED: {
+          target: "active",
+          actions: assign({
+            error: () => null,
+          }),
+        },
+      },
+    },
   },
 });
