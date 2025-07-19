@@ -12,7 +12,6 @@ export default function useAI() {
     render: ({ state }) => (
       <div style={{ fontSize: 12, fontFamily: "monospace", padding: 8 }}>
         <div>
-          {JSON.stringify(state)}
           <strong>Model:</strong> {state.model}
         </div>
         <div>

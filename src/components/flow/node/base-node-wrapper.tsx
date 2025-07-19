@@ -74,38 +74,44 @@ export default function BaseNodeWrapper({
 
   // Fetch secrets for connections
   const clusterSecretQuery = useClusterSecret(clusterName || "");
-  const objectStorageSecretQuery = useObjectStorageSecret(objectStorageName || "");
+  const objectStorageSecretQuery = useObjectStorageSecret(
+    objectStorageName || ""
+  );
 
   // Helper function to create environment variables from cluster secret
-  const createClusterEnvVars = (secretName: string): EnvVar[] => {
+  const createClusterEnvVars = (
+    secretName: string,
+    clusterName: string
+  ): EnvVar[] => {
+    const prefix = clusterName.toUpperCase().replace(/[^A-Z0-9]/g, "_");
     return [
       {
         type: "secretKeyRef",
-        key: "DB_HOST",
+        key: `${prefix}_DB_HOST`,
         secretName,
         secretKey: "host",
       },
       {
         type: "secretKeyRef",
-        key: "DB_PORT",
+        key: `${prefix}_DB_PORT`,
         secretName,
         secretKey: "port",
       },
       {
         type: "secretKeyRef",
-        key: "DB_USER",
+        key: `${prefix}_DB_USER`,
         secretName,
         secretKey: "username",
       },
       {
         type: "secretKeyRef",
-        key: "DB_PASSWORD",
+        key: `${prefix}_DB_PASSWORD`,
         secretName,
         secretKey: "password",
       },
       {
         type: "secretKeyRef",
-        key: "DB_ENDPOINT",
+        key: `${prefix}_DB_ENDPOINT`,
         secretName,
         secretKey: "endpoint",
       },
@@ -113,35 +119,39 @@ export default function BaseNodeWrapper({
   };
 
   // Helper function to create environment variables from object storage secret
-  const createObjectStorageEnvVars = (secretName: string): EnvVar[] => {
+  const createObjectStorageEnvVars = (
+    secretName: string,
+    objectStorageName: string
+  ): EnvVar[] => {
+    const prefix = objectStorageName.toUpperCase().replace(/[^A-Z0-9]/g, "_");
     return [
       {
         type: "secretKeyRef",
-        key: "S3_ACCESS_KEY",
+        key: `${prefix}_S3_ACCESS_KEY`,
         secretName,
         secretKey: "accessKey",
       },
       {
         type: "secretKeyRef",
-        key: "S3_SECRET_KEY",
+        key: `${prefix}_S3_SECRET_KEY`,
         secretName,
         secretKey: "secretKey",
       },
       {
         type: "secretKeyRef",
-        key: "S3_BUCKET",
+        key: `${prefix}_S3_BUCKET`,
         secretName,
         secretKey: "bucket",
       },
       {
         type: "secretKeyRef",
-        key: "S3_ENDPOINT_EXTERNAL",
+        key: `${prefix}_S3_ENDPOINT_EXTERNAL`,
         secretName,
         secretKey: "external",
       },
       {
         type: "secretKeyRef",
-        key: "S3_ENDPOINT_INTERNAL",
+        key: `${prefix}_S3_ENDPOINT_INTERNAL`,
         secretName,
         secretKey: "internal",
       },
@@ -149,12 +159,15 @@ export default function BaseNodeWrapper({
   };
 
   // Helper function to handle connection based on resource type
-  const handleConnection = async (resourceKind: string, resourceName: string) => {
+  const handleConnection = async (
+    resourceKind: string,
+    resourceName: string
+  ) => {
     // Create resource target
     const resourceTarget = flowGraphResources.find(
       (r: any) => r.kind === resourceKind && r.name === resourceName
     );
-    
+
     if (!resourceTarget) {
       console.error(`Resource ${resourceKind}:${resourceName} not found`);
       return;
@@ -191,13 +204,15 @@ export default function BaseNodeWrapper({
 
     // Determine environment variables based on connection type
     let envVars: EnvVar[] = [];
-    
+
     if (clusterName && clusterSecretQuery.data) {
       const secretName = `${clusterName}-conn-credential`;
-      envVars = createClusterEnvVars(secretName);
+      envVars = createClusterEnvVars(secretName, clusterName);
     } else if (objectStorageName && objectStorageSecretQuery.data) {
-      const secretName = `object-storage-key-${context.namespace.slice(3)}-${objectStorageName}`;
-      envVars = createObjectStorageEnvVars(secretName);
+      const secretName = `object-storage-key-${context.namespace.slice(
+        3
+      )}-${objectStorageName}`;
+      envVars = createObjectStorageEnvVars(secretName, objectStorageName);
     }
 
     if (envVars.length === 0) {
@@ -207,7 +222,11 @@ export default function BaseNodeWrapper({
 
     try {
       await addEnvMutation.mutateAsync({ target, envVars });
-      console.log(`Successfully connected ${clusterName || objectStorageName} to ${resourceKind}:${resourceName}`);
+      console.log(
+        `Successfully connected ${
+          clusterName || objectStorageName
+        } to ${resourceKind}:${resourceName}`
+      );
     } catch (error) {
       console.error("Failed to add environment variables:", error);
     }

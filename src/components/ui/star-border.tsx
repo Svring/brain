@@ -7,6 +7,7 @@ interface StarBorderProps<T extends ElementType> {
   speed?: string;
   className?: string;
   children: React.ReactNode;
+  isRound?: boolean;
 }
 
 export function StarBorder<T extends ElementType = "button">({
@@ -15,6 +16,7 @@ export function StarBorder<T extends ElementType = "button">({
   color,
   speed = "6s",
   children,
+  isRound,
   ...props
 }: StarBorderProps<T> &
   Omit<ComponentPropsWithoutRef<T>, keyof StarBorderProps<T>>) {
@@ -24,7 +26,8 @@ export function StarBorder<T extends ElementType = "button">({
   return (
     <Component
       className={cn(
-        "relative inline-block py-[1px] overflow-hidden rounded-[20px]",
+        "relative inline-block py-[1px] overflow-hidden",
+        isRound ? "rounded-full" : "rounded-[20px]",
         className
       )}
       {...props}
@@ -51,7 +54,10 @@ export function StarBorder<T extends ElementType = "button">({
       />
       <div
         className={cn(
-          "relative z-1 border text-foreground text-center text-base py-4 px-6 rounded-[20px]",
+          "relative z-1 border text-foreground text-center text-base h-full",
+          isRound
+            ? "rounded-full flex items-center justify-center"
+            : "py-4 px-6 rounded-[20px]",
           "bg-gradient-to-b from-background/90 to-muted/90 border-border/40",
           "dark:from-background dark:to-muted dark:border-border"
         )}

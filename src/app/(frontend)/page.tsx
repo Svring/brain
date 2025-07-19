@@ -17,7 +17,6 @@ import useProjects from "@/hooks/app/project/use-projects";
 import { TextShimmer } from "@/components/app/project/components/text-shimmer";
 import { useDisclosure } from "@reactuses/core";
 import { CopilotSidebarWrapper } from "@/components/ai/copilot-sidebar-wrapper";
-import { useCopilotChat } from "@copilotkit/react-core";
 
 const CreateProject = dynamic(
   () => import("@/components/app/project/create-project")
