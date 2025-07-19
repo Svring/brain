@@ -12,14 +12,6 @@ import {
   useCreateAppMutation,
   useDeleteAppMutation,
 } from "../devbox-method/devbox-mutation";
-import {
-  listDevboxOptions,
-  getDevboxOptions,
-  getDevboxReleasesOptions,
-  listAppsOptions,
-  getAppOptions,
-  getAppPodsOptions,
-} from "../devbox-method/devbox-query";
 import { generateDevboxName } from "../devbox-utils";
 import type {
   DevboxApiContext,
@@ -190,70 +182,4 @@ export function useDeleteAppAction(context: DevboxApiContext) {
   return useMutation({
     mutationFn: (appName: string) => baseMutation.mutateAsync(appName),
   });
-}
-
-// Query Actions - Higher level abstractions for query functions
-
-/**
- * Action for listing devboxes with optional postprocessing
- */
-export function useListDevboxesAction(
-  context: DevboxApiContext,
-  postprocess?: (data: any) => unknown
-) {
-  return useQuery(listDevboxOptions(context, postprocess)());
-}
-
-/**
- * Action for getting a specific devbox
- */
-export function useGetDevboxAction(
-  devboxName: string,
-  context: DevboxApiContext,
-  postprocess?: (data: any) => unknown
-) {
-  return useQuery(getDevboxOptions(context, postprocess)(devboxName));
-}
-
-/**
- * Action for getting devbox releases
- */
-export function useGetDevboxReleasesAction(
-  devboxName: string,
-  context: DevboxApiContext,
-  postprocess?: (data: any) => unknown
-) {
-  return useQuery(getDevboxReleasesOptions(context, postprocess)(devboxName));
-}
-
-/**
- * Action for listing apps with optional postprocessing
- */
-export function useListAppsAction(
-  context: DevboxApiContext,
-  postprocess?: (data: any) => unknown
-) {
-  return useQuery(listAppsOptions(context, postprocess)());
-}
-
-/**
- * Action for getting a specific app
- */
-export function useGetAppAction(
-  appName: string,
-  context: DevboxApiContext,
-  postprocess?: (data: any) => unknown
-) {
-  return useQuery(getAppOptions(context, postprocess)(appName));
-}
-
-/**
- * Action for getting app pods
- */
-export function useGetAppPodsAction(
-  appName: string,
-  context: DevboxApiContext,
-  postprocess?: (data: any) => unknown
-) {
-  return useQuery(getAppPodsOptions(context, postprocess)(appName));
 }

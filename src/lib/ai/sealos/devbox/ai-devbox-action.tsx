@@ -10,7 +10,7 @@ import { createDevboxContext } from "@/lib/sealos/devbox/devbox-utils";
 
 export const listDevboxAction = () => {
   const context = createDevboxContext();
-  const { data } = useQuery(listDevboxOptions(context)());
+  const { data } = useQuery(listDevboxOptions(context));
 
   useCopilotAction({
     name: "listDevbox",
@@ -22,7 +22,6 @@ export const listDevboxAction = () => {
 export const getDevboxAction = () => {
   const context = createDevboxContext();
   const queryClient = useQueryClient();
-  const getDevboxQueryOptions = getDevboxOptions(context);
 
   useCopilotAction({
     name: "getDevbox",
@@ -37,7 +36,9 @@ export const getDevboxAction = () => {
       },
     ],
     handler: async ({ devboxName }) => {
-      return await queryClient.fetchQuery(getDevboxQueryOptions(devboxName));
+      return await queryClient.fetchQuery(
+        getDevboxOptions(context, devboxName)
+      );
     },
   });
 };
