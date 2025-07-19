@@ -2,12 +2,12 @@
 
 import { Globe } from "lucide-react";
 import { useAuthContext } from "@/contexts/auth-context/auth-context";
-import { RegionSwitcher } from "@/components/app/base/sidebar/region-switcher";
+import { RegionSwitcher } from "@/components/app/sidebar/region-switcher";
 import {
   MainSection,
   type NavigationItem,
-} from "@/components/app/base/sidebar/sidebar-section";
-import { UserCard } from "@/components/app/base/sidebar/user-card";
+} from "@/components/app/sidebar/sidebar-section";
+import { UserCard } from "@/components/app/sidebar/user-card";
 import {
   Sidebar,
   SidebarContent,

@@ -9,8 +9,8 @@ import {
 import { ArrowLeft, Plus, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useState, useEffect } from "react";
-import { AddResourceTabs } from "@/components/app/project/add-resource/add-resource-tabs";
-import { MenuBar } from "@/components/app/project/components/menu-bar";
+import { AddResourceTabs } from "@/components/project/add-resource/add-resource-tabs";
+import { MenuBar } from "@/components/project/components/menu-bar";
 import edgeTypes from "@/components/flow/edge/edge-types";
 import nodeTypes from "@/components/flow/node/node-types";
 import {
@@ -20,11 +20,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useProjectResources } from "@/hooks/app/project/use-project-resources";
+import { useProjectResources } from "@/hooks/project/use-project-resources";
 import { useFlow } from "@/hooks/flow/use-flow";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { DndProvider } from "@/components/flow/dnd/dnd-provider";
-import { TextShimmer } from "@/components/app/project/components/text-shimmer";
+import { TextShimmer } from "@/components/project/components/text-shimmer";
 import { CopilotSidebarWrapper } from "@/components/ai/copilot-sidebar-wrapper";
 
 import "@xyflow/react/dist/style.css";
@@ -33,7 +33,7 @@ import { DragEndEvent } from "@dnd-kit/core";
 import {
   useAddToProjectMutation,
   useRemoveProjectAnnotationMutation,
-} from "@/lib/app/project/project-method/project-mutation";
+} from "@/lib/project/project-method/project-mutation";
 import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
 import { toast } from "sonner";
 import _ from "lodash";

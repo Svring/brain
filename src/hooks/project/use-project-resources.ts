@@ -2,7 +2,7 @@
 
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getProjectResourcesOptions } from "@/lib/app/project/project-method/project-query";
+import { getProjectResourcesOptions } from "@/lib/project/project-method/project-query";
 import {
   createK8sContext,
   BrainResourcesSimplified,

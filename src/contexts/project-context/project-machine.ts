@@ -1,6 +1,6 @@
 "use client";
 
-import { createMachine, assign } from "xstate";
+import { assign, createMachine } from "xstate";
 
 export interface ProjectContext {
   homepageData: {

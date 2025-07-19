@@ -4,7 +4,7 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Plus, Search } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useState, useMemo, useRef, useEffect } from "react";
-import ProjectCard from "@/components/app/project/components/project-card";
+import ProjectCard from "@/components/project/components/project-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,20 +13,22 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import useProjects from "@/hooks/app/project/use-projects";
-import { TextShimmer } from "@/components/app/project/components/text-shimmer";
+import useProjects from "@/hooks/project/use-projects";
+import { TextShimmer } from "@/components/project/components/text-shimmer";
 import { useDisclosure } from "@reactuses/core";
 import { CopilotSidebarWrapper } from "@/components/ai/copilot-sidebar-wrapper";
-
-const CreateProject = dynamic(
-  () => import("@/components/app/project/create-project")
-);
+import CreateProject from "@/components/project/create-project/create-project";
 
 export default function Page() {
   const { isOpen, onClose, onOpenChange } = useDisclosure();
+  const {
+    isOpen: isSearchOpen,
+    onOpen: onSearchOpen,
+    onClose: onSearchClose,
+  } = useDisclosure();
   const [searchTerm, setSearchTerm] = useState("");
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
   const {
     data: projects,
     isLoading: projectsLoading,
@@ -68,14 +70,14 @@ export default function Page() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onBlur={() => {
                     if (!searchTerm) {
-                      setIsSearchOpen(false);
+                      onSearchClose();
                     }
                   }}
                   placeholder="Search projects..."
                   value={searchTerm}
                 />
               ) : (
-                <Button variant="ghost" onClick={() => setIsSearchOpen(true)}>
+                <Button variant="ghost" onClick={onSearchOpen}>
                   <Search />
                 </Button>
               )}

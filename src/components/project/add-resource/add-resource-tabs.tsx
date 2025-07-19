@@ -1,6 +1,6 @@
 "use client";
 
-import { useInventories } from "@/hooks/app/inventory/use-inventories";
+import { useInventories } from "@/hooks/inventory/use-inventories";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import {

@@ -5,7 +5,7 @@ import {
   useNodesState,
 } from "@xyflow/react";
 import { useEffect } from "react";
-import { inferRelianceFromEnv } from "@/lib/app/project/project-method/project-utils";
+import { inferRelianceFromEnv } from "@/lib/project/project-method/project-utils";
 import { convertConnectionsToEdges } from "@/lib/flow/edges/flow-edges-utils";
 import { applyLayout } from "@/lib/flow/layout/flow-layout-utils";
 import { convertResourcesToNodes } from "@/lib/flow/nodes/flow-nodes-utils";

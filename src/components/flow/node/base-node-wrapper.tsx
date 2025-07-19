@@ -8,7 +8,7 @@ import {
   useAddEnvToResourceMutation,
   type EnvVar,
 } from "@/lib/k8s/k8s-method/k8s-mutation";
-import { useRemoveFromProjectMutation } from "@/lib/app/project/project-method/project-mutation";
+import { useRemoveFromProjectMutation } from "@/lib/project/project-method/project-mutation";
 import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
@@ -16,7 +16,7 @@ import { useRef, useState, useEffect } from "react";
 import FloatingActionMenu from "@/components/flow/components/floating-action-menu";
 import { Trash2, ArrowLeft } from "lucide-react";
 // import { useChatContext } from "@copilotkit/react-ui";
-import { useProjectResources } from "@/hooks/app/project/use-project-resources";
+import { useProjectResources } from "@/hooks/project/use-project-resources";
 import { useProjectContext } from "@/contexts/project-context/project-context";
 import { useClusterSecret } from "@/lib/sealos/cluster/cluster-query";
 import { useObjectStorageSecret } from "@/lib/sealos/objectstorage/objectstorage-query";

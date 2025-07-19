@@ -1,6 +1,6 @@
 "use client";
 
-import { createMachine, assign } from "xstate";
+import { assign, createMachine } from "xstate";
 
 // Define and export Auth here
 export interface Auth {
@@ -46,7 +46,8 @@ export const authMachine = createMachine({
           target: "unauthenticated",
           guard: ({ context }) => context.mode == null,
           actions: assign({
-            error: () => "Auth mode could not be determined",
+            error: () =>
+              "Auth mode could not be determined, please set env variable NEXT_PUBLIC_MODE to development or production",
           }),
         },
       ],

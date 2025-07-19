@@ -1,14 +1,14 @@
 "use client";
 
-import { createContext, type ReactNode, use } from "react";
-import type { User } from "@/payload-types";
-import { useMachine } from "@xstate/react";
-import { authMachine } from "@/contexts/auth-context/auth-machine";
-import { authenticateDev, authenticateProd } from "@/lib/app/auth/auth-utils";
 import { useMount } from "@reactuses/core";
-import type { Auth } from "@/contexts/auth-context/auth-machine";
-import type { StateFrom, EventFrom, ActorRefFrom } from "xstate";
 import { createBrowserInspector } from "@statelyai/inspect";
+import { useMachine } from "@xstate/react";
+import { createContext, type ReactNode, use } from "react";
+import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
+import type { Auth } from "@/contexts/auth-context/auth-machine";
+import { authMachine } from "@/contexts/auth-context/auth-machine";
+import { authenticateDev, authenticateProd } from "@/lib/auth/auth-utils";
+import type { User } from "@/payload-types";
 
 const inspector = createBrowserInspector();
 
@@ -65,6 +65,8 @@ export const AuthProvider = ({
 
 export function useAuthContext() {
   const ctx = use(AuthContext);
-  if (!ctx) throw new Error("useAuthContext must be used within AuthProvider");
+  if (!ctx) {
+    throw new Error("useAuthContext must be used within AuthProvider");
+  }
   return ctx;
 }

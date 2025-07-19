@@ -1,7 +1,7 @@
 "use client";
 
 import { useCoAgent, useCoAgentStateRender } from "@copilotkit/react-core";
-import type { AIState } from "@/components/app/base/provider/ai-provider";
+import type { AIState } from "@/components/app/provider/ai-provider";
 import { useAuthContext } from "@/contexts/auth-context/auth-context";
 
 export default function useAI() {
@@ -48,7 +48,7 @@ export default function useAI() {
     initialState: {
       base_url: auth?.baseUrl,
       api_key: auth?.apiKey,
-      model: "gpt-4o-mini",
+      model: "qwen2-72b-instruct",
       system_prompt: "you are sealos brain.",
       project_context: {
         homepageData: {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Main } from "@/components/layout/main";
+import { Main } from "@/components/app/layout/main";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,9 +12,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { useTemplates } from "@/hooks/app/project/use-templates";
-import { useToast } from "@/hooks/use-toast";
-import { useCreateProjectMutation } from "@/lib/app/project/project-method/project-mutation";
+import { useTemplates } from "@/hooks/project/use-templates";
+import { useToast } from "@/hooks/general/use-toast";
+import { useCreateProjectMutation } from "@/lib/project/project-method/project-mutation";
 import {
   getCurrentNamespace,
   getDecodedKubeconfig,

@@ -11,8 +11,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useToast } from "@/hooks/use-toast";
-import { useDeleteProjectMutation } from "@/lib/app/project/project-method/project-mutation";
+import { useToast } from "@/hooks/general/use-toast";
+import { useDeleteProjectMutation } from "@/lib/project/project-method/project-mutation";
 import {
   getCurrentNamespace,
   getDecodedKubeconfig,

@@ -11,6 +11,12 @@ import {
 } from "@/lib/k8s/k8s-api/k8s-api-utils";
 import type { Auth } from "@/contexts/auth-context/auth-machine";
 import type { User } from "@/payload-types";
+import {
+  getAiProxyTokens,
+  createAiProxyToken,
+} from "@/lib/sealos/ai-proxy/ai-proxy-old-api";
+import type { AiProxyApiContext } from "@/lib/sealos/ai-proxy/schemas/ai-proxy-api-context";
+import { runParallelAction } from "next-server-actions-parallel";
 
 export async function extractAuthFromSession(
   session: SessionV1
@@ -58,11 +64,45 @@ export async function authenticateProd(send: (event: any) => void) {
       return;
     }
     const authFromSession = await extractAuthFromSession(sessionData);
-    if (authFromSession) {
-      send({ type: "SET_AUTH", auth: authFromSession });
-    } else {
+    if (!authFromSession) {
       send({ type: "FAIL", error: "Failed to extract auth from session" });
+      return;
     }
+
+    // Create AI Proxy context
+    const aiProxyContext: AiProxyApiContext = {
+      baseURL: authFromSession.regionUrl,
+      authorization: authFromSession.appToken,
+    };
+
+    // Fetch existing tokens
+    const tokensResponse = await runParallelAction(
+      getAiProxyTokens(aiProxyContext)
+    );
+    console.log("Tokens Response:", tokensResponse);
+    let brainToken = tokensResponse.data.tokens.find(
+      (token: any) => token.name === "brain"
+    );
+
+    // Create token if it doesn't exist
+    if (!brainToken) {
+      const createResponse = await runParallelAction(
+        createAiProxyToken({ name: "brain" }, aiProxyContext)
+      );
+      brainToken = createResponse.data;
+    }
+
+    // Construct base URL similar to ai-proxy-old-api.ts
+    const baseUrl = `https://aiproxy.${authFromSession.regionUrl}/v1`;
+
+    // Update auth with AI proxy credentials
+    const enhancedAuth: Auth = {
+      ...authFromSession,
+      apiKey: brainToken.key,
+      baseUrl: baseUrl,
+    };
+
+    send({ type: "SET_AUTH", auth: enhancedAuth });
   } catch (error) {
     send({
       type: "FAIL",

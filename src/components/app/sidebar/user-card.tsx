@@ -25,7 +25,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/general/use-toast";
 
 export function UserCard({
   user,
