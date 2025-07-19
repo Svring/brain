@@ -41,6 +41,11 @@ export interface EnvironmentVariable {
 // Environment extraction
 // -------------------------
 
+/**
+ * Flattens and collects all environment variables from a list of containers.
+ * @param containers An array of container-like objects that may have an `env` property.
+ * @returns A single array of all environment variables.
+ */
 const getContainerEnvs = (
   containers: Array<{ env?: EnvironmentVariable[] }> | undefined
 ): EnvironmentVariable[] => _.flatMap(containers, (c) => c.env ?? []);
@@ -50,27 +55,34 @@ const getContainerEnvs = (
  *   kind -> workloadName -> env[]
  */
 export const extractEnvironmentVariables = (
-  resources: Record<string, { items: any[] }>
+  resources: Record<string, { items: K8sResource[] }>
 ): Record<string, Record<string, EnvironmentVariable[]>> => {
   const pickWorkloads = _.pick(resources, ["statefulset", "deployment"]);
 
   return _.transform(
     pickWorkloads,
     (acc, { items = [] }, kind) => {
-      const perWorkload = _.transform(
-        items,
+      // For each workload kind, iterate through its resource items.
+      const perWorkload = items.reduce<Record<string, EnvironmentVariable[]>>(
         (inner, wl) => {
           const name = wl?.metadata?.name;
-          if (!name) return;
+          if (!name) return inner;
 
+          // The spec is loosely typed; cast to access nested properties.
+          const spec = wl.spec as any;
+
+          // Combine envs from both regular and init containers.
           const envs = [
-            ...getContainerEnvs(wl?.spec?.template?.spec?.containers),
-            ...getContainerEnvs(wl?.spec?.template?.spec?.initContainers),
+            ...getContainerEnvs(spec?.template?.spec?.containers),
+            ...getContainerEnvs(spec?.template?.spec?.initContainers),
           ];
 
-          if (envs.length) inner[name] = envs;
+          if (envs.length) {
+            inner[name] = envs;
+          }
+          return inner;
         },
-        {} as Record<string, EnvironmentVariable[]>
+        {}
       );
 
       if (!_.isEmpty(perWorkload)) acc[kind] = perWorkload;
@@ -79,27 +91,39 @@ export const extractEnvironmentVariables = (
   );
 };
 
-// Collapse an env array into literal values and name references (Secrets / ConfigMaps)
+/**
+ * Collapses an environment variable array into its constituent parts:
+ * - `refs`: Names of Secrets or ConfigMaps referenced via `valueFrom`.
+ * - `values`: Literal string values from the `value` property.
+ * This function ensures the returned names and values are unique.
+ * @param envs The array of environment variables to process.
+ * @returns An object containing unique arrays of `refs` and `values`.
+ */
 export const collectEnv = (
   envs: EnvironmentVariable[]
 ): { refs: string[]; values: string[] } => {
-  const refs: string[] = [];
-  const values: string[] = [];
+  const refs = new Set<string>();
+  const values = new Set<string>();
 
   envs.forEach((env) => {
     if (env.value !== undefined) {
-      values.push(env.value);
+      values.add(env.value);
     } else if (env.valueFrom) {
+      // If value is not literal, it might be a reference to a Secret or ConfigMap.
       const vf: any = env.valueFrom;
-      if (vf?.secretKeyRef?.name) refs.push(vf.secretKeyRef.name);
-      if (vf?.configMapKeyRef?.name) refs.push(vf.configMapKeyRef.name);
+      if (vf?.secretKeyRef?.name) refs.add(vf.secretKeyRef.name);
+      if (vf?.configMapKeyRef?.name) refs.add(vf.configMapKeyRef.name);
     }
   });
 
-  return { refs: _.uniq(refs), values: _.uniq(values) };
+  return { refs: Array.from(refs), values: Array.from(values) };
 };
 
-// Apply collectEnv per workload
+/**
+ * Applies the `collectEnv` function to each workload in a nested map.
+ * @param envsByKind A map of envs, structured as kind -> workloadName -> env[].
+ * @returns A map with the same structure, but with envs processed into refs and values.
+ */
 export const collectEnvByWorkload = (
   envsByKind: Record<string, Record<string, EnvironmentVariable[]>>
 ): Record<string, Record<string, { refs: string[]; values: string[] }>> =>
@@ -109,11 +133,13 @@ export const collectEnvByWorkload = (
  * Extract metadata.name for every resource grouped by kind.
  */
 export const extractResourceNames = (
-  resources: Record<string, { items: any[] }>
+  resources: Record<string, { items: K8sResource[] }>
 ): Record<string, string[]> =>
-  _.mapValues(resources, (v) =>
-    _.uniq(_.compact(_.map(v?.items, "metadata.name")))
-  );
+  _.mapValues(resources, (v) => {
+    const names =
+      v?.items?.map((item) => item.metadata?.name).filter(Boolean) ?? [];
+    return Array.from(new Set(names));
+  });
 
 // -------------------------
 // Connection inference
@@ -130,59 +156,74 @@ export const mergeConnectFromByWorkload = (
   >,
   candidatesByKind: Record<string, string[]>
 ): ConnectionsByKind => {
-  const result: ConnectionsByKind = {} as any;
+  // Pre-sort all candidate names by length descending. This allows us to find
+  // the longest possible match efficiently using `Array.find()`.
+  const allCandidates = _.sortBy(
+    _.flatten(_.values(candidatesByKind)),
+    (c) => -c.length
+  );
+  const result: ConnectionsByKind = {};
 
   _.forEach(envSummary, (workloads, kind) => {
-    result[kind] = {} as any;
+    const kindConnections: Record<string, WorkloadConnections> = {};
 
     _.forEach(workloads, ({ refs, values }, workloadName) => {
+      // For each environment value, find the first (and longest) candidate name that is a substring.
       const allMatches = _.uniq(
         _.compact(
-          [...refs, ...values].map((v) => {
-            const match = _.maxBy(
-              _.flatten(_.values(candidatesByKind)).filter((c) =>
-                v.includes(c)
-              ),
-              "length"
-            );
-            return match ?? null;
-          })
+          [...refs, ...values].map((v) =>
+            allCandidates.find((c) => v.includes(c))
+          )
         )
       );
 
       const connectFrom: KindMap = {};
       const others: KindMap = {};
 
+      // Partition the candidates for this workload into 'connectFrom' (matched) and 'others' (unmatched).
       _.forEach(candidatesByKind, (names, k) => {
+        // Find which of the candidate names for this kind were matched in the envs.
         const matched = names.filter((n) => allMatches.includes(n));
         if (matched.length) connectFrom[k] = matched;
 
+        // Any candidate names not matched are stored in 'others'.
         const remaining = names.filter((n) => !allMatches.includes(n));
         if (remaining.length) others[k] = remaining;
       });
 
-      (result[kind] as Record<string, WorkloadConnections>)[workloadName] = {
+      kindConnections[workloadName] = {
         connectFrom,
         others,
       };
     });
+
+    result[kind] = kindConnections;
   });
 
   return result;
 };
 
 /**
- * Map Ingress -> workload with same name.
+ * Creates connections for Ingress resources based on a naming convention.
+ * If an Ingress resource shares the same `metadata.name` as a Deployment or
+ * StatefulSet, a connection is inferred from the Ingress to that workload.
+ * @param resources A map of all project resources, grouped by kind.
+ * @returns A `ConnectionsByKind` map specifically for `ingress` resources.
  */
 export const processIngressConnections = (
-  resources: Record<string, { items: any[] }>
+  resources: Record<string, { items: K8sResource[] }>
 ): ConnectionsByKind => {
   const ingressResources = resources.ingress?.items ?? [];
   if (!ingressResources.length) return {};
 
+  // Create a map of workload kinds to their resource names for quick lookups.
   const workloadsByKind = _.mapValues(
     _.pick(resources, ["deployment", "statefulset"]),
-    (d) => _.compact(_.map(d?.items, "metadata.name"))
+    (d) => {
+      const names =
+        d?.items?.map((i) => i?.metadata?.name).filter(Boolean) ?? [];
+      return Array.from(new Set(names));
+    }
   );
 
   const ingressMap: Record<string, WorkloadConnections> = {};
@@ -191,17 +232,18 @@ export const processIngressConnections = (
     const name = ing?.metadata?.name;
     if (!name) return;
 
+    // Find workloads that have the same name as the Ingress resource.
     const connectFrom = _.pickBy(
       _.mapValues(workloadsByKind, (names) =>
         names.includes(name) ? [name] : []
       ),
-      (v) => (v as string[]).length > 0
+      (v) => v.length > 0
     ) as KindMap;
 
     ingressMap[name] = { connectFrom, others: {} };
   });
 
-  return { ingress: ingressMap } as ConnectionsByKind;
+  return { ingress: ingressMap };
 };
 
 // -------------------------
@@ -228,16 +270,16 @@ export const processIngressConnections = (
 export const inferRelianceFromEnv = (
   resources: Record<string, { items: K8sResource[] }>
 ): ConnectionsByKind => {
-  // Stage 1 — ENV-based connections
+  // Stage 1 — ENV-based connections from Deployments and StatefulSets.
   const envConnections = mergeConnectFromByWorkload(
     collectEnvByWorkload(extractEnvironmentVariables(resources)),
     omitIngressFromCandidates(extractResourceNames(resources))
   );
 
-  // Stage 2 — Ingress-to-workload connections
+  // Stage 2 — Ingress-to-workload connections based on naming conventions.
   const ingressConnections = processIngressConnections(resources);
 
-  // Merge both maps. If there are no ingress resources we just return the env map.
+  // Merge both connection maps, with Ingress connections taking precedence.
   return {
     ...envConnections,
     ...(ingressConnections.ingress
