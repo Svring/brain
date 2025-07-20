@@ -189,7 +189,7 @@ export function DevboxCard({ data }: { data?: DevboxInfo }) {
   const isRunning = devbox.status.toLowerCase() === "running";
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold">{devbox.name}</CardTitle>
@@ -257,7 +257,7 @@ export function DevboxCard({ data }: { data?: DevboxInfo }) {
               ) : (
                 <Square className="h-3 w-3 mr-1" />
               )}
-              Stop
+              Pause
             </Button>
           ) : (
             <Button

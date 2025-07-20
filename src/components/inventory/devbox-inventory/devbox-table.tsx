@@ -138,10 +138,10 @@ export function DataTable<TData, TValue>({
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="h-8">
+              <TableRow key={headerGroup.id} className="h-6">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className="py-2">
+                    <TableHead key={header.id} className="py-1">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
