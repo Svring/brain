@@ -25,9 +25,9 @@ import type {
   TemplateResource,
 } from "@/lib/sealos/template/schemas/template-api-context-schemas";
 import { useCreateInstanceMutation } from "@/lib/sealos/template/template-method/template-mutation";
+import { createTemplateApiContext } from "@/lib/sealos/template/template-method/template-utils";
 import { TemplateCard } from "./template-card";
 import { TemplateDetails } from "./template-details";
-import { useAuthContext } from "@/contexts/auth-context/auth-context";
 
 interface CreateProjectProps {
   onClose: () => void;
@@ -39,7 +39,6 @@ export default function CreateProject({ onClose }: CreateProjectProps) {
   const [selectedTemplate, setSelectedTemplate] =
     useState<TemplateResource | null>(null);
 
-  const { auth } = useAuthContext();
   const { toast } = useToast();
   const { data: templatesResponse, isLoading, error } = useProjectTemplates();
   const templates =
@@ -54,13 +53,7 @@ export default function CreateProject({ onClose }: CreateProjectProps) {
   const createProjectMutation = useCreateProjectMutation(context);
 
   // Get template API context
-  const templateApiContext = useMemo(
-    () => ({
-      baseURL: auth?.regionUrl || undefined,
-      authorization: auth?.kubeconfig || undefined,
-    }),
-    [auth]
-  );
+  const templateApiContext = createTemplateApiContext();
 
   const createInstanceMutation = useCreateInstanceMutation(templateApiContext);
 

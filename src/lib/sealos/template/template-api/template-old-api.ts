@@ -3,7 +3,7 @@
 import axios from "axios";
 import { createParallelAction } from "next-server-actions-parallel";
 import type {
-  InstanceApiContext,
+  TemplateApiContext,
   ListTemplateResponse,
   TemplateSourceResponse,
 } from "../schemas/template-api-context-schemas";
@@ -19,7 +19,7 @@ import {
 } from "../schemas/template-create-instance-schemas";
 import https from "https";
 
-function createApi(context: InstanceApiContext) {
+function createApi(context: TemplateApiContext) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
   return axios.create({
     baseURL: `https://template.${context.baseURL}/api`,
@@ -36,7 +36,7 @@ function createApi(context: InstanceApiContext) {
 }
 
 export const listTemplates = createParallelAction(
-  async (context: InstanceApiContext): Promise<ListTemplateResponse> => {
+  async (context: TemplateApiContext): Promise<ListTemplateResponse> => {
     const api = createApi(context);
     const response = await api.get("/listTemplate?language=en");
     return ListTemplateResponseSchema.parse(response.data);
@@ -45,7 +45,7 @@ export const listTemplates = createParallelAction(
 
 export const getTemplateSource = createParallelAction(
   async (
-    context: InstanceApiContext,
+    context: TemplateApiContext,
     templateName: string
   ): Promise<TemplateSourceResponse> => {
     const api = createApi(context);
@@ -59,7 +59,7 @@ export const getTemplateSource = createParallelAction(
 export const createInstance = createParallelAction(
   async (
     request: CreateInstanceRequest,
-    context: InstanceApiContext
+    context: TemplateApiContext
   ): Promise<CreateInstanceResponse> => {
     const validatedRequest = CreateInstanceRequestSchema.parse(request);
     const api = createApi(context);

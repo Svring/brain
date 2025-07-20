@@ -4,12 +4,12 @@ import { KubernetesMetadataSchema } from "@/lib/k8s/schemas/resource-schemas/kub
 // =====================
 // 1. API Context Schema
 // =====================
-export const InstanceApiContextSchema = z.object({
+export const TemplateApiContextSchema = z.object({
   baseURL: z.string().optional(),
   authorization: z.string().optional(),
 });
 
-export type InstanceApiContext = z.infer<typeof InstanceApiContextSchema>;
+export type TemplateApiContext = z.infer<typeof TemplateApiContextSchema>;
 
 // =============================
 // 2. Template Resource (List)

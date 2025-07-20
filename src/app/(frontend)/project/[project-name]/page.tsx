@@ -37,6 +37,7 @@ import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
 import { toast } from "sonner";
 import _ from "lodash";
 import { useProjectContext } from "@/contexts/project-context/project-context";
+import { FlowProvider } from "@/contexts/flow-context/flow-context";
 
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
   const router = useRouter();
@@ -213,10 +214,12 @@ export default function Page({
 
   return (
     <DndProvider>
-      <div className="relative h-screen w-full">
-        <ProjectFloatingUI projectName={projectName} />
-        <ProjectFlow projectName={projectName} />
-      </div>
+      <FlowProvider>
+        <div className="relative h-screen w-full">
+          <ProjectFloatingUI projectName={projectName} />
+          <ProjectFlow projectName={projectName} />
+        </div>
+      </FlowProvider>
     </DndProvider>
   );
 }

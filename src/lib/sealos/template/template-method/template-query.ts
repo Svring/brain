@@ -3,7 +3,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { runParallelAction } from "next-server-actions-parallel";
 import type {
-  InstanceApiContext,
+  TemplateApiContext,
   ListTemplateResponse,
   TemplateSourceResponse,
 } from "../schemas/template-api-context-schemas";
@@ -13,7 +13,7 @@ import {
 } from "../template-api/template-old-api";
 
 export const listTemplatesOptions = (
-  context: InstanceApiContext,
+  context: TemplateApiContext,
   postprocess?: (data: ListTemplateResponse) => unknown
 ) =>
   queryOptions({
@@ -24,7 +24,7 @@ export const listTemplatesOptions = (
   });
 
 export const getTemplateSourceOptions = (
-  context: InstanceApiContext,
+  context: TemplateApiContext,
   templateName: string,
   postprocess?: (data: TemplateSourceResponse) => unknown
 ) =>
