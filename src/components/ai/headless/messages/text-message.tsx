@@ -3,6 +3,9 @@
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { MessageRendererProps } from "./types";
+import { AnimatedMarkdown } from "flowtoken";
+
+import "flowtoken/dist/styles.css";
 
 export function RenderTextMessage({
   message,
@@ -10,7 +13,8 @@ export function RenderTextMessage({
   inProgress,
 }: MessageRendererProps) {
   const isUser = message.role === "user";
-  const isLoading = isCurrentMessage && inProgress && !isUser && !message.content;
+  const isLoading =
+    isCurrentMessage && inProgress && !isUser && !message.content;
 
   // Don't render empty messages unless they're loading
   if (!message.content && !isLoading) {
@@ -28,14 +32,20 @@ export function RenderTextMessage({
           isLoading && "animate-pulse"
         )}
       >
-        <div className="whitespace-pre-wrap">{message.content}</div>
+        {/* <AnimatedMarkdown
+          content={message.content ?? ""}
+          animation="fadeIn"
+          animationDuration="0.2s"
+          animationTimingFunction="ease-in-out"
+        /> */}
+        <span>{message.content}</span>
 
-        {isLoading && (
+        {/* {isLoading && (
           <div className="flex items-center gap-2 text-xs opacity-70">
             <Loader2 className="w-3 h-3 animate-spin" />
             <span>Thinking...</span>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

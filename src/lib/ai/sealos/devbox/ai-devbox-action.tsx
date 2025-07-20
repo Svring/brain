@@ -59,8 +59,12 @@ export const deleteDevboxAction = () => {
         required: true,
       },
     ],
-    handler: async ({ devboxName }) => {
-      return { devboxName };
+    renderAndWaitForResponse(props) {
+      return (
+        <div className="flex flex-col gap-2 p-4">
+          <p>Deleting devbox...</p>
+        </div>
+      );
     },
   });
 };

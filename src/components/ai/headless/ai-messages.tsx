@@ -1,21 +1,11 @@
 "use client";
 
 import { useCopilotChat } from "@copilotkit/react-core";
-import { CopilotSidebar } from "@copilotkit/react-ui";
-import { cn } from "@/lib/utils";
-import { useMemo } from "react";
 import { StickToBottom } from "@/components/ui/stick-to-bottom";
 import { RenderTextMessage } from "./messages";
-import type { MessageRendererProps } from "./messages";
 
-interface AiMessagesProps {
-  className?: string;
-}
-
-export function AiMessages({ className }: AiMessagesProps) {
+export function AiMessages() {
   const { visibleMessages, isLoading } = useCopilotChat();
-
-  console.log("visibleMessages", visibleMessages);
 
   return (
     <>
@@ -27,20 +17,8 @@ export function AiMessages({ className }: AiMessagesProps) {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto">
               <StickToBottom.Content className="flex flex-col h-full">
-                {visibleMessages.length === 0 ? (
-                  <div className="flex-1 flex items-center justify-center h-full">
-                    <div className="text-center">
-                      <div className="text-4xl mb-4">💬</div>
-                      <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-                        What is on the agenda today?
-                      </h2>
-                      <p className="text-gray-600">
-                        Start a conversation to get help with anything.
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="max-w-full mx-auto w-full px-4 py-8">
+                {visibleMessages.length !== 0 && (
+                  <div className="max-w-full mx-auto w-full px-4 py-0 pb-4">
                     {visibleMessages.map((message, index) => {
                       const isCurrentMessage =
                         index === visibleMessages.length - 1;
@@ -60,7 +38,7 @@ export function AiMessages({ className }: AiMessagesProps) {
 
                           {/* Tool call results */}
                           {message.role === "tool" && (
-                            <div className="mt-2 p-3 bg-gray-50 rounded-lg border">
+                            <div className="mt-2 p-3 rounded-lg border">
                               <div className="text-sm text-gray-600">
                                 <span className="font-medium">
                                   Tool: {message.toolName}
