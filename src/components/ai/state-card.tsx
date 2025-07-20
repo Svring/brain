@@ -38,8 +38,7 @@ interface StateCardProps {
 export function StateCard({ state, className }: StateCardProps) {
   const [isOpen, setIsOpen] = useState(false);
   const hasApiKey = !!state.api_key;
-  const hasProjects =
-    state.project_context?.homepageData?.projects?.length > 0;
+  const hasProjects = state.project_context?.homepageData?.projects?.length > 0;
   const hasCurrentProject = !!state.project_context?.flowGraphData?.project;
   const hasResources =
     state.project_context?.flowGraphData?.resources?.length > 0;
@@ -55,27 +54,21 @@ export function StateCard({ state, className }: StateCardProps) {
       className={cn("w-full", className)}
     >
       <Card>
-        <div className="flex items-center justify-between p-6 pb-3">
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <Bot className="w-5 h-5 text-primary" />
-              <CardTitle className="text-lg">AI Configuration</CardTitle>
+        <CollapsibleTrigger asChild>
+          <div className="flex items-center justify-between p-2 cursor-pointer hover:bg-muted/50 transition-colors">
+            <div className="flex items-center gap-3">
+              <Bot className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium">AI State</span>
             </div>
-            <CardDescription>
-              Current AI assistant state and configuration
-            </CardDescription>
-          </div>
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm" className="w-9 p-0">
+            <div className="flex items-center gap-2">
               {isOpen ? (
                 <ChevronDown className="h-4 w-4" />
               ) : (
                 <ChevronRight className="h-4 w-4" />
               )}
-              <span className="sr-only">Toggle</span>
-            </Button>
-          </CollapsibleTrigger>
-        </div>
+            </div>
+          </div>
+        </CollapsibleTrigger>
 
         <CollapsibleContent>
           <CardContent className="space-y-4 pt-0 p-6">
@@ -247,9 +240,7 @@ export function StateCard({ state, className }: StateCardProps) {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Database className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">
-                        Resources:
-                      </span>
+                      <span className="text-muted-foreground">Resources:</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant={hasResources ? "default" : "secondary"}>
@@ -294,16 +285,6 @@ export function StateCard({ state, className }: StateCardProps) {
                   )}
                 </div>
               </div>
-            </div>
-
-            {/* Status Summary */}
-            <Separator />
-
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Status:</span>
-              <Badge variant={hasApiKey ? "default" : "destructive"}>
-                {hasApiKey ? "Ready" : "Configuration Required"}
-              </Badge>
             </div>
           </CardContent>
         </CollapsibleContent>
