@@ -11,7 +11,7 @@ export function RenderActionExecutionMessage({
   const isLoading = isCurrentMessage && inProgress;
 
   return (
-    <div className="max-w-[85%] mr-auto">
+    <div className="max-w-full mr-auto">
       <div className="rounded-lg px-4 py-2 text-sm bg-blue-50 text-blue-800 border border-blue-200">
         <div className="font-medium mb-1">Executing Action</div>
         <div className="text-xs opacity-75">

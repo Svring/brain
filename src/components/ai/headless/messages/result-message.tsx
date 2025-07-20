@@ -36,7 +36,7 @@ export function RenderResultMessage({ message }: MessageRendererProps) {
   const CardComponent = actionName ? cardTypes[actionName] : null;
 
   return (
-    <div className="max-w-[85%] mr-auto">
+    <div className="w-full mr-auto">
       <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
         <Card className="bg-background border">
           <CollapsibleTrigger asChild>

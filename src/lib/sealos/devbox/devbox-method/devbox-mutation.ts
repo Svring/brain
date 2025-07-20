@@ -50,7 +50,7 @@ export function useManageDevboxLifecycleMutation(context: DevboxApiContext) {
           queryKey: ["sealos", "devbox", "get", variables.devboxName],
         });
       }
-      queryClient.invalidateQueries({ queryKey: ["sealos", "devbox", "list"] });
+      queryClient.invalidateQueries({ queryKey: ["sealos", "devbox"] });
     },
   });
 }
@@ -61,7 +61,7 @@ export function useDeleteDevboxMutation(context: DevboxApiContext) {
     mutationFn: (devboxName: string) =>
       runParallelAction(deleteDevbox(devboxName, context)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sealos", "devbox", "list"] });
+      queryClient.invalidateQueries({ queryKey: ["sealos", "devbox"] });
     },
   });
 }

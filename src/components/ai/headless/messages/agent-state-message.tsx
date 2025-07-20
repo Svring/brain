@@ -8,7 +8,7 @@ export function RenderAgentStateMessage({ message }: MessageRendererProps) {
   const { state } = useAiContext();
 
   return (
-    <div className="max-w-[95%] mr-auto">
+    <div className="max-w-full mr-auto">
       <StateCard state={state.context.state} className="max-w-md" />
     </div>
   );

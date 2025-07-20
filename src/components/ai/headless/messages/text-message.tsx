@@ -13,7 +13,7 @@ export function RenderTextMessage({
   const isLoading = isCurrentMessage && inProgress && !isUser;
 
   return (
-    <div className={cn("max-w-[85%]", isUser ? "ml-auto" : "mr-auto")}>
+    <div className={cn("max-w-full", isUser ? "ml-auto" : "mr-auto")}>
       <div
         className={cn(
           "rounded-lg px-4 py-2 text-sm break-words",
