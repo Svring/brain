@@ -5,6 +5,7 @@ import {
   listDevboxOptions,
   getDevboxOptions,
 } from "@/lib/sealos/devbox/devbox-method/devbox-query";
+import { useDeleteDevboxMutation } from "@/lib/sealos/devbox/devbox-method/devbox-mutation";
 import { useCopilotAction } from "@copilotkit/react-core";
 import { createDevboxContext } from "@/lib/sealos/devbox/devbox-utils";
 
@@ -43,7 +44,29 @@ export const getDevboxAction = () => {
   });
 };
 
+export const deleteDevboxAction = () => {
+  const context = createDevboxContext();
+
+  useCopilotAction({
+    name: "deleteDevbox",
+    description: "Delete the devbox",
+    parameters: [
+      {
+        name: "devboxName",
+        type: "string",
+        description:
+          "The name of the devbox to delete. Can be a single devbox name or array of devbox names.",
+        required: true,
+      },
+    ],
+    handler: async ({ devboxName }) => {
+      return { devboxName };
+    },
+  });
+};
+
 export const activateDevboxActions = () => {
   listDevboxAction();
   getDevboxAction();
+  deleteDevboxAction();
 };

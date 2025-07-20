@@ -8,6 +8,7 @@ import {
   BrainCog,
   FolderCode,
   Globe,
+  Languages,
   Mic,
   Paperclip,
   Square,
@@ -205,6 +206,8 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 }) => {
   const [time, setTime] = React.useState(0);
   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const lastTranscriptRef = React.useRef("");
+  const lastTimeRef = React.useRef(0);
   const {
     transcript,
     listening,
@@ -212,13 +215,32 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     browserSupportsSpeechRecognition,
   } = useSpeechRecognition();
 
+  // Stable callback references
+  const stableOnStartRecording = React.useCallback(onStartRecording, []);
+  const stableOnStopRecording = React.useCallback(onStopRecording, []);
+  const stableResetTranscript = React.useCallback(resetTranscript, []);
+
+  // Effect for starting recording
   React.useEffect(() => {
     if (isRecording && browserSupportsSpeechRecognition) {
-      onStartRecording();
-      resetTranscript();
-      SpeechRecognition.startListening({ continuous: true });
-      timerRef.current = setInterval(() => setTime((t) => t + 1), 1000);
-    } else {
+      stableOnStartRecording();
+      stableResetTranscript();
+      SpeechRecognition.startListening({ 
+        continuous: true
+      });
+      timerRef.current = setInterval(() => {
+        setTime((t) => {
+          const newTime = t + 1;
+          lastTimeRef.current = newTime;
+          return newTime;
+        });
+      }, 1000);
+    }
+  }, [isRecording, browserSupportsSpeechRecognition, stableOnStartRecording, stableResetTranscript]);
+
+  // Effect for stopping recording
+  React.useEffect(() => {
+    if (!isRecording) {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
@@ -226,25 +248,27 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       if (listening) {
         SpeechRecognition.stopListening();
       }
-      if (!isRecording && time > 0) {
-        onStopRecording(transcript, time);
+      if (lastTimeRef.current > 0) {
+        stableOnStopRecording(lastTranscriptRef.current, lastTimeRef.current);
         setTime(0);
+        lastTimeRef.current = 0;
+        lastTranscriptRef.current = "";
       }
     }
+  }, [isRecording, listening, stableOnStopRecording]);
+
+  // Update transcript ref when transcript changes
+  React.useEffect(() => {
+    lastTranscriptRef.current = transcript;
+  }, [transcript]);
+
+  // Cleanup effect
+  React.useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       if (listening) SpeechRecognition.stopListening();
     };
-  }, [
-    isRecording,
-    browserSupportsSpeechRecognition,
-    listening,
-    transcript,
-    time,
-    onStartRecording,
-    onStopRecording,
-    resetTranscript,
-  ]);
+  }, []);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -281,6 +305,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
         <span className="font-mono text-sm text-white/80">
           {formatTime(time)}
         </span>
+
       </div>
 
       {/* Show live transcript */}
@@ -691,9 +716,13 @@ export const PromptInputBox = React.forwardRef(
     const handleStopRecording = (transcript: string, duration: number) => {
       console.log(`Stopped recording after ${duration} seconds`);
       setIsRecording(false);
-      // If we have a transcript, use it as the input; otherwise, send a voice message indicator
+      // If we have a transcript, append it to existing input or set as new input
       if (transcript.trim()) {
-        setInput(transcript);
+        const currentInput = input.trim();
+        const newInput = currentInput 
+          ? `${currentInput} ${transcript}` 
+          : transcript;
+        setInput(newInput);
       } else {
         onSend(`[Voice message - ${duration} seconds]`, []);
       }
@@ -815,6 +844,8 @@ export const PromptInputBox = React.forwardRef(
             </PromptInputAction> */}
 
               <div className="flex items-center">
+
+                
                 {/* <button
                 type="button"
                 onClick={() => handleToggleChange("search")}

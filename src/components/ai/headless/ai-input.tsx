@@ -2,7 +2,7 @@
 
 import { PromptInputBox } from "../components/ai-prompt-box";
 import { useCopilotChat } from "@copilotkit/react-core";
-import { MessageRole, TextMessage } from "@copilotkit/runtime-client-gql";
+import { randomId } from "@copilotkit/shared";
 
 interface AiChatInputProps {
   className?: string;
@@ -13,12 +13,11 @@ export function AiChatInput({ className }: AiChatInputProps) {
 
   const handleSendMessage = (message: string) => {
     if (message.trim() && !isLoading) {
-      appendMessage(
-        new TextMessage({
-          role: MessageRole.User,
-          content: message.trim(),
-        })
-      );
+      appendMessage({
+        id: randomId(),
+        role: "user",
+        content: message.trim(),
+      });
     }
   };
 

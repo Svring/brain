@@ -292,3 +292,71 @@ export function DevboxCard({ data }: { data?: DevboxInfo }) {
     </Card>
   );
 }
+
+export function DevboxDeleteCard({ data }: { data: { devboxName: string } }) {
+  const context = createDevboxContext();
+  const deleteMutation = useDeleteDevboxMutation(context);
+  const { devboxName } = data;
+
+  const handleDelete = async () => {
+    try {
+      if (!devboxName) {
+        toast.error("Devbox name is required");
+        return;
+      }
+      await deleteMutation.mutateAsync(devboxName);
+      toast.success("Devbox deleted successfully");
+    } catch (error) {
+      toast.error(`Failed to delete devbox: ${error}`);
+    }
+  };
+
+  const handleCancel = () => {
+    toast.info("Deletion cancelled");
+  };
+
+  return (
+    <Card className="w-full max-w-md">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg font-semibold text-destructive">
+          Delete Devbox
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-sm">
+          Are you sure you want to delete devbox:{" "}
+          <strong className="font-semibold">{devboxName}</strong>?
+        </p>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleDelete}
+            disabled={deleteMutation.isPending}
+            variant="destructive"
+            size="sm"
+            className="flex-1"
+          >
+            {deleteMutation.isPending ? (
+              <>
+                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Trash2 className="h-3 w-3 mr-1" />
+                Delete Devbox
+              </>
+            )}
+          </Button>
+          <Button
+            onClick={handleCancel}
+            variant="outline"
+            size="sm"
+            disabled={deleteMutation.isPending}
+          >
+            Cancel
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

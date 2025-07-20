@@ -9,10 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@copilotkit/react-core": "^1.9.1",
-    "@copilotkit/react-ui": "^1.9.1",
-    "@copilotkit/runtime": "^1.9.1",
-    "@copilotkit/runtime-client-gql": "^1.9.1",
+    "@copilotkit/react-core": "1.10.0-next.0",
+    "@copilotkit/react-ui": "1.10.0-next.0",
+    "@copilotkit/runtime": "1.10.0-next.0",
+    "@copilotkit/runtime-client-gql": "1.10.0-next.0",
+    "@copilotkit/shared": "^1.9.3",
     "@dagrejs/dagre": "^1.1.5",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
@@ -71,6 +72,7 @@
     "dotenv": "^17.2.0",
     "embla-carousel-react": "8.5.1",
     "fast-json-patch": "^3.1.1",
+    "flowtoken": "^1.0.40",
     "framer-motion": "^12.23.3",
     "graphql": "^16.8.1",
     "input-otp": "1.4.1",

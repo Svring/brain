@@ -10,13 +10,18 @@ export function RenderTextMessage({
   inProgress,
 }: MessageRendererProps) {
   const isUser = message.role === "user";
-  const isLoading = isCurrentMessage && inProgress && !isUser;
+  const isLoading = isCurrentMessage && inProgress && !isUser && !message.content;
+
+  // Don't render empty messages unless they're loading
+  if (!message.content && !isLoading) {
+    return null;
+  }
 
   return (
-    <div className={cn("max-w-full", isUser ? "ml-auto" : "mr-auto")}>
+    <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
       <div
         className={cn(
-          "rounded-lg px-4 py-2 text-sm break-words",
+          "inline-block rounded-lg px-4 py-2 text-sm break-words",
           isUser
             ? "bg-primary text-primary-foreground"
             : "bg-muted text-foreground",
