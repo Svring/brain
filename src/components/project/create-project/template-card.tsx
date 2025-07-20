@@ -92,13 +92,22 @@ export function TemplateCard({
     setSelectedCategory(category);
   };
 
+  const handleCategoryKeyDown = (e: React.KeyboardEvent, category: string) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      e.stopPropagation();
+      setSelectedCategory(category);
+    }
+  };
+
   return (
     <>
-      <button
+      <div
         className="group relative cursor-pointer rounded-lg border p-4 text-left transition-all hover:border-border/60 hover:shadow-md"
         onClick={handleClick}
         onKeyDown={handleKeyDown}
-        type="button"
+        role="button"
+        tabIndex={0}
       >
         {/* Header with icon and title */}
         <div className="mb-3 flex items-center gap-3">
@@ -131,14 +140,16 @@ export function TemplateCard({
         {template.spec.categories && template.spec.categories.length > 0 && (
           <div className="mb-4 flex flex-wrap gap-1">
             {template.spec.categories.slice(0, 3).map((category: string) => (
-              <button
+              <div
                 className="cursor-pointer rounded-full border-none bg-secondary px-2 py-1 text-secondary-foreground text-xs transition-colors hover:bg-secondary/80"
                 key={category}
                 onClick={(e) => handleCategoryClick(e, category)}
-                type="button"
+                onKeyDown={(e) => handleCategoryKeyDown(e, category)}
+                role="button"
+                tabIndex={0}
               >
                 {category}
-              </button>
+              </div>
             ))}
           </div>
         )}
@@ -164,7 +175,7 @@ export function TemplateCard({
             )}
           </Button>
         </div>
-      </button>
+      </div>
 
       {/* Template Input Dialog */}
       {hasInputs && (

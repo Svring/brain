@@ -13,10 +13,12 @@ export default function AiCoin() {
   return (
     <StarBorder
       isRound
-      className={cn("absolute w-12 h-12 p-2 right-2 bottom-2 cursor-pointer hover:scale-105 transition-transform")}
+      className={cn(
+        "absolute w-12 h-12 right-4 bottom-4 cursor-pointer hover:scale-105 transition-transform"
+      )}
       onClick={handleClick}
     >
-      <Bird className="w-full h-full" />
+      <Bird className="w-full h-full p-2" />
     </StarBorder>
   );
 }

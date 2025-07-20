@@ -12,7 +12,6 @@ import { AuthProvider } from "@/contexts/auth-context/auth-context";
 import { AiProvider } from "@/contexts/ai-context/ai-context";
 import { ProjectProvider } from "@/contexts/project-context/project-context";
 import { getUser } from "@/payload/operations/users-operation";
-import type { User } from "@/payload-types";
 
 import "@/styles/globals.css";
 import "@copilotkit/react-ui/styles.css";

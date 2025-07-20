@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import BaseNode from "../base-node-wrapper";
 import { cn } from "@/lib/utils";
@@ -37,10 +37,8 @@ export default function IngressNode({
   const [readyStatus, setReadyStatus] = useState<ReadyStatus | null>(null);
   const [isChecking, setIsChecking] = useState(false);
 
-  // Create context at component level and memoize it
-  const deployContext = useMemo(() => {
-    return appName ? createDeployContext() : null;
-  }, [appName]);
+  // Create context at component level - only when appName exists
+  const deployContext = appName ? createDeployContext() : null;
 
   useEffect(() => {
     // Only check ready status for apps (not devboxes)
