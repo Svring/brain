@@ -220,7 +220,7 @@ export default function Page({
     return () => {
       exitProject();
     };
-  }, [projectName, enterProject, exitProject]);
+  }, [projectName]);
 
   return (
     <DndProvider>

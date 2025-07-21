@@ -35,7 +35,7 @@ export function useFlow(resources: ListAllResourcesResponse | undefined) {
       const updatedNodes = applyNodeChanges(changes, nodes);
       updateNodes(updatedNodes);
     },
-    [nodes, updateNodes]
+    [nodes]
   );
 
   const onEdgesChange = useCallback(
@@ -43,7 +43,7 @@ export function useFlow(resources: ListAllResourcesResponse | undefined) {
       const updatedEdges = applyEdgeChanges(changes, edges);
       updateEdges(updatedEdges);
     },
-    [edges, updateEdges]
+    [edges]
   );
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export function useFlow(resources: ListAllResourcesResponse | undefined) {
       direction: "BT",
     });
     setFlowData(positionedNodes, newEdges);
-  }, [resources, setFlowData]);
+  }, [resources]);
 
   return [nodes, onNodesChange, edges, onEdgesChange] as const;
 }

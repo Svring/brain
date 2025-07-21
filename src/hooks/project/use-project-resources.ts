@@ -13,7 +13,10 @@ import {
 } from "@/lib/k8s/k8s-method/k8s-utils";
 import { ListAllResourcesResponse } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
 import { useEffect, useMemo } from "react";
-import { useProjectState, useProjectActions } from "@/contexts/project-context/project-context";
+import {
+  useProjectState,
+  useProjectActions,
+} from "@/contexts/project-context/project-context";
 import _ from "lodash";
 import { listAnnotationBasedResourcesOptions } from "@/lib/k8s/k8s-method/k8s-query";
 import { useBatchPatchResourcesMetadataMutation } from "@/lib/k8s/k8s-method/k8s-mutation";
@@ -70,7 +73,7 @@ export function useProjectResources(
       const simplifiedData = convertResourcesToAnnotation(resourcesQuery.data);
       setFlowGraphData(projectName, simplifiedData);
     }
-  }, [projectName, resourcesQuery.data, setFlowGraphData]);
+  }, [projectName, resourcesQuery.data]);
 
   // Store simplified data in annotation when full resources are loaded and no annotation exists
   useEffect(() => {
