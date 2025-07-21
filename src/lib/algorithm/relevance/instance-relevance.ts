@@ -1,8 +1,5 @@
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
-import {
-  listAllResources,
-  getAllResourcesByName,
-} from "@/lib/k8s/k8s-method/k8s-query";
+import { listAllResources } from "@/lib/k8s/k8s-method/k8s-query";
 import { INSTANCE_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
 import _ from "lodash";
 
@@ -41,17 +38,5 @@ export const getInstanceRelatedResources = async (
     }
   });
 
-  // 2. Get resources by name
-  const namedResources = await getAllResourcesByName(context, instanceName);
-  allItems.push(...namedResources);
-
-  // 3. Remove duplicates
-  return _.uniqWith(
-    allItems,
-    (a, b) =>
-      a.metadata?.selfLink === b.metadata?.selfLink ||
-      (a.kind === b.kind &&
-        a.metadata?.name === b.metadata?.name &&
-        a.metadata?.namespace === b.metadata?.namespace)
-  );
+  return allItems;
 };

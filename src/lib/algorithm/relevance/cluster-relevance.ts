@@ -1,5 +1,5 @@
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
-import { listAllResources, getAllResourcesByName } from "@/lib/k8s/k8s-method/k8s-query";
+import { listAllResources } from "@/lib/k8s/k8s-method/k8s-query";
 import { CLUSTER_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
 import _ from "lodash";
 
@@ -23,14 +23,5 @@ export const getClusterRelatedResources = async (context: K8sApiContext, cluster
       });
   }
 
-  // Get resources by name
-  const namedResources = await getAllResourcesByName(context, clusterName);
-  const exportService = await getAllResourcesByName(context, `${clusterName}-export`);
-  allItems.push(...namedResources, ...exportService);
-
-  // Remove duplicates, as some resources might be fetched by both label and name
-  return _.uniqWith(allItems, (a, b) => 
-    a.metadata?.selfLink === b.metadata?.selfLink ||
-    (a.kind === b.kind && a.metadata?.name === b.metadata?.name && a.metadata?.namespace === b.metadata?.namespace)
-  );
+  return allItems;
 };
