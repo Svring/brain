@@ -1,8 +1,6 @@
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
-import { listAllResources } from "@/lib/k8s/k8s-method/k8s-query";
-import { getBuiltinResource, getCustomResource } from "@/lib/k8s/k8s-api/k8s-api-query";
+import { listAllResources, getAllResourcesByName } from "@/lib/k8s/k8s-method/k8s-query";
 import { PROJECT_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
-import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 import _ from "lodash";
 
 export const getInstanceRelatedResources = async (context: K8sApiContext, instanceName: string) => {
@@ -32,36 +30,9 @@ export const getInstanceRelatedResources = async (context: K8sApiContext, instan
     }
   });
 
-  // 2. Get resources by name, based on useDeleteInstanceRelatedMutation
-  const namedResourcePromises = [
-    getBuiltinResource(context, { type: 'builtin', resourceType: 'configmap', name: instanceName }),
-    getBuiltinResource(context, { type: 'builtin', resourceType: 'secret', name: instanceName }),
-    getBuiltinResource(context, { type: 'builtin', resourceType: 'horizontalpodautoscaler', name: instanceName }),
-    getBuiltinResource(context, { type: 'builtin', resourceType: 'job', name: instanceName }),
-    getBuiltinResource(context, { type: 'builtin', resourceType: 'cronjob', name: instanceName }),
-    getBuiltinResource(context, { type: 'builtin', resourceType: 'deployment', name: instanceName }),
-    getBuiltinResource(context, { type: 'builtin', resourceType: 'statefulset', name: instanceName }),
-  ];
-
-  if (CUSTOM_RESOURCES.app) {
-    namedResourcePromises.push(
-      getCustomResource(context, {
-        type: 'custom',
-        group: CUSTOM_RESOURCES.app.group,
-        version: CUSTOM_RESOURCES.app.version,
-        plural: CUSTOM_RESOURCES.app.plural,
-        name: instanceName,
-      })
-    );
-  }
-
-  const namedResourceResults = await Promise.allSettled(namedResourcePromises);
-
-  namedResourceResults.forEach(result => {
-    if (result.status === 'fulfilled' && result.value && Object.keys(result.value).length > 0) {
-      allItems.push(result.value);
-    }
-  });
+  // 2. Get resources by name
+  const namedResources = await getAllResourcesByName(context, instanceName);
+  allItems.push(...namedResources);
 
   // 3. Remove duplicates
   return _.uniqWith(allItems, (a, b) => 

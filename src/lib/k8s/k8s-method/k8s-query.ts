@@ -270,6 +270,72 @@ export const listAnnotationBasedResourcesOptions = (
   });
 
 /**
+ * Get all builtin resources by name in parallel.
+ */
+export const getAllBuiltinResourcesByName = async (
+  context: K8sApiContext,
+  name: string
+) => {
+  const builtinPromises = _.map(BUILTIN_RESOURCES, (config) =>
+    runParallelAction(
+      getBuiltinResource(context, {
+        type: "builtin",
+        resourceType: config.resourceType,
+        name,
+      })
+    )
+  );
+
+  const results = await Promise.allSettled(builtinPromises);
+  return results
+    .filter(
+      (r) => r.status === "fulfilled" && r.value && Object.keys(r.value).length > 0
+    )
+    .map((r: any) => r.value);
+};
+
+/**
+ * Get all custom resources by name in parallel.
+ */
+export const getAllCustomResourcesByName = async (
+  context: K8sApiContext,
+  name: string
+) => {
+  const customPromises = _.map(CUSTOM_RESOURCES, (config) =>
+    runParallelAction(
+      getCustomResource(context, {
+        type: "custom",
+        group: config.group,
+        version: config.version,
+        plural: config.plural,
+        name,
+      })
+    )
+  );
+
+  const results = await Promise.allSettled(customPromises);
+  return results
+    .filter(
+      (r) => r.status === "fulfilled" && r.value && Object.keys(r.value).length > 0
+    )
+    .map((r: any) => r.value);
+};
+
+/**
+ * Get all resources by name in parallel.
+ */
+export const getAllResourcesByName = async (
+  context: K8sApiContext,
+  name: string
+) => {
+  const [builtinResources, customResources] = await Promise.all([
+    getAllBuiltinResourcesByName(context, name),
+    getAllCustomResourcesByName(context, name),
+  ]);
+  return [...builtinResources, ...customResources];
+};
+
+/**
  * Query options for getting a secret by name
  * Secrets are builtin Kubernetes resources
  */
