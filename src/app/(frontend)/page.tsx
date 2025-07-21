@@ -1,12 +1,11 @@
 "use client";
 
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { Plus, Search } from "lucide-react";
+import { Plus } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo } from "react";
 import ProjectCard from "@/components/project/components/project-card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -19,28 +18,17 @@ import { useDisclosure } from "@reactuses/core";
 import CreateProject from "@/components/project/create-project/create-project";
 import AiCoin from "@/components/ai/headless/ai-coin";
 import AiChatbox from "@/components/ai/headless/ai-chatbox";
+import SearchBar from "@/components/app/search-bar";
 
 export default function Page() {
   const { isOpen, onClose, onOpenChange } = useDisclosure();
-  const {
-    isOpen: isSearchOpen,
-    onOpen: onSearchOpen,
-    onClose: onSearchClose,
-  } = useDisclosure();
   const [searchTerm, setSearchTerm] = useState("");
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const {
     data: projects,
     isLoading: projectsLoading,
     isError: projectsError,
   } = useProjects();
-
-  useEffect(() => {
-    if (isSearchOpen && searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  }, [isSearchOpen]);
 
   // Filter projects based on search term
   const filteredProjects = useMemo(() => {
@@ -63,26 +51,10 @@ export default function Page() {
           </div>
           {/* Search bar and plus button in the same row */}
           <div className="flex items-center gap-3">
-            <div className="relative w-full max-w-md">
-              {isSearchOpen ? (
-                <Input
-                  ref={searchInputRef}
-                  className="h-9 w-full"
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onBlur={() => {
-                    if (!searchTerm) {
-                      onSearchClose();
-                    }
-                  }}
-                  placeholder="Search projects..."
-                  value={searchTerm}
-                />
-              ) : (
-                <Button variant="ghost" onClick={onSearchOpen}>
-                  <Search />
-                </Button>
-              )}
-            </div>
+            <SearchBar
+              onSearchChange={setSearchTerm}
+              placeholder="Search projects..."
+            />
             <Dialog onOpenChange={onOpenChange} open={isOpen}>
               <VisuallyHidden>
                 <DialogTitle>Create Project</DialogTitle>

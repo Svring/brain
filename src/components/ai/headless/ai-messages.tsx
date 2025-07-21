@@ -35,20 +35,6 @@ export function AiMessages() {
                           {/* Generative UI for assistant messages */}
                           {message.role === "assistant" &&
                             message.generativeUI?.()}
-
-                          {/* Tool call results */}
-                          {message.role === "tool" && (
-                            <div className="mt-2 p-3 rounded-lg border">
-                              <div className="text-sm text-gray-600">
-                                <span className="font-medium">
-                                  Tool: {message.toolName}
-                                </span>
-                                <div className="mt-1 font-mono text-xs">
-                                  {message.content || "No response"}
-                                </div>
-                              </div>
-                            </div>
-                          )}
                         </div>
                       );
                     })}

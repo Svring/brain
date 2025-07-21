@@ -8,6 +8,11 @@ import {
 import { useDeleteDevboxMutation } from "@/lib/sealos/devbox/devbox-method/devbox-mutation";
 import { useCopilotAction } from "@copilotkit/react-core";
 import { createDevboxContext } from "@/lib/sealos/devbox/devbox-utils";
+import {
+  DevboxListCard,
+  DevboxCard,
+  DevboxDeleteCard,
+} from "@/components/ai/action-cards/devbox-action-cards";
 
 export const listDevboxAction = () => {
   const context = createDevboxContext();
@@ -17,6 +22,9 @@ export const listDevboxAction = () => {
     name: "listDevbox",
     description: "Get the list of devboxes",
     handler: () => data,
+    render: (props) => {
+      return <DevboxListCard devboxList={props.result} />;
+    },
   });
 };
 
@@ -41,6 +49,13 @@ export const getDevboxAction = () => {
         getDevboxOptions(context, devboxName)
       );
     },
+    render(props) {
+      if (!props.result) {
+        return <></>;
+      }
+      const devboxData = JSON.parse(props.result);
+      return <DevboxCard data={devboxData?.data} />;
+    },
   });
 };
 
@@ -60,10 +75,24 @@ export const deleteDevboxAction = () => {
       },
     ],
     renderAndWaitForResponse(props) {
+      const { status, args, respond, result } = props;
+      
+      // Ensure args has the required devboxName property
+      if (!args?.devboxName) {
+        return (
+          <div className="flex flex-col gap-2 p-4">
+            <p className="text-destructive">Error: Devbox name is required</p>
+          </div>
+        );
+      }
+      
       return (
-        <div className="flex flex-col gap-2 p-4">
-          <p>Deleting devbox...</p>
-        </div>
+        <DevboxDeleteCard
+          status={status}
+          args={args as { devboxName: string }}
+          respond={respond}
+          result={result}
+        />
       );
     },
   });

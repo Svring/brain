@@ -17,7 +17,7 @@ export function RenderTextMessage({
     isCurrentMessage && inProgress && !isUser && !message.content;
 
   // Don't render empty messages unless they're loading
-  if (!message.content && !isLoading) {
+  if ((!message.content && !isLoading) || message.role === "tool") {
     return null;
   }
 
@@ -32,20 +32,20 @@ export function RenderTextMessage({
           isLoading && "animate-pulse"
         )}
       >
-        {/* <AnimatedMarkdown
+        <AnimatedMarkdown
           content={message.content ?? ""}
           animation="fadeIn"
           animationDuration="0.2s"
           animationTimingFunction="ease-in-out"
-        /> */}
-        <span>{message.content}</span>
+        />
+        {/* <span>{message.content}</span> */}
 
-        {/* {isLoading && (
+        {isLoading && (
           <div className="flex items-center gap-2 text-xs opacity-70">
             <Loader2 className="w-3 h-3 animate-spin" />
             <span>Thinking...</span>
           </div>
-        )} */}
+        )}
       </div>
     </div>
   );
