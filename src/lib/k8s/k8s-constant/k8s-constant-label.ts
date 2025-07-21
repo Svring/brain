@@ -1,14 +1,12 @@
-export const PROJECT_NAME_LABEL_KEY = "cloud.sealos.io/deploy-on-sealos";
-
 /**
- * Labels used for project (instance) related resource operations
+ * Labels used for instance (project) related resource operations
  */
-export const PROJECT_RELATE_RESOURCE_LABELS = {
-  /** Label used for most project-related resources managed by app-deploy-manager */
-  APP_DEPLOY_MANAGER: "cloud.sealos.io/app-deploy-manager",
-  /** Label used specifically for PVCs in project deletion */
+export const INSTANCE_RELATE_RESOURCE_LABELS = {
+  /** Label used for direct affiliated resources */
+  DEPLOY_ON_SEALOS: "cloud.sealos.io/deploy-on-sealos",
+  /** Label used specifically for PVCs in instance deletion */
   APP: "app",
-  /** Label used for services, ingresses, cert-manager resources, and other managed resources in project deletion */
+  /** Label used for services, ingresses, cert-manager resources, and other managed resources in instance deletion */
   MANAGED_BY: "app.kubernetes.io/managed-by",
 } as const;
 
@@ -17,18 +15,15 @@ export const DEPLOYMENT_RELATE_RESOURCE_LABELS = {
   APP_DEPLOY_MANAGER: "cloud.sealos.io/app-deploy-manager",
 } as const;
 
+export const DEVBOX_RELATE_RESOURCE_LABELS = {
+  /** Label used for devbox-related resources like backups in devbox deletion */
+  DEVBOX_MANAGER: "cloud.sealos.io/devbox-manager",
+} as const;
+
 /**
  * Labels used for cluster related resource operations
  */
 export const CLUSTER_RELATE_RESOURCE_LABELS = {
   /** Label used for cluster-related resources like backups in cluster deletion */
   APP_KUBERNETES_INSTANCE: "app.kubernetes.io/instance",
-} as const;
-
-/**
- * All deletion-related labels combined for easy access
- */
-export const DELETION_LABELS = {
-  PROJECT: PROJECT_RELATE_RESOURCE_LABELS,
-  CLUSTER: CLUSTER_RELATE_RESOURCE_LABELS,
 } as const;

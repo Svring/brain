@@ -276,9 +276,10 @@ export default function BaseNodeWrapper({
     {
       label: "Remove from project",
       onClick: () => {
-        // removeFromProjectMutation.mutate({
-        //   resources: [target],
-        // }),
+        removeFromProjectMutation.mutate({
+          resources: [target],
+          projectName,
+        });
       },
       Icon: <Trash2 className="w-4 h-4" />,
     },

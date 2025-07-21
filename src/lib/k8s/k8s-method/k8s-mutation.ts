@@ -28,7 +28,7 @@ import {
 import { CUSTOM_RESOURCES } from "../k8s-constant/k8s-constant-custom-resource";
 import { invalidateResourceQueries } from "./k8s-utils";
 import {
-  PROJECT_RELATE_RESOURCE_LABELS,
+  INSTANCE_RELATE_RESOURCE_LABELS,
   CLUSTER_RELATE_RESOURCE_LABELS,
 } from "../k8s-constant/k8s-constant-label";
 
@@ -313,7 +313,7 @@ export function useDeleteInstanceRelatedMutation(context: K8sApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ instanceName }: { instanceName: string }) => {
-      const labelSelector = `${PROJECT_RELATE_RESOURCE_LABELS.MANAGED_BY}=${instanceName}`;
+      const labelSelector = `${INSTANCE_RELATE_RESOURCE_LABELS.MANAGED_BY}=${instanceName}`;
 
       // Phase 1: Delete dependent resources
       const dependentResults = await Promise.allSettled([
@@ -338,7 +338,7 @@ export function useDeleteInstanceRelatedMutation(context: K8sApiContext) {
           deleteBuiltinResourcesByLabelSelector(context, {
             type: "builtin",
             resourceType: "pvc",
-            labelSelector: `${PROJECT_RELATE_RESOURCE_LABELS.APP}=${instanceName}`,
+            labelSelector: `${INSTANCE_RELATE_RESOURCE_LABELS.APP}=${instanceName}`,
           })
         ),
         // Delete cert-manager resources if available

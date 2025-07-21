@@ -17,6 +17,9 @@ import {
   CUSTOM_RESOURCES,
   CustomResourceConfig,
 } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
+import { runParallelAction } from "next-server-actions-parallel";
+import { listBuiltinResources, listCustomResources } from "../k8s-api/k8s-api-query";
+import { INSTANCE_RELATE_RESOURCE_LABELS } from "../k8s-constant/k8s-constant-label";
 
 import _ from "lodash";
 import { ListAllResourcesResponse } from "../k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
@@ -88,15 +91,9 @@ export async function convertAnnotationToResources(
   context: K8sApiContext,
   projectName: string
 ): Promise<ListAllResourcesResponse> {
-  const { runParallelAction } = await import("next-server-actions-parallel");
-  const { listBuiltinResources, listCustomResources } = await import(
-    "../k8s-api/k8s-api-query"
-  );
-  const { PROJECT_NAME_LABEL_KEY } = await import(
-    "../k8s-constant/k8s-constant-label"
-  );
 
-  const labelSelector = `${PROJECT_NAME_LABEL_KEY}=${projectName}`;
+
+  const labelSelector = `${INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS}=${projectName}`;
 
   // Get unique kinds from annotation
   const builtinKinds = _.uniqBy(annotation.builtin, "kind");

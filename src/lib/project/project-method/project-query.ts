@@ -8,7 +8,7 @@ import {
 } from "@/lib/k8s/k8s-method/k8s-query";
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
 import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
-import { PROJECT_NAME_LABEL_KEY } from "@/lib/k8s/k8s-constant/k8s-constant-label";
+import { INSTANCE_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
 import { filterEmptyResources } from "@/lib/k8s/k8s-method/k8s-utils";
 
 /**
@@ -61,7 +61,7 @@ export const getProjectResourcesOptions = (
   context: K8sApiContext,
   projectName: string
 ) => {
-  const labelSelector = `${PROJECT_NAME_LABEL_KEY}=${projectName}`;
+  const labelSelector = `${INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS}=${projectName}`;
 
   const baseOptions = listAllResourcesOptions(context, labelSelector);
 

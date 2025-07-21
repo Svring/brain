@@ -17,7 +17,7 @@ import {
   BuiltinResourceTarget,
   CustomResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { PROJECT_NAME_LABEL_KEY } from "@/lib/k8s/k8s-constant/k8s-constant-label";
+import { INSTANCE_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
 import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 import { BUILTIN_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-builtin-resource";
 import {
@@ -26,12 +26,11 @@ import {
 } from "./project-utils";
 import { getClusterRelatedResources } from "@/lib/algorithm/relevance/cluster-relevance";
 import { getDeployRelatedResources } from "@/lib/algorithm/relevance/deploy-relevance";
+import { getDevboxRelatedResources } from "@/lib/algorithm/relevance/devbox-relevance";
 import { getInstanceRelatedResources } from "@/lib/algorithm/relevance/instance-relevance";
-import {
-  convertAndFilterResourceToTarget,
-  convertToResourceTarget,
-  getResourceConfigFromKind,
-} from "@/lib/k8s/k8s-method/k8s-utils";
+import { convertAndFilterResourceToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { BRAIN_RESOURCES_ANNOTATION_KEY } from "@/lib/project/project-constant/project-constant-label";
+import { getProjectOptions } from "./project-query";
 
 /**
  * Extract instance and cluster names from individual resource queries
@@ -41,7 +40,7 @@ async function extractProjectResourcesDirectly(
   projectName: string,
   queryClient: any
 ) {
-  const labelSelector = `${PROJECT_NAME_LABEL_KEY}=${projectName}`;
+  const labelSelector = `${INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS}=${projectName}`;
   const instanceNames: string[] = [];
   const clusterNames: string[] = [];
 
@@ -136,6 +135,14 @@ export const useAddToProjectMutation = (context: K8sApiContext) => {
           relatedResourcesPromises.push(
             getInstanceRelatedResources(context, resource.name)
           );
+        } else if (
+          CUSTOM_RESOURCES.devbox &&
+          resource.type === "custom" &&
+          resource.plural === CUSTOM_RESOURCES.devbox.plural
+        ) {
+          relatedResourcesPromises.push(
+            getDevboxRelatedResources(context, resource.name)
+          );
         }
       }
 
@@ -148,17 +155,112 @@ export const useAddToProjectMutation = (context: K8sApiContext) => {
       allTargetsToPatch.push(...relatedTargets);
       allTargetsToPatch = _.uniqWith(allTargetsToPatch, _.isEqual);
 
+      // Add labels to all resources
       await batchPatchMutation.mutateAsync({
         targets: allTargetsToPatch,
         metadataType: "labels",
-        key: PROJECT_NAME_LABEL_KEY,
+        key: INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS,
         value: projectName,
+      });
+
+      // Update brain-resources annotation
+
+      // Get current project to read existing annotation
+      const projectQuery = getProjectOptions(context, projectName);
+      const currentProject = await queryClient.ensureQueryData(projectQuery);
+
+      // Parse existing annotation or create new one
+      let currentAnnotation: any = { builtin: [], custom: [] };
+      if (
+        currentProject?.metadata?.annotations?.[BRAIN_RESOURCES_ANNOTATION_KEY]
+      ) {
+        try {
+          currentAnnotation = JSON.parse(
+            currentProject.metadata.annotations[BRAIN_RESOURCES_ANNOTATION_KEY]
+          );
+        } catch (error) {
+          console.warn(
+            "Failed to parse existing annotation, using empty:",
+            error
+          );
+        }
+      }
+
+      // Convert new resources to simplified format
+      const newSimplifiedResources = allTargetsToPatch.map((target) => {
+        if (target.type === "custom") {
+          const config = Object.values(CUSTOM_RESOURCES).find(
+            (c) =>
+              c.group === target.group &&
+              c.version === target.version &&
+              c.plural === target.plural
+          );
+          // For custom resources, capitalize the resourceType as kind
+          const kind = config?.resourceType
+            ? config.resourceType.charAt(0).toUpperCase() +
+              config.resourceType.slice(1)
+            : target.plural;
+          return {
+            kind,
+            name: target.name,
+          };
+        } else {
+          const config = Object.values(BUILTIN_RESOURCES).find(
+            (c) => c.resourceType === target.resourceType
+          );
+          return {
+            kind: config?.kind || target.resourceType,
+            name: target.name,
+          };
+        }
+      });
+
+      // Merge with existing annotation
+      const builtinResources = newSimplifiedResources.filter((r) => {
+        return Object.values(BUILTIN_RESOURCES).some((c) => c.kind === r.kind);
+      });
+      const customResources = newSimplifiedResources.filter((r) => {
+        return Object.values(CUSTOM_RESOURCES).some((c) => {
+          const kind =
+            c.resourceType.charAt(0).toUpperCase() + c.resourceType.slice(1);
+          return kind === r.kind;
+        });
+      });
+
+      const updatedAnnotation = {
+        builtin: _.uniqWith(
+          [...(currentAnnotation.builtin || []), ...builtinResources],
+          _.isEqual
+        ),
+        custom: _.uniqWith(
+          [...(currentAnnotation.custom || []), ...customResources],
+          _.isEqual
+        ),
+      };
+
+      // Update the annotation
+      await batchPatchMutation.mutateAsync({
+        targets: [
+          {
+            type: "custom",
+            group: CUSTOM_RESOURCES.instance.group,
+            version: CUSTOM_RESOURCES.instance.version,
+            plural: CUSTOM_RESOURCES.instance.plural,
+            name: projectName,
+          },
+        ],
+        metadataType: "annotations",
+        key: BRAIN_RESOURCES_ANNOTATION_KEY,
+        value: JSON.stringify(updatedAnnotation),
       });
     },
     onSuccess: (_, { projectName }) => {
       toast.success(`Resources added to project ${projectName}`);
       queryClient.invalidateQueries({
         queryKey: ["project", "resources", context.namespace, projectName],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["project", "get", context.namespace],
       });
       queryClient.invalidateQueries({
         queryKey: ["inventory"],
@@ -173,6 +275,7 @@ export const useAddToProjectMutation = (context: K8sApiContext) => {
 export const useRemoveFromProjectMutation = (context: K8sApiContext) => {
   const queryClient = useQueryClient();
   const batchRemoveMutation = useBatchRemoveResourcesMetadataMutation(context);
+  const batchPatchMutation = useBatchPatchResourcesMetadataMutation(context);
 
   return useMutation({
     mutationFn: async ({
@@ -212,6 +315,14 @@ export const useRemoveFromProjectMutation = (context: K8sApiContext) => {
           relatedResourcesPromises.push(
             getInstanceRelatedResources(context, resource.name)
           );
+        } else if (
+          CUSTOM_RESOURCES.devbox &&
+          resource.type === "custom" &&
+          resource.plural === CUSTOM_RESOURCES.devbox.plural
+        ) {
+          relatedResourcesPromises.push(
+            getDevboxRelatedResources(context, resource.name)
+          );
         }
       }
 
@@ -224,16 +335,106 @@ export const useRemoveFromProjectMutation = (context: K8sApiContext) => {
       allTargetsToRemove.push(...relatedTargets);
       allTargetsToRemove = _.uniqWith(allTargetsToRemove, _.isEqual);
 
+      // Remove labels from all resources
       await batchRemoveMutation.mutateAsync({
         targets: allTargetsToRemove,
         metadataType: "labels",
-        key: PROJECT_NAME_LABEL_KEY,
+        key: INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS,
+      });
+
+      // Update brain-resources annotation
+
+      // Get current project to read existing annotation
+      const projectQuery = getProjectOptions(context, projectName);
+      const currentProject = await queryClient.ensureQueryData(projectQuery);
+
+      // Parse existing annotation
+      let currentAnnotation: any = { builtin: [], custom: [] };
+      if (
+        currentProject?.metadata?.annotations?.[BRAIN_RESOURCES_ANNOTATION_KEY]
+      ) {
+        try {
+          currentAnnotation = JSON.parse(
+            currentProject.metadata.annotations[BRAIN_RESOURCES_ANNOTATION_KEY]
+          );
+        } catch (error) {
+          console.warn(
+            "Failed to parse existing annotation, using empty:",
+            error
+          );
+        }
+      }
+
+      // Convert removed resources to simplified format for filtering
+      const removedSimplifiedResources = allTargetsToRemove.map((target) => {
+        if (target.type === "custom") {
+          const config = Object.values(CUSTOM_RESOURCES).find(
+            (c) =>
+              c.group === target.group &&
+              c.version === target.version &&
+              c.plural === target.plural
+          );
+          // For custom resources, capitalize the resourceType as kind
+          const kind = config?.resourceType
+            ? config.resourceType.charAt(0).toUpperCase() +
+              config.resourceType.slice(1)
+            : target.plural;
+          return {
+            kind,
+            name: target.name,
+          };
+        } else {
+          const config = Object.values(BUILTIN_RESOURCES).find(
+            (c) => c.resourceType === target.resourceType
+          );
+          return {
+            kind: config?.kind || target.resourceType,
+            name: target.name,
+          };
+        }
+      });
+
+      // Remove resources from annotation
+      const updatedAnnotation = {
+        builtin: (currentAnnotation.builtin || []).filter(
+          (resource: any) =>
+            !removedSimplifiedResources.some(
+              (removed) =>
+                removed.kind === resource.kind && removed.name === resource.name
+            )
+        ),
+        custom: (currentAnnotation.custom || []).filter(
+          (resource: any) =>
+            !removedSimplifiedResources.some(
+              (removed) =>
+                removed.kind === resource.kind && removed.name === resource.name
+            )
+        ),
+      };
+
+      // Update the annotation
+      await batchPatchMutation.mutateAsync({
+        targets: [
+          {
+            type: "custom",
+            group: CUSTOM_RESOURCES.instance.group,
+            version: CUSTOM_RESOURCES.instance.version,
+            plural: CUSTOM_RESOURCES.instance.plural,
+            name: projectName,
+          },
+        ],
+        metadataType: "annotations",
+        key: BRAIN_RESOURCES_ANNOTATION_KEY,
+        value: JSON.stringify(updatedAnnotation),
       });
     },
     onSuccess: (_, { projectName }) => {
       toast.success(`Resources removed from project ${projectName}`);
       queryClient.invalidateQueries({
         queryKey: ["project", "resources", context.namespace, projectName],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["project", "get", context.namespace],
       });
       queryClient.invalidateQueries({
         queryKey: ["inventory"],
@@ -359,7 +560,7 @@ export const useDeleteProjectMutation = (context: K8sApiContext) => {
           })
         );
 
-        const labelSelector = `${PROJECT_NAME_LABEL_KEY}=${projectName}`;
+        const labelSelector = `${INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS}=${projectName}`;
 
         const builtinDeletions = await Promise.allSettled(
           Object.entries(BUILTIN_RESOURCES).map(([, config]) => {

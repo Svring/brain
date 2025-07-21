@@ -1,13 +1,17 @@
 import { customAlphabet } from "nanoid";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
-import { PROJECT_NAME_LABEL_KEY } from "@/lib/k8s/k8s-constant/k8s-constant-label";
+import { INSTANCE_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
 
 export { inferRelianceFromEnv } from "@/lib/algorithm/reliance/env-reliance";
 
 export const getProjectNameFromResource = (
   resource: K8sResource
 ): string | null => {
-  return resource.metadata.labels?.[PROJECT_NAME_LABEL_KEY] ?? null;
+  return (
+    resource.metadata.labels?.[
+      INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS
+    ] ?? null
+  );
 };
 
 export const generateNewProjectName = () => {
@@ -25,7 +29,7 @@ metadata:
   name: ${projectName}
   namespace: ${namespace}
   labels:
-    ${PROJECT_NAME_LABEL_KEY}: ${projectName}
+    ${INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS}: ${projectName}
 spec:
   templateType: inline
   defaults:

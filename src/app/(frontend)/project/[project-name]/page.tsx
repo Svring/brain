@@ -149,7 +149,7 @@ function ProjectFlow({ projectName }: { projectName: string }) {
     addToProjectMutation.mutate(
       { resources, projectName },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
           setFlowGraphData(projectName, null);
           toast.success(
             `Added ${resources.length} resource${

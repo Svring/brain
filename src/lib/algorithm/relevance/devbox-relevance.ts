@@ -1,13 +1,13 @@
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
 import { listAllResources } from "@/lib/k8s/k8s-method/k8s-query";
-import { DEPLOYMENT_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
+import { DEVBOX_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
 import _ from "lodash";
 
-export const getDeployRelatedResources = async (
+export const getDevboxRelatedResources = async (
   context: K8sApiContext,
-  deployName: string
+  devboxName: string
 ) => {
-  const labelSelector = `${DEPLOYMENT_RELATE_RESOURCE_LABELS.APP_DEPLOY_MANAGER}=${deployName}`;
+  const labelSelector = `${DEVBOX_RELATE_RESOURCE_LABELS.DEVBOX_MANAGER}=${devboxName}`;
   const resources = await listAllResources(context, labelSelector);
 
   const allItems: any[] = [];

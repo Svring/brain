@@ -35,16 +35,12 @@ export function useProjectResources(
     getProjectOptions(context, projectName)
   );
 
-  const annotation = useMemo(
-    () => project?.metadata?.annotations?.[BRAIN_RESOURCES_ANNOTATION_KEY],
-    [project]
-  );
-
-  // Parse annotation data
   const annotationData = useMemo(() => {
+    const annotation =
+      project?.metadata?.annotations?.[BRAIN_RESOURCES_ANNOTATION_KEY];
     if (!annotation) return null;
     return JSON.parse(annotation) as BrainResourcesSimplified;
-  }, [annotation]);
+  }, [project]);
 
   // Full resources query when no annotation exists
   const fullResourcesQuery = useQuery({
@@ -81,7 +77,7 @@ export function useProjectResources(
     if (
       project === projectName &&
       resources &&
-      !annotation &&
+      !annotationData &&
       !patchMutation.isPending
     ) {
       patchMutation.mutate({
@@ -99,7 +95,7 @@ export function useProjectResources(
         value: JSON.stringify(resources),
       });
     }
-  }, [projectName, flowGraphData, annotation, patchMutation]);
+  }, [projectName, flowGraphData, annotationData, patchMutation]);
 
   return resourcesQuery;
 }
