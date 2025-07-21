@@ -1,6 +1,6 @@
 "use client";
 
-import { PromptInputBox } from "../components/ai-prompt-box";
+import { PromptInputBox } from "./ai-prompt-box";
 import { useCopilotChat } from "@copilotkit/react-core";
 import { randomId } from "@copilotkit/shared";
 
