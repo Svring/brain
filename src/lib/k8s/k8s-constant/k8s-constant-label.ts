@@ -15,6 +15,10 @@ export const DEPLOYMENT_RELATE_RESOURCE_LABELS = {
   APP_DEPLOY_MANAGER: "cloud.sealos.io/app-deploy-manager",
 } as const;
 
+export const STATEFULSET_RELATE_RESOURCE_LABELS = {
+  APP_DEPLOY_MANAGER: "cloud.sealos.io/app-deploy-manager",
+} as const;
+
 export const DEVBOX_RELATE_RESOURCE_LABELS = {
   /** Label used for devbox-related resources like backups in devbox deletion */
   DEVBOX_MANAGER: "cloud.sealos.io/devbox-manager",
