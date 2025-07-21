@@ -26,7 +26,7 @@ import _ from "lodash";
 /**
  * List all resources (both custom and builtin) in parallel.
  */
-const listAllResources = async (
+export const listAllResources = async (
   context: K8sApiContext,
   labelSelector?: string
 ) => {

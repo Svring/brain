@@ -1,8 +1,11 @@
 "use client";
 
 import type { UseQueryResult } from "@tanstack/react-query";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getProjectResourcesOptions } from "@/lib/project/project-method/project-query";
+import { useQuery } from "@tanstack/react-query";
+import {
+  getProjectResourcesOptions,
+  getProjectOptions,
+} from "@/lib/project/project-method/project-query";
 import {
   createK8sContext,
   BrainResourcesSimplified,
@@ -16,25 +19,22 @@ import { listAnnotationBasedResourcesOptions } from "@/lib/k8s/k8s-method/k8s-qu
 import { useBatchPatchResourcesMetadataMutation } from "@/lib/k8s/k8s-method/k8s-mutation";
 import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 import { BRAIN_RESOURCES_ANNOTATION_KEY } from "@/lib/project/project-constant/project-constant-label";
-import { listProjectsOptions } from "@/lib/project/project-method/project-query";
 
 export function useProjectResources(
   projectName: string
 ): UseQueryResult<ListAllResourcesResponse, Error> {
   const { send } = useProjectContext();
   const context = createK8sContext();
-  const queryClient = useQueryClient();
   const patchMutation = useBatchPatchResourcesMetadataMutation(context);
 
-  const {
-    data: projectList,
-    isLoading,
-    isSuccess,
-  } = useQuery(listProjectsOptions(context));
+  const { data: project, isSuccess } = useQuery(
+    getProjectOptions(context, projectName)
+  );
 
-  const annotation = projectList?.items?.find(
-    (item) => item.metadata.name === projectName
-  )?.metadata?.annotations?.[BRAIN_RESOURCES_ANNOTATION_KEY];
+  const annotation = useMemo(
+    () => project?.metadata?.annotations?.[BRAIN_RESOURCES_ANNOTATION_KEY],
+    [project]
+  );
 
   // Parse annotation data
   const annotationData = useMemo(() => {
@@ -65,10 +65,8 @@ export function useProjectResources(
 
   // Store simplified data in annotation when full resources are loaded and no annotation exists
   useEffect(() => {
-    if (fullResourcesQuery.data && !annotation && !patchMutation.isPending) {
-      const simplifiedData = convertResourcesToAnnotation(
-        fullResourcesQuery.data
-      );
+    if (resourcesQuery.data && !annotation && !patchMutation.isPending) {
+      const simplifiedData = convertResourcesToAnnotation(resourcesQuery.data);
 
       patchMutation.mutate({
         targets: [
@@ -85,9 +83,9 @@ export function useProjectResources(
         value: JSON.stringify(simplifiedData),
       });
     }
-  }, [fullResourcesQuery.data, patchMutation, projectName]);
+  }, [projectName, resourcesQuery.data, annotation, patchMutation]);
 
-  // Send simplified data to state machine for flow graph
+  // Send simplified data to state machine for flow graph state
   useEffect(() => {
     if (resourcesQuery.data) {
       const simplifiedData = convertResourcesToAnnotation(resourcesQuery.data);
@@ -97,7 +95,7 @@ export function useProjectResources(
         resources: [...simplifiedData.builtin, ...simplifiedData.custom],
       });
     }
-  }, [resourcesQuery.data, projectName, send]);
+  }, [projectName, resourcesQuery.data, send]);
 
   return resourcesQuery;
 }

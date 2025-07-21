@@ -218,19 +218,7 @@ export function StateCard({ state, className }: StateCardProps) {
                   </div>
                   {showCurrentProjectJson && hasCurrentProject && (
                     <div className="bg-muted p-3 rounded overflow-auto max-h-64">
-                      <ReactJson
-                        src={state.project_context.flowGraphData.project}
-                        theme="rjv-default"
-                        name={false}
-                        collapsed={1}
-                        displayDataTypes={false}
-                        displayObjectSize={false}
-                        enableClipboard={false}
-                        style={{
-                          fontSize: "12px",
-                          backgroundColor: "transparent",
-                        }}
-                      />
+                      {state.project_context.flowGraphData.project}
                     </div>
                   )}
                 </div>

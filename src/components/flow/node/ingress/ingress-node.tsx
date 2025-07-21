@@ -8,6 +8,7 @@ import { checkReadyDeploy } from "@/lib/sealos/deploy/deploy-api/deploy-old-api"
 import { createDeployContext } from "@/lib/sealos/deploy/deploy-utils";
 import { runParallelAction } from "next-server-actions-parallel";
 import type { IngressResource } from "@/lib/k8s/schemas/resource-schemas/ingress-schemas";
+// import { useFlowContext } from "@/contexts/flow-context/flow-context";
 
 interface IngressNodeProps {
   name: string;
@@ -36,6 +37,9 @@ export default function IngressNode({
   const { host, target, appName, devboxName, resource } = data;
   const [readyStatus, setReadyStatus] = useState<ReadyStatus | null>(null);
   const [isChecking, setIsChecking] = useState(false);
+
+  // const { state } = useFlowContext();
+  // console.log("state", state);
 
   // Create context at component level - only when appName exists
   const deployContext = appName ? createDeployContext() : null;

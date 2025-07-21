@@ -14,7 +14,7 @@ export default function AiCoin() {
     <StarBorder
       isRound
       className={cn(
-        "absolute w-12 h-12 right-4 bottom-4 cursor-pointer hover:scale-105 transition-transform"
+        "absolute w-12 h-12 right-4 bottom-4 cursor-pointer hover:scale-105 transition-transform z-10"
       )}
       onClick={handleClick}
     >

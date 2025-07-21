@@ -38,15 +38,16 @@ import { toast } from "sonner";
 import _ from "lodash";
 import { useProjectContext } from "@/contexts/project-context/project-context";
 import { FlowProvider } from "@/contexts/flow-context/flow-context";
+import AiCoin from "@/components/ai/headless/ai-coin";
+import AiChatbox from "@/components/ai/headless/ai-chatbox";
 
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const removeProjectAnnotationMutation = useRemoveProjectAnnotationMutation(
-    createK8sContext()
-  );
+  const context = createK8sContext();
+  const removeProjectAnnotationMutation = useRemoveProjectAnnotationMutation(context);
 
   const handleRefresh = async () => {
     if (isRefreshing) return;
@@ -119,6 +120,9 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
           </Droppable>
         </SheetContent>
       </Sheet>
+
+      <AiCoin />
+      <AiChatbox />
     </>
   );
 }
@@ -128,7 +132,8 @@ function ProjectFlow({ projectName }: { projectName: string }) {
 
   const [nodes, onNodesChange, edges, onEdgesChange] = useFlow(data);
 
-  const addToProjectMutation = useAddToProjectMutation(createK8sContext());
+  const context = createK8sContext();
+  const addToProjectMutation = useAddToProjectMutation(context);
 
   const handleDrop = (event: DragEndEvent) => {
     const { active } = event;
