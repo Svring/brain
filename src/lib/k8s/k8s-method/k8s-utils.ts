@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuthState } from "@/contexts/auth-context/auth-context";
+import { useAuthState } from "@/contexts/auth/auth-context";
 import type { K8sApiContext } from "../k8s-api/k8s-api-schemas/context-schemas";
 import { K8sApiContextSchema } from "../k8s-api/k8s-api-schemas/context-schemas";
 import type { QueryClient } from "@tanstack/react-query";
@@ -18,7 +18,10 @@ import {
   CustomResourceConfig,
 } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 import { runParallelAction } from "next-server-actions-parallel";
-import { listBuiltinResources, listCustomResources } from "../k8s-api/k8s-api-query";
+import {
+  listBuiltinResources,
+  listCustomResources,
+} from "../k8s-api/k8s-api-query";
 import { INSTANCE_RELATE_RESOURCE_LABELS } from "../k8s-constant/k8s-constant-label";
 
 import _ from "lodash";
@@ -91,8 +94,6 @@ export async function convertAnnotationToResources(
   context: K8sApiContext,
   projectName: string
 ): Promise<ListAllResourcesResponse> {
-
-
   const labelSelector = `${INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS}=${projectName}`;
 
   // Get unique kinds from annotation

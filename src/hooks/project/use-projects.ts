@@ -6,7 +6,7 @@ import { listProjectsOptions } from "@/lib/project/project-method/project-query"
 import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceListResponse } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
 import { useEffect } from "react";
-import { useProjectActions } from "@/contexts/project-context/project-context";
+import { useProjectActions } from "@/contexts/project/project-context";
 import _ from "lodash";
 
 const useProjects = (): UseQueryResult<CustomResourceListResponse, Error> => {

@@ -1,6 +1,6 @@
 "use client";
 
-import type { AiState } from "@/contexts/ai-context/ai-machine";
+import type { AiState } from "@/contexts/ai/ai-machine";
 import {
   Card,
   CardContent,

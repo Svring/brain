@@ -2,7 +2,7 @@
 
 import { ObjectStorageApiContextSchema } from "./schemas/objectstorage-api-context-schemas";
 import { nanoid } from "nanoid";
-import { useAuthState } from "@/contexts/auth-context/auth-context";
+import { useAuthState } from "@/contexts/auth/auth-context";
 
 export function createObjectStorageContext() {
   const { auth } = useAuthState();

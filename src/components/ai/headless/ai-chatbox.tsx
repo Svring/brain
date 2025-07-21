@@ -1,6 +1,6 @@
 "use client";
 
-import { useAiState, useAiActions } from "@/contexts/ai-context/ai-context";
+import { useAiState, useAiActions } from "@/contexts/ai/ai-context";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { AiMessages } from "./ai-messages";
 import { AiChatInput } from "./ai-input";

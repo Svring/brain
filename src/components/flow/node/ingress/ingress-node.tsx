@@ -4,10 +4,7 @@ import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res
 import BaseNode from "../base-node-wrapper";
 import { cn } from "@/lib/utils";
 import type { IngressResource } from "@/lib/k8s/schemas/resource-schemas/ingress-schemas";
-import {
-  useFlowState,
-  useFlowActions,
-} from "@/contexts/flow-context/flow-context";
+import { useFlowState, useFlowActions } from "@/contexts/flow/flow-context";
 import { useMount } from "@reactuses/core";
 
 interface IngressNodeProps {

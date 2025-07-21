@@ -17,7 +17,7 @@ import FloatingActionMenu from "@/components/flow/components/floating-action-men
 import { Trash2, ArrowLeft } from "lucide-react";
 // import { useChatContext } from "@copilotkit/react-ui";
 import { useProjectResources } from "@/hooks/project/use-project-resources";
-import { useProjectState } from "@/contexts/project-context/project-context";
+import { useProjectState } from "@/contexts/project/project-context";
 import { useClusterSecret } from "@/lib/sealos/cluster/cluster-method/cluster-query";
 import { useObjectStorageSecret } from "@/lib/sealos/objectstorage/objectstorage-method/objectstorage-query";
 import { BUILTIN_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-builtin-resource";

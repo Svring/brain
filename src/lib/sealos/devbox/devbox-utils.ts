@@ -3,7 +3,7 @@
 import type { DevboxListResponse } from "./schemas";
 import { DevboxApiContextSchema } from "./schemas";
 import { nanoid } from "nanoid";
-import { useAuthState } from "@/contexts/auth-context/auth-context";
+import { useAuthState } from "@/contexts/auth/auth-context";
 
 export function createDevboxContext() {
   const { auth } = useAuthState();

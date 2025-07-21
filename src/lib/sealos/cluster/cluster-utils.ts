@@ -2,7 +2,7 @@
 
 import { ClusterApiContextSchema } from "./schemas/cluster-api-context-schemas";
 import { nanoid } from "nanoid";
-import { useAuthState } from "@/contexts/auth-context/auth-context";
+import { useAuthState } from "@/contexts/auth/auth-context";
 
 export function createClusterContext() {
   const { auth } = useAuthState();

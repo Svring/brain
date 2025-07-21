@@ -8,9 +8,9 @@ import { QueryProvider } from "@/components/app/provider/query-provider";
 import AppSidebar from "@/components/app/sidebar/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "@/contexts/auth-context/auth-context";
-import { AiProvider } from "@/contexts/ai-context/ai-context";
-import { ProjectProvider } from "@/contexts/project-context/project-context";
+import { AuthProvider } from "@/contexts/auth/auth-context";
+import { AiProvider } from "@/contexts/ai/ai-context";
+import { ProjectProvider } from "@/contexts/project/project-context";
 import { getUser } from "@/payload/operations/users-operation";
 
 import "@/styles/globals.css";

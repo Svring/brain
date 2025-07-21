@@ -1,7 +1,7 @@
 import { StarBorder } from "@/components/ui/star-border";
 import { cn } from "@/lib/utils";
 import { Bird } from "lucide-react";
-import { useAiActions } from "@/contexts/ai-context/ai-context";
+import { useAiActions } from "@/contexts/ai/ai-context";
 
 export default function AiCoin() {
   const { openChat } = useAiActions();

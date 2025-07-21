@@ -5,7 +5,7 @@ import type {
   InputParameters,
   K8sManifestGeneration,
 } from "./schemas/deploy-manifest-schemas";
-import { useAuthState } from "@/contexts/auth-context/auth-context";
+import { useAuthState } from "@/contexts/auth/auth-context";
 
 export function generateServiceJson(params: InputParameters) {
   const { name, ports } = params;

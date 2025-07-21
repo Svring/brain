@@ -1,8 +1,8 @@
 "use client";
 
 import { Key, ChevronsUpDown, Plus, Brain, Settings, Edit } from "lucide-react";
-import { useAuthState } from "@/contexts/auth-context/auth-context";
-import { useAiState, useAiActions } from "@/contexts/ai-context/ai-context";
+import { useAuthState } from "@/contexts/auth/auth-context";
+import { useAiState, useAiActions } from "@/contexts/ai/ai-context";
 import {
   Dialog,
   DialogContent,
@@ -61,7 +61,11 @@ export default function AIAccess() {
     (token: any) => token.name === "brain"
   );
   const isBrainActive = aiState?.api_key === brainToken?.key;
-  const hasCustomCredentials = !!(aiState?.api_key && aiState?.base_url && !isBrainActive);
+  const hasCustomCredentials = !!(
+    aiState?.api_key &&
+    aiState?.base_url &&
+    !isBrainActive
+  );
 
   // Load existing custom credentials into form
   useEffect(() => {
@@ -92,9 +96,9 @@ export default function AIAccess() {
   // Set active method based on current state
   useEffect(() => {
     if (isBrainActive) {
-      setActiveMethod(authMethods.find(m => m.id === "brain") || null);
+      setActiveMethod(authMethods.find((m) => m.id === "brain") || null);
     } else if (hasCustomCredentials) {
-      setActiveMethod(authMethods.find(m => m.id === "custom") || null);
+      setActiveMethod(authMethods.find((m) => m.id === "custom") || null);
     } else {
       setActiveMethod(null);
     }
@@ -166,9 +170,9 @@ export default function AIAccess() {
               <Button type="submit" className="flex-1">
                 Save Configuration
               </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setIsDialogOpen(false)}
               >
                 Cancel
@@ -220,7 +224,7 @@ export default function AIAccess() {
               <DropdownMenuLabel className="text-muted-foreground text-xs">
                 Authentication Methods
               </DropdownMenuLabel>
-              
+
               {/* Brain Token Option */}
               <DropdownMenuItem
                 className="gap-2 p-2"
@@ -233,24 +237,31 @@ export default function AIAccess() {
                 <div className="flex-1">
                   <div className="font-medium">Brain Token</div>
                   <div className="text-xs text-muted-foreground">
-                    {brainToken ? (isBrainActive ? "Active" : "Available") : "Not available"}
+                    {brainToken
+                      ? isBrainActive
+                        ? "Active"
+                        : "Available"
+                      : "Not available"}
                   </div>
                 </div>
-                {isBrainActive && <div className="size-2 rounded-full bg-green-500" />}
+                {isBrainActive && (
+                  <div className="size-2 rounded-full bg-green-500" />
+                )}
               </DropdownMenuItem>
 
               {/* Custom API Option */}
-              <DropdownMenuItem
-                className="gap-2 p-2"
-                onClick={handleUseCustom}
-              >
+              <DropdownMenuItem className="gap-2 p-2" onClick={handleUseCustom}>
                 <div className="flex size-6 items-center justify-center rounded-sm border">
                   <Settings className="size-4 shrink-0" />
                 </div>
                 <div className="flex-1">
                   <div className="font-medium">Custom API</div>
                   <div className="text-xs text-muted-foreground">
-                    {hasCustomCredentials ? (activeMethod?.id === "custom" ? "Active" : "Configured") : "Configure"}
+                    {hasCustomCredentials
+                      ? activeMethod?.id === "custom"
+                        ? "Active"
+                        : "Configured"
+                      : "Configure"}
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
@@ -269,7 +280,7 @@ export default function AIAccess() {
               </DropdownMenuItem>
 
               <DropdownMenuSeparator />
-              
+
               {/* Add new method placeholder */}
               <DropdownMenuItem className="gap-2 p-2" disabled>
                 <div className="flex size-6 items-center justify-center rounded-md border bg-background">

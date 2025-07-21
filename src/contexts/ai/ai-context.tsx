@@ -7,7 +7,7 @@ import { createContext, type ReactNode, use } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import { aiMachine, type AiState } from "./ai-machine";
 import { getAiCredentialsDev, getAiCredentialsProd } from "@/lib/ai/ai-utils";
-import { useAuthState } from "@/contexts/auth-context/auth-context";
+import { useAuthState } from "@/contexts/auth/auth-context";
 import type { User } from "@/payload-types";
 
 const inspector = createBrowserInspector();

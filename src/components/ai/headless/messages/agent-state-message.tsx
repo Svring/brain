@@ -1,7 +1,7 @@
 "use client";
 
 import { StateCard } from "../../state-card";
-import { useAiState } from "@/contexts/ai-context/ai-context";
+import { useAiState } from "@/contexts/ai/ai-context";
 import { MessageRendererProps } from "./types";
 
 export function RenderAgentStateMessage({ message }: MessageRendererProps) {

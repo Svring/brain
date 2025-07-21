@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuthState } from "@/contexts/auth-context/auth-context";
+import { useAuthState } from "@/contexts/auth/auth-context";
 import { AiProxyApiContextSchema } from "./schemas/ai-proxy-api-context";
 
 export function createAiProxyContext() {

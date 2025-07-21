@@ -1,7 +1,7 @@
 "use client";
 
 import { Globe } from "lucide-react";
-import { useAuthState } from "@/contexts/auth-context/auth-context";
+import { useAuthState } from "@/contexts/auth/auth-context";
 import { RegionSwitcher } from "@/components/app/sidebar/region-switcher";
 import {
   MainSection,

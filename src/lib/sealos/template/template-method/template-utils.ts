@@ -1,7 +1,7 @@
 "use client";
 
 import { TemplateApiContextSchema } from "../schemas/template-api-context-schemas";
-import { useAuthState } from "@/contexts/auth-context/auth-context";
+import { useAuthState } from "@/contexts/auth/auth-context";
 
 export function createTemplateApiContext() {
   const { auth } = useAuthState();

@@ -4,7 +4,7 @@ import { createBrowserInspector } from "@statelyai/inspect";
 import { useMachine } from "@xstate/react";
 import _ from "lodash";
 import { createContext, type ReactNode, useContext, useEffect } from "react";
-import { projectMachine } from "@/contexts/project-context/project-machine";
+import { projectMachine } from "./project-machine";
 import useAI from "@/hooks/ai/use-ai";
 
 const inspector = createBrowserInspector();

@@ -2,6 +2,7 @@
 
 import _ from "lodash";
 import type { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
+import { processIngressConnections } from "./ingress-reliance";
 
 export type KindMap = Record<string, string[]>;
 
@@ -203,66 +204,19 @@ export const mergeConnectFromByWorkload = (
   return result;
 };
 
-/**
- * Creates connections for Ingress resources based on a naming convention.
- * If an Ingress resource shares the same `metadata.name` as a Deployment or
- * StatefulSet, a connection is inferred from the Ingress to that workload.
- * @param resources A map of all project resources, grouped by kind.
- * @returns A `ConnectionsByKind` map specifically for `ingress` resources.
- */
-export const processIngressConnections = (
-  resources: Record<string, { items: K8sResource[] }>
-): ConnectionsByKind => {
-  const ingressResources = resources.ingress?.items ?? [];
-  if (!ingressResources.length) return {};
 
-  // Create a map of workload kinds to their resource names for quick lookups.
-  const workloadsByKind = _.mapValues(
-    _.pick(resources, ["deployment", "statefulset"]),
-    (d) => {
-      const names =
-        d?.items?.map((i) => i?.metadata?.name).filter(Boolean) ?? [];
-      return Array.from(new Set(names));
-    }
-  );
-
-  const ingressMap: Record<string, WorkloadConnections> = {};
-
-  ingressResources.forEach((ing) => {
-    const name = ing?.metadata?.name;
-    if (!name) return;
-
-    // Find workloads that have the same name as the Ingress resource.
-    const connectFrom = _.pickBy(
-      _.mapValues(workloadsByKind, (names) =>
-        names.includes(name) ? [name] : []
-      ),
-      (v) => v.length > 0
-    ) as KindMap;
-
-    ingressMap[name] = { connectFrom, others: {} };
-  });
-
-  return { ingress: ingressMap };
-};
 
 // -------------------------
 // Primary entry
 // -------------------------
 
 /**
- * Derive connection information between project resources.
+ * Derive connection information between project resources based on environment variables.
  *
- * The algorithm works in two complementary stages:
- *   1. ENV-based discovery — look at environment variables defined on
- *      Deployments & StatefulSets. If a variable value (or referenced
- *      Secret/ConfigMap name) contains another resource's name we treat that
- *      as a connection from the workload defining the variable to the
- *      matching resource.
- *   2. Ingress convention — if an Ingress shares the same metadata.name with
- *      a Deployment/StatefulSet we consider the Ingress to connect **from**
- *      that workload. This follows the common "one Ingress per workload"
- *      convention.
+ * The algorithm looks at environment variables defined on Deployments & StatefulSets.
+ * If a variable value (or referenced Secret/ConfigMap name) contains another resource's
+ * name we treat that as a connection from the workload defining the variable to the
+ * matching resource.
  *
  * The result groups connections by Kubernetes kind so that downstream
  * consumers (e.g. the flow visualiser) can easily map kinds to edge types.
@@ -270,20 +224,9 @@ export const processIngressConnections = (
 export const inferRelianceFromEnv = (
   resources: Record<string, { items: K8sResource[] }>
 ): ConnectionsByKind => {
-  // Stage 1 — ENV-based connections from Deployments and StatefulSets.
-  const envConnections = mergeConnectFromByWorkload(
+  // ENV-based connections from Deployments and StatefulSets.
+  return mergeConnectFromByWorkload(
     collectEnvByWorkload(extractEnvironmentVariables(resources)),
     omitIngressFromCandidates(extractResourceNames(resources))
   );
-
-  // Stage 2 — Ingress-to-workload connections based on naming conventions.
-  const ingressConnections = processIngressConnections(resources);
-
-  // Merge both connection maps, with Ingress connections taking precedence.
-  return {
-    ...envConnections,
-    ...(ingressConnections.ingress
-      ? { ingress: ingressConnections.ingress }
-      : {}),
-  };
 };

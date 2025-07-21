@@ -36,8 +36,8 @@ import {
 import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
 import { toast } from "sonner";
 import _ from "lodash";
-import { useProjectActions } from "@/contexts/project-context/project-context";
-import { FlowProvider } from "@/contexts/flow-context/flow-context";
+import { useProjectActions } from "@/contexts/project/project-context";
+import { FlowProvider } from "@/contexts/flow/flow-context";
 import AiCoin from "@/components/ai/headless/ai-coin";
 import AiChatbox from "@/components/ai/headless/ai-chatbox";
 

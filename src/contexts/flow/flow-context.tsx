@@ -3,7 +3,7 @@
 import { createBrowserInspector } from "@statelyai/inspect";
 import { useMachine } from "@xstate/react";
 import { createContext, type ReactNode, useContext } from "react";
-import { flowMachine } from "@/contexts/flow-context/flow-machine";
+import { flowMachine } from "./flow-machine";
 import type { Edge, Node } from "@xyflow/react";
 
 const inspector = createBrowserInspector();
@@ -32,8 +32,7 @@ export const FlowProvider = ({ children }: { children: ReactNode }) => {
 
 export function useFlowContext() {
   const ctx = useContext(FlowContext);
-  if (!ctx)
-    throw new Error("useFlowContext must be used within FlowProvider");
+  if (!ctx) throw new Error("useFlowContext must be used within FlowProvider");
   return ctx;
 }
 
@@ -49,15 +48,12 @@ export function useFlowState() {
 
 export function useFlowActions() {
   const { send } = useFlowContext();
-  
+
   return {
     setFlowData: (nodes: Node[], edges: Edge[]) =>
       send({ type: "SET_FLOW_DATA", nodes, edges }),
-    updateNodes: (nodes: Node[]) =>
-      send({ type: "UPDATE_NODES", nodes }),
-    updateEdges: (edges: Edge[]) =>
-      send({ type: "UPDATE_EDGES", edges }),
-    resetFlow: () =>
-      send({ type: "RESET_FLOW" }),
+    updateNodes: (nodes: Node[]) => send({ type: "UPDATE_NODES", nodes }),
+    updateEdges: (edges: Edge[]) => send({ type: "UPDATE_EDGES", edges }),
+    resetFlow: () => send({ type: "RESET_FLOW" }),
   };
 }

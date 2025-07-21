@@ -16,7 +16,7 @@ import { useEffect, useMemo } from "react";
 import {
   useProjectState,
   useProjectActions,
-} from "@/contexts/project-context/project-context";
+} from "@/contexts/project/project-context";
 import _ from "lodash";
 import { listAnnotationBasedResourcesOptions } from "@/lib/k8s/k8s-method/k8s-query";
 import { useBatchPatchResourcesMetadataMutation } from "@/lib/k8s/k8s-method/k8s-mutation";

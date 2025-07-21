@@ -5,8 +5,8 @@ import { createBrowserInspector } from "@statelyai/inspect";
 import { useMachine } from "@xstate/react";
 import { createContext, type ReactNode, use } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
-import type { Auth } from "@/contexts/auth-context/auth-machine";
-import { authMachine } from "@/contexts/auth-context/auth-machine";
+import type { Auth } from "@/contexts/auth/auth-machine";
+import { authMachine } from "@/contexts/auth/auth-machine";
 import { authenticateDev, authenticateProd } from "@/lib/auth/auth-utils";
 import type { User } from "@/payload-types";
 
@@ -85,13 +85,10 @@ export function useAuthState() {
 
 export function useAuthActions() {
   const { send } = useAuthContext();
-  
+
   return {
-    setAuth: (auth: Auth) =>
-      send({ type: "SET_AUTH", auth }),
-    fail: (error: string) =>
-      send({ type: "FAIL", error }),
-    retry: () =>
-      send({ type: "RETRY" }),
+    setAuth: (auth: Auth) => send({ type: "SET_AUTH", auth }),
+    fail: (error: string) => send({ type: "FAIL", error }),
+    retry: () => send({ type: "RETRY" }),
   };
 }
