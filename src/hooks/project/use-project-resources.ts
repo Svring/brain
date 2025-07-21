@@ -12,14 +12,11 @@ import { ListAllResourcesResponse } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-
 import { useEffect, useMemo } from "react";
 import { useProjectContext } from "@/contexts/project-context/project-context";
 import _ from "lodash";
-import {
-  getCustomResourceOptions,
-  listAnnotationBasedResourcesOptions,
-} from "@/lib/k8s/k8s-method/k8s-query";
+import { listAnnotationBasedResourcesOptions } from "@/lib/k8s/k8s-method/k8s-query";
 import { useBatchPatchResourcesMetadataMutation } from "@/lib/k8s/k8s-method/k8s-mutation";
 import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
-
-const BRAIN_RESOURCES_ANNOTATION_KEY = "brain-resources";
+import { BRAIN_RESOURCES_ANNOTATION_KEY } from "@/lib/project/project-constant/project-constant-label";
+import { listProjectsOptions } from "@/lib/project/project-method/project-query";
 
 export function useProjectResources(
   projectName: string
@@ -29,36 +26,26 @@ export function useProjectResources(
   const queryClient = useQueryClient();
   const patchMutation = useBatchPatchResourcesMetadataMutation(context);
 
-  const projectInstanceQueryOptions = getCustomResourceOptions(context, {
-    type: "custom",
-    group: CUSTOM_RESOURCES.instance.group,
-    version: CUSTOM_RESOURCES.instance.version,
-    plural: CUSTOM_RESOURCES.instance.plural,
-    name: projectName,
-  });
+  const {
+    data: projectList,
+    isLoading,
+    isSuccess,
+  } = useQuery(listProjectsOptions(context));
 
-  const projectInstanceQuery = useQuery(projectInstanceQueryOptions);
-
-  const annotation =
-    projectInstanceQuery.data?.metadata?.annotations?.[
-      BRAIN_RESOURCES_ANNOTATION_KEY
-    ];
+  const annotation = projectList?.items?.find(
+    (item) => item.metadata.name === projectName
+  )?.metadata?.annotations?.[BRAIN_RESOURCES_ANNOTATION_KEY];
 
   // Parse annotation data
   const annotationData = useMemo(() => {
     if (!annotation) return null;
-    try {
-      return JSON.parse(annotation) as BrainResourcesSimplified;
-    } catch (error) {
-      console.warn("Failed to parse brain resources annotation:", error);
-      return null;
-    }
+    return JSON.parse(annotation) as BrainResourcesSimplified;
   }, [annotation]);
 
   // Full resources query when no annotation exists
   const fullResourcesQuery = useQuery({
     ...getProjectResourcesOptions(context, projectName),
-    enabled: projectInstanceQuery.isSuccess && !annotationData,
+    enabled: isSuccess && !annotationData,
   });
 
   // Optimized annotation-based query when annotation exists
@@ -68,7 +55,7 @@ export function useProjectResources(
       annotationData!,
       projectName
     ),
-    enabled: projectInstanceQuery.isSuccess && !!annotationData,
+    enabled: isSuccess && !!annotationData,
   });
 
   // Use annotation-based query if available, otherwise use full query
@@ -83,55 +70,31 @@ export function useProjectResources(
         fullResourcesQuery.data
       );
 
-      patchMutation.mutate(
-        {
-          targets: [
-            {
-              type: "custom",
-              group: CUSTOM_RESOURCES.instance.group,
-              version: CUSTOM_RESOURCES.instance.version,
-              plural: CUSTOM_RESOURCES.instance.plural,
-              name: projectName,
-            },
-          ],
-          metadataType: "annotations",
-          key: BRAIN_RESOURCES_ANNOTATION_KEY,
-          value: JSON.stringify(simplifiedData),
-        },
-        {
-          onSuccess: () => {
-            queryClient.invalidateQueries({
-              queryKey: projectInstanceQueryOptions.queryKey,
-            });
+      patchMutation.mutate({
+        targets: [
+          {
+            type: "custom",
+            group: CUSTOM_RESOURCES.instance.group,
+            version: CUSTOM_RESOURCES.instance.version,
+            plural: CUSTOM_RESOURCES.instance.plural,
+            name: projectName,
           },
-        }
-      );
+        ],
+        metadataType: "annotations",
+        key: BRAIN_RESOURCES_ANNOTATION_KEY,
+        value: JSON.stringify(simplifiedData),
+      });
     }
-  }, [
-    fullResourcesQuery.data,
-    annotation,
-    patchMutation,
-    projectName,
-    queryClient,
-    projectInstanceQueryOptions.queryKey,
-  ]);
+  }, [fullResourcesQuery.data, patchMutation, projectName]);
 
   // Send simplified data to state machine for flow graph
   useEffect(() => {
     if (resourcesQuery.data) {
+      const simplifiedData = convertResourcesToAnnotation(resourcesQuery.data);
       send({
         type: "SET_FLOW_GRAPH_DATA",
         project: projectName,
-        resources: _.flatMap(
-          [resourcesQuery.data.builtin, resourcesQuery.data.custom],
-          (resourceGroup) =>
-            _.map(resourceGroup, (resourceList) =>
-              _.map(resourceList.items, (item) => ({
-                kind: item.kind,
-                name: item.metadata.name,
-              }))
-            )
-        ).flat(),
+        resources: [...simplifiedData.builtin, ...simplifiedData.custom],
       });
     }
   }, [resourcesQuery.data, projectName, send]);
