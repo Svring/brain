@@ -38,11 +38,14 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
       "project_context.flowGraphData.project",
       state.context.flowGraphData.project
     );
-    _.set(
-      newState,
-      "project_context.flowGraphData.resources",
-      state.context.flowGraphData.resources
-    );
+    const resources = state.context.flowGraphData.resources;
+    if (resources) {
+      _.set(
+        newState,
+        "project_context.flowGraphData.resources",
+        [...resources.builtin, ...resources.custom]
+      );
+    }
     setAIState(newState);
   }, [state]);
 

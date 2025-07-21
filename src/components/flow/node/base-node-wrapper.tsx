@@ -304,17 +304,17 @@ export default function BaseNodeWrapper({
       Icon: <ArrowLeft className="w-4 h-4" />,
     },
     // Filter flowGraphResources for deployable resources (apps and devboxes)
-    ...flowGraphResources
-      .filter(
-        (resource: any) =>
-          resource.kind === "Deployment" ||
-          resource.kind === "DevBox" ||
-          resource.kind === "Instance" // Sealos app instances
-      )
-      .map((resource: any) => ({
-        label: `${resource.kind}: ${resource.name}`,
-        onClick: () => handleConnection(resource.kind, resource.name),
-      })),
+    // ...flowGraphResources
+    //   .filter(
+    //     (resource: any) =>
+    //       resource.kind === "Deployment" ||
+    //       resource.kind === "DevBox" ||
+    //       resource.kind === "Instance" // Sealos app instances
+    //   )
+    //   .map((resource: any) => ({
+    //     label: `${resource.kind}: ${resource.name}`,
+    //     onClick: () => handleConnection(resource.kind, resource.name),
+    //   })),
   ];
 
   const menuOptions = showConnectionMenu

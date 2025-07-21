@@ -12,6 +12,11 @@ export const PROJECT_RELATE_RESOURCE_LABELS = {
   MANAGED_BY: "app.kubernetes.io/managed-by",
 } as const;
 
+export const DEPLOYMENT_RELATE_RESOURCE_LABELS = {
+  /** Label used for deployment-related resources like backups in deployment deletion */
+  APP_DEPLOY_MANAGER: "cloud.sealos.io/app-deploy-manager",
+} as const;
+
 /**
  * Labels used for cluster related resource operations
  */

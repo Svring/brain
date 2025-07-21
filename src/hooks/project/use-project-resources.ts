@@ -23,7 +23,7 @@ import { BRAIN_RESOURCES_ANNOTATION_KEY } from "@/lib/project/project-constant/p
 export function useProjectResources(
   projectName: string
 ): UseQueryResult<ListAllResourcesResponse, Error> {
-  const { send } = useProjectContext();
+  const { state, send } = useProjectContext();
   const context = createK8sContext();
   const patchMutation = useBatchPatchResourcesMetadataMutation(context);
 
@@ -63,11 +63,27 @@ export function useProjectResources(
     ? annotationBasedQuery
     : fullResourcesQuery;
 
+  // Send simplified data to state machine for flow graph state
+  useEffect(() => {
+    if (resourcesQuery.data) {
+      const simplifiedData = convertResourcesToAnnotation(resourcesQuery.data);
+      send({
+        type: "SET_FLOW_GRAPH_DATA",
+        project: projectName,
+        resources: simplifiedData,
+      });
+    }
+  }, [projectName, resourcesQuery.data, send]);
+
   // Store simplified data in annotation when full resources are loaded and no annotation exists
   useEffect(() => {
-    if (resourcesQuery.data && !annotation && !patchMutation.isPending) {
-      const simplifiedData = convertResourcesToAnnotation(resourcesQuery.data);
-
+    const { project, resources } = state.context.flowGraphData;
+    if (
+      project === projectName &&
+      resources &&
+      !annotation &&
+      !patchMutation.isPending
+    ) {
       patchMutation.mutate({
         targets: [
           {
@@ -80,22 +96,10 @@ export function useProjectResources(
         ],
         metadataType: "annotations",
         key: BRAIN_RESOURCES_ANNOTATION_KEY,
-        value: JSON.stringify(simplifiedData),
+        value: JSON.stringify(resources),
       });
     }
-  }, [projectName, resourcesQuery.data, annotation, patchMutation]);
-
-  // Send simplified data to state machine for flow graph state
-  useEffect(() => {
-    if (resourcesQuery.data) {
-      const simplifiedData = convertResourcesToAnnotation(resourcesQuery.data);
-      send({
-        type: "SET_FLOW_GRAPH_DATA",
-        project: projectName,
-        resources: [...simplifiedData.builtin, ...simplifiedData.custom],
-      });
-    }
-  }, [projectName, resourcesQuery.data, send]);
+  }, [projectName, state.context.flowGraphData, annotation, patchMutation]);
 
   return resourcesQuery;
 }
