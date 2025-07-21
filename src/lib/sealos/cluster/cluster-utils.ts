@@ -2,10 +2,10 @@
 
 import { ClusterApiContextSchema } from "./schemas/cluster-api-context-schemas";
 import { nanoid } from "nanoid";
-import { useAuthContext } from "@/contexts/auth-context/auth-context";
+import { useAuthState } from "@/contexts/auth-context/auth-context";
 
 export function createClusterContext() {
-  const { auth } = useAuthContext();
+  const { auth } = useAuthState();
   if (!auth) {
     throw new Error("User not found");
   }

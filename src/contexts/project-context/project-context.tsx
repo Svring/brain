@@ -40,11 +40,10 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     );
     const resources = state.context.flowGraphData.resources;
     if (resources) {
-      _.set(
-        newState,
-        "project_context.flowGraphData.resources",
-        [...resources.builtin, ...resources.custom]
-      );
+      _.set(newState, "project_context.flowGraphData.resources", [
+        ...resources.builtin,
+        ...resources.custom,
+      ]);
     }
     setAIState(newState);
   }, [state]);
@@ -61,4 +60,27 @@ export function useProjectContext() {
   if (!ctx)
     throw new Error("useProjectContext must be used within ProjectProvider");
   return ctx;
+}
+
+export function useProjectState() {
+  const { state } = useProjectContext();
+  return {
+    homepageData: state.context.homepageData,
+    flowGraphData: state.context.flowGraphData,
+    isOnHomepage: state.matches("homepage"),
+    isOnFlowGraph: state.matches("flowGraph"),
+  };
+}
+
+export function useProjectActions() {
+  const { send } = useProjectContext();
+
+  return {
+    enterProject: () => send({ type: "ENTER_PROJECT" }),
+    exitProject: () => send({ type: "EXIT_PROJECT" }),
+    setHomepageData: (projects: any) =>
+      send({ type: "SET_HOMEPAGE_DATA", projects }),
+    setFlowGraphData: (project: any, resources: any) =>
+      send({ type: "SET_FLOW_GRAPH_DATA", project, resources }),
+  };
 }

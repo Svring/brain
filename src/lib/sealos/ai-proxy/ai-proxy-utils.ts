@@ -1,10 +1,10 @@
 "use client";
 
-import { useAuthContext } from "@/contexts/auth-context/auth-context";
+import { useAuthState } from "@/contexts/auth-context/auth-context";
 import { AiProxyApiContextSchema } from "./schemas/ai-proxy-api-context";
 
 export function createAiProxyContext() {
-  const { auth } = useAuthContext();
+  const { auth } = useAuthState();
   if (!auth) {
     throw new Error("User not found");
   }

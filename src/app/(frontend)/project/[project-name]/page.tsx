@@ -36,7 +36,7 @@ import {
 import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
 import { toast } from "sonner";
 import _ from "lodash";
-import { useProjectContext } from "@/contexts/project-context/project-context";
+import { useProjectActions } from "@/contexts/project-context/project-context";
 import { FlowProvider } from "@/contexts/flow-context/flow-context";
 import AiCoin from "@/components/ai/headless/ai-coin";
 import AiChatbox from "@/components/ai/headless/ai-chatbox";
@@ -47,7 +47,9 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const context = createK8sContext();
-  const removeProjectAnnotationMutation = useRemoveProjectAnnotationMutation(context);
+  const removeProjectAnnotationMutation =
+    useRemoveProjectAnnotationMutation(context);
+  const { setFlowGraphData } = useProjectActions();
 
   const handleRefresh = async () => {
     if (isRefreshing) return;
@@ -55,6 +57,7 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
     setIsRefreshing(true);
     try {
       await removeProjectAnnotationMutation.mutateAsync({ projectName });
+      setFlowGraphData(projectName, null);
       toast.success("Project resources refreshed successfully");
     } catch (error) {
       toast.error("Failed to refresh project resources");
@@ -129,11 +132,11 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
 
 function ProjectFlow({ projectName }: { projectName: string }) {
   const { data, isLoading } = useProjectResources(projectName);
+  const { setFlowGraphData } = useProjectActions();
 
   const [nodes, onNodesChange, edges, onEdgesChange] = useFlow(data);
 
-  const context = createK8sContext();
-  const addToProjectMutation = useAddToProjectMutation(context);
+  const addToProjectMutation = useAddToProjectMutation(createK8sContext());
 
   const handleDrop = (event: DragEndEvent) => {
     const { active } = event;
@@ -146,12 +149,14 @@ function ProjectFlow({ projectName }: { projectName: string }) {
     addToProjectMutation.mutate(
       { resources, projectName },
       {
-        onSuccess: () =>
+        onSuccess: () => {
+          setFlowGraphData(projectName, null);
           toast.success(
             `Added ${resources.length} resource${
               resources.length === 1 ? "" : "s"
             } to project ${projectName}`
-          ),
+          );
+        },
         onError: () => toast.error("Failed to add resources to project"),
       }
     );
@@ -207,15 +212,15 @@ export default function Page({
   params: Promise<{ "project-name": string }>;
 }) {
   const { "project-name": projectName } = use(params);
-  const { send } = useProjectContext();
+  const { enterProject, exitProject } = useProjectActions();
 
   // Set project name in machine context on mount
   useEffect(() => {
-    send({ type: "ENTER_PROJECT" });
+    enterProject();
     return () => {
-      send({ type: "EXIT_PROJECT" });
+      exitProject();
     };
-  }, [projectName, send]);
+  }, [projectName, enterProject, exitProject]);
 
   return (
     <DndProvider>

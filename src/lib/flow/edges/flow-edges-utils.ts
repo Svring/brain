@@ -1,11 +1,6 @@
 import _ from "lodash";
-import type { ConnectionsByKind } from "@/lib/k8s/k8s-utils";
-
-export interface FlowEdge {
-  id: string;
-  source: string;
-  target: string;
-}
+import type { ConnectionsByKind } from "@/lib/algorithm/reliance/env-reliance";
+import { type Edge } from "@xyflow/react";
 
 /**
  * Convert the ConnectionsByKind structure returned by `processProjectConnections`
@@ -23,7 +18,7 @@ export interface FlowEdge {
  */
 export const convertConnectionsToEdges = (
   connections: ConnectionsByKind
-): FlowEdge[] => {
+): Edge[] => {
   const edges = _.flatMap(connections, (workloads, targetKind) =>
     _.flatMap(workloads, ({ connectFrom }, workloadName) => {
       const target = `${targetKind}-${workloadName}`;
@@ -39,7 +34,7 @@ export const convertConnectionsToEdges = (
             target,
             type: "step",
             animated: true,
-          } as FlowEdge;
+          } as Edge;
         })
       );
     })
@@ -47,4 +42,19 @@ export const convertConnectionsToEdges = (
 
   // Ensure uniqueness in case duplicates slipped through
   return _.uniqBy(edges, (e) => `${e.source}-${e.target}`);
+};
+
+export const updateEdgesForNode = (edges: Edge[], nodeId: string, updates: Partial<Edge>): Edge[] => {
+    let changed = false;
+    const newEdges = edges.map(edge => {
+        if (edge.source === nodeId || edge.target === nodeId) {
+            const newEdge = { ...edge, ...updates };
+            if (!_.isEqual(edge, newEdge)) {
+                changed = true;
+            }
+            return newEdge;
+        }
+        return edge;
+    });
+    return changed ? newEdges : edges;
 };

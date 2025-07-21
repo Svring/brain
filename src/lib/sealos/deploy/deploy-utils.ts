@@ -5,7 +5,7 @@ import type {
   InputParameters,
   K8sManifestGeneration,
 } from "./schemas/deploy-manifest-schemas";
-import { useAuthContext } from "@/contexts/auth-context/auth-context";
+import { useAuthState } from "@/contexts/auth-context/auth-context";
 
 export function generateServiceJson(params: InputParameters) {
   const { name, ports } = params;
@@ -188,7 +188,7 @@ export function generateIngressYaml(params: InputParameters): string {
 }
 
 export function createDeployContext() {
-  const { auth } = useAuthContext();
+  const { auth } = useAuthState();
   if (!auth) {
     throw new Error("User not found");
   }

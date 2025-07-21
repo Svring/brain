@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuthContext } from "@/contexts/auth-context/auth-context";
+import { useAuthState } from "@/contexts/auth-context/auth-context";
 import type { K8sApiContext } from "../k8s-api/k8s-api-schemas/context-schemas";
 import { K8sApiContextSchema } from "../k8s-api/k8s-api-schemas/context-schemas";
 import type { QueryClient } from "@tanstack/react-query";
@@ -22,7 +22,7 @@ import _ from "lodash";
 import { ListAllResourcesResponse } from "../k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
 
 function getUserKubeconfig(): string | undefined {
-  const { auth } = useAuthContext();
+  const { auth } = useAuthState();
   return auth?.kubeconfig;
 }
 
@@ -35,7 +35,7 @@ export function getDecodedKubeconfig(): string | undefined {
 }
 
 export function getCurrentNamespace(): string | undefined {
-  const { auth } = useAuthContext();
+  const { auth } = useAuthState();
   return auth?.namespace;
 }
 
@@ -287,4 +287,25 @@ export function getResourceConfigFromKind(kind: string) {
   return (
     BUILTIN_RESOURCES[lowerKind] || CUSTOM_RESOURCES[lowerKind] || undefined
   );
+}
+
+export function convertAndFilterResourceToTarget(
+  resource: K8sResource
+): CustomResourceTarget | BuiltinResourceTarget | null {
+  if (!resource.kind || !resource.metadata?.name) {
+    return null;
+  }
+  const config = getResourceConfigFromKind(resource.kind);
+  if (!config) {
+    return null;
+  }
+  try {
+    return convertToResourceTarget(resource, config);
+  } catch (error) {
+    console.warn(
+      `Failed to convert resource to target: ${resource.kind}/${resource.metadata.name}`,
+      error
+    );
+    return null;
+  }
 }

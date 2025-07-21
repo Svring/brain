@@ -17,7 +17,7 @@ import FloatingActionMenu from "@/components/flow/components/floating-action-men
 import { Trash2, ArrowLeft } from "lucide-react";
 // import { useChatContext } from "@copilotkit/react-ui";
 import { useProjectResources } from "@/hooks/project/use-project-resources";
-import { useProjectContext } from "@/contexts/project-context/project-context";
+import { useProjectState } from "@/contexts/project-context/project-context";
 import { useClusterSecret } from "@/lib/sealos/cluster/cluster-method/cluster-query";
 import { useObjectStorageSecret } from "@/lib/sealos/objectstorage/objectstorage-method/objectstorage-query";
 import { BUILTIN_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-builtin-resource";
@@ -52,9 +52,9 @@ export default function BaseNodeWrapper({
   objectStorageName,
 }: BaseNodeProps) {
   // const { setOpen } = useChatContext();
-  const { state } = useProjectContext();
-  const projectName = state.context.flowGraphData.project;
-  const flowGraphResources = state.context.flowGraphData.resources || [];
+  const { flowGraphData } = useProjectState();
+  const projectName = flowGraphData.project;
+  const flowGraphResources = flowGraphData.resources || [];
   const projectResourcesQuery = useProjectResources(projectName);
   const context = createK8sContext();
   const removeFromProjectMutation = useRemoveFromProjectMutation(context);
@@ -275,10 +275,11 @@ export default function BaseNodeWrapper({
   const defaultMenuOptions = [
     {
       label: "Remove from project",
-      onClick: () =>
-        removeFromProjectMutation.mutate({
-          resources: [target],
-        }),
+      onClick: () => {
+        // removeFromProjectMutation.mutate({
+        //   resources: [target],
+        // }),
+      },
       Icon: <Trash2 className="w-4 h-4" />,
     },
     {

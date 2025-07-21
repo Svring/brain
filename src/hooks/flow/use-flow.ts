@@ -8,7 +8,10 @@ import {
 } from "@xyflow/react";
 import { useEffect, useCallback } from "react";
 import { inferRelianceFromEnv } from "@/lib/project/project-method/project-utils";
-import { convertConnectionsToEdges } from "@/lib/flow/edges/flow-edges-utils";
+import {
+  convertConnectionsToEdges,
+  updateEdgesForNode,
+} from "@/lib/flow/edges/flow-edges-utils";
 import { applyLayout } from "@/lib/flow/layout/flow-layout-utils";
 import { convertResourcesToNodes } from "@/lib/flow/nodes/flow-nodes-utils";
 import type { ListAllResourcesResponse } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
@@ -49,7 +52,6 @@ export function useFlow(resources: ListAllResourcesResponse | undefined) {
     }
 
     const resource = _.merge({}, resources.custom, resources.builtin);
-
     const connections = inferRelianceFromEnv(resource);
     const newNodes = convertResourcesToNodes(resource);
     const newEdges = convertConnectionsToEdges(connections);
@@ -57,7 +59,7 @@ export function useFlow(resources: ListAllResourcesResponse | undefined) {
       direction: "BT",
     });
     setFlowData(positionedNodes, newEdges);
-  }, [resources]);
+  }, [resources, setFlowData]);
 
   return [nodes, onNodesChange, edges, onEdgesChange] as const;
 }

@@ -6,11 +6,11 @@ import { listProjectsOptions } from "@/lib/project/project-method/project-query"
 import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceListResponse } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
 import { useEffect } from "react";
-import { useProjectContext } from "@/contexts/project-context/project-context";
+import { useProjectActions } from "@/contexts/project-context/project-context";
 import _ from "lodash";
 
 const useProjects = (): UseQueryResult<CustomResourceListResponse, Error> => {
-  const { send } = useProjectContext();
+  const { setHomepageData } = useProjectActions();
   const queryResult = useQuery(listProjectsOptions(createK8sContext()));
 
   useEffect(() => {
@@ -20,9 +20,9 @@ const useProjects = (): UseQueryResult<CustomResourceListResponse, Error> => {
           name: project.metadata.name,
         };
       });
-      send({ type: "SET_HOMEPAGE_DATA", projects });
+      setHomepageData(projects);
     }
-  }, [queryResult.data, send]);
+  }, [queryResult.data]);
 
   return queryResult;
 };

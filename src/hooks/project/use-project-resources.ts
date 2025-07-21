@@ -13,7 +13,7 @@ import {
 } from "@/lib/k8s/k8s-method/k8s-utils";
 import { ListAllResourcesResponse } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
 import { useEffect, useMemo } from "react";
-import { useProjectContext } from "@/contexts/project-context/project-context";
+import { useProjectState, useProjectActions } from "@/contexts/project-context/project-context";
 import _ from "lodash";
 import { listAnnotationBasedResourcesOptions } from "@/lib/k8s/k8s-method/k8s-query";
 import { useBatchPatchResourcesMetadataMutation } from "@/lib/k8s/k8s-method/k8s-mutation";
@@ -23,7 +23,8 @@ import { BRAIN_RESOURCES_ANNOTATION_KEY } from "@/lib/project/project-constant/p
 export function useProjectResources(
   projectName: string
 ): UseQueryResult<ListAllResourcesResponse, Error> {
-  const { state, send } = useProjectContext();
+  const { flowGraphData } = useProjectState();
+  const { setFlowGraphData } = useProjectActions();
   const context = createK8sContext();
   const patchMutation = useBatchPatchResourcesMetadataMutation(context);
 
@@ -67,17 +68,13 @@ export function useProjectResources(
   useEffect(() => {
     if (resourcesQuery.data) {
       const simplifiedData = convertResourcesToAnnotation(resourcesQuery.data);
-      send({
-        type: "SET_FLOW_GRAPH_DATA",
-        project: projectName,
-        resources: simplifiedData,
-      });
+      setFlowGraphData(projectName, simplifiedData);
     }
-  }, [projectName, resourcesQuery.data, send]);
+  }, [projectName, resourcesQuery.data, setFlowGraphData]);
 
   // Store simplified data in annotation when full resources are loaded and no annotation exists
   useEffect(() => {
-    const { project, resources } = state.context.flowGraphData;
+    const { project, resources } = flowGraphData;
     if (
       project === projectName &&
       resources &&
@@ -99,7 +96,7 @@ export function useProjectResources(
         value: JSON.stringify(resources),
       });
     }
-  }, [projectName, state.context.flowGraphData, annotation, patchMutation]);
+  }, [projectName, flowGraphData, annotation, patchMutation]);
 
   return resourcesQuery;
 }

@@ -1,38 +1,33 @@
 "use client";
 
-import { useAiContext } from "@/contexts/ai-context/ai-context";
+import { useAiState, useAiActions } from "@/contexts/ai-context/ai-context";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { AiMessages } from "./ai-messages";
 import { AiChatInput } from "./ai-input";
 import { AiChatHeader } from "./ai-header";
 
 export default function AiChatbox() {
-  const { state, send } = useAiContext();
-
-  const isChatOpen = state.context.chat.open;
-
-  const handleClose = () => {
-    send({ type: "CHAT_CLOSE" });
-  };
+  const { chat } = useAiState();
+  const { closeChat } = useAiActions();
 
   return (
     <Sheet
-      open={isChatOpen}
+      open={chat.open}
       onOpenChange={(open) => {
         if (!open) {
-          handleClose();
+          closeChat();
         }
       }}
     >
       <SheetContent
         side="right"
         className="w-[500px] p-0 flex flex-col"
-        onClose={handleClose}
+        onClose={closeChat}
       >
         <AiChatHeader />
 
         <div className="flex-1 min-h-0">
-          <AiMessages className="h-full" />
+          <AiMessages />
         </div>
 
         <div className="p-2 pt-0 flex-shrink-0">

@@ -1,15 +1,15 @@
 "use client";
 
 import { StateCard } from "../../state-card";
-import { useAiContext } from "@/contexts/ai-context/ai-context";
+import { useAiState } from "@/contexts/ai-context/ai-context";
 import { MessageRendererProps } from "./types";
 
 export function RenderAgentStateMessage({ message }: MessageRendererProps) {
-  const { state } = useAiContext();
+  const { aiState } = useAiState();
 
   return (
     <div className="max-w-full mr-auto">
-      <StateCard state={state.context.state} className="max-w-md" />
+      <StateCard state={aiState} className="max-w-md" />
     </div>
   );
 }

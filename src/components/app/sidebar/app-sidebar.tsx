@@ -1,7 +1,7 @@
 "use client";
 
 import { Globe } from "lucide-react";
-import { useAuthContext } from "@/contexts/auth-context/auth-context";
+import { useAuthState } from "@/contexts/auth-context/auth-context";
 import { RegionSwitcher } from "@/components/app/sidebar/region-switcher";
 import {
   MainSection,
@@ -22,7 +22,7 @@ import AIAccess from "./ai-access";
 const NAVIGATION_ITEMS: NavigationItem[] = [];
 
 export default function AppSidebar() {
-  const { auth } = useAuthContext();
+  const { auth } = useAuthState();
 
   return (
     <>

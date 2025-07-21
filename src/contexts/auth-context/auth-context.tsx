@@ -70,3 +70,28 @@ export function useAuthContext() {
   }
   return ctx;
 }
+
+export function useAuthState() {
+  const { state } = useAuthContext();
+  return {
+    auth: state.context.auth,
+    mode: state.context.mode,
+    error: state.context.error,
+    isAuthenticated: state.matches("authenticated"),
+    isAuthenticating: state.matches("authenticating"),
+    isUnauthenticated: state.matches("unauthenticated"),
+  };
+}
+
+export function useAuthActions() {
+  const { send } = useAuthContext();
+  
+  return {
+    setAuth: (auth: Auth) =>
+      send({ type: "SET_AUTH", auth }),
+    fail: (error: string) =>
+      send({ type: "FAIL", error }),
+    retry: () =>
+      send({ type: "RETRY" }),
+  };
+}

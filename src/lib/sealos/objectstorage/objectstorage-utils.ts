@@ -2,10 +2,10 @@
 
 import { ObjectStorageApiContextSchema } from "./schemas/objectstorage-api-context-schemas";
 import { nanoid } from "nanoid";
-import { useAuthContext } from "@/contexts/auth-context/auth-context";
+import { useAuthState } from "@/contexts/auth-context/auth-context";
 
 export function createObjectStorageContext() {
-  const { auth } = useAuthContext();
+  const { auth } = useAuthState();
   if (!auth) {
     throw new Error("User not found");
   }

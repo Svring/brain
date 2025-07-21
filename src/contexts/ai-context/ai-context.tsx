@@ -7,7 +7,7 @@ import { createContext, type ReactNode, use } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import { aiMachine, type AiState } from "./ai-machine";
 import { getAiCredentialsDev, getAiCredentialsProd } from "@/lib/ai/ai-utils";
-import { useAuthContext } from "@/contexts/auth-context/auth-context";
+import { useAuthState } from "@/contexts/auth-context/auth-context";
 import type { User } from "@/payload-types";
 
 const inspector = createBrowserInspector();
@@ -21,36 +21,36 @@ interface AiContextValue {
 
 const AiContext = createContext<AiContextValue | undefined>(undefined);
 
-export const AiProvider = ({ 
+export const AiProvider = ({
   children,
-  payloadUser 
-}: { 
+  payloadUser,
+}: {
   children: ReactNode;
   payloadUser?: User | null;
 }) => {
   const [state, send, actorRef] = useMachine(aiMachine, {
     inspect: inspector.inspect,
   });
-  
-  const { auth, state: authState } = useAuthContext();
+
+  const { auth, mode } = useAuthState();
 
   const setCredentials = (credentials: { baseUrl: string; apiKey: string }) => {
     // Use SET_STATE event to update the machine context properly
-    send({ 
-      type: "SET_STATE", 
-      state: { 
+    send({
+      type: "SET_STATE",
+      state: {
         base_url: credentials.baseUrl,
         api_key: credentials.apiKey,
-      }
+      },
     });
-    
+
     send({ type: "CREDENTIALS_LOADED" });
   };
 
   useMount(async () => {
     try {
-      const isProduction = authState.context.mode === "production";
-      
+      const isProduction = mode === "production";
+
       if (isProduction && auth) {
         const credentials = await getAiCredentialsProd(auth);
         setCredentials(credentials);
@@ -61,9 +61,9 @@ export const AiProvider = ({
         send({ type: "FAIL", error: "Unable to get AI credentials" });
       }
     } catch (error) {
-      send({ 
-        type: "FAIL", 
-        error: error instanceof Error ? error.message : "Unknown AI error" 
+      send({
+        type: "FAIL",
+        error: error instanceof Error ? error.message : "Unknown AI error",
       });
     }
   });
@@ -79,9 +79,7 @@ export const AiProvider = ({
   if (state.matches("error")) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="text-destructive">
-          AI Error: {state.context.error}
-        </div>
+        <div className="text-destructive">AI Error: {state.context.error}</div>
       </div>
     );
   }
@@ -106,4 +104,28 @@ export function useAiContext() {
     throw new Error("useAiContext must be used within AiProvider");
   }
   return ctx;
+}
+
+export function useAiState() {
+  const { state } = useAiContext();
+  return {
+    aiState: state.context.state,
+    chat: state.context.chat,
+    error: state.context.error,
+    isInitializing: state.matches("initializing"),
+    isActive: state.matches("active"),
+    isError: state.matches("error"),
+  };
+}
+
+export function useAiActions() {
+  const { send } = useAiContext();
+
+  return {
+    openChat: () => send({ type: "CHAT_OPEN" }),
+    closeChat: () => send({ type: "CHAT_CLOSE" }),
+    setState: (state: Partial<AiState>) => send({ type: "SET_STATE", state }),
+    credentialsLoaded: () => send({ type: "CREDENTIALS_LOADED" }),
+    fail: (error: string) => send({ type: "FAIL", error }),
+  };
 }

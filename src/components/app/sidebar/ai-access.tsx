@@ -1,8 +1,8 @@
 "use client";
 
 import { Key, ChevronsUpDown, Plus, Brain, Settings, Edit } from "lucide-react";
-import { useAuthContext } from "@/contexts/auth-context/auth-context";
-import { useAiContext } from "@/contexts/ai-context/ai-context";
+import { useAuthState } from "@/contexts/auth-context/auth-context";
+import { useAiState, useAiActions } from "@/contexts/ai-context/ai-context";
 import {
   Dialog,
   DialogContent,
@@ -40,8 +40,9 @@ interface AuthMethod {
 }
 
 export default function AIAccess() {
-  const { auth, state } = useAuthContext();
-  const { aiState, send: aiSend } = useAiContext();
+  const { auth } = useAuthState();
+  const { aiState } = useAiState();
+  const { setState, credentialsLoaded } = useAiActions();
   const { isMobile, state: sidebarState } = useSidebar();
   const [activeMethod, setActiveMethod] = useState<AuthMethod | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -101,25 +102,19 @@ export default function AIAccess() {
 
   const handleUseBrain = () => {
     if (brainToken) {
-      aiSend({
-        type: "SET_STATE",
-        state: {
-          api_key: brainToken.key,
-          base_url: `https://aiproxy.${auth?.regionUrl}/v1`,
-        },
+      setState({
+        api_key: brainToken.key,
+        base_url: `https://aiproxy.${auth?.regionUrl}/v1`,
       });
-      aiSend({ type: "CREDENTIALS_LOADED" });
+      credentialsLoaded();
     }
   };
 
   const handleUseCustom = () => {
     if (hasCustomCredentials) {
       // Credentials exist, directly switch to custom without dialog
-      aiSend({
-        type: "SET_STATE",
-        state: { api_key: aiState?.api_key, base_url: aiState?.base_url },
-      });
-      aiSend({ type: "CREDENTIALS_LOADED" });
+      setState({ api_key: aiState?.api_key, base_url: aiState?.base_url });
+      credentialsLoaded();
     } else {
       // No credentials exist, open dialog to configure
       setIsDialogOpen(true);
@@ -134,11 +129,8 @@ export default function AIAccess() {
   const handleSubmitCustom = (e: React.FormEvent) => {
     e.preventDefault();
     if (apiKey && baseUrl) {
-      aiSend({
-        type: "SET_STATE",
-        state: { api_key: apiKey, base_url: baseUrl },
-      });
-      aiSend({ type: "CREDENTIALS_LOADED" });
+      setState({ api_key: apiKey, base_url: baseUrl });
+      credentialsLoaded();
       setIsDialogOpen(false);
     }
   };

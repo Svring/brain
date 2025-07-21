@@ -2,7 +2,7 @@ import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { useAuthContext } from "@/contexts/auth-context/auth-context";
+import { useAuthState } from "@/contexts/auth-context/auth-context";
 import { useToast } from "@/hooks/general/use-toast";
 import type { TemplateResource } from "@/lib/sealos/template/schemas/template-api-context-schemas";
 import { useCreateInstanceMutation } from "@/lib/sealos/template/template-method/template-mutation";
@@ -21,7 +21,7 @@ export function TemplateCard({
   onViewDetails,
   onTemplateDeployed,
 }: TemplateCardProps) {
-  const { auth } = useAuthContext();
+  const { auth } = useAuthState();
   const { toast } = useToast();
   const [showInputDialog, setShowInputDialog] = useState(false);
 
