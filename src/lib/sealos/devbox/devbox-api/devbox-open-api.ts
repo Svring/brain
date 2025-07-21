@@ -36,6 +36,7 @@ import {
   DevboxDeleteResponseSchema,
   DevboxDeployRequestSchema,
   DevboxDeployResponseSchema,
+  DevboxErrorDataSchema,
   DevboxGetResponseSchema,
   DevboxLifecycleRequestSchema,
   DevboxLifecycleResponseSchema,
@@ -174,6 +175,7 @@ export const getDevboxByName = createParallelAction(
     const response = await api.get("/get", {
       params: { devboxName },
     });
+    console.log("getDevboxByName", response);
     return DevboxGetResponseSchema.parse(response.data);
   }
 );

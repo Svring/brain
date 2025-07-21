@@ -10,9 +10,9 @@ import { useCopilotAction } from "@copilotkit/react-core";
 import { createDevboxContext } from "@/lib/sealos/devbox/devbox-utils";
 import {
   DevboxListCard,
-  DevboxCard,
+  DevboxGetCard,
   DevboxDeleteCard,
-} from "@/components/ai/action-cards/devbox-action-cards";
+} from "@/components/ai/action-cards/devbox-action-cards/index";
 
 export const listDevboxAction = () => {
   const context = createDevboxContext();
@@ -54,7 +54,7 @@ export const getDevboxAction = () => {
         return <></>;
       }
       const devboxData = JSON.parse(props.result);
-      return <DevboxCard data={devboxData?.data} />;
+      return <DevboxGetCard data={devboxData?.data} />;
     },
   });
 };
@@ -76,7 +76,7 @@ export const deleteDevboxAction = () => {
     ],
     renderAndWaitForResponse(props) {
       const { status, args, respond, result } = props;
-      
+
       // Ensure args has the required devboxName property
       if (!args?.devboxName) {
         return (
@@ -85,7 +85,7 @@ export const deleteDevboxAction = () => {
           </div>
         );
       }
-      
+
       return (
         <DevboxDeleteCard
           status={status}

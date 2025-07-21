@@ -31,8 +31,15 @@ export const DevboxInfoSchema = z.object({
   domain: z.string(),
 });
 
+// Error response schema for when devbox doesn't exist
+export const DevboxErrorDataSchema = z.object({
+  code: z.number(),
+  statusText: z.string(),
+  message: z.string(),
+});
+
 export const DevboxGetResponseSchema = z.object({
-  data: DevboxInfoSchema,
+  data: z.union([DevboxInfoSchema, DevboxErrorDataSchema]).optional(),
 });
 
 // Get DevBox list schemas
@@ -59,6 +66,7 @@ export type DevboxInfo = z.infer<typeof DevboxInfoSchema>;
 export type DevboxNetwork = z.infer<typeof DevboxNetworkSchema>;
 export type DevboxListItem = z.infer<typeof DevboxListItemSchema>;
 export type DevboxListResponse = z.infer<typeof DevboxListResponseSchema>;
+export type DevboxErrorData = z.infer<typeof DevboxErrorDataSchema>;
 export type DevboxQueryErrorResponse = z.infer<
   typeof DevboxQueryErrorResponseSchema
 >;

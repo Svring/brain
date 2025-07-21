@@ -1,5 +1,9 @@
 import React from "react";
-import { DevboxListCard, DevboxCard, DevboxDeleteCard } from "./devbox-action-cards";
+import {
+  DevboxListCard,
+  DevboxGetCard,
+  DevboxDeleteCard,
+} from "./devbox-action-cards";
 
 interface ActionCardProps {
   data: any;
@@ -12,9 +16,9 @@ const cardTypes: Record<string, ActionCardRenderer> = {
   listDevbox: ({ data }: ActionCardProps) =>
     React.createElement(DevboxListCard, data),
   getDevbox: ({ data }: ActionCardProps) =>
-    React.createElement(DevboxCard, data),
+    React.createElement(DevboxGetCard, data),
   deleteDevbox: ({ data }: ActionCardProps) =>
-    React.createElement(DevboxDeleteCard, { data }),
+    React.createElement(DevboxDeleteCard, data),
 };
 
 export default cardTypes;
