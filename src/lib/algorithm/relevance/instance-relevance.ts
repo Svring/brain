@@ -11,13 +11,18 @@ export const getInstanceRelatedResources = async (
 
   // 1. Get resources by label selectors
   const labelSelectors = [
-    `${INSTANCE_RELATE_RESOURCE_LABELS.MANAGED_BY}=${instanceName}`,
-    `${INSTANCE_RELATE_RESOURCE_LABELS.APP}=${instanceName}`,
+    // `${INSTANCE_RELATE_RESOURCE_LABELS.MANAGED_BY}=${instanceName}`,
+    // `${INSTANCE_RELATE_RESOURCE_LABELS.APP}=${instanceName}`,
     `${INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS}=${instanceName}`,
   ];
 
   const labeledResourcesPromises = labelSelectors.map((selector) =>
-    listAllResources(context, selector)
+    listAllResources(
+      context,
+      selector,
+      [],
+      ["devbox", "cluster", "objectstoragebucket", "deployment", "statefulset"]
+    )
   );
   const labeledResourcesResults = await Promise.allSettled(
     labeledResourcesPromises

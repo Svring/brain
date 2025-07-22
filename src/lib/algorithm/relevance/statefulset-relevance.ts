@@ -8,7 +8,12 @@ export const getStatefulsetRelatedResources = async (
   statefulsetName: string
 ) => {
   const labelSelector = `${STATEFULSET_RELATE_RESOURCE_LABELS.APP_DEPLOY_MANAGER}=${statefulsetName}`;
-  const resources = await listAllResources(context, labelSelector);
+  const resources = await listAllResources(
+    context,
+    labelSelector,
+    ["ingress"],
+    []
+  );
 
   const allItems: any[] = [];
   if (resources) {

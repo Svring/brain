@@ -8,7 +8,12 @@ export const getDeployRelatedResources = async (
   deployName: string
 ) => {
   const labelSelector = `${DEPLOYMENT_RELATE_RESOURCE_LABELS.APP_DEPLOY_MANAGER}=${deployName}`;
-  const resources = await listAllResources(context, labelSelector);
+  const resources = await listAllResources(
+    context,
+    labelSelector,
+    ["ingress"],
+    []
+  );
 
   const allItems: any[] = [];
   if (resources) {

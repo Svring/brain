@@ -48,8 +48,6 @@ export function useProjectResources(
     enabled: isSuccess && !annotationData,
   });
 
-  console.log("fullResourcesQuery", fullResourcesQuery.data);
-
   // Optimized annotation-based query when annotation exists
   const annotationBasedQuery = useQuery({
     ...listAnnotationBasedResourcesOptions(
