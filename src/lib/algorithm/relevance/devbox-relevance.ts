@@ -8,7 +8,12 @@ export const getDevboxRelatedResources = async (
   devboxName: string
 ) => {
   const labelSelector = `${DEVBOX_RELATE_RESOURCE_LABELS.DEVBOX_MANAGER}=${devboxName}`;
-  const resources = await listAllResources(context, labelSelector);
+  const resources = await listAllResources(
+    context,
+    labelSelector,
+    ["service", "ingress"], // Only fetch service and ingress builtin resources
+    [] // No custom resources
+  );
 
   const allItems: any[] = [];
   if (resources) {

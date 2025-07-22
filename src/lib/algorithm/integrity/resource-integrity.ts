@@ -1,1 +1,1 @@
-// TODO: Implement position integrity algorithm
+// TODO: Implement resource integrity algorithm

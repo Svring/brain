@@ -28,10 +28,22 @@ import _ from "lodash";
  */
 export const listAllResources = async (
   context: K8sApiContext,
-  labelSelector?: string
+  labelSelector?: string,
+  builtinResourceTypes?: string[],
+  customResourceTypes?: string[]
 ) => {
+  // Filter builtin resources based on provided list
+  const builtinResourcesToFetch = builtinResourceTypes
+    ? _.pick(BUILTIN_RESOURCES, builtinResourceTypes)
+    : BUILTIN_RESOURCES;
+
+  // Filter custom resources based on provided list
+  const customResourcesToFetch = customResourceTypes
+    ? _.pick(CUSTOM_RESOURCES, customResourceTypes)
+    : CUSTOM_RESOURCES;
+
   // Prepare builtin resource promises
-  const builtinPromises = _.map(BUILTIN_RESOURCES, (config, name) =>
+  const builtinPromises = _.map(builtinResourcesToFetch, (config, name) =>
     runParallelAction(
       listBuiltinResources(context, {
         type: "builtin",
@@ -42,7 +54,7 @@ export const listAllResources = async (
   );
 
   // Prepare custom resource promises
-  const customPromises = _.map(CUSTOM_RESOURCES, (config, name) =>
+  const customPromises = _.map(customResourcesToFetch, (config, name) =>
     runParallelAction(
       listCustomResources(context, {
         type: "custom",
@@ -217,7 +229,9 @@ export const listResourcesOptions = (
  */
 export const listAllResourcesOptions = (
   context: K8sApiContext,
-  labelSelector?: string
+  labelSelector?: string,
+  builtinResourceTypes?: string[],
+  customResourceTypes?: string[]
 ) =>
   queryOptions({
     queryKey: [
@@ -226,9 +240,11 @@ export const listAllResourcesOptions = (
       "list",
       context.namespace,
       labelSelector,
+      builtinResourceTypes,
+      customResourceTypes,
     ],
     queryFn: async () => {
-      const result = await listAllResources(context, labelSelector);
+      const result = await listAllResources(context, labelSelector, builtinResourceTypes, customResourceTypes);
       return result;
     },
     enabled: !!context.namespace && !!context.kubeconfig,
