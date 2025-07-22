@@ -8,6 +8,7 @@ import {
   getCustomResource,
   listBuiltinResources,
   listCustomResources,
+  getPodsByOwnerReference,
 } from "../k8s-api/k8s-api-query";
 import { K8sApiContext } from "../k8s-api/k8s-api-schemas/context-schemas";
 import {
@@ -244,7 +245,12 @@ export const listAllResourcesOptions = (
       customResourceTypes,
     ],
     queryFn: async () => {
-      const result = await listAllResources(context, labelSelector, builtinResourceTypes, customResourceTypes);
+      const result = await listAllResources(
+        context,
+        labelSelector,
+        builtinResourceTypes,
+        customResourceTypes
+      );
       return result;
     },
     enabled: !!context.namespace && !!context.kubeconfig,
@@ -305,7 +311,8 @@ export const getAllBuiltinResourcesByName = async (
   const results = await Promise.allSettled(builtinPromises);
   return results
     .filter(
-      (r) => r.status === "fulfilled" && r.value && Object.keys(r.value).length > 0
+      (r) =>
+        r.status === "fulfilled" && r.value && Object.keys(r.value).length > 0
     )
     .map((r: any) => r.value);
 };
@@ -332,7 +339,8 @@ export const getAllCustomResourcesByName = async (
   const results = await Promise.allSettled(customPromises);
   return results
     .filter(
-      (r) => r.status === "fulfilled" && r.value && Object.keys(r.value).length > 0
+      (r) =>
+        r.status === "fulfilled" && r.value && Object.keys(r.value).length > 0
     )
     .map((r: any) => r.value);
 };
@@ -413,4 +421,82 @@ export const getObjectStorageSecretOptions = (
     context.namespace
   );
   return getSecretOptions(context, secretName);
+};
+
+/**
+ * Get pods owned by a specific resource target.
+ */
+export const getPodsByResourceTarget = async (
+  context: K8sApiContext,
+  target: CustomResourceTarget | BuiltinResourceTarget
+) => {
+  let ownerKind: string;
+  let ownerName: string;
+
+  if (target.type === "custom") {
+    // For custom resources, we need to determine the kind from the resource type
+    const resourceConfig = Object.values(CUSTOM_RESOURCES).find(
+      (config) =>
+        config.group === target.group &&
+        config.version === target.version &&
+        config.plural === target.plural
+    );
+    ownerKind = resourceConfig
+      ? _.upperFirst(_.camelCase(resourceConfig.resourceType))
+      : "Unknown";
+    ownerName = target.name!;
+  } else {
+    // For builtin resources, get the kind from the config
+    const resourceConfig = Object.values(BUILTIN_RESOURCES).find(
+      (config) => config.resourceType === target.resourceType
+    );
+    ownerKind = resourceConfig ? resourceConfig.kind : "Unknown";
+    ownerName = target.name!;
+  }
+
+  return await runParallelAction(
+    getPodsByOwnerReference(context, ownerKind, ownerName)
+  );
+};
+
+/**
+ * Query options for getting pods owned by a specific resource target.
+ */
+export const getPodsByResourceTargetOptions = (
+  context: K8sApiContext,
+  target: CustomResourceTarget | BuiltinResourceTarget
+) => {
+  let ownerKind: string;
+  let ownerName: string;
+
+  if (target.type === "custom") {
+    const resourceConfig = Object.values(CUSTOM_RESOURCES).find(
+      (config) =>
+        config.group === target.group &&
+        config.version === target.version &&
+        config.plural === target.plural
+    );
+    ownerKind = resourceConfig
+      ? _.upperFirst(_.camelCase(resourceConfig.resourceType))
+      : "Unknown";
+    ownerName = target.name!;
+  } else {
+    const resourceConfig = Object.values(BUILTIN_RESOURCES).find(
+      (config) => config.resourceType === target.resourceType
+    );
+    ownerKind = resourceConfig ? resourceConfig.kind : "Unknown";
+    ownerName = target.name!;
+  }
+
+  return queryOptions({
+    queryKey: ["k8s", "pods-by-owner", context.namespace, ownerKind, ownerName],
+    queryFn: async () => {
+      const result = await runParallelAction(
+        getPodsByOwnerReference(context, ownerKind, ownerName)
+      );
+      return result;
+    },
+    enabled:
+      !!context.namespace && !!context.kubeconfig && !!ownerName && !!ownerKind,
+  });
 };

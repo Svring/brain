@@ -132,3 +132,52 @@ export const getBuiltinResource = createParallelAction(
     );
   }
 );
+
+/**
+ * Get pods owned by a specific resource (filtered by ownerReferences).
+ */
+export const getPodsByOwnerReference = createParallelAction(
+  async (
+    context: K8sApiContext,
+    ownerKind: string,
+    ownerName: string
+  ) => {
+    const { client } = await getBuiltinApiClient(
+      context.kubeconfig,
+      "pod"
+    );
+
+    const podListResponse = await invokeApiMethod<BuiltinResourceListResponse>(
+      client,
+      "listNamespacedPod",
+      {
+        namespace: context.namespace,
+      }
+    );
+
+    // Filter pods by ownerReferences
+    const filteredPods = podListResponse.items.filter((pod: any) => {
+      if (!pod.metadata?.ownerReferences) return false;
+      return pod.metadata.ownerReferences.some(
+        (owner: any) => owner.kind === ownerKind && owner.name === ownerName
+      );
+    });
+
+    const result = {
+      ...podListResponse,
+      items: filteredPods,
+    };
+
+    return BuiltinResourceListResponseSchema.parse(
+      JSON.parse(
+        JSON.stringify(
+          await addMissingFields(
+            result.items,
+            "v1",
+            "Pod"
+          )
+        )
+      )
+    );
+  }
+);

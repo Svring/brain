@@ -22,6 +22,8 @@ import SearchBar from "@/components/app/search-bar";
 import { getInstanceRelatedResources } from "@/lib/algorithm/relevance/instance-relevance";
 import { useMount } from "@reactuses/core";
 import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
+import { getPodsByResourceTarget } from "@/lib/k8s/k8s-method/k8s-query";
+import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 
 export default function Page() {
   const { isOpen, onClose, onOpenChange } = useDisclosure();
@@ -42,14 +44,31 @@ export default function Page() {
     );
   }, [projects?.items, searchTerm]);
 
-  const context = createK8sContext();
-  useMount(async () => {
-    const relatedResources = await getInstanceRelatedResources(
-      context,
-      "teable-afdmhcrb"
-    );
-    console.log(relatedResources);
-  });
+  // const context = createK8sContext();
+  // useMount(async () => {
+  //   // const relatedResources = await getInstanceRelatedResources(
+  //   //   context,
+  //   //   "teable-afdmhcrb"
+  //   // );
+  //   // console.log(relatedResources);
+
+  //   // Test getPodsByResourceTarget with cluster
+  //   const clusterConfig = CUSTOM_RESOURCES.cluster;
+  //   const clusterTarget = {
+  //     type: "custom" as const,
+  //     group: clusterConfig.group,
+  //     version: clusterConfig.version,
+  //     plural: clusterConfig.plural,
+  //     name: "ai-postgresql-postgresql",
+  //   };
+
+  //   try {
+  //     const pods = await getPodsByResourceTarget(context, clusterTarget);
+  //     console.log("Pods owned by ai-postgresql:", pods);
+  //   } catch (error) {
+  //     console.error("Error fetching pods for cluster:", error);
+  //   }
+  // });
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center p-8">
