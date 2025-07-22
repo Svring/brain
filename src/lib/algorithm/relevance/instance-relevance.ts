@@ -9,39 +9,28 @@ export const getInstanceRelatedResources = async (
 ) => {
   const allItems: any[] = [];
 
-  // 1. Get resources by label selectors
-  const labelSelectors = [
-    // `${INSTANCE_RELATE_RESOURCE_LABELS.MANAGED_BY}=${instanceName}`,
-    // `${INSTANCE_RELATE_RESOURCE_LABELS.APP}=${instanceName}`,
-    `${INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS}=${instanceName}`,
-  ];
+  // 1. Get resources by label selector
+  const labelSelector = `${INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS}=${instanceName}`;
 
-  const labeledResourcesPromises = labelSelectors.map((selector) =>
-    listAllResources(
-      context,
-      selector,
-      ["configmap"],
-      ["devbox", "cluster", "objectstoragebucket", "deployment", "statefulset"]
-    )
-  );
-  const labeledResourcesResults = await Promise.allSettled(
-    labeledResourcesPromises
+  const labeledResources = await listAllResources(
+    context,
+    labelSelector,
+    ["configmap", "deployment", "statefulset"],
+    ["devbox", "cluster", "objectstoragebucket"]
   );
 
-  labeledResourcesResults.forEach((result) => {
-    if (result.status === "fulfilled" && result.value) {
-      _.forEach(result.value.builtin, (resourceList) => {
-        if (resourceList && resourceList.items) {
-          allItems.push(...resourceList.items);
-        }
-      });
-      _.forEach(result.value.custom, (resourceList) => {
-        if (resourceList && resourceList.items) {
-          allItems.push(...resourceList.items);
-        }
-      });
-    }
-  });
+  if (labeledResources) {
+    _.forEach(labeledResources.builtin, (resourceList) => {
+      if (resourceList && resourceList.items) {
+        allItems.push(...resourceList.items);
+      }
+    });
+    _.forEach(labeledResources.custom, (resourceList) => {
+      if (resourceList && resourceList.items) {
+        allItems.push(...resourceList.items);
+      }
+    });
+  }
 
   return allItems;
 };

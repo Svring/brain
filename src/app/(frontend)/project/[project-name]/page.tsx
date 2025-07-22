@@ -131,12 +131,14 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
 }
 
 function ProjectFlow({ projectName }: { projectName: string }) {
-  const { data, isLoading } = useProjectResources(projectName);
+  const context = createK8sContext();
+
+  const { data, isLoading } = useProjectResources(context, projectName);
   const { setFlowGraphData } = useProjectActions();
 
   const [nodes, onNodesChange, edges, onEdgesChange] = useFlow(data);
 
-  const addToProjectMutation = useAddToProjectMutation(createK8sContext());
+  const addToProjectMutation = useAddToProjectMutation(context);
 
   const handleDrop = (event: DragEndEvent) => {
     const { active } = event;

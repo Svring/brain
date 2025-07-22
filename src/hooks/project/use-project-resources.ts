@@ -22,13 +22,14 @@ import { listAnnotationBasedResourcesOptions } from "@/lib/k8s/k8s-method/k8s-qu
 import { useBatchPatchResourcesMetadataMutation } from "@/lib/k8s/k8s-method/k8s-mutation";
 import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 import { BRAIN_RESOURCES_ANNOTATION_KEY } from "@/lib/project/project-constant/project-constant-label";
+import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
 
 export function useProjectResources(
+  context: K8sApiContext,
   projectName: string
 ): UseQueryResult<ListAllResourcesResponse, Error> {
   const { flowGraphData } = useProjectState();
   const { setFlowGraphData } = useProjectActions();
-  const context = createK8sContext();
   const patchMutation = useBatchPatchResourcesMetadataMutation(context);
 
   const { data: project, isSuccess } = useQuery(
@@ -44,7 +45,12 @@ export function useProjectResources(
 
   // Full resources query when no annotation exists
   const fullResourcesQuery = useQuery({
-    ...getProjectResourcesOptions(context, projectName, ["devbox"]),
+    ...getProjectResourcesOptions(context, projectName, [
+      "devbox",
+      "cluster",
+      "deployment",
+      "statefulset",
+    ]),
     enabled: isSuccess && !annotationData,
   });
 
@@ -69,7 +75,7 @@ export function useProjectResources(
       const simplifiedData = convertResourcesToAnnotation(resourcesQuery.data);
       setFlowGraphData(projectName, simplifiedData);
     }
-  }, [projectName, resourcesQuery.data]);
+  }, [projectName]);
 
   // Store simplified data in annotation when full resources are loaded and no annotation exists
   useEffect(() => {
@@ -95,7 +101,7 @@ export function useProjectResources(
         value: JSON.stringify(resources),
       });
     }
-  }, [projectName, flowGraphData, annotationData, patchMutation]);
+  }, [projectName, flowGraphData]);
 
   return resourcesQuery;
 }

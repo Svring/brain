@@ -15,7 +15,6 @@ import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-
 import { useRef, useState, useEffect } from "react";
 import FloatingActionMenu from "@/components/flow/components/floating-action-menu";
 import { Trash2, ArrowLeft } from "lucide-react";
-// import { useChatContext } from "@copilotkit/react-ui";
 import { useProjectResources } from "@/hooks/project/use-project-resources";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useClusterSecret } from "@/lib/sealos/cluster/cluster-method/cluster-query";
@@ -55,7 +54,10 @@ export default function BaseNodeWrapper({
   const { flowGraphData } = useProjectState();
   const projectName = flowGraphData.project;
   const flowGraphResources = flowGraphData.resources || [];
-  const projectResourcesQuery = useProjectResources(projectName);
+  const projectResourcesQuery = useProjectResources(
+    createK8sContext(),
+    projectName
+  );
   const context = createK8sContext();
   const removeFromProjectMutation = useRemoveFromProjectMutation(context);
   const deleteResourceMutation = useDeleteResourceMutation(context);

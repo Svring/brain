@@ -20,11 +20,8 @@ import AiCoin from "@/components/ai/headless/ai-coin";
 import AiChatbox from "@/components/ai/headless/ai-chatbox";
 import SearchBar from "@/components/app/search-bar";
 import { getInstanceRelatedResources } from "@/lib/algorithm/relevance/instance-relevance";
-import { getProjectRelatedResources } from "@/lib/algorithm/relevance/project-relevance";
-
-import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
-
 import { useMount } from "@reactuses/core";
+import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
 
 export default function Page() {
   const { isOpen, onClose, onOpenChange } = useDisclosure();
@@ -45,43 +42,14 @@ export default function Page() {
     );
   }, [projects?.items, searchTerm]);
 
-  // const context = createK8sContext();
-  // useMount(async () => {
-  //   const projectRelatedResources = await getProjectRelatedResources(
-  //     context,
-  //     "project-31oeuj5",
-  //     ["devbox"]
-  //   );
-
-  //   // Extract and display only kind and name from all resources
-  //   const resourceSummary: { kind: string; name: string }[] = [];
-
-  //   // Process builtin resources
-  //   Object.entries(projectRelatedResources.builtin).forEach(
-  //     ([type, resourceList]) => {
-  //       resourceList.items.forEach((item) => {
-  //         resourceSummary.push({
-  //           kind: item.kind,
-  //           name: item.metadata.name,
-  //         });
-  //       });
-  //     }
-  //   );
-
-  //   // Process custom resources
-  //   Object.entries(projectRelatedResources.custom).forEach(
-  //     ([type, resourceList]) => {
-  //       resourceList.items.forEach((item) => {
-  //         resourceSummary.push({
-  //           kind: item.kind,
-  //           name: item.metadata.name,
-  //         });
-  //       });
-  //     }
-  //   );
-
-  //   console.log("Resources (kind and name only):", resourceSummary);
-  // });
+  const context = createK8sContext();
+  useMount(async () => {
+    const relatedResources = await getInstanceRelatedResources(
+      context,
+      "teable-afdmhcrb"
+    );
+    console.log(relatedResources);
+  });
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center p-8">
