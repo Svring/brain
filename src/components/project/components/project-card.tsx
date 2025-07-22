@@ -42,15 +42,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ projectName }) => {
       { projectName },
       {
         onSuccess: (data) => {
-          console.log("delete project success", data);
-          const totalDeleted =
-            (data.builtinDeletions || 0) +
-            (data.customDeletions || 0) +
-            (data.instanceDeletions || 0) +
-            (data.clusterDeletions || 0);
           toast({
             title: "Project deleted",
-            description: `${projectName} has been deleted successfully. ${totalDeleted} resources were removed.`,
+            description: `${projectName} has been deleted successfully.`,
           });
         },
         onError: (error) => {

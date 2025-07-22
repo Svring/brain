@@ -222,3 +222,58 @@ export function createSignedUrlConfig(
     signatureVersion: "v4",
   };
 }
+
+/**
+ * Environment variable structure for K8s resources
+ */
+export interface EnvVar {
+  type: "secretKeyRef";
+  key: string;
+  secretName: string;
+  secretKey: string;
+}
+
+/**
+ * Create environment variables for object storage connection
+ * @param secretName - Name of the object storage secret
+ * @param objectStorageName - Name of the object storage bucket
+ * @returns Array of environment variables for object storage connection
+ */
+export function createObjectStorageEnvVars(
+  secretName: string,
+  objectStorageName: string
+): EnvVar[] {
+  const prefix = objectStorageName.toUpperCase().replace(/[^A-Z0-9]/g, "_");
+  return [
+    {
+      type: "secretKeyRef",
+      key: `${prefix}_S3_ACCESS_KEY`,
+      secretName,
+      secretKey: "accessKey",
+    },
+    {
+      type: "secretKeyRef",
+      key: `${prefix}_S3_SECRET_KEY`,
+      secretName,
+      secretKey: "secretKey",
+    },
+    {
+      type: "secretKeyRef",
+      key: `${prefix}_S3_BUCKET`,
+      secretName,
+      secretKey: "bucket",
+    },
+    {
+      type: "secretKeyRef",
+      key: `${prefix}_S3_ENDPOINT_EXTERNAL`,
+      secretName,
+      secretKey: "external",
+    },
+    {
+      type: "secretKeyRef",
+      key: `${prefix}_S3_ENDPOINT_INTERNAL`,
+      secretName,
+      secretKey: "internal",
+    },
+  ];
+}

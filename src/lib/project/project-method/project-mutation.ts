@@ -7,9 +7,7 @@ import {
   useBatchPatchResourcesMetadataMutation,
   useBatchRemoveResourcesMetadataMutation,
   useApplyInstanceYamlMutation,
-  useDeleteInstanceRelatedMutation,
-  useDeleteClusterRelatedMutation,
-  useDeleteResourcesByLabelSelectorMutation,
+  useDeleteAllResourcesMutation,
 } from "@/lib/k8s/k8s-method/k8s-mutation";
 import { listCustomResourcesOptions } from "@/lib/k8s/k8s-method/k8s-query";
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
@@ -28,67 +26,10 @@ import { getClusterRelatedResources } from "@/lib/algorithm/relevance/cluster-re
 import { getDeployRelatedResources } from "@/lib/algorithm/relevance/deploy-relevance";
 import { getDevboxRelatedResources } from "@/lib/algorithm/relevance/devbox-relevance";
 import { getInstanceRelatedResources } from "@/lib/algorithm/relevance/instance-relevance";
+import { getProjectRelatedResources } from "@/lib/algorithm/relevance/project-relevance";
 import { convertAndFilterResourceToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { BRAIN_RESOURCES_ANNOTATION_KEY } from "@/lib/project/project-constant/project-constant-label";
 import { getProjectOptions } from "./project-query";
-
-/**
- * Extract instance and cluster names from individual resource queries
- */
-async function extractProjectResourcesDirectly(
-  context: K8sApiContext,
-  projectName: string,
-  queryClient: any
-) {
-  const labelSelector = `${INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS}=${projectName}`;
-  const instanceNames: string[] = [];
-  const clusterNames: string[] = [];
-
-  try {
-    // Query instances directly
-    const instanceQuery = listCustomResourcesOptions(context, {
-      type: "custom",
-      group: CUSTOM_RESOURCES.instance.group,
-      version: CUSTOM_RESOURCES.instance.version,
-      plural: CUSTOM_RESOURCES.instance.plural,
-      labelSelector,
-    });
-
-    const instancesResult = await queryClient.ensureQueryData(instanceQuery);
-
-    if (instancesResult?.items) {
-      instanceNames.push(
-        ...instancesResult.items
-          .map((item: any) => item.metadata?.name)
-          .filter(Boolean)
-      );
-    }
-
-    // Query clusters directly
-    const clusterQuery = listCustomResourcesOptions(context, {
-      type: "custom",
-      group: CUSTOM_RESOURCES.cluster.group,
-      version: CUSTOM_RESOURCES.cluster.version,
-      plural: CUSTOM_RESOURCES.cluster.plural,
-      labelSelector,
-    });
-
-    const clustersResult = await queryClient.ensureQueryData(clusterQuery);
-
-    if (clustersResult?.items) {
-      clusterNames.push(
-        ...clustersResult.items
-          .map((item: any) => item.metadata?.name)
-          .filter(Boolean)
-      );
-    }
-  } catch (error) {
-    //
-  }
-
-  const result = { instanceNames, clusterNames };
-  return result;
-}
 
 /**
  * Hook to add project name label to multiple resources
@@ -532,74 +473,27 @@ export const useCreateProjectMutation = (context: K8sApiContext) => {
  */
 export const useDeleteProjectMutation = (context: K8sApiContext) => {
   const queryClient = useQueryClient();
-  const deleteInstanceRelated = useDeleteInstanceRelatedMutation(context);
-  const deleteClusterRelated = useDeleteClusterRelatedMutation(context);
-  const deleteByLabel = useDeleteResourcesByLabelSelectorMutation(context);
+  const deleteAllResources = useDeleteAllResourcesMutation(context);
 
   return useMutation({
     mutationFn: async ({ projectName }: { projectName: string }) => {
       try {
-        const { instanceNames, clusterNames } =
-          await extractProjectResourcesDirectly(
-            context,
-            projectName,
-            queryClient
-          );
-
-        const clusterDeletions = await Promise.allSettled(
-          clusterNames.map((clusterName: string) => {
-            return deleteClusterRelated.mutateAsync({
-              instanceName: clusterName,
-            });
-          })
-        );
-
-        const instanceDeletions = await Promise.allSettled(
-          instanceNames.map((instanceName: string) => {
-            return deleteInstanceRelated.mutateAsync({ instanceName });
-          })
-        );
-
-        const labelSelector = `${INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS}=${projectName}`;
-
-        const builtinDeletions = await Promise.allSettled(
-          Object.entries(BUILTIN_RESOURCES).map(([, config]) => {
-            return deleteByLabel.mutateAsync({
-              target: {
-                type: "builtin",
-                resourceType: config.resourceType,
-                labelSelector,
-              },
-            });
-          })
-        );
-
-        const customDeletions = await Promise.allSettled(
-          Object.entries(CUSTOM_RESOURCES).map(([, config]) => {
-            return deleteByLabel.mutateAsync({
-              target: {
-                type: "custom",
-                group: config.group,
-                version: config.version,
-                plural: config.plural,
-                labelSelector,
-              },
-            });
-          })
-        );
-
-        const result = {
-          success: true,
+        // 1. Get all resources related to the project
+        const projectResources = await getProjectRelatedResources(
+          context,
           projectName,
-          instanceNames,
-          clusterNames,
-          clusterDeletions: clusterDeletions.length,
-          instanceDeletions: instanceDeletions.length,
-          builtinDeletions: builtinDeletions.length,
-          customDeletions: customDeletions.length,
-        };
+          ["deployment", "statefulset", "instance", "devbox"]
+        );
 
-        return result;
+        // 2. Delete all found resources
+        const result = await deleteAllResources.mutateAsync({
+          resources: projectResources,
+        });
+
+        return {
+          projectName,
+          ...result,
+        };
       } catch (error) {
         throw error;
       }
@@ -607,16 +501,13 @@ export const useDeleteProjectMutation = (context: K8sApiContext) => {
     onSuccess: (data) => {
       toast.success(`Project "${data.projectName}" deleted successfully`);
       queryClient.invalidateQueries({
-        queryKey: ["projects", context.namespace],
+        queryKey: ["k8s"],
       });
       queryClient.invalidateQueries({
-        queryKey: ["project", "get", context.namespace],
+        queryKey: ["project", "resources", context.namespace],
       });
       queryClient.invalidateQueries({
-        queryKey: ["cluster", "list", context.namespace],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["cluster", "get", context.namespace],
+        queryKey: ["projects"],
       });
     },
     onError: (error) => {

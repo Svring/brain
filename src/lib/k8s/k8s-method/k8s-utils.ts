@@ -287,6 +287,31 @@ export function getResourceConfigFromKind(kind: string) {
   );
 }
 
+/**
+ * Flatten project resources from project-relevance algorithm structure to individual K8s resources
+ * @param projectResources - Resources from getProjectRelatedResources
+ * @returns Array of individual K8s resources
+ */
+export function flattenProjectResources(projectResources: ListAllResourcesResponse): K8sResource[] {
+  const allResources: K8sResource[] = [];
+
+  // Process builtin resources
+  Object.values(projectResources.builtin || {}).forEach((resourceList) => {
+    if (resourceList && resourceList.items) {
+      allResources.push(...resourceList.items);
+    }
+  });
+
+  // Process custom resources
+  Object.values(projectResources.custom || {}).forEach((resourceList) => {
+    if (resourceList && resourceList.items) {
+      allResources.push(...resourceList.items);
+    }
+  });
+
+  return allResources;
+}
+
 export function convertAndFilterResourceToTarget(
   resource: K8sResource
 ): CustomResourceTarget | BuiltinResourceTarget | null {

@@ -19,6 +19,7 @@ import {
   getCustomResource,
   getBuiltinResource,
 } from "../k8s-api/k8s-api-query";
+import { listAllResources } from "./k8s-query";
 import { K8sApiContext } from "../k8s-api/k8s-api-schemas/context-schemas";
 import {
   BuiltinResourceTarget,
@@ -26,11 +27,17 @@ import {
   ResourceTarget,
 } from "../k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { CUSTOM_RESOURCES } from "../k8s-constant/k8s-constant-custom-resource";
-import { invalidateResourceQueries } from "./k8s-utils";
+import { invalidateResourceQueries, convertAndFilterResourceToTarget, flattenProjectResources } from "./k8s-utils";
 import {
   INSTANCE_RELATE_RESOURCE_LABELS,
   CLUSTER_RELATE_RESOURCE_LABELS,
 } from "../k8s-constant/k8s-constant-label";
+import { getClusterRelatedResources } from "@/lib/algorithm/relevance/cluster-relevance";
+import { getDeployRelatedResources } from "@/lib/algorithm/relevance/deploy-relevance";
+import { getDevboxRelatedResources } from "@/lib/algorithm/relevance/devbox-relevance";
+import { getInstanceRelatedResources } from "@/lib/algorithm/relevance/instance-relevance";
+import { getStatefulsetRelatedResources } from "@/lib/algorithm/relevance/statefulset-relevance";
+import _ from "lodash";
 
 /**
  * Mutation for patching resource metadata (annotations or labels)
@@ -313,184 +320,123 @@ export function useDeleteInstanceRelatedMutation(context: K8sApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ instanceName }: { instanceName: string }) => {
-      const labelSelector = `${INSTANCE_RELATE_RESOURCE_LABELS.MANAGED_BY}=${instanceName}`;
+      // 1. Get all resources related to the instance
+      const instanceResources = await getInstanceRelatedResources(
+        context,
+        instanceName
+      );
 
-      // Phase 1: Delete dependent resources
-      const dependentResults = await Promise.allSettled([
-        // Delete services by label selector
-        runParallelAction(
-          deleteBuiltinResourcesByLabelSelector(context, {
-            type: "builtin",
-            resourceType: "service",
-            labelSelector,
-          })
-        ),
-        // Delete ingresses by label selector
-        runParallelAction(
-          deleteBuiltinResourcesByLabelSelector(context, {
-            type: "builtin",
-            resourceType: "ingress",
-            labelSelector,
-          })
-        ),
-        // Delete PVCs by label selector
-        runParallelAction(
-          deleteBuiltinResourcesByLabelSelector(context, {
-            type: "builtin",
-            resourceType: "pvc",
-            labelSelector: `${INSTANCE_RELATE_RESOURCE_LABELS.APP}=${instanceName}`,
-          })
-        ),
-        // Delete cert-manager resources if available
-        ...(CUSTOM_RESOURCES.issuers
-          ? [
-              runParallelAction(
-                deleteCustomResourcesByLabelSelector(context, {
-                  type: "custom",
-                  group: CUSTOM_RESOURCES.issuers.group,
-                  version: CUSTOM_RESOURCES.issuers.version,
-                  plural: CUSTOM_RESOURCES.issuers.plural,
-                  labelSelector,
-                })
-              ),
-            ]
-          : []),
-        ...(CUSTOM_RESOURCES.certificates
-          ? [
-              runParallelAction(
-                deleteCustomResourcesByLabelSelector(context, {
-                  type: "custom",
-                  group: CUSTOM_RESOURCES.certificates.group,
-                  version: CUSTOM_RESOURCES.certificates.version,
-                  plural: CUSTOM_RESOURCES.certificates.plural,
-                  labelSelector,
-                })
-              ),
-            ]
-          : []),
-        // Delete configmap and secret by name
-        runParallelAction(
-          deleteBuiltinResource(context, {
-            type: "builtin",
-            resourceType: "configmap",
-            name: instanceName,
-          })
-        ),
-        runParallelAction(
-          deleteBuiltinResource(context, {
-            type: "builtin",
-            resourceType: "secret",
-            name: instanceName,
-          })
-        ),
-        // Delete other resources by name
-        runParallelAction(
-          deleteBuiltinResource(context, {
-            type: "builtin",
-            resourceType: "horizontalpodautoscaler",
-            name: instanceName,
-          })
-        ),
-        runParallelAction(
-          deleteBuiltinResource(context, {
-            type: "builtin",
-            resourceType: "job",
-            name: instanceName,
-          })
-        ),
-        runParallelAction(
-          deleteBuiltinResource(context, {
-            type: "builtin",
-            resourceType: "cronjob",
-            name: instanceName,
-          })
-        ),
-        // Delete App custom resource if available
-        ...(CUSTOM_RESOURCES.app
-          ? [
-              runParallelAction(
-                deleteCustomResource(context, {
-                  type: "custom",
-                  group: CUSTOM_RESOURCES.app.group,
-                  version: CUSTOM_RESOURCES.app.version,
-                  plural: CUSTOM_RESOURCES.app.plural,
-                  name: instanceName,
-                })
-              ),
-            ]
-          : []),
-      ]);
+      let allResourcesToDelete: any[] = [...instanceResources];
+      let allPromises: Promise<any[]>[] = [];
 
-      // Phase 2: Delete main workload resources
-      const workloadResults = await Promise.allSettled([
-        runParallelAction(
-          deleteBuiltinResource(context, {
-            type: "builtin",
-            resourceType: "deployment",
-            name: instanceName,
-          })
-        ),
-        runParallelAction(
-          deleteBuiltinResource(context, {
-            type: "builtin",
-            resourceType: "statefulset",
-            name: instanceName,
-          })
-        ),
-      ]);
+      // 2. For some resource types, get their related resources
+      instanceResources.forEach((resource: any) => {
+        const kind = resource.kind;
+        const name = resource.metadata.name;
+
+        if (kind === "Deployment") {
+          allPromises.push(getDeployRelatedResources(context, name));
+        } else if (kind === "StatefulSet") {
+          allPromises.push(getStatefulsetRelatedResources(context, name));
+        } else if (kind === "Cluster") {
+          allPromises.push(getClusterRelatedResources(context, name));
+        } else if (kind === "Devbox") {
+          allPromises.push(getDevboxRelatedResources(context, name));
+        }
+      });
+
+      const nestedResults = await Promise.all(allPromises);
+      nestedResults.forEach((resources) => {
+        allResourcesToDelete.push(...resources);
+      });
+
+      // 3. Deduplicate resources
+      allResourcesToDelete = _.uniqWith(
+        allResourcesToDelete,
+        (a, b) => a.metadata.uid === b.metadata.uid
+      );
+
+      // 4. Delete all resources
+      const deletionPromises = allResourcesToDelete
+        .map((resource: any) => {
+          if (!resource.metadata?.name) {
+            return null;
+          }
+
+          const apiVersion = resource.apiVersion;
+          const kind = resource.kind;
+          const name = resource.metadata.name;
+
+          if (apiVersion && apiVersion.includes("/")) {
+            // Custom resource
+            const [group, version] = apiVersion.split("/");
+            // Convert kind to plural (basic pluralization)
+            const plural = kind.toLowerCase() + "s";
+
+            return runParallelAction(
+              deleteCustomResource(context, {
+                type: "custom",
+                group,
+                version,
+                plural,
+                name,
+              })
+            );
+          } else {
+            // Builtin resource - map kind to resource type
+            const resourceTypeMap: Record<string, string> = {
+              Deployment: "deployment",
+              Service: "service",
+              Ingress: "ingress",
+              StatefulSet: "statefulset",
+              DaemonSet: "daemonset",
+              ConfigMap: "configmap",
+              Secret: "secret",
+              Pod: "pod",
+              PersistentVolumeClaim: "pvc",
+              HorizontalPodAutoscaler: "horizontalpodautoscaler",
+              Role: "role",
+              RoleBinding: "rolebinding",
+              ServiceAccount: "serviceaccount",
+              Job: "job",
+              CronJob: "cronjob",
+            };
+
+            const resourceType = resourceTypeMap[kind];
+            if (resourceType) {
+              return runParallelAction(
+                deleteBuiltinResource(context, {
+                  type: "builtin",
+                  resourceType,
+                  name,
+                })
+              );
+            }
+          }
+          return null;
+        })
+        .filter((p) => p !== null);
+
+      const results = await Promise.allSettled(deletionPromises);
+      const deletedCount = results.filter(
+        (r) => r.status === "fulfilled"
+      ).length;
 
       return {
         success: true,
         instanceName,
-        dependentResults,
-        workloadResults,
+        deletedCount,
+        results,
       };
     },
     onSuccess: (_data, variables) => {
       // Invalidate all resource queries
-      // For each resource type, use invalidateResourceQueries
-      const resourceTypes = [
-        "deployment",
-        "service",
-        "ingress",
-        "statefulset",
-        "configmap",
-        "secret",
-        "pvc",
-        "horizontalpodautoscaler",
-        "job",
-        "cronjob",
-      ];
-      for (const resourceType of resourceTypes) {
-        invalidateResourceQueries(queryClient, context, {
-          type: "builtin",
-          resourceType,
-        });
-      }
-      if (CUSTOM_RESOURCES.issuers) {
-        invalidateResourceQueries(queryClient, context, {
-          type: "custom",
-          group: CUSTOM_RESOURCES.issuers.group,
-          version: CUSTOM_RESOURCES.issuers.version,
-          plural: CUSTOM_RESOURCES.issuers.plural,
-        });
-      }
-      if (CUSTOM_RESOURCES.certificates) {
-        invalidateResourceQueries(queryClient, context, {
-          type: "custom",
-          group: CUSTOM_RESOURCES.certificates.group,
-          version: CUSTOM_RESOURCES.certificates.version,
-          plural: CUSTOM_RESOURCES.certificates.plural,
-        });
-      }
-      if (CUSTOM_RESOURCES.app) {
-        invalidateResourceQueries(queryClient, context, {
-          type: "custom",
-          group: CUSTOM_RESOURCES.app.group,
-          version: CUSTOM_RESOURCES.app.version,
-          plural: CUSTOM_RESOURCES.app.plural,
-        });
-      }
+      queryClient.invalidateQueries({
+        queryKey: ["k8s"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["inventory"],
+      });
     },
   });
 }
@@ -501,121 +447,91 @@ export function useDeleteInstanceRelatedMutation(context: K8sApiContext) {
 export function useDeleteClusterRelatedMutation(context: K8sApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ instanceName }: { instanceName: string }) => {
-      const labelSelector = `${CLUSTER_RELATE_RESOURCE_LABELS.APP_KUBERNETES_INSTANCE}=${instanceName}`;
+    mutationFn: async ({ clusterName }: { clusterName: string }) => {
+      const relatedResources = await getClusterRelatedResources(
+        context,
+        clusterName
+      );
 
-      // Phase 1: Delete backups if available
-      // NOTE: no reference for backup
-      const backupResults = CUSTOM_RESOURCES.backups
-        ? await runParallelAction(
-            deleteCustomResourcesByLabelSelector(context, {
-              type: "custom",
-              group: CUSTOM_RESOURCES.backups.group,
-              version: CUSTOM_RESOURCES.backups.version,
-              plural: CUSTOM_RESOURCES.backups.plural,
-              labelSelector,
-            })
-          )
-        : { success: true, deletedCount: 0, results: [] };
+      const deletionPromises = relatedResources
+        .map((resource: any) => {
+          if (!resource.metadata?.name) {
+            return null;
+          }
 
-      // Phase 2: Delete export service
-      // FIXME: All services have reference to statefulset owner, so this could be removed.
-      const exportServiceResult = await Promise.allSettled([
-        runParallelAction(
-          deleteBuiltinResource(context, {
-            type: "builtin",
-            resourceType: "service",
-            name: `${instanceName}-export`,
-          })
-        ),
-      ]);
+          const apiVersion = resource.apiVersion;
+          const kind = resource.kind;
+          const name = resource.metadata.name;
 
-      // Phase 3: Delete RBAC resources
-      const rbacResults = await Promise.allSettled([
-        runParallelAction(
-          deleteBuiltinResource(context, {
-            type: "builtin",
-            resourceType: "role",
-            name: instanceName,
-          })
-        ),
-        runParallelAction(
-          deleteBuiltinResource(context, {
-            type: "builtin",
-            resourceType: "rolebinding",
-            name: instanceName,
-          })
-        ),
-        runParallelAction(
-          deleteBuiltinResource(context, {
-            type: "builtin",
-            resourceType: "serviceaccount",
-            name: instanceName,
-          })
-        ),
-      ]);
+          if (apiVersion && apiVersion.includes("/")) {
+            // Custom resource
+            const [group, version] = apiVersion.split("/");
+            // Convert kind to plural (basic pluralization)
+            const plural = kind.toLowerCase() + "s";
 
-      // Phase 4: Delete the cluster if available
-      const clusterResult = CUSTOM_RESOURCES.cluster
-        ? await runParallelAction(
-            deleteCustomResource(context, {
-              type: "custom",
-              group: CUSTOM_RESOURCES.cluster.group,
-              version: CUSTOM_RESOURCES.cluster.version,
-              plural: CUSTOM_RESOURCES.cluster.plural,
-              name: instanceName,
-            })
-          )
-        : { success: true, notFound: true };
+            return runParallelAction(
+              deleteCustomResource(context, {
+                type: "custom",
+                group,
+                version,
+                plural,
+                name,
+              })
+            );
+          } else {
+            // Builtin resource - map kind to resource type
+            const resourceTypeMap: Record<string, string> = {
+              Role: "role",
+              RoleBinding: "rolebinding",
+              ServiceAccount: "serviceaccount",
+              Secret: "secret",
+            };
+
+            const resourceType = resourceTypeMap[kind];
+            if (resourceType) {
+              return runParallelAction(
+                deleteBuiltinResource(context, {
+                  type: "builtin",
+                  resourceType,
+                  name,
+                })
+              );
+            }
+          }
+          return null;
+        })
+        .filter((p) => p !== null);
+
+      const results = await Promise.allSettled(deletionPromises);
+      const deletedCount = results.filter(
+        (r) => r.status === "fulfilled"
+      ).length;
 
       return {
         success: true,
-        instanceName,
-        backupResults,
-        exportServiceResult,
-        rbacResults,
-        clusterResult,
+        clusterName,
+        deletedCount,
+        results,
       };
     },
     onSuccess: (_data, variables) => {
       // Invalidate all resource queries
-      const resourceTypes = [
-        "role",
-        "rolebinding",
-        "serviceaccount",
-        "service",
-      ];
-      for (const resourceType of resourceTypes) {
-        invalidateResourceQueries(queryClient, context, {
-          type: "builtin",
-          resourceType,
-        });
-      }
-      if (CUSTOM_RESOURCES.backups) {
-        invalidateResourceQueries(queryClient, context, {
-          type: "custom",
-          group: CUSTOM_RESOURCES.backups.group,
-          version: CUSTOM_RESOURCES.backups.version,
-          plural: CUSTOM_RESOURCES.backups.plural,
-        });
-      }
-      if (CUSTOM_RESOURCES.cluster) {
-        invalidateResourceQueries(queryClient, context, {
-          type: "custom",
-          group: CUSTOM_RESOURCES.cluster.group,
-          version: CUSTOM_RESOURCES.cluster.version,
-          plural: CUSTOM_RESOURCES.cluster.plural,
-        });
-      }
+      queryClient.invalidateQueries({
+        queryKey: ["k8s"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["inventory"],
+      });
     },
   });
 }
 
 /**
- * Mutation for deleting all resources marked by a specific label selector
- * This is used as the final step in project deletion to clean up any remaining resources
+ * Mutation for deleting a list of resources, or all resources matching a label selector.
+ * It fetches resources by label selector if a list of resources is not provided.
+ * Then, it deletes the resources one by one by name for more granular control and feedback.
  */
-export function useDeleteAllResourcesByLabelSelectorMutation(
+export function useBulkDeleteResourcesMutation(
   context: K8sApiContext
 ) {
   const queryClient = useQueryClient();
@@ -624,7 +540,7 @@ export function useDeleteAllResourcesByLabelSelectorMutation(
       labelSelector,
       resources,
     }: {
-      labelSelector: string;
+      labelSelector?: string;
       resources?: any; // Optional pre-fetched resources to avoid server action serialization issues
     }) => {
       let allResourceItems: any[] = [];
@@ -648,13 +564,30 @@ export function useDeleteAllResourcesByLabelSelectorMutation(
             }
           }
         );
+      } else if (labelSelector) {
+        // Fetch all resources if not provided
+        const fetchedResources = await listAllResources(context, labelSelector);
+        if (fetchedResources) {
+          Object.values(fetchedResources.builtin).forEach((resourceList: any) => {
+            if (resourceList && resourceList.items) {
+              allResourceItems.push(...resourceList.items);
+            }
+          });
+          Object.values(fetchedResources.custom).forEach((resourceList: any) => {
+            if (resourceList && resourceList.items) {
+              allResourceItems.push(...resourceList.items);
+            }
+          });
+        }
+      } else {
+        throw new Error("Either 'resources' or 'labelSelector' must be provided for bulk deletion.");
       }
 
       if (allResourceItems.length === 0) {
         return { success: true, deletedCount: 0, results: [] };
       }
 
-      // Group resources by type and delete them
+      // Delete resources individually by name for granular control
       const deletionPromises: Promise<any>[] = [];
 
       for (const resource of allResourceItems) {
@@ -743,8 +676,69 @@ export function useDeleteAllResourcesByLabelSelectorMutation(
 }
 
 /**
- * Environment variable types for Kubernetes resources
+ * Mutation for deleting all resources related to a project.
+ * This function takes the resources returned by the project-relevance algorithm
+ * and converts them to resource targets before deletion.
  */
+export function useDeleteAllResourcesMutation(
+  context: K8sApiContext
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      resources,
+    }: {
+      resources: any; // Resources from project-relevance algorithm
+    }) => {
+      // Flatten project resources to individual K8s resources
+      const flattenedResources = flattenProjectResources(resources);
+      
+      // Convert each resource to resource target using the utility function
+      const allResourceTargets = flattenedResources
+        .map(convertAndFilterResourceToTarget)
+        .filter(Boolean) as (CustomResourceTarget | BuiltinResourceTarget)[];
+
+      if (allResourceTargets.length === 0) {
+        return { success: true, deletedCount: 0, results: [] };
+      }
+
+      // Delete all resources directly
+      const promises = allResourceTargets.map((target) => {
+        if (target.type === "custom") {
+          return runParallelAction(deleteCustomResource(context, target));
+        }
+        return runParallelAction(deleteBuiltinResource(context, target));
+      });
+
+      const results = await Promise.allSettled(promises);
+      const deletedCount = results.filter(
+        (r) => r.status === "fulfilled"
+      ).length;
+
+      return {
+        success: true,
+        deletedCount,
+        results,
+      };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["k8s"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["inventory"],
+      });
+    },
+    onError: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["k8s"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["inventory"],
+      });
+    },
+  });
+}
 export interface EnvVarValue {
   type: "value";
   key: string;

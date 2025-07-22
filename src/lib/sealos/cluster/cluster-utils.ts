@@ -157,3 +157,58 @@ export function parseEndpoint(endpoint: string): {
 
   return { host, port };
 }
+
+/**
+ * Environment variable structure for K8s resources
+ */
+export interface EnvVar {
+  type: "secretKeyRef";
+  key: string;
+  secretName: string;
+  secretKey: string;
+}
+
+/**
+ * Create environment variables for cluster database connection
+ * @param secretName - Name of the cluster secret
+ * @param clusterName - Name of the cluster
+ * @returns Array of environment variables for database connection
+ */
+export function createClusterEnvVars(
+  secretName: string,
+  clusterName: string
+): EnvVar[] {
+  const prefix = clusterName.toUpperCase().replace(/[^A-Z0-9]/g, "_");
+  return [
+    {
+      type: "secretKeyRef",
+      key: `${prefix}_DB_HOST`,
+      secretName,
+      secretKey: "host",
+    },
+    {
+      type: "secretKeyRef",
+      key: `${prefix}_DB_PORT`,
+      secretName,
+      secretKey: "port",
+    },
+    {
+      type: "secretKeyRef",
+      key: `${prefix}_DB_USER`,
+      secretName,
+      secretKey: "username",
+    },
+    {
+      type: "secretKeyRef",
+      key: `${prefix}_DB_PASSWORD`,
+      secretName,
+      secretKey: "password",
+    },
+    {
+      type: "secretKeyRef",
+      key: `${prefix}_DB_ENDPOINT`,
+      secretName,
+      secretKey: "endpoint",
+    },
+  ];
+}
