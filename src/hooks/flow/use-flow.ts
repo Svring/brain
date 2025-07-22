@@ -8,6 +8,7 @@ import {
 } from "@xyflow/react";
 import { useEffect, useCallback } from "react";
 import { inferRelianceFromEnv } from "@/lib/project/project-method/project-utils";
+import { inferRelianceForIngress } from "@/lib/algorithm/reliance/ingress-reliance";
 import {
   convertConnectionsToEdges,
   updateEdgesForNode,
@@ -49,7 +50,9 @@ export function useFlow(resources: ListAllResourcesResponse | undefined) {
     }
 
     const resource = _.merge({}, resources.custom, resources.builtin);
-    const connections = inferRelianceFromEnv(resource);
+    const envConnections = inferRelianceFromEnv(resource);
+    const ingressConnections = inferRelianceForIngress(resource);
+    const connections = _.merge({}, envConnections, ingressConnections);
     const newNodes = convertResourcesToNodes(resource);
     const newEdges = convertConnectionsToEdges(connections);
     const positionedNodes = applyLayout(newNodes, newEdges, {

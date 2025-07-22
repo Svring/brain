@@ -2,7 +2,6 @@
 
 import _ from "lodash";
 import type { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
-import { processIngressConnections } from "./ingress-reliance";
 
 export type KindMap = Record<string, string[]>;
 
@@ -203,8 +202,6 @@ export const mergeConnectFromByWorkload = (
 
   return result;
 };
-
-
 
 // -------------------------
 // Primary entry

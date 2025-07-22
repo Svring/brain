@@ -45,43 +45,43 @@ export default function Page() {
     );
   }, [projects?.items, searchTerm]);
 
-  const context = createK8sContext();
-  useMount(async () => {
-    const projectRelatedResources = await getProjectRelatedResources(
-      context,
-      "project-31oeuj5",
-      ["devbox"]
-    );
+  // const context = createK8sContext();
+  // useMount(async () => {
+  //   const projectRelatedResources = await getProjectRelatedResources(
+  //     context,
+  //     "project-31oeuj5",
+  //     ["devbox"]
+  //   );
 
-    // Extract and display only kind and name from all resources
-    const resourceSummary: { kind: string; name: string }[] = [];
+  //   // Extract and display only kind and name from all resources
+  //   const resourceSummary: { kind: string; name: string }[] = [];
 
-    // Process builtin resources
-    Object.entries(projectRelatedResources.builtin).forEach(
-      ([type, resourceList]) => {
-        resourceList.items.forEach((item) => {
-          resourceSummary.push({
-            kind: item.kind,
-            name: item.metadata.name,
-          });
-        });
-      }
-    );
+  //   // Process builtin resources
+  //   Object.entries(projectRelatedResources.builtin).forEach(
+  //     ([type, resourceList]) => {
+  //       resourceList.items.forEach((item) => {
+  //         resourceSummary.push({
+  //           kind: item.kind,
+  //           name: item.metadata.name,
+  //         });
+  //       });
+  //     }
+  //   );
 
-    // Process custom resources
-    Object.entries(projectRelatedResources.custom).forEach(
-      ([type, resourceList]) => {
-        resourceList.items.forEach((item) => {
-          resourceSummary.push({
-            kind: item.kind,
-            name: item.metadata.name,
-          });
-        });
-      }
-    );
+  //   // Process custom resources
+  //   Object.entries(projectRelatedResources.custom).forEach(
+  //     ([type, resourceList]) => {
+  //       resourceList.items.forEach((item) => {
+  //         resourceSummary.push({
+  //           kind: item.kind,
+  //           name: item.metadata.name,
+  //         });
+  //       });
+  //     }
+  //   );
 
-    console.log("Resources (kind and name only):", resourceSummary);
-  });
+  //   console.log("Resources (kind and name only):", resourceSummary);
+  // });
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center p-8">

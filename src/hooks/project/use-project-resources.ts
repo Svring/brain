@@ -44,7 +44,7 @@ export function useProjectResources(
 
   // Full resources query when no annotation exists
   const fullResourcesQuery = useQuery({
-    ...getProjectResourcesOptions(context, projectName),
+    ...getProjectResourcesOptions(context, projectName, ["devbox"]),
     enabled: isSuccess && !annotationData,
   });
 
