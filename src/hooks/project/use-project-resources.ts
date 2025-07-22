@@ -39,9 +39,12 @@ export function useProjectResources(
   const annotationData = useMemo(() => {
     const annotation =
       project?.metadata?.annotations?.[BRAIN_RESOURCES_ANNOTATION_KEY];
-    if (!annotation) return null;
+    if (!annotation) {
+      const { resources } = flowGraphData;
+      return resources || null;
+    }
     return JSON.parse(annotation) as BrainResourcesSimplified;
-  }, [project]);
+  }, [project, flowGraphData]);
 
   // Full resources query when no annotation exists
   const fullResourcesQuery = useQuery({
@@ -75,7 +78,7 @@ export function useProjectResources(
       const simplifiedData = convertResourcesToAnnotation(resourcesQuery.data);
       setFlowGraphData(projectName, simplifiedData);
     }
-  }, [projectName]);
+  }, [projectName, resourcesQuery.data]);
 
   // Store simplified data in annotation when full resources are loaded and no annotation exists
   useEffect(() => {
