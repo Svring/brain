@@ -46,7 +46,11 @@ export default function IngressNode({ data }: IngressNodeComponentProps) {
           aria-label={displayUrl ? `Open ${displayUrl}` : undefined}
           onClick={
             displayUrl
-              ? () => window.open(displayUrl, "_blank", "noopener")
+              ? (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.open(displayUrl, "_blank", "noopener");
+                }
               : undefined
           }
           onKeyDown={

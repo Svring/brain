@@ -40,6 +40,7 @@ import { useProjectActions } from "@/contexts/project/project-context";
 import { FlowProvider } from "@/contexts/flow/flow-context";
 import AiCoin from "@/components/ai/headless/ai-coin";
 import AiChatbox from "@/components/ai/headless/ai-chatbox";
+import DevTools from "@/components/flow/devtools/flow-devtools";
 
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
   const router = useRouter();
@@ -203,6 +204,7 @@ function ProjectFlow({ projectName }: { projectName: string }) {
         snapGrid={[20, 20]}
       >
         <Background gap={60} size={1} variant={BackgroundVariant.Dots} />
+        {/* <DevTools /> */}
       </ReactFlow>
     </Droppable>
   );
