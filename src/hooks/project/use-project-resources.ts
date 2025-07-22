@@ -25,12 +25,12 @@ import { BRAIN_RESOURCES_ANNOTATION_KEY } from "@/lib/project/project-constant/p
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
 
 export function useProjectResources(
-  context: K8sApiContext,
   projectName: string
 ): UseQueryResult<ListAllResourcesResponse, Error> {
+  const context = createK8sContext();
   const { flowGraphData } = useProjectState();
   const { setFlowGraphData } = useProjectActions();
-  const patchMutation = useBatchPatchResourcesMetadataMutation(context);
+  const patchMutation = useBatchPatchResourcesMetadataMutation();
 
   const { data: project, isSuccess } = useQuery(
     getProjectOptions(context, projectName)

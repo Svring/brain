@@ -9,34 +9,33 @@ import {
   useApplyInstanceYamlMutation,
   useDeleteAllResourcesMutation,
 } from "@/lib/k8s/k8s-method/k8s-mutation";
-import { listCustomResourcesOptions } from "@/lib/k8s/k8s-method/k8s-query";
-import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
+import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
 import {
   BuiltinResourceTarget,
   CustomResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { INSTANCE_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
-import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
-import { BUILTIN_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-builtin-resource";
 import {
   generateNewProjectName,
   generateProjectTemplate,
+  gatherRelatedResources,
+  convertTargetsToSimplifiedFormat,
+  parseProjectAnnotation,
+  mergeProjectAnnotation,
+  removeFromProjectAnnotation,
+  createProjectInstanceTarget,
+  getProjectQueryInvalidationKeys,
 } from "./project-utils";
-import { getClusterRelatedResources } from "@/lib/algorithm/relevance/cluster-relevance";
-import { getDeployRelatedResources } from "@/lib/algorithm/relevance/deploy-relevance";
-import { getDevboxRelatedResources } from "@/lib/algorithm/relevance/devbox-relevance";
-import { getInstanceRelatedResources } from "@/lib/algorithm/relevance/instance-relevance";
 import { getProjectRelatedResources } from "@/lib/algorithm/relevance/project-relevance";
-import { convertAndFilterResourceToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { BRAIN_RESOURCES_ANNOTATION_KEY } from "@/lib/project/project-constant/project-constant-label";
 import { getProjectOptions } from "./project-query";
+import { INSTANCE_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
 
 /**
  * Hook to add project name label to multiple resources
  */
-export const useAddToProjectMutation = (context: K8sApiContext) => {
+export const useAddToProjectMutation = () => {
   const queryClient = useQueryClient();
-  const batchPatchMutation = useBatchPatchResourcesMetadataMutation(context);
+  const batchPatchMutation = useBatchPatchResourcesMetadataMutation();
 
   return useMutation({
     mutationFn: async ({
@@ -46,55 +45,10 @@ export const useAddToProjectMutation = (context: K8sApiContext) => {
       resources: (CustomResourceTarget | BuiltinResourceTarget)[];
       projectName: string;
     }) => {
-      let allTargetsToPatch: (CustomResourceTarget | BuiltinResourceTarget)[] =
-        [...resources];
-      const relatedResourcesPromises: Promise<any[]>[] = [];
-
-      for (const resource of resources) {
-        if (!resource.name) continue;
-
-        if (
-          CUSTOM_RESOURCES.cluster &&
-          resource.type === "custom" &&
-          resource.plural === CUSTOM_RESOURCES.cluster.plural
-        ) {
-          relatedResourcesPromises.push(
-            getClusterRelatedResources(context, resource.name)
-          );
-        } else if (
-          resource.type === "builtin" &&
-          resource.resourceType === "deployment"
-        ) {
-          relatedResourcesPromises.push(
-            getDeployRelatedResources(context, resource.name)
-          );
-        } else if (
-          CUSTOM_RESOURCES.instance &&
-          resource.type === "custom" &&
-          resource.plural === CUSTOM_RESOURCES.instance.plural
-        ) {
-          relatedResourcesPromises.push(
-            getInstanceRelatedResources(context, resource.name)
-          );
-        } else if (
-          CUSTOM_RESOURCES.devbox &&
-          resource.type === "custom" &&
-          resource.plural === CUSTOM_RESOURCES.devbox.plural
-        ) {
-          relatedResourcesPromises.push(
-            getDevboxRelatedResources(context, resource.name)
-          );
-        }
-      }
-
-      const relatedResourceArrays = await Promise.all(relatedResourcesPromises);
-      const allRelatedResources = relatedResourceArrays.flat();
-      const relatedTargets = allRelatedResources
-        .map(convertAndFilterResourceToTarget)
-        .filter(Boolean) as (CustomResourceTarget | BuiltinResourceTarget)[];
-
-      allTargetsToPatch.push(...relatedTargets);
-      allTargetsToPatch = _.uniqWith(allTargetsToPatch, _.isEqual);
+      const context = createK8sContext();
+      
+      // Gather all related resources using the utility function
+      const allTargetsToPatch = await gatherRelatedResources(context, resources);
 
       // Add labels to all resources
       await batchPatchMutation.mutateAsync({
@@ -104,107 +58,29 @@ export const useAddToProjectMutation = (context: K8sApiContext) => {
         value: projectName,
       });
 
-      // Update brain-resources annotation
-
-      // Get current project to read existing annotation
+      // Update brain-resources annotation using utility functions
       const projectQuery = getProjectOptions(context, projectName);
       const currentProject = await queryClient.ensureQueryData(projectQuery);
-
-      // Parse existing annotation or create new one
-      let currentAnnotation: any = { builtin: [], custom: [] };
-      if (
+      
+      const currentAnnotation = parseProjectAnnotation(
         currentProject?.metadata?.annotations?.[BRAIN_RESOURCES_ANNOTATION_KEY]
-      ) {
-        try {
-          currentAnnotation = JSON.parse(
-            currentProject.metadata.annotations[BRAIN_RESOURCES_ANNOTATION_KEY]
-          );
-        } catch (error) {
-          console.warn(
-            "Failed to parse existing annotation, using empty:",
-            error
-          );
-        }
-      }
-
-      // Convert new resources to simplified format
-      const newSimplifiedResources = allTargetsToPatch.map((target) => {
-        if (target.type === "custom") {
-          const config = Object.values(CUSTOM_RESOURCES).find(
-            (c) =>
-              c.group === target.group &&
-              c.version === target.version &&
-              c.plural === target.plural
-          );
-          // For custom resources, capitalize the resourceType as kind
-          const kind = config?.resourceType
-            ? config.resourceType.charAt(0).toUpperCase() +
-              config.resourceType.slice(1)
-            : target.plural;
-          return {
-            kind,
-            name: target.name,
-          };
-        } else {
-          const config = Object.values(BUILTIN_RESOURCES).find(
-            (c) => c.resourceType === target.resourceType
-          );
-          return {
-            kind: config?.kind || target.resourceType,
-            name: target.name,
-          };
-        }
-      });
-
-      // Merge with existing annotation
-      const builtinResources = newSimplifiedResources.filter((r) => {
-        return Object.values(BUILTIN_RESOURCES).some((c) => c.kind === r.kind);
-      });
-      const customResources = newSimplifiedResources.filter((r) => {
-        return Object.values(CUSTOM_RESOURCES).some((c) => {
-          const kind =
-            c.resourceType.charAt(0).toUpperCase() + c.resourceType.slice(1);
-          return kind === r.kind;
-        });
-      });
-
-      const updatedAnnotation = {
-        builtin: _.uniqWith(
-          [...(currentAnnotation.builtin || []), ...builtinResources],
-          _.isEqual
-        ),
-        custom: _.uniqWith(
-          [...(currentAnnotation.custom || []), ...customResources],
-          _.isEqual
-        ),
-      };
-
-      // Update the annotation
+      );
+      const newSimplifiedResources = convertTargetsToSimplifiedFormat(allTargetsToPatch);
+      const updatedAnnotation = mergeProjectAnnotation(currentAnnotation, newSimplifiedResources);
+      
       await batchPatchMutation.mutateAsync({
-        targets: [
-          {
-            type: "custom",
-            group: CUSTOM_RESOURCES.instance.group,
-            version: CUSTOM_RESOURCES.instance.version,
-            plural: CUSTOM_RESOURCES.instance.plural,
-            name: projectName,
-          },
-        ],
+        targets: [createProjectInstanceTarget(projectName)],
         metadataType: "annotations",
         key: BRAIN_RESOURCES_ANNOTATION_KEY,
         value: JSON.stringify(updatedAnnotation),
       });
     },
     onSuccess: (_, { projectName }) => {
+      const context = createK8sContext();
       toast.success(`Resources added to project ${projectName}`);
-      queryClient.invalidateQueries({
-        queryKey: ["project", "resources", context.namespace, projectName],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["project", "get", context.namespace],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["inventory"],
+      const invalidationKeys = getProjectQueryInvalidationKeys(context.namespace, projectName);
+      invalidationKeys.forEach(key => {
+        queryClient.invalidateQueries({ queryKey: key });
       });
     },
   });
@@ -213,10 +89,10 @@ export const useAddToProjectMutation = (context: K8sApiContext) => {
 /**
  * Hook to remove project name label from multiple resources
  */
-export const useRemoveFromProjectMutation = (context: K8sApiContext) => {
+export const useRemoveFromProjectMutation = () => {
   const queryClient = useQueryClient();
-  const batchRemoveMutation = useBatchRemoveResourcesMetadataMutation(context);
-  const batchPatchMutation = useBatchPatchResourcesMetadataMutation(context);
+  const batchRemoveMutation = useBatchRemoveResourcesMetadataMutation();
+  const batchPatchMutation = useBatchPatchResourcesMetadataMutation();
 
   return useMutation({
     mutationFn: async ({
@@ -226,55 +102,10 @@ export const useRemoveFromProjectMutation = (context: K8sApiContext) => {
       resources: (CustomResourceTarget | BuiltinResourceTarget)[];
       projectName: string;
     }) => {
-      let allTargetsToRemove: (CustomResourceTarget | BuiltinResourceTarget)[] =
-        [...resources];
-      const relatedResourcesPromises: Promise<any[]>[] = [];
-
-      for (const resource of resources) {
-        if (!resource.name) continue;
-
-        if (
-          CUSTOM_RESOURCES.cluster &&
-          resource.type === "custom" &&
-          resource.plural === CUSTOM_RESOURCES.cluster.plural
-        ) {
-          relatedResourcesPromises.push(
-            getClusterRelatedResources(context, resource.name)
-          );
-        } else if (
-          resource.type === "builtin" &&
-          resource.resourceType === "deployment"
-        ) {
-          relatedResourcesPromises.push(
-            getDeployRelatedResources(context, resource.name)
-          );
-        } else if (
-          CUSTOM_RESOURCES.instance &&
-          resource.type === "custom" &&
-          resource.plural === CUSTOM_RESOURCES.instance.plural
-        ) {
-          relatedResourcesPromises.push(
-            getInstanceRelatedResources(context, resource.name)
-          );
-        } else if (
-          CUSTOM_RESOURCES.devbox &&
-          resource.type === "custom" &&
-          resource.plural === CUSTOM_RESOURCES.devbox.plural
-        ) {
-          relatedResourcesPromises.push(
-            getDevboxRelatedResources(context, resource.name)
-          );
-        }
-      }
-
-      const relatedResourceArrays = await Promise.all(relatedResourcesPromises);
-      const allRelatedResources = relatedResourceArrays.flat();
-      const relatedTargets = allRelatedResources
-        .map(convertAndFilterResourceToTarget)
-        .filter(Boolean) as (CustomResourceTarget | BuiltinResourceTarget)[];
-
-      allTargetsToRemove.push(...relatedTargets);
-      allTargetsToRemove = _.uniqWith(allTargetsToRemove, _.isEqual);
+      const context = createK8sContext();
+      
+      // Gather all related resources using the utility function
+      const allTargetsToRemove = await gatherRelatedResources(context, resources);
 
       // Remove labels from all resources
       await batchRemoveMutation.mutateAsync({
@@ -283,102 +114,29 @@ export const useRemoveFromProjectMutation = (context: K8sApiContext) => {
         key: INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS,
       });
 
-      // Update brain-resources annotation
-
-      // Get current project to read existing annotation
+      // Update brain-resources annotation using utility functions
       const projectQuery = getProjectOptions(context, projectName);
       const currentProject = await queryClient.ensureQueryData(projectQuery);
-
-      // Parse existing annotation
-      let currentAnnotation: any = { builtin: [], custom: [] };
-      if (
+      
+      const currentAnnotation = parseProjectAnnotation(
         currentProject?.metadata?.annotations?.[BRAIN_RESOURCES_ANNOTATION_KEY]
-      ) {
-        try {
-          currentAnnotation = JSON.parse(
-            currentProject.metadata.annotations[BRAIN_RESOURCES_ANNOTATION_KEY]
-          );
-        } catch (error) {
-          console.warn(
-            "Failed to parse existing annotation, using empty:",
-            error
-          );
-        }
-      }
-
-      // Convert removed resources to simplified format for filtering
-      const removedSimplifiedResources = allTargetsToRemove.map((target) => {
-        if (target.type === "custom") {
-          const config = Object.values(CUSTOM_RESOURCES).find(
-            (c) =>
-              c.group === target.group &&
-              c.version === target.version &&
-              c.plural === target.plural
-          );
-          // For custom resources, capitalize the resourceType as kind
-          const kind = config?.resourceType
-            ? config.resourceType.charAt(0).toUpperCase() +
-              config.resourceType.slice(1)
-            : target.plural;
-          return {
-            kind,
-            name: target.name,
-          };
-        } else {
-          const config = Object.values(BUILTIN_RESOURCES).find(
-            (c) => c.resourceType === target.resourceType
-          );
-          return {
-            kind: config?.kind || target.resourceType,
-            name: target.name,
-          };
-        }
-      });
-
-      // Remove resources from annotation
-      const updatedAnnotation = {
-        builtin: (currentAnnotation.builtin || []).filter(
-          (resource: any) =>
-            !removedSimplifiedResources.some(
-              (removed) =>
-                removed.kind === resource.kind && removed.name === resource.name
-            )
-        ),
-        custom: (currentAnnotation.custom || []).filter(
-          (resource: any) =>
-            !removedSimplifiedResources.some(
-              (removed) =>
-                removed.kind === resource.kind && removed.name === resource.name
-            )
-        ),
-      };
-
-      // Update the annotation
+      );
+      const removedSimplifiedResources = convertTargetsToSimplifiedFormat(allTargetsToRemove);
+      const updatedAnnotation = removeFromProjectAnnotation(currentAnnotation, removedSimplifiedResources);
+      
       await batchPatchMutation.mutateAsync({
-        targets: [
-          {
-            type: "custom",
-            group: CUSTOM_RESOURCES.instance.group,
-            version: CUSTOM_RESOURCES.instance.version,
-            plural: CUSTOM_RESOURCES.instance.plural,
-            name: projectName,
-          },
-        ],
+        targets: [createProjectInstanceTarget(projectName)],
         metadataType: "annotations",
         key: BRAIN_RESOURCES_ANNOTATION_KEY,
         value: JSON.stringify(updatedAnnotation),
       });
     },
     onSuccess: (_, { projectName }) => {
+      const context = createK8sContext();
       toast.success(`Resources removed from project ${projectName}`);
-      queryClient.invalidateQueries({
-        queryKey: ["project", "resources", context.namespace, projectName],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["project", "get", context.namespace],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["inventory"],
+      const invalidationKeys = getProjectQueryInvalidationKeys(context.namespace, projectName);
+      invalidationKeys.forEach(key => {
+        queryClient.invalidateQueries({ queryKey: key });
       });
     },
   });
@@ -387,41 +145,24 @@ export const useRemoveFromProjectMutation = (context: K8sApiContext) => {
 /**
  * Hook to remove brain-resources annotation from a project instance
  */
-export const useRemoveProjectAnnotationMutation = (context: K8sApiContext) => {
+export const useRemoveProjectAnnotationMutation = () => {
   const queryClient = useQueryClient();
-  const batchRemoveMutation = useBatchRemoveResourcesMetadataMutation(context);
+  const batchRemoveMutation = useBatchRemoveResourcesMetadataMutation();
 
   return useMutation({
     mutationFn: async ({ projectName }: { projectName: string }) => {
       return batchRemoveMutation.mutateAsync({
-        targets: [
-          {
-            type: "custom",
-            group: CUSTOM_RESOURCES.instance.group,
-            version: CUSTOM_RESOURCES.instance.version,
-            plural: CUSTOM_RESOURCES.instance.plural,
-            name: projectName,
-          },
-        ],
+        targets: [createProjectInstanceTarget(projectName)],
         metadataType: "annotations",
-        key: "brain-resources",
+        key: BRAIN_RESOURCES_ANNOTATION_KEY,
       });
     },
-    onSuccess: () => {
+    onSuccess: (_, { projectName }) => {
+      const context = createK8sContext();
       toast.success("Project annotation removed successfully");
-      queryClient.invalidateQueries({
-        queryKey: ["project", "resources", context.namespace],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["project", "get", context.namespace],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [
-          "k8s",
-          "annotation-based-resources",
-          "list",
-          context.namespace,
-        ],
+      const invalidationKeys = getProjectQueryInvalidationKeys(context.namespace, projectName);
+      invalidationKeys.forEach(key => {
+        queryClient.invalidateQueries({ queryKey: key });
       });
     },
     onError: (error) => {
@@ -434,12 +175,13 @@ export const useRemoveProjectAnnotationMutation = (context: K8sApiContext) => {
 /**
  * Hook to create a new project instance
  */
-export const useCreateProjectMutation = (context: K8sApiContext) => {
+export const useCreateProjectMutation = () => {
   const queryClient = useQueryClient();
-  const createInstanceMutation = useApplyInstanceYamlMutation(context);
+  const createInstanceMutation = useApplyInstanceYamlMutation();
 
   return useMutation({
     mutationFn: async ({ projectName }: { projectName?: string }) => {
+      const context = createK8sContext();
       const finalProjectName = projectName || generateNewProjectName();
       const projectYaml = generateProjectTemplate(
         finalProjectName,
@@ -448,10 +190,13 @@ export const useCreateProjectMutation = (context: K8sApiContext) => {
 
       return createInstanceMutation.mutateAsync({ yamlContent: projectYaml });
     },
-    onSuccess: (data) => {
+    onSuccess: (data, { projectName }) => {
+      const context = createK8sContext();
+      const finalProjectName = projectName || generateNewProjectName();
       toast.success("Project created successfully");
-      queryClient.invalidateQueries({
-        queryKey: ["projects", context.namespace],
+      const invalidationKeys = getProjectQueryInvalidationKeys(context.namespace, finalProjectName);
+      invalidationKeys.forEach(key => {
+        queryClient.invalidateQueries({ queryKey: key });
       });
       return data;
     },
@@ -471,13 +216,14 @@ export const useCreateProjectMutation = (context: K8sApiContext) => {
  * 2. Delete instance-related resources (not instances themselves)
  * 3. Delete all remaining resources with the project label (final cleanup)
  */
-export const useDeleteProjectMutation = (context: K8sApiContext) => {
+export const useDeleteProjectMutation = () => {
   const queryClient = useQueryClient();
-  const deleteAllResources = useDeleteAllResourcesMutation(context);
+  const deleteAllResources = useDeleteAllResourcesMutation();
 
   return useMutation({
     mutationFn: async ({ projectName }: { projectName: string }) => {
       try {
+        const context = createK8sContext();
         // 1. Get all resources related to the project
         const projectResources = await getProjectRelatedResources(
           context,
@@ -499,15 +245,11 @@ export const useDeleteProjectMutation = (context: K8sApiContext) => {
       }
     },
     onSuccess: (data) => {
+      const context = createK8sContext();
       toast.success(`Project "${data.projectName}" deleted successfully`);
-      queryClient.invalidateQueries({
-        queryKey: ["k8s"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["project", "resources", context.namespace],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["projects"],
+      const invalidationKeys = getProjectQueryInvalidationKeys(context.namespace, data.projectName);
+      invalidationKeys.forEach(key => {
+        queryClient.invalidateQueries({ queryKey: key });
       });
     },
     onError: (error) => {

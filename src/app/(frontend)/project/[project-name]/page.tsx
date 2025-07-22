@@ -47,9 +47,7 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
   const [open, setOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const context = createK8sContext();
-  const removeProjectAnnotationMutation =
-    useRemoveProjectAnnotationMutation(context);
+  const removeProjectAnnotationMutation = useRemoveProjectAnnotationMutation();
   const { setFlowGraphData } = useProjectActions();
 
   const handleRefresh = async () => {
@@ -132,14 +130,12 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
 }
 
 function ProjectFlow({ projectName }: { projectName: string }) {
-  const context = createK8sContext();
-
-  const { data, isLoading } = useProjectResources(context, projectName);
+  const { data, isLoading } = useProjectResources(projectName);
   const { setFlowGraphData } = useProjectActions();
 
   const [nodes, onNodesChange, edges, onEdgesChange] = useFlow(data);
 
-  const addToProjectMutation = useAddToProjectMutation(context);
+  const addToProjectMutation = useAddToProjectMutation();
 
   const handleDrop = (event: DragEndEvent) => {
     const { active } = event;

@@ -332,3 +332,273 @@ export function convertAndFilterResourceToTarget(
     return null;
   }
 }
+
+/**
+ * Environment variable types for Kubernetes resources
+ */
+export interface EnvVarValue {
+  type: "value";
+  key: string;
+  value: string;
+}
+
+export interface EnvVarSecretRef {
+  type: "secretKeyRef";
+  key: string;
+  secretName: string;
+  secretKey: string;
+}
+
+export type EnvVar = EnvVarValue | EnvVarSecretRef;
+
+/**
+ * Get the container path for a Kubernetes resource based on its kind
+ */
+export function getContainerPath(resourceKind: string): string {
+  switch (resourceKind) {
+    case "Deployment":
+    case "StatefulSet":
+    case "DaemonSet":
+    case "Job":
+      return "/spec/template/spec/containers";
+    case "CronJob":
+      return "/spec/jobTemplate/spec/template/spec/containers";
+    default:
+      throw new Error(`Unsupported resource type: ${resourceKind}`);
+  }
+}
+
+/**
+ * Extract containers array from a Kubernetes resource
+ */
+export function getContainersFromResource(resource: any): any[] {
+  return (
+    resource.spec?.template?.spec?.containers ||
+    resource.spec?.jobTemplate?.spec?.template?.spec?.containers ||
+    []
+  );
+}
+
+/**
+ * Create environment variable specification for Kubernetes
+ */
+export function createEnvVarSpec(envVar: EnvVar): any {
+  return {
+    name: envVar.key,
+    ...(envVar.type === "value"
+      ? { value: envVar.value }
+      : {
+          valueFrom: {
+            secretKeyRef: {
+              name: envVar.secretName,
+              key: envVar.secretKey,
+            },
+          },
+        }),
+  };
+}
+
+/**
+ * Build patch operations for adding environment variables to containers
+ */
+export function buildEnvVarPatchOps(
+  containers: any[],
+  envVars: EnvVar[],
+  containerPath: string
+): any[] {
+  const patchOps: any[] = [];
+
+  containers.forEach((container: any, containerIndex: number) => {
+    const envPath = `${containerPath}/${containerIndex}/env`;
+    const currentEnv = container.env || [];
+
+    // Ensure env array exists if it doesn't
+    if (!container.env) {
+      patchOps.push({
+        op: "add",
+        path: `${containerPath}/${containerIndex}/env`,
+        value: [],
+      });
+    }
+
+    envVars.forEach((envVar) => {
+      // Check if env var already exists
+      const existingIndex = currentEnv.findIndex(
+        (e: any) => e.name === envVar.key
+      );
+
+      const envVarSpec = createEnvVarSpec(envVar);
+
+      if (existingIndex >= 0) {
+        // Replace existing env var
+        patchOps.push({
+          op: "replace",
+          path: `${envPath}/${existingIndex}`,
+          value: envVarSpec,
+        });
+      } else {
+        // Add new env var
+        patchOps.push({
+          op: "add",
+          path: `${envPath}/-`,
+          value: envVarSpec,
+        });
+      }
+    });
+  });
+
+  return patchOps;
+}
+
+/**
+ * Generic function to fetch a resource (custom or builtin)
+ */
+export async function fetchResource(
+  context: K8sApiContext,
+  target: CustomResourceTarget | BuiltinResourceTarget
+): Promise<any> {
+  const { getCustomResource, getBuiltinResource } = await import("../k8s-api/k8s-api-query");
+  
+  if (target.type === "custom") {
+    return await runParallelAction(
+      getCustomResource(context, target as CustomResourceTarget)
+    );
+  }
+  return await runParallelAction(
+    getBuiltinResource(context, target as BuiltinResourceTarget)
+  );
+}
+
+/**
+ * Generic function to apply patch operations to a resource
+ */
+export async function applyResourcePatch(
+  context: K8sApiContext,
+  target: CustomResourceTarget | BuiltinResourceTarget,
+  patchOps: any[]
+): Promise<any> {
+  const { patchCustomResource, patchBuiltinResource } = await import("../k8s-api/k8s-api-mutation");
+  
+  if (target.type === "custom") {
+    return await runParallelAction(
+      patchCustomResource(context, target as CustomResourceTarget, patchOps)
+    );
+  }
+  return await runParallelAction(
+    patchBuiltinResource(context, target as BuiltinResourceTarget, patchOps)
+  );
+}
+
+/**
+ * Generic function to delete a resource
+ */
+export async function deleteResource(
+  context: K8sApiContext,
+  target: CustomResourceTarget | BuiltinResourceTarget
+): Promise<any> {
+  const { deleteCustomResource, deleteBuiltinResource } = await import("../k8s-api/k8s-api-mutation");
+  
+  if (target.type === "custom") {
+    return await runParallelAction(deleteCustomResource(context, target));
+  }
+  return await runParallelAction(deleteBuiltinResource(context, target));
+}
+
+/**
+ * Generic function to patch resource metadata
+ */
+export async function patchResourceMetadata(
+  context: K8sApiContext,
+  target: CustomResourceTarget | BuiltinResourceTarget,
+  metadataType: "annotations" | "labels",
+  key: string,
+  value: string
+): Promise<any> {
+  const { patchCustomResourceMetadata, patchBuiltinResourceMetadata } = await import("../k8s-api/k8s-api-mutation");
+  
+  if (target.type === "custom") {
+    return await runParallelAction(
+      patchCustomResourceMetadata(context, target, metadataType, key, value)
+    );
+  }
+  return await runParallelAction(
+    patchBuiltinResourceMetadata(context, target, metadataType, key, value)
+  );
+}
+
+/**
+ * Generic function to remove resource metadata
+ */
+export async function removeResourceMetadata(
+  context: K8sApiContext,
+  target: CustomResourceTarget | BuiltinResourceTarget,
+  metadataType: "annotations" | "labels",
+  key: string
+): Promise<any> {
+  const { removeCustomResourceMetadata, removeBuiltinResourceMetadata } = await import("../k8s-api/k8s-api-mutation");
+  
+  if (target.type === "custom") {
+    return await runParallelAction(
+      removeCustomResourceMetadata(context, target, metadataType, key)
+    );
+  }
+  return await runParallelAction(
+    removeBuiltinResourceMetadata(context, target, metadataType, key)
+  );
+}
+
+/**
+ * Generic function to delete resources by label selector
+ */
+export async function deleteResourcesByLabelSelector(
+  context: K8sApiContext,
+  target: (CustomResourceTarget | BuiltinResourceTarget) & { labelSelector: string }
+): Promise<any> {
+  const { deleteCustomResourcesByLabelSelector, deleteBuiltinResourcesByLabelSelector } = await import("../k8s-api/k8s-api-mutation");
+  
+  if (target.type === "custom") {
+    return await runParallelAction(
+      deleteCustomResourcesByLabelSelector(context, target)
+    );
+  }
+  return await runParallelAction(
+    deleteBuiltinResourcesByLabelSelector(context, target)
+  );
+}
+
+/**
+ * Centralized query invalidation for mutations
+ */
+export function invalidateQueriesAfterMutation(
+  queryClient: QueryClient,
+  context: K8sApiContext,
+  target?: CustomResourceTarget | BuiltinResourceTarget,
+  includeInventory: boolean = false
+): void {
+  if (target) {
+    invalidateResourceQueries(queryClient, context, target);
+  }
+  
+  if (includeInventory) {
+    queryClient.invalidateQueries({
+      queryKey: ["inventory"],
+    });
+  }
+}
+
+/**
+ * Batch operation utility for processing multiple targets
+ */
+export async function processBatchOperation<T>(
+  targets: (CustomResourceTarget | BuiltinResourceTarget)[],
+  operation: (target: CustomResourceTarget | BuiltinResourceTarget) => Promise<T>
+): Promise<{ success: boolean; results: PromiseSettledResult<T>[]; resourceCount: number }> {
+  const promises = targets.map(operation);
+  const results = await Promise.allSettled(promises);
+  
+  return {
+    success: true,
+    results,
+    resourceCount: targets.length,
+  };
+}

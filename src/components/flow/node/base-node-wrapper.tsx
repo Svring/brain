@@ -35,9 +35,8 @@ export default function BaseNodeWrapper({
 }: BaseNodeProps) {
   const { flowGraphData } = useProjectState();
   const projectName = flowGraphData.project;
-  const context = createK8sContext();
-  const removeFromProjectMutation = useRemoveFromProjectMutation(context);
-  const deleteResourceMutation = useDeleteResourceMutation(context);
+  const removeFromProjectMutation = useRemoveFromProjectMutation();
+  const deleteResourceMutation = useDeleteResourceMutation();
   const nodeRef = useRef(null);
 
   // Handle node click to open chat sidebar
