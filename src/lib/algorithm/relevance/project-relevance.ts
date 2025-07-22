@@ -27,8 +27,6 @@ export const getProjectRelatedResources = async (
     })
   );
 
-  console.log("projectInstanceRaw", projectInstanceRaw);
-
   if (!projectInstanceRaw) {
     const emptyResult = {
       builtin: _.mapValues(BUILTIN_RESOURCES, (config) => ({
@@ -50,8 +48,6 @@ export const getProjectRelatedResources = async (
     context,
     projectName
   );
-
-  console.log("instanceRelatedResources", instanceRelatedResources);
 
   const allItems = [projectInstanceRaw, ...instanceRelatedResources];
 
@@ -87,15 +83,11 @@ export const getProjectRelatedResources = async (
 
   allItems.push(...subModuleResources.flat());
 
-  console.log("allItems before deduplicate", allItems);
-
   // Deduplicate resources by kind and name
   const uniqueItems = _.uniqWith(
     allItems,
     (a, b) => a.kind === b.kind && a.metadata.name === b.metadata.name
   );
-
-  console.log("uniqueItems", uniqueItems);
 
   const builtinKinds = new Set(
     Object.values(BUILTIN_RESOURCES).map((config) => config.kind)
@@ -137,8 +129,6 @@ export const getProjectRelatedResources = async (
       items: customByType[config.resourceType] || [],
     })),
   };
-
-  console.log("result", result);
 
   return filterEmptyResources(ListAllResourcesResponseSchema.parse(result));
 };

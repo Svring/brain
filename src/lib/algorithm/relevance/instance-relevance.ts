@@ -1,4 +1,5 @@
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
+import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import { listAllResources } from "@/lib/k8s/k8s-method/k8s-query";
 import { INSTANCE_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
 import _ from "lodash";
@@ -7,7 +8,7 @@ export const getInstanceRelatedResources = async (
   context: K8sApiContext,
   instanceName: string
 ) => {
-  const allItems: any[] = [];
+  const allItems: K8sResource[] = [];
 
   // 1. Get resources by label selector
   const labelSelector = `${INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS}=${instanceName}`;
