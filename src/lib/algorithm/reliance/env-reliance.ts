@@ -5,15 +5,12 @@ import type { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-sch
 
 export type KindMap = Record<string, string[]>;
 
-export interface WorkloadConnections {
+export interface Connection {
   connectFrom: KindMap;
   others: KindMap;
 }
 
-export type ConnectionsByKind = Record<
-  string,
-  Record<string, WorkloadConnections>
->;
+export type ResourceConnections = Record<string, Record<string, Connection>>;
 
 /**
  * Remove ingress resources from the workload candidate map.
@@ -155,17 +152,17 @@ export const mergeConnectFromByWorkload = (
     Record<string, { refs: string[]; values: string[] }>
   >,
   candidatesByKind: Record<string, string[]>
-): ConnectionsByKind => {
+): ResourceConnections => {
   // Pre-sort all candidate names by length descending. This allows us to find
   // the longest possible match efficiently using `Array.find()`.
   const allCandidates = _.sortBy(
     _.flatten(_.values(candidatesByKind)),
     (c) => -c.length
   );
-  const result: ConnectionsByKind = {};
+  const result: ResourceConnections = {};
 
   _.forEach(envSummary, (workloads, kind) => {
-    const kindConnections: Record<string, WorkloadConnections> = {};
+    const kindConnections: Record<string, Connection> = {};
 
     _.forEach(workloads, ({ refs, values }, workloadName) => {
       // For each environment value, find the first (and longest) candidate name that is a substring.
@@ -220,7 +217,7 @@ export const mergeConnectFromByWorkload = (
  */
 export const inferRelianceFromEnv = (
   resources: Record<string, { items: K8sResource[] }>
-): ConnectionsByKind => {
+): ResourceConnections => {
   // ENV-based connections from Deployments and StatefulSets.
   return mergeConnectFromByWorkload(
     collectEnvByWorkload(extractEnvironmentVariables(resources)),

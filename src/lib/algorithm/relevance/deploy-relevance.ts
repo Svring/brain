@@ -11,8 +11,8 @@ export const getDeployRelatedResources = async (
   const resources = await listAllResources(
     context,
     labelSelector,
-    ["ingress"],
-    []
+    ["ingress", "service", "pvc", "configmap"],
+    ["issuers", "certificates"]
   );
 
   const allItems: any[] = [];

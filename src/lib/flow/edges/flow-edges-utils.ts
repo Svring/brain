@@ -1,5 +1,5 @@
 import _ from "lodash";
-import type { ConnectionsByKind } from "@/lib/algorithm/reliance/env-reliance";
+import type { ResourceConnections } from "@/lib/algorithm/reliance/env-reliance";
 import { type Edge } from "@xyflow/react";
 
 /**
@@ -17,7 +17,7 @@ import { type Edge } from "@xyflow/react";
  *      { id: "cluster-redis-deployment-my-app", source: "cluster-redis", target: "deployment-my-app" }
  */
 export const convertConnectionsToEdges = (
-  connections: ConnectionsByKind
+  connections: ResourceConnections
 ): Edge[] => {
   const edges = _.flatMap(connections, (workloads, targetKind) =>
     _.flatMap(workloads, ({ connectFrom }, workloadName) => {
@@ -44,17 +44,21 @@ export const convertConnectionsToEdges = (
   return _.uniqBy(edges, (e) => `${e.source}-${e.target}`);
 };
 
-export const updateEdgesForNode = (edges: Edge[], nodeId: string, updates: Partial<Edge>): Edge[] => {
-    let changed = false;
-    const newEdges = edges.map(edge => {
-        if (edge.source === nodeId || edge.target === nodeId) {
-            const newEdge = { ...edge, ...updates };
-            if (!_.isEqual(edge, newEdge)) {
-                changed = true;
-            }
-            return newEdge;
-        }
-        return edge;
-    });
-    return changed ? newEdges : edges;
+export const updateEdgesForNode = (
+  edges: Edge[],
+  nodeId: string,
+  updates: Partial<Edge>
+): Edge[] => {
+  let changed = false;
+  const newEdges = edges.map((edge) => {
+    if (edge.source === nodeId || edge.target === nodeId) {
+      const newEdge = { ...edge, ...updates };
+      if (!_.isEqual(edge, newEdge)) {
+        changed = true;
+      }
+      return newEdge;
+    }
+    return edge;
+  });
+  return changed ? newEdges : edges;
 };

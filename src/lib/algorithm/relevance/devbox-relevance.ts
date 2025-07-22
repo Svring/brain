@@ -11,8 +11,8 @@ export const getDevboxRelatedResources = async (
   const resources = await listAllResources(
     context,
     labelSelector,
-    ["ingress"], // Only fetch service and ingress builtin resources
-    [] // No custom resources
+    ["ingress", "service"], // Only fetch service and ingress builtin resources
+    ["issuers", "certificates"] // No custom resources
   );
 
   const allItems: any[] = [];

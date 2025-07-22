@@ -20,7 +20,7 @@ export const getInstanceRelatedResources = async (
     listAllResources(
       context,
       selector,
-      [],
+      ["configmap"],
       ["devbox", "cluster", "objectstoragebucket", "deployment", "statefulset"]
     )
   );

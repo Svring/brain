@@ -5,10 +5,8 @@ import {
   Position,
   MarkerType,
 } from "@xyflow/react";
-// import { useChatContext } from "@copilotkit/react-ui";
 
 export default function FaultEdge(props: EdgeProps) {
-  // const { setOpen } = useChatContext();
   const { id, sourceX, sourceY, targetX, targetY, markerEnd, style, data } =
     props;
 
@@ -34,7 +32,7 @@ export default function FaultEdge(props: EdgeProps) {
       markerEnd={markerEnd}
       onClick={handleClick}
       path={path}
-      style={style}
+      style={{ ...style, stroke: "red" }}
     />
   );
 }

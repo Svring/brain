@@ -2,11 +2,7 @@
 
 import _ from "lodash";
 import type { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
-import type {
-  ConnectionsByKind,
-  KindMap,
-  WorkloadConnections,
-} from "./env-reliance";
+import type { ResourceConnections, KindMap, Connection } from "./env-reliance";
 import {
   DEVBOX_RELATE_RESOURCE_LABELS,
   DEPLOYMENT_RELATE_RESOURCE_LABELS,
@@ -23,7 +19,7 @@ import {
  */
 export const inferRelianceForIngress = (
   resources: Record<string, { items: K8sResource[] }>
-): ConnectionsByKind => {
+): ResourceConnections => {
   const ingressResources = resources.ingress?.items ?? [];
   if (!ingressResources.length) return {};
 
@@ -37,7 +33,7 @@ export const inferRelianceForIngress = (
     }
   );
 
-  const ingressMap: Record<string, WorkloadConnections> = {};
+  const ingressMap: Record<string, Connection> = {};
 
   ingressResources.forEach((ing) => {
     const name = ing?.metadata?.name;
