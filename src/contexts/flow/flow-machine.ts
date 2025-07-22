@@ -6,6 +6,8 @@ import type { Edge, Node } from "@xyflow/react";
 export interface FlowContext {
   nodes: Node[];
   edges: Edge[];
+  selectedNode: string | null;
+  selectedEdge: string | null;
   isInitialized: boolean;
 }
 
@@ -13,6 +15,10 @@ export type FlowEvent =
   | { type: "SET_FLOW_DATA"; nodes: Node[]; edges: Edge[] }
   | { type: "UPDATE_NODES"; nodes: Node[] }
   | { type: "UPDATE_EDGES"; edges: Edge[] }
+  | { type: "UPDATE_SINGLE_NODE"; id: string; node: Partial<Node> }
+  | { type: "UPDATE_SINGLE_EDGE"; id: string; edge: Partial<Edge> }
+  | { type: "SET_SELECTED_NODE"; nodeId: string | null }
+  | { type: "SET_SELECTED_EDGE"; edgeId: string | null }
   | { type: "RESET_FLOW" };
 
 export const flowMachine = createMachine({
@@ -23,6 +29,8 @@ export const flowMachine = createMachine({
   context: {
     nodes: [],
     edges: [],
+    selectedNode: null,
+    selectedEdge: null,
     isInitialized: false,
   },
   states: {
@@ -56,11 +64,39 @@ export const flowMachine = createMachine({
             edges: ({ event }) => event.edges,
           }),
         },
+        UPDATE_SINGLE_NODE: {
+          actions: assign({
+            nodes: ({ context, event }) =>
+              context.nodes.map((node) =>
+                node.id === event.id ? { ...node, ...event.node } : node
+              ),
+          }),
+        },
+        UPDATE_SINGLE_EDGE: {
+          actions: assign({
+            edges: ({ context, event }) =>
+              context.edges.map((edge) =>
+                edge.id === event.id ? { ...edge, ...event.edge } : edge
+              ),
+          }),
+        },
+        SET_SELECTED_NODE: {
+          actions: assign({
+            selectedNode: ({ event }) => event.nodeId,
+          }),
+        },
+        SET_SELECTED_EDGE: {
+          actions: assign({
+            selectedEdge: ({ event }) => event.edgeId,
+          }),
+        },
         RESET_FLOW: {
           target: "idle",
           actions: assign({
             nodes: [],
             edges: [],
+            selectedNode: null,
+            selectedEdge: null,
             isInitialized: false,
           }),
         },

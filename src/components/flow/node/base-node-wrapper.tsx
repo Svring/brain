@@ -17,6 +17,7 @@ import FloatingActionMenu from "@/components/flow/components/floating-action-men
 import { Trash2, ArrowLeft } from "lucide-react";
 import { useProjectResources } from "@/hooks/project/use-project-resources";
 import { useProjectState } from "@/contexts/project/project-context";
+import { useAiActions } from "@/contexts/ai/ai-context";
 import { useClusterSecret } from "@/lib/sealos/cluster/cluster-method/cluster-query";
 import { useObjectStorageSecret } from "@/lib/sealos/objectstorage/objectstorage-method/objectstorage-query";
 import { BUILTIN_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-builtin-resource";
@@ -246,8 +247,9 @@ export default function BaseNodeWrapper({
   const handleMenuMouseLeave = () => setIsMenuHovered(false);
 
   // Handle node click to open chat sidebar
+  const { openChat } = useAiActions();
   const handleNodeClick = () => {
-    // setOpen(true);
+    openChat();
   };
 
   // Effect to manage menu visibility
