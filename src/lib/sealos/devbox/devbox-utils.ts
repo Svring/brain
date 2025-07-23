@@ -17,17 +17,6 @@ export function createDevboxContext() {
   });
 }
 
-/**
- * Transform a DevboxListResponse into an array of devbox names (string[]).
- */
-export const transformDevboxListToNameList = (
-  listData: DevboxListResponse | undefined
-): string[] => {
-  return listData?.data?.map((item) => item.name) ?? [];
-};
-
 export function generateDevboxName() {
-  return `devbox-${nanoid(12)
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "")}`;
+  return `devbox-${nanoid(6)}`;
 }

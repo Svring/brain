@@ -6,17 +6,15 @@ import BaseNode from "../base-node-wrapper";
 import Image from "next/image";
 import { getDevboxOptions } from "@/lib/sealos/devbox/devbox-method/devbox-query";
 import { createDevboxContext } from "@/lib/sealos/devbox/devbox-utils";
+import { DevboxNodeDataSchema } from "@/lib/sealos/devbox/schemas/devbox-node-schemas";
 
-interface DevboxNodeProps {
-  target: CustomResourceTarget;
-}
-
-export default function DevboxNode({ data }: { data: DevboxNodeProps }) {
-  const { target } = data;
-
+export default function DevboxNode({
+  data: { target },
+}: {
+  data: { target: CustomResourceTarget };
+}) {
   // Extract devbox name from target
   const devboxName = target.name || "";
-
   // Create devbox API context
   const devboxContext = createDevboxContext();
 

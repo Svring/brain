@@ -137,15 +137,8 @@ export const getBuiltinResource = createParallelAction(
  * Get pods owned by a specific resource (filtered by ownerReferences).
  */
 export const getPodsByOwnerReference = createParallelAction(
-  async (
-    context: K8sApiContext,
-    ownerKind: string,
-    ownerName: string
-  ) => {
-    const { client } = await getBuiltinApiClient(
-      context.kubeconfig,
-      "pod"
-    );
+  async (context: K8sApiContext, ownerKind: string, ownerName: string) => {
+    const { client } = await getBuiltinApiClient(context.kubeconfig, "pod");
 
     const podListResponse = await invokeApiMethod<BuiltinResourceListResponse>(
       client,
@@ -170,13 +163,44 @@ export const getPodsByOwnerReference = createParallelAction(
 
     return BuiltinResourceListResponseSchema.parse(
       JSON.parse(
-        JSON.stringify(
-          await addMissingFields(
-            result.items,
-            "v1",
-            "Pod"
-          )
-        )
+        JSON.stringify(await addMissingFields(result.items, "v1", "Pod"))
+      )
+    );
+  }
+);
+
+/**
+ * Get secrets owned by a specific resource (filtered by ownerReferences).
+ */
+export const getSecretsByOwnerReference = createParallelAction(
+  async (context: K8sApiContext, ownerKind: string, ownerName: string) => {
+    const { client } = await getBuiltinApiClient(context.kubeconfig, "secret");
+
+    const secretListResponse =
+      await invokeApiMethod<BuiltinResourceListResponse>(
+        client,
+        "listNamespacedSecret",
+        {
+          namespace: context.namespace,
+        }
+      );
+
+    // Filter secrets by ownerReferences
+    const filteredSecrets = secretListResponse.items.filter((secret: any) => {
+      if (!secret.metadata?.ownerReferences) return false;
+      return secret.metadata.ownerReferences.some(
+        (owner: any) => owner.kind === ownerKind && owner.name === ownerName
+      );
+    });
+
+    const result = {
+      ...secretListResponse,
+      items: filteredSecrets,
+    };
+
+    return BuiltinResourceListResponseSchema.parse(
+      JSON.parse(
+        JSON.stringify(await addMissingFields(result.items, "v1", "Secret"))
       )
     );
   }

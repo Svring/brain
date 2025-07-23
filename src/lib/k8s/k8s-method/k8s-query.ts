@@ -9,6 +9,7 @@ import {
   listBuiltinResources,
   listCustomResources,
   getPodsByOwnerReference,
+  getSecretsByOwnerReference,
 } from "../k8s-api/k8s-api-query";
 import { K8sApiContext } from "../k8s-api/k8s-api-schemas/context-schemas";
 import {
@@ -493,6 +494,90 @@ export const getPodsByResourceTargetOptions = (
     queryFn: async () => {
       const result = await runParallelAction(
         getPodsByOwnerReference(context, ownerKind, ownerName)
+      );
+      return result;
+    },
+    enabled:
+      !!context.namespace && !!context.kubeconfig && !!ownerName && !!ownerKind,
+  });
+};
+
+/**
+ * Get secrets owned by a specific resource target.
+ */
+export const getSecretsByResourceTarget = async (
+  context: K8sApiContext,
+  target: CustomResourceTarget | BuiltinResourceTarget
+) => {
+  let ownerKind: string;
+  let ownerName: string;
+
+  if (target.type === "custom") {
+    // For custom resources, we need to determine the kind from the resource type
+    const resourceConfig = Object.values(CUSTOM_RESOURCES).find(
+      (config) =>
+        config.group === target.group &&
+        config.version === target.version &&
+        config.plural === target.plural
+    );
+    ownerKind = resourceConfig
+      ? _.upperFirst(_.camelCase(resourceConfig.resourceType))
+      : "Unknown";
+    ownerName = target.name!;
+  } else {
+    // For builtin resources, get the kind from the config
+    const resourceConfig = Object.values(BUILTIN_RESOURCES).find(
+      (config) => config.resourceType === target.resourceType
+    );
+    ownerKind = resourceConfig ? resourceConfig.kind : "Unknown";
+    ownerName = target.name!;
+  }
+
+  return await runParallelAction(
+    getSecretsByOwnerReference(context, ownerKind, ownerName)
+  );
+};
+
+/**
+ * Query options for getting secrets owned by a specific resource target.
+ */
+export const getSecretsByResourceTargetOptions = (
+  context: K8sApiContext,
+  target: CustomResourceTarget | BuiltinResourceTarget
+) => {
+  let ownerKind: string;
+  let ownerName: string;
+
+  if (target.type === "custom") {
+    const resourceConfig = Object.values(CUSTOM_RESOURCES).find(
+      (config) =>
+        config.group === target.group &&
+        config.version === target.version &&
+        config.plural === target.plural
+    );
+    ownerKind = resourceConfig
+      ? _.upperFirst(_.camelCase(resourceConfig.resourceType))
+      : "Unknown";
+    ownerName = target.name!;
+  } else {
+    const resourceConfig = Object.values(BUILTIN_RESOURCES).find(
+      (config) => config.resourceType === target.resourceType
+    );
+    ownerKind = resourceConfig ? resourceConfig.kind : "Unknown";
+    ownerName = target.name!;
+  }
+
+  return queryOptions({
+    queryKey: [
+      "k8s",
+      "secrets-by-owner",
+      context.namespace,
+      ownerKind,
+      ownerName,
+    ],
+    queryFn: async () => {
+      const result = await runParallelAction(
+        getSecretsByOwnerReference(context, ownerKind, ownerName)
       );
       return result;
     },

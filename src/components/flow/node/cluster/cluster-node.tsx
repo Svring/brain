@@ -21,6 +21,37 @@ interface ClusterNodeProps {
   target: CustomResourceTarget;
 }
 
+interface ClusterNodeData {
+  name: string;
+  type: string;
+  version: string;
+  connection: {
+    privateConnectionString: string;
+    publicConnectionString: string;
+  };
+  resources: {
+    cpu: string;
+    memory: string;
+    storage: string;
+  };
+  monitor: {
+    cpu: string;
+    memory: string;
+    storage: string;
+  };
+  env: {
+    name: string;
+    value: string;
+  }[];
+  backup: {
+    type: string;
+    storage: string;
+  }[];
+  pods: {
+    name: string;
+  }[];
+}
+
 export default function ClusterNode({ data }: { data: ClusterNodeProps }) {
   const { target } = data;
   const [showConnectionMenu, setShowConnectionMenu] = useState(false);
