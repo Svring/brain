@@ -1,17 +1,12 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQueries } from "@tanstack/react-query";
 import {
   listAllResourcesOptions,
   getCustomResourceOptions,
   getPodsByResourceTargetOptions,
   getSecretsByResourceTargetOptions,
 } from "@/lib/k8s/k8s-method/k8s-query";
-import { getDevboxRelatedResourcesOptions } from "@/lib/sealos/devbox/devbox-method/devbox-query";
-import {
-  DevboxNodeDataSchema,
-  DevboxNodeData,
-} from "@/lib/sealos/devbox/schemas/devbox-node-schemas";
 import _ from "lodash";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { DEVBOX_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
@@ -31,29 +26,43 @@ const useDevboxNode = (target: CustomResourceTarget) => {
   const context = createK8sContext();
   const devboxLabel = `${DEVBOX_RELATE_RESOURCE_LABELS.DEVBOX_MANAGER}=${target.name}`;
 
-  // Get the devbox custom resource
-  const { data: resourceData } = useQuery({
-    ...getCustomResourceOptions(context, target),
-    select: (data) => DevboxResourceK8sSchema.parse(data),
-  });
-  const { data: podsData } = useQuery({
-    ...getPodsByResourceTargetOptions(context, target),
-    select: (data) => spreadResourceList(data),
-  });
-  const { data: secretsData } = useQuery({
-    ...getSecretsByResourceTargetOptions(context, target),
-    select: (data) =>
-      DevboxSecretSchema.parse(_.first(spreadResourceList(data))),
-  });
-  const { data: ingressData } = useQuery({
-    ...listAllResourcesOptions(context, devboxLabel, ["ingress"], []),
-    select: (data) =>
-      _.map(spreadResourceList(_.get(data, "builtin.ingress")), (item) =>
-        DevboxIngressSchema.parse(item)
-      ),
+  const queries = useQueries({
+    queries: [
+      {
+        ...getCustomResourceOptions(context, target),
+        select: (data: any) => DevboxResourceK8sSchema.parse(data),
+      },
+      {
+        ...getPodsByResourceTargetOptions(context, target),
+        select: (data: any) =>
+          _.map(spreadResourceList(data), (item) =>
+            DevboxPodSchema.parse(item)
+          ),
+      },
+      {
+        ...getSecretsByResourceTargetOptions(context, target),
+        select: (data: any) =>
+          DevboxSecretSchema.parse(_.first(spreadResourceList(data))),
+      },
+      {
+        ...listAllResourcesOptions(context, devboxLabel, ["ingress"], []),
+        select: (data: any) =>
+          _.map(spreadResourceList(_.get(data, "builtin.ingress")), (item) =>
+            DevboxIngressSchema.parse(item)
+          ),
+      },
+    ],
   });
 
-  if (!resourceData || !podsData || !secretsData || !ingressData) {
+  const [resourceQuery, podsQuery, secretsQuery, ingressQuery] = queries;
+
+  const isLoading = queries.some((query) => query.isLoading);
+  const resourceData = resourceQuery.data;
+  const podsData = podsQuery.data;
+  const secretsData = secretsQuery.data;
+  const ingressData = ingressQuery.data;
+
+  if (isLoading || !resourceData) {
     return {
       data: undefined,
       isLoading: true,
@@ -68,8 +77,8 @@ const useDevboxNode = (target: CustomResourceTarget) => {
   );
 
   return {
-    data: nodeData,
-    isLoading: false,
+    nodeData,
+    isLoading,
   };
 };
 

@@ -1,12 +1,8 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import BaseNode from "../base-node-wrapper";
 import Image from "next/image";
-import { getDevboxOptions } from "@/lib/sealos/devbox/devbox-method/devbox-query";
-import { createDevboxContext } from "@/lib/sealos/devbox/devbox-utils";
-import { DevboxNodeDataSchema } from "@/lib/sealos/devbox/schemas/devbox-node-schemas";
 import useDevboxNode from "@/hooks/sealos/devbox/use-devbox-node";
 
 export default function DevboxNode({
@@ -14,20 +10,13 @@ export default function DevboxNode({
 }: {
   data: { target: CustomResourceTarget };
 }) {
-  // Extract devbox name from target
-  const devboxName = target.name || "";
-  // Create devbox API context
-  const devboxContext = createDevboxContext();
+  const { nodeData, isLoading } = useDevboxNode(target);
 
-  useDevboxNode(target);
+  // if (isLoading) {
+  //   return null;
+  // }
 
-  // Fetch devbox data
-  const { data: devboxResource } = useQuery(
-    getDevboxOptions(devboxContext, devboxName)
-  );
-
-  // Extract data from resource or provide fallbacks
-  const name = devboxName;
+  console.log(nodeData);
 
   return (
     <BaseNode target={target}>
@@ -49,7 +38,7 @@ export default function DevboxNode({
                   Devbox
                 </span>
                 <span className="text-lg font-bold text-foreground leading-tight w-40 overflow-hidden text-ellipsis text-left">
-                  {name}
+                  {/* {name} */}
                 </span>
               </span>
             </span>
