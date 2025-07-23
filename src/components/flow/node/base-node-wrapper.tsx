@@ -17,6 +17,7 @@ import HoverableNodeWrapper from "@/components/flow/components/hoverable-node-wr
 interface BaseNodeProps {
   children: React.ReactNode;
   target: CustomResourceTarget | BuiltinResourceTarget;
+  nodeData: any;
   className?: string;
   showDefaultMenu?: boolean;
   floatingMenuOptions?: {
@@ -29,6 +30,7 @@ interface BaseNodeProps {
 export default function BaseNodeWrapper({
   children,
   target,
+  nodeData,
   className,
   showDefaultMenu = true,
   floatingMenuOptions,

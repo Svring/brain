@@ -166,7 +166,7 @@ export function convertDevboxK8sToNodeData(
   // Extract basic information
   const result: Partial<DevboxNodeData> = {
     name: extractDevboxName(devbox),
-    image: extractDevboxImage(devbox),
+    image: extractDevboxImageTag(extractDevboxImage(devbox)),
     status: extractDevboxStatus(devbox),
     resources: extractDevboxResources(devbox),
     ports: extractDevboxPorts(devbox),
@@ -187,4 +187,35 @@ export function convertDevboxK8sToNodeData(
   }
 
   return result;
+}
+
+// Extract image tag from Docker image name
+export function extractDevboxImageTag(imageUrl: string): string {
+  // Handle cases like:
+  // ghcr.io/labring-actions/devbox/cpp-gcc-12.2.0:13aacd8
+  // registry.com/namespace/image:tag
+  // image:tag
+  // image@sha256:hash
+
+  // First, remove any digest (sha256 hash) if present
+  const withoutDigest = imageUrl.split("@")[0];
+
+  // Split by colon to separate image name from tag
+  const parts = withoutDigest.split(":");
+
+  if (parts.length < 2) {
+    // No tag specified, return 'latest' or the image name itself
+    const imageName = parts[0].split("/").pop() || parts[0];
+    return imageName;
+  }
+
+  // Get the tag (everything after the last colon)
+  const tag = parts[parts.length - 1];
+
+  // Get the image name (everything after the last slash before the tag)
+  const imageNameWithTag = parts.slice(0, -1).join(":");
+  const imageName = imageNameWithTag.split("/").pop() || imageNameWithTag;
+
+  // Return the image name (without registry/namespace)
+  return imageName;
 }
