@@ -29,11 +29,13 @@ export const DevboxNodeDataSchema = z.object({
       })
     )
     .optional(),
-  pods: z.array(
-    z.object({
-      name: z.string(),
-    })
-  ),
+  pods: z
+    .array(
+      z.object({
+        name: z.string(),
+      })
+    )
+    .optional(),
 });
 
 export type DevboxNodeData = z.infer<typeof DevboxNodeDataSchema>;

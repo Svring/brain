@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { KubernetesMetadataSchema } from "./kubernetes-resource-schemas";
+import { K8sMetadataSchema } from "./kubernetes-resource-schemas";
 
 // Ingress-specific schemas
 export const IngressBackendSchema = z.object({
@@ -73,7 +73,7 @@ export const IngressStatusSchema = z.object({
 export const IngressResourceSchema = z.object({
   apiVersion: z.literal("networking.k8s.io/v1"),
   kind: z.literal("Ingress"),
-  metadata: KubernetesMetadataSchema,
+  metadata: K8sMetadataSchema,
   spec: IngressSpecSchema.optional(),
   status: IngressStatusSchema.optional(),
 });

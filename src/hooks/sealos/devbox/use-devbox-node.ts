@@ -15,6 +15,7 @@ import _ from "lodash";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
 import { DevboxResourceK8sSchema } from "@/lib/sealos/devbox/schemas/devbox-k8s-schemas";
+import { convertDevboxK8sToNodeData } from "@/lib/sealos/devbox/devbox-utils";
 
 const useDevboxNode = async (target: CustomResourceTarget) => {
   const context = createK8sContext();
@@ -24,6 +25,9 @@ const useDevboxNode = async (target: CustomResourceTarget) => {
     getCustomResourceOptions(context, target)
   );
   const devboxResourceK8s = DevboxResourceK8sSchema.parse(devboxResource);
+  const devboxNodeData = convertDevboxK8sToNodeData(devboxResourceK8s);
+
+  console.log("devboxNodeData", devboxNodeData);
 
   // Get pods owned by this devbox
   const { data: podsData } = useQuery(

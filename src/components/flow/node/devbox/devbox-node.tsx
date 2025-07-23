@@ -7,6 +7,7 @@ import Image from "next/image";
 import { getDevboxOptions } from "@/lib/sealos/devbox/devbox-method/devbox-query";
 import { createDevboxContext } from "@/lib/sealos/devbox/devbox-utils";
 import { DevboxNodeDataSchema } from "@/lib/sealos/devbox/schemas/devbox-node-schemas";
+import useDevboxNode from "@/hooks/sealos/devbox/use-devbox-node";
 
 export default function DevboxNode({
   data: { target },
@@ -17,6 +18,8 @@ export default function DevboxNode({
   const devboxName = target.name || "";
   // Create devbox API context
   const devboxContext = createDevboxContext();
+
+  useDevboxNode(target);
 
   // Fetch devbox data
   const { data: devboxResource } = useQuery(
