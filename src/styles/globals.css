@@ -7,6 +7,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
+  --color-background-primary: #0A0A0A;
+  --color-background-secondary: #151515;
+
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
 

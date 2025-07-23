@@ -1,6 +1,6 @@
 "use client";
 
-import { Globe } from "lucide-react";
+import { Globe, House } from "lucide-react";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { RegionSwitcher } from "@/components/app/sidebar/region-switcher";
 import {
@@ -19,7 +19,14 @@ import { cn } from "@/lib/utils";
 import AIAccess from "./ai-access";
 
 // Constants
-const NAVIGATION_ITEMS: NavigationItem[] = [];
+const NAVIGATION_ITEMS: NavigationItem[] = [
+  {
+    title: "home",
+    icon: House,
+    group: "overview",
+    path: "/",
+  },
+];
 
 export default function AppSidebar() {
   const { auth } = useAuthState();
@@ -27,7 +34,7 @@ export default function AppSidebar() {
   return (
     <>
       <Sidebar className="rounded-lg" collapsible="icon" variant="floating">
-        <SidebarHeader className={cn("rounded-t-lg bg-background")}>
+        <SidebarHeader className={cn("rounded-t-lg bg-background-secondary")}>
           <RegionSwitcher
             regions={[
               {
@@ -38,10 +45,10 @@ export default function AppSidebar() {
             ]}
           />
         </SidebarHeader>
-        <SidebarContent className={cn("bg-background")}>
+        <SidebarContent className={cn("bg-background-secondary")}>
           <MainSection navigationItems={NAVIGATION_ITEMS} />
         </SidebarContent>
-        <SidebarFooter className={cn("rounded-b-lg bg-background")}>
+        <SidebarFooter className={cn("rounded-b-lg bg-background-secondary")}>
           <AIAccess />
           <UserCard
             user={{

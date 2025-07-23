@@ -38,7 +38,7 @@ export const MainSection: React.FC<MainSectionProps> = ({
             .map((item) => (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton onClick={() => handleNavigation(item.path)}>
-                  <item.icon className="h-4 w-4" />
+                  <item.icon className="" />
                   <span>{item.title}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>

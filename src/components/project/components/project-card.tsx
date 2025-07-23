@@ -26,13 +26,7 @@ interface ProjectCardProps {
 const ProjectCard: React.FC<ProjectCardProps> = ({ projectName }) => {
   const { toast } = useToast();
 
-  // Create K8s API context
-  const context = K8sApiContextSchema.parse({
-    namespace: getCurrentNamespace(),
-    kubeconfig: getDecodedKubeconfig(),
-  });
-
-  const deleteProjectMutation = useDeleteProjectMutation(context);
+  const deleteProjectMutation = useDeleteProjectMutation();
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -65,7 +59,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ projectName }) => {
       href={`/project/${encodeURIComponent(projectName)}`}
     >
       <motion.div
-        className="relative flex min-h-[160px] w-full cursor-pointer flex-col rounded-lg border bg-background p-4 text-left shadow-sm"
+        className="relative flex min-h-[160px] w-full cursor-pointer flex-col rounded-lg border bg-background-secondary p-4 text-left shadow-sm"
         transition={{ duration: 0.15, ease: "easeInOut" }}
         whileHover={{ y: -5 }}
       >
