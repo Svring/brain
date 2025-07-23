@@ -6,25 +6,43 @@ import { NodeToolbar, Position } from "@xyflow/react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
-import type { ClusterResource } from "@/lib/k8s/schemas/resource-schemas/cluster-schemas";
 import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/cluster/cluster-constant";
 import { CLUSTER_DEFINITION_LABEL_KEY } from "@/lib/sealos/cluster/cluster-constant";
 import { Link } from "lucide-react";
 import { useClusterSecret } from "@/lib/sealos/cluster/cluster-method/cluster-query";
 import { extractClusterCredentials } from "@/lib/sealos/cluster/cluster-utils";
+import { useQuery } from "@tanstack/react-query";
+import { getCustomResourceOptions } from "@/lib/k8s/k8s-method/k8s-query";
+import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
+import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
+import type { ClusterResource } from "@/lib/k8s/schemas/resource-schemas/cluster-schemas";
 
 interface ClusterNodeProps {
-  name: string;
-  state: string;
   target: CustomResourceTarget;
-  resource: ClusterResource;
 }
 
 export default function ClusterNode({ data }: { data: ClusterNodeProps }) {
-  const { name, state, target, resource } = data;
+  const { target } = data;
   const [showConnectionMenu, setShowConnectionMenu] = useState(false);
+
+  // Extract cluster name from target
+  const clusterName = target.name || "";
+
+  // Fetch cluster resource data
+  const k8sContext = createK8sContext();
+  const clusterQuery = useQuery({
+    ...getCustomResourceOptions(k8sContext, {
+      ...CUSTOM_RESOURCES.cluster,
+      name: clusterName,
+    }),
+    enabled: !!clusterName,
+  });
+
+  const clusterResource = clusterQuery.data as ClusterResource | undefined;
+  const name = clusterResource?.metadata.name || clusterName;
+  const state = clusterResource?.status?.phase || "Unknown";
   const clusterType =
-    resource.metadata.labels?.[CLUSTER_DEFINITION_LABEL_KEY] ?? "";
+    clusterResource?.metadata.labels?.[CLUSTER_DEFINITION_LABEL_KEY] || "";
 
   // Fetch cluster secret
   const clusterSecretQuery = useClusterSecret(name);
@@ -46,9 +64,6 @@ export default function ClusterNode({ data }: { data: ClusterNodeProps }) {
       target={target}
       showDefaultMenu={!showConnectionMenu}
       floatingMenuOptions={floatingMenuOptions}
-      onShowConnectionMenu={setShowConnectionMenu}
-      showConnectionMenu={showConnectionMenu}
-      clusterName={name}
     >
       <div className="flex h-full flex-col justify-between">
         {/* Name */}

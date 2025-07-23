@@ -1,14 +1,14 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import BaseNode from "../base-node-wrapper";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import { getBuiltinResourceOptions } from "@/lib/k8s/k8s-method/k8s-query";
+import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
 
 interface StatefulSetNodeProps {
-  name: string;
-  readyReplicas: number;
-  replicas: number;
   target: BuiltinResourceTarget;
 }
 
@@ -17,7 +17,23 @@ export default function StatefulSetNode({
 }: {
   data: StatefulSetNodeProps;
 }) {
-  const { name, readyReplicas, replicas, target } = data;
+  const { target } = data;
+
+  // Extract statefulset name from target
+  const statefulSetName = target.name || "";
+
+  // Create K8s context
+  const k8sContext = createK8sContext();
+
+  // Fetch statefulset data
+  const { data: statefulSetResource } = useQuery(
+    getBuiltinResourceOptions(k8sContext, target)
+  );
+
+  // Extract data from resource or provide fallbacks
+  const name = statefulSetResource?.metadata?.name || statefulSetName;
+  const readyReplicas = statefulSetResource?.status?.readyReplicas || 0;
+  const replicas = statefulSetResource?.spec?.replicas || 0;
 
   return (
     <BaseNode target={target}>
@@ -47,7 +63,7 @@ export default function StatefulSetNode({
         </div>
 
         {/* State badge */}
-        <div className="mt-auto flex justify-start">
+        {/* <div className="mt-auto flex justify-start">
           <Badge
             variant="outline"
             className={
@@ -60,7 +76,7 @@ export default function StatefulSetNode({
               ? "Running"
               : "Preparing"}
           </Badge>
-        </div>
+        </div> */}
       </div>
     </BaseNode>
   );

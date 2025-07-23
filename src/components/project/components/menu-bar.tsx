@@ -17,12 +17,16 @@ export interface MenuBarItem {
 interface MenuBarProps extends React.HTMLAttributes<HTMLDivElement> {
   items: MenuBarItem[];
   activeIndex?: number | null;
+  title?: string;
+  children?: React.ReactNode;
 }
 
 export function MenuBar({
   items,
   className,
   activeIndex: controlledActiveIndex,
+  title,
+  children,
   ...props
 }: MenuBarProps) {
   const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
@@ -104,6 +108,7 @@ export function MenuBar({
         )}
         ref={menuRef}
       >
+        {title && <div className="px-3 mr-1 font-lg">12{title}</div>}
         {items.map((item, index) =>
           item.isToggle ? (
             <Toggle
@@ -145,6 +150,7 @@ export function MenuBar({
             </button>
           )
         )}
+        {children}
       </div>
     </div>
   );

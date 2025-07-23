@@ -79,7 +79,9 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
               isToggle: false,
             },
           ]}
-        />
+        >
+          <span className="mx-2">{projectName}</span>
+        </MenuBar>
       </div>
       {/* MenuBar in the upper right corner */}
       <div className="absolute top-2 right-2 z-20">

@@ -55,7 +55,7 @@ export default function AppSidebar() {
           <MainSection navigationItems={NAVIGATION_ITEMS} />
         </SidebarContent>
         <SidebarFooter className={cn("rounded-b-lg bg-background-secondary")}>
-          <AIAccess />
+          {/* <AIAccess /> */}
           <UserCard
             user={{
               name: "Brain",

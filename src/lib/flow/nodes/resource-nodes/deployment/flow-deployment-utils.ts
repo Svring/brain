@@ -5,9 +5,6 @@ import { BUILTIN_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-builtin-r
 // Converts a DeploymentResource to node data for DeployNode
 export function convertResourceToNode(resource: DeploymentResource) {
   return {
-    name: resource.metadata.name,
-    readyReplicas: resource.status?.readyReplicas ?? 0,
-    replicas: resource.spec?.replicas ?? 0,
     target: convertToResourceTarget(resource, BUILTIN_RESOURCES.deployment),
   };
 }

@@ -1,19 +1,35 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import BaseNode from "../base-node-wrapper";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import { getBuiltinResourceOptions } from "@/lib/k8s/k8s-method/k8s-query";
+import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
 
 interface DeployNodeProps {
-  name: string;
-  readyReplicas: number;
-  replicas: number;
   target: BuiltinResourceTarget;
 }
 
 export default function DeployNode({ data }: { data: DeployNodeProps }) {
-  const { name, readyReplicas, replicas, target } = data;
+  const { target } = data;
+
+  // Extract deployment name from target
+  const deploymentName = target.name || "";
+
+  // Create K8s context
+  const k8sContext = createK8sContext();
+
+  // Fetch deployment data
+  const { data: deploymentResource } = useQuery(
+    getBuiltinResourceOptions(k8sContext, target)
+  );
+
+  // Extract data from resource or provide fallbacks
+  const name = deploymentResource?.metadata?.name || deploymentName;
+  const readyReplicas = deploymentResource?.status?.readyReplicas || 0;
+  const replicas = deploymentResource?.spec?.replicas || 0;
 
   return (
     <BaseNode target={target}>
@@ -43,7 +59,7 @@ export default function DeployNode({ data }: { data: DeployNodeProps }) {
         </div>
 
         {/* State badge */}
-        <div className="mt-auto flex justify-start">
+        {/* <div className="mt-auto flex justify-start">
           <Badge
             variant="outline"
             className={
@@ -56,7 +72,7 @@ export default function DeployNode({ data }: { data: DeployNodeProps }) {
               ? "running"
               : "preparing"}
           </Badge>
-        </div>
+        </div> */}
       </div>
     </BaseNode>
   );
