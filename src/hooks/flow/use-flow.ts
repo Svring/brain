@@ -17,16 +17,18 @@ import { applyLayout } from "@/lib/flow/layout/flow-layout-utils";
 import { convertResourcesToNodes } from "@/lib/flow/nodes/flow-nodes-utils";
 import type { ListAllResourcesResponse } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
 import { useFlowState, useFlowActions } from "@/contexts/flow/flow-context";
+import { useProjectResources } from "@/hooks/project/use-project-resources";
 import _ from "lodash";
 
 /**
  * Custom hook to process project resources into flow nodes and edges state.
- * @param resources Project resources object (from useProjectResources)
- * @returns [nodes, onNodesChange, edges, onEdgesChange]
+ * @param projectName The name of the project
+ * @returns [nodes, onNodesChange, edges, onEdgesChange, isLoading]
  */
-export function useFlow(resources: ListAllResourcesResponse | undefined) {
+export function useFlow(projectName: string) {
   const { nodes, edges } = useFlowState();
   const { setFlowData, updateNodes, updateEdges } = useFlowActions();
+  const { data: resources, isLoading } = useProjectResources(projectName);
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
@@ -61,5 +63,5 @@ export function useFlow(resources: ListAllResourcesResponse | undefined) {
     setFlowData(positionedNodes, newEdges);
   }, [resources]);
 
-  return [nodes, onNodesChange, edges, onEdgesChange] as const;
+  return [nodes, onNodesChange, edges, onEdgesChange, isLoading] as const;
 }

@@ -5,6 +5,7 @@ import {
   BackgroundVariant,
   ConnectionLineType,
   ReactFlow,
+  ReactFlowProvider,
 } from "@xyflow/react";
 import { ArrowLeft, Plus, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -20,7 +21,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useProjectResources } from "@/hooks/project/use-project-resources";
+
 import { useFlow } from "@/hooks/flow/use-flow";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { DndProvider } from "@/components/flow/dnd/dnd-provider";
@@ -28,16 +29,12 @@ import { TextShimmer } from "@/components/project/components/text-shimmer";
 
 import "@xyflow/react/dist/style.css";
 import { Droppable } from "@/components/flow/dnd/droppable";
-import { DragEndEvent } from "@dnd-kit/core";
-import {
-  useAddToProjectMutation,
-  useRemoveProjectAnnotationMutation,
-} from "@/lib/project/project-method/project-mutation";
-import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
+import { useRemoveProjectAnnotationMutation } from "@/lib/project/project-method/project-mutation";
 import { toast } from "sonner";
-import _ from "lodash";
 import { useProjectActions } from "@/contexts/project/project-context";
 import { FlowProvider } from "@/contexts/flow/flow-context";
+import { useFlowFocus } from "@/hooks/flow/use-flow-focus";
+import { useFlowDrop } from "@/hooks/flow/use-flow-drop";
 import AiCoin from "@/components/ai/headless/ai-coin";
 import AiChatbox from "@/components/ai/headless/ai-chatbox";
 import DevTools from "@/components/flow/devtools/flow-devtools";
@@ -132,36 +129,12 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
 }
 
 function ProjectFlow({ projectName }: { projectName: string }) {
-  const { data, isLoading } = useProjectResources(projectName);
-  const { setFlowGraphData } = useProjectActions();
+  const [nodes, onNodesChange, edges, onEdgesChange, isLoading] =
+    useFlow(projectName);
+  const { handleDrop } = useFlowDrop(projectName);
 
-  const [nodes, onNodesChange, edges, onEdgesChange] = useFlow(data);
-
-  const addToProjectMutation = useAddToProjectMutation();
-
-  const handleDrop = (event: DragEndEvent) => {
-    const { active } = event;
-    const resources = _.castArray(
-      _.get(active, "data.current.resources") ??
-        _.get(active, "data.current.resourceTarget", [])
-    );
-    if (_.isEmpty(resources)) return;
-
-    addToProjectMutation.mutate(
-      { resources, projectName },
-      {
-        onSuccess: (data) => {
-          setFlowGraphData(projectName, null);
-          toast.success(
-            `Added ${resources.length} resource${
-              resources.length === 1 ? "" : "s"
-            } to project ${projectName}`
-          );
-        },
-        onError: () => toast.error("Failed to add resources to project"),
-      }
-    );
-  };
+  // Auto-focus on selected nodes
+  useFlowFocus();
 
   if (isLoading) {
     return (
@@ -229,7 +202,9 @@ export default function Page({
       <FlowProvider>
         <div className="relative h-screen w-full">
           <ProjectFloatingUI projectName={projectName} />
-          <ProjectFlow projectName={projectName} />
+          <ReactFlowProvider>
+            <ProjectFlow projectName={projectName} />
+          </ReactFlowProvider>
         </div>
       </FlowProvider>
     </DndProvider>
