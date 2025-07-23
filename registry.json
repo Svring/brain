@@ -1,0 +1,225 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "brain",
+  "homepage": "",
+  "items": [
+    {
+      "name": "project-relevance",
+      "type": "registry:lib",
+      "title": "Project Relevance",
+      "description": "A utility function to get project-related Kubernetes resources with sub-module support for devbox, cluster, deployment, and statefulset resources.",
+      "dependencies": [
+        "next-server-actions-parallel",
+        "js-yaml",
+        "@kubernetes/client-node",
+        "lodash",
+        "@types/lodash",
+        "fast-json-patch",
+        "@tanstack/react-query",
+        "@types/js-yaml"
+      ],
+      "files": [
+        {
+          "path": "registry/new-york/project-relevance/algorithm/relevance/project-relevance.ts",
+          "type": "registry:lib",
+          "target": "lib/algorithm/relevance/project-relevance.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/algorithm/relevance/instance-relevance.ts",
+          "type": "registry:lib",
+          "target": "lib/algorithm/relevance/instance-relevance.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/algorithm/relevance/devbox-relevance.ts",
+          "type": "registry:lib",
+          "target": "lib/algorithm/relevance/devbox-relevance.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/algorithm/relevance/cluster-relevance.ts",
+          "type": "registry:lib",
+          "target": "lib/algorithm/relevance/cluster-relevance.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/algorithm/relevance/deploy-relevance.ts",
+          "type": "registry:lib",
+          "target": "lib/algorithm/relevance/deploy-relevance.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/algorithm/relevance/statefulset-relevance.ts",
+          "type": "registry:lib",
+          "target": "lib/algorithm/relevance/statefulset-relevance.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/algorithm/relevance/relevance-utils.ts",
+          "type": "registry:lib",
+          "target": "lib/algorithm/relevance/relevance-utils.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-schemas/context-schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-schemas/context-schemas.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-query.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-query.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-constant/k8s-constant-custom-resource.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-constant/k8s-constant-custom-resource.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-method/k8s-utils.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-method/k8s-utils.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-mutation.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-mutation.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-utils.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-utils.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-create-schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-create-schemas.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-delete-schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-delete-schemas.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-get-schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-get-schemas.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-patch-schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-patch-schemas.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-schemas/resource-schemas/cluster-schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/cluster-schemas.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-schemas/resource-schemas/configmap-schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/configmap-schemas.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-schemas/resource-schemas/custom-resource-schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/custom-resource-schemas.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-schemas/resource-schemas/daemonset-schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/daemonset-schemas.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-schemas/resource-schemas/deployment-schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/deployment-schemas.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-schemas/resource-schemas/ingress-schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/ingress-schemas.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-schemas/resource-schemas/instance-schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/instance-schemas.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-schemas/resource-schemas/object-storage.schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/object-storage.schemas.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-schemas/resource-schemas/pod-schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/pod-schemas.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-schemas/resource-schemas/pvc-schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/pvc-schemas.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-schemas/resource-schemas/resource-target-schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/resource-target-schemas.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-schemas/resource-schemas/secret-schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/secret-schemas.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-schemas/resource-schemas/service-schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/service-schemas.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-api/k8s-api-schemas/resource-schemas/statefulset-schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/statefulset-schemas.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-constant/k8s-constant-builtin-resource.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-constant/k8s-constant-builtin-resource.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-constant/k8s-constant-client.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-constant/k8s-constant-client.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-constant/k8s-constant-label.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-constant/k8s-constant-label.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-method/k8s-mutation.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-method/k8s-mutation.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-method/k8s-query.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-method/k8s-query.ts"
+        },
+        {
+          "path": "registry/new-york/project-relevance/k8s/k8s-method/k8s-utils.ts",
+          "type": "registry:lib",
+          "target": "lib/k8s/k8s-method/k8s-utils.ts"
+        }
+      ]
+    }
+  ]
+}

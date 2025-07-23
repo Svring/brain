@@ -44,7 +44,8 @@ export default function Page() {
     );
   }, [projects?.items, searchTerm]);
 
-  // const context = createK8sContext();
+  const context = createK8sContext();
+  console.log(context);
   // useMount(async () => {
   //   // const relatedResources = await getInstanceRelatedResources(
   //   //   context,

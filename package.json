@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "registry:build": "shadcn build"
   },
   "dependencies": {
     "@copilotkit/react-core": "1.10.0-next.0",
@@ -93,6 +94,7 @@
     "react-resizable-panels": "^2.1.7",
     "react-speech-recognition": "^4.0.1",
     "recharts": "2.15.4",
+    "shadcn": "2.9.3-canary.0",
     "sharp": "^0.34.2",
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.5.5",
