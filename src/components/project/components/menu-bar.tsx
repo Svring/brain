@@ -101,7 +101,7 @@ export function MenuBar({
       <div
         className={cn(
           "z-10 inline-flex h-10 items-center justify-center gap-[3px] overflow-hidden px-1",
-          "rounded-lg bg-background/95 backdrop-blur",
+          "rounded-lg bg-background-secondary backdrop-blur",
           "border border-border/50",
           "shadow-[0_0_0_1px_rgba(0,0,0,0.08),0_8px_16px_-4px_rgba(0,0,0,0.1)]",
           "dark:border-border/50 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_8px_16px_-4px_rgba(0,0,0,0.2)]"

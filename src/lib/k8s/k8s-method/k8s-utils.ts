@@ -292,7 +292,9 @@ export function getResourceConfigFromKind(kind: string) {
  * @param projectResources - Resources from getProjectRelatedResources
  * @returns Array of individual K8s resources
  */
-export function flattenProjectResources(projectResources: ListAllResourcesResponse): K8sResource[] {
+export function flattenProjectResources(
+  projectResources: ListAllResourcesResponse
+): K8sResource[] {
   const allResources: K8sResource[] = [];
 
   // Process builtin resources
@@ -457,8 +459,10 @@ export async function fetchResource(
   context: K8sApiContext,
   target: CustomResourceTarget | BuiltinResourceTarget
 ): Promise<any> {
-  const { getCustomResource, getBuiltinResource } = await import("../k8s-api/k8s-api-query");
-  
+  const { getCustomResource, getBuiltinResource } = await import(
+    "../k8s-api/k8s-api-query"
+  );
+
   if (target.type === "custom") {
     return await runParallelAction(
       getCustomResource(context, target as CustomResourceTarget)
@@ -477,8 +481,10 @@ export async function applyResourcePatch(
   target: CustomResourceTarget | BuiltinResourceTarget,
   patchOps: any[]
 ): Promise<any> {
-  const { patchCustomResource, patchBuiltinResource } = await import("../k8s-api/k8s-api-mutation");
-  
+  const { patchCustomResource, patchBuiltinResource } = await import(
+    "../k8s-api/k8s-api-mutation"
+  );
+
   if (target.type === "custom") {
     return await runParallelAction(
       patchCustomResource(context, target as CustomResourceTarget, patchOps)
@@ -496,8 +502,10 @@ export async function deleteResource(
   context: K8sApiContext,
   target: CustomResourceTarget | BuiltinResourceTarget
 ): Promise<any> {
-  const { deleteCustomResource, deleteBuiltinResource } = await import("../k8s-api/k8s-api-mutation");
-  
+  const { deleteCustomResource, deleteBuiltinResource } = await import(
+    "../k8s-api/k8s-api-mutation"
+  );
+
   if (target.type === "custom") {
     return await runParallelAction(deleteCustomResource(context, target));
   }
@@ -514,8 +522,9 @@ export async function patchResourceMetadata(
   key: string,
   value: string
 ): Promise<any> {
-  const { patchCustomResourceMetadata, patchBuiltinResourceMetadata } = await import("../k8s-api/k8s-api-mutation");
-  
+  const { patchCustomResourceMetadata, patchBuiltinResourceMetadata } =
+    await import("../k8s-api/k8s-api-mutation");
+
   if (target.type === "custom") {
     return await runParallelAction(
       patchCustomResourceMetadata(context, target, metadataType, key, value)
@@ -535,8 +544,9 @@ export async function removeResourceMetadata(
   metadataType: "annotations" | "labels",
   key: string
 ): Promise<any> {
-  const { removeCustomResourceMetadata, removeBuiltinResourceMetadata } = await import("../k8s-api/k8s-api-mutation");
-  
+  const { removeCustomResourceMetadata, removeBuiltinResourceMetadata } =
+    await import("../k8s-api/k8s-api-mutation");
+
   if (target.type === "custom") {
     return await runParallelAction(
       removeCustomResourceMetadata(context, target, metadataType, key)
@@ -552,10 +562,15 @@ export async function removeResourceMetadata(
  */
 export async function deleteResourcesByLabelSelector(
   context: K8sApiContext,
-  target: (CustomResourceTarget | BuiltinResourceTarget) & { labelSelector: string }
+  target: (CustomResourceTarget | BuiltinResourceTarget) & {
+    labelSelector: string;
+  }
 ): Promise<any> {
-  const { deleteCustomResourcesByLabelSelector, deleteBuiltinResourcesByLabelSelector } = await import("../k8s-api/k8s-api-mutation");
-  
+  const {
+    deleteCustomResourcesByLabelSelector,
+    deleteBuiltinResourcesByLabelSelector,
+  } = await import("../k8s-api/k8s-api-mutation");
+
   if (target.type === "custom") {
     return await runParallelAction(
       deleteCustomResourcesByLabelSelector(context, target)
@@ -578,7 +593,7 @@ export function invalidateQueriesAfterMutation(
   if (target) {
     invalidateResourceQueries(queryClient, context, target);
   }
-  
+
   if (includeInventory) {
     queryClient.invalidateQueries({
       queryKey: ["inventory"],
@@ -591,14 +606,39 @@ export function invalidateQueriesAfterMutation(
  */
 export async function processBatchOperation<T>(
   targets: (CustomResourceTarget | BuiltinResourceTarget)[],
-  operation: (target: CustomResourceTarget | BuiltinResourceTarget) => Promise<T>
-): Promise<{ success: boolean; results: PromiseSettledResult<T>[]; resourceCount: number }> {
+  operation: (
+    target: CustomResourceTarget | BuiltinResourceTarget
+  ) => Promise<T>
+): Promise<{
+  success: boolean;
+  results: PromiseSettledResult<T>[];
+  resourceCount: number;
+}> {
   const promises = targets.map(operation);
   const results = await Promise.allSettled(promises);
-  
+
   return {
     success: true,
     results,
     resourceCount: targets.length,
   };
+}
+
+/**
+ * Spreads a resource list query result into an array of individual resource objects
+ * @param resourceList - The resource list query result containing items array
+ * @returns Array of individual resource objects, or empty array if input is invalid
+ */
+export function spreadResourceList<T extends K8sResource>(
+  resourceList: { items?: T[] } | undefined
+): T[] {
+  if (
+    !resourceList ||
+    !resourceList.items ||
+    !Array.isArray(resourceList.items)
+  ) {
+    return [];
+  }
+
+  return resourceList.items;
 }

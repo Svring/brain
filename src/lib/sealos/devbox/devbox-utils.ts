@@ -8,8 +8,10 @@ import {
   DevboxResourceK8s,
   DevboxSecret,
   DevboxPod,
+  DevboxIngress,
 } from "./schemas/devbox-k8s-schemas";
 import { DevboxNodeData } from "./schemas/devbox-node-schemas";
+import _ from "lodash";
 
 export function createDevboxContext() {
   const { auth } = useAuthState();
@@ -29,17 +31,17 @@ export function generateDevboxName() {
 
 // Extract name from Kubernetes Devbox resource
 export function extractDevboxName(devbox: DevboxResourceK8s): string {
-  return devbox.metadata.name;
+  return _.get(devbox, "metadata.name");
 }
 
 // Extract image from Kubernetes Devbox resource
 export function extractDevboxImage(devbox: DevboxResourceK8s): string {
-  return devbox.spec.image;
+  return _.get(devbox, "spec.image");
 }
 
 // Extract status from Kubernetes Devbox resource
 export function extractDevboxStatus(devbox: DevboxResourceK8s): string {
-  return devbox.status?.phase || "Unknown";
+  return _.get(devbox, "status.phase", "Unknown");
 }
 
 // Extract resources from Kubernetes Devbox resource
@@ -47,10 +49,7 @@ export function extractDevboxResources(devbox: DevboxResourceK8s): {
   cpu: string;
   memory: string;
 } {
-  return {
-    cpu: devbox.spec.resource.cpu,
-    memory: devbox.spec.resource.memory,
-  };
+  return _.pick(devbox.spec.resource, ["cpu", "memory"]);
 }
 
 // Extract ports from Kubernetes Devbox resource
@@ -58,9 +57,8 @@ export function extractDevboxPorts(devbox: DevboxResourceK8s): Array<{
   number: number;
   protocol: string;
 }> {
-  const appPorts = devbox.spec.config.appPorts || [];
-
-  return appPorts.map((port) => ({
+  const appPorts = _.get(devbox, "spec.config.appPorts", []);
+  return _.map(appPorts, (port) => ({
     number: port.port,
     protocol: port.protocol,
   }));
@@ -83,16 +81,19 @@ export function composeDevboxSsh(
   }
 
   // Extract host from auth.regionUrl
-  const host = auth.regionUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const host = _.chain(auth.regionUrl)
+    .replace(/^https?:\/\//, "")
+    .replace(/\/$/, "")
+    .value();
 
   // Extract port from devbox.status.network.nodePort
-  const port = devbox.status?.network?.nodePort?.toString() || "";
+  const port = _.get(devbox, "status.network.nodePort", "").toString();
 
   // Set default user to 'devbox'
   const user = "devbox";
 
   // Base64 decode the private key from secret
-  const privateKey = atob(secret.data.SEALOS_DEVBOX_PRIVATE_KEY);
+  const privateKey = atob(_.get(secret, "data.SEALOS_DEVBOX_PRIVATE_KEY"));
 
   return {
     host,
@@ -106,8 +107,8 @@ export function composeDevboxSsh(
 export function extractDevboxPods(pods: DevboxPod[]): Array<{
   name: string;
 }> {
-  return pods.map((pod) => ({
-    name: pod.metadata.name,
+  return _.map(pods, (pod) => ({
+    name: _.get(pod, "metadata.name"),
   }));
 }
 
@@ -118,18 +119,72 @@ export function convertPodsToDevboxNodeData(pods: DevboxPod[]): Array<{
   return extractDevboxPods(pods);
 }
 
+// Extract public domain from ingress resources
+export function extractPublicDomainsFromIngress(
+  ingressResources: DevboxIngress[]
+): Record<number, string> {
+  const domains = _.chain(ingressResources)
+    .flatMap((ingress) => _.get(ingress, "spec.rules", []))
+    .flatMap((rule) => {
+      const host = rule.host;
+      const paths = _.get(rule, "http.paths", []);
+      return _.map(paths, (path) => {
+        const port = _.get(path, "backend.service.port.number");
+        return port && host ? { port, host } : null;
+      });
+    })
+    .compact() // Remove null values
+    .reduce((acc: Record<number, string>, item) => {
+      if (item && item.port) {
+        acc[item.port] = item.host;
+      }
+      return acc;
+    }, {})
+    .value();
+
+  return domains as Record<number, string>;
+}
+
+// Update ports with public domains
+export function updatePortsWithDomains(
+  ports: Array<{ number: number; protocol: string; publicDomain?: string }>,
+  domains: Record<number, string>
+): Array<{ number: number; protocol: string; publicDomain?: string }> {
+  return _.map(ports, (port) => ({
+    ...port,
+    publicDomain: _.get(domains, port.number, port.publicDomain),
+  }));
+}
+
 // Convert Kubernetes Devbox resource to DevboxNodeData
 export function convertDevboxK8sToNodeData(
   devbox: DevboxResourceK8s,
-  pods?: DevboxPod[]
+  pods?: DevboxPod[],
+  secret?: DevboxSecret,
+  ingress?: DevboxIngress[]
 ): Partial<DevboxNodeData> {
-  return {
+  // Extract basic information
+  const result: Partial<DevboxNodeData> = {
     name: extractDevboxName(devbox),
     image: extractDevboxImage(devbox),
     status: extractDevboxStatus(devbox),
     resources: extractDevboxResources(devbox),
     ports: extractDevboxPorts(devbox),
-    // Add pods if provided
     pods: pods ? convertPodsToDevboxNodeData(pods) : [],
   };
+
+  // Add SSH information if secret is provided
+  if (secret) {
+    _.set(result, "ssh", composeDevboxSsh(devbox, secret));
+  }
+
+  // Update ports with public domains if ingress data is provided
+  if (!_.isEmpty(ingress)) {
+    const domains = extractPublicDomainsFromIngress(ingress!);
+    if (!_.isEmpty(domains) && result.ports) {
+      result.ports = updatePortsWithDomains(result.ports, domains);
+    }
+  }
+
+  return result;
 }

@@ -135,7 +135,101 @@ export const DevboxListSchema = z.object({
   items: z.array(DevboxResourceK8sSchema),
 });
 
+// Ingress backend service port schema
+export const IngressServicePortSchema = z.object({
+  number: z.number(),
+  name: z.string().optional(),
+});
+
+// Ingress backend service schema
+export const IngressBackendServiceSchema = z.object({
+  name: z.string(),
+  port: IngressServicePortSchema,
+});
+
+// Ingress backend schema
+export const IngressBackendSchema = z.object({
+  service: IngressBackendServiceSchema,
+  resource: z.record(z.unknown()).optional(),
+});
+
+// Ingress HTTP path schema
+export const IngressHttpPathSchema = z.object({
+  backend: IngressBackendSchema,
+  path: z.string(),
+  pathType: z.enum(["Exact", "Prefix", "ImplementationSpecific"]),
+});
+
+// Ingress HTTP schema
+export const IngressHttpSchema = z.object({
+  paths: z.array(IngressHttpPathSchema),
+});
+
+// Ingress rule schema
+export const IngressRuleSchema = z.object({
+  host: z.string().optional(),
+  http: IngressHttpSchema.optional(),
+});
+
+// Ingress TLS schema
+export const IngressTlsSchema = z.object({
+  hosts: z.array(z.string()).optional(),
+  secretName: z.string().optional(),
+});
+
+// Ingress spec schema
+export const IngressSpecSchema = z.object({
+  defaultBackend: IngressBackendSchema.optional(),
+  ingressClassName: z.string().optional(),
+  rules: z.array(IngressRuleSchema).optional(),
+  tls: z.array(IngressTlsSchema).optional(),
+});
+
+// Ingress status schema
+export const IngressStatusSchema = z.object({
+  loadBalancer: z
+    .object({
+      ingress: z
+        .array(
+          z.object({
+            hostname: z.string().optional(),
+            ip: z.string().optional(),
+            ports: z
+              .array(
+                z.object({
+                  error: z.string().optional(),
+                  port: z.number(),
+                  protocol: z.string(),
+                })
+              )
+              .optional(),
+          })
+        )
+        .optional(),
+    })
+    .optional(),
+});
+
+// Complete Devbox Ingress resource schema
+export const DevboxIngressSchema = z.object({
+  apiVersion: z.string(),
+  kind: z.literal("Ingress"),
+  metadata: K8sMetadataSchema,
+  spec: IngressSpecSchema.optional(),
+  status: IngressStatusSchema.optional(),
+}); // Devbox Secret schema
+
 // Type exports
+export type IngressServicePort = z.infer<typeof IngressServicePortSchema>;
+export type IngressBackendService = z.infer<typeof IngressBackendServiceSchema>;
+export type IngressBackend = z.infer<typeof IngressBackendSchema>;
+export type IngressHttpPath = z.infer<typeof IngressHttpPathSchema>;
+export type IngressHttp = z.infer<typeof IngressHttpSchema>;
+export type IngressRule = z.infer<typeof IngressRuleSchema>;
+export type IngressTls = z.infer<typeof IngressTlsSchema>;
+export type IngressSpec = z.infer<typeof IngressSpecSchema>;
+export type IngressStatus = z.infer<typeof IngressStatusSchema>;
+export type DevboxIngress = z.infer<typeof DevboxIngressSchema>;
 export type DevboxAppPort = z.infer<typeof DevboxAppPortSchema>;
 export type DevboxSSHPort = z.infer<typeof DevboxSSHPortSchema>;
 export type DevboxNetwork = z.infer<typeof DevboxNetworkSchema>;
