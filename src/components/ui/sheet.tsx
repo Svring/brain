@@ -88,14 +88,34 @@ const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
 >(({ side = "right", className, children, onClose, ...props }, ref) => {
+  // Create a handler for closing the sheet when clicked outside
+  const handleOutsideClick = (event: Event) => {
+    // Don't prevent the event, which allows scrolling to work
+    // Instead, close the sheet using the onClose prop or SheetClose
+    if (onClose) {
+      onClose();
+    } else {
+      // Find the closest SheetClose button and click it
+      const closeButton = document.querySelector('[data-state="open"] [aria-label="Close"]') as HTMLElement;
+      if (closeButton) {
+        closeButton.click();
+      }
+    }
+  };
+
   return (
     <SheetPortal>
       {/* <SheetOverlay /> */}
       <SheetPrimitive.Content
         className={cn(sheetVariants({ side }), className)}
         ref={ref}
-        onPointerDownOutside={(event) => event.preventDefault()}
-        onInteractOutside={(event) => event.preventDefault()}
+        onPointerDownOutside={handleOutsideClick}
+        onInteractOutside={(event) => {
+          // Allow scrolling and other interactions, but close on click
+          if (event.type === 'pointerdown') {
+            handleOutsideClick(event);
+          }
+        }}
         {...props}
       >
         <SheetRail onClose={onClose} />

@@ -10,6 +10,9 @@
   --color-background-primary: #0A0A0A;
   --color-background-secondary: #151515;
 
+  --color-state-error: #311E1E;
+  --color-state-normal: #12B981;
+
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
 

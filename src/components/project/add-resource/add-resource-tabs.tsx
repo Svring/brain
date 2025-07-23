@@ -175,7 +175,7 @@ export function AddResourceTabs() {
       </div>
 
       {/* Main bordered block for search/filter, create new, and resource list */}
-      <div className="flex-1 min-h-0 overflow-hidden border rounded-lg bg-background flex flex-col">
+      <div className="flex-1 min-h-0 bg-background-secondary overflow-hidden border rounded-lg flex flex-col">
         {/* Search and Filter Controls */}
         <div className="flex-shrink-0 p-4 pb-2">
           <div className="flex gap-4">
