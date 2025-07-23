@@ -8,6 +8,11 @@ import {
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
 import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 import { getProjectRelatedResources } from "@/lib/algorithm/relevance/project-relevance";
+import {
+  getListProjectsQueryKey,
+  getProjectQueryKey,
+  getProjectResourcesQueryKey,
+} from "./project-utils";
 
 /**
  * Query options for listing all projects (instances)
@@ -24,7 +29,7 @@ export const listProjectsOptions = (context: K8sApiContext) => {
 
   return queryOptions({
     ...baseOptions,
-    queryKey: ["projects", context.namespace],
+    queryKey: getListProjectsQueryKey(context.namespace),
   });
 };
 
@@ -47,7 +52,7 @@ export const getProjectOptions = (
 
   return queryOptions({
     ...baseOptions,
-    queryKey: ["project", "get", context.namespace, projectName],
+    queryKey: getProjectQueryKey(context.namespace, projectName),
     enabled: !!context.namespace && !!projectName,
   });
 };
@@ -61,7 +66,7 @@ export const getProjectResourcesOptions = (
   enabledSubModules: string[] = []
 ) => {
   return queryOptions({
-    queryKey: ["project", "resources", context.namespace, projectName],
+    queryKey: getProjectResourcesQueryKey(context.namespace, projectName),
     queryFn: async () => {
       const resources = await getProjectRelatedResources(
         context,

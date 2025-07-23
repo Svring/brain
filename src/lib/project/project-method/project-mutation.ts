@@ -24,6 +24,7 @@ import {
   removeFromProjectAnnotation,
   createProjectInstanceTarget,
   getProjectQueryInvalidationKeys,
+  invalidateProjectQueries,
 } from "./project-utils";
 import { getProjectRelatedResources } from "@/lib/algorithm/relevance/project-relevance";
 import { BRAIN_RESOURCES_ANNOTATION_KEY } from "@/lib/project/project-constant/project-constant-label";
@@ -78,10 +79,7 @@ export const useAddToProjectMutation = () => {
     onSuccess: (_, { projectName }) => {
       const context = createK8sContext();
       toast.success(`Resources added to project ${projectName}`);
-      const invalidationKeys = getProjectQueryInvalidationKeys(context.namespace, projectName);
-      invalidationKeys.forEach(key => {
-        queryClient.invalidateQueries({ queryKey: key });
-      });
+      invalidateProjectQueries(queryClient, context.namespace, projectName);
     },
   });
 };
@@ -134,10 +132,7 @@ export const useRemoveFromProjectMutation = () => {
     onSuccess: (_, { projectName }) => {
       const context = createK8sContext();
       toast.success(`Resources removed from project ${projectName}`);
-      const invalidationKeys = getProjectQueryInvalidationKeys(context.namespace, projectName);
-      invalidationKeys.forEach(key => {
-        queryClient.invalidateQueries({ queryKey: key });
-      });
+      invalidateProjectQueries(queryClient, context.namespace, projectName);
     },
   });
 };
@@ -160,10 +155,7 @@ export const useRemoveProjectAnnotationMutation = () => {
     onSuccess: (_, { projectName }) => {
       const context = createK8sContext();
       toast.success("Project annotation removed successfully");
-      const invalidationKeys = getProjectQueryInvalidationKeys(context.namespace, projectName);
-      invalidationKeys.forEach(key => {
-        queryClient.invalidateQueries({ queryKey: key });
-      });
+      invalidateProjectQueries(queryClient, context.namespace, projectName);
     },
     onError: (error) => {
       toast.error("Failed to remove project annotation");
@@ -194,10 +186,7 @@ export const useCreateProjectMutation = () => {
       const context = createK8sContext();
       const finalProjectName = projectName || generateNewProjectName();
       toast.success("Project created successfully");
-      const invalidationKeys = getProjectQueryInvalidationKeys(context.namespace, finalProjectName);
-      invalidationKeys.forEach(key => {
-        queryClient.invalidateQueries({ queryKey: key });
-      });
+      invalidateProjectQueries(queryClient, context.namespace, finalProjectName);
       return data;
     },
     onError: (error) => {
@@ -247,10 +236,7 @@ export const useDeleteProjectMutation = () => {
     onSuccess: (data) => {
       const context = createK8sContext();
       toast.success(`Project "${data.projectName}" deleted successfully`);
-      const invalidationKeys = getProjectQueryInvalidationKeys(context.namespace, data.projectName);
-      invalidationKeys.forEach(key => {
-        queryClient.invalidateQueries({ queryKey: key });
-      });
+      invalidateProjectQueries(queryClient, context.namespace, data.projectName);
     },
     onError: (error) => {
       toast.error("Failed to delete project");

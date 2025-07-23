@@ -164,6 +164,27 @@ export const removeCustomResourceMetadata = createParallelAction(
       throw new Error("Resource name is required for metadata removal");
     }
 
+    // Get current resource to check if the annotation/label exists
+    const currentResource = await invokeApiMethod<CustomResourceGetResponse>(
+      clients.customApi,
+      "getNamespacedCustomObject",
+      {
+        group: target.group,
+        version: target.version,
+        namespace: context.namespace,
+        plural: target.plural,
+        name: target.name,
+      }
+    );
+
+    // Check if the metadata field and specific key exist
+    const metadata = currentResource.metadata?.[metadataType];
+    if (!metadata || !_.has(metadata, key)) {
+      // If the annotation/label doesn't exist, return the current resource as-is
+      // This prevents 422 errors when trying to remove non-existent paths
+      return JSON.parse(JSON.stringify(currentResource));
+    }
+
     const patchBody = [
       {
         op: "remove",
@@ -265,6 +286,24 @@ export const removeBuiltinResourceMetadata = createParallelAction(
 
     if (_.isNil(target.name)) {
       throw new Error("Resource name is required for metadata removal");
+    }
+
+    // Get current resource to check if the annotation/label exists
+    const currentResource = await invokeApiMethod<BuiltinResourceGetResponse>(
+      client,
+      resourceConfig.getMethod,
+      {
+        namespace: context.namespace,
+        name: target.name,
+      }
+    );
+
+    // Check if the metadata field and specific key exist
+    const metadata = currentResource.metadata?.[metadataType];
+    if (!metadata || !_.has(metadata, key)) {
+      // If the annotation/label doesn't exist, return the current resource as-is
+      // This prevents 422 errors when trying to remove non-existent paths
+      return JSON.parse(JSON.stringify(currentResource));
     }
 
     const patchBody = [

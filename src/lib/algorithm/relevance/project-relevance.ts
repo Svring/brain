@@ -1,7 +1,6 @@
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
 import { getCustomResource } from "@/lib/k8s/k8s-api/k8s-api-query";
 import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
-import { BUILTIN_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-builtin-resource";
 import { ListAllResourcesResponseSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
 import { filterEmptyResources } from "@/lib/k8s/k8s-method/k8s-utils";
 import { getInstanceRelatedResources } from "./instance-relevance";
@@ -9,8 +8,16 @@ import { getDevboxRelatedResources } from "./devbox-relevance";
 import { getClusterRelatedResources } from "./cluster-relevance";
 import { getDeployRelatedResources } from "./deploy-relevance";
 import { getStatefulsetRelatedResources } from "./statefulset-relevance";
+import {
+  createEmptyResourceResult,
+  deduplicateResources,
+  categorizeResources,
+  groupBuiltinResourcesByType,
+  groupCustomResourcesByType,
+  createStructuredResourceResult,
+  processSubModuleResources
+} from "./relevance-utils";
 import { runParallelAction } from "next-server-actions-parallel";
-import _ from "lodash";
 
 export const getProjectRelatedResources = async (
   context: K8sApiContext,
@@ -28,19 +35,7 @@ export const getProjectRelatedResources = async (
   );
 
   if (!projectInstanceRaw) {
-    const emptyResult = {
-      builtin: _.mapValues(BUILTIN_RESOURCES, (config) => ({
-        apiVersion: config.apiVersion,
-        kind: `${config.kind}List`,
-        items: [],
-      })),
-      custom: _.mapValues(CUSTOM_RESOURCES, (config) => ({
-        apiVersion: `${config.group}/${config.version}`,
-        kind: `${_.upperFirst(config.resourceType)}List`,
-        metadata: {},
-        items: [],
-      })),
-    };
+    const emptyResult = createEmptyResourceResult();
     return ListAllResourcesResponseSchema.parse(emptyResult);
   }
 
@@ -62,73 +57,23 @@ export const getProjectRelatedResources = async (
     },
   };
 
-  const subModuleResources = await Promise.all(
-    enabledSubModules.map(async (module) => {
-      const config =
-        subModuleHandlers[module as keyof typeof subModuleHandlers];
-      if (!config) return [];
-
-      const resourceNames = instanceRelatedResources
-        .filter((resource) => resource.kind === config.kind)
-        .map((resource) => resource.metadata.name);
-
-      if (resourceNames.length === 0) return [];
-
-      const results = await Promise.all(
-        resourceNames.map((name) => config.handler(context, name))
-      );
-      return results.flat();
-    })
+  const subModuleResources = await processSubModuleResources(
+    context,
+    instanceRelatedResources,
+    enabledSubModules,
+    subModuleHandlers
   );
 
-  allItems.push(...subModuleResources.flat());
+  allItems.push(...subModuleResources);
 
   // Deduplicate resources by kind and name
-  const uniqueItems = _.uniqWith(
-    allItems,
-    (a, b) => a.kind === b.kind && a.metadata.name === b.metadata.name
-  );
-
-  const builtinKinds = new Set(
-    Object.values(BUILTIN_RESOURCES).map((config) => config.kind)
-  );
-
-  const categorizedResources = _.groupBy(uniqueItems, (resource) =>
-    builtinKinds.has(resource.kind) ? "builtin" : "custom"
-  );
-
-  const builtinByType = _.groupBy(
-    categorizedResources.builtin || [],
-    (resource) => {
-      const config = Object.values(BUILTIN_RESOURCES).find(
-        (c) => c.kind === resource.kind
-      );
-      return config ? config.resourceType : "unknown";
-    }
-  );
-
-  const customByType = _.groupBy(
-    categorizedResources.custom || [],
-    (resource) => {
-      const config = Object.values(CUSTOM_RESOURCES).find(
-        (c) => c.resourceType.toLowerCase() === resource.kind.toLowerCase()
-      );
-      return config ? config.resourceType : "unknown";
-    }
-  );
-
-  const result = {
-    builtin: _.mapValues(BUILTIN_RESOURCES, (config) => ({
-      apiVersion: config.apiVersion,
-      kind: `${config.kind}List`,
-      items: builtinByType[config.resourceType] || [],
-    })),
-    custom: _.mapValues(CUSTOM_RESOURCES, (config) => ({
-      apiVersion: `${config.group}/${config.version}`,
-      kind: `${_.upperFirst(config.resourceType)}List`,
-      items: customByType[config.resourceType] || [],
-    })),
-  };
+  const uniqueItems = deduplicateResources(allItems);
+  const categorizedResources = categorizeResources(uniqueItems);
+  
+  const builtinByType = groupBuiltinResourcesByType(categorizedResources.builtin || []);
+  const customByType = groupCustomResourcesByType(categorizedResources.custom || []);
+  
+  const result = createStructuredResourceResult(builtinByType, customByType);
 
   return filterEmptyResources(ListAllResourcesResponseSchema.parse(result));
 };

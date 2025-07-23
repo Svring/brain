@@ -1,5 +1,6 @@
 import { customAlphabet } from "nanoid";
 import _ from "lodash";
+import { QueryClient } from "@tanstack/react-query";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import { INSTANCE_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
@@ -246,23 +247,65 @@ export function createProjectInstanceTarget(
 }
 
 /**
- * Invalidate project-related queries
+ * Generate query key for listing all projects
+ */
+export function getListProjectsQueryKey(namespace: string) {
+  return ["projects", namespace];
+}
+
+/**
+ * Generate query key for getting a specific project
+ */
+export function getProjectQueryKey(namespace: string, projectName: string) {
+  return ["project", "get", namespace, projectName];
+}
+
+/**
+ * Generate query key for getting project resources
+ */
+export function getProjectResourcesQueryKey(namespace: string, projectName: string) {
+  return ["project", "resources", namespace, projectName];
+}
+
+/**
+ * Get all query keys that should be invalidated when project data changes
  */
 export function getProjectQueryInvalidationKeys(
   namespace: string,
   projectName?: string
 ) {
   const keys = [
-    ["project", "resources", namespace],
-    ["project", "get", namespace],
+    // General project list queries
+    getListProjectsQueryKey(namespace),
+    // General inventory and k8s queries that might include project data
     ["inventory"],
     ["k8s"],
+    // Broader project queries
     ["projects"],
+    ["project", "resources", namespace],
+    ["project", "get", namespace],
   ];
 
   if (projectName) {
-    keys.push(["project", "resources", namespace, projectName]);
+    // Specific project queries
+    keys.push(getProjectQueryKey(namespace, projectName));
+    keys.push(getProjectResourcesQueryKey(namespace, projectName));
   }
 
   return keys;
+}
+
+/**
+ * Helper function to invalidate project-related queries
+ * This ensures consistent invalidation across all mutations
+ */
+export function invalidateProjectQueries(
+  queryClient: QueryClient,
+  namespace: string,
+  projectName?: string
+) {
+  const invalidationKeys = getProjectQueryInvalidationKeys(namespace, projectName);
+  invalidationKeys.forEach(key => {
+    queryClient.invalidateQueries({ queryKey: key });
+  });
 }
