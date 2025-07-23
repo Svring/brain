@@ -9,7 +9,7 @@ import {
 } from "@xyflow/react";
 import { ArrowLeft, Plus, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { use, useState, useEffect } from "react";
+import { use, useState } from "react";
 import { AddResourceTabs } from "@/components/project/add-resource/add-resource-tabs";
 import { MenuBar } from "@/components/project/components/menu-bar";
 import edgeTypes from "@/components/flow/edge/edge-types";
@@ -29,12 +29,12 @@ import { TextShimmer } from "@/components/project/components/text-shimmer";
 
 import "@xyflow/react/dist/style.css";
 import { Droppable } from "@/components/flow/dnd/droppable";
-import { useRemoveProjectAnnotationMutation } from "@/lib/project/project-method/project-mutation";
-import { toast } from "sonner";
-import { useProjectActions } from "@/contexts/project/project-context";
+
 import { FlowProvider } from "@/contexts/flow/flow-context";
 import { useFlowFocus } from "@/hooks/flow/use-flow-focus";
 import { useFlowDrop } from "@/hooks/flow/use-flow-drop";
+import { useFlowRefresh } from "@/hooks/flow/use-flow-refresh";
+import { useProjectSignal } from "@/hooks/project/use-project-signal";
 import AiCoin from "@/components/ai/headless/ai-coin";
 import AiChatbox from "@/components/ai/headless/ai-chatbox";
 import DevTools from "@/components/flow/devtools/flow-devtools";
@@ -42,25 +42,7 @@ import DevTools from "@/components/flow/devtools/flow-devtools";
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const removeProjectAnnotationMutation = useRemoveProjectAnnotationMutation();
-  const { setFlowGraphData } = useProjectActions();
-
-  const handleRefresh = async () => {
-    if (isRefreshing) return;
-
-    setIsRefreshing(true);
-    try {
-      await removeProjectAnnotationMutation.mutateAsync({ projectName });
-      setFlowGraphData(projectName, null);
-      toast.success("Project resources refreshed successfully");
-    } catch (error) {
-      toast.error("Failed to refresh project resources");
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
+  const { handleRefresh, isRefreshing } = useFlowRefresh(projectName);
 
   return (
     <>
@@ -187,15 +169,9 @@ export default function Page({
   params: Promise<{ "project-name": string }>;
 }) {
   const { "project-name": projectName } = use(params);
-  const { enterProject, exitProject } = useProjectActions();
 
-  // Set project name in machine context on mount
-  useEffect(() => {
-    enterProject();
-    return () => {
-      exitProject();
-    };
-  }, [projectName]);
+  // Handle project lifecycle signals
+  useProjectSignal(projectName);
 
   return (
     <DndProvider>
