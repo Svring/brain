@@ -1,5 +1,9 @@
 "use client";
 
+import { use, useState } from "react";
+import { useRouter } from "next/navigation";
+
+// React Flow imports
 import {
   Background,
   BackgroundVariant,
@@ -7,92 +11,113 @@ import {
   ReactFlow,
   ReactFlowProvider,
 } from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
+
+// Icon imports
 import { ArrowLeft, Plus, RefreshCw } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { use, useState } from "react";
-import { AddResourceTabs } from "@/components/project/add-resource/add-resource-tabs";
+
+// Custom component imports
 import { MenuBar } from "@/components/project/components/menu-bar";
-import edgeTypes from "@/components/flow/edge/edge-types";
-import nodeTypes from "@/components/flow/node/node-types";
+import { AddResourceTabs } from "@/components/project/add-resource/add-resource-tabs";
+import { Droppable } from "@/components/flow/dnd/droppable";
+import { DndProvider } from "@/components/flow/dnd/dnd-provider";
+import { TextShimmer } from "@/components/project/components/text-shimmer";
+import AiCoin from "@/components/ai/headless/ai-coin";
+import AiChatbox from "@/components/ai/headless/ai-chatbox";
+
+// UI component imports
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
+  SheetDescription,
 } from "@/components/ui/sheet";
-
-import { useFlow } from "@/hooks/flow/use-flow";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { DndProvider } from "@/components/flow/dnd/dnd-provider";
-import { TextShimmer } from "@/components/project/components/text-shimmer";
 
-import "@xyflow/react/dist/style.css";
-import { Droppable } from "@/components/flow/dnd/droppable";
-
-import { FlowProvider } from "@/contexts/flow/flow-context";
+// Custom hook imports
+import { useFlow } from "@/hooks/flow/use-flow";
 import { useFlowFocus } from "@/hooks/flow/use-flow-focus";
 import { useFlowDrop } from "@/hooks/flow/use-flow-drop";
 import { useFlowRefresh } from "@/hooks/flow/use-flow-refresh";
 import { useProjectSignal } from "@/hooks/project/use-project-signal";
-import AiCoin from "@/components/ai/headless/ai-coin";
-import AiChatbox from "@/components/ai/headless/ai-chatbox";
-import DevTools from "@/components/flow/devtools/flow-devtools";
 
+// Custom types
+import edgeTypes from "@/components/flow/edge/edge-types";
+import nodeTypes from "@/components/flow/node/node-types";
+
+// Flow context
+import { FlowProvider } from "@/contexts/flow/flow-context";
+
+// Constants
+const FLOW_CONFIG = {
+  connectionLineType: ConnectionLineType.SmoothStep,
+  snapGrid: [20, 20] as [number, number],
+  fitViewOptions: {
+    padding: 0.1,
+    includeHiddenNodes: false,
+    minZoom: 0.1,
+    maxZoom: 1.0,
+  },
+  background: {
+    gap: 60,
+    size: 1,
+    variant: BackgroundVariant.Dots,
+  },
+};
+
+interface ProjectPageProps {
+  params: Promise<{ "project-name": string }>;
+}
+
+// Floating UI Component
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const { handleRefresh, isRefreshing } = useFlowRefresh(projectName);
 
+  const menuItemsLeft = [
+    {
+      icon: ArrowLeft,
+      label: "Back to Home",
+      onClick: () => router.push("/"),
+      isToggle: false,
+    },
+  ];
+
+  const menuItemsRight = [
+    {
+      icon: isRefreshing
+        ? () => <RefreshCw className="animate-spin" />
+        : RefreshCw,
+      label: "Refresh",
+      onClick: handleRefresh,
+      isToggle: false,
+    },
+    {
+      icon: Plus,
+      label: "Add New",
+      onClick: () => setOpen(true),
+      isToggle: false,
+    },
+  ];
+
   return (
     <>
-      {/* MenuBar in the upper left corner */}
       <div className="absolute top-2 left-2 z-20">
-        <MenuBar
-          activeIndex={null}
-          items={[
-            {
-              icon: ArrowLeft,
-              label: "Back to Home",
-              onClick: () => router.push("/"),
-              isToggle: false,
-            },
-          ]}
-        >
+        <MenuBar activeIndex={null} items={menuItemsLeft}>
           <span className="mx-2">{projectName}</span>
         </MenuBar>
       </div>
-      {/* MenuBar in the upper right corner */}
       <div className="absolute top-2 right-2 z-20">
-        <MenuBar
-          activeIndex={null}
-          items={[
-            {
-              icon: isRefreshing
-                ? () => <RefreshCw className="animate-spin" />
-                : RefreshCw,
-              label: "Refresh",
-              onClick: handleRefresh,
-              isToggle: false,
-            },
-            {
-              icon: Plus,
-              label: "Add New",
-              onClick: () => setOpen(true),
-              isToggle: false,
-            },
-          ]}
-        />
+        <MenuBar activeIndex={null} items={menuItemsRight} />
       </div>
       <Sheet onOpenChange={setOpen} open={open}>
-        <SheetContent
-          onClose={() => setOpen(false)}
-          className="!w-[40vw] !max-w-none fade-in-0 animate-in flex flex-col"
-        >
+        <SheetContent className="!w-[40vw] !max-w-none fade-in-0 animate-in flex flex-col">
           <SheetHeader className="flex-shrink-0">
             <SheetTitle>Add Resource</SheetTitle>
             <VisuallyHidden>
-              <SheetDescription></SheetDescription>
+              <SheetDescription />
             </VisuallyHidden>
           </SheetHeader>
           <Droppable
@@ -103,20 +128,18 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
           </Droppable>
         </SheetContent>
       </Sheet>
-
       <AiCoin />
       <AiChatbox />
     </>
   );
 }
 
+// Flow Component
 function ProjectFlow({ projectName }: { projectName: string }) {
   const [nodes, onNodesChange, edges, onEdgesChange, isLoading] =
     useFlow(projectName);
   const { handleDrop } = useFlowDrop(projectName);
-
-  // Auto-focus on selected nodes
-  useFlowFocus();
+  const { onNodeClick } = useFlowFocus();
 
   if (isLoading) {
     return (
@@ -138,49 +161,44 @@ function ProjectFlow({ projectName }: { projectName: string }) {
       }}
     >
       <ReactFlow
-        connectionLineType={ConnectionLineType.SmoothStep}
+        connectionLineType={FLOW_CONFIG.connectionLineType}
         edges={edges}
         edgeTypes={edgeTypes}
         fitView
-        fitViewOptions={{
-          padding: 0.1,
-          includeHiddenNodes: false,
-          minZoom: 0.1,
-          maxZoom: 1.0,
-        }}
+        fitViewOptions={FLOW_CONFIG.fitViewOptions}
         nodes={nodes}
         nodeTypes={nodeTypes}
         onEdgesChange={onEdgesChange}
         onNodesChange={onNodesChange}
+        onNodeClick={onNodeClick}
         panOnScroll
         snapToGrid
-        snapGrid={[20, 20]}
+        snapGrid={FLOW_CONFIG.snapGrid}
       >
-        <Background gap={60} size={1} variant={BackgroundVariant.Dots} />
-        {/* <DevTools /> */}
+        <Background
+          gap={FLOW_CONFIG.background.gap}
+          size={FLOW_CONFIG.background.size}
+          variant={FLOW_CONFIG.background.variant}
+        />
       </ReactFlow>
     </Droppable>
   );
 }
 
-export default function Page({
-  params,
-}: {
-  params: Promise<{ "project-name": string }>;
-}) {
+// Main Page Component
+export default function ProjectPage({ params }: ProjectPageProps) {
   const { "project-name": projectName } = use(params);
 
-  // Handle project lifecycle signals
   useProjectSignal(projectName);
 
   return (
     <DndProvider>
       <FlowProvider>
         <div className="relative h-screen w-full">
-          <ProjectFloatingUI projectName={projectName} />
           <ReactFlowProvider>
             <ProjectFlow projectName={projectName} />
           </ReactFlowProvider>
+          <ProjectFloatingUI projectName={projectName} />
         </div>
       </FlowProvider>
     </DndProvider>

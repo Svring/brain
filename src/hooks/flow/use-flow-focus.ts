@@ -4,6 +4,7 @@ import { useReactFlow, useOnSelectionChange } from '@xyflow/react';
 /**
  * Custom hook for auto-focusing on selected nodes in ReactFlow
  * Centers the selected node in the left 60% of the screen
+ * Also provides onNodeClick handler for triggering selection
  */
 export function useFlowFocus() {
   const { setCenter, getViewport } = useReactFlow();
@@ -37,4 +38,12 @@ export function useFlowFocus() {
   useOnSelectionChange({
     onChange,
   });
+
+  // Handle node click to trigger selection
+  const onNodeClick = useCallback((_event: any, node: any) => {
+    // This will trigger the selection change which the onChange callback listens to
+    onChange({ nodes: [{ ...node, selected: true }] });
+  }, [onChange]);
+
+  return { onNodeClick };
 }

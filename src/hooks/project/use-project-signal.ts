@@ -14,5 +14,5 @@ export function useProjectSignal(projectName: string) {
     return () => {
       exitProject();
     };
-  }, [projectName, enterProject, exitProject]);
+  }, [projectName]);
 }
