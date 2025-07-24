@@ -96,7 +96,9 @@ const SheetContent = React.forwardRef<
       onClose();
     } else {
       // Find the closest SheetClose button and click it
-      const closeButton = document.querySelector('[data-state="open"] [aria-label="Close"]') as HTMLElement;
+      const closeButton = document.querySelector(
+        '[data-state="open"] [aria-label="Close"]'
+      ) as HTMLElement;
       if (closeButton) {
         closeButton.click();
       }
@@ -112,13 +114,13 @@ const SheetContent = React.forwardRef<
         onPointerDownOutside={handleOutsideClick}
         onInteractOutside={(event) => {
           // Allow scrolling and other interactions, but close on click
-          if (event.type === 'pointerdown') {
+          if (event.type === "pointerdown") {
             handleOutsideClick(event);
           }
         }}
         {...props}
       >
-        <SheetRail onClose={onClose} />
+        {/* <SheetRail onClose={onClose} /> */}
         {children}
         <SheetPrimitive.Close className="absolute top-4 right-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
           <X className="h-4 w-4" />

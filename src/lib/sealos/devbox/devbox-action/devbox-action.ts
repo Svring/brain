@@ -67,6 +67,8 @@ export function useCreateDevboxAction(context: DevboxApiContext) {
         runtimeName: partialRequest.runtimeName,
       };
 
+      console.log(fullRequest);
+
       // Use the base mutation function
       return baseMutation.mutateAsync(fullRequest);
     },

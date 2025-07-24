@@ -26,7 +26,9 @@ export function createDevboxContext() {
 }
 
 export function generateDevboxName() {
-  return `devbox-${nanoid(6)}`;
+  return `devbox-${nanoid(8)
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "")}`;
 }
 
 // Extract name from Kubernetes Devbox resource

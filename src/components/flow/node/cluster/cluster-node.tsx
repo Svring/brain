@@ -10,8 +10,6 @@ interface ClusterNodeProps {
   target: CustomResourceTarget;
 }
 
-
-
 export default function ClusterNode({ data }: { data: ClusterNodeProps }) {
   const { target } = data;
 
@@ -21,10 +19,7 @@ export default function ClusterNode({ data }: { data: ClusterNodeProps }) {
   const clusterType = "postgresql"; // Default cluster type
 
   return (
-    <BaseNode
-      target={target}
-      nodeData={{}}
-    >
+    <BaseNode target={target} nodeData={{}}>
       <div className="flex h-full flex-col justify-between">
         {/* Name */}
         <div className="flex items-center gap-2 truncate font-medium">
@@ -42,7 +37,7 @@ export default function ClusterNode({ data }: { data: ClusterNodeProps }) {
                 <span className="text-xs text-muted-foreground leading-none">
                   Database
                 </span>
-                <span className="text-lg font-bold text-foreground leading-tight w-40 overflow-hidden text-ellipsis text-left">
+                <span className="text-lg font-bold text-foreground leading-tight w-full overflow-hidden text-ellipsis text-left">
                   {name}
                 </span>
               </span>

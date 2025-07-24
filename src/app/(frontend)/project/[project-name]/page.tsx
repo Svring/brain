@@ -142,7 +142,7 @@ function ProjectFlow({ projectName }: { projectName: string }) {
     context,
     projectName
   );
-  const { handleDrop } = useFlowDrop(projectName);
+  const { handleDrop } = useFlowDrop(context, projectName);
   const { onNodeClick } = useFlowFocus();
 
   if (isLoading) {

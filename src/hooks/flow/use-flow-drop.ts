@@ -1,4 +1,5 @@
 import type { DragEndEvent } from "@dnd-kit/core";
+import type { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
 import { useAddToProjectMutation } from "@/lib/project/project-method/project-mutation";
 import { useProjectActions } from "@/contexts/project/project-context";
 import { toast } from "sonner";
@@ -9,8 +10,8 @@ import _ from "lodash";
  * @param projectName The name of the project
  * @returns handleDrop function
  */
-export function useFlowDrop(projectName: string) {
-  const addToProjectMutation = useAddToProjectMutation();
+export function useFlowDrop(context: K8sApiContext, projectName: string) {
+  const addToProjectMutation = useAddToProjectMutation(context);
   const { setFlowGraphData } = useProjectActions();
 
   const handleDrop = (event: DragEndEvent) => {

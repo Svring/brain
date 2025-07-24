@@ -35,7 +35,7 @@ export const ClusterCreateRequestSchema = z.object({
 export const ClusterCreateResponseSchema = z.object({
   code: z.number(),
   message: z.string(),
-  data: z.string(),
+  data: z.string().optional(),
 });
 
 // Type exports

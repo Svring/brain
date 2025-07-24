@@ -19,10 +19,7 @@ export default function ObjectStorageNode({
   const name = target.name || "Object Storage";
 
   return (
-    <BaseNode
-      target={target}
-      nodeData={{}}
-    >
+    <BaseNode target={target} nodeData={{}}>
       <div className="flex h-full flex-col justify-between">
         {/* Name */}
         <div className="flex items-center gap-2 truncate font-medium">
@@ -40,15 +37,13 @@ export default function ObjectStorageNode({
                 <span className="text-xs text-muted-foreground leading-none">
                   Object Storage
                 </span>
-                <span className="text-lg font-bold text-foreground leading-tight w-40 overflow-hidden text-ellipsis text-left">
+                <span className="text-lg font-bold text-foreground leading-tight w-full overflow-hidden text-ellipsis text-left">
                   {name}
                 </span>
               </span>
             </span>
           </div>
         </div>
-
-
       </div>
     </BaseNode>
   );
