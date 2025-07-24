@@ -3,7 +3,6 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Plus } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useState, useMemo } from "react";
 import ProjectCard from "@/components/project/components/project-card";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import useProjects from "@/hooks/project/use-projects";
+import useProjectSearch from "@/hooks/project/use-project-search";
 import { TextShimmer } from "@/components/project/components/text-shimmer";
 import { useDisclosure } from "@reactuses/core";
 import CreateProject from "@/components/project/create-project/create-project";
@@ -21,31 +20,17 @@ import AiChatbox from "@/components/ai/headless/ai-chatbox";
 import SearchBar from "@/components/app/search-bar";
 import { getInstanceRelatedResources } from "@/lib/algorithm/relevance/instance-relevance";
 import { useMount } from "@reactuses/core";
-import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
+import { createK8sContext } from "@/lib/auth/auth-utils";
 import { getPodsByResourceTarget } from "@/lib/k8s/k8s-method/k8s-query";
 import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 
 export default function Page() {
   const { isOpen, onClose, onOpenChange } = useDisclosure();
-  const [searchTerm, setSearchTerm] = useState("");
 
-  const {
-    data: projects,
-    isLoading: projectsLoading,
-    isError: projectsError,
-  } = useProjects();
+  const { setSearchTerm, filteredProjects, projectsLoading, projectsError } =
+    useProjectSearch();
 
-  // Filter projects based on search term
-  const filteredProjects = useMemo(() => {
-    if (!projects?.items) return [];
-
-    return projects.items.filter((project) =>
-      project.metadata.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [projects?.items, searchTerm]);
-
-  const context = createK8sContext();
-  console.log(context);
+  // const context = createK8sContext();
   // useMount(async () => {
   //   // const relatedResources = await getInstanceRelatedResources(
   //   //   context,

@@ -3,13 +3,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { runParallelAction } from "next-server-actions-parallel";
 import { applyInstanceYaml } from "../k8s-api/k8s-api-mutation";
-import { K8sApiContext } from "../k8s-api/k8s-api-schemas/context-schemas";
-import { createK8sContext } from "./k8s-utils";
+import { createK8sContext } from "@/lib/auth/auth-utils";
 import {
   BuiltinResourceTarget,
   CustomResourceTarget,
   ResourceTarget,
 } from "../k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { K8sApiContext } from "../k8s-api/k8s-api-schemas/context-schemas";
 import { CUSTOM_RESOURCES } from "../k8s-constant/k8s-constant-custom-resource";
 import {
   invalidateResourceQueries,
@@ -32,9 +32,8 @@ import {
 /**
  * Mutation for patching resource metadata (annotations or labels)
  */
-export function usePatchResourceMetadataMutation() {
+export function usePatchResourceMetadataMutation(context: K8sApiContext) {
   const queryClient = useQueryClient();
-  const context = createK8sContext();
 
   return useMutation({
     mutationFn: async ({
@@ -65,9 +64,8 @@ export function usePatchResourceMetadataMutation() {
 /**
  * Mutation for removing resource metadata (annotations or labels)
  */
-export function useRemoveResourceMetadataMutation() {
+export function useRemoveResourceMetadataMutation(context: K8sApiContext) {
   const queryClient = useQueryClient();
-  const context = createK8sContext();
 
   return useMutation({
     mutationFn: async ({
@@ -90,9 +88,8 @@ export function useRemoveResourceMetadataMutation() {
 /**
  * Mutation for deleting a single resource
  */
-export function useDeleteResourceMutation() {
+export function useDeleteResourceMutation(context: K8sApiContext) {
   const queryClient = useQueryClient();
-  const context = createK8sContext();
 
   return useMutation({
     mutationFn: async ({
@@ -111,9 +108,8 @@ export function useDeleteResourceMutation() {
 /**
  * Mutation for batch patching multiple resources metadata
  */
-export function useBatchPatchResourcesMetadataMutation() {
+export function useBatchPatchResourcesMetadataMutation(context: K8sApiContext) {
   const queryClient = useQueryClient();
-  const context = createK8sContext();
 
   return useMutation({
     mutationFn: async ({
@@ -142,9 +138,10 @@ export function useBatchPatchResourcesMetadataMutation() {
 /**
  * Mutation for batch removing multiple resources metadata
  */
-export function useBatchRemoveResourcesMetadataMutation() {
+export function useBatchRemoveResourcesMetadataMutation(
+  context: K8sApiContext
+) {
   const queryClient = useQueryClient();
-  const context = createK8sContext();
 
   return useMutation({
     mutationFn: async ({
@@ -171,9 +168,8 @@ export function useBatchRemoveResourcesMetadataMutation() {
 /**
  * Mutation for batch deleting multiple resources
  */
-export function useBatchDeleteResourcesMutation() {
+export function useBatchDeleteResourcesMutation(context: K8sApiContext) {
   const queryClient = useQueryClient();
-  const context = createK8sContext();
 
   return useMutation({
     mutationFn: async ({
@@ -196,9 +192,10 @@ export function useBatchDeleteResourcesMutation() {
 /**
  * Mutation for deleting resources by label selector
  */
-export function useDeleteResourcesByLabelSelectorMutation() {
+export function useDeleteResourcesByLabelSelectorMutation(
+  context: K8sApiContext
+) {
   const queryClient = useQueryClient();
-  const context = createK8sContext();
 
   return useMutation({
     mutationFn: async ({
@@ -224,9 +221,8 @@ export function useDeleteResourcesByLabelSelectorMutation() {
 /**
  * Mutation for applying instance YAML
  */
-export function useApplyInstanceYamlMutation() {
+export function useApplyInstanceYamlMutation(context: K8sApiContext) {
   const queryClient = useQueryClient();
-  const context = createK8sContext();
 
   return useMutation({
     mutationFn: async ({ yamlContent }: { yamlContent: string }) => {
@@ -251,9 +247,8 @@ export function useApplyInstanceYamlMutation() {
  * This function takes the resources returned by the project-relevance algorithm
  * and converts them to resource targets before deletion.
  */
-export function useDeleteAllResourcesMutation() {
+export function useDeleteAllResourcesMutation(context: K8sApiContext) {
   const queryClient = useQueryClient();
-  const context = createK8sContext();
 
   return useMutation({
     mutationFn: async ({
@@ -290,9 +285,8 @@ export function useDeleteAllResourcesMutation() {
  * Mutation for adding environment variables to a Kubernetes resource
  * Supports both direct values and secret references
  */
-export function useAddEnvToResourceMutation() {
+export function useAddEnvToResourceMutation(context: K8sApiContext) {
   const queryClient = useQueryClient();
-  const context = createK8sContext();
 
   return useMutation({
     mutationFn: async ({

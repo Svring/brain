@@ -1,8 +1,6 @@
 "use client";
 
-import { useAuthState } from "@/contexts/auth/auth-context";
 import type { K8sApiContext } from "../k8s-api/k8s-api-schemas/context-schemas";
-import { K8sApiContextSchema } from "../k8s-api/k8s-api-schemas/context-schemas";
 import type { QueryClient } from "@tanstack/react-query";
 import type {
   CustomResourceTarget,
@@ -26,34 +24,6 @@ import { INSTANCE_RELATE_RESOURCE_LABELS } from "../k8s-constant/k8s-constant-la
 
 import _ from "lodash";
 import { ListAllResourcesResponse } from "../k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
-
-function getUserKubeconfig(): string | undefined {
-  const { auth } = useAuthState();
-  return auth?.kubeconfig;
-}
-
-export function getDecodedKubeconfig(): string | undefined {
-  const kc = getUserKubeconfig();
-  if (!kc) {
-    throw new Error("Kubeconfig not available");
-  }
-  return decodeURIComponent(kc);
-}
-
-export function getCurrentNamespace(): string | undefined {
-  const { auth } = useAuthState();
-  return auth?.namespace;
-}
-
-/**
- * Helper function to create K8s API context from user data
- */
-export function createK8sContext(): K8sApiContext {
-  return K8sApiContextSchema.parse({
-    namespace: getCurrentNamespace(),
-    kubeconfig: getDecodedKubeconfig(),
-  });
-}
 
 /**
  * Simplified resource annotation interface

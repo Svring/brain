@@ -5,12 +5,14 @@ import {
   createSealosApp,
   sealosApp,
 } from "@zjy365/sealos-desktop-sdk/app";
-import {
-  getCurrentNamespace,
-  getRegionUrlFromKubeconfig,
-} from "@/lib/k8s/k8s-api/k8s-api-utils";
+import { getRegionUrlFromKubeconfig } from "@/lib/k8s/k8s-api/k8s-api-utils";
 import type { Auth } from "@/contexts/auth/auth-machine";
 import type { User } from "@/payload-types";
+import {
+  type K8sApiContext,
+  K8sApiContextSchema,
+} from "../k8s/k8s-api/k8s-api-schemas/context-schemas";
+import { useAuthState } from "@/contexts/auth/auth-context";
 
 export async function extractAuthFromSession(
   session: SessionV1
@@ -21,7 +23,7 @@ export async function extractAuthFromSession(
   }
   // Fetch namespace and regionUrl concurrently
   const [namespace, regionUrl] = await Promise.all([
-    getCurrentNamespace(session.kubeconfig),
+    getCurrentNamespace(),
     getRegionUrlFromKubeconfig(session.kubeconfig),
   ]);
 
@@ -68,4 +70,26 @@ export async function authenticateProd(send: (event: any) => void) {
       error: error instanceof Error ? error.message : "Unknown error",
     });
   }
+}
+
+export function createK8sContext(): K8sApiContext {
+  return K8sApiContextSchema.parse({
+    namespace: getCurrentNamespace(),
+    kubeconfig: getDecodedKubeconfig(),
+  });
+}
+export function getUserKubeconfig(): string | undefined {
+  const { auth } = useAuthState();
+  return auth?.kubeconfig;
+}
+export function getDecodedKubeconfig(): string | undefined {
+  const kc = getUserKubeconfig();
+  if (!kc) {
+    throw new Error("Kubeconfig not available");
+  }
+  return decodeURIComponent(kc);
+}
+export function getCurrentNamespace(): string | undefined {
+  const { auth } = useAuthState();
+  return auth?.namespace;
 }

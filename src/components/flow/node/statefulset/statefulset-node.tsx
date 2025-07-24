@@ -6,7 +6,7 @@ import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { getBuiltinResourceOptions } from "@/lib/k8s/k8s-method/k8s-query";
-import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
+import { createK8sContext } from "@/lib/auth/auth-utils";
 
 interface StatefulSetNodeProps {
   target: BuiltinResourceTarget;

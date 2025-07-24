@@ -10,7 +10,7 @@ import {
   listObjectStoragesInventoryOptions,
   listStatefulSetsInventoryOptions,
 } from "@/lib/inventory/inventory-method/inventory-query";
-import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
+import { createK8sContext } from "@/lib/auth/auth-utils";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import { filterResourcesWithoutProject } from "@/lib/project/project-method/project-utils";
 

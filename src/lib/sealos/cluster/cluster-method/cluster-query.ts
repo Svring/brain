@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { getClusterSecretOptions } from "@/lib/k8s/k8s-method/k8s-query";
-import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
+import { createK8sContext } from "@/lib/auth/auth-utils";
 import type { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
 
 /**

@@ -13,7 +13,7 @@ import { useClusterSecret } from "@/lib/sealos/cluster/cluster-method/cluster-qu
 import { extractClusterCredentials } from "@/lib/sealos/cluster/cluster-utils";
 import { useQuery } from "@tanstack/react-query";
 import { getCustomResourceOptions } from "@/lib/k8s/k8s-method/k8s-query";
-import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
+import { createK8sContext } from "@/lib/auth/auth-utils";
 import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 import type { ClusterResource } from "@/lib/k8s/schemas/resource-schemas/cluster-schemas";
 

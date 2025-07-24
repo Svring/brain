@@ -7,16 +7,17 @@ import {
   getProjectOptions,
 } from "@/lib/project/project-method/project-query";
 import {
-  createK8sContext,
   BrainResourcesSimplified,
   convertResourcesToAnnotation,
 } from "@/lib/k8s/k8s-method/k8s-utils";
+import { createK8sContext } from "@/lib/auth/auth-utils";
 import { ListAllResourcesResponse } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
 import { useEffect, useMemo } from "react";
 import {
   useProjectState,
   useProjectActions,
 } from "@/contexts/project/project-context";
+import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
 import _ from "lodash";
 import { listAnnotationBasedResourcesOptions } from "@/lib/k8s/k8s-method/k8s-query";
 import { useBatchPatchResourcesMetadataMutation } from "@/lib/k8s/k8s-method/k8s-mutation";
@@ -24,12 +25,12 @@ import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-res
 import { BRAIN_RESOURCES_ANNOTATION_KEY } from "@/lib/project/project-constant/project-constant-label";
 
 export function useProjectResources(
+  context: K8sApiContext,
   projectName: string
 ): UseQueryResult<ListAllResourcesResponse, Error> {
-  const context = createK8sContext();
   const { flowGraphData } = useProjectState();
   const { setFlowGraphData } = useProjectActions();
-  const patchMutation = useBatchPatchResourcesMetadataMutation();
+  const patchMutation = useBatchPatchResourcesMetadataMutation(context);
 
   const { data: project, isSuccess } = useQuery(
     getProjectOptions(context, projectName)

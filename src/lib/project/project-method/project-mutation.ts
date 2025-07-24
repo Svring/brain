@@ -9,7 +9,7 @@ import {
   useApplyInstanceYamlMutation,
   useDeleteAllResourcesMutation,
 } from "@/lib/k8s/k8s-method/k8s-mutation";
-import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
+import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
 import {
   BuiltinResourceTarget,
   CustomResourceTarget,
@@ -34,9 +34,9 @@ import { INSTANCE_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-cons
 /**
  * Hook to add project name label to multiple resources
  */
-export const useAddToProjectMutation = () => {
+export const useAddToProjectMutation = (context: K8sApiContext) => {
   const queryClient = useQueryClient();
-  const batchPatchMutation = useBatchPatchResourcesMetadataMutation();
+  const batchPatchMutation = useBatchPatchResourcesMetadataMutation(context);
 
   return useMutation({
     mutationFn: async ({
@@ -46,10 +46,11 @@ export const useAddToProjectMutation = () => {
       resources: (CustomResourceTarget | BuiltinResourceTarget)[];
       projectName: string;
     }) => {
-      const context = createK8sContext();
-      
       // Gather all related resources using the utility function
-      const allTargetsToPatch = await gatherRelatedResources(context, resources);
+      const allTargetsToPatch = await gatherRelatedResources(
+        context,
+        resources
+      );
 
       // Add labels to all resources
       await batchPatchMutation.mutateAsync({
@@ -62,13 +63,17 @@ export const useAddToProjectMutation = () => {
       // Update brain-resources annotation using utility functions
       const projectQuery = getProjectOptions(context, projectName);
       const currentProject = await queryClient.ensureQueryData(projectQuery);
-      
+
       const currentAnnotation = parseProjectAnnotation(
         currentProject?.metadata?.annotations?.[BRAIN_RESOURCES_ANNOTATION_KEY]
       );
-      const newSimplifiedResources = convertTargetsToSimplifiedFormat(allTargetsToPatch);
-      const updatedAnnotation = mergeProjectAnnotation(currentAnnotation, newSimplifiedResources);
-      
+      const newSimplifiedResources =
+        convertTargetsToSimplifiedFormat(allTargetsToPatch);
+      const updatedAnnotation = mergeProjectAnnotation(
+        currentAnnotation,
+        newSimplifiedResources
+      );
+
       await batchPatchMutation.mutateAsync({
         targets: [createProjectInstanceTarget(projectName)],
         metadataType: "annotations",
@@ -77,7 +82,6 @@ export const useAddToProjectMutation = () => {
       });
     },
     onSuccess: (_, { projectName }) => {
-      const context = createK8sContext();
       toast.success(`Resources added to project ${projectName}`);
       invalidateProjectQueries(queryClient, context.namespace, projectName);
     },
@@ -87,10 +91,10 @@ export const useAddToProjectMutation = () => {
 /**
  * Hook to remove project name label from multiple resources
  */
-export const useRemoveFromProjectMutation = () => {
+export const useRemoveFromProjectMutation = (context: K8sApiContext) => {
   const queryClient = useQueryClient();
-  const batchRemoveMutation = useBatchRemoveResourcesMetadataMutation();
-  const batchPatchMutation = useBatchPatchResourcesMetadataMutation();
+  const batchRemoveMutation = useBatchRemoveResourcesMetadataMutation(context);
+  const batchPatchMutation = useBatchPatchResourcesMetadataMutation(context);
 
   return useMutation({
     mutationFn: async ({
@@ -100,10 +104,11 @@ export const useRemoveFromProjectMutation = () => {
       resources: (CustomResourceTarget | BuiltinResourceTarget)[];
       projectName: string;
     }) => {
-      const context = createK8sContext();
-      
       // Gather all related resources using the utility function
-      const allTargetsToRemove = await gatherRelatedResources(context, resources);
+      const allTargetsToRemove = await gatherRelatedResources(
+        context,
+        resources
+      );
 
       // Remove labels from all resources
       await batchRemoveMutation.mutateAsync({
@@ -115,13 +120,17 @@ export const useRemoveFromProjectMutation = () => {
       // Update brain-resources annotation using utility functions
       const projectQuery = getProjectOptions(context, projectName);
       const currentProject = await queryClient.ensureQueryData(projectQuery);
-      
+
       const currentAnnotation = parseProjectAnnotation(
         currentProject?.metadata?.annotations?.[BRAIN_RESOURCES_ANNOTATION_KEY]
       );
-      const removedSimplifiedResources = convertTargetsToSimplifiedFormat(allTargetsToRemove);
-      const updatedAnnotation = removeFromProjectAnnotation(currentAnnotation, removedSimplifiedResources);
-      
+      const removedSimplifiedResources =
+        convertTargetsToSimplifiedFormat(allTargetsToRemove);
+      const updatedAnnotation = removeFromProjectAnnotation(
+        currentAnnotation,
+        removedSimplifiedResources
+      );
+
       await batchPatchMutation.mutateAsync({
         targets: [createProjectInstanceTarget(projectName)],
         metadataType: "annotations",
@@ -130,7 +139,6 @@ export const useRemoveFromProjectMutation = () => {
       });
     },
     onSuccess: (_, { projectName }) => {
-      const context = createK8sContext();
       toast.success(`Resources removed from project ${projectName}`);
       invalidateProjectQueries(queryClient, context.namespace, projectName);
     },
@@ -140,9 +148,9 @@ export const useRemoveFromProjectMutation = () => {
 /**
  * Hook to remove brain-resources annotation from a project instance
  */
-export const useRemoveProjectAnnotationMutation = () => {
+export const useRemoveProjectAnnotationMutation = (context: K8sApiContext) => {
   const queryClient = useQueryClient();
-  const batchRemoveMutation = useBatchRemoveResourcesMetadataMutation();
+  const batchRemoveMutation = useBatchRemoveResourcesMetadataMutation(context);
 
   return useMutation({
     mutationFn: async ({ projectName }: { projectName: string }) => {
@@ -153,7 +161,6 @@ export const useRemoveProjectAnnotationMutation = () => {
       });
     },
     onSuccess: (_, { projectName }) => {
-      const context = createK8sContext();
       toast.success("Project annotation removed successfully");
       invalidateProjectQueries(queryClient, context.namespace, projectName);
     },
@@ -167,13 +174,12 @@ export const useRemoveProjectAnnotationMutation = () => {
 /**
  * Hook to create a new project instance
  */
-export const useCreateProjectMutation = () => {
+export const useCreateProjectMutation = (context: K8sApiContext) => {
   const queryClient = useQueryClient();
-  const createInstanceMutation = useApplyInstanceYamlMutation();
+  const createInstanceMutation = useApplyInstanceYamlMutation(context);
 
   return useMutation({
     mutationFn: async ({ projectName }: { projectName?: string }) => {
-      const context = createK8sContext();
       const finalProjectName = projectName || generateNewProjectName();
       const projectYaml = generateProjectTemplate(
         finalProjectName,
@@ -183,10 +189,13 @@ export const useCreateProjectMutation = () => {
       return createInstanceMutation.mutateAsync({ yamlContent: projectYaml });
     },
     onSuccess: (data, { projectName }) => {
-      const context = createK8sContext();
       const finalProjectName = projectName || generateNewProjectName();
       toast.success("Project created successfully");
-      invalidateProjectQueries(queryClient, context.namespace, finalProjectName);
+      invalidateProjectQueries(
+        queryClient,
+        context.namespace,
+        finalProjectName
+      );
       return data;
     },
     onError: (error) => {
@@ -205,14 +214,13 @@ export const useCreateProjectMutation = () => {
  * 2. Delete instance-related resources (not instances themselves)
  * 3. Delete all remaining resources with the project label (final cleanup)
  */
-export const useDeleteProjectMutation = () => {
+export const useDeleteProjectMutation = (context: K8sApiContext) => {
   const queryClient = useQueryClient();
-  const deleteAllResources = useDeleteAllResourcesMutation();
+  const deleteAllResources = useDeleteAllResourcesMutation(context);
 
   return useMutation({
     mutationFn: async ({ projectName }: { projectName: string }) => {
       try {
-        const context = createK8sContext();
         // 1. Get all resources related to the project
         const projectResources = await getProjectRelatedResources(
           context,
@@ -234,9 +242,12 @@ export const useDeleteProjectMutation = () => {
       }
     },
     onSuccess: (data) => {
-      const context = createK8sContext();
       toast.success(`Project "${data.projectName}" deleted successfully`);
-      invalidateProjectQueries(queryClient, context.namespace, data.projectName);
+      invalidateProjectQueries(
+        queryClient,
+        context.namespace,
+        data.projectName
+      );
     },
     onError: (error) => {
       toast.error("Failed to delete project");

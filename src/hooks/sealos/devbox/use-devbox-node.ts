@@ -10,10 +10,8 @@ import {
 import _ from "lodash";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { DEVBOX_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
-import {
-  createK8sContext,
-  spreadResourceList,
-} from "@/lib/k8s/k8s-method/k8s-utils";
+import { spreadResourceList } from "@/lib/k8s/k8s-method/k8s-utils";
+import { createK8sContext } from "@/lib/auth/auth-utils";
 import {
   DevboxResourceK8sSchema,
   DevboxPodSchema,

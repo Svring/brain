@@ -5,7 +5,7 @@ import { BaseNode } from "@/components/flow/components/base-node";
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { useDeleteResourceMutation } from "@/lib/k8s/k8s-method/k8s-mutation";
 import { useRemoveFromProjectMutation } from "@/lib/project/project-method/project-mutation";
-import { createK8sContext } from "@/lib/k8s/k8s-method/k8s-utils";
+import { createK8sContext } from "@/lib/auth/auth-utils";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useRef } from "react";
@@ -35,10 +35,11 @@ export default function BaseNodeWrapper({
   showDefaultMenu = true,
   floatingMenuOptions,
 }: BaseNodeProps) {
+  const context = createK8sContext();
   const { flowGraphData } = useProjectState();
   const projectName = flowGraphData.project;
-  const removeFromProjectMutation = useRemoveFromProjectMutation();
-  const deleteResourceMutation = useDeleteResourceMutation();
+  const removeFromProjectMutation = useRemoveFromProjectMutation(context);
+  const deleteResourceMutation = useDeleteResourceMutation(context);
   const nodeRef = useRef(null);
 
   // Handle node click to open chat sidebar

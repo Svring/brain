@@ -1,7 +1,8 @@
 "use client";
 
-import { use, useState } from "react";
+import { useState, use } from "react";
 import { useRouter } from "next/navigation";
+import { createK8sContext } from "@/lib/auth/auth-utils";
 
 // React Flow imports
 import {
@@ -136,8 +137,11 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
 
 // Flow Component
 function ProjectFlow({ projectName }: { projectName: string }) {
-  const [nodes, onNodesChange, edges, onEdgesChange, isLoading] =
-    useFlow(projectName);
+  const context = createK8sContext();
+  const [nodes, onNodesChange, edges, onEdgesChange, isLoading] = useFlow(
+    context,
+    projectName
+  );
   const { handleDrop } = useFlowDrop(projectName);
   const { onNodeClick } = useFlowFocus();
 
