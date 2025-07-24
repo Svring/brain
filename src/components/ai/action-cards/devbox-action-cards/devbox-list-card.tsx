@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Table,
   TableBody,
@@ -10,40 +11,35 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { listDevboxOptions } from "@/lib/sealos/devbox/devbox-method/devbox-query";
+import { createDevboxContext } from "@/lib/sealos/devbox/devbox-utils";
 
-interface DevboxListCardProps {
-  devboxList: any;
-}
-
-export function DevboxListCard({ devboxList }: DevboxListCardProps) {
+export function DevboxListCard() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const context = createDevboxContext();
 
-  if (!devboxList) {
+  const {
+    data: devboxListData,
+    isLoading,
+    error,
+  } = useQuery(listDevboxOptions(context));
+
+  if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  const data = JSON.parse(devboxList);
-  const devboxes = data?.data || [];
-  
+  if (error) {
+    return <div>Error loading DevBoxes</div>;
+  }
+
+  const devboxes = devboxListData?.data || [];
+
   // Pagination logic
   const totalPages = Math.ceil(devboxes.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentDevboxes = devboxes.slice(startIndex, endIndex);
-
-  const getStatusColor = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case "running":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "stopped":
-        return "bg-red-100 text-red-800 border-red-200";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
 
   const handlePreviousPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -52,42 +48,48 @@ export function DevboxListCard({ devboxList }: DevboxListCardProps) {
   const handleNextPage = () => {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   };
-  
+
   return (
     <div className="space-y-4">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Status</TableHead>
+          <TableRow className="h-6">
+            <TableHead className="">Name</TableHead>
+            <TableHead className="">Created At</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {currentDevboxes.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={2} className="text-center text-muted-foreground">
+            <TableRow className="h-8">
+              <TableCell
+                colSpan={2}
+                className="text-center text-muted-foreground py-2"
+              >
                 No DevBoxes found
               </TableCell>
             </TableRow>
           ) : (
             currentDevboxes.map((devbox: any, index: number) => (
-              <TableRow key={devbox.name || index}>
-                <TableCell className="font-medium">{devbox.name}</TableCell>
-                <TableCell>
-                  <Badge className={getStatusColor(devbox.state || devbox.status)}>
-                    {devbox.state || devbox.status}
-                  </Badge>
+              <TableRow key={devbox.name || index} className="h-8">
+                <TableCell className="font-medium py-2">
+                  {devbox.name}
+                </TableCell>
+                <TableCell className="py-2">
+                  {/* <Badge className="text-xs px-2 py-0.5"> */}
+                  {devbox.createTime}
+                  {/* </Badge> */}
                 </TableCell>
               </TableRow>
             ))
           )}
         </TableBody>
       </Table>
-      
+
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
-            Showing {startIndex + 1} to {Math.min(endIndex, devboxes.length)} of {devboxes.length} DevBoxes
+            Showing {startIndex + 1} to {Math.min(endIndex, devboxes.length)} of{" "}
+            {devboxes.length} DevBoxes
           </div>
           <div className="flex items-center gap-2">
             <Button

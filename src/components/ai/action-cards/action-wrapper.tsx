@@ -67,14 +67,14 @@ export function ActionWrapper({
 }: ActionWrapperProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const statusConfig = getStatusConfig(status);
-  
+
   // Auto-expand when status is complete
   useEffect(() => {
     if (status === "complete") {
       setIsOpen(true);
     }
   }, [status]);
-  
+
   // Show content only when complete, otherwise show status indicator
   const showContent = status === "complete";
   const showStatusInContent = status === "inProgress" || status === "executing";
@@ -87,7 +87,7 @@ export function ActionWrapper({
     >
       <Card>
         <CollapsibleTrigger asChild>
-          <div className="flex items-center justify-between p-3 cursor-pointer hover:bg-muted/50 transition-colors">
+          <div className="flex items-center justify-between p-2 cursor-pointer hover:bg-muted/50 transition-colors">
             <div className="flex items-center gap-3">
               {icon || (
                 <div className={statusConfig.color}>{statusConfig.icon}</div>
@@ -107,14 +107,16 @@ export function ActionWrapper({
           </div>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <CardContent className="pt-0 p-4">
+          <CardContent className="p-0">
             {showContent ? (
               children
             ) : showStatusInContent ? (
               <div className="flex items-center gap-2 py-2">
                 <div className={statusConfig.color}>{statusConfig.icon}</div>
                 <span className="text-sm text-muted-foreground">
-                  {status === "executing" ? "Action in progress..." : "Preparing action..."}
+                  {status === "executing"
+                    ? "Action in progress..."
+                    : "Preparing action..."}
                 </span>
               </div>
             ) : (

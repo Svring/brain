@@ -25,15 +25,15 @@ export const listDevboxAction = () => {
     handler: async () => data,
     render: (props) => {
       return (
-        <RenderActionWrapper
-          title="List DevBoxes"
-          status={props.status}
-          args={props.args}
-          result={props.result}
-        >
-          <DevboxListCard devboxList={props.result} />
-        </RenderActionWrapper>
-      );
+          <RenderActionWrapper
+            title="List DevBoxes"
+            status={props.status}
+            args={props.args}
+            result={props.result}
+          >
+            <DevboxListCard />
+          </RenderActionWrapper>
+        );
     },
   });
 };
