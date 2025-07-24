@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { KubernetesMetadataSchema } from "./kubernetes-resource-schemas";
+import { K8sMetadataSchema } from "./kubernetes-resource-schemas";
 
 // ConfigMap-specific schemas
 export const ConfigMapResourceSchema = z.object({
   apiVersion: z.literal("v1"),
   kind: z.literal("ConfigMap"),
-  metadata: KubernetesMetadataSchema,
+  metadata: K8sMetadataSchema,
   data: z.record(z.string()).optional(),
   binaryData: z.record(z.string()).optional(),
   immutable: z.boolean().optional(),

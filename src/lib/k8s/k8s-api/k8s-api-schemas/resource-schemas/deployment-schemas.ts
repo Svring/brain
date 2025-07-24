@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { KubernetesMetadataSchema } from "./kubernetes-resource-schemas";
+import { K8sMetadataSchema } from "./kubernetes-resource-schemas";
 
 // Deployment-specific schemas
 export const DeploymentSpecSchema = z.object({
@@ -17,7 +17,7 @@ export const DeploymentSpecSchema = z.object({
       .optional(),
   }),
   template: z.object({
-    metadata: KubernetesMetadataSchema.optional(),
+    metadata: K8sMetadataSchema.optional(),
     spec: z.record(z.unknown()),
   }),
   strategy: z
@@ -61,7 +61,7 @@ export const DeploymentStatusSchema = z.object({
 export const DeploymentResourceSchema = z.object({
   apiVersion: z.literal("apps/v1"),
   kind: z.literal("Deployment"),
-  metadata: KubernetesMetadataSchema,
+  metadata: K8sMetadataSchema,
   spec: DeploymentSpecSchema.optional(),
   status: DeploymentStatusSchema.optional(),
 });

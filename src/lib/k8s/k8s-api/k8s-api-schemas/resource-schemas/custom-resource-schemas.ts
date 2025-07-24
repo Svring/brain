@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { KubernetesMetadataSchema } from "./kubernetes-resource-schemas";
+import { K8sMetadataSchema } from "./kubernetes-resource-schemas";
 
 // Custom resource schemas (generic structure)
 export const CustomResourceSchema = z.object({
   apiVersion: z.string(),
   kind: z.string(),
-  metadata: KubernetesMetadataSchema,
+  metadata: K8sMetadataSchema,
   spec: z.record(z.unknown()).optional(),
   status: z.record(z.unknown()).optional(),
 });

@@ -5,7 +5,6 @@ import {
   listDevboxOptions,
   getDevboxOptions,
 } from "@/lib/sealos/devbox/devbox-method/devbox-query";
-import { useDeleteDevboxMutation } from "@/lib/sealos/devbox/devbox-method/devbox-mutation";
 import { useCopilotAction } from "@copilotkit/react-core";
 import { createDevboxContext } from "@/lib/sealos/devbox/devbox-utils";
 import {
@@ -13,7 +12,10 @@ import {
   DevboxGetCard,
   DevboxDeleteCard,
 } from "@/components/ai/action-cards/devbox-action-cards/index";
-import { RenderActionWrapper, RenderAndWaitActionWrapper } from "@/components/ai/action-cards/action-wrapper";
+import {
+  RenderActionWrapper,
+  RenderAndWaitActionWrapper,
+} from "@/components/ai/action-cards/action-wrapper";
 
 export const listDevboxAction = () => {
   const context = createDevboxContext();
@@ -25,15 +27,15 @@ export const listDevboxAction = () => {
     handler: async () => data,
     render: (props) => {
       return (
-          <RenderActionWrapper
-            title="List DevBoxes"
-            status={props.status}
-            args={props.args}
-            result={props.result}
-          >
-            <DevboxListCard />
-          </RenderActionWrapper>
-        );
+        <RenderActionWrapper
+          title="List DevBoxes"
+          status={props.status}
+          args={props.args}
+          result={props.result}
+        >
+          <DevboxListCard />
+        </RenderActionWrapper>
+      );
     },
   });
 };

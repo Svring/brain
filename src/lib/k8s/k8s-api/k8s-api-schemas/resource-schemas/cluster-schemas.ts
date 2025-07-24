@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { KubernetesMetadataSchema } from "./kubernetes-resource-schemas";
+import { K8sMetadataSchema } from "./kubernetes-resource-schemas";
 
 // Cluster ComponentSpec
 export const ClusterComponentSpecSchema = z.object({
@@ -90,7 +90,7 @@ export const ClusterStatusSchema = z.object({
 export const ClusterResourceSchema = z.object({
   apiVersion: z.literal("apps.kubeblocks.io/v1alpha1"),
   kind: z.literal("Cluster"),
-  metadata: KubernetesMetadataSchema,
+  metadata: K8sMetadataSchema,
   spec: ClusterSpecSchema,
   status: ClusterStatusSchema.optional(),
 });

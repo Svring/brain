@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { KubernetesMetadataSchema } from "./kubernetes-resource-schemas";
+import { K8sMetadataSchema } from "./kubernetes-resource-schemas";
 
 // PersistentVolumeClaim-specific schemas
 export const PersistentVolumeClaimSpecSchema = z.object({
@@ -90,7 +90,7 @@ export const PersistentVolumeClaimStatusSchema = z.object({
 export const PersistentVolumeClaimResourceSchema = z.object({
   apiVersion: z.literal("v1"),
   kind: z.literal("PersistentVolumeClaim"),
-  metadata: KubernetesMetadataSchema,
+  metadata: K8sMetadataSchema,
   spec: PersistentVolumeClaimSpecSchema.optional(),
   status: PersistentVolumeClaimStatusSchema.optional(),
 });

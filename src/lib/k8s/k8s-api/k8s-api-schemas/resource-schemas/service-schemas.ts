@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { KubernetesMetadataSchema } from "./kubernetes-resource-schemas";
+import { K8sMetadataSchema } from "./kubernetes-resource-schemas";
 
 // Service-specific schemas
 export const ServicePortSchema = z.object({
@@ -83,7 +83,7 @@ export const ServiceStatusSchema = z.object({
 export const ServiceResourceSchema = z.object({
   apiVersion: z.literal("v1"),
   kind: z.literal("Service"),
-  metadata: KubernetesMetadataSchema,
+  metadata: K8sMetadataSchema,
   spec: ServiceSpecSchema.optional(),
   status: ServiceStatusSchema.optional(),
 });

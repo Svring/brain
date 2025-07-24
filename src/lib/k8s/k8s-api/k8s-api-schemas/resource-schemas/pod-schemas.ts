@@ -1,8 +1,5 @@
 import { z } from "zod";
-import {
-  KubernetesMetadataSchema,
-  PodSpecSchema,
-} from "./kubernetes-resource-schemas";
+import { K8sMetadataSchema } from "./kubernetes-resource-schemas";
 
 // Pod-specific schemas
 export const PodConditionSchema = z.object({
@@ -84,7 +81,7 @@ export const PodStatusSchema = z.object({
 export const PodResourceSchema = z.object({
   apiVersion: z.literal("v1"),
   kind: z.literal("Pod"),
-  metadata: KubernetesMetadataSchema,
+  metadata: K8sMetadataSchema,
   spec: PodSpecSchema.optional(),
   status: PodStatusSchema.optional(),
 });

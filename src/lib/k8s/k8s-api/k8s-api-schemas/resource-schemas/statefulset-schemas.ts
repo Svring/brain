@@ -1,12 +1,12 @@
 import { z } from "zod";
 import {
-  KubernetesMetadataSchema,
+  K8sMetadataSchema,
   PodSpecSchema,
 } from "./kubernetes-resource-schemas";
 
 // StatefulSet-specific schemas
 export const PersistentVolumeClaimTemplateSchema = z.object({
-  metadata: KubernetesMetadataSchema.optional(),
+  metadata: K8sMetadataSchema.optional(),
   spec: z.object({
     accessModes: z
       .array(
@@ -75,7 +75,7 @@ export const StatefulSetSpecSchema = z.object({
       .optional(),
   }),
   template: z.object({
-    metadata: KubernetesMetadataSchema.optional(),
+    metadata: K8sMetadataSchema.optional(),
     spec: PodSpecSchema,
   }),
   volumeClaimTemplates: z.array(PersistentVolumeClaimTemplateSchema).optional(),
@@ -133,7 +133,7 @@ export const StatefulSetStatusSchema = z.object({
 export const StatefulSetResourceSchema = z.object({
   apiVersion: z.literal("apps/v1"),
   kind: z.literal("StatefulSet"),
-  metadata: KubernetesMetadataSchema,
+  metadata: K8sMetadataSchema,
   spec: StatefulSetSpecSchema.optional(),
   status: StatefulSetStatusSchema.optional(),
 });

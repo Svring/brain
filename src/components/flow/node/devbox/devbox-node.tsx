@@ -4,7 +4,6 @@ import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-
 import BaseNode from "../base-node-wrapper";
 import Image from "next/image";
 import useDevboxNode from "@/hooks/sealos/devbox/use-devbox-node";
-import { Badge } from "@/components/ui/badge";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 
 export default function DevboxNode({

@@ -5,13 +5,17 @@ import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/cluster/cluster-constant";
+import useClusterNode from "@/hooks/sealos/cluster/use-cluster-node";
+import { createK8sContext } from "@/lib/auth/auth-utils";
 
 interface ClusterNodeProps {
   target: CustomResourceTarget;
 }
 
 export default function ClusterNode({ data }: { data: ClusterNodeProps }) {
+  const context = createK8sContext();
   const { target } = data;
+  useClusterNode(context, target);
 
   // Extract cluster name from target
   const name = target.name || "Database";

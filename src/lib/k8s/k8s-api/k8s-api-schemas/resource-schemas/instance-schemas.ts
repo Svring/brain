@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { KubernetesMetadataSchema } from "./kubernetes-resource-schemas";
+import { K8sMetadataSchema } from "./kubernetes-resource-schemas";
 
 // Instance spec property schema
 const InstanceSpecDefaultsSchema = z.record(
@@ -27,7 +27,7 @@ export const InstanceSpecSchema = z.object({
 export const InstanceResourceSchema = z.object({
   apiVersion: z.literal("app.sealos.io/v1"),
   kind: z.literal("Instance"),
-  metadata: KubernetesMetadataSchema,
+  metadata: K8sMetadataSchema,
   spec: InstanceSpecSchema,
   status: z.record(z.unknown()).optional(),
 });

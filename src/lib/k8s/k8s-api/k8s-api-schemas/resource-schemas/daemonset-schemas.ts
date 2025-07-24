@@ -1,6 +1,6 @@
 import { z } from "zod";
 import {
-  KubernetesMetadataSchema,
+  K8sMetadataSchema,
   PodSpecSchema,
 } from "./kubernetes-resource-schemas";
 
@@ -19,7 +19,7 @@ export const DaemonSetSpecSchema = z.object({
       .optional(),
   }),
   template: z.object({
-    metadata: KubernetesMetadataSchema.optional(),
+    metadata: K8sMetadataSchema.optional(),
     spec: PodSpecSchema,
   }),
   updateStrategy: z
@@ -61,7 +61,7 @@ export const DaemonSetStatusSchema = z.object({
 export const DaemonSetResourceSchema = z.object({
   apiVersion: z.literal("apps/v1"),
   kind: z.literal("DaemonSet"),
-  metadata: KubernetesMetadataSchema,
+  metadata: K8sMetadataSchema,
   spec: DaemonSetSpecSchema.optional(),
   status: DaemonSetStatusSchema.optional(),
 });
