@@ -33,6 +33,7 @@ import { AddResourceDropZone } from "./add-resource-drop-zone";
 import { ResourceCards } from "./resource-cards";
 import { useState, useMemo } from "react";
 import type { AnyKubernetesResource } from "@/lib/k8s/schemas";
+import { createK8sContext } from "@/lib/auth/auth-utils";
 
 // Define the resource creation options
 const CREATION_OPTIONS = [
@@ -72,7 +73,8 @@ const RESOURCE_TYPES = [
 ];
 
 export function AddResourceTabs() {
-  const inventories = useInventories();
+  const context = createK8sContext();
+  const inventories = useInventories(context);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedResourceType, setSelectedResourceType] = useState("all");
   const [selectedCreationOption, setSelectedCreationOption] = useState<

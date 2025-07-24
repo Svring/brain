@@ -5,13 +5,15 @@ import BaseNode from "../base-node-wrapper";
 import Image from "next/image";
 import useDevboxNode from "@/hooks/sealos/devbox/use-devbox-node";
 import { Badge } from "@/components/ui/badge";
+import { createK8sContext } from "@/lib/auth/auth-utils";
 
 export default function DevboxNode({
   data: { target },
 }: {
   data: { target: CustomResourceTarget };
 }) {
-  const { nodeData, isLoading } = useDevboxNode(target);
+  const context = createK8sContext();
+  const { nodeData, isLoading } = useDevboxNode(context, target);
 
   if (isLoading || !nodeData) {
     return null;

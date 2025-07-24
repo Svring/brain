@@ -25,10 +25,12 @@ import { getPodsByResourceTarget } from "@/lib/k8s/k8s-method/k8s-query";
 import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 
 export default function Page() {
+  const context = createK8sContext();
+
   const { isOpen, onClose, onOpenChange } = useDisclosure();
 
   const { setSearchTerm, filteredProjects, projectsLoading, projectsError } =
-    useProjectSearch();
+    useProjectSearch(context);
 
   // const context = createK8sContext();
   // useMount(async () => {

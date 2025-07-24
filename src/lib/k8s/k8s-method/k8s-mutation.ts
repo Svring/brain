@@ -3,7 +3,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { runParallelAction } from "next-server-actions-parallel";
 import { applyInstanceYaml } from "../k8s-api/k8s-api-mutation";
-import { createK8sContext } from "@/lib/auth/auth-utils";
 import {
   BuiltinResourceTarget,
   CustomResourceTarget,

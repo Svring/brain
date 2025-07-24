@@ -10,7 +10,7 @@ import {
   listObjectStoragesInventoryOptions,
   listStatefulSetsInventoryOptions,
 } from "@/lib/inventory/inventory-method/inventory-query";
-import { createK8sContext } from "@/lib/auth/auth-utils";
+import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import { filterResourcesWithoutProject } from "@/lib/project/project-method/project-utils";
 
@@ -33,9 +33,7 @@ export interface UseInventoriesResult {
 /**
  * Hook to list all resource inventories and group them by resource type
  */
-export function useInventories(): UseInventoriesResult {
-  const context = createK8sContext();
-
+export function useInventories(context: K8sApiContext): UseInventoriesResult {
   // Define all inventory queries
   const inventoryQueries = useQueries({
     queries: [

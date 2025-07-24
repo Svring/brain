@@ -2,7 +2,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { getObjectStorageSecretOptions } from "@/lib/k8s/k8s-method/k8s-query";
-import { createK8sContext } from "@/lib/auth/auth-utils";
 import type { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
 
 /**
@@ -12,15 +11,12 @@ import type { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-sc
  * @returns Query result containing the object storage secret
  */
 export function useObjectStorageSecret(
-  objectStorageName: string,
-  context?: K8sApiContext
+  context: K8sApiContext,
+  objectStorageName: string
 ) {
-  const k8sContext = context || createK8sContext();
-
   return useQuery({
-    ...getObjectStorageSecretOptions(k8sContext, objectStorageName),
-    enabled:
-      !!objectStorageName && !!k8sContext.namespace && !!k8sContext.kubeconfig,
+    ...getObjectStorageSecretOptions(context, objectStorageName),
+    enabled: !!objectStorageName && !!context.namespace && !!context.kubeconfig,
   });
 }
 
@@ -31,9 +27,8 @@ export function useObjectStorageSecret(
  * @returns Query options for the object storage secret
  */
 export function getObjectStorageSecretQueryOptions(
-  objectStorageName: string,
-  context?: K8sApiContext
+  context: K8sApiContext,
+  objectStorageName: string
 ) {
-  const k8sContext = context || createK8sContext();
-  return getObjectStorageSecretOptions(k8sContext, objectStorageName);
+  return getObjectStorageSecretOptions(context, objectStorageName);
 }

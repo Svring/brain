@@ -10,7 +10,6 @@ import {
   BrainResourcesSimplified,
   convertResourcesToAnnotation,
 } from "@/lib/k8s/k8s-method/k8s-utils";
-import { createK8sContext } from "@/lib/auth/auth-utils";
 import { ListAllResourcesResponse } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
 import { useEffect, useMemo } from "react";
 import {

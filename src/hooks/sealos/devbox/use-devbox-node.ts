@@ -11,7 +11,7 @@ import _ from "lodash";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { DEVBOX_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
 import { spreadResourceList } from "@/lib/k8s/k8s-method/k8s-utils";
-import { createK8sContext } from "@/lib/auth/auth-utils";
+import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
 import {
   DevboxResourceK8sSchema,
   DevboxPodSchema,
@@ -20,8 +20,10 @@ import {
 } from "@/lib/sealos/devbox/schemas/devbox-k8s-schemas";
 import { convertDevboxK8sToNodeData } from "@/lib/sealos/devbox/devbox-utils";
 
-const useDevboxNode = (target: CustomResourceTarget) => {
-  const context = createK8sContext();
+const useDevboxNode = (
+  context: K8sApiContext,
+  target: CustomResourceTarget
+) => {
   const devboxLabel = `${DEVBOX_RELATE_RESOURCE_LABELS.DEVBOX_MANAGER}=${target.name}`;
 
   const queries = useQueries({
