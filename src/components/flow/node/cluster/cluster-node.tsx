@@ -15,12 +15,11 @@ interface ClusterNodeProps {
 export default function ClusterNode({ data }: { data: ClusterNodeProps }) {
   const context = createK8sContext();
   const { target } = data;
-  useClusterNode(context, target);
+  const { nodeData, isLoading } = useClusterNode(context, target);
 
-  // Extract cluster name from target
-  const name = target.name || "Database";
-  const state = "Unknown";
-  const clusterType = "postgresql"; // Default cluster type
+  if (isLoading || !nodeData) {
+    return null;
+  }
 
   return (
     <BaseNode target={target} nodeData={{}}>
@@ -30,8 +29,8 @@ export default function ClusterNode({ data }: { data: ClusterNodeProps }) {
           <div className="flex flex-col items-start">
             <span className="flex items-center gap-2">
               <Image
-                src={CLUSTER_TYPE_ICON_MAP[clusterType] ?? ""}
-                alt={clusterType}
+                src={CLUSTER_TYPE_ICON_MAP[nodeData.type!] ?? ""}
+                alt={nodeData.type!}
                 width={24}
                 height={24}
                 className="rounded-lg h-9 w-9"
@@ -42,7 +41,7 @@ export default function ClusterNode({ data }: { data: ClusterNodeProps }) {
                   Database
                 </span>
                 <span className="text-lg font-bold text-foreground leading-tight w-full overflow-hidden text-ellipsis text-left">
-                  {name}
+                  {nodeData.name!}
                 </span>
               </span>
             </span>
@@ -54,12 +53,13 @@ export default function ClusterNode({ data }: { data: ClusterNodeProps }) {
           <Badge
             variant="outline"
             className={
-              typeof state === "string" && state.toLowerCase() === "running"
+              typeof nodeData.status === "string" &&
+              nodeData.status.toLowerCase() === "running"
                 ? "border-green-600 text-green-700"
                 : ""
             }
           >
-            {state}
+            {nodeData.status!}
           </Badge>
         </div>
       </div>

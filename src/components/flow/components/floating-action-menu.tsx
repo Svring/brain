@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 type FloatingActionMenuProps = {
   options: {
     label: string;
-    onClick: () => void;
+    onClick: (e: Event) => void;
     Icon?: React.ReactNode;
   }[];
   className?: string;
@@ -37,7 +37,7 @@ const FloatingActionMenu = ({
             {options.map((option, index) => (
               <Button
                 key={index}
-                onClick={option.onClick}
+                onClick={(e) => option.onClick(e as unknown as Event)}
                 size="sm"
                 className="flex items-center text-foreground gap-2 bg-background hover:bg-muted border border-muted shadow-[0_0_20px_rgba(0,0,0,0.2)] rounded-xl backdrop-blur-sm"
               >

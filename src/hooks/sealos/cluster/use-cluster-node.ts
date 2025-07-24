@@ -53,12 +53,7 @@ const useClusterNode = (
   const resourceData = resourceQuery.data;
   const secretsData = secretsQuery.data;
 
-  console.log("resourceData", resourceData);
-  console.log("secretsData", secretsData);
-
   const nodeData = convertClusterK8sToNodeData(resourceData!);
-
-  console.log("nodeData", nodeData);
 
   return {
     nodeData,

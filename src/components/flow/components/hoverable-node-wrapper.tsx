@@ -8,7 +8,7 @@ interface HoverableNodeWrapperProps {
   children: ReactNode;
   menuOptions: {
     label: string;
-    onClick: () => void;
+    onClick: (e: Event) => void;
     Icon?: ReactNode;
   }[];
   onNodeMouseEnter?: () => void;

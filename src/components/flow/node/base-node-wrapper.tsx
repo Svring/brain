@@ -54,7 +54,8 @@ export default function BaseNodeWrapper({
   const defaultMenuOptions = [
     {
       label: "Remove from project",
-      onClick: () => {
+      onClick: (e: Event) => {
+        e.stopPropagation();
         removeFromProjectMutation.mutate({
           resources: [target],
           projectName,
@@ -64,10 +65,12 @@ export default function BaseNodeWrapper({
     },
     {
       label: "Delete resource",
-      onClick: () =>
+      onClick: (e: Event) => {
+        e.stopPropagation();
         deleteResourceMutation.mutate({
           target: target,
-        }),
+        });
+      },
       Icon: <Trash2 className="w-4 h-4" />,
     },
   ];
