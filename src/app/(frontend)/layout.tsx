@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Nunito } from "next/font/google";
+import { Nunito, Lora } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import type React from "react";
 import Login from "@/components/app/auth/login";
@@ -19,6 +19,11 @@ import "@copilotkit/react-ui/styles.css";
 const nunito = Nunito({
   subsets: ["latin"],
   variable: "--font-nunito",
+});
+
+const lora = Lora({
+  subsets: ["latin"],
+  variable: "--font-lora",
 });
 
 export const metadata: Metadata = {
@@ -52,7 +57,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${nunito.variable} font-nunito antialiased`}>
+      <body className={`${lora.className} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

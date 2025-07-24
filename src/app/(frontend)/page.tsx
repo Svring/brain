@@ -37,14 +37,14 @@ export default function Page() {
   const { setSearchTerm, filteredProjects, projectsLoading, projectsError } =
     useProjectSearch(context);
 
-  const trafficQuery = useQuery(
-    getPodTrafficOptions(createTrafficContext(auth!), {
-      namespace: "ns-wr6b9u65",
-      pod: "teable-izdfsect-66bb865b4-rrb74",
-    })
-  );
+  // const trafficQuery = useQuery(
+  //   getPodTrafficOptions(createTrafficContext(auth!), {
+  //     namespace: "ns-wr6b9u65",
+  //     pod: "teable-izdfsect-66bb865b4-rrb74",
+  //   })
+  // );
 
-  console.log(trafficQuery.data);
+  // console.log(trafficQuery.data);
 
   // useMount(async () => {
   //   // const relatedResources = await getInstanceRelatedResources(

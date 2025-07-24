@@ -183,9 +183,9 @@ export function StateCard({ state, className }: StateCardProps) {
                     <div className="bg-muted p-3 rounded overflow-auto max-h-64">
                       <ReactJson
                         src={state.project_context.homepageData.projects}
-                        theme="rjv-default"
+                        theme="summerfruit"
                         name={false}
-                        collapsed={1}
+                        // collapsed={1}
                         displayDataTypes={false}
                         displayObjectSize={false}
                         enableClipboard={false}
@@ -273,7 +273,7 @@ export function StateCard({ state, className }: StateCardProps) {
                     <div className="bg-muted p-3 rounded overflow-auto max-h-64">
                       <ReactJson
                         src={state.project_context.flowGraphData.resources}
-                        theme="rjv-default"
+                        theme="summerfruit"
                         name={false}
                         collapsed={1}
                         displayDataTypes={false}
@@ -343,7 +343,7 @@ export function StateCard({ state, className }: StateCardProps) {
                     <div className="bg-muted p-3 rounded overflow-auto max-h-64">
                       <ReactJson
                         src={state.flow_context.nodes}
-                        theme="rjv-default"
+                        theme="summerfruit"
                         name={false}
                         collapsed={1}
                         displayDataTypes={false}
@@ -391,7 +391,7 @@ export function StateCard({ state, className }: StateCardProps) {
                     <div className="bg-muted p-3 rounded overflow-auto max-h-64">
                       <ReactJson
                         src={state.flow_context.edges}
-                        theme="rjv-default"
+                        theme="summerfruit"
                         name={false}
                         collapsed={1}
                         displayDataTypes={false}
@@ -411,10 +411,14 @@ export function StateCard({ state, className }: StateCardProps) {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <MousePointer className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Selected Node:</span>
+                      <span className="text-muted-foreground">
+                        Selected Node:
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant={hasSelectedNode ? "default" : "secondary"}>
+                      <Badge
+                        variant={hasSelectedNode ? "default" : "secondary"}
+                      >
                         {hasSelectedNode ? "Selected" : "None"}
                       </Badge>
                       {hasSelectedNode && (
@@ -422,7 +426,9 @@ export function StateCard({ state, className }: StateCardProps) {
                           variant="ghost"
                           size="sm"
                           className="h-6 w-6 p-0"
-                          onClick={() => setShowSelectedNodeJson(!showSelectedNodeJson)}
+                          onClick={() =>
+                            setShowSelectedNodeJson(!showSelectedNodeJson)
+                          }
                         >
                           {showSelectedNodeJson ? (
                             <ChevronDown className="w-3 h-3" />
@@ -437,7 +443,7 @@ export function StateCard({ state, className }: StateCardProps) {
                     <div className="bg-muted p-3 rounded overflow-auto max-h-64">
                       <ReactJson
                         src={state.flow_context.selectedNode}
-                        theme="rjv-default"
+                        theme="summerfruit"
                         name={false}
                         collapsed={1}
                         displayDataTypes={false}
@@ -457,10 +463,14 @@ export function StateCard({ state, className }: StateCardProps) {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <MousePointer className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Selected Edge:</span>
+                      <span className="text-muted-foreground">
+                        Selected Edge:
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant={hasSelectedEdge ? "default" : "secondary"}>
+                      <Badge
+                        variant={hasSelectedEdge ? "default" : "secondary"}
+                      >
                         {hasSelectedEdge ? "Selected" : "None"}
                       </Badge>
                       {hasSelectedEdge && (
@@ -468,7 +478,9 @@ export function StateCard({ state, className }: StateCardProps) {
                           variant="ghost"
                           size="sm"
                           className="h-6 w-6 p-0"
-                          onClick={() => setShowSelectedEdgeJson(!showSelectedEdgeJson)}
+                          onClick={() =>
+                            setShowSelectedEdgeJson(!showSelectedEdgeJson)
+                          }
                         >
                           {showSelectedEdgeJson ? (
                             <ChevronDown className="w-3 h-3" />
@@ -483,7 +495,7 @@ export function StateCard({ state, className }: StateCardProps) {
                     <div className="bg-muted p-3 rounded overflow-auto max-h-64">
                       <ReactJson
                         src={state.flow_context.selectedEdge}
-                        theme="rjv-default"
+                        theme="summerfruit"
                         name={false}
                         collapsed={1}
                         displayDataTypes={false}

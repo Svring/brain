@@ -13,6 +13,7 @@ import {
   DevboxGetCard,
   DevboxDeleteCard,
 } from "@/components/ai/action-cards/devbox-action-cards/index";
+import { RenderActionWrapper, RenderAndWaitActionWrapper } from "@/components/ai/action-cards/action-wrapper";
 
 export const listDevboxAction = () => {
   const context = createDevboxContext();
@@ -21,9 +22,18 @@ export const listDevboxAction = () => {
   useCopilotAction({
     name: "listDevbox",
     description: "Get the list of devboxes",
-    handler: () => data,
+    handler: async () => data,
     render: (props) => {
-      return <DevboxListCard devboxList={props.result} />;
+      return (
+        <RenderActionWrapper
+          title="List DevBoxes"
+          status={props.status}
+          args={props.args}
+          result={props.result}
+        >
+          <DevboxListCard devboxList={props.result} />
+        </RenderActionWrapper>
+      );
     },
   });
 };
@@ -50,11 +60,23 @@ export const getDevboxAction = () => {
       );
     },
     render(props) {
-      if (!props.result) {
-        return <></>;
-      }
-      const devboxData = JSON.parse(props.result);
-      return <DevboxGetCard data={devboxData?.data} />;
+      return (
+        <RenderActionWrapper
+          title="Get DevBox"
+          status={props.status}
+          args={props.args}
+          result={props.result}
+        >
+          {props.result ? (
+            (() => {
+              const devboxData = JSON.parse(props.result);
+              return <DevboxGetCard data={devboxData?.data} />;
+            })()
+          ) : (
+            <></>
+          )}
+        </RenderActionWrapper>
+      );
     },
   });
 };
@@ -77,22 +99,30 @@ export const deleteDevboxAction = () => {
     renderAndWaitForResponse(props) {
       const { status, args, respond, result } = props;
 
-      // Ensure args has the required devboxName property
-      if (!args?.devboxName) {
-        return (
-          <div className="flex flex-col gap-2 p-4">
-            <p className="text-destructive">Error: Devbox name is required</p>
-          </div>
-        );
-      }
+      // Ensure respond is defined
+      const safeRespond = respond || (() => {});
 
       return (
-        <DevboxDeleteCard
+        <RenderAndWaitActionWrapper
+          title="Delete DevBox"
           status={status}
-          args={args as { devboxName: string }}
-          respond={respond}
+          args={args}
+          respond={safeRespond}
           result={result}
-        />
+        >
+          {!args?.devboxName ? (
+            <div className="flex flex-col gap-2 p-4">
+              <p className="text-destructive">Error: Devbox name is required</p>
+            </div>
+          ) : (
+            <DevboxDeleteCard
+              status={status}
+              args={args as { devboxName: string }}
+              respond={safeRespond}
+              result={result}
+            />
+          )}
+        </RenderAndWaitActionWrapper>
       );
     },
   });

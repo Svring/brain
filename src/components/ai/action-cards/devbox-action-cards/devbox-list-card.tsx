@@ -1,72 +1,119 @@
-"use client";
-
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import {
-  listDevboxOptions,
-} from "@/lib/sealos/devbox/devbox-method/devbox-query";
-import { getDevboxByName } from "@/lib/sealos/devbox/devbox-api/devbox-open-api";
-import { runParallelAction } from "next-server-actions-parallel";
-import { createDevboxContext } from "@/lib/sealos/devbox/devbox-utils";
-import { DataTable } from "@/components/inventory/devbox-inventory/devbox-table";
-import { columns } from "@/components/inventory/devbox-inventory/devbox-table-columns";
-import type { DevboxInfo } from "@/lib/sealos/devbox/schemas";
-import { Loader2 } from "lucide-react";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-export function DevboxListCard({ devboxList }: { devboxList: any }) {
-  const context = createDevboxContext();
+interface DevboxListCardProps {
+  devboxList: any;
+}
 
-  // Fetch fresh devbox list data
-  const { data: listData, isLoading: isListLoading } = useQuery(
-    listDevboxOptions(context)
-  );
+export function DevboxListCard({ devboxList }: DevboxListCardProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
-  // Fetch detailed data for each devbox
-  const devboxNames = listData?.data?.map((item) => item.name) || [];
-
-  const devboxQueries = useQuery({
-    queryKey: ["sealos", "devbox", devboxNames],
-    queryFn: async () => {
-      if (!devboxNames.length) return [];
-
-      const promises = devboxNames.map((name) =>
-        runParallelAction(getDevboxByName(name, context))
-      );
-
-      const results = await Promise.allSettled(promises);
-      return results
-        .filter(
-          (result): result is PromiseFulfilledResult<any> =>
-            result.status === "fulfilled"
-        )
-        .map((result) => result.value.data);
-    },
-    enabled: !!devboxNames.length,
-  });
-
-  if (isListLoading || devboxQueries.isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-6 w-6 animate-spin mr-2" />
-        <span>Loading DevBoxes...</span>
-      </div>
-    );
+  if (!devboxList) {
+    return <div>Loading...</div>;
   }
 
-  if (!devboxQueries.data?.length) {
-    return (
-      <div className="text-center p-8 text-muted-foreground">
-        No DevBoxes found.
-      </div>
-    );
-  }
+  const data = JSON.parse(devboxList);
+  const devboxes = data?.data || [];
+  
+  // Pagination logic
+  const totalPages = Math.ceil(devboxes.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentDevboxes = devboxes.slice(startIndex, endIndex);
 
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case "running":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "stopped":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  };
+
+  const handlePreviousPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
+  
   return (
-    <div className="bg-card rounded-lg p-4 border border-muted">
-      <h3 className="text-lg font-semibold mb-4">DevBox List</h3>
-      <DataTable<DevboxInfo, any>
-        columns={columns}
-        data={devboxQueries.data as DevboxInfo[]}
-      />
+    <div className="space-y-4">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Status</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {currentDevboxes.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={2} className="text-center text-muted-foreground">
+                No DevBoxes found
+              </TableCell>
+            </TableRow>
+          ) : (
+            currentDevboxes.map((devbox: any, index: number) => (
+              <TableRow key={devbox.name || index}>
+                <TableCell className="font-medium">{devbox.name}</TableCell>
+                <TableCell>
+                  <Badge className={getStatusColor(devbox.state || devbox.status)}>
+                    {devbox.state || devbox.status}
+                  </Badge>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+      
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">
+            Showing {startIndex + 1} to {Math.min(endIndex, devboxes.length)} of {devboxes.length} DevBoxes
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </Button>
+            <span className="text-sm">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

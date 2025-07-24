@@ -1,57 +1,54 @@
 "use client";
 
-import { createDevboxContext } from "@/lib/sealos/devbox/devbox-utils";
-import { Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  useDeleteDevboxMutation,
-} from "@/lib/sealos/devbox/devbox-method/devbox-mutation";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Trash2, AlertTriangle } from "lucide-react";
+
+interface DevboxDeleteCardProps {
+  status: "complete" | "executing" | "inProgress";
+  args: { devboxName: string };
+  respond: (response: string) => void;
+  result?: string;
+}
 
 export function DevboxDeleteCard({
   status,
   args,
   respond,
   result,
-}: {
-  status: "complete" | "executing" | "inProgress";
-  args: { devboxName: string };
-  respond?: (response: string) => void;
-  result?: any;
-}) {
-  const context = createDevboxContext();
-  const deleteMutation = useDeleteDevboxMutation(context);
-  const { devboxName } = args;
-
-  const handleDelete = async () => {
-    try {
-      if (!devboxName) {
-        respond?.("Error: Devbox name is required");
-        return;
-      }
-      const result = await deleteMutation.mutateAsync(devboxName);
-      respond?.("Devbox deleted successfully");
-    } catch (error) {
-      respond?.(`Failed to delete devbox: ${error}`);
-    }
+}: DevboxDeleteCardProps) {
+  const handleConfirm = () => {
+    respond("yes");
   };
 
   const handleCancel = () => {
-    respond?.("deletion canceled");
+    respond("no");
   };
 
   if (status === "complete") {
     return (
-      <Card className="w-full">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-semibold text-green-600">
-            Operation Complete
-          </CardTitle>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Trash2 className="h-5 w-5 text-green-600" />
+            <CardTitle className="text-lg">DevBox Deleted</CardTitle>
+            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+              Success
+            </Badge>
+          </div>
         </CardHeader>
         <CardContent>
-          <p className="text-sm">
-            {result || "Operation completed successfully"}
+          <p className="text-sm text-muted-foreground">
+            DevBox "{args.devboxName}" has been successfully deleted.
           </p>
+          {result && (
+            <div className="mt-3 p-3 bg-muted rounded-md">
+              <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
+                {result}
+              </pre>
+            </div>
+          )}
         </CardContent>
       </Card>
     );
@@ -59,62 +56,63 @@ export function DevboxDeleteCard({
 
   if (status === "executing") {
     return (
-      <Card className="w-full">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-semibold text-destructive">
-            Delete Devbox
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm">
-            Are you sure you want to delete devbox:{" "}
-            <strong className="font-semibold">{devboxName}</strong>?
-          </p>
-          <div className="flex gap-2">
-            <Button
-              onClick={handleDelete}
-              disabled={deleteMutation.isPending}
-              variant="destructive"
-              size="sm"
-              className="flex-1"
-            >
-              {deleteMutation.isPending ? (
-                <>
-                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                  Deleting...
-                </>
-              ) : (
-                <>
-                  <Trash2 className="h-3 w-3 mr-1" />
-                  Delete Devbox
-                </>
-              )}
-            </Button>
-            <Button
-              onClick={handleCancel}
-              variant="outline"
-              size="sm"
-              disabled={deleteMutation.isPending}
-            >
-              Cancel
-            </Button>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+            <CardTitle className="text-lg">Deleting DevBox</CardTitle>
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+              In Progress
+            </Badge>
           </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Deleting DevBox "{args.devboxName}"...
+          </p>
         </CardContent>
       </Card>
     );
   }
 
+  // status === "inProgress" - waiting for user confirmation
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold">
-          Preparing to Delete
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+    <Card>
+      <CardHeader>
         <div className="flex items-center gap-2">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span className="text-sm">Preparing to delete {devboxName}...</span>
+          <AlertTriangle className="h-5 w-5 text-amber-600" />
+          <CardTitle className="text-lg">Confirm Deletion</CardTitle>
+          <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+            Confirmation Required
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-md">
+          <p className="text-sm font-medium text-destructive mb-2">
+            ⚠️ This action cannot be undone
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Are you sure you want to delete DevBox "{args.devboxName}"? All data and configurations will be permanently lost.
+          </p>
+        </div>
+        
+        <div className="flex gap-2 justify-end">
+          <Button
+            variant="outline"
+            onClick={handleCancel}
+            className="min-w-[80px]"
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleConfirm}
+            className="min-w-[80px]"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete
+          </Button>
         </div>
       </CardContent>
     </Card>

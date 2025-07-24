@@ -25,10 +25,8 @@ export function RenderTextMessage({
     <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
       <div
         className={cn(
-          "inline-block rounded-lg px-4 py-2 text-sm break-words",
-          isUser
-            ? "bg-primary text-primary-foreground"
-            : "bg-muted text-foreground",
+          "inline-block rounded-lg py-2 text-sm break-words",
+          isUser ? "bg-muted text-foreground px-4" : "text-foreground px-1",
           isLoading && "animate-pulse"
         )}
       >
@@ -38,7 +36,6 @@ export function RenderTextMessage({
           animationDuration="0.2s"
           animationTimingFunction="ease-in-out"
         />
-        {/* <span>{message.content}</span> */}
 
         {isLoading && (
           <div className="flex items-center gap-2 text-xs opacity-70">
