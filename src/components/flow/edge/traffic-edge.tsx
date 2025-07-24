@@ -3,11 +3,10 @@ import {
   type EdgeProps,
   getSmoothStepPath,
   Position,
+  MarkerType,
 } from "@xyflow/react";
-// import { useChatContext } from "@copilotkit/react-ui";
 
-export default function StepEdge(props: EdgeProps) {
-  // const { setOpen } = useChatContext();
+export default function TrafficEdge(props: EdgeProps) {
   const { id, sourceX, sourceY, targetX, targetY, markerEnd, style, data } =
     props;
 
@@ -32,7 +31,7 @@ export default function StepEdge(props: EdgeProps) {
       markerEnd={markerEnd}
       onClick={handleClick}
       path={path}
-      style={style}
+      style={{ ...style, stroke: "blue" }}
     />
   );
 }

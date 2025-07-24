@@ -20,7 +20,6 @@ export default function FaultEdge(props: EdgeProps) {
   });
 
   const handleClick = (event: React.MouseEvent) => {
-    // setOpen(true);
     if (data?.onClick && typeof data.onClick === "function") {
       data.onClick(event);
     }
