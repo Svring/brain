@@ -23,16 +23,29 @@ import { useMount } from "@reactuses/core";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import { getPodsByResourceTarget } from "@/lib/k8s/k8s-method/k8s-query";
 import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
+import { getPodTrafficOptions } from "@/lib/hubble/traffic/traffic-query";
+import { useQuery } from "@tanstack/react-query";
+import { createTrafficContext } from "@/lib/hubble/traffic/traffic-utils";
+import { useAuthState } from "@/contexts/auth/auth-context";
 
 export default function Page() {
   const context = createK8sContext();
+  const { auth } = useAuthState();
 
   const { isOpen, onClose, onOpenChange } = useDisclosure();
 
   const { setSearchTerm, filteredProjects, projectsLoading, projectsError } =
     useProjectSearch(context);
 
-  // const context = createK8sContext();
+  const trafficQuery = useQuery(
+    getPodTrafficOptions(createTrafficContext(auth!), {
+      namespace: "ns-wr6b9u65",
+      pod: "teable-izdfsect-66bb865b4-rrb74",
+    })
+  );
+
+  console.log(trafficQuery.data);
+
   // useMount(async () => {
   //   // const relatedResources = await getInstanceRelatedResources(
   //   //   context,
