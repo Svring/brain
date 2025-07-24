@@ -2,7 +2,7 @@
 
 import { useQueries } from "@tanstack/react-query";
 import {
-  listAllResourcesOptions,
+  listResourcesByLabelOptions,
   getCustomResourceOptions,
   getPodsByResourceTargetOptions,
   getSecretsByResourceTargetOptions,
@@ -45,7 +45,7 @@ const useDevboxNode = (
           DevboxSecretSchema.parse(_.first(spreadResourceList(data))),
       },
       {
-        ...listAllResourcesOptions(context, devboxLabel, ["ingress"], []),
+        ...listResourcesByLabelOptions(context, devboxLabel, ["ingress"], []),
         select: (data: any) =>
           _.map(spreadResourceList(_.get(data, "builtin.ingress")), (item) =>
             DevboxIngressSchema.parse(item)

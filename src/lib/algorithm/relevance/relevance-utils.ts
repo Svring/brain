@@ -1,6 +1,6 @@
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
-import { listAllResources } from "@/lib/k8s/k8s-method/k8s-query";
+import { listResourcesByLabel } from "@/lib/k8s/k8s-method/k8s-query";
 import { ListAllResourcesResponseSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
 import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 import { BUILTIN_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-builtin-resource";
@@ -10,10 +10,10 @@ import _ from "lodash";
  * Flattens the result from listAllResources into a single array of K8sResource
  */
 export function flattenResourcesResult(
-  resources: Awaited<ReturnType<typeof listAllResources>>
+  resources: Awaited<ReturnType<typeof listResourcesByLabel>>
 ): K8sResource[] {
   const allItems: K8sResource[] = [];
-  
+
   if (resources) {
     _.forEach(resources.builtin, (resourceList) => {
       if (resourceList && resourceList.items) {
@@ -26,7 +26,7 @@ export function flattenResourcesResult(
       }
     });
   }
-  
+
   return allItems;
 }
 
@@ -41,14 +41,14 @@ export async function getRelatedResourcesByLabel(
   customResourceTypes: string[] = []
 ): Promise<K8sResource[]> {
   const labelSelector = `${labelKey}=${labelValue}`;
-  
-  const resources = await listAllResources(
+
+  const resources = await listResourcesByLabel(
     context,
     labelSelector,
     builtinResourceTypes,
     customResourceTypes
   );
-  
+
   return flattenResourcesResult(resources);
 }
 
@@ -147,12 +147,16 @@ export function processResourcesIntoStructuredResult(
 ): ReturnType<typeof ListAllResourcesResponseSchema.parse> {
   const uniqueResources = deduplicateResources(resources);
   const categorizedResources = categorizeResources(uniqueResources);
-  
-  const builtinByType = groupBuiltinResourcesByType(categorizedResources.builtin || []);
-  const customByType = groupCustomResourcesByType(categorizedResources.custom || []);
-  
+
+  const builtinByType = groupBuiltinResourcesByType(
+    categorizedResources.builtin || []
+  );
+  const customByType = groupCustomResourcesByType(
+    categorizedResources.custom || []
+  );
+
   const result = createStructuredResourceResult(builtinByType, customByType);
-  
+
   return ListAllResourcesResponseSchema.parse(result);
 }
 
@@ -163,10 +167,13 @@ export async function processSubModuleResources(
   context: K8sApiContext,
   instanceRelatedResources: K8sResource[],
   enabledSubModules: string[],
-  subModuleHandlers: Record<string, {
-    kind: string;
-    handler: (context: K8sApiContext, name: string) => Promise<K8sResource[]>;
-  }>
+  subModuleHandlers: Record<
+    string,
+    {
+      kind: string;
+      handler: (context: K8sApiContext, name: string) => Promise<K8sResource[]>;
+    }
+  >
 ): Promise<K8sResource[]> {
   const subModuleResources = await Promise.all(
     enabledSubModules.map(async (module) => {

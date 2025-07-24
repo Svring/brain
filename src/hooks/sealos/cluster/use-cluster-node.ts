@@ -2,7 +2,7 @@
 
 import { useQueries } from "@tanstack/react-query";
 import {
-  listAllResourcesOptions,
+  listResourcesByLabelOptions,
   getCustomResourceOptions,
   getPodsByResourceTargetOptions,
   getSecretsByResourceTargetOptions,
@@ -33,9 +33,16 @@ const useClusterNode = (
         select: (data: any) => ClusterResourceSchema.parse(data),
       },
       {
-        ...listAllResourcesOptions(context, clusterLabel, ["secret"]),
+        ...listResourcesByLabelOptions(context, clusterLabel, ["secret"]),
         select: (data: any) =>
           _.map(spreadResourceList(_.get(data, "builtin.secret")), (item) =>
+            K8sResourceSchema.parse(item)
+          ),
+      },
+      {
+        ...listResourcesByLabelOptions(context, clusterLabel, ["service"]),
+        select: (data: any) =>
+          _.map(spreadResourceList(_.get(data, "builtin.service")), (item) =>
             K8sResourceSchema.parse(item)
           ),
       },
@@ -49,9 +56,14 @@ const useClusterNode = (
     };
   }
 
-  const [resourceQuery, secretsQuery] = queries;
+  const [resourceQuery, secretsQuery, servicesQuery] = queries;
   const resourceData = resourceQuery.data;
   const secretsData = secretsQuery.data;
+  const servicesData = servicesQuery.data;
+
+  console.log("resourceData", resourceData);
+  console.log("secretsData", secretsData);
+  console.log("servicesData", servicesData);
 
   const nodeData = convertClusterK8sToNodeData(resourceData!);
 

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { KubernetesMetadataSchema } from "@/lib/k8s/schemas/resource-schemas/kubernetes-resource-schemas";
+import { K8sMetadataSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 
 // =====================
 // 1. API Context Schema
@@ -62,7 +62,7 @@ const TemplateSpecSchema = z.object({
 const TemplateResourceSchema = z.object({
   apiVersion: z.literal("app.sealos.io/v1"),
   kind: z.literal("Template"),
-  metadata: KubernetesMetadataSchema,
+  metadata: K8sMetadataSchema,
   spec: TemplateSpecSchema,
 });
 

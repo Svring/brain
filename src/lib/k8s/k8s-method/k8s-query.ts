@@ -27,7 +27,7 @@ import _ from "lodash";
 /**
  * List all resources (both custom and builtin) in parallel.
  */
-export const listAllResources = async (
+export const listResourcesByLabel = async (
   context: K8sApiContext,
   labelSelector?: string,
   builtinResourceTypes?: string[],
@@ -228,7 +228,7 @@ export const listResourcesOptions = (
 /**
  * Query options for listing all resources (both custom and builtin)
  */
-export const listAllResourcesOptions = (
+export const listResourcesByLabelOptions = (
   context: K8sApiContext,
   labelSelector?: string,
   builtinResourceTypes?: string[],
@@ -245,7 +245,7 @@ export const listAllResourcesOptions = (
       customResourceTypes,
     ],
     queryFn: async () => {
-      const result = await listAllResources(
+      const result = await listResourcesByLabel(
         context,
         labelSelector,
         builtinResourceTypes,

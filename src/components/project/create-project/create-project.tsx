@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/general/use-toast";
 import { useCreateProjectMutation } from "@/lib/project/project-method/project-mutation";
 import { getCurrentNamespace } from "@/lib/auth/auth-utils";
 import { getDecodedKubeconfig } from "@/lib/auth/auth-utils";
-import { K8sApiContextSchema } from "@/lib/k8s/schemas";
+import { K8sApiContextSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
 import type {
   ListTemplateResponse,
   TemplateResource,
