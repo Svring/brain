@@ -19,6 +19,10 @@ import {
   FileText,
   ChevronDown,
   ChevronRight,
+  GitBranch,
+  MousePointer,
+  Circle,
+  ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -43,9 +47,20 @@ export function StateCard({ state, className }: StateCardProps) {
   const hasResources =
     state.project_context?.flowGraphData?.resources?.length > 0;
 
+  // Flow context state
+  const hasNodes = state.flow_context?.nodes?.length > 0;
+  const hasEdges = state.flow_context?.edges?.length > 0;
+  const hasSelectedNode = !!state.flow_context?.selectedNode;
+  const hasSelectedEdge = !!state.flow_context?.selectedEdge;
+  const isFlowInitialized = !!state.flow_context?.isInitialized;
+
   const [showProjectsJson, setShowProjectsJson] = useState(false);
   const [showCurrentProjectJson, setShowCurrentProjectJson] = useState(false);
   const [showResourcesJson, setShowResourcesJson] = useState(false);
+  const [showNodesJson, setShowNodesJson] = useState(false);
+  const [showEdgesJson, setShowEdgesJson] = useState(false);
+  const [showSelectedNodeJson, setShowSelectedNodeJson] = useState(false);
+  const [showSelectedEdgeJson, setShowSelectedEdgeJson] = useState(false);
 
   return (
     <Collapsible
@@ -258,6 +273,216 @@ export function StateCard({ state, className }: StateCardProps) {
                     <div className="bg-muted p-3 rounded overflow-auto max-h-64">
                       <ReactJson
                         src={state.project_context.flowGraphData.resources}
+                        theme="rjv-default"
+                        name={false}
+                        collapsed={1}
+                        displayDataTypes={false}
+                        displayObjectSize={false}
+                        enableClipboard={false}
+                        style={{
+                          fontSize: "12px",
+                          backgroundColor: "transparent",
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Flow Context */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium text-muted-foreground">
+                Flow Context
+              </h4>
+
+              <div className="grid grid-cols-1 gap-3 text-sm">
+                {/* Flow Status */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <GitBranch className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Status:</span>
+                  </div>
+                  <Badge variant={isFlowInitialized ? "default" : "secondary"}>
+                    {isFlowInitialized ? "Initialized" : "Not Initialized"}
+                  </Badge>
+                </div>
+
+                {/* Nodes */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Circle className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Nodes:</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={hasNodes ? "default" : "secondary"}>
+                        {hasNodes
+                          ? `${state.flow_context.nodes.length} nodes`
+                          : "None"}
+                      </Badge>
+                      {hasNodes && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0"
+                          onClick={() => setShowNodesJson(!showNodesJson)}
+                        >
+                          {showNodesJson ? (
+                            <ChevronDown className="w-3 h-3" />
+                          ) : (
+                            <ChevronRight className="w-3 h-3" />
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  {showNodesJson && hasNodes && (
+                    <div className="bg-muted p-3 rounded overflow-auto max-h-64">
+                      <ReactJson
+                        src={state.flow_context.nodes}
+                        theme="rjv-default"
+                        name={false}
+                        collapsed={1}
+                        displayDataTypes={false}
+                        displayObjectSize={false}
+                        enableClipboard={false}
+                        style={{
+                          fontSize: "12px",
+                          backgroundColor: "transparent",
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Edges */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Edges:</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={hasEdges ? "default" : "secondary"}>
+                        {hasEdges
+                          ? `${state.flow_context.edges.length} edges`
+                          : "None"}
+                      </Badge>
+                      {hasEdges && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0"
+                          onClick={() => setShowEdgesJson(!showEdgesJson)}
+                        >
+                          {showEdgesJson ? (
+                            <ChevronDown className="w-3 h-3" />
+                          ) : (
+                            <ChevronRight className="w-3 h-3" />
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  {showEdgesJson && hasEdges && (
+                    <div className="bg-muted p-3 rounded overflow-auto max-h-64">
+                      <ReactJson
+                        src={state.flow_context.edges}
+                        theme="rjv-default"
+                        name={false}
+                        collapsed={1}
+                        displayDataTypes={false}
+                        displayObjectSize={false}
+                        enableClipboard={false}
+                        style={{
+                          fontSize: "12px",
+                          backgroundColor: "transparent",
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Selected Node */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <MousePointer className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Selected Node:</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={hasSelectedNode ? "default" : "secondary"}>
+                        {hasSelectedNode ? "Selected" : "None"}
+                      </Badge>
+                      {hasSelectedNode && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0"
+                          onClick={() => setShowSelectedNodeJson(!showSelectedNodeJson)}
+                        >
+                          {showSelectedNodeJson ? (
+                            <ChevronDown className="w-3 h-3" />
+                          ) : (
+                            <ChevronRight className="w-3 h-3" />
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  {showSelectedNodeJson && hasSelectedNode && (
+                    <div className="bg-muted p-3 rounded overflow-auto max-h-64">
+                      <ReactJson
+                        src={state.flow_context.selectedNode}
+                        theme="rjv-default"
+                        name={false}
+                        collapsed={1}
+                        displayDataTypes={false}
+                        displayObjectSize={false}
+                        enableClipboard={false}
+                        style={{
+                          fontSize: "12px",
+                          backgroundColor: "transparent",
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Selected Edge */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <MousePointer className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Selected Edge:</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={hasSelectedEdge ? "default" : "secondary"}>
+                        {hasSelectedEdge ? "Selected" : "None"}
+                      </Badge>
+                      {hasSelectedEdge && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0"
+                          onClick={() => setShowSelectedEdgeJson(!showSelectedEdgeJson)}
+                        >
+                          {showSelectedEdgeJson ? (
+                            <ChevronDown className="w-3 h-3" />
+                          ) : (
+                            <ChevronRight className="w-3 h-3" />
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  {showSelectedEdgeJson && hasSelectedEdge && (
+                    <div className="bg-muted p-3 rounded overflow-auto max-h-64">
+                      <ReactJson
+                        src={state.flow_context.selectedEdge}
                         theme="rjv-default"
                         name={false}
                         collapsed={1}

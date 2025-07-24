@@ -6,8 +6,8 @@ import type { Edge, Node } from "@xyflow/react";
 export interface FlowContext {
   nodes: Node[];
   edges: Edge[];
-  selectedNode: string | null;
-  selectedEdge: string | null;
+  selectedNode: any;
+  selectedEdge: any;
   isInitialized: boolean;
 }
 
@@ -17,8 +17,8 @@ export type FlowEvent =
   | { type: "UPDATE_EDGES"; edges: Edge[] }
   | { type: "UPDATE_SINGLE_NODE"; id: string; node: Partial<Node> }
   | { type: "UPDATE_SINGLE_EDGE"; id: string; edge: Partial<Edge> }
-  | { type: "SET_SELECTED_NODE"; nodeId: string | null }
-  | { type: "SET_SELECTED_EDGE"; edgeId: string | null }
+  | { type: "SET_SELECTED_NODE"; node: any }
+  | { type: "SET_SELECTED_EDGE"; edge: any }
   | { type: "RESET_FLOW" };
 
 export const flowMachine = createMachine({
@@ -82,12 +82,12 @@ export const flowMachine = createMachine({
         },
         SET_SELECTED_NODE: {
           actions: assign({
-            selectedNode: ({ event }) => event.nodeId,
+            selectedNode: ({ event }) => event.node,
           }),
         },
         SET_SELECTED_EDGE: {
           actions: assign({
-            selectedEdge: ({ event }) => event.edgeId,
+            selectedEdge: ({ event }) => event.edge,
           }),
         },
         RESET_FLOW: {

@@ -12,6 +12,7 @@ import { useRef } from "react";
 import { Trash2 } from "lucide-react";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useAiActions } from "@/contexts/ai/ai-context";
+import { useFlowActions } from "@/contexts/flow/flow-context";
 import HoverableNodeWrapper from "@/components/flow/components/hoverable-node-wrapper";
 
 interface BaseNodeProps {
@@ -42,9 +43,11 @@ export default function BaseNodeWrapper({
   const deleteResourceMutation = useDeleteResourceMutation(context);
   const nodeRef = useRef(null);
 
-  // Handle node click to open chat sidebar
+  // Handle node click to open chat sidebar and set selected node
   const { openChat } = useAiActions();
+  const { setSelectedNode } = useFlowActions();
   const handleNodeClick = () => {
+    setSelectedNode(nodeData);
     openChat();
   };
 

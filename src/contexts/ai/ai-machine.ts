@@ -16,6 +16,13 @@ export interface AiState {
       resources: any;
     };
   };
+  flow_context: {
+    nodes: any;
+    edges: any;
+    selectedNode: any;
+    selectedEdge: any;
+    isInitialized: boolean;
+  };
 }
 
 export interface AiChat {
@@ -32,6 +39,7 @@ export type AiEvent =
   | { type: "CHAT_OPEN" }
   | { type: "CHAT_CLOSE" }
   | { type: "SET_STATE"; state: Partial<AiState> }
+  | { type: "SET_FLOW_CONTEXT"; flowContext: Partial<AiState['flow_context']> }
   | { type: "CREDENTIALS_LOADED" }
   | { type: "FAIL"; error: string };
 
@@ -54,6 +62,13 @@ export const aiMachine = createMachine({
           resources: null,
         },
       },
+      flow_context: {
+        nodes: [],
+        edges: [],
+        selectedNode: null,
+        selectedEdge: null,
+        isInitialized: false,
+      },
     },
     chat: {
       open: false,
@@ -68,6 +83,17 @@ export const aiMachine = createMachine({
             state: ({ context, event }) => ({
               ...context.state,
               ...event.state,
+            }),
+          }),
+        },
+        SET_FLOW_CONTEXT: {
+          actions: assign({
+            state: ({ context, event }) => ({
+              ...context.state,
+              flow_context: {
+                ...context.state.flow_context,
+                ...event.flowContext,
+              },
             }),
           }),
         },
@@ -108,6 +134,17 @@ export const aiMachine = createMachine({
             }),
           }),
         },
+        SET_FLOW_CONTEXT: {
+          actions: assign({
+            state: ({ context, event }) => ({
+              ...context.state,
+              flow_context: {
+                ...context.state.flow_context,
+                ...event.flowContext,
+              },
+            }),
+          }),
+        },
         CREDENTIALS_LOADED: {
           // Allow credential updates in active state
         },
@@ -126,6 +163,17 @@ export const aiMachine = createMachine({
             state: ({ context, event }) => ({
               ...context.state,
               ...event.state,
+            }),
+          }),
+        },
+        SET_FLOW_CONTEXT: {
+          actions: assign({
+            state: ({ context, event }) => ({
+              ...context.state,
+              flow_context: {
+                ...context.state.flow_context,
+                ...event.flowContext,
+              },
             }),
           }),
         },

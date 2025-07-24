@@ -2,9 +2,11 @@
 
 import { createBrowserInspector } from "@statelyai/inspect";
 import { useMachine } from "@xstate/react";
-import { createContext, type ReactNode, useContext } from "react";
+import _ from "lodash";
+import { createContext, type ReactNode, useContext, useEffect } from "react";
 import { flowMachine } from "./flow-machine";
 import type { Edge, Node } from "@xyflow/react";
+import useAI from "@/hooks/ai/use-ai";
 
 const inspector = createBrowserInspector();
 
@@ -22,6 +24,18 @@ export const FlowProvider = ({ children }: { children: ReactNode }) => {
   const [state, send, actorRef] = useMachine(flowMachine, {
     inspect: inspector.inspect,
   });
+
+  const { state: aiState, setState: setAIState } = useAI();
+
+  useEffect(() => {
+    const newState = _.cloneDeep(aiState);
+    _.set(newState, "flow_context.nodes", state.context.nodes);
+    _.set(newState, "flow_context.edges", state.context.edges);
+    _.set(newState, "flow_context.selectedNode", state.context.selectedNode);
+    _.set(newState, "flow_context.selectedEdge", state.context.selectedEdge);
+    _.set(newState, "flow_context.isInitialized", state.context.isInitialized);
+    setAIState(newState);
+  }, [state]);
 
   return (
     <FlowContext.Provider value={{ state, send, actorRef }}>
@@ -41,8 +55,8 @@ export function useFlowState() {
   return {
     nodes: state.context.nodes as Node[],
     edges: state.context.edges as Edge[],
-    selectedNode: state.context.selectedNode as string | null,
-    selectedEdge: state.context.selectedEdge as string | null,
+    selectedNode: state.context.selectedNode as any,
+    selectedEdge: state.context.selectedEdge as any,
     isInitialized: state.context.isInitialized as boolean,
     isReady: state.matches("ready"),
   };
@@ -60,10 +74,8 @@ export function useFlowActions() {
       send({ type: "UPDATE_SINGLE_NODE", id, node }),
     updateSingleEdge: (id: string, edge: Partial<Edge>) =>
       send({ type: "UPDATE_SINGLE_EDGE", id, edge }),
-    setSelectedNode: (nodeId: string | null) =>
-      send({ type: "SET_SELECTED_NODE", nodeId }),
-    setSelectedEdge: (edgeId: string | null) =>
-      send({ type: "SET_SELECTED_EDGE", edgeId }),
+    setSelectedNode: (node: any) => send({ type: "SET_SELECTED_NODE", node }),
+    setSelectedEdge: (edge: any) => send({ type: "SET_SELECTED_EDGE", edge }),
     resetFlow: () => send({ type: "RESET_FLOW" }),
   };
 }

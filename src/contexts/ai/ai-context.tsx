@@ -125,6 +125,7 @@ export function useAiActions() {
     openChat: () => send({ type: "CHAT_OPEN" }),
     closeChat: () => send({ type: "CHAT_CLOSE" }),
     setState: (state: Partial<AiState>) => send({ type: "SET_STATE", state }),
+    setFlowContext: (flowContext: Partial<AiState['flow_context']>) => send({ type: "SET_FLOW_CONTEXT", flowContext }),
     credentialsLoaded: () => send({ type: "CREDENTIALS_LOADED" }),
     fail: (error: string) => send({ type: "FAIL", error }),
   };
