@@ -7,32 +7,22 @@ import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { getBuiltinResourceOptions } from "@/lib/k8s/k8s-method/k8s-query";
 import { createK8sContext } from "@/lib/auth/auth-utils";
+import useDeploymentNode from "@/hooks/sealos/deployment/use-deployment-node";
 
-interface DeployNodeProps {
-  target: BuiltinResourceTarget;
-}
-
-export default function DeployNode({ data }: { data: DeployNodeProps }) {
-  const { target } = data;
-
-  // Extract deployment name from target
-  const deploymentName = target.name || "";
-
-  // Create K8s context
+export default function DeploymentNode({
+  data: { target },
+}: {
+  data: { target: BuiltinResourceTarget };
+}) {
   const k8sContext = createK8sContext();
+  const { data, isLoading } = useDeploymentNode(k8sContext, target);
 
-  // Fetch deployment data
-  const { data: deploymentResource } = useQuery(
-    getBuiltinResourceOptions(k8sContext, target)
-  );
-
-  // Extract data from resource or provide fallbacks
-  const name = deploymentResource?.metadata?.name || deploymentName;
-  const readyReplicas = deploymentResource?.status?.readyReplicas || 0;
-  const replicas = deploymentResource?.spec?.replicas || 0;
+  if (isLoading) {
+    return null;
+  }
 
   return (
-    <BaseNode target={target}>
+    <BaseNode target={target} nodeData={data}>
       <div className="flex h-full flex-col justify-between">
         {/* Name */}
         <div className="flex items-center gap-2 truncate font-medium">
@@ -51,7 +41,7 @@ export default function DeployNode({ data }: { data: DeployNodeProps }) {
                   App Launchpad
                 </span>
                 <span className="text-lg font-bold text-foreground leading-tight w-40 overflow-hidden text-ellipsis text-left">
-                  {name}
+                  {data.name}
                 </span>
               </span>
             </span>
@@ -59,20 +49,22 @@ export default function DeployNode({ data }: { data: DeployNodeProps }) {
         </div>
 
         {/* State badge */}
-        {/* <div className="mt-auto flex justify-start">
+        <div className="mt-auto flex justify-start">
           <Badge
             variant="outline"
             className={
-              readyReplicas === replicas && replicas > 0
+              data.status.readyReplicas === data.status.replicas &&
+              data.status.replicas > 0
                 ? "border-green-600 text-green-700"
                 : ""
             }
           >
-            {readyReplicas === replicas && replicas > 0
+            {data.status.readyReplicas === data.status.replicas &&
+            data.status.replicas > 0
               ? "running"
               : "preparing"}
           </Badge>
-        </div> */}
+        </div>
       </div>
     </BaseNode>
   );

@@ -1,34 +1,72 @@
-"use client";
+import { queryOptions } from "@tanstack/react-query";
+import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
+import {
+  CustomResourceTarget,
+  CustomResourceTargetSchema,
+} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { getObjectStorageObject } from "@/lib/algorithm/bridge/bridge-resources/objectstorage/objectstorage-bridge";
+import { listCustomResources } from "@/lib/k8s/k8s-api/k8s-api-query";
+import { runParallelAction } from "next-server-actions-parallel";
+import {
+  convertResourceTypeToTarget,
+  convertResourceToTarget,
+} from "@/lib/k8s/k8s-method/k8s-utils";
+import { buildQueryKey } from "@/lib/k8s/k8s-constant/k8s-constant-query-key";
 
-import { useQuery } from "@tanstack/react-query";
-import { getObjectStorageSecretOptions } from "@/lib/k8s/k8s-method/k8s-query";
-import type { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
+export const getObjectStorage = async (
+  context: K8sApiContext,
+  target: CustomResourceTarget
+) => {
+  // Test the new composeObjectFromTarget function
+  const objectStorageObject = await getObjectStorageObject(context, target);
+  return objectStorageObject;
+};
+
+export const listObjectStorage = async (context: K8sApiContext) => {
+  const target = CustomResourceTargetSchema.parse(
+    convertResourceTypeToTarget("objectstoragebucket")
+  );
+  const objectStorageResourceList = await runParallelAction(
+    listCustomResources(context, target)
+  );
+  const objectStorageTargetList = objectStorageResourceList.items.map((item) =>
+    CustomResourceTargetSchema.parse(convertResourceToTarget(item))
+  );
+  return objectStorageTargetList.map(
+    async (target) => await getObjectStorage(context, target)
+  );
+};
+
+// ============================================================================
+// OPTIONS FUNCTIONS (React Query wrappers)
+// ============================================================================
 
 /**
- * Hook to get object storage key secret
- * @param objectStorageName - Name of the object storage
- * @param context - Optional K8s context, will create one if not provided
- * @returns Query result containing the object storage secret
+ * Query options for getting an objectstorage by target
  */
-export function useObjectStorageSecret(
+export const getObjectStorageOptions = (
   context: K8sApiContext,
-  objectStorageName: string
-) {
-  return useQuery({
-    ...getObjectStorageSecretOptions(context, objectStorageName),
-    enabled: !!objectStorageName && !!context.namespace && !!context.kubeconfig,
+  target: CustomResourceTarget
+) =>
+  queryOptions({
+    queryKey: buildQueryKey.getObjectStorage(context.namespace, target.name!),
+    queryFn: async () => await getObjectStorage(context, target),
+    enabled:
+      !!target.group &&
+      !!target.version &&
+      !!context.namespace &&
+      !!target.plural &&
+      !!target.name &&
+      !!context.kubeconfig,
   });
-}
 
 /**
- * Get object storage secret query options for use with custom query clients
- * @param objectStorageName - Name of the object storage
- * @param context - Optional K8s context, will create one if not provided
- * @returns Query options for the object storage secret
+ * Query options for listing objectstorages
  */
-export function getObjectStorageSecretQueryOptions(
-  context: K8sApiContext,
-  objectStorageName: string
-) {
-  return getObjectStorageSecretOptions(context, objectStorageName);
-}
+export const listObjectStorageOptions = (context: K8sApiContext) =>
+  queryOptions({
+    queryKey: buildQueryKey.listObjectStorages(context.namespace),
+    queryFn: async () => await listObjectStorage(context),
+    enabled: !!context.namespace && !!context.kubeconfig,
+    staleTime: 1000 * 30,
+  });

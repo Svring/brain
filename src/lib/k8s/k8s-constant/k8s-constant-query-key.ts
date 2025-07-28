@@ -29,6 +29,10 @@ export const QUERY_KEY_RESOURCE_TYPE = {
   SECRETS_BY_OWNER: "secrets-by-owner",
   DEVBOX: "devbox",
   DEVBOXES: "devboxes",
+  CLUSTER: "cluster",
+  CLUSTERS: "clusters",
+  OBJECTSTORAGE: "objectstorage",
+  OBJECTSTORAGES: "objectstorages",
 } as const;
 
 // Query key builders
@@ -207,6 +211,48 @@ export const buildQueryKey = {
   getDevbox: (namespace: string, name: string) => [
     QUERY_KEY_PREFIX.K8S,
     QUERY_KEY_RESOURCE_TYPE.DEVBOX,
+    QUERY_KEY_OPERATION.GET,
+    namespace,
+    name,
+  ],
+
+  /**
+   * Build query key for listing clusters
+   */
+  listClusters: (namespace: string) => [
+    QUERY_KEY_PREFIX.K8S,
+    QUERY_KEY_RESOURCE_TYPE.CLUSTERS,
+    QUERY_KEY_OPERATION.LIST,
+    namespace,
+  ],
+
+  /**
+   * Build query key for getting a cluster
+   */
+  getCluster: (namespace: string, name: string) => [
+    QUERY_KEY_PREFIX.K8S,
+    QUERY_KEY_RESOURCE_TYPE.CLUSTER,
+    QUERY_KEY_OPERATION.GET,
+    namespace,
+    name,
+  ],
+
+  /**
+   * Build query key for listing object storages
+   */
+  listObjectStorages: (namespace: string) => [
+    QUERY_KEY_PREFIX.K8S,
+    QUERY_KEY_RESOURCE_TYPE.OBJECTSTORAGES,
+    QUERY_KEY_OPERATION.LIST,
+    namespace,
+  ],
+
+  /**
+   * Build query key for getting an object storage
+   */
+  getObjectStorage: (namespace: string, name: string) => [
+    QUERY_KEY_PREFIX.K8S,
+    QUERY_KEY_RESOURCE_TYPE.OBJECTSTORAGE,
     QUERY_KEY_OPERATION.GET,
     namespace,
     name,

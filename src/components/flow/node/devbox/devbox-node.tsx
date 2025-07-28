@@ -12,14 +12,14 @@ export default function DevboxNode({
   data: { target: CustomResourceTarget };
 }) {
   const context = createK8sContext();
-  const { nodeData, isLoading } = useDevboxNode(context, target);
+  const { data, isLoading } = useDevboxNode(context, target);
 
-  if (isLoading || !nodeData) {
+  if (isLoading) {
     return null;
   }
 
   return (
-    <BaseNode target={target} nodeData={nodeData}>
+    <BaseNode target={target} nodeData={data}>
       <div className="flex h-full flex-col justify-between">
         {/* Name and Status */}
         <div className="flex items-center gap-2 truncate font-medium">
@@ -38,7 +38,7 @@ export default function DevboxNode({
                   Devbox
                 </span>
                 <span className="text-lg font-bold text-foreground leading-tight w-full overflow-hidden text-ellipsis text-left">
-                  {nodeData.name}
+                  {data.name}
                 </span>
               </span>
             </span>
@@ -48,9 +48,9 @@ export default function DevboxNode({
               <span className="text-xs text-muted-foreground">Image:</span>
               <span
                 className="text-sm text-foreground truncate w-full"
-                title={nodeData.image}
+                title={data.image}
               >
-                {nodeData.image}
+                {data.image}
               </span>
             </div>
           </div>

@@ -8,5 +8,5 @@ export const getDeploymentObject = async (
 ) => {
   // Test the new composeObjectFromTarget function
   const deploymentObject = await composeObjectFromTarget(context, target);
-  console.log(deploymentObject);
+  return deploymentObject;
 };

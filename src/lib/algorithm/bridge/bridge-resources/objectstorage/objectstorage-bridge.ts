@@ -8,6 +8,5 @@ export const getObjectStorageObject = async (
 ) => {
   // Test the new composeObjectFromTarget function
   const objectStorageObject = await composeObjectFromTarget(context, target);
-  console.log(objectStorageObject);
   return objectStorageObject;
 };

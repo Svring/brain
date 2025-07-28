@@ -2,13 +2,6 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { runParallelAction } from "next-server-actions-parallel";
-import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
-import {
-  DevboxObject,
-  DevboxObjectPort,
-} from "@/lib/sealos/devbox/devbox-schemas/devbox-object-schema";
-import { strategicMergePatchCustomResource } from "@/lib/k8s/k8s-api/k8s-api-mutation";
-import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import {
   createApp,
   createDevbox,
@@ -20,190 +13,154 @@ import {
   releaseDevbox,
   removeDevboxPort,
 } from "../devbox-api/devbox-open-api";
-// import type {
-//   AppFormConfig,
-//   DevboxApiContext,
-//   DevboxCreateRequest,
-//   DevboxDeployRequest,
-//   DevboxLifecycleRequest,
-//   DevboxPortCreateRequest,
-//   DevboxReleaseRequest,
-// } from "../schemas";
+import type {
+  AppFormConfig,
+  DevboxApiContext,
+  DevboxCreateRequest,
+  DevboxDeployRequest,
+  DevboxLifecycleRequest,
+  DevboxPortCreateRequest,
+  DevboxReleaseRequest,
+} from "../devbox-api/devbox-open-api-schemas/index";
 
-export function useUpdateDevboxResourceMutation(
-  context: K8sApiContext,
-  target: CustomResourceTarget
-) {
+export function useCreateDevboxMutation(context: DevboxApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (
-      data: Partial<DevboxObject> & {
-        resource: { cpu?: string; memory?: string };
+    mutationFn: (request: DevboxCreateRequest) =>
+      runParallelAction(createDevbox(request, context)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sealos", "devbox", "list"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory", "devboxes"] });
+    },
+  });
+}
+
+export function useManageDevboxLifecycleMutation(context: DevboxApiContext) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: DevboxLifecycleRequest) =>
+      runParallelAction(manageDevboxLifecycle(request, context)),
+    onSuccess: (_data, variables) => {
+      if (
+        variables &&
+        typeof variables === "object" &&
+        "devboxName" in variables
+      ) {
+        queryClient.invalidateQueries({
+          queryKey: ["sealos", "devbox", "get", variables.devboxName],
+        });
       }
-    ) => {
-      return strategicMergePatchCustomResource(context, target, data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["devbox"] });
+      queryClient.invalidateQueries({ queryKey: ["sealos", "devbox"] });
     },
   });
 }
 
-export function useUpdateDevboxPortsMutation(
-  context: K8sApiContext,
-  target: CustomResourceTarget
-) {
+export function useDeleteDevboxMutation(context: DevboxApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (
-      data: Partial<DevboxObject> & { ports: DevboxObjectPort[] }
-    ) => {
-      return strategicMergePatchCustomResource(context, target, data);
-    },
+    mutationFn: (devboxName: string) =>
+      runParallelAction(deleteDevbox(devboxName, context)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["devbox"] });
+      queryClient.invalidateQueries({ queryKey: ["sealos", "devbox"] });
     },
   });
 }
 
-// export function useCreateDevboxMutation(context: DevboxApiContext) {
-//   const queryClient = useQueryClient();
-//   return useMutation({
-//     mutationFn: (request: DevboxCreateRequest) =>
-//       runParallelAction(createDevbox(request, context)),
-//     onSuccess: () => {
-//       queryClient.invalidateQueries({ queryKey: ["sealos", "devbox", "list"] });
-//       queryClient.invalidateQueries({ queryKey: ["inventory", "devboxes"] });
-//     },
-//   });
-// }
+export function useReleaseDevboxMutation(context: DevboxApiContext) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: DevboxReleaseRequest) =>
+      runParallelAction(releaseDevbox(request, context)),
+    onSuccess: (_data, variables) => {
+      if (
+        variables &&
+        typeof variables === "object" &&
+        "devboxName" in variables
+      ) {
+        queryClient.invalidateQueries({
+          queryKey: ["sealos", "devbox", "releases", variables.devboxName],
+        });
+      }
+    },
+  });
+}
 
-// export function useManageDevboxLifecycleMutation(context: DevboxApiContext) {
-//   const queryClient = useQueryClient();
-//   return useMutation({
-//     mutationFn: (request: DevboxLifecycleRequest) =>
-//       runParallelAction(manageDevboxLifecycle(request, context)),
-//     onSuccess: (_data, variables) => {
-//       if (
-//         variables &&
-//         typeof variables === "object" &&
-//         "devboxName" in variables
-//       ) {
-//         queryClient.invalidateQueries({
-//           queryKey: ["sealos", "devbox", "get", variables.devboxName],
-//         });
-//       }
-//       queryClient.invalidateQueries({ queryKey: ["sealos", "devbox"] });
-//     },
-//   });
-// }
+export function useDeployDevboxMutation(context: DevboxApiContext) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: DevboxDeployRequest) =>
+      runParallelAction(deployDevbox(request, context)),
+    onSuccess: (_data, variables) => {
+      if (
+        variables &&
+        typeof variables === "object" &&
+        "devboxName" in variables
+      ) {
+        queryClient.invalidateQueries({
+          queryKey: ["sealos", "devbox", "get", variables.devboxName],
+        });
+        queryClient.invalidateQueries({ queryKey: ["inventory", "devboxes"] });
+      }
+    },
+  });
+}
 
-// export function useDeleteDevboxMutation(context: DevboxApiContext) {
-//   const queryClient = useQueryClient();
-//   return useMutation({
-//     mutationFn: (devboxName: string) =>
-//       runParallelAction(deleteDevbox(devboxName, context)),
-//     onSuccess: () => {
-//       queryClient.invalidateQueries({ queryKey: ["sealos", "devbox"] });
-//     },
-//   });
-// }
+export function useCreateDevboxPortMutation(context: DevboxApiContext) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: DevboxPortCreateRequest) =>
+      runParallelAction(createDevboxPort(request, context)),
+    onSuccess: (_data, variables) => {
+      if (
+        variables &&
+        typeof variables === "object" &&
+        "devboxName" in variables
+      ) {
+        queryClient.invalidateQueries({
+          queryKey: ["sealos", "devbox", "get", variables.devboxName],
+        });
+      }
+    },
+  });
+}
 
-// export function useReleaseDevboxMutation(context: DevboxApiContext) {
-//   const queryClient = useQueryClient();
-//   return useMutation({
-//     mutationFn: (request: DevboxReleaseRequest) =>
-//       runParallelAction(releaseDevbox(request, context)),
-//     onSuccess: (_data, variables) => {
-//       if (
-//         variables &&
-//         typeof variables === "object" &&
-//         "devboxName" in variables
-//       ) {
-//         queryClient.invalidateQueries({
-//           queryKey: ["sealos", "devbox", "releases", variables.devboxName],
-//         });
-//       }
-//     },
-//   });
-// }
+export function useRemoveDevboxPortMutation(context: DevboxApiContext) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ devboxName, port }: { devboxName: string; port: number }) =>
+      runParallelAction(removeDevboxPort(devboxName, port, context)),
+    onSuccess: (_data, variables) => {
+      if (
+        variables &&
+        typeof variables === "object" &&
+        "devboxName" in variables
+      ) {
+        queryClient.invalidateQueries({
+          queryKey: ["sealos", "devbox", "get", variables.devboxName],
+        });
+      }
+    },
+  });
+}
 
-// export function useDeployDevboxMutation(context: DevboxApiContext) {
-//   const queryClient = useQueryClient();
-//   return useMutation({
-//     mutationFn: (request: DevboxDeployRequest) =>
-//       runParallelAction(deployDevbox(request, context)),
-//     onSuccess: (_data, variables) => {
-//       if (
-//         variables &&
-//         typeof variables === "object" &&
-//         "devboxName" in variables
-//       ) {
-//         queryClient.invalidateQueries({
-//           queryKey: ["sealos", "devbox", "get", variables.devboxName],
-//         });
-//         queryClient.invalidateQueries({ queryKey: ["inventory", "devboxes"] });
-//       }
-//     },
-//   });
-// }
+export function useCreateAppMutation(context: DevboxApiContext) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (appForm: AppFormConfig) =>
+      runParallelAction(createApp(appForm, context)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sealos", "app", "list"] });
+    },
+  });
+}
 
-// export function useCreateDevboxPortMutation(context: DevboxApiContext) {
-//   const queryClient = useQueryClient();
-//   return useMutation({
-//     mutationFn: (request: DevboxPortCreateRequest) =>
-//       runParallelAction(createDevboxPort(request, context)),
-//     onSuccess: (_data, variables) => {
-//       if (
-//         variables &&
-//         typeof variables === "object" &&
-//         "devboxName" in variables
-//       ) {
-//         queryClient.invalidateQueries({
-//           queryKey: ["sealos", "devbox", "get", variables.devboxName],
-//         });
-//       }
-//     },
-//   });
-// }
-
-// export function useRemoveDevboxPortMutation(context: DevboxApiContext) {
-//   const queryClient = useQueryClient();
-//   return useMutation({
-//     mutationFn: ({ devboxName, port }: { devboxName: string; port: number }) =>
-//       runParallelAction(removeDevboxPort(devboxName, port, context)),
-//     onSuccess: (_data, variables) => {
-//       if (
-//         variables &&
-//         typeof variables === "object" &&
-//         "devboxName" in variables
-//       ) {
-//         queryClient.invalidateQueries({
-//           queryKey: ["sealos", "devbox", "get", variables.devboxName],
-//         });
-//       }
-//     },
-//   });
-// }
-
-// export function useCreateAppMutation(context: DevboxApiContext) {
-//   const queryClient = useQueryClient();
-//   return useMutation({
-//     mutationFn: (appForm: AppFormConfig) =>
-//       runParallelAction(createApp(appForm, context)),
-//     onSuccess: () => {
-//       queryClient.invalidateQueries({ queryKey: ["sealos", "app", "list"] });
-//     },
-//   });
-// }
-
-// export function useDeleteAppMutation(context: DevboxApiContext) {
-//   const queryClient = useQueryClient();
-//   return useMutation({
-//     mutationFn: (appName: string) =>
-//       runParallelAction(deleteApp(appName, context)),
-//     onSuccess: () => {
-//       queryClient.invalidateQueries({ queryKey: ["sealos", "app", "list"] });
-//     },
-//   });
-// }
+export function useDeleteAppMutation(context: DevboxApiContext) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (appName: string) =>
+      runParallelAction(deleteApp(appName, context)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sealos", "app", "list"] });
+    },
+  });
+}

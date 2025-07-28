@@ -8,6 +8,5 @@ export const getStatefulSetObject = async (
 ) => {
   // Test the new composeObjectFromTarget function
   const statefulSetObject = await composeObjectFromTarget(context, target);
-  console.log(statefulSetObject);
   return statefulSetObject;
 };

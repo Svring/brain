@@ -19,7 +19,7 @@ import {
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
 import _ from "lodash";
 import { listAnnotationBasedResourcesOptions } from "@/lib/k8s/k8s-method/k8s-query";
-import { useBatchPatchResourcesMetadataMutation } from "@/lib/k8s/k8s-method/k8s-mutation";
+import { usePatchResourceMetadataMutation } from "@/lib/k8s/k8s-method/k8s-mutation";
 import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 import { BRAIN_RESOURCES_ANNOTATION_KEY } from "@/lib/project/project-constant/project-constant-label";
 
@@ -29,7 +29,7 @@ export function useProjectResources(
 ): UseQueryResult<ListAllResourcesResponse, Error> {
   const { flowGraphData } = useProjectState();
   const { setFlowGraphData } = useProjectActions();
-  const patchMutation = useBatchPatchResourcesMetadataMutation(context);
+  const patchMutation = usePatchResourceMetadataMutation(context);
 
   const { data: project, isSuccess } = useQuery(
     getProjectOptions(context, projectName)
@@ -91,9 +91,10 @@ export function useProjectResources(
     const { project, resources } = flowGraphData;
     if (project === projectName && resources) {
       patchMutation.mutate({
-        targets: [
+        target: [
           {
             type: "custom",
+            resourceType: CUSTOM_RESOURCES.instance.resourceType,
             group: CUSTOM_RESOURCES.instance.group,
             version: CUSTOM_RESOURCES.instance.version,
             plural: CUSTOM_RESOURCES.instance.plural,

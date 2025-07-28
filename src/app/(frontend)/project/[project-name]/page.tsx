@@ -113,7 +113,7 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
       <div className="absolute top-2 right-2 z-20">
         <MenuBar activeIndex={null} items={menuItemsRight} />
       </div>
-      <Sheet onOpenChange={setOpen} open={open}>
+      {/* <Sheet onOpenChange={setOpen} open={open}>
         <SheetContent className="!w-[40vw] !max-w-none fade-in-0 animate-in flex flex-col">
           <SheetHeader className="flex-shrink-0">
             <SheetTitle>Add Resource</SheetTitle>
@@ -128,7 +128,7 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
             <AddResourceTabs />
           </Droppable>
         </SheetContent>
-      </Sheet>
+      </Sheet> */}
       <AiCoin />
       <AiChatbox />
     </>
