@@ -5,7 +5,7 @@ import { nanoid } from "nanoid";
 import type {
   InputParameters,
   K8sManifestGeneration,
-} from "../schemas/deploy-manifest-schemas";
+} from "../../deployment/schemas/deploy-manifest-schemas";
 
 async function generateServiceJson(params: InputParameters) {
   const { name, ports } = params;

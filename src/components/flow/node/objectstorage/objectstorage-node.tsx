@@ -1,7 +1,9 @@
 "use client";
 
 import BaseNode from "../base-node-wrapper";
+import { createK8sContext } from "@/lib/auth/auth-utils";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import useObjectStorageNode from "@/hooks/sealos/objectstorage/use-objectstorage-node";
 import Image from "next/image";
 
 interface ObjectStorageNodeProps {
@@ -9,17 +11,21 @@ interface ObjectStorageNodeProps {
 }
 
 export default function ObjectStorageNode({
-  data,
+  data: { target },
 }: {
-  data: ObjectStorageNodeProps;
+  data: { target: CustomResourceTarget };
 }) {
-  const { target } = data;
+  const context = createK8sContext();
+  const { data, isLoading } = useObjectStorageNode(context, target);
 
-  // Extract object storage name from target
-  const name = target.name || "Object Storage";
+  if (isLoading) {
+    return null;
+  }
+
+  const { name } = data;
 
   return (
-    <BaseNode target={target} nodeData={{}}>
+    <BaseNode target={target} nodeData={data}>
       <div className="flex h-full flex-col justify-between">
         {/* Name */}
         <div className="flex items-center gap-2 truncate font-medium">

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Request schema for checkReady API
-export const DeployCheckReadyRequestSchema = z.object({
+export const AppCheckReadyRequestSchema = z.object({
   appName: z.string(),
 });
 
@@ -13,12 +13,12 @@ export const CheckReadyDataItemSchema = z.object({
 });
 
 // Response schema for checkReady API
-export const DeployCheckReadyResponseSchema = z.object({
+export const AppCheckReadyResponseSchema = z.object({
   code: z.literal(200),
   message: z.string(),
   data: z.array(CheckReadyDataItemSchema),
 });
 
-export type DeployCheckReadyRequest = z.infer<typeof DeployCheckReadyRequestSchema>;
-export type DeployCheckReadyResponse = z.infer<typeof DeployCheckReadyResponseSchema>;
+export type AppCheckReadyRequest = z.infer<typeof AppCheckReadyRequestSchema>;
+export type AppCheckReadyResponse = z.infer<typeof AppCheckReadyResponseSchema>;
 export type CheckReadyDataItem = z.infer<typeof CheckReadyDataItemSchema>;

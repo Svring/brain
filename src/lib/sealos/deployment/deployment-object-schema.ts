@@ -24,12 +24,16 @@ export const DeploymentObjectSchema = z.object({
         path: ["status.replicas"],
       })
     ),
-    unavailableReplicas: z.number().describe(
-      JSON.stringify({
-        resourceType: "deployment",
-        path: ["status.unavailableReplicas"],
-      })
-    ),
+    unavailableReplicas: z
+      .number()
+      .nullable()
+      .optional()
+      .describe(
+        JSON.stringify({
+          resourceType: "deployment",
+          path: ["status.unavailableReplicas"],
+        })
+      ),
   }),
   containers: z.array(
     z.object({

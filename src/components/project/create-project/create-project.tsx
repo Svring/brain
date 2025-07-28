@@ -38,7 +38,12 @@ export default function CreateProject({ onClose }: CreateProjectProps) {
     useState<TemplateResource | null>(null);
 
   const { toast } = useToast();
-  const { data: templatesResponse, isLoading, error } = useProjectTemplates();
+  const templateApiContext = createTemplateApiContext();
+  const {
+    data: templatesResponse,
+    isLoading,
+    error,
+  } = useProjectTemplates(templateApiContext);
   const templates =
     (templatesResponse as ListTemplateResponse)?.data?.templates ?? [];
 
@@ -49,9 +54,6 @@ export default function CreateProject({ onClose }: CreateProjectProps) {
   });
 
   const createProjectMutation = useCreateProjectMutation(context);
-
-  // Get template API context
-  const templateApiContext = createTemplateApiContext();
 
   const createInstanceMutation = useCreateInstanceMutation(templateApiContext);
 

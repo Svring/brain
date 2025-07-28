@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRemoveProjectAnnotationMutation } from "@/lib/project/project-method/project-mutation";
+import { createK8sContext } from "@/lib/auth/auth-utils";
 import { useProjectActions } from "@/contexts/project/project-context";
 import { toast } from "sonner";
 
@@ -9,8 +10,10 @@ import { toast } from "sonner";
  * @returns { handleRefresh, isRefreshing }
  */
 export function useFlowRefresh(projectName: string) {
+  const context = createK8sContext();
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const removeProjectAnnotationMutation = useRemoveProjectAnnotationMutation();
+  const removeProjectAnnotationMutation =
+    useRemoveProjectAnnotationMutation(context);
   const { setFlowGraphData } = useProjectActions();
 
   const handleRefresh = async () => {

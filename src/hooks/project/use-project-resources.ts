@@ -74,9 +74,9 @@ export function useProjectResources(
   });
 
   // Use annotation-based query if available, otherwise use full query
-  const resourcesQuery = resourcesData
-    ? annotationBasedQuery
-    : fullResourcesQuery;
+  const resourcesQuery = fullResourcesQuery.data
+    ? fullResourcesQuery
+    : annotationBasedQuery;
 
   // Send simplified data to state machine for flow graph state
   useEffect(() => {

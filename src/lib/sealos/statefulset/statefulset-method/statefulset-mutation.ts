@@ -14,55 +14,71 @@ import type { AppDeleteRequest } from "../../applaunchpad/applaunchpad-api/appla
 import type { AppPauseRequest } from "../../applaunchpad/applaunchpad-api/applaunchpad-old-api-schemas/req-res-pause-schemas";
 import type { AppStartRequest } from "../../applaunchpad/applaunchpad-api/applaunchpad-old-api-schemas/req-res-start-schemas";
 
-export function useCreateDeployMutation(context: SealosApiContext) {
+export function useCreateStatefulSetMutation(context: SealosApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: AppCreateRequest) =>
       runParallelAction(createApp(request, context)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sealos", "deploy", "list"] });
-      queryClient.invalidateQueries({ queryKey: ["inventory", "deployments"] });
-    },
-  });
-}
-
-export function useDeleteDeployMutation(context: SealosApiContext) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (request: AppDeleteRequest) =>
-      runParallelAction(deleteApp(request, context)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sealos", "deploy", "list"] });
-      queryClient.invalidateQueries({ queryKey: ["inventory", "deployments"] });
-    },
-  });
-}
-
-export function usePauseDeployMutation(context: SealosApiContext) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (request: AppPauseRequest) =>
-      runParallelAction(pauseApp(request, context)),
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["sealos", "deploy", "list"] });
-      queryClient.invalidateQueries({ queryKey: ["inventory", "deployments"] });
       queryClient.invalidateQueries({
-        queryKey: ["sealos", "deploy", "get", variables.appName],
+        queryKey: ["sealos", "statefulset", "list"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["inventory", "statefulsets"],
       });
     },
   });
 }
 
-export function useStartDeployMutation(context: SealosApiContext) {
+export function useDeleteStatefulSetMutation(context: SealosApiContext) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: AppDeleteRequest) =>
+      runParallelAction(deleteApp(request, context)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["sealos", "statefulset", "list"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["inventory", "statefulsets"],
+      });
+    },
+  });
+}
+
+export function usePauseStatefulSetMutation(context: SealosApiContext) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: AppPauseRequest) =>
+      runParallelAction(pauseApp(request, context)),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["sealos", "statefulset", "list"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["inventory", "statefulsets"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["sealos", "statefulset", "get", variables.appName],
+      });
+    },
+  });
+}
+
+export function useStartStatefulSetMutation(context: SealosApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: AppStartRequest) =>
       runParallelAction(startApp(request, context)),
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["sealos", "deploy", "list"] });
-      queryClient.invalidateQueries({ queryKey: ["inventory", "deployments"] });
       queryClient.invalidateQueries({
-        queryKey: ["sealos", "deploy", "get", variables.appName],
+        queryKey: ["sealos", "statefulset", "list"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["inventory", "statefulsets"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["sealos", "statefulset", "get", variables.appName],
       });
     },
   });

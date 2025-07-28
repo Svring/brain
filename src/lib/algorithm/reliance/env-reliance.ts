@@ -165,7 +165,7 @@ export const mergeConnectFromByWorkload = (
     const kindConnections: Record<string, Connection> = {};
 
     _.forEach(workloads, ({ refs, values }, workloadName) => {
-      // For each environment value, find the first (and longest) candidate name that is a substring.
+      // For each environment value, find the longest candidate name that is a substring.
       const allMatches = _.uniq(
         _.compact(
           [...refs, ...values].map((v) =>

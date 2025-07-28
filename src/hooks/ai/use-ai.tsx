@@ -11,10 +11,10 @@ export default function useAI() {
 
   // activateDevboxActions();
 
-  // useCoAgentStateRender<AiState>({
-  //   name: "ai",
-  //   render: ({ state }) => <StateCard state={state} />,
-  // });
+  useCoAgentStateRender<AiState>({
+    name: "ai",
+    render: ({ state }) => <StateCard state={state} />,
+  });
 
   return useCoAgent<AiState>({
     name: "ai",

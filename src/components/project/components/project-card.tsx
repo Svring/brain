@@ -13,9 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/general/use-toast";
 import { useDeleteProjectMutation } from "@/lib/project/project-method/project-mutation";
-import { getCurrentNamespace } from "@/lib/auth/auth-utils";
-import { getDecodedKubeconfig } from "@/lib/auth/auth-utils";
-import { K8sApiContextSchema } from "@/lib/k8s/schemas";
+import { createK8sContext } from "@/lib/auth/auth-utils";
 
 interface ProjectCardProps {
   projectName: string;
@@ -23,8 +21,9 @@ interface ProjectCardProps {
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ projectName }) => {
   const { toast } = useToast();
+  const context = createK8sContext();
 
-  const deleteProjectMutation = useDeleteProjectMutation();
+  const deleteProjectMutation = useDeleteProjectMutation(context);
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
