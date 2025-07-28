@@ -7,8 +7,9 @@ import {
 } from "@/lib/k8s/k8s-method/k8s-query";
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
 import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
-import { getProjectRelatedResources } from "@/lib/algorithm/relevance/project-relevance";
+import { getProjectRelatedResources } from "@/lib/algorithm/relevance/project/project-relevance";
 import {
+  createProjectTarget,
   getListProjectsQueryKey,
   getProjectQueryKey,
   getProjectResourcesQueryKey,
@@ -22,6 +23,7 @@ export const listProjectsOptions = (context: K8sApiContext) => {
 
   const baseOptions = listResourcesOptions(context, {
     type: "custom",
+    resourceType: instanceConfig.resourceType,
     group: instanceConfig.group,
     version: instanceConfig.version,
     plural: instanceConfig.plural,
@@ -44,6 +46,7 @@ export const getProjectOptions = (
 
   const baseOptions = getResourceOptions(context, {
     type: "custom",
+    resourceType: instanceConfig.resourceType,
     group: instanceConfig.group,
     version: instanceConfig.version,
     plural: instanceConfig.plural,

@@ -11,10 +11,10 @@ import {
 import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 import { BUILTIN_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-builtin-resource";
 import { convertAndFilterResourceToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import { getClusterRelatedResources } from "@/lib/algorithm/relevance/cluster-relevance";
-import { getDeployRelatedResources } from "@/lib/algorithm/relevance/deploy-relevance";
-import { getDevboxRelatedResources } from "@/lib/algorithm/relevance/devbox-relevance";
-import { getInstanceRelatedResources } from "@/lib/algorithm/relevance/instance-relevance";
+import { getClusterRelatedResources } from "@/lib/algorithm/relevance/cluster/cluster-relevance";
+import { getDeployRelatedResources } from "@/lib/algorithm/relevance/deployment/deployment-relevance";
+import { getDevboxRelatedResources } from "@/lib/algorithm/relevance/devbox/devbox-relevance";
+import { getInstanceRelatedResources } from "@/lib/algorithm/relevance/instance/instance-relevance";
 
 export { inferRelianceFromEnv } from "@/lib/algorithm/reliance/env-reliance";
 
@@ -67,7 +67,9 @@ export async function gatherRelatedResources(
   context: K8sApiContext,
   resources: (CustomResourceTarget | BuiltinResourceTarget)[]
 ): Promise<(CustomResourceTarget | BuiltinResourceTarget)[]> {
-  let allTargets: (CustomResourceTarget | BuiltinResourceTarget)[] = [...resources];
+  let allTargets: (CustomResourceTarget | BuiltinResourceTarget)[] = [
+    ...resources,
+  ];
   const relatedResourcesPromises: Promise<any[]>[] = [];
 
   for (const resource of resources) {
@@ -234,11 +236,10 @@ export function removeFromProjectAnnotation(
 /**
  * Create project instance target for annotations
  */
-export function createProjectInstanceTarget(
-  projectName: string
-): CustomResourceTarget {
+export function createProjectTarget(projectName: string): CustomResourceTarget {
   return {
     type: "custom",
+    resourceType: CUSTOM_RESOURCES.instance.resourceType,
     group: CUSTOM_RESOURCES.instance.group,
     version: CUSTOM_RESOURCES.instance.version,
     plural: CUSTOM_RESOURCES.instance.plural,
@@ -263,7 +264,10 @@ export function getProjectQueryKey(namespace: string, projectName: string) {
 /**
  * Generate query key for getting project resources
  */
-export function getProjectResourcesQueryKey(namespace: string, projectName: string) {
+export function getProjectResourcesQueryKey(
+  namespace: string,
+  projectName: string
+) {
   return ["project", "resources", namespace, projectName];
 }
 
@@ -304,8 +308,11 @@ export function invalidateProjectQueries(
   namespace: string,
   projectName?: string
 ) {
-  const invalidationKeys = getProjectQueryInvalidationKeys(namespace, projectName);
-  invalidationKeys.forEach(key => {
+  const invalidationKeys = getProjectQueryInvalidationKeys(
+    namespace,
+    projectName
+  );
+  invalidationKeys.forEach((key) => {
     queryClient.invalidateQueries({ queryKey: key });
   });
 }

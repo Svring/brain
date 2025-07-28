@@ -23,7 +23,7 @@ import {
   manageDevboxLifecycle,
   deleteDevbox,
 } from "@/lib/sealos/devbox/devbox-api/devbox-open-api";
-import type { DevboxInfo } from "@/lib/sealos/devbox/schemas";
+import type { DevboxInfo } from "@/lib/sealos/devbox/devbox-api/devbox-open-api-schemas/devbox-query-schema";
 
 interface DevboxGetCardProps {
   data: DevboxInfo | undefined;

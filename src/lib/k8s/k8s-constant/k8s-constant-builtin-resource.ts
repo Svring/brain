@@ -23,6 +23,7 @@ export interface BuiltinResourceConfig {
   createMethod: string;
   deleteMethod: string;
   patchMethod: string;
+  replaceMethod: string; // For update/replace operations
   deleteCollectionMethod?: string; // Optional as not all resources support bulk deletion
   apiClient: string;
 }
@@ -38,6 +39,7 @@ export const BUILTIN_RESOURCES: Record<string, BuiltinResourceConfig> = {
     createMethod: "createNamespacedDeployment",
     deleteMethod: "deleteNamespacedDeployment",
     patchMethod: "patchNamespacedDeployment",
+    replaceMethod: "replaceNamespacedDeployment",
     apiClient: "appsApi",
   },
   service: {
@@ -50,6 +52,7 @@ export const BUILTIN_RESOURCES: Record<string, BuiltinResourceConfig> = {
     createMethod: "createNamespacedService",
     deleteMethod: "deleteNamespacedService",
     patchMethod: "patchNamespacedService",
+    replaceMethod: "replaceNamespacedService",
     deleteCollectionMethod: "deleteCollectionNamespacedService",
     apiClient: "coreApi",
   },
@@ -63,6 +66,7 @@ export const BUILTIN_RESOURCES: Record<string, BuiltinResourceConfig> = {
     createMethod: "createNamespacedIngress",
     deleteMethod: "deleteNamespacedIngress",
     patchMethod: "patchNamespacedIngress",
+    replaceMethod: "replaceNamespacedIngress",
     deleteCollectionMethod: "deleteCollectionNamespacedIngress",
     apiClient: "networkingApi",
   },
@@ -76,6 +80,7 @@ export const BUILTIN_RESOURCES: Record<string, BuiltinResourceConfig> = {
     createMethod: "createNamespacedStatefulSet",
     deleteMethod: "deleteNamespacedStatefulSet",
     patchMethod: "patchNamespacedStatefulSet",
+    replaceMethod: "replaceNamespacedStatefulSet",
     apiClient: "appsApi",
   },
   daemonset: {
@@ -88,6 +93,7 @@ export const BUILTIN_RESOURCES: Record<string, BuiltinResourceConfig> = {
     createMethod: "createNamespacedDaemonSet",
     deleteMethod: "deleteNamespacedDaemonSet",
     patchMethod: "patchNamespacedDaemonSet",
+    replaceMethod: "replaceNamespacedDaemonSet",
     apiClient: "appsApi",
   },
   configmap: {
@@ -100,6 +106,7 @@ export const BUILTIN_RESOURCES: Record<string, BuiltinResourceConfig> = {
     createMethod: "createNamespacedConfigMap",
     deleteMethod: "deleteNamespacedConfigMap",
     patchMethod: "patchNamespacedConfigMap",
+    replaceMethod: "replaceNamespacedConfigMap",
     apiClient: "coreApi",
   },
   secret: {
@@ -112,6 +119,7 @@ export const BUILTIN_RESOURCES: Record<string, BuiltinResourceConfig> = {
     createMethod: "createNamespacedSecret",
     deleteMethod: "deleteNamespacedSecret",
     patchMethod: "patchNamespacedSecret",
+    replaceMethod: "replaceNamespacedSecret",
     apiClient: "coreApi",
   },
   pod: {
@@ -124,6 +132,7 @@ export const BUILTIN_RESOURCES: Record<string, BuiltinResourceConfig> = {
     createMethod: "createNamespacedPod",
     deleteMethod: "deleteNamespacedPod",
     patchMethod: "patchNamespacedPod",
+    replaceMethod: "replaceNamespacedPod",
     apiClient: "coreApi",
   },
   pvc: {
@@ -136,10 +145,11 @@ export const BUILTIN_RESOURCES: Record<string, BuiltinResourceConfig> = {
     createMethod: "createNamespacedPersistentVolumeClaim",
     deleteMethod: "deleteNamespacedPersistentVolumeClaim",
     patchMethod: "patchNamespacedPersistentVolumeClaim",
+    replaceMethod: "replaceNamespacedPersistentVolumeClaim",
     deleteCollectionMethod: "deleteCollectionNamespacedPersistentVolumeClaim",
     apiClient: "coreApi",
   },
-  horizontalpodautoscaler: {
+  hpa: {
     type: "builtin",
     resourceType: "horizontalpodautoscaler",
     apiVersion: "autoscaling/v2",
@@ -149,6 +159,7 @@ export const BUILTIN_RESOURCES: Record<string, BuiltinResourceConfig> = {
     createMethod: "createNamespacedHorizontalPodAutoscaler",
     deleteMethod: "deleteNamespacedHorizontalPodAutoscaler",
     patchMethod: "patchNamespacedHorizontalPodAutoscaler",
+    replaceMethod: "replaceNamespacedHorizontalPodAutoscaler",
     apiClient: "autoscalingApi",
   },
   role: {
@@ -161,6 +172,7 @@ export const BUILTIN_RESOURCES: Record<string, BuiltinResourceConfig> = {
     createMethod: "createNamespacedRole",
     deleteMethod: "deleteNamespacedRole",
     patchMethod: "patchNamespacedRole",
+    replaceMethod: "replaceNamespacedRole",
     apiClient: "rbacApi",
   },
   rolebinding: {
@@ -173,6 +185,7 @@ export const BUILTIN_RESOURCES: Record<string, BuiltinResourceConfig> = {
     createMethod: "createNamespacedRoleBinding",
     deleteMethod: "deleteNamespacedRoleBinding",
     patchMethod: "patchNamespacedRoleBinding",
+    replaceMethod: "replaceNamespacedRoleBinding",
     apiClient: "rbacApi",
   },
   serviceaccount: {
@@ -185,6 +198,7 @@ export const BUILTIN_RESOURCES: Record<string, BuiltinResourceConfig> = {
     createMethod: "createNamespacedServiceAccount",
     deleteMethod: "deleteNamespacedServiceAccount",
     patchMethod: "patchNamespacedServiceAccount",
+    replaceMethod: "replaceNamespacedServiceAccount",
     apiClient: "coreApi",
   },
   job: {
@@ -197,6 +211,7 @@ export const BUILTIN_RESOURCES: Record<string, BuiltinResourceConfig> = {
     createMethod: "createNamespacedJob",
     deleteMethod: "deleteNamespacedJob",
     patchMethod: "patchNamespacedJob",
+    replaceMethod: "replaceNamespacedJob",
     apiClient: "batchApi",
   },
   cronjob: {
@@ -209,6 +224,7 @@ export const BUILTIN_RESOURCES: Record<string, BuiltinResourceConfig> = {
     createMethod: "createNamespacedCronJob",
     deleteMethod: "deleteNamespacedCronJob",
     patchMethod: "patchNamespacedCronJob",
+    replaceMethod: "replaceNamespacedCronJob",
     apiClient: "batchApi",
   },
 };

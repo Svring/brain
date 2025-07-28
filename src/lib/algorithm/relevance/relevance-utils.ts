@@ -1,6 +1,6 @@
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
-import { listResourcesByLabel } from "@/lib/k8s/k8s-method/k8s-query";
+import { listAllResources } from "@/lib/k8s/k8s-method/k8s-query";
 import { ListAllResourcesResponseSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
 import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 import { BUILTIN_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-builtin-resource";
@@ -10,7 +10,7 @@ import _ from "lodash";
  * Flattens the result from listAllResources into a single array of K8sResource
  */
 export function flattenResourcesResult(
-  resources: Awaited<ReturnType<typeof listResourcesByLabel>>
+  resources: Awaited<ReturnType<typeof listAllResources>>
 ): K8sResource[] {
   const allItems: K8sResource[] = [];
 
@@ -33,23 +33,25 @@ export function flattenResourcesResult(
 /**
  * Generic function to get related resources by label selector
  */
-export async function getRelatedResourcesByLabel(
+export async function getRelatedResources(
   context: K8sApiContext,
-  labelKey: string,
-  labelValue: string,
+  labelSelectors: string[],
   builtinResourceTypes: string[] = [],
   customResourceTypes: string[] = []
 ): Promise<K8sResource[]> {
-  const labelSelector = `${labelKey}=${labelValue}`;
+  const allResources: K8sResource[] = [];
 
-  const resources = await listResourcesByLabel(
-    context,
-    labelSelector,
-    builtinResourceTypes,
-    customResourceTypes
-  );
+  for (const labelSelector of labelSelectors) {
+    const resources = await listAllResources(
+      context,
+      labelSelector,
+      builtinResourceTypes,
+      customResourceTypes
+    );
+    allResources.push(...flattenResourcesResult(resources));
+  }
 
-  return flattenResourcesResult(resources);
+  return deduplicateResources(allResources);
 }
 
 /**

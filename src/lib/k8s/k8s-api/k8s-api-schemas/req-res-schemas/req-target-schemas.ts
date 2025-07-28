@@ -1,14 +1,21 @@
 import { z } from "zod";
 import { BUILTIN_RESOURCES } from "../../../k8s-constant/k8s-constant-builtin-resource";
+import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 
 // Builtin resource types enum (from BUILTIN_RESOURCES keys)
 export const BuiltinResourceTypeSchema = z.enum([
   ...(Object.keys(BUILTIN_RESOURCES) as [keyof typeof BUILTIN_RESOURCES]),
 ]);
 
+// Custom resource types enum (from CUSTOM_RESOURCES keys)
+export const CustomResourceTypeSchema = z.enum([
+  ...(Object.keys(CUSTOM_RESOURCES) as [keyof typeof CUSTOM_RESOURCES]),
+]);
+
 // Custom resource target schema - for targeting specific custom resources
 export const CustomResourceTargetSchema = z.object({
   type: z.literal("custom"),
+  resourceType: CustomResourceTypeSchema,
   group: z.string(),
   version: z.string(),
   plural: z.string(),

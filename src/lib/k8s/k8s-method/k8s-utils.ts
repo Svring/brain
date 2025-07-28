@@ -15,12 +15,8 @@ import {
   CUSTOM_RESOURCES,
   CustomResourceConfig,
 } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
-import { runParallelAction } from "next-server-actions-parallel";
-import {
-  listBuiltinResources,
-  listCustomResources,
-} from "../k8s-api/k8s-api-query";
 import { INSTANCE_RELATE_RESOURCE_LABELS } from "../k8s-constant/k8s-constant-label";
+import { buildQueryKey } from "../k8s-constant/k8s-constant-query-key";
 
 import _ from "lodash";
 import { ListAllResourcesResponse } from "../k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
@@ -56,82 +52,66 @@ export function convertResourcesToAnnotation(
 }
 
 /**
- * Convert simplified annotation format back to full ListAllResourcesResponse
- * This function fetches all resources of each kind that has the project label
+ * Convert simplified annotation format to resource targets for batch processing
+ * This function creates targets that can be used for API operations
  */
-export async function convertAnnotationToResources(
+export function convertAnnotationToResourceTargets(
   annotation: BrainResourcesSimplified,
-  context: K8sApiContext,
   projectName: string
-): Promise<ListAllResourcesResponse> {
+): {
+  builtinTargets: { key: string; target: BuiltinResourceTarget }[];
+  customTargets: { key: string; target: CustomResourceTarget }[];
+} {
   const labelSelector = `${INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS}=${projectName}`;
 
   // Get unique kinds from annotation
   const builtinKinds = _.uniqBy(annotation.builtin, "kind");
   const customKinds = _.uniqBy(annotation.custom, "kind");
 
-  // Fetch all builtin resources by kind with project label
-  const builtinPromises = builtinKinds.map(async (resource) => {
+  // Create builtin resource targets
+  const builtinTargets: { key: string; target: BuiltinResourceTarget }[] = [];
+  for (const resource of builtinKinds) {
     const resourceKey = Object.keys(BUILTIN_RESOURCES).find(
       (k) => k.toLowerCase() === resource.kind.toLowerCase()
     );
-    if (!resourceKey) return [resource.kind.toLowerCase(), { items: [] }];
-    const resourceConfig = BUILTIN_RESOURCES[resourceKey];
-
-    try {
-      const result = await runParallelAction(
-        listBuiltinResources(context, {
+    if (resourceKey) {
+      const resourceConfig = BUILTIN_RESOURCES[resourceKey];
+      builtinTargets.push({
+        key: resourceKey,
+        target: {
           type: "builtin",
           resourceType: resourceConfig.resourceType,
           labelSelector,
-        })
-      );
-      return [resourceKey, result];
-    } catch (error) {
-      console.warn(
-        `Failed to fetch builtin resources of kind ${resource.kind}:`,
-        error
-      );
-      return [resourceKey, { items: [] }];
+        },
+      });
     }
-  });
+  }
 
-  // Fetch all custom resources by kind with project label
-  const customPromises = customKinds.map(async (resource) => {
+  // Create custom resource targets
+  const customTargets: { key: string; target: CustomResourceTarget }[] = [];
+  for (const resource of customKinds) {
     const resourceKey = Object.keys(CUSTOM_RESOURCES).find(
       (k) => k.toLowerCase() === resource.kind.toLowerCase()
     );
-    if (!resourceKey) return [resource.kind.toLowerCase(), { items: [] }];
-    const resourceConfig = CUSTOM_RESOURCES[resourceKey];
-
-    try {
-      const result = await runParallelAction(
-        listCustomResources(context, {
+    if (resourceKey) {
+      const resourceConfig = CUSTOM_RESOURCES[resourceKey];
+      customTargets.push({
+        key: resourceKey,
+        target: {
           type: "custom",
+          resourceType: resourceConfig.resourceType,
           group: resourceConfig.group,
           version: resourceConfig.version,
           plural: resourceConfig.plural,
           labelSelector,
-        })
-      );
-      return [resourceKey, result];
-    } catch (error) {
-      console.warn(
-        `Failed to fetch custom resources of kind ${resource.kind}:`,
-        error
-      );
-      return [resourceKey, { items: [] }];
+        },
+      });
     }
-  });
-
-  const [builtinResults, customResults] = await Promise.all([
-    Promise.all(builtinPromises),
-    Promise.all(customPromises),
-  ]);
+  }
 
   return {
-    builtin: _.fromPairs(builtinResults),
-    custom: _.fromPairs(customResults),
+    builtinTargets,
+    customTargets,
   };
 }
 
@@ -170,7 +150,7 @@ export function filterEmptyResources<T extends { items: unknown[] }>(data: {
   };
 }
 
-export const convertToResourceTarget = (
+export const convertResourceToTarget = (
   resource: K8sResource,
   config: BuiltinResourceConfig | CustomResourceConfig
 ): CustomResourceTarget | BuiltinResourceTarget => {
@@ -181,6 +161,7 @@ export const convertToResourceTarget = (
   if (config.type === "custom") {
     return {
       type: "custom",
+      resourceType: config.resourceType,
       group: config.group,
       version: config.version,
       plural: config.plural,
@@ -211,38 +192,32 @@ export async function invalidateResourceQueries(
   if (target.type === "custom") {
     // Invalidate custom resource queries
     queryClient.invalidateQueries({
-      queryKey: ["project", "resources"],
+      queryKey: buildQueryKey.projectResources(),
     });
     queryClient.invalidateQueries({
-      queryKey: [
-        "k8s",
-        "custom-resources",
-        "list",
+      queryKey: buildQueryKey.listCustomResources(
         target.group,
         target.version,
         context.namespace,
-        target.plural,
-      ],
+        target.plural
+      ),
     });
   } else {
     // Invalidate builtin resource queries
     queryClient.invalidateQueries({
-      queryKey: ["project", "resources"],
+      queryKey: buildQueryKey.projectResources(),
     });
     queryClient.invalidateQueries({
-      queryKey: [
-        "k8s",
-        "builtin-resources",
-        "list",
+      queryKey: buildQueryKey.listBuiltinResources(
         target.resourceType,
-        context.namespace,
-      ],
+        context.namespace
+      ),
     });
   }
 
   // Invalidate all-resources query
   queryClient.invalidateQueries({
-    queryKey: ["k8s", "all-resources", "list", context.namespace],
+    queryKey: buildQueryKey.listAllResources(context.namespace),
   });
 }
 
@@ -258,28 +233,68 @@ export function getResourceConfigFromKind(kind: string) {
 }
 
 /**
+ * Convert a resource type string to a resourceTarget.
+ * This function creates a target that can be used for API operations.
+ * @param resourceType - The resource type string (e.g., "deployment", "service", "issuer")
+ * @returns A complete resourceTarget
+ * @throws Error if resource type is not found
+ */
+export function convertResourceTypeToTarget(
+  resourceType: string
+): CustomResourceTarget | BuiltinResourceTarget {
+  const lowerResourceType = resourceType.toLowerCase();
+
+  // Check builtin resources first
+  const builtinConfig = BUILTIN_RESOURCES[lowerResourceType];
+  if (builtinConfig) {
+    return {
+      type: "builtin",
+      resourceType: builtinConfig.resourceType,
+    };
+  }
+
+  // Check custom resources
+  const customConfig = CUSTOM_RESOURCES[lowerResourceType];
+  if (customConfig) {
+    return {
+      type: "custom",
+      resourceType: customConfig.resourceType,
+      group: customConfig.group,
+      version: customConfig.version,
+      plural: customConfig.plural,
+    };
+  }
+
+  throw new Error(`Unknown resource type: ${resourceType}`);
+}
+
+/**
  * Flatten project resources from project-relevance algorithm structure to individual K8s resources
- * @param projectResources - Resources from getProjectRelatedResources
+ * @param listAllResourcesResponse - Resources from getProjectRelatedResources
  * @returns Array of individual K8s resources
  */
-export function flattenProjectResources(
-  projectResources: ListAllResourcesResponse
+export function flattenListAllResourcesResponse(
+  listAllResourcesResponse: ListAllResourcesResponse
 ): K8sResource[] {
   const allResources: K8sResource[] = [];
 
   // Process builtin resources
-  Object.values(projectResources.builtin || {}).forEach((resourceList) => {
-    if (resourceList && resourceList.items) {
-      allResources.push(...resourceList.items);
+  Object.values(listAllResourcesResponse.builtin || {}).forEach(
+    (resourceList) => {
+      if (resourceList && resourceList.items) {
+        allResources.push(...resourceList.items);
+      }
     }
-  });
+  );
 
   // Process custom resources
-  Object.values(projectResources.custom || {}).forEach((resourceList) => {
-    if (resourceList && resourceList.items) {
-      allResources.push(...resourceList.items);
+  Object.values(listAllResourcesResponse.custom || {}).forEach(
+    (resourceList) => {
+      if (resourceList && resourceList.items) {
+        allResources.push(...resourceList.items);
+      }
     }
-  });
+  );
 
   return allResources;
 }
@@ -295,7 +310,7 @@ export function convertAndFilterResourceToTarget(
     return null;
   }
   try {
-    return convertToResourceTarget(resource, config);
+    return convertResourceToTarget(resource, config);
   } catch (error) {
     console.warn(
       `Failed to convert resource to target: ${resource.kind}/${resource.metadata.name}`,
@@ -423,135 +438,6 @@ export function buildEnvVarPatchOps(
 }
 
 /**
- * Generic function to fetch a resource (custom or builtin)
- */
-export async function fetchResource(
-  context: K8sApiContext,
-  target: CustomResourceTarget | BuiltinResourceTarget
-): Promise<any> {
-  const { getCustomResource, getBuiltinResource } = await import(
-    "../k8s-api/k8s-api-query"
-  );
-
-  if (target.type === "custom") {
-    return await runParallelAction(
-      getCustomResource(context, target as CustomResourceTarget)
-    );
-  }
-  return await runParallelAction(
-    getBuiltinResource(context, target as BuiltinResourceTarget)
-  );
-}
-
-/**
- * Generic function to apply patch operations to a resource
- */
-export async function applyResourcePatch(
-  context: K8sApiContext,
-  target: CustomResourceTarget | BuiltinResourceTarget,
-  patchOps: any[]
-): Promise<any> {
-  const { patchCustomResource, patchBuiltinResource } = await import(
-    "../k8s-api/k8s-api-mutation"
-  );
-
-  if (target.type === "custom") {
-    return await runParallelAction(
-      patchCustomResource(context, target as CustomResourceTarget, patchOps)
-    );
-  }
-  return await runParallelAction(
-    patchBuiltinResource(context, target as BuiltinResourceTarget, patchOps)
-  );
-}
-
-/**
- * Generic function to delete a resource
- */
-export async function deleteResource(
-  context: K8sApiContext,
-  target: CustomResourceTarget | BuiltinResourceTarget
-): Promise<any> {
-  const { deleteCustomResource, deleteBuiltinResource } = await import(
-    "../k8s-api/k8s-api-mutation"
-  );
-
-  if (target.type === "custom") {
-    return await runParallelAction(deleteCustomResource(context, target));
-  }
-  return await runParallelAction(deleteBuiltinResource(context, target));
-}
-
-/**
- * Generic function to patch resource metadata
- */
-export async function patchResourceMetadata(
-  context: K8sApiContext,
-  target: CustomResourceTarget | BuiltinResourceTarget,
-  metadataType: "annotations" | "labels",
-  key: string,
-  value: string
-): Promise<any> {
-  const { patchCustomResourceMetadata, patchBuiltinResourceMetadata } =
-    await import("../k8s-api/k8s-api-mutation");
-
-  if (target.type === "custom") {
-    return await runParallelAction(
-      patchCustomResourceMetadata(context, target, metadataType, key, value)
-    );
-  }
-  return await runParallelAction(
-    patchBuiltinResourceMetadata(context, target, metadataType, key, value)
-  );
-}
-
-/**
- * Generic function to remove resource metadata
- */
-export async function removeResourceMetadata(
-  context: K8sApiContext,
-  target: CustomResourceTarget | BuiltinResourceTarget,
-  metadataType: "annotations" | "labels",
-  key: string
-): Promise<any> {
-  const { removeCustomResourceMetadata, removeBuiltinResourceMetadata } =
-    await import("../k8s-api/k8s-api-mutation");
-
-  if (target.type === "custom") {
-    return await runParallelAction(
-      removeCustomResourceMetadata(context, target, metadataType, key)
-    );
-  }
-  return await runParallelAction(
-    removeBuiltinResourceMetadata(context, target, metadataType, key)
-  );
-}
-
-/**
- * Generic function to delete resources by label selector
- */
-export async function deleteResourcesByLabelSelector(
-  context: K8sApiContext,
-  target: (CustomResourceTarget | BuiltinResourceTarget) & {
-    labelSelector: string;
-  }
-): Promise<any> {
-  const {
-    deleteCustomResourcesByLabelSelector,
-    deleteBuiltinResourcesByLabelSelector,
-  } = await import("../k8s-api/k8s-api-mutation");
-
-  if (target.type === "custom") {
-    return await runParallelAction(
-      deleteCustomResourcesByLabelSelector(context, target)
-    );
-  }
-  return await runParallelAction(
-    deleteBuiltinResourcesByLabelSelector(context, target)
-  );
-}
-
-/**
  * Centralized query invalidation for mutations
  */
 export function invalidateQueriesAfterMutation(
@@ -566,7 +452,7 @@ export function invalidateQueriesAfterMutation(
 
   if (includeInventory) {
     queryClient.invalidateQueries({
-      queryKey: ["inventory"],
+      queryKey: buildQueryKey.inventory(),
     });
   }
 }

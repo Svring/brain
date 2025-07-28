@@ -4,10 +4,6 @@
 export const INSTANCE_RELATE_RESOURCE_LABELS = {
   /** Label used for direct affiliated resources */
   DEPLOY_ON_SEALOS: "cloud.sealos.io/deploy-on-sealos",
-  /** Label used specifically for PVCs in instance deletion */
-  // APP: "app",
-  /** Label used for services, ingresses, cert-manager resources, and other managed resources in instance deletion */
-  // MANAGED_BY: "app.kubernetes.io/managed-by",
 } as const;
 
 export const DEPLOYMENT_RELATE_RESOURCE_LABELS = {
@@ -21,7 +17,10 @@ export const STATEFULSET_RELATE_RESOURCE_LABELS = {
 
 export const DEVBOX_RELATE_RESOURCE_LABELS = {
   /** Label used for devbox-related resources like backups in devbox deletion */
+  // ingress, service
   DEVBOX_MANAGER: "cloud.sealos.io/devbox-manager",
+  // secret, pod
+  APP_KUBERNETES_NAME: "app.kubernetes.io/name",
 } as const;
 
 /**

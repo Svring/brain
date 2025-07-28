@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { createDeployContext } from "@/lib/sealos/deploy/deploy-utils";
-import { useCreateDeployAction } from "@/lib/sealos/deploy/deploy-action/deploy-action";
+import { createDeployContext } from "@/lib/sealos/deployment/deploy-utils";
+import { useCreateDeployAction } from "@/lib/sealos/deployment/deployment-action/deployment-action";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToggle } from "@reactuses/core";

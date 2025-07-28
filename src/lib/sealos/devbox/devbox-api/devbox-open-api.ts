@@ -25,7 +25,7 @@ import type {
   GetAppByNameResponse,
   GetAppPodsResponse,
   GetAppsResponse,
-} from "../schemas";
+} from "./devbox-open-api-schemas";
 import {
   AppFormConfigSchema,
   CreateAppRequestSchema,
@@ -50,7 +50,7 @@ import {
   GetAppByNameResponseSchema,
   GetAppPodsResponseSchema,
   GetAppsResponseSchema,
-} from "../schemas";
+} from "./devbox-open-api-schemas";
 import https from "https";
 
 // Helper to create axios instance per request

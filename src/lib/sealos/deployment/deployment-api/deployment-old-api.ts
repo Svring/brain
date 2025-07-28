@@ -33,7 +33,7 @@ import {
   DeployCheckReadyRequestSchema,
   DeployCheckReadyResponseSchema,
 } from "../schemas/req-res-schemas/req-res-check-ready-schemas";
-import { generateK8sManifests } from "./deploy-api-utils";
+import { generateK8sManifests } from "./deployment-api-utils";
 import https from "https";
 
 function createDeployApi(context: DeployApiContext) {

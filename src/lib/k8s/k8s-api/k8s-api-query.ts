@@ -134,73 +134,53 @@ export const getBuiltinResource = createParallelAction(
 );
 
 /**
- * Get pods owned by a specific resource (filtered by ownerReferences).
+ * Get resources owned by a specific resource (filtered by ownerReferences).
  */
-export const getPodsByOwnerReference = createParallelAction(
-  async (context: K8sApiContext, ownerKind: string, ownerName: string) => {
-    const { client } = await getBuiltinApiClient(context.kubeconfig, "pod");
-
-    const podListResponse = await invokeApiMethod<BuiltinResourceListResponse>(
-      client,
-      "listNamespacedPod",
-      {
-        namespace: context.namespace,
-      }
+export const getResourceByOwner = createParallelAction(
+  async (
+    context: K8sApiContext,
+    resourceType: string,
+    ownerKind: string,
+    ownerName: string
+  ) => {
+    const { client, resourceConfig } = await getBuiltinApiClient(
+      context.kubeconfig,
+      resourceType
     );
 
-    // Filter pods by ownerReferences
-    const filteredPods = podListResponse.items.filter((pod: any) => {
-      if (!pod.metadata?.ownerReferences) return false;
-      return pod.metadata.ownerReferences.some(
-        (owner: any) => owner.kind === ownerKind && owner.name === ownerName
-      );
-    });
-
-    const result = {
-      ...podListResponse,
-      items: filteredPods,
-    };
-
-    return BuiltinResourceListResponseSchema.parse(
-      JSON.parse(
-        JSON.stringify(await addMissingFields(result.items, "v1", "Pod"))
-      )
-    );
-  }
-);
-
-/**
- * Get secrets owned by a specific resource (filtered by ownerReferences).
- */
-export const getSecretsByOwnerReference = createParallelAction(
-  async (context: K8sApiContext, ownerKind: string, ownerName: string) => {
-    const { client } = await getBuiltinApiClient(context.kubeconfig, "secret");
-
-    const secretListResponse =
+    const resourceListResponse =
       await invokeApiMethod<BuiltinResourceListResponse>(
         client,
-        "listNamespacedSecret",
+        resourceConfig.listMethod,
         {
           namespace: context.namespace,
         }
       );
 
-    // Filter secrets by ownerReferences
-    const filteredSecrets = secretListResponse.items.filter((secret: any) => {
-      if (!secret.metadata?.ownerReferences) return false;
-      return secret.metadata.ownerReferences.some(
-        (owner: any) => owner.kind === ownerKind && owner.name === ownerName
-      );
-    });
+    // Filter resources by ownerReferences
+    const filteredResources = resourceListResponse.items.filter(
+      (resource: any) => {
+        if (!resource.metadata?.ownerReferences) return false;
+        return resource.metadata.ownerReferences.some(
+          (owner: any) => owner.kind === ownerKind && owner.name === ownerName
+        );
+      }
+    );
 
     const result = {
-      ...secretListResponse,
-      items: filteredSecrets,
+      ...resourceListResponse,
+      items: filteredResources,
     };
 
     return BuiltinResourceListResponseSchema.parse(
       JSON.parse(
-        JSON.stringify(await addMissingFields(result.items, "v1", "Secret"))
+        JSON.stringify(
+          await addMissingFields(
+            result.items,
+            resourceConfig.apiVersion,
+            resourceConfig.kind
+          )
+        )
       )
     );
   }

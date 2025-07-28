@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  DevboxListCard,
+  // DevboxListCard,
   DevboxGetCard,
   DevboxDeleteCard,
 } from "./devbox-action-cards";
@@ -13,8 +13,8 @@ interface ActionCardProps {
 type ActionCardRenderer = (props: ActionCardProps) => React.ReactElement;
 
 const cardTypes: Record<string, ActionCardRenderer> = {
-  listDevbox: ({ data }: ActionCardProps) =>
-    React.createElement(DevboxListCard, data),
+  // listDevbox: ({ data }: ActionCardProps) =>
+  //   React.createElement(DevboxListCard, data),
   getDevbox: ({ data }: ActionCardProps) =>
     React.createElement(DevboxGetCard, data),
   deleteDevbox: ({ data }: ActionCardProps) =>

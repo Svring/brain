@@ -4,8 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import _ from "lodash";
 import {
-  useBatchPatchResourcesMetadataMutation,
-  useBatchRemoveResourcesMetadataMutation,
+  usePatchResourceMetadataMutation,
+  useRemoveResourceMetadataMutation,
   useApplyInstanceYamlMutation,
   useDeleteAllResourcesMutation,
 } from "@/lib/k8s/k8s-method/k8s-mutation";
@@ -22,11 +22,11 @@ import {
   parseProjectAnnotation,
   mergeProjectAnnotation,
   removeFromProjectAnnotation,
-  createProjectInstanceTarget,
+  createProjectTarget,
   getProjectQueryInvalidationKeys,
   invalidateProjectQueries,
 } from "./project-utils";
-import { getProjectRelatedResources } from "@/lib/algorithm/relevance/project-relevance";
+import { getProjectRelatedResources } from "@/lib/algorithm/relevance/project/project-relevance";
 import { BRAIN_RESOURCES_ANNOTATION_KEY } from "@/lib/project/project-constant/project-constant-label";
 import { getProjectOptions } from "./project-query";
 import { INSTANCE_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
@@ -36,7 +36,7 @@ import { INSTANCE_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-cons
  */
 export const useAddToProjectMutation = (context: K8sApiContext) => {
   const queryClient = useQueryClient();
-  const batchPatchMutation = useBatchPatchResourcesMetadataMutation(context);
+  const patchMutation = usePatchResourceMetadataMutation(context);
 
   return useMutation({
     mutationFn: async ({
@@ -53,8 +53,8 @@ export const useAddToProjectMutation = (context: K8sApiContext) => {
       );
 
       // Add labels to all resources
-      await batchPatchMutation.mutateAsync({
-        targets: allTargetsToPatch,
+      await patchMutation.mutateAsync({
+        target: allTargetsToPatch,
         metadataType: "labels",
         key: INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS,
         value: projectName,
@@ -74,8 +74,8 @@ export const useAddToProjectMutation = (context: K8sApiContext) => {
         newSimplifiedResources
       );
 
-      await batchPatchMutation.mutateAsync({
-        targets: [createProjectInstanceTarget(projectName)],
+      await patchMutation.mutateAsync({
+        target: [createProjectTarget(projectName)],
         metadataType: "annotations",
         key: BRAIN_RESOURCES_ANNOTATION_KEY,
         value: JSON.stringify(updatedAnnotation),
@@ -93,8 +93,8 @@ export const useAddToProjectMutation = (context: K8sApiContext) => {
  */
 export const useRemoveFromProjectMutation = (context: K8sApiContext) => {
   const queryClient = useQueryClient();
-  const batchRemoveMutation = useBatchRemoveResourcesMetadataMutation(context);
-  const batchPatchMutation = useBatchPatchResourcesMetadataMutation(context);
+  const removeMutation = useRemoveResourceMetadataMutation(context);
+  const patchMutation = usePatchResourceMetadataMutation(context);
 
   return useMutation({
     mutationFn: async ({
@@ -111,8 +111,8 @@ export const useRemoveFromProjectMutation = (context: K8sApiContext) => {
       );
 
       // Remove labels from all resources
-      await batchRemoveMutation.mutateAsync({
-        targets: allTargetsToRemove,
+      await removeMutation.mutateAsync({
+        target: allTargetsToRemove,
         metadataType: "labels",
         key: INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS,
       });
@@ -131,8 +131,8 @@ export const useRemoveFromProjectMutation = (context: K8sApiContext) => {
         removedSimplifiedResources
       );
 
-      await batchPatchMutation.mutateAsync({
-        targets: [createProjectInstanceTarget(projectName)],
+      await patchMutation.mutateAsync({
+        target: [createProjectTarget(projectName)],
         metadataType: "annotations",
         key: BRAIN_RESOURCES_ANNOTATION_KEY,
         value: JSON.stringify(updatedAnnotation),
@@ -150,12 +150,12 @@ export const useRemoveFromProjectMutation = (context: K8sApiContext) => {
  */
 export const useRemoveProjectAnnotationMutation = (context: K8sApiContext) => {
   const queryClient = useQueryClient();
-  const batchRemoveMutation = useBatchRemoveResourcesMetadataMutation(context);
+  const removeMutation = useRemoveResourceMetadataMutation(context);
 
   return useMutation({
     mutationFn: async ({ projectName }: { projectName: string }) => {
-      return batchRemoveMutation.mutateAsync({
-        targets: [createProjectInstanceTarget(projectName)],
+      return removeMutation.mutateAsync({
+        target: [createProjectTarget(projectName)],
         metadataType: "annotations",
         key: BRAIN_RESOURCES_ANNOTATION_KEY,
       });

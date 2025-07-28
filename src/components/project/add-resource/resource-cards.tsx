@@ -13,7 +13,7 @@ import {
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
-  convertToResourceTarget,
+  convertResourceToTarget,
   getResourceConfigFromKind,
 } from "@/lib/k8s/k8s-method/k8s-utils";
 import type { AnyKubernetesResource } from "@/lib/k8s/schemas";
@@ -200,7 +200,7 @@ function ResourceCard({
     useSortable({
       id,
       data: {
-        resourceTarget: convertToResourceTarget(resource, resourceConfig),
+        resourceTarget: convertResourceToTarget(resource, resourceConfig),
         resourceName: name,
         resourceKind: kind,
       },

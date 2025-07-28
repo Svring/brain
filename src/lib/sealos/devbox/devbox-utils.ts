@@ -1,7 +1,6 @@
 "use client";
 
-import type { DevboxListResponse } from "./schemas";
-import { DevboxApiContextSchema } from "./schemas";
+import { DevboxApiContextSchema } from "./devbox-schemas/devbox-api-context-schema";
 import { nanoid } from "nanoid";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import {
@@ -9,8 +8,8 @@ import {
   DevboxSecret,
   DevboxPod,
   DevboxIngress,
-} from "./schemas/devbox-k8s-schemas";
-import { DevboxNodeData } from "./schemas/devbox-node-schemas";
+} from "@/lib/sealos/devbox/devbox-api/devbox-open-api-schemas/devbox-k8s-schemas";
+import { DevboxNodeData } from "@/lib/sealos/devbox/devbox-api/devbox-open-api-schemas/devbox-node-schemas";
 import _ from "lodash";
 
 export function createDevboxContext() {

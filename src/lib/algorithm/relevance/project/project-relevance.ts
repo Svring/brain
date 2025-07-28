@@ -3,11 +3,11 @@ import { getCustomResource } from "@/lib/k8s/k8s-api/k8s-api-query";
 import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 import { ListAllResourcesResponseSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
 import { filterEmptyResources } from "@/lib/k8s/k8s-method/k8s-utils";
-import { getInstanceRelatedResources } from "./instance-relevance";
-import { getDevboxRelatedResources } from "./devbox-relevance";
-import { getClusterRelatedResources } from "./cluster-relevance";
-import { getDeployRelatedResources } from "./deploy-relevance";
-import { getStatefulsetRelatedResources } from "./statefulset-relevance";
+import { getInstanceRelatedResources } from "../instance/instance-relevance";
+import { getDevboxRelatedResources } from "../devbox/devbox-relevance";
+import { getClusterRelatedResources } from "../cluster/cluster-relevance";
+import { getDeployRelatedResources } from "../deployment/deployment-relevance";
+import { getStatefulsetRelatedResources } from "../statefulset/statefulset-relevance";
 import {
   createEmptyResourceResult,
   deduplicateResources,
@@ -15,8 +15,8 @@ import {
   groupBuiltinResourcesByType,
   groupCustomResourcesByType,
   createStructuredResourceResult,
-  processSubModuleResources
-} from "./relevance-utils";
+  processSubModuleResources,
+} from "../relevance-utils";
 import { runParallelAction } from "next-server-actions-parallel";
 
 export const getProjectRelatedResources = async (
@@ -27,6 +27,7 @@ export const getProjectRelatedResources = async (
   const projectInstanceRaw = await runParallelAction(
     getCustomResource(context, {
       type: "custom",
+      resourceType: CUSTOM_RESOURCES.instance.resourceType,
       group: CUSTOM_RESOURCES.instance.group,
       version: CUSTOM_RESOURCES.instance.version,
       plural: CUSTOM_RESOURCES.instance.plural,
@@ -69,10 +70,14 @@ export const getProjectRelatedResources = async (
   // Deduplicate resources by kind and name
   const uniqueItems = deduplicateResources(allItems);
   const categorizedResources = categorizeResources(uniqueItems);
-  
-  const builtinByType = groupBuiltinResourcesByType(categorizedResources.builtin || []);
-  const customByType = groupCustomResourcesByType(categorizedResources.custom || []);
-  
+
+  const builtinByType = groupBuiltinResourcesByType(
+    categorizedResources.builtin || []
+  );
+  const customByType = groupCustomResourcesByType(
+    categorizedResources.custom || []
+  );
+
   const result = createStructuredResourceResult(builtinByType, customByType);
 
   return filterEmptyResources(ListAllResourcesResponseSchema.parse(result));

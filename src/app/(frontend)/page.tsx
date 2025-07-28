@@ -2,7 +2,6 @@
 
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Plus } from "lucide-react";
-import dynamic from "next/dynamic";
 import ProjectCard from "@/components/project/components/project-card";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,15 +17,7 @@ import CreateProject from "@/components/project/create-project/create-project";
 import AiCoin from "@/components/ai/headless/ai-coin";
 import AiChatbox from "@/components/ai/headless/ai-chatbox";
 import SearchBar from "@/components/app/search-bar";
-import { getInstanceRelatedResources } from "@/lib/algorithm/relevance/instance-relevance";
-import { getClusterRelatedResources } from "@/lib/algorithm/relevance/cluster-relevance";
-import { useMount } from "@reactuses/core";
 import { createK8sContext } from "@/lib/auth/auth-utils";
-import { getPodsByResourceTarget } from "@/lib/k8s/k8s-method/k8s-query";
-import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
-import { getPodTrafficOptions } from "@/lib/hubble/traffic/traffic-query";
-import { useQuery } from "@tanstack/react-query";
-import { createTrafficContext } from "@/lib/hubble/traffic/traffic-utils";
 import { useAuthState } from "@/contexts/auth/auth-context";
 
 export default function Page() {
@@ -37,43 +28,6 @@ export default function Page() {
 
   const { setSearchTerm, filteredProjects, projectsLoading, projectsError } =
     useProjectSearch(context);
-
-  // const trafficQuery = useQuery(
-  //   getPodTrafficOptions(createTrafficContext(auth!), {
-  //     namespace: "ns-wr6b9u65",
-  //     pod: "teable-izdfsect-66bb865b4-rrb74",
-  //   })
-  // );
-
-  // console.log(trafficQuery.data);
-
-  useMount(async () => {
-    // const relatedResources = await getInstanceRelatedResources(
-    //   context,
-    //   "teable-afdmhcrb"
-    // );
-    // console.log(relatedResources);
-
-    // Test getPodsByResourceTarget with cluster
-    const clusterConfig = CUSTOM_RESOURCES.cluster;
-    const clusterTarget = {
-      type: "custom" as const,
-      group: clusterConfig.group,
-      version: clusterConfig.version,
-      plural: clusterConfig.plural,
-      name: "affine-dktnxbbx-pg",
-    };
-
-    try {
-      const pods = await getClusterRelatedResources(
-        context,
-        "affine-dktnxbbx-pg"
-      );
-      console.log("cluster:", pods);
-    } catch (error) {
-      console.error("Error fetching pods for cluster:", error);
-    }
-  });
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center p-8">

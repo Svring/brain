@@ -8,14 +8,14 @@ export interface CustomResourceConfig {
 
 export const CUSTOM_RESOURCES: Record<string, CustomResourceConfig> = {
   // Cert Manager
-  issuers: {
+  issuer: {
     type: "custom",
     resourceType: "issuer",
     group: "cert-manager.io",
     version: "v1",
     plural: "issuers",
   },
-  certificates: {
+  certificate: {
     type: "custom",
     resourceType: "certificate",
     group: "cert-manager.io",
@@ -23,7 +23,7 @@ export const CUSTOM_RESOURCES: Record<string, CustomResourceConfig> = {
     plural: "certificates",
   },
   // KubeBlocks
-  backups: {
+  backup: {
     type: "custom",
     resourceType: "backup",
     group: "dataprotection.kubeblocks.io",

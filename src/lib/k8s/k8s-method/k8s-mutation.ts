@@ -2,7 +2,26 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { runParallelAction } from "next-server-actions-parallel";
-import { applyInstanceYaml } from "../k8s-api/k8s-api-mutation";
+import {
+  applyInstanceYaml,
+  upsertCustomResource,
+  upsertBuiltinResource,
+  applyResource,
+  patchCustomResource,
+  patchBuiltinResource,
+  strategicMergePatchCustomResource,
+  strategicMergePatchBuiltinResource,
+  deleteCustomResource,
+  deleteBuiltinResource,
+  patchCustomResourceMetadata,
+  patchBuiltinResourceMetadata,
+  removeCustomResourceMetadata,
+  removeBuiltinResourceMetadata,
+} from "../k8s-api/k8s-api-mutation";
+import {
+  getCustomResource,
+  getBuiltinResource,
+} from "../k8s-api/k8s-api-query";
 import {
   BuiltinResourceTarget,
   CustomResourceTarget,
@@ -13,23 +32,19 @@ import { CUSTOM_RESOURCES } from "../k8s-constant/k8s-constant-custom-resource";
 import {
   invalidateResourceQueries,
   convertAndFilterResourceToTarget,
-  flattenProjectResources,
+  flattenListAllResourcesResponse,
   EnvVar,
   getContainerPath,
   getContainersFromResource,
   buildEnvVarPatchOps,
-  fetchResource,
-  applyResourcePatch,
-  deleteResource,
-  patchResourceMetadata,
-  removeResourceMetadata,
-  deleteResourcesByLabelSelector,
   invalidateQueriesAfterMutation,
   processBatchOperation,
 } from "./k8s-utils";
+import { Operation } from "fast-json-patch";
 
 /**
  * Mutation for patching resource metadata (annotations or labels)
+ * Supports both single target and batch operations
  */
 export function usePatchResourceMetadataMutation(context: K8sApiContext) {
   const queryClient = useQueryClient();
@@ -41,27 +56,52 @@ export function usePatchResourceMetadataMutation(context: K8sApiContext) {
       key,
       value,
     }: {
-      target: CustomResourceTarget | BuiltinResourceTarget;
+      target:
+        | (CustomResourceTarget | BuiltinResourceTarget)
+        | (CustomResourceTarget | BuiltinResourceTarget)[];
       metadataType: "annotations" | "labels";
       key: string;
       value: string;
     }) => {
-      return await patchResourceMetadata(
-        context,
-        target,
-        metadataType,
-        key,
-        value
-      );
+      const targets = Array.isArray(target) ? target : [target];
+
+      return await processBatchOperation(targets, async (singleTarget) => {
+        if (singleTarget.type === "custom") {
+          return await runParallelAction(
+            patchCustomResourceMetadata(
+              context,
+              singleTarget,
+              metadataType,
+              key,
+              value
+            )
+          );
+        }
+        return await runParallelAction(
+          patchBuiltinResourceMetadata(
+            context,
+            singleTarget,
+            metadataType,
+            key,
+            value
+          )
+        );
+      });
     },
     onSuccess: (_data, variables) => {
-      invalidateQueriesAfterMutation(queryClient, context, variables.target);
+      const targets = Array.isArray(variables.target)
+        ? variables.target
+        : [variables.target];
+      for (const singleTarget of targets) {
+        invalidateQueriesAfterMutation(queryClient, context, singleTarget);
+      }
     },
   });
 }
 
 /**
  * Mutation for removing resource metadata (annotations or labels)
+ * Supports both single target and batch operations
  */
 export function useRemoveResourceMetadataMutation(context: K8sApiContext) {
   const queryClient = useQueryClient();
@@ -72,20 +112,49 @@ export function useRemoveResourceMetadataMutation(context: K8sApiContext) {
       metadataType,
       key,
     }: {
-      target: CustomResourceTarget | BuiltinResourceTarget;
+      target:
+        | (CustomResourceTarget | BuiltinResourceTarget)
+        | (CustomResourceTarget | BuiltinResourceTarget)[];
       metadataType: "annotations" | "labels";
       key: string;
     }) => {
-      return await removeResourceMetadata(context, target, metadataType, key);
+      const targets = Array.isArray(target) ? target : [target];
+
+      return await processBatchOperation(targets, async (singleTarget) => {
+        if (singleTarget.type === "custom") {
+          return await runParallelAction(
+            removeCustomResourceMetadata(
+              context,
+              singleTarget,
+              metadataType,
+              key
+            )
+          );
+        }
+        return await runParallelAction(
+          removeBuiltinResourceMetadata(
+            context,
+            singleTarget,
+            metadataType,
+            key
+          )
+        );
+      });
     },
-    onSuccess: (_, { target }) => {
-      invalidateQueriesAfterMutation(queryClient, context, target);
+    onSuccess: (_, variables) => {
+      const targets = Array.isArray(variables.target)
+        ? variables.target
+        : [variables.target];
+      for (const singleTarget of targets) {
+        invalidateQueriesAfterMutation(queryClient, context, singleTarget);
+      }
     },
   });
 }
 
 /**
- * Mutation for deleting a single resource
+ * Mutation for deleting resources
+ * Supports both single target and batch operations
  */
 export function useDeleteResourceMutation(context: K8sApiContext) {
   const queryClient = useQueryClient();
@@ -94,125 +163,30 @@ export function useDeleteResourceMutation(context: K8sApiContext) {
     mutationFn: async ({
       target,
     }: {
-      target: CustomResourceTarget | BuiltinResourceTarget;
+      target:
+        | (CustomResourceTarget | BuiltinResourceTarget)
+        | (CustomResourceTarget | BuiltinResourceTarget)[];
     }) => {
-      return await deleteResource(context, target);
+      const targets = Array.isArray(target) ? target : [target];
+
+      return await processBatchOperation(targets, async (singleTarget) => {
+        if (singleTarget.type === "custom") {
+          return await runParallelAction(
+            deleteCustomResource(context, singleTarget)
+          );
+        }
+        return await runParallelAction(
+          deleteBuiltinResource(context, singleTarget)
+        );
+      });
     },
     onSuccess: (_data, variables) => {
-      invalidateQueriesAfterMutation(queryClient, context, variables.target);
-    },
-  });
-}
-
-/**
- * Mutation for batch patching multiple resources metadata
- */
-export function useBatchPatchResourcesMetadataMutation(context: K8sApiContext) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({
-      targets,
-      metadataType,
-      key,
-      value,
-    }: {
-      targets: (CustomResourceTarget | BuiltinResourceTarget)[];
-      metadataType: "annotations" | "labels";
-      key: string;
-      value: string;
-    }) => {
-      return await processBatchOperation(targets, (target) =>
-        patchResourceMetadata(context, target, metadataType, key, value)
-      );
-    },
-    onSuccess: (_data, variables) => {
-      for (const target of variables.targets) {
-        invalidateQueriesAfterMutation(queryClient, context, target);
+      const targets = Array.isArray(variables.target)
+        ? variables.target
+        : [variables.target];
+      for (const singleTarget of targets) {
+        invalidateQueriesAfterMutation(queryClient, context, singleTarget);
       }
-    },
-  });
-}
-
-/**
- * Mutation for batch removing multiple resources metadata
- */
-export function useBatchRemoveResourcesMetadataMutation(
-  context: K8sApiContext
-) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({
-      targets,
-      metadataType,
-      key,
-    }: {
-      targets: (CustomResourceTarget | BuiltinResourceTarget)[];
-      metadataType: "annotations" | "labels";
-      key: string;
-    }) => {
-      return await processBatchOperation(targets, (target) =>
-        removeResourceMetadata(context, target, metadataType, key)
-      );
-    },
-    onSuccess: (_data, variables) => {
-      for (const target of variables.targets) {
-        invalidateQueriesAfterMutation(queryClient, context, target);
-      }
-    },
-  });
-}
-
-/**
- * Mutation for batch deleting multiple resources
- */
-export function useBatchDeleteResourcesMutation(context: K8sApiContext) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({
-      targets,
-    }: {
-      targets: (CustomResourceTarget | BuiltinResourceTarget)[];
-    }) => {
-      return await processBatchOperation(targets, (target) =>
-        deleteResource(context, target)
-      );
-    },
-    onSuccess: (_data, variables) => {
-      for (const target of variables.targets) {
-        invalidateQueriesAfterMutation(queryClient, context, target);
-      }
-    },
-  });
-}
-
-/**
- * Mutation for deleting resources by label selector
- */
-export function useDeleteResourcesByLabelSelectorMutation(
-  context: K8sApiContext
-) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({
-      target,
-    }: {
-      target: (CustomResourceTarget | BuiltinResourceTarget) & {
-        labelSelector: string;
-      };
-    }) => {
-      return await deleteResourcesByLabelSelector(context, target);
-    },
-    onSuccess: (_data, variables) => {
-      invalidateQueriesAfterMutation(
-        queryClient,
-        context,
-        variables.target,
-        true
-      );
     },
   });
 }
@@ -232,6 +206,7 @@ export function useApplyInstanceYamlMutation(context: K8sApiContext) {
       if (instanceConfig) {
         invalidateQueriesAfterMutation(queryClient, context, {
           type: "custom",
+          resourceType: instanceConfig.resourceType,
           group: instanceConfig.group,
           version: instanceConfig.version,
           plural: instanceConfig.plural,
@@ -256,7 +231,7 @@ export function useDeleteAllResourcesMutation(context: K8sApiContext) {
       resources: any; // Resources from project-relevance algorithm
     }) => {
       // Flatten project resources to individual K8s resources
-      const flattenedResources = flattenProjectResources(resources);
+      const flattenedResources = flattenListAllResourcesResponse(resources);
 
       // Convert each resource to resource target using the utility function
       const allResourceTargets = flattenedResources
@@ -268,9 +243,12 @@ export function useDeleteAllResourcesMutation(context: K8sApiContext) {
       }
 
       // Use the batch operation utility
-      return await processBatchOperation(allResourceTargets, (target) =>
-        deleteResource(context, target)
-      );
+      return await processBatchOperation(allResourceTargets, async (target) => {
+        if (target.type === "custom") {
+          return await runParallelAction(deleteCustomResource(context, target));
+        }
+        return await runParallelAction(deleteBuiltinResource(context, target));
+      });
     },
     onSuccess: () => {
       invalidateQueriesAfterMutation(queryClient, context, undefined, true);
@@ -296,7 +274,10 @@ export function useAddEnvToResourceMutation(context: K8sApiContext) {
       envVars: EnvVar[];
     }) => {
       // Get the resource first
-      const resource = await fetchResource(context, target);
+      const resource =
+        target.type === "custom"
+          ? await runParallelAction(getCustomResource(context, target))
+          : await runParallelAction(getBuiltinResource(context, target));
 
       // Determine the container path based on the resource kind
       const containerPath = getContainerPath(resource.kind);
@@ -314,7 +295,134 @@ export function useAddEnvToResourceMutation(context: K8sApiContext) {
       const patchOps = buildEnvVarPatchOps(containers, envVars, containerPath);
 
       // Apply the patch
-      return await applyResourcePatch(context, target, patchOps);
+      if (target.type === "custom") {
+        return await runParallelAction(
+          patchCustomResource(context, target, patchOps)
+        );
+      }
+      return await runParallelAction(
+        patchBuiltinResource(context, target, patchOps)
+      );
+    },
+    onSuccess: (_data, variables) => {
+      invalidateQueriesAfterMutation(queryClient, context, variables.target);
+    },
+  });
+}
+
+/**
+ * Mutation for upserting (create or update) resources
+ * Works with both custom and builtin resources
+ */
+export function useUpsertResourceMutation(context: K8sApiContext) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      target,
+      resourceBody,
+    }: {
+      target: CustomResourceTarget | BuiltinResourceTarget;
+      resourceBody: Record<string, unknown>;
+    }) => {
+      if (target.type === "custom") {
+        return await runParallelAction(
+          upsertCustomResource(context, target, resourceBody)
+        );
+      }
+      return await runParallelAction(
+        upsertBuiltinResource(context, target, resourceBody)
+      );
+    },
+    onSuccess: (_data, variables) => {
+      invalidateQueriesAfterMutation(queryClient, context, variables.target);
+    },
+  });
+}
+
+/**
+ * Mutation for applying resource content (JSON or YAML)
+ * Works with both custom and builtin resources
+ */
+export function useApplyResourceMutation(context: K8sApiContext) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      resourceContent,
+      target,
+    }: {
+      resourceContent: string | Record<string, unknown>;
+      target?: CustomResourceTarget | BuiltinResourceTarget;
+    }) => {
+      return await runParallelAction(
+        applyResource(context, resourceContent, target)
+      );
+    },
+    onSuccess: (_data, variables) => {
+      if (variables.target) {
+        invalidateQueriesAfterMutation(queryClient, context, variables.target);
+      } else {
+        // If no target specified, invalidate all queries
+        invalidateQueriesAfterMutation(queryClient, context, undefined, true);
+      }
+    },
+  });
+}
+
+/**
+ * Mutation for patching resources with JSON patch operations
+ * Works with both custom and builtin resources
+ */
+export function usePatchResourceMutation(context: K8sApiContext) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      target,
+      patchBody,
+    }: {
+      target: CustomResourceTarget | BuiltinResourceTarget;
+      patchBody: Operation[];
+    }) => {
+      if (target.type === "custom") {
+        return await runParallelAction(
+          patchCustomResource(context, target, patchBody)
+        );
+      }
+      return await runParallelAction(
+        patchBuiltinResource(context, target, patchBody)
+      );
+    },
+    onSuccess: (_data, variables) => {
+      invalidateQueriesAfterMutation(queryClient, context, variables.target);
+    },
+  });
+}
+
+/**
+ * Mutation for strategic merge patching resources
+ * Works with both custom and builtin resources
+ */
+export function useStrategicMergePatchResourceMutation(context: K8sApiContext) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      target,
+      patchBody,
+    }: {
+      target: CustomResourceTarget | BuiltinResourceTarget;
+      patchBody: Record<string, unknown>;
+    }) => {
+      if (target.type === "custom") {
+        return await runParallelAction(
+          strategicMergePatchCustomResource(context, target, patchBody)
+        );
+      }
+      return await runParallelAction(
+        strategicMergePatchBuiltinResource(context, target, patchBody)
+      );
     },
     onSuccess: (_data, variables) => {
       invalidateQueriesAfterMutation(queryClient, context, variables.target);
