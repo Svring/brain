@@ -10,7 +10,7 @@ import {
 import _ from "lodash";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { DEVBOX_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
-import { spreadResourceList } from "@/lib/k8s/k8s-method/k8s-utils";
+import { flattenResourceList } from "@/lib/k8s/k8s-method/k8s-utils";
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
 import {
   DevboxResourceK8sSchema,
@@ -35,19 +35,19 @@ const useDevboxNode = (
       {
         ...getPodsByResourceTargetOptions(context, target),
         select: (data: any) =>
-          _.map(spreadResourceList(data), (item) =>
+          _.map(flattenResourceList(data), (item) =>
             DevboxPodSchema.parse(item)
           ),
       },
       {
         ...getSecretsByResourceTargetOptions(context, target),
         select: (data: any) =>
-          DevboxSecretSchema.parse(_.first(spreadResourceList(data))),
+          DevboxSecretSchema.parse(_.first(flattenResourceList(data))),
       },
       {
         ...listResourcesByLabelOptions(context, devboxLabel, ["ingress"], []),
         select: (data: any) =>
-          _.map(spreadResourceList(_.get(data, "builtin.ingress")), (item) =>
+          _.map(flattenResourceList(_.get(data, "builtin.ingress")), (item) =>
             DevboxIngressSchema.parse(item)
           ),
       },

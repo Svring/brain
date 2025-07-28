@@ -151,33 +151,42 @@ export function filterEmptyResources<T extends { items: unknown[] }>(data: {
 }
 
 export const convertResourceToTarget = (
-  resource: K8sResource,
-  config: BuiltinResourceConfig | CustomResourceConfig
+  resource: K8sResource
 ): CustomResourceTarget | BuiltinResourceTarget => {
   if (!resource.metadata.name) {
     throw new Error("Resource name is required");
   }
 
-  if (config.type === "custom") {
-    return {
-      type: "custom",
-      resourceType: config.resourceType,
-      group: config.group,
-      version: config.version,
-      plural: config.plural,
-      name: resource.metadata.name,
-    };
+  if (!resource.kind) {
+    throw new Error("Resource kind is required");
   }
 
-  if (config.type === "builtin") {
+  const lowerKind = resource.kind.toLowerCase();
+
+  // Check builtin resources first
+  const builtinConfig = BUILTIN_RESOURCES[lowerKind];
+  if (builtinConfig) {
     return {
       type: "builtin",
-      resourceType: config.resourceType,
+      resourceType: builtinConfig.resourceType,
       name: resource.metadata.name,
     };
   }
 
-  throw new Error("Invalid resource type");
+  // Check custom resources
+  const customConfig = CUSTOM_RESOURCES[lowerKind];
+  if (customConfig) {
+    return {
+      type: "custom",
+      resourceType: customConfig.resourceType,
+      group: customConfig.group,
+      version: customConfig.version,
+      plural: customConfig.plural,
+      name: resource.metadata.name,
+    };
+  }
+
+  throw new Error(`Unknown resource kind: ${resource.kind}`);
 };
 
 /**
@@ -305,12 +314,8 @@ export function convertAndFilterResourceToTarget(
   if (!resource.kind || !resource.metadata?.name) {
     return null;
   }
-  const config = getResourceConfigFromKind(resource.kind);
-  if (!config) {
-    return null;
-  }
   try {
-    return convertResourceToTarget(resource, config);
+    return convertResourceToTarget(resource);
   } catch (error) {
     console.warn(
       `Failed to convert resource to target: ${resource.kind}/${resource.metadata.name}`,
@@ -485,7 +490,7 @@ export async function processBatchOperation<T>(
  * @param resourceList - The resource list query result containing items array
  * @returns Array of individual resource objects, or empty array if input is invalid
  */
-export function spreadResourceList<T extends K8sResource>(
+export function flattenResourceList<T extends K8sResource>(
   resourceList: { items?: T[] } | undefined
 ): T[] {
   if (

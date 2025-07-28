@@ -5,9 +5,6 @@ import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-res
 // Converts an ObjectStorageBucket resource to node data for ObjectStorageNode
 export function convertResourceToNode(resource: ObjectStorageBucket) {
   return {
-    target: convertResourceToTarget(
-      resource,
-      CUSTOM_RESOURCES.objectstoragebucket
-    ),
+    target: convertResourceToTarget(resource),
   };
 }

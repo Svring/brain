@@ -7,6 +7,6 @@ export function convertResourceToNode(resource: PersistentVolumeClaimResource) {
   return {
     name: resource.metadata.name,
     volume: resource.spec?.volumeName ?? "Unbound",
-    target: convertResourceToTarget(resource, BUILTIN_RESOURCES.pvc),
+    target: convertResourceToTarget(resource),
   };
 }

@@ -27,6 +27,8 @@ export const QUERY_KEY_RESOURCE_TYPE = {
   OBJECTSTORAGE_SECRET: "objectstorage-secret",
   PODS_BY_OWNER: "pods-by-owner",
   SECRETS_BY_OWNER: "secrets-by-owner",
+  DEVBOX: "devbox",
+  DEVBOXES: "devboxes",
 } as const;
 
 // Query key builders
@@ -188,4 +190,25 @@ export const buildQueryKey = {
    * Build query key for inventory (used in query invalidation)
    */
   inventory: () => ["inventory"] as const,
+
+  /**
+   * Build query key for listing devboxes
+   */
+  listDevboxes: (namespace: string) => [
+    QUERY_KEY_PREFIX.K8S,
+    QUERY_KEY_RESOURCE_TYPE.DEVBOXES,
+    QUERY_KEY_OPERATION.LIST,
+    namespace,
+  ],
+
+  /**
+   * Build query key for getting a devbox
+   */
+  getDevbox: (namespace: string, name: string) => [
+    QUERY_KEY_PREFIX.K8S,
+    QUERY_KEY_RESOURCE_TYPE.DEVBOX,
+    QUERY_KEY_OPERATION.GET,
+    namespace,
+    name,
+  ],
 } as const;

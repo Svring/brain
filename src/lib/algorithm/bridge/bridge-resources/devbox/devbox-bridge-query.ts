@@ -8,5 +8,5 @@ export const getDevboxObject = async (
 ) => {
   // Test the new composeObjectFromTarget function
   const devboxObject = await composeObjectFromTarget(context, target);
-  console.log(devboxObject);
+  return devboxObject;
 };

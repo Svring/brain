@@ -200,7 +200,7 @@ function ResourceCard({
     useSortable({
       id,
       data: {
-        resourceTarget: convertResourceToTarget(resource, resourceConfig),
+        resourceTarget: convertResourceToTarget(resource),
         resourceName: name,
         resourceKind: kind,
       },

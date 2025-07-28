@@ -6,6 +6,6 @@ import { CLUSTER_DEFINITION_LABEL_KEY } from "@/lib/sealos/cluster/cluster-const
 // Converts a ClusterResource to node data for DatabaseNode
 export function convertResourceToNode(resource: ClusterResource) {
   return {
-    target: convertResourceToTarget(resource, CUSTOM_RESOURCES.cluster),
+    target: convertResourceToTarget(resource),
   };
 }

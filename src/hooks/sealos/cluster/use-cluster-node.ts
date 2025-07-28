@@ -10,7 +10,7 @@ import {
 import _ from "lodash";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { CLUSTER_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
-import { spreadResourceList } from "@/lib/k8s/k8s-method/k8s-utils";
+import { flattenResourceList } from "@/lib/k8s/k8s-method/k8s-utils";
 import {
   K8sResourceSchema,
   K8sResource,
@@ -35,14 +35,14 @@ const useClusterNode = (
       {
         ...listResourcesByLabelOptions(context, clusterLabel, ["secret"]),
         select: (data: any) =>
-          _.map(spreadResourceList(_.get(data, "builtin.secret")), (item) =>
+          _.map(flattenResourceList(_.get(data, "builtin.secret")), (item) =>
             K8sResourceSchema.parse(item)
           ),
       },
       {
         ...listResourcesByLabelOptions(context, clusterLabel, ["service"]),
         select: (data: any) =>
-          _.map(spreadResourceList(_.get(data, "builtin.service")), (item) =>
+          _.map(flattenResourceList(_.get(data, "builtin.service")), (item) =>
             K8sResourceSchema.parse(item)
           ),
       },
