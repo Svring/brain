@@ -3,9 +3,11 @@ import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/
 import { DEPLOYMENT_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
 import { getRelatedResources } from "../relevance-utils";
 
-export const getDeployRelatedResources = async (
+export const getDeploymentRelatedResources = async (
   context: K8sApiContext,
-  deployName: string
+  deployName: string,
+  builtinResources?: string[],
+  customResources?: string[]
 ): Promise<K8sResource[]> => {
   const labelSelectors = [
     `${DEPLOYMENT_RELATE_RESOURCE_LABELS.APP_DEPLOY_MANAGER}=${deployName}`,
@@ -13,7 +15,7 @@ export const getDeployRelatedResources = async (
   return getRelatedResources(
     context,
     labelSelectors,
-    ["ingress", "service", "pvc", "configmap"],
-    ["issuers", "certificates"]
+    builtinResources ?? ["ingress", "service", "pvc", "configmap"],
+    customResources ?? ["issuers", "certificates"]
   );
 };

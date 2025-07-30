@@ -5,7 +5,9 @@ import { getRelatedResources } from "../relevance-utils";
 
 export const getStatefulsetRelatedResources = async (
   context: K8sApiContext,
-  statefulsetName: string
+  statefulsetName: string,
+  builtinResources?: string[],
+  customResources?: string[]
 ): Promise<K8sResource[]> => {
   const labelSelectors = [
     `${STATEFULSET_RELATE_RESOURCE_LABELS.APP_DEPLOY_MANAGER}=${statefulsetName}`,
@@ -13,7 +15,7 @@ export const getStatefulsetRelatedResources = async (
   return getRelatedResources(
     context,
     labelSelectors,
-    ["ingress", "service", "pvc", "configmap"],
-    ["issuers", "certificates"]
+    builtinResources ?? ["ingress", "service", "pvc", "configmap"],
+    customResources ?? ["issuers", "certificates"]
   );
 };

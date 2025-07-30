@@ -5,7 +5,9 @@ import { getRelatedResources } from "../relevance-utils";
 
 export const getInstanceRelatedResources = async (
   context: K8sApiContext,
-  instanceName: string
+  instanceName: string,
+  builtinResources?: string[],
+  customResources?: string[]
 ): Promise<K8sResource[]> => {
   const labelSelectors = [
     `${INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS}=${instanceName}`,
@@ -13,7 +15,7 @@ export const getInstanceRelatedResources = async (
   return getRelatedResources(
     context,
     labelSelectors,
-    ["configmap", "deployment", "statefulset"],
-    ["devbox", "cluster", "objectstoragebucket"]
+    builtinResources ?? ["configmap", "deployment", "statefulset"],
+    customResources ?? ["devbox", "cluster", "objectstoragebucket"]
   );
 };

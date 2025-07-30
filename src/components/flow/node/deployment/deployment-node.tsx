@@ -5,7 +5,24 @@ import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res
 import Image from "next/image";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import useDeploymentNode from "@/hooks/sealos/deployment/use-deployment-node";
-import { GlobeLock, Activity, Package, Square } from "lucide-react";
+import {
+  GlobeLock,
+  Activity,
+  Package,
+  Square,
+  MoreHorizontal,
+  Pause,
+  RotateCcw,
+  Trash2,
+  PencilLine,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function DeploymentNode({
   data: { target },
@@ -14,37 +31,75 @@ export default function DeploymentNode({
 }) {
   const { data, isLoading } = useDeploymentNode(createK8sContext(), target);
 
-  if (isLoading) {
+  if (isLoading || !data) {
     return null;
   }
 
-  const { name, image, status } = data;
+  const { name, image, status, ports } = data;
 
   return (
     <BaseNode target={target} nodeData={data}>
       <div className="flex h-full flex-col gap-2 justify-between">
-        {/* Name */}
-        <div className="flex items-center gap-2 truncate font-medium">
-          <div className="flex flex-col items-start">
-            <span className="flex items-center gap-4">
-              <Image
-                src="https://applaunchpad.bja.sealos.run/logo.svg"
-                alt="Deploy Icon"
-                width={24}
-                height={24}
-                className="rounded-lg border border-muted h-9 w-9"
-                priority
-              />
-              <span className="flex flex-col">
-                <span className="text-xs text-muted-foreground leading-none">
-                  App Launchpad
-                </span>
-                <span className="text-lg font-bold text-foreground leading-tight w-50 overflow-hidden text-ellipsis text-left">
-                  {name}
+        {/* Header with Name and Dropdown */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 truncate font-medium">
+            <div className="flex flex-col items-start">
+              <span className="flex items-center gap-4">
+                <Image
+                  src="https://applaunchpad.bja.sealos.run/logo.svg"
+                  alt="Deploy Icon"
+                  width={24}
+                  height={24}
+                  className="rounded-lg border border-muted h-9 w-9"
+                  priority
+                />
+                <span className="flex flex-col">
+                  <span className="text-xs text-muted-foreground leading-none">
+                    App Launchpad
+                  </span>
+                  <span className="text-lg font-bold text-foreground leading-tight w-50 overflow-hidden text-ellipsis text-left">
+                    {name}
+                  </span>
                 </span>
               </span>
-            </span>
+            </div>
           </div>
+
+          {/* Dropdown Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+                className="p-1 hover:bg-muted rounded transition-colors"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="rounded-xl bg-background-secondary"
+              align="start"
+            >
+              <DropdownMenuItem>
+                <Pause className="mr-2 h-4 w-4" />
+                Pause
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <PencilLine className="mr-2 h-4 w-4" />
+                Update
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Restart
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-destructive">
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Image with Package Icon */}

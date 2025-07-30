@@ -8,7 +8,7 @@ export const BaseNode = forwardRef<
 >(({ className, selected, ...props }, ref) => (
   <div
     className={cn(
-      "relative rounded-xl border bg-background-secondary p-5 text-card-foreground w-70 h-50",
+      "relative cursor-pointer rounded-xl border bg-background-secondary p-5 text-card-foreground w-70 h-50",
       className,
       selected ? "border-muted-foreground shadow-lg" : "",
       "hover:ring-1"

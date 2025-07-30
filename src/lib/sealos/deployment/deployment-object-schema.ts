@@ -79,7 +79,9 @@ export const DeploymentObjectSchema = z.object({
     )
     .transform((containers) => {
       if (Array.isArray(containers) && containers.length > 0) {
-        return containers[0].ports;
+        return containers[0].ports.map((port: { containerPort: number }) => ({
+          number: port.containerPort,
+        }));
       }
       return [];
     })

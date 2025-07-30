@@ -5,7 +5,9 @@ import { getRelatedResources } from "../relevance-utils";
 
 export const getClusterRelatedResources = async (
   context: K8sApiContext,
-  clusterName: string
+  clusterName: string,
+  builtinResources?: string[],
+  customResources?: string[]
 ): Promise<K8sResource[]> => {
   const labelSelectors = [
     `${CLUSTER_RELATE_RESOURCE_LABELS.APP_KUBERNETES_INSTANCE}=${clusterName}`,
@@ -13,7 +15,7 @@ export const getClusterRelatedResources = async (
   return getRelatedResources(
     context,
     labelSelectors,
-    ["serviceaccount", "role", "rolebinding", "secret"],
-    ["backups"]
+    builtinResources ?? ["serviceaccount", "role", "rolebinding", "secret"],
+    customResources ?? ["backups"]
   );
 };

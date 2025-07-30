@@ -12,7 +12,7 @@ import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-res
 import { BUILTIN_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-builtin-resource";
 import { convertAndFilterResourceToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { getClusterRelatedResources } from "@/lib/algorithm/relevance/cluster/cluster-relevance";
-import { getDeployRelatedResources } from "@/lib/algorithm/relevance/deployment/deployment-relevance";
+import { getDeploymentRelatedResources } from "@/lib/algorithm/relevance/deployment/deployment-relevance";
 import { getDevboxRelatedResources } from "@/lib/algorithm/relevance/devbox/devbox-relevance";
 import { getInstanceRelatedResources } from "@/lib/algorithm/relevance/instance/instance-relevance";
 
@@ -88,7 +88,7 @@ export async function gatherRelatedResources(
       resource.resourceType === "deployment"
     ) {
       relatedResourcesPromises.push(
-        getDeployRelatedResources(context, resource.name)
+        getDeploymentRelatedResources(context, resource.name)
       );
     } else if (
       CUSTOM_RESOURCES.instance &&

@@ -6,7 +6,7 @@ import { filterEmptyResources } from "@/lib/k8s/k8s-method/k8s-utils";
 import { getInstanceRelatedResources } from "../instance/instance-relevance";
 import { getDevboxRelatedResources } from "../devbox/devbox-relevance";
 import { getClusterRelatedResources } from "../cluster/cluster-relevance";
-import { getDeployRelatedResources } from "../deployment/deployment-relevance";
+import { getDeploymentRelatedResources } from "../deployment/deployment-relevance";
 import { getStatefulsetRelatedResources } from "../statefulset/statefulset-relevance";
 import {
   createEmptyResourceResult,
@@ -51,7 +51,7 @@ export const getProjectRelatedResources = async (
   const subModuleHandlers = {
     devbox: { kind: "Devbox", handler: getDevboxRelatedResources },
     cluster: { kind: "Cluster", handler: getClusterRelatedResources },
-    deployment: { kind: "Deployment", handler: getDeployRelatedResources },
+    deployment: { kind: "Deployment", handler: getDeploymentRelatedResources },
     statefulset: {
       kind: "StatefulSet",
       handler: getStatefulsetRelatedResources,

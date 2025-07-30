@@ -5,7 +5,9 @@ import { getRelatedResources } from "../relevance-utils";
 
 export const getDevboxRelatedResources = async (
   context: K8sApiContext,
-  devboxName: string
+  devboxName: string,
+  builtinResources?: string[],
+  customResources?: string[]
 ): Promise<K8sResource[]> => {
   const labelSelectors = [
     `${DEVBOX_RELATE_RESOURCE_LABELS.DEVBOX_MANAGER}=${devboxName}`,
@@ -15,7 +17,7 @@ export const getDevboxRelatedResources = async (
   return getRelatedResources(
     context,
     labelSelectors,
-    ["ingress", "service", "secret", "pod"],
-    ["issuers", "certificates"]
+    builtinResources ?? ["ingress", "service", "secret", "pod"],
+    customResources ?? ["issuers", "certificates"]
   );
 };
