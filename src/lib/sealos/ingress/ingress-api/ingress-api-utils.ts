@@ -19,11 +19,13 @@ export const checkHttps = createParallelAction(
         validateStatus: () => true,
       });
 
+      const isAvailable = response.status < 500;
       return {
         protocol: "HTTPS",
         url: httpsUrl,
-        available: response.status < 500,
+        available: isAvailable,
         responseTime: Date.now() - startTime,
+        ...(isAvailable ? {} : { response: response.data }),
       };
     } catch (error) {
       return {
@@ -32,6 +34,7 @@ export const checkHttps = createParallelAction(
         available: false,
         error: error instanceof Error ? error.message : "Unknown error",
         responseTime: Date.now() - startTime,
+        response: error,
       };
     }
   }
@@ -56,6 +59,7 @@ export const checkWss = createParallelAction(
             available: false,
             error: "Connection timeout",
             responseTime: Date.now() - startTime,
+            response: { timeout: true },
           });
         }, 5000);
 
@@ -78,6 +82,7 @@ export const checkWss = createParallelAction(
             available: false,
             error: error.message,
             responseTime: Date.now() - startTime,
+            response: error,
           });
         });
       } catch (error) {
@@ -87,6 +92,7 @@ export const checkWss = createParallelAction(
           available: false,
           error: error instanceof Error ? error.message : "Unknown error",
           responseTime: Date.now() - startTime,
+          response: error,
         });
       }
     });
@@ -122,6 +128,7 @@ export const checkGrpcs = createParallelAction(
               available: false,
               error: error.message,
               responseTime: Date.now() - startTime,
+              response: error,
             });
           } else {
             resolve({
@@ -139,6 +146,7 @@ export const checkGrpcs = createParallelAction(
           available: false,
           error: error instanceof Error ? error.message : "Unknown error",
           responseTime: Date.now() - startTime,
+          response: error,
         });
       }
     });

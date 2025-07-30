@@ -4,4 +4,5 @@ export interface ProtocolCheckResult {
   available: boolean;
   error?: string;
   responseTime?: number;
+  response?: any;
 }

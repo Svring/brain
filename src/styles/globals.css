@@ -16,6 +16,7 @@
   --color-theme-blue: #1C86FB;
   --color-theme-green: #12B981;
   --color-theme-red: #F87270;
+  --color-theme-yellow: #FACC14;
 
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
