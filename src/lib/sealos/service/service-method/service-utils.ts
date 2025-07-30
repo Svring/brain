@@ -1,6 +1,8 @@
 "use client";
 
 import { K8sResource } from "../../../k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
+import { K8sApiContext } from "../../../k8s/k8s-api/k8s-api-schemas/context-schemas";
+import { transformRegionUrl } from "@/lib/sealos/sealos-utils";
 
 // Types for service transformation
 export interface ServicePort {
@@ -34,6 +36,8 @@ export interface CompletedPort {
   protocol?: string;
   targetPort?: number | string;
   serviceName?: string;
+  privateAddress?: string;
+  publicAddress?: string;
 }
 
 /**
@@ -50,12 +54,46 @@ export const transformServiceResources = (
 };
 
 /**
+ * Compose addresses for completed ports based on context and port information
+ */
+export const composeAddressFromService = (
+  ports: CompletedPort[],
+  context: K8sApiContext
+): CompletedPort[] => {
+  return ports.map((port) => {
+    const protocol = port.protocol?.toLowerCase() || "http";
+    const serviceName = port.serviceName;
+
+    // Compose private address: protocol://serviceName.namespace:port
+    const privateAddress = serviceName
+      ? `${protocol}://${serviceName}.${context.namespace}:${port.number}`
+      : undefined;
+
+    // Compose public address: protocol://protocol.transformedRegionUrl:nodePort
+    const publicAddress = port.nodePort
+      ? `${protocol}://${protocol}.${transformRegionUrl(context.regionUrl)}:${
+          port.nodePort
+        }`
+      : undefined;
+
+    const result = {
+      ...port,
+      ...(privateAddress && { privateAddress }),
+      ...(publicAddress && { publicAddress }),
+    };
+
+    return result;
+  });
+};
+
+/**
  * Complete ports information by matching port numbers with service ports
  * and adding additional properties like name, nodePort, protocol, etc.
  */
 export function enrichPortsWithService(
   ports: PortInput[],
-  servicesOrResources: TransformedService[] | ServiceResource[]
+  servicesOrResources: TransformedService[] | ServiceResource[],
+  context?: K8sApiContext
 ): CompletedPort[] {
   // Check if we received raw resources or transformed services
   const transformedServices =
@@ -65,7 +103,7 @@ export function enrichPortsWithService(
       ? transformServiceResources(servicesOrResources as ServiceResource[])
       : (servicesOrResources as TransformedService[]);
 
-  return ports.map((portInput) => {
+  const completedPorts = ports.map((portInput) => {
     // Find matching service port by port number
     for (const service of transformedServices) {
       const matchingPort = service.ports.find(
@@ -88,4 +126,9 @@ export function enrichPortsWithService(
       number: portInput.number,
     };
   });
+
+  // If context and regionUrl are provided, compose addresses
+  return context
+    ? composeAddressFromService(completedPorts, context)
+    : completedPorts;
 }

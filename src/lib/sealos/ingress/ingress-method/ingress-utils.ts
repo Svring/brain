@@ -11,6 +11,7 @@ import {
 
 import { ProtocolCheckResult } from "../ingress-api/ingress-api-schema";
 import { K8sResource } from "../../../k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
+import { K8sApiContext } from "../../../k8s/k8s-api/k8s-api-schemas/context-schemas";
 
 // Types for ingress transformation
 export interface IngressResource extends K8sResource {
@@ -55,6 +56,8 @@ export interface EnrichedPort extends PortWithNumber {
   ingressName?: string;
   protocol?: string;
   host?: string;
+  privateAddress?: string;
+  publicAddress?: string;
 }
 
 /**
@@ -112,12 +115,46 @@ export const transformIngressResources = (
 };
 
 /**
+ * Compose addresses for enriched ports based on context and port information
+ */
+export const composeAddressFromIngress = (
+  ports: EnrichedPort[],
+  context: K8sApiContext
+): EnrichedPort[] => {
+  return ports.map((port) => {
+    const protocol = port.protocol?.toLocaleLowerCase() || "http";
+    const serviceName = (port as any).serviceName;
+
+    // Compose private address: protocol://serviceName.namespace:port
+    const privateAddress = serviceName
+      ? `${protocol}://${serviceName}.${context.namespace}:${port.number}`
+      : undefined;
+
+    // Compose public address: protocols://host (add 's' for secure)
+    const publicAddress = port.host ? `${protocol}s://${port.host}` : undefined;
+
+    const enrichedPort = { ...port };
+
+    if (privateAddress) {
+      enrichedPort.privateAddress = privateAddress;
+    }
+
+    if (publicAddress) {
+      enrichedPort.publicAddress = publicAddress;
+    }
+
+    return enrichedPort;
+  });
+};
+
+/**
  * Enrich port objects with ingress information by matching port numbers.
  * Overwrites existing properties if they conflict.
  */
 export function enrichPortsWithIngress(
   ports: PortWithNumber[],
-  ingressesOrResources: TransformedIngress[] | IngressResource[]
+  ingressesOrResources: TransformedIngress[] | IngressResource[],
+  context?: K8sApiContext
 ): EnrichedPort[] {
   // Check if we received raw resources or transformed ingresses
   const transformedIngresses =
@@ -127,7 +164,7 @@ export function enrichPortsWithIngress(
       ? transformIngressResources(ingressesOrResources as IngressResource[])
       : (ingressesOrResources as TransformedIngress[]);
 
-  return ports.map((port) => {
+  const enrichedPorts = ports.map((port) => {
     // Find matching ingress by port number
     const matchingIngress = transformedIngresses.find(
       (ingress) => ingress.port === port.number
@@ -146,4 +183,9 @@ export function enrichPortsWithIngress(
     // Return original port if no matching ingress found
     return port;
   });
+
+  // If context is provided, compose addresses
+  return context
+    ? composeAddressFromIngress(enrichedPorts, context)
+    : enrichedPorts;
 }

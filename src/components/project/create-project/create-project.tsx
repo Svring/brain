@@ -15,9 +15,6 @@ import { Separator } from "@/components/ui/separator";
 import { useProjectTemplates } from "@/hooks/project/use-project-templates";
 import { useToast } from "@/hooks/general/use-toast";
 import { useCreateProjectMutation } from "@/lib/project/project-method/project-mutation";
-import { getCurrentNamespace } from "@/lib/auth/auth-utils";
-import { getDecodedKubeconfig } from "@/lib/auth/auth-utils";
-import { K8sApiContextSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
 import type {
   ListTemplateResponse,
   TemplateResource,
@@ -26,6 +23,7 @@ import { useCreateInstanceMutation } from "@/lib/sealos/template/template-method
 import { createTemplateApiContext } from "@/lib/sealos/template/template-method/template-utils";
 import { TemplateCard } from "./template-card";
 import { TemplateDetails } from "./template-details";
+import { createK8sContext } from "@/lib/auth/auth-utils";
 
 interface CreateProjectProps {
   onClose: () => void;
@@ -48,10 +46,7 @@ export default function CreateProject({ onClose }: CreateProjectProps) {
     (templatesResponse as ListTemplateResponse)?.data?.templates ?? [];
 
   // Get K8s context for mutations
-  const context = K8sApiContextSchema.parse({
-    namespace: getCurrentNamespace(),
-    kubeconfig: getDecodedKubeconfig(),
-  });
+  const context = createK8sContext();
 
   const createProjectMutation = useCreateProjectMutation(context);
 

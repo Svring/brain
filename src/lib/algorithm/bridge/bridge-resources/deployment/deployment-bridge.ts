@@ -4,36 +4,41 @@ import { composeObjectFromTarget } from "@/lib/algorithm/bridge/bridge-method/br
 import { getDeploymentRelatedResources } from "@/lib/algorithm/relevance/deployment/deployment-relevance";
 import { enrichPortsWithService } from "@/lib/sealos/service/service-method/service-utils";
 import { enrichPortsWithIngress } from "@/lib/sealos/ingress/ingress-method/ingress-utils";
+import _ from "lodash";
 
 export const getDeploymentObject = async (
   context: K8sApiContext,
   target: BuiltinResourceTarget
 ) => {
-  // Test the new composeObjectFromTarget function
   const deploymentObject = await composeObjectFromTarget(context, target);
-  console.log("deploymentObject", deploymentObject);
-  const relatedServices = await getDeploymentRelatedResources(
+  const relatedResources = await getDeploymentRelatedResources(
     context,
     deploymentObject.name,
-    ["service"],
+    ["service", "ingress"],
     []
-  );
-  console.log("relatedServices", relatedServices);
-  deploymentObject.ports = enrichPortsWithService(
-    deploymentObject.ports,
-    relatedServices as any[]
   );
 
-  const relatedIngresses = await getDeploymentRelatedResources(
-    context,
-    deploymentObject.name,
-    ["ingress"],
-    []
-  );
-  console.log("relatedIngresses", relatedIngresses);
-  deploymentObject.ports = enrichPortsWithIngress(
-    deploymentObject.ports,
-    relatedIngresses as any[]
-  );
+  deploymentObject.ports = _.chain(deploymentObject.ports)
+    .thru((ports) =>
+      enrichPortsWithService(
+        ports,
+        relatedResources.filter(
+          (resource) => resource.kind === "Service"
+        ) as any[],
+        context
+      )
+    )
+    .thru((ports) =>
+      enrichPortsWithIngress(
+        ports,
+        relatedResources.filter(
+          (resource) => resource.kind === "Ingress"
+        ) as any[],
+        context
+      )
+    )
+    .value();
+
+  console.log("deploymentObject.ports", deploymentObject.ports);
   return deploymentObject;
 };

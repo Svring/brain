@@ -76,6 +76,7 @@ export function createK8sContext(): K8sApiContext {
   return K8sApiContextSchema.parse({
     namespace: getCurrentNamespace(),
     kubeconfig: getDecodedKubeconfig(),
+    regionUrl: getCurrentRegionUrl(),
   });
 }
 export function getUserKubeconfig(): string | undefined {
@@ -93,29 +94,7 @@ export function getCurrentNamespace(): string | undefined {
   const { auth } = useAuthState();
   return auth?.namespace;
 }
-
-/**
- * Converts URL format from subdomain.sealos.run to sealossubdomain.site
- * Example: bja.sealos.run -> sealosbja.site
- */
-export function convertToDbconnUrl(url: string): string {
-  // Remove protocol if present
-  const cleanUrl = url.replace(/^https?:\/\//, "");
-
-  // If URL ends with 'io', return as is
-  if (cleanUrl.endsWith(".io")) {
-    return url;
-  }
-
-  // Split by dots
-  const parts = cleanUrl.split(".");
-
-  // Check if it matches the expected pattern (subdomain.sealos.run)
-  if (parts.length === 3 && parts[1] === "sealos" && parts[2] === "run") {
-    const subdomain = parts[0];
-    return `dbconn.sealos${subdomain}.site`;
-  }
-
-  // Return original if pattern doesn't match
-  return url;
+export function getCurrentRegionUrl(): string | undefined {
+  const { auth } = useAuthState();
+  return auth?.regionUrl;
 }
