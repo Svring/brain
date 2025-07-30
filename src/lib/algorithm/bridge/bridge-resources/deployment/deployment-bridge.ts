@@ -39,6 +39,5 @@ export const getDeploymentObject = async (
     )
     .value();
 
-  console.log("deploymentObject.ports", deploymentObject.ports);
   return deploymentObject;
 };

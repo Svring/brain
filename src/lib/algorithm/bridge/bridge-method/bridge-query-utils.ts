@@ -242,7 +242,41 @@ async function getResourceByFieldValue(
 }
 
 /**
- * Fetches resources for multiple schema descriptions in parallel
+ * Creates a unique cache key for a resource locator
+ * @param fieldValue - The field value containing resourceType and optional label/name
+ * @param instanceName - Name of the instance
+ * @returns A unique string key for caching
+ */
+function createResourceLocatorKey(
+  fieldValue: ObjectQuery,
+  instanceName: string
+): string {
+  if (fieldValue.resourceType === "external") {
+    return `external:${fieldValue.resourceType}`;
+  }
+
+  const parts = [fieldValue.resourceType];
+  
+  if (fieldValue.label) {
+    parts.push(`label:${fieldValue.label}=${instanceName}`);
+  }
+  
+  if (fieldValue.name) {
+    const namePattern = fieldValue.name.replace(
+      /\{\{instanceName\}\}/g,
+      instanceName
+    );
+    parts.push(`name:${namePattern}`);
+  } else if (!fieldValue.label) {
+    // Fall back to exact name match
+    parts.push(`exact:${instanceName}`);
+  }
+  
+  return parts.join("|");
+}
+
+/**
+ * Fetches resources for multiple schema descriptions with caching to avoid redundant API calls
  * @param context - K8s API context
  * @param schemaDescriptions - Record of field names to schema descriptions (can be nested)
  * @param instanceName - Name of the instance
@@ -255,18 +289,48 @@ export async function getResourcesByFieldDescriptions(
 ): Promise<Record<string, any>> {
   const flattenedDescriptions = flattenFieldDescriptions(schemaDescriptions);
   const entries = Object.entries(flattenedDescriptions);
-
-  const promises = entries.map(async ([fieldName, description]) => {
+  
+  // Cache to store fetched resources by their locator key
+  const resourceCache = new Map<string, any>();
+  
+  // Group fields by their resource locator to identify duplicates
+  const fieldsByLocator = new Map<string, string[]>();
+  
+  for (const [fieldName, description] of entries) {
+    const locatorKey = createResourceLocatorKey(description, instanceName);
+    if (!fieldsByLocator.has(locatorKey)) {
+      fieldsByLocator.set(locatorKey, []);
+    }
+    fieldsByLocator.get(locatorKey)!.push(fieldName);
+  }
+  
+  // Fetch resources only once per unique locator
+  const uniqueLocators = Array.from(fieldsByLocator.keys());
+  const fetchPromises = uniqueLocators.map(async (locatorKey) => {
+    // Get the first field with this locator to extract the description
+    const firstFieldName = fieldsByLocator.get(locatorKey)![0];
+    const description = flattenedDescriptions[firstFieldName];
+    
     const resource = await getResourceByFieldValue(
       context,
       description,
       instanceName
     );
-    return [fieldName, resource] as const;
+    
+    resourceCache.set(locatorKey, resource);
+    return [locatorKey, resource] as const;
   });
-
-  const results = await Promise.all(promises);
-  return Object.fromEntries(results);
+  
+  await Promise.all(fetchPromises);
+  
+  // Map each field to its corresponding cached resource
+  const results: Record<string, any> = {};
+  for (const [fieldName, description] of entries) {
+    const locatorKey = createResourceLocatorKey(description, instanceName);
+    results[fieldName] = resourceCache.get(locatorKey);
+  }
+  
+  return results;
 }
 
 // ============================================================================
