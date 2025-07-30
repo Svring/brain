@@ -7,6 +7,7 @@ import { Network, Globe, Copy } from "lucide-react";
 import useIngressNode from "@/hooks/sealos/ingress/use-ingress-node";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import { toast } from "sonner";
+import { checkUrl } from "@/lib/sealos/ingress/ingress-method/ingress-utils";
 
 export default function IngressNode({
   data: { target },

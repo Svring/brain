@@ -4,14 +4,7 @@ import WebSocket from "ws";
 import axios from "axios";
 import grpc from "@grpc/grpc-js";
 import { createParallelAction } from "next-server-actions-parallel";
-
-interface ProtocolCheckResult {
-  protocol: string;
-  url: string;
-  available: boolean;
-  error?: string;
-  responseTime?: number;
-}
+import { ProtocolCheckResult } from "./ingress-api-schema";
 
 /**
  * Check HTTPS availability for a given URL.

@@ -7,152 +7,83 @@ export const StatefulsetObjectSchema = z.object({
       path: ["metadata.name"],
     })
   ),
-  image: z.array(
-    z.object({
-      name: z.string().describe(
-        JSON.stringify({
-          resourceType: "statefulset",
-          path: ["spec.template.spec.containers", "image"],
-        })
-      ),
+  image: z
+    .any()
+    .describe(
+      JSON.stringify({
+        resourceType: "statefulset",
+        path: ["spec.template.spec.containers"],
+      })
+    )
+    .transform((containers) => {
+      if (Array.isArray(containers) && containers.length > 0) {
+        return containers[0].image;
+      }
+      return "";
+    }),
+  resource: z
+    .any()
+    .describe(
+      JSON.stringify({
+        resourceType: "statefulset",
+        path: ["spec"],
+      })
+    )
+    .transform((spec) => {
+      const replicas = spec.replicas;
+      const containers = spec.template.spec.containers;
+      if (Array.isArray(containers) && containers.length > 0) {
+        return {
+          replicas,
+          ...containers[0].resources.limits,
+        };
+      }
+      return {};
+    }),
+  status: z
+    .any()
+    .describe(
+      JSON.stringify({
+        resourceType: "statefulset",
+        path: ["status"],
+      })
+    )
+    .transform((status) => {
+      return {
+        replicas: status.replicas,
+        unavailableReplicas: status.unavailableReplicas,
+      };
+    }),
+  env: z
+    .any()
+    .describe(
+      JSON.stringify({
+        resourceType: "statefulset",
+        path: ["spec.template.spec.containers"],
+      })
+    )
+    .transform((containers) => {
+      if (Array.isArray(containers) && containers.length > 0) {
+        return containers[0].env;
+      }
+      return [];
     })
-  ),
-  status: z.object({
-    replicas: z.number().describe(
+    .optional(),
+  ports: z
+    .any()
+    .describe(
       JSON.stringify({
         resourceType: "statefulset",
-        path: ["status.replicas"],
+        path: ["spec.template.spec.containers"],
       })
-    ),
-    availableReplicas: z.number().describe(
-      JSON.stringify({
-        resourceType: "statefulset",
-        path: ["status.availableReplicas"],
-      })
-    ),
-    unavailableReplicas: z.number().nullable().describe(
-      JSON.stringify({
-        resourceType: "statefulset",
-        path: ["status.unavailableReplicas"],
-      })
-    ).transform((data) => data || 0),
-    readyReplicas: z.number().describe(
-      JSON.stringify({
-        resourceType: "statefulset",
-        path: ["status.readyReplicas"],
-      })
-    ),
-    currentReplicas: z.number().describe(
-      JSON.stringify({
-        resourceType: "statefulset",
-        path: ["status.currentReplicas"],
-      })
-    ),
-  }),
-  containers: z.array(
-    z.object({
-      name: z.string().describe(
-        JSON.stringify({
-          resourceType: "statefulset",
-          path: ["spec.template.spec.containers", "name"],
-        })
-      ),
-      image: z.string().describe(
-        JSON.stringify({
-          resourceType: "statefulset",
-          path: ["spec.template.spec.containers", "image"],
-        })
-      ),
-      command: z.any().describe(
-        JSON.stringify({
-          resourceType: "statefulset",
-          path: ["spec.template.spec.containers", "command"],
-        })
-      ).transform((data) => {
-        if (Array.isArray(data)) {
-          return JSON.stringify(data);
-        }
-        return typeof data === "string" ? data : "";
-      }),
-      requests: z
-        .object({
-          cpu: z.string(),
-          memory: z.string(),
-        })
-        .describe(
-          JSON.stringify({
-            resourceType: "statefulset",
-            path: ["spec.template.spec.containers", "resources.requests"],
-          })
-        ),
-      limits: z
-        .object({
-          cpu: z.string(),
-          memory: z.string(),
-        })
-        .describe(
-          JSON.stringify({
-            resourceType: "statefulset",
-            path: ["spec.template.spec.containers", "resources.limits"],
-          })
-        ),
-      ports: z
-        .any()
-        .describe(
-          JSON.stringify({
-            resourceType: "statefulset",
-            path: ["spec.template.spec.containers", "ports"],
-          })
-        )
-        .transform((data) => {
-          if (Array.isArray(data)) {
-            return JSON.stringify(data);
-          }
-          return typeof data === "string" ? data : "";
-        })
-        .optional(),
-      env: z
-        .any()
-        .describe(
-          JSON.stringify({
-            resourceType: "statefulset",
-            path: ["spec.template.spec.containers", "env"],
-          })
-        )
-        .transform((data) => {
-          if (Array.isArray(data)) {
-            return JSON.stringify(data);
-          }
-          return typeof data === "string" ? data : "";
-        })
-        .optional(),
+    )
+    .transform((containers) => {
+      if (Array.isArray(containers) && containers.length > 0) {
+        return containers[0].ports;
+      }
+      return [];
     })
-  ),
-  volume: z.array(
-    z.object({
-      accessModes: z.array(z.string()).describe(
-        JSON.stringify({
-          resourceType: "statefulset",
-          path: ["spec.volumeClaimTemplates", "spec.accessModes"],
-        })
-      ),
-      storage: z.string().describe(
-        JSON.stringify({
-          resourceType: "statefulset",
-          path: [
-            "spec.volumeClaimTemplates",
-            "spec.resources.requests.storage",
-          ],
-        })
-      ),
-      volumeMode: z.string().describe(
-        JSON.stringify({
-          resourceType: "statefulset",
-          path: ["spec.volumeClaimTemplates", "spec.volumeMode"],
-        })
-      ),
-    })
-  ),
+    .optional(),
   configMap: z
     .array(
       z.object({

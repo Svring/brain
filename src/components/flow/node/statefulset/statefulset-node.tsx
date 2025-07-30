@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import useStatefulSetNode from "@/hooks/sealos/statefulset/use-statefulset-node";
+import { GlobeLock, Activity, Package, Square } from "lucide-react";
 
 export default function StatefulSetNode({
   data: { target },
@@ -18,6 +19,10 @@ export default function StatefulSetNode({
   if (isLoading) {
     return null;
   }
+
+  console.log("data", data);
+
+  const { name, image, status, containers } = data;
 
   return (
     <BaseNode target={target} nodeData={data}>
@@ -39,29 +44,47 @@ export default function StatefulSetNode({
                   App Launchpad
                 </span>
                 <span className="text-lg font-bold text-foreground leading-tight w-40 overflow-hidden text-ellipsis text-left">
-                  {data.name}
+                  {name}
                 </span>
               </span>
             </span>
           </div>
         </div>
 
-        {/* State badge */}
-        <div className="mt-auto flex justify-start">
-          <Badge
-            variant="outline"
-            className={
-              data.status.readyReplicas === data.status.replicas &&
-              data.status.replicas > 0
-                ? "border-green-600 text-green-700"
-                : ""
-            }
-          >
-            {data.status.readyReplicas === data.status.replicas &&
-            data.status.replicas > 0
-              ? "running"
-              : "preparing"}
-          </Badge>
+        {/* Image with Package Icon */}
+        <div className="flex items-center gap-2 mt-2">
+          <Package className="h-4 w-4 text-muted-foreground" />
+          <div className="flex-1">
+            <div className="text-sm text-muted-foreground truncate">
+              {containers?.[0]?.image || "No image"}
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom section with status and icons */}
+        <div className="mt-auto flex justify-between items-center">
+          {/* Left: Square icon with status */}
+          <div className="flex items-center gap-2">
+            <Square className="h-4 w-4 text-muted-foreground" />
+            <Badge
+              variant="outline"
+              className={
+                status.readyReplicas === status.replicas && status.replicas > 0
+                  ? "border-green-600 text-green-700"
+                  : ""
+              }
+            >
+              {status.readyReplicas === status.replicas && status.replicas > 0
+                ? "running"
+                : "preparing"}
+            </Badge>
+          </div>
+
+          {/* Right: GlobeLock and Activity icons */}
+          <div className="flex items-center gap-2">
+            <GlobeLock className="h-4 w-4 text-muted-foreground" />
+            <Activity className="h-4 w-4 text-muted-foreground" />
+          </div>
         </div>
       </div>
     </BaseNode>
