@@ -42,6 +42,7 @@ import { useFlowFocus } from "@/hooks/flow/use-flow-focus";
 import { useFlowDrop } from "@/hooks/flow/use-flow-drop";
 import { useFlowRefresh } from "@/hooks/flow/use-flow-refresh";
 import { useProjectSignal } from "@/hooks/project/use-project-signal";
+import { useFlowActions } from "@/contexts/flow/flow-context";
 
 // Custom types
 import edgeTypes from "@/components/flow/edge/edge-types";
@@ -144,6 +145,18 @@ function ProjectFlow({ projectName }: { projectName: string }) {
   );
   const { handleDrop } = useFlowDrop(context, projectName);
   const { onNodeClick } = useFlowFocus();
+  const { setDragging } = useFlowActions();
+
+  const handleNodeDragStart = () => {
+    setDragging(true);
+  };
+
+  const handleNodeDragStop = () => {
+    // Add a small delay to ensure drag state is cleared after any click events
+    setTimeout(() => {
+      setDragging(false);
+    }, 100);
+  };
 
   if (isLoading) {
     return (
@@ -175,6 +188,8 @@ function ProjectFlow({ projectName }: { projectName: string }) {
         onEdgesChange={onEdgesChange}
         onNodesChange={onNodesChange}
         onNodeClick={onNodeClick}
+        onNodeDragStart={handleNodeDragStart}
+        onNodeDragStop={handleNodeDragStop}
         panOnScroll
         snapToGrid
         snapGrid={FLOW_CONFIG.snapGrid}

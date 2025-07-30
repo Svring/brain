@@ -4,7 +4,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 import { BUILTIN_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-builtin-resource";
 import { listResourcesOptions } from "@/lib/k8s/k8s-method/k8s-query";
-import type { K8sApiContext } from "@/lib/k8s/schemas";
+import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
 import {
   BuiltinResourceTargetSchema,
   CustomResourceTargetSchema,

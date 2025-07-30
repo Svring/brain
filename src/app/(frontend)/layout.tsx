@@ -7,7 +7,7 @@ import { CopilotProvider } from "@/components/app/provider/copilot-provider";
 import { QueryProvider } from "@/components/app/provider/query-provider";
 import AppSidebar from "@/components/app/sidebar/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/auth/auth-context";
 import { AiProvider } from "@/contexts/ai/ai-context";
 import { ProjectProvider } from "@/contexts/project/project-context";
@@ -78,7 +78,7 @@ export default async function RootLayout({
               </QueryProvider>
             </CopilotProvider>
           </AuthProvider>
-          <Toaster />
+          <Toaster position="top-center" toastOptions={{ duration: 1500 }} />
         </ThemeProvider>
       </body>
     </html>

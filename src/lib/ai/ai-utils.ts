@@ -1,7 +1,7 @@
 "use client";
 
 import type { User } from "@/payload-types";
-import type { Auth } from "@/contexts/auth-context/auth-machine";
+import type { Auth } from "@/contexts/auth/auth-machine";
 import {
   getAiProxyTokens,
   createAiProxyToken,
@@ -9,14 +9,19 @@ import {
 import type { AiProxyApiContext } from "@/lib/sealos/ai-proxy/schemas/ai-proxy-api-context";
 import { runParallelAction } from "next-server-actions-parallel";
 
-export function getAiCredentialsDev(payloadUser: User): { baseUrl: string; apiKey: string } {
+export function getAiCredentialsDev(payloadUser: User): {
+  baseUrl: string;
+  apiKey: string;
+} {
   return {
     baseUrl: payloadUser.baseUrl || "http://localhost:8080/v1",
     apiKey: payloadUser.apiKey || "mock-api-key",
   };
 }
 
-export async function getAiCredentialsProd(auth: Auth): Promise<{ baseUrl: string; apiKey: string }> {
+export async function getAiCredentialsProd(
+  auth: Auth
+): Promise<{ baseUrl: string; apiKey: string }> {
   try {
     // Create AI Proxy context
     const aiProxyContext: AiProxyApiContext = {

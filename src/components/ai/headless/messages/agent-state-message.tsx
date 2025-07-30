@@ -1,6 +1,6 @@
 "use client";
 
-import { StateCard } from "../../state-card";
+import { StateCard } from "../ai-state-card";
 import { useAiState } from "@/contexts/ai/ai-context";
 import { MessageRendererProps } from "./types";
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { z } from "zod";
+import { IngressObjectSchema } from "@/lib/sealos/ingress/ingress-object-schema";
 import { DevboxObjectSchema } from "@/lib/sealos/devbox/devbox-schemas/devbox-object-schema";
 import { ClusterObjectSchema } from "@/lib/sealos/cluster/cluster-schemas/cluster-object-schema";
 import { DeploymentObjectSchema } from "@/lib/sealos/deployment/deployment-object-schema";
@@ -17,6 +18,7 @@ export const RESOURCE_SCHEMA_MAP: Record<string, z.ZodObject<any>> = {
   deployment: DeploymentObjectSchema,
   statefulset: StatefulsetObjectSchema,
   objectstoragebucket: ObjectStorageBucketObjectSchema,
+  ingress: IngressObjectSchema,
   // Add more resource schemas here as they become available
   // example: "pod": PodObjectSchema,
   // example: "service": ServiceObjectSchema,

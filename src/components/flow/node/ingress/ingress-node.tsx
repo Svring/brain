@@ -1,92 +1,116 @@
 "use client";
 
-import { useState } from "react";
-import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import BaseNode from "../base-node-wrapper";
+import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { cn } from "@/lib/utils";
-import type { IngressResource } from "@/lib/k8s/schemas/resource-schemas/ingress-schemas";
-import { useFlowState, useFlowActions } from "@/contexts/flow/flow-context";
-import { useMount } from "@reactuses/core";
-import { Badge } from "@/components/ui/badge";
-import { Network, ExternalLink } from "lucide-react";
+import { Network, Globe, Copy } from "lucide-react";
+import useIngressNode from "@/hooks/sealos/ingress/use-ingress-node";
+import { createK8sContext } from "@/lib/auth/auth-utils";
+import { toast } from "sonner";
 
-interface IngressNodeProps {
-  name: string;
-  host: string;
-  target: BuiltinResourceTarget;
-  resource: IngressResource; // Full resource for accessing labels and metadata
-}
-
-interface IngressNodeComponentProps {
-  data: IngressNodeProps;
-}
-
-export default function IngressNode({ data }: IngressNodeComponentProps) {
-  const { name, host, target, resource } = data;
-  const [showConnectionMenu, setShowConnectionMenu] = useState(false);
-
-  const getDisplayUrl = () => {
-    return host ? `https://${host}` : null;
+export default function IngressNode({
+  data: { target },
+}: {
+  data: {
+    target: BuiltinResourceTarget;
   };
+}) {
+  const k8sContext = createK8sContext();
+  const { data, isLoading } = useIngressNode(k8sContext, target);
 
-  const displayUrl = getDisplayUrl();
+  if (isLoading) {
+    return null;
+  }
 
-  const handleOpenUrl = (e: React.MouseEvent) => {
-    if (displayUrl) {
-      e.preventDefault();
-      e.stopPropagation();
-      window.open(displayUrl, "_blank", "noopener");
-    }
-  };
-
-  const floatingMenuOptions = displayUrl
-    ? [
-        {
-          label: "Open URL",
-          onClick: () => window.open(displayUrl, "_blank", "noopener"),
-          Icon: <ExternalLink className="w-4 h-4" />,
-        },
-      ]
-    : [];
+  const { layer, host, affiliation, protocol } = data;
 
   return (
     <BaseNode
       target={target}
-      className={"p-4"}
-      showDefaultMenu={!showConnectionMenu}
-      floatingMenuOptions={floatingMenuOptions}
+      nodeData={data}
+      className={"p-4 h-27"}
+      showDefaultMenu={false}
     >
       <div className="flex h-full flex-col justify-between">
         {/* Name */}
         <div className="flex items-center gap-2 truncate font-medium">
           <div className="flex flex-col items-start">
-            <span className="flex items-center gap-2">
-              <Network className="rounded-lg h-9 w-9 p-1.5" />
+            <span className="flex items-center gap-4">
+              <Network className="rounded-lg h-9 w-9 p-1.5 bg-muted" />
               <span className="flex flex-col">
-                <span className="text-xs text-muted-foreground leading-none">
-                  Ingress
-                </span>
-                <span className="text-lg font-bold text-foreground leading-tight w-40 overflow-hidden text-ellipsis text-left">
-                  {name}
-                </span>
+                <span className="text-lg leading-none">Ingress</span>
               </span>
             </span>
           </div>
         </div>
 
-        {/* URL badge */}
-        <div className="mt-auto flex justify-start">
-          <Badge
-            variant="outline"
+        {/* Layer and Host */}
+        <div className="flex items-center gap-2 mt-2">
+          <Globe
             className={cn(
-              displayUrl
-                ? "border-blue-600 text-blue-700 hover:underline cursor-pointer"
-                : "text-muted-foreground cursor-not-allowed opacity-60"
+              "h-4 w-4",
+              layer === "application" ? "text-theme-green" : "text-theme-blue"
             )}
-            onClick={handleOpenUrl}
-          >
-            {displayUrl ? displayUrl : "No URL available"}
-          </Badge>
+          />
+          {host ? (
+            <div className="flex items-center gap-1 flex-1 min-w-0">
+              {layer === "application" ? (
+                <>
+                  <span
+                    className="text-sm text-muted-foreground truncate cursor-pointer hover:text-foreground transition-colors"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const url = `${
+                        protocol
+                          ? protocol.toLowerCase() + "s" + "://"
+                          : "https://"
+                      }${host}`;
+                      window.open(url, "_blank");
+                    }}
+                  >
+                    {`${
+                      protocol
+                        ? protocol.toLowerCase() + "s" + "://"
+                        : "https://"
+                    }${host}`}
+                  </span>
+                  <Copy
+                    className="h-4 w-4 hover:text-foreground cursor-pointer transition-colors flex-shrink-0"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const url = `${
+                        protocol
+                          ? protocol.toLowerCase() + "s" + "://"
+                          : "https://"
+                      }${host}`;
+                      navigator.clipboard.writeText(url);
+                      console.log("url", url);
+                      toast("URL copied to clipboard");
+                    }}
+                  />
+                </>
+              ) : (
+                <span
+                  className="text-sm truncate cursor-pointer hover:text-foreground transition-colors"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const url = `${
+                      protocol ? protocol.toLowerCase() + "://" : ""
+                    }${host}`;
+                    navigator.clipboard.writeText(url);
+                    toast("URL copied to clipboard");
+                  }}
+                >
+                  {`${protocol ? protocol.toLowerCase() + "://" : ""}${host}`}
+                </span>
+              )}
+            </div>
+          ) : (
+            <span className="text-sm text-muted-foreground">No host</span>
+          )}
         </div>
       </div>
     </BaseNode>

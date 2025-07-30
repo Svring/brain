@@ -9,6 +9,7 @@ export interface FlowContext {
   selectedNode: any;
   selectedEdge: any;
   isInitialized: boolean;
+  isDragging: boolean;
 }
 
 export type FlowEvent =
@@ -19,6 +20,7 @@ export type FlowEvent =
   | { type: "UPDATE_SINGLE_EDGE"; id: string; edge: Partial<Edge> }
   | { type: "SET_SELECTED_NODE"; node: any }
   | { type: "SET_SELECTED_EDGE"; edge: any }
+  | { type: "SET_DRAGGING"; isDragging: boolean }
   | { type: "RESET_FLOW" };
 
 export const flowMachine = createMachine({
@@ -32,6 +34,7 @@ export const flowMachine = createMachine({
     selectedNode: null,
     selectedEdge: null,
     isInitialized: false,
+    isDragging: false,
   },
   states: {
     idle: {
@@ -90,6 +93,11 @@ export const flowMachine = createMachine({
             selectedEdge: ({ event }) => event.edge,
           }),
         },
+        SET_DRAGGING: {
+          actions: assign({
+            isDragging: ({ event }) => event.isDragging,
+          }),
+        },
         RESET_FLOW: {
           target: "idle",
           actions: assign({
@@ -98,6 +106,7 @@ export const flowMachine = createMachine({
             selectedNode: null,
             selectedEdge: null,
             isInitialized: false,
+            isDragging: false,
           }),
         },
       },

@@ -58,6 +58,7 @@ export function useFlowState() {
     selectedNode: state.context.selectedNode as any,
     selectedEdge: state.context.selectedEdge as any,
     isInitialized: state.context.isInitialized as boolean,
+    isDragging: state.context.isDragging as boolean,
     isReady: state.matches("ready"),
   };
 }
@@ -76,6 +77,7 @@ export function useFlowActions() {
       send({ type: "UPDATE_SINGLE_EDGE", id, edge }),
     setSelectedNode: (node: any) => send({ type: "SET_SELECTED_NODE", node }),
     setSelectedEdge: (edge: any) => send({ type: "SET_SELECTED_EDGE", edge }),
+    setDragging: (isDragging: boolean) => send({ type: "SET_DRAGGING", isDragging }),
     resetFlow: () => send({ type: "RESET_FLOW" }),
   };
 }

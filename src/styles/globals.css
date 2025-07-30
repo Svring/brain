@@ -13,6 +13,9 @@
   --color-state-error: #311E1E;
   --color-state-normal: #12B981;
 
+  --color-theme-blue: #1C86FB;
+  --color-theme-green: #12B981;
+
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
 

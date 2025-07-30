@@ -3,7 +3,7 @@
 import { useCoAgent, useCoAgentStateRender } from "@copilotkit/react-core";
 import type { AiState } from "@/contexts/ai/ai-machine";
 import { useAiState } from "@/contexts/ai/ai-context";
-import { StateCard } from "@/components/ai/state-card";
+import { StateCard } from "@/components/ai/headless/ai-state-card";
 // import { activateDevboxActions } from "@/lib/ai/sealos/devbox/ai-devbox-action";
 
 export default function useAI() {
