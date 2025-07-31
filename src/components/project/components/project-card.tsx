@@ -56,9 +56,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ projectName }) => {
       href={`/project/${encodeURIComponent(projectName)}`}
     >
       <motion.div
-        className="relative flex min-h-[160px] w-full cursor-pointer flex-col rounded-lg border bg-background-secondary p-4 text-left shadow-sm"
+        className="relative flex min-h-[160px] w-full cursor-pointer flex-col rounded-lg border bg-background-secondary p-4 text-left shadow-sm hover:border-amber-50"
         transition={{ duration: 0.15, ease: "easeInOut" }}
-        whileHover={{ y: -5 }}
       >
         {/* Triple dot menu */}
         <div className="absolute top-2 right-2">
@@ -77,14 +76,15 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ projectName }) => {
                 <span className="sr-only">Open menu</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent className="rounded-lg " align="start">
               <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
+                className="text-destructive rounded-lg"
                 disabled={deleteProjectMutation.isPending}
                 onClick={handleDelete}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                {deleteProjectMutation.isPending ? "Deleting..." : "Delete"}
+                Delete
+                {/* {deleteProjectMutation.isPending ? "Deleting..." : "Delete"} */}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

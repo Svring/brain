@@ -4,12 +4,13 @@ import { composeObjectFromTarget } from "@/lib/algorithm/bridge/bridge-method/br
 import { getDeploymentRelatedResources } from "@/lib/algorithm/relevance/deployment/deployment-relevance";
 import { enrichPortsWithService } from "@/lib/sealos/service/service-method/service-utils";
 import { enrichPortsWithIngress } from "@/lib/sealos/ingress/ingress-method/ingress-utils";
+import { DeploymentObjectSchema, DeploymentObject } from "@/lib/sealos/deployment/deployment-object-schema";
 import _ from "lodash";
 
 export const getDeploymentObject = async (
   context: K8sApiContext,
   target: BuiltinResourceTarget
-) => {
+): Promise<DeploymentObject> => {
   const deploymentObject = await composeObjectFromTarget(context, target);
   const relatedResources = await getDeploymentRelatedResources(
     context,
@@ -39,5 +40,5 @@ export const getDeploymentObject = async (
     )
     .value();
 
-  return deploymentObject;
+  return DeploymentObjectSchema.parse(deploymentObject);
 };

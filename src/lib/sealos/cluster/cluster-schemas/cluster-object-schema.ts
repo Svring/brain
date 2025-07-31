@@ -25,6 +25,14 @@ export const ClusterObjectSchema = z.object({
       path: ["status.phase"],
     })
   ),
+  resource: z.object({
+    cpu: z.enum(["1", "2", "4"]),
+    memory: z.enum(["1Gi", "2Gi", "4Gi"]),
+    storage: z.enum(["1Gi", "2Gi", "4Gi"]),
+    replicas: z.number().min(1).max(3),
+  }),
+  createdAt: z.string(),
+  uptime: z.string(),
   components: z.array(
     z.object({
       name: z.string().describe(
@@ -129,10 +137,25 @@ export const ClusterObjectSchema = z.object({
     }),
     publicConnection: z.string().optional(),
   }),
+  backup: z.object({
+    enabled: z.boolean(),
+    schedule: z.string(),
+    retention: z.string(),
+    strategy: z.enum(["full", "incremental"]),
+  }),
   pods: z
     .array(
       z.object({
         name: z.string(),
+        uptime: z.string(),
+        restartCount: z.number(),
+        containers: z.array(
+          z.object({
+            name: z.string(),
+            status: z.string(),
+            startedAt: z.string(),
+          })
+        ),
       })
     )
     .optional(),

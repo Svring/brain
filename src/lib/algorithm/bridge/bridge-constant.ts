@@ -4,7 +4,7 @@ import { z } from "zod";
 import { IngressObjectSchema } from "@/lib/sealos/ingress/ingress-object-schema";
 import { DevboxObjectSchema } from "@/lib/sealos/devbox/devbox-schemas/devbox-object-schema";
 import { ClusterObjectSchema } from "@/lib/sealos/cluster/cluster-schemas/cluster-object-schema";
-import { DeploymentObjectSchema } from "@/lib/sealos/deployment/deployment-object-schema";
+import { DeploymentObjectQuerySchema } from "@/lib/sealos/deployment/deployment-object-query-schema";
 import { StatefulsetObjectSchema } from "@/lib/sealos/statefulset/statefulset-object-schema";
 import { ObjectStorageBucketObjectSchema } from "@/lib/sealos/objectstorage/objectstorage-schemas/objectstorage-object-schema";
 
@@ -15,7 +15,7 @@ import { ObjectStorageBucketObjectSchema } from "@/lib/sealos/objectstorage/obje
 export const RESOURCE_SCHEMA_MAP: Record<string, z.ZodObject<any>> = {
   devbox: DevboxObjectSchema,
   cluster: ClusterObjectSchema,
-  deployment: DeploymentObjectSchema,
+  deployment: DeploymentObjectQuerySchema,
   statefulset: StatefulsetObjectSchema,
   objectstoragebucket: ObjectStorageBucketObjectSchema,
   ingress: IngressObjectSchema,

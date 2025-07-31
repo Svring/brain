@@ -1,107 +1,46 @@
 import { z } from "zod";
 
+const EnvVarSchema = z.object({
+  name: z.string(),
+  value: z.string().optional(),
+  valueFrom: z.object({
+    secretKeyRef: z.object({
+      key: z.string(),
+      name: z.string(),
+    }),
+  }).optional(),
+});
+
+const PortSchema = z.object({
+  number: z.number(),
+  name: z.string().optional(),
+  nodePort: z.number().optional(),
+  protocol: z.string(),
+  serviceName: z.string().optional(),
+  privateAddress: z.string().optional(),
+  publicAddress: z.string().optional(),
+  ingressName: z.string().optional(),
+  host: z.string().optional(),
+});
+
+const ResourceSchema = z.object({
+  replicas: z.number(),
+  cpu: z.string(),
+  memory: z.string(),
+});
+
+const StatusSchema = z.object({
+  replicas: z.number(),
+  unavailableReplicas: z.number().optional(),
+});
+
 export const DeploymentObjectSchema = z.object({
-  name: z.string().describe(
-    JSON.stringify({
-      resourceType: "deployment",
-      path: ["metadata.name"],
-    })
-  ),
-  image: z
-    .any()
-    .describe(
-      JSON.stringify({
-        resourceType: "deployment",
-        path: ["spec.template.spec.containers"],
-      })
-    )
-    .transform((containers) => {
-      if (Array.isArray(containers) && containers.length > 0) {
-        return containers[0].image;
-      }
-      return "";
-    }),
-  resource: z
-    .any()
-    .describe(
-      JSON.stringify({
-        resourceType: "deployment",
-        path: ["spec"],
-      })
-    )
-    .transform((spec) => {
-      const replicas = spec.replicas;
-      const containers = spec.template.spec.containers;
-      if (Array.isArray(containers) && containers.length > 0) {
-        return {
-          replicas,
-          ...containers[0].resources.limits,
-        };
-      }
-      return {};
-    }),
-  status: z
-    .any()
-    .describe(
-      JSON.stringify({
-        resourceType: "deployment",
-        path: ["status"],
-      })
-    )
-    .transform((status) => {
-      return {
-        replicas: status.replicas,
-        unavailableReplicas: status.unavailableReplicas,
-      };
-    }),
-  env: z
-    .any()
-    .describe(
-      JSON.stringify({
-        resourceType: "deployment",
-        path: ["spec.template.spec.containers"],
-      })
-    )
-    .transform((containers) => {
-      if (Array.isArray(containers) && containers.length > 0) {
-        return containers[0].env;
-      }
-      return [];
-    })
-    .optional(),
-  ports: z
-    .any()
-    .describe(
-      JSON.stringify({
-        resourceType: "deployment",
-        path: ["spec.template.spec.containers"],
-      })
-    )
-    .transform((containers) => {
-      if (Array.isArray(containers) && containers.length > 0) {
-        return containers[0].ports.map((port: { containerPort: number }) => ({
-          number: port.containerPort,
-        }));
-      }
-      return [];
-    })
-    .optional(),
-  configMap: z
-    .array(
-      z.object({
-        name: z.string(),
-        path: z.string(),
-      })
-    )
-    .optional(),
-  localStorage: z
-    .array(
-      z.object({
-        name: z.string(),
-        path: z.string(),
-      })
-    )
-    .optional(),
+  name: z.string(),
+  image: z.string(),
+  resource: ResourceSchema,
+  status: StatusSchema,
+  env: z.array(EnvVarSchema).optional(),
+  ports: z.array(PortSchema).optional(),
 });
 
 export type DeploymentObject = z.infer<typeof DeploymentObjectSchema>;

@@ -45,6 +45,19 @@ export default function IngressNode({
   const { data, isLoading } = useIngressNode(k8sContext, target);
   const [urlAvailable, setUrlAvailable] = useState(false);
 
+  // Construct the URL from data (will be null if isLoading or no host)
+  const url = !isLoading && data?.host
+    ? `${
+        data.protocol
+          ? data.protocol.toLowerCase() +
+            (data.layer === "application" ? "s" : "") +
+            "://"
+          : data.layer === "application"
+          ? "https://"
+          : ""
+      }${data.host}`
+    : null;
+
   useInterval(
     async () => {
       if (!url) {
@@ -62,19 +75,6 @@ export default function IngressNode({
   }
 
   const { layer, host, affiliation, protocol } = data;
-
-  // Construct the URL
-  const url = host
-    ? `${
-        protocol
-          ? protocol.toLowerCase() +
-            (layer === "application" ? "s" : "") +
-            "://"
-          : layer === "application"
-          ? "https://"
-          : ""
-      }${host}`
-    : null;
 
   if (!url) {
     return null;
@@ -113,7 +113,7 @@ export default function IngressNode({
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="rounded-xl bg-background-secondary"
+              className="rounded-lg bg-background-secondary"
               align="start"
             >
               <DropdownMenuItem>
