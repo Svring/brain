@@ -38,15 +38,9 @@ export const getPodTraffic = createParallelAction(
     request: GetPodTrafficRequest,
     context: TrafficApiContext
   ): Promise<GetPodTrafficResponse> => {
-    try {
-      const validatedRequest = GetPodTrafficRequestSchema.parse(request);
-      const api = createTrafficApi(context);
-      const response = await api.post("/api/v1/flows", validatedRequest);
-      console.log("response", response);
-      return GetPodTrafficResponseSchema.parse(response.data);
-    } catch (error) {
-      console.error("Error in getPodTraffic:", JSON.stringify(error));
-      throw error; // Re-throw to maintain error handling chain
-    }
+    const validatedRequest = GetPodTrafficRequestSchema.parse(request);
+    const api = createTrafficApi(context);
+    const response = await api.post("/api/v1/flows", validatedRequest);
+    return GetPodTrafficResponseSchema.parse(response.data);
   }
 );

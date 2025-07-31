@@ -33,6 +33,12 @@ import {
   AppCheckReadyRequestSchema,
   AppCheckReadyResponseSchema,
 } from "./applaunchpad-old-api-schemas/req-res-check-ready-schemas";
+import {
+  QueryLogsRequest,
+  QueryLogsResponse,
+  QueryLogsRequestSchema,
+  QueryLogsResponseSchema,
+} from "./applaunchpad-old-api-schemas/req-res-query-logs-schemas";
 import { generateK8sManifests } from "./applaunchpad-api-utils";
 import https from "https";
 
@@ -118,5 +124,17 @@ export const checkReadyApp = createParallelAction(
       params: { appName: validatedRequest.appName },
     });
     return AppCheckReadyResponseSchema.parse(response.data);
+  }
+);
+
+export const queryLogs = createParallelAction(
+  async (
+    request: QueryLogsRequest,
+    context: SealosApiContext
+  ): Promise<QueryLogsResponse> => {
+    const validatedRequest = QueryLogsRequestSchema.parse(request);
+    const api = createAppApi(context);
+    const response = await api.post("/log/queryLogs", validatedRequest);
+    return QueryLogsResponseSchema.parse(response.data);
   }
 );
