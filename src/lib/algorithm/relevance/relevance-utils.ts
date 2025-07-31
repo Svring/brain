@@ -1,4 +1,4 @@
-import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
+import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import { listAllResources } from "@/lib/k8s/k8s-method/k8s-query";
 import { ListAllResourcesResponseSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";

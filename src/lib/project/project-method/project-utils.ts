@@ -3,7 +3,7 @@ import _ from "lodash";
 import { QueryClient } from "@tanstack/react-query";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import { INSTANCE_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
-import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
+import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import {
   BuiltinResourceTarget,
   CustomResourceTarget,

@@ -1,10 +1,13 @@
-import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
+import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { composeObjectFromTarget } from "@/lib/algorithm/bridge/bridge-method/bridge-query-utils";
 import { getDeploymentRelatedResources } from "@/lib/algorithm/relevance/deployment/deployment-relevance";
 import { enrichPortsWithService } from "@/lib/sealos/service/service-method/service-utils";
 import { enrichPortsWithIngress } from "@/lib/sealos/ingress/ingress-method/ingress-utils";
-import { DeploymentObjectSchema, DeploymentObject } from "@/lib/sealos/deployment/deployment-object-schema";
+import {
+  DeploymentObjectSchema,
+  DeploymentObject,
+} from "@/lib/sealos/deployment/deployment-object-schema";
 import _ from "lodash";
 
 export const getDeploymentObject = async (
@@ -40,5 +43,6 @@ export const getDeploymentObject = async (
     )
     .value();
 
+  console.log("getDeploymentObject", deploymentObject);
   return DeploymentObjectSchema.parse(deploymentObject);
 };

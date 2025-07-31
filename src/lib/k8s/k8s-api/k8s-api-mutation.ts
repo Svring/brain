@@ -8,7 +8,7 @@ import {
   getBuiltinApiClient,
   escapeSlash,
 } from "./k8s-api-utils";
-import { K8sApiContext } from "./k8s-api-schemas/context-schemas";
+import { K8sApiContext } from "./k8s-api-schemas/k8s-api-context-schemas";
 import {
   BuiltinResourceTarget,
   CustomResourceTarget,

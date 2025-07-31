@@ -1,4 +1,4 @@
-import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
+import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import { getCustomResource } from "@/lib/k8s/k8s-api/k8s-api-query";
 import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 import { ListAllResourcesResponseSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";

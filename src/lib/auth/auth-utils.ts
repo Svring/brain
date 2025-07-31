@@ -11,7 +11,7 @@ import type { User } from "@/payload-types";
 import {
   type K8sApiContext,
   K8sApiContextSchema,
-} from "../k8s/k8s-api/k8s-api-schemas/context-schemas";
+} from "../k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import { useAuthState } from "@/contexts/auth/auth-context";
 
 export async function extractAuthFromSession(

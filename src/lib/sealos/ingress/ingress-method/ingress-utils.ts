@@ -11,7 +11,7 @@ import {
 
 import { ProtocolCheckResult } from "../ingress-api/ingress-api-schema";
 import { K8sResource } from "../../../k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
-import { K8sApiContext } from "../../../k8s/k8s-api/k8s-api-schemas/context-schemas";
+import { K8sApiContext } from "../../../k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 
 // Types for ingress transformation
 export interface IngressResource extends K8sResource {

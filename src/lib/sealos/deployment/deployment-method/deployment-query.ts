@@ -1,10 +1,10 @@
 import { queryOptions } from "@tanstack/react-query";
-import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
+import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import {
   BuiltinResourceTarget,
   BuiltinResourceTargetSchema,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { getDeploymentObject } from "@/lib/algorithm/bridge/bridge-resources/deployment/deployment-bridge";
+import { getDeploymentObject } from "@/lib/algorithm/bridge/bridge-resources/deployment/deployment-bridge-query";
 import { listBuiltinResources } from "@/lib/k8s/k8s-api/k8s-api-query";
 import { runParallelAction } from "next-server-actions-parallel";
 import {

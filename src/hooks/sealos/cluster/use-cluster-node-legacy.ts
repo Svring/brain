@@ -16,7 +16,7 @@ import {
   K8sResource,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import { ClusterResourceSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/cluster-schemas";
-import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
+import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import { convertClusterK8sToNodeData } from "@/lib/sealos/cluster/cluster-utils";
 import { ClusterNodeData } from "@/lib/sealos/cluster/schemas/cluster-node-schemas";
 

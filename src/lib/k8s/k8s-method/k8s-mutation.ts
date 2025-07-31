@@ -27,7 +27,7 @@ import {
   CustomResourceTarget,
   ResourceTarget,
 } from "../k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { K8sApiContext } from "../k8s-api/k8s-api-schemas/context-schemas";
+import { K8sApiContext } from "../k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import { CUSTOM_RESOURCES } from "../k8s-constant/k8s-constant-custom-resource";
 import {
   invalidateResourceQueries,

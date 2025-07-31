@@ -16,7 +16,7 @@ import {
   useProjectState,
   useProjectActions,
 } from "@/contexts/project/project-context";
-import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
+import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import _ from "lodash";
 import { listAnnotationBasedResourcesOptions } from "@/lib/k8s/k8s-method/k8s-query";
 import { usePatchResourceMetadataMutation } from "@/lib/k8s/k8s-method/k8s-mutation";

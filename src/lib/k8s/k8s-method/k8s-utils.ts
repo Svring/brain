@@ -1,6 +1,6 @@
 "use client";
 
-import type { K8sApiContext } from "../k8s-api/k8s-api-schemas/context-schemas";
+import type { K8sApiContext } from "../k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import type { QueryClient } from "@tanstack/react-query";
 import type {
   CustomResourceTarget,

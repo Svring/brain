@@ -1,5 +1,5 @@
 import type { DragEndEvent } from "@dnd-kit/core";
-import type { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
+import type { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import { useAddToProjectMutation } from "@/lib/project/project-method/project-mutation";
 import { useProjectActions } from "@/contexts/project/project-context";
 import { toast } from "sonner";

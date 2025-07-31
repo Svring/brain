@@ -19,7 +19,7 @@ import type { ListAllResourcesResponse } from "@/lib/k8s/k8s-api/k8s-api-schemas
 import { useFlowState, useFlowActions } from "@/contexts/flow/flow-context";
 import { useProjectResources } from "@/hooks/project/use-project-resources";
 import _ from "lodash";
-import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
+import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 
 /**
  * Custom hook to process project resources into flow nodes and edges state.

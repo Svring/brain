@@ -1,7 +1,7 @@
 "use client";
 
 import { K8sResource } from "../../../k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
-import { K8sApiContext } from "../../../k8s/k8s-api/k8s-api-schemas/context-schemas";
+import { K8sApiContext } from "../../../k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import { transformRegionUrl } from "@/lib/sealos/sealos-utils";
 
 // Types for service transformation

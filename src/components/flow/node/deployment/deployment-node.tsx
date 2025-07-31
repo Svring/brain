@@ -133,8 +133,8 @@ export default function DeploymentNode({
             <span className="text-sm text-center">
               {status.unavailableReplicas !== undefined &&
               status.unavailableReplicas > 0
-                ? "error"
-                : "running"}
+                ? "Error"
+                : "Running"}
             </span>
           </div>
 

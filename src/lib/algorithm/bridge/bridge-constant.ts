@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { IngressObjectSchema } from "@/lib/sealos/ingress/ingress-object-schema";
-import { DevboxObjectSchema } from "@/lib/sealos/devbox/devbox-schemas/devbox-object-schema";
+import { DevboxObjectQuerySchema } from "@/lib/sealos/devbox/devbox-schemas/devbox-object-query-schema";
 import { ClusterObjectSchema } from "@/lib/sealos/cluster/cluster-schemas/cluster-object-schema";
 import { DeploymentObjectQuerySchema } from "@/lib/sealos/deployment/deployment-object-query-schema";
 import { StatefulsetObjectSchema } from "@/lib/sealos/statefulset/statefulset-object-schema";
@@ -13,7 +13,7 @@ import { ObjectStorageBucketObjectSchema } from "@/lib/sealos/objectstorage/obje
  * This allows for easy extension when adding new resource types
  */
 export const RESOURCE_SCHEMA_MAP: Record<string, z.ZodObject<any>> = {
-  devbox: DevboxObjectSchema,
+  devbox: DevboxObjectQuerySchema,
   cluster: ClusterObjectSchema,
   deployment: DeploymentObjectQuerySchema,
   statefulset: StatefulsetObjectSchema,

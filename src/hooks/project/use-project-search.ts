@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import useProjects from "@/hooks/project/use-projects";
-import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/context-schemas";
+import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 
 export default function useProjectSearch(context: K8sApiContext) {
   const [searchTerm, setSearchTerm] = useState("");

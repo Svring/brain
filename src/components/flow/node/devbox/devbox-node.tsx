@@ -14,7 +14,7 @@ export default function DevboxNode({
   const context = createK8sContext();
   const { data, isLoading } = useDevboxNode(context, target);
 
-  if (isLoading) {
+  if (isLoading || !data) {
     return null;
   }
 
