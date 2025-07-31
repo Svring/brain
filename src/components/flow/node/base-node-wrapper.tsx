@@ -9,13 +9,12 @@ import { useRef } from "react";
 import { useAiActions } from "@/contexts/ai/ai-context";
 import { useFlowActions } from "@/contexts/flow/flow-context";
 
-
 interface BaseNodeProps {
   children: React.ReactNode;
   target: CustomResourceTarget | BuiltinResourceTarget;
   nodeData: any;
   className?: string;
-
+  active?: boolean;
 }
 
 export default function BaseNodeWrapper({
@@ -23,6 +22,7 @@ export default function BaseNodeWrapper({
   target,
   nodeData,
   className,
+  active = true,
 }: BaseNodeProps) {
   const nodeRef = useRef(null);
 
@@ -30,20 +30,16 @@ export default function BaseNodeWrapper({
   const { openChat } = useAiActions();
   const { setSelectedNode } = useFlowActions();
   const handleNodeClick = () => {
-    setSelectedNode(nodeData);
-    openChat();
+    if (active) {
+      setSelectedNode(nodeData);
+      openChat();
+    }
   };
-
-
 
   return (
     <ContextMenu>
       <ContextMenuTrigger>
-        <BaseNode
-          className={className}
-          ref={nodeRef}
-          onClick={handleNodeClick}
-        >
+        <BaseNode className={className} ref={nodeRef} onClick={handleNodeClick}>
           <Handle position={Position.Top} type="source" />
           {children}
           <Handle position={Position.Bottom} type="target" />
