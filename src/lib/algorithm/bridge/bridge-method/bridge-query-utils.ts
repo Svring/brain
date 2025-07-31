@@ -39,7 +39,11 @@ export function parseFieldDescription(description: string): ObjectQuery {
  */
 export function extractDataFromObject(data: any, path: string[]): any {
   if (!data || !path?.length) return null;
-  if (path.length === 1) return _.get(data, path[0], null);
+  if (path.length === 1) {
+    // Handle empty string path to return the object directly
+    if (path[0] === "") return data;
+    return _.get(data, path[0], null);
+  }
 
   return _.chain(path)
     .reduce((current, segment, i) => {

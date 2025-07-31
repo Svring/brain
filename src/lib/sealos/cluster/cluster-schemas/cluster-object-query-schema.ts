@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { transformComponentSpecsToResources } from "../cluster-utils";
 
 export const ClusterObjectQuerySchema = z.object({
   name: z.string().describe(
@@ -25,58 +26,52 @@ export const ClusterObjectQuerySchema = z.object({
       path: ["status.phase"],
     })
   ),
-  resource: z.object({
-    cpu: z.enum(["1", "2", "4"]),
-    memory: z.enum(["1Gi", "2Gi", "4Gi"]),
-    storage: z.enum(["1Gi", "2Gi", "4Gi"]),
-    replicas: z.number().min(1).max(3),
-  }),
-  createdAt: z.string(),
-  uptime: z.string(),
-  components: z.array(
-    z.object({
-      name: z.string().describe(
-        JSON.stringify({
-          resourceType: "cluster",
-          path: ["spec.componentSpecs", "name"],
-        })
-      ),
-      replicas: z.number().describe(
-        JSON.stringify({
-          resourceType: "cluster",
-          path: ["spec.componentSpecs", "replicas"],
-        })
-      ),
-      cpu: z.string().describe(
-        JSON.stringify({
-          resourceType: "cluster",
-          path: ["spec.componentSpecs", "resources.requests.cpu"],
-        })
-      ),
-      memory: z.string().describe(
-        JSON.stringify({
-          resourceType: "cluster",
-          path: ["spec.componentSpecs", "resources.requests.memory"],
-        })
-      ),
-      storage: z
-        .any()
-        .describe(
-          JSON.stringify({
-            resourceType: "cluster",
-            path: ["spec.componentSpecs", "volumeClaimTemplates"],
-          })
-        )
-        .transform((data) => {
-          // data is the volumeClaimTemplates array
-          if (Array.isArray(data) && data.length > 0) {
-            const firstTemplate = data[0];
-            return firstTemplate?.spec?.resources?.requests?.storage || "";
-          }
-          return "";
-        }),
+  resource: z
+    .any()
+    .describe(
+      JSON.stringify({
+        resourceType: "cluster",
+        path: ["spec.componentSpecs"],
+      })
+    )
+    .transform((data) => transformComponentSpecsToResources(data)),
+  createdAt: z.string().describe(
+    JSON.stringify({
+      resourceType: "cluster",
+      path: ["metadata.creationTimestamp"],
     })
   ),
+  uptime: z.any().optional(),
+  components: z
+    .any()
+    .describe(
+      JSON.stringify({
+        resourceType: "cluster",
+        path: [""],
+      })
+    )
+    .transform((resourece) => {
+      const componentSpecs = resourece.spec.componentSpecs;
+      const statusComponents = resourece.status?.components;
+      if (!Array.isArray(componentSpecs)) return [];
+
+      return componentSpecs.map((spec) => ({
+        name: spec.name,
+        status: statusComponents?.[spec.name]?.phase || "unknown",
+        resource: {
+          cpu:
+            spec.resources?.limits?.cpu || spec.resources?.requests?.cpu || "0",
+          memory:
+            spec.resources?.limits?.memory ||
+            spec.resources?.requests?.memory ||
+            "0",
+          storage:
+            spec.volumeClaimTemplates?.[0]?.spec?.resources?.requests
+              ?.storage || "0",
+          replicas: spec.replicas || 0,
+        },
+      }));
+    }),
   connection: z.object({
     privateConnection: z.object({
       endpoint: z
@@ -137,12 +132,12 @@ export const ClusterObjectQuerySchema = z.object({
     }),
     publicConnection: z.string().optional(),
   }),
-  backup: z.object({
-    enabled: z.boolean(),
-    schedule: z.string(),
-    retention: z.string(),
-    strategy: z.enum(["full", "incremental"]),
-  }),
+  backup: z.any().describe(
+    JSON.stringify({
+      resourceType: "cluster",
+      path: ["spec.backup"],
+    })
+  ),
   pods: z
     .array(
       z.object({
