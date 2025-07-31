@@ -9,6 +9,7 @@ export const DevboxSshSchema = z.object({
   host: z.string(),
   port: z.number(),
   user: z.string(),
+  workingDir: z.string(),
   privateKey: z.string().optional(),
 });
 

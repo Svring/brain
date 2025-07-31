@@ -12,6 +12,8 @@ import {
   convertResourceToTarget,
 } from "@/lib/k8s/k8s-method/k8s-utils";
 import { buildQueryKey } from "@/lib/k8s/k8s-constant/k8s-constant-query-key";
+import { getSshConnectionInfo } from "@/lib/sealos/devbox/devbox-api/devbox-old-api";
+import { DevboxApiContext } from "../devbox-api/devbox-open-api-schemas";
 
 export const getDevbox = async (
   context: K8sApiContext,
@@ -35,6 +37,16 @@ export const listDevbox = async (context: K8sApiContext) => {
   return devboxTargetList.map(
     async (target) => await getDevbox(context, target)
   );
+};
+
+export const getDevboxSshInfo = async (
+  context: DevboxApiContext,
+  target: CustomResourceTarget
+) => {
+  const sshInfo = await runParallelAction(
+    getSshConnectionInfo(context, target.name!)
+  );
+  return sshInfo.data.token;
 };
 
 // ============================================================================

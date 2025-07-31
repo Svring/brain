@@ -43,3 +43,15 @@ export const listTemplateVersions = createParallelAction(
     return response.data;
   }
 );
+
+export const getSshConnectionInfo = createParallelAction(
+  async (context: DevboxApiContext, name: string) => {
+    const api = createDevboxApi(context);
+    const response = await api.get("/getSSHConnectionInfo", {
+      params: {
+        devboxName: name,
+      },
+    });
+    return response.data;
+  }
+);

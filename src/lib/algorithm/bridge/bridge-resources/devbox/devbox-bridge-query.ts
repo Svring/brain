@@ -4,7 +4,10 @@ import { composeObjectFromTarget } from "@/lib/algorithm/bridge/bridge-method/br
 import { getDevboxRelatedResources } from "@/lib/algorithm/relevance/devbox/devbox-relevance";
 import { enrichPortsWithService } from "@/lib/sealos/service/service-method/service-utils";
 import { enrichPortsWithIngress } from "@/lib/sealos/ingress/ingress-method/ingress-utils";
-import { enrichSshWithRegionUrl } from "@/lib/sealos/devbox/devbox-method/devbox-utils";
+import {
+  enrichSshWithRegionUrl,
+  transformDevboxImage,
+} from "@/lib/sealos/devbox/devbox-method/devbox-utils";
 import { DevboxObjectSchema } from "@/lib/sealos/devbox/devbox-schemas/devbox-object-schema";
 import _ from "lodash";
 
@@ -20,6 +23,8 @@ export const getDevboxObject = async (
     ["service", "ingress"],
     []
   );
+
+  devboxObject.image = transformDevboxImage(devboxObject.image);
 
   devboxObject.ports = _.chain(devboxObject.ports)
     .thru((ports) =>

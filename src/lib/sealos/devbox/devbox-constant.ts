@@ -17,3 +17,5 @@ export const DEVBOX_RUNTIME_ICON_MAP: Record<string, string> = {
   C: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/c/c-plain.svg",
   PHP: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/php/php-original.svg",
 };
+
+export const DEVBOX_IDE = ["cursor", "vscode", "windsurf", "trae"];

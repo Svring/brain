@@ -55,6 +55,12 @@ export const DevboxObjectQuerySchema = z.object({
         path: ["spec.config.user"],
       })
     ),
+    workingDir: z.any().describe(
+      JSON.stringify({
+        resourceType: "devbox",
+        path: ["spec.config.workingDir"],
+      })
+    ),
     privateKey: z
       .any()
       .describe(

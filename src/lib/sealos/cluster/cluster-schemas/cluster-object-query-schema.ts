@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const ClusterObjectSchema = z.object({
+export const ClusterObjectQuerySchema = z.object({
   name: z.string().describe(
     JSON.stringify({
       resourceType: "cluster",
@@ -161,4 +161,4 @@ export const ClusterObjectSchema = z.object({
     .optional(),
 });
 
-export type ClusterObject = z.infer<typeof ClusterObjectSchema>;
+export type ClusterObjectQuery = z.infer<typeof ClusterObjectQuerySchema>;
