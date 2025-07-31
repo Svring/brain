@@ -43,6 +43,6 @@ export const getDeploymentObject = async (
     )
     .value();
 
-  console.log("getDeploymentObject", deploymentObject);
+  // console.log("getDeploymentObject", deploymentObject);
   return DeploymentObjectSchema.parse(deploymentObject);
 };

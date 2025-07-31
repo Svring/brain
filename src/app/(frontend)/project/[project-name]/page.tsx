@@ -5,13 +5,7 @@ import { useRouter } from "next/navigation";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 
 // React Flow imports
-import {
-  Background,
-  BackgroundVariant,
-  ConnectionLineType,
-  ReactFlow,
-  ReactFlowProvider,
-} from "@xyflow/react";
+import { Background, ReactFlow, ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
 // Icon imports
@@ -52,25 +46,7 @@ import nodeTypes from "@/components/flow/node/node-types";
 import { FlowProvider } from "@/contexts/flow/flow-context";
 
 // Constants
-const FLOW_CONFIG = {
-  connectionLineType: ConnectionLineType.SmoothStep,
-  snapGrid: [20, 20] as [number, number],
-  fitViewOptions: {
-    padding: 0.1,
-    includeHiddenNodes: false,
-    minZoom: 0.1,
-    maxZoom: 1.0,
-  },
-  background: {
-    gap: 60,
-    size: 1,
-    variant: BackgroundVariant.Dots,
-  },
-};
-
-interface ProjectPageProps {
-  params: Promise<{ "project-name": string }>;
-}
+import { FLOW_CONFIG } from "@/lib/flow/flow-constant/flow-constant-config";
 
 // Floating UI Component
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
@@ -205,7 +181,11 @@ function ProjectFlow({ projectName }: { projectName: string }) {
 }
 
 // Main Page Component
-export default function ProjectPage({ params }: ProjectPageProps) {
+export default function ProjectPage({
+  params,
+}: {
+  params: Promise<{ "project-name": string }>;
+}) {
   const { "project-name": projectName } = use(params);
 
   useProjectSignal(projectName);

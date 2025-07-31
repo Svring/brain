@@ -18,11 +18,9 @@ import AiCoin from "@/components/ai/headless/ai-coin";
 import AiChatbox from "@/components/ai/headless/ai-chatbox";
 import SearchBar from "@/components/app/search-bar";
 import { createK8sContext } from "@/lib/auth/auth-utils";
-import { useAuthState } from "@/contexts/auth/auth-context";
 
 export default function Page() {
   const context = createK8sContext();
-  const { auth } = useAuthState();
 
   const { isOpen, onClose, onOpenChange } = useDisclosure();
 
