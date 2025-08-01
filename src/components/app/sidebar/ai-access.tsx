@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useEffect, useState } from "react";
 import { listAiProxyTokensOptions } from "@/lib/sealos/ai-proxy/ai-proxy-method/ai-proxy-query";
-import { createAiProxyContext } from "@/lib/sealos/ai-proxy/ai-proxy-utils";
+import { createAiProxyContext } from "@/lib/auth/auth-utils";
 import { useQuery } from "@tanstack/react-query";
 
 interface AuthMethod {

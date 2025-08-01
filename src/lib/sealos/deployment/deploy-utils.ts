@@ -1,11 +1,9 @@
 import { nanoid } from "nanoid";
 import yaml from "js-yaml";
-import { DeployApiContextSchema } from "./schemas/deploy-api-context-schemas";
 import type {
   InputParameters,
   K8sManifestGeneration,
 } from "./schemas/deploy-manifest-schemas";
-import { useAuthState } from "@/contexts/auth/auth-context";
 
 export function generateServiceJson(params: InputParameters) {
   const { name, ports } = params;
@@ -185,17 +183,6 @@ export function generateIngressYaml(params: InputParameters): string {
   return generateIngressJson(params)
     .map((obj) => yaml.dump(obj))
     .join("---\n");
-}
-
-export function createDeployContext() {
-  const { auth } = useAuthState();
-  if (!auth) {
-    throw new Error("User not found");
-  }
-  return DeployApiContextSchema.parse({
-    baseURL: auth.regionUrl,
-    authorization: auth.kubeconfig,
-  });
 }
 
 export function generateDeployName() {

@@ -25,7 +25,7 @@ import {
   useManageDevboxLifecycleMutation,
   useDeleteDevboxMutation,
 } from "@/lib/sealos/devbox/devbox-method/devbox-mutation";
-import { createDevboxContext } from "@/lib/sealos/devbox/devbox-utils";
+import { createDevboxContext } from "@/lib/auth/auth-utils";
 import { useState } from "react";
 import { toast } from "sonner";
 

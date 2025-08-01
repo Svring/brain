@@ -7,12 +7,17 @@ export const INSTANCE_RELATE_RESOURCE_LABELS = {
 } as const;
 
 export const DEPLOYMENT_RELATE_RESOURCE_LABELS = {
-  /** Label used for deployment-related resources like backups in deployment deletion */
+  // Ingress, Service, Pvc, Configmap, Issuer, certificate
   APP_DEPLOY_MANAGER: "cloud.sealos.io/app-deploy-manager",
+  // Pod and ReplicaSet
+  APP: "app",
 } as const;
 
 export const STATEFULSET_RELATE_RESOURCE_LABELS = {
+  // Ingress, Service, Pvc, Configmap, Issuer, certificate
   APP_DEPLOY_MANAGER: "cloud.sealos.io/app-deploy-manager",
+  // Pod and ReplicaSet
+  APP: "app",
 } as const;
 
 export const DEVBOX_RELATE_RESOURCE_LABELS = {

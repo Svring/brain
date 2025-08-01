@@ -12,6 +12,7 @@ import {
   convertResourceToTarget,
 } from "@/lib/k8s/k8s-method/k8s-utils";
 import { buildQueryKey } from "@/lib/k8s/k8s-constant/k8s-constant-query-key";
+import { getLogFiles, getLog } from "../cluster-api/cluster-old-api";
 
 export const getCluster = async (
   context: K8sApiContext,
@@ -35,6 +36,14 @@ export const listCluster = async (context: K8sApiContext) => {
   return clusterTargetList.map(
     async (target) => await getCluster(context, target)
   );
+};
+
+export const getClusterLog = async (
+  context: K8sApiContext,
+  target: CustomResourceTarget
+) => {
+  const clusterObject = await getCluster(context, target);
+  return clusterObject;
 };
 
 // ============================================================================

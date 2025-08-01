@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Loader2, Play, Square, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { createDevboxContext } from "@/lib/sealos/devbox/devbox-utils";
+import { createDevboxContext } from "@/lib/auth/auth-utils";
 import {
   manageDevboxLifecycle,
   deleteDevbox,

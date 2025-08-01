@@ -1,18 +1,4 @@
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
-import { DevboxApiContextSchema } from "@/lib/sealos/devbox/devbox-schemas/devbox-api-context-schema";
-import { useAuthState } from "@/contexts/auth/auth-context";
-
-export function createDevboxContext() {
-  const { auth } = useAuthState();
-  if (!auth) {
-    throw new Error("User not found");
-  }
-  return DevboxApiContextSchema.parse({
-    baseURL: auth.regionUrl,
-    authorization: auth.kubeconfig,
-    authorizationBearer: auth.appToken,
-  });
-}
 
 interface SshConfig {
   host: string | null;

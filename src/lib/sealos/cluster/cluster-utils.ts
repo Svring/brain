@@ -1,23 +1,10 @@
 "use client";
 
-import { ClusterApiContextSchema } from "./schemas/cluster-api-context-schemas";
 import { nanoid } from "nanoid";
-import { useAuthState } from "@/contexts/auth/auth-context";
 import { ClusterResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/cluster-schemas";
 import { ClusterNodeData } from "./schemas/cluster-node-schemas";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import _ from "lodash";
-
-export function createClusterContext() {
-  const { auth } = useAuthState();
-  if (!auth) {
-    throw new Error("User not found");
-  }
-  return ClusterApiContextSchema.parse({
-    baseURL: auth?.regionUrl,
-    authorization: auth?.kubeconfig,
-  });
-}
 
 export function generateClusterName() {
   return `cluster-${nanoid(12)
@@ -130,7 +117,7 @@ export function transformComponentSpecsToResources(componentSpecs: any[]): {
 
   // Helper function to parse CPU values (handles 'm' suffix)
   const parseCpu = (cpu: string): number => {
-    if (cpu.endsWith('m')) {
+    if (cpu.endsWith("m")) {
       return parseInt(cpu.slice(0, -1));
     }
     return parseInt(cpu) * 1000; // Convert cores to millicores
@@ -138,10 +125,10 @@ export function transformComponentSpecsToResources(componentSpecs: any[]): {
 
   // Helper function to parse memory values (handles Mi, Gi suffixes)
   const parseMemory = (memory: string): number => {
-    if (memory.endsWith('Mi')) {
+    if (memory.endsWith("Mi")) {
       return parseInt(memory.slice(0, -2));
     }
-    if (memory.endsWith('Gi')) {
+    if (memory.endsWith("Gi")) {
       return parseInt(memory.slice(0, -2)) * 1024;
     }
     return parseInt(memory);
@@ -149,7 +136,7 @@ export function transformComponentSpecsToResources(componentSpecs: any[]): {
 
   // Helper function to parse storage values (handles Gi suffix)
   const parseStorage = (storage: string): number => {
-    if (storage.endsWith('Gi')) {
+    if (storage.endsWith("Gi")) {
       return parseInt(storage.slice(0, -2));
     }
     return parseInt(storage);
@@ -193,10 +180,15 @@ export function transformComponentSpecsToResources(componentSpecs: any[]): {
     }
 
     // Find max storage from volumeClaimTemplates
-    if (component.volumeClaimTemplates && Array.isArray(component.volumeClaimTemplates)) {
+    if (
+      component.volumeClaimTemplates &&
+      Array.isArray(component.volumeClaimTemplates)
+    ) {
       component.volumeClaimTemplates.forEach((template: any) => {
         if (template.spec?.resources?.requests?.storage) {
-          const storage = parseStorage(template.spec.resources.requests.storage);
+          const storage = parseStorage(
+            template.spec.resources.requests.storage
+          );
           maxStorage = Math.max(maxStorage, storage);
         }
       });

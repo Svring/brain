@@ -139,20 +139,17 @@ export const ClusterObjectQuerySchema = z.object({
     })
   ),
   pods: z
-    .array(
-      z.object({
-        name: z.string(),
-        uptime: z.string(),
-        restartCount: z.number(),
-        containers: z.array(
-          z.object({
-            name: z.string(),
-            status: z.string(),
-            startedAt: z.string(),
-          })
-        ),
+    .any()
+    .describe(
+      JSON.stringify({
+        resourceType: "pod",
+        label: "app.kubernetes.io/instance",
+        name: "^{{instanceName}}-.*$",
       })
     )
+    .transform((resourece) => {
+      return resourece.items;
+    })
     .optional(),
 });
 

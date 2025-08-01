@@ -13,6 +13,10 @@ import {
   K8sApiContextSchema,
 } from "../k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import { useAuthState } from "@/contexts/auth/auth-context";
+import { ClusterApiContextSchema } from "../sealos/cluster/schemas/cluster-api-context-schemas";
+import { DevboxApiContextSchema } from "../sealos/devbox/devbox-api/devbox-open-api-schemas";
+import { DeployApiContextSchema } from "../sealos/deployment/schemas/deploy-api-context-schemas";
+import { AiProxyApiContextSchema } from "../sealos/ai-proxy/schemas/ai-proxy-api-context";
 
 export async function extractAuthFromSession(
   session: SessionV1
@@ -97,4 +101,49 @@ export function getCurrentNamespace(): string | undefined {
 export function getCurrentRegionUrl(): string | undefined {
   const { auth } = useAuthState();
   return auth?.regionUrl;
+}
+
+export function createClusterContext() {
+  const { auth } = useAuthState();
+  if (!auth) {
+    throw new Error("User not found");
+  }
+  return ClusterApiContextSchema.parse({
+    baseURL: auth?.regionUrl,
+    authorization: auth?.kubeconfig,
+  });
+}
+
+export function createDevboxContext() {
+  const { auth } = useAuthState();
+  if (!auth) {
+    throw new Error("User not found");
+  }
+  return DevboxApiContextSchema.parse({
+    baseURL: auth.regionUrl,
+    authorization: auth.kubeconfig,
+    authorizationBearer: auth.appToken,
+  });
+}
+
+export function createDeployContext() {
+  const { auth } = useAuthState();
+  if (!auth) {
+    throw new Error("User not found");
+  }
+  return DeployApiContextSchema.parse({
+    baseURL: auth.regionUrl,
+    authorization: auth.kubeconfig,
+  });
+}
+
+export function createAiProxyContext() {
+  const { auth } = useAuthState();
+  if (!auth) {
+    throw new Error("User not found");
+  }
+  return AiProxyApiContextSchema.parse({
+    baseURL: auth.regionUrl,
+    authorization: auth.appToken,
+  });
 }

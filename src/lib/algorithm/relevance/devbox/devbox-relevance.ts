@@ -9,15 +9,69 @@ export const getDevboxRelatedResources = async (
   builtinResources?: string[],
   customResources?: string[]
 ): Promise<K8sResource[]> => {
-  const labelSelectors = [
-    `${DEVBOX_RELATE_RESOURCE_LABELS.DEVBOX_MANAGER}=${devboxName}`,
-    `${DEVBOX_RELATE_RESOURCE_LABELS.APP_KUBERNETES_NAME}=${devboxName}`,
-  ];
+  const defaultBuiltinResources = ["ingress", "service", "secret", "pod"];
+  const defaultCustomResources = ["issuers", "certificates"];
+  const finalBuiltinResources = builtinResources ?? defaultBuiltinResources;
+  const finalCustomResources = customResources ?? defaultCustomResources;
 
-  return getRelatedResources(
-    context,
-    labelSelectors,
-    builtinResources ?? ["ingress", "service", "secret", "pod"],
-    customResources ?? ["issuers", "certificates"]
+  // Resources that use APP_KUBERNETES_NAME label
+  const appKubernetesNameResources = ["secret", "pod"];
+  
+  // Check if any APP_KUBERNETES_NAME resources are requested
+  const hasAppKubernetesNameResources = finalBuiltinResources.some(resource => 
+    appKubernetesNameResources.includes(resource)
   );
+  
+  if (hasAppKubernetesNameResources) {
+    // Separate resources by label type
+    const devboxManagerResources = finalBuiltinResources.filter(resource => 
+      !appKubernetesNameResources.includes(resource)
+    );
+    const appKubernetesResources = finalBuiltinResources.filter(resource => 
+      appKubernetesNameResources.includes(resource)
+    );
+    
+    const results: K8sResource[] = [];
+    
+    // Get resources with DEVBOX_MANAGER label
+    if (devboxManagerResources.length > 0) {
+      const devboxManagerLabelSelectors = [
+        `${DEVBOX_RELATE_RESOURCE_LABELS.DEVBOX_MANAGER}=${devboxName}`,
+      ];
+      const mainResources = await getRelatedResources(
+        context,
+        devboxManagerLabelSelectors,
+        devboxManagerResources,
+        finalCustomResources
+      );
+      results.push(...mainResources);
+    }
+    
+    // Get resources with APP_KUBERNETES_NAME label
+    if (appKubernetesResources.length > 0) {
+      const appKubernetesLabelSelectors = [
+        `${DEVBOX_RELATE_RESOURCE_LABELS.APP_KUBERNETES_NAME}=${devboxName}`,
+      ];
+      const appKubernetesResourcesResult = await getRelatedResources(
+        context,
+        appKubernetesLabelSelectors,
+        appKubernetesResources,
+        []
+      );
+      results.push(...appKubernetesResourcesResult);
+    }
+    
+    return results;
+  } else {
+    // Original behavior when no APP_KUBERNETES_NAME resources are requested
+    const labelSelectors = [
+      `${DEVBOX_RELATE_RESOURCE_LABELS.DEVBOX_MANAGER}=${devboxName}`,
+    ];
+    return getRelatedResources(
+      context,
+      labelSelectors,
+      finalBuiltinResources,
+      finalCustomResources
+    );
+  }
 };

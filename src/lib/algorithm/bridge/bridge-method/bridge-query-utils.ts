@@ -192,6 +192,12 @@ async function getResourceByFieldValue(
         })
       : flattenedResources;
 
+    // If no path is specified, return the list of resources
+    if (!fieldValue.path || (Array.isArray(fieldValue.path) && fieldValue.path.length === 0) || 
+        (Array.isArray(fieldValue.path) && fieldValue.path.length === 1 && fieldValue.path[0] === "")) {
+      return filteredResources;
+    }
+
     if (filteredResources.length > 1) {
       throw new Error(
         `Multiple resources ${
@@ -225,6 +231,12 @@ async function getResourceByFieldValue(
       // Use regex matching for the pattern
       return new RegExp(namePattern).test(resource.metadata.name || "");
     });
+
+    // If no path is specified, return the list of resources
+    if (!fieldValue.path || (Array.isArray(fieldValue.path) && fieldValue.path.length === 0) || 
+        (Array.isArray(fieldValue.path) && fieldValue.path.length === 1 && fieldValue.path[0] === "")) {
+      return filteredResources;
+    }
 
     if (filteredResources.length > 1) {
       throw new Error(
@@ -417,10 +429,16 @@ function processRegularFields(
   results: Record<string, any>
 ): void {
   for (const { fieldName, description, resource } of regularFields) {
-    const extractedValue =
-      description && description.path
-        ? extractDataFromObject(resource, description.path)
-        : resource;
+    let extractedValue;
+    
+    // If no path is specified or path is empty/[""], return the resource as-is (list of resources)
+    if (!description?.path || 
+        (Array.isArray(description.path) && description.path.length === 0) || 
+        (Array.isArray(description.path) && description.path.length === 1 && description.path[0] === "")) {
+      extractedValue = resource;
+    } else {
+      extractedValue = extractDataFromObject(resource, description.path);
+    }
 
     setNestedValue(results, fieldName, extractedValue);
   }
