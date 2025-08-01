@@ -5,8 +5,6 @@ import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
-import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/cluster/cluster-constant/cluster-constant";
 import useClusterNode from "@/hooks/sealos/cluster/use-cluster-node";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import { motion } from "framer-motion";
@@ -18,6 +16,7 @@ import NodeStatusLight from "../node-components/node-status-light";
 import NodeInternalUrl from "../node-components/node-internal-url";
 import NodeMonitor from "../node-components/node-monitor";
 import NodePods from "../node-components/node-pods";
+import ClusterNodeTitle from "./cluster-node-title";
 import ClusterNodeMenu from "./cluster-node-menu";
 
 export default function ClusterNode({
@@ -32,17 +31,11 @@ export default function ClusterNode({
   const hovered = useHover(ref);
   const [publicAccess, setPublicAccess] = useState(false);
 
-  const handleCopyClusterInfo = () => {
-    const clusterInfo = `Cluster: ${data.name}\nType: ${data.type}\nStatus: ${data.status}`;
-    navigator.clipboard.writeText(clusterInfo);
-    toast("Cluster information copied to clipboard");
-  };
-
   if (isLoading || !data) {
     return null;
   }
 
-  console.log("cluster data", data);
+  const { name, type, status, pods } = data;
 
   return (
     <div ref={ref} className="relative">
@@ -77,30 +70,7 @@ export default function ClusterNode({
           <div className="flex h-full flex-col gap-2 justify-between">
             {/* Header with Name and Menu */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 truncate font-medium">
-                <div className="flex flex-col items-start">
-                  <span className="flex items-center gap-2">
-                    <Image
-                      src={CLUSTER_TYPE_ICON_MAP[data.type] ?? ""}
-                      alt={data.type}
-                      width={24}
-                      height={24}
-                      className="rounded-lg h-9 w-9"
-                      priority
-                    />
-                    <span className="flex flex-col">
-                      <span className="text-xs text-muted-foreground leading-none">
-                        {data.type}
-                      </span>
-                      <span className="text-lg font-bold text-foreground leading-tight w-full overflow-hidden text-ellipsis text-left">
-                        {data.name}
-                      </span>
-                    </span>
-                  </span>
-                </div>
-              </div>
-
-              {/* Menu */}
+              <ClusterNodeTitle name={name} type={type} />
               <div className="flex-shrink-0">
                 <ClusterNodeMenu />
               </div>
@@ -121,7 +91,6 @@ export default function ClusterNode({
               <Button
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleCopyClusterInfo();
                 }}
                 size="sm"
                 variant="ghost"
@@ -134,12 +103,12 @@ export default function ClusterNode({
             {/* Bottom section with status and icons */}
             <div className="mt-auto flex justify-between items-center">
               {/* Left: Status light */}
-              <NodeStatusLight status={data.status} />
+              <NodeStatusLight status={status} />
 
               {/* Right: Icon components */}
               <div className="flex items-center gap-2">
                 <NodeInternalUrl ports={[]} />
-                <NodePods />
+                <NodePods pods={pods} />
                 <NodeMonitor />
               </div>
             </div>

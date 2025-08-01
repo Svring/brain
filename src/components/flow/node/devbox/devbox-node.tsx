@@ -36,7 +36,9 @@ export default function DevboxNode({
     return null;
   }
 
-  const { name, image, status, ports } = data;
+  const { name, image, status, ports, pods } = data;
+
+  console.log("devbox data", data);
 
   return (
     <div ref={ref} className="relative">
