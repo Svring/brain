@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/cluster/cluster-constant";
+import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/cluster/cluster-constant/cluster-constant";
 import useClusterNode from "@/hooks/sealos/cluster/use-cluster-node";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import { motion } from "framer-motion";

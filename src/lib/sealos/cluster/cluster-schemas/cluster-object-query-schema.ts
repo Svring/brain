@@ -144,11 +144,15 @@ export const ClusterObjectQuerySchema = z.object({
       JSON.stringify({
         resourceType: "pod",
         label: "app.kubernetes.io/instance",
-        name: "^{{instanceName}}-.*$",
       })
     )
-    .transform((resourece) => {
-      return resourece.items;
+    .transform((pods) => {
+      return pods.map((pod: any) => {
+        return {
+          name: pod.metadata.name,
+          status: pod.status.phase,
+        };
+      });
     })
     .optional(),
 });

@@ -17,8 +17,8 @@ export const LogFileItemSchema = z.object({
 // Get log files request schema
 export const GetLogFilesRequestSchema = z.object({
   podName: z.string().min(1, "Pod name is required"),
-  dbType: z.string().min(1, "Database type is required"),
-  logType: z.string().min(1, "Log type is required"),
+  dbType: z.enum(["redis", "apecloud-mysql", "postgresql", "mongodb"]),
+  logType: z.enum(["runtimeLog", "slowQuery", "errorLog"]),
 });
 
 // Get log files response schema

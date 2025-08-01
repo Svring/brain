@@ -7,7 +7,7 @@ import { useCreateClusterAction } from "@/lib/sealos/cluster/cluster-action/clus
 import {
   CLUSTER_TYPE_VERSION_MAP,
   CLUSTER_TYPE_ICON_MAP,
-} from "@/lib/sealos/cluster/cluster-constant";
+} from "@/lib/sealos/cluster/cluster-constant/cluster-constant";
 import { Label } from "@/components/ui/label";
 import { useToggle } from "@reactuses/core";
 import { toast } from "sonner";

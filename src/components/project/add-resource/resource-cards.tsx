@@ -21,7 +21,7 @@ import Image from "next/image";
 import {
   CLUSTER_TYPE_ICON_MAP,
   CLUSTER_DEFINITION_LABEL_KEY,
-} from "@/lib/sealos/cluster/cluster-constant";
+} from "@/lib/sealos/cluster/cluster-constant/cluster-constant";
 
 interface ResourceCardsProps {
   resources: (AnyKubernetesResource & { resourceType: string })[];
