@@ -3,12 +3,14 @@ import { z } from "zod";
 const EnvVarSchema = z.object({
   name: z.string(),
   value: z.string().optional(),
-  valueFrom: z.object({
-    secretKeyRef: z.object({
-      key: z.string(),
-      name: z.string(),
-    }),
-  }).optional(),
+  valueFrom: z
+    .object({
+      secretKeyRef: z.object({
+        key: z.string(),
+        name: z.string(),
+      }),
+    })
+    .optional(),
 });
 
 const PortSchema = z.object({
@@ -34,6 +36,11 @@ const StatusSchema = z.object({
   unavailableReplicas: z.number().optional(),
 });
 
+const PodSchema = z.object({
+  name: z.string(),
+  status: z.string(),
+});
+
 export const DeploymentObjectSchema = z.object({
   name: z.string(),
   image: z.string(),
@@ -41,6 +48,7 @@ export const DeploymentObjectSchema = z.object({
   status: StatusSchema,
   env: z.array(EnvVarSchema).optional(),
   ports: z.array(PortSchema).optional(),
+  pods: z.array(PodSchema).optional(),
 });
 
 export type DeploymentObject = z.infer<typeof DeploymentObjectSchema>;

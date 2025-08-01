@@ -1,7 +1,7 @@
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { composeObjectFromTarget } from "@/lib/algorithm/bridge/bridge-method/bridge-query-utils";
-import { listAllResources } from "@/lib/k8s/k8s-method/k8s-query";
+import { ClusterObjectSchema } from "@/lib/sealos/cluster/cluster-schemas/cluster-object-schema";
 
 export const getClusterObject = async (
   context: K8sApiContext,
@@ -11,5 +11,5 @@ export const getClusterObject = async (
   const clusterObject = await composeObjectFromTarget(context, target);
 
   // console.log("clusterObject", clusterObject);
-  return clusterObject;
+  return ClusterObjectSchema.parse(clusterObject);
 };

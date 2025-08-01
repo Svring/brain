@@ -15,7 +15,13 @@ export const getClusterRelatedResources = async (
   return getRelatedResources(
     context,
     labelSelectors,
-    builtinResources ?? ["serviceaccount", "role", "rolebinding", "secret"],
+    builtinResources ?? [
+      "serviceaccount",
+      "role",
+      "rolebinding",
+      "secret",
+      "pod",
+    ],
     customResources ?? ["backups"]
   );
 };

@@ -102,6 +102,23 @@ export const DeploymentObjectQuerySchema = z.object({
       })
     )
     .optional(),
+  pods: z
+    .any()
+    .optional()
+    .describe(
+      JSON.stringify({
+        resourceType: "pod",
+        label: "app",
+      })
+    )
+    .transform((pods) => {
+      return pods.map((pod: any) => {
+        return {
+          name: pod.metadata.name,
+          status: pod.status.phase,
+        };
+      });
+    }),
 });
 
 export type DeploymentObjectQuery = z.infer<typeof DeploymentObjectQuerySchema>;

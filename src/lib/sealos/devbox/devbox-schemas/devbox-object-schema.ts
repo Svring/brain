@@ -24,6 +24,11 @@ export const DevboxPortSchema = z.object({
   publicAddress: z.string().optional(),
 });
 
+const PodSchema = z.object({
+  name: z.string(),
+  status: z.string(),
+});
+
 export const DevboxObjectSchema = z.object({
   name: z.string(),
   image: z.string(),
@@ -31,6 +36,7 @@ export const DevboxObjectSchema = z.object({
   resources: DevboxResourceSchema,
   ssh: DevboxSshSchema,
   ports: z.array(DevboxPortSchema),
+  pods: z.array(PodSchema).optional(),
 });
 
 export type DevboxResource = z.infer<typeof DevboxResourceSchema>;

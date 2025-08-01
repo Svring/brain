@@ -88,7 +88,23 @@ export const DevboxObjectQuerySchema = z.object({
       }
       return [];
     }),
-  pods: z.array(z.any()).optional(),
+  pods: z
+    .any()
+    .optional()
+    .describe(
+      JSON.stringify({
+        resourceType: "pod",
+        label: "app.kubernetes.io/instance",
+      })
+    )
+    .transform((pods) => {
+      return pods.map((pod: any) => {
+        return {
+          name: pod.metadata.name,
+          status: pod.status.phase,
+        };
+      });
+    }),
 });
 
 export type DevboxObjectQuery = z.infer<typeof DevboxObjectQuerySchema>;
