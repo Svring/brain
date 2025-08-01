@@ -25,7 +25,7 @@ export const GetLogFilesRequestSchema = z.object({
 export const GetLogFilesResponseSchema = z.object({
   code: z.number(),
   message: z.string(),
-  data: z.array(LogFileItemSchema),
+  data: z.array(LogFileItemSchema).optional(),
 });
 
 // Type exports

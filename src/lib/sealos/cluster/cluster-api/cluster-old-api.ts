@@ -128,6 +128,7 @@ export const getLog = createParallelAction(
     const validatedRequest = GetLogRequestSchema.parse(request);
     const api = createClusterApi(context);
     const response = await api.post("/logs/get", validatedRequest);
+    console.log("get log response", response.data);
     return GetLogResponseSchema.parse(response.data);
   }
 );

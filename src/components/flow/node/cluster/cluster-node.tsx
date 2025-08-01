@@ -2,11 +2,10 @@
 
 import BaseNode from "../base-node-wrapper";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import useClusterNode from "@/hooks/sealos/cluster/use-cluster-node";
-import { createK8sContext } from "@/lib/auth/auth-utils";
+import { createK8sContext, createClusterContext } from "@/lib/auth/auth-utils";
 import { motion } from "framer-motion";
 import { useHover } from "@reactuses/core";
 import { useRef, useState } from "react";
@@ -18,6 +17,8 @@ import NodeMonitor from "../node-components/node-monitor";
 import NodePods from "../node-components/node-pods";
 import ClusterNodeTitle from "./cluster-node-title";
 import ClusterNodeMenu from "./cluster-node-menu";
+import { getClusterLogFiles } from "@/lib/sealos/cluster/cluster-method/cluster-query";
+import { useEffect } from "react";
 
 export default function ClusterNode({
   data: { target },
@@ -31,11 +32,27 @@ export default function ClusterNode({
   const hovered = useHover(ref);
   const [publicAccess, setPublicAccess] = useState(false);
 
+  const clusterContext = createClusterContext();
+
+  useEffect(() => {
+    async function fetchLogFiles() {
+      if (!data) {
+        return;
+      }
+      const files = await getClusterLogFiles(context, clusterContext, target);
+      // const logs = files.map((file) => file.log);
+      console.log("log files", files);
+    }
+    fetchLogFiles();
+  }, [data]);
+
   if (isLoading || !data) {
     return null;
   }
 
   const { name, type, status, pods } = data;
+
+  console.log("cluster data", data);
 
   return (
     <div ref={ref} className="relative">

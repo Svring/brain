@@ -14,8 +14,8 @@ export const LogDataSchema = z.object({
 
 // Get log request schema
 export const GetLogRequestSchema = z.object({
-  page: z.number().min(1, "Page must be at least 1"),
-  pageSize: z.number().min(1, "Page size must be at least 1"),
+  page: z.number().min(1, "Page must be at least 1").default(1),
+  pageSize: z.number().min(1, "Page size must be at least 1").default(100),
   podName: z.string().min(1, "Pod name is required"),
   dbType: z.string().min(1, "Database type is required"),
   logType: z.string().min(1, "Log type is required"),
@@ -26,7 +26,7 @@ export const GetLogRequestSchema = z.object({
 export const GetLogResponseSchema = z.object({
   code: z.number(),
   message: z.string(),
-  data: LogDataSchema,
+  data: LogDataSchema.optional(),
 });
 
 // Type exports

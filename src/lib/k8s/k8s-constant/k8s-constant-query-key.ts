@@ -257,4 +257,15 @@ export const buildQueryKey = {
     namespace,
     name,
   ],
+
+  /**
+   * Build query key for getting cluster log files
+   */
+  getClusterLogFiles: (namespace: string, name: string) => [
+    QUERY_KEY_PREFIX.K8S,
+    QUERY_KEY_RESOURCE_TYPE.CLUSTER,
+    "log-files",
+    namespace,
+    name,
+  ],
 } as const;

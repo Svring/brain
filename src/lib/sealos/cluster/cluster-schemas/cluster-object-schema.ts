@@ -39,7 +39,14 @@ const PodSchema = z.object({
 
 export const ClusterObjectSchema = z.object({
   name: z.string(),
-  type: z.string(),
+  type: z.enum([
+    "postgresql",
+    "mongodb",
+    "redis",
+    "apecloud-mysql",
+    "kafka",
+    "milvus",
+  ]),
   version: z.string(),
   status: z.string(),
   resource: ClusterResourceSchema,

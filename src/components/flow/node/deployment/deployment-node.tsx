@@ -4,9 +4,7 @@ import BaseNode from "../base-node-wrapper";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import useDeploymentNode from "@/hooks/sealos/deployment/use-deployment-node";
-import {
-  Package,
-} from "lucide-react";
+import { Package } from "lucide-react";
 import NodeStatusLight from "../node-components/node-status-light";
 import NodeInternalUrl from "../node-components/node-internal-url";
 import NodePods from "../node-components/node-pods";
@@ -27,7 +25,7 @@ export default function DeploymentNode({
 
   const { name, image, status, ports, pods } = data;
 
-  console.log("deployment data", data);
+  // console.log("deployment data", data);
 
   return (
     <BaseNode target={target} nodeData={data}>
@@ -49,13 +47,13 @@ export default function DeploymentNode({
         {/* Bottom section with status and icons */}
         <div className="mt-auto flex justify-between items-center">
           {/* Left: Status light */}
-          <NodeStatusLight 
+          <NodeStatusLight
             status={
               status.unavailableReplicas !== undefined &&
               status.unavailableReplicas > 0
                 ? "Error"
                 : "Running"
-            } 
+            }
           />
 
           {/* Right: Icon components */}

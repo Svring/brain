@@ -4,6 +4,7 @@ import { nanoid } from "nanoid";
 import { ClusterResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/cluster-schemas";
 import { ClusterNodeData } from "./schemas/cluster-node-schemas";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
+import { CLUSTER_LOG_TYPES } from "./cluster-constant/cluster-constant-logs";
 import _ from "lodash";
 
 export function generateClusterName() {
@@ -201,4 +202,79 @@ export function transformComponentSpecsToResources(componentSpecs: any[]): {
     storage: formatStorage(maxStorage),
     replicas: totalReplicas,
   };
+}
+
+// Check if log types are supported for a database type
+export function ifSupportLog(type: string): {
+  supported: boolean;
+  message?: string;
+  dbType: string;
+  reason?: string;
+  availableTypes?: string[];
+} {
+  const logTypes = CLUSTER_LOG_TYPES[type as keyof typeof CLUSTER_LOG_TYPES];
+  const supportedDbTypes = ["redis", "postgresql", "mongodb", "apecloud-mysql"];
+
+  // Check if log types are supported for this database type
+  if (!logTypes || logTypes.length === 0) {
+    return {
+      supported: false,
+      message: `Log files are not supported for database type: ${type}`,
+      dbType: type,
+      availableTypes: Object.keys(CLUSTER_LOG_TYPES).filter(
+        (key) =>
+          CLUSTER_LOG_TYPES[key as keyof typeof CLUSTER_LOG_TYPES].length > 0
+      ),
+    };
+  }
+
+  // Only proceed if the database type is supported by the API
+  if (!supportedDbTypes.includes(type as any)) {
+    return {
+      supported: false,
+      message: `Log files are not supported for database type: ${type}`,
+      dbType: type,
+      availableTypes: supportedDbTypes,
+    };
+  }
+
+  return {
+    supported: true,
+    dbType: type,
+  };
+}
+
+// Process log file responses and log responses to create pod-based structure
+export function processLogData(
+  logFileResponses: any[],
+  logResponses: any[],
+  pods: string[]
+): Record<string, Record<string, any>> {
+  // Extract log files once
+  const logFiles = _.chain(logFileResponses)
+    .filter((response) => response.code === 200 && response.data)
+    .flatMap((response) => response.data)
+    .filter((logFile) => logFile.path)
+    .value();
+
+  return _.chain(pods)
+    .keyBy()
+    .mapValues((podName) => {
+      // Get logs for this pod grouped by log type
+      const podLogs = _.chain(logResponses)
+        .filter((response) => 
+          response.code === 200 && 
+          response.data && 
+          response.podName === podName
+        )
+        .groupBy('logType')
+        .mapValues((logs) => logs.map((log) => log.data))
+        .value();
+
+      return {
+        logFiles,
+        logs: podLogs,
+      };
+    })
+    .value();
 }
