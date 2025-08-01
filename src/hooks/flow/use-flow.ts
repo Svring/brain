@@ -20,6 +20,7 @@ import { useFlowState, useFlowActions } from "@/contexts/flow/flow-context";
 import { useProjectResources } from "@/hooks/project/use-project-resources";
 import _ from "lodash";
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
+import { inferRelianceFromTraffic } from "@/lib/algorithm/reliance/traffic-reliance";
 
 /**
  * Custom hook to process project resources into flow nodes and edges state.
@@ -65,6 +66,9 @@ export function useFlow(context: K8sApiContext, projectName: string) {
       direction: "BT",
     });
     setFlowData(positionedNodes, newEdges);
+
+    const reliance = inferRelianceFromTraffic(resource);
+    console.log("reliance", reliance);
   }, [resources]);
 
   return [nodes, onNodesChange, edges, onEdgesChange, isLoading] as const;
