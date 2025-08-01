@@ -1,13 +1,19 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { motion } from "framer-motion"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import * as React from "react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface ActionProps {
-  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+  variant?:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link";
   href: string;
   label: string;
 }
@@ -37,14 +43,14 @@ const Hero = React.forwardRef<HTMLElement, HeroProps>(
       actionsClassName,
       ...props
     },
-    ref,
+    ref
   ) => {
     return (
       <section
         ref={ref}
         className={cn(
-          "relative z-0 flex h-[50vh] w-full items-end justify-center overflow-hidden rounded-md bg-transparent",
-          className,
+          "relative z-0 flex h-[45vh] w-full items-end justify-center overflow-hidden rounded-md bg-transparent",
+          className
         )}
         {...props}
       >
@@ -124,7 +130,7 @@ const Hero = React.forwardRef<HTMLElement, HeroProps>(
             <h1
               className={cn(
                 "text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight",
-                titleClassName,
+                titleClassName
               )}
             >
               {heroTitle}
@@ -133,7 +139,7 @@ const Hero = React.forwardRef<HTMLElement, HeroProps>(
               <p
                 className={cn(
                   "text-xl text-muted-foreground",
-                  subtitleClassName,
+                  subtitleClassName
                 )}
               >
                 {subtitle}
@@ -155,9 +161,9 @@ const Hero = React.forwardRef<HTMLElement, HeroProps>(
           </div>
         </motion.div>
       </section>
-    )
-  },
-)
-Hero.displayName = "Hero"
+    );
+  }
+);
+Hero.displayName = "Hero";
 
-export { Hero }
+export { Hero };

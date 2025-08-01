@@ -40,7 +40,7 @@ export default function AppSidebar() {
   return (
     <>
       <Sidebar className="rounded-lg" collapsible="icon" variant="floating">
-        <SidebarHeader className={cn("rounded-t-lg bg-background-secondary")}>
+        {/* <SidebarHeader className={cn("rounded-t-lg bg-background-secondary")}>
           <RegionSwitcher
             regions={[
               {
@@ -50,19 +50,19 @@ export default function AppSidebar() {
               },
             ]}
           />
-        </SidebarHeader>
+        </SidebarHeader> */}
         <SidebarContent className={cn("bg-background-secondary")}>
           <MainSection navigationItems={NAVIGATION_ITEMS} />
         </SidebarContent>
         <SidebarFooter className={cn("rounded-b-lg bg-background-secondary")}>
           {/* <AIAccess /> */}
-          <UserCard
+          {/* <UserCard
             user={{
               name: "Brain",
               email: "brain@sealos.io",
               avatar: "https://github.com/vercel.png",
             }}
-          />
+          /> */}
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>

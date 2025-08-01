@@ -30,7 +30,7 @@ export default function MainPage() {
               actionsClassName="mt-4"
             />
             <div className="container mx-auto px-4 py-8">
-              <AiChatInput className="max-w-2xl mx-auto" />
+              <AiChatInput className="max-w-3xl mx-auto" />
             </div>
           </motion.div>
         ) : (
@@ -43,16 +43,18 @@ export default function MainPage() {
             className="flex-1 flex flex-col h-screen"
           >
             {/* Messages area */}
-            <div className="flex-1 overflow-hidden">
-              <AiMessages />
+            <div className="flex-1 overflow-hidden pt-8">
+              <div className="max-w-4xl mx-auto">
+                <AiMessages />
+              </div>
             </div>
-            
+
             {/* Input at bottom */}
             <motion.div
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
-              className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+              className="bg-background/95 backdrop-blur"
             >
               <div className="container mx-auto px-4 py-4">
                 <AiChatInput className="max-w-4xl mx-auto" />
