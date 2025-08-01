@@ -2,15 +2,7 @@
 
 import _ from "lodash";
 import type { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
-
-export type KindMap = Record<string, string[]>;
-
-export interface Connection {
-  connectFrom: KindMap;
-  others: KindMap;
-}
-
-export type ResourceConnections = Record<string, Record<string, Connection>>;
+import type { KindMap, Connection, ResourceConnections } from "./reliance-utils";
 
 /**
  * Remove ingress resources from the workload candidate map.
@@ -175,22 +167,15 @@ export const mergeConnectFromByWorkload = (
       );
 
       const connectFrom: KindMap = {};
-      const others: KindMap = {};
 
-      // Partition the candidates for this workload into 'connectFrom' (matched) and 'others' (unmatched).
+      // Find which candidate names for each kind were matched in the envs.
       _.forEach(candidatesByKind, (names, k) => {
-        // Find which of the candidate names for this kind were matched in the envs.
         const matched = names.filter((n) => allMatches.includes(n));
         if (matched.length) connectFrom[k] = matched;
-
-        // Any candidate names not matched are stored in 'others'.
-        const remaining = names.filter((n) => !allMatches.includes(n));
-        if (remaining.length) others[k] = remaining;
       });
 
       kindConnections[workloadName] = {
         connectFrom,
-        others,
       };
     });
 

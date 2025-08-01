@@ -2,7 +2,7 @@
 
 import _ from "lodash";
 import type { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
-import type { ResourceConnections, KindMap, Connection } from "./env-reliance";
+import type { ResourceConnections, KindMap, Connection } from "./reliance-utils";
 import {
   DEVBOX_RELATE_RESOURCE_LABELS,
   DEPLOYMENT_RELATE_RESOURCE_LABELS,
@@ -80,7 +80,7 @@ export const inferRelianceForIngress = (
       Object.assign(connectFrom, nameBasedConnections);
     }
 
-    ingressMap[name] = { connectFrom, others: {} };
+    ingressMap[name] = { connectFrom };
   });
 
   return { ingress: ingressMap };
