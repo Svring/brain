@@ -17,7 +17,8 @@ export default function DeploymentNode({
 }: {
   data: { target: BuiltinResourceTarget };
 }) {
-  const { data, isLoading } = useDeploymentNode(createK8sContext(), target);
+  const k8sContext = createK8sContext();
+  const { data, isLoading } = useDeploymentNode(k8sContext, target);
 
   if (isLoading || !data) {
     return null;

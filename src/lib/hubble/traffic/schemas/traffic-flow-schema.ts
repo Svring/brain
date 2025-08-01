@@ -7,17 +7,17 @@ export const FlowDataSchema = z.object({
 });
 
 // Get Pod Traffic request schema
-export const GetPodTrafficRequestSchema = z.object({
-  crNames: z.array(z.string()).min(1, "CR name is required"),
+export const GetTrafficRequestSchema = z.object({
+  resources: z.array(z.string()).min(1, "Resource name is required"),
 });
 
 // Get Pod Traffic response schema
-export const GetPodTrafficResponseSchema = z.object({
+export const GetTrafficResponseSchema = z.object({
   message: z.string(),
   data: z.array(FlowDataSchema),
 });
 
 // Type exports
 export type FlowData = z.infer<typeof FlowDataSchema>;
-export type GetPodTrafficRequest = z.infer<typeof GetPodTrafficRequestSchema>;
-export type GetPodTrafficResponse = z.infer<typeof GetPodTrafficResponseSchema>;
+export type GetTrafficRequest = z.infer<typeof GetTrafficRequestSchema>;
+export type GetTrafficResponse = z.infer<typeof GetTrafficResponseSchema>;

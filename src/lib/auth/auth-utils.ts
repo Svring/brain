@@ -17,6 +17,7 @@ import { ClusterApiContextSchema } from "../sealos/cluster/schemas/cluster-api-c
 import { DevboxApiContextSchema } from "../sealos/devbox/devbox-api/devbox-open-api-schemas";
 import { DeployApiContextSchema } from "../sealos/deployment/schemas/deploy-api-context-schemas";
 import { AiProxyApiContextSchema } from "../sealos/ai-proxy/schemas/ai-proxy-api-context";
+import { SealosApiContextSchema } from "../sealos/sealos-api-context-schema";
 
 export async function extractAuthFromSession(
   session: SessionV1
@@ -109,6 +110,17 @@ export function createClusterContext() {
     throw new Error("User not found");
   }
   return ClusterApiContextSchema.parse({
+    baseURL: auth?.regionUrl,
+    authorization: auth?.kubeconfig,
+  });
+}
+
+export function createSealosContext() {
+  const { auth } = useAuthState();
+  if (!auth) {
+    throw new Error("User not found");
+  }
+  return SealosApiContextSchema.parse({
     baseURL: auth?.regionUrl,
     authorization: auth?.kubeconfig,
   });

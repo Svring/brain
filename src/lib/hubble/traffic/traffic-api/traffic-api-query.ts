@@ -4,10 +4,10 @@ import axios from "axios";
 import { createParallelAction } from "next-server-actions-parallel";
 import { TrafficApiContext } from "../schemas/traffic-api-context-schema";
 import {
-  GetPodTrafficRequestSchema,
-  GetPodTrafficResponseSchema,
-  GetPodTrafficRequest,
-  GetPodTrafficResponse,
+  GetTrafficRequestSchema,
+  GetTrafficResponseSchema,
+  GetTrafficRequest,
+  GetTrafficResponse,
 } from "../schemas/traffic-flow-schema";
 import https from "https";
 
@@ -33,14 +33,14 @@ function createTrafficApi(context: TrafficApiContext) {
   });
 }
 
-export const getPodTraffic = createParallelAction(
+export const getTraffic = createParallelAction(
   async (
-    request: GetPodTrafficRequest,
+    request: GetTrafficRequest,
     context: TrafficApiContext
-  ): Promise<GetPodTrafficResponse> => {
-    const validatedRequest = GetPodTrafficRequestSchema.parse(request);
+  ): Promise<GetTrafficResponse> => {
+    const validatedRequest = GetTrafficRequestSchema.parse(request);
     const api = createTrafficApi(context);
-    const response = await api.post("/api/v1/flows", validatedRequest);
-    return GetPodTrafficResponseSchema.parse(response.data);
+    const response = await api.post("/api/v1/traffic", validatedRequest);
+    return GetTrafficResponseSchema.parse(response.data);
   }
 );
