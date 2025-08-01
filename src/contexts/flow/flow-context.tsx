@@ -7,6 +7,7 @@ import { createContext, type ReactNode, useContext, useEffect } from "react";
 import { flowMachine } from "./flow-machine";
 import type { Edge, Node } from "@xyflow/react";
 import useAI from "@/hooks/ai/use-ai";
+import { createK8sContext } from "@/lib/auth/auth-utils";
 
 const inspector = createBrowserInspector();
 
@@ -25,7 +26,8 @@ export const FlowProvider = ({ children }: { children: ReactNode }) => {
     inspect: inspector.inspect,
   });
 
-  const { state: aiState, setState: setAIState } = useAI();
+  const context = createK8sContext();
+  const { state: aiState, setState: setAIState } = useAI(context);
 
   useEffect(() => {
     const newState = _.cloneDeep(aiState);
@@ -77,7 +79,8 @@ export function useFlowActions() {
       send({ type: "UPDATE_SINGLE_EDGE", id, edge }),
     setSelectedNode: (node: any) => send({ type: "SET_SELECTED_NODE", node }),
     setSelectedEdge: (edge: any) => send({ type: "SET_SELECTED_EDGE", edge }),
-    setDragging: (isDragging: boolean) => send({ type: "SET_DRAGGING", isDragging }),
+    setDragging: (isDragging: boolean) =>
+      send({ type: "SET_DRAGGING", isDragging }),
     resetFlow: () => send({ type: "RESET_FLOW" }),
   };
 }

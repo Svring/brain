@@ -14,20 +14,16 @@ import {
   getProjectQueryKey,
   getProjectResourcesQueryKey,
 } from "./project-utils";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 /**
  * Query options for listing all projects (instances)
  */
 export const listProjectsOptions = (context: K8sApiContext) => {
-  const instanceConfig = CUSTOM_RESOURCES.instance;
-
-  const baseOptions = listResourcesOptions(context, {
-    type: "custom",
-    resourceType: instanceConfig.resourceType,
-    group: instanceConfig.group,
-    version: instanceConfig.version,
-    plural: instanceConfig.plural,
-  });
+  const baseOptions = listResourcesOptions(
+    context,
+    convertResourceTypeToTarget("instance")
+  );
 
   return queryOptions({
     ...baseOptions,
@@ -42,16 +38,10 @@ export const getProjectOptions = (
   context: K8sApiContext,
   projectName: string
 ) => {
-  const instanceConfig = CUSTOM_RESOURCES.instance;
-
-  const baseOptions = getResourceOptions(context, {
-    type: "custom",
-    resourceType: instanceConfig.resourceType,
-    group: instanceConfig.group,
-    version: instanceConfig.version,
-    plural: instanceConfig.plural,
-    name: projectName,
-  });
+  const baseOptions = getResourceOptions(
+    context,
+    convertResourceTypeToTarget("instance")
+  );
 
   return queryOptions({
     ...baseOptions,
