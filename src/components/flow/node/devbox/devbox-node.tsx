@@ -37,8 +37,6 @@ export default function DevboxNode({
 
   const { name, image, status, ports, pods } = data;
 
-  console.log("devbox data", data);
-
   return (
     <div ref={ref} className="relative">
       {/* Background card */}
@@ -89,7 +87,7 @@ export default function DevboxNode({
                 />
 
                 {/* Actions Dropdown Menu */}
-                <DevboxNodeMenu />
+                <DevboxNodeMenu devboxName={name} />
               </div>
             </div>
 
