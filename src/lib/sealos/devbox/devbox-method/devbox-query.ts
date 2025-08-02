@@ -22,7 +22,6 @@ export const getDevbox = async (
 ) => {
   // Test the new composeObjectFromTarget function
   const devboxObject = await getDevboxObject(context, target);
-  console.log("getDevbox", devboxObject);
   return devboxObject;
 };
 

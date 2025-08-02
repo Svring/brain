@@ -9,6 +9,8 @@ import { activateProjectActions } from "@/lib/ai/project/ai-project-actions";
 import { activateAppActions } from "@/lib/ai/sealos/app/ai-app-actions";
 import { activateObjectStorageBucketActions } from "@/lib/ai/sealos/objectstoragebucket/ai-objectstoragebucket-actions";
 import { activateClusterActions } from "@/lib/ai/sealos/cluster/ai-cluster-actions";
+import { activateGeneralActions } from "@/lib/ai/general/ai-general-actions";
+
 import {
   createK8sContext,
   createDevboxContext,
@@ -26,9 +28,10 @@ export default function useAI() {
 
   activateProjectActions(k8sContext);
   activateDevboxActions(k8sContext, devboxContext);
-  activateAppActions(sealosContext);
+  activateAppActions(sealosContext, k8sContext);
   activateObjectStorageBucketActions(k8sContext, sealosContext);
   activateClusterActions(k8sContext, clusterContext);
+  activateGeneralActions();
 
   // useCoAgentStateRender<AiState>({
   //   name: "ai",

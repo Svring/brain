@@ -51,7 +51,7 @@ export const aiMachine = createMachine({
     state: {
       base_url: "",
       api_key: "",
-      model: "gpt-4o",
+      model: "gpt-4.1-nano",
       system_prompt: "you are sealos brain.",
       project_context: {
         homepageData: {
