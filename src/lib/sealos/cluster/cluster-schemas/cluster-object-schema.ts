@@ -23,14 +23,16 @@ export const ClusterConnectionSchema = z.object({
   }),
 });
 
-export const ClusterBackupSchema = z.object({
-  cronExpression: z.string(),
-  enabled: z.boolean(),
-  method: z.string(),
-  pitrEnabled: z.boolean(),
-  repoName: z.string(),
-  retentionPeriod: z.string(),
-});
+export const ClusterBackupSchema = z
+  .object({
+    cronExpression: z.string(),
+    enabled: z.boolean(),
+    method: z.string(),
+    pitrEnabled: z.boolean(),
+    repoName: z.string(),
+    retentionPeriod: z.string(),
+  })
+  .optional();
 
 const PodSchema = z.object({
   name: z.string(),

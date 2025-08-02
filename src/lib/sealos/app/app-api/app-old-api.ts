@@ -8,38 +8,38 @@ import {
   AppCreateResponse,
   AppCreateRequestSchema,
   AppCreateResponseSchema,
-} from "./applaunchpad-old-api-schemas/req-res-create-schemas";
+} from "./app-old-api-schemas/req-res-create-schemas";
 import {
   AppPauseRequest,
   AppPauseResponse,
   AppPauseRequestSchema,
   AppPauseResponseSchema,
-} from "./applaunchpad-old-api-schemas/req-res-pause-schemas";
+} from "./app-old-api-schemas/req-res-pause-schemas";
 import {
   AppStartRequest,
   AppStartResponse,
   AppStartRequestSchema,
   AppStartResponseSchema,
-} from "./applaunchpad-old-api-schemas/req-res-start-schemas";
+} from "./app-old-api-schemas/req-res-start-schemas";
 import {
   AppDeleteRequest,
   AppDeleteResponse,
   AppDeleteRequestSchema,
   AppDeleteResponseSchema,
-} from "./applaunchpad-old-api-schemas/req-res-delete-schemas";
+} from "./app-old-api-schemas/req-res-delete-schemas";
 import {
   AppCheckReadyRequest,
   AppCheckReadyResponse,
   AppCheckReadyRequestSchema,
   AppCheckReadyResponseSchema,
-} from "./applaunchpad-old-api-schemas/req-res-check-ready-schemas";
+} from "./app-old-api-schemas/req-res-check-ready-schemas";
 import {
   QueryLogsRequest,
   QueryLogsResponse,
   QueryLogsRequestSchema,
   QueryLogsResponseSchema,
-} from "./applaunchpad-old-api-schemas/req-res-query-logs-schemas";
-import { generateK8sManifests } from "./applaunchpad-api-utils";
+} from "./app-old-api-schemas/req-res-query-logs-schemas";
+import { generateK8sManifests } from "./app-api-utils";
 import https from "https";
 
 function createAppApi(context: SealosApiContext) {

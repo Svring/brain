@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { createParallelAction } from "next-server-actions-parallel";
-import { ClusterApiContext } from "../schemas/cluster-api-context-schemas";
+import { SealosApiContext } from "../../sealos-api-context-schema";
 import {
   ClusterCreateRequest,
   ClusterCreateRequestSchema,
@@ -42,7 +42,7 @@ import {
 import https from "https";
 
 // Helper to create axios instance per request
-function createClusterApi(context: ClusterApiContext) {
+function createClusterApi(context: SealosApiContext) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
   return axios.create({
     baseURL: `https://dbprovider.${context.baseURL}/api`,
@@ -61,7 +61,7 @@ function createClusterApi(context: ClusterApiContext) {
 export const createCluster = createParallelAction(
   async (
     request: ClusterCreateRequest,
-    context: ClusterApiContext
+    context: SealosApiContext
   ): Promise<ClusterCreateResponse> => {
     const validatedRequest = ClusterCreateRequestSchema.parse(request);
     const api = createClusterApi(context);
@@ -73,7 +73,7 @@ export const createCluster = createParallelAction(
 export const startCluster = createParallelAction(
   async (
     request: ClusterStartRequest,
-    context: ClusterApiContext
+    context: SealosApiContext
   ): Promise<ClusterStartResponse> => {
     const validatedRequest = ClusterStartRequestSchema.parse(request);
     const api = createClusterApi(context);
@@ -85,7 +85,7 @@ export const startCluster = createParallelAction(
 export const pauseCluster = createParallelAction(
   async (
     request: ClusterPauseRequest,
-    context: ClusterApiContext
+    context: SealosApiContext
   ): Promise<ClusterPauseResponse> => {
     const validatedRequest = ClusterPauseRequestSchema.parse(request);
     const api = createClusterApi(context);
@@ -97,7 +97,7 @@ export const pauseCluster = createParallelAction(
 export const deleteCluster = createParallelAction(
   async (
     request: ClusterDeleteRequest,
-    context: ClusterApiContext
+    context: SealosApiContext
   ): Promise<ClusterDeleteResponse> => {
     const validatedRequest = ClusterDeleteRequestSchema.parse(request);
     const api = createClusterApi(context);
@@ -111,7 +111,7 @@ export const deleteCluster = createParallelAction(
 export const getLogFiles = createParallelAction(
   async (
     request: GetLogFilesRequest,
-    context: ClusterApiContext
+    context: SealosApiContext
   ): Promise<GetLogFilesResponse> => {
     const validatedRequest = GetLogFilesRequestSchema.parse(request);
     const api = createClusterApi(context);
@@ -123,7 +123,7 @@ export const getLogFiles = createParallelAction(
 export const getLog = createParallelAction(
   async (
     request: GetLogRequest,
-    context: ClusterApiContext
+    context: SealosApiContext
   ): Promise<GetLogResponse> => {
     const validatedRequest = GetLogRequestSchema.parse(request);
     const api = createClusterApi(context);

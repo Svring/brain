@@ -6,13 +6,11 @@ import {
   createObjectStorage,
   deleteObjectStorage,
 } from "../objectstorage-api/objectstorage-old-api";
-import type { ObjectStorageApiContext } from "../schemas/objectstorage-api-context-schemas";
+import { SealosApiContext } from "../../sealos-api-context-schema";
 import type { ObjectStorageCreateRequest } from "../schemas/req-res-schemas/req-res-create-schemas";
 import type { ObjectStorageDeleteRequest } from "../schemas/req-res-schemas/req-res-delete-schemas";
 
-export function useCreateObjectStorageMutation(
-  context: ObjectStorageApiContext
-) {
+export function useCreateObjectStorageMutation(context: SealosApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: ObjectStorageCreateRequest) =>
@@ -28,9 +26,7 @@ export function useCreateObjectStorageMutation(
   });
 }
 
-export function useDeleteObjectStorageMutation(
-  context: ObjectStorageApiContext
-) {
+export function useDeleteObjectStorageMutation(context: SealosApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: ObjectStorageDeleteRequest) =>

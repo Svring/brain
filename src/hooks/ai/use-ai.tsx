@@ -6,18 +6,29 @@ import { useAiState } from "@/contexts/ai/ai-context";
 import { StateCard } from "@/components/ai/headless/ai-state-card";
 import { activateDevboxActions } from "@/lib/ai/sealos/devbox/ai-devbox-actions";
 import { activateProjectActions } from "@/lib/ai/project/ai-project-actions";
-import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
-import { DevboxApiContext } from "@/lib/sealos/devbox/devbox-api/devbox-open-api-schemas";
-import { createK8sContext, createDevboxContext } from "@/lib/auth/auth-utils";
+import { activateAppActions } from "@/lib/ai/sealos/app/ai-app-actions";
+import { activateObjectStorageBucketActions } from "@/lib/ai/sealos/objectstoragebucket/ai-objectstoragebucket-actions";
+import { activateClusterActions } from "@/lib/ai/sealos/cluster/ai-cluster-actions";
+import {
+  createK8sContext,
+  createDevboxContext,
+  createSealosContext,
+  createClusterContext,
+} from "@/lib/auth/auth-utils";
 
 export default function useAI() {
   const { aiState } = useAiState();
 
   const k8sContext = createK8sContext();
   const devboxContext = createDevboxContext();
+  const sealosContext = createSealosContext();
+  const clusterContext = createClusterContext();
 
   activateProjectActions(k8sContext);
   activateDevboxActions(k8sContext, devboxContext);
+  activateAppActions(sealosContext);
+  activateObjectStorageBucketActions(k8sContext, sealosContext);
+  activateClusterActions(k8sContext, clusterContext);
 
   // useCoAgentStateRender<AiState>({
   //   name: "ai",

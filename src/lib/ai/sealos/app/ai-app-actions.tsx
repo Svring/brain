@@ -1,29 +1,183 @@
-export const createAppAction = async () => {};
+"use client";
 
-export const listAppAction = async () => {};
+import { useCopilotAction } from "@copilotkit/react-core";
+import {
+  useCreateAppMutation,
+  useDeleteAppMutation,
+  usePauseAppMutation,
+  useStartAppMutation,
+  useCheckReadyAppMutation,
+} from "@/lib/sealos/app/app-method/app-mutation";
+import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
 
-export const getAppAction = async () => {};
+export function activateAppActions(context: SealosApiContext) {
+  createAppAction(context);
+  deleteAppAction(context);
+  startAppAction(context);
+  stopAppAction(context);
+  checkReadyAppAction(context);
+}
 
-export const deleteAppAction = async () => {};
+function createAppAction(context: SealosApiContext) {
+  const createApp = useCreateAppMutation(context);
 
-export const updateAppAction = async () => {};
+  useCopilotAction({
+    name: "createApp",
+    description: "Create a new application",
+    parameters: [
+      {
+        name: "appName",
+        type: "string",
+        description: "Name of the application to create",
+        required: true,
+      },
+      {
+        name: "imageName",
+        type: "string",
+        description: "Docker image name for the application",
+        required: true,
+      },
+      {
+        name: "cpu",
+        type: "number",
+        description: "CPU allocation in millicores (e.g., 1000 for 1 CPU)",
+        required: false,
+      },
+      {
+        name: "memory",
+        type: "number",
+        description: "Memory allocation in MB",
+        required: false,
+      },
+      {
+        name: "replicas",
+        type: "number",
+        description: "Number of replicas",
+        required: false,
+      },
+    ],
+    handler: async ({ appName, imageName, cpu, memory, replicas }) => {
+      const createRequest = {
+        name: appName,
+        image: imageName,
+        env: {},
+        ports: [],
+        cpu: cpu || 1000,
+        memory: memory || 1024,
+        replicas: replicas || 1,
+      };
 
-export const getAppLogAction = async () => {};
+      await createApp.mutateAsync(createRequest);
+      return `Application '${appName}' created successfully with image '${imageName}'.`;
+    },
+  });
+}
 
-export const startAppAction = async () => {};
+function deleteAppAction(context: SealosApiContext) {
+  const deleteApp = useDeleteAppMutation(context);
 
-export const stopAppAction = async () => {};
+  useCopilotAction({
+    name: "deleteApp",
+    description: "Delete an application",
+    parameters: [
+      {
+        name: "appName",
+        type: "string",
+        description: "Name of the application to delete",
+        required: true,
+      },
+    ],
+    handler: async ({ appName }) => {
+      const deleteRequest = {
+        name: appName,
+      };
 
-export const restartAppAction = async () => {};
+      await deleteApp.mutateAsync(deleteRequest);
+      return `Application '${appName}' deleted successfully.`;
+    },
+  });
+}
 
-export const getAppMonitorAction = async () => {};
+function startAppAction(context: SealosApiContext) {
+  const startApp = useStartAppMutation(context);
 
-export const setAppCommandAction = async () => {};
+  useCopilotAction({
+    name: "startApp",
+    description: "Start an application",
+    parameters: [
+      {
+        name: "appName",
+        type: "string",
+        description: "Name of the application to start",
+        required: true,
+      },
+    ],
+    handler: async ({ appName }) => {
+      const startRequest = {
+        appName,
+      };
 
-export const setAppEnvAction = async () => {};
+      await startApp.mutateAsync(startRequest);
+      return `Application '${appName}' started successfully.`;
+    },
+  });
+}
 
-export const setAppConfigAction = async () => {};
+function stopAppAction(context: SealosApiContext) {
+  const pauseApp = usePauseAppMutation(context);
 
-export const setAppStorageAction = async () => {};
+  useCopilotAction({
+    name: "stopApp",
+    description: "Stop (pause) an application",
+    parameters: [
+      {
+        name: "appName",
+        type: "string",
+        description: "Name of the application to stop",
+        required: true,
+      },
+    ],
+    handler: async ({ appName }) => {
+      const pauseRequest = {
+        appName,
+      };
 
-export const getAppYamlAction = async () => {};
+      await pauseApp.mutateAsync(pauseRequest);
+      return `Application '${appName}' stopped successfully.`;
+    },
+  });
+}
+
+function checkReadyAppAction(context: SealosApiContext) {
+  const checkReadyApp = useCheckReadyAppMutation(context);
+
+  useCopilotAction({
+    name: "checkAppReady",
+    description: "Check if an application is ready",
+    parameters: [
+      {
+        name: "appName",
+        type: "string",
+        description: "Name of the application to check readiness for",
+        required: true,
+      },
+    ],
+    handler: async ({ appName }) => {
+      const checkRequest = {
+        appName,
+      };
+
+      const result = await checkReadyApp.mutateAsync(checkRequest);
+      const readyCount = result.data.filter((item: any) => item.ready).length;
+
+      return `Application '${appName}' readiness check: ${readyCount}/${result.data.length} endpoints ready.`;
+    },
+  });
+}
+
+// TODO: Implement additional app actions if needed
+// export const setAppCommandAction = async () => {};
+// export const setAppEnvAction = async () => {};
+// export const setAppPortAction = async () => {};
+// export const setAppVolumeAction = async () => {};
+// export const getAppYamlAction = async () => {};

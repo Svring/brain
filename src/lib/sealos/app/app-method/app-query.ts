@@ -3,12 +3,12 @@ import { SealosApiContext } from "../../sealos-api-context-schema";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { getDeployment } from "../../deployment/deployment-method/deployment-query";
 import { getStatefulSet } from "../../statefulset/statefulset-method/statefulset-query";
-import { queryLogs } from "../applaunchpad-api/applaunchpad-old-api";
+import { queryLogs } from "../app-api/app-old-api";
 import {
   QueryLogsRequest,
   QueryLogsRequestSchema,
   QueryLogsResponseSchema,
-} from "../applaunchpad-api/applaunchpad-old-api-schemas/req-res-query-logs-schemas";
+} from "../app-api/app-old-api-schemas/req-res-query-logs-schemas";
 import { runParallelAction } from "next-server-actions-parallel";
 
 export const getApp = async (

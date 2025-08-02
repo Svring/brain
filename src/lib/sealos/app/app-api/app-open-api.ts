@@ -4,7 +4,7 @@ import axios from "axios";
 import { createParallelAction } from "next-server-actions-parallel";
 import https from "https";
 import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
-import { AppControlSuccessResponse } from "./applaunchpad-open-api-schemas/app-control-schema";
+import { AppControlSuccessResponse } from "./app-open-api-schemas/app-control-schema";
 
 function createApplaunchpadApi(context: SealosApiContext) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";

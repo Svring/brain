@@ -7,12 +7,12 @@ import {
   deleteApp,
   pauseApp,
   startApp,
-} from "../../applaunchpad/applaunchpad-api/applaunchpad-old-api";
+} from "../../app/app-api/app-old-api";
 import type { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
-import type { AppCreateRequest } from "../../applaunchpad/applaunchpad-api/applaunchpad-old-api-schemas/req-res-create-schemas";
-import type { AppDeleteRequest } from "../../applaunchpad/applaunchpad-api/applaunchpad-old-api-schemas/req-res-delete-schemas";
-import type { AppPauseRequest } from "../../applaunchpad/applaunchpad-api/applaunchpad-old-api-schemas/req-res-pause-schemas";
-import type { AppStartRequest } from "../../applaunchpad/applaunchpad-api/applaunchpad-old-api-schemas/req-res-start-schemas";
+import type { AppCreateRequest } from "../../app/app-api/app-old-api-schemas/req-res-create-schemas";
+import type { AppDeleteRequest } from "../../app/app-api/app-old-api-schemas/req-res-delete-schemas";
+import type { AppPauseRequest } from "../../app/app-api/app-old-api-schemas/req-res-pause-schemas";
+import type { AppStartRequest } from "../../app/app-api/app-old-api-schemas/req-res-start-schemas";
 
 export function useCreateDeployMutation(context: SealosApiContext) {
   const queryClient = useQueryClient();

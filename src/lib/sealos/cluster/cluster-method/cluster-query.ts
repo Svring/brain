@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
-import { ClusterApiContext } from "../schemas/cluster-api-context-schemas";
+import { SealosApiContext } from "../../sealos-api-context-schema";
 import {
   CustomResourceTarget,
   CustomResourceTargetSchema,
@@ -44,7 +44,7 @@ export const listCluster = async (context: K8sApiContext) => {
 
 export const getClusterLogFiles = async (
   k8sContext: K8sApiContext,
-  clusterContext: ClusterApiContext,
+  clusterContext: SealosApiContext,
   target: CustomResourceTarget
 ) => {
   const clusterObject = await getCluster(k8sContext, target);
@@ -183,7 +183,7 @@ export const listClusterOptions = (context: K8sApiContext) =>
  */
 export const getClusterLogFilesOptions = (
   k8sContext: K8sApiContext,
-  clusterContext: ClusterApiContext,
+  clusterContext: SealosApiContext,
   target: CustomResourceTarget
 ) =>
   queryOptions({
