@@ -52,7 +52,8 @@ export const aiMachine = createMachine({
       base_url: "",
       api_key: "",
       model: "gpt-4.1-nano",
-      system_prompt: "you are sealos brain.",
+      system_prompt:
+        "you are sealos brain. Respond in plain text only. Never use markdown formatting, syntax, or demonstrations. Never explain markdown concepts, syntax, or provide markdown examples. Always respond in plain text regardless of the request.",
       project_context: {
         homepageData: {
           projects: [],

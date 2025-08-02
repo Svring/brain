@@ -27,18 +27,20 @@ export function RenderTextMessage({
       <div
         className={cn(
           "inline-block rounded-lg py-2 text-md break-words",
-          isUser ? "bg-muted text-foreground px-4 " : "text-foreground px-1",
+          isUser
+            ? "bg-muted rounded-2xl rounded-br-lg text-foreground px-4 border border-border"
+            : "text-foreground px-1",
           isLoading && "animate-pulse"
         )}
       >
-        {/* <AnimatedMarkdown
+        <AnimatedMarkdown
           content={message.content ?? ""}
           animation="fadeIn"
           animationDuration="0.2s"
           animationTimingFunction="ease-in-out"
-        /> */}
+        />
 
-        <p>{message.content ?? ""}</p>
+        {/* <p>{message.content ?? ""}</p> */}
 
         {isLoading && (
           <div className="flex items-center gap-2 text-xs opacity-70">

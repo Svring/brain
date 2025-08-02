@@ -40,24 +40,24 @@ export default function ChatPage() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
-            className="flex-1 flex flex-col h-screen"
+            className="flex-1 flex flex-col h-screen relative"
           >
-            {/* Messages area */}
-            <div className="flex-1 overflow-hidden pt-8">
-              <div className="max-w-4xl mx-auto">
+            {/* Messages area - scrollable */}
+            <div className="flex-1 overflow-y-auto pt-8 pb-24">
+              <div className="max-w-3xl mx-auto">
                 <AiMessages />
               </div>
             </div>
 
-            {/* Input at bottom */}
+            {/* Input fixed at bottom */}
             <motion.div
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
-              className="bg-background/95 backdrop-blur"
+              className="absolute bottom-0 left-0 right-0 bg-background/95 backdrop-blur mb-4"
             >
               <div className="container mx-auto px-4 py-4">
-                <AiChatInput className="max-w-4xl mx-auto" />
+                <AiChatInput className="max-w-3xl mx-auto" />
               </div>
             </motion.div>
           </motion.div>
