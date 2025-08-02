@@ -14,7 +14,6 @@ import DevboxNodeTitle from "./devbox-node-title";
 import DevboxNodeMenu from "./devbox-node-menu";
 import NodeInternalUrl from "../node-components/node-internal-url";
 import NodeMonitor from "../node-components/node-monitor";
-import NodePods from "../node-components/node-pods";
 import { motion } from "framer-motion";
 import { useHover } from "@reactuses/core";
 import { useRef, useState } from "react";
@@ -110,7 +109,6 @@ export default function DevboxNode({
               {/* Right: Icon components */}
               <div className="flex items-center gap-2">
                 <NodeInternalUrl ports={ports} />
-                <NodePods />
                 <NodeMonitor />
               </div>
             </div>

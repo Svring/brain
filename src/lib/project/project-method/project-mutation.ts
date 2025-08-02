@@ -27,7 +27,7 @@ import {
   invalidateProjectQueries,
 } from "./project-utils";
 import { getProjectRelatedResources } from "@/lib/algorithm/relevance/project/project-relevance";
-import { BRAIN_RESOURCES_ANNOTATION_KEY } from "@/lib/project/project-constant/project-constant-label";
+import { BRAIN_RESOURCES_ANNOTATION_KEY, PROJECT_DISPLAY_NAME_ANNOTATION_KEY } from "@/lib/project/project-constant/project-constant-label";
 import { getProjectOptions } from "./project-query";
 import { INSTANCE_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
 
@@ -201,6 +201,39 @@ export const useCreateProjectMutation = (context: K8sApiContext) => {
     onError: (error) => {
       console.log("error", error);
       toast.error("Failed to create project");
+      throw error;
+    },
+  });
+};
+
+/**
+ * Hook to rename a project by updating its display name annotation
+ */
+export const useRenameProjectMutation = (context: K8sApiContext) => {
+  const queryClient = useQueryClient();
+  const patchMutation = usePatchResourceMetadataMutation(context);
+
+  return useMutation({
+    mutationFn: async ({
+      projectName,
+      newDisplayName,
+    }: {
+      projectName: string;
+      newDisplayName: string;
+    }) => {
+      return await patchMutation.mutateAsync({
+        target: createProjectTarget(projectName),
+        metadataType: "annotations",
+        key: PROJECT_DISPLAY_NAME_ANNOTATION_KEY,
+        value: newDisplayName,
+      });
+    },
+    onSuccess: (_, { projectName, newDisplayName }) => {
+      toast.success(`Project renamed to "${newDisplayName}"`);
+      invalidateProjectQueries(queryClient, context.namespace, projectName);
+    },
+    onError: (error) => {
+      toast.error("Failed to rename project");
       throw error;
     },
   });

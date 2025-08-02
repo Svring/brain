@@ -9,6 +9,15 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface Port {
   number: number;
@@ -33,44 +42,56 @@ export default function NodeInternalUrl({ ports }: NodeInternalUrlProps) {
           className="bg-background-secondary rounded-lg"
           onPointerDownOutside={(e) => e.preventDefault()}
         >
-          <div className="space-y-2 p-2">
+          <div className="p-2">
             {ports && ports.length > 0 ? (
-              ports.map((port, index) => (
-                <div key={index} className="text-sm space-y-1">
-                  <div className="font-medium">Port: {port.number}</div>
-                  {port.privateAddress && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground">
-                        Private:
-                      </span>
-                      <span
-                        className="font-mono text-xs bg-muted px-2 py-1 rounded cursor-pointer hover:bg-muted/80 transition-colors"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          navigator.clipboard.writeText(
-                            port.privateAddress!
-                          );
-                          toast("Private address copied to clipboard");
-                        }}
-                      >
-                        {port.privateAddress}
-                      </span>
-                      <Copy
-                        className="h-3 w-3 hover:text-foreground cursor-pointer transition-colors flex-shrink-0"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          navigator.clipboard.writeText(
-                            port.privateAddress!
-                          );
-                          toast("Private address copied to clipboard");
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
-              ))
+              <Table>
+                <TableCaption>Internal URLs for this service</TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">Port</TableHead>
+                    <TableHead>Internal Address</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {ports.map((port, index) => (
+                    <TableRow key={index}>
+                      <TableCell className="font-medium">{port.number}</TableCell>
+                      <TableCell>
+                        {port.privateAddress ? (
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="font-mono text-xs bg-muted px-2 py-1 rounded cursor-pointer hover:bg-muted/80 transition-colors"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                navigator.clipboard.writeText(
+                                  port.privateAddress!
+                                );
+                                toast("Private address copied to clipboard");
+                              }}
+                            >
+                              {port.privateAddress}
+                            </span>
+                            <Copy
+                              className="h-3 w-3 hover:text-foreground cursor-pointer transition-colors flex-shrink-0"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                navigator.clipboard.writeText(
+                                  port.privateAddress!
+                                );
+                                toast("Private address copied to clipboard");
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">N/A</span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             ) : (
               <div className="text-sm">No ports available</div>
             )}

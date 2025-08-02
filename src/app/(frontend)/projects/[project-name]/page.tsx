@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, use } from "react";
-import { useRouter } from "next/navigation";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 
 // React Flow imports
@@ -9,10 +8,10 @@ import { Background, ReactFlow, ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
 // Icon imports
-import { ArrowLeft, Plus, RefreshCw } from "lucide-react";
 
 // Custom component imports
-import { MenuBar } from "@/components/project/components/menu-bar";
+import { ProjectHeader } from "@/components/project/components/project-header";
+import { ProjectActions } from "@/components/project/components/project-actions";
 import { AddResourceTabs } from "@/components/project/add-resource/add-resource-tabs";
 import { Droppable } from "@/components/flow/dnd/droppable";
 import { DndProvider } from "@/components/flow/dnd/dnd-provider";
@@ -50,46 +49,17 @@ import { FLOW_CONFIG } from "@/lib/flow/flow-constant/flow-constant-config";
 
 // Floating UI Component
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const { handleRefresh, isRefreshing } = useFlowRefresh(projectName);
 
-  const menuItemsLeft = [
-    {
-      icon: ArrowLeft,
-      label: "Back to Home",
-      onClick: () => router.push("/project"),
-      isToggle: false,
-    },
-  ];
-
-  const menuItemsRight = [
-    {
-      icon: isRefreshing
-        ? () => <RefreshCw className="animate-spin" />
-        : RefreshCw,
-      label: "Refresh",
-      onClick: handleRefresh,
-      isToggle: false,
-    },
-    {
-      icon: Plus,
-      label: "Add New",
-      onClick: () => setOpen(true),
-      isToggle: false,
-    },
-  ];
-
   return (
     <>
-      <div className="absolute top-2 left-2 z-20">
-        <MenuBar activeIndex={null} items={menuItemsLeft}>
-          <span className="mx-2">{projectName}</span>
-        </MenuBar>
-      </div>
-      <div className="absolute top-2 right-2 z-20">
-        <MenuBar activeIndex={null} items={menuItemsRight} />
-      </div>
+      <ProjectHeader projectName={projectName} />
+      <ProjectActions
+        onAddNew={() => setOpen(true)}
+        onRefresh={handleRefresh}
+        isRefreshing={isRefreshing}
+      />
       {/* <Sheet onOpenChange={setOpen} open={open}>
         <SheetContent className="!w-[40vw] !max-w-none fade-in-0 animate-in flex flex-col">
           <SheetHeader className="flex-shrink-0">

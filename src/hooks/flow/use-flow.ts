@@ -7,7 +7,7 @@ import {
   type EdgeChange,
 } from "@xyflow/react";
 import { useEffect, useCallback } from "react";
-import { inferRelianceFromEnv } from "@/lib/project/project-method/project-utils";
+import { inferRelianceFromEnv } from "@/lib/algorithm/reliance/env-reliance";
 import { inferRelianceForIngress } from "@/lib/algorithm/reliance/ingress-reliance";
 import {
   convertConnectionsToEdges,

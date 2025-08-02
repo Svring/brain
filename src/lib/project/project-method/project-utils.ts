@@ -16,8 +16,6 @@ import { getDeploymentRelatedResources } from "@/lib/algorithm/relevance/deploym
 import { getDevboxRelatedResources } from "@/lib/algorithm/relevance/devbox/devbox-relevance";
 import { getInstanceRelatedResources } from "@/lib/algorithm/relevance/instance/instance-relevance";
 
-export { inferRelianceFromEnv } from "@/lib/algorithm/reliance/env-reliance";
-
 export const getProjectNameFromResource = (
   resource: K8sResource
 ): string | null => {
@@ -25,6 +23,17 @@ export const getProjectNameFromResource = (
     resource.metadata.labels?.[
       INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS
     ] ?? null
+  );
+};
+
+export const getProjectDisplayNameFromResource = (
+  resource: K8sResource
+): string | null => {
+  return (
+    _.get(
+      resource,
+      "metadata.annotations['cloud.sealos.io/deploy-on-sealos-displayName']"
+    ) ?? _.get(resource, "metadata.name")
   );
 };
 

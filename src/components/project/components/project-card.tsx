@@ -14,6 +14,9 @@ import {
 import { useToast } from "@/hooks/general/use-toast";
 import { useDeleteProjectMutation } from "@/lib/project/project-method/project-mutation";
 import { createK8sContext } from "@/lib/auth/auth-utils";
+import { getProjectDisplayNameFromResource } from "@/lib/project/project-method/project-utils";
+import { getProjectOptions } from "@/lib/project/project-method/project-query";
+import { useQuery } from "@tanstack/react-query";
 
 interface ProjectCardProps {
   projectName: string;
@@ -22,6 +25,7 @@ interface ProjectCardProps {
 const ProjectCard: React.FC<ProjectCardProps> = ({ projectName }) => {
   const { toast } = useToast();
   const context = createK8sContext();
+  const { data: project } = useQuery(getProjectOptions(context, projectName));
 
   const deleteProjectMutation = useDeleteProjectMutation(context);
 
@@ -49,6 +53,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ projectName }) => {
       }
     );
   };
+
+  if (!project) {
+    return null;
+  }
+
+  const projectDisplayName = getProjectDisplayNameFromResource(project);
 
   return (
     <Link
@@ -90,7 +100,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ projectName }) => {
           </DropdownMenu>
         </div>
 
-        <h3 className="mb-2 text-foreground">{projectName}</h3>
+        <h3 className="mb-2 text-foreground">{projectDisplayName}</h3>
       </motion.div>
     </Link>
   );
