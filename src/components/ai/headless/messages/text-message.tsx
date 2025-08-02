@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { MessageRendererProps } from "./types";
 import { AnimatedMarkdown } from "flowtoken";
+import Markdown from "react-markdown";
 
 import "flowtoken/dist/styles.css";
 
@@ -25,8 +26,8 @@ export function RenderTextMessage({
     <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
       <div
         className={cn(
-          "inline-block rounded-lg py-2 text-sm break-words",
-          isUser ? "bg-muted text-foreground px-4" : "text-foreground px-1",
+          "inline-block rounded-lg py-2 text-md break-words",
+          isUser ? "bg-muted text-foreground px-4 " : "text-foreground px-1",
           isLoading && "animate-pulse"
         )}
       >
@@ -36,6 +37,8 @@ export function RenderTextMessage({
           animationDuration="0.2s"
           animationTimingFunction="ease-in-out"
         />
+
+        {/* <Markdown>{message.content ?? ""}</Markdown> */}
 
         {isLoading && (
           <div className="flex items-center gap-2 text-xs opacity-70">

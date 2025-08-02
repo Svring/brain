@@ -66,6 +66,7 @@ export const createProjectAction = (context: K8sApiContext) => {
 
 export const listProjectAction = (context: K8sApiContext) => {
   const { data } = useQuery(listProjectsOptions(context));
+  console.log("listProjectAction", data);
 
   useCopilotAction({
     name: "listProjects",

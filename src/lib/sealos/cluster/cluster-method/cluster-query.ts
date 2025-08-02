@@ -37,9 +37,10 @@ export const listCluster = async (context: K8sApiContext) => {
   const clusterTargetList = clusterResourceList.items.map((item) =>
     CustomResourceTargetSchema.parse(convertResourceToTarget(item))
   );
-  return clusterTargetList.map(
+  const clusterPromises = clusterTargetList.map(
     async (target) => await getCluster(context, target)
   );
+  return await Promise.all(clusterPromises);
 };
 
 export const getClusterLogFiles = async (

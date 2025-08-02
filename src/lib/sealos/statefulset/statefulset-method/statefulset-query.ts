@@ -32,9 +32,10 @@ export const listStatefulSet = async (context: K8sApiContext) => {
   const statefulSetTargetList = statefulSetResourceList.items.map((item) =>
     BuiltinResourceTargetSchema.parse(convertResourceToTarget(item))
   );
-  return statefulSetTargetList.map(
+  const statefulSetPromises = statefulSetTargetList.map(
     async (target) => await getStatefulSet(context, target)
   );
+  return await Promise.all(statefulSetPromises);
 };
 
 // ============================================================================

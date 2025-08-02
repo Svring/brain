@@ -32,9 +32,10 @@ export const listObjectStorage = async (context: K8sApiContext) => {
   const objectStorageTargetList = objectStorageResourceList.items.map((item) =>
     CustomResourceTargetSchema.parse(convertResourceToTarget(item))
   );
-  return objectStorageTargetList.map(
+  const objectStoragePromises = objectStorageTargetList.map(
     async (target) => await getObjectStorage(context, target)
   );
+  return await Promise.all(objectStoragePromises);
 };
 
 // ============================================================================

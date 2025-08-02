@@ -22,6 +22,7 @@ export const getDevbox = async (
 ) => {
   // Test the new composeObjectFromTarget function
   const devboxObject = await getDevboxObject(context, target);
+  console.log("getDevbox", devboxObject);
   return devboxObject;
 };
 
@@ -35,9 +36,10 @@ export const listDevbox = async (context: K8sApiContext) => {
   const devboxTargetList = devboxResourceList.items.map((item) =>
     CustomResourceTargetSchema.parse(convertResourceToTarget(item))
   );
-  return devboxTargetList.map(
+  const devboxPromises = devboxTargetList.map(
     async (target) => await getDevbox(context, target)
   );
+  return await Promise.all(devboxPromises);
 };
 
 export const getDevboxSshInfo = async (

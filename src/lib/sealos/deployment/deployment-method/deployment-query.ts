@@ -32,9 +32,10 @@ export const listDeployment = async (context: K8sApiContext) => {
   const deploymentTargetList = deploymentResourceList.items.map((item) =>
     BuiltinResourceTargetSchema.parse(convertResourceToTarget(item))
   );
-  return deploymentTargetList.map(
+  const deploymentPromises = deploymentTargetList.map(
     async (target) => await getDeployment(context, target)
   );
+  return await Promise.all(deploymentPromises);
 };
 
 // ============================================================================

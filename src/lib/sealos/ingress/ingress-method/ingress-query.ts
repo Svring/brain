@@ -32,9 +32,10 @@ export const listIngress = async (context: K8sApiContext) => {
   const ingressTargetList = ingressResourceList.items.map((item) =>
     BuiltinResourceTargetSchema.parse(convertResourceToTarget(item))
   );
-  return ingressTargetList.map(
+  const ingressPromises = ingressTargetList.map(
     async (target) => await getIngress(context, target)
   );
+  return await Promise.all(ingressPromises);
 };
 
 // ============================================================================

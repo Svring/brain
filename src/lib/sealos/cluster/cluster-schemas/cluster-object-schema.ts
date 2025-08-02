@@ -55,7 +55,7 @@ export const ClusterObjectSchema = z.object({
   createdAt: z.string(),
   components: z.array(ClusterComponentSchema),
   connection: ClusterConnectionSchema,
-  backup: ClusterBackupSchema,
+  backup: ClusterBackupSchema.optional(),
   pods: z.array(PodSchema),
 });
 

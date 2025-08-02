@@ -39,7 +39,7 @@ export type AiEvent =
   | { type: "CHAT_OPEN" }
   | { type: "CHAT_CLOSE" }
   | { type: "SET_STATE"; state: Partial<AiState> }
-  | { type: "SET_FLOW_CONTEXT"; flowContext: Partial<AiState['flow_context']> }
+  | { type: "SET_FLOW_CONTEXT"; flowContext: Partial<AiState["flow_context"]> }
   | { type: "CREDENTIALS_LOADED" }
   | { type: "FAIL"; error: string };
 
@@ -51,7 +51,7 @@ export const aiMachine = createMachine({
     state: {
       base_url: "",
       api_key: "",
-      model: "gpt-4.1-mini",
+      model: "gpt-4o",
       system_prompt: "you are sealos brain.",
       project_context: {
         homepageData: {

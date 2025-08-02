@@ -37,6 +37,7 @@ export const createDevboxAction = (context: DevboxApiContext) => {};
 
 export const listDevboxAction = (context: K8sApiContext) => {
   const { data } = useQuery(listDevboxOptions(context));
+  console.log("listDevboxAction", data);
 
   useCopilotAction({
     name: "listDevboxes",
@@ -231,7 +232,11 @@ export const releaseDevboxAction = (context: DevboxApiContext) => {
       },
     ],
     handler: ({ devboxName, tag, releaseDes }) => {
-      releaseDevbox.mutateAsync({ devboxName, tag, releaseDes: releaseDes || "" });
+      releaseDevbox.mutateAsync({
+        devboxName,
+        tag,
+        releaseDes: releaseDes || "",
+      });
     },
   });
 };
