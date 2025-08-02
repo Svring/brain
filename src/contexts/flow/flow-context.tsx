@@ -7,7 +7,7 @@ import { createContext, type ReactNode, useContext, useEffect } from "react";
 import { flowMachine } from "./flow-machine";
 import type { Edge, Node } from "@xyflow/react";
 import useAI from "@/hooks/ai/use-ai";
-import { createK8sContext } from "@/lib/auth/auth-utils";
+import { createK8sContext, createDevboxContext } from "@/lib/auth/auth-utils";
 
 const inspector = createBrowserInspector();
 
@@ -26,8 +26,7 @@ export const FlowProvider = ({ children }: { children: ReactNode }) => {
     inspect: inspector.inspect,
   });
 
-  const context = createK8sContext();
-  const { state: aiState, setState: setAIState } = useAI(context);
+  const { state: aiState, setState: setAIState } = useAI();
 
   useEffect(() => {
     const newState = _.cloneDeep(aiState);

@@ -249,7 +249,8 @@ export function getResourceConfigFromKind(kind: string) {
  * @throws Error if resource type is not found
  */
 export function convertResourceTypeToTarget(
-  resourceType: string
+  resourceType: string,
+  resourceName?: string
 ): CustomResourceTarget | BuiltinResourceTarget {
   const lowerResourceType = resourceType.toLowerCase();
 
@@ -259,6 +260,7 @@ export function convertResourceTypeToTarget(
     return {
       type: "builtin",
       resourceType: builtinConfig.resourceType,
+      name: resourceName,
     };
   }
 
@@ -271,6 +273,7 @@ export function convertResourceTypeToTarget(
       group: customConfig.group,
       version: customConfig.version,
       plural: customConfig.plural,
+      name: resourceName,
     };
   }
 

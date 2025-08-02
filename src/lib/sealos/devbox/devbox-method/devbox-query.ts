@@ -14,6 +14,7 @@ import {
 import { buildQueryKey } from "@/lib/k8s/k8s-constant/k8s-constant-query-key";
 import { getSshConnectionInfo } from "@/lib/sealos/devbox/devbox-api/devbox-old-api";
 import { DevboxApiContext } from "../devbox-api/devbox-open-api-schemas";
+import { getDevboxReleases } from "../devbox-api/devbox-open-api";
 
 export const getDevbox = async (
   context: K8sApiContext,
@@ -49,6 +50,16 @@ export const getDevboxSshInfo = async (
   return sshInfo.data.token;
 };
 
+export const getDevboxReleasesQuery = async (
+  context: DevboxApiContext,
+  devboxName: string
+) => {
+  const releases = await runParallelAction(
+    getDevboxReleases(devboxName, context)
+  );
+  return releases;
+};
+
 // ============================================================================
 // OPTIONS FUNCTIONS (React Query wrappers)
 // ============================================================================
@@ -81,4 +92,18 @@ export const listDevboxOptions = (context: K8sApiContext) =>
     queryFn: async () => await listDevbox(context),
     enabled: !!context.namespace && !!context.kubeconfig,
     staleTime: 1000 * 30,
+  });
+
+/**
+ * Query options for getting devbox releases
+ */
+export const getDevboxReleasesOptions = (
+  context: DevboxApiContext,
+  devboxName: string
+) =>
+  queryOptions({
+    queryKey: ["sealos", "devbox", "releases", devboxName],
+    queryFn: async () => await getDevboxReleasesQuery(context, devboxName),
+    enabled: !!devboxName && !!context.baseURL,
+    staleTime: 1000 * 60,
   });

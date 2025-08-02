@@ -6,7 +6,10 @@ interface NodeStatusLightProps {
   className?: string;
 }
 
-export default function NodeStatusLight({ status, className = "" }: NodeStatusLightProps) {
+export default function NodeStatusLight({
+  status,
+  className = "",
+}: NodeStatusLightProps) {
   return (
     <div className={`flex items-center justify-center gap-2 ${className}`}>
       <Square
@@ -21,6 +24,8 @@ export default function NodeStatusLight({ status, className = "" }: NodeStatusLi
             ? "fill-theme-purple text-theme-purple"
             : status === "Error"
             ? "fill-theme-red text-theme-red"
+            : status === "Deleting"
+            ? "fill-theme-yellow text-theme-yellow"
             : "fill-theme-gray text-theme-gray"
         }`}
       />

@@ -24,7 +24,7 @@ export default function MainPage() {
           >
             <Hero
               heroTitle="Seaward"
-              subtitle="Look up models with a license of cc-by-sa-4.0 and sort by most likes on Hugging face, save top 5 to file."
+              subtitle="We have lingered in the chambers of the sea. By sea-girls wreathed with seaweed red and brown."
               titleClassName="text-5xl md:text-6xl font-extrabold"
               subtitleClassName="text-lg md:text-xl max-w-[600px]"
               actionsClassName="mt-4"

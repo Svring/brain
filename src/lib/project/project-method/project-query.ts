@@ -40,7 +40,7 @@ export const getProjectOptions = (
 ) => {
   const baseOptions = getResourceOptions(
     context,
-    convertResourceTypeToTarget("instance")
+    createProjectTarget(projectName)
   );
 
   return queryOptions({

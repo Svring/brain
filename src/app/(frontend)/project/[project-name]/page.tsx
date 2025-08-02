@@ -58,7 +58,7 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
     {
       icon: ArrowLeft,
       label: "Back to Home",
-      onClick: () => router.push("/"),
+      onClick: () => router.push("/project"),
       isToggle: false,
     },
   ];
