@@ -193,8 +193,13 @@ async function getResourceByFieldValue(
       : flattenedResources;
 
     // If no path is specified, return the list of resources
-    if (!fieldValue.path || (Array.isArray(fieldValue.path) && fieldValue.path.length === 0) || 
-        (Array.isArray(fieldValue.path) && fieldValue.path.length === 1 && fieldValue.path[0] === "")) {
+    if (
+      !fieldValue.path ||
+      (Array.isArray(fieldValue.path) && fieldValue.path.length === 0) ||
+      (Array.isArray(fieldValue.path) &&
+        fieldValue.path.length === 1 &&
+        fieldValue.path[0] === "")
+    ) {
       return filteredResources;
     }
 
@@ -233,8 +238,13 @@ async function getResourceByFieldValue(
     });
 
     // If no path is specified, return the list of resources
-    if (!fieldValue.path || (Array.isArray(fieldValue.path) && fieldValue.path.length === 0) || 
-        (Array.isArray(fieldValue.path) && fieldValue.path.length === 1 && fieldValue.path[0] === "")) {
+    if (
+      !fieldValue.path ||
+      (Array.isArray(fieldValue.path) && fieldValue.path.length === 0) ||
+      (Array.isArray(fieldValue.path) &&
+        fieldValue.path.length === 1 &&
+        fieldValue.path[0] === "")
+    ) {
       return filteredResources;
     }
 
@@ -430,11 +440,15 @@ function processRegularFields(
 ): void {
   for (const { fieldName, description, resource } of regularFields) {
     let extractedValue;
-    
+
     // If no path is specified or path is empty/[""], return the resource as-is (list of resources)
-    if (!description?.path || 
-        (Array.isArray(description.path) && description.path.length === 0) || 
-        (Array.isArray(description.path) && description.path.length === 1 && description.path[0] === "")) {
+    if (
+      !description?.path ||
+      (Array.isArray(description.path) && description.path.length === 0) ||
+      (Array.isArray(description.path) &&
+        description.path.length === 1 &&
+        description.path[0] === "")
+    ) {
       extractedValue = resource;
     } else {
       extractedValue = extractDataFromObject(resource, description.path);

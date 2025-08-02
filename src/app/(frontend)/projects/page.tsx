@@ -1,19 +1,11 @@
 "use client";
 
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Plus } from "lucide-react";
 import ProjectCard from "@/components/project/components/project-card";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import useProjectSearch from "@/hooks/project/use-project-search";
 import { TextShimmer } from "@/components/project/components/text-shimmer";
-import { useDisclosure } from "@reactuses/core";
-import CreateProject from "@/components/project/create-project/create-project";
+import { useCreateProjectDialog } from "@/hooks/project/use-project-create-dialog";
 import AiCoin from "@/components/ai/headless/ai-coin";
 import AiChatbox from "@/components/ai/headless/ai-chatbox";
 import SearchBar from "@/components/app/search-bar";
@@ -22,7 +14,7 @@ import { createK8sContext } from "@/lib/auth/auth-utils";
 export default function Page() {
   const context = createK8sContext();
 
-  const { isOpen, onClose, onOpenChange } = useDisclosure();
+  const { openDialog, CreateProjectDialog } = useCreateProjectDialog();
 
   const { setSearchTerm, filteredProjects, projectsLoading, projectsError } =
     useProjectSearch(context);
@@ -43,19 +35,9 @@ export default function Page() {
               onSearchChange={setSearchTerm}
               placeholder="Search projects..."
             />
-            <Dialog onOpenChange={onOpenChange} open={isOpen}>
-              <VisuallyHidden>
-                <DialogTitle>Create Project</DialogTitle>
-              </VisuallyHidden>
-              <DialogTrigger asChild>
-                <Button variant="ghost">
-                  <Plus />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="h-[90vh] max-h-none w-[90vw] max-w-none">
-                <CreateProject onClose={onClose} />
-              </DialogContent>
-            </Dialog>
+            <Button variant="ghost" onClick={openDialog}>
+              <Plus />
+            </Button>
           </div>
         </div>
       </div>
@@ -93,6 +75,7 @@ export default function Page() {
 
       <AiCoin />
       <AiChatbox />
+      <CreateProjectDialog />
     </div>
   );
 }

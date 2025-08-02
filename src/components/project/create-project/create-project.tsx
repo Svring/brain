@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useProjectTemplates } from "@/hooks/project/use-project-templates";
-import { useToast } from "@/hooks/general/use-toast";
+import { toast } from "sonner";
 import { useCreateProjectMutation } from "@/lib/project/project-method/project-mutation";
 import type {
   ListTemplateResponse,
@@ -24,6 +24,8 @@ import { createTemplateApiContext } from "@/lib/sealos/template/template-method/
 import { TemplateCard } from "./template-card";
 import { TemplateDetails } from "./template-details";
 import { createK8sContext } from "@/lib/auth/auth-utils";
+import { useRouter } from "next/navigation";
+import { CreateInstanceSuccessResponseSchema } from "@/lib/sealos/template/schemas/template-create-instance-schemas";
 
 interface CreateProjectProps {
   onClose: () => void;
@@ -34,8 +36,8 @@ export default function CreateProject({ onClose }: CreateProjectProps) {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedTemplate, setSelectedTemplate] =
     useState<TemplateResource | null>(null);
+  const router = useRouter();
 
-  const { toast } = useToast();
   const templateApiContext = createTemplateApiContext();
   const {
     data: templatesResponse,
@@ -96,26 +98,7 @@ export default function CreateProject({ onClose }: CreateProjectProps) {
   }
 
   const handleCreateEmptyProject = () => {
-    createProjectMutation.mutate(
-      {},
-      {
-        onSuccess: (data) => {
-          console.log("data", data);
-          toast({
-            title: "Project Created",
-            description: `Project "${data.metadata.name}" has been created successfully.`,
-          });
-          onClose();
-        },
-        onError: (mutationError) => {
-          toast({
-            title: "Error",
-            description: `Failed to create project: ${mutationError.message}`,
-            variant: "destructive",
-          });
-        },
-      }
-    );
+    createProjectMutation.mutate({});
   };
 
   const handleViewDetails = (template: TemplateResource) => {
@@ -130,29 +113,10 @@ export default function CreateProject({ onClose }: CreateProjectProps) {
     templateName: string,
     templateForm?: Record<string, string>
   ) => {
-    createInstanceMutation.mutate(
-      {
-        templateName,
-        templateForm,
-      },
-      {
-        onSuccess: () => {
-          toast({
-            title: "Template deployed successfully",
-            description: `Template has been deployed to your project.`,
-          });
-          onClose();
-        },
-        onError: (error) => {
-          toast({
-            title: "Deployment failed",
-            description:
-              error.message || "Failed to deploy template. Please try again.",
-            variant: "destructive",
-          });
-        },
-      }
-    );
+    createInstanceMutation.mutate({
+      templateName,
+      templateForm,
+    });
   };
 
   // If a template is selected, show the details view

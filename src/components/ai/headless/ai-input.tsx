@@ -27,6 +27,8 @@ export function AiChatInput({ className }: AiChatInputProps) {
         isLoading={isLoading}
         onSend={handleSendMessage}
         placeholder="Type your message..."
+        disableInput={false}
+        disableSend={isLoading}
       />
     </div>
   );

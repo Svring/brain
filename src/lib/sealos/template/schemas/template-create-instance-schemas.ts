@@ -36,7 +36,7 @@ const KubernetesObjectSchema = z
   .passthrough();
 
 // Success response schema
-const CreateInstanceSuccessResponseSchema = z.object({
+export const CreateInstanceSuccessResponseSchema = z.object({
   code: z.literal(200),
   message: z.string().optional(),
   data: z.array(KubernetesObjectSchema),

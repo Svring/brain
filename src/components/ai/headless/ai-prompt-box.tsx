@@ -431,7 +431,7 @@ const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(
           <div
             className={cn(
               "rounded-xl border border-[#444444] bg-background-secondary p-2 shadow-[0_8px_30px_rgba(0,0,0,0.24)] transition-all duration-300",
-              isLoading && "border-2 border-white animate-shimmer-border",
+              isLoading && "border-1 border-white animate-shimmer-border",
               className
             )}
             onDragLeave={onDragLeave}
@@ -565,6 +565,8 @@ interface PromptInputBoxProps {
   className?: string;
   textareaRef?: React.Ref<HTMLTextAreaElement>;
   autoFocus?: boolean;
+  disableInput?: boolean;
+  disableSend?: boolean;
 }
 export const PromptInputBox = React.forwardRef(
   (props: PromptInputBoxProps, ref: React.Ref<HTMLDivElement>) => {
@@ -575,6 +577,8 @@ export const PromptInputBox = React.forwardRef(
       className,
       textareaRef,
       autoFocus = false,
+      disableInput = false,
+      disableSend = false,
     } = props;
     const [input, setInput] = React.useState("");
     const [files, setFiles] = React.useState<File[]>([]);
@@ -689,7 +693,7 @@ export const PromptInputBox = React.forwardRef(
     }, [handlePaste]);
 
     const handleSubmit = () => {
-      if (input.trim() || files.length > 0) {
+      if ((input.trim() || files.length > 0) && !disableSend) {
         let messagePrefix = "";
         if (showSearch) messagePrefix = "[Search: ";
         else if (showThink) messagePrefix = "[Think: ";
@@ -732,7 +736,7 @@ export const PromptInputBox = React.forwardRef(
             isRecording && "border-text-foreground",
             className
           )}
-          disabled={isLoading || isRecording}
+          disabled={disableInput}
           isLoading={isLoading}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
@@ -970,7 +974,7 @@ export const PromptInputBox = React.forwardRef(
                     : "bg-transparent text-[#9CA3AF] hover:bg-gray-600/30 hover:text-[#D1D5DB]"
                 )}
                 disabled={
-                  (isLoading && !hasContent) ||
+                  (disableSend && !hasContent) ||
                   (!hasContent && !browserSupportsSpeechRecognition)
                 }
                 onClick={() => {

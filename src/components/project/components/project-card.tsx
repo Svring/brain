@@ -66,7 +66,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ projectName }) => {
       href={`/projects/${encodeURIComponent(projectName)}`}
     >
       <motion.div
-        className="relative flex min-h-[160px] w-full cursor-pointer flex-col rounded-lg border bg-background-secondary p-4 text-left shadow-sm hover:border-amber-50"
+        className={`relative flex min-h-[160px] w-full cursor-pointer flex-col rounded-lg border bg-background-secondary p-4 text-left shadow-sm ${
+          deleteProjectMutation.isPending
+            ? "border-theme-red"
+            : "hover:border-amber-50"
+        }`}
         transition={{ duration: 0.15, ease: "easeInOut" }}
       >
         {/* Triple dot menu */}

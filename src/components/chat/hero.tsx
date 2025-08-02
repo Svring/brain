@@ -14,8 +14,9 @@ interface ActionProps {
     | "secondary"
     | "ghost"
     | "link";
-  href: string;
+  href?: string;
   label: string;
+  onClick?: () => void;
 }
 
 export interface HeroProps extends React.HTMLAttributes<HTMLElement> {
@@ -151,9 +152,9 @@ const Hero = React.forwardRef<HTMLElement, HeroProps>(
                   <Button
                     key={index}
                     variant={action.variant || "default"}
-                    asChild
+                    onClick={action.onClick}
                   >
-                    <Link href={action.href}>{action.label}</Link>
+                    {action.label}
                   </Button>
                 ))}
               </div>

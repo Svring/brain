@@ -1,14 +1,18 @@
 "use client";
 
-import { Hero } from "@/components/main/hero";
+import { Hero } from "@/components/chat/hero";
 import { AiChatInput } from "@/components/ai/headless/ai-input";
 import { AiMessages } from "@/components/ai/headless/ai-messages";
 import { useCopilotChat } from "@copilotkit/react-core";
 import { motion, AnimatePresence } from "framer-motion";
+import { useCreateProjectDialog } from "@/hooks/project/use-project-create-dialog";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 export default function ChatPage() {
   const { visibleMessages } = useCopilotChat();
   const hasMessages = visibleMessages.length > 0;
+  const { openDialog, CreateProjectDialog } = useCreateProjectDialog();
 
   return (
     <div className="min-h-screen w-full flex flex-col">
@@ -28,6 +32,13 @@ export default function ChatPage() {
               titleClassName="text-5xl md:text-6xl font-extrabold"
               subtitleClassName="text-lg md:text-xl max-w-[600px]"
               actionsClassName="mt-4"
+              actions={[
+                {
+                  variant: "outline",
+                  label: "Create From Template",
+                  onClick: openDialog,
+                },
+              ]}
             />
             <div className="container mx-auto px-4 py-8">
               <AiChatInput className="max-w-3xl mx-auto" />
@@ -63,6 +74,7 @@ export default function ChatPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      <CreateProjectDialog />
     </div>
   );
 }

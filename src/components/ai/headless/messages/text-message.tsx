@@ -33,14 +33,14 @@ export function RenderTextMessage({
           isLoading && "animate-pulse"
         )}
       >
-        <AnimatedMarkdown
+        {/* <AnimatedMarkdown
           content={message.content ?? ""}
           animation="fadeIn"
           animationDuration="0.2s"
           animationTimingFunction="ease-in-out"
-        />
+        /> */}
 
-        {/* <p>{message.content ?? ""}</p> */}
+        <p>{message.content ?? ""}</p>
 
         {isLoading && (
           <div className="flex items-center gap-2 text-xs opacity-70">
