@@ -48,7 +48,7 @@ export function useDeleteAppMutation(context: SealosApiContext) {
   });
 }
 
-export function usePauseAppMutation(context: SealosApiContext) {
+export function useStopAppMutation(context: SealosApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: AppPauseRequest) =>

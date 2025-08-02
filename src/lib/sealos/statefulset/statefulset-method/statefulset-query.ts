@@ -11,7 +11,6 @@ import {
   convertResourceTypeToTarget,
   convertResourceToTarget,
 } from "@/lib/k8s/k8s-method/k8s-utils";
-import { buildQueryKey } from "@/lib/k8s/k8s-constant/k8s-constant-query-key";
 
 export const getStatefulSet = async (
   context: K8sApiContext,
@@ -50,11 +49,7 @@ export const getStatefulSetOptions = (
   target: BuiltinResourceTarget
 ) =>
   queryOptions({
-    queryKey: buildQueryKey.getBuiltinResource(
-      context.namespace,
-      target.resourceType,
-      target.name!
-    ),
+    queryKey: ["statefulset", target.name],
     queryFn: async () => await getStatefulSet(context, target),
     enabled: !!context.namespace && !!target.name && !!context.kubeconfig,
   });
@@ -64,10 +59,7 @@ export const getStatefulSetOptions = (
  */
 export const listStatefulSetOptions = (context: K8sApiContext) =>
   queryOptions({
-    queryKey: buildQueryKey.listBuiltinResources(
-      context.namespace,
-      "statefulset"
-    ),
+    queryKey: ["statefulset"],
     queryFn: async () => await listStatefulSet(context),
     enabled: !!context.namespace && !!context.kubeconfig,
     staleTime: 1000 * 30,

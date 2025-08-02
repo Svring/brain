@@ -29,8 +29,7 @@ export function useCreateDevboxMutation(context: DevboxApiContext) {
     mutationFn: (request: DevboxCreateRequest) =>
       runParallelAction(createDevbox(request, context)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sealos", "devbox", "list"] });
-      queryClient.invalidateQueries({ queryKey: ["inventory", "devboxes"] });
+      queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
   });
 }
@@ -40,17 +39,8 @@ export function useManageDevboxLifecycleMutation(context: DevboxApiContext) {
   return useMutation({
     mutationFn: (request: DevboxLifecycleRequest) =>
       runParallelAction(manageDevboxLifecycle(request, context)),
-    onSuccess: (_data, variables) => {
-      if (
-        variables &&
-        typeof variables === "object" &&
-        "devboxName" in variables
-      ) {
-        queryClient.invalidateQueries({
-          queryKey: ["sealos", "devbox", "get", variables.devboxName],
-        });
-      }
-      queryClient.invalidateQueries({ queryKey: ["sealos", "devbox"] });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
   });
 }
@@ -61,7 +51,7 @@ export function useDeleteDevboxMutation(context: DevboxApiContext) {
     mutationFn: (devboxName: string) =>
       runParallelAction(deleteDevbox(devboxName, context)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sealos", "devbox"] });
+      queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
   });
 }
@@ -71,16 +61,8 @@ export function useReleaseDevboxMutation(context: DevboxApiContext) {
   return useMutation({
     mutationFn: (request: DevboxReleaseRequest) =>
       runParallelAction(releaseDevbox(request, context)),
-    onSuccess: (_data, variables) => {
-      if (
-        variables &&
-        typeof variables === "object" &&
-        "devboxName" in variables
-      ) {
-        queryClient.invalidateQueries({
-          queryKey: ["sealos", "devbox", "releases", variables.devboxName],
-        });
-      }
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
   });
 }
@@ -90,17 +72,8 @@ export function useDeployDevboxMutation(context: DevboxApiContext) {
   return useMutation({
     mutationFn: (request: DevboxDeployRequest) =>
       runParallelAction(deployDevbox(request, context)),
-    onSuccess: (_data, variables) => {
-      if (
-        variables &&
-        typeof variables === "object" &&
-        "devboxName" in variables
-      ) {
-        queryClient.invalidateQueries({
-          queryKey: ["sealos", "devbox", "get", variables.devboxName],
-        });
-        queryClient.invalidateQueries({ queryKey: ["inventory", "devboxes"] });
-      }
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
   });
 }
@@ -110,16 +83,8 @@ export function useCreateDevboxPortMutation(context: DevboxApiContext) {
   return useMutation({
     mutationFn: (request: DevboxPortCreateRequest) =>
       runParallelAction(createDevboxPort(request, context)),
-    onSuccess: (_data, variables) => {
-      if (
-        variables &&
-        typeof variables === "object" &&
-        "devboxName" in variables
-      ) {
-        queryClient.invalidateQueries({
-          queryKey: ["sealos", "devbox", "get", variables.devboxName],
-        });
-      }
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
   });
 }
@@ -129,16 +94,8 @@ export function useRemoveDevboxPortMutation(context: DevboxApiContext) {
   return useMutation({
     mutationFn: ({ devboxName, port }: { devboxName: string; port: number }) =>
       runParallelAction(removeDevboxPort(devboxName, port, context)),
-    onSuccess: (_data, variables) => {
-      if (
-        variables &&
-        typeof variables === "object" &&
-        "devboxName" in variables
-      ) {
-        queryClient.invalidateQueries({
-          queryKey: ["sealos", "devbox", "get", variables.devboxName],
-        });
-      }
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
   });
 }
@@ -149,7 +106,7 @@ export function useCreateAppMutation(context: DevboxApiContext) {
     mutationFn: (appForm: AppFormConfig) =>
       runParallelAction(createApp(appForm, context)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sealos", "app", "list"] });
+      queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
   });
 }
@@ -160,7 +117,7 @@ export function useDeleteAppMutation(context: DevboxApiContext) {
     mutationFn: (appName: string) =>
       runParallelAction(deleteApp(appName, context)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sealos", "app", "list"] });
+      queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
   });
 }

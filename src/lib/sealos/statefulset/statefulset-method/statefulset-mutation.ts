@@ -21,10 +21,7 @@ export function useCreateStatefulSetMutation(context: SealosApiContext) {
       runParallelAction(createApp(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["sealos", "statefulset", "list"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["inventory", "statefulsets"],
+        queryKey: ["statefulset"],
       });
     },
   });
@@ -37,10 +34,7 @@ export function useDeleteStatefulSetMutation(context: SealosApiContext) {
       runParallelAction(deleteApp(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["sealos", "statefulset", "list"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["inventory", "statefulsets"],
+        queryKey: ["statefulset"],
       });
     },
   });
@@ -51,15 +45,9 @@ export function usePauseStatefulSetMutation(context: SealosApiContext) {
   return useMutation({
     mutationFn: (request: AppPauseRequest) =>
       runParallelAction(pauseApp(request, context)),
-    onSuccess: (_data, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["sealos", "statefulset", "list"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["inventory", "statefulsets"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["sealos", "statefulset", "get", variables.appName],
+        queryKey: ["statefulset"],
       });
     },
   });
@@ -70,15 +58,9 @@ export function useStartStatefulSetMutation(context: SealosApiContext) {
   return useMutation({
     mutationFn: (request: AppStartRequest) =>
       runParallelAction(startApp(request, context)),
-    onSuccess: (_data, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["sealos", "statefulset", "list"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["inventory", "statefulsets"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["sealos", "statefulset", "get", variables.appName],
+        queryKey: ["statefulset"],
       });
     },
   });

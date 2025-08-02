@@ -20,8 +20,7 @@ export function useCreateDeployMutation(context: SealosApiContext) {
     mutationFn: (request: AppCreateRequest) =>
       runParallelAction(createApp(request, context)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sealos", "deploy", "list"] });
-      queryClient.invalidateQueries({ queryKey: ["inventory", "deployments"] });
+      queryClient.invalidateQueries({ queryKey: ["deployment"] });
     },
   });
 }
@@ -32,8 +31,7 @@ export function useDeleteDeployMutation(context: SealosApiContext) {
     mutationFn: (request: AppDeleteRequest) =>
       runParallelAction(deleteApp(request, context)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sealos", "deploy", "list"] });
-      queryClient.invalidateQueries({ queryKey: ["inventory", "deployments"] });
+      queryClient.invalidateQueries({ queryKey: ["deployment"] });
     },
   });
 }
@@ -43,12 +41,8 @@ export function usePauseDeployMutation(context: SealosApiContext) {
   return useMutation({
     mutationFn: (request: AppPauseRequest) =>
       runParallelAction(pauseApp(request, context)),
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["sealos", "deploy", "list"] });
-      queryClient.invalidateQueries({ queryKey: ["inventory", "deployments"] });
-      queryClient.invalidateQueries({
-        queryKey: ["sealos", "deploy", "get", variables.appName],
-      });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["deployment"] });
     },
   });
 }
@@ -58,12 +52,8 @@ export function useStartDeployMutation(context: SealosApiContext) {
   return useMutation({
     mutationFn: (request: AppStartRequest) =>
       runParallelAction(startApp(request, context)),
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["sealos", "deploy", "list"] });
-      queryClient.invalidateQueries({ queryKey: ["inventory", "deployments"] });
-      queryClient.invalidateQueries({
-        queryKey: ["sealos", "deploy", "get", variables.appName],
-      });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["deployment"] });
     },
   });
 }

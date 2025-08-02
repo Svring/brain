@@ -87,7 +87,7 @@ export default function DevboxNode({
                 />
 
                 {/* Actions Dropdown Menu */}
-                <DevboxNodeMenu devboxName={name} />
+                <DevboxNodeMenu target={target} />
               </div>
             </div>
 

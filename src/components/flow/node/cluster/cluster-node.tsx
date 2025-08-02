@@ -40,7 +40,7 @@ export default function ClusterNode({
         <div className="flex items-center justify-between">
           <ClusterNodeTitle name={name} type={type} />
           <div className="flex-shrink-0">
-            <ClusterNodeMenu />
+            <ClusterNodeMenu clusterName={name} />
           </div>
         </div>
 

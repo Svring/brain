@@ -4,7 +4,7 @@ import { useCopilotAction } from "@copilotkit/react-core";
 import {
   useCreateAppMutation,
   useDeleteAppMutation,
-  usePauseAppMutation,
+  useStopAppMutation,
   useStartAppMutation,
   useCheckReadyAppMutation,
 } from "@/lib/sealos/app/app-method/app-mutation";
@@ -138,7 +138,7 @@ function startAppAction(context: SealosApiContext) {
 }
 
 function stopAppAction(context: SealosApiContext) {
-  const pauseApp = usePauseAppMutation(context);
+  const pauseApp = useStopAppMutation(context);
 
   useCopilotAction({
     name: "stopApp",

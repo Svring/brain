@@ -16,32 +16,31 @@ import {
   PencilLine,
 } from "lucide-react";
 import { createK8sContext, createDevboxContext } from "@/lib/auth/auth-utils";
-import { getDevboxOptions } from "@/lib/sealos/devbox/devbox-method/devbox-query";
 import {
   useDeleteDevboxMutation,
   useManageDevboxLifecycleMutation,
 } from "@/lib/sealos/devbox/devbox-method/devbox-mutation";
-import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import useDevboxNode from "@/hooks/sealos/devbox/use-devbox-node";
 
-export default function DevboxNodeMenu({ devboxName }: { devboxName: string }) {
+export default function DevboxNodeMenu({
+  target,
+}: {
+  target: CustomResourceTarget;
+}) {
   const k8sContext = createK8sContext();
   const devboxContext = createDevboxContext();
 
-  const target = CustomResourceTargetSchema.parse(
-    convertResourceTypeToTarget("devbox", devboxName)
-  );
-  const { data: status } = useQuery({
-    ...getDevboxOptions(k8sContext, target),
-    select: (data) => data?.status,
-  });
+  const { data, isLoading } = useDevboxNode(k8sContext, target);
 
   const deleteDevbox = useDeleteDevboxMutation(devboxContext);
   const manageDevboxLifecycle = useManageDevboxLifecycleMutation(devboxContext);
 
-  if (!status) {
+  if (isLoading || !data) {
     return null;
   }
+
+  const { name: devboxName, status } = data;
 
   return (
     <DropdownMenu>
@@ -61,9 +60,10 @@ export default function DevboxNodeMenu({ devboxName }: { devboxName: string }) {
       >
         {status !== "Running" && (
           <DropdownMenuItem
-            onClick={() =>
-              manageDevboxLifecycle.mutate({ devboxName, action: "start" })
-            }
+            onClick={(e) => {
+              e.stopPropagation();
+              manageDevboxLifecycle.mutate({ devboxName, action: "start" });
+            }}
             disabled={status === "Pending"}
             className={status === "Pending" ? "opacity-50" : ""}
           >
@@ -73,9 +73,10 @@ export default function DevboxNodeMenu({ devboxName }: { devboxName: string }) {
         )}
         {status !== "Stopped" && status !== "Shutdown" && (
           <DropdownMenuItem
-            onClick={() =>
-              manageDevboxLifecycle.mutate({ devboxName, action: "stop" })
-            }
+            onClick={(e) => {
+              e.stopPropagation();
+              manageDevboxLifecycle.mutate({ devboxName, action: "stop" });
+            }}
             disabled={status === "Pending"}
             className={status === "Pending" ? "opacity-50" : ""}
           >
@@ -84,9 +85,10 @@ export default function DevboxNodeMenu({ devboxName }: { devboxName: string }) {
           </DropdownMenuItem>
         )}
         <DropdownMenuItem
-          onClick={() =>
-            manageDevboxLifecycle.mutate({ devboxName, action: "restart" })
-          }
+          onClick={(e) => {
+            e.stopPropagation();
+            manageDevboxLifecycle.mutate({ devboxName, action: "restart" });
+          }}
           disabled={status === "Pending"}
           className={status === "Pending" ? "opacity-50" : ""}
         >
@@ -94,7 +96,10 @@ export default function DevboxNodeMenu({ devboxName }: { devboxName: string }) {
           Restart
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => deleteDevbox.mutate(devboxName)}
+          onClick={(e) => {
+            e.stopPropagation();
+            deleteDevbox.mutate(devboxName);
+          }}
           className={`text-destructive ${
             status === "Pending" ? "opacity-50" : ""
           }`}

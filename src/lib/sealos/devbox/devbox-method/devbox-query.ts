@@ -73,7 +73,7 @@ export const getDevboxOptions = (
   target: CustomResourceTarget
 ) =>
   queryOptions({
-    queryKey: buildQueryKey.getDevbox(context.namespace, target.name!),
+    queryKey: ["devbox", target.name],
     queryFn: async () => await getDevbox(context, target),
     enabled:
       !!target.group &&
@@ -89,7 +89,7 @@ export const getDevboxOptions = (
  */
 export const listDevboxOptions = (context: K8sApiContext) =>
   queryOptions({
-    queryKey: buildQueryKey.listDevboxes(context.namespace),
+    queryKey: ["devbox"],
     queryFn: async () => await listDevbox(context),
     enabled: !!context.namespace && !!context.kubeconfig,
     staleTime: 1000 * 30,

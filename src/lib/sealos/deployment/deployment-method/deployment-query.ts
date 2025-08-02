@@ -50,11 +50,7 @@ export const getDeploymentOptions = (
   target: BuiltinResourceTarget
 ) =>
   queryOptions({
-    queryKey: buildQueryKey.getBuiltinResource(
-      context.namespace,
-      target.resourceType,
-      target.name!
-    ),
+    queryKey: ["deployment", target.name],
     queryFn: async () => await getDeployment(context, target),
     enabled: !!context.namespace && !!target.name && !!context.kubeconfig,
   });
@@ -64,10 +60,7 @@ export const getDeploymentOptions = (
  */
 export const listDeploymentOptions = (context: K8sApiContext) =>
   queryOptions({
-    queryKey: buildQueryKey.listBuiltinResources(
-      context.namespace,
-      "deployment"
-    ),
+    queryKey: ["deployment"],
     queryFn: async () => await listDeployment(context),
     enabled: !!context.namespace && !!context.kubeconfig,
     staleTime: 1000 * 30,

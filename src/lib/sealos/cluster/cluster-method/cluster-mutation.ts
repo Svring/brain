@@ -58,7 +58,7 @@ export function useStartClusterMutation(context: ClusterApiContext) {
   });
 }
 
-export function usePauseClusterMutation(context: ClusterApiContext) {
+export function useStopClusterMutation(context: ClusterApiContext) {
   const queryClient = useQueryClient();
   return useMutation<ClusterPauseResponse, unknown, ClusterPauseRequest>({
     mutationFn: (request: ClusterPauseRequest) =>

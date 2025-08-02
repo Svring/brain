@@ -26,15 +26,13 @@ export default function DeploymentNode({
 
   const { name, image, status, ports, pods } = data;
 
-  // console.log("deployment data", data);
-
   return (
     <BaseNode target={target} nodeData={data}>
       <div className="flex h-full flex-col gap-2 justify-between">
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
           <DeploymentNodeTitle name={name} />
-          <DeploymentNodeMenu />
+          <DeploymentNodeMenu target={target} />
         </div>
 
         {/* Image with Package Icon */}

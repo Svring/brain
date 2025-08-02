@@ -31,7 +31,7 @@ export default function StatefulsetNode({
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
           <StatefulsetNodeTitle name={name} />
-          <StatefulsetNodeMenu />
+          <StatefulsetNodeMenu target={target} />
         </div>
 
         {/* Image with Package Icon */}
@@ -45,8 +45,8 @@ export default function StatefulsetNode({
         {/* Bottom section with status and icons */}
         <div className="mt-auto flex justify-between items-center">
           {/* Left: Status light */}
-          <NodeStatusLight 
-            status={status.unavailableReplicas > 0 ? "Error" : "Running"} 
+          <NodeStatusLight
+            status={status.unavailableReplicas > 0 ? "Error" : "Running"}
           />
 
           {/* Right: Icon components */}
