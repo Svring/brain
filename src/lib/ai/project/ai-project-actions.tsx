@@ -1,5 +1,5 @@
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   listProjectsOptions,
   getProjectResourcesOptions,
@@ -65,13 +65,14 @@ export const createProjectAction = (context: K8sApiContext) => {
 };
 
 export const listProjectAction = (context: K8sApiContext) => {
-  const { data } = useQuery(listProjectsOptions(context));
-  console.log("listProjectAction", data);
+  const queryClient = useQueryClient();
 
   useCopilotAction({
     name: "listProjects",
     description: "List all projects",
-    handler: () => data?.items,
+    handler: () => {
+      return queryClient.fetchQuery(listProjectsOptions(context));
+    },
   });
 };
 

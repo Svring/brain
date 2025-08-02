@@ -1,8 +1,18 @@
+import { queryOptions } from "@tanstack/react-query";
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import { SealosApiContext } from "../../sealos-api-context-schema";
-import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { getDeployment } from "../../deployment/deployment-method/deployment-query";
-import { getStatefulSet } from "../../statefulset/statefulset-method/statefulset-query";
+import {
+  BuiltinResourceTarget,
+  BuiltinResourceTargetSchema,
+} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import {
+  getDeployment,
+  listDeployment,
+} from "../../deployment/deployment-method/deployment-query";
+import {
+  getStatefulSet,
+  listStatefulSet,
+} from "../../statefulset/statefulset-method/statefulset-query";
 import { queryLogs } from "../app-api/app-old-api";
 import {
   QueryLogsRequest,
@@ -10,6 +20,11 @@ import {
   QueryLogsResponseSchema,
 } from "../app-api/app-old-api-schemas/req-res-query-logs-schemas";
 import { runParallelAction } from "next-server-actions-parallel";
+import {
+  convertResourceTypeToTarget,
+  convertResourceToTarget,
+} from "@/lib/k8s/k8s-method/k8s-utils";
+import { buildQueryKey } from "@/lib/k8s/k8s-constant/k8s-constant-query-key";
 
 export const getApp = async (
   context: K8sApiContext,
@@ -25,6 +40,17 @@ export const getApp = async (
         `Resource type ${target.resourceType} is not supported for app queries`
       );
   }
+};
+
+export const listApp = async (context: K8sApiContext) => {
+  // Get both deployments and statefulsets
+  const [deployments, statefulsets] = await Promise.all([
+    listDeployment(context),
+    listStatefulSet(context),
+  ]);
+
+  // Combine both lists
+  return [...deployments, ...statefulsets];
 };
 
 export const queryAppLogs = async (
@@ -55,7 +81,53 @@ export const queryAppLogs = async (
   const logResponse = await runParallelAction(
     queryLogs(validatedRequest, sealosContext)
   );
-  console.log("queryAppLogs logResponse", logResponse);
   // Validate and return the response
   return QueryLogsResponseSchema.parse(logResponse);
 };
+
+// ============================================================================
+// OPTIONS FUNCTIONS (React Query wrappers)
+// ============================================================================
+
+/**
+ * Query options for getting an app by target
+ */
+export const getAppOptions = (
+  context: K8sApiContext,
+  target: BuiltinResourceTarget
+) =>
+  queryOptions({
+    queryKey: buildQueryKey.getBuiltinResource(
+      context.namespace,
+      target.resourceType,
+      target.name!
+    ),
+    queryFn: async () => await getApp(context, target),
+    enabled: !!context.namespace && !!target.name && !!context.kubeconfig,
+  });
+
+/**
+ * Query options for listing apps
+ */
+export const listAppOptions = (context: K8sApiContext) =>
+  queryOptions({
+    queryKey: buildQueryKey.listBuiltinResources(context.namespace, "app"),
+    queryFn: async () => await listApp(context),
+    enabled: !!context.namespace && !!context.kubeconfig,
+    staleTime: 1000 * 30,
+  });
+
+/**
+ * Query options for querying app logs
+ */
+export const queryAppLogsOptions = (
+  k8sContext: K8sApiContext,
+  sealosContext: SealosApiContext,
+  target: BuiltinResourceTarget
+) =>
+  queryOptions({
+    queryKey: ["app", "logs", k8sContext.namespace, target.name],
+    queryFn: async () => await queryAppLogs(k8sContext, sealosContext, target),
+    enabled: !!k8sContext.namespace && !!target.name && !!k8sContext.kubeconfig,
+    staleTime: 1000 * 10, // Logs are more dynamic, shorter stale time
+  });

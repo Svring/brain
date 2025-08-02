@@ -1,6 +1,6 @@
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   listClusterOptions,
   getClusterOptions,
@@ -117,12 +117,14 @@ export const createClusterAction = (context: SealosApiContext) => {
 };
 
 export const listClusterAction = (context: K8sApiContext) => {
-  const { data } = useQuery(listClusterOptions(context));
+  const queryClient = useQueryClient();
 
   useCopilotAction({
     name: "listClusters",
     description: "List all database clusters",
-    handler: () => data,
+    handler: async () => {
+      return await queryClient.fetchQuery(listClusterOptions(context));
+    },
   });
 };
 

@@ -8,14 +8,28 @@ import {
   useStartAppMutation,
   useCheckReadyAppMutation,
 } from "@/lib/sealos/app/app-method/app-mutation";
+import {
+  listAppOptions,
+  getAppOptions,
+  queryAppLogsOptions,
+} from "@/lib/sealos/app/app-method/app-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
+import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
+import { BuiltinResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
-export function activateAppActions(context: SealosApiContext) {
-  createAppAction(context);
-  deleteAppAction(context);
-  startAppAction(context);
-  stopAppAction(context);
-  checkReadyAppAction(context);
+export function activateAppActions(
+  sealosContext: SealosApiContext,
+  k8sContext: K8sApiContext
+) {
+  createAppAction(sealosContext);
+  deleteAppAction(sealosContext);
+  startAppAction(sealosContext);
+  stopAppAction(sealosContext);
+  checkReadyAppAction(sealosContext);
+  listAppAction(k8sContext);
+  getAppAction(k8sContext);
 }
 
 function createAppAction(context: SealosApiContext) {
@@ -171,6 +185,67 @@ function checkReadyAppAction(context: SealosApiContext) {
       const readyCount = result.data.filter((item: any) => item.ready).length;
 
       return `Application '${appName}' readiness check: ${readyCount}/${result.data.length} endpoints ready.`;
+    },
+  });
+}
+
+function listAppAction(context: K8sApiContext) {
+  const queryClient = useQueryClient();
+
+  useCopilotAction({
+    name: "listApps",
+    description: "List all applications (deployments and statefulsets)",
+    parameters: [],
+    handler: async () => {
+      const apps = await queryClient.fetchQuery(listAppOptions(context));
+
+      if (!apps || apps.length === 0) {
+        return "No applications found.";
+      }
+
+      const appNames = apps
+        .map((app: any) => app.metadata?.name)
+        .filter(Boolean);
+
+      return `Found ${appNames.length} applications: ${appNames.join(", ")}`;
+    },
+  });
+}
+
+function getAppAction(context: K8sApiContext) {
+  const queryClient = useQueryClient();
+
+  useCopilotAction({
+    name: "getApp",
+    description: "Get details of a specific application",
+    parameters: [
+      {
+        name: "appName",
+        type: "string",
+        description: "Name of the application to get details for",
+        required: true,
+      },
+      {
+        name: "resourceType",
+        type: "string",
+        description: "Type of resource (deployment or statefulset)",
+        required: false,
+      },
+    ],
+    handler: async ({ appName, resourceType }) => {
+      const type = resourceType || "deployment";
+      const target = BuiltinResourceTargetSchema.parse({
+        ...convertResourceTypeToTarget(type),
+        name: appName,
+      });
+
+      const app = await queryClient.fetchQuery(getAppOptions(context, target));
+
+      return `Application '${appName}' details: Status: ${
+        (app as any).status?.readyReplicas || 0
+      }/${(app as any).spec?.replicas || 0} replicas ready, Image: ${
+        (app as any).spec?.template?.spec?.containers?.[0]?.image || "Unknown"
+      }`;
     },
   });
 }

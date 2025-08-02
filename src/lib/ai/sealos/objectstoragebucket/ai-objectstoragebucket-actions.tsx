@@ -1,7 +1,7 @@
 "use client";
 
 import { useCopilotAction } from "@copilotkit/react-core";
-import { useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   getObjectStorageOptions,
   listObjectStorageOptions,
@@ -63,13 +63,15 @@ function createObjectStorageBucketAction(sealosContext: SealosApiContext) {
 }
 
 function listObjectStorageBucketAction(k8sContext: K8sApiContext) {
-  const { data: bucketList } = useQuery(listObjectStorageOptions(k8sContext));
+  const queryClient = useQueryClient();
 
   useCopilotAction({
     name: "listObjectStorageBuckets",
     description: "List all object storage buckets",
     parameters: [],
     handler: async () => {
+      const bucketList = await queryClient.fetchQuery(listObjectStorageOptions(k8sContext));
+      
       if (!bucketList || !Array.isArray(bucketList)) {
         return "No buckets found or data not loaded yet.";
       }
@@ -84,6 +86,8 @@ function listObjectStorageBucketAction(k8sContext: K8sApiContext) {
 }
 
 function getObjectStorageBucketAction(k8sContext: K8sApiContext) {
+  const queryClient = useQueryClient();
+  
   useCopilotAction({
     name: "getObjectStorageBucket",
     description: "Get details of a specific object storage bucket",
@@ -97,10 +101,10 @@ function getObjectStorageBucketAction(k8sContext: K8sApiContext) {
     ],
     handler: async ({ bucketName }) => {
       const target = CustomResourceTargetSchema.parse({
-        type: "objectstoragebucket",
+        ...convertResourceTypeToTarget("objectstoragebucket"),
         name: bucketName,
       });
-      const { data: bucket } = useQuery(
+      const bucket = await queryClient.fetchQuery(
         getObjectStorageOptions(k8sContext, target)
       );
 

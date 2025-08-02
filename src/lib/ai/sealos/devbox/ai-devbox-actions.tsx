@@ -36,13 +36,14 @@ export const activateDevboxActions = (
 export const createDevboxAction = (context: DevboxApiContext) => {};
 
 export const listDevboxAction = (context: K8sApiContext) => {
-  const { data } = useQuery(listDevboxOptions(context));
-  console.log("listDevboxAction", data);
+  const queryClient = useQueryClient();
 
   useCopilotAction({
     name: "listDevboxes",
     description: "List all devboxes",
-    handler: () => data,
+    handler: () => {
+      return queryClient.fetchQuery(listDevboxOptions(context));
+    },
   });
 };
 
