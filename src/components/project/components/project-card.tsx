@@ -53,7 +53,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ projectName }) => {
   return (
     <Link
       className="block h-full w-full"
-      href={`/project/${encodeURIComponent(projectName)}`}
+      href={`/projects/${encodeURIComponent(projectName)}`}
     >
       <motion.div
         className="relative flex min-h-[160px] w-full cursor-pointer flex-col rounded-lg border bg-background-secondary p-4 text-left shadow-sm hover:border-amber-50"

@@ -6,7 +6,7 @@ import { AiMessages } from "@/components/ai/headless/ai-messages";
 import { useCopilotChat } from "@copilotkit/react-core";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function MainPage() {
+export default function ChatPage() {
   const { visibleMessages } = useCopilotChat();
   const hasMessages = visibleMessages.length > 0;
 

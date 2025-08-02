@@ -22,7 +22,7 @@ export const openProjectAction = () => {
       },
     ],
     handler: async ({ projectName }) => {
-      router.push(`project/${projectName}`);
+      router.push(`projects/${projectName}`);
       return `Successfully opened project: ${projectName}`;
     },
   });

@@ -1,6 +1,6 @@
 "use client";
 
-import { Globe, Plus, LayoutGrid } from "lucide-react";
+import { MessageCirclePlus, LayoutGrid } from "lucide-react";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { RegionSwitcher } from "@/components/app/sidebar/region-switcher";
 import {
@@ -21,16 +21,16 @@ import AIAccess from "./ai-access";
 // Constants
 const NAVIGATION_ITEMS: NavigationItem[] = [
   {
-    title: "home",
-    icon: Plus,
+    title: "chat",
+    icon: MessageCirclePlus,
     group: "overview",
-    path: "/main",
+    path: "/chat",
   },
   {
     title: "projects",
     icon: LayoutGrid,
     group: "overview",
-    path: "/project",
+    path: "/projects",
   },
 ];
 

@@ -21,6 +21,7 @@ export const getClusterRelatedResources = async (
       "rolebinding",
       "secret",
       "pod",
+      "cronjob",
     ],
     customResources ?? ["backups"]
   );
