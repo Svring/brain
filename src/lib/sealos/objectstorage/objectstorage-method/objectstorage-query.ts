@@ -4,7 +4,7 @@ import {
   CustomResourceTarget,
   CustomResourceTargetSchema,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { getObjectStorageObject } from "@/lib/algorithm/bridge/bridge-resources/objectstorage/objectstorage-bridge";
+import { getObjectStorageObject } from "@/lib/algorithm/bridge/bridge-resources/objectstorage/objectstorage-bridge-query";
 import { listCustomResources } from "@/lib/k8s/k8s-api/k8s-api-query";
 import { runParallelAction } from "next-server-actions-parallel";
 import {
@@ -19,6 +19,7 @@ export const getObjectStorage = async (
 ) => {
   // Test the new composeObjectFromTarget function
   const objectStorageObject = await getObjectStorageObject(context, target);
+  console.log("objectStorageObject", objectStorageObject);
   return objectStorageObject;
 };
 

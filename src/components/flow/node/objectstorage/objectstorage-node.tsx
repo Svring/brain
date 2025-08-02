@@ -5,6 +5,7 @@ import { createK8sContext } from "@/lib/auth/auth-utils";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import useObjectStorageNode from "@/hooks/sealos/objectstorage/use-objectstorage-node";
 import Image from "next/image";
+import ObjectStoragePolicyBadge from "./objectstorage-policy-badge";
 
 interface ObjectStorageNodeProps {
   target: CustomResourceTarget;
@@ -18,11 +19,11 @@ export default function ObjectStorageNode({
   const context = createK8sContext();
   const { data, isLoading } = useObjectStorageNode(context, target);
 
-  if (isLoading) {
+  if (isLoading || !data) {
     return null;
   }
 
-  const { name } = data;
+  const { name, policy } = data;
 
   return (
     <BaseNode target={target} nodeData={data}>
@@ -49,6 +50,11 @@ export default function ObjectStorageNode({
               </span>
             </span>
           </div>
+        </div>
+
+        {/* Policy Badge */}
+        <div className="flex justify-start">
+          <ObjectStoragePolicyBadge policy={policy} />
         </div>
       </div>
     </BaseNode>

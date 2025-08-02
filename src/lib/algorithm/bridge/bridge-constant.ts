@@ -6,7 +6,7 @@ import { DevboxObjectQuerySchema } from "@/lib/sealos/devbox/devbox-schemas/devb
 import { ClusterObjectQuerySchema } from "@/lib/sealos/cluster/cluster-schemas/cluster-object-query-schema";
 import { DeploymentObjectQuerySchema } from "@/lib/sealos/deployment/deployment-object-query-schema";
 import { StatefulsetObjectSchema } from "@/lib/sealos/statefulset/statefulset-object-schema";
-import { ObjectStorageBucketObjectSchema } from "@/lib/sealos/objectstorage/objectstorage-schemas/objectstorage-object-schema";
+import { ObjectStorageBucketObjectQuerySchema } from "@/lib/sealos/objectstorage/objectstorage-schemas/objectstorage-object-query-schema";
 
 /**
  * Map of resource types to their corresponding Zod schemas
@@ -17,7 +17,7 @@ export const RESOURCE_SCHEMA_MAP: Record<string, z.ZodObject<any>> = {
   cluster: ClusterObjectQuerySchema,
   deployment: DeploymentObjectQuerySchema,
   statefulset: StatefulsetObjectSchema,
-  objectstoragebucket: ObjectStorageBucketObjectSchema,
+  objectstoragebucket: ObjectStorageBucketObjectQuerySchema,
   ingress: IngressObjectSchema,
   // Add more resource schemas here as they become available
   // example: "pod": PodObjectSchema,

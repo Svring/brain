@@ -1,72 +1,29 @@
 import { z } from "zod";
 
-export const ObjectStorageBucketObjectSchema = z.object({
-  name: z.string().describe(
-    JSON.stringify({
-      resourceType: "objectstoragebucket",
-      path: ["metadata.name"],
-    })
-  ),
-  policy: z.string().describe(
-    JSON.stringify({
-      resourceType: "objectstoragebucket",
-      path: ["spec.policy"],
-    })
-  ),
-  access: z.object({
-    accessKey: z
-      .string()
-      .describe(
-        JSON.stringify({
-          resourceType: "secret",
-          name: "^object-storage-key-.*-{{instanceName}}$",
-          path: ["data.accessKey"],
-        })
-      )
-      .transform((val) => Buffer.from(val, "base64").toString("utf-8")),
-    bucket: z
-      .string()
-      .describe(
-        JSON.stringify({
-          resourceType: "secret",
-          name: "^object-storage-key-.*-{{instanceName}}$",
-          path: ["data.bucket"],
-        })
-      )
-      .transform((val) => Buffer.from(val, "base64").toString("utf-8")),
-    external: z
-      .string()
-      .describe(
-        JSON.stringify({
-          resourceType: "secret",
-          name: "^object-storage-key-.*-{{instanceName}}$",
-          path: ["data.external"],
-        })
-      )
-      .transform((val) => Buffer.from(val, "base64").toString("utf-8")),
-    internal: z
-      .string()
-      .describe(
-        JSON.stringify({
-          resourceType: "secret",
-          name: "^object-storage-key-.*-{{instanceName}}$",
-          path: ["data.internal"],
-        })
-      )
-      .transform((val) => Buffer.from(val, "base64").toString("utf-8")),
-    secretKey: z
-      .string()
-      .describe(
-        JSON.stringify({
-          resourceType: "secret",
-          name: "^object-storage-key-.*-{{instanceName}}$",
-          path: ["data.secretKey"],
-        })
-      )
-      .transform((val) => Buffer.from(val, "base64").toString("utf-8")),
-  }),
+// Object Storage Access Configuration Schema
+export const ObjectStorageAccessSchema = z.object({
+  accessKey: z.string(),
+  bucket: z.string(),
+  external: z.string(),
+  internal: z.string(),
+  secretKey: z.string(),
 });
 
-export type ObjectStorageBucketObject = z.infer<
-  typeof ObjectStorageBucketObjectSchema
->;
+// Object Storage Policy Enum
+export const ObjectStoragePolicySchema = z.enum([
+  "Private",
+  "PublicRead",
+  "PublicReadwrite",
+]);
+
+// Main Object Storage Object Schema
+export const ObjectStorageObjectSchema = z.object({
+  name: z.string(),
+  policy: ObjectStoragePolicySchema,
+  access: ObjectStorageAccessSchema,
+});
+
+// Type exports
+export type ObjectStorageAccess = z.infer<typeof ObjectStorageAccessSchema>;
+export type ObjectStoragePolicy = z.infer<typeof ObjectStoragePolicySchema>;
+export type ObjectStorageObject = z.infer<typeof ObjectStorageObjectSchema>;

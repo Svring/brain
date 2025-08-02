@@ -67,8 +67,8 @@ export function useFlow(context: K8sApiContext, projectName: string) {
     });
     setFlowData(positionedNodes, newEdges);
 
-    const reliance = inferRelianceFromTraffic(resource);
-    console.log("reliance", reliance);
+    // const reliance = inferRelianceFromTraffic(resource);
+    // console.log("reliance", reliance);
   }, [resources]);
 
   return [nodes, onNodesChange, edges, onEdgesChange, isLoading] as const;
