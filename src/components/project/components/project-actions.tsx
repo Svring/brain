@@ -2,6 +2,7 @@
 
 import { Plus, RefreshCw } from "lucide-react";
 import { MenuBar, MenuBarItem } from "./menu-bar";
+import { useFlowState } from "@/contexts/flow/flow-context";
 
 interface ProjectActionsProps {
   onAddNew: () => void;
@@ -9,7 +10,13 @@ interface ProjectActionsProps {
   isRefreshing: boolean;
 }
 
-export function ProjectActions({ onAddNew, onRefresh, isRefreshing }: ProjectActionsProps) {
+export function ProjectActions({
+  onAddNew,
+  onRefresh,
+  isRefreshing,
+}: ProjectActionsProps) {
+  const { nodes } = useFlowState();
+
   const menuItemsRight: MenuBarItem[] = [
     {
       icon: isRefreshing

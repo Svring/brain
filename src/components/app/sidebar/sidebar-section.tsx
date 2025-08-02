@@ -1,5 +1,6 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
+import { MessageCirclePlus, LayoutGrid } from "lucide-react";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -7,6 +8,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useQuery } from "@tanstack/react-query";
+import { listProjectsOptions } from "@/lib/project/project-method/project-query";
+import { createK8sContext } from "@/lib/auth/auth-utils";
 
 // Types
 export interface NavigationItem {
@@ -16,14 +25,27 @@ export interface NavigationItem {
   path: string;
 }
 
-export interface MainSectionProps {
-  navigationItems: NavigationItem[];
-}
+export interface MainSectionProps {}
 
-export const MainSection: React.FC<MainSectionProps> = ({
-  navigationItems,
-}) => {
+// Constants
+const NAVIGATION_ITEMS: NavigationItem[] = [
+  {
+    title: "chat",
+    icon: MessageCirclePlus,
+    group: "overview",
+    path: "/chat",
+  },
+  {
+    title: "projects",
+    icon: LayoutGrid,
+    group: "overview",
+    path: "/projects",
+  },
+];
+
+export const MainSection: React.FC<MainSectionProps> = () => {
   const router = useRouter();
+  const { data: projects } = useQuery(listProjectsOptions(createK8sContext()));
 
   const handleNavigation = (path: string) => {
     router.push(path);
@@ -33,16 +55,46 @@ export const MainSection: React.FC<MainSectionProps> = ({
     <SidebarGroup>
       <SidebarGroupContent>
         <SidebarMenu>
-          {navigationItems
-            .filter((item) => item.group === "overview")
-            .map((item) => (
+          {NAVIGATION_ITEMS.filter((item) => item.group === "overview").map(
+            (item) => (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton onClick={() => handleNavigation(item.path)}>
-                  <item.icon className="" />
-                  <span>{item.title}</span>
-                </SidebarMenuButton>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <SidebarMenuButton
+                      onClick={() => handleNavigation(item.path)}
+                    >
+                      <item.icon className="" />
+                      <span>{item.title}</span>
+                    </SidebarMenuButton>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" align="start">
+                    {item.title === "projects" && projects?.items ? (
+                      <div className="space-y-1">
+                        <p className="font-medium">Projects</p>
+                        <div className="max-h-48 overflow-y-auto">
+                          {projects.items.map((project) => (
+                            <div
+                              key={project.metadata.name}
+                              className="text-sm text-muted-foreground hover:text-foreground cursor-pointer px-2 py-1 rounded hover:bg-accent"
+                              onClick={() =>
+                                handleNavigation(
+                                  `/projects/${project.metadata.name}`
+                                )
+                              }
+                            >
+                              {project.metadata.name}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <p>{item.title}</p>
+                    )}
+                  </TooltipContent>
+                </Tooltip>
               </SidebarMenuItem>
-            ))}
+            )
+          )}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
