@@ -1,6 +1,6 @@
-import { useCallback } from 'react';
-import { useReactFlow, useOnSelectionChange } from '@xyflow/react';
-import { useFlowState } from '@/contexts/flow/flow-context';
+import { useCallback } from "react";
+import { useReactFlow, useOnSelectionChange } from "@xyflow/react";
+import { useFlowState } from "@/contexts/flow/flow-context";
 
 /**
  * Custom hook for auto-focusing on selected nodes in ReactFlow
@@ -45,14 +45,17 @@ export function useFlowFocus() {
   });
 
   // Handle node click to trigger selection
-  const onNodeClick = useCallback((_event: any, node: any) => {
-    // Don't trigger focus if currently dragging
-    if (isDragging) {
-      return;
-    }
-    // This will trigger the selection change which the onChange callback listens to
-    onChange({ nodes: [{ ...node, selected: true }] });
-  }, [onChange, isDragging]);
+  const onNodeClick = useCallback(
+    (_event: any, node: any) => {
+      // Don't trigger focus if currently dragging
+      if (isDragging) {
+        return;
+      }
+      // This will trigger the selection change which the onChange callback listens to
+      onChange({ nodes: [{ ...node, selected: true }] });
+    },
+    [onChange, isDragging]
+  );
 
   return { onNodeClick };
 }

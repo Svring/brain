@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,40 +9,34 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Pause, Trash2, PencilLine, Power } from "lucide-react";
 import { createK8sContext, createClusterContext } from "@/lib/auth/auth-utils";
-import { getClusterOptions } from "@/lib/sealos/cluster/cluster-method/cluster-query";
 import {
   useDeleteClusterMutation,
   useStartClusterMutation,
   useStopClusterMutation,
 } from "@/lib/sealos/cluster/cluster-method/cluster-mutation";
-import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import useClusterNode from "@/hooks/sealos/cluster/use-cluster-node";
 
 export default function ClusterNodeMenu({
-  clusterName,
+  target,
 }: {
-  clusterName: string;
+  target: CustomResourceTarget;
 }) {
   const k8sContext = createK8sContext();
   const clusterContext = createClusterContext();
 
-  const target = CustomResourceTargetSchema.parse(
-    convertResourceTypeToTarget("cluster", clusterName)
-  );
-  const { data: cluster } = useQuery({
-    ...getClusterOptions(k8sContext, target),
-    select: (data) => data,
-  });
+  const { data: cluster, isLoading } = useClusterNode(k8sContext, target);
 
   const deleteCluster = useDeleteClusterMutation(clusterContext);
   const startCluster = useStartClusterMutation(clusterContext);
   const stopCluster = useStopClusterMutation(clusterContext);
 
-  const status = cluster?.status;
-
   if (!cluster) {
     return null;
   }
+
+  const { name: clusterName, status } = cluster;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

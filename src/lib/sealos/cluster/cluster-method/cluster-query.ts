@@ -13,7 +13,11 @@ import {
   convertResourceToTarget,
 } from "@/lib/k8s/k8s-method/k8s-utils";
 import { buildQueryKey } from "@/lib/k8s/k8s-constant/k8s-constant-query-key";
-import { getLogFiles, getLog } from "../cluster-api/cluster-old-api";
+import {
+  getLogFiles,
+  getLog,
+  getBackupList,
+} from "../cluster-api/cluster-old-api";
 import { CLUSTER_LOG_TYPES } from "../cluster-constant/cluster-constant-logs";
 import { ifSupportLog, processLogData } from "../cluster-utils";
 import _ from "lodash";
@@ -41,6 +45,21 @@ export const listCluster = async (context: K8sApiContext) => {
     async (target) => await getCluster(context, target)
   );
   return await Promise.all(clusterPromises);
+};
+
+export const getClusterBackupList = async (
+  clusterContext: SealosApiContext,
+  target: CustomResourceTarget
+) => {
+  const backupListResponse = await runParallelAction(
+    getBackupList({ dbName: target.name! }, clusterContext)
+  );
+  return backupListResponse.data.map((item) => {
+    return {
+      name: item.metadata.name,
+      time: item.status?.completionTimestamp,
+    };
+  });
 };
 
 export const getClusterLogFiles = async (
@@ -177,6 +196,20 @@ export const listClusterOptions = (context: K8sApiContext) =>
     queryFn: async () => await listCluster(context),
     enabled: !!context.namespace && !!context.kubeconfig,
     staleTime: 1000 * 30,
+  });
+
+/**
+ * Query options for getting cluster backup list
+ */
+export const getClusterBackupListOptions = (
+  clusterContext: SealosApiContext,
+  target: CustomResourceTarget
+) =>
+  queryOptions({
+    queryKey: ["backups"],
+    queryFn: async () => await getClusterBackupList(clusterContext, target),
+    enabled: !!target.name && !!clusterContext.baseURL,
+    staleTime: 1000 * 60, // 1 minute
   });
 
 /**

@@ -7,6 +7,7 @@ import {
   startCluster,
   pauseCluster,
   deleteCluster,
+  deleteBackup,
 } from "../cluster-api/cluster-old-api";
 import type { ClusterApiContext } from "../schemas/cluster-api-context-schemas";
 import type {
@@ -25,6 +26,10 @@ import type {
   ClusterDeleteRequest,
   ClusterDeleteResponse,
 } from "../schemas/req-res-schemas/req-res-delete-schemas";
+import type {
+  ClusterBackupDeleteRequest,
+  ClusterBackupDeleteResponse,
+} from "../schemas/req-res-schemas/req-res-delete-backup-schemas";
 
 export function useCreateClusterMutation(context: ClusterApiContext) {
   const queryClient = useQueryClient();
@@ -32,10 +37,7 @@ export function useCreateClusterMutation(context: ClusterApiContext) {
     mutationFn: (request: ClusterCreateRequest) =>
       runParallelAction(createCluster(request, context)),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["sealos", "cluster", "list"],
-      });
-      queryClient.invalidateQueries({ queryKey: ["inventory", "clusters"] });
+      queryClient.invalidateQueries({ queryKey: ["clusters", "cluster"] });
     },
   });
 }
@@ -45,14 +47,9 @@ export function useStartClusterMutation(context: ClusterApiContext) {
   return useMutation<ClusterStartResponse, unknown, ClusterStartRequest>({
     mutationFn: (request: ClusterStartRequest) =>
       runParallelAction(startCluster(request, context)),
-    onSuccess: (_data, variables) => {
-      if (variables && typeof variables === "object" && "dbName" in variables) {
-        queryClient.invalidateQueries({
-          queryKey: ["sealos", "cluster", "get", variables.dbName],
-        });
-      }
+    onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["sealos", "cluster", "list"],
+        queryKey: ["clusters", "cluster"],
       });
     },
   });
@@ -63,14 +60,9 @@ export function useStopClusterMutation(context: ClusterApiContext) {
   return useMutation<ClusterPauseResponse, unknown, ClusterPauseRequest>({
     mutationFn: (request: ClusterPauseRequest) =>
       runParallelAction(pauseCluster(request, context)),
-    onSuccess: (_data, variables) => {
-      if (variables && typeof variables === "object" && "dbName" in variables) {
-        queryClient.invalidateQueries({
-          queryKey: ["sealos", "cluster", "get", variables.dbName],
-        });
-      }
+    onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["sealos", "cluster", "list"],
+        queryKey: ["clusters", "cluster"],
       });
     },
   });
@@ -81,16 +73,28 @@ export function useDeleteClusterMutation(context: ClusterApiContext) {
   return useMutation<ClusterDeleteResponse, unknown, ClusterDeleteRequest>({
     mutationFn: (request: ClusterDeleteRequest) =>
       runParallelAction(deleteCluster(request, context)),
-    onSuccess: (_data, variables) => {
-      if (variables && typeof variables === "object" && "name" in variables) {
-        queryClient.invalidateQueries({
-          queryKey: ["sealos", "cluster", "get", variables.name],
-        });
-      }
+    onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["sealos", "cluster", "list"],
+        queryKey: ["clusters", "cluster"],
       });
-      queryClient.invalidateQueries({ queryKey: ["inventory", "clusters"] });
+    },
+  });
+}
+
+export function useDeleteBackupMutation(context: ClusterApiContext) {
+  const queryClient = useQueryClient();
+  return useMutation<
+    ClusterBackupDeleteResponse,
+    unknown,
+    ClusterBackupDeleteRequest
+  >({
+    mutationFn: (request: ClusterBackupDeleteRequest) =>
+      runParallelAction(deleteBackup(request, context)),
+    onSuccess: () => {
+      // Invalidate backup list queries to refresh the backup list
+      queryClient.invalidateQueries({
+        queryKey: ["backups"],
+      });
     },
   });
 }

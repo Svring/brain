@@ -24,10 +24,7 @@ export default function NodeStack({
   const frontCard = isMainInFront ? mainCard : subCard;
   const backCard = isMainInFront ? subCard : mainCard;
 
-  const handleCardClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsMainInFront(!isMainInFront);
-  };
+
 
   const handleBackCardClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -67,8 +64,7 @@ export default function NodeStack({
           y: 0,
         }}
         transition={{ duration: 0.2, ease: "easeOut" }}
-        className="cursor-pointer"
-        onClick={handleCardClick}
+        className="cursor-default"
       >
         {frontCard}
       </motion.div>

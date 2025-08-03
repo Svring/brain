@@ -39,6 +39,18 @@ import {
   GetLogResponse,
   GetLogResponseSchema,
 } from "../schemas/req-res-schemas/req-res-get-log-schemas";
+import {
+  ClusterBackupListRequest,
+  ClusterBackupListRequestSchema,
+  ClusterBackupListResponse,
+  ClusterBackupListResponseSchema,
+} from "../schemas/req-res-schemas/req-res-get-backup-list-schemas";
+import {
+  ClusterBackupDeleteRequest,
+  ClusterBackupDeleteRequestSchema,
+  ClusterBackupDeleteResponse,
+  ClusterBackupDeleteResponseSchema,
+} from "../schemas/req-res-schemas/req-res-delete-backup-schemas";
 import https from "https";
 
 // Helper to create axios instance per request
@@ -130,5 +142,33 @@ export const getLog = createParallelAction(
     const response = await api.post("/logs/get", validatedRequest);
     console.log("get log response", response.data);
     return GetLogResponseSchema.parse(response.data);
+  }
+);
+
+export const getBackupList = createParallelAction(
+  async (
+    request: ClusterBackupListRequest,
+    context: SealosApiContext
+  ): Promise<ClusterBackupListResponse> => {
+    const validatedRequest = ClusterBackupListRequestSchema.parse(request);
+    const api = createClusterApi(context);
+    const response = await api.get("/backup/getBackupList", {
+      params: { dbName: validatedRequest.dbName },
+    });
+    return ClusterBackupListResponseSchema.parse(response.data);
+  }
+);
+
+export const deleteBackup = createParallelAction(
+  async (
+    request: ClusterBackupDeleteRequest,
+    context: SealosApiContext
+  ): Promise<ClusterBackupDeleteResponse> => {
+    const validatedRequest = ClusterBackupDeleteRequestSchema.parse(request);
+    const api = createClusterApi(context);
+    const response = await api.get("/backup/delBackup", {
+      params: { backupName: validatedRequest.backupName },
+    });
+    return ClusterBackupDeleteResponseSchema.parse(response.data);
   }
 );

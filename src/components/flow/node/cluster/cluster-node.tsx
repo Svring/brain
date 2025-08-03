@@ -5,10 +5,9 @@ import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import useClusterNode from "@/hooks/sealos/cluster/use-cluster-node";
-import { createK8sContext, createClusterContext } from "@/lib/auth/auth-utils";
+import { createK8sContext } from "@/lib/auth/auth-utils";
 import { useState } from "react";
 import { Copy } from "lucide-react";
-import { toast } from "sonner";
 import NodeStatusLight from "../node-components/node-status-light";
 import NodeInternalUrl from "../node-components/node-internal-url";
 import NodeMonitor from "../node-components/node-monitor";
@@ -16,6 +15,7 @@ import NodePods from "../node-components/node-pods";
 import NodeStack from "../node-components/node-stack";
 import ClusterNodeTitle from "./cluster-node-title";
 import ClusterNodeMenu from "./cluster-node-menu";
+import ClusterNodeBackup from "./cluster-node-backup";
 
 export default function ClusterNode({
   data: { target },
@@ -23,6 +23,7 @@ export default function ClusterNode({
   data: { target: CustomResourceTarget };
 }) {
   const context = createK8sContext();
+
   const { data, isLoading } = useClusterNode(context, target);
 
   const [publicAccess, setPublicAccess] = useState(false);
@@ -40,7 +41,7 @@ export default function ClusterNode({
         <div className="flex items-center justify-between">
           <ClusterNodeTitle name={name} type={type} />
           <div className="flex-shrink-0">
-            <ClusterNodeMenu clusterName={name} />
+            <ClusterNodeMenu target={target} />
           </div>
         </div>
 
@@ -69,7 +70,7 @@ export default function ClusterNode({
         {/* Bottom section with status and icons */}
         <div className="mt-auto flex justify-between items-center">
           {/* Left: Status light */}
-          <NodeStatusLight status={status} />
+          <NodeStatusLight status={status!} />
 
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
@@ -82,36 +83,7 @@ export default function ClusterNode({
     </BaseNode>
   );
 
-  const subCard = (
-    <BaseNode target={target} nodeData={data}>
-      <div className="flex h-full flex-col gap-4 justify-between">
-        {/* Header with Name and Menu */}
-        <div className="flex items-center justify-between">
-          <ClusterNodeTitle name={name} type={type} />
-          <div className="flex-shrink-0">
-            <ClusterNodeMenu />
-          </div>
-        </div>
-
-        {/* Alternative view - could show different content */}
-        <div className="flex items-center justify-center flex-1">
-          <span className="text-sm text-muted-foreground">
-            Alternative View
-          </span>
-        </div>
-
-        {/* Bottom section with status and icons */}
-        <div className="mt-auto flex justify-between items-center">
-          <NodeStatusLight status={status} />
-          <div className="flex items-center gap-2">
-            <NodeInternalUrl ports={[]} />
-            <NodePods pods={pods} />
-            <NodeMonitor />
-          </div>
-        </div>
-      </div>
-    </BaseNode>
-  );
+  const subCard = <ClusterNodeBackup target={target} nodeData={data} />;
 
   return <NodeStack mainCard={mainCard} subCard={subCard} />;
 }
