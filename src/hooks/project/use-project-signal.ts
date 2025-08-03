@@ -17,15 +17,15 @@ export function useProjectSignal(projectName: string) {
     enterProject();
     appendMessage({
       id: randomId(),
-      role: "user",
-      content: `user event: the user has entered the ${projectName} project`,
+      role: "system",
+      content: `system event: the user has entered the ${projectName} project`,
     });
     return () => {
       exitProject();
       appendMessage({
         id: randomId(),
-        role: "user",
-        content: `user event: the user has exited the ${projectName} project`,
+        role: "system",
+        content: `system event: the user has exited the ${projectName} project`,
       });
     };
   }, [projectName]);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCoAgent, useCoAgentStateRender } from "@copilotkit/react-core";
+import { useMount } from "@reactuses/core";
 import type { AiState } from "@/contexts/ai/ai-machine";
 import { useAiState } from "@/contexts/ai/ai-context";
 import { StateCard } from "@/components/ai/headless/ai-state-card";
@@ -33,10 +34,10 @@ export default function useAI() {
   // activateClusterActions(k8sContext, clusterContext);
   activateGeneralActions();
 
-  useCoAgentStateRender<AiState>({
-    name: "ai",
-    render: ({ state }) => <StateCard state={state} />,
-  });
+  // useCoAgentStateRender<AiState>({
+  //   name: "ai",
+  //   render: ({ state }) => <StateCard state={state} />,
+  // });
 
   return useCoAgent<AiState>({
     name: "ai",

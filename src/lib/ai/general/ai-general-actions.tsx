@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 export const activateGeneralActions = () => {
   openProjectAction();
+  redirectAction();
   gossipAction();
 };
 
@@ -26,6 +27,28 @@ export const openProjectAction = () => {
     handler: async ({ projectName }) => {
       router.push(`projects/${projectName}`);
       return `Successfully opened project: ${projectName}`;
+    },
+  });
+};
+
+export const redirectAction = () => {
+  const router = useRouter();
+
+  useCopilotAction({
+    name: "redirect",
+    description: "Redirect to a specific page",
+    parameters: [
+      {
+        name: "path",
+        type: "string",
+        enum: ["projects", "chat"],
+        description: "The path to redirect to",
+        required: true,
+      },
+    ],
+    handler: async ({ path }) => {
+      router.push(`/${path}`);
+      return `Successfully redirected to: ${path}`;
     },
   });
 };
