@@ -18,7 +18,11 @@ export function RenderTextMessage({
     isCurrentMessage && inProgress && !isUser && !message.content;
 
   // Don't render empty messages unless they're loading
-  if ((!message.content && !isLoading) || message.role === "tool") {
+  if (
+    (!message.content && !isLoading) ||
+    message.role === "tool" ||
+    message.role === "system"
+  ) {
     return null;
   }
 

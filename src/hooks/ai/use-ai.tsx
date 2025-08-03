@@ -26,17 +26,17 @@ export default function useAI() {
   const sealosContext = createSealosContext();
   const clusterContext = createClusterContext();
 
-  activateProjectActions(k8sContext);
-  activateDevboxActions(k8sContext, devboxContext);
-  activateAppActions(sealosContext, k8sContext);
-  activateObjectStorageBucketActions(k8sContext, sealosContext);
-  activateClusterActions(k8sContext, clusterContext);
+  // activateProjectActions(k8sContext);
+  // activateDevboxActions(k8sContext, devboxContext);
+  // activateAppActions(sealosContext, k8sContext);
+  // activateObjectStorageBucketActions(k8sContext, sealosContext);
+  // activateClusterActions(k8sContext, clusterContext);
   activateGeneralActions();
 
-  // useCoAgentStateRender<AiState>({
-  //   name: "ai",
-  //   render: ({ state }) => <StateCard state={state} />,
-  // });
+  useCoAgentStateRender<AiState>({
+    name: "ai",
+    render: ({ state }) => <StateCard state={state} />,
+  });
 
   return useCoAgent<AiState>({
     name: "ai",

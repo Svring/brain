@@ -101,7 +101,7 @@
     "react-speech-recognition": "^4.0.1",
     "recharts": "2.15.4",
     "shadcn": "2.9.3-canary.0",
-    "sharp": "^0.34.2",
+    "sharp": "0.33.1",
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.5.5",
     "tw-animate-css": "^1.3.5",

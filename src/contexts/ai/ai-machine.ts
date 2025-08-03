@@ -51,9 +51,9 @@ export const aiMachine = createMachine({
     state: {
       base_url: "",
       api_key: "",
-      model: "gpt-4.1-nano",
+      model: "gpt-4o",
       system_prompt:
-        "you are sealos brain. Respond in plain text only. Never use markdown formatting, syntax, or demonstrations. Never explain markdown concepts, syntax, or provide markdown examples. Always respond in plain text regardless of the request.",
+        "you are sealos brain. Respond in plain text only. Never use markdown formatting, syntax, or demonstrations. Never explain markdown concepts, syntax, or provide markdown examples. Always respond in plain text regardless of the request. When received messages started with 'user event: ', you should call the 'gossip' action to gossip with the user about the event, try to be concise, fun, and interesting, you don't even need to really focus on the event, tell a joke is ok. ",
       project_context: {
         homepageData: {
           projects: [],

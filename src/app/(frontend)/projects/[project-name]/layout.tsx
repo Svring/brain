@@ -5,7 +5,6 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 import { SealosApiContextSchema } from "@/lib/sealos/sealos-api-context-schema";
-import { listTemplates } from "@/lib/sealos/template/template-api/template-old-api";
 import { runParallelAction } from "next-server-actions-parallel";
 
 const createSealosContext = async () => {
@@ -20,10 +19,13 @@ const createSealosContext = async () => {
 
 export default async function ChatLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ "project-name": string }>;
 }) {
   const queryClient = new QueryClient();
+  const { "project-name": projectName } = await params;
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

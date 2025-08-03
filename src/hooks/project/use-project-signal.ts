@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import { useProjectActions } from "@/contexts/project/project-context";
+import { useCopilotChat } from "@copilotkit/react-core";
+import { randomId } from "@copilotkit/shared";
 
 /**
  * Custom hook for handling project lifecycle signals
@@ -9,10 +11,22 @@ import { useProjectActions } from "@/contexts/project/project-context";
 export function useProjectSignal(projectName: string) {
   const { enterProject, exitProject } = useProjectActions();
 
+  const { appendMessage } = useCopilotChat();
+
   useEffect(() => {
     enterProject();
+    appendMessage({
+      id: randomId(),
+      role: "user",
+      content: `user event: the user has entered the ${projectName} project`,
+    });
     return () => {
       exitProject();
+      appendMessage({
+        id: randomId(),
+        role: "user",
+        content: `user event: the user has exited the ${projectName} project`,
+      });
     };
   }, [projectName]);
 }
