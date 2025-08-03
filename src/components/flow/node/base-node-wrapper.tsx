@@ -31,6 +31,9 @@ export default function BaseNodeWrapper({
 
   const { selectedNode } = useFlowState();
   const { setSelectedNode } = useFlowActions();
+
+  const alreadySelected = selectedNode === nodeData;
+
   const handleNodeClick = () => {
     if (active) {
       setSelectedNode(nodeData);
@@ -42,7 +45,7 @@ export default function BaseNodeWrapper({
     <ContextMenu>
       <ContextMenuTrigger>
         <BaseNode
-          selected={selectedNode === nodeData}
+          selected={alreadySelected}
           className={className}
           ref={nodeRef}
           onClick={handleNodeClick}
