@@ -7,6 +7,10 @@ import { RenderTextMessage } from "./messages";
 export function AiMessages() {
   const { visibleMessages, isLoading } = useCopilotChat();
 
+  const messages = visibleMessages.filter(
+    (message) => message.role !== "system"
+  );
+
   return (
     <>
       {/* <CopilotSidebar suggestions="manual" clickOutsideToClose={false} /> */}
@@ -17,11 +21,10 @@ export function AiMessages() {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto">
               <StickToBottom.Content className="flex flex-col h-full">
-                {visibleMessages.length !== 0 && (
+                {messages.length !== 0 && (
                   <div className="max-w-full mx-auto w-full px-4 py-0 pb-4">
-                    {visibleMessages.map((message, index) => {
-                      const isCurrentMessage =
-                        index === visibleMessages.length - 1;
+                    {messages.map((message, index) => {
+                      const isCurrentMessage = index === messages.length - 1;
 
                       return (
                         <div key={message.id} className="mb-2">

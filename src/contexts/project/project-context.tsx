@@ -6,6 +6,8 @@ import _ from "lodash";
 import { createContext, type ReactNode, useContext, useEffect } from "react";
 import { projectMachine } from "./project-machine";
 import useAI from "@/hooks/ai/use-ai";
+import { useCopilotChat } from "@copilotkit/react-core";
+import { randomId } from "@copilotkit/shared";
 
 const inspector = createBrowserInspector();
 
@@ -74,9 +76,17 @@ export function useProjectState() {
 
 export function useProjectActions() {
   const { send } = useProjectContext();
+  const { appendMessage } = useCopilotChat();
 
   return {
-    enterProject: () => send({ type: "ENTER_PROJECT" }),
+    enterProject: () => {
+      send({ type: "ENTER_PROJECT" });
+      // appendMessage({
+      //   id: randomId(),
+      //   role: "system",
+      //   content: `system event: the user has entered the project`,
+      // });
+    },
     exitProject: () => send({ type: "EXIT_PROJECT" }),
     setHomepageData: (projects: any) =>
       send({ type: "SET_HOMEPAGE_DATA", projects }),
