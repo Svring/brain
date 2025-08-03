@@ -34,7 +34,7 @@ export default function AppSidebar() {
         <SidebarContent className={cn("bg-background-primary")}>
           <MainSection />
         </SidebarContent>
-        <SidebarFooter className={cn("rounded-b-lg bg-background-secondary")}>
+        <SidebarFooter className={cn("rounded-b-lg bg-background-primary")}>
           {/* <AIAccess /> */}
           {/* <UserCard
             user={{

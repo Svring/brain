@@ -4,7 +4,7 @@ import { ThemeProvider } from "next-themes";
 import type React from "react";
 import Login from "@/components/app/auth/login";
 import { CopilotProvider } from "@/components/app/provider/copilot-provider";
-import { QueryProvider } from "@/components/app/provider/query-provider";
+import QueryProvider from "@/components/app/provider/query-provider";
 import AppSidebar from "@/components/app/sidebar/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";

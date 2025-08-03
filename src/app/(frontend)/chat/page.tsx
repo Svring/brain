@@ -6,8 +6,6 @@ import { AiMessages } from "@/components/ai/headless/ai-messages";
 import { useCopilotChat } from "@copilotkit/react-core";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCreateProjectDialog } from "@/hooks/project/use-project-create-dialog";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 
 export default function ChatPage() {
   const { visibleMessages } = useCopilotChat();

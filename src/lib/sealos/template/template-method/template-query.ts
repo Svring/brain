@@ -17,7 +17,7 @@ export const listTemplatesOptions = (
   postprocess?: (data: ListTemplateResponse) => unknown
 ) =>
   queryOptions({
-    queryKey: ["sealos", "instance", "templates", "list"],
+    queryKey: ["templates"],
     queryFn: () => runParallelAction(listTemplates(context)),
     select: (data) => postprocess?.(data) ?? data,
     enabled: !!context.baseURL,
@@ -29,7 +29,7 @@ export const getTemplateSourceOptions = (
   postprocess?: (data: TemplateSourceResponse) => unknown
 ) =>
   queryOptions({
-    queryKey: ["sealos", "instance", "templates", "source", templateName],
+    queryKey: ["template", templateName],
     queryFn: () => runParallelAction(getTemplateSource(context, templateName)),
     select: (data) => postprocess?.(data) ?? data,
     enabled: !!context.baseURL && !!templateName,

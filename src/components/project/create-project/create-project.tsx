@@ -23,9 +23,8 @@ import { useCreateInstanceMutation } from "@/lib/sealos/template/template-method
 import { createTemplateApiContext } from "@/lib/sealos/template/template-method/template-utils";
 import { TemplateCard } from "./template-card";
 import { TemplateDetails } from "./template-details";
-import { createK8sContext } from "@/lib/auth/auth-utils";
+import { createK8sContext, createSealosContext } from "@/lib/auth/auth-utils";
 import { useRouter } from "next/navigation";
-import { CreateInstanceSuccessResponseSchema } from "@/lib/sealos/template/schemas/template-create-instance-schemas";
 
 interface CreateProjectProps {
   onClose: () => void;
@@ -38,7 +37,7 @@ export default function CreateProject({ onClose }: CreateProjectProps) {
     useState<TemplateResource | null>(null);
   const router = useRouter();
 
-  const templateApiContext = createTemplateApiContext();
+  const templateApiContext = createSealosContext();
   const {
     data: templatesResponse,
     isLoading,

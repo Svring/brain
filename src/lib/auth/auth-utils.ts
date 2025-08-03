@@ -5,6 +5,7 @@ import {
   createSealosApp,
   sealosApp,
 } from "@zjy365/sealos-desktop-sdk/app";
+import { setCookie } from "nookies";
 import { getRegionUrlFromKubeconfig } from "@/lib/k8s/k8s-api/k8s-api-utils";
 import type { Auth } from "@/contexts/auth/auth-machine";
 import type { User } from "@/payload-types";
@@ -78,11 +79,15 @@ export async function authenticateProd(send: (event: any) => void) {
 }
 
 export function createK8sContext(): K8sApiContext {
-  return K8sApiContextSchema.parse({
+  const k8sContext = K8sApiContextSchema.parse({
     namespace: getCurrentNamespace(),
     kubeconfig: getDecodedKubeconfig(),
     regionUrl: getCurrentRegionUrl(),
   });
+  setCookie(null, "kubeconfig", k8sContext.kubeconfig);
+  setCookie(null, "namespace", k8sContext.namespace);
+  setCookie(null, "regionUrl", k8sContext.regionUrl);
+  return k8sContext;
 }
 export function getUserKubeconfig(): string | undefined {
   const { auth } = useAuthState();
@@ -109,10 +114,11 @@ export function createClusterContext() {
   if (!auth) {
     throw new Error("User not found");
   }
-  return ClusterApiContextSchema.parse({
+  const clusterContext = ClusterApiContextSchema.parse({
     baseURL: auth?.regionUrl,
     authorization: auth?.kubeconfig,
   });
+  return clusterContext;
 }
 
 export function createSealosContext() {
@@ -120,10 +126,11 @@ export function createSealosContext() {
   if (!auth) {
     throw new Error("User not found");
   }
-  return SealosApiContextSchema.parse({
-    baseURL: auth?.regionUrl,
-    authorization: auth?.kubeconfig,
+  const sealosContext = SealosApiContextSchema.parse({
+    baseURL: auth.regionUrl,
+    authorization: auth.kubeconfig,
   });
+  return sealosContext;
 }
 
 export function createDevboxContext() {
@@ -131,11 +138,13 @@ export function createDevboxContext() {
   if (!auth) {
     throw new Error("User not found");
   }
-  return DevboxApiContextSchema.parse({
+  const devboxContext = DevboxApiContextSchema.parse({
     baseURL: auth.regionUrl,
     authorization: auth.kubeconfig,
     authorizationBearer: auth.appToken,
   });
+  setCookie(null, "appToken", auth.appToken);
+  return devboxContext;
 }
 
 export function createDeployContext() {
@@ -143,10 +152,11 @@ export function createDeployContext() {
   if (!auth) {
     throw new Error("User not found");
   }
-  return DeployApiContextSchema.parse({
+  const deployContext = DeployApiContextSchema.parse({
     baseURL: auth.regionUrl,
     authorization: auth.kubeconfig,
   });
+  return deployContext;
 }
 
 export function createAiProxyContext() {
@@ -154,8 +164,15 @@ export function createAiProxyContext() {
   if (!auth) {
     throw new Error("User not found");
   }
-  return AiProxyApiContextSchema.parse({
+  const aiProxyContext = AiProxyApiContextSchema.parse({
     baseURL: auth.regionUrl,
     authorization: auth.appToken,
   });
+  setCookie(null, "appToken", auth.appToken);
+  return aiProxyContext;
+}
+
+export function activateContextCookies() {
+  createK8sContext();
+  createAiProxyContext();
 }
