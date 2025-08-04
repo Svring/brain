@@ -10,7 +10,7 @@ import { authMachine } from "@/contexts/auth/auth-machine";
 import { authenticateDev, authenticateProd } from "@/lib/auth/auth-utils";
 import type { User } from "@/payload-types";
 
-const inspector = createBrowserInspector();
+// const inspector = createBrowserInspector();
 
 interface AuthContextValue {
   auth: Auth | null;
@@ -29,7 +29,7 @@ export const AuthProvider = ({
   payloadUser: User | null;
 }) => {
   const [state, send, actorRef] = useMachine(authMachine, {
-    inspect: inspector.inspect,
+    // inspect: inspector.inspect,
   });
 
   useMount(() => {

@@ -1,5 +1,5 @@
 import _ from "lodash";
-import type { ResourceConnections } from "@/lib/algorithm/reliance/env-reliance";
+import type { ResourceConnections } from "@/lib/algorithm/reliance/reliance-utils";
 import { type Edge } from "@xyflow/react";
 
 /**
@@ -16,10 +16,10 @@ import { type Edge } from "@xyflow/react";
  *      { id: "cluster-pg-deployment-my-app", source: "cluster-pg", target: "deployment-my-app" }
  *      { id: "cluster-redis-deployment-my-app", source: "cluster-redis", target: "deployment-my-app" }
  */
-export const convertConnectionsToEdges = (
-  connections: ResourceConnections
+export const convertReliancesToEdges = (
+  reliances: ResourceConnections
 ): Edge[] => {
-  const edges = _.flatMap(connections, (workloads, targetKind) =>
+  const edges = _.flatMap(reliances, (workloads, targetKind) =>
     _.flatMap(workloads, ({ connectFrom }, workloadName) => {
       const target = `${targetKind}-${workloadName}`;
 

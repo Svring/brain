@@ -10,7 +10,7 @@ import { getAiCredentialsDev, getAiCredentialsProd } from "@/lib/ai/ai-utils";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import type { User } from "@/payload-types";
 
-const inspector = createBrowserInspector();
+// const inspector = createBrowserInspector();
 
 interface AiContextValue {
   state: StateFrom<typeof aiMachine>;
@@ -29,7 +29,7 @@ export const AiProvider = ({
   payloadUser?: User | null;
 }) => {
   const [state, send, actorRef] = useMachine(aiMachine, {
-    inspect: inspector.inspect,
+    // inspect: inspector.inspect,
   });
 
   const { auth, mode } = useAuthState();
@@ -125,7 +125,8 @@ export function useAiActions() {
     openChat: () => send({ type: "CHAT_OPEN" }),
     closeChat: () => send({ type: "CHAT_CLOSE" }),
     setState: (state: Partial<AiState>) => send({ type: "SET_STATE", state }),
-    setFlowContext: (flowContext: Partial<AiState['flow_context']>) => send({ type: "SET_FLOW_CONTEXT", flowContext }),
+    setFlowContext: (flowContext: Partial<AiState["flow_context"]>) =>
+      send({ type: "SET_FLOW_CONTEXT", flowContext }),
     credentialsLoaded: () => send({ type: "CREDENTIALS_LOADED" }),
     fail: (error: string) => send({ type: "FAIL", error }),
   };

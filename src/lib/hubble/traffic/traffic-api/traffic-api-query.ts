@@ -26,7 +26,6 @@ function createTrafficApi(context: TrafficApiContext) {
     httpsAgent: isDevelopment
       ? new https.Agent({
           rejectUnauthorized: false,
-          secureProtocol: "TLSv1_2_method",
         })
       : undefined,
     timeout: 10000, // 10 second timeout

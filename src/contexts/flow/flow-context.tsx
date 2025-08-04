@@ -9,7 +9,7 @@ import type { Edge, Node } from "@xyflow/react";
 import useAI from "@/hooks/ai/use-ai";
 import { createK8sContext, createDevboxContext } from "@/lib/auth/auth-utils";
 
-const inspector = createBrowserInspector();
+// const inspector = createBrowserInspector();
 
 interface FlowContextValue {
   state: any;
@@ -23,7 +23,7 @@ export const FlowContext = createContext<FlowContextValue | undefined>(
 
 export const FlowProvider = ({ children }: { children: ReactNode }) => {
   const [state, send, actorRef] = useMachine(flowMachine, {
-    inspect: inspector.inspect,
+    // inspect: inspector.inspect,
   });
 
   const { state: aiState, setState: setAIState } = useAI();

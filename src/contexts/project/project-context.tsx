@@ -9,7 +9,7 @@ import useAI from "@/hooks/ai/use-ai";
 import { useCopilotChat } from "@copilotkit/react-core";
 import { randomId } from "@copilotkit/shared";
 
-const inspector = createBrowserInspector();
+// const inspector = createBrowserInspector();
 
 interface ProjectContextValue {
   state: any;
@@ -23,7 +23,7 @@ export const ProjectContext = createContext<ProjectContextValue | undefined>(
 
 export const ProjectProvider = ({ children }: { children: ReactNode }) => {
   const [state, send, actorRef] = useMachine(projectMachine, {
-    inspect: inspector.inspect,
+    // inspect: inspector.inspect,
   });
 
   const { state: aiState, setState: setAIState } = useAI();

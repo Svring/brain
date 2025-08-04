@@ -36,13 +36,13 @@ export default function AppSidebar() {
         </SidebarContent>
         <SidebarFooter className={cn("rounded-b-lg bg-background-primary")}>
           {/* <AIAccess /> */}
-          {/* <UserCard
+          <UserCard
             user={{
               name: "Brain",
               email: "brain@sealos.io",
               avatar: "https://github.com/vercel.png",
             }}
-          /> */}
+          />
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>
