@@ -62,7 +62,7 @@ export function useStopClusterMutation(context: ClusterApiContext) {
       runParallelAction(pauseCluster(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["clusters", "cluster"],
+        queryKey: ["cluster"],
       });
     },
   });

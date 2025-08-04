@@ -62,7 +62,7 @@ export default function NodePods({ pods = [] }: NodePodsProps) {
   const displayedPods = pods.slice(0, 5);
 
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="p-1 border-2 border-muted-foreground/20 rounded-full">

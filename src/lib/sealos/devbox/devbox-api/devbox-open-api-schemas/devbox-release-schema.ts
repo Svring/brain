@@ -45,7 +45,6 @@ export const DevboxReleasesResponseSchema = z.object({
 export const DevboxDeployRequestSchema = z.object({
   devboxName: z.string().min(1, "DevBox name is required"),
   tag: z.string().min(1, "Devbox release version tag is required"),
-  port: z.number().min(1).max(65_535).optional(),
   cpu: z.number().min(0).optional().default(2000),
   memory: z.number().min(0).optional().default(4096),
 });

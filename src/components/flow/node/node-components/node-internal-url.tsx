@@ -30,7 +30,7 @@ interface NodeInternalUrlProps {
 
 export default function NodeInternalUrl({ ports }: NodeInternalUrlProps) {
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="p-1 border-2 border-muted-foreground/20 rounded-full">
@@ -55,7 +55,9 @@ export default function NodeInternalUrl({ ports }: NodeInternalUrlProps) {
                 <TableBody>
                   {ports.map((port, index) => (
                     <TableRow key={index}>
-                      <TableCell className="font-medium">{port.number}</TableCell>
+                      <TableCell className="font-medium">
+                        {port.number}
+                      </TableCell>
                       <TableCell>
                         {port.privateAddress ? (
                           <div className="flex items-center gap-2">

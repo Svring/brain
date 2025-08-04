@@ -58,7 +58,7 @@ export const MainSection: React.FC<MainSectionProps> = () => {
           {NAVIGATION_ITEMS.filter((item) => item.group === "overview").map(
             (item) => (
               <SidebarMenuItem key={item.title}>
-                <Tooltip>
+                <Tooltip delayDuration={0}>
                   <TooltipTrigger asChild>
                     <SidebarMenuButton
                       onClick={() => handleNavigation(item.path)}

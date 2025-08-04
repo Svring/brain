@@ -55,3 +55,15 @@ export const getSshConnectionInfo = createParallelAction(
     return response.data;
   }
 );
+
+export const deleteDevboxRelease = createParallelAction(
+  async (context: DevboxApiContext, versionName: string) => {
+    const api = createDevboxApi(context);
+    const response = await api.delete("/delDevboxVersionByName", {
+      params: {
+        versionName,
+      },
+    });
+    return response.data;
+  }
+);

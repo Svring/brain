@@ -176,7 +176,7 @@ export const getClusterOptions = (
   target: CustomResourceTarget
 ) =>
   queryOptions({
-    queryKey: buildQueryKey.getCluster(context.namespace, target.name!),
+    queryKey: ["cluster"],
     queryFn: async () => await getCluster(context, target),
     enabled:
       !!target.group &&
@@ -192,7 +192,7 @@ export const getClusterOptions = (
  */
 export const listClusterOptions = (context: K8sApiContext) =>
   queryOptions({
-    queryKey: buildQueryKey.listClusters(context.namespace),
+    queryKey: ["clusters"],
     queryFn: async () => await listCluster(context),
     enabled: !!context.namespace && !!context.kubeconfig,
     staleTime: 1000 * 30,

@@ -55,9 +55,13 @@ export default function ClusterNodeMenu({
       >
         {status !== "Running" && (
           <DropdownMenuItem
-            onClick={() =>
-              startCluster.mutate({ dbName: clusterName, dbType: cluster.type })
-            }
+            onClick={(e) => {
+              e.stopPropagation();
+              startCluster.mutate({
+                dbName: clusterName,
+                dbType: cluster.type,
+              });
+            }}
             disabled={status === "Creating" || status === "Updating"}
             className={
               status === "Creating" || status === "Updating" ? "opacity-50" : ""
@@ -69,9 +73,10 @@ export default function ClusterNodeMenu({
         )}
         {status !== "Stopped" && status !== "Shutdown" && (
           <DropdownMenuItem
-            onClick={() =>
-              stopCluster.mutate({ dbName: clusterName, dbType: cluster.type })
-            }
+            onClick={(e) => {
+              e.stopPropagation();
+              stopCluster.mutate({ dbName: clusterName, dbType: cluster.type });
+            }}
             disabled={status === "Creating" || status === "Updating"}
             className={
               status === "Creating" || status === "Updating" ? "opacity-50" : ""
@@ -91,7 +96,10 @@ export default function ClusterNodeMenu({
           Update
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => deleteCluster.mutate({ name: clusterName })}
+          onClick={(e) => {
+            e.stopPropagation();
+            deleteCluster.mutate({ name: clusterName });
+          }}
           className={`text-destructive ${
             status === "Creating" || status === "Updating" ? "opacity-50" : ""
           }`}

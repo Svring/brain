@@ -171,12 +171,6 @@ export const deployDevboxAction = (context: DevboxApiContext) => {
         description: "Devbox release version tag to deploy",
       },
       {
-        name: "port",
-        type: "number",
-        required: false,
-        description: "Port number (1-65535) for the deployment",
-      },
-      {
         name: "cpu",
         type: "number",
         required: false,
@@ -189,13 +183,12 @@ export const deployDevboxAction = (context: DevboxApiContext) => {
         description: "Memory allocation in MB (default: 4096)",
       },
     ],
-    handler: ({ devboxName, tag, port, cpu, memory }) => {
+    handler: ({ devboxName, tag, cpu, memory }) => {
       const deployRequest = {
         devboxName,
         tag,
         cpu: cpu ?? 2000,
         memory: memory ?? 4096,
-        ...(port !== undefined && { port }),
       };
       deployDevbox.mutateAsync(deployRequest);
     },

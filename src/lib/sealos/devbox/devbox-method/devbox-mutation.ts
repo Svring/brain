@@ -13,6 +13,7 @@ import {
   releaseDevbox,
   removeDevboxPort,
 } from "../devbox-api/devbox-open-api";
+import { deleteDevboxRelease } from "../devbox-api/devbox-old-api";
 import type {
   AppFormConfig,
   DevboxApiContext,
@@ -118,6 +119,17 @@ export function useDeleteAppMutation(context: DevboxApiContext) {
       runParallelAction(deleteApp(appName, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["devbox"] });
+    },
+  });
+}
+
+export function useDeleteDevboxReleaseMutation(context: DevboxApiContext) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (versionName: string) =>
+      runParallelAction(deleteDevboxRelease(context, versionName)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["release"] });
     },
   });
 }
