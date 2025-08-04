@@ -5,7 +5,7 @@ import { AlertTriangle } from "lucide-react";
 
 export const activateInterruptActions = () => {
   useLangGraphInterrupt({
-    // enabled: ({ eventValue }) => eventValue.type === "approval",
+    enabled: ({ eventValue }) => eventValue.type === "approval",
     render: ({ event, resolve }) => (
       <ApproveComponent
         content={event.value.content}
@@ -37,9 +37,7 @@ const ApproveComponent = ({
         <Button variant="outline" onClick={() => onAnswer(false)}>
           Reject
         </Button>
-        <Button onClick={() => onAnswer(true)}>
-          Approve
-        </Button>
+        <Button onClick={() => onAnswer(true)}>Approve</Button>
       </div>
     </CardContent>
   </Card>

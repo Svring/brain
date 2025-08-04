@@ -16,6 +16,7 @@ import {
 import { useCopilotAction } from "@copilotkit/react-core";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { useAiState } from "@/contexts/ai/ai-context";
 
 export const activateDevboxActions = (
   k8sContext: K8sApiContext,
@@ -37,11 +38,15 @@ export const createDevboxAction = (context: DevboxApiContext) => {};
 
 export const listDevboxAction = (context: K8sApiContext) => {
   const queryClient = useQueryClient();
+  const { aiState } = useAiState();
 
   useCopilotAction({
     name: "listDevboxes",
     description: "List all devboxes",
     handler: () => {
+      if (aiState.approval.toString() !== "approved") {
+        return "user cancelled the action";
+      }
       return queryClient.fetchQuery(listDevboxOptions(context));
     },
   });

@@ -23,6 +23,7 @@ export interface AiState {
     selectedEdge: any;
     isInitialized: boolean;
   };
+  approval: boolean;
 }
 
 export interface AiChat {
@@ -70,6 +71,7 @@ export const aiMachine = createMachine({
         selectedEdge: null,
         isInitialized: false,
       },
+      approval: false,
     },
     chat: {
       open: false,

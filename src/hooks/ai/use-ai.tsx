@@ -1,9 +1,11 @@
 "use client";
 
 import { useCoAgent, useCoAgentStateRender } from "@copilotkit/react-core";
+import _ from "lodash";
+import { useEffect } from "react";
 import { useMount } from "@reactuses/core";
 import type { AiState } from "@/contexts/ai/ai-machine";
-import { useAiState } from "@/contexts/ai/ai-context";
+import { useAiState, useAiActions } from "@/contexts/ai/ai-context";
 import { StateCard } from "@/components/ai/headless/ai-state-card";
 import { activateDevboxActions } from "@/lib/ai/sealos/devbox/ai-devbox-actions";
 import { activateProjectActions } from "@/lib/ai/project/ai-project-actions";
@@ -22,6 +24,7 @@ import {
 
 export default function useAI() {
   const { aiState } = useAiState();
+  const { setState } = useAiActions();
 
   const k8sContext = createK8sContext();
   const devboxContext = createDevboxContext();
@@ -41,8 +44,19 @@ export default function useAI() {
   //   render: ({ state }) => <StateCard state={state} />,
   // });
 
-  return useCoAgent<AiState>({
+  const agent = useCoAgent<AiState>({
     name: "ai",
     initialState: aiState,
   });
+
+  useEffect(() => {
+    const newState = _.cloneDeep(aiState);
+    const approval = agent.state.approval;
+    if (approval !== aiState.approval) {
+      _.set(newState, "approval", approval);
+      setState(newState);
+    }
+  }, [agent]);
+
+  return agent;
 }
