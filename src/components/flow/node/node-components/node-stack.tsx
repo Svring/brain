@@ -47,7 +47,7 @@ export default function NodeStack({
         transition={{ duration: 0.2, ease: "easeOut" }}
         onClick={handleBackCardClick}
       >
-        <div className="bg-background-secondary border border-border rounded-xl shadow-sm h-full w-full">
+        <div className="bg-transparent rounded-xl shadow-sm h-full w-full">
           {backCard}
         </div>
       </motion.div>

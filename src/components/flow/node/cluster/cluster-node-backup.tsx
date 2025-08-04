@@ -4,9 +4,10 @@ import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-
 import { getClusterBackupListOptions } from "@/lib/sealos/cluster/cluster-method/cluster-query";
 import { createSealosContext } from "@/lib/auth/auth-utils";
 import { useQuery } from "@tanstack/react-query";
-import { Clock, Database } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { useState } from "react";
 import BaseNode from "../base-node-wrapper";
+import ClusterNodeBackupTitle from "./cluster-node-backup-title";
+import ClusterNodeBackupList from "./cluster-node-backup-list";
 
 interface ClusterNodeBackupProps {
   target: CustomResourceTarget;
@@ -18,71 +19,37 @@ export default function ClusterNodeBackup({
   nodeData,
 }: ClusterNodeBackupProps) {
   const sealosContext = createSealosContext();
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const { data: backupList, isLoading } = useQuery(
     getClusterBackupListOptions(sealosContext, target)
   );
 
-  if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-sm text-muted-foreground">Loading backups...</div>
-      </div>
-    );
-  }
+  const clusterName = target.name || 'Unknown Cluster';
 
-  if (!backupList || backupList.length === 0) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center gap-2">
-        <Database className="h-8 w-8 text-muted-foreground" />
-        <div className="text-sm text-muted-foreground">No backups found</div>
-      </div>
-    );
-  }
+  const handleToggleExpand = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  // Transform the backup data to match our interface
+  const transformedBackups = backupList?.map(backup => ({
+    name: backup.name,
+    time: typeof backup.time === 'string' ? backup.time : undefined
+  }));
 
   return (
-    <BaseNode target={target} nodeData={nodeData}>
-      <div className="flex h-full flex-col gap-3">
-        <div className="flex items-center gap-2">
-          <Database className="h-4 w-4" />
-          <span className="text-sm font-medium">Cluster Backups</span>
-          <span className="text-xs text-muted-foreground">
-            ({backupList.length})
-          </span>
-        </div>
-
-        <div className="flex-1 overflow-y-auto">
-          <div className="space-y-2">
-            {backupList.map((backup, index) => {
-              const backupTime =
-                backup.time && typeof backup.time === "string"
-                  ? new Date(backup.time)
-                  : null;
-              const isValidTime = backupTime && !isNaN(backupTime.getTime());
-
-              return (
-                <div
-                  key={backup.name || index}
-                  className="flex items-center justify-between rounded-md border p-2 text-xs"
-                >
-                  <div className="flex flex-col gap-1">
-                    <span className="font-medium truncate">{backup.name}</span>
-                    {isValidTime && (
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        <span>
-                          {formatDistanceToNow(backupTime, {
-                            addSuffix: true,
-                          })}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+    <BaseNode target={target} nodeData={nodeData} expand={isExpanded}>
+      <div className="flex h-full flex-col gap-3 p-1">
+        <ClusterNodeBackupTitle
+          backupsCount={backupList?.length || 0}
+          clusterName={clusterName}
+          onToggleExpand={handleToggleExpand}
+          isExpanded={isExpanded}
+        />
+        <ClusterNodeBackupList
+          backups={transformedBackups}
+          isLoading={isLoading}
+        />
       </div>
     </BaseNode>
   );

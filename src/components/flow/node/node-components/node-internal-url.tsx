@@ -39,30 +39,30 @@ export default function NodeInternalUrl({ ports }: NodeInternalUrlProps) {
         </TooltipTrigger>
         <TooltipContent
           side="bottom"
-          className="bg-background-secondary rounded-lg"
+          className="bg-background-secondary rounded-xl w-80"
           onPointerDownOutside={(e) => e.preventDefault()}
         >
-          <div className="p-2">
+          <div className="p-2 border border-dotted rounded-xl">
             {ports && ports.length > 0 ? (
-              <Table>
-                <TableCaption>Internal URLs for this service</TableCaption>
+              <Table className="w-full">
+                <TableCaption className="text-xs">Internal URLs for this service</TableCaption>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[100px]">Port</TableHead>
-                    <TableHead>Internal Address</TableHead>
+                  <TableRow className="h-8">
+                    <TableHead className="w-16 text-xs py-1">Port</TableHead>
+                    <TableHead className="text-xs py-1">Internal Address</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {ports.map((port, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="font-medium">
+                    <TableRow key={index} className="h-8">
+                      <TableCell className="font-medium text-xs py-1">
                         {port.number}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-1">
                         {port.privateAddress ? (
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1 min-w-0">
                             <span
-                              className="font-mono text-xs bg-muted px-2 py-1 rounded cursor-pointer hover:bg-muted/80 transition-colors"
+                              className="font-mono text-xs bg-muted px-1 py-0.5 rounded cursor-pointer hover:bg-muted/80 transition-colors truncate max-w-48"
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -71,6 +71,7 @@ export default function NodeInternalUrl({ ports }: NodeInternalUrlProps) {
                                 );
                                 toast("Private address copied to clipboard");
                               }}
+                              title={port.privateAddress}
                             >
                               {port.privateAddress}
                             </span>
@@ -87,7 +88,7 @@ export default function NodeInternalUrl({ ports }: NodeInternalUrlProps) {
                             />
                           </div>
                         ) : (
-                          <span className="text-muted-foreground">N/A</span>
+                          <span className="text-muted-foreground text-xs">N/A</span>
                         )}
                       </TableCell>
                     </TableRow>
@@ -95,7 +96,7 @@ export default function NodeInternalUrl({ ports }: NodeInternalUrlProps) {
                 </TableBody>
               </Table>
             ) : (
-              <div className="text-sm">No ports available</div>
+              <div className="text-xs">No ports available</div>
             )}
           </div>
         </TooltipContent>
