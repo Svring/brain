@@ -103,7 +103,7 @@ export const getDevboxReleasesOptions = (
   devboxName: string
 ) =>
   queryOptions({
-    queryKey: ["release"],
+    queryKey: ["release", devboxName],
     queryFn: async () => await getDevboxReleasesQuery(context, devboxName),
     enabled: !!devboxName && !!context.baseURL,
     staleTime: 1000 * 60,

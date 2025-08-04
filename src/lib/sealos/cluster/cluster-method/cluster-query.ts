@@ -176,7 +176,7 @@ export const getClusterOptions = (
   target: CustomResourceTarget
 ) =>
   queryOptions({
-    queryKey: ["cluster"],
+    queryKey: ["cluster", target.name],
     queryFn: async () => await getCluster(context, target),
     enabled:
       !!target.group &&
@@ -206,7 +206,7 @@ export const getClusterBackupListOptions = (
   target: CustomResourceTarget
 ) =>
   queryOptions({
-    queryKey: ["backups"],
+    queryKey: ["backup", target.name],
     queryFn: async () => await getClusterBackupList(clusterContext, target),
     enabled: !!target.name && !!clusterContext.baseURL,
     staleTime: 1000 * 60, // 1 minute

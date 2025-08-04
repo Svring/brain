@@ -37,6 +37,12 @@ export default function DevboxNodeRelease({
     releaseTag: string,
     config: { cpu: number; memory: number }
   ) => {
+    console.log("handleDeploy", {
+      devboxName,
+      tag: releaseTag,
+      cpu: config.cpu,
+      memory: config.memory,
+    });
     await deployMutation.mutateAsync({
       devboxName,
       tag: releaseTag,

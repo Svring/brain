@@ -74,7 +74,7 @@ export function useDeployDevboxMutation(context: DevboxApiContext) {
     mutationFn: (request: DevboxDeployRequest) =>
       runParallelAction(deployDevbox(request, context)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["devbox"] });
+      queryClient.invalidateQueries({ queryKey: ["app"] });
     },
   });
 }
