@@ -2,6 +2,7 @@
 
 import { useAiState, useAiActions } from "@/contexts/ai/ai-context";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useCopilotChat } from "@copilotkit/react-core";
 import { AiMessages } from "./ai-messages";
 import { AiChatInput } from "./ai-input";
 import { AiChatHeader } from "./ai-header";

@@ -1,15 +1,11 @@
 "use client";
 
-import { useCopilotChat } from "@copilotkit/react-core";
 import { StickToBottom } from "@/components/ui/stick-to-bottom";
 import { RenderTextMessage } from "./messages";
+import { useAiCacheMessages } from "@/hooks/ai/use-ai-cache-messages";
 
 export function AiMessages() {
-  const { visibleMessages, isLoading } = useCopilotChat();
-
-  const messages = visibleMessages.filter(
-    (message) => message.role !== "system"
-  );
+  const { messages, isLoading, interrupt } = useAiCacheMessages();
 
   return (
     <>
@@ -43,6 +39,7 @@ export function AiMessages() {
                     })}
                   </div>
                 )}
+                {interrupt}
               </StickToBottom.Content>
             </div>
           </div>

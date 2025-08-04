@@ -11,6 +11,7 @@ import { activateAppActions } from "@/lib/ai/sealos/app/ai-app-actions";
 import { activateObjectStorageBucketActions } from "@/lib/ai/sealos/objectstoragebucket/ai-objectstoragebucket-actions";
 import { activateClusterActions } from "@/lib/ai/sealos/cluster/ai-cluster-actions";
 import { activateGeneralActions } from "@/lib/ai/general/ai-general-actions";
+import { activateInterruptActions } from "@/lib/ai/general/ai-interrupt-actions";
 
 import {
   createK8sContext,
@@ -28,11 +29,12 @@ export default function useAI() {
   const clusterContext = createClusterContext();
 
   // activateProjectActions(k8sContext);
-  // activateDevboxActions(k8sContext, devboxContext);
+  activateDevboxActions(k8sContext, devboxContext);
   // activateAppActions(sealosContext, k8sContext);
   // activateObjectStorageBucketActions(k8sContext, sealosContext);
   // activateClusterActions(k8sContext, clusterContext);
-  activateGeneralActions();
+  // activateGeneralActions();
+  activateInterruptActions();
 
   // useCoAgentStateRender<AiState>({
   //   name: "ai",
