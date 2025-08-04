@@ -111,12 +111,17 @@ export const deleteCluster = createParallelAction(
     request: ClusterDeleteRequest,
     context: SealosApiContext
   ): Promise<ClusterDeleteResponse> => {
-    const validatedRequest = ClusterDeleteRequestSchema.parse(request);
-    const api = createClusterApi(context);
-    const response = await api.get("/deleteDBByName", {
-      params: { name: validatedRequest.name },
-    });
-    return ClusterDeleteResponseSchema.parse(response.data);
+    try {
+      const validatedRequest = ClusterDeleteRequestSchema.parse(request);
+      const api = createClusterApi(context);
+      const response = await api.get("/delDBByName", {
+        params: { name: validatedRequest.name },
+      });
+      return ClusterDeleteResponseSchema.parse(response.data);
+    } catch (error) {
+      console.error("Failed to delete cluster:", JSON.stringify(error));
+      throw error;
+    }
   }
 );
 

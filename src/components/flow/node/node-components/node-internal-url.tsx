@@ -39,17 +39,21 @@ export default function NodeInternalUrl({ ports }: NodeInternalUrlProps) {
         </TooltipTrigger>
         <TooltipContent
           side="bottom"
-          className="bg-background-secondary rounded-xl w-80"
+          className="bg-background-secondary rounded-xl w-80 p-0"
           onPointerDownOutside={(e) => e.preventDefault()}
         >
-          <div className="p-2 border border-dotted rounded-xl">
+          <div className="p-2 rounded-xl">
             {ports && ports.length > 0 ? (
               <Table className="w-full">
-                <TableCaption className="text-xs">Internal URLs for this service</TableCaption>
-                <TableHeader>
+                {/* <TableCaption className="text-xs">
+                  Internal URLs for this service
+                </TableCaption> */}
+                <TableHeader className="h-8">
                   <TableRow className="h-8">
-                    <TableHead className="w-16 text-xs py-1">Port</TableHead>
-                    <TableHead className="text-xs py-1">Internal Address</TableHead>
+                    <TableHead className="w-12 text-xs py-1">Port</TableHead>
+                    <TableHead className="text-xs py-1">
+                      Internal Address
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -88,7 +92,9 @@ export default function NodeInternalUrl({ ports }: NodeInternalUrlProps) {
                             />
                           </div>
                         ) : (
-                          <span className="text-muted-foreground text-xs">N/A</span>
+                          <span className="text-muted-foreground text-xs">
+                            N/A
+                          </span>
                         )}
                       </TableCell>
                     </TableRow>

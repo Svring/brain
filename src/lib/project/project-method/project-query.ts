@@ -59,7 +59,7 @@ export const getProjectResourcesOptions = (
   enabledSubModules: string[] = []
 ) => {
   return queryOptions({
-    queryKey: getProjectResourcesQueryKey(context.namespace, projectName),
+    queryKey: ["project", projectName],
     queryFn: async () => {
       const resources = await getProjectRelatedResources(
         context,

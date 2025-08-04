@@ -63,7 +63,7 @@ export const MainSection: React.FC<MainSectionProps> = () => {
                     <SidebarMenuButton
                       onClick={() => handleNavigation(item.path)}
                     >
-                      <item.icon className="" />
+                      <item.icon />
                       <span>{item.title}</span>
                     </SidebarMenuButton>
                   </TooltipTrigger>

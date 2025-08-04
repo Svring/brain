@@ -1,8 +1,10 @@
 "use client";
 
-import { Database, Clock } from "lucide-react";
+import { Database, Clock, History, Trash2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDistanceToNow } from "date-fns";
+import { useDeleteBackupMutation } from "@/lib/sealos/cluster/cluster-method/cluster-mutation";
+import { createSealosContext } from "@/lib/auth/auth-utils";
 
 interface Backup {
   name: string;
@@ -12,12 +14,26 @@ interface Backup {
 interface ClusterNodeBackupListProps {
   backups: Backup[] | undefined;
   isLoading: boolean;
+  isExpanded?: boolean;
 }
 
 export default function ClusterNodeBackupList({
   backups,
   isLoading,
+  isExpanded = false,
 }: ClusterNodeBackupListProps) {
+  const sealosContext = createSealosContext();
+  const deleteBackupMutation = useDeleteBackupMutation(sealosContext);
+
+  const handleDeleteBackup = async (backupName: string) => {
+    console.log('Attempting to delete backup:', backupName);
+    try {
+      const result = await deleteBackupMutation.mutateAsync({ backupName });
+      console.log('Delete backup result:', result);
+    } catch (error) {
+      console.error('Failed to delete backup:', error);
+    }
+  };
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       month: "short",
@@ -28,7 +44,7 @@ export default function ClusterNodeBackupList({
   };
 
   return (
-    <ScrollArea className="flex-1">
+    <ScrollArea className={`flex-1 ${!isExpanded ? "overflow-hidden" : ""}`}>
       {isLoading ? (
         <div className="flex items-center justify-center h-20">
           <div className="text-xs text-muted-foreground">Loading...</div>
@@ -53,27 +69,49 @@ export default function ClusterNodeBackupList({
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <Database className="h-3 w-3 text-muted-foreground" />
-                    <div className="flex flex-col">
+                    <div className="flex flex-col max-w-[120px]">
                       <span className="text-xs font-medium truncate">
                         {backup.name}
                       </span>
-                      {isValidTime ? (
+                      {backup.time && (
                         <div className="flex items-center gap-1 text-muted-foreground">
                           <Clock className="h-3 w-3" />
                           <span className="text-xs">
-                            {formatDistanceToNow(backupTime, {
-                              addSuffix: true,
-                            })}
-                          </span>
-                        </div>
-                      ) : (
-                        backup.time && (
-                          <span className="text-xs text-muted-foreground">
                             {formatDate(backup.time)}
                           </span>
-                        )
+                        </div>
                       )}
                     </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      className="p-1 hover:bg-muted rounded transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Handle restore action
+                      }}
+                      title="Restore backup"
+                    >
+                      <History className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                    </button>
+                    <button
+                      className={`p-1 hover:bg-muted rounded transition-colors ${
+                        deleteBackupMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        console.log('Delete button clicked for:', backup.name);
+                        handleDeleteBackup(backup.name);
+                      }}
+                      title="Delete backup"
+                      disabled={deleteBackupMutation.isPending}
+                    >
+                      <Trash2 className={`h-3 w-3 ${
+                        deleteBackupMutation.isPending 
+                          ? 'text-muted-foreground/50' 
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`} />
+                    </button>
                   </div>
                 </div>
               </div>

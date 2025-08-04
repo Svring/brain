@@ -37,7 +37,9 @@ export function useCreateClusterMutation(context: ClusterApiContext) {
     mutationFn: (request: ClusterCreateRequest) =>
       runParallelAction(createCluster(request, context)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["clusters", "cluster"] });
+      queryClient.invalidateQueries({
+        queryKey: [["cluster"], ["project"]],
+      });
     },
   });
 }
@@ -49,7 +51,7 @@ export function useStartClusterMutation(context: ClusterApiContext) {
       runParallelAction(startCluster(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["clusters", "cluster"],
+        queryKey: [["cluster"], ["project"]],
       });
     },
   });
@@ -75,7 +77,7 @@ export function useDeleteClusterMutation(context: ClusterApiContext) {
       runParallelAction(deleteCluster(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["clusters", "cluster"],
+        queryKey: [["cluster"], ["project"]],
       });
     },
   });
@@ -93,7 +95,7 @@ export function useDeleteBackupMutation(context: ClusterApiContext) {
     onSuccess: () => {
       // Invalidate backup list queries to refresh the backup list
       queryClient.invalidateQueries({
-        queryKey: ["backups"],
+        queryKey: ["backup"],
       });
     },
   });

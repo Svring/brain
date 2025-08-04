@@ -9,6 +9,7 @@ interface NodeStackProps {
   subCard: ReactNode;
   className?: string;
   showMainFirst?: boolean;
+  onSubCardClick?: () => void;
 }
 
 export default function NodeStack({
@@ -16,6 +17,7 @@ export default function NodeStack({
   subCard,
   className = "",
   showMainFirst = true,
+  onSubCardClick,
 }: NodeStackProps) {
   const ref = useRef<HTMLDivElement>(null);
   const hovered = useHover(ref);
@@ -26,7 +28,11 @@ export default function NodeStack({
 
   const handleBackCardClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsMainInFront(!isMainInFront);
+    if (!isMainInFront && onSubCardClick) {
+      onSubCardClick();
+    } else {
+      setIsMainInFront(!isMainInFront);
+    }
   };
 
   return (

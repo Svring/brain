@@ -49,6 +49,7 @@ export default function ClusterNodeBackup({
         <ClusterNodeBackupList
           backups={transformedBackups}
           isLoading={isLoading}
+          isExpanded={isExpanded}
         />
       </div>
     </BaseNode>
