@@ -11,11 +11,11 @@ interface NodeStackProps {
   showMainFirst?: boolean;
 }
 
-export default function NodeStack({ 
-  mainCard, 
-  subCard, 
-  className = "", 
-  showMainFirst = true 
+export default function NodeStack({
+  mainCard,
+  subCard,
+  className = "",
+  showMainFirst = true,
 }: NodeStackProps) {
   const ref = useRef<HTMLDivElement>(null);
   const hovered = useHover(ref);
@@ -23,8 +23,6 @@ export default function NodeStack({
 
   const frontCard = isMainInFront ? mainCard : subCard;
   const backCard = isMainInFront ? subCard : mainCard;
-
-
 
   const handleBackCardClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -43,7 +41,8 @@ export default function NodeStack({
         initial={{ opacity: 0, x: 0, y: 0 }}
         animate={{
           opacity: hovered ? 0.8 : 0.6,
-          y: hovered ? -40 : -10,
+          y: hovered ? -30 : -10,
+          x: hovered ? 20 : 10,
         }}
         transition={{ duration: 0.2, ease: "easeOut" }}
         onClick={handleBackCardClick}

@@ -15,6 +15,7 @@ interface BaseNodeProps {
   nodeData: any;
   className?: string;
   active?: boolean;
+  expand?: boolean;
 }
 
 export default function BaseNodeWrapper({
@@ -23,6 +24,7 @@ export default function BaseNodeWrapper({
   nodeData,
   className,
   active = true,
+  expand = false,
 }: BaseNodeProps) {
   const nodeRef = useRef(null);
 
@@ -49,6 +51,7 @@ export default function BaseNodeWrapper({
           className={className}
           ref={nodeRef}
           onClick={handleNodeClick}
+          expand={expand}
         >
           <Handle position={Position.Top} type="source" />
           {children}

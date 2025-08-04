@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Maximize2 } from "lucide-react";
+import { Plus, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,8 @@ interface DevboxNodeReleaseTitleProps {
   devboxName: string;
   onRelease: (config: { tag: string; releaseDes: string }) => Promise<void>;
   isReleasing: boolean;
+  onToggleExpand: () => void;
+  isExpanded: boolean;
 }
 
 export default function DevboxNodeReleaseTitle({
@@ -23,6 +25,8 @@ export default function DevboxNodeReleaseTitle({
   devboxName,
   onRelease,
   isReleasing,
+  onToggleExpand,
+  isExpanded,
 }: DevboxNodeReleaseTitleProps) {
   const [releaseConfig, setReleaseConfig] = useState({
     tag: "",
@@ -153,13 +157,17 @@ export default function DevboxNodeReleaseTitle({
         <Button
           onClick={(e) => {
             e.stopPropagation();
-            // Add maximize functionality here
+            onToggleExpand();
           }}
           size="sm"
           variant="ghost"
           className="h-7 w-7 p-0"
         >
-          <Maximize2 className="h-3 w-3" />
+          {isExpanded ? (
+            <Minimize2 className="h-3 w-3" />
+          ) : (
+            <Maximize2 className="h-3 w-3" />
+          )}
         </Button>
       </div>
     </div>

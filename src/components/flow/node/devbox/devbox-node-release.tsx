@@ -12,6 +12,7 @@ import {
 import { createDevboxContext } from "@/lib/auth/auth-utils";
 import DevboxNodeReleaseTitle from "./devbox-node-release-title";
 import DevboxNodeReleaseList from "./devbox-node-release-list";
+import { useState } from "react";
 
 interface DevboxNodeReleaseProps {
   target: CustomResourceTarget;
@@ -24,6 +25,7 @@ export default function DevboxNodeRelease({
 }: DevboxNodeReleaseProps) {
   const devboxContext = createDevboxContext();
   const devboxName = target.name || "";
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const { data: releases, isLoading } = useQuery(
     getDevboxReleasesOptions(devboxContext, devboxName)
@@ -64,14 +66,20 @@ export default function DevboxNodeRelease({
     await deleteReleaseMutation.mutateAsync(versionName);
   };
 
+  const handleToggleExpand = () => {
+    setIsExpanded(!isExpanded);
+  };
+
   return (
-    <BaseNode target={target} nodeData={{}}>
+    <BaseNode target={target} nodeData={{}} expand={isExpanded}>
       <div className="flex h-full flex-col gap-3 p-1">
         <DevboxNodeReleaseTitle
           releasesCount={releases?.data?.length || 0}
           devboxName={devboxName}
           onRelease={handleRelease}
           isReleasing={releaseMutation.isPending}
+          onToggleExpand={handleToggleExpand}
+          isExpanded={isExpanded}
         />
         <DevboxNodeReleaseList
           releases={releases?.data}

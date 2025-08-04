@@ -153,46 +153,52 @@ export default function DevboxNodeReleaseList({
                         </div>
                         <div className="grid gap-3">
                           <div className="grid gap-2">
-                            <Label htmlFor="cpu" className="text-xs">
+                            <Label className="text-xs">
                               CPU (millicores)
                             </Label>
-                            <Input
-                              id="cpu"
-                              type="number"
-                              value={deployConfig.cpu}
-                              onChange={(e) =>
-                                setDeployConfig((prev) => ({
-                                  ...prev,
-                                  cpu: parseInt(e.target.value) || 2000,
-                                }))
-                              }
-                              onClick={(e) => {
-                                e.stopPropagation();
-                              }}
-                              className="h-8 text-xs"
-                              min="100"
-                            />
+                            <div className="grid grid-cols-3 gap-1">
+                              {[1000, 2000, 4000, 8000, 16000].map((cpu) => (
+                                <Button
+                                  key={cpu}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDeployConfig((prev) => ({
+                                      ...prev,
+                                      cpu,
+                                    }));
+                                  }}
+                                  variant={deployConfig.cpu === cpu ? "default" : "outline"}
+                                  size="sm"
+                                  className="h-7 text-xs"
+                                >
+                                  {cpu}
+                                </Button>
+                              ))}
+                            </div>
                           </div>
                           <div className="grid gap-2">
-                            <Label htmlFor="memory" className="text-xs">
+                            <Label className="text-xs">
                               Memory (MB)
                             </Label>
-                            <Input
-                              id="memory"
-                              type="number"
-                              value={deployConfig.memory}
-                              onChange={(e) =>
-                                setDeployConfig((prev) => ({
-                                  ...prev,
-                                  memory: parseInt(e.target.value) || 4096,
-                                }))
-                              }
-                              onClick={(e) => {
-                                e.stopPropagation();
-                              }}
-                              className="h-8 text-xs"
-                              min="128"
-                            />
+                            <div className="grid grid-cols-3 gap-1">
+                              {[1024, 2048, 4096, 8192, 16384].map((memory) => (
+                                <Button
+                                  key={memory}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDeployConfig((prev) => ({
+                                      ...prev,
+                                      memory,
+                                    }));
+                                  }}
+                                  variant={deployConfig.memory === memory ? "default" : "outline"}
+                                  size="sm"
+                                  className="h-7 text-xs"
+                                >
+                                  {memory}
+                                </Button>
+                              ))}
+                            </div>
                           </div>
                         </div>
                         <div className="flex gap-2">
