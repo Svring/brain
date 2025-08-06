@@ -3,9 +3,13 @@
 import { StickToBottom } from "@/components/ui/stick-to-bottom";
 import { RenderTextMessage } from "./messages";
 import { useAiCacheMessages } from "@/hooks/ai/use-ai-cache-messages";
+import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 
 export function AiMessages() {
-  const { messages, isLoading, interrupt } = useAiCacheMessages();
+  // const { messages, isLoading, interrupt } = useAiCacheMessages();
+  const { messages, isLoading, interrupt } = useCopilotChatHeadless_c({
+    id: "chat",
+  });
 
   return (
     <>

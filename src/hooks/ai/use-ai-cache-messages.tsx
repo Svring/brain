@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useCopilotChat } from "@copilotkit/react-core";
+import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 
 export function useAiCacheMessages() {
-  const { visibleMessages, setMessages, isLoading, interrupt } = useCopilotChat(
-    { id: "chat" }
-  );
-  const [cachedMessages, setCachedMessages] = useState(visibleMessages);
-  const prevVisibleLengthRef = useRef(visibleMessages.length);
+  const { messages, setMessages, isLoading, interrupt } =
+    useCopilotChatHeadless_c({ id: "chat" });
+
+  const [cachedMessages, setCachedMessages] = useState(messages);
+  const prevVisibleLengthRef = useRef(messages.length);
 
   useEffect(() => {
-    const currentLength = visibleMessages.length;
+    const currentLength = messages.length;
     const cachedLength = cachedMessages.length;
 
     // Calculate total content length for both message arrays
@@ -22,7 +22,7 @@ export function useAiCacheMessages() {
       }, 0);
     };
 
-    const visibleContentLength = getContentLength(visibleMessages);
+    const visibleContentLength = getContentLength(messages);
     const cachedContentLength = getContentLength(cachedMessages);
 
     if (
@@ -30,7 +30,7 @@ export function useAiCacheMessages() {
       visibleContentLength > cachedContentLength
     ) {
       // Sync visibleMessages to cachedMessages if it has more messages or longer content
-      setCachedMessages(visibleMessages);
+      setCachedMessages(messages);
     } else if (
       currentLength < prevVisibleLengthRef.current ||
       cachedContentLength > visibleContentLength
@@ -40,10 +40,10 @@ export function useAiCacheMessages() {
     }
 
     prevVisibleLengthRef.current = currentLength;
-  }, [visibleMessages, setMessages, cachedMessages]);
+  }, [messages, setMessages, cachedMessages]);
 
   // Filter out system messages and deduplicate by id
-  const messages = cachedMessages
+  const filteredMessages = cachedMessages
     .filter((message) => message.role !== "system")
     .filter((message, index, array) => {
       // Keep only the first occurrence of each id
@@ -51,7 +51,7 @@ export function useAiCacheMessages() {
     });
 
   return {
-    messages,
+    messages: filteredMessages,
     isLoading,
     interrupt,
     cachedMessages,

@@ -3,18 +3,19 @@
 import { Hero } from "@/components/chat/hero";
 import { AiChatInput } from "@/components/ai/headless/ai-input";
 import { AiMessages } from "@/components/ai/headless/ai-messages";
-import { useCopilotChat } from "@copilotkit/react-core";
+import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCreateProjectDialog } from "@/hooks/project/use-project-create-dialog";
 import AiChatbox from "@/components/ai/headless/ai-chatbox";
 
 export default function ChatPage() {
-  const { visibleMessages } = useCopilotChat({ id: "chat" });
-  const hasMessages = visibleMessages.length > 0;
+  // const { messages } = useCopilotChatHeadless_c({ id: "chat" });
+  const messages = [];
+  const hasMessages = messages.length > 0;
   const { openDialog, CreateProjectDialog } = useCreateProjectDialog();
 
   return (
-    <div className="min-h-screen w-full flex flex-col">
+    <div className="h-screen w-full flex flex-col">
       <AnimatePresence mode="wait">
         {!hasMessages ? (
           // Initial state: Hero + centered input
@@ -23,7 +24,7 @@ export default function ChatPage() {
             initial={{ opacity: 1 }}
             exit={{ opacity: 0, y: -50 }}
             transition={{ duration: 0.3 }}
-            className="flex-1 flex flex-col"
+            className="flex-1 flex flex-col min-h-screen"
           >
             <Hero
               heroTitle="Seaward"
@@ -44,16 +45,16 @@ export default function ChatPage() {
             </div>
           </motion.div>
         ) : (
-          // Chat state: Messages + bottom input
+          // Chat state: Scrollable messages + fixed bottom input
           <motion.div
             key="chat-state"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
-            className="flex-1 flex flex-col h-screen relative"
+            className="flex flex-col min-h-screen"
           >
             {/* Messages area - scrollable */}
-            <div className="flex-1 overflow-y-auto pt-8 pb-24">
+            <div className="flex-1 overflow-y-auto pt-8 pb-4">
               <div className="max-w-3xl mx-auto">
                 <AiMessages />
               </div>
@@ -64,16 +65,15 @@ export default function ChatPage() {
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
-              className="absolute bottom-0 left-0 right-0 bg-background/95 backdrop-blur mb-4"
+              className="sticky bottom-0 bg-background/95 backdrop-blur z-10 pb-8"
             >
-              <div className="container mx-auto px-4 py-4">
+              <div className="container mx-auto px-4">
                 <AiChatInput className="max-w-3xl mx-auto" />
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-      <AiChatbox />
       <CreateProjectDialog />
     </div>
   );

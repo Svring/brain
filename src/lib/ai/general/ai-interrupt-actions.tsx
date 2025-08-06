@@ -8,7 +8,7 @@ export const activateInterruptActions = () => {
     enabled: ({ eventValue }) => eventValue.type === "approval",
     render: ({ event, resolve }) => (
       <ApproveComponent
-        content={event.value.content}
+        content={event.value}
         onAnswer={(answer) => resolve(answer.toString())}
       />
     ),

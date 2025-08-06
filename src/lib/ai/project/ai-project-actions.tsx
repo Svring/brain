@@ -9,7 +9,6 @@ import {
   useCreateProjectMutation,
 } from "@/lib/project/project-method/project-mutation";
 import { useCopilotAction } from "@copilotkit/react-core";
-import { GeneralActionCard } from "@/components/ai/action-cards/general-action-card";
 
 export const activateProjectActions = (context: K8sApiContext) => {
   listProjectAction(context);

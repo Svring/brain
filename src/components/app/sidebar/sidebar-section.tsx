@@ -1,4 +1,4 @@
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import type React from "react";
 import { MessageCirclePlus, LayoutGrid } from "lucide-react";
 import {
@@ -16,6 +16,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { listProjectsOptions } from "@/lib/project/project-method/project-query";
 import { createK8sContext } from "@/lib/auth/auth-utils";
+import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 
 // Types
 export interface NavigationItem {
@@ -45,10 +46,18 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
 
 export const MainSection: React.FC<MainSectionProps> = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const { data: projects } = useQuery(listProjectsOptions(createK8sContext()));
+  const { reset } = useCopilotChatHeadless_c({ id: "chat" });
 
   const handleNavigation = (path: string) => {
-    router.push(path);
+    console.log("path:", path);
+    if (path === "/chat" && pathname === "/chat") {
+      reset();
+      console.log("reset chat");
+    } else {
+      router.push(path);
+    }
   };
 
   return (

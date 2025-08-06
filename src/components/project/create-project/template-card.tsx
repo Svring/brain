@@ -4,8 +4,12 @@ import { Button } from "@/components/ui/button";
 import type { TemplateResource } from "@/lib/sealos/template/schemas/template-api-context-schemas";
 import { TemplateInputDialog } from "./template-input-dialog";
 import { useTemplateCard } from "@/hooks/template/use-template-card";
-import { useCopilotChat } from "@copilotkit/react-core";
-import { useAiActions } from "@/contexts/ai/ai-context";
+import { useTemplatePopover } from "@/hooks/template/use-template-popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export type TemplateCardProps = {
   template: TemplateResource;
@@ -22,23 +26,14 @@ export function TemplateCard({ template, onViewDetails }: TemplateCardProps) {
     deployTemplate,
   } = useTemplateCard(template);
 
-  const { appendMessage } = useCopilotChat({ id: "template" });
-  const { openChat } = useAiActions();
-
-  const handleAskAi = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const message = `Tell me more about the ${
-      template.spec.title
-    } template. What does it do and how can I use it? Here are the details:\n\nTitle: ${
-      template.spec.title
-    }\nDescription: ${
-      template.spec.description || "No description available"
-    }\nCategories: ${template.spec.categories?.join(", ") || "None"}${
-      template.spec.author ? `\nAuthor: ${template.spec.author}` : ""
-    }`;
-    appendMessage({ id: crypto.randomUUID(), role: "user", content: message });
-    openChat();
-  };
+  const {
+    aiResponse,
+    isPopoverOpen,
+    setIsPopoverOpen,
+    isLoadingAi,
+    handleAskAi,
+    handleAskFurtherQuestions,
+  } = useTemplatePopover(template);
 
   return (
     <>
@@ -48,15 +43,58 @@ export function TemplateCard({ template, onViewDetails }: TemplateCardProps) {
         role="button"
         tabIndex={0}
       >
-        {/* Ask AI button in upper right */}
-        <Button
-          className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100"
-          onClick={handleAskAi}
-          size="sm"
-          variant="ghost"
-        >
-          <MessageCircle className="size-4" />
-        </Button>
+        {/* Ask AI button in upper right - always visible */}
+        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              className="absolute top-2 right-2 z-10"
+              onClick={handleAskAi}
+              size="sm"
+              variant="ghost"
+            >
+              <MessageCircle className="size-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            align="center"
+            className="w-96 h-80 flex flex-col"
+            side="bottom"
+          >
+            <div className="flex flex-col h-full">
+              <h4 className="font-medium text-sm mb-2 flex-shrink-0">
+                AI Response about {template.spec.title}
+              </h4>
+              <div className="flex-1 overflow-y-auto mb-3">
+                {isLoadingAi ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="size-4 animate-spin" />
+                    <span className="text-sm text-muted-foreground">
+                      Getting AI response...
+                    </span>
+                  </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    {aiResponse || "No response yet."}
+                  </div>
+                )}
+              </div>
+              <div className="flex-shrink-0 border-t pt-2">
+                <Button
+                  className="w-full"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAskFurtherQuestions();
+                  }}
+                  size="sm"
+                  variant="outline"
+                  disabled={isLoadingAi || !aiResponse}
+                >
+                  Ask Further Questions
+                </Button>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
         {/* Header with icon and title */}
         <div className="mb-3 flex items-center gap-3">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted p-2">

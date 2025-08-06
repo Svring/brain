@@ -11,10 +11,10 @@
     "eslint": "npx tsc --noEmit"
   },
   "dependencies": {
-    "@copilotkit/react-core": "1.10.0-next.0",
-    "@copilotkit/react-ui": "1.10.0-next.0",
-    "@copilotkit/runtime": "1.10.0-next.0",
-    "@copilotkit/runtime-client-gql": "1.10.0-next.0",
+    "@copilotkit/react-core": "1.10.0-next.10",
+    "@copilotkit/react-ui": "1.10.0-next.10",
+    "@copilotkit/runtime": "1.10.0-next.10",
+    "@copilotkit/runtime-client-gql": "1.10.0-next.10",
     "@copilotkit/shared": "^1.9.3",
     "@dagrejs/dagre": "^1.1.5",
     "@dnd-kit/core": "^6.3.1",
@@ -24,6 +24,8 @@
     "@grpc/proto-loader": "^0.8.0",
     "@hookform/resolvers": "^3.9.1",
     "@kubernetes/client-node": "^1.3.0",
+    "@langchain/core": "^0.3.66",
+    "@langchain/langgraph-sdk": "^0.0.105",
     "@payloadcms/db-postgres": "3.41.0",
     "@payloadcms/next": "3.41.0",
     "@payloadcms/payload-cloud": "3.41.0",
@@ -79,6 +81,7 @@
     "fast-json-patch": "^3.1.1",
     "flowtoken": "^1.0.40",
     "framer-motion": "^12.23.3",
+    "github-markdown-css": "^5.8.1",
     "graphql": "^16.8.1",
     "input-otp": "1.4.1",
     "js-yaml": "^4.1.0",
@@ -131,4 +134,3 @@
     "react-is": "^19.0.0-rc-69d4b800-20241021"
   }
 }
-

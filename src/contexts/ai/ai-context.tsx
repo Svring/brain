@@ -9,6 +9,8 @@ import { aiMachine, type AiState } from "./ai-machine";
 import { getAiCredentialsDev, getAiCredentialsProd } from "@/lib/ai/ai-utils";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import type { User } from "@/payload-types";
+import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
+import { randomId } from "@copilotkit/shared";
 
 // const inspector = createBrowserInspector();
 
@@ -120,9 +122,18 @@ export function useAiState() {
 
 export function useAiActions() {
   const { send } = useAiContext();
+  const { messages, setMessages } = useCopilotChatHeadless_c();
 
   return {
-    openChat: () => send({ type: "CHAT_OPEN" }),
+    openChat: (initialMessage?: string) => {
+      send({ type: "CHAT_OPEN" });
+      if (initialMessage) {
+        setMessages([
+          ...messages,
+          { id: randomId(), role: "user", content: initialMessage },
+        ]);
+      }
+    },
     closeChat: () => send({ type: "CHAT_CLOSE" }),
     setState: (state: Partial<AiState>) => send({ type: "SET_STATE", state }),
     setFlowContext: (flowContext: Partial<AiState["flow_context"]>) =>

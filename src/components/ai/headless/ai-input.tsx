@@ -1,7 +1,7 @@
 "use client";
 
 import { PromptInputBox } from "./ai-prompt-box";
-import { useCopilotChat } from "@copilotkit/react-core";
+import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { randomId } from "@copilotkit/shared";
 
 interface AiChatInputProps {
@@ -9,11 +9,11 @@ interface AiChatInputProps {
 }
 
 export function AiChatInput({ className }: AiChatInputProps) {
-  const { appendMessage, isLoading } = useCopilotChat({ id: "chat" });
+  const { sendMessage, isLoading } = useCopilotChatHeadless_c({ id: "chat" });
 
   const handleSendMessage = (message: string) => {
     if (message.trim() && !isLoading) {
-      appendMessage({
+      sendMessage({
         id: randomId(),
         role: "user",
         content: message.trim(),
