@@ -1,4 +1,4 @@
-import { Loader2 } from "lucide-react";
+import { Loader2, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import type { TemplateResource } from "@/lib/sealos/template/schemas/template-api-context-schemas";
@@ -22,8 +22,23 @@ export function TemplateCard({ template, onViewDetails }: TemplateCardProps) {
     deployTemplate,
   } = useTemplateCard(template);
 
-  const { appendMessage } = useCopilotChat();
+  const { appendMessage } = useCopilotChat({ id: "template" });
   const { openChat } = useAiActions();
+
+  const handleAskAi = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const message = `Tell me more about the ${
+      template.spec.title
+    } template. What does it do and how can I use it? Here are the details:\n\nTitle: ${
+      template.spec.title
+    }\nDescription: ${
+      template.spec.description || "No description available"
+    }\nCategories: ${template.spec.categories?.join(", ") || "None"}${
+      template.spec.author ? `\nAuthor: ${template.spec.author}` : ""
+    }`;
+    appendMessage({ id: crypto.randomUUID(), role: "user", content: message });
+    openChat();
+  };
 
   return (
     <>
@@ -33,6 +48,15 @@ export function TemplateCard({ template, onViewDetails }: TemplateCardProps) {
         role="button"
         tabIndex={0}
       >
+        {/* Ask AI button in upper right */}
+        <Button
+          className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100"
+          onClick={handleAskAi}
+          size="sm"
+          variant="ghost"
+        >
+          <MessageCircle className="size-4" />
+        </Button>
         {/* Header with icon and title */}
         <div className="mb-3 flex items-center gap-3">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted p-2">

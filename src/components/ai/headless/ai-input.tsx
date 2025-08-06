@@ -9,7 +9,7 @@ interface AiChatInputProps {
 }
 
 export function AiChatInput({ className }: AiChatInputProps) {
-  const { appendMessage, isLoading } = useCopilotChat();
+  const { appendMessage, isLoading } = useCopilotChat({ id: "chat" });
 
   const handleSendMessage = (message: string) => {
     if (message.trim() && !isLoading) {

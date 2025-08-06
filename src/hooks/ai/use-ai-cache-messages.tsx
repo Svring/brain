@@ -4,7 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import { useCopilotChat } from "@copilotkit/react-core";
 
 export function useAiCacheMessages() {
-  const { visibleMessages, setMessages, isLoading, interrupt } = useCopilotChat();
+  const { visibleMessages, setMessages, isLoading, interrupt } = useCopilotChat(
+    { id: "chat" }
+  );
   const [cachedMessages, setCachedMessages] = useState(visibleMessages);
   const prevVisibleLengthRef = useRef(visibleMessages.length);
 
@@ -45,7 +47,7 @@ export function useAiCacheMessages() {
     .filter((message) => message.role !== "system")
     .filter((message, index, array) => {
       // Keep only the first occurrence of each id
-      return array.findIndex(m => m.id === message.id) === index;
+      return array.findIndex((m) => m.id === message.id) === index;
     });
 
   return {
@@ -53,6 +55,6 @@ export function useAiCacheMessages() {
     isLoading,
     interrupt,
     cachedMessages,
-    cachedMessagesLength: cachedMessages.length
+    cachedMessagesLength: cachedMessages.length,
   };
 }

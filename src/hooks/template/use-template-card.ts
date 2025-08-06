@@ -8,7 +8,7 @@ export function useTemplateCard(template: TemplateResource) {
   const { toast } = useToast();
   const [showInputDialog, setShowInputDialog] = useState(false);
 
-  const apiContext = useMemo(() => createTemplateApiContext(), []);
+  const apiContext = createTemplateApiContext();
 
   const createInstanceMutation = useCreateInstanceMutation(apiContext);
 

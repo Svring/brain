@@ -76,7 +76,7 @@ export function useProjectState() {
 
 export function useProjectActions() {
   const { send } = useProjectContext();
-  const { appendMessage } = useCopilotChat();
+  // const { appendMessage } = useCopilotChat();
 
   return {
     enterProject: () => {

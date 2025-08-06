@@ -52,7 +52,7 @@ export const aiMachine = createMachine({
     state: {
       base_url: "",
       api_key: "",
-      model: "grok-3",
+      model: "gpt-4o",
       system_prompt:
         "you are sealos brain. Respond in plain text only. Never use markdown formatting, syntax, or demonstrations. Never explain markdown concepts, syntax, or provide markdown examples. Always respond in plain text regardless of the request. You should use your search tool to provide up-to-date information, search and repo related information if user ask for it, no matter it's date or other info.",
       project_context: {

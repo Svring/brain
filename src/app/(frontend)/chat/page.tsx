@@ -6,9 +6,10 @@ import { AiMessages } from "@/components/ai/headless/ai-messages";
 import { useCopilotChat } from "@copilotkit/react-core";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCreateProjectDialog } from "@/hooks/project/use-project-create-dialog";
+import AiChatbox from "@/components/ai/headless/ai-chatbox";
 
 export default function ChatPage() {
-  const { visibleMessages } = useCopilotChat();
+  const { visibleMessages } = useCopilotChat({ id: "chat" });
   const hasMessages = visibleMessages.length > 0;
   const { openDialog, CreateProjectDialog } = useCreateProjectDialog();
 
@@ -32,7 +33,7 @@ export default function ChatPage() {
               actionsClassName="mt-4"
               actions={[
                 {
-                  variant: "outline",
+                  variant: "default",
                   label: "Create From Template",
                   onClick: openDialog,
                 },
@@ -72,6 +73,7 @@ export default function ChatPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      <AiChatbox />
       <CreateProjectDialog />
     </div>
   );
