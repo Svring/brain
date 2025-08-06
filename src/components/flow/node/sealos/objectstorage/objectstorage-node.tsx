@@ -1,6 +1,6 @@
 "use client";
 
-import BaseNode from "../base-node-wrapper";
+import BaseNode from "../../base-node-wrapper";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import useObjectStorageNode from "@/hooks/sealos/objectstorage/use-objectstorage-node";

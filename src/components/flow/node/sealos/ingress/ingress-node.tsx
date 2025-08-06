@@ -1,6 +1,6 @@
 "use client";
 
-import BaseNode from "../base-node-wrapper";
+import BaseNode from "../../base-node-wrapper";
 import { useState } from "react";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { cn } from "@/lib/utils";
@@ -46,17 +46,18 @@ export default function IngressNode({
   const [urlAvailable, setUrlAvailable] = useState(false);
 
   // Construct the URL from data (will be null if isLoading or no host)
-  const url = !isLoading && data?.host
-    ? `${
-        data.protocol
-          ? data.protocol.toLowerCase() +
-            (data.layer === "application" ? "s" : "") +
-            "://"
-          : data.layer === "application"
-          ? "https://"
-          : ""
-      }${data.host}`
-    : null;
+  const url =
+    !isLoading && data?.host
+      ? `${
+          data.protocol
+            ? data.protocol.toLowerCase() +
+              (data.layer === "application" ? "s" : "") +
+              "://"
+            : data.layer === "application"
+            ? "https://"
+            : ""
+        }${data.host}`
+      : null;
 
   useInterval(
     async () => {

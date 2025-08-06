@@ -5,7 +5,7 @@ import { getClusterBackupListOptions } from "@/lib/sealos/cluster/cluster-method
 import { createSealosContext } from "@/lib/auth/auth-utils";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import BaseNode from "../base-node-wrapper";
+import BaseNode from "../../base-node-wrapper";
 import ClusterNodeBackupTitle from "./cluster-node-backup-title";
 import ClusterNodeBackupList from "./cluster-node-backup-list";
 
@@ -25,16 +25,16 @@ export default function ClusterNodeBackup({
     getClusterBackupListOptions(sealosContext, target)
   );
 
-  const clusterName = target.name || 'Unknown Cluster';
+  const clusterName = target.name || "Unknown Cluster";
 
   const handleToggleExpand = () => {
     setIsExpanded(!isExpanded);
   };
 
   // Transform the backup data to match our interface
-  const transformedBackups = backupList?.map(backup => ({
+  const transformedBackups = backupList?.map((backup) => ({
     name: backup.name,
-    time: typeof backup.time === 'string' ? backup.time : undefined
+    time: typeof backup.time === "string" ? backup.time : undefined,
   }));
 
   return (

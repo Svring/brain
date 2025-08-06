@@ -6,6 +6,7 @@ import type { ResourceConnections } from "./reliance-utils";
 import {
   convertToTrafficRequest,
   transformTrafficToReliance,
+  correctRelianceResourceTypes,
 } from "@/lib/hubble/traffic/traffic-utils";
 import { TrafficApiContext } from "@/lib/hubble/traffic/schemas/traffic-api-context-schema";
 import { runParallelAction } from "next-server-actions-parallel";
@@ -35,5 +36,17 @@ export const inferRelianceFromTraffic = async (
 
   const reliance = transformTrafficToReliance(traffic, currentNamespace!);
 
-  return reliance;
+  // Correct resource types by checking actual deployment and statefulset resources
+  const deploymentResources = resources.deployment?.items || [];
+  const statefulsetResources = resources.statefulset?.items || [];
+
+  const correctedReliance = correctRelianceResourceTypes(
+    reliance,
+    deploymentResources,
+    statefulsetResources
+  );
+
+  console.log("correctedReliance", correctedReliance);
+
+  return correctedReliance;
 };

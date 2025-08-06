@@ -1,111 +1,35 @@
 import { Loader2 } from "lucide-react";
 import Image from "next/image";
-import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { useAuthState } from "@/contexts/auth/auth-context";
-import { useToast } from "@/hooks/general/use-toast";
 import type { TemplateResource } from "@/lib/sealos/template/schemas/template-api-context-schemas";
-import { useCreateInstanceMutation } from "@/lib/sealos/template/template-method/template-mutation";
 import { TemplateInputDialog } from "./template-input-dialog";
+import { useTemplateCard } from "@/hooks/template/use-template-card";
+import { useCopilotChat } from "@copilotkit/react-core";
+import { useAiActions } from "@/contexts/ai/ai-context";
 
 export type TemplateCardProps = {
   template: TemplateResource;
-  setSelectedCategory: (category: string) => void;
   onViewDetails: (template: TemplateResource) => void;
-  onTemplateDeployed: () => void;
 };
 
-export function TemplateCard({
-  template,
-  setSelectedCategory,
-  onViewDetails,
-  onTemplateDeployed,
-}: TemplateCardProps) {
-  const { auth } = useAuthState();
-  const { toast } = useToast();
-  const [showInputDialog, setShowInputDialog] = useState(false);
+export function TemplateCard({ template, onViewDetails }: TemplateCardProps) {
+  const {
+    showInputDialog,
+    setShowInputDialog,
+    hasInputs,
+    isDeploying,
+    handleDeploy,
+    deployTemplate,
+  } = useTemplateCard(template);
 
-  const apiContext = useMemo(
-    () => ({
-      baseURL: auth?.regionUrl || undefined,
-      authorization: auth?.kubeconfig || undefined,
-    }),
-    [auth?.regionUrl, auth?.kubeconfig]
-  );
-  const createInstanceMutation = useCreateInstanceMutation(apiContext);
-
-  const handleClick = () => onViewDetails(template);
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      onViewDetails(template);
-    }
-  };
-
-  // Check if template has required inputs or any inputs at all
-  const hasInputs =
-    template.spec.inputs && Object.keys(template.spec.inputs).length > 0;
-
-  const handleDeploy = (e: React.MouseEvent) => {
-    e.stopPropagation();
-
-    // If template has inputs, show the input dialog
-    if (hasInputs) {
-      setShowInputDialog(true);
-      return;
-    }
-
-    // Otherwise, deploy directly
-    deployTemplate();
-  };
-
-  const deployTemplate = (templateForm?: Record<string, string>) => {
-    createInstanceMutation.mutate(
-      {
-        templateName: template.metadata.name,
-        templateForm,
-      },
-      {
-        onSuccess: () => {
-          toast({
-            title: "Template deployed successfully",
-            description: `${template.spec.title} has been deployed to your project.`,
-          });
-          setShowInputDialog(false);
-          onTemplateDeployed();
-        },
-        onError: (error) => {
-          toast({
-            title: "Deployment failed",
-            description:
-              error.message || "Failed to deploy template. Please try again.",
-            variant: "destructive",
-          });
-          setShowInputDialog(false);
-        },
-      }
-    );
-  };
-
-  const handleCategoryClick = (e: React.MouseEvent, category: string) => {
-    e.stopPropagation();
-    setSelectedCategory(category);
-  };
-
-  const handleCategoryKeyDown = (e: React.KeyboardEvent, category: string) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      e.stopPropagation();
-      setSelectedCategory(category);
-    }
-  };
+  const { appendMessage } = useCopilotChat();
+  const { openChat } = useAiActions();
 
   return (
     <>
       <div
-        className="group relative cursor-pointer rounded-lg border p-4 text-left transition-all hover:border-border/60 hover:shadow-md"
-        onClick={handleClick}
-        onKeyDown={handleKeyDown}
+        className="group relative cursor-pointer rounded-lg border p-4 text-left transition-all hover:bg-background-secondary hover:shadow-md"
+        onClick={() => onViewDetails(template)}
         role="button"
         tabIndex={0}
       >
@@ -141,12 +65,8 @@ export function TemplateCard({
           <div className="mb-4 flex flex-wrap gap-1">
             {template.spec.categories.slice(0, 3).map((category: string) => (
               <div
-                className="cursor-pointer rounded-full border-none bg-secondary px-2 py-1 text-secondary-foreground text-xs transition-colors hover:bg-secondary/80"
+                className="rounded-full border-none bg-secondary px-2 py-1 text-secondary-foreground text-xs"
                 key={category}
-                onClick={(e) => handleCategoryClick(e, category)}
-                onKeyDown={(e) => handleCategoryKeyDown(e, category)}
-                role="button"
-                tabIndex={0}
               >
                 {category}
               </div>
@@ -158,12 +78,12 @@ export function TemplateCard({
         <div className="flex justify-end">
           <Button
             className="opacity-0 transition-opacity group-hover:opacity-100"
-            disabled={createInstanceMutation.isPending}
+            disabled={isDeploying}
             onClick={handleDeploy}
             size="sm"
             variant="outline"
           >
-            {createInstanceMutation.isPending ? (
+            {isDeploying ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
                 Deploying...
@@ -184,7 +104,7 @@ export function TemplateCard({
           isOpen={showInputDialog}
           onClose={() => setShowInputDialog(false)}
           onSubmit={deployTemplate}
-          isLoading={createInstanceMutation.isPending}
+          isLoading={isDeploying}
         />
       )}
     </>

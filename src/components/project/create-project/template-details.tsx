@@ -2,7 +2,7 @@
 
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,40 +12,75 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useAuthState } from "@/contexts/auth/auth-context";
+import { useToast } from "@/hooks/general/use-toast";
 import type { TemplateResource } from "@/lib/sealos/template/schemas/template-api-context-schemas";
+import { useCreateInstanceMutation } from "@/lib/sealos/template/template-method/template-mutation";
 import { TemplateInputDialog } from "./template-input-dialog";
 
 export type TemplateDetailsProps = {
   template: TemplateResource;
   onBack: () => void;
-  onDeploy: (
-    templateName: string,
-    templateForm?: Record<string, string>
-  ) => void;
 };
 
 export function TemplateDetails({
   template,
   onBack,
-  onDeploy,
 }: TemplateDetailsProps) {
+  const { auth } = useAuthState();
+  const { toast } = useToast();
   const [showInputDialog, setShowInputDialog] = useState(false);
+
+  const apiContext = useMemo(
+    () => ({
+      baseURL: auth?.regionUrl || undefined,
+      authorization: auth?.kubeconfig || undefined,
+    }),
+    [auth?.regionUrl, auth?.kubeconfig]
+  );
+  const createInstanceMutation = useCreateInstanceMutation(apiContext);
 
   // Check if template has inputs
   const hasInputs =
     template.spec.inputs && Object.keys(template.spec.inputs).length > 0;
 
+  const deployTemplate = (templateForm?: Record<string, string>) => {
+    createInstanceMutation.mutate(
+      {
+        templateName: template.metadata.name,
+        templateForm,
+      },
+      {
+        onSuccess: () => {
+          toast({
+            title: "Template deployed successfully",
+            description: `${template.spec.title} has been deployed to your project.`,
+          });
+          setShowInputDialog(false);
+        },
+        onError: (error) => {
+          toast({
+            title: "Deployment failed",
+            description:
+              error.message || "Failed to deploy template. Please try again.",
+            variant: "destructive",
+          });
+          setShowInputDialog(false);
+        },
+      }
+    );
+  };
+
   const handleDeploy = () => {
     if (hasInputs) {
       setShowInputDialog(true);
     } else {
-      onDeploy(template.metadata.name);
+      deployTemplate();
     }
   };
 
   const handleDeployWithForm = (templateForm: Record<string, string>) => {
-    onDeploy(template.metadata.name, templateForm);
-    setShowInputDialog(false);
+    deployTemplate(templateForm);
   };
 
   return (
@@ -90,8 +125,16 @@ export function TemplateDetails({
                         </CardDescription>
                       )}
                     </div>
-                    <Button onClick={handleDeploy} size="lg">
-                      {hasInputs ? "Configure & Deploy" : "Deploy Template"}
+                    <Button 
+                      onClick={handleDeploy} 
+                      size="lg"
+                      disabled={createInstanceMutation.isPending}
+                    >
+                      {createInstanceMutation.isPending
+                        ? "Deploying..."
+                        : hasInputs
+                        ? "Configure & Deploy"
+                        : "Deploy Template"}
                     </Button>
                   </div>
 
@@ -249,7 +292,7 @@ export function TemplateDetails({
           isOpen={showInputDialog}
           onClose={() => setShowInputDialog(false)}
           onSubmit={handleDeployWithForm}
-          isLoading={false}
+          isLoading={createInstanceMutation.isPending}
         />
       )}
     </div>

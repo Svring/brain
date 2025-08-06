@@ -1,9 +1,9 @@
-import ClusterNode from "./cluster/cluster-node";
-import DeploymentNode from "./deployment/deployment-node";
-import DevboxNode from "./devbox/devbox-node";
-import IngressNode from "./ingress/ingress-node";
-import ObjectStorageNode from "./objectstorage/objectstorage-node";
-import StatefulSetNode from "./statefulset/statefulset-node";
+import ClusterNode from "./sealos/cluster/cluster-node";
+import DeploymentNode from "./sealos/deployment/deployment-node";
+import DevboxNode from "./sealos/devbox/devbox-node";
+import IngressNode from "./sealos/ingress/ingress-node";
+import ObjectStorageNode from "./sealos/objectstorage/objectstorage-node";
+import StatefulSetNode from "./sealos/statefulset/statefulset-node";
 import { NodeTypes } from "@xyflow/react";
 
 const nodeTypes: NodeTypes = {

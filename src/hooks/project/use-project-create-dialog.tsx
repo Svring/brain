@@ -15,7 +15,7 @@ export function useCreateProjectDialog() {
         <DialogTitle>Create Project</DialogTitle>
       </VisuallyHidden>
       <DialogContent className="h-[90vh] max-h-none w-[90vw] max-w-none">
-        <CreateProject onClose={onClose} />
+        <CreateProject />
       </DialogContent>
     </Dialog>
   );

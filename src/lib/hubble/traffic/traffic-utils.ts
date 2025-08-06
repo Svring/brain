@@ -250,3 +250,173 @@ export function transformTrafficToReliance(
 
   return reliance;
 }
+
+/**
+ * Corrects resource types in reliance structure by checking actual deployment and statefulset resources
+ * @param reliance - The reliance structure to correct
+ * @param deploymentResources - Array of deployment resources
+ * @param statefulsetResources - Array of statefulset resources
+ * @returns Corrected reliance structure with accurate resource types
+ */
+export function correctRelianceResourceTypes(
+  reliance: Record<
+    string,
+    Record<
+      string,
+      {
+        connectFrom: Record<string, string[]>;
+        external?: Record<string, Record<string, string[]>>;
+      }
+    >
+  >,
+  deploymentResources: Array<{ metadata?: { name?: string } }>,
+  statefulsetResources: Array<{ metadata?: { name?: string } }>
+): Record<
+  string,
+  Record<
+    string,
+    {
+      connectFrom: Record<string, string[]>;
+      external?: Record<string, Record<string, string[]>>;
+    }
+  >
+> {
+  // Create lookup sets for quick name checking
+  const deploymentNames = new Set(
+    deploymentResources
+      .map((resource) => resource.metadata?.name)
+      .filter((name) => name !== undefined)
+  );
+
+  const statefulsetNames = new Set(
+    statefulsetResources
+      .map((resource) => resource.metadata?.name)
+      .filter((name) => name !== undefined)
+  );
+
+  const correctedReliance = JSON.parse(JSON.stringify(reliance)); // Deep clone
+
+  // Check if we have statefulset entries to correct
+  if (correctedReliance.statefulset) {
+    const statefulsetEntries = correctedReliance.statefulset;
+    const resourcesToMove: Array<{ name: string; data: any }> = [];
+
+    // Find statefulset entries that should be deployments
+    Object.entries(statefulsetEntries).forEach(
+      ([resourceName, resourceData]) => {
+        if (
+          !statefulsetNames.has(resourceName) &&
+          deploymentNames.has(resourceName)
+        ) {
+          resourcesToMove.push({ name: resourceName, data: resourceData });
+        }
+      }
+    );
+
+    // Move resources from statefulset to deployment
+    if (resourcesToMove.length > 0) {
+      if (!correctedReliance.deployment) {
+        correctedReliance.deployment = {};
+      }
+
+      resourcesToMove.forEach(({ name, data }) => {
+        correctedReliance.deployment[name] = data;
+        delete correctedReliance.statefulset[name];
+      });
+
+      // Clean up empty statefulset object
+      if (Object.keys(correctedReliance.statefulset).length === 0) {
+        delete correctedReliance.statefulset;
+      }
+    }
+  }
+
+  // Also correct references in connectFrom and external fields
+  Object.entries(correctedReliance).forEach(([, kindResources]) => {
+    Object.entries(kindResources as Record<string, unknown>).forEach(
+      ([, resourceData]) => {
+        const typedResourceData = resourceData as {
+          connectFrom: Record<string, string[]>;
+          external?: Record<string, Record<string, string[]>>;
+        };
+
+        // Correct connectFrom references
+        if (typedResourceData.connectFrom?.statefulset) {
+          const statefulsetRefs = typedResourceData.connectFrom.statefulset;
+          const deploymentRefs: string[] = [];
+          const remainingStatefulsetRefs: string[] = [];
+
+          statefulsetRefs.forEach((refName: string) => {
+            if (
+              !statefulsetNames.has(refName) &&
+              deploymentNames.has(refName)
+            ) {
+              deploymentRefs.push(refName);
+            } else {
+              remainingStatefulsetRefs.push(refName);
+            }
+          });
+
+          // Update references
+          if (deploymentRefs.length > 0) {
+            if (!typedResourceData.connectFrom.deployment) {
+              typedResourceData.connectFrom.deployment = [];
+            }
+            typedResourceData.connectFrom.deployment.push(...deploymentRefs);
+          }
+
+          if (remainingStatefulsetRefs.length > 0) {
+            typedResourceData.connectFrom.statefulset =
+              remainingStatefulsetRefs;
+          } else {
+            delete typedResourceData.connectFrom.statefulset;
+          }
+        }
+
+        // Correct external references
+        if (typedResourceData.external) {
+          Object.entries(typedResourceData.external).forEach(
+            ([, namespaceRefs]) => {
+              const typedNamespaceRefs = namespaceRefs as Record<
+                string,
+                string[]
+              >;
+              if (typedNamespaceRefs.statefulset) {
+                const statefulsetRefs = typedNamespaceRefs.statefulset;
+                const deploymentRefs: string[] = [];
+                const remainingStatefulsetRefs: string[] = [];
+
+                statefulsetRefs.forEach((refName: string) => {
+                  if (
+                    !statefulsetNames.has(refName) &&
+                    deploymentNames.has(refName)
+                  ) {
+                    deploymentRefs.push(refName);
+                  } else {
+                    remainingStatefulsetRefs.push(refName);
+                  }
+                });
+
+                // Update references
+                if (deploymentRefs.length > 0) {
+                  if (!typedNamespaceRefs.deployment) {
+                    typedNamespaceRefs.deployment = [];
+                  }
+                  typedNamespaceRefs.deployment.push(...deploymentRefs);
+                }
+
+                if (remainingStatefulsetRefs.length > 0) {
+                  typedNamespaceRefs.statefulset = remainingStatefulsetRefs;
+                } else {
+                  delete typedNamespaceRefs.statefulset;
+                }
+              }
+            }
+          );
+        }
+      }
+    );
+  });
+
+  return correctedReliance;
+}

@@ -3,7 +3,7 @@
 import React from "react";
 import { Package } from "lucide-react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import BaseNode from "../base-node-wrapper";
+import BaseNode from "../../base-node-wrapper";
 import useDevboxNode from "@/hooks/sealos/devbox/use-devbox-node";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import { createDevboxContext } from "@/lib/auth/auth-utils";

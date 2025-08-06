@@ -1,7 +1,7 @@
 "use client";
 
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import BaseNode from "../base-node-wrapper";
+import BaseNode from "../../base-node-wrapper";
 import { useQuery } from "@tanstack/react-query";
 import { getDevboxReleasesOptions } from "@/lib/sealos/devbox/devbox-method/devbox-query";
 import {
