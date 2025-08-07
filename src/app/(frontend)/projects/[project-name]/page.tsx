@@ -11,7 +11,7 @@ import "@xyflow/react/dist/style.css";
 
 // Custom component imports
 import { ProjectHeader } from "@/components/project/components/project-header";
-import { ProjectActions } from "@/components/project/components/project-actions";
+// import { ProjectActions } from "@/components/project/components/project-actions";
 import { AddResourceTabs } from "@/components/project/add-resource/add-resource-tabs";
 import { Droppable } from "@/components/flow/dnd/droppable";
 import { DndProvider } from "@/components/flow/dnd/dnd-provider";
@@ -33,7 +33,7 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useFlow } from "@/hooks/flow/use-flow";
 import { useFlowFocus } from "@/hooks/flow/use-flow-focus";
 import { useFlowDrop } from "@/hooks/flow/use-flow-drop";
-import { useFlowRefresh } from "@/hooks/flow/use-flow-refresh";
+// import { useFlowRefresh } from "@/hooks/flow/use-flow-refresh";
 import { useProjectSignal } from "@/hooks/project/use-project-signal";
 import { useFlowActions } from "@/contexts/flow/flow-context";
 
@@ -50,16 +50,16 @@ import { FLOW_CONFIG } from "@/lib/flow/flow-constant/flow-constant-config";
 // Floating UI Component
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
   const [open, setOpen] = useState(false);
-  const { handleRefresh, isRefreshing } = useFlowRefresh(projectName);
+  // const { handleRefresh, isRefreshing } = useFlowRefresh(projectName);
 
   return (
     <>
       <ProjectHeader projectName={projectName} />
-      <ProjectActions
+      {/* <ProjectActions
         onAddNew={() => setOpen(true)}
         onRefresh={handleRefresh}
         isRefreshing={isRefreshing}
-      />
+      /> */}
       {/* <Sheet onOpenChange={setOpen} open={open}>
         <SheetContent className="!w-[40vw] !max-w-none fade-in-0 animate-in flex flex-col">
           <SheetHeader className="flex-shrink-0">
