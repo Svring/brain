@@ -1,7 +1,5 @@
 "use client";
 
-import { useAuthState } from "@/contexts/auth/auth-context";
-import { RegionSwitcher } from "@/components/app/sidebar/region-switcher";
 import { MainSection } from "@/components/app/sidebar/sidebar-section";
 import { UserCard } from "@/components/app/sidebar/user-card";
 import {
@@ -12,10 +10,16 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import AIAccess from "./ai-access";
+import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function AppSidebar() {
-  const { auth } = useAuthState();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  if (pathname === "/") {
+    router.push("/new/chat");
+  }
 
   return (
     <>

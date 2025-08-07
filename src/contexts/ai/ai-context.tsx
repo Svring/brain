@@ -113,6 +113,7 @@ export function useAiState() {
   return {
     aiState: state.context.state,
     chat: state.context.chat,
+    floatingChat: state.context.floatingChat,
     error: state.context.error,
     isInitializing: state.matches("initializing"),
     isActive: state.matches("active"),
@@ -134,7 +135,13 @@ export function useAiActions() {
         ]);
       }
     },
+    setThreadId: (threadId: string) =>
+      send({ type: "FLOATING_CHAT_SET_THREAD_ID", threadId }),
+    setAssistantId: (assistantId: string) =>
+      send({ type: "FLOATING_CHAT_SET_ASSISTANT_ID", assistantId }),
     closeChat: () => send({ type: "CHAT_CLOSE" }),
+    openFloatingChat: () => send({ type: "FLOATING_CHAT_OPEN" }),
+    closeFloatingChat: () => send({ type: "FLOATING_CHAT_CLOSE" }),
     setState: (state: Partial<AiState>) => send({ type: "SET_STATE", state }),
     setFlowContext: (flowContext: Partial<AiState["flow_context"]>) =>
       send({ type: "SET_FLOW_CONTEXT", flowContext }),

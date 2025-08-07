@@ -38,15 +38,11 @@ export const createDevboxAction = (context: DevboxApiContext) => {};
 
 export const listDevboxAction = (context: K8sApiContext) => {
   const queryClient = useQueryClient();
-  const { aiState } = useAiState();
 
   useCopilotAction({
     name: "listDevboxes",
     description: "List all devboxes",
     handler: () => {
-      if (aiState.approval.toString() !== "approved") {
-        return "user cancelled the action";
-      }
       return queryClient.fetchQuery(listDevboxOptions(context));
     },
   });

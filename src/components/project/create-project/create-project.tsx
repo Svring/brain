@@ -1,8 +1,6 @@
 "use client";
 
-import { useState } from "react";
 import { Main } from "@/components/app/layout/main";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -18,8 +16,6 @@ import type { TemplateResource } from "@/lib/sealos/template/schemas/template-ap
 import { TemplateCard } from "./template-card";
 import { TemplateDetails } from "./template-details";
 import { createSealosContext } from "@/lib/auth/auth-utils";
-import AiCoin from "@/components/ai/headless/ai-coin";
-import AiChatbox from "@/components/ai/headless/ai-chatbox";
 
 export default function CreateProject() {
   const templateApiContext = createSealosContext();
@@ -118,8 +114,6 @@ export default function CreateProject() {
             No templates found matching your criteria
           </div>
         )}
-        <AiCoin />
-        <AiChatbox />
       </Main>
     </>
   );

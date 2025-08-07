@@ -101,6 +101,7 @@
     "react-json-view": "^1.21.3",
     "react-markdown": "^10.1.0",
     "react-resizable-panels": "^2.1.7",
+    "react-rnd": "^10.5.2",
     "react-speech-recognition": "^4.0.1",
     "recharts": "2.15.4",
     "shadcn": "2.9.3-canary.0",

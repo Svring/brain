@@ -5,14 +5,16 @@ import { AiChatInput } from "@/components/ai/headless/ai-input";
 import { AiMessages } from "@/components/ai/headless/ai-messages";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { motion, AnimatePresence } from "framer-motion";
-import { useCreateProjectDialog } from "@/hooks/project/use-project-create-dialog";
-import AiChatbox from "@/components/ai/headless/ai-chatbox";
+import { useRouter } from "next/navigation";
 
 export default function ChatPage() {
-  // const { messages } = useCopilotChatHeadless_c({ id: "chat" });
-  const messages = [];
+  const { messages } = useCopilotChatHeadless_c({ id: "chat" });
   const hasMessages = messages.length > 0;
-  const { openDialog, CreateProjectDialog } = useCreateProjectDialog();
+  const router = useRouter();
+
+  const handleCreateFromTemplate = () => {
+    router.push("/new/template");
+  };
 
   return (
     <div className="h-screen w-full flex flex-col">
@@ -36,7 +38,7 @@ export default function ChatPage() {
                 {
                   variant: "default",
                   label: "Create From Template",
-                  onClick: openDialog,
+                  onClick: handleCreateFromTemplate,
                 },
               ]}
             />
@@ -74,7 +76,6 @@ export default function ChatPage() {
           </motion.div>
         )}
       </AnimatePresence>
-      <CreateProjectDialog />
     </div>
   );
 }

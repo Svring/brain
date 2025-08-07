@@ -6,6 +6,7 @@ import Login from "@/components/app/auth/login";
 import { CopilotProvider } from "@/components/app/provider/copilot-provider";
 import QueryProvider from "@/components/app/provider/query-provider";
 import AppSidebar from "@/components/app/sidebar/app-sidebar";
+import LanggraphProvider from "@/components/app/provider/langgraph-provider";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/auth/auth-context";
@@ -63,12 +64,14 @@ export default async function RootLayout({
             <CopilotProvider>
               <QueryProvider>
                 <AiProvider payloadUser={payloadUser}>
-                  <ProjectProvider>
-                    <SidebarProvider defaultOpen={false}>
-                      <AppSidebar />
-                      {children}
-                    </SidebarProvider>
-                  </ProjectProvider>
+                  <LanggraphProvider>
+                    <ProjectProvider>
+                      <SidebarProvider defaultOpen={false}>
+                        <AppSidebar />
+                        {children}
+                      </SidebarProvider>
+                    </ProjectProvider>
+                  </LanggraphProvider>
                 </AiProvider>
               </QueryProvider>
             </CopilotProvider>

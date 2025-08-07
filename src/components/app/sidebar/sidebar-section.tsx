@@ -34,7 +34,7 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
     title: "chat",
     icon: MessageCirclePlus,
     group: "overview",
-    path: "/chat",
+    path: "/new/chat",
   },
   {
     title: "projects",

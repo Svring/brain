@@ -23,22 +23,33 @@ export interface AiState {
     selectedEdge: any;
     isInitialized: boolean;
   };
-  approval: boolean;
 }
 
 export interface AiChat {
   open: boolean;
 }
 
+export interface AiFloatingChat {
+  open: boolean;
+  graphId: string;
+  assistantId: string;
+  threadId: string;
+}
+
 export interface AiContext {
   state: AiState;
   chat: AiChat;
+  floatingChat: AiFloatingChat;
   error: string | null;
 }
 
 export type AiEvent =
   | { type: "CHAT_OPEN" }
   | { type: "CHAT_CLOSE" }
+  | { type: "FLOATING_CHAT_OPEN" }
+  | { type: "FLOATING_CHAT_CLOSE" }
+  | { type: "FLOATING_CHAT_SET_THREAD_ID"; threadId: string }
+  | { type: "FLOATING_CHAT_SET_ASSISTANT_ID"; assistantId: string }
   | { type: "SET_STATE"; state: Partial<AiState> }
   | { type: "SET_FLOW_CONTEXT"; flowContext: Partial<AiState["flow_context"]> }
   | { type: "CREDENTIALS_LOADED" }
@@ -71,10 +82,15 @@ export const aiMachine = createMachine({
         selectedEdge: null,
         isInitialized: false,
       },
-      approval: false,
     },
     chat: {
       open: false,
+    },
+    floatingChat: {
+      open: false,
+      graphId: "ai",
+      assistantId: "",
+      threadId: "",
     },
     error: null,
   },
@@ -126,6 +142,38 @@ export const aiMachine = createMachine({
             chat: ({ context }) => ({
               ...context.chat,
               open: false,
+            }),
+          }),
+        },
+        FLOATING_CHAT_OPEN: {
+          actions: assign({
+            floatingChat: ({ context }) => ({
+              ...context.floatingChat,
+              open: true,
+            }),
+          }),
+        },
+        FLOATING_CHAT_CLOSE: {
+          actions: assign({
+            floatingChat: ({ context }) => ({
+              ...context.floatingChat,
+              open: false,
+            }),
+          }),
+        },
+        FLOATING_CHAT_SET_THREAD_ID: {
+          actions: assign({
+            floatingChat: ({ context, event }) => ({
+              ...context.floatingChat,
+              threadId: event.threadId,
+            }),
+          }),
+        },
+        FLOATING_CHAT_SET_ASSISTANT_ID: {
+          actions: assign({
+            floatingChat: ({ context, event }) => ({
+              ...context.floatingChat,
+              assistantId: event.assistantId,
             }),
           }),
         },
