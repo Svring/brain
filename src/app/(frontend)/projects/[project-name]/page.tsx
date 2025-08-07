@@ -7,25 +7,17 @@ import { createK8sContext } from "@/lib/auth/auth-utils";
 import { Background, ReactFlow, ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
-// Icon imports
-
 // Custom component imports
 import { ProjectHeader } from "@/components/project/components/project-header";
-import { Droppable } from "@/components/flow/dnd/droppable";
-import { DndProvider } from "@/components/flow/dnd/dnd-provider";
 import { TextShimmer } from "@/components/project/components/text-shimmer";
 import AiCoin from "@/components/ai/headless/ai-coin";
 import AiChatbox from "@/components/ai/headless/ai-chatbox";
 
-// Custom hook imports
-import { useFlow } from "@/hooks/flow/use-flow";
-import { useFlowFocus } from "@/hooks/flow/use-flow-focus";
-import { useFlowDrop } from "@/hooks/flow/use-flow-drop";
 // import { useFlowRefresh } from "@/hooks/flow/use-flow-refresh";
 import { useProjectSignal } from "@/hooks/project/use-project-signal";
-import { useFlowActions } from "@/contexts/flow/flow-context";
 
 import { getBrainProjectQuery } from "@/lib/brain/brain-methods/brain-query";
+import { useBrainProjectResources } from "@/hooks/brain/use-brain-project-resources";
 import { useQuery } from "@tanstack/react-query";
 
 // Custom types
@@ -77,11 +69,10 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
 function ProjectFlow({ projectName }: { projectName: string }) {
   const context = createK8sContext();
 
-  const { data: brainProject, isLoading } = useQuery(
-    getBrainProjectQuery(context, projectName)
-  );
+  const { expandedResources, isLoading: isLoadingResources } =
+    useBrainProjectResources(projectName);
 
-  if (isLoading) {
+  if (isLoadingResources) {
     return (
       <div className="flex items-center justify-center h-full w-full">
         <TextShimmer className="font-mono text-md" duration={1.2}>
@@ -91,7 +82,7 @@ function ProjectFlow({ projectName }: { projectName: string }) {
     );
   }
 
-  console.log("data", brainProject);
+  console.log("data", expandedResources);
 
   return (
     <ReactFlow
@@ -131,15 +122,13 @@ export default function ProjectPage({
   useProjectSignal(projectName);
 
   return (
-    <DndProvider>
-      <FlowProvider>
-        <div className="relative h-screen w-full">
-          <ReactFlowProvider>
-            <ProjectFlow projectName={projectName} />
-          </ReactFlowProvider>
-          <ProjectFloatingUI projectName={projectName} />
-        </div>
-      </FlowProvider>
-    </DndProvider>
+    <FlowProvider>
+      <div className="relative h-screen w-full">
+        <ReactFlowProvider>
+          <ProjectFlow projectName={projectName} />
+        </ReactFlowProvider>
+        <ProjectFloatingUI projectName={projectName} />
+      </div>
+    </FlowProvider>
   );
 }

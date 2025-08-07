@@ -16,6 +16,7 @@ import { useDeleteProjectMutation } from "@/lib/project/project-method/project-m
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import { BrainProjectObjectSchema } from "@/lib/brain/brain-schemas/brain-project-object-schema";
 import { z } from "zod";
+import { Badge } from "@/components/ui/badge";
 
 interface BrainProjectCardProps {
   project: z.infer<typeof BrainProjectObjectSchema>;
@@ -97,6 +98,13 @@ const BrainProjectCard: React.FC<BrainProjectCardProps> = ({ project }) => {
         </div>
 
         <h3 className="mb-2 text-foreground">{project.displayName}</h3>
+        
+        {/* Compatibility badge at bottom left */}
+        <div className="absolute bottom-4 left-4">
+          <Badge variant="secondary" className="text-xs">
+            {project.metadata.compatibility}
+          </Badge>
+        </div>
       </motion.div>
     </Link>
   );
