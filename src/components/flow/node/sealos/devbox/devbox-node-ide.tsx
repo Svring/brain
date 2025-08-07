@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
-import { DEVBOX_IDE } from "@/lib/sealos/devbox/devbox-constant";
+import { DEVBOX_IDE } from "@/lib/sealos/devbox/devbox-constant-a";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { composeSshConnectionUri } from "@/lib/sealos/devbox/devbox-method/devbox-utils";
 import { getDevboxSshInfo } from "@/lib/sealos/devbox/devbox-method/devbox-query";
@@ -27,12 +27,14 @@ export default function DevboxNodeIde({
   devboxContext,
   target,
   data,
-  className = ""
+  className = "",
 }: DevboxNodeIdeProps) {
   const [selectedIde, setSelectedIde] = useState<string>("vscode");
 
   return (
-    <div className={`flex items-center border border-border rounded-lg overflow-hidden ${className}`}>
+    <div
+      className={`flex items-center border border-border rounded-lg overflow-hidden ${className}`}
+    >
       {/* IDE Icon - Click to open IDE */}
       <button
         onClick={async (e) => {

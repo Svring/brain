@@ -57,8 +57,8 @@ export const createProjectAction = (context: K8sApiContext) => {
         ],
       },
     ],
-    handler: ({ projectName }) => {
-      // createProject.mutateAsync({ projectName });
+    renderAndWaitForResponse(props) {
+      return <></>;
     },
   });
 };

@@ -7,9 +7,9 @@ import { useMount } from "@reactuses/core";
 import type { AiState } from "@/contexts/ai/ai-machine";
 import { useAiState, useAiActions } from "@/contexts/ai/ai-context";
 import { StateCard } from "@/components/ai/headless/ai-state-card";
+import { activateAppActions } from "@/lib/ai/brain/app/ai-app-actions";
 import { activateDevboxActions } from "@/lib/ai/sealos/devbox/ai-devbox-actions";
 import { activateProjectActions } from "@/lib/ai/project/ai-project-actions";
-import { activateAppActions } from "@/lib/ai/sealos/app/ai-app-actions";
 import { activateObjectStorageBucketActions } from "@/lib/ai/sealos/objectstoragebucket/ai-objectstoragebucket-actions";
 import { activateClusterActions } from "@/lib/ai/sealos/cluster/ai-cluster-actions";
 import { activateGeneralActions } from "@/lib/ai/general/ai-general-actions";
@@ -33,10 +33,10 @@ export default function useAI() {
 
   // activateProjectActions(k8sContext);
   // activateDevboxActions(k8sContext, devboxContext);
-  // activateAppActions(sealosContext, k8sContext);
+  activateAppActions();
   // activateObjectStorageBucketActions(k8sContext, sealosContext);
   // activateClusterActions(k8sContext, clusterContext);
-  activateGeneralActions();
+  // activateGeneralActions();
   // activateInterruptActions();
 
   // useCoAgentStateRender<AiState>({
@@ -48,15 +48,6 @@ export default function useAI() {
     name: "ai",
     initialState: aiState,
   });
-
-  useEffect(() => {
-    const newState = _.cloneDeep(aiState);
-    const approval = agent.state.approval;
-    if (approval !== aiState.approval) {
-      _.set(newState, "approval", approval);
-      setState(newState);
-    }
-  }, [agent]);
 
   return agent;
 }

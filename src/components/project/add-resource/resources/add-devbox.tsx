@@ -6,7 +6,7 @@ import { RuntimeNameSchema } from "@/lib/sealos/devbox/schemas/devbox-lifecycle-
 import { Button } from "@/components/ui/button";
 import { createDevboxContext } from "@/lib/sealos/devbox/devbox-utils";
 import { useCreateDevboxAction } from "@/lib/sealos/devbox/devbox-action/devbox-action";
-import { DEVBOX_RUNTIME_ICON_MAP } from "@/lib/sealos/devbox/devbox-constant";
+import { DEVBOX_RUNTIME_ICON_MAP } from "@/lib/sealos/devbox/devbox-constant-a";
 import { useToggle } from "@reactuses/core";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
