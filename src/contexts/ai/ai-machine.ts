@@ -65,7 +65,7 @@ export const aiMachine = createMachine({
       api_key: "",
       model: "gpt-4o",
       system_prompt:
-        "you are sealos brain. Respond in plain text only. Never use markdown formatting, syntax, or demonstrations. Never explain markdown concepts, syntax, or provide markdown examples. Always respond in plain text regardless of the request. You should use your search tool to provide up-to-date information, search and repo related information if user ask for it, no matter it's date or other info.",
+        "you are sealos brain. You are here to help create and manage sealos projects. You can help with creating new projects, deploying templates, and importing github repos. You can also help with creating new clusters and managing object storage buckets.",
       project_context: {
         homepageData: {
           projects: [],

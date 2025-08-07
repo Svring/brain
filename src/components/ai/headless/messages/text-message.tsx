@@ -27,8 +27,6 @@ export function RenderTextMessage({
     return null;
   }
 
-  const dummyMessage = `The AFFiNE template is a ready-to-use tool designed as a privacy-focused and local-first alternative to popular platforms like Notion and Miro. This open-source solution provides users with a collaborative workspace for note-taking, planning, and brainstorming while prioritizing data privacy and ownership.\n\n### Key Features:\n1. **Privacy-Focused**: Ensures that your data remains secure and private, unlike cloud-driven platforms.\n2. **Local-First**: Allows you to store and manage data directly on your device without relying on third-party servers.\n3. **Open Source**: Provides transparency and customization opportunities, giving you full control over the platform.\n4. **Alternative to Notion and Miro**: Combines tools for note-taking (Notion) and whiteboarding or brainstorming (Miro) in one platform.\n\n### How to Use:\n- **Install the Template**: If you're using this on a development platform like Sealos, you might need to deploy the template and integrate it into your workspace.\n- **Setup Your Workspace**: Customize your interface to match your workflow, whether it’s for organizing tasks, creating docs, or collaborating with a team.\n- **Collaborate Seamlessly**: You can use the tool for individual productivity or encourage team collaboration, allowing for optimal brainstorming, project management, and information management.\n- **Extend Features**: Since it’s open-source, you can tweak its features or add new ones to meet specific needs.\n\nThis tool is ideal for anyone looking for a secure and self-reliant alternative to established but server-reliant productivity tools.`;
-
   return (
     <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
       <div
@@ -49,7 +47,22 @@ export function RenderTextMessage({
 
         {/* <p>{dummyMessage ?? ""}</p> */}
 
-        <Markdown>{message.content ?? ""}</Markdown>
+        <Markdown
+          components={{
+            ol: ({ children, ...props }) => (
+              <ol className="list-decimal list-inside" {...props}>
+                {children}
+              </ol>
+            ),
+            ul: ({ children, ...props }) => (
+              <ul className="list-disc list-inside" {...props}>
+                {children}
+              </ul>
+            ),
+          }}
+        >
+          {message.content ?? ""}
+        </Markdown>
 
         {/* <Markdown>{dummyMessage ?? ""}</Markdown> */}
 
