@@ -6,7 +6,7 @@ import {
 import {
   DevboxObjectUpdateSchema,
   DevboxObjectUpdate,
-} from "../../../../sealos/devbox/devbox-schemas/devbox-object-mutation-schema";
+} from "../../../../../sealos/devbox/devbox-schemas/devbox-object-mutation-schema";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 

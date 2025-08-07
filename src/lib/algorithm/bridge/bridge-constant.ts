@@ -7,6 +7,7 @@ import { ClusterObjectQuerySchema } from "@/lib/sealos/cluster/cluster-schemas/c
 import { DeploymentObjectQuerySchema } from "@/lib/sealos/deployment/deployment-object-query-schema";
 import { StatefulsetObjectSchema } from "@/lib/sealos/statefulset/statefulset-object-schema";
 import { ObjectStorageBucketObjectQuerySchema } from "@/lib/sealos/objectstorage/objectstorage-schemas/objectstorage-object-query-schema";
+import { BrainProjectObjectQuerySchema } from "@/lib/brain/brain-schemas/brain-project-object-query-schema";
 
 /**
  * Map of resource types to their corresponding Zod schemas
@@ -19,6 +20,7 @@ export const RESOURCE_SCHEMA_MAP: Record<string, z.ZodObject<any>> = {
   statefulset: StatefulsetObjectSchema,
   objectstoragebucket: ObjectStorageBucketObjectQuerySchema,
   ingress: IngressObjectSchema,
+  instance: BrainProjectObjectQuerySchema,
   // Add more resource schemas here as they become available
   // example: "pod": PodObjectSchema,
   // example: "service": ServiceObjectSchema,

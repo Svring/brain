@@ -1,23 +1,23 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import ProjectCard from "@/components/project/components/project-card";
+import BrainProjectCard from "@/components/brain/brain-project-card";
 import { Button } from "@/components/ui/button";
-import useProjectSearch from "@/hooks/project/use-project-search";
 import { TextShimmer } from "@/components/project/components/text-shimmer";
 import { useCreateProjectDialog } from "@/hooks/project/use-project-create-dialog";
 import AiCoin from "@/components/ai/headless/ai-coin";
 import AiChatbox from "@/components/ai/headless/ai-chatbox";
 import SearchBar from "@/components/app/search-bar";
 import { createK8sContext } from "@/lib/auth/auth-utils";
+import useBrainProjectSearch from "@/hooks/brain/use-brain-project-search";
 
 export default function Page() {
   const context = createK8sContext();
 
   const { openDialog, CreateProjectDialog } = useCreateProjectDialog();
 
-  const { setSearchTerm, filteredProjects, projectsLoading, projectsError } =
-    useProjectSearch(context);
+  const { setSearchTerm, filteredBrainProjects, isLoading, isError } =
+    useBrainProjectSearch(context);
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center p-8">
@@ -45,7 +45,7 @@ export default function Page() {
       {/* Content */}
       <div className="w-4xl">
         <div className="grid grid-cols-3 gap-6">
-          {projectsLoading && (
+          {isLoading && (
             <div className="col-span-full flex h-32 items-center justify-center">
               <TextShimmer className="font-mono text-md" duration={1.2}>
                 Loading projects...
@@ -53,20 +53,17 @@ export default function Page() {
             </div>
           )}
 
-          {projectsError && (
+          {isError && (
             <div className="col-span-full flex h-32 items-center justify-center">
               <div className="text-destructive">Error loading projects</div>
             </div>
           )}
 
-          {!projectsError && (
+          {!isError && (
             <>
-              {filteredProjects.length !== 0 &&
-                filteredProjects.map((project) => (
-                  <ProjectCard
-                    key={project.metadata.name}
-                    projectName={project.metadata.name}
-                  />
+              {filteredBrainProjects.length !== 0 &&
+                filteredBrainProjects.map((project) => (
+                  <BrainProjectCard key={project.name} project={project} />
                 ))}
             </>
           )}

@@ -36,7 +36,7 @@ export default function useAI() {
   activateAppActions();
   // activateObjectStorageBucketActions(k8sContext, sealosContext);
   // activateClusterActions(k8sContext, clusterContext);
-  // activateGeneralActions();
+  activateGeneralActions();
   // activateInterruptActions();
 
   // useCoAgentStateRender<AiState>({

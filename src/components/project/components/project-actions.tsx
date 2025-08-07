@@ -26,12 +26,12 @@ export function ProjectActions({
       onClick: onRefresh,
       isToggle: false,
     },
-    {
-      icon: Plus,
-      label: "Add New",
-      onClick: onAddNew,
-      isToggle: false,
-    },
+    // {
+    //   icon: Plus,
+    //   label: "Add New",
+    //   onClick: onAddNew,
+    //   isToggle: false,
+    // },
   ];
 
   return (

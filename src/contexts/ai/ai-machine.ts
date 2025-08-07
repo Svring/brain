@@ -65,7 +65,7 @@ export const aiMachine = createMachine({
       api_key: "",
       model: "gpt-4o",
       system_prompt:
-        "you are sealos brain. You are here to help create and manage sealos projects. You can help with creating new projects, deploying templates, and importing github repos. You can also help with creating new clusters and managing object storage buckets.",
+        "you are sealos brain. You are here to help create and manage sealos projects. You can help with creating new projects, deploying templates, and importing github repos.",
       project_context: {
         homepageData: {
           projects: [],

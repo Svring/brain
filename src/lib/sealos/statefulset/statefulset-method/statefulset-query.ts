@@ -4,7 +4,7 @@ import {
   BuiltinResourceTarget,
   BuiltinResourceTargetSchema,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { getStatefulSetObject } from "@/lib/algorithm/bridge/bridge-resources/statefulset/statefulset-bridge";
+import { getStatefulSetObject } from "@/lib/algorithm/bridge/bridge-resources/bridge-sealos/statefulset/statefulset-bridge";
 import { listBuiltinResources } from "@/lib/k8s/k8s-api/k8s-api-query";
 import { runParallelAction } from "next-server-actions-parallel";
 import {

@@ -7,6 +7,13 @@ import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 
+import {
+  getBrainProject,
+  listBrainProjects,
+} from "@/lib/brain/brain-methods/brain-query";
+import { useEffect } from "react";
+import { createK8sContext } from "@/lib/auth/auth-utils";
+
 export default function ChatPage() {
   const { messages } = useCopilotChatHeadless_c({ id: "chat" });
   const hasMessages = messages.length > 0;
@@ -15,6 +22,14 @@ export default function ChatPage() {
   const handleCreateFromTemplate = () => {
     router.push("/new/template");
   };
+
+  const k8sContext = createK8sContext();
+
+  // useEffect(() => {
+  //   listBrainProjects(k8sContext).then((res) => {
+  //     console.log(res);
+  //   });
+  // }, []);
 
   return (
     <div className="h-screen w-full flex flex-col">

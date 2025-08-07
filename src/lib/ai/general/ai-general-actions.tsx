@@ -7,7 +7,7 @@ import { toast } from "sonner";
 export const activateGeneralActions = () => {
   openProjectAction();
   redirectAction();
-  gossipAction();
+  // gossipAction();
 };
 
 export const openProjectAction = () => {
@@ -41,7 +41,7 @@ export const redirectAction = () => {
       {
         name: "path",
         type: "string",
-        enum: ["projects", "chat"],
+        enum: ["projects", "new/chat", "new/template"],
         description: "The path to redirect to",
         required: true,
       },

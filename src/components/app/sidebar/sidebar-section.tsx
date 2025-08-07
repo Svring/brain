@@ -52,7 +52,7 @@ export const MainSection: React.FC<MainSectionProps> = () => {
 
   const handleNavigation = (path: string) => {
     console.log("path:", path);
-    if (path === "/chat" && pathname === "/chat") {
+    if (path === "/new/chat" && pathname === "/new/chat") {
       reset();
       console.log("reset chat");
     } else {

@@ -20,7 +20,8 @@ const deployTemplateAppAction = () => {
 
   useCopilotAction({
     name: "deployTemplateApp",
-    description: "Deploy a pre-configured template application from the available template library. Templates include ready-to-use configurations for common development scenarios like web apps, APIs, databases, and microservices. You should automatically generate an appropriate project name based on the template being deployed.",
+    description:
+      "Deploy a pre-configured template application from the available template library. Templates include ready-to-use configurations for common development scenarios like web apps, APIs, databases, and microservices. You should automatically generate an appropriate project name based on the template being deployed.",
     parameters: [
       {
         name: "projectName",
@@ -33,7 +34,7 @@ const deployTemplateAppAction = () => {
         type: "string",
         enum: templateNames,
         required: true,
-        description: "Name of the template to deploy (e.g., 'nextjs-starter', 'express-api', 'postgres-db')",
+        description: "Name of the template to deploy (e.g., 'WordPress')",
       },
     ],
   });
@@ -42,7 +43,8 @@ const deployTemplateAppAction = () => {
 const deployImageAppAction = () => {
   useCopilotAction({
     name: "deployImageApp",
-    description: "Deploy an application from a Docker container image. This allows you to run any containerized application by specifying the image name from Docker Hub or other container registries. You should automatically generate an appropriate project name based on the image being deployed.",
+    description:
+      "Deploy an application from a Docker container image. This allows you to run any containerized application by specifying the image name from Docker Hub or other container registries. You should automatically generate an appropriate project name based on the image being deployed.",
     parameters: [
       {
         name: "projectName",
@@ -54,7 +56,8 @@ const deployImageAppAction = () => {
         name: "imageName",
         type: "string",
         required: true,
-        description: "Docker image name with optional tag (e.g., 'nginx:latest', 'postgres:14', 'redis:alpine')",
+        description:
+          "Docker image name with optional tag (e.g., 'nginx:latest', 'postgres:14', 'redis:alpine')",
       },
     ],
     handler: async (props) => {
@@ -66,7 +69,8 @@ const deployImageAppAction = () => {
 const importGithubRepoAppAction = () => {
   useCopilotAction({
     name: "importGithubRepo",
-    description: "Import and deploy an application directly from a GitHub repository. The system will automatically detect the project type, install dependencies, and configure the deployment environment. You should automatically generate an appropriate project name based on the repository being imported.",
+    description:
+      "Import and deploy an application directly from a GitHub repository. The system will automatically detect the project type, install dependencies, and configure the deployment environment. You should automatically generate an appropriate project name based on the repository being imported.",
     parameters: [
       {
         name: "projectName",
@@ -78,7 +82,8 @@ const importGithubRepoAppAction = () => {
         name: "repoUrl",
         type: "string",
         required: true,
-        description: "Full GitHub repository URL (e.g., 'https://github.com/username/repository-name')",
+        description:
+          "Full GitHub repository URL (e.g., 'https://github.com/username/repository-name')",
       },
     ],
   });
@@ -100,20 +105,23 @@ const createNewAppAction = () => {
         name: "apps",
         type: "object[]",
         required: true,
-        description: "Array of application configurations to create within the project",
+        description:
+          "Array of application configurations to create within the project",
         attributes: [
           {
             name: "appName",
             type: "string",
             required: true,
-            description: "Unique name for the application (e.g., 'frontend', 'api-server', 'worker-service')",
+            description:
+              "Unique name for the application (e.g., 'frontend', 'api-server', 'worker-service')",
           },
           {
             name: "appRuntime",
             type: "string",
             enum: DEVBOX_RUNTIMES,
             required: true,
-            description: "Development runtime environment that determines the programming language, framework, and toolchain for the application",
+            description:
+              "Development runtime environment that determines the programming language, framework, and toolchain for the application",
           },
         ],
       },

@@ -4,7 +4,7 @@ import {
   BuiltinResourceTarget,
   BuiltinResourceTargetSchema,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { getDeploymentObject } from "@/lib/algorithm/bridge/bridge-resources/deployment/deployment-bridge-query";
+import { getDeploymentObject } from "@/lib/algorithm/bridge/bridge-resources/bridge-sealos/deployment/deployment-bridge-query";
 import { listBuiltinResources } from "@/lib/k8s/k8s-api/k8s-api-query";
 import { runParallelAction } from "next-server-actions-parallel";
 import {
