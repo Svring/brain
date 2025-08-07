@@ -10,17 +10,8 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { usePathname } from "next/navigation";
-import { useRouter } from "next/navigation";
 
 export default function AppSidebar() {
-  const pathname = usePathname();
-  const router = useRouter();
-
-  if (pathname === "/") {
-    router.push("/new/chat");
-  }
-
   return (
     <>
       <Sidebar className="" collapsible="icon">

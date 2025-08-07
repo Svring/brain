@@ -11,11 +11,23 @@ import "@xyflow/react/dist/style.css";
 
 // Custom component imports
 import { ProjectHeader } from "@/components/project/components/project-header";
+// import { ProjectActions } from "@/components/project/components/project-actions";
+import { AddResourceTabs } from "@/components/project/add-resource/add-resource-tabs";
 import { Droppable } from "@/components/flow/dnd/droppable";
 import { DndProvider } from "@/components/flow/dnd/dnd-provider";
 import { TextShimmer } from "@/components/project/components/text-shimmer";
 import AiCoin from "@/components/ai/headless/ai-coin";
 import AiChatbox from "@/components/ai/headless/ai-chatbox";
+
+// UI component imports
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 // Custom hook imports
 import { useFlow } from "@/hooks/flow/use-flow";
@@ -24,9 +36,6 @@ import { useFlowDrop } from "@/hooks/flow/use-flow-drop";
 // import { useFlowRefresh } from "@/hooks/flow/use-flow-refresh";
 import { useProjectSignal } from "@/hooks/project/use-project-signal";
 import { useFlowActions } from "@/contexts/flow/flow-context";
-
-import { getBrainProjectQuery } from "@/lib/brain/brain-methods/brain-query";
-import { useQuery } from "@tanstack/react-query";
 
 // Custom types
 import edgeTypes from "@/components/flow/edge/edge-types";
@@ -76,10 +85,24 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
 // Flow Component
 function ProjectFlow({ projectName }: { projectName: string }) {
   const context = createK8sContext();
-
-  const { data: brainProject, isLoading } = useQuery(
-    getBrainProjectQuery(context, projectName)
+  const [nodes, onNodesChange, edges, onEdgesChange, isLoading] = useFlow(
+    context,
+    projectName
   );
+  const { handleDrop } = useFlowDrop(context, projectName);
+  const { onNodeClick } = useFlowFocus();
+  const { setDragging } = useFlowActions();
+
+  const handleNodeDragStart = () => {
+    setDragging(true);
+  };
+
+  const handleNodeDragStop = () => {
+    // Add a small delay to ensure drag state is cleared after any click events
+    setTimeout(() => {
+      setDragging(false);
+    }, 100);
+  };
 
   if (isLoading) {
     return (
@@ -91,32 +114,39 @@ function ProjectFlow({ projectName }: { projectName: string }) {
     );
   }
 
-  console.log("data", brainProject);
-
   return (
-    <ReactFlow
-      connectionLineType={FLOW_CONFIG.connectionLineType}
-      // edges={edges}
-      edgeTypes={edgeTypes}
-      fitView
-      fitViewOptions={FLOW_CONFIG.fitViewOptions}
-      // nodes={nodes}
-      nodeTypes={nodeTypes}
-      // onEdgesChange={onEdgesChange}
-      // onNodesChange={onNodesChange}
-      // onNodeClick={onNodeClick}
-      // onNodeDragStart={handleNodeDragStart}
-      // onNodeDragStop={handleNodeDragStop}
-      panOnScroll
-      snapToGrid
-      snapGrid={FLOW_CONFIG.snapGrid}
+    <Droppable
+      id="project-flow"
+      className="w-full h-full"
+      data={{
+        projectName: projectName ?? "",
+        onDrop: handleDrop,
+      }}
     >
-      <Background
-        gap={FLOW_CONFIG.background.gap}
-        size={FLOW_CONFIG.background.size}
-        variant={FLOW_CONFIG.background.variant}
-      />
-    </ReactFlow>
+      <ReactFlow
+        connectionLineType={FLOW_CONFIG.connectionLineType}
+        edges={edges}
+        edgeTypes={edgeTypes}
+        fitView
+        fitViewOptions={FLOW_CONFIG.fitViewOptions}
+        nodes={nodes}
+        nodeTypes={nodeTypes}
+        onEdgesChange={onEdgesChange}
+        onNodesChange={onNodesChange}
+        onNodeClick={onNodeClick}
+        onNodeDragStart={handleNodeDragStart}
+        onNodeDragStop={handleNodeDragStop}
+        panOnScroll
+        snapToGrid
+        snapGrid={FLOW_CONFIG.snapGrid}
+      >
+        <Background
+          gap={FLOW_CONFIG.background.gap}
+          size={FLOW_CONFIG.background.size}
+          variant={FLOW_CONFIG.background.variant}
+        />
+      </ReactFlow>
+    </Droppable>
   );
 }
 

@@ -6,7 +6,8 @@ import { useState } from "react";
 import { MenuBar, MenuBarItem } from "./menu-bar";
 import { getProjectDisplayNameFromResource } from "@/lib/project/project-method/project-utils";
 import { getProjectOptions } from "@/lib/project/project-method/project-query";
-import { useRenameProjectMutation } from "@/lib/project/project-method/project-mutation";
+import { getBrainProjectQuery } from "@/lib/brain/brain-methods/brain-query";
+import { useUpdateBrainProjectNameMutation } from "@/lib/brain/brain-methods/brain-mutation";
 import { useQuery } from "@tanstack/react-query";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import { Button } from "@/components/ui/button";
@@ -19,9 +20,11 @@ interface ProjectHeaderProps {
 export function ProjectHeader({ projectName }: ProjectHeaderProps) {
   const router = useRouter();
   const context = createK8sContext();
-  const { data: project } = useQuery(getProjectOptions(context, projectName));
-  const renameMutation = useRenameProjectMutation(context);
-  
+  const { data: project } = useQuery(
+    getBrainProjectQuery(context, projectName)
+  );
+  const renameMutation = useUpdateBrainProjectNameMutation(context);
+
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState("");
 
@@ -29,7 +32,7 @@ export function ProjectHeader({ projectName }: ProjectHeaderProps) {
     return null;
   }
 
-  const projectDisplayName = getProjectDisplayNameFromResource(project) || projectName;
+  const projectDisplayName = project.displayName;
 
   const handleEditClick = () => {
     setEditValue(projectDisplayName);
@@ -40,7 +43,7 @@ export function ProjectHeader({ projectName }: ProjectHeaderProps) {
     if (editValue.trim() && editValue !== projectDisplayName) {
       try {
         await renameMutation.mutateAsync({
-          projectName,
+          name: projectName,
           newDisplayName: editValue.trim(),
         });
       } catch (error) {
