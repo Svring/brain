@@ -42,7 +42,7 @@ export const generateNewProjectName = () => {
   return `project-${nanoid()}`;
 };
 
-export const generateProjectTemplate = (
+export const generateInstanceTemplate = (
   projectName: string,
   namespace: string
 ) => {
@@ -129,8 +129,6 @@ export async function gatherRelatedResources(
 
   return allTargets;
 }
-
-
 
 /**
  * Create project instance target for annotations

@@ -24,3 +24,13 @@ export const BrainProjectObjectSchema = z.object({
   metadata: BrainProjectObjectMetadataSchema,
   createdAt: z.string(),
 });
+
+export type BrainProjectObject = z.infer<typeof BrainProjectObjectSchema>;
+
+export type BrainProjectObjectMetadata = z.infer<
+  typeof BrainProjectObjectMetadataSchema
+>;
+
+export type BrainProjectObjectResource = z.infer<
+  typeof BrainProjectObjectSchema.shape.metadata.shape.resources
+>;

@@ -16,7 +16,7 @@ import {
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import {
   generateNewProjectName,
-  generateProjectTemplate,
+  generateInstanceTemplate,
   gatherRelatedResources,
   createProjectTarget,
   getProjectQueryInvalidationKeys,
@@ -133,7 +133,7 @@ export const useCreateProjectMutation = (context: K8sApiContext) => {
   return useMutation({
     mutationFn: async ({ projectName }: { projectName?: string }) => {
       const finalProjectName = projectName || generateNewProjectName();
-      const projectYaml = generateProjectTemplate(
+      const projectYaml = generateInstanceTemplate(
         finalProjectName,
         context.namespace
       );
