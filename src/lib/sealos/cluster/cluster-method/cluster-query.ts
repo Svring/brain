@@ -62,7 +62,7 @@ export const getClusterBackupList = async (
   });
 };
 
-export const getClusterLogFiles = async (
+export const getClusterLogs = async (
   k8sContext: K8sApiContext,
   clusterContext: SealosApiContext,
   target: CustomResourceTarget
@@ -192,7 +192,7 @@ export const getClusterOptions = (
  */
 export const listClusterOptions = (context: K8sApiContext) =>
   queryOptions({
-    queryKey: ["clusters"],
+    queryKey: ["cluster", "list"],
     queryFn: async () => await listCluster(context),
     enabled: !!context.namespace && !!context.kubeconfig,
     staleTime: 1000 * 30,
@@ -206,7 +206,7 @@ export const getClusterBackupListOptions = (
   target: CustomResourceTarget
 ) =>
   queryOptions({
-    queryKey: ["backup", target.name],
+    queryKey: ["cluster", "backup", target.name],
     queryFn: async () => await getClusterBackupList(clusterContext, target),
     enabled: !!target.name && !!clusterContext.baseURL,
     staleTime: 1000 * 60, // 1 minute
@@ -215,18 +215,15 @@ export const getClusterBackupListOptions = (
 /**
  * Query options for getting cluster log files
  */
-export const getClusterLogFilesOptions = (
+export const getClusterLogsOptions = (
   k8sContext: K8sApiContext,
   clusterContext: SealosApiContext,
   target: CustomResourceTarget
 ) =>
   queryOptions({
-    queryKey: buildQueryKey.getClusterLogFiles(
-      k8sContext.namespace,
-      target.name!
-    ),
+    queryKey: ["cluster", "log", target.name],
     queryFn: async () =>
-      await getClusterLogFiles(k8sContext, clusterContext, target),
+      await getClusterLogs(k8sContext, clusterContext, target),
     enabled:
       !!target.group &&
       !!target.version &&

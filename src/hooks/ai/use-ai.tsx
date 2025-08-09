@@ -13,6 +13,7 @@ import { activateProjectActions } from "@/lib/ai/project/ai-project-actions";
 import { activateObjectStorageBucketActions } from "@/lib/ai/sealos/objectstoragebucket/ai-objectstoragebucket-actions";
 import { activateClusterActions } from "@/lib/ai/sealos/cluster/ai-cluster-actions";
 import { activateGeneralActions } from "@/lib/ai/general/ai-general-actions";
+import { activateLaunchpadActions } from "@/lib/ai/sealos/launchpad/ai-launchpad-actions";
 import { activateInterruptActions } from "@/lib/ai/general/ai-interrupt-actions";
 
 import {
@@ -34,8 +35,9 @@ export default function useAI() {
   // activateProjectActions(k8sContext);
   // activateDevboxActions(k8sContext, devboxContext);
   activateAppActions();
+  activateLaunchpadActions(sealosContext, k8sContext);
   // activateObjectStorageBucketActions(k8sContext, sealosContext);
-  // activateClusterActions(k8sContext, clusterContext);
+  activateClusterActions(k8sContext, clusterContext);
   activateGeneralActions();
   // activateInterruptActions();
 

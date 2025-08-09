@@ -50,12 +50,12 @@ export function RenderTextMessage({
         <Markdown
           components={{
             ol: ({ children, ...props }) => (
-              <ol className="list-decimal list-inside" {...props}>
+              <ol className="list-decimal" {...props}>
                 {children}
               </ol>
             ),
             ul: ({ children, ...props }) => (
-              <ul className="list-disc list-inside" {...props}>
+              <ul className="list-disc" {...props}>
                 {children}
               </ul>
             ),

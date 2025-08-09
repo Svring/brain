@@ -7,22 +7,6 @@ export interface AiState {
   api_key: string;
   model: string;
   system_prompt: string;
-  project_context: {
-    homepageData: {
-      projects: any;
-    };
-    flowGraphData: {
-      project: any;
-      resources: any;
-    };
-  };
-  flow_context: {
-    nodes: any;
-    edges: any;
-    selectedNode: any;
-    selectedEdge: any;
-    isInitialized: boolean;
-  };
 }
 
 export interface AiChat {
@@ -51,7 +35,6 @@ export type AiEvent =
   | { type: "FLOATING_CHAT_SET_THREAD_ID"; threadId: string }
   | { type: "FLOATING_CHAT_SET_ASSISTANT_ID"; assistantId: string }
   | { type: "SET_STATE"; state: Partial<AiState> }
-  | { type: "SET_FLOW_CONTEXT"; flowContext: Partial<AiState["flow_context"]> }
   | { type: "CREDENTIALS_LOADED" }
   | { type: "FAIL"; error: string };
 
@@ -66,22 +49,6 @@ export const aiMachine = createMachine({
       model: "gpt-4o",
       system_prompt:
         "you are sealos brain. You are here to help create and manage sealos projects. You can help with creating new projects, deploying templates, and importing github repos.",
-      project_context: {
-        homepageData: {
-          projects: [],
-        },
-        flowGraphData: {
-          project: null,
-          resources: null,
-        },
-      },
-      flow_context: {
-        nodes: [],
-        edges: [],
-        selectedNode: null,
-        selectedEdge: null,
-        isInitialized: false,
-      },
     },
     chat: {
       open: false,
@@ -102,17 +69,6 @@ export const aiMachine = createMachine({
             state: ({ context, event }) => ({
               ...context.state,
               ...event.state,
-            }),
-          }),
-        },
-        SET_FLOW_CONTEXT: {
-          actions: assign({
-            state: ({ context, event }) => ({
-              ...context.state,
-              flow_context: {
-                ...context.state.flow_context,
-                ...event.flowContext,
-              },
             }),
           }),
         },
@@ -185,17 +141,6 @@ export const aiMachine = createMachine({
             }),
           }),
         },
-        SET_FLOW_CONTEXT: {
-          actions: assign({
-            state: ({ context, event }) => ({
-              ...context.state,
-              flow_context: {
-                ...context.state.flow_context,
-                ...event.flowContext,
-              },
-            }),
-          }),
-        },
         CREDENTIALS_LOADED: {
           // Allow credential updates in active state
         },
@@ -214,17 +159,6 @@ export const aiMachine = createMachine({
             state: ({ context, event }) => ({
               ...context.state,
               ...event.state,
-            }),
-          }),
-        },
-        SET_FLOW_CONTEXT: {
-          actions: assign({
-            state: ({ context, event }) => ({
-              ...context.state,
-              flow_context: {
-                ...context.state.flow_context,
-                ...event.flowContext,
-              },
             }),
           }),
         },

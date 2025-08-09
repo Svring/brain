@@ -3,22 +3,22 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { runParallelAction } from "next-server-actions-parallel";
 import {
-  createApp,
-  deleteApp,
-  pauseApp,
-  startApp,
-} from "../../app/app-api/app-old-api";
+  createLaunchpad,
+  deleteLaunchpad,
+  pauseLaunchpad,
+  startLaunchpad,
+} from "../../launchpad/launchpad-api/launchpad-old-api";
 import type { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
-import type { AppCreateRequest } from "../../app/app-api/app-old-api-schemas/req-res-create-schemas";
-import type { AppDeleteRequest } from "../../app/app-api/app-old-api-schemas/req-res-delete-schemas";
-import type { AppPauseRequest } from "../../app/app-api/app-old-api-schemas/req-res-pause-schemas";
-import type { AppStartRequest } from "../../app/app-api/app-old-api-schemas/req-res-start-schemas";
+import type { AppCreateRequest } from "../../launchpad/launchpad-api/launchpad-old-api-schemas/req-res-create-schemas";
+import type { AppDeleteRequest } from "../../launchpad/launchpad-api/launchpad-old-api-schemas/req-res-delete-schemas";
+import type { AppPauseRequest } from "../../launchpad/launchpad-api/launchpad-old-api-schemas/req-res-pause-schemas";
+import type { AppStartRequest } from "../../launchpad/launchpad-api/launchpad-old-api-schemas/req-res-start-schemas";
 
 export function useCreateDeployMutation(context: SealosApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: AppCreateRequest) =>
-      runParallelAction(createApp(request, context)),
+      runParallelAction(createLaunchpad(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["deployment"] });
     },
@@ -29,7 +29,7 @@ export function useDeleteDeployMutation(context: SealosApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: AppDeleteRequest) =>
-      runParallelAction(deleteApp(request, context)),
+      runParallelAction(deleteLaunchpad(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["deployment"] });
     },
@@ -40,7 +40,7 @@ export function usePauseDeployMutation(context: SealosApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: AppPauseRequest) =>
-      runParallelAction(pauseApp(request, context)),
+      runParallelAction(pauseLaunchpad(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["deployment"] });
     },
@@ -51,7 +51,7 @@ export function useStartDeployMutation(context: SealosApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: AppStartRequest) =>
-      runParallelAction(startApp(request, context)),
+      runParallelAction(startLaunchpad(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["deployment"] });
     },

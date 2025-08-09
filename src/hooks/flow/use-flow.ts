@@ -16,7 +16,7 @@ import {
 import { applyLayout } from "@/lib/flow/layout/flow-layout-utils";
 import { convertResourcesToNodes } from "@/lib/flow/nodes/flow-nodes-utils";
 import type { ListAllResourcesResponse } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
-import { createTrafficApiContext } from "@/lib/hubble/traffic/traffic-utils";
+import { createTrafficApiContext } from "@/lib/service/traffic/traffic-utils";
 import { useFlowState, useFlowActions } from "@/contexts/flow/flow-context";
 import { useProjectResources } from "@/hooks/project/use-project-resources";
 import _ from "lodash";

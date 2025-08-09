@@ -4,9 +4,9 @@ import axios from "axios";
 import { createParallelAction } from "next-server-actions-parallel";
 import https from "https";
 import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
-import { AppControlSuccessResponse } from "./app-open-api-schemas/app-control-schema";
+import { AppControlSuccessResponse } from "./launchpad-open-api-schemas/launchpad-control-schema";
 
-function createApplaunchpadApi(context: SealosApiContext) {
+function createLaunchpadApi(context: SealosApiContext) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
   return axios.create({
     baseURL: isDevelopment
@@ -24,21 +24,21 @@ function createApplaunchpadApi(context: SealosApiContext) {
   });
 }
 
-export const startApp = createParallelAction(
-  async (context: SealosApiContext, appName: string) => {
-    const api = createApplaunchpadApi(context);
-    const response = await api.get<AppControlSuccessResponse>("/app/startApp", {
-      params: { appName },
+export const startLaunchpad = createParallelAction(
+  async (context: SealosApiContext, name: string) => {
+    const api = createLaunchpadApi(context);
+    const response = await api.get<AppControlSuccessResponse>("/app/start", {
+      params: { name },
     });
     return response.data;
   }
 );
 
-export const pauseApp = createParallelAction(
-  async (context: SealosApiContext, appName: string) => {
-    const api = createApplaunchpadApi(context);
-    const response = await api.get<AppControlSuccessResponse>("/app/pauseApp", {
-      params: { appName },
+export const pauseLaunchpad = createParallelAction(
+  async (context: SealosApiContext, name: string) => {
+    const api = createLaunchpadApi(context);
+    const response = await api.get<AppControlSuccessResponse>("/app/pause", {
+      params: { name },
     });
     return response.data;
   }

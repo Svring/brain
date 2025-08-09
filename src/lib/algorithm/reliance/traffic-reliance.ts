@@ -1,14 +1,14 @@
 "use client";
 
-import { getTraffic } from "@/lib/hubble/traffic/traffic-api/traffic-api-query";
+import { getTraffic } from "@/lib/service/traffic/traffic-api/traffic-api-query";
 import type { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import type { ResourceConnections } from "./reliance-utils";
 import {
   convertToTrafficRequest,
   transformTrafficToReliance,
   correctRelianceResourceTypes,
-} from "@/lib/hubble/traffic/traffic-utils";
-import { TrafficApiContext } from "@/lib/hubble/traffic/schemas/traffic-api-context-schema";
+} from "@/lib/service/traffic/traffic-utils";
+import { TrafficApiContext } from "@/lib/service/traffic/schemas/traffic-api-context-schema";
 import { runParallelAction } from "next-server-actions-parallel";
 import { getCurrentNamespace } from "@/lib/k8s/k8s-api/k8s-api-utils";
 

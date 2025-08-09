@@ -11,6 +11,12 @@ export const BrainResourceSchema = z.object({
       CustomResourceTargetSchema || BuiltinResourceTargetSchema
     ).optional(),
   }),
+  dependencies: z
+    .object({
+      envString: z.string().optional(),
+      envVariables: z.record(z.string(), z.string()).optional(),
+    })
+    .optional(),
 });
 
 export const BrainProjectObjectMetadataSchema = z.object({

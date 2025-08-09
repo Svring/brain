@@ -24,7 +24,7 @@ import {
   useDeleteAppMutation,
   useStartAppMutation,
   useStopAppMutation,
-} from "@/lib/sealos/app/app-method/app-mutation";
+} from "@/lib/sealos/launchpad/launchpad-method/launchpad-mutation";
 
 export default function DeploymentNodeMenu({
   target,

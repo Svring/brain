@@ -13,12 +13,12 @@ import {
   getStatefulSet,
   listStatefulSet,
 } from "../../statefulset/statefulset-method/statefulset-query";
-import { queryLogs } from "../app-api/app-old-api";
+import { getLaunchpadLogs as getLaunchpadLogsApi } from "../launchpad-api/launchpad-old-api";
 import {
   QueryLogsRequest,
   QueryLogsRequestSchema,
   QueryLogsResponseSchema,
-} from "../app-api/app-old-api-schemas/req-res-query-logs-schemas";
+} from "../launchpad-api/launchpad-old-api-schemas/req-res-query-logs-schemas";
 import { runParallelAction } from "next-server-actions-parallel";
 import {
   convertResourceTypeToTarget,
@@ -26,7 +26,7 @@ import {
 } from "@/lib/k8s/k8s-method/k8s-utils";
 import { buildQueryKey } from "@/lib/k8s/k8s-constant/k8s-constant-query-key";
 
-export const getApp = async (
+export const getLaunchpad = async (
   context: K8sApiContext,
   target: BuiltinResourceTarget
 ) => {
@@ -42,7 +42,7 @@ export const getApp = async (
   }
 };
 
-export const listApp = async (context: K8sApiContext) => {
+export const listLaunchpads = async (context: K8sApiContext) => {
   // Get both deployments and statefulsets
   const [deployments, statefulsets] = await Promise.all([
     listDeployment(context),
@@ -53,36 +53,40 @@ export const listApp = async (context: K8sApiContext) => {
   return [...deployments, ...statefulsets];
 };
 
-export const queryAppLogs = async (
+export const getLaunchpadLogs = async (
   k8sContext: K8sApiContext,
   sealosContext: SealosApiContext,
   target: BuiltinResourceTarget
 ) => {
-  // Construct the request with default values based on the example
-  const logRequest: QueryLogsRequest = {
+  // Construct the request with only required fields and overrides
+  const logRequest = {
     app: target.name!,
-    numberMode: "true",
-    numberLevel: "m",
-    jsonMode: "false",
-    time: "30m",
-    stderrMode: "false",
-    pod: [],
-    container: [],
-    jsonQuery: [],
-    keyword: "",
     namespace: k8sContext.namespace,
-    limit: "10", // Default limit
-  };
+  } as QueryLogsRequest;
 
   // Validate the request
   const validatedRequest = QueryLogsRequestSchema.parse(logRequest);
 
   // Query the logs
   const logResponse = await runParallelAction(
-    queryLogs(validatedRequest, sealosContext)
+    getLaunchpadLogsApi(validatedRequest, sealosContext)
   );
-  // Validate and return the response
-  return QueryLogsResponseSchema.parse(logResponse);
+
+  const parsedLogResponse = QueryLogsResponseSchema.parse(logResponse);
+
+  // Step 1: Split the data string into lines
+  const lines = parsedLogResponse.data
+    .split("\n")
+    .filter((line) => line.trim() !== "");
+
+  // Step 2: Parse each line as a JSON object
+  const parsedLogs = lines
+    .map((line, _) => {
+      return JSON.parse(line);
+    })
+    .filter((log) => log !== null); // Remove null entries from failed parses
+
+  return parsedLogs;
 };
 
 // ============================================================================
@@ -92,7 +96,7 @@ export const queryAppLogs = async (
 /**
  * Query options for getting an app by target
  */
-export const getAppOptions = (
+export const getLaunchpadOptions = (
   context: K8sApiContext,
   target: BuiltinResourceTarget
 ) =>
@@ -102,17 +106,17 @@ export const getAppOptions = (
       target.resourceType,
       target.name!
     ),
-    queryFn: async () => await getApp(context, target),
+    queryFn: async () => await getLaunchpad(context, target),
     enabled: !!context.namespace && !!target.name && !!context.kubeconfig,
   });
 
 /**
  * Query options for listing apps
  */
-export const listAppOptions = (context: K8sApiContext) =>
+export const listLaunchpadOptions = (context: K8sApiContext) =>
   queryOptions({
     queryKey: buildQueryKey.listBuiltinResources(context.namespace, "app"),
-    queryFn: async () => await listApp(context),
+    queryFn: async () => await listLaunchpads(context),
     enabled: !!context.namespace && !!context.kubeconfig,
     staleTime: 1000 * 30,
   });
@@ -120,14 +124,15 @@ export const listAppOptions = (context: K8sApiContext) =>
 /**
  * Query options for querying app logs
  */
-export const queryAppLogsOptions = (
+export const getLaunchpadLogsOptions = (
   k8sContext: K8sApiContext,
   sealosContext: SealosApiContext,
   target: BuiltinResourceTarget
 ) =>
   queryOptions({
     queryKey: ["app", "logs", k8sContext.namespace, target.name],
-    queryFn: async () => await queryAppLogs(k8sContext, sealosContext, target),
+    queryFn: async () =>
+      await getLaunchpadLogs(k8sContext, sealosContext, target),
     enabled: !!k8sContext.namespace && !!target.name && !!k8sContext.kubeconfig,
     staleTime: 1000 * 10, // Logs are more dynamic, shorter stale time
   });

@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   listClusterOptions,
   getClusterOptions,
-  getClusterLogFilesOptions,
+  getClusterLogsOptions,
 } from "@/lib/sealos/cluster/cluster-method/cluster-query";
 import {
   useCreateClusterMutation,
@@ -197,7 +197,7 @@ export const getClusterLogAction = (
         name: clusterName,
       });
       return queryClient.fetchQuery(
-        getClusterLogFilesOptions(k8sContext, clusterContext, target)
+        getClusterLogsOptions(k8sContext, clusterContext, target)
       );
     },
   });
