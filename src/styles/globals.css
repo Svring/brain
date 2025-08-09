@@ -23,7 +23,6 @@
   --color-theme-gray: #A1A1AA;
   --color-theme-darkblue: #3C5F89;
 
-
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
 
@@ -262,7 +261,15 @@
     opacity: 0;
     }
   }
-}
+  --animate-aurora: aurora 20s linear infinite;
+  @keyframes aurora {
+  from {
+    backgroundPosition: 50% 50%, 50% 50%;
+    }
+  to {
+    backgroundPosition: 350% 50%, 350% 50%;
+    }
+  }}
 
 /*
   ---break---

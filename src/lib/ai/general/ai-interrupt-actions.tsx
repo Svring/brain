@@ -6,12 +6,15 @@ import { AlertTriangle } from "lucide-react";
 export const activateInterruptActions = () => {
   useLangGraphInterrupt({
     enabled: ({ eventValue }) => eventValue.type === "approval",
-    render: ({ event, resolve }) => (
-      <ApproveComponent
-        content={event.value}
-        onAnswer={(answer) => resolve(answer.toString())}
-      />
-    ),
+    render: ({ event, resolve }) => {
+      console.log("event", event);
+      return (
+        <ApproveComponent
+          content={event.value.content}
+          onAnswer={(answer) => resolve(answer.toString())}
+        />
+      );
+    },
   });
 };
 

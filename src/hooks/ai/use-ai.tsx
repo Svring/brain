@@ -33,13 +33,13 @@ export default function useAI() {
   const clusterContext = createClusterContext();
 
   // activateProjectActions(k8sContext);
-  // activateDevboxActions(k8sContext, devboxContext);
-  activateAppActions();
-  activateLaunchpadActions(sealosContext, k8sContext);
+  activateDevboxActions(k8sContext, devboxContext);
+  // activateAppActions();
+  // activateLaunchpadActions(sealosContext, k8sContext);
   // activateObjectStorageBucketActions(k8sContext, sealosContext);
-  activateClusterActions(k8sContext, clusterContext);
+  // activateClusterActions(k8sContext, clusterContext);
   activateGeneralActions();
-  // activateInterruptActions();
+  activateInterruptActions();
 
   // useCoAgentStateRender<AiState>({
   //   name: "ai",

@@ -16,7 +16,16 @@ import {
 import { useCopilotAction } from "@copilotkit/react-core";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import {
+  AITool,
+  AIToolContent,
+  AIToolHeader,
+  AIToolParameters,
+  AIToolResult,
+  type AIToolStatus,
+} from "@/components/ui/shadcn-io/ai/tool";
 import { useAiState } from "@/contexts/ai/ai-context";
+import { AIResponse } from "@/components/ui/shadcn-io/ai/response";
 
 export const activateDevboxActions = (
   k8sContext: K8sApiContext,
@@ -44,6 +53,26 @@ export const listDevboxAction = (context: K8sApiContext) => {
     description: "List all devboxes",
     handler: () => {
       return queryClient.fetchQuery(listDevboxOptions(context));
+    },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"listDevboxes"}>
+          <AIToolHeader
+            description={"List all devboxes"}
+            name={"listDevboxes"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                // error={error}
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
     },
   });
 };

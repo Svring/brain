@@ -6,6 +6,7 @@ import { AiMessages } from "@/components/ai/headless/ai-messages";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { AuroraBackground } from "@/components/ui/shadcn-io/aurora-background";
 
 export default function ChatPage() {
   const { messages } = useCopilotChatHeadless_c({ id: "chat" });
@@ -14,6 +15,7 @@ export default function ChatPage() {
 
   return (
     <div className="relative h-screen w-full flex flex-col">
+      {/* <AuroraBackground> */}
       {/* Hero overlays the content area and fades out when messages exist */}
       <motion.div
         initial={!hasMessages ? { opacity: 0, y: 0 } : false}
@@ -72,6 +74,7 @@ export default function ChatPage() {
           <AiChatInput className="max-w-3xl mx-auto" />
         </div>
       </motion.div>
+      {/* </AuroraBackground> */}
     </div>
   );
 }
