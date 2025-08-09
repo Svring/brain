@@ -56,8 +56,12 @@ export default function ChatPage() {
       <motion.div
         layout
         initial={!hasMessages ? { y: 0, opacity: 0 } : false}
-        animate={{ y: 60, opacity: 1 }}
-        transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }}
+        animate={{ y: hasMessages ? 0 : 60, opacity: 1 }}
+        transition={{
+          delay: hasMessages ? 0 : 0.3,
+          duration: hasMessages ? 0.4 : 0.8,
+          ease: "easeOut",
+        }}
         className={
           hasMessages
             ? "sticky bottom-0 bg-background/95 backdrop-blur z-10 pb-8"

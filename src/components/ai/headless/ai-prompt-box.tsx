@@ -430,8 +430,8 @@ const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(
         >
           <div
             className={cn(
-              "rounded-xl border border-[#444444] bg-background-secondary p-2 shadow-[0_8px_30px_rgba(0,0,0,0.24)] transition-all duration-300",
-              isLoading && "border-1 border-white animate-shimmer-border",
+              "rounded-xl border border-[#444444] bg-background-secondary p-2 shadow-[0_8px_30px_rgba(0,0,0,0.24)] transition-all duration-300 focus-within:border-gray-400",
+              isLoading && "border-1 border-gray-400 animate-shimmer-border",
               className
             )}
             onDragLeave={onDragLeave}
@@ -615,6 +615,33 @@ export const PromptInputBox = React.forwardRef(
         internalTextareaRef.current?.focus();
       }
     }, [autoFocus]);
+
+    // Focus prompt and insert typed character when user starts typing anywhere
+    React.useEffect(() => {
+      const handleGlobalKeydown = (event: KeyboardEvent) => {
+        if (disableInput) return;
+
+        const target = event.target as HTMLElement | null;
+        if (target) {
+          const tagName = target.tagName;
+          const isEditable = (target as any).isContentEditable === true;
+          if (tagName === "INPUT" || tagName === "TEXTAREA" || isEditable) {
+            return;
+          }
+        }
+
+        if (event.metaKey || event.ctrlKey || event.altKey) return;
+        if (event.key.length !== 1) return; // printable characters only
+
+        // Focus the textarea and append the pressed key
+        internalTextareaRef.current?.focus();
+        setInput((prev) => `${prev}${event.key}`);
+        event.preventDefault();
+      };
+
+      window.addEventListener("keydown", handleGlobalKeydown);
+      return () => window.removeEventListener("keydown", handleGlobalKeydown);
+    }, [disableInput]);
 
     const handleToggleChange = (value: string) => {
       if (value === "search") {

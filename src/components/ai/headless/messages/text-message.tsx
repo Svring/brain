@@ -33,7 +33,7 @@ export function RenderTextMessage({
         className={cn(
           "inline-block rounded-lg py-2 text-md markdown-body",
           isUser
-            ? "bg-muted rounded-2xl rounded-br-md text-foreground px-4 border border-border"
+            ? "bg-muted rounded-2xl rounded-br-md text-foreground px-4 border border-border-primary"
             : "text-foreground px-1",
           isLoading && "animate-pulse"
         )}
