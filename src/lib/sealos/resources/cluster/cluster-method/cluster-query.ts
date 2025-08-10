@@ -1,11 +1,11 @@
 import { queryOptions } from "@tanstack/react-query";
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
-import { SealosApiContext } from "../../sealos-api-context-schema";
+import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
 import {
   CustomResourceTarget,
   CustomResourceTargetSchema,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { getClusterObject } from "@/lib/algorithm/bridge/bridge-resources/bridge-sealos/cluster/cluster-bridge-query";
+import { getClusterObject } from "@/lib/sealos/services/bridge/bridge-resources/bridge-sealos/cluster/cluster-bridge-query";
 import { listCustomResources } from "@/lib/k8s/k8s-api/k8s-api-query";
 import { runParallelAction } from "next-server-actions-parallel";
 import {
@@ -69,7 +69,7 @@ export const getClusterLogs = async (
 ) => {
   const clusterObject = await getCluster(k8sContext, target);
   const { pods = [], type } = clusterObject;
-  const logTypes = CLUSTER_LOG_TYPES[type];
+  const logTypes = CLUSTER_LOG_TYPES[type as keyof typeof CLUSTER_LOG_TYPES];
 
   // Check if pods are available
   if (!pods.length) {
@@ -114,7 +114,7 @@ export const getClusterLogs = async (
 
       const logRequestsWithMetadata = _.chain(logFilePaths)
         .flatMap((logPath) =>
-          pods.flatMap((pod) =>
+          pods.flatMap((pod: { name: string }) =>
             logTypes.map((logType) => ({
               request: runParallelAction(
                 getLog(
@@ -153,7 +153,7 @@ export const getClusterLogs = async (
       return processLogData(
         logFileResponses,
         logResponsesWithMetadata,
-        pods.map((pod) => pod.name)
+        pods.map((pod: { name: string }) => pod.name)
       );
     })
     .value();

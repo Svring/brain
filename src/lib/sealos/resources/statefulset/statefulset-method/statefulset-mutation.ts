@@ -9,15 +9,15 @@ import {
   startLaunchpad,
 } from "../../launchpad/launchpad-api/launchpad-old-api";
 import type { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
-import type { AppCreateRequest } from "../../launchpad/launchpad-api/launchpad-old-api-schemas/req-res-create-schemas";
-import type { AppDeleteRequest } from "../../launchpad/launchpad-api/launchpad-old-api-schemas/req-res-delete-schemas";
-import type { AppPauseRequest } from "../../launchpad/launchpad-api/launchpad-old-api-schemas/req-res-pause-schemas";
-import type { AppStartRequest } from "../../launchpad/launchpad-api/launchpad-old-api-schemas/req-res-start-schemas";
+import type { LaunchpadCreateRequest } from "../../launchpad/launchpad-api/launchpad-old-api-schemas/req-res-create-schemas";
+import type { LaunchpadDeleteRequest } from "../../launchpad/launchpad-api/launchpad-old-api-schemas/req-res-delete-schemas";
+import type { LaunchpadPauseRequest } from "../../launchpad/launchpad-api/launchpad-old-api-schemas/req-res-pause-schemas";
+import type { LaunchpadStartRequest } from "../../launchpad/launchpad-api/launchpad-old-api-schemas/req-res-start-schemas";
 
 export function useCreateStatefulSetMutation(context: SealosApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (request: AppCreateRequest) =>
+    mutationFn: (request: LaunchpadCreateRequest) =>
       runParallelAction(createLaunchpad(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -30,7 +30,7 @@ export function useCreateStatefulSetMutation(context: SealosApiContext) {
 export function useDeleteStatefulSetMutation(context: SealosApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (request: AppDeleteRequest) =>
+    mutationFn: (request: LaunchpadDeleteRequest) =>
       runParallelAction(deleteLaunchpad(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -43,7 +43,7 @@ export function useDeleteStatefulSetMutation(context: SealosApiContext) {
 export function usePauseStatefulSetMutation(context: SealosApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (request: AppPauseRequest) =>
+    mutationFn: (request: LaunchpadPauseRequest) =>
       runParallelAction(pauseLaunchpad(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -56,7 +56,7 @@ export function usePauseStatefulSetMutation(context: SealosApiContext) {
 export function useStartStatefulSetMutation(context: SealosApiContext) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (request: AppStartRequest) =>
+    mutationFn: (request: LaunchpadStartRequest) =>
       runParallelAction(startLaunchpad(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({

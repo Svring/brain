@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
-import { SealosApiContext } from "../../sealos-api-context-schema";
+import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
 import {
   BuiltinResourceTarget,
   BuiltinResourceTargetSchema,

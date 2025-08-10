@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { createParallelAction } from "next-server-actions-parallel";
-import { SealosApiContext } from "../../sealos-api-context-schema";
+import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
 import {
   ClusterCreateRequest,
   ClusterCreateRequestSchema,

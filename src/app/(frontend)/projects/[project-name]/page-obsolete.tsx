@@ -1,0 +1,175 @@
+"use client";
+
+import { useState, use } from "react";
+import { createK8sContext } from "@/lib/auth/auth-utils";
+
+// React Flow imports
+import { Background, ReactFlow, ReactFlowProvider } from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
+
+// Icon imports
+
+// Custom component imports
+import { ProjectHeader } from "@/components/project/components/project-header";
+// import { ProjectActions } from "@/components/project/components/project-actions";
+import { AddResourceTabs } from "@/components/project/add-resource/add-resource-tabs";
+import { Droppable } from "@/components/flow/dnd/droppable";
+import { DndProvider } from "@/components/flow/dnd/dnd-provider";
+import { TextShimmer } from "@/components/project/components/text-shimmer";
+import AiCoin from "@/components/ai/headless/ai-coin";
+import AiChatbox from "@/components/ai/headless/ai-chatbox";
+
+// UI component imports
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+
+// Custom hook imports
+import { useFlow } from "@/hooks/flow/use-flow";
+import { useFlowFocus } from "@/hooks/flow/use-flow-focus";
+import { useFlowDrop } from "@/hooks/flow/use-flow-drop";
+// import { useFlowRefresh } from "@/hooks/flow/use-flow-refresh";
+import { useProjectSignal } from "@/hooks/project/use-project-signal";
+import { useFlowActions } from "@/contexts/flow/flow-context";
+
+// Custom types
+import edgeTypes from "@/components/flow/edge/edge-types";
+import nodeTypes from "@/components/flow/node/node-types";
+
+// Flow context
+import { FlowProvider } from "@/contexts/flow/flow-context";
+
+// Constants
+import { FLOW_CONFIG } from "@/lib/flow/flow-constant/flow-constant-config";
+
+// Floating UI Component
+function ProjectFloatingUI({ projectName }: { projectName: string }) {
+  const [open, setOpen] = useState(false);
+  // const { handleRefresh, isRefreshing } = useFlowRefresh(projectName);
+
+  return (
+    <>
+      <ProjectHeader projectName={projectName} />
+      {/* <ProjectActions
+        onAddNew={() => setOpen(true)}
+        onRefresh={handleRefresh}
+        isRefreshing={isRefreshing}
+      /> */}
+      {/* <Sheet onOpenChange={setOpen} open={open}>
+        <SheetContent className="!w-[40vw] !max-w-none fade-in-0 animate-in flex flex-col">
+          <SheetHeader className="flex-shrink-0">
+            <SheetTitle>Add Resource</SheetTitle>
+            <VisuallyHidden>
+              <SheetDescription />
+            </VisuallyHidden>
+          </SheetHeader>
+          <Droppable
+            id="project-floating-ui"
+            className="flex-1 min-h-0 overflow-hidden"
+          >
+            <AddResourceTabs />
+          </Droppable>
+        </SheetContent>
+      </Sheet> */}
+      <AiCoin />
+      <AiChatbox />
+    </>
+  );
+}
+
+// Flow Component
+function ProjectFlow({ projectName }: { projectName: string }) {
+  const context = createK8sContext();
+  const [nodes, onNodesChange, edges, onEdgesChange, isLoading] = useFlow(
+    context,
+    projectName
+  );
+  const { handleDrop } = useFlowDrop(context, projectName);
+  const { onNodeClick } = useFlowFocus();
+  const { setDragging } = useFlowActions();
+
+  const handleNodeDragStart = () => {
+    setDragging(true);
+  };
+
+  const handleNodeDragStop = () => {
+    // Add a small delay to ensure drag state is cleared after any click events
+    setTimeout(() => {
+      setDragging(false);
+    }, 100);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full w-full">
+        <TextShimmer className="font-mono text-md" duration={1.2}>
+          Loading project resources...
+        </TextShimmer>
+      </div>
+    );
+  }
+
+  return (
+    <Droppable
+      id="project-flow"
+      className="w-full h-full"
+      data={{
+        projectName: projectName ?? "",
+        onDrop: handleDrop,
+      }}
+    >
+      <ReactFlow
+        connectionLineType={FLOW_CONFIG.connectionLineType}
+        edges={edges}
+        edgeTypes={edgeTypes}
+        fitView
+        fitViewOptions={FLOW_CONFIG.fitViewOptions}
+        nodes={nodes}
+        nodeTypes={nodeTypes}
+        onEdgesChange={onEdgesChange}
+        onNodesChange={onNodesChange}
+        onNodeClick={onNodeClick}
+        onNodeDragStart={handleNodeDragStart}
+        onNodeDragStop={handleNodeDragStop}
+        panOnScroll
+        snapToGrid
+        snapGrid={FLOW_CONFIG.snapGrid}
+      >
+        <Background
+          gap={FLOW_CONFIG.background.gap}
+          size={FLOW_CONFIG.background.size}
+          variant={FLOW_CONFIG.background.variant}
+        />
+      </ReactFlow>
+    </Droppable>
+  );
+}
+
+// Main Page Component
+export default function ProjectPage({
+  params,
+}: {
+  params: Promise<{ "project-name": string }>;
+}) {
+  const { "project-name": projectName } = use(params);
+
+  useProjectSignal(projectName);
+
+  return (
+    <DndProvider>
+      <FlowProvider>
+        <div className="relative h-screen w-full">
+          <ReactFlowProvider>
+            <ProjectFlow projectName={projectName} />
+          </ReactFlowProvider>
+          <ProjectFloatingUI projectName={projectName} />
+        </div>
+      </FlowProvider>
+    </DndProvider>
+  );
+}
