@@ -100,7 +100,7 @@ export function StateCard({ state, className }: StateCardProps) {
                 </div>
 
                 <div className="flex items-start justify-between gap-2">
-                  <span className="text-muted-foreground flex-shrink-0">
+                  <span className="text-muted-foreground shrink-0">
                     System Prompt:
                   </span>
                   <span className="text-right text-xs font-mono bg-muted px-2 py-1 rounded max-w-[200px] truncate">

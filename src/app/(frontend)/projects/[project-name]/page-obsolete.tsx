@@ -61,8 +61,8 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
         isRefreshing={isRefreshing}
       /> */}
       {/* <Sheet onOpenChange={setOpen} open={open}>
-        <SheetContent className="!w-[40vw] !max-w-none fade-in-0 animate-in flex flex-col">
-          <SheetHeader className="flex-shrink-0">
+        <SheetContent className="w-[40vw]! max-w-none! fade-in-0 animate-in flex flex-col">
+          <SheetHeader className="shrink-0">
             <SheetTitle>Add Resource</SheetTitle>
             <VisuallyHidden>
               <SheetDescription />

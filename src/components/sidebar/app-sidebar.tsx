@@ -1,7 +1,7 @@
 "use client";
 
-import { MainSection } from "@/components/app/sidebar/sidebar-section";
-import { UserCard } from "@/components/app/sidebar/user-card";
+import { MainSection } from "./sidebar-section";
+import { UserCard } from "./user-card";
 import {
   Sidebar,
   SidebarContent,

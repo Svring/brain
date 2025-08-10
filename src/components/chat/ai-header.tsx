@@ -15,7 +15,7 @@ interface AiChatHeaderProps {
 export function AiChatHeader({
   title = "AI Assistant",
   description = "Chat with Sealos Brain AI to help with your projects",
-  className = "p-6 pb-0 flex-shrink-0",
+  className = "p-6 pb-0 shrink-0",
 }: AiChatHeaderProps) {
   return (
     <SheetHeader className={className}>

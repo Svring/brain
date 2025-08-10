@@ -3,11 +3,10 @@
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { MessageRendererProps } from "./types";
-import { AnimatedMarkdown } from "flowtoken";
 import Markdown from "react-markdown";
-import { AIResponse } from "@/components/ui/shadcn-io/ai/response";
+// import { AIResponse } from "@/components/ui/shadcn-io/ai/response";
 
-import "flowtoken/dist/styles.css";
+// import "flowtoken/dist/styles.css";
 import "@/styles/github-markdown-dark.css";
 
 export function RenderTextMessage({

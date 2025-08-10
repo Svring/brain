@@ -14,7 +14,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useQuery } from "@tanstack/react-query";
-import { listProjectsOptions } from "@/lib/project/project-method/project-query";
+// import { listProjectsOptions } from "@/lib/project/project-method/project-query";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 
@@ -47,7 +47,7 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
 export const MainSection: React.FC<MainSectionProps> = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const { data: projects } = useQuery(listProjectsOptions(createK8sContext()));
+  // const { data: projects } = useQuery(listProjectsOptions(createK8sContext()));
   const { reset } = useCopilotChatHeadless_c({ id: "chat" });
 
   const handleNavigation = (path: string) => {
@@ -76,7 +76,7 @@ export const MainSection: React.FC<MainSectionProps> = () => {
                       <span>{item.title}</span>
                     </SidebarMenuButton>
                   </TooltipTrigger>
-                  <TooltipContent side="right" align="start">
+                  {/* <TooltipContent side="right" align="start">
                     {item.title === "projects" && projects?.items ? (
                       <div className="space-y-1">
                         <p className="font-medium">Projects</p>
@@ -99,7 +99,7 @@ export const MainSection: React.FC<MainSectionProps> = () => {
                     ) : (
                       <p>{item.title}</p>
                     )}
-                  </TooltipContent>
+                  </TooltipContent> */}
                 </Tooltip>
               </SidebarMenuItem>
             )

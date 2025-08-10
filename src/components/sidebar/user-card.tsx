@@ -25,7 +25,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useToast } from "@/hooks/general/use-toast";
+// import { useToast } from "@/hooks/general/use-toast";
 
 export function UserCard({
   user,
@@ -37,7 +37,7 @@ export function UserCard({
   };
 }) {
   const { isMobile, state } = useSidebar();
-  const { toast } = useToast();
+  // const { toast } = useToast();
 
   const isCollapsed = state === "collapsed";
 
@@ -57,19 +57,19 @@ export function UserCard({
         throw new Error("Logout failed");
       }
 
-      toast({
-        title: "Logged out",
-        description: "You have been logged out successfully.",
-      });
+      // toast({
+      //   title: "Logged out",
+      //   description: "You have been logged out successfully.",
+      // });
 
       // Reload the page to reflect logged-out state
       window.location.reload();
     } catch (error) {
-      toast({
-        title: "Logout error",
-        description: error instanceof Error ? error.message : "Unknown error.",
-        variant: "destructive",
-      });
+      // toast({
+      //   title: "Logout error",
+      //   description: error instanceof Error ? error.message : "Unknown error.",
+      //   variant: "destructive",
+      // });
     }
   };
 

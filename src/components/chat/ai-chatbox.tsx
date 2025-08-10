@@ -30,7 +30,7 @@ export default function AiChatbox() {
           <AiMessages />
         </div>
 
-        <div className="p-2 pt-0 flex-shrink-0">
+        <div className="p-2 pt-0 shrink-0">
           <AiChatInput />
         </div>
       </SheetContent>
