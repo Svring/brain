@@ -1,0 +1,44 @@
+import { z } from "zod";
+import { IngressObjectSchema } from "@/lib/sealos/resources/ingress/ingress-object-schema";
+import { DevboxObjectQuerySchema } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-query-schema";
+import { ClusterObjectQuerySchema } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-query-schema";
+import { DeploymentObjectQuerySchema } from "@/lib/sealos/resources/deployment/deployment-object-query-schema";
+import { StatefulsetObjectSchema } from "@/lib/sealos/resources/statefulset/statefulset-object-schema";
+import { ObjectStorageBucketObjectQuerySchema } from "../../resources/objectstorage/objectstorage-schemas/objectstorage-object-query-schema";
+// import { BrainProjectObjectQuerySchema } from "@/lib/sealos/resources/brain/brain-schemas/brain-project-object-query-schema";
+
+/**
+ * Map of resource types to their corresponding Zod schemas
+ * This allows for easy extension when adding new resource types
+ */
+export const RESOURCE_SCHEMA_MAP: Record<string, z.ZodObject<any>> = {
+  devbox: DevboxObjectQuerySchema,
+  cluster: ClusterObjectQuerySchema,
+  deployment: DeploymentObjectQuerySchema,
+  statefulset: StatefulsetObjectSchema,
+  objectstoragebucket: ObjectStorageBucketObjectQuerySchema,
+  ingress: IngressObjectSchema,
+  // instance: BrainProjectObjectQuerySchema,
+  // Add more resource schemas here as they become available
+  // example: "pod": PodObjectSchema,
+  // example: "service": ServiceObjectSchema,
+};
+
+/**
+ * Gets the schema for a given resource type
+ * @param resourceType - The resource type to get schema for
+ * @returns The corresponding Zod schema or null if not found
+ */
+export function getSchemaForResourceType(
+  resourceType: string
+): z.ZodObject<any> | null {
+  return RESOURCE_SCHEMA_MAP[resourceType] || null;
+}
+
+/**
+ * Gets all supported resource types
+ * @returns Array of supported resource type strings
+ */
+export function getSupportedResourceTypes(): string[] {
+  return Object.keys(RESOURCE_SCHEMA_MAP);
+}

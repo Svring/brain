@@ -1,0 +1,30 @@
+import {
+  CopilotRuntime,
+  copilotRuntimeNextJSAppRouterEndpoint,
+  ExperimentalEmptyAdapter,
+  LangGraphAgent,
+} from "@copilotkit/runtime";
+import type { NextRequest } from "next/server";
+
+// You can use any service adapter here for multi-agent support.
+const serviceAdapter = new ExperimentalEmptyAdapter();
+
+const runtime = new CopilotRuntime({
+  agents: {
+    ai: new LangGraphAgent({
+      deploymentUrl: process.env.NEXT_PUBLIC_LANGGRAPH_DEPLOYMENT_URL || "",
+      graphId: "ai",
+      langsmithApiKey: process.env.LANGSMITH_API_KEY || "",
+    }),
+  },
+});
+
+export const POST = async (req: NextRequest) => {
+  const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
+    runtime,
+    serviceAdapter,
+    endpoint: "/api/copilot",
+  });
+
+  return handleRequest(req);
+};
