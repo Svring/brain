@@ -3,12 +3,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { runParallelAction } from "next-server-actions-parallel";
 import {
-  createCluster,
-  startCluster,
-  pauseCluster,
-  deleteCluster,
+  createCluster as createClusterOld,
+  startCluster as startClusterOld,
+  pauseCluster as pauseClusterOld,
+  deleteCluster as deleteClusterOld,
   deleteBackup,
 } from "../cluster-api/cluster-old-api";
+import { createCluster, updateCluster } from "../cluster-api/cluster-open-api";
 import type { ClusterApiContext } from "../schemas/cluster-api-context-schemas";
 import type {
   ClusterCreateRequest,
@@ -30,12 +31,35 @@ import type {
   ClusterBackupDeleteRequest,
   ClusterBackupDeleteResponse,
 } from "../schemas/req-res-schemas/req-res-delete-backup-schemas";
+import type {
+  CreateClusterRequest,
+  CreateClusterResponse,
+  UpdateClusterRequest,
+  UpdateClusterResponse,
+} from "../cluster-api/cluster-open-api-schemas";
 
 export function useCreateClusterMutation(context: ClusterApiContext) {
   const queryClient = useQueryClient();
-  return useMutation<ClusterCreateResponse, unknown, ClusterCreateRequest>({
-    mutationFn: (request: ClusterCreateRequest) =>
+  return useMutation<CreateClusterResponse, unknown, CreateClusterRequest>({
+    mutationFn: (request: CreateClusterRequest) =>
       runParallelAction(createCluster(request, context)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [["cluster"], ["project"]],
+      });
+    },
+  });
+}
+
+export function useUpdateClusterMutation(context: ClusterApiContext) {
+  const queryClient = useQueryClient();
+  return useMutation<
+    UpdateClusterResponse,
+    unknown,
+    { clusterName: string; request: UpdateClusterRequest }
+  >({
+    mutationFn: ({ clusterName, request }) =>
+      runParallelAction(updateCluster(clusterName, request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [["cluster"], ["project"]],
@@ -48,7 +72,7 @@ export function useStartClusterMutation(context: ClusterApiContext) {
   const queryClient = useQueryClient();
   return useMutation<ClusterStartResponse, unknown, ClusterStartRequest>({
     mutationFn: (request: ClusterStartRequest) =>
-      runParallelAction(startCluster(request, context)),
+      runParallelAction(startClusterOld(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [["cluster"], ["project"]],
@@ -61,7 +85,7 @@ export function useStopClusterMutation(context: ClusterApiContext) {
   const queryClient = useQueryClient();
   return useMutation<ClusterPauseResponse, unknown, ClusterPauseRequest>({
     mutationFn: (request: ClusterPauseRequest) =>
-      runParallelAction(pauseCluster(request, context)),
+      runParallelAction(pauseClusterOld(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["cluster"],
@@ -74,7 +98,7 @@ export function useDeleteClusterMutation(context: ClusterApiContext) {
   const queryClient = useQueryClient();
   return useMutation<ClusterDeleteResponse, unknown, ClusterDeleteRequest>({
     mutationFn: (request: ClusterDeleteRequest) =>
-      runParallelAction(deleteCluster(request, context)),
+      runParallelAction(deleteClusterOld(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [["cluster"], ["project"]],
