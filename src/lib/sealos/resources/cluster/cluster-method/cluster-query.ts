@@ -18,6 +18,7 @@ import {
   getLog,
   getBackupList,
 } from "../cluster-api/cluster-old-api";
+import { getClusterVersions } from "../cluster-api/cluster-open-api";
 import { CLUSTER_LOG_TYPES } from "../cluster-constant/cluster-constant-logs";
 import { ifSupportLog, processLogData } from "../cluster-utils";
 import _ from "lodash";
@@ -191,6 +192,11 @@ export const getClusterRelatedResources = async (
   );
 };
 
+export const fetchClusterVersions = async (context: SealosApiContext) => {
+  const versionsResponse = await runParallelAction(getClusterVersions(context));
+  return versionsResponse;
+};
+
 // ============================================================================
 // OPTIONS FUNCTIONS (React Query wrappers)
 // ============================================================================
@@ -259,4 +265,15 @@ export const getClusterLogsOptions = (
       !!target.name &&
       !!k8sContext.kubeconfig &&
       !!clusterContext.baseURL,
+  });
+
+/**
+ * Query options for getting cluster versions
+ */
+export const getClusterVersionsOptions = (context: SealosApiContext) =>
+  queryOptions({
+    queryKey: ["cluster", "versions"],
+    queryFn: async () => await fetchClusterVersions(context),
+    enabled: !!context.baseURL,
+    staleTime: 1000 * 60 * 60, // 1 hour - versions don't change frequently
   });

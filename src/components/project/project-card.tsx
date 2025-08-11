@@ -12,17 +12,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import { useDeleteProjectMutation } from "@/lib/sealos/resources/project/project-method/project-mutation";
+import { useDeleteProjectMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
 import { createK8sContext } from "@/lib/auth/auth-utils";
-import { ProjectObjectSchema } from "@/lib/sealos/resources/project/project-schemas/project-object-schema";
+import { ProjectObjectSchema } from "@/lib/brain/resources/project/project-schemas/project-object-schema";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 
-interface BrainProjectCardProps {
-  project: z.infer<typeof BrainProjectObjectSchema>;
+interface ProjectCardProps {
+  project: z.infer<typeof ProjectObjectSchema>;
 }
 
-const BrainProjectCard: React.FC<BrainProjectCardProps> = ({ project }) => {
+const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
   const context = createK8sContext();
 
   const deleteProjectMutation = useDeleteProjectMutation(context);
@@ -32,7 +32,7 @@ const BrainProjectCard: React.FC<BrainProjectCardProps> = ({ project }) => {
     e.stopPropagation();
 
     deleteProjectMutation.mutate(
-      { projectName: project.name },
+      { name: project.name },
       {
         onSuccess: () => {
           // Project deleted successfully
@@ -103,4 +103,4 @@ const BrainProjectCard: React.FC<BrainProjectCardProps> = ({ project }) => {
   );
 };
 
-export default BrainProjectCard;
+export default ProjectCard;

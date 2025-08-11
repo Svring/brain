@@ -1,21 +1,22 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import BrainProjectCard from "@/components/brain/brain-project-card";
+import ProjectCard from "@/components/project/project-card";
 import { Button } from "@/components/ui/button";
 import { TextShimmer } from "@/components/ui/text-shimmer";
 import AiCoin from "@/components/chat/ai-coin";
 import AiChatbox from "@/components/chat/ai-chatbox";
 import SearchBar from "@/components/ui/search-bar";
 import { createK8sContext } from "@/lib/auth/auth-utils";
+import useProjectSearch from "@/hooks/brain/use-projects-search";
 
 export default function Page() {
   const context = createK8sContext();
 
   // const { openDialog, CreateProjectDialog } = useCreateProjectDialog();
 
-  // const { setSearchTerm, filteredBrainProjects, isLoading, isError } =
-  //   useBrainProjectSearch(context);
+  const { setSearchTerm, filteredProjects, isLoading, isError } =
+    useProjectSearch(context);
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center p-8">
@@ -33,9 +34,9 @@ export default function Page() {
               onSearchChange={setSearchTerm}
               placeholder="Search projects..."
             />
-            <Button variant="ghost" onClick={openDialog}>
+            {/* <Button variant="ghost" onClick={openDialog}>
               <Plus />
-            </Button>
+            </Button> */}
           </div>
         </div>
       </div>
@@ -59,9 +60,9 @@ export default function Page() {
 
           {!isError && (
             <>
-              {filteredBrainProjects.length !== 0 &&
-                filteredBrainProjects.map((project) => (
-                  <BrainProjectCard key={project.name} project={project} />
+              {filteredProjects.length !== 0 &&
+                filteredProjects.map((project) => (
+                  <ProjectCard key={project.name} project={project} />
                 ))}
             </>
           )}
@@ -70,7 +71,7 @@ export default function Page() {
 
       <AiCoin />
       <AiChatbox />
-      <CreateProjectDialog />
+      {/* <CreateProjectDialog /> */}
     </div>
   );
 }

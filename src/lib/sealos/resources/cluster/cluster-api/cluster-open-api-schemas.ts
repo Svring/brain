@@ -195,6 +195,13 @@ export const GetLogsFilesResponseSchema = z.object({
   data: z.array(LogFileInfoSchema),
 });
 
+// Cluster versions response schema
+export const ClusterVersionsResponseSchema = z.object({
+  code: z.number(),
+  message: z.string(),
+  data: z.record(z.array(z.string())),
+});
+
 // Cluster API context schema
 export const ClusterApiContextSchema = z.object({
   baseURL: z.string().optional(),
@@ -227,4 +234,7 @@ export type LogMetadata = z.infer<typeof LogMetadataSchema>;
 export type GetLogsDataResponse = z.infer<typeof GetLogsDataResponseSchema>;
 export type LogFileInfo = z.infer<typeof LogFileInfoSchema>;
 export type GetLogsFilesResponse = z.infer<typeof GetLogsFilesResponseSchema>;
+export type ClusterVersionsResponse = z.infer<
+  typeof ClusterVersionsResponseSchema
+>;
 export type ClusterApiContext = z.infer<typeof ClusterApiContextSchema>;

@@ -10,7 +10,7 @@ import { getDevboxObject } from "../bridge-resources/bridge-sealos/devbox/devbox
 import { getIngressObject } from "../bridge-resources/bridge-sealos/ingress/ingress-bridge-query";
 import { getObjectStorageObject } from "../bridge-resources/bridge-sealos/objectstorage/objectstorage-bridge-query";
 import { getStatefulSetObject } from "../bridge-resources/bridge-sealos/statefulset/statefulset-bridge-query";
-import { getBrainProjectObject } from "../bridge-resources/bridge-brain/brain-project/brain-project-bridge-query";
+import { getProjectObject } from "@/lib/brain/resources/project/project-method/project-bridge";
 import { composeObjectFromTarget } from "./bridge-query-utils";
 
 /**
@@ -27,11 +27,8 @@ const RESOURCE_BRIDGE_MAP = {
   statefulset: getStatefulSetObject,
   ingress: getIngressObject,
 
-  // Brain resources
-  brainproject: getBrainProjectObject,
-
   // Default for instance (brain projects)
-  instance: composeObjectFromTarget,
+  instance: getProjectObject,
 } as const;
 
 /**

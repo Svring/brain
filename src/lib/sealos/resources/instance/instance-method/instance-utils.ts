@@ -13,7 +13,7 @@ import { BUILTIN_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-builtin-r
 import { convertAndFilterResourceToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { getClusterRelatedResources } from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
 import { getDeploymentRelatedResources } from "@/lib/sealos/resources/deployment/deployment-method/deployment-query";
-import { getDevboxRelatedResources } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
+import { getDevboxRelatedResources } from "../../devbox/devbox-method/devbox-relevance";
 import { getInstanceRelatedResources } from "./instance-query";
 
 export const getInstanceNameFromResource = (

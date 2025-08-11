@@ -14,10 +14,10 @@ import { composeProjectMetadata } from "./project-utils";
 import { PROJECT_METADATA_ANNOTATION_KEY } from "@/lib/brain/resources/project/project-constant/project-constant-annotation";
 import { ProjectObjectMetadata } from "@/lib/brain/resources/project/project-schemas/project-object-schema";
 
-export const useCreateBrainProjectMutation = (context: K8sApiContext) => {
+export const useCreateProjectMutation = (context: K8sApiContext) => {
   const queryClient = useQueryClient();
   const createInstanceMutation = useApplyInstanceYamlMutation(context);
-  const updateMetadataMutation = useUpdateBrainProjectMetadataMutation(context);
+  const updateMetadataMutation = useUpdateProjectMetadataMutation(context);
 
   return useMutation({
     mutationFn: async ({ name }: { name: string }) => {
@@ -49,7 +49,7 @@ export const useCreateBrainProjectMutation = (context: K8sApiContext) => {
   });
 };
 
-export const useUpdateBrainProjectNameMutation = (context: K8sApiContext) => {
+export const useUpdateProjectNameMutation = (context: K8sApiContext) => {
   const queryClient = useQueryClient();
   const patchMutation = usePatchResourceMetadataMutation(context);
 
@@ -82,9 +82,7 @@ export const useUpdateBrainProjectNameMutation = (context: K8sApiContext) => {
   });
 };
 
-export const useUpdateBrainProjectMetadataMutation = (
-  context: K8sApiContext
-) => {
+export const useUpdateProjectMetadataMutation = (context: K8sApiContext) => {
   const queryClient = useQueryClient();
   const patchMutation = usePatchResourceMetadataMutation(context);
 
@@ -117,7 +115,7 @@ export const useUpdateBrainProjectMetadataMutation = (
   });
 };
 
-export const useDeleteBrainProjectMutation = (context: K8sApiContext) => {
+export const useDeleteProjectMutation = (context: K8sApiContext) => {
   const queryClient = useQueryClient();
   const deleteAllResources = useDeleteAllResourcesMutation(context);
 

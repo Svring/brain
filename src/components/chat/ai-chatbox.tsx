@@ -1,28 +1,27 @@
 "use client";
 
-import { useAiState, useAiActions } from "@/contexts/ai/ai-context";
+import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { AiMessages } from "./ai-messages";
 import { AiChatInput } from "./ai-input";
 import { AiChatHeader } from "./ai-header";
 
 export default function AiChatbox() {
-  const { chat } = useAiState();
-  const { closeChat } = useAiActions();
+  const { sidebarChatOpen } = useChatState();
+  const { closeSidebarChat } = useChatActions();
 
   return (
     <Sheet
-      open={chat.open}
+      open={sidebarChatOpen}
       onOpenChange={(open) => {
         if (!open) {
-          closeChat();
+          closeSidebarChat();
         }
       }}
     >
       <SheetContent
         side="right"
         className="w-[500px] p-0 flex flex-col"
-        onClose={closeChat}
       >
         <AiChatHeader />
 

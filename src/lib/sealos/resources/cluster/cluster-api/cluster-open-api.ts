@@ -17,6 +17,7 @@ import type {
   LogClusterType,
   LogType,
   ClusterForm,
+  ClusterVersionsResponse,
 } from "./cluster-open-api-schemas";
 import {
   CreateClusterRequestSchema,
@@ -325,6 +326,28 @@ export const getLogsFiles = createParallelAction(
     const api = createClusterApi(context);
     const response = await api.get("/logs/files", { params });
     return GetLogsFilesResponseSchema.parse(response.data);
+  }
+);
+
+/**
+ * Get available cluster versions
+ *
+ * @example
+ * ```typescript
+ * // Get all available cluster versions
+ * const versions = await getClusterVersions(context);
+ *
+ * // Access specific cluster versions
+ * console.log("PostgreSQL versions:", versions.data.postgresql);
+ * console.log("MongoDB versions:", versions.data.mongodb);
+ * console.log("Redis versions:", versions.data.redis);
+ * ```
+ */
+export const getClusterVersions = createParallelAction(
+  async (context: ClusterApiContext): Promise<ClusterVersionsResponse> => {
+    const api = createClusterApi(context);
+    const response = await api.get("/database/version/list");
+    return response.data;
   }
 );
 

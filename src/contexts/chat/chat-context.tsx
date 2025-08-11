@@ -48,18 +48,13 @@ export function useChatActions() {
   const { send } = useChatContext();
 
   return {
-    openSidebarChat: () => send({ type: "OPEN_SIDEBAR_CHAT" }),
-    closeSidebarChat: () => send({ type: "CLOSE_SIDEBAR_CHAT" }),
-    toggleSidebarChat: () => send({ type: "TOGGLE_SIDEBAR_CHAT" }),
-    setSidebarChatOpen: (open: boolean) =>
-      send({ type: "SET_SIDEBAR_CHAT_OPEN", open }),
+    openSidebarChat: () => send({ type: "SET_SIDEBAR_CHAT_OPEN", open: true }),
+    closeSidebarChat: () =>
+      send({ type: "SET_SIDEBAR_CHAT_OPEN", open: false }),
 
-    openFloatingChat: () => send({ type: "OPEN_FLOATING_CHAT" }),
-    closeFloatingChat: () => send({ type: "CLOSE_FLOATING_CHAT" }),
-    toggleFloatingChat: () => send({ type: "TOGGLE_FLOATING_CHAT" }),
-    setFloatingChatOpen: (open: boolean) =>
-      send({ type: "SET_FLOATING_CHAT_OPEN", open }),
+    openFloatingChat: () =>
+      send({ type: "SET_FLOATING_CHAT_OPEN", open: true }),
+    closeFloatingChat: () =>
+      send({ type: "SET_FLOATING_CHAT_OPEN", open: false }),
   };
 }
-
-
