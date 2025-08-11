@@ -1,6 +1,4 @@
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { getAllResourceObjectsOptions } from "@/lib/sealos/services/bridge/bridge-method/bridge-query";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
@@ -18,12 +16,6 @@ export default function useResourceObjects(
   const [fetchedObjects, setFetchedObjects] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-
-  // const {
-  //   data: resourceObjects = [],
-  //   isLoading,
-  //   error,
-  // } = useQuery(getAllResourceObjectsOptions(context, resources));
 
   // Filter and fetch all resource types
   useEffect(() => {

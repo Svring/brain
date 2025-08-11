@@ -15,11 +15,13 @@ import AiChatbox from "@/components/chat/ai-chatbox";
 
 import { useProjectResources } from "@/hooks/brain/use-project-resources";
 import useResourceObjects from "@/hooks/sealos/use-resource-objects";
-// import useFlowgraphNodes from "@/hooks/flowgraph/use-flowgraph-nodes";
+import useFlowgraphNodes from "@/hooks/flowgraph/use-flowgraph-nodes";
+import useResourceReliances from "@/hooks/sealos/use-resource-reliances";
+import useFlowgraphEdges from "@/hooks/flowgraph/use-flowgraph-edges";
 
 // Custom types
 import edgeTypes from "@/components/flowgraph/edge/edge-types";
-import nodeTypes from "@/components/flowgraph/node/node-types";
+// import nodeTypes from "@/components/flowgraph/node/node-types";
 
 // Flow context
 import { FlowgraphProvider } from "@/contexts/flowgraph/flowgraph-context";
@@ -67,11 +69,16 @@ function ProjectFlow({ projectName }: { projectName: string }) {
   const context = createK8sContext();
 
   const { resources, isLoading, error } = useProjectResources(projectName);
-
   const { resourceObjects } = useResourceObjects(resources ?? []);
+  const { nodes } = useFlowgraphNodes(resourceObjects);
+  const { reliances } = useResourceReliances(resourceObjects);
+  const { edges } = useFlowgraphEdges(reliances);
 
   console.log("resourceObjects", resourceObjects);
-
+  console.log("nodes", nodes);
+  console.log("reliances", reliances);
+  console.log("edges", edges);
+  
   // const { expandedResources, isLoading: isLoadingResources } =
   //   useBrainProjectResources(projectName);
 
@@ -95,7 +102,7 @@ function ProjectFlow({ projectName }: { projectName: string }) {
       fitView
       fitViewOptions={REACT_FLOW_CONFIG.fitViewOptions}
       // nodes={nodes}
-      nodeTypes={nodeTypes}
+      // nodeTypes={nodeTypes}
       // onEdgesChange={onEdgesChange}
       // onNodesChange={onNodesChange}
       // onNodeClick={onNodeClick}
