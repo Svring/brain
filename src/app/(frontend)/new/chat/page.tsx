@@ -6,11 +6,15 @@ import { AiMessages } from "@/components/chat/ai-messages";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
+import useLanggraphAgent from "@/hooks/langgraph/use-langgraph-agent";
 
 export default function ChatPage() {
   const { messages } = useCopilotChatHeadless_c();
   const hasMessages = messages.length > 0;
   const router = useRouter();
+
+  useCopilotActions();
 
   return (
     <div className="relative h-screen w-full flex flex-col">
@@ -29,15 +33,15 @@ export default function ChatPage() {
           titleClassName="text-5xl md:text-6xl font-extrabold"
           subtitleClassName="text-lg md:text-xl max-w-[600px]"
           actionsClassName="mt-4"
-          actions={[
-            {
-              variant: "default",
-              label: "Create From Template",
-              onClick: () => {
-                router.push("/new/template");
-              },
-            },
-          ]}
+          // actions={[
+          //   {
+          //     variant: "default",
+          //     label: "Create From Template",
+          //     onClick: () => {
+          //       router.push("/new/template");
+          //     },
+          //   },
+          // ]}
         />
       </motion.div>
 

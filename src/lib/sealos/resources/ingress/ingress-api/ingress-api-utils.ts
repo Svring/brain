@@ -2,7 +2,7 @@
 
 import WebSocket from "ws";
 import axios from "axios";
-import grpc from "@grpc/grpc-js";
+import * as grpc from "@grpc/grpc-js";
 import { createParallelAction } from "next-server-actions-parallel";
 import { ProtocolCheckResult } from "./ingress-api-schema";
 

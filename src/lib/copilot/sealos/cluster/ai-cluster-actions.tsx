@@ -5,16 +5,17 @@ import {
   listClusterOptions,
   getClusterOptions,
   getClusterLogsOptions,
-} from "@/lib/sealos/cluster/cluster-method/cluster-query";
+} from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
 import {
   useCreateClusterMutation,
   useStartClusterMutation,
   useStopClusterMutation,
   useDeleteClusterMutation,
-} from "@/lib/sealos/cluster/cluster-method/cluster-mutation";
+} from "@/lib/sealos/resources/cluster/cluster-method/cluster-mutation";
 import { useCopilotAction } from "@copilotkit/react-core";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import type { CreateClusterRequest } from "@/lib/sealos/resources/cluster/cluster-api/cluster-open-api-schemas";
 
 export const activateClusterActions = (
   k8sContext: K8sApiContext,
@@ -40,13 +41,13 @@ export const createClusterAction = (context: SealosApiContext) => {
         name: "dbType",
         type: "string",
         required: true,
-        description: "Database type (e.g., kafka, postgresql, mongodb)",
+        description: "Database type (e.g., postgresql, mongodb, redis, kafka)",
       },
       {
         name: "dbVersion",
         type: "string",
         required: true,
-        description: "Database version (e.g., kafka-3.3.2)",
+        description: "Database version (e.g., 14.0, 6.0, 7.0)",
       },
       {
         name: "dbName",
@@ -58,7 +59,7 @@ export const createClusterAction = (context: SealosApiContext) => {
         name: "replicas",
         type: "number",
         required: false,
-        description: "Number of replicas (default: 1)",
+        description: "Number of replicas (default: 1, max: 3)",
       },
       {
         name: "cpu",
@@ -76,7 +77,13 @@ export const createClusterAction = (context: SealosApiContext) => {
         name: "storage",
         type: "number",
         required: false,
-        description: "Storage in GB (default: 10)",
+        description: "Storage in GB (default: 3)",
+      },
+      {
+        name: "terminationPolicy",
+        type: "string",
+        required: false,
+        description: "Termination policy: 'Delete' or 'WipeOut' (default: 'Delete')",
       },
     ],
     handler: ({
@@ -87,30 +94,42 @@ export const createClusterAction = (context: SealosApiContext) => {
       cpu,
       memory,
       storage,
+      terminationPolicy,
     }) => {
-      const createRequest = {
+      // Validate dbType against allowed values
+      const validDbTypes = [
+        "postgresql",
+        "mongodb",
+        "apecloud-mysql",
+        "redis",
+        "kafka",
+        "qdrant",
+        "nebula",
+        "weaviate",
+        "milvus",
+        "pulsar",
+        "clickhouse",
+      ] as const;
+      
+      if (!validDbTypes.includes(dbType as any)) {
+        throw new Error(`Invalid database type: ${dbType}. Valid types are: ${validDbTypes.join(", ")}`);
+      }
+
+      const createRequest: CreateClusterRequest = {
         dbForm: {
-          dbType,
-          dbVersion,
-          dbName,
-          replicas: replicas ?? 1,
-          cpu: cpu ?? 1000,
-          memory: memory ?? 1024,
-          storage: storage ?? 10,
-          labels: {},
-          autoBackup: {
-            start: false,
-            type: "day",
-            week: [],
-            hour: "0",
-            minute: "0",
-            saveTime: 7,
-            saveType: "d",
+          terminationPolicy: (terminationPolicy as "Delete" | "WipeOut") || "Delete",
+          name: dbName,
+          type: dbType as any, // Cast to ClusterType
+          version: dbVersion,
+          resource: {
+            cpu: `${cpu ?? 1000}m`,
+            memory: `${memory ?? 1024}Mi`,
+            storage: `${storage ?? 3}Gi`,
+            replicas: replicas ?? 1,
           },
-          terminationPolicy: "Delete" as const,
         },
-        isEdit: false,
       };
+      
       return createCluster.mutateAsync(createRequest);
     },
   });

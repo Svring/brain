@@ -2,7 +2,7 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '@repo/shadcn-ui/components/ui/avatar';
+} from '@/components/ui/avatar';
 import type { ComponentProps, HTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 

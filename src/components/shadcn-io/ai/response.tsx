@@ -16,7 +16,7 @@ import {
   CodeBlockSelectItem,
   CodeBlockSelectTrigger,
   CodeBlockSelectValue,
-} from "@/components/ui/shadcn-io/code-block";
+} from "@/components/shadcn-io/code-block";
 import type { HTMLAttributes } from "react";
 import { memo } from "react";
 import ReactMarkdown, { type Options } from "react-markdown";
