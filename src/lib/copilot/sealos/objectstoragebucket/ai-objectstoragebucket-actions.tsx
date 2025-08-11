@@ -15,6 +15,14 @@ import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context
 import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import {
+  AITool,
+  AIToolContent,
+  AIToolHeader,
+  AIToolParameters,
+  AIToolResult,
+} from "@/components/shadcn-io/ai/tool";
+import { AIResponse } from "@/components/shadcn-io/ai/response";
 
 export function activateObjectStorageBucketActions(
   k8sContext: K8sApiContext,
@@ -59,6 +67,25 @@ function createObjectStorageBucketAction(sealosContext: SealosApiContext) {
         bucketPolicy || "private"
       }'.`;
     },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"createObjectStorageBucket"}>
+          <AIToolHeader
+            description={"Create a new object storage bucket"}
+            name={"createObjectStorageBucket"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
+    },
   });
 }
 
@@ -81,6 +108,25 @@ function listObjectStorageBucketAction(k8sContext: K8sApiContext) {
         .filter(Boolean);
 
       return `Found ${bucketNames.length} buckets: ${bucketNames.join(", ")}`;
+    },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"listObjectStorageBuckets"}>
+          <AIToolHeader
+            description={"List all object storage buckets"}
+            name={"listObjectStorageBuckets"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
     },
   });
 }
@@ -112,6 +158,25 @@ function getObjectStorageBucketAction(k8sContext: K8sApiContext) {
         (bucket as any).status?.phase || "Unknown"
       }, Policy: ${(bucket as any).spec?.policy || "Unknown"}`;
     },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"getObjectStorageBucket"}>
+          <AIToolHeader
+            description={"Get details of a specific object storage bucket"}
+            name={"getObjectStorageBucket"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
+    },
   });
 }
 
@@ -136,6 +201,25 @@ function deleteObjectStorageBucketAction(sealosContext: SealosApiContext) {
 
       await deleteObjectStorage.mutateAsync(deleteRequest);
       return `Object storage bucket '${bucketName}' deleted successfully.`;
+    },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"deleteObjectStorageBucket"}>
+          <AIToolHeader
+            description={"Delete an object storage bucket"}
+            name={"deleteObjectStorageBucket"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
     },
   });
 }

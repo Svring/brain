@@ -192,7 +192,7 @@ export const AIResponse = memo(
         remarkPlugins={[remarkGfm]}
         {...options}
       >
-        {children}
+        {JSON.stringify(children)}
       </ReactMarkdown>
     </div>
   ),

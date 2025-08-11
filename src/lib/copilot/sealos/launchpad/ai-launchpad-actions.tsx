@@ -18,6 +18,14 @@ import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import { BuiltinResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import {
+  AITool,
+  AIToolContent,
+  AIToolHeader,
+  AIToolParameters,
+  AIToolResult,
+} from "@/components/shadcn-io/ai/tool";
+import { AIResponse } from "@/components/shadcn-io/ai/response";
 
 export function activateLaunchpadActions(
   sealosContext: SealosApiContext,
@@ -85,6 +93,25 @@ function createLaunchpadAction(context: SealosApiContext) {
       await createLaunchpad.mutateAsync(createRequest);
       return `Launchpad '${name}' created successfully with image '${image}'.`;
     },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"createLaunchpad"}>
+          <AIToolHeader
+            description={"Create a new launchpad"}
+            name={"createLaunchpad"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
+    },
   });
 }
 
@@ -109,6 +136,25 @@ function deleteLaunchpadAction(context: SealosApiContext) {
 
       await deleteLaunchpad.mutateAsync(deleteRequest);
       return `Launchpad '${name}' deleted successfully.`;
+    },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"deleteLaunchpad"}>
+          <AIToolHeader
+            description={"Delete a launchpad"}
+            name={"deleteLaunchpad"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
     },
   });
 }
@@ -135,6 +181,25 @@ function startLaunchpadAction(context: SealosApiContext) {
       await startLaunchpad.mutateAsync(startRequest);
       return `Launchpad '${name}' started successfully.`;
     },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"startLaunchpad"}>
+          <AIToolHeader
+            description={"Start a launchpad"}
+            name={"startLaunchpad"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
+    },
   });
 }
 
@@ -159,6 +224,25 @@ function pauseLaunchpadAction(context: SealosApiContext) {
 
       await pauseLaunchpad.mutateAsync(pauseRequest);
       return `Launchpad '${name}' paused successfully.`;
+    },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"pauseLaunchpad"}>
+          <AIToolHeader
+            description={"Pause a launchpad"}
+            name={"pauseLaunchpad"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
     },
   });
 }
@@ -187,6 +271,25 @@ function checkReadyLaunchpadAction(context: SealosApiContext) {
 
       return `Launchpad '${name}' readiness check: ${readyCount}/${result.data.length} endpoints ready.`;
     },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"checkLaunchpadReady"}>
+          <AIToolHeader
+            description={"Check if a launchpad is ready"}
+            name={"checkLaunchpadReady"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
+    },
   });
 }
 
@@ -213,6 +316,25 @@ function listLaunchpadAction(context: K8sApiContext) {
       return `Found ${launchpadNames.length} launchpads: ${launchpadNames.join(
         ", "
       )}`;
+    },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"listLaunchpads"}>
+          <AIToolHeader
+            description={"List all launchpads (deployments and statefulsets)"}
+            name={"listLaunchpads"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
     },
   });
 }
@@ -255,6 +377,25 @@ function getLaunchpadAction(context: K8sApiContext) {
         "Unknown"
       }`;
     },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"getLaunchpad"}>
+          <AIToolHeader
+            description={"Get details of a specific launchpad"}
+            name={"getLaunchpad"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
+    },
   });
 }
 
@@ -286,6 +427,25 @@ function getLaunchpadLogsAction(
       );
       console.log("logs in ai-launchpad-actions", JSON.stringify(logs));
       return `Launchpad '${name}' logs: ${JSON.stringify(logs)}`;
+    },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"getLaunchpadLogs"}>
+          <AIToolHeader
+            description={"Get logs of a specific launchpad"}
+            name={"getLaunchpadLogs"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
     },
   });
 }

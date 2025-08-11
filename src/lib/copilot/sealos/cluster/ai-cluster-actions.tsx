@@ -16,6 +16,14 @@ import { useCopilotAction } from "@copilotkit/react-core";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import type { CreateClusterRequest } from "@/lib/sealos/resources/cluster/cluster-api/cluster-open-api-schemas";
+import {
+  AITool,
+  AIToolContent,
+  AIToolHeader,
+  AIToolParameters,
+  AIToolResult,
+} from "@/components/shadcn-io/ai/tool";
+import { AIResponse } from "@/components/shadcn-io/ai/response";
 
 export const activateClusterActions = (
   k8sContext: K8sApiContext,
@@ -132,6 +140,25 @@ export const createClusterAction = (context: SealosApiContext) => {
       
       return createCluster.mutateAsync(createRequest);
     },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"createCluster"}>
+          <AIToolHeader
+            description={"Create a new database cluster"}
+            name={"createCluster"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
+    },
   });
 };
 
@@ -143,6 +170,25 @@ export const listClusterAction = (context: K8sApiContext) => {
     description: "List all database clusters",
     handler: async () => {
       return await queryClient.fetchQuery(listClusterOptions(context));
+    },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"listClusters"}>
+          <AIToolHeader
+            description={"List all database clusters"}
+            name={"listClusters"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
     },
   });
 };
@@ -168,6 +214,25 @@ export const getClusterAction = (context: K8sApiContext) => {
       });
       return queryClient.fetchQuery(getClusterOptions(context, target));
     },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"getCluster"}>
+          <AIToolHeader
+            description={"Get a specific cluster by name"}
+            name={"getCluster"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
+    },
   });
 };
 
@@ -187,6 +252,25 @@ export const deleteClusterAction = (context: SealosApiContext) => {
     ],
     handler: ({ clusterName }) => {
       return deleteCluster.mutateAsync({ name: clusterName });
+    },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"deleteCluster"}>
+          <AIToolHeader
+            description={"Delete a cluster by its name"}
+            name={"deleteCluster"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
     },
   });
 };
@@ -219,6 +303,25 @@ export const getClusterLogAction = (
         getClusterLogsOptions(k8sContext, clusterContext, target)
       );
     },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"getClusterLogs"}>
+          <AIToolHeader
+            description={"Get log files for a specific cluster"}
+            name={"getClusterLogs"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
+    },
   });
 };
 
@@ -245,6 +348,25 @@ export const startClusterAction = (context: SealosApiContext) => {
     handler: ({ dbName, dbType }) => {
       return startCluster.mutateAsync({ dbName, dbType });
     },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"startCluster"}>
+          <AIToolHeader
+            description={"Start a database cluster"}
+            name={"startCluster"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
+    },
   });
 };
 
@@ -270,6 +392,25 @@ export const stopClusterAction = (context: SealosApiContext) => {
     ],
     handler: ({ dbName, dbType }) => {
       return pauseCluster.mutateAsync({ dbName, dbType });
+    },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"stopCluster"}>
+          <AIToolHeader
+            description={"Stop (pause) a database cluster"}
+            name={"stopCluster"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
     },
   });
 };

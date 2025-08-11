@@ -96,6 +96,25 @@ export const getDevboxAction = (context: K8sApiContext) => {
       });
       return queryClient.fetchQuery(getDevboxOptions(context, target));
     },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"getDevbox"}>
+          <AIToolHeader
+            description={"Get a specific devbox by name"}
+            name={"getDevbox"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
+    },
   });
 };
 
@@ -115,6 +134,25 @@ export const deleteDevboxAction = (context: DevboxApiContext) => {
     ],
     handler: ({ devboxName }) => {
       deleteDevbox.mutateAsync(devboxName);
+    },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"deleteDevbox"}>
+          <AIToolHeader
+            description={"Delete a devbox by its name"}
+            name={"deleteDevbox"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
     },
   });
 };
@@ -136,6 +174,25 @@ export const startDevboxAction = (context: DevboxApiContext) => {
     handler: ({ devboxName }) => {
       manageDevboxLifecycle.mutateAsync({ devboxName, action: "start" });
     },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"startDevbox"}>
+          <AIToolHeader
+            description={"Start a devbox"}
+            name={"startDevbox"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
+    },
   });
 };
 
@@ -156,6 +213,25 @@ export const stopDevboxAction = (context: DevboxApiContext) => {
     handler: ({ devboxName }) => {
       manageDevboxLifecycle.mutateAsync({ devboxName, action: "stop" });
     },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"stopDevbox"}>
+          <AIToolHeader
+            description={"Stop a devbox"}
+            name={"stopDevbox"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
+    },
   });
 };
 
@@ -175,6 +251,25 @@ export const restartDevboxAction = (context: DevboxApiContext) => {
     ],
     handler: ({ devboxName }) => {
       manageDevboxLifecycle.mutateAsync({ devboxName, action: "restart" });
+    },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"restartDevbox"}>
+          <AIToolHeader
+            description={"Restart a devbox"}
+            name={"restartDevbox"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
     },
   });
 };
@@ -220,6 +315,25 @@ export const deployDevboxAction = (context: DevboxApiContext) => {
       };
       deployDevbox.mutateAsync(deployRequest);
     },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"deployDevbox"}>
+          <AIToolHeader
+            description={"Deploy a devbox release with specified configuration"}
+            name={"deployDevbox"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
+    },
   });
 };
 
@@ -260,6 +374,25 @@ export const releaseDevboxAction = (context: DevboxApiContext) => {
         releaseDes: releaseDes || "",
       });
     },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"releaseDevbox"}>
+          <AIToolHeader
+            description={"Release a devbox with a specific tag"}
+            name={"releaseDevbox"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
+    },
   });
 };
 
@@ -280,6 +413,25 @@ export const listDevboxReleasesAction = (context: DevboxApiContext) => {
     handler: ({ devboxName }) => {
       return queryClient.fetchQuery(
         getDevboxReleasesOptions(context, devboxName)
+      );
+    },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"listDevboxReleases"}>
+          <AIToolHeader
+            description={"List all releases for a specific devbox"}
+            name={"listDevboxReleases"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult
+                result={<AIResponse>{result}</AIResponse>}
+              />
+            )}
+          </AIToolContent>
+        </AITool>
       );
     },
   });
