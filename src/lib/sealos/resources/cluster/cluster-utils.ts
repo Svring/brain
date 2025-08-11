@@ -262,12 +262,13 @@ export function processLogData(
     .mapValues((podName) => {
       // Get logs for this pod grouped by log type
       const podLogs = _.chain(logResponses)
-        .filter((response) => 
-          response.code === 200 && 
-          response.data && 
-          response.podName === podName
+        .filter(
+          (response) =>
+            response.code === 200 &&
+            response.data &&
+            response.podName === podName
         )
-        .groupBy('logType')
+        .groupBy("logType")
         .mapValues((logs) => logs.map((log) => log.data))
         .value();
 
@@ -277,4 +278,43 @@ export function processLogData(
       };
     })
     .value();
+}
+
+// Helper functions to generate enum arrays for cluster creation
+export function generateClusterCpuOptions(): string[] {
+  const options = [];
+  for (let i = 0.5; i <= 8; i += 0.5) {
+    options.push(`${Math.round(i * 1000)}m`);
+  }
+  return options;
+}
+
+export function generateClusterMemoryOptions(): string[] {
+  const options = [];
+  // 512Mi to 1Gi in 512Mi increments
+  for (let i = 512; i <= 1024; i += 512) {
+    options.push(`${i}Mi`);
+  }
+  // 2Gi to 32Gi in 1Gi increments
+  for (let i = 2; i <= 32; i++) {
+    options.push(`${i}Gi`);
+  }
+  return options;
+}
+
+export function generateClusterStorageOptions(): string[] {
+  const options = [];
+  // 3Gi to 10Gi in 1Gi increments
+  for (let i = 3; i <= 10; i++) {
+    options.push(`${i}Gi`);
+  }
+  // 15Gi to 50Gi in 5Gi increments
+  for (let i = 15; i <= 50; i += 5) {
+    options.push(`${i}Gi`);
+  }
+  // 60Gi to 300Gi in 10Gi increments
+  for (let i = 60; i <= 300; i += 10) {
+    options.push(`${i}Gi`);
+  }
+  return options;
 }

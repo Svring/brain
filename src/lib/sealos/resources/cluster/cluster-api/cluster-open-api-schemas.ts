@@ -199,7 +199,6 @@ export const GetLogsFilesResponseSchema = z.object({
 export const ClusterApiContextSchema = z.object({
   baseURL: z.string().optional(),
   authorization: z.string().optional(),
-  authorizationBearer: z.string().optional(),
 });
 
 // Type exports

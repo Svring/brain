@@ -11,6 +11,7 @@ import {
   useStartClusterMutation,
   useStopClusterMutation,
   useDeleteClusterMutation,
+  useUpdateClusterMutation,
 } from "@/lib/sealos/resources/cluster/cluster-method/cluster-mutation";
 import { useCopilotAction } from "@copilotkit/react-core";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
@@ -24,6 +25,11 @@ import {
   AIToolResult,
 } from "@/components/shadcn-io/ai/tool";
 import { AIResponse } from "@/components/shadcn-io/ai/response";
+import {
+  generateClusterCpuOptions,
+  generateClusterMemoryOptions,
+  generateClusterStorageOptions,
+} from "@/lib/sealos/resources/cluster/cluster-utils";
 
 export const activateClusterActions = (
   k8sContext: K8sApiContext,
@@ -66,32 +72,37 @@ export const createClusterAction = (context: SealosApiContext) => {
       {
         name: "replicas",
         type: "number",
+        enum: Array.from({ length: 10 }, (_, i) => i + 1),
         required: false,
-        description: "Number of replicas (default: 1, max: 3)",
+        description: "Number of replicas (default: 1, max: 10)",
       },
       {
         name: "cpu",
-        type: "number",
+        type: "string",
+        enum: generateClusterCpuOptions(),
         required: false,
-        description: "CPU in millicores (default: 1000)",
+        description: "CPU in millicores (default: 1000m, range: 500m to 8000m)",
       },
       {
         name: "memory",
-        type: "number",
+        type: "string",
+        enum: generateClusterMemoryOptions(),
         required: false,
-        description: "Memory in MB (default: 1024)",
+        description: "Memory (default: 1024Mi, range: 512Mi to 32Gi)",
       },
       {
         name: "storage",
-        type: "number",
+        type: "string",
+        enum: generateClusterStorageOptions(),
         required: false,
-        description: "Storage in GB (default: 3)",
+        description: "Storage (default: 3Gi, range: 3Gi to 300Gi)",
       },
       {
         name: "terminationPolicy",
         type: "string",
         required: false,
-        description: "Termination policy: 'Delete' or 'WipeOut' (default: 'Delete')",
+        description:
+          "Termination policy: 'Delete' or 'WipeOut' (default: 'Delete')",
       },
     ],
     handler: ({
@@ -118,14 +129,19 @@ export const createClusterAction = (context: SealosApiContext) => {
         "pulsar",
         "clickhouse",
       ] as const;
-      
+
       if (!validDbTypes.includes(dbType as any)) {
-        throw new Error(`Invalid database type: ${dbType}. Valid types are: ${validDbTypes.join(", ")}`);
+        throw new Error(
+          `Invalid database type: ${dbType}. Valid types are: ${validDbTypes.join(
+            ", "
+          )}`
+        );
       }
 
       const createRequest: CreateClusterRequest = {
         dbForm: {
-          terminationPolicy: (terminationPolicy as "Delete" | "WipeOut") || "Delete",
+          terminationPolicy:
+            (terminationPolicy as "Delete" | "WipeOut") || "Delete",
           name: dbName,
           type: dbType as any, // Cast to ClusterType
           version: dbVersion,
@@ -137,7 +153,7 @@ export const createClusterAction = (context: SealosApiContext) => {
           },
         },
       };
-      
+
       return createCluster.mutateAsync(createRequest);
     },
     render: ({ args, result, status }) => {
@@ -151,9 +167,7 @@ export const createClusterAction = (context: SealosApiContext) => {
           <AIToolContent>
             <AIToolParameters parameters={args} />
             {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
             )}
           </AIToolContent>
         </AITool>
@@ -182,9 +196,7 @@ export const listClusterAction = (context: K8sApiContext) => {
           <AIToolContent>
             <AIToolParameters parameters={args} />
             {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
             )}
           </AIToolContent>
         </AITool>
@@ -225,9 +237,7 @@ export const getClusterAction = (context: K8sApiContext) => {
           <AIToolContent>
             <AIToolParameters parameters={args} />
             {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
             )}
           </AIToolContent>
         </AITool>
@@ -264,9 +274,7 @@ export const deleteClusterAction = (context: SealosApiContext) => {
           <AIToolContent>
             <AIToolParameters parameters={args} />
             {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
             )}
           </AIToolContent>
         </AITool>
@@ -275,7 +283,103 @@ export const deleteClusterAction = (context: SealosApiContext) => {
   });
 };
 
-export const updateClusterAction = async () => {};
+export const updateClusterAction = (context: SealosApiContext) => {
+  const updateCluster = useUpdateClusterMutation(context);
+
+  useCopilotAction({
+    name: "updateCluster",
+    description: "Update an existing database cluster configuration",
+    parameters: [
+      {
+        name: "clusterName",
+        type: "string",
+        required: true,
+        description: "Name of the existing cluster to update",
+      },
+      {
+        name: "replicas",
+        type: "number",
+        enum: Array.from({ length: 10 }, (_, i) => i + 1),
+        required: false,
+        description: "Number of replicas (1-10, leave empty to keep current)",
+      },
+      {
+        name: "cpu",
+        type: "string",
+        enum: generateClusterCpuOptions(),
+        required: false,
+        description: "CPU in millicores (500m to 8000m, leave empty to keep current)",
+      },
+      {
+        name: "memory",
+        type: "string",
+        enum: generateClusterMemoryOptions(),
+        required: false,
+        description: "Memory (512Mi to 32Gi, leave empty to keep current)",
+      },
+      {
+        name: "storage",
+        type: "string",
+        enum: generateClusterStorageOptions(),
+        required: false,
+        description: "Storage (3Gi to 300Gi, leave empty to keep current)",
+      },
+    ],
+    handler: ({
+      clusterName,
+      replicas,
+      cpu,
+      memory,
+      storage,
+    }) => {
+      // Only include fields that are actually provided
+      const resourceUpdates: any = {};
+      
+      if (replicas !== undefined) {
+        resourceUpdates.replicas = replicas;
+      }
+      if (cpu !== undefined) {
+        resourceUpdates.cpu = cpu;
+      }
+      if (memory !== undefined) {
+        resourceUpdates.memory = memory;
+      }
+      if (storage !== undefined) {
+        resourceUpdates.storage = storage;
+      }
+
+      // If no resource updates provided, throw error
+      if (Object.keys(resourceUpdates).length === 0) {
+        throw new Error("At least one resource field must be specified for update");
+      }
+
+      const updateRequest = {
+        dbForm: {
+          resource: resourceUpdates,
+        },
+      };
+
+      return updateCluster.mutateAsync({ clusterName, request: updateRequest });
+    },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"updateCluster"}>
+          <AIToolHeader
+            description={"Update an existing database cluster configuration"}
+            name={"updateCluster"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
+    },
+  });
+};
 
 export const getClusterLogAction = (
   k8sContext: K8sApiContext,
@@ -314,9 +418,7 @@ export const getClusterLogAction = (
           <AIToolContent>
             <AIToolParameters parameters={args} />
             {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
             )}
           </AIToolContent>
         </AITool>
@@ -359,9 +461,7 @@ export const startClusterAction = (context: SealosApiContext) => {
           <AIToolContent>
             <AIToolParameters parameters={args} />
             {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
             )}
           </AIToolContent>
         </AITool>
@@ -404,9 +504,7 @@ export const stopClusterAction = (context: SealosApiContext) => {
           <AIToolContent>
             <AIToolParameters parameters={args} />
             {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
             )}
           </AIToolContent>
         </AITool>

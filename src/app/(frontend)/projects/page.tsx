@@ -3,21 +3,19 @@
 import { Plus } from "lucide-react";
 import BrainProjectCard from "@/components/brain/brain-project-card";
 import { Button } from "@/components/ui/button";
-import { TextShimmer } from "@/components/project/components/text-shimmer";
-import { useCreateProjectDialog } from "@/hooks/project/use-project-create-dialog";
-import AiCoin from "@/components/ai/headless/ai-coin";
-import AiChatbox from "@/components/ai/headless/ai-chatbox";
-import SearchBar from "@/components/app/search-bar";
+import { TextShimmer } from "@/components/ui/text-shimmer";
+import AiCoin from "@/components/chat/ai-coin";
+import AiChatbox from "@/components/chat/ai-chatbox";
+import SearchBar from "@/components/ui/search-bar";
 import { createK8sContext } from "@/lib/auth/auth-utils";
-import useBrainProjectSearch from "@/hooks/brain/use-brain-project-search";
 
 export default function Page() {
   const context = createK8sContext();
 
-  const { openDialog, CreateProjectDialog } = useCreateProjectDialog();
+  // const { openDialog, CreateProjectDialog } = useCreateProjectDialog();
 
-  const { setSearchTerm, filteredBrainProjects, isLoading, isError } =
-    useBrainProjectSearch(context);
+  // const { setSearchTerm, filteredBrainProjects, isLoading, isError } =
+  //   useBrainProjectSearch(context);
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center p-8">
