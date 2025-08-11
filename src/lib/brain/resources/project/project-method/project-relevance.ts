@@ -16,7 +16,7 @@ import {
   groupCustomResourcesByType,
   createStructuredResourceResult,
   processSubModuleResources,
-} from "../relevance-utils";
+} from "@/lib/sealos/services/relevance/relevance-utils";
 import { runParallelAction } from "next-server-actions-parallel";
 
 export const getProjectRelatedResources = async (

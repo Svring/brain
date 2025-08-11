@@ -49,6 +49,7 @@ function createObjectStorageBucketAction(sealosContext: SealosApiContext) {
       {
         name: "bucketPolicy",
         type: "string",
+        enum: ["private", "publicRead", "publicReadWrite"],
         description: "Bucket policy (private, publicRead, publicReadWrite)",
         required: false,
       },
