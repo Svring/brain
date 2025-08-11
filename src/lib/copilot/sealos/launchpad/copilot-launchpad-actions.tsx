@@ -7,12 +7,12 @@ import {
   usePauseLaunchpadMutation,
   useStartLaunchpadMutation,
   useCheckReadyLaunchpadMutation,
-} from "@/lib/sealos/launchpad/launchpad-method/launchpad-mutation";
+} from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-mutation";
 import {
   listLaunchpadOptions,
   getLaunchpadOptions,
   getLaunchpadLogsOptions,
-} from "@/lib/sealos/launchpad/launchpad-method/launchpad-query";
+} from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
@@ -104,9 +104,7 @@ function createLaunchpadAction(context: SealosApiContext) {
           <AIToolContent>
             <AIToolParameters parameters={args} />
             {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
             )}
           </AIToolContent>
         </AITool>
@@ -148,9 +146,7 @@ function deleteLaunchpadAction(context: SealosApiContext) {
           <AIToolContent>
             <AIToolParameters parameters={args} />
             {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
             )}
           </AIToolContent>
         </AITool>
@@ -192,9 +188,7 @@ function startLaunchpadAction(context: SealosApiContext) {
           <AIToolContent>
             <AIToolParameters parameters={args} />
             {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
             )}
           </AIToolContent>
         </AITool>
@@ -236,9 +230,7 @@ function pauseLaunchpadAction(context: SealosApiContext) {
           <AIToolContent>
             <AIToolParameters parameters={args} />
             {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
             )}
           </AIToolContent>
         </AITool>
@@ -282,9 +274,7 @@ function checkReadyLaunchpadAction(context: SealosApiContext) {
           <AIToolContent>
             <AIToolParameters parameters={args} />
             {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
             )}
           </AIToolContent>
         </AITool>
@@ -328,9 +318,7 @@ function listLaunchpadAction(context: K8sApiContext) {
           <AIToolContent>
             <AIToolParameters parameters={args} />
             {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
             )}
           </AIToolContent>
         </AITool>
@@ -388,9 +376,7 @@ function getLaunchpadAction(context: K8sApiContext) {
           <AIToolContent>
             <AIToolParameters parameters={args} />
             {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
             )}
           </AIToolContent>
         </AITool>
@@ -439,9 +425,7 @@ function getLaunchpadLogsAction(
           <AIToolContent>
             <AIToolParameters parameters={args} />
             {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
             )}
           </AIToolContent>
         </AITool>

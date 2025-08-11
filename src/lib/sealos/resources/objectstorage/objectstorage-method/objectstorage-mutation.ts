@@ -6,7 +6,7 @@ import {
   createObjectStorage,
   deleteObjectStorage,
 } from "../objectstorage-api/objectstorage-old-api";
-import { SealosApiContext } from "../../sealos-api-context-schema";
+import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
 import type { ObjectStorageCreateRequest } from "../schemas/req-res-schemas/req-res-create-schemas";
 import type { ObjectStorageDeleteRequest } from "../schemas/req-res-schemas/req-res-delete-schemas";
 
