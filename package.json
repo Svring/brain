@@ -64,6 +64,7 @@
     "@types/react-speech-recognition": "^3.9.6",
     "@types/ws": "^8.18.1",
     "@xstate/react": "^6.0.0",
+    "@xyflow/react": "^12.8.2",
     "@zjy365/sealos-desktop-sdk": "0.1.16",
     "autoprefixer": "^10.4.20",
     "axios": "^1.11.0",

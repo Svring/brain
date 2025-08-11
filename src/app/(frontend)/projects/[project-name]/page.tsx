@@ -8,27 +8,24 @@ import { Background, ReactFlow, ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
 // Custom component imports
-import { ProjectHeader } from "@/components/project/components/project-header";
-import { TextShimmer } from "@/components/project/components/text-shimmer";
-import AiCoin from "@/components/ai/headless/ai-coin";
-import AiChatbox from "@/components/ai/headless/ai-chatbox";
+import { ProjectHeader } from "@/components/project/project-header";
+import { TextShimmer } from "@/components/ui/text-shimmer";
+import AiCoin from "@/components/chat/ai-coin";
+import AiChatbox from "@/components/chat/ai-chatbox";
 
-// import { useFlowRefresh } from "@/hooks/flow/use-flow-refresh";
-import { useProjectSignal } from "@/hooks/project/use-project-signal";
-
-import { getBrainProjectQuery } from "@/lib/brain/brain-methods/brain-query";
-import { useBrainProjectResources } from "@/hooks/brain/use-brain-project-resources";
+import { getProjectQuery } from "@/lib/brain/resources/project/project-method/project-query";
+import { useProjectResources } from "@/hooks/brain/use-project-resources";
 import { useQuery } from "@tanstack/react-query";
 
 // Custom types
-import edgeTypes from "@/components/flow/edge/edge-types";
-import nodeTypes from "@/components/flow/node/node-types";
+import edgeTypes from "@/components/flowgraph/edge/edge-types";
+import nodeTypes from "@/components/flowgraph/node/node-types";
 
 // Flow context
-import { FlowProvider } from "@/contexts/flow/flow-context";
+import { FlowgraphProvider } from "@/contexts/flowgraph/flowgraph-context";
 
 // Constants
-import { FLOW_CONFIG } from "@/lib/flow/flow-constant/flow-constant-config";
+import { REACT_FLOW_CONFIG } from "@/lib/flowgraph/flowgraph-constant/flowgraph-constant-config";
 
 // Floating UI Component
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
@@ -69,28 +66,28 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
 function ProjectFlow({ projectName }: { projectName: string }) {
   const context = createK8sContext();
 
-  const { expandedResources, isLoading: isLoadingResources } =
-    useBrainProjectResources(projectName);
+  // const { expandedResources, isLoading: isLoadingResources } =
+  //   useBrainProjectResources(projectName);
 
-  if (isLoadingResources) {
-    return (
-      <div className="flex items-center justify-center h-full w-full">
-        <TextShimmer className="font-mono text-md" duration={1.2}>
-          Loading project resources...
-        </TextShimmer>
-      </div>
-    );
-  }
+  // if (isLoadingResources) {
+  //   return (
+  //     <div className="flex items-center justify-center h-full w-full">
+  //       <TextShimmer className="font-mono text-md" duration={1.2}>
+  //         Loading project resources...
+  //       </TextShimmer>
+  //     </div>
+  //   );
+  // }
 
-  console.log("data", expandedResources);
+  // console.log("data", expandedResources);
 
   return (
     <ReactFlow
-      connectionLineType={FLOW_CONFIG.connectionLineType}
+      connectionLineType={REACT_FLOW_CONFIG.connectionLineType}
       // edges={edges}
       edgeTypes={edgeTypes}
       fitView
-      fitViewOptions={FLOW_CONFIG.fitViewOptions}
+      fitViewOptions={REACT_FLOW_CONFIG.fitViewOptions}
       // nodes={nodes}
       nodeTypes={nodeTypes}
       // onEdgesChange={onEdgesChange}
@@ -100,12 +97,12 @@ function ProjectFlow({ projectName }: { projectName: string }) {
       // onNodeDragStop={handleNodeDragStop}
       panOnScroll
       snapToGrid
-      snapGrid={FLOW_CONFIG.snapGrid}
+      snapGrid={REACT_FLOW_CONFIG.snapGrid}
     >
       <Background
-        gap={FLOW_CONFIG.background.gap}
-        size={FLOW_CONFIG.background.size}
-        variant={FLOW_CONFIG.background.variant}
+        gap={REACT_FLOW_CONFIG.background.gap}
+        size={REACT_FLOW_CONFIG.background.size}
+        variant={REACT_FLOW_CONFIG.background.variant}
       />
     </ReactFlow>
   );
@@ -119,16 +116,14 @@ export default function ProjectPage({
 }) {
   const { "project-name": projectName } = use(params);
 
-  useProjectSignal(projectName);
-
   return (
-    <FlowProvider>
+    <FlowgraphProvider>
       <div className="relative h-screen w-full">
         <ReactFlowProvider>
           <ProjectFlow projectName={projectName} />
         </ReactFlowProvider>
         <ProjectFloatingUI projectName={projectName} />
       </div>
-    </FlowProvider>
+    </FlowgraphProvider>
   );
 }

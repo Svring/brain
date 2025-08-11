@@ -22,15 +22,15 @@ export default function ChatPage() {
 
   useCopilotActions();
 
-  useEffect(() => {
-    const fetchClusterVersions = async () => {
-      const clusterVersions = await runParallelAction(getClusterVersions(context));
-      const cluster = await runParallelAction(getCluster("affine-kssnwpeh-pg", context));
-      console.log(clusterVersions);
-      console.log(cluster);
-    };
-    fetchClusterVersions();
-  }, []);
+  // useEffect(() => {
+  //   const fetchClusterVersions = async () => {
+  //     const clusterVersions = await runParallelAction(getClusterVersions(context));
+  //     const cluster = await runParallelAction(getCluster("affine-kssnwpeh-pg", context));
+  //     console.log(clusterVersions);
+  //     console.log(cluster);
+  //   };
+  //   fetchClusterVersions();
+  // }, []);
 
   return (
     <div className="relative h-screen w-full flex flex-col">

@@ -14,6 +14,8 @@ export default function useProjectSearch(context: K8sApiContext) {
     isError,
   } = useQuery(listProjectsQuery(context));
 
+  console.log("[useProjectSearch] projects", projects);
+
   // Filter projects based on search term
   const filteredProjects = useMemo(() => {
     if (!projects?.length) return [];
