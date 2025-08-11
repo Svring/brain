@@ -62,22 +62,22 @@ export default async function RootLayout({
           enableSystem
         >
           <AuthProvider payloadUser={payloadUser}>
-            <CopilotProvider>
-              <QueryProvider>
-                {/* <AiProvider payloadUser={payloadUser}>
+            <QueryProvider>
+              {/* <AiProvider payloadUser={payloadUser}>
                   <LanggraphProvider>
                     <ProjectProvider> */}
-                    <ChatProvider>
-                      <SidebarProvider defaultOpen={false}>
-                        <AppSidebar />
-                        {children}
-                      </SidebarProvider>
-                    </ChatProvider>
-                    {/* </ProjectProvider>
+              <CopilotProvider>
+                <ChatProvider>
+                  <SidebarProvider defaultOpen={false}>
+                    <AppSidebar />
+                    {children}
+                  </SidebarProvider>
+                </ChatProvider>
+              </CopilotProvider>
+              {/* </ProjectProvider>
                   </LanggraphProvider>
                 </AiProvider> */}
-              </QueryProvider>
-            </CopilotProvider>
+            </QueryProvider>
           </AuthProvider>
           <Toaster position="top-center" toastOptions={{ duration: 1500 }} />
         </ThemeProvider>

@@ -3,6 +3,7 @@ import {
   copilotRuntimeNextJSAppRouterEndpoint,
   ExperimentalEmptyAdapter,
   LangGraphAgent,
+  LangChainAdapter,
 } from "@copilotkit/runtime";
 import type { NextRequest } from "next/server";
 
@@ -14,6 +15,11 @@ const runtime = new CopilotRuntime({
     ai: new LangGraphAgent({
       deploymentUrl: process.env.NEXT_PUBLIC_LANGGRAPH_DEPLOYMENT_URL || "",
       graphId: "ai",
+      langsmithApiKey: process.env.LANGSMITH_API_KEY || "",
+    }),
+    new_project: new LangGraphAgent({
+      deploymentUrl: process.env.NEXT_PUBLIC_LANGGRAPH_DEPLOYMENT_URL || "",
+      graphId: "new_project",
       langsmithApiKey: process.env.LANGSMITH_API_KEY || "",
     }),
   },

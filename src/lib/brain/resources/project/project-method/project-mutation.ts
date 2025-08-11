@@ -71,9 +71,7 @@ export const useUpdateProjectNameMutation = (context: K8sApiContext) => {
     },
     onSuccess: (_, { name, newDisplayName }) => {
       toast.success(`Project "${name}" renamed to "${newDisplayName}"`);
-      queryClient.invalidateQueries({
-        queryKey: ["projects"],
-      });
+      queryClient.invalidateQueries({ queryKey: ["project"] });
     },
     onError: (error, { name }) => {
       toast.error(`Failed to rename project "${name}"`);

@@ -27,7 +27,7 @@ export const ProjectObjectMetadataSchema = z.object({
 export const ProjectObjectSchema = z.object({
   name: z.string(),
   displayName: z.string(),
-  metadata: ProjectObjectMetadataSchema,
+  // metadata: ProjectObjectMetadataSchema,
   createdAt: z.string(),
 });
 
@@ -35,6 +35,6 @@ export type ProjectObject = z.infer<typeof ProjectObjectSchema>;
 
 export type ProjectObjectMetadata = z.infer<typeof ProjectObjectMetadataSchema>;
 
-export type ProjectObjectResource = z.infer<
-  typeof ProjectObjectSchema.shape.metadata.shape.resources
->;
+// export type ProjectObjectResource = z.infer<
+//   typeof ProjectObjectSchema.shape.metadata.shape.resources
+// >;

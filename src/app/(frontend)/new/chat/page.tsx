@@ -9,9 +9,13 @@ import { useRouter } from "next/navigation";
 import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
 
 import { createSealosContext } from "@/lib/auth/auth-utils";
-import { getClusterVersions, getCluster } from "@/lib/sealos/resources/cluster/cluster-api/cluster-open-api";
+import {
+  getClusterVersions,
+  getCluster,
+} from "@/lib/sealos/resources/cluster/cluster-api/cluster-open-api";
 import { useEffect } from "react";
 import { runParallelAction } from "next-server-actions-parallel";
+import { useLanggraphAgentNewProject } from "@/hooks/langgraph/use-langgraph-agent";
 
 export default function ChatPage() {
   const { messages } = useCopilotChatHeadless_c();
@@ -21,6 +25,7 @@ export default function ChatPage() {
   const context = createSealosContext();
 
   useCopilotActions();
+  const newProjectAgent = useLanggraphAgentNewProject();
 
   // useEffect(() => {
   //   const fetchClusterVersions = async () => {
@@ -44,8 +49,8 @@ export default function ChatPage() {
         }`}
       >
         <Hero
-          heroTitle="Seaward"
-          subtitle="We have lingered in the chambers of the sea. By sea-girls wreathed with seaweed red and brown."
+          heroTitle="Sealos Brain"
+          subtitle=""
           titleClassName="text-5xl md:text-6xl font-extrabold"
           subtitleClassName="text-lg md:text-xl max-w-[600px]"
           actionsClassName="mt-4"

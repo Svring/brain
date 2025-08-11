@@ -22,24 +22,24 @@ export const ProjectObjectQuerySchema = z.object({
         resourceMetadata["annotations"][PROJECT_DISPLAY_NAME_ANNOTATION_KEY];
       return projectDisplayName ?? resourceMetadata["name"];
     }),
-  metadata: z
-    .any()
-    .describe(
-      JSON.stringify({
-        resourceType: "instance",
-        path: ["metadata.annotations"],
-      })
-    )
-    .transform((resourceMetadata) => {
-      const projectMetadata = resourceMetadata[PROJECT_METADATA_ANNOTATION_KEY];
-      if (!projectMetadata) {
-        return {
-          compatibility: "desktop",
-          resources: [],
-        };
-      }
-      return JSON.parse(projectMetadata);
-    }),
+  // metadata: z
+  //   .any()
+  //   .describe(
+  //     JSON.stringify({
+  //       resourceType: "instance",
+  //       path: ["metadata.annotations"],
+  //     })
+  //   )
+  //   .transform((resourceMetadata) => {
+  //     const projectMetadata = resourceMetadata[PROJECT_METADATA_ANNOTATION_KEY];
+  //     if (!projectMetadata) {
+  //       return {
+  //         compatibility: "desktop",
+  //         resources: [],
+  //       };
+  //     }
+  //     return JSON.parse(projectMetadata);
+  //   }),
   createdAt: z.any().describe(
     JSON.stringify({
       resourceType: "instance",

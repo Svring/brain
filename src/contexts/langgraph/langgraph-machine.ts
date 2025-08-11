@@ -1,9 +1,45 @@
 import { assign, createMachine } from "xstate";
 
-export type LanggraphState = {
+export type LanggraphAgentAiState = {
   base_url: string;
   api_key: string;
   model: string;
+};
+
+type DevBox = {
+  name?: string;
+  [key: string]: any;
+};
+
+type Database = {
+  name?: string;
+  [key: string]: any;
+};
+
+type ObjectStorageBucket = {
+  name?: string;
+  [key: string]: any;
+};
+
+type ProjectResources = {
+  devboxes: DevBox[];
+  databases: Database[];
+  buckets: ObjectStorageBucket[];
+};
+
+type ProjectInfo = {
+  name?: string;
+  description?: string;
+  resources?: ProjectResources;
+};
+
+export type LanggraphAgentNewProjectState = {
+  base_url: string;
+  api_key: string;
+  model: string;
+  observed_steps: string[];
+  project?: ProjectInfo;
+  project_brief?: string;
 };
 
 export type LanggraphEvent =
@@ -18,7 +54,7 @@ export type LanggraphEvent =
 
 export const langgraphMachine = createMachine({
   /** XState v5 generics */
-  types: {} as { context: LanggraphState; events: LanggraphEvent },
+  types: {} as { context: LanggraphAgentAiState; events: LanggraphEvent },
   id: "langgraph",
   initial: "idle",
   context: {
