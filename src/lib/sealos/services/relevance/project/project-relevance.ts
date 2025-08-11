@@ -3,11 +3,11 @@ import { getCustomResource } from "@/lib/k8s/k8s-api/k8s-api-query";
 import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 import { ListAllResourcesResponseSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
 import { filterEmptyResources } from "@/lib/k8s/k8s-method/k8s-utils";
-import { getInstanceRelatedResources } from "../instance/instance-relevance";
-import { getDevboxRelatedResources } from "../devbox/devbox-relevance";
-import { getClusterRelatedResources } from "../cluster/cluster-relevance";
-import { getDeploymentRelatedResources } from "../deployment/deployment-relevance";
-import { getStatefulsetRelatedResources } from "../statefulset/statefulset-relevance";
+import { getInstanceRelatedResources } from "@/lib/sealos/resources/instance/instance-method/instance-query";
+import { getDevboxRelatedResources } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
+import { getClusterRelatedResources } from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
+import { getDeploymentRelatedResources } from "@/lib/sealos/resources/deployment/deployment-method/deployment-query";
+import { getStatefulsetRelatedResources } from "@/lib/sealos/resources/statefulset/statefulset-method/statefulset-query";
 import {
   createEmptyResourceResult,
   deduplicateResources,

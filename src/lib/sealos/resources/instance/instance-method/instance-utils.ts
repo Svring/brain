@@ -11,10 +11,10 @@ import {
 import { CUSTOM_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 import { BUILTIN_RESOURCES } from "@/lib/k8s/k8s-constant/k8s-constant-builtin-resource";
 import { convertAndFilterResourceToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import { getClusterRelatedResources } from "@/lib/sealos/services/relevance/cluster/cluster-relevance";
-import { getDeploymentRelatedResources } from "@/lib/sealos/services/relevance/deployment/deployment-relevance";
-import { getDevboxRelatedResources } from "@/lib/sealos/services/relevance/devbox/devbox-relevance";
-import { getInstanceRelatedResources } from "@/lib/sealos/services/relevance/instance/instance-relevance";
+import { getClusterRelatedResources } from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
+import { getDeploymentRelatedResources } from "@/lib/sealos/resources/deployment/deployment-method/deployment-query";
+import { getDevboxRelatedResources } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
+import { getInstanceRelatedResources } from "./instance-query";
 
 export const getInstanceNameFromResource = (
   resource: K8sResource

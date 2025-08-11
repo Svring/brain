@@ -1,7 +1,7 @@
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { composeObjectFromTarget } from "@/lib/sealos/services/bridge/bridge-method/bridge-query-utils";
-import { getDeploymentRelatedResources } from "@/lib/sealos/services/relevance/deployment/deployment-relevance";
+import { getDeploymentRelatedResources } from "@/lib/sealos/resources/deployment/deployment-method/deployment-query";
 import { enrichPortsWithService } from "@/lib/sealos/resources/service/service-method/service-utils";
 import { enrichPortsWithIngress } from "@/lib/sealos/resources/ingress/ingress-method/ingress-utils";
 import {

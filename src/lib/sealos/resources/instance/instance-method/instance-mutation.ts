@@ -22,7 +22,7 @@ import {
   getInstanceQueryInvalidationKeys,
   invalidateInstanceQueries,
 } from "./instance-utils";
-import { getInstanceRelatedResources } from "@/lib/sealos/services/relevance/instance/instance-relevance";
+import { getInstanceRelatedResources } from "./instance-query";
 import { INSTANCE_DISPLAY_NAME_ANNOTATION_KEY } from "@/lib/sealos/resources/instance/instance-constant/instance-constant-label";
 import { INSTANCE_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
 

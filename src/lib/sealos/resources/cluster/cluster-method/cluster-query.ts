@@ -21,6 +21,9 @@ import {
 import { CLUSTER_LOG_TYPES } from "../cluster-constant/cluster-constant-logs";
 import { ifSupportLog, processLogData } from "../cluster-utils";
 import _ from "lodash";
+import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
+import { CLUSTER_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
+import { getRelatedResources } from "@/lib/sealos/services/relevance/relevance-utils";
 
 export const getCluster = async (
   context: K8sApiContext,
@@ -162,6 +165,30 @@ export const getClusterLogs = async (
     supported: true,
     data: processedData,
   };
+};
+
+export const getClusterRelatedResources = async (
+  context: K8sApiContext,
+  clusterName: string,
+  builtinResources?: string[],
+  customResources?: string[]
+): Promise<K8sResource[]> => {
+  const labelSelectors = [
+    `${CLUSTER_RELATE_RESOURCE_LABELS.APP_KUBERNETES_INSTANCE}=${clusterName}`,
+  ];
+  return getRelatedResources(
+    context,
+    labelSelectors,
+    builtinResources ?? [
+      // "serviceaccount",
+      // "role",
+      // "rolebinding",
+      "secret",
+      "pod",
+      // "cronjob",
+    ],
+    customResources ?? ["backups"]
+  );
 };
 
 // ============================================================================
