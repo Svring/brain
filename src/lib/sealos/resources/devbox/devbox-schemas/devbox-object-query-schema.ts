@@ -7,6 +7,12 @@ export const DevboxObjectQuerySchema = z.object({
       path: ["metadata.name"],
     })
   ),
+  kind: z.string().describe(
+    JSON.stringify({
+      resourceType: "devbox",
+      path: ["kind"],
+    })
+  ),
   image: z.any().describe(
     JSON.stringify({
       resourceType: "devbox",

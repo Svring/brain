@@ -1,43 +1,7 @@
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
-import {
-  CustomResourceTarget,
-  BuiltinResourceTarget,
-  ResourceTarget,
-} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { getClusterObject } from "../bridge-resources/bridge-sealos/cluster/cluster-bridge-query";
-import { getDeploymentObject } from "../bridge-resources/bridge-sealos/deployment/deployment-bridge-query";
-import { getDevboxObject } from "../bridge-resources/bridge-sealos/devbox/devbox-bridge-query";
-import { getIngressObject } from "../bridge-resources/bridge-sealos/ingress/ingress-bridge-query";
-import { getObjectStorageObject } from "../bridge-resources/bridge-sealos/objectstorage/objectstorage-bridge-query";
-import { getStatefulSetObject } from "../bridge-resources/bridge-sealos/statefulset/statefulset-bridge-query";
-import { getProjectObject } from "@/lib/brain/resources/project/project-method/project-bridge";
-import { composeObjectFromTarget } from "./bridge-query-utils";
-
-/**
- * Map of resource types to their corresponding bridge query functions
- */
-const RESOURCE_BRIDGE_MAP = {
-  // Custom resources
-  devbox: getDevboxObject,
-  cluster: getClusterObject,
-  objectstoragebucket: getObjectStorageObject,
-
-  // Builtin resources
-  deployment: getDeploymentObject,
-  statefulset: getStatefulSetObject,
-  ingress: getIngressObject,
-
-  // Default for instance (brain projects)
-  instance: getProjectObject,
-} as const;
-
-/**
- * Determines the resource type from a target
- */
-function getResourceTypeFromTarget(target: ResourceTarget): string {
-  // Both custom and builtin targets have resourceType property
-  return target.resourceType.toLowerCase();
-}
+import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { RESOURCE_BRIDGE_MAP, getResourceTypeFromTarget } from "./bridge-utils";
+import { queryOptions } from "@tanstack/react-query";
 
 /**
  * Universal function to get a resource object based on its target
@@ -56,6 +20,64 @@ export async function getResourceObject(
     RESOURCE_BRIDGE_MAP[resourceType as keyof typeof RESOURCE_BRIDGE_MAP];
   return bridgeFunction(context, target as any);
 }
+
+/**
+ * Gets multiple resource objects based on a list of targets
+ * Processes targets in parallel for better performance
+ *
+ * @param context - K8s API context
+ * @param targets - Array of resource targets
+ * @returns Array of resource objects with appropriate enrichments
+ */
+export async function getAllResourceObjects(
+  context: K8sApiContext,
+  targets: ResourceTarget[]
+) {
+  const resourcePromises = targets.map(
+    async (target) => await getResourceObject(context, target)
+  );
+  return await Promise.all(resourcePromises);
+}
+
+// ============================================================================
+// OPTIONS FUNCTIONS (React Query wrappers)
+// ============================================================================
+
+/**
+ * Query options for getting a resource object by target
+ */
+export const getResourceObjectOptions = (
+  context: K8sApiContext,
+  target: ResourceTarget
+) =>
+  queryOptions({
+    queryKey: ["resource", target.resourceType, target.name || "list"],
+    queryFn: async () => await getResourceObject(context, target),
+    enabled:
+      !!target.resourceType && !!context.namespace && !!context.kubeconfig,
+  });
+
+/**
+ * Query options for getting multiple resource objects by targets
+ */
+export const getAllResourceObjectsOptions = (
+  context: K8sApiContext,
+  targets: ResourceTarget[]
+) =>
+  queryOptions({
+    queryKey: [
+      "resource",
+      "multiple",
+      targets.map((t) => `${t.resourceType}:${t.name || "list"}`).join(","),
+    ],
+    queryFn: async () => await getAllResourceObjects(context, targets),
+    enabled:
+      targets.length > 0 &&
+      targets.every((target) => !!target.resourceType) &&
+      !!context.namespace &&
+      !!context.kubeconfig,
+    staleTime: 1000 * 30, // 30 seconds
+  });
 
 /**
  * Gets all supported resource types that have specific bridge functions

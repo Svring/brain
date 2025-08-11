@@ -41,6 +41,7 @@ const PodSchema = z.object({
 
 export const ClusterObjectSchema = z.object({
   name: z.string(),
+  kind: z.string(),
   type: z.enum([
     "postgresql",
     "mongodb",

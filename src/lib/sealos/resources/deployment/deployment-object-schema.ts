@@ -43,6 +43,7 @@ const PodSchema = z.object({
 
 export const DeploymentObjectSchema = z.object({
   name: z.string(),
+  kind: z.string(),
   image: z.string(),
   resource: ResourceSchema,
   status: StatusSchema,

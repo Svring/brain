@@ -14,6 +14,8 @@ import AiCoin from "@/components/chat/ai-coin";
 import AiChatbox from "@/components/chat/ai-chatbox";
 
 import { useProjectResources } from "@/hooks/brain/use-project-resources";
+import useResourceObjects from "@/hooks/sealos/use-resource-objects";
+// import useFlowgraphNodes from "@/hooks/flowgraph/use-flowgraph-nodes";
 
 // Custom types
 import edgeTypes from "@/components/flowgraph/edge/edge-types";
@@ -32,7 +34,7 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
 
   return (
     <>
-      <ProjectHeader projectName={projectName} />
+      {/* <ProjectHeader projectName={projectName} /> */}
       {/* <ProjectActions
         onAddNew={() => setOpen(true)}
         onRefresh={handleRefresh}
@@ -66,7 +68,9 @@ function ProjectFlow({ projectName }: { projectName: string }) {
 
   const { resources, isLoading, error } = useProjectResources(projectName);
 
-  console.log("resources", resources);
+  const { resourceObjects } = useResourceObjects(resources ?? []);
+
+  console.log("resourceObjects", resourceObjects);
 
   // const { expandedResources, isLoading: isLoadingResources } =
   //   useBrainProjectResources(projectName);

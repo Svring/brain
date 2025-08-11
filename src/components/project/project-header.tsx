@@ -4,7 +4,7 @@ import { ArrowLeft, Edit2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { MenuBar, MenuBarItem } from "./menu-bar";
-import { getProjectQuery } from "@/lib/brain/resources/project/project-method/project-query";
+import { getProjectOptions } from "@/lib/brain/resources/project/project-method/project-query";
 import { useUpdateProjectNameMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
 import { useQuery } from "@tanstack/react-query";
 import { createK8sContext } from "@/lib/auth/auth-utils";
@@ -18,9 +18,7 @@ interface ProjectHeaderProps {
 export function ProjectHeader({ projectName }: ProjectHeaderProps) {
   const router = useRouter();
   const context = createK8sContext();
-  const { data: project } = useQuery(
-    getProjectQuery(context, projectName)
-  );
+  const { data: project } = useQuery(getProjectOptions(context, projectName));
   const renameMutation = useUpdateProjectNameMutation(context);
 
   const [isEditing, setIsEditing] = useState(false);
@@ -29,6 +27,8 @@ export function ProjectHeader({ projectName }: ProjectHeaderProps) {
   if (!project) {
     return null;
   }
+
+  console.log("project", project);
 
   const projectDisplayName = project.displayName;
 

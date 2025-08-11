@@ -180,14 +180,15 @@ export const getClusterRelatedResources = async (
   return getRelatedResources(
     context,
     labelSelectors,
-    builtinResources ?? [
-      // "serviceaccount",
-      // "role",
-      // "rolebinding",
-      "secret",
-      "pod",
-      // "cronjob",
-    ],
+    builtinResources ??
+      [
+        // "serviceaccount",
+        // "role",
+        // "rolebinding",
+        // "secret",
+        // "pod",
+        // "cronjob",
+      ],
     customResources ?? ["backups"]
   );
 };

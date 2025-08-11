@@ -10,6 +10,7 @@ import { getProjectObject } from "./project-bridge";
 import { runParallelAction } from "next-server-actions-parallel";
 import { getProjectRelatedResources } from "./project-relevance";
 import { getResourceObject } from "@/lib/sealos/services/bridge/bridge-method/bridge-query";
+import { flattenListAllResourcesResponse } from "@/lib/k8s/k8s-method/k8s-utils";
 import { convertInstanceListToProjectList } from "./project-utils";
 
 export const listProjects = async (context: K8sApiContext) => {
@@ -62,7 +63,9 @@ export const getProjectResourcesOptions = (
         projectName,
         enabledSubModules
       );
-      return resources;
+      return flattenListAllResourcesResponse(resources).map(
+        convertResourceToTarget
+      );
     },
     enabled: !!context.namespace && !!projectName && !!context.kubeconfig,
     staleTime: 60 * 1000, // 5 minutes

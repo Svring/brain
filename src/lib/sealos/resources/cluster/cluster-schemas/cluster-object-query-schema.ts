@@ -8,6 +8,12 @@ export const ClusterObjectQuerySchema = z.object({
       path: ["metadata.name"],
     })
   ),
+  kind: z.string().describe(
+    JSON.stringify({
+      resourceType: "cluster",
+      path: ["kind"],
+    })
+  ),
   type: z.string().describe(
     JSON.stringify({
       resourceType: "cluster",

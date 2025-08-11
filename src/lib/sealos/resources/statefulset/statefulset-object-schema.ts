@@ -7,6 +7,12 @@ export const StatefulsetObjectSchema = z.object({
       path: ["metadata.name"],
     })
   ),
+  kind: z.string().describe(
+    JSON.stringify({
+      resourceType: "statefulset",
+      path: ["kind"],
+    })
+  ),
   image: z
     .any()
     .describe(

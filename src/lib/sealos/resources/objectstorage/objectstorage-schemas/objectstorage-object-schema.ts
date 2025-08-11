@@ -19,6 +19,7 @@ export const ObjectStoragePolicySchema = z.enum([
 // Main Object Storage Object Schema
 export const ObjectStorageObjectSchema = z.object({
   name: z.string(),
+  kind: z.string(),
   policy: ObjectStoragePolicySchema,
   access: ObjectStorageAccessSchema,
 });
