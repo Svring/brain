@@ -1,9 +1,6 @@
 "use client";
 
 import BaseNode from "../../base-node-wrapper";
-import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { createK8sContext } from "@/lib/auth/auth-utils";
-import useStatefulsetNode from "@/hooks/sealos/statefulset/use-statefulset-node";
 import { Package } from "lucide-react";
 import NodeStatusLight from "../node-components/node-status-light";
 import NodeInternalUrl from "../node-components/node-internal-url";
@@ -11,27 +8,18 @@ import NodePods from "../node-components/node-pods";
 import NodeMonitor from "../node-components/node-monitor";
 import StatefulsetNodeTitle from "./statefulset-node-title";
 import StatefulsetNodeMenu from "./statefulset-node-menu";
+import { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulset-object-schema";
 
-export default function StatefulsetNode({
-  data: { target },
-}: {
-  data: { target: BuiltinResourceTarget };
-}) {
-  const { data, isLoading } = useStatefulsetNode(createK8sContext(), target);
-
-  if (isLoading) {
-    return null;
-  }
-
+export default function StatefulsetNode({ data }: { data: StatefulsetObject }) {
   const { name, image, status } = data;
 
   return (
-    <BaseNode target={target} nodeData={data}>
+    <BaseNode nodeData={data}>
       <div className="flex h-full flex-col gap-2 justify-between">
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
           <StatefulsetNodeTitle name={name} />
-          <StatefulsetNodeMenu target={target} />
+          {/* <StatefulsetNodeMenu target={target} /> */}
         </div>
 
         {/* Image with Package Icon */}

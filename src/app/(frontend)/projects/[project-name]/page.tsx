@@ -18,10 +18,11 @@ import useResourceObjects from "@/hooks/sealos/use-resource-objects";
 import useFlowgraphNodes from "@/hooks/flowgraph/use-flowgraph-nodes";
 import useResourceReliances from "@/hooks/sealos/use-resource-reliances";
 import useFlowgraphEdges from "@/hooks/flowgraph/use-flowgraph-edges";
+import { applyLayout } from "@/lib/flowgraph/layout/flowgraph-layout-utils";
 
 // Custom types
 import edgeTypes from "@/components/flowgraph/edge/edge-types";
-// import nodeTypes from "@/components/flowgraph/node/node-types";
+import nodeTypes from "@/components/flowgraph/node/node-types";
 
 // Flow context
 import { FlowgraphProvider } from "@/contexts/flowgraph/flowgraph-context";
@@ -78,7 +79,11 @@ function ProjectFlow({ projectName }: { projectName: string }) {
   console.log("nodes", nodes);
   console.log("reliances", reliances);
   console.log("edges", edges);
-  
+
+  const layoutNodes = applyLayout(nodes, edges, {
+    direction: "BT",
+  });
+
   // const { expandedResources, isLoading: isLoadingResources } =
   //   useBrainProjectResources(projectName);
 
@@ -97,12 +102,12 @@ function ProjectFlow({ projectName }: { projectName: string }) {
   return (
     <ReactFlow
       connectionLineType={REACT_FLOW_CONFIG.connectionLineType}
-      // edges={edges}
+      edges={edges}
       edgeTypes={edgeTypes}
       fitView
       fitViewOptions={REACT_FLOW_CONFIG.fitViewOptions}
-      // nodes={nodes}
-      // nodeTypes={nodeTypes}
+      nodes={layoutNodes}
+      nodeTypes={nodeTypes}
       // onEdgesChange={onEdgesChange}
       // onNodesChange={onNodesChange}
       // onNodeClick={onNodeClick}

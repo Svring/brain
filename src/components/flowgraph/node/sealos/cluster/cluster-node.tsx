@@ -4,7 +4,7 @@ import BaseNode from "../../base-node-wrapper";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import useClusterNode from "@/hooks/sealos/cluster/use-cluster-node";
+// import useClusterNode from "@/hooks/sealos/cluster/use-cluster-node";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import { useState } from "react";
 import { Copy } from "lucide-react";
@@ -16,32 +16,21 @@ import NodeStack from "../node-components/node-stack";
 import ClusterNodeTitle from "./cluster-node-title";
 import ClusterNodeMenu from "./cluster-node-menu";
 import ClusterNodeBackup from "./cluster-node-backup";
+import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 
-export default function ClusterNode({
-  data: { target },
-}: {
-  data: { target: CustomResourceTarget };
-}) {
-  const context = createK8sContext();
-
-  const { data, isLoading } = useClusterNode(context, target);
-
+export default function ClusterNode({ data }: { data: ClusterObject }) {
   const [publicAccess, setPublicAccess] = useState(false);
-
-  if (isLoading || !data) {
-    return null;
-  }
 
   const { name, type, status, pods } = data;
 
   const mainCard = (
-    <BaseNode target={target} nodeData={data}>
+    <BaseNode nodeData={data}>
       <div className="flex h-full flex-col gap-4 justify-between">
         {/* Header with Name and Menu */}
         <div className="flex items-center justify-between">
           <ClusterNodeTitle name={name} type={type} />
           <div className="flex-shrink-0">
-            <ClusterNodeMenu target={target} />
+            {/* <ClusterNodeMenu target={target} /> */}
           </div>
         </div>
 
@@ -83,7 +72,7 @@ export default function ClusterNode({
     </BaseNode>
   );
 
-  const subCard = <ClusterNodeBackup target={target} nodeData={data} />;
+  // const subCard = <ClusterNodeBackup target={target} nodeData={data} />;
 
-  return <NodeStack mainCard={mainCard} subCard={subCard} />;
+  return <NodeStack mainCard={mainCard} subCard={<></>} />;
 }

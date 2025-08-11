@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/cluster/cluster-constant/cluster-constant-icons";
+import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
 
 interface ClusterNodeTitleProps {
   name: string;

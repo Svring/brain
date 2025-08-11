@@ -1,9 +1,7 @@
 "use client";
 
 import BaseNode from "../../base-node-wrapper";
-import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { createK8sContext } from "@/lib/auth/auth-utils";
-import useDeploymentNode from "@/hooks/sealos/deployment/use-deployment-node";
+// import useDeploymentNode from "@/hooks/sealos/deployment/use-deployment-node";
 import { Package } from "lucide-react";
 import NodeStatusLight from "../node-components/node-status-light";
 import NodeInternalUrl from "../node-components/node-internal-url";
@@ -11,28 +9,18 @@ import NodePods from "../node-components/node-pods";
 import NodeMonitor from "../node-components/node-monitor";
 import DeploymentNodeTitle from "./deployment-node-title";
 import DeploymentNodeMenu from "./deployment-node-menu";
+import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-object-schema";
 
-export default function DeploymentNode({
-  data: { target },
-}: {
-  data: { target: BuiltinResourceTarget };
-}) {
-  const k8sContext = createK8sContext();
-  const { data, isLoading } = useDeploymentNode(k8sContext, target);
-
-  if (isLoading || !data) {
-    return null;
-  }
-
+export default function DeploymentNode({ data }: { data: DeploymentObject }) {
   const { name, image, status, ports, pods } = data;
 
   return (
-    <BaseNode target={target} nodeData={data}>
+    <BaseNode nodeData={data}>
       <div className="flex h-full flex-col gap-2 justify-between">
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
           <DeploymentNodeTitle name={name} />
-          <DeploymentNodeMenu target={target} />
+          {/* <DeploymentNodeMenu target={target} /> */}
         </div>
 
         {/* Image with Package Icon */}
