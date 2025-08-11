@@ -10,14 +10,11 @@ import { getProjectRelatedResources } from "@/lib/brain/resources/project/projec
 import { PROJECT_DISPLAY_NAME_ANNOTATION_KEY } from "@/lib/brain/resources/project/project-constant/project-constant-annotation";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { generateInstanceTemplate } from "@/lib/sealos/resources/instance/instance-method/instance-utils";
-import { composeProjectMetadata } from "./project-utils";
-import { PROJECT_METADATA_ANNOTATION_KEY } from "@/lib/brain/resources/project/project-constant/project-constant-annotation";
-import { ProjectObjectMetadata } from "@/lib/brain/resources/project/project-schemas/project-object-schema";
+import { convertInstanceToProject } from "./project-utils";
 
 export const useCreateProjectMutation = (context: K8sApiContext) => {
   const queryClient = useQueryClient();
   const createInstanceMutation = useApplyInstanceYamlMutation(context);
-  const updateMetadataMutation = useUpdateProjectMetadataMutation(context);
 
   return useMutation({
     mutationFn: async ({ name }: { name: string }) => {
@@ -27,13 +24,7 @@ export const useCreateProjectMutation = (context: K8sApiContext) => {
         yamlContent: instanceYaml,
       });
 
-      const metadata = composeProjectMetadata();
-      await updateMetadataMutation.mutateAsync({
-        name,
-        newMetadata: metadata,
-      });
-
-      return instanceResource;
+      return convertInstanceToProject(instanceResource);
     },
     onSuccess: (data, { name }) => {
       toast.success(`project "${name}" created successfully`);
@@ -80,38 +71,38 @@ export const useUpdateProjectNameMutation = (context: K8sApiContext) => {
   });
 };
 
-export const useUpdateProjectMetadataMutation = (context: K8sApiContext) => {
-  const queryClient = useQueryClient();
-  const patchMutation = usePatchResourceMetadataMutation(context);
+// export const useUpdateProjectMetadataMutation = (context: K8sApiContext) => {
+//   const queryClient = useQueryClient();
+//   const patchMutation = usePatchResourceMetadataMutation(context);
 
-  return useMutation({
-    mutationFn: async ({
-      name,
-      newMetadata,
-    }: {
-      name: string;
-      newMetadata: ProjectObjectMetadata;
-    }) => {
-      const target = convertResourceTypeToTarget("instance", name);
-      return await patchMutation.mutateAsync({
-        target,
-        metadataType: "annotations",
-        key: PROJECT_METADATA_ANNOTATION_KEY,
-        value: JSON.stringify(newMetadata),
-      });
-    },
-    onSuccess: (_, { name, newMetadata }) => {
-      toast.success(`Project "${name}" metadata updated`);
-      queryClient.invalidateQueries({
-        queryKey: ["projects"],
-      });
-    },
-    onError: (error, { name }) => {
-      toast.error(`Failed to update project "${name}" metadata`);
-      throw error;
-    },
-  });
-};
+//   return useMutation({
+//     mutationFn: async ({
+//       name,
+//       newMetadata,
+//     }: {
+//       name: string;
+//       newMetadata: ProjectObjectMetadata;
+//     }) => {
+//       const target = convertResourceTypeToTarget("instance", name);
+//       return await patchMutation.mutateAsync({
+//         target,
+//         metadataType: "annotations",
+//         key: PROJECT_METADATA_ANNOTATION_KEY,
+//         value: JSON.stringify(newMetadata),
+//       });
+//     },
+//     onSuccess: (_, { name, newMetadata }) => {
+//       toast.success(`Project "${name}" metadata updated`);
+//       queryClient.invalidateQueries({
+//         queryKey: ["projects"],
+//       });
+//     },
+//     onError: (error, { name }) => {
+//       toast.error(`Failed to update project "${name}" metadata`);
+//       throw error;
+//     },
+//   });
+// };
 
 export const useDeleteProjectMutation = (context: K8sApiContext) => {
   const queryClient = useQueryClient();

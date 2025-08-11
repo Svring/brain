@@ -8,7 +8,9 @@ import {
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { getProjectObject } from "./project-bridge";
 import { runParallelAction } from "next-server-actions-parallel";
+import { getProjectRelatedResources } from "./project-relevance";
 import { getResourceObject } from "@/lib/sealos/services/bridge/bridge-method/bridge-query";
+import { convertInstanceListToProjectList } from "./project-utils";
 
 export const listProjects = async (context: K8sApiContext) => {
   const target = CustomResourceTargetSchema.parse(
@@ -17,13 +19,7 @@ export const listProjects = async (context: K8sApiContext) => {
   const instanceResourceList = await runParallelAction(
     listCustomResources(context, target)
   );
-  const instanceTargetList = instanceResourceList.items.map((item) =>
-    CustomResourceTargetSchema.parse(convertResourceToTarget(item))
-  );
-  const instancePromises = instanceTargetList.map(
-    async (target) => await getProject(context, target.name!)
-  );
-  return await Promise.all(instancePromises);
+  return convertInstanceListToProjectList(instanceResourceList);
 };
 
 export const getProject = async (context: K8sApiContext, name: string) => {
@@ -34,60 +30,41 @@ export const getProject = async (context: K8sApiContext, name: string) => {
   return projectObject;
 };
 
-export const listProjectsQuery = (context: K8sApiContext) => {
+export const listProjectsOptions = (context: K8sApiContext) => {
   return queryOptions({
     queryKey: ["projects"],
     queryFn: () => listProjects(context),
   });
 };
 
-export const getProjectQuery = (context: K8sApiContext, name: string) => {
+export const getProjectOptions = (context: K8sApiContext, name: string) => {
   return queryOptions({
     queryKey: ["project", name],
     queryFn: () => getProject(context, name),
   });
 };
 
-export const getProjectResources = async (
+export const getProjectResourcesOptions = (
   context: K8sApiContext,
-  projectName: string
-) => {
-  const project = await getProject(context, projectName);
-  const results = await Promise.all(
-    project.metadata.resources.map(async (resource) => {
-      const devObject = resource.backboneResources.dev
-        ? await getResourceObject(
-            context,
-            resource.backboneResources.dev
-          ).catch(() => null)
-        : null;
-
-      const prodObject = resource.backboneResources.prod
-        ? await getResourceObject(
-            context,
-            resource.backboneResources.prod
-          ).catch(() => null)
-        : null;
-
-      return {
-        ...resource,
-        backboneResources: {
-          ...resource.backboneResources,
-          dev: devObject,
-          prod: prodObject,
-        },
-      };
-    })
-  );
-  return results;
-};
-
-export const getProjectResourcesQuery = (
-  context: K8sApiContext,
-  projectName: string
+  projectName: string,
+  enabledSubModules: string[] = [
+    "devbox",
+    "cluster",
+    "deployment",
+    "statefulset",
+  ]
 ) => {
   return queryOptions({
-    queryKey: ["project-resources", projectName],
-    queryFn: () => getProjectResources(context, projectName),
+    queryKey: ["project", projectName],
+    queryFn: async () => {
+      const resources = await getProjectRelatedResources(
+        context,
+        projectName,
+        enabledSubModules
+      );
+      return resources;
+    },
+    enabled: !!context.namespace && !!projectName && !!context.kubeconfig,
+    staleTime: 60 * 1000, // 5 minutes
   });
 };

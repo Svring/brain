@@ -13,9 +13,7 @@ import { TextShimmer } from "@/components/ui/text-shimmer";
 import AiCoin from "@/components/chat/ai-coin";
 import AiChatbox from "@/components/chat/ai-chatbox";
 
-import { getProjectQuery } from "@/lib/brain/resources/project/project-method/project-query";
 import { useProjectResources } from "@/hooks/brain/use-project-resources";
-import { useQuery } from "@tanstack/react-query";
 
 // Custom types
 import edgeTypes from "@/components/flowgraph/edge/edge-types";
@@ -65,6 +63,10 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
 // Flow Component
 function ProjectFlow({ projectName }: { projectName: string }) {
   const context = createK8sContext();
+
+  const { resources, isLoading, error } = useProjectResources(projectName);
+
+  console.log("resources", resources);
 
   // const { expandedResources, isLoading: isLoadingResources } =
   //   useBrainProjectResources(projectName);

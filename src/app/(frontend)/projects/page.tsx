@@ -61,7 +61,7 @@ export default function Page() {
           {!isError && (
             <>
               {filteredProjects.length !== 0 &&
-                filteredProjects.map((project) => (
+                filteredProjects.map((project: any) => (
                   <ProjectCard key={project.name} project={project} />
                 ))}
             </>

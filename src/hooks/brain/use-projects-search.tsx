@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { listProjectsQuery } from "@/lib/brain/resources/project/project-method/project-query";
+import { listProjectsOptions } from "@/lib/brain/resources/project/project-method/project-query";
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 
 export default function useProjectSearch(context: K8sApiContext) {
@@ -12,9 +12,7 @@ export default function useProjectSearch(context: K8sApiContext) {
     data: projects,
     isLoading,
     isError,
-  } = useQuery(listProjectsQuery(context));
-
-  console.log("[useProjectSearch] projects", projects);
+  } = useQuery(listProjectsOptions(context));
 
   // Filter projects based on search term
   const filteredProjects = useMemo(() => {
