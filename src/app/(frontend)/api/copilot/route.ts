@@ -3,34 +3,50 @@ import {
   copilotRuntimeNextJSAppRouterEndpoint,
   ExperimentalEmptyAdapter,
   LangGraphAgent,
-  LangChainAdapter,
 } from "@copilotkit/runtime";
 import type { NextRequest } from "next/server";
 
-// You can use any service adapter here for multi-agent support.
-const serviceAdapter = new ExperimentalEmptyAdapter();
+// Force Node runtime and dynamic route to avoid Edge bundling churn and static optimization
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-const runtime = new CopilotRuntime({
-  agents: {
-    ai: new LangGraphAgent({
-      deploymentUrl: process.env.NEXT_PUBLIC_LANGGRAPH_DEPLOYMENT_URL || "",
-      graphId: "ai",
-      langsmithApiKey: process.env.LANGSMITH_API_KEY || "",
-    }),
-    new_project: new LangGraphAgent({
-      deploymentUrl: process.env.NEXT_PUBLIC_LANGGRAPH_DEPLOYMENT_URL || "",
-      graphId: "new_project",
-      langsmithApiKey: process.env.LANGSMITH_API_KEY || "",
-    }),
-  },
-});
+// Cache singletons across HMR in development to avoid re-instantiation costs
+const g = globalThis as any;
 
-export const POST = async (req: NextRequest) => {
+if (!g.__copilot_serviceAdapter) {
+  g.__copilot_serviceAdapter = new ExperimentalEmptyAdapter();
+}
+const serviceAdapter = g.__copilot_serviceAdapter;
+
+if (!g.__copilot_runtime) {
+  g.__copilot_runtime = new CopilotRuntime({
+    agents: {
+      ai: new LangGraphAgent({
+        deploymentUrl: process.env.NEXT_PUBLIC_LANGGRAPH_DEPLOYMENT_URL || "",
+        graphId: "ai",
+        langsmithApiKey: process.env.LANGSMITH_API_KEY || "",
+      }),
+      new_project: new LangGraphAgent({
+        deploymentUrl: process.env.NEXT_PUBLIC_LANGGRAPH_DEPLOYMENT_URL || "",
+        graphId: "new_project",
+        langsmithApiKey: process.env.LANGSMITH_API_KEY || "",
+      }),
+    },
+  });
+}
+const runtimeSingleton: CopilotRuntime = g.__copilot_runtime;
+
+if (!g.__copilot_handleRequest) {
   const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
-    runtime,
+    runtime: runtimeSingleton,
     serviceAdapter,
     endpoint: "/api/copilot",
   });
+  g.__copilot_handleRequest = handleRequest;
+}
+const handleRequest: (req: NextRequest) => Promise<Response> =
+  g.__copilot_handleRequest;
 
+export const POST = async (req: NextRequest) => {
   return handleRequest(req);
 };

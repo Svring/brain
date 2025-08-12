@@ -142,7 +142,7 @@ export default function IngressNode({
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-theme-yellow cursor-pointer" />
                 </TooltipTrigger>
-                <TooltipContent className="bg-background-secondary">
+                <TooltipContent className="">
                   <p>Diagnose with ai</p>
                 </TooltipContent>
               </Tooltip>

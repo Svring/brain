@@ -24,7 +24,6 @@ export function useLanggraphAgentNewProject() {
       base_url: "",
       api_key: "",
       model: "",
-      observed_steps: [],
       project: undefined,
       project_brief: "",
     },

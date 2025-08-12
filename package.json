@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbo",
+    "million-dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -21,6 +22,7 @@
     "@langchain/core": "^0.3.68",
     "@langchain/langgraph": "^0.4.3",
     "@langchain/langgraph-sdk": "^0.0.105",
+    "@million/lint": "^1.0.14",
     "@payloadcms/db-postgres": "3.41.0",
     "@payloadcms/next": "3.41.0",
     "@payloadcms/payload-cloud": "3.41.0",
@@ -89,6 +91,7 @@
     "next-themes": "latest",
     "nookies": "^2.5.2",
     "payload": "3.41.0",
+    "process": "^0.11.10",
     "react": "^19",
     "react-day-picker": "8.10.1",
     "react-dom": "^19",

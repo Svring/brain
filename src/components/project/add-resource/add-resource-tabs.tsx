@@ -47,16 +47,16 @@ export default function AddResourceTabs() {
     error: deploymentError,
   } = useQuery(listDeploymentOptions(k8sContext));
 
-  const {
-    data: statefulSets = [],
-    isLoading: statefulSetLoading,
-    error: statefulSetError,
-  } = useQuery(listStatefulSetOptions(k8sContext));
+  // const {
+  //   data: statefulSets = [],
+  //   isLoading: statefulSetLoading,
+  //   error: statefulSetError,
+  // } = useQuery(listStatefulSetOptions(k8sContext));
 
   // Combine deployments and statefulsets for launchpad tab
-  const launchpadResources = [...deployments, ...statefulSets];
-  const launchpadLoading = deploymentLoading || statefulSetLoading;
-  const launchpadError = deploymentError || statefulSetError;
+  // const launchpadResources = [...deployments, ...statefulSets];
+  // const launchpadLoading = deploymentLoading || statefulSetLoading;
+  // const launchpadError = deploymentError || statefulSetError;
 
   const DevboxTable = () => (
     <Card>
@@ -103,29 +103,35 @@ export default function AddResourceTabs() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          if (
-                            selectedProject &&
-                            typeof selectedProject === "object" &&
-                            "name" in selectedProject
-                          ) {
-                            addToProjectMutation.mutate({
-                              resources: [
-                                convertResourceTypeToTarget(
-                                  "devbox",
-                                  devbox.name
-                                ),
-                              ],
-                              name: selectedProject.name as string,
-                            });
-                          }
-                        }}
-                      >
-                        Add
-                      </Button>
+                      {devbox.inProject ? (
+                        <span className="text-sm text-muted-foreground">
+                          {devbox.inProject}
+                        </span>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            if (
+                              selectedProject &&
+                              typeof selectedProject === "object" &&
+                              "name" in selectedProject
+                            ) {
+                              addToProjectMutation.mutate({
+                                resources: [
+                                  convertResourceTypeToTarget(
+                                    "devbox",
+                                    devbox.name
+                                  ),
+                                ],
+                                name: selectedProject.name as string,
+                              });
+                            }
+                          }}
+                        >
+                          Add
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))
@@ -190,29 +196,35 @@ export default function AddResourceTabs() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          if (
-                            selectedProject &&
-                            typeof selectedProject === "object" &&
-                            "name" in selectedProject
-                          ) {
-                            addToProjectMutation.mutate({
-                              resources: [
-                                convertResourceTypeToTarget(
-                                  "cluster",
-                                  cluster.name
-                                ),
-                              ],
-                              name: selectedProject.name as string,
-                            });
-                          }
-                        }}
-                      >
-                        Add
-                      </Button>
+                      {cluster.inProject ? (
+                        <span className="text-sm text-muted-foreground">
+                          {cluster.inProject}
+                        </span>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            if (
+                              selectedProject &&
+                              typeof selectedProject === "object" &&
+                              "name" in selectedProject
+                            ) {
+                              addToProjectMutation.mutate({
+                                resources: [
+                                  convertResourceTypeToTarget(
+                                    "cluster",
+                                    cluster.name
+                                  ),
+                                ],
+                                name: selectedProject.name as string,
+                              });
+                            }
+                          }}
+                        >
+                          Add
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))
@@ -230,11 +242,11 @@ export default function AddResourceTabs() {
         <CardTitle>Launchpad (Deployments & StatefulSets)</CardTitle>
       </CardHeader>
       <CardContent>
-        {launchpadLoading ? (
+        {deploymentLoading ? (
           <div className="text-center py-4">Loading launchpad resources...</div>
-        ) : launchpadError ? (
+        ) : deploymentError ? (
           <div className="text-center py-4 text-red-500">
-            Error loading launchpad resources: {launchpadError.message}
+            Error loading launchpad resources: {deploymentError.message}
           </div>
         ) : (
           <Table>
@@ -246,7 +258,7 @@ export default function AddResourceTabs() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {launchpadResources.length === 0 ? (
+              {deployments.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={3}
@@ -256,7 +268,7 @@ export default function AddResourceTabs() {
                   </TableCell>
                 </TableRow>
               ) : (
-                launchpadResources.map((resource: any) => (
+                deployments.map((resource: any) => (
                   <TableRow key={`${resource.kind}-${resource.name}`}>
                     <TableCell className="font-medium">
                       {resource.name}
@@ -265,29 +277,35 @@ export default function AddResourceTabs() {
                       {resource.image || "N/A"}
                     </TableCell>
                     <TableCell>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          if (
-                            selectedProject &&
-                            typeof selectedProject === "object" &&
-                            "name" in selectedProject
-                          ) {
-                            addToProjectMutation.mutate({
-                              resources: [
-                                convertResourceTypeToTarget(
-                                  resource.kind.toLowerCase(),
-                                  resource.name
-                                ),
-                              ],
-                              name: selectedProject.name as string,
-                            });
-                          }
-                        }}
-                      >
-                        Add
-                      </Button>
+                      {resource.inProject ? (
+                        <span className="text-sm text-muted-foreground">
+                          {resource.inProject}
+                        </span>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            if (
+                              selectedProject &&
+                              typeof selectedProject === "object" &&
+                              "name" in selectedProject
+                            ) {
+                              addToProjectMutation.mutate({
+                                resources: [
+                                  convertResourceTypeToTarget(
+                                    resource.kind.toLowerCase(),
+                                    resource.name
+                                  ),
+                                ],
+                                name: selectedProject.name as string,
+                              });
+                            }
+                          }}
+                        >
+                          Add
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))

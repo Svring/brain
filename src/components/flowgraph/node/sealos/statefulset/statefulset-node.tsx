@@ -13,8 +13,6 @@ import { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulse
 export default function StatefulsetNode({ data }: { data: StatefulsetObject }) {
   const { name, image, status, ports, pods } = data;
 
-  console.log("statefulset node", status);
-
   return (
     <BaseNode nodeData={data}>
       <div className="flex h-full flex-col gap-2 justify-between">
@@ -36,7 +34,13 @@ export default function StatefulsetNode({ data }: { data: StatefulsetObject }) {
         <div className="mt-auto flex justify-between items-center">
           {/* Left: Status light */}
           <NodeStatusLight
-            status={status.unavailableReplicas > 0 ? "Error" : "Running"}
+            status={
+              status.paused
+                ? "Stopped"
+                : status.unavailableReplicas > 0
+                ? "Error"
+                : "Running"
+            }
           />
 
           {/* Right: Icon components */}

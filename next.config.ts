@@ -1,3 +1,4 @@
+import MillionLint from "@million/lint";
 import { withPayload } from "@payloadcms/next/withPayload";
 
 // Define regex patterns at top level to avoid performance issues
@@ -7,14 +8,45 @@ const MODULE_NOT_FOUND_WARNING = /Module not found: Can't resolve/;
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  // eslint: {
+  //   ignoreDuringBuilds: true,
+  // },
+  // typescript: {
+  //   ignoreBuildErrors: true,
+  // },
   images: {
-    unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: "https" as const,
+        hostname: "assets.example.com",
+        pathname: "/account123/**",
+      },
+      {
+        protocol: "https" as const,
+        hostname: "*.bja.sealos.run",
+        pathname: "/**",
+      },
+      {
+        protocol: "https" as const,
+        hostname: "*.hzh.sealos.run",
+        pathname: "/**",
+      },
+      {
+        protocol: "https" as const,
+        hostname: "*.gzg.sealos.run",
+        pathname: "/**",
+      },
+      {
+        protocol: "https" as const,
+        hostname: "*.usw.sealos.io",
+        pathname: "/**",
+      },
+      {
+        protocol: "https" as const,
+        hostname: "*.cloud.sealos.io",
+        pathname: "/**",
+      },
+    ],
   },
   webpack: (config: any, { isServer }: any) => {
     // Suppress webpack warnings for known issues
@@ -26,9 +58,11 @@ const nextConfig = {
     // Handle node modules that have dynamic imports
     config.externals = config.externals || [];
     if (isServer) {
+      // Avoid bundling heavy native/gRPC libs into server build; resolve at runtime instead
       config.externals.push("prettier");
+      config.externals.push("@grpc/grpc-js");
+      config.externals.push("@grpc/proto-loader");
     }
-
     return config;
   },
   experimental: {
@@ -40,5 +74,10 @@ const nextConfig = {
     // devtoolSegmentExplorer: true,
   },
 };
+
+// export default MillionLint.next({
+//   enabled: true,
+//   rsc: true,
+// })(withPayload(nextConfig));
 
 export default withPayload(nextConfig);

@@ -23,10 +23,13 @@ export function useCreateLaunchpadMutation(context: SealosApiContext) {
       runParallelAction(createLaunchpad(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["sealos", "app", "list"],
+        queryKey: ["project"],
       });
       queryClient.invalidateQueries({
-        queryKey: ["inventory", "apps"],
+        queryKey: ["deployment"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["statefulset"],
       });
     },
   });
@@ -39,10 +42,13 @@ export function useDeleteLaunchpadMutation(context: SealosApiContext) {
       runParallelAction(deleteLaunchpad(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["sealos", "app", "list"],
+        queryKey: ["project"],
       });
       queryClient.invalidateQueries({
-        queryKey: ["inventory", "apps"],
+        queryKey: ["deployment"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["statefulset"],
       });
     },
   });
@@ -55,10 +61,13 @@ export function usePauseLaunchpadMutation(context: SealosApiContext) {
       runParallelAction(pauseLaunchpad(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["sealos", "app", "list"],
+        queryKey: ["project"],
       });
       queryClient.invalidateQueries({
-        queryKey: ["inventory", "apps"],
+        queryKey: ["deployment"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["statefulset"],
       });
     },
   });
@@ -71,10 +80,13 @@ export function useStartLaunchpadMutation(context: SealosApiContext) {
       runParallelAction(startLaunchpad(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["sealos", "app", "list"],
+        queryKey: ["project"],
       });
       queryClient.invalidateQueries({
-        queryKey: ["inventory", "apps"],
+        queryKey: ["deployment"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["statefulset"],
       });
     },
   });

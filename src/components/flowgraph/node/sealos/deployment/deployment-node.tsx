@@ -36,8 +36,10 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
           {/* Left: Status light */}
           <NodeStatusLight
             status={
-              status.unavailableReplicas !== undefined &&
-              status.unavailableReplicas > 0
+              status.paused
+                ? "Stopped"
+                : status.unavailableReplicas !== undefined &&
+                  status.unavailableReplicas > 0
                 ? "Error"
                 : "Running"
             }

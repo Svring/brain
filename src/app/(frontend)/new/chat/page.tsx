@@ -12,7 +12,7 @@ import {
   getClusterVersions,
   getCluster,
 } from "@/lib/sealos/resources/cluster/cluster-api/cluster-open-api";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { runParallelAction } from "next-server-actions-parallel";
 
 export default function ChatPage() {
@@ -23,19 +23,19 @@ export default function ChatPage() {
 
   useCopilotActions();
 
-  useEffect(() => {
-    const fetchClusterVersions = async () => {
-      const clusterVersions = await runParallelAction(
-        getClusterVersions(context)
-      );
-      const cluster = await runParallelAction(
-        getCluster("affine-kssnwpeh-pg", context)
-      );
-      console.log(clusterVersions);
-      console.log(cluster);
-    };
-    fetchClusterVersions();
-  }, []);
+  // useEffect(() => {
+  //   const fetchClusterVersions = async () => {
+  //     const clusterVersions = await runParallelAction(
+  //       getClusterVersions(context)
+  //     );
+  //     const cluster = await runParallelAction(
+  //       getCluster("affine-kssnwpeh-pg", context)
+  //     );
+  //     console.log(clusterVersions);
+  //     console.log(cluster);
+  //   };
+  //   fetchClusterVersions();
+  // }, []);
 
   return (
     <div className="relative h-screen w-full flex flex-col">

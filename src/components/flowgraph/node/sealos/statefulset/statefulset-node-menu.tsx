@@ -35,15 +35,15 @@ export default function StatefulsetNodeMenu({
   const sealosContext = createSealosContext();
   const k8sContext = createK8sContext();
 
-  const deleteApp = useDeleteLaunchpadMutation(sealosContext);
-  const startApp = useStartLaunchpadMutation(sealosContext);
-  const stopApp = usePauseLaunchpadMutation(sealosContext);
+  const deleteLaunchpad = useDeleteLaunchpadMutation(sealosContext);
+  const startLaunchpad = useStartLaunchpadMutation(sealosContext);
+  const pauseLaunchpad = usePauseLaunchpadMutation(sealosContext);
   const removeFromProject = useRemoveFromProjectMutation(k8sContext);
 
   const { name, status } = object;
 
   const isRunning =
-    status.replicas && status.replicas > 0 && !status.unavailableReplicas;
+    status.replicas && status.replicas > 0 && status.unavailableReplicas === 0;
 
   return (
     <DropdownMenu>
@@ -65,9 +65,9 @@ export default function StatefulsetNodeMenu({
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
-              startApp.mutate({ name });
+              startLaunchpad.mutate({ name });
             }}
-            disabled={startApp.isPending}
+            disabled={startLaunchpad.isPending}
           >
             <Power className="mr-2 h-4 w-4" />
             Start
@@ -77,9 +77,9 @@ export default function StatefulsetNodeMenu({
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
-              stopApp.mutate({ name });
+              pauseLaunchpad.mutate({ name });
             }}
-            disabled={stopApp.isPending}
+            disabled={pauseLaunchpad.isPending}
           >
             <Pause className="mr-2 h-4 w-4" />
             Stop
@@ -96,7 +96,10 @@ export default function StatefulsetNodeMenu({
         <DropdownMenuItem
           onClick={(e) => {
             e.stopPropagation();
-            const statefulsetTarget = convertResourceTypeToTarget("statefulset", name);
+            const statefulsetTarget = convertResourceTypeToTarget(
+              "statefulset",
+              name
+            );
             removeFromProject.mutate({
               resources: [statefulsetTarget],
             });
@@ -111,10 +114,10 @@ export default function StatefulsetNodeMenu({
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
-              deleteApp.mutate({ name });
+              deleteLaunchpad.mutate({ name });
             }}
             className="text-destructive"
-            disabled={deleteApp.isPending}
+            disabled={deleteLaunchpad.isPending}
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Delete

@@ -44,7 +44,7 @@ export default function DeploymentNodeMenu({
   const { name, status } = object;
 
   const isRunning =
-    status?.replicas && status.replicas > 0 && !status.unavailableReplicas;
+    status?.replicas && status.replicas > 0 && status.unavailableReplicas === 0;
 
   return (
     <DropdownMenu>

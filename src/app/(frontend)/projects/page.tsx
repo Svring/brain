@@ -10,6 +10,7 @@ import SearchBar from "@/components/ui/search-bar";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import useProjectSearch from "@/hooks/brain/use-projects-search";
 import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
+import ProjectPlanCard from "@/components/chat/state-cards/project-plan-card";
 
 export default function Page() {
   const context = createK8sContext();
@@ -67,6 +68,16 @@ export default function Page() {
                 ))}
             </>
           )}
+        </div>
+      </div>
+
+      <div className="pt-8 pb-4">
+        <div className="w-3xl mx-auto px-4">
+          <ProjectPlanCard
+            title="Project Planning Status"
+            analyzingStatus="active"
+            proposingStatus="pending"
+          />
         </div>
       </div>
 
