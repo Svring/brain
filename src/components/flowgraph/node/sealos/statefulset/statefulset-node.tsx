@@ -9,9 +9,33 @@ import NodeMonitor from "../node-components/node-monitor";
 import StatefulsetNodeTitle from "./statefulset-node-title";
 import StatefulsetNodeMenu from "./statefulset-node-menu";
 import { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulset-object-schema";
+import { useEffect, useMemo } from "react";
+import {
+  useFlowgraphActions,
+  useFlowgraphState,
+} from "@/contexts/flowgraph/flowgraph-context";
+import { convertPortsToIngressNodes } from "@/lib/flowgraph/nodes/flowgraph-nodes-utils";
 
 export default function StatefulsetNode({ data }: { data: StatefulsetObject }) {
   const { name, image, status, ports, pods } = data;
+
+  const { nodes, edges } = useFlowgraphState();
+  const { setNodes, setEdges } = useFlowgraphActions();
+
+  // Build ingress nodes/edges derived from statefulset ports
+  const derived = useMemo(() => {
+    return convertPortsToIngressNodes(ports, name, "Statefulset", data, nodes, edges);
+  }, [ports, name, data, nodes, edges]);
+
+  // Minimal effect: commit derived nodes/edges once available
+  useEffect(() => {
+    const { newNodes, newEdges } = derived;
+    if ((newNodes.length || newEdges.length) && (nodes.length || edges.length)) {
+      if (newNodes.length) setNodes([...nodes, ...newNodes]);
+      if (newEdges.length) setEdges([...edges, ...newEdges]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [derived]);
 
   return (
     <BaseNode nodeData={data}>

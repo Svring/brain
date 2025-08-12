@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useMemo } from "react";
 import { Package } from "lucide-react";
 import BaseNode from "../../base-node-wrapper";
 import { createK8sContext } from "@/lib/auth/auth-utils";
@@ -14,12 +14,35 @@ import NodeMonitor from "../node-components/node-monitor";
 import NodeStack from "../node-components/node-stack";
 import DevboxNodeRelease from "./devbox-node-release";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
+import {
+  useFlowgraphActions,
+  useFlowgraphState,
+} from "@/contexts/flowgraph/flowgraph-context";
+import { convertPortsToIngressNodes } from "@/lib/flowgraph/nodes/flowgraph-nodes-utils";
 
 export default function DevboxNode({ data }: { data: DevboxObject }) {
   const { name, image, status, ports, pods } = data;
 
   const context = createK8sContext();
   const devboxContext = createDevboxContext();
+
+  const { nodes, edges } = useFlowgraphState();
+  const { setNodes, setEdges } = useFlowgraphActions();
+
+  // Build ingress nodes/edges derived from devbox ports
+  const derived = useMemo(() => {
+    return convertPortsToIngressNodes(ports, name, "Devbox", data, nodes, edges);
+  }, [ports, name, data, nodes, edges]);
+
+  // Minimal effect: commit derived nodes/edges once available
+  useEffect(() => {
+    const { newNodes, newEdges } = derived;
+    if ((newNodes.length || newEdges.length) && (nodes.length || edges.length)) {
+      if (newNodes.length) setNodes([...nodes, ...newNodes]);
+      if (newEdges.length) setEdges([...edges, ...newEdges]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [derived]);
 
   const mainCard = (
     <BaseNode nodeData={data}>

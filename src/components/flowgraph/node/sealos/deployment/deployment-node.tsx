@@ -15,7 +15,7 @@ import {
   useFlowgraphActions,
   useFlowgraphState,
 } from "@/contexts/flowgraph/flowgraph-context";
-import type { Edge, Node } from "@xyflow/react";
+import { convertPortsToIngressNodes } from "@/lib/flowgraph/nodes/flowgraph-nodes-utils";
 
 // TODO: The derived nodes caused inifinite call stack, need to investigate.
 export default function DeploymentNode({ data }: { data: DeploymentObject }) {
@@ -26,55 +26,8 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
 
   // Build ingress nodes/edges derived from deployment ports
   const derived = useMemo(() => {
-    const newNodes: Node<any>[] = [];
-    const newEdges: Edge[] = [];
-
-    if (!ports || ports.length === 0) return { newNodes, newEdges };
-
-    for (const p of ports) {
-      const ingressName = p.name || `${p.protocol?.toLowerCase() || "port"}-${p.number}`;
-      const ingressNodeId = `ingress-${ingressName}-of-${name}`;
-      const deploymentNodeId = `deployment-${name}`;
-      const edgeId = `deployment-${name}-to-${ingressNodeId}`;
-
-      // Node data shape expected by IngressNode component
-      const ingressData = {
-        object: {
-          number: p.number,
-          name: ingressName,
-          nodePort: p.nodePort as number | undefined,
-          protocol: p.protocol,
-          serviceName: p.serviceName as string | undefined,
-          privateAddress: p.privateAddress as string | undefined,
-          publicAddress: p.publicAddress as string | undefined,
-        },
-        parent: data,
-      };
-
-      // Append node if missing
-      if (!nodes.some((n) => n.id === ingressNodeId)) {
-        newNodes.push({
-          id: ingressNodeId,
-          type: "ingress",
-          position: { x: 0, y: 0 },
-          data: ingressData,
-        });
-      }
-
-      // Append edge if missing
-      if (!edges.some((e) => e.id === edgeId)) {
-        newEdges.push({
-          id: edgeId,
-          source: deploymentNodeId,
-          target: ingressNodeId,
-          type: "step",
-          animated: true,
-        });
-      }
-    }
-
-    return { newNodes, newEdges };
-  }, [ports, data]);
+    return convertPortsToIngressNodes(ports, name, "Deployment", data, nodes, edges);
+  }, [ports, name, data, nodes, edges]);
 
   // Minimal effect: commit derived nodes/edges once available
   useEffect(() => {

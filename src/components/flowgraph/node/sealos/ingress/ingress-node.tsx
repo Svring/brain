@@ -125,7 +125,7 @@ export default function IngressNode({
         </div>
 
         {/* Service and Port Information */}
-        <div className="flex items-center gap-2 mt-2">
+        {/* <div className="flex items-center gap-2 mt-2">
           {urlAvailable ? (
             <Globe
               className={cn(
@@ -154,7 +154,7 @@ export default function IngressNode({
               (NodePort: {object.nodePort})
             </span>
           </div>
-        </div>
+        </div> */}
 
         {/* Address Display */}
         <div className="flex items-center gap-2 mt-2">
