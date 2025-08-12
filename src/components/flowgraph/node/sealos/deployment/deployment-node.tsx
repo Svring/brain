@@ -14,7 +14,7 @@ import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-o
 export default function DeploymentNode({ data }: { data: DeploymentObject }) {
   const { name, image, status, ports, pods } = data;
 
-  console.log("status", status)
+  // console.log("status", status)
 
   return (
     <BaseNode nodeData={data}>

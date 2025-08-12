@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
@@ -18,6 +18,33 @@ export default function useResourceObjects(
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  // Memoize filtered resource targets to avoid recomputing on every render
+  const filteredTargets = useMemo(() => {
+    return {
+      clusterTargets: resources.filter(
+        (resource): resource is CustomResourceTarget =>
+          resource.type === "custom" && resource.resourceType === "cluster"
+      ),
+      devboxTargets: resources.filter(
+        (resource): resource is CustomResourceTarget =>
+          resource.type === "custom" && resource.resourceType === "devbox"
+      ),
+      deploymentTargets: resources.filter(
+        (resource): resource is BuiltinResourceTarget =>
+          resource.type === "builtin" && resource.resourceType === "deployment"
+      ),
+      statefulsetTargets: resources.filter(
+        (resource): resource is BuiltinResourceTarget =>
+          resource.type === "builtin" && resource.resourceType === "statefulset"
+      ),
+      objectStorageTargets: resources.filter(
+        (resource): resource is CustomResourceTarget =>
+          resource.type === "custom" &&
+          resource.resourceType === "objectstoragebucket"
+      ),
+    };
+  }, [resources]);
+
   // Filter and fetch all resource types
   useEffect(() => {
     if (!context.kubeconfig || !context.namespace || resources.length === 0)
@@ -27,36 +54,13 @@ export default function useResourceObjects(
       setIsLoading(true);
       const objects: any[] = [];
 
-      // Filter and fetch clusters
-      const clusterTargets = resources.filter(
-        (resource): resource is CustomResourceTarget =>
-          resource.type === "custom" && resource.resourceType === "cluster"
-      );
-
-      // Filter and fetch devboxes
-      const devboxTargets = resources.filter(
-        (resource): resource is CustomResourceTarget =>
-          resource.type === "custom" && resource.resourceType === "devbox"
-      );
-
-      // Filter and fetch deployments
-      const deploymentTargets = resources.filter(
-        (resource): resource is BuiltinResourceTarget =>
-          resource.type === "builtin" && resource.resourceType === "deployment"
-      );
-
-      // Filter and fetch statefulsets
-      const statefulsetTargets = resources.filter(
-        (resource): resource is BuiltinResourceTarget =>
-          resource.type === "builtin" && resource.resourceType === "statefulset"
-      );
-
-      // Filter and fetch object storage buckets
-      const objectStorageTargets = resources.filter(
-        (resource): resource is CustomResourceTarget =>
-          resource.type === "custom" &&
-          resource.resourceType === "objectstoragebucket"
-      );
+      const {
+        clusterTargets,
+        devboxTargets,
+        deploymentTargets,
+        statefulsetTargets,
+        objectStorageTargets,
+      } = filteredTargets;
 
       // Fetch all resources
       const clusterPromises = clusterTargets.map(async (target) =>
@@ -92,7 +96,7 @@ export default function useResourceObjects(
     };
 
     fetchAllResources();
-  }, [resources, context.kubeconfig, context.namespace]);
+  }, [filteredTargets, context.kubeconfig, context.namespace]);
 
   return {
     resourceObjects: fetchedObjects,

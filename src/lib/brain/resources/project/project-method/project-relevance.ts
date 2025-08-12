@@ -42,7 +42,9 @@ export const getProjectRelatedResources = async (
 
   const instanceRelatedResources = await getInstanceRelatedResources(
     context,
-    projectName
+    projectName,
+    ["deployment", "statefulset"],
+    ["devbox", "cluster", "objectstoragebucket"]
   );
 
   const allItems = [projectInstanceRaw, ...instanceRelatedResources];

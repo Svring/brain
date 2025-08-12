@@ -31,7 +31,13 @@ export const getInstanceRelatedResources = async (
     context,
     labelSelectors,
     builtinResources ?? ["configmap", "deployment", "statefulset"],
-    customResources ?? ["devbox", "cluster", "objectstoragebucket", "app"]
+    customResources ?? [
+      "devbox",
+      "cluster",
+      "objectstoragebucket",
+      "app",
+      "objectstoragebucket",
+    ]
   );
 };
 

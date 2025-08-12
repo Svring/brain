@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, use, useEffect } from "react";
+import { useState, use, useEffect, useMemo } from "react";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 
 import { useDisclosure } from "@reactuses/core";
@@ -92,7 +92,8 @@ function ProjectFlow({ projectName }: { projectName: string }) {
     useFlowgraphActions();
   const { nodes, edges } = useFlowgraphState();
 
-  useEffect(() => {
+  // Memoize ingress node processing to avoid heavy computation on every render
+  const { finalNodes, finalEdges } = useMemo(() => {
     // Generate ingress nodes and edges from ports of all resource nodes
     let allNodes = [...computedNodes];
     let allEdges = [...computedEdges];
@@ -114,11 +115,17 @@ function ProjectFlow({ projectName }: { projectName: string }) {
       }
     }
 
-    // Set nodes and edges with ingress nodes included
-    setNodes(allNodes);
-    setEdges(allEdges);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return {
+      finalNodes: allNodes,
+      finalEdges: allEdges,
+    };
   }, [computedNodes, computedEdges]);
+
+  useEffect(() => {
+    // Set nodes and edges with ingress nodes included
+    setNodes(finalNodes);
+    setEdges(finalEdges);
+  }, [finalNodes, finalEdges]);
 
   // Show loading state if nodes and edges are not ready
   if (!nodes.length || !edges.length) {

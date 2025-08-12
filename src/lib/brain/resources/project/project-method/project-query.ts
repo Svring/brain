@@ -9,7 +9,6 @@ import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/re
 import { getProjectObject } from "./project-bridge";
 import { runParallelAction } from "next-server-actions-parallel";
 import { getProjectRelatedResources } from "./project-relevance";
-import { getResourceObject } from "@/lib/sealos/services/bridge/bridge-method/bridge-query";
 import { flattenListAllResourcesResponse } from "@/lib/k8s/k8s-method/k8s-utils";
 import { convertInstanceListToProjectList } from "./project-utils";
 
