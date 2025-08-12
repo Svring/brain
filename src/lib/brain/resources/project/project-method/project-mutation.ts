@@ -88,7 +88,7 @@ export const useRemoveFromProjectMutation = (context: K8sApiContext) => {
       name,
     }: {
       resources: (CustomResourceTarget | BuiltinResourceTarget)[];
-      name: string;
+      name?: string;
     }) => {
       // Remove project label from all targets completely
       await removeMutation.mutateAsync({
@@ -100,7 +100,11 @@ export const useRemoveFromProjectMutation = (context: K8sApiContext) => {
       // Resources are now removed from project via labels only
     },
     onSuccess: (_, { name }) => {
-      toast.success(`Resources removed from project ${name}`);
+      if (name) {
+        toast.success(`Resources removed from project ${name}`);
+      } else {
+        toast.success(`Resources removed from project`);
+      }
       queryClient.invalidateQueries({ queryKey: ["project"] });
     },
   });

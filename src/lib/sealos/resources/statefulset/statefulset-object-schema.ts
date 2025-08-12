@@ -51,13 +51,19 @@ export const StatefulsetObjectSchema = z.object({
     .describe(
       JSON.stringify({
         resourceType: "statefulset",
-        path: ["status"],
+        path: [""],
       })
     )
-    .transform((status) => {
+    .transform((resource) => {
+      const status = resource.status;
+      const paused =
+        resource.metadata.annotations?.["deploy.cloud.sealos.io/pause"];
       return {
         replicas: status.replicas,
+        readyReplicas: status.readyReplicas,
         unavailableReplicas: status.unavailableReplicas,
+        availableReplicas: status.availableReplicas,
+        paused: paused ? true : false,
       };
     }),
   env: z
@@ -85,7 +91,11 @@ export const StatefulsetObjectSchema = z.object({
     )
     .transform((containers) => {
       if (Array.isArray(containers) && containers.length > 0) {
-        return containers[0].ports;
+        return (
+          containers[0].ports?.map((port: { containerPort: number }) => ({
+            number: port.containerPort,
+          })) || []
+        );
       }
       return [];
     })

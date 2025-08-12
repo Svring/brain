@@ -13,6 +13,8 @@ import { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulse
 export default function StatefulsetNode({ data }: { data: StatefulsetObject }) {
   const { name, image, status, ports, pods } = data;
 
+  console.log("statefulset node", status);
+
   return (
     <BaseNode nodeData={data}>
       <div className="flex h-full flex-col gap-2 justify-between">

@@ -35,7 +35,7 @@ interface IngressObject {
   number: number;
   name: string;
   nodePort: number;
-  protocol: string;
+  protocol: "TCP" | "UDP" | "HTTP" | "GRPC" | "WS";
   serviceName: string;
   privateAddress: string;
   publicAddress: string;
@@ -52,8 +52,11 @@ export default function IngressNode({
   const { object } = data;
   const [urlAvailable, setUrlAvailable] = useState(false);
 
+  // console.log("ingress node", object);
+
   // Use public address if available, otherwise fall back to private address
-  const displayAddress = object.publicAddress || object.privateAddress;
+  const { publicAddress, privateAddress, protocol } = object;
+  const displayAddress = publicAddress || privateAddress;
   const url = displayAddress;
 
   useInterval(
@@ -64,7 +67,7 @@ export default function IngressNode({
       const result = await checkUrl(url);
       setUrlAvailable(result.available);
     },
-    20000,
+    url ? 20000 : null, // Only run if url exists, and use reasonable interval
     { immediate: true }
   );
 
@@ -124,13 +127,13 @@ export default function IngressNode({
           </DropdownMenu>
         </div>
 
-        {/* Service and Port Information */}
-        {/* <div className="flex items-center gap-2 mt-2">
+        {/* Status and Address Display */}
+        <div className="flex items-center gap-2 mt-2">
           {urlAvailable ? (
             <Globe
               className={cn(
                 "h-4 w-4",
-                object.protocol === "TCP" ? "text-theme-blue" : "text-theme-green"
+                protocol === "TCP" ? "text-theme-blue" : "text-theme-green"
               )}
             />
           ) : (
@@ -146,19 +149,6 @@ export default function IngressNode({
             </TooltipProvider>
           )}
           
-          <div className="flex items-center gap-1 flex-1 min-w-0">
-            <span className="text-sm text-muted-foreground">
-              {object.serviceName}:{object.number}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              (NodePort: {object.nodePort})
-            </span>
-          </div>
-        </div> */}
-
-        {/* Address Display */}
-        <div className="flex items-center gap-2 mt-2">
-          <Globe className="h-4 w-4 text-muted-foreground" />
           <div className="flex items-center gap-1 flex-1 min-w-0">
             <span
               className={cn(

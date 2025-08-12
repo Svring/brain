@@ -94,7 +94,6 @@ export default function DevboxNodeMenu({ object }: { object: DevboxObject }) {
             const devboxTarget = convertResourceTypeToTarget("devbox", devboxName);
             removeFromProject.mutate({
               resources: [devboxTarget],
-              name: "", // This will be determined by the mutation based on the resource's current project label
             });
           }}
           disabled={status === "Pending"}

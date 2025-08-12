@@ -79,7 +79,7 @@ export const pauseLaunchpad = createParallelAction(
     const validatedRequest = LaunchpadPauseRequestSchema.parse(request);
     const api = createLaunchpadApi(context);
     const response = await api.get("/pauseApp", {
-      params: { name: validatedRequest.name },
+      params: { appName: validatedRequest.name },
     });
     return LaunchpadPauseResponseSchema.parse(response.data);
   }
@@ -93,7 +93,7 @@ export const startLaunchpad = createParallelAction(
     const validatedRequest = LaunchpadStartRequestSchema.parse(request);
     const api = createLaunchpadApi(context);
     const response = await api.get("/startApp", {
-      params: { name: validatedRequest.name },
+      params: { appName: validatedRequest.name },
     });
     return LaunchpadStartResponseSchema.parse(response.data);
   }
@@ -107,7 +107,7 @@ export const deleteLaunchpad = createParallelAction(
     const validatedRequest = LaunchpadDeleteRequestSchema.parse(request);
     const api = createLaunchpadApi(context);
     const response = await api.get("/delApp", {
-      params: { name: validatedRequest.name },
+      params: { appName: validatedRequest.name },
     });
     return LaunchpadDeleteResponseSchema.parse(response.data);
   }
@@ -121,7 +121,7 @@ export const checkReadyLaunchpad = createParallelAction(
     const validatedRequest = LaunchpadCheckReadyRequestSchema.parse(request);
     const api = createLaunchpadApi(context);
     const response = await api.get("/checkReady", {
-      params: { name: validatedRequest.name },
+      params: { appName: validatedRequest.name },
     });
     return LaunchpadCheckReadyResponseSchema.parse(response.data);
   }

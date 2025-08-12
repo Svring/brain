@@ -15,6 +15,7 @@ import NodeStack from "../node-components/node-stack";
 import DevboxNodeRelease from "./devbox-node-release";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 
+// TODO: Devbox nodes would cause maximum call stack error
 export default function DevboxNode({ data }: { data: DevboxObject }) {
   const { name, image, status, ports, pods } = data;
 

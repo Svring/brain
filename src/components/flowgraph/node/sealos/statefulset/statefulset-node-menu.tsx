@@ -23,6 +23,9 @@ import {
   usePauseLaunchpadMutation,
 } from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-mutation";
 import { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulset-object-schema";
+import { useRemoveFromProjectMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
+import { createK8sContext } from "@/lib/auth/auth-utils";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 export default function StatefulsetNodeMenu({
   object,
@@ -30,10 +33,12 @@ export default function StatefulsetNodeMenu({
   object: StatefulsetObject;
 }) {
   const sealosContext = createSealosContext();
+  const k8sContext = createK8sContext();
 
   const deleteApp = useDeleteLaunchpadMutation(sealosContext);
   const startApp = useStartLaunchpadMutation(sealosContext);
   const stopApp = usePauseLaunchpadMutation(sealosContext);
+  const removeFromProject = useRemoveFromProjectMutation(k8sContext);
 
   const { name, status } = object;
 
@@ -87,6 +92,19 @@ export default function StatefulsetNodeMenu({
         <DropdownMenuItem disabled>
           <RotateCcw className="mr-2 h-4 w-4" />
           Restart
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={(e) => {
+            e.stopPropagation();
+            const statefulsetTarget = convertResourceTypeToTarget("statefulset", name);
+            removeFromProject.mutate({
+              resources: [statefulsetTarget],
+            });
+          }}
+          disabled={!name}
+        >
+          <PencilLine className="mr-2 h-4 w-4" />
+          Remove from Project
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         {name && (

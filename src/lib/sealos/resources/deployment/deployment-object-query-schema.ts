@@ -51,13 +51,19 @@ export const DeploymentObjectQuerySchema = z.object({
     .describe(
       JSON.stringify({
         resourceType: "deployment",
-        path: ["status"],
+        path: [""],
       })
     )
-    .transform((status) => {
+    .transform((resource) => {
+      const status = resource.status;
+      const paused =
+        resource.metadata.annotations?.["deploy.cloud.sealos.io/pause"];
       return {
         replicas: status.replicas,
         readyReplicas: status.readyReplicas,
+        unavailableReplicas: status.unavailableReplicas,
+        availableReplicas: status.availableReplicas,
+        paused: paused ? true : false,
       };
     }),
   env: z
