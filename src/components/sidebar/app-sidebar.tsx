@@ -10,8 +10,6 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { useCopilotContext } from "@copilotkit/react-core";
-import { useCreateThreadMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
 export default function AppSidebar() {
   return (

@@ -14,7 +14,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useQuery } from "@tanstack/react-query";
-// import { listProjectsOptions } from "@/lib/project/project-method/project-query";
+import { listProjectsOptions } from "@/lib/brain/resources/project/project-method/project-query";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { useCreateThreadMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
@@ -48,28 +48,23 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
 
 export const MainSection: React.FC<MainSectionProps> = () => {
   const router = useRouter();
-  const pathname = usePathname();
-  // const { data: projects } = useQuery(listProjectsOptions(createK8sContext()));
+  const { data: projects } = useQuery(listProjectsOptions(createK8sContext()));
 
-  const { setThreadId } = useCopilotContext();
-  const { mutate: createThread } = useCreateThreadMutation();
-  const { reset } = useCopilotChatHeadless_c();
-
-  const handleNavigation = async (path: string) => {
-    if (path === "/new/chat" && pathname === "/new/chat") {
-      createThread(undefined, {
-        onSuccess: (thread) => {
-          setThreadId(thread.thread_id);
-          reset();
-        },
-        onError: (error) => {
-          console.error("Failed to create thread:", error);
-        }
-      });
-    } else {
-      router.push(path);
-    }
-  };
+  // const handleNavigation = async (path: string) => {
+  //   if (path === "/new/chat" && pathname === "/new/chat") {
+  //     createThread(undefined, {
+  //       onSuccess: (thread) => {
+  //         setThreadId(thread.thread_id);
+  //         reset();
+  //       },
+  //       onError: (error) => {
+  //         console.error("Failed to create thread:", error);
+  //       },
+  //     });
+  //   } else {
+  //     router.push(path);
+  //   }
+  // };
 
   return (
     <SidebarGroup>
@@ -80,29 +75,25 @@ export const MainSection: React.FC<MainSectionProps> = () => {
               <SidebarMenuItem key={item.title}>
                 <Tooltip delayDuration={0}>
                   <TooltipTrigger asChild>
-                    <SidebarMenuButton
-                      onClick={() => handleNavigation(item.path)}
-                    >
+                    <SidebarMenuButton onClick={() => router.push(item.path)}>
                       <item.icon />
                       <span>{item.title}</span>
                     </SidebarMenuButton>
                   </TooltipTrigger>
-                  {/* <TooltipContent side="right" align="start">
-                    {item.title === "projects" && projects?.items ? (
+                  <TooltipContent side="right" align="start">
+                    {item.title === "projects" && projects ? (
                       <div className="space-y-1">
                         <p className="font-medium">Projects</p>
                         <div className="max-h-48 overflow-y-auto">
-                          {projects.items.map((project) => (
+                          {projects.map((project) => (
                             <div
-                              key={project.metadata.name}
+                              key={project.name}
                               className="text-sm text-muted-foreground hover:text-foreground cursor-pointer px-2 py-1 rounded hover:bg-accent"
                               onClick={() =>
-                                handleNavigation(
-                                  `/projects/${project.metadata.name}`
-                                )
+                                router.push(`/projects/${project.name}`)
                               }
                             >
-                              {project.metadata.name}
+                              {project.displayName}
                             </div>
                           ))}
                         </div>
@@ -110,7 +101,7 @@ export const MainSection: React.FC<MainSectionProps> = () => {
                     ) : (
                       <p>{item.title}</p>
                     )}
-                  </TooltipContent> */}
+                  </TooltipContent>
                 </Tooltip>
               </SidebarMenuItem>
             )

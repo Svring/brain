@@ -3,7 +3,7 @@ import { Lora } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import type React from "react";
 import Login from "@/components/auth/login";
-import { CopilotProvider } from "@/components/provider/copilot-provider";
+// import { CopilotProvider } from "@/components/provider/copilot-provider";
 import QueryProvider from "@/components/provider/query-provider";
 import AppSidebar from "@/components/sidebar/app-sidebar";
 // import LanggraphProvider from "@/components/app/provider/langgraph-provider";
@@ -66,14 +66,14 @@ export default async function RootLayout({
               {/* <AiProvider payloadUser={payloadUser}>
                   <LanggraphProvider>
                     <ProjectProvider> */}
-              <CopilotProvider>
+              {/* <CopilotProvider> */}
                 <ChatProvider>
                   <SidebarProvider defaultOpen={false}>
                     <AppSidebar />
                     {children}
                   </SidebarProvider>
                 </ChatProvider>
-              </CopilotProvider>
+              {/* </CopilotProvider> */}
               {/* </ProjectProvider>
                   </LanggraphProvider>
                 </AiProvider> */}

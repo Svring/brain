@@ -88,9 +88,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
                 <span className="sr-only">Open menu</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="rounded-lg " align="start">
+            <DropdownMenuContent className="rounded-lg bg-background-secondary" align="start">
               <DropdownMenuItem
-                className="text-destructive rounded-lg"
+                className="text-theme-red rounded-lg"
                 disabled={deleteProjectMutation.isPending}
                 onClick={handleDelete}
               >

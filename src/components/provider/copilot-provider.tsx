@@ -1,9 +1,15 @@
 import { CopilotKit } from "@copilotkit/react-core";
 
-export function CopilotProvider({ children }: { children: React.ReactNode }) {
+export function CopilotProvider({
+  children,
+  agent,
+}: {
+  children: React.ReactNode;
+  agent: string;
+}) {
   return (
     <CopilotKit
-      agent={"new_project"}
+      agent={agent}
       runtimeUrl="/api/copilot"
       publicApiKey={process.env.NEXT_PUBLIC_COPILOT_API_KEY}
     >
