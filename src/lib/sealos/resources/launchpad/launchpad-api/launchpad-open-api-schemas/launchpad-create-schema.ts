@@ -1,0 +1,287 @@
+import { z } from "zod";
+
+// GPU resource configuration schema
+const GpuResourceSchema = z.object({
+  vendor: z.string().default("nvidia"),
+  type: z.string(),
+  amount: z.number().default(1),
+});
+
+// Resource configuration schema
+const ResourceSchema = z.object({
+  replicas: z.number().min(0).max(10).default(1),
+  cpu: z.number().default(200),
+  memory: z.number().default(256),
+  gpu: GpuResourceSchema.optional(),
+});
+
+// Port configuration schema (for create requests)
+const PortSchema = z.object({
+  port: z.number().default(80),
+  protocol: z.enum(["TCP", "UDP", "SCTP"]).default("TCP"),
+  appProtocol: z.enum(["HTTP", "GRPC", "WS"]).optional(),
+  exposesPublicDomain: z.boolean().default(true),
+});
+
+// Extended port schema (for GET responses with additional runtime fields)
+const ExtendedPortSchema = z.object({
+  serviceName: z.string().optional(),
+  port: z.number().default(80),
+  protocol: z.enum(["TCP", "UDP", "SCTP"]).default("TCP"),
+  appProtocol: z.enum(["HTTP", "GRPC", "WS"]).optional(),
+  exposesPublicDomain: z.boolean().default(true),
+  networkName: z.string().default("network-muqhstfkrung"),
+  portName: z.string().default("yakkrftqqfxg"),
+  publicDomain: z.string().default("mbyrxxkwqxms"),
+  domain: z.string().default(""),
+  customDomain: z.string().optional(),
+  nodePort: z.number().optional(),
+});
+
+// Environment variable schema
+const EnvSchema = z.object({
+  name: z.string(),
+  value: z.string().optional(),
+  valueFrom: z
+    .object({
+      secretKeyRef: z.object({
+        key: z.string(),
+        name: z.string(),
+      }),
+    })
+    .optional(),
+});
+
+// Horizontal Pod Autoscaler schema
+const HpaSchema = z.object({
+  target: z.enum(["cpu", "memory", "gpu"]),
+  value: z.number(),
+  minReplicas: z.number(),
+  maxReplicas: z.number(),
+});
+
+// Image registry schema
+const ImageRegistrySchema = z.object({
+  username: z.string(),
+  password: z.string(),
+  serverAddress: z.string(),
+});
+
+// Storage configuration schema
+const StorageSchema = z.object({
+  name: z.string(),
+  path: z.string(),
+  size: z.string().default("1Gi"),
+});
+
+// ConfigMap configuration schema (for create requests)
+const ConfigMapSchema = z.object({
+  path: z.string(),
+  value: z.string().optional(),
+});
+
+// Extended ConfigMap schema (for GET responses with additional fields)
+const ExtendedConfigMapSchema = z.object({
+  name: z.string(),
+  path: z.string(),
+  key: z.string().optional(),
+  value: z.string().optional(),
+});
+
+// Main request schema for creating launchpad application
+export const LaunchpadCreateRequestSchema = z.object({
+  name: z.string().default("hello-world"),
+  image: z.string().default("nginx"),
+  command: z.string().default(""),
+  args: z.string().default(""),
+  resource: ResourceSchema,
+  ports: z.array(PortSchema).default([
+    {
+      port: 80,
+      protocol: "TCP",
+      appProtocol: "HTTP",
+      exposesPublicDomain: true,
+    },
+  ]),
+  env: z.array(EnvSchema).default([]),
+  hpa: HpaSchema.nullable().default(null),
+  imageRegistry: ImageRegistrySchema.nullable().default(null),
+  storage: z.array(StorageSchema).default([]),
+  configMap: z.array(ConfigMapSchema).default([]),
+});
+
+// Success response schema
+export const LaunchpadCreateSuccessResponseSchema = z.object({
+  data: z.object({
+    message: z.string(),
+    name: z.string(),
+  }),
+});
+
+// Error response schema (400/500)
+export const LaunchpadCreateErrorResponseSchema = z.object({
+  code: z.number(),
+  message: z.string(),
+  data: z.string().optional(),
+  error: z.string().optional(),
+});
+
+// ============= GET /api/v1/app/{name} SCHEMAS =============
+
+// Extended resource schema for GET responses (with required fields)
+const ExtendedResourceSchema = z.object({
+  replicas: z.number(),
+  cpu: z.number(),
+  memory: z.number(),
+  gpu: GpuResourceSchema.optional(),
+});
+
+// GET response schema for application details
+export const LaunchpadGetResponseSchema = z.object({
+  data: z.object({
+    name: z.string(),
+    image: z.string(),
+    command: z.string().optional(),
+    args: z.string().optional(),
+    resource: ExtendedResourceSchema,
+    ports: z.array(ExtendedPortSchema),
+    env: z.array(EnvSchema).optional(),
+    hpa: HpaSchema.optional(),
+    imageRegistry: ImageRegistrySchema.optional(),
+    storage: z.array(StorageSchema).optional(),
+    configMap: z.array(ExtendedConfigMapSchema).optional(),
+    kind: z.enum(["deployment", "statefulset"]).optional(),
+    id: z.string(),
+    createTime: z.string(),
+    isPause: z.boolean(),
+  }),
+});
+
+// ============= PATCH /api/v1/app/{name} SCHEMAS =============
+
+// PATCH request schema (partial update)
+export const LaunchpadPatchRequestSchema = z.object({
+  resource: z
+    .object({
+      cpu: z.number().optional(),
+      memory: z.number().optional(),
+      replicas: z.number().min(0).optional(),
+    })
+    .optional(),
+  command: z.string().optional(),
+  args: z.string().optional(),
+  image: z.string().optional(),
+  env: z.array(EnvSchema).optional(),
+});
+
+// PATCH response schema
+export const LaunchpadPatchResponseSchema = z.object({
+  data: z.array(z.any()).nullable(),
+});
+
+// ============= DELETE /api/v1/app/{name} SCHEMAS =============
+
+// DELETE response schema
+export const LaunchpadDeleteResponseSchema = z.object({
+  message: z.string(),
+});
+
+// ============= GET /api/v1/pod/getAppPodsByAppName SCHEMAS =============
+
+// Pod status schema
+const PodStatusSchema = z.object({
+  label: z.string(),
+  value: z.string(),
+  color: z.string(),
+  reason: z.string().optional(),
+  message: z.string().optional(),
+});
+
+// Pod metrics schema
+const PodMetricsSchema = z.object({
+  name: z.string().optional(),
+  xData: z.array(z.number()),
+  yData: z.array(z.string()),
+});
+
+// Pod schema
+const PodSchema = z
+  .object({
+    name: z.string(),
+    status: PodStatusSchema,
+    nodeName: z.string(),
+    ip: z.string(),
+    restarts: z.number(),
+    age: z.string(),
+    cpuStats: PodMetricsSchema,
+    memoryStats: PodMetricsSchema,
+    cpu: z.number(),
+    memory: z.number(),
+    podReason: z.string().optional(),
+    podMessage: z.string().optional(),
+    containerStatus: PodStatusSchema,
+  })
+  .and(z.record(z.any())); // Allow additional properties
+
+// GET pods response schema
+export const LaunchpadGetPodsResponseSchema = z.object({
+  data: z.array(PodSchema),
+});
+
+// ============= POST /api/v1/pod/getPodsMetrics SCHEMAS =============
+
+// Pods metrics request schema
+export const LaunchpadPodsMetricsRequestSchema = z.object({
+  podsName: z.array(z.string()),
+});
+
+// Pods metrics response schema
+export const LaunchpadPodsMetricsResponseSchema = z.object({
+  data: z.any(), // Generic object as the schema doesn't specify structure
+});
+
+// Export types
+export type LaunchpadCreateRequest = z.infer<
+  typeof LaunchpadCreateRequestSchema
+>;
+export type LaunchpadCreateSuccessResponse = z.infer<
+  typeof LaunchpadCreateSuccessResponseSchema
+>;
+export type LaunchpadCreateErrorResponse = z.infer<
+  typeof LaunchpadCreateErrorResponseSchema
+>;
+export type LaunchpadGetResponse = z.infer<typeof LaunchpadGetResponseSchema>;
+export type LaunchpadPatchRequest = z.infer<typeof LaunchpadPatchRequestSchema>;
+export type LaunchpadPatchResponse = z.infer<
+  typeof LaunchpadPatchResponseSchema
+>;
+export type LaunchpadDeleteResponse = z.infer<
+  typeof LaunchpadDeleteResponseSchema
+>;
+export type LaunchpadGetPodsResponse = z.infer<
+  typeof LaunchpadGetPodsResponseSchema
+>;
+export type LaunchpadPodsMetricsRequest = z.infer<
+  typeof LaunchpadPodsMetricsRequestSchema
+>;
+export type LaunchpadPodsMetricsResponse = z.infer<
+  typeof LaunchpadPodsMetricsResponseSchema
+>;
+
+// Re-export individual schemas for flexibility
+export {
+  GpuResourceSchema,
+  ResourceSchema,
+  PortSchema,
+  ExtendedPortSchema,
+  EnvSchema,
+  HpaSchema,
+  ImageRegistrySchema,
+  StorageSchema,
+  ConfigMapSchema,
+  ExtendedConfigMapSchema,
+  ExtendedResourceSchema,
+  PodStatusSchema,
+  PodMetricsSchema,
+  PodSchema,
+};

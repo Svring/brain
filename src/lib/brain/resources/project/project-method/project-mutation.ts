@@ -5,6 +5,7 @@ import {
   usePatchResourceMetadataMutation,
   useApplyInstanceYamlMutation,
   useDeleteAllResourcesMutation,
+  useRemoveResourceMetadataMutation,
 } from "@/lib/k8s/k8s-method/k8s-mutation";
 import { getProjectRelatedResources } from "@/lib/brain/resources/project/project-method/project-relevance";
 import { PROJECT_DISPLAY_NAME_ANNOTATION_KEY } from "@/lib/brain/resources/project/project-constant/project-constant-annotation";
@@ -69,6 +70,37 @@ export const useAddToProjectMutation = (context: K8sApiContext) => {
     },
     onSuccess: (_, { name }) => {
       toast.success(`Resources added to project ${name}`);
+      queryClient.invalidateQueries({ queryKey: ["project"] });
+    },
+  });
+};
+
+/**
+ * Hook to remove project name label from multiple resources
+ */
+export const useRemoveFromProjectMutation = (context: K8sApiContext) => {
+  const queryClient = useQueryClient();
+  const removeMutation = useRemoveResourceMetadataMutation(context);
+
+  return useMutation({
+    mutationFn: async ({
+      resources,
+      name,
+    }: {
+      resources: (CustomResourceTarget | BuiltinResourceTarget)[];
+      name: string;
+    }) => {
+      // Remove project label from all targets completely
+      await removeMutation.mutateAsync({
+        target: resources,
+        metadataType: "labels",
+        key: INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS,
+      });
+
+      // Resources are now removed from project via labels only
+    },
+    onSuccess: (_, { name }) => {
+      toast.success(`Resources removed from project ${name}`);
       queryClient.invalidateQueries({ queryKey: ["project"] });
     },
   });

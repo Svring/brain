@@ -54,7 +54,6 @@ import { REACT_FLOW_CONFIG } from "@/lib/flowgraph/flowgraph-constant/flowgraph-
 // Floating UI Component
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  // const { handleRefresh, isRefreshing } = useFlowRefresh(projectName);
 
   return (
     <>
@@ -173,7 +172,7 @@ export default function ProjectPage({
     return () => {
       clearSelectedProject();
     };
-  }, [projectName, selectProject, clearSelectedProject]);
+  }, [projectName]);
 
   return (
     <FlowgraphProvider>

@@ -72,7 +72,7 @@ export const composeSshConnectionUri = (
 /**
  * Converts a devbox resource to a simplified list item with only essential fields
  * @param devboxResource - The full devbox K8s resource object
- * @returns A simplified devbox list item with only name, kind, status, and image
+ * @returns A simplified devbox list item with name, kind, status, image, and inProject
  */
 export const convertDevboxToSimplifiedList = (devboxResource: K8sResource) => {
   return {
@@ -80,6 +80,8 @@ export const convertDevboxToSimplifiedList = (devboxResource: K8sResource) => {
     kind: devboxResource.kind,
     status: devboxResource.status?.phase,
     image: devboxResource.spec?.image,
+    inProject:
+      devboxResource.metadata?.labels?.["cloud.sealos.io/deploy-on-sealos"],
   };
 };
 

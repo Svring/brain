@@ -1,7 +1,7 @@
 /**
  * Converts a cluster resource to a simplified list item with only essential fields
  * @param clusterResource - The full cluster K8s resource object
- * @returns A simplified cluster list item with name, kind, type, and status
+ * @returns A simplified cluster list item with name, kind, type, status, and inProject
  */
 export const convertClusterToSimplifiedList = (clusterResource: any) => {
   return {
@@ -9,6 +9,8 @@ export const convertClusterToSimplifiedList = (clusterResource: any) => {
     kind: clusterResource.kind,
     type: clusterResource.spec?.clusterDefinitionRef,
     status: clusterResource.status?.phase,
+    inProject:
+      clusterResource.metadata?.labels?.["cloud.sealos.io/deploy-on-sealos"],
   };
 };
 

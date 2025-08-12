@@ -3,10 +3,10 @@ import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/
 /**
  * Converts a statefulset resource to a simplified list item with only essential fields
  * @param statefulsetResource - The full statefulset K8s resource object
- * @returns A simplified statefulset list item with name, kind, image, and status
+ * @returns A simplified statefulset list item with name, kind, image, status, and inProject
  */
 export const convertStatefulsetToSimplifiedList = (
-  statefulsetResource: K8sResource
+  statefulsetResource: any
 ) => {
   const containers = statefulsetResource.spec?.template?.spec?.containers;
   const image =
@@ -22,6 +22,10 @@ export const convertStatefulsetToSimplifiedList = (
       replicas: statefulsetResource.status?.replicas,
       readyReplicas: statefulsetResource.status?.readyReplicas,
     },
+    inProject:
+      statefulsetResource.metadata?.labels?.[
+        "cloud.sealos.io/deploy-on-sealos"
+      ],
   };
 };
 

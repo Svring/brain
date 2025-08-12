@@ -1,7 +1,7 @@
 /**
  * Converts a deployment resource to a simplified list item with only essential fields
  * @param deploymentResource - The full deployment K8s resource object
- * @returns A simplified deployment list item with name, kind, image, and status
+ * @returns A simplified deployment list item with name, kind, image, status, and inProject
  */
 export const convertDeploymentToSimplifiedList = (deploymentResource: any) => {
   const containers = deploymentResource.spec?.template?.spec?.containers;
@@ -18,6 +18,8 @@ export const convertDeploymentToSimplifiedList = (deploymentResource: any) => {
       replicas: deploymentResource.status?.replicas,
       unavailableReplicas: deploymentResource.status?.unavailableReplicas,
     },
+    inProject:
+      deploymentResource.metadata?.labels?.["cloud.sealos.io/deploy-on-sealos"],
   };
 };
 

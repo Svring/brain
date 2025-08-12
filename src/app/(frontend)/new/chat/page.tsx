@@ -5,7 +5,6 @@ import { AiChatInput } from "@/components/chat/ai-input";
 import { AiMessages } from "@/components/chat/ai-messages";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
 import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
 
 import { createSealosContext } from "@/lib/auth/auth-utils";
@@ -15,26 +14,28 @@ import {
 } from "@/lib/sealos/resources/cluster/cluster-api/cluster-open-api";
 import { useEffect } from "react";
 import { runParallelAction } from "next-server-actions-parallel";
-import { useLanggraphAgentNewProject } from "@/hooks/langgraph/use-langgraph-agent";
 
 export default function ChatPage() {
   const { messages } = useCopilotChatHeadless_c();
   const hasMessages = messages.length > 0;
-  const router = useRouter();
 
   const context = createSealosContext();
 
   useCopilotActions();
-  
-  // useEffect(() => {
-  //   const fetchClusterVersions = async () => {
-  //     const clusterVersions = await runParallelAction(getClusterVersions(context));
-  //     const cluster = await runParallelAction(getCluster("affine-kssnwpeh-pg", context));
-  //     console.log(clusterVersions);
-  //     console.log(cluster);
-  //   };
-  //   fetchClusterVersions();
-  // }, []);
+
+  useEffect(() => {
+    const fetchClusterVersions = async () => {
+      const clusterVersions = await runParallelAction(
+        getClusterVersions(context)
+      );
+      const cluster = await runParallelAction(
+        getCluster("affine-kssnwpeh-pg", context)
+      );
+      console.log(clusterVersions);
+      console.log(cluster);
+    };
+    fetchClusterVersions();
+  }, []);
 
   return (
     <div className="relative h-screen w-full flex flex-col">
