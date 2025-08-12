@@ -10,34 +10,9 @@ import NodeMonitor from "../node-components/node-monitor";
 import DeploymentNodeTitle from "./deployment-node-title";
 import DeploymentNodeMenu from "./deployment-node-menu";
 import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-object-schema";
-import { useEffect, useMemo } from "react";
-import {
-  useFlowgraphActions,
-  useFlowgraphState,
-} from "@/contexts/flowgraph/flowgraph-context";
-import { convertPortsToIngressNodes } from "@/lib/flowgraph/nodes/flowgraph-nodes-utils";
 
-// TODO: The derived nodes caused inifinite call stack, need to investigate.
 export default function DeploymentNode({ data }: { data: DeploymentObject }) {
   const { name, image, status, ports, pods } = data;
-
-  const { nodes, edges } = useFlowgraphState();
-  const { setNodes, setEdges } = useFlowgraphActions();
-
-  // Build ingress nodes/edges derived from deployment ports
-  const derived = useMemo(() => {
-    return convertPortsToIngressNodes(ports, name, "Deployment", data, nodes, edges);
-  }, [ports, name, data, nodes, edges]);
-
-  // Minimal effect: commit derived nodes/edges once available
-  useEffect(() => {
-    const { newNodes, newEdges } = derived;
-    if ((newNodes.length || newEdges.length) && (nodes.length || edges.length)) {
-      if (newNodes.length) setNodes([...nodes, ...newNodes]);
-      if (newEdges.length) setEdges([...edges, ...newEdges]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [derived]);
 
   return (
     <BaseNode nodeData={data}>

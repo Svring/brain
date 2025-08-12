@@ -18,6 +18,7 @@ import useResourceObjects from "@/hooks/sealos/use-resource-objects";
 import useFlowgraphNodes from "@/hooks/flowgraph/use-flowgraph-nodes";
 import useResourceReliances from "@/hooks/sealos/use-resource-reliances";
 import useFlowgraphEdges from "@/hooks/flowgraph/use-flowgraph-edges";
+import { convertPortsToIngressNodes } from "@/lib/flowgraph/nodes/flowgraph-nodes-utils";
 
 // Custom types
 import edgeTypes from "@/components/flowgraph/edge/edge-types";
@@ -81,9 +82,30 @@ function ProjectFlow({ projectName }: { projectName: string }) {
   const { nodes, edges } = useFlowgraphState();
 
   useEffect(() => {
-    // Minimal effect: delegate layout to the state machine
-    setNodes(computedNodes);
-    setEdges(computedEdges);
+    // Generate ingress nodes and edges from ports of all resource nodes
+    let allNodes = [...computedNodes];
+    let allEdges = [...computedEdges];
+
+    // Process each computed node to extract ports and generate ingress nodes
+    for (const node of computedNodes) {
+      const { data } = node;
+      if (data && data.ports) {
+        const { newNodes, newEdges } = convertPortsToIngressNodes(
+          data.ports,
+          data.name,
+          data.kind,
+          data,
+          allNodes,
+          allEdges
+        );
+        allNodes = [...allNodes, ...newNodes];
+        allEdges = [...allEdges, ...newEdges];
+      }
+    }
+
+    // Set nodes and edges with ingress nodes included
+    setNodes(allNodes);
+    setEdges(allEdges);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [computedNodes, computedEdges]);
 
