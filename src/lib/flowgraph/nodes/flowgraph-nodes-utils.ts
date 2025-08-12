@@ -1,4 +1,4 @@
-import type { Node, Edge } from "@xyflow/react";
+import { Edge, MarkerType, Node } from "@xyflow/react";
 
 interface ResourceObject {
   name: string;
@@ -110,7 +110,8 @@ export const convertPortsToIngressNodes = (
         id: edgeId,
         source: resourceNodeId,
         target: ingressNodeId,
-        type: "step",
+        type: "floating",
+        markerEnd: { type: MarkerType.Arrow, width: 30, height: 30 },
         animated: true,
       });
     }

@@ -29,6 +29,8 @@ import AiCoin from "@/components/chat/ai-coin";
 import AiChatbox from "@/components/chat/ai-chatbox";
 import AddResourceTabs from "@/components/project/add-resource/add-resource-tabs";
 
+import FloatingConnectionLine from "@/components/flowgraph/edge/floating-connection-line";
+
 import { useProjectResources } from "@/hooks/brain/use-project-resources";
 import useResourceObjects from "@/hooks/sealos/use-resource-objects";
 import useFlowgraphNodes from "@/hooks/flowgraph/use-flowgraph-nodes";
@@ -143,6 +145,7 @@ function ProjectFlow({ projectName }: { projectName: string }) {
       panOnScroll
       snapToGrid
       snapGrid={REACT_FLOW_CONFIG.snapGrid}
+      connectionLineComponent={FloatingConnectionLine}
     >
       <Background
         gap={REACT_FLOW_CONFIG.background.gap}
