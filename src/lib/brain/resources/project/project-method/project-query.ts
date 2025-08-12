@@ -56,7 +56,7 @@ export const getProjectResourcesOptions = (
   ]
 ) => {
   return queryOptions({
-    queryKey: ["project", projectName],
+    queryKey: ["project", "resources", projectName],
     queryFn: async () => {
       const resources = await getProjectRelatedResources(
         context,

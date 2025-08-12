@@ -17,7 +17,11 @@ import { TemplateCard } from "./template-card";
 import { TemplateDetails } from "./template-details";
 import { createSealosContext } from "@/lib/auth/auth-utils";
 
-export default function CreateProject() {
+interface CreateProjectProps {
+  closeDialog?: () => void;
+}
+
+export default function CreateProject({ closeDialog }: CreateProjectProps) {
   const templateApiContext = createSealosContext();
 
   const {
@@ -106,6 +110,7 @@ export default function CreateProject() {
               key={template.metadata.name}
               onViewDetails={handleViewDetails}
               template={template}
+              closeDialog={closeDialog}
             />
           ))}
         </div>

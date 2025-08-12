@@ -4,6 +4,7 @@ import { MoreHorizontal, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import type React from "react";
+import { useDisclosure } from "@reactuses/core";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -23,12 +24,20 @@ interface ProjectCardProps {
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
   const context = createK8sContext();
+  const {
+    isOpen: isDropdownOpen,
+    onClose: closeDropdown,
+    onOpen: openDropdown,
+  } = useDisclosure();
 
   const deleteProjectMutation = useDeleteProjectMutation(context);
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // Close the dropdown menu immediately
+    closeDropdown();
 
     deleteProjectMutation.mutate(
       { name: project.name },
@@ -60,13 +69,17 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
       >
         {/* Triple dot menu */}
         <div className="absolute top-2 right-2">
-          <DropdownMenu>
+          <DropdownMenu
+            open={isDropdownOpen}
+            onOpenChange={(open) => !open && closeDropdown()}
+          >
             <DropdownMenuTrigger asChild>
               <Button
                 className="h-8 w-8 p-0 hover:bg-muted"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                  openDropdown();
                 }}
                 size="sm"
                 variant="ghost"

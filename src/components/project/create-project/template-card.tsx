@@ -9,9 +9,14 @@ import { useTemplateCard } from "@/hooks/template/use-template-card";
 export type TemplateCardProps = {
   template: TemplateResource;
   onViewDetails: (template: TemplateResource) => void;
+  closeDialog?: () => void;
 };
 
-export function TemplateCard({ template, onViewDetails }: TemplateCardProps) {
+export function TemplateCard({
+  template,
+  onViewDetails,
+  closeDialog,
+}: TemplateCardProps) {
   const {
     showInputDialog,
     setShowInputDialog,
@@ -19,7 +24,7 @@ export function TemplateCard({ template, onViewDetails }: TemplateCardProps) {
     isDeploying,
     handleDeploy,
     deployTemplate,
-  } = useTemplateCard(template);
+  } = useTemplateCard(template, closeDialog);
 
   return (
     <>

@@ -1,10 +1,13 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import type { TemplateResource } from "@/lib/sealos/resources/template/schemas/template-api-context-schemas";
 import { useCreateInstanceMutation } from "@/lib/sealos/resources/template/template-method/template-mutation";
 import { createTemplateApiContext } from "@/lib/auth/auth-utils";
 
-export function useTemplateCard(template: TemplateResource) {
+export function useTemplateCard(
+  template: TemplateResource,
+  closeDialog?: () => void
+) {
   const [showInputDialog, setShowInputDialog] = useState(false);
 
   const apiContext = createTemplateApiContext();
@@ -27,6 +30,10 @@ export function useTemplateCard(template: TemplateResource) {
             `${template.spec.title} has been deployed to your project.`
           );
           setShowInputDialog(false);
+          // Only call closeDialog if it was passed
+          if (closeDialog) {
+            closeDialog();
+          }
         },
         onError: (error: Error) => {
           toast.error(

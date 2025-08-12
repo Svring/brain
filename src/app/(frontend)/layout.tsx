@@ -79,7 +79,15 @@ export default async function RootLayout({
                 </AiProvider> */}
             </QueryProvider>
           </AuthProvider>
-          <Toaster position="top-center" toastOptions={{ duration: 1500 }} />
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              duration: 1500,
+              style: {
+                background: "bg-background-secondary",
+              },
+            }}
+          />
         </ThemeProvider>
       </body>
     </html>
