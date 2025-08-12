@@ -127,8 +127,8 @@ function ProjectFlow({ projectName }: { projectName: string }) {
     setEdges(finalEdges);
   }, [finalNodes, finalEdges]);
 
-  // Show loading state if nodes and edges are not ready
-  if (!nodes.length || !edges.length) {
+  // Show loading state only when resources exist but nodes haven't been computed yet
+  if (isLoading || (resources.length > 0 && !nodes.length)) {
     return (
       <div className="flex items-center justify-center h-full w-full">
         <TextShimmer className="font-mono text-md" duration={1.2}>
