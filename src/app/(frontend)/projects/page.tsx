@@ -4,16 +4,17 @@ import { Plus } from "lucide-react";
 import ProjectCard from "@/components/project/project-card";
 import { Button } from "@/components/ui/button";
 import { TextShimmer } from "@/components/ui/text-shimmer";
-import AiCoin from "@/components/chat/ai-coin";
-import AiChatbox from "@/components/chat/ai-chatbox";
+// import AiCoin from "@/components/chat/ai-coin";
+// import AiChatbox from "@/components/chat/ai-chatbox";
 import SearchBar from "@/components/ui/search-bar";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import useProjectSearch from "@/hooks/brain/use-projects-search";
+import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
 
 export default function Page() {
   const context = createK8sContext();
 
-  // const { openDialog, CreateProjectDialog } = useCreateProjectDialog();
+  const { openDialog, CreateProjectDialog } = useProjectCreateDialog();
 
   const { setSearchTerm, filteredProjects, isLoading, isError } =
     useProjectSearch(context);
@@ -34,9 +35,9 @@ export default function Page() {
               onSearchChange={setSearchTerm}
               placeholder="Search projects..."
             />
-            {/* <Button variant="ghost" onClick={openDialog}>
+            <Button variant="ghost" onClick={openDialog}>
               <Plus />
-            </Button> */}
+            </Button>
           </div>
         </div>
       </div>
@@ -69,9 +70,9 @@ export default function Page() {
         </div>
       </div>
 
-      <AiCoin />
-      <AiChatbox />
-      {/* <CreateProjectDialog /> */}
+      {/* <AiCoin />
+      <AiChatbox /> */}
+      <CreateProjectDialog />
     </div>
   );
 }

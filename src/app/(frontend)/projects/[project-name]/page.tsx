@@ -67,8 +67,6 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
 
 // Flow Component
 function ProjectFlow({ projectName }: { projectName: string }) {
-  const context = createK8sContext();
-
   const { resources, isLoading, error } = useProjectResources(projectName);
   const { resourceObjects } = useResourceObjects(resources ?? []);
   const { nodes } = useFlowgraphNodes(resourceObjects);
