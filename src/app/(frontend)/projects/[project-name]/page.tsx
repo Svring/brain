@@ -18,7 +18,6 @@ import useResourceObjects from "@/hooks/sealos/use-resource-objects";
 import useFlowgraphNodes from "@/hooks/flowgraph/use-flowgraph-nodes";
 import useResourceReliances from "@/hooks/sealos/use-resource-reliances";
 import useFlowgraphEdges from "@/hooks/flowgraph/use-flowgraph-edges";
-import { applyLayout } from "@/lib/flowgraph/layout/flowgraph-layout-utils";
 
 // Custom types
 import edgeTypes from "@/components/flowgraph/edge/edge-types";
@@ -82,11 +81,8 @@ function ProjectFlow({ projectName }: { projectName: string }) {
   const { nodes, edges } = useFlowgraphState();
 
   useEffect(() => {
-    // Apply layout and commit to state machine
-    const layoutNodes = applyLayout(computedNodes, computedEdges, {
-      direction: "BT",
-    });
-    setNodes(layoutNodes);
+    // Minimal effect: delegate layout to the state machine
+    setNodes(computedNodes);
     setEdges(computedEdges);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [computedNodes, computedEdges]);

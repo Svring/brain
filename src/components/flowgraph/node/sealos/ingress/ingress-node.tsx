@@ -2,23 +2,20 @@
 
 import BaseNode from "../../base-node-wrapper";
 import { useState } from "react";
-import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { cn } from "@/lib/utils";
 import {
   Network,
   Globe,
   Copy,
-  CircleQuestionMark,
+  HelpCircle,
   MoreHorizontal,
   PencilLine,
   HdmiPort,
   Trash2,
 } from "lucide-react";
-import useIngressNode from "@/hooks/sealos/ingress/use-ingress-node";
-import { createK8sContext } from "@/lib/auth/auth-utils";
 import { toast } from "sonner";
 import { useInterval } from "@reactuses/core";
-import { checkUrl } from "@/lib/sealos/ingress/ingress-method/ingress-utils";
+import { checkUrl } from "@/lib/sealos/resources/ingress/ingress-method/ingress-utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,30 +31,30 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+interface IngressObject {
+  number: number;
+  name: string;
+  nodePort: number;
+  protocol: string;
+  serviceName: string;
+  privateAddress: string;
+  publicAddress: string;
+}
+
 export default function IngressNode({
-  data: { target },
+  data,
 }: {
   data: {
-    target: BuiltinResourceTarget;
+    object: IngressObject;
+    parent: any;
   };
 }) {
-  const k8sContext = createK8sContext();
-  const { data, isLoading } = useIngressNode(k8sContext, target);
+  const { object } = data;
   const [urlAvailable, setUrlAvailable] = useState(false);
 
-  // Construct the URL from data (will be null if isLoading or no host)
-  const url =
-    !isLoading && data?.host
-      ? `${
-          data.protocol
-            ? data.protocol.toLowerCase() +
-              (data.layer === "application" ? "s" : "") +
-              "://"
-            : data.layer === "application"
-            ? "https://"
-            : ""
-        }${data.host}`
-      : null;
+  // Use public address if available, otherwise fall back to private address
+  const displayAddress = object.publicAddress || object.privateAddress;
+  const url = displayAddress;
 
   useInterval(
     async () => {
@@ -71,19 +68,8 @@ export default function IngressNode({
     { immediate: true }
   );
 
-  if (isLoading) {
-    return null;
-  }
-
-  const { layer, host, affiliation, protocol } = data;
-
-  if (!url) {
-    return null;
-  }
-
   return (
     <BaseNode
-      target={target}
       nodeData={data}
       className={cn("p-4 h-27", !urlAvailable && "bg-theme-yellow/10")}
     >
@@ -138,20 +124,20 @@ export default function IngressNode({
           </DropdownMenu>
         </div>
 
-        {/* Layer and Host */}
+        {/* Service and Port Information */}
         <div className="flex items-center gap-2 mt-2">
           {urlAvailable ? (
             <Globe
               className={cn(
                 "h-4 w-4",
-                layer === "application" ? "text-theme-green" : "text-theme-blue"
+                object.protocol === "TCP" ? "text-theme-blue" : "text-theme-green"
               )}
             />
           ) : (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <CircleQuestionMark className="h-4 w-4 text-theme-yellow cursor-pointer" />
+                  <HelpCircle className="h-4 w-4 text-theme-yellow cursor-pointer" />
                 </TooltipTrigger>
                 <TooltipContent className="bg-background-secondary">
                   <p>Diagnose with ai</p>
@@ -159,57 +145,48 @@ export default function IngressNode({
               </Tooltip>
             </TooltipProvider>
           )}
-          {host ? (
-            <div className="flex items-center gap-1 flex-1 min-w-0">
-              {layer === "application" ? (
-                <>
-                  <span
-                    className={cn(
-                      "text-sm truncate transition-colors",
-                      urlAvailable
-                        ? "text-foreground cursor-pointer hover:text-foreground"
-                        : "text-muted-foreground cursor-not-allowed"
-                    )}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      window.open(url!, "_blank");
-                    }}
-                  >
-                    {url}
-                  </span>
-                  <Copy
-                    className="h-4 w-4 hover:text-foreground cursor-pointer transition-colors flex-shrink-0"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      navigator.clipboard.writeText(url!);
-                      toast("URL copied to clipboard");
-                    }}
-                  />
-                </>
-              ) : (
-                <span
-                  className={cn(
-                    "text-sm truncate transition-colors",
-                    urlAvailable
-                      ? "text-foreground cursor-pointer hover:text-foreground"
-                      : "text-muted-foreground cursor-not-allowed"
-                  )}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    navigator.clipboard.writeText(url!);
-                    toast("URL copied to clipboard");
-                  }}
-                >
-                  {url}
-                </span>
+          
+          <div className="flex items-center gap-1 flex-1 min-w-0">
+            <span className="text-sm text-muted-foreground">
+              {object.serviceName}:{object.number}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              (NodePort: {object.nodePort})
+            </span>
+          </div>
+        </div>
+
+        {/* Address Display */}
+        <div className="flex items-center gap-2 mt-2">
+          <Globe className="h-4 w-4 text-muted-foreground" />
+          <div className="flex items-center gap-1 flex-1 min-w-0">
+            <span
+              className={cn(
+                "text-sm truncate transition-colors",
+                urlAvailable
+                  ? "text-foreground cursor-pointer hover:text-foreground"
+                  : "text-muted-foreground cursor-not-allowed"
               )}
-            </div>
-          ) : (
-            <span className="text-sm text-muted-foreground">No host</span>
-          )}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (urlAvailable) {
+                  window.open(url, "_blank");
+                }
+              }}
+            >
+              {displayAddress}
+            </span>
+            <Copy
+              className="h-4 w-4 hover:text-foreground cursor-pointer transition-colors flex-shrink-0"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                navigator.clipboard.writeText(displayAddress);
+                toast("Address copied to clipboard");
+              }}
+            />
+          </div>
         </div>
       </div>
     </BaseNode>

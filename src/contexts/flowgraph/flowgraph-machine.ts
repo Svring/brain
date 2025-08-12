@@ -2,6 +2,9 @@
 
 import { assign, createMachine } from "xstate";
 import type { Edge, Node } from "@xyflow/react";
+import { applyLayout } from "@/lib/flowgraph/layout/flowgraph-layout-utils";
+
+const LAYOUT_OPTIONS = { direction: "BT" } as const;
 
 export interface FlowgraphContext {
   nodes: Node[];
@@ -40,26 +43,48 @@ export const flowgraphMachine = createMachine({
   },
   on: {
     SET_NODES: {
-      actions: assign({ nodes: ({ event }) => event.nodes }),
+      actions: assign({
+        nodes: ({ context, event }) =>
+          applyLayout(event.nodes, context.edges, LAYOUT_OPTIONS),
+      }),
     },
     SET_EDGES: {
-      actions: assign({ edges: ({ event }) => event.edges }),
+      actions: assign({
+        edges: ({ event }) => event.edges,
+        nodes: ({ context, event }) =>
+          applyLayout(context.nodes, event.edges, LAYOUT_OPTIONS),
+      }),
     },
     ADD_NODE: {
       actions: assign({
-        nodes: ({ context, event }) => [...context.nodes, event.node],
+        nodes: ({ context, event }) =>
+          applyLayout(
+            [...context.nodes, event.node],
+            context.edges,
+            LAYOUT_OPTIONS
+          ),
       }),
     },
     ADD_EDGE: {
       actions: assign({
         edges: ({ context, event }) => [...context.edges, event.edge],
+        nodes: ({ context, event }) =>
+          applyLayout(
+            context.nodes,
+            [...context.edges, event.edge],
+            LAYOUT_OPTIONS
+          ),
       }),
     },
     UPDATE_NODE: {
       actions: assign({
         nodes: ({ context, event }) =>
-          context.nodes.map((n) =>
-            n.id === event.node.id ? { ...n, ...event.node } : n
+          applyLayout(
+            context.nodes.map((n) =>
+              n.id === event.node.id ? { ...n, ...event.node } : n
+            ),
+            context.edges,
+            LAYOUT_OPTIONS
           ),
       }),
     },
@@ -69,31 +94,65 @@ export const flowgraphMachine = createMachine({
           context.edges.map((e) =>
             e.id === event.edge.id ? { ...e, ...event.edge } : e
           ),
+        nodes: ({ context, event }) =>
+          applyLayout(
+            context.nodes,
+            context.edges.map((e) =>
+              e.id === event.edge.id ? { ...e, ...event.edge } : e
+            ),
+            LAYOUT_OPTIONS
+          ),
       }),
     },
     REMOVE_NODE: {
       actions: assign({
         nodes: ({ context, event }) =>
-          context.nodes.filter((n) => n.id !== event.id),
+          applyLayout(
+            context.nodes.filter((n) => n.id !== event.id),
+            context.edges,
+            LAYOUT_OPTIONS
+          ),
       }),
     },
     REMOVE_EDGE: {
       actions: assign({
         edges: ({ context, event }) =>
           context.edges.filter((e) => e.id !== event.id),
+        nodes: ({ context, event }) =>
+          applyLayout(
+            context.nodes,
+            context.edges.filter((e) => e.id !== event.id),
+            LAYOUT_OPTIONS
+          ),
       }),
     },
     SELECT_NODE: {
-      actions: assign({ selectedNode: ({ event }) => event.node }),
+      actions: assign({
+        selectedNode: ({ event }) => event.node,
+        nodes: ({ context }) =>
+          applyLayout(context.nodes, context.edges, LAYOUT_OPTIONS),
+      }),
     },
     SELECT_EDGE: {
-      actions: assign({ selectedEdge: ({ event }) => event.edge }),
+      actions: assign({
+        selectedEdge: ({ event }) => event.edge,
+        nodes: ({ context }) =>
+          applyLayout(context.nodes, context.edges, LAYOUT_OPTIONS),
+      }),
     },
     CLEAR_SELECTED_NODE: {
-      actions: assign({ selectedNode: () => null }),
+      actions: assign({
+        selectedNode: () => null,
+        nodes: ({ context }) =>
+          applyLayout(context.nodes, context.edges, LAYOUT_OPTIONS),
+      }),
     },
     CLEAR_SELECTED_EDGE: {
-      actions: assign({ selectedEdge: () => null }),
+      actions: assign({
+        selectedEdge: () => null,
+        nodes: ({ context }) =>
+          applyLayout(context.nodes, context.edges, LAYOUT_OPTIONS),
+      }),
     },
   },
 });
