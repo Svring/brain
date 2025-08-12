@@ -2,7 +2,7 @@ import { ConnectionLineType, BackgroundVariant } from "@xyflow/react";
 
 export const REACT_FLOW_CONFIG = {
   connectionLineType: ConnectionLineType.SmoothStep,
-  snapGrid: [20, 20] as [number, number],
+  snapGrid: [10, 10] as [number, number],
   fitViewOptions: {
     padding: 0.1,
     includeHiddenNodes: false,

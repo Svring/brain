@@ -5,6 +5,8 @@ import { useMachine } from "@xstate/react";
 import { createContext, type ReactNode, useContext } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import { flowgraphMachine } from "@/contexts/flowgraph/flowgraph-machine";
+import type { Edge, Node, EdgeChange, NodeChange } from "@xyflow/react";
+import { applyEdgeChanges, applyNodeChanges } from "@xyflow/react";
 
 // const inspector = createBrowserInspector();
 
@@ -49,21 +51,25 @@ export function useFlowgraphState() {
 }
 
 export function useFlowgraphActions() {
-  const { send } = useFlowgraphContext();
+  const { state, send } = useFlowgraphContext();
 
   return {
-    setNodes: (nodes: Array<{ id: string }>) => send({ type: "SET_NODES", nodes }),
-    setEdges: (edges: Array<{ id: string }>) => send({ type: "SET_EDGES", edges }),
-    addNode: (node: { id: string }) => send({ type: "ADD_NODE", node }),
-    addEdge: (edge: { id: string }) => send({ type: "ADD_EDGE", edge }),
-    updateNode: (node: { id: string }) => send({ type: "UPDATE_NODE", node }),
-    updateEdge: (edge: { id: string }) => send({ type: "UPDATE_EDGE", edge }),
+    setNodes: (nodes: Node[]) => send({ type: "SET_NODES", nodes }),
+    setEdges: (edges: Edge[]) => send({ type: "SET_EDGES", edges }),
+    addNode: (node: Node) => send({ type: "ADD_NODE", node }),
+    addEdge: (edge: Edge) => send({ type: "ADD_EDGE", edge }),
+    updateNode: (node: Node) => send({ type: "UPDATE_NODE", node }),
+    updateEdge: (edge: Edge) => send({ type: "UPDATE_EDGE", edge }),
     removeNode: (id: string) => send({ type: "REMOVE_NODE", id }),
     removeEdge: (id: string) => send({ type: "REMOVE_EDGE", id }),
     selectNode: (node: unknown) => send({ type: "SELECT_NODE", node }),
     selectEdge: (edge: unknown) => send({ type: "SELECT_EDGE", edge }),
     clearSelectedNode: () => send({ type: "CLEAR_SELECTED_NODE" }),
     clearSelectedEdge: () => send({ type: "CLEAR_SELECTED_EDGE" }),
+    onNodesChange: (changes: NodeChange[]) =>
+      send({ type: "SET_NODES", nodes: applyNodeChanges(changes, state.context.nodes) }),
+    onEdgesChange: (changes: EdgeChange[]) =>
+      send({ type: "SET_EDGES", edges: applyEdgeChanges(changes, state.context.edges) }),
   };
 }
 

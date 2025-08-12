@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { SealosApiContextSchema } from "@/lib/sealos/sealos-api-context-schema";
 import { runParallelAction } from "next-server-actions-parallel";
+import { CopilotProvider } from "@/components/provider/copilot-provider";
 
 const createSealosContext = async () => {
   const cookieStore = await cookies();
@@ -29,7 +30,7 @@ export default async function ChatLayout({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      {children}
+      <CopilotProvider agent="ai">{children}</CopilotProvider>
     </HydrationBoundary>
   );
 }

@@ -1,20 +1,7 @@
 "use client";
 
 import { assign, createMachine } from "xstate";
-
-export interface Node {
-  id: string;
-  data?: unknown;
-  [key: string]: unknown;
-}
-
-export interface Edge {
-  id: string;
-  source?: string;
-  target?: string;
-  data?: unknown;
-  [key: string]: unknown;
-}
+import type { Edge, Node } from "@xyflow/react";
 
 export interface FlowgraphContext {
   nodes: Node[];
@@ -59,28 +46,42 @@ export const flowgraphMachine = createMachine({
       actions: assign({ edges: ({ event }) => event.edges }),
     },
     ADD_NODE: {
-      actions: assign({ nodes: ({ context, event }) => [...context.nodes, event.node] }),
+      actions: assign({
+        nodes: ({ context, event }) => [...context.nodes, event.node],
+      }),
     },
     ADD_EDGE: {
-      actions: assign({ edges: ({ context, event }) => [...context.edges, event.edge] }),
+      actions: assign({
+        edges: ({ context, event }) => [...context.edges, event.edge],
+      }),
     },
     UPDATE_NODE: {
       actions: assign({
         nodes: ({ context, event }) =>
-          context.nodes.map((n) => (n.id === event.node.id ? { ...n, ...event.node } : n)),
+          context.nodes.map((n) =>
+            n.id === event.node.id ? { ...n, ...event.node } : n
+          ),
       }),
     },
     UPDATE_EDGE: {
       actions: assign({
         edges: ({ context, event }) =>
-          context.edges.map((e) => (e.id === event.edge.id ? { ...e, ...event.edge } : e)),
+          context.edges.map((e) =>
+            e.id === event.edge.id ? { ...e, ...event.edge } : e
+          ),
       }),
     },
     REMOVE_NODE: {
-      actions: assign({ nodes: ({ context, event }) => context.nodes.filter((n) => n.id !== event.id) }),
+      actions: assign({
+        nodes: ({ context, event }) =>
+          context.nodes.filter((n) => n.id !== event.id),
+      }),
     },
     REMOVE_EDGE: {
-      actions: assign({ edges: ({ context, event }) => context.edges.filter((e) => e.id !== event.id) }),
+      actions: assign({
+        edges: ({ context, event }) =>
+          context.edges.filter((e) => e.id !== event.id),
+      }),
     },
     SELECT_NODE: {
       actions: assign({ selectedNode: ({ event }) => event.node }),
@@ -96,5 +97,3 @@ export const flowgraphMachine = createMachine({
     },
   },
 });
-
-

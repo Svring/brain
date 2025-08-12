@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, use } from "react";
+import { useState, use, useEffect } from "react";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 
 // React Flow imports
@@ -8,7 +8,7 @@ import { Background, ReactFlow, ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
 // Custom component imports
-import { ProjectHeader } from "@/components/project/project-header";
+import { FlowgraphHeader } from "@/components/flowgraph/flowgraph-header";
 import { TextShimmer } from "@/components/ui/text-shimmer";
 import AiCoin from "@/components/chat/ai-coin";
 import AiChatbox from "@/components/chat/ai-chatbox";
@@ -26,6 +26,10 @@ import nodeTypes from "@/components/flowgraph/node/node-types";
 
 // Flow context
 import { FlowgraphProvider } from "@/contexts/flowgraph/flowgraph-context";
+import {
+  useFlowgraphActions,
+  useFlowgraphState,
+} from "@/contexts/flowgraph/flowgraph-context";
 
 // Constants
 import { REACT_FLOW_CONFIG } from "@/lib/flowgraph/flowgraph-constant/flowgraph-constant-config";
@@ -37,7 +41,7 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
 
   return (
     <>
-      <ProjectHeader projectName={projectName} />
+      <FlowgraphHeader projectName={projectName} />
       {/* <ProjectActions
         onAddNew={() => setOpen(true)}
         onRefresh={handleRefresh}
@@ -69,33 +73,34 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
 function ProjectFlow({ projectName }: { projectName: string }) {
   const { resources, isLoading, error } = useProjectResources(projectName);
   const { resourceObjects } = useResourceObjects(resources ?? []);
-  const { nodes } = useFlowgraphNodes(resourceObjects);
+  const { nodes: computedNodes } = useFlowgraphNodes(resourceObjects);
   const { reliances } = useResourceReliances(resourceObjects);
-  const { edges } = useFlowgraphEdges(reliances);
+  const { edges: computedEdges } = useFlowgraphEdges(reliances);
 
-  // console.log("resourceObjects", resourceObjects);
-  // console.log("nodes", nodes);
-  // console.log("reliances", reliances);
-  // console.log("edges", edges);
+  const { setNodes, setEdges, onNodesChange, onEdgesChange } =
+    useFlowgraphActions();
+  const { nodes, edges } = useFlowgraphState();
 
-  const layoutNodes = applyLayout(nodes, edges, {
-    direction: "BT",
-  });
+  useEffect(() => {
+    // Apply layout and commit to state machine
+    const layoutNodes = applyLayout(computedNodes, computedEdges, {
+      direction: "BT",
+    });
+    setNodes(layoutNodes);
+    setEdges(computedEdges);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [computedNodes, computedEdges]);
 
-  // const { expandedResources, isLoading: isLoadingResources } =
-  //   useBrainProjectResources(projectName);
-
-  // if (isLoadingResources) {
-  //   return (
-  //     <div className="flex items-center justify-center h-full w-full">
-  //       <TextShimmer className="font-mono text-md" duration={1.2}>
-  //         Loading project resources...
-  //       </TextShimmer>
-  //     </div>
-  //   );
-  // }
-
-  // console.log("data", expandedResources);
+  // Show loading state if nodes and edges are not ready
+  if (!nodes.length || !edges.length) {
+    return (
+      <div className="flex items-center justify-center h-full w-full">
+        <TextShimmer className="font-mono text-md" duration={1.2}>
+          Loading flowgraph...
+        </TextShimmer>
+      </div>
+    );
+  }
 
   return (
     <ReactFlow
@@ -104,13 +109,10 @@ function ProjectFlow({ projectName }: { projectName: string }) {
       edgeTypes={edgeTypes}
       fitView
       fitViewOptions={REACT_FLOW_CONFIG.fitViewOptions}
-      nodes={layoutNodes}
+      nodes={nodes}
       nodeTypes={nodeTypes}
-      // onEdgesChange={onEdgesChange}
-      // onNodesChange={onNodesChange}
-      // onNodeClick={onNodeClick}
-      // onNodeDragStart={handleNodeDragStart}
-      // onNodeDragStop={handleNodeDragStop}
+      onEdgesChange={onEdgesChange}
+      onNodesChange={onNodesChange}
       panOnScroll
       snapToGrid
       snapGrid={REACT_FLOW_CONFIG.snapGrid}

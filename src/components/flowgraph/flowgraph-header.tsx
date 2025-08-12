@@ -3,7 +3,7 @@
 import { ArrowLeft, Edit2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { MenuBar, MenuBarItem } from "./menu-bar";
+import { MenuBar, MenuBarItem } from "../project/menu-bar";
 import { getProjectOptions } from "@/lib/brain/resources/project/project-method/project-query";
 import { useUpdateProjectNameMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
 import { useQuery } from "@tanstack/react-query";
@@ -11,11 +11,11 @@ import { createK8sContext } from "@/lib/auth/auth-utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-interface ProjectHeaderProps {
+interface FlowgraphHeaderProps {
   projectName: string;
 }
 
-export function ProjectHeader({ projectName }: ProjectHeaderProps) {
+export function FlowgraphHeader({ projectName }: FlowgraphHeaderProps) {
   const router = useRouter();
   const context = createK8sContext();
   const { data: project } = useQuery(getProjectOptions(context, projectName));
@@ -27,8 +27,6 @@ export function ProjectHeader({ projectName }: ProjectHeaderProps) {
   if (!project) {
     return null;
   }
-
-  console.log("project", project);
 
   const projectDisplayName = project.displayName;
 
