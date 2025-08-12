@@ -14,9 +14,7 @@ import {
 import { getSshConnectionInfo } from "@/lib/sealos/resources/devbox/devbox-api/devbox-old-api";
 import { DevboxApiContext } from "../devbox-api/devbox-open-api-schemas";
 import { getDevboxReleases } from "../devbox-api/devbox-open-api";
-import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
-import { DEVBOX_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
-import { getRelatedResources } from "@/lib/sealos/services/relevance/relevance-utils";
+import { convertDevboxListToSimplified } from "./devbox-utils";
 
 export const getDevbox = async (
   context: K8sApiContext,
@@ -34,13 +32,7 @@ export const listDevbox = async (context: K8sApiContext) => {
   const devboxResourceList = await runParallelAction(
     listCustomResources(context, target)
   );
-  const devboxTargetList = devboxResourceList.items.map((item) =>
-    CustomResourceTargetSchema.parse(convertResourceToTarget(item))
-  );
-  const devboxPromises = devboxTargetList.map(
-    async (target) => await getDevbox(context, target)
-  );
-  return await Promise.all(devboxPromises);
+  return convertDevboxListToSimplified(devboxResourceList.items);
 };
 
 export const getDevboxSshInfo = async (

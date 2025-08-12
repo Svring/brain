@@ -15,6 +15,7 @@ import { buildQueryKey } from "@/lib/k8s/k8s-constant/k8s-constant-query-key";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import { DEPLOYMENT_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
 import { getRelatedResources } from "@/lib/sealos/services/relevance/relevance-utils";
+import { convertDeploymentListToSimplified } from "./deployment-utils";
 
 export const getDeployment = async (
   context: K8sApiContext,
@@ -32,13 +33,7 @@ export const listDeployment = async (context: K8sApiContext) => {
   const deploymentResourceList = await runParallelAction(
     listBuiltinResources(context, target)
   );
-  const deploymentTargetList = deploymentResourceList.items.map((item) =>
-    BuiltinResourceTargetSchema.parse(convertResourceToTarget(item))
-  );
-  const deploymentPromises = deploymentTargetList.map(
-    async (target) => await getDeployment(context, target)
-  );
-  return await Promise.all(deploymentPromises);
+  return convertDeploymentListToSimplified(deploymentResourceList.items);
 };
 
 export const getDeploymentRelatedResources = async (

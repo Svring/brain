@@ -1,4 +1,5 @@
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
+import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 
 interface SshConfig {
   host: string | null;
@@ -66,4 +67,29 @@ export const composeSshConnectionUri = (
   const workingDir = encodeURIComponent(ssh.workingDir);
 
   return `${ide}://labring.devbox-aio?sshDomain=${`${userName}@${regionUrl}`}&sshPort=${sshPort}&base64PrivateKey=${base64PrivateKey}&sshHostLabel=${`${regionUrl}_${namespace}_${devboxName}`}&workingDir=${workingDir}&token=${token}`;
+};
+
+/**
+ * Converts a devbox resource to a simplified list item with only essential fields
+ * @param devboxResource - The full devbox K8s resource object
+ * @returns A simplified devbox list item with only name, kind, status, and image
+ */
+export const convertDevboxToSimplifiedList = (devboxResource: K8sResource) => {
+  return {
+    name: devboxResource.metadata?.name,
+    kind: devboxResource.kind,
+    status: devboxResource.status?.phase,
+    image: devboxResource.spec?.image,
+  };
+};
+
+/**
+ * Converts an array of devbox resources to a simplified list
+ * @param devboxResources - Array of full devbox resource objects
+ * @returns Array of simplified devbox list items
+ */
+export const convertDevboxListToSimplified = (
+  devboxResources: K8sResource[]
+) => {
+  return devboxResources.map(convertDevboxToSimplifiedList);
 };

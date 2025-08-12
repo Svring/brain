@@ -25,6 +25,7 @@ import _ from "lodash";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import { CLUSTER_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
 import { getRelatedResources } from "@/lib/sealos/services/relevance/relevance-utils";
+import { convertClusterListToSimplified } from "./cluster-utils";
 
 export const getCluster = async (
   context: K8sApiContext,
@@ -42,13 +43,7 @@ export const listCluster = async (context: K8sApiContext) => {
   const clusterResourceList = await runParallelAction(
     listCustomResources(context, target)
   );
-  const clusterTargetList = clusterResourceList.items.map((item) =>
-    CustomResourceTargetSchema.parse(convertResourceToTarget(item))
-  );
-  const clusterPromises = clusterTargetList.map(
-    async (target) => await getCluster(context, target)
-  );
-  return await Promise.all(clusterPromises);
+  return convertClusterListToSimplified(clusterResourceList.items);
 };
 
 export const getClusterBackupList = async (

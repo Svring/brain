@@ -14,6 +14,7 @@ import {
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import { STATEFULSET_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
 import { getRelatedResources } from "@/lib/sealos/services/relevance/relevance-utils";
+import { convertStatefulsetListToSimplified } from "./statefulset-utils";
 
 export const getStatefulSet = async (
   context: K8sApiContext,
@@ -31,13 +32,7 @@ export const listStatefulSet = async (context: K8sApiContext) => {
   const statefulSetResourceList = await runParallelAction(
     listBuiltinResources(context, target)
   );
-  const statefulSetTargetList = statefulSetResourceList.items.map((item) =>
-    BuiltinResourceTargetSchema.parse(convertResourceToTarget(item))
-  );
-  const statefulSetPromises = statefulSetTargetList.map(
-    async (target) => await getStatefulSet(context, target)
-  );
-  return await Promise.all(statefulSetPromises);
+  return convertStatefulsetListToSimplified(statefulSetResourceList.items);
 };
 
 export const getStatefulsetRelatedResources = async (

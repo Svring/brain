@@ -57,7 +57,7 @@ export const DeploymentObjectQuerySchema = z.object({
     .transform((status) => {
       return {
         replicas: status.replicas,
-        unavailableReplicas: status.unavailableReplicas,
+        readyReplicas: status.readyReplicas,
       };
     }),
   env: z

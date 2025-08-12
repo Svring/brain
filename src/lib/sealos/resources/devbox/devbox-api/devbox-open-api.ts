@@ -63,9 +63,9 @@ function createDevboxApi(context: DevboxApiContext) {
       ...(context.authorization
         ? { Authorization: context.authorization }
         : {}),
-      ...(context.authorizationBearer
-        ? { "Authorization-Bearer": context.authorizationBearer }
-        : {}),
+      // ...(context.authorizationBearer
+      //   ? { "Authorization-Bearer": context.authorizationBearer }
+      //   : {}),
     },
     httpsAgent: isDevelopment
       ? new https.Agent({ rejectUnauthorized: false })
@@ -82,9 +82,9 @@ function createAppApi(context: DevboxApiContext) {
       ...(context.authorization
         ? { Authorization: context.authorization }
         : {}),
-      ...(context.authorizationBearer
-        ? { "Authorization-Bearer": context.authorizationBearer }
-        : {}),
+      // ...(context.authorizationBearer
+      //   ? { "Authorization-Bearer": context.authorizationBearer }
+      //   : {}),
     },
   });
 }
