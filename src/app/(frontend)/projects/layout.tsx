@@ -5,6 +5,7 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 import { SealosApiContextSchema } from "@/lib/sealos/sealos-api-context-schema";
+import { ProjectProvider } from "@/contexts/project/project-context";
 // import { listTemplates } from "@/lib/sealos/template/template-api/template-old-api";
 // import { runParallelAction } from "next-server-actions-parallel";
 
@@ -27,7 +28,9 @@ export default async function ChatLayout({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      {children}
+      <ProjectProvider>
+        {children}
+      </ProjectProvider>
     </HydrationBoundary>
   );
 }

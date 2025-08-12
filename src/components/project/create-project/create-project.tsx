@@ -15,7 +15,10 @@ import { useTemplateSearch } from "@/hooks/template/use-template-search";
 import type { TemplateResource } from "@/lib/sealos/resources/template/schemas/template-api-context-schemas";
 import { TemplateCard } from "./template-card";
 import { TemplateDetails } from "./template-details";
-import { createSealosContext } from "@/lib/auth/auth-utils";
+import { createSealosContext, createK8sContext } from "@/lib/auth/auth-utils";
+import { useCreateProjectMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface CreateProjectProps {
   closeDialog?: () => void;
@@ -23,6 +26,7 @@ interface CreateProjectProps {
 
 export default function CreateProject({ closeDialog }: CreateProjectProps) {
   const templateApiContext = createSealosContext();
+  const k8sContext = createK8sContext();
 
   const {
     templates,
@@ -41,6 +45,32 @@ export default function CreateProject({ closeDialog }: CreateProjectProps) {
     categories,
     filteredTemplates,
   } = useTemplateSearch(templates);
+
+  const createProjectMutation = useCreateProjectMutation(k8sContext);
+
+  const generateProjectName = () => {
+    const timestamp = Date.now().toString(36);
+    const randomSuffix = Math.random().toString(36).substring(2, 6);
+    return `project-${timestamp}-${randomSuffix}`;
+  };
+
+  const handleCreateProject = () => {
+    const projectName = generateProjectName();
+    createProjectMutation.mutate(
+      { name: projectName },
+      {
+        onSuccess: () => {
+          toast.success(`Project "${projectName}" created successfully!`);
+          closeDialog?.();
+        },
+        onError: (error: Error) => {
+          toast.error(
+            error.message || "Failed to create project. Please try again."
+          );
+        },
+      }
+    );
+  };
 
   if (isLoading) {
     return (
@@ -76,6 +106,15 @@ export default function CreateProject({ closeDialog }: CreateProjectProps) {
               Select from available app templates.
             </p>
           </div>
+          <Button 
+            onClick={handleCreateProject} 
+            size="lg"
+            disabled={createProjectMutation.isPending}
+          >
+            {createProjectMutation.isPending
+              ? "Creating Project..."
+              : "Create Project"}
+          </Button>
         </div>
         <div className="my-4 flex items-end justify-between sm:my-0 sm:items-center">
           <div className="flex flex-col gap-4 sm:my-4 sm:flex-row">

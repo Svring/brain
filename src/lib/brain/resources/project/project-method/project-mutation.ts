@@ -11,6 +11,11 @@ import { PROJECT_DISPLAY_NAME_ANNOTATION_KEY } from "@/lib/brain/resources/proje
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { generateInstanceTemplate } from "@/lib/sealos/resources/instance/instance-method/instance-utils";
 import { convertInstanceToProject } from "./project-utils";
+import {
+  BuiltinResourceTarget,
+  CustomResourceTarget,
+} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { INSTANCE_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
 
 export const useCreateProjectMutation = (context: K8sApiContext) => {
   const queryClient = useQueryClient();
@@ -29,13 +34,42 @@ export const useCreateProjectMutation = (context: K8sApiContext) => {
     onSuccess: (data, { name }) => {
       toast.success(`project "${name}" created successfully`);
       queryClient.invalidateQueries({
-        queryKey: ["projects"],
+        queryKey: ["project"],
       });
     },
     onError: (error) => {
       console.log("error", error);
       toast.error("Failed to create project");
       throw error;
+    },
+  });
+};
+
+export const useAddToProjectMutation = (context: K8sApiContext) => {
+  const queryClient = useQueryClient();
+  const patchMutation = usePatchResourceMetadataMutation(context);
+
+  return useMutation({
+    mutationFn: async ({
+      resources,
+      name,
+    }: {
+      resources: (CustomResourceTarget | BuiltinResourceTarget)[];
+      name: string;
+    }) => {
+      // Add labels to all resources
+      await patchMutation.mutateAsync({
+        target: resources,
+        metadataType: "labels",
+        key: INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS,
+        value: name,
+      });
+
+      // Resources are now added to instance via labels only
+    },
+    onSuccess: (_, { name }) => {
+      toast.success(`Resources added to project ${name}`);
+      queryClient.invalidateQueries({ queryKey: ["project"] });
     },
   });
 };

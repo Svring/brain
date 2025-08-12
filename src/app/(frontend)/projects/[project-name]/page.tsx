@@ -3,6 +3,9 @@
 import { useState, use, useEffect } from "react";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 
+import { useDisclosure } from "@reactuses/core";
+import { useProjectActions } from "@/contexts/project/project-context";
+
 // React Flow imports
 import { Background, ReactFlow, ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -24,6 +27,7 @@ import { FlowgraphMenuActions } from "@/components/flowgraph/flowgraph-menu-acti
 import { TextShimmer } from "@/components/ui/text-shimmer";
 import AiCoin from "@/components/chat/ai-coin";
 import AiChatbox from "@/components/chat/ai-chatbox";
+import AddResourceTabs from "@/components/project/add-resource/add-resource-tabs";
 
 import { useProjectResources } from "@/hooks/brain/use-project-resources";
 import useResourceObjects from "@/hooks/sealos/use-resource-objects";
@@ -49,14 +53,14 @@ import { REACT_FLOW_CONFIG } from "@/lib/flowgraph/flowgraph-constant/flowgraph-
 
 // Floating UI Component
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
-  const [open, setOpen] = useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure();
   // const { handleRefresh, isRefreshing } = useFlowRefresh(projectName);
 
   return (
     <>
       <FlowgraphHeader projectName={projectName} />
-      <FlowgraphMenuActions onAddNew={() => setOpen(true)} />
-      <Sheet onOpenChange={setOpen} open={open}>
+      <FlowgraphMenuActions onAddNew={onOpen} />
+      <Sheet onOpenChange={onClose} open={isOpen}>
         <SheetContent className="w-[40vw]! max-w-none! fade-in-0 animate-in flex flex-col">
           <SheetHeader className="shrink-0">
             <SheetTitle>Add Resource</SheetTitle>
@@ -64,10 +68,9 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
               <SheetDescription />
             </VisuallyHidden>
           </SheetHeader>
-          {/* <Droppable
-            id="project-floating-ui"
-            className="flex-1 min-h-0 overflow-hidden"
-          ></Droppable> */}
+          <div className="flex-1 overflow-y-auto">
+            <AddResourceTabs />
+          </div>
         </SheetContent>
       </Sheet>
       <AiCoin />
@@ -158,8 +161,19 @@ export default function ProjectPage({
   params: Promise<{ "project-name": string }>;
 }) {
   const { "project-name": projectName } = use(params);
+  const { selectProject, clearSelectedProject } = useProjectActions();
 
   useCopilotActions();
+
+  useEffect(() => {
+    // Set the selected project when the component mounts
+    selectProject({ name: projectName });
+
+    // Cleanup: clear the selected project when the component unmounts
+    return () => {
+      clearSelectedProject();
+    };
+  }, [projectName, selectProject, clearSelectedProject]);
 
   return (
     <FlowgraphProvider>
