@@ -30,6 +30,7 @@ export function useCreateDevboxMutation(context: DevboxApiContext) {
     mutationFn: (request: DevboxCreateRequest) =>
       runParallelAction(createDevbox(request, context)),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project"] });
       queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
   });
@@ -41,6 +42,7 @@ export function useManageDevboxLifecycleMutation(context: DevboxApiContext) {
     mutationFn: (request: DevboxLifecycleRequest) =>
       runParallelAction(manageDevboxLifecycle(request, context)),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project"] });
       queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
   });
@@ -52,6 +54,7 @@ export function useDeleteDevboxMutation(context: DevboxApiContext) {
     mutationFn: (devboxName: string) =>
       runParallelAction(deleteDevbox(devboxName, context)),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project"] });
       queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
   });
@@ -63,6 +66,7 @@ export function useReleaseDevboxMutation(context: DevboxApiContext) {
     mutationFn: (request: DevboxReleaseRequest) =>
       runParallelAction(releaseDevbox(request, context)),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project"] });
       queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
   });
@@ -74,7 +78,8 @@ export function useDeployDevboxMutation(context: DevboxApiContext) {
     mutationFn: (request: DevboxDeployRequest) =>
       runParallelAction(deployDevbox(request, context)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["app"] });
+      queryClient.invalidateQueries({ queryKey: ["project"] });
+      queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
   });
 }
@@ -85,6 +90,7 @@ export function useCreateDevboxPortMutation(context: DevboxApiContext) {
     mutationFn: (request: DevboxPortCreateRequest) =>
       runParallelAction(createDevboxPort(request, context)),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project"] });
       queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
   });
@@ -96,6 +102,7 @@ export function useRemoveDevboxPortMutation(context: DevboxApiContext) {
     mutationFn: ({ devboxName, port }: { devboxName: string; port: number }) =>
       runParallelAction(removeDevboxPort(devboxName, port, context)),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project"] });
       queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
   });

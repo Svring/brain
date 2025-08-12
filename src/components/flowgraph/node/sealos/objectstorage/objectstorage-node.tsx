@@ -1,9 +1,6 @@
 "use client";
 
 import BaseNode from "../../base-node-wrapper";
-import { createK8sContext } from "@/lib/auth/auth-utils";
-import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import useObjectStorageNode from "@/hooks/sealos/objectstorage/use-objectstorage-node";
 import Image from "next/image";
 import { Globe, Copy } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
@@ -11,28 +8,19 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import ObjectStoragePolicyBadge from "./objectstorage-policy-badge";
 import ObjectStorageNodeMenu from "./objectstorage-node-menu";
-
-interface ObjectStorageNodeProps {
-  target: CustomResourceTarget;
-}
+import { ObjectStorageObject } from "@/lib/sealos/resources/objectstorage/objectstorage-schemas/objectstorage-object-schema";
 
 export default function ObjectStorageNode({
-  data: { target },
+  data,
 }: {
-  data: { target: CustomResourceTarget };
+  data: ObjectStorageObject;
 }) {
-  const context = createK8sContext();
-  const { data, isLoading } = useObjectStorageNode(context, target);
   const [staticHosting, setStaticHosting] = useState(false);
-
-  if (isLoading || !data) {
-    return null;
-  }
 
   const { name, policy } = data;
 
   return (
-    <BaseNode target={target} nodeData={data}>
+    <BaseNode nodeData={data}>
       <div className="flex h-full flex-col justify-between">
         <div className="flex flex-col gap-4">
           {/* Header with Name and Menu */}

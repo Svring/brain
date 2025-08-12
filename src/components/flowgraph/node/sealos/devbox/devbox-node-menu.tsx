@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,32 +14,24 @@ import {
   Trash2,
   PencilLine,
 } from "lucide-react";
-import { createK8sContext, createDevboxContext } from "@/lib/auth/auth-utils";
+import { createDevboxContext } from "@/lib/auth/auth-utils";
 import {
   useDeleteDevboxMutation,
   useManageDevboxLifecycleMutation,
-} from "@/lib/sealos/devbox/devbox-method/devbox-mutation";
-import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import useDevboxNode from "@/hooks/sealos/devbox/use-devbox-node";
+} from "@/lib/sealos/resources/devbox/devbox-method/devbox-mutation";
+import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 
 export default function DevboxNodeMenu({
-  target,
+  object,
 }: {
-  target: CustomResourceTarget;
+  object: DevboxObject;
 }) {
-  const k8sContext = createK8sContext();
   const devboxContext = createDevboxContext();
-
-  const { data, isLoading } = useDevboxNode(k8sContext, target);
 
   const deleteDevbox = useDeleteDevboxMutation(devboxContext);
   const manageDevboxLifecycle = useManageDevboxLifecycleMutation(devboxContext);
 
-  if (isLoading || !data) {
-    return null;
-  }
-
-  const { name: devboxName, status } = data;
+  const { name: devboxName, status } = object;
 
   return (
     <DropdownMenu>

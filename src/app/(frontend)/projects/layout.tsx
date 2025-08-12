@@ -5,8 +5,8 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 import { SealosApiContextSchema } from "@/lib/sealos/sealos-api-context-schema";
-import { listTemplates } from "@/lib/sealos/template/template-api/template-old-api";
-import { runParallelAction } from "next-server-actions-parallel";
+// import { listTemplates } from "@/lib/sealos/template/template-api/template-old-api";
+// import { runParallelAction } from "next-server-actions-parallel";
 
 const createSealosContext = async () => {
   const cookieStore = await cookies();

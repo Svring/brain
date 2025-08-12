@@ -37,7 +37,7 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
 
   return (
     <>
-      {/* <ProjectHeader projectName={projectName} /> */}
+      <ProjectHeader projectName={projectName} />
       {/* <ProjectActions
         onAddNew={() => setOpen(true)}
         onRefresh={handleRefresh}
@@ -73,10 +73,10 @@ function ProjectFlow({ projectName }: { projectName: string }) {
   const { reliances } = useResourceReliances(resourceObjects);
   const { edges } = useFlowgraphEdges(reliances);
 
-  console.log("resourceObjects", resourceObjects);
-  console.log("nodes", nodes);
-  console.log("reliances", reliances);
-  console.log("edges", edges);
+  // console.log("resourceObjects", resourceObjects);
+  // console.log("nodes", nodes);
+  // console.log("reliances", reliances);
+  // console.log("edges", edges);
 
   const layoutNodes = applyLayout(nodes, edges, {
     direction: "BT",

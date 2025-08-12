@@ -2,9 +2,7 @@
 
 import React from "react";
 import { Package } from "lucide-react";
-import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import BaseNode from "../../base-node-wrapper";
-import useDevboxNode from "@/hooks/sealos/devbox/use-devbox-node";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import { createDevboxContext } from "@/lib/auth/auth-utils";
 import NodeStatusLight from "../node-components/node-status-light";
@@ -15,24 +13,16 @@ import NodeInternalUrl from "../node-components/node-internal-url";
 import NodeMonitor from "../node-components/node-monitor";
 import NodeStack from "../node-components/node-stack";
 import DevboxNodeRelease from "./devbox-node-release";
+import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 
-export default function DevboxNode({
-  data: { target },
-}: {
-  data: { target: CustomResourceTarget };
-}) {
-  const context = createK8sContext();
-  const devboxContext = createDevboxContext();
-  const { data, isLoading } = useDevboxNode(context, target);
-
-  if (isLoading || !data) {
-    return null;
-  }
-
+export default function DevboxNode({ data }: { data: DevboxObject }) {
   const { name, image, status, ports, pods } = data;
 
+  const context = createK8sContext();
+  const devboxContext = createDevboxContext();
+
   const mainCard = (
-    <BaseNode target={target} nodeData={data}>
+    <BaseNode nodeData={data}>
       <div className="flex h-full flex-col gap-2 justify-between">
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
@@ -48,12 +38,11 @@ export default function DevboxNode({
             <DevboxNodeIde
               context={context}
               devboxContext={devboxContext}
-              target={target}
-              data={data}
+              object={data}
             />
 
             {/* Actions Dropdown Menu */}
-            <DevboxNodeMenu target={target} />
+            <DevboxNodeMenu object={data} />
           </div>
         </div>
 
@@ -80,7 +69,7 @@ export default function DevboxNode({
     </BaseNode>
   );
 
-  const subCard = <DevboxNodeRelease target={target} nodeData={data} />;
+  const subCard = <DevboxNodeRelease object={data} />;
 
   return <NodeStack mainCard={mainCard} subCard={subCard} />;
 }

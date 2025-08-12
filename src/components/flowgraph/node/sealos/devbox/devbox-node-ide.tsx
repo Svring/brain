@@ -9,27 +9,31 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
-import { DEVBOX_IDE } from "@/lib/sealos/devbox/devbox-constant-a";
-import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { composeSshConnectionUri } from "@/lib/sealos/devbox/devbox-method/devbox-utils";
-import { getDevboxSshInfo } from "@/lib/sealos/devbox/devbox-method/devbox-query";
+import { DEVBOX_IDE } from "@/lib/sealos/resources/devbox/devbox-constant-a";
+import { composeSshConnectionUri } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
+import { getDevboxSshInfo } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
+import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface DevboxNodeIdeProps {
   context: any;
   devboxContext: any;
-  target: CustomResourceTarget;
-  data: any;
+  object: DevboxObject;
   className?: string;
 }
 
 export default function DevboxNodeIde({
   context,
   devboxContext,
-  target,
-  data,
+  object,
   className = "",
 }: DevboxNodeIdeProps) {
   const [selectedIde, setSelectedIde] = useState<string>("vscode");
+
+  const target = CustomResourceTargetSchema.parse(
+    convertResourceTypeToTarget("devbox", object.name)
+  );
 
   return (
     <div
@@ -43,12 +47,12 @@ export default function DevboxNodeIde({
             // Fetch SSH info dynamically
             const token = await getDevboxSshInfo(devboxContext, target);
 
-            if (data.ssh) {
+            if (object.ssh) {
               const sshUri = composeSshConnectionUri(
                 selectedIde,
                 context,
-                data.ssh,
-                data.name,
+                object.ssh,
+                object.name,
                 token
               );
               window.open(sshUri, "_blank");

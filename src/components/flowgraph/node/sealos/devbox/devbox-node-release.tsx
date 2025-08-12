@@ -1,30 +1,26 @@
 "use client";
 
-import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import BaseNode from "../../base-node-wrapper";
 import { useQuery } from "@tanstack/react-query";
-import { getDevboxReleasesOptions } from "@/lib/sealos/devbox/devbox-method/devbox-query";
+import { getDevboxReleasesOptions } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
 import {
   useDeployDevboxMutation,
   useReleaseDevboxMutation,
   useDeleteDevboxReleaseMutation,
-} from "@/lib/sealos/devbox/devbox-method/devbox-mutation";
+} from "@/lib/sealos/resources/devbox/devbox-method/devbox-mutation";
 import { createDevboxContext } from "@/lib/auth/auth-utils";
 import DevboxNodeReleaseTitle from "./devbox-node-release-title";
 import DevboxNodeReleaseList from "./devbox-node-release-list";
 import { useState } from "react";
+import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 
 interface DevboxNodeReleaseProps {
-  target: CustomResourceTarget;
-  nodeData: any;
+  object: DevboxObject;
 }
 
-export default function DevboxNodeRelease({
-  target,
-  nodeData,
-}: DevboxNodeReleaseProps) {
+export default function DevboxNodeRelease({ object }: DevboxNodeReleaseProps) {
   const devboxContext = createDevboxContext();
-  const devboxName = target.name || "";
+  const devboxName = object.name || "";
   const [isExpanded, setIsExpanded] = useState(false);
 
   const { data: releases, isLoading } = useQuery(
@@ -71,7 +67,7 @@ export default function DevboxNodeRelease({
   };
 
   return (
-    <BaseNode target={target} nodeData={{}} expand={isExpanded}>
+    <BaseNode nodeData={{}} expand={isExpanded}>
       <div className="flex h-full flex-col gap-3 p-1">
         <DevboxNodeReleaseTitle
           releasesCount={releases?.data?.length || 0}
