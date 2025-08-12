@@ -28,7 +28,6 @@ interface ResourceReliances {
 export default function useResourceReliances(
   resourceObjects: ResourceObject[]
 ) {
-  console.log("resourceObjects", resourceObjects);
   const reliances = useMemo(() => {
     const result: ResourceReliances = {};
 

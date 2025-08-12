@@ -17,6 +17,8 @@ export default function ObjectStorageNode({
 }) {
   const [staticHosting, setStaticHosting] = useState(false);
 
+  console.log("data", data);
+
   const { name, policy } = data;
 
   return (

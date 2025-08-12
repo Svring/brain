@@ -8,6 +8,7 @@ import { getCluster } from "@/lib/sealos/resources/cluster/cluster-method/cluste
 import { getDevbox } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
 import { getDeployment } from "@/lib/sealos/resources/deployment/deployment-method/deployment-query";
 import { getStatefulSet } from "@/lib/sealos/resources/statefulset/statefulset-method/statefulset-query";
+import { getObjectStorage } from "@/lib/sealos/resources/objectstorage/objectstorage-method/objectstorage-query";
 
 export default function useResourceObjects(
   resources: (CustomResourceTarget | BuiltinResourceTarget)[]
@@ -50,6 +51,13 @@ export default function useResourceObjects(
           resource.type === "builtin" && resource.resourceType === "statefulset"
       );
 
+      // Filter and fetch object storage buckets
+      const objectStorageTargets = resources.filter(
+        (resource): resource is CustomResourceTarget =>
+          resource.type === "custom" &&
+          resource.resourceType === "objectstoragebucket"
+      );
+
       // Fetch all resources
       const clusterPromises = clusterTargets.map(async (target) =>
         getCluster(context, target)
@@ -67,11 +75,16 @@ export default function useResourceObjects(
         getStatefulSet(context, target)
       );
 
+      const objectStoragePromises = objectStorageTargets.map(async (target) =>
+        getObjectStorage(context, target)
+      );
+
       const allResults = await Promise.all([
         ...clusterPromises,
         ...devboxPromises,
         ...deploymentPromises,
         ...statefulsetPromises,
+        ...objectStoragePromises,
       ]);
 
       setFetchedObjects(allResults);
