@@ -14,15 +14,34 @@ import ClusterNodeTitle from "./cluster-node-title";
 import ClusterNodeMenu from "./cluster-node-menu";
 import ClusterNodeBackup from "./cluster-node-backup";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
+import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
+import { useChatActions } from "@/contexts/chat/chat-context";
+import { randomId } from "@copilotkit/shared";
 
 export default function ClusterNode({ data }: { data: ClusterObject }) {
   const [publicAccess, setPublicAccess] = useState(false);
+  const { sendMessage } = useCopilotChatHeadless_c();
+  const { openSidebarChat } = useChatActions();
 
   const { name, type, status, pods } = data;
 
+  const handleNodeClick = () => {
+    // Send a message about the cluster
+    sendMessage({
+      id: randomId(),
+      role: "user",
+      content: `Tell me about the cluster ${name} of type ${type}. What can I do with it?`,
+    });
+    // Open the sidebar chat
+    openSidebarChat();
+  };
+
   const mainCard = (
     <BaseNode nodeData={data}>
-      <div className="flex h-full flex-col gap-4 justify-between">
+      <div
+        className="flex h-full flex-col gap-4 justify-between"
+        onClick={handleNodeClick}
+      >
         {/* Header with Name and Menu */}
         <div className="flex items-center justify-between">
           <ClusterNodeTitle name={name} type={type} />

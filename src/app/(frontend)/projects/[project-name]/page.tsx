@@ -19,6 +19,7 @@ import useFlowgraphNodes from "@/hooks/flowgraph/use-flowgraph-nodes";
 import useResourceReliances from "@/hooks/sealos/use-resource-reliances";
 import useFlowgraphEdges from "@/hooks/flowgraph/use-flowgraph-edges";
 import { convertPortsToIngressNodes } from "@/lib/flowgraph/nodes/flowgraph-nodes-utils";
+import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
 
 // Custom types
 import edgeTypes from "@/components/flowgraph/edge/edge-types";
@@ -151,6 +152,8 @@ export default function ProjectPage({
   params: Promise<{ "project-name": string }>;
 }) {
   const { "project-name": projectName } = use(params);
+
+  useCopilotActions();
 
   return (
     <FlowgraphProvider>

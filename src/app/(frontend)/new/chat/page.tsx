@@ -25,8 +25,7 @@ export default function ChatPage() {
   const context = createSealosContext();
 
   useCopilotActions();
-  const newProjectAgent = useLanggraphAgentNewProject();
-
+  
   // useEffect(() => {
   //   const fetchClusterVersions = async () => {
   //     const clusterVersions = await runParallelAction(getClusterVersions(context));
