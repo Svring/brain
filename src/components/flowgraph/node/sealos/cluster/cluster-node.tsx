@@ -38,10 +38,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
 
   const mainCard = (
     <BaseNode nodeData={data}>
-      <div
-        className="flex h-full flex-col gap-4 justify-between"
-        onClick={handleNodeClick}
-      >
+      <div className="flex h-full flex-col gap-4 justify-between">
         {/* Header with Name and Menu */}
         <div className="flex items-center justify-between">
           <ClusterNodeTitle name={name} type={type} />

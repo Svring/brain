@@ -7,8 +7,20 @@ import { createK8sContext } from "@/lib/auth/auth-utils";
 import { Background, ReactFlow, ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
+// Shadcn UI imports
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+
 // Custom component imports
-import { FlowgraphHeader } from "@/components/flowgraph/flowgraph-header";
+import { FlowgraphHeader } from "@/components/flowgraph/flowgraph-menu-header";
+import { FlowgraphMenuActions } from "@/components/flowgraph/flowgraph-menu-actions";
 import { TextShimmer } from "@/components/ui/text-shimmer";
 import AiCoin from "@/components/chat/ai-coin";
 import AiChatbox from "@/components/chat/ai-chatbox";
@@ -43,12 +55,8 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
   return (
     <>
       <FlowgraphHeader projectName={projectName} />
-      {/* <ProjectActions
-        onAddNew={() => setOpen(true)}
-        onRefresh={handleRefresh}
-        isRefreshing={isRefreshing}
-      /> */}
-      {/* <Sheet onOpenChange={setOpen} open={open}>
+      <FlowgraphMenuActions onAddNew={() => setOpen(true)} />
+      <Sheet onOpenChange={setOpen} open={open}>
         <SheetContent className="w-[40vw]! max-w-none! fade-in-0 animate-in flex flex-col">
           <SheetHeader className="shrink-0">
             <SheetTitle>Add Resource</SheetTitle>
@@ -56,14 +64,12 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
               <SheetDescription />
             </VisuallyHidden>
           </SheetHeader>
-          <Droppable
+          {/* <Droppable
             id="project-floating-ui"
             className="flex-1 min-h-0 overflow-hidden"
-          >
-            <AddResourceTabs />
-          </Droppable>
+          ></Droppable> */}
         </SheetContent>
-      </Sheet> */}
+      </Sheet>
       <AiCoin />
       <AiChatbox />
     </>
