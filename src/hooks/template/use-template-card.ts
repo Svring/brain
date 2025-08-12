@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import type { TemplateResource } from "@/lib/sealos/resources/template/schemas/template-api-context-schemas";
 import { useCreateInstanceMutation } from "@/lib/sealos/resources/template/template-method/template-mutation";
@@ -14,14 +14,22 @@ export function useTemplateCard(
 
   const createInstanceMutation = useCreateInstanceMutation(apiContext);
 
-  // Check if template has required inputs or any inputs at all
-  const hasInputs =
-    template.spec.inputs && Object.keys(template.spec.inputs).length > 0;
+  // Check if template has required inputs or any inputs at all (memoized)
+  const hasInputs = useMemo(
+    () => template.spec.inputs && Object.keys(template.spec.inputs).length > 0,
+    [template.spec.inputs]
+  );
+
+  // Memoize template name to avoid repeated property access
+  const templateName = useMemo(
+    () => template.metadata.name,
+    [template.metadata.name]
+  );
 
   const deployTemplate = (templateForm?: Record<string, string>) => {
     createInstanceMutation.mutate(
       {
-        templateName: template.metadata.name,
+        templateName,
         templateForm,
       },
       {

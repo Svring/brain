@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type {
   ListTemplateResponse,
@@ -19,8 +19,10 @@ export function useTemplates(context: TemplateApiContext) {
     error,
   } = useQuery(listTemplatesOptions(context));
 
-  const templates =
-    (templatesResponse as ListTemplateResponse)?.data?.templates ?? [];
+  const templates = useMemo(
+    () => (templatesResponse as ListTemplateResponse)?.data?.templates ?? [],
+    [templatesResponse]
+  );
 
   const handleViewDetails = (template: TemplateResource) => {
     setSelectedTemplate(template);

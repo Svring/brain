@@ -16,6 +16,9 @@ export function useTemplateSearch(templates: TemplateResource[]) {
     return uniqueCategories;
   }, [templates]);
 
+  // Memoize lowercase search term to avoid repeated calls
+  const lowerSearchTerm = useMemo(() => searchTerm.toLowerCase(), [searchTerm]);
+
   // Filter templates based on search term and category
   const filteredTemplates = useMemo(() => {
     return templates.filter((template: TemplateResource) => {
@@ -27,15 +30,13 @@ export function useTemplateSearch(templates: TemplateResource[]) {
         return false;
       }
 
-      // Filter by search term
+      // Filter by search term (using memoized lowercase term)
       return (
-        template.spec.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        template.spec.description
-          ?.toLowerCase()
-          .includes(searchTerm.toLowerCase())
+        template.spec.title.toLowerCase().includes(lowerSearchTerm) ||
+        template.spec.description?.toLowerCase().includes(lowerSearchTerm)
       );
     });
-  }, [templates, searchTerm, selectedCategory]);
+  }, [templates, lowerSearchTerm, selectedCategory]);
 
   return {
     searchTerm,

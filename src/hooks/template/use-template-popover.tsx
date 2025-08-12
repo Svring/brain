@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { TemplateResource } from "@/lib/sealos/template/schemas/template-api-context-schemas";
 import { useAiState } from "@/contexts/ai/ai-context";
 import { useAiActions } from "@/contexts/ai/ai-context";
@@ -26,10 +26,9 @@ export function useTemplatePopover(template: TemplateResource) {
     // threadId: threadId,
   });
 
-  const handleAskAi = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-
-    const message = `Tell me more about the ${
+  // Memoize the message to avoid recomputing on every render
+  const aiMessage = useMemo(() => {
+    return `Tell me more about the ${
       template.spec.title
     } template. What does it do and how can I use it? Here are the details:\n\nTitle: ${
       template.spec.title
@@ -38,11 +37,15 @@ export function useTemplatePopover(template: TemplateResource) {
     }\nCategories: ${template.spec.categories?.join(", ") || "None"}${
       template.spec.author ? `\nAuthor: ${template.spec.author}` : ""
     }`;
+  }, [template]);
+
+  const handleAskAi = async (e: React.MouseEvent) => {
+    e.stopPropagation();
 
     openFloatingChat();
 
     submit({
-      messages: [{ type: "human", content: message }],
+      messages: [{ type: "human", content: aiMessage }],
       model: model,
       base_url: base_url,
       api_key: api_key,

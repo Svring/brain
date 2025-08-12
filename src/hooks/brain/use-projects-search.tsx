@@ -14,14 +14,20 @@ export default function useProjectSearch(context: K8sApiContext) {
     isError,
   } = useQuery(listProjectsOptions(context));
 
+  // Memoize lowercase search term to avoid repeated calls
+  const lowerSearchTerm = useMemo(
+    () => searchTerm.toLowerCase(),
+    [searchTerm]
+  );
+
   // Filter projects based on search term
   const filteredProjects = useMemo(() => {
     if (!projects?.length) return [];
 
     return projects.filter((project) =>
-      project.name.toLowerCase().includes(searchTerm.toLowerCase())
+      project.name.toLowerCase().includes(lowerSearchTerm)
     );
-  }, [projects, searchTerm]);
+  }, [projects, lowerSearchTerm]);
 
   return {
     searchTerm,
