@@ -32,8 +32,11 @@ const ResourceSchema = z.object({
 });
 
 const StatusSchema = z.object({
-  replicas: z.number(),
+  paused: z.boolean().optional(),
+  replicas: z.number().optional(),
   unavailableReplicas: z.number().optional(),
+  readyReplicas: z.number().optional(),
+  availableReplicas: z.number().optional(),
 });
 
 const PodSchema = z.object({

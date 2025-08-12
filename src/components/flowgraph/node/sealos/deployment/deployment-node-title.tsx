@@ -24,7 +24,7 @@ export default function DeploymentNodeTitle({ name }: DeploymentNodeTitleProps) 
             <span className="text-xs text-muted-foreground leading-none">
               App Launchpad
             </span>
-            <span className="text-lg font-bold text-foreground leading-tight truncate">
+            <span className="text-lg font-bold text-foreground leading-tight truncate w-full">
               {name.length > 8 ? `${name.slice(0, 8)}...` : name}
             </span>
           </span>

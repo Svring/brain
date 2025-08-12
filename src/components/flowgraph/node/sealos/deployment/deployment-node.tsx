@@ -14,6 +14,8 @@ import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-o
 export default function DeploymentNode({ data }: { data: DeploymentObject }) {
   const { name, image, status, ports, pods } = data;
 
+  console.log("data", data);
+
   return (
     <BaseNode nodeData={data}>
       <div className="flex h-full flex-col gap-2 justify-between">

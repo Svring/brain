@@ -18,32 +18,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https" as const,
-        hostname: "assets.example.com",
-        pathname: "/account123/**",
-      },
-      {
-        protocol: "https" as const,
-        hostname: "*.bja.sealos.run",
-        pathname: "/**",
-      },
-      {
-        protocol: "https" as const,
-        hostname: "*.hzh.sealos.run",
-        pathname: "/**",
-      },
-      {
-        protocol: "https" as const,
-        hostname: "*.gzg.sealos.run",
-        pathname: "/**",
-      },
-      {
-        protocol: "https" as const,
-        hostname: "*.usw.sealos.io",
-        pathname: "/**",
-      },
-      {
-        protocol: "https" as const,
-        hostname: "*.cloud.sealos.io",
+        hostname: "**", // Wildcard to allow all domains
         pathname: "/**",
       },
     ],

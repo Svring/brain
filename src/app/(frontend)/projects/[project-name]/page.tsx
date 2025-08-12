@@ -86,6 +86,8 @@ function ProjectFlow({ projectName }: { projectName: string }) {
   const { reliances } = useResourceReliances(resourceObjects);
   const { edges: computedEdges } = useFlowgraphEdges(reliances);
 
+  console.log("reliances", reliances);
+
   const { setNodes, setEdges, onNodesChange, onEdgesChange } =
     useFlowgraphActions();
   const { nodes, edges } = useFlowgraphState();

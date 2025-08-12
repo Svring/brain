@@ -28,6 +28,7 @@ interface ResourceReliances {
 export default function useResourceReliances(
   resourceObjects: ResourceObject[]
 ) {
+  console.log("resourceObjects", resourceObjects);
   const reliances = useMemo(() => {
     const result: ResourceReliances = {};
 
@@ -38,12 +39,8 @@ export default function useResourceReliances(
         resource.kind.toLowerCase() === "statefulset"
     );
 
-    // Filter potential dependency resources (all others)
-    const dependencyResources = resourceObjects.filter(
-      (resource) =>
-        resource.kind.toLowerCase() !== "deployment" &&
-        resource.kind.toLowerCase() !== "statefulset"
-    );
+    // All resources can be dependencies (including other deployments/statefulsets)
+    const dependencyResources = resourceObjects;
 
     for (const ownerResource of ownerResources) {
       const ownerKind = ownerResource.kind.toLowerCase();
@@ -77,6 +74,14 @@ export default function useResourceReliances(
 
         for (const depResource of dependencyResources) {
           const depName = depResource.name;
+
+          // Skip self-reference (a resource cannot depend on itself)
+          if (
+            depResource.name === ownerName &&
+            depResource.kind.toLowerCase() === ownerKind
+          ) {
+            continue;
+          }
 
           // Check if env value contains the dependency resource name
           if (envValue.includes(depName) && depName.length > bestMatchLength) {

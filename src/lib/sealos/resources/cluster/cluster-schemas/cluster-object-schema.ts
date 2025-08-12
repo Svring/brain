@@ -25,12 +25,12 @@ export const ClusterConnectionSchema = z.object({
 
 export const ClusterBackupSchema = z
   .object({
-    cronExpression: z.string(),
-    enabled: z.boolean(),
-    method: z.string(),
-    pitrEnabled: z.boolean(),
-    repoName: z.string(),
-    retentionPeriod: z.string(),
+    cronExpression: z.string().optional(),
+    enabled: z.boolean().optional(),
+    method: z.string().optional(),
+    pitrEnabled: z.boolean().optional(),
+    repoName: z.string().optional(),
+    retentionPeriod: z.string().optional(),
   })
   .optional();
 
