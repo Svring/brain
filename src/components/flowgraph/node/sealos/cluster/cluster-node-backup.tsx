@@ -1,6 +1,5 @@
 "use client";
 
-import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { getClusterBackupListOptions } from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
 import { createSealosContext } from "@/lib/auth/auth-utils";
 import { useQuery } from "@tanstack/react-query";
@@ -8,24 +7,28 @@ import { useState } from "react";
 import BaseNode from "../../base-node-wrapper";
 import ClusterNodeBackupTitle from "./cluster-node-backup-title";
 import ClusterNodeBackupList from "./cluster-node-backup-list";
-
-interface ClusterNodeBackupProps {
-  target: CustomResourceTarget;
-  nodeData: any;
-}
+import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
+import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 export default function ClusterNodeBackup({
-  target,
-  nodeData,
-}: ClusterNodeBackupProps) {
+  object,
+}: {
+  object: ClusterObject;
+}) {
   const sealosContext = createSealosContext();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const { data: backupList, isLoading } = useQuery(
-    getClusterBackupListOptions(sealosContext, target)
+    getClusterBackupListOptions(
+      sealosContext,
+      CustomResourceTargetSchema.parse(
+        convertResourceTypeToTarget("cluster", object.name)
+      )
+    )
   );
 
-  const clusterName = target.name || "Unknown Cluster";
+  const clusterName = object.name || "Unknown Cluster";
 
   const handleToggleExpand = () => {
     setIsExpanded(!isExpanded);
@@ -38,7 +41,7 @@ export default function ClusterNodeBackup({
   }));
 
   return (
-    <BaseNode target={target} nodeData={nodeData} expand={isExpanded}>
+    <BaseNode nodeData={object} expand={isExpanded}>
       <div className="flex h-full flex-col gap-3 p-1">
         <ClusterNodeBackupTitle
           backupsCount={backupList?.length || 0}

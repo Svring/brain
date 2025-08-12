@@ -16,35 +16,30 @@ import {
   PencilLine,
   Power,
 } from "lucide-react";
-import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import useStatefulsetNode from "@/hooks/sealos/statefulset/use-statefulset-node";
-import { createK8sContext, createSealosContext } from "@/lib/auth/auth-utils";
+import { createSealosContext } from "@/lib/auth/auth-utils";
 import {
-  useDeleteAppMutation,
-  useStartAppMutation,
-  useStopAppMutation,
-} from "@/lib/sealos/launchpad/launchpad-method/launchpad-mutation";
+  useDeleteLaunchpadMutation,
+  useStartLaunchpadMutation,
+  usePauseLaunchpadMutation,
+} from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-mutation";
+import { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulset-object-schema";
 
 export default function StatefulsetNodeMenu({
-  target,
+  object,
 }: {
-  target: BuiltinResourceTarget;
+  object: StatefulsetObject;
 }) {
-  const k8sContext = createK8sContext();
   const sealosContext = createSealosContext();
-  const { data: statefulset } = useStatefulsetNode(k8sContext, target);
 
-  const deleteApp = useDeleteAppMutation(sealosContext);
-  const startApp = useStartAppMutation(sealosContext);
-  const stopApp = useStopAppMutation(sealosContext);
+  const deleteApp = useDeleteLaunchpadMutation(sealosContext);
+  const startApp = useStartLaunchpadMutation(sealosContext);
+  const stopApp = usePauseLaunchpadMutation(sealosContext);
 
-  const appName = target.name;
-  const status = statefulset?.status;
-  const isRunning = status?.readyReplicas && status.readyReplicas > 0;
+  const { name, status } = object;
 
-  if (!statefulset) {
-    return null;
-  }
+  const isRunning =
+    status.replicas && status.replicas > 0 && !status.unavailableReplicas;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -61,11 +56,11 @@ export default function StatefulsetNodeMenu({
         className="rounded-xl bg-background-secondary"
         align="start"
       >
-        {!isRunning && appName && (
+        {!isRunning && name && (
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
-              startApp.mutate({ appName });
+              startApp.mutate({ name });
             }}
             disabled={startApp.isPending}
           >
@@ -73,11 +68,11 @@ export default function StatefulsetNodeMenu({
             Start
           </DropdownMenuItem>
         )}
-        {isRunning && appName && (
+        {isRunning && name && (
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
-              stopApp.mutate({ appName });
+              stopApp.mutate({ name });
             }}
             disabled={stopApp.isPending}
           >
@@ -94,11 +89,11 @@ export default function StatefulsetNodeMenu({
           Restart
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        {appName && (
+        {name && (
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
-              deleteApp.mutate({ name: appName });
+              deleteApp.mutate({ name });
             }}
             className="text-destructive"
             disabled={deleteApp.isPending}

@@ -17,36 +17,30 @@ import {
   PencilLine,
   Power,
 } from "lucide-react";
-import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import useDeploymentNode from "@/hooks/sealos/deployment/use-deployment-node";
-import { createK8sContext, createSealosContext } from "@/lib/auth/auth-utils";
+import { createSealosContext } from "@/lib/auth/auth-utils";
 import {
-  useDeleteAppMutation,
-  useStartAppMutation,
-  useStopAppMutation,
-} from "@/lib/sealos/launchpad/launchpad-method/launchpad-mutation";
+  useDeleteLaunchpadMutation,
+  useStartLaunchpadMutation,
+  usePauseLaunchpadMutation,
+} from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-mutation";
+import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-object-schema";
 
 export default function DeploymentNodeMenu({
-  target,
+  object,
 }: {
-  target: BuiltinResourceTarget;
+  object: DeploymentObject;
 }) {
-  const k8sContext = createK8sContext();
   const sealosContext = createSealosContext();
-  const { data: deployment } = useDeploymentNode(k8sContext, target);
 
-  const deleteApp = useDeleteAppMutation(sealosContext);
-  const startApp = useStartAppMutation(sealosContext);
-  const stopApp = useStopAppMutation(sealosContext);
+  const deleteApp = useDeleteLaunchpadMutation(sealosContext);
+  const startApp = useStartLaunchpadMutation(sealosContext);
+  const stopApp = usePauseLaunchpadMutation(sealosContext);
 
-  const appName = target.name;
-  const status = deployment?.status;
+  const { name, status } = object;
+
   const isRunning =
     status?.replicas && status.replicas > 0 && !status.unavailableReplicas;
 
-  if (!deployment) {
-    return null;
-  }
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -63,11 +57,11 @@ export default function DeploymentNodeMenu({
         className="rounded-xl bg-background-secondary"
         align="start"
       >
-        {!isRunning && appName && (
+        {!isRunning && name && (
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
-              startApp.mutate({ appName });
+              startApp.mutate({ name });
             }}
             disabled={startApp.isPending}
           >
@@ -75,11 +69,11 @@ export default function DeploymentNodeMenu({
             Start
           </DropdownMenuItem>
         )}
-        {isRunning && appName && (
+        {isRunning && name && (
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
-              stopApp.mutate({ appName });
+              stopApp.mutate({ name });
             }}
             disabled={stopApp.isPending}
           >
@@ -96,11 +90,11 @@ export default function DeploymentNodeMenu({
           Restart
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        {appName && (
+        {name && (
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
-              deleteApp.mutate({ name: appName });
+              deleteApp.mutate({ name });
             }}
             className="text-destructive"
             disabled={deleteApp.isPending}

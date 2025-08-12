@@ -8,34 +8,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Pause, Trash2, PencilLine, Power } from "lucide-react";
-import { createK8sContext, createClusterContext } from "@/lib/auth/auth-utils";
+import { createClusterContext } from "@/lib/auth/auth-utils";
 import {
   useDeleteClusterMutation,
   useStartClusterMutation,
   useStopClusterMutation,
 } from "@/lib/sealos/resources/cluster/cluster-method/cluster-mutation";
-import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import useClusterNode from "@/hooks/sealos/cluster/use-cluster-node";
+import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 
-export default function ClusterNodeMenu({
-  target,
-}: {
-  target: CustomResourceTarget;
-}) {
-  const k8sContext = createK8sContext();
+export default function ClusterNodeMenu({ object }: { object: ClusterObject }) {
   const clusterContext = createClusterContext();
-
-  const { data: cluster, isLoading } = useClusterNode(k8sContext, target);
 
   const deleteCluster = useDeleteClusterMutation(clusterContext);
   const startCluster = useStartClusterMutation(clusterContext);
   const stopCluster = useStopClusterMutation(clusterContext);
 
-  if (!cluster) {
-    return null;
-  }
-
-  const { name: clusterName, status } = cluster;
+  const { name: clusterName, status } = object;
 
   return (
     <DropdownMenu>
@@ -59,7 +47,7 @@ export default function ClusterNodeMenu({
               e.stopPropagation();
               startCluster.mutate({
                 dbName: clusterName,
-                dbType: cluster.type,
+                dbType: object.type,
               });
             }}
             disabled={status === "Creating" || status === "Updating"}
@@ -75,7 +63,7 @@ export default function ClusterNodeMenu({
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
-              stopCluster.mutate({ dbName: clusterName, dbType: cluster.type });
+              stopCluster.mutate({ dbName: clusterName, dbType: object.type });
             }}
             disabled={status === "Creating" || status === "Updating"}
             className={

@@ -1,11 +1,8 @@
 "use client";
 
 import BaseNode from "../../base-node-wrapper";
-import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-// import useClusterNode from "@/hooks/sealos/cluster/use-cluster-node";
-import { createK8sContext } from "@/lib/auth/auth-utils";
 import { useState } from "react";
 import { Copy } from "lucide-react";
 import NodeStatusLight from "../node-components/node-status-light";
@@ -30,7 +27,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
         <div className="flex items-center justify-between">
           <ClusterNodeTitle name={name} type={type} />
           <div className="flex-shrink-0">
-            {/* <ClusterNodeMenu target={target} /> */}
+            <ClusterNodeMenu object={data} />
           </div>
         </div>
 
@@ -72,7 +69,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
     </BaseNode>
   );
 
-  // const subCard = <ClusterNodeBackup target={target} nodeData={data} />;
+  const subCard = <ClusterNodeBackup object={data} />;
 
-  return <NodeStack mainCard={mainCard} subCard={<></>} />;
+  return <NodeStack mainCard={mainCard} subCard={subCard} />;
 }

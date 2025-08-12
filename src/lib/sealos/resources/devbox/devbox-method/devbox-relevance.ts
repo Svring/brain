@@ -6,13 +6,11 @@ import { getRelatedResources } from "@/lib/sealos/services/relevance/relevance-u
 export const getDevboxRelatedResources = async (
   context: K8sApiContext,
   devboxName: string,
-  builtinResources?: string[],
-  customResources?: string[]
+  builtinResources: string[] = ["ingress", "service", "secret", "pod"],
+  customResources: string[] = ["issuers", "certificates"]
 ): Promise<K8sResource[]> => {
-  const defaultBuiltinResources = ["ingress", "service", "secret", "pod"];
-  const defaultCustomResources = ["issuers", "certificates"];
-  const finalBuiltinResources = builtinResources ?? defaultBuiltinResources;
-  const finalCustomResources = customResources ?? defaultCustomResources;
+  const finalBuiltinResources = builtinResources;
+  const finalCustomResources = customResources;
 
   // Resources that use APP_KUBERNETES_NAME label
   const appKubernetesNameResources = ["secret", "pod"];

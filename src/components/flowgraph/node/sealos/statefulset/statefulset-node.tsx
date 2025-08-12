@@ -11,7 +11,7 @@ import StatefulsetNodeMenu from "./statefulset-node-menu";
 import { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulset-object-schema";
 
 export default function StatefulsetNode({ data }: { data: StatefulsetObject }) {
-  const { name, image, status } = data;
+  const { name, image, status, ports, pods } = data;
 
   return (
     <BaseNode nodeData={data}>
@@ -19,7 +19,7 @@ export default function StatefulsetNode({ data }: { data: StatefulsetObject }) {
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
           <StatefulsetNodeTitle name={name} />
-          {/* <StatefulsetNodeMenu target={target} /> */}
+          <StatefulsetNodeMenu object={data} />
         </div>
 
         {/* Image with Package Icon */}
@@ -39,8 +39,8 @@ export default function StatefulsetNode({ data }: { data: StatefulsetObject }) {
 
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
-            <NodeInternalUrl ports={[]} />
-            <NodePods pods={[]} />
+            <NodeInternalUrl ports={ports || []} />
+            <NodePods pods={pods || []} />
             <NodeMonitor />
           </div>
         </div>

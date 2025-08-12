@@ -20,7 +20,7 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
           <DeploymentNodeTitle name={name} />
-          {/* <DeploymentNodeMenu target={target} /> */}
+          <DeploymentNodeMenu object={data} />
         </div>
 
         {/* Image with Package Icon */}
