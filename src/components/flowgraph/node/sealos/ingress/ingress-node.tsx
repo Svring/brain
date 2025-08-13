@@ -30,6 +30,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
+import { useChatActions } from "@/contexts/chat/chat-context";
 
 interface IngressObject {
   number: number;
@@ -52,7 +54,12 @@ export default function IngressNode({
   const { object } = data;
   const [urlAvailable, setUrlAvailable] = useState(false);
 
+  const { sendMessage } = useCopilotChatHeadless_c();
+  const { openSidebarChat } = useChatActions();
+
   // console.log("ingress node", object);
+  // console.log("object", object);
+  // console.log("parent", data.parent);
 
   // Use public address if available, otherwise fall back to private address
   const { publicAddress, privateAddress, protocol } = object;
@@ -76,7 +83,10 @@ export default function IngressNode({
   return (
     <BaseNode
       nodeData={data}
-      className={cn("p-4 h-27", shouldCheckUrl && !urlAvailable && "bg-theme-yellow/10")}
+      className={cn(
+        "p-4 h-27",
+        shouldCheckUrl && !urlAvailable && "bg-theme-yellow/10"
+      )}
     >
       <div className="flex h-full flex-col justify-between">
         {/* Header with Name and Dropdown */}
@@ -138,7 +148,24 @@ export default function IngressNode({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <HelpCircle className="h-4 w-4 text-theme-yellow cursor-pointer" />
+                    <HelpCircle
+                      className="h-4 w-4 text-theme-yellow cursor-pointer"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openSidebarChat();
+                        sendMessage({
+                          role: "user",
+                          id: "diagnose-ingress",
+                          content: `The ingress URL is not accessible. Please help diagnose and fix this issue based on the following information:
+
+Ingress Object: ${JSON.stringify(object, null, 2)}
+Parent Data: ${JSON.stringify(data.parent, null, 2)}
+
+What could be causing the connectivity issue and how can I fix it?`,
+                        });
+                      }}
+                    />
                   </TooltipTrigger>
                   <TooltipContent className="">
                     <p>Diagnose with ai</p>
@@ -149,7 +176,7 @@ export default function IngressNode({
           ) : (
             <Globe className="h-4 w-4 text-theme-blue" />
           )}
-          
+
           <div className="flex items-center gap-1 flex-1 min-w-0">
             <span
               className={cn(

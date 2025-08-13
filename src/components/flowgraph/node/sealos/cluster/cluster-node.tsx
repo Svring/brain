@@ -25,16 +25,18 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
 
   const { name, type, status, pods } = data;
 
-  const handleNodeClick = () => {
-    // Send a message about the cluster
-    sendMessage({
-      id: randomId(),
-      role: "user",
-      content: `Tell me about the cluster ${name} of type ${type}. What can I do with it?`,
-    });
-    // Open the sidebar chat
-    openSidebarChat();
-  };
+  // console.log("pods", pods);
+
+  // const handleNodeClick = () => {
+  //   // Send a message about the cluster
+  //   sendMessage({
+  //     id: randomId(),
+  //     role: "user",
+  //     content: `Tell me about the cluster ${name} of type ${type}. What can I do with it?`,
+  //   });
+  //   // Open the sidebar chat
+  //   openSidebarChat();
+  // };
 
   const mainCard = (
     <BaseNode nodeData={data}>

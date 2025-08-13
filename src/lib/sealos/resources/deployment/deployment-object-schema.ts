@@ -42,6 +42,7 @@ const StatusSchema = z.object({
 const PodSchema = z.object({
   name: z.string(),
   status: z.string(),
+  containers: z.any(),
 });
 
 export const DeploymentObjectSchema = z.object({

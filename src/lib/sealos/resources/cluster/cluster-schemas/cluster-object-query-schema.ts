@@ -144,6 +144,7 @@ export const ClusterObjectQuerySchema = z.object({
       path: ["spec.backup"],
     })
   ),
+  // NOTE: cluster pod may have multiple containers, which represent the real status of the pod, the current status need to be refined.
   pods: z
     .any()
     .describe(
@@ -157,6 +158,12 @@ export const ClusterObjectQuerySchema = z.object({
         return {
           name: pod.metadata.name,
           status: pod.status.phase,
+          containers:
+            pod.status.containerStatuses?.map((container: any) => ({
+              name: container.name,
+              ready: container.ready,
+              state: container.state,
+            })) || [],
         };
       });
     })

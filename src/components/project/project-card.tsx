@@ -51,7 +51,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
         className={`relative flex min-h-[160px] w-full cursor-pointer flex-col rounded-lg border bg-background-secondary p-4 text-left shadow-sm ${
           deleteProjectMutation.isPending
             ? "border-theme-red"
-            : "hover:border-amber-50"
+            : "hover:brightness-135"
         }`}
         transition={{ duration: 0.15, ease: "easeInOut" }}
       >

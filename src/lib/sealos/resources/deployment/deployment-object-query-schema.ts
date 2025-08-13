@@ -127,7 +127,12 @@ export const DeploymentObjectQuerySchema = z.object({
       return pods.map((pod: any) => {
         return {
           name: pod.metadata.name,
-          status: pod.status.phase,
+          status: pod.status.containerStatuses[0].ready ? "Running" : "Waiting",
+          containers: pod.status.containerStatuses.map((container: any) => ({
+            name: container.name,
+            ready: container.ready,
+            state: container.state,
+          })),
         };
       });
     }),

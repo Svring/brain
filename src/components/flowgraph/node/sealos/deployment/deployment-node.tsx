@@ -15,7 +15,8 @@ import { truncateImage } from "@/lib/sealos/sealos-utils";
 export default function DeploymentNode({ data }: { data: DeploymentObject }) {
   const { name, image, status, ports, pods } = data;
 
-  // console.log("status", status)
+  // console.log("status", status);
+  // console.log("pods", pods);
 
   return (
     <BaseNode nodeData={data}>

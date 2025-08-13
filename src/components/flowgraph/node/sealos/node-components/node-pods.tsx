@@ -49,6 +49,7 @@ export default function NodePods({ pods = [] }: NodePodsProps) {
       case "shutdown":
         return "bg-theme-purple";
       case "pending":
+      case "waiting":
         return "bg-theme-gray";
       case "error":
         return "bg-theme-red";
