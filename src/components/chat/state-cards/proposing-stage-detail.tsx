@@ -11,11 +11,11 @@ interface ProposingStageDetailProps {
 
 export function ProposingStageDetail({ proposingData, proposingStatus }: ProposingStageDetailProps) {
   return (
-    <div className="rounded-lg">
+    <div className="h-full flex flex-col">
       {proposingData ? (
         <div className="h-full flex flex-col relative">
           {/* Scrollable content */}
-          <div className="flex-1 overflow-y-auto pr-2 pb-16">
+          <div className={`flex-1 overflow-y-auto pr-2 ${proposingStatus === 'completed' ? 'pb-16' : 'pb-4'}`}>
             <div className="space-y-4">
               {proposingData.name && (
                 <div>
@@ -87,18 +87,20 @@ export function ProposingStageDetail({ proposingData, proposingStatus }: Proposi
             </div>
           </div>
 
-          {/* Fixed button at bottom right */}
-          <div className="absolute bottom-2 right-2 p-3">
-            <Button 
-              size="sm"
-              onClick={() => {
-                // TODO: Implement create functionality
-                console.log("Creating project:", proposingData.name);
-              }}
-            >
-              Create Project
-            </Button>
-          </div>
+          {/* Fixed button at bottom right - only show when completed */}
+          {proposingStatus === 'completed' && (
+            <div className="absolute bottom-2 right-2 p-3">
+              <Button 
+                size="sm"
+                onClick={() => {
+                  // TODO: Implement create functionality
+                  console.log("Creating project:", proposingData.name);
+                }}
+              >
+                Create Project
+              </Button>
+            </div>
+          )}
         </div>
       ) : proposingStatus === "active" ? (
         <div className="flex flex-col items-center justify-center py-8">

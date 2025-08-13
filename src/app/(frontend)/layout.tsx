@@ -3,17 +3,14 @@ import { Lora } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import type React from "react";
 import Login from "@/components/auth/login";
-// import { CopilotProvider } from "@/components/provider/copilot-provider";
+import { CopilotProvider } from "@/components/provider/copilot-provider";
 import QueryProvider from "@/components/provider/query-provider";
 import AppSidebar from "@/components/sidebar/app-sidebar";
-// import LanggraphProvider from "@/components/app/provider/langgraph-provider";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ChatProvider } from "@/contexts/chat/chat-context";
 import { ReactScan } from "@/components/provider/react-scan-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/auth/auth-context";
-// import { AiProvider } from "@/contexts/ai/ai-context";
-// import { ProjectProvider } from "@/contexts/project/project-context";
 import { getUser } from "@/payload/operations/users-operation";
 
 import "@/styles/globals.css";
@@ -68,12 +65,14 @@ export default async function RootLayout({
         >
           <AuthProvider payloadUser={payloadUser}>
             <QueryProvider>
-              <ChatProvider>
-                <SidebarProvider defaultOpen={false}>
-                  <AppSidebar />
-                  {children}
-                </SidebarProvider>
-              </ChatProvider>
+              <CopilotProvider>
+                <ChatProvider>
+                  <SidebarProvider defaultOpen={false}>
+                    <AppSidebar />
+                    {children}
+                  </SidebarProvider>
+                </ChatProvider>
+              </CopilotProvider>
             </QueryProvider>
           </AuthProvider>
           <Toaster

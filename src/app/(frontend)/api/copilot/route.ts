@@ -1,7 +1,7 @@
 import {
   CopilotRuntime,
   copilotRuntimeNextJSAppRouterEndpoint,
-  ExperimentalEmptyAdapter,
+  EmptyAdapter,
   LangGraphAgent,
 } from "@copilotkit/runtime";
 import type { NextRequest } from "next/server";
@@ -14,21 +14,16 @@ export const dynamic = "force-dynamic";
 const g = globalThis as any;
 
 if (!g.__copilot_serviceAdapter) {
-  g.__copilot_serviceAdapter = new ExperimentalEmptyAdapter();
+  g.__copilot_serviceAdapter = new EmptyAdapter();
 }
 const serviceAdapter = g.__copilot_serviceAdapter;
 
 if (!g.__copilot_runtime) {
   g.__copilot_runtime = new CopilotRuntime({
     agents: {
-      ai: new LangGraphAgent({
+      sealos_brain: new LangGraphAgent({
         deploymentUrl: process.env.NEXT_PUBLIC_LANGGRAPH_DEPLOYMENT_URL || "",
-        graphId: "ai",
-        langsmithApiKey: process.env.LANGSMITH_API_KEY || "",
-      }),
-      new_project: new LangGraphAgent({
-        deploymentUrl: process.env.NEXT_PUBLIC_LANGGRAPH_DEPLOYMENT_URL || "",
-        graphId: "new_project",
+        graphId: "sealos_brain",
         langsmithApiKey: process.env.LANGSMITH_API_KEY || "",
       }),
     },

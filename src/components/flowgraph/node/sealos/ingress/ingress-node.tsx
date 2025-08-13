@@ -58,23 +58,24 @@ export default function IngressNode({
   const { publicAddress, privateAddress, protocol } = object;
   const displayAddress = publicAddress || privateAddress;
   const url = displayAddress;
+  const hasPublicAddress = !!publicAddress;
 
   useInterval(
     async () => {
-      if (!url) {
+      if (!url || !hasPublicAddress) {
         return;
       }
       const result = await checkUrl(url);
       setUrlAvailable(result.available);
     },
-    url ? 20000 : null, // Only run if url exists, and use reasonable interval
+    url && hasPublicAddress ? 20000 : null, // Only run if url exists and has public address
     { immediate: true }
   );
 
   return (
     <BaseNode
       nodeData={data}
-      className={cn("p-4 h-27", !urlAvailable && "bg-theme-yellow/10")}
+      className={cn("p-4 h-27", hasPublicAddress && !urlAvailable && "bg-theme-yellow/10")}
     >
       <div className="flex h-full flex-col justify-between">
         {/* Header with Name and Dropdown */}
@@ -129,38 +130,42 @@ export default function IngressNode({
 
         {/* Status and Address Display */}
         <div className="flex items-center gap-2 mt-2">
-          {urlAvailable ? (
-            <Globe
-              className={cn(
-                "h-4 w-4",
-                protocol === "TCP" ? "text-theme-blue" : "text-theme-green"
-              )}
-            />
+          {hasPublicAddress ? (
+            urlAvailable ? (
+              <Globe
+                className={cn(
+                  "h-4 w-4",
+                  protocol === "TCP" ? "text-theme-blue" : "text-theme-green"
+                )}
+              />
+            ) : (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 text-theme-yellow cursor-pointer" />
+                  </TooltipTrigger>
+                  <TooltipContent className="">
+                    <p>Diagnose with ai</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )
           ) : (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <HelpCircle className="h-4 w-4 text-theme-yellow cursor-pointer" />
-                </TooltipTrigger>
-                <TooltipContent className="">
-                  <p>Diagnose with ai</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Globe className="h-4 w-4 text-theme-blue" />
           )}
           
           <div className="flex items-center gap-1 flex-1 min-w-0">
             <span
               className={cn(
                 "text-sm truncate transition-colors",
-                urlAvailable
+                hasPublicAddress && urlAvailable
                   ? "text-foreground cursor-pointer hover:text-foreground"
                   : "text-muted-foreground cursor-not-allowed"
               )}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                if (urlAvailable) {
+                if (hasPublicAddress && urlAvailable) {
                   window.open(url, "_blank");
                 }
               }}

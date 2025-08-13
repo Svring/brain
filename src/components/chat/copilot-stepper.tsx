@@ -127,9 +127,9 @@ export function CopilotStepper<T = any>({
                 </div>
 
                 {/* Right Side - Stage Details */}
-                <div className="lg:w-3/4 overflow-y-auto flex-1 min-h-0 pl-3">
+                <div className="lg:w-3/4 overflow-y-auto flex-1 min-h-0 h-full pl-3">
                   {/* Stage Content */}
-                  <div>
+                  <div className="h-full">
                     {currentStage.details ? (
                       currentStage.details(
                         currentStage,

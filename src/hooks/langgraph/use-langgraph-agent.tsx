@@ -20,7 +20,7 @@ export function useLanggraphAgentAi() {
 
 export function useLanggraphAgentNewProject() {
   const agent = useCoAgent<LanggraphAgentNewProjectState>({
-    name: "new_project",
+    name: "sealos_brain",
     initialState: {
       base_url: "",
       api_key: "",
@@ -43,7 +43,7 @@ export function useLanggraphAgentNewProject() {
   });
 
   useCoAgentStateRender<LanggraphAgentNewProjectState>({
-    name: "new_project",
+    name: "sealos_brain",
     render: ({ status, state }) => {
       const hasAnyData = state.project_brief || state.project_plan;
 

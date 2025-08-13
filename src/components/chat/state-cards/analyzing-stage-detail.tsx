@@ -1,6 +1,7 @@
 "use client";
 
 import { ProjectBrief } from "@/contexts/langgraph/langgraph-schema";
+import { Spinner } from "@/components/ui/spinner";
 
 interface AnalyzingStageDetailProps {
   analyzingData: ProjectBrief;
@@ -24,7 +25,7 @@ export function AnalyzingStageDetail({ analyzingData, analyzingStatus }: Analyzi
         </div>
       ) : analyzingStatus === "active" ? (
         <div className="flex flex-col items-center justify-center py-8">
-          <div className="animate-pulse text-2xl mb-4">⏳</div>
+          <Spinner variant="bars" size={32} className="mb-4" />
           <p className="text-sm text-muted-foreground">Analyzing project requirements...</p>
         </div>
       ) : (
