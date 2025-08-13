@@ -227,7 +227,7 @@ export const useDeleteInstanceMutation = (context: K8sApiContext) => {
       }
     },
     onSuccess: (data) => {
-      toast.success(`Instance "${data.instanceName}" deleted successfully`);
+      // toast.success(`Instance "${data.instanceName}" deleted successfully`);
       invalidateInstanceQueries(
         queryClient,
         context.namespace,

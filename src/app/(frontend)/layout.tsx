@@ -81,10 +81,7 @@ export default async function RootLayout({
           <Toaster
             position="top-center"
             toastOptions={{
-              duration: 1500,
-              style: {
-                background: "bg-background-secondary",
-              },
+              duration: 5000,
             }}
           />
         </ThemeProvider>

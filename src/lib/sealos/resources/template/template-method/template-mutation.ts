@@ -17,7 +17,7 @@ export function useCreateInstanceMutation(context: TemplateApiContext) {
       runParallelAction(createInstance(request, context)),
     onSuccess: (data: any) => {
       const projectName = _.get(data, "data[0].metadata.name");
-      toast(`Template has been deployed to project "${projectName}".`);
+      // toast(`Template has been deployed to project "${projectName}".`);
       // router.replace(`/projects/${projectName}`);
       queryClient.invalidateQueries({ queryKey: ["projects"] });
     },

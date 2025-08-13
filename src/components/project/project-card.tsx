@@ -39,19 +39,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
     // Close the dropdown menu immediately
     closeDropdown();
 
-    deleteProjectMutation.mutate(
-      { name: project.name },
-      {
-        onSuccess: () => {
-          // Project deleted successfully
-          toast.success(`Project ${project.name} deleted successfully`);
-        },
-        onError: () => {
-          // Delete failed
-          toast.error(`Failed to delete project ${project.name}`);
-        },
-      }
-    );
+    deleteProjectMutation.mutate({ name: project.name });
   };
 
   return (
@@ -88,7 +76,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
                 <span className="sr-only">Open menu</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="rounded-lg bg-background-secondary" align="start">
+            <DropdownMenuContent
+              className="rounded-lg bg-background-secondary"
+              align="start"
+            >
               <DropdownMenuItem
                 className="text-theme-red rounded-lg"
                 disabled={deleteProjectMutation.isPending}
