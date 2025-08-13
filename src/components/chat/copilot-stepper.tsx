@@ -10,6 +10,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { TextShimmer } from "@/components/ui/text-shimmer";
+import { Spinner } from "@/components/ui/spinner";
 import { motion } from "framer-motion";
 
 export interface StepperStage<T = any> {
@@ -135,6 +136,11 @@ export function CopilotStepper<T = any>({
                         currentStageIndex,
                         inputData || ({} as T)
                       )
+                    ) : currentStage.status === "active" ? (
+                      <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400">
+                        <Spinner variant="bars" size={32} className="mb-4" />
+                        <p>Processing...</p>
+                      </div>
                     ) : (
                       <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
                         <p>No details available for this stage</p>

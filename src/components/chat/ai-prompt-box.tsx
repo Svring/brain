@@ -485,7 +485,9 @@ const PromptInputTextarea = React.forwardRef<
 
     // When the external value changes (e.g., cleared after send), reflect it locally
     React.useEffect(() => {
-      if (value !== localValue) setLocalValue(value);
+      if (value !== localValue) {
+        setLocalValue(value);
+      }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value]);
 

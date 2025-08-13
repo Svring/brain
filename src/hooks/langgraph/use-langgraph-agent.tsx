@@ -47,6 +47,8 @@ export function useLanggraphAgentNewProject() {
     render: ({ status, state }) => {
       const hasAnyData = state.project_brief || state.project_plan;
 
+      console.log("state", state);
+
       if (!hasAnyData || state.project_brief?.status === "pending") {
         return null;
       }

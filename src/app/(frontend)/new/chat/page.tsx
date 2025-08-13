@@ -7,6 +7,7 @@ import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { motion } from "framer-motion";
 import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
 import { useLanggraphAgentNewProject } from "@/hooks/langgraph/use-langgraph-agent";
+import { useAutoScroll } from "@/hooks/use-auto-scroll";
 
 import { createSealosContext } from "@/lib/auth/auth-utils";
 import {
@@ -17,13 +18,22 @@ import { useEffect, useState } from "react";
 import { runParallelAction } from "next-server-actions-parallel";
 
 export default function ChatPage() {
-  const { messages } = useCopilotChatHeadless_c();
+  const { messages } = useCopilotChatHeadless_c({ id: "chat" });
   const hasMessages = messages.length > 0;
 
   const context = createSealosContext();
 
   useCopilotActions();
   useLanggraphAgentNewProject();
+
+  // Create a content key that changes when message content actually changes
+  const contentKey = messages.map(m => `${m.id}-${m.content?.length || 0}-${m.role}`).join('|');
+  
+  const { scrollRef, isAtBottom, autoScrollEnabled, scrollToBottom, disableAutoScroll } = useAutoScroll({
+    offset: 50,
+    smooth: true,
+    content: contentKey,
+  });
 
   // useEffect(() => {
   //   const fetchClusterVersions = async () => {
@@ -70,12 +80,19 @@ export default function ChatPage() {
 
       {/* Messages area becomes visible once there are messages */}
       {hasMessages && (
-        <div className="flex-1 min-h-0 flex flex-col">
-          <div className="flex-1 overflow-y-auto pt-8 pb-4">
-            <div className="max-w-3xl mx-auto">
+        <div className="flex-1 min-h-0 flex flex-col relative">
+          <div 
+            ref={scrollRef}
+            className="flex-1 overflow-y-auto pt-8 pb-4"
+            onScroll={disableAutoScroll}
+            onWheel={disableAutoScroll} 
+            onTouchMove={disableAutoScroll}
+          >
+            <div className="max-w-3xl mx-auto w-full">
               <AiMessages />
             </div>
           </div>
+
         </div>
       )}
 

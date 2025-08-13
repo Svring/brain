@@ -7,6 +7,8 @@ import {
 } from "@/components/chat/copilot-stepper";
 import { ProjectBrief } from "@/contexts/langgraph/langgraph-schema";
 import { ProjectPlanWithStatus } from "@/contexts/langgraph/langgraph-schema";
+import { AnalyzingStageDetail } from "./analyzing-stage-detail";
+import { ProposingStageDetail } from "./proposing-stage-detail";
 
 // Type definitions based on the provided data structure
 interface DevBox {
@@ -70,25 +72,10 @@ export function ProjectPlanCard({
       description: "",
       status: analyzingStatus,
       details: () => (
-        <div className="p-3 rounded-lg">
-          {analyzingData.briefs.length > 0 ? (
-            <div>
-              <h4 className="font-medium mb-1">Analysis Results:</h4>
-              <ul className="space-y-0.5">
-                {analyzingData.briefs.map((item, index) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
-                    <span className="text-sm">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              No analysis data available
-            </p>
-          )}
-        </div>
+        <AnalyzingStageDetail 
+          analyzingData={analyzingData} 
+          analyzingStatus={analyzingStatus} 
+        />
       ),
     },
     {
@@ -97,106 +84,10 @@ export function ProjectPlanCard({
       description: "",
       status: proposingStatus,
       details: () => (
-        <div className="p-3 rounded-lg">
-          {proposingData ? (
-            <div className="space-y-3">
-              {proposingData.name && (
-                <div>
-                  <h4 className="font-medium mb-0.5">Project Name:</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {proposingData.name}
-                  </p>
-                </div>
-              )}
-
-              {proposingData.description && (
-                <div>
-                  <h4 className="font-medium mb-0.5">Description:</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {proposingData.description}
-                  </p>
-                </div>
-              )}
-
-              {proposingData.resources && (
-                <div className="space-y-2">
-                  <h4 className="font-medium">Resources:</h4>
-
-                  {proposingData.resources.devboxes.length > 0 && (
-                    <div>
-                      <h5 className="text-sm font-medium mb-0.5">DevBoxes:</h5>
-                      <ul className="space-y-0.5 ml-3">
-                        {proposingData.resources.devboxes.map(
-                          (devbox, index) => (
-                            <li key={index} className="text-sm">
-                              <span className="font-medium">
-                                {devbox.runtime}
-                              </span>
-                              {devbox.description && (
-                                <span className="text-muted-foreground">
-                                  {" "}
-                                  - {devbox.description}
-                                </span>
-                              )}
-                            </li>
-                          )
-                        )}
-                      </ul>
-                    </div>
-                  )}
-
-                  {proposingData.resources.databases.length > 0 && (
-                    <div>
-                      <h5 className="text-sm font-medium mb-0.5">Databases:</h5>
-                      <ul className="space-y-0.5 ml-3">
-                        {proposingData.resources.databases.map((db, index) => (
-                          <li key={index} className="text-sm">
-                            <span className="font-medium">{db.type}</span>
-                            {db.description && (
-                              <span className="text-muted-foreground">
-                                {" "}
-                                - {db.description}
-                              </span>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {proposingData.resources.buckets.length > 0 && (
-                    <div>
-                      <h5 className="text-sm font-medium mb-0.5">
-                        Object Storage Buckets:
-                      </h5>
-                      <ul className="space-y-0.5 ml-3">
-                        {proposingData.resources.buckets.map(
-                          (bucket, index) => (
-                            <li key={index} className="text-sm">
-                              <span className="font-medium">
-                                {bucket.policy}
-                              </span>
-                              {bucket.description && (
-                                <span className="text-muted-foreground">
-                                  {" "}
-                                  - {bucket.description}
-                                </span>
-                              )}
-                            </li>
-                          )
-                        )}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              No project proposal data available
-            </p>
-          )}
-        </div>
+        <ProposingStageDetail 
+          proposingData={proposingData} 
+          proposingStatus={proposingStatus} 
+        />
       ),
     },
   ];

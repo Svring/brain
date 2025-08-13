@@ -4,9 +4,7 @@ import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { MessageRendererProps } from "./types";
 import Markdown from "react-markdown";
-// import { AIResponse } from "@/components/ui/shadcn-io/ai/response";
 
-// import "flowtoken/dist/styles.css";
 import "@/styles/github-markdown-dark.css";
 
 export function RenderTextMessage({
@@ -18,7 +16,6 @@ export function RenderTextMessage({
   const isLoading =
     isCurrentMessage && inProgress && !isUser && !message.content;
 
-  // Don't render empty messages unless they're loading
   if (
     (!message.content && !isLoading) ||
     message.role === "tool" ||
@@ -38,13 +35,6 @@ export function RenderTextMessage({
           isLoading && "animate-pulse"
         )}
       >
-        {/* <AnimatedMarkdown
-          content={message.content ?? ""}
-          animation="fadeIn"
-          animationDuration="0.2s"
-          animationTimingFunction="ease-in-out"
-        /> */}
-        {/* <p>{dummyMessage ?? ""}</p> */}
         <Markdown
           components={{
             ol: ({ children, ...props }) => (
@@ -61,7 +51,6 @@ export function RenderTextMessage({
         >
           {message.content ?? ""}
         </Markdown>
-        {/* <AIResponse>{message.content ?? ""}</AIResponse> */}
 
         {isLoading && (
           <div className="flex items-center gap-2 text-xs opacity-70">
