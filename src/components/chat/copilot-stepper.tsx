@@ -9,6 +9,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { TextShimmer } from "@/components/ui/text-shimmer";
+import { motion } from "framer-motion";
 
 export interface StepperStage<T = any> {
   id: string;
@@ -34,9 +36,25 @@ export function CopilotStepper<T = any>({
   inputData,
   title = "Progress Stepper",
 }: StepperProps<T>) {
-  const [currentStageIndex, setCurrentStageIndex] = React.useState(0);
+  // Find the last active or completed stage index, default to 0 if none
+  const lastActiveOrCompletedIndex = React.useMemo(() => {
+    // Find the last stage that is either active or completed
+    for (let i = stages.length - 1; i >= 0; i--) {
+      if (stages[i].status === "active" || stages[i].status === "completed") {
+        return i;
+      }
+    }
+    return 0; // Default to first stage if none are active or completed
+  }, [stages]);
+
+  const [currentStageIndex, setCurrentStageIndex] = React.useState(lastActiveOrCompletedIndex);
   const [isOpen, setIsOpen] = React.useState(true);
   const currentStage = stages[currentStageIndex];
+
+  // Update current stage when stages status changes
+  React.useEffect(() => {
+    setCurrentStageIndex(lastActiveOrCompletedIndex);
+  }, [lastActiveOrCompletedIndex]);
 
   const getStageIcon = (stage: StepperStage<T>, index: number) => {
     if (stage.status === "completed") {
@@ -49,77 +67,68 @@ export function CopilotStepper<T = any>({
   };
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="w-full">
-        <CollapsibleTrigger asChild>
-          <CardHeader className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors rounded-2xl">
-            <CardTitle className="text-xl font-semibold flex items-center justify-between">
-              {title}
-              <span className="text-sm text-muted-foreground">
-                {isOpen ? "Click to collapse" : "Click to expand"}
-              </span>
-            </CardTitle>
-          </CardHeader>
-        </CollapsibleTrigger>
+    <div className="h-full bg-background-primary p-1 rounded-2xl">
+      <Collapsible open={isOpen} onOpenChange={setIsOpen} className="h-full">
+        <Card className="w-full h-full flex flex-col bg-background-secondary shadow-lg">
+          {/* <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer transition-colors flex-shrink-0">
+              <CardTitle className="text-xl font-semibold flex items-center justify-between">
+                {title}
+                <span className="text-sm text-muted-foreground">
+                  {isOpen ? "Click to collapse" : "Click to expand"}
+                </span>
+              </CardTitle>
+            </CardHeader>
+          </CollapsibleTrigger> */}
 
-        <CollapsibleContent>
-          <CardContent className="p-0">
-            <div className="flex flex-col lg:flex-row gap-6">
-              {/* Left Side - Stages */}
-              <div className="lg:w-1/3 p-6 border-r">
-                <div className="space-y-3">
-                  {stages.map((stage, index) => (
-                    <div
-                      key={stage.id}
-                      className={cn(
-                        "flex items-start gap-3 p-3 rounded-lg border-2 transition-all cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800",
-                        index === currentStageIndex
-                          ? "border-blue-600 bg-blue-50 dark:bg-blue-950/20"
-                          : "border-gray-300"
-                      )}
-                      onClick={() => setCurrentStageIndex(index)}
-                    >
-                      <div className="flex-shrink-0 mt-0.5">
-                        {getStageIcon(stage, index)}
-                      </div>
-                      <div className="flex-1">
-                        <h4
-                          className={cn(
-                            "text-sm font-medium",
-                            index === currentStageIndex
-                              ? "text-blue-900 dark:text-blue-100"
-                              : "text-gray-900 dark:text-gray-100"
-                          )}
-                        >
-                          {stage.title}
-                        </h4>
-                        {stage.description && (
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            {stage.description}
-                          </p>
+          <CollapsibleContent className="flex-1 overflow-hidden">
+            <CardContent className="px-4 h-full">
+              <div className="flex flex-col lg:flex-row gap-3 h-full">
+                {/* Left Side - Stages */}
+                <div className="lg:w-1/4 border-r overflow-y-auto flex-shrink-0 pr-3">
+                  <div className="space-y-1">
+                    {stages.map((stage, index) => (
+                      <motion.div
+                        key={stage.id}
+                        className={cn(
+                          "p-2 rounded-md cursor-pointer relative",
+                          index === currentStageIndex
+                            ? "bg-background-secondary brightness-150"
+                            : ""
                         )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Right Side - Stage Details */}
-              <div className="lg:w-2/3 p-6">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                      {currentStage.title}
-                    </h3>
-                    {currentStage.description && (
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        {currentStage.description}
-                      </p>
-                    )}
+                        onClick={() => setCurrentStageIndex(index)}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="flex-1">
+                          <h4 className="text-sm font-medium">
+                            {stage.status === "pending" && (
+                              <span className="text-muted-foreground">{stage.title}</span>
+                            )}
+                            {stage.status === "active" && (
+                              <TextShimmer className="text-sm font-medium" duration={1.5}>
+                                {stage.title}
+                              </TextShimmer>
+                            )}
+                            {stage.status === "completed" && (
+                              <span className="text-foreground">{stage.title}</span>
+                            )}
+                          </h4>
+                          {stage.description && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                              {stage.description}
+                            </p>
+                          )}
+                        </div>
+                      </motion.div>
+                    ))}
                   </div>
+                </div>
 
+                {/* Right Side - Stage Details */}
+                <div className="lg:w-3/4 overflow-y-auto flex-1 min-h-0 pl-3">
                   {/* Stage Content */}
-                  <div className="min-h-[200px]">
+                  <div>
                     {currentStage.details ? (
                       currentStage.details(
                         currentStage,
@@ -134,11 +143,11 @@ export function CopilotStepper<T = any>({
                   </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </CollapsibleContent>
-      </Card>
-    </Collapsible>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+    </div>
   );
 }
 

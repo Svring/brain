@@ -6,6 +6,7 @@ import { AiMessages } from "@/components/chat/ai-messages";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { motion } from "framer-motion";
 import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
+import { useLanggraphAgentNewProject } from "@/hooks/langgraph/use-langgraph-agent";
 
 import { createSealosContext } from "@/lib/auth/auth-utils";
 import {
@@ -22,6 +23,7 @@ export default function ChatPage() {
   const context = createSealosContext();
 
   useCopilotActions();
+  useLanggraphAgentNewProject();
 
   // useEffect(() => {
   //   const fetchClusterVersions = async () => {
