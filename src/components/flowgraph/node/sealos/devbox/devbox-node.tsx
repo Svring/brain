@@ -14,6 +14,7 @@ import NodeMonitor from "../node-components/node-monitor";
 import NodeStack from "../node-components/node-stack";
 import DevboxNodeRelease from "./devbox-node-release";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
+import { useDeleteDevboxMutation } from "@/lib/sealos/resources/devbox/devbox-method/devbox-mutation";
 
 // TODO: Devbox nodes would cause maximum call stack error
 export default function DevboxNode({ data }: { data: DevboxObject }) {
@@ -21,9 +22,13 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
 
   const context = createK8sContext();
   const devboxContext = createDevboxContext();
+  const deleteDevbox = useDeleteDevboxMutation(devboxContext);
 
   const mainCard = (
-    <BaseNode nodeData={data}>
+    <BaseNode 
+      nodeData={data}
+      className={deleteDevbox.isPending ? "border-theme-red" : ""}
+    >
       <div className="flex h-full flex-col gap-2 justify-between">
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
@@ -62,7 +67,7 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
 
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
-            <NodeInternalUrl ports={ports} />
+            {/* <NodeInternalUrl ports={ports} /> */}
             <NodeMonitor />
           </div>
         </div>

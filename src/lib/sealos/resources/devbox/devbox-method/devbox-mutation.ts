@@ -41,9 +41,33 @@ export function useManageDevboxLifecycleMutation(context: DevboxApiContext) {
   return useMutation({
     mutationFn: (request: DevboxLifecycleRequest) =>
       runParallelAction(manageDevboxLifecycle(request, context)),
-    onSuccess: () => {
+    onSuccess: (_, request) => {
+      // Immediate invalidation
       queryClient.invalidateQueries({ queryKey: ["project"] });
       queryClient.invalidateQueries({ queryKey: ["devbox"] });
+
+      // Start polling for status changes after lifecycle actions
+      const startPolling = () => {
+        let pollCount = 0;
+        const maxPolls = 10; // Poll for up to 20 seconds
+        const pollInterval = 2000; // Poll every 1 second
+
+        const poll = () => {
+          pollCount++;
+          queryClient.invalidateQueries({ queryKey: ["project"] });
+          queryClient.invalidateQueries({
+            queryKey: ["devbox", request.devboxName],
+          });
+
+          if (pollCount < maxPolls) {
+            setTimeout(poll, pollInterval);
+          }
+        };
+
+        setTimeout(poll, pollInterval);
+      };
+
+      startPolling();
     },
   });
 }

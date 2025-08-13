@@ -73,7 +73,7 @@ export default function DevboxNodeMenu({ object }: { object: DevboxObject }) {
             className={status === "Pending" ? "opacity-50" : ""}
           >
             <Pause className="mr-2 h-4 w-4" />
-            Stop
+            Pause
           </DropdownMenuItem>
         )}
         <DropdownMenuItem

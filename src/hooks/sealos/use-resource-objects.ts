@@ -9,11 +9,13 @@ import { getDevbox } from "@/lib/sealos/resources/devbox/devbox-method/devbox-qu
 import { getDeployment } from "@/lib/sealos/resources/deployment/deployment-method/deployment-query";
 import { getStatefulSet } from "@/lib/sealos/resources/statefulset/statefulset-method/statefulset-query";
 import { getObjectStorage } from "@/lib/sealos/resources/objectstorage/objectstorage-method/objectstorage-query";
+import { useProjectActions } from "@/contexts/project/project-context";
 
 export default function useResourceObjects(
   resources: (CustomResourceTarget | BuiltinResourceTarget)[]
 ) {
   const context = createK8sContext();
+  const { setSelectedProjectResources } = useProjectActions();
   const [fetchedObjects, setFetchedObjects] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -92,6 +94,7 @@ export default function useResourceObjects(
       ]);
 
       setFetchedObjects(allResults);
+      setSelectedProjectResources(allResults);
       setIsLoading(false);
     };
 
