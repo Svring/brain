@@ -5,6 +5,7 @@ import type { TemplateResource } from "@/lib/sealos/resources/template/schemas/t
 import { TemplateInputDialog } from "./template-input-dialog";
 import { useTemplateCard } from "@/hooks/template/use-template-card";
 // import { useTemplatePopover } from "@/hooks/template/use-template-popover";
+import React, { memo, useCallback } from "react";
 
 export type TemplateCardProps = {
   template: TemplateResource;
@@ -12,7 +13,7 @@ export type TemplateCardProps = {
   closeDialog?: () => void;
 };
 
-export function TemplateCard({
+export const TemplateCard = memo(function TemplateCard({
   template,
   onViewDetails,
   closeDialog,
@@ -26,11 +27,14 @@ export function TemplateCard({
     deployTemplate,
   } = useTemplateCard(template, closeDialog);
 
+  const handleClickCard = useCallback(() => onViewDetails(template), [onViewDetails, template]);
+  const handleCloseDialog = useCallback(() => setShowInputDialog(false), [setShowInputDialog]);
+
   return (
     <>
       <div
         className="group relative cursor-pointer rounded-lg border p-4 text-left transition-all hover:bg-background-secondary hover:shadow-md"
-        onClick={() => onViewDetails(template)}
+        onClick={handleClickCard}
         role="button"
         tabIndex={0}
       >
@@ -116,11 +120,11 @@ export function TemplateCard({
         <TemplateInputDialog
           template={template}
           isOpen={showInputDialog}
-          onClose={() => setShowInputDialog(false)}
+          onClose={handleCloseDialog}
           onSubmit={deployTemplate}
           isLoading={isDeploying}
         />
       )}
     </>
   );
-}
+});

@@ -1,5 +1,6 @@
 "use client";
 
+import React, { memo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -31,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { TemplateResource } from "@/lib/sealos/template/schemas/template-api-context-schemas";
+import type { TemplateResource } from "@/lib/sealos/resources/template/schemas/template-api-context-schemas";
 
 export type TemplateInputDialogProps = {
   template: TemplateResource;
@@ -47,12 +48,13 @@ function createFormSchema(template: TemplateResource) {
 
   if (template.spec.inputs) {
     Object.entries(template.spec.inputs).forEach(([key, input]) => {
-      if (!input) return;
+      const i: any = input as any;
+      if (!i) return;
 
-      switch (input.type) {
+      switch (i.type) {
         case "string":
         case "choice": {
-          if (input.required) {
+          if (i.required) {
             schemaFields[key] = z.string().min(1, `${key} is required`);
           } else {
             schemaFields[key] = z.string().optional();
@@ -60,7 +62,7 @@ function createFormSchema(template: TemplateResource) {
           break;
         }
         case "number": {
-          if (input.required) {
+          if (i.required) {
             schemaFields[key] = z
               .string()
               .min(1, `${key} is required`)
@@ -84,7 +86,7 @@ function createFormSchema(template: TemplateResource) {
           break;
         }
         default: {
-          if (input.required) {
+          if (i.required) {
             schemaFields[key] = z.string().min(1, `${key} is required`);
           } else {
             schemaFields[key] = z.string().optional();
@@ -103,17 +105,18 @@ function getDefaultValues(template: TemplateResource) {
 
   if (template.spec.inputs) {
     Object.entries(template.spec.inputs).forEach(([key, input]) => {
-      if (!input) return;
+      const i: any = input as any;
+      if (!i) return;
 
-      switch (input.type) {
+      switch (i.type) {
         case "boolean":
-          defaults[key] = input.default === "true" || input.default === true;
+          defaults[key] = i.default === "true" || i.default === true;
           break;
         case "number":
-          defaults[key] = input.default?.toString() || "";
+          defaults[key] = i.default?.toString() || "";
           break;
         default:
-          defaults[key] = input.default?.toString() || "";
+          defaults[key] = i.default?.toString() || "";
       }
     });
   }
@@ -121,7 +124,7 @@ function getDefaultValues(template: TemplateResource) {
   return defaults;
 }
 
-export function TemplateInputDialog({
+export const TemplateInputDialog = memo(function TemplateInputDialog({
   template,
   isOpen,
   onClose,
@@ -322,4 +325,4 @@ export function TemplateInputDialog({
       </DialogContent>
     </Dialog>
   );
-}
+});

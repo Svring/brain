@@ -8,6 +8,7 @@ import React from "react";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
+import { useDebounce } from "@reactuses/core";
 
 // Utility function for className merging
 const cn = (...classes: (string | undefined | null | false)[]) =>
@@ -462,6 +463,8 @@ const PromptInputTextarea = React.forwardRef<
   ) => {
     const { value, setValue, maxHeight, onSubmit, disabled } = usePromptInput();
     const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+    const [localValue, setLocalValue] = React.useState(value);
+    const debouncedValue = useDebounce(localValue, 500);
 
     React.useEffect(() => {
       if (disableAutosize || !textareaRef.current) return;
@@ -470,7 +473,21 @@ const PromptInputTextarea = React.forwardRef<
         typeof maxHeight === "number"
           ? `${Math.min(textareaRef.current.scrollHeight, maxHeight)}px`
           : `min(${textareaRef.current.scrollHeight}px, ${maxHeight})`;
-    }, [value, maxHeight, disableAutosize]);
+    }, [localValue, maxHeight, disableAutosize]);
+
+    // Sync debounced local input into the shared context to avoid re-renders on every keystroke
+    React.useEffect(() => {
+      if (debouncedValue !== value) {
+        setValue(debouncedValue);
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [debouncedValue]);
+
+    // When the external value changes (e.g., cleared after send), reflect it locally
+    React.useEffect(() => {
+      if (value !== localValue) setLocalValue(value);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [value]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === "Enter" && !e.shiftKey) {
@@ -487,7 +504,7 @@ const PromptInputTextarea = React.forwardRef<
       <Textarea
         className={cn("", className)}
         disabled={disabled}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => setLocalValue(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         ref={(node) => {
@@ -498,7 +515,7 @@ const PromptInputTextarea = React.forwardRef<
               ref as React.MutableRefObject<HTMLTextAreaElement | null>
             ).current = node;
         }}
-        value={value}
+        value={localValue}
         {...props}
       />
     );
@@ -720,14 +737,13 @@ export const PromptInputBox = React.forwardRef(
     }, [handlePaste]);
 
     const handleSubmit = () => {
-      if ((input.trim() || files.length > 0) && !disableSend) {
+      const liveText = (internalTextareaRef.current?.value ?? input).trim();
+      if ((liveText || files.length > 0) && !disableSend) {
         let messagePrefix = "";
         if (showSearch) messagePrefix = "[Search: ";
         else if (showThink) messagePrefix = "[Think: ";
         else if (showCanvas) messagePrefix = "[Canvas: ";
-        const formattedInput = messagePrefix
-          ? `${messagePrefix}${input}]`
-          : input;
+        const formattedInput = messagePrefix ? `${messagePrefix}${liveText}]` : liveText;
         onSend(formattedInput, files);
         setInput("");
         setFiles([]);

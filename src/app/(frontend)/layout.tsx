@@ -9,6 +9,7 @@ import AppSidebar from "@/components/sidebar/app-sidebar";
 // import LanggraphProvider from "@/components/app/provider/langgraph-provider";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ChatProvider } from "@/contexts/chat/chat-context";
+import { ReactScan } from "@/components/provider/react-scan-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/auth/auth-context";
 // import { AiProvider } from "@/contexts/ai/ai-context";
@@ -54,6 +55,10 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script src="https://unpkg.com/react-scan/dist/auto.global.js" />
+      </head>
+      <ReactScan />
       <body className={`antialiased`}>
         <ThemeProvider
           attribute="class"
