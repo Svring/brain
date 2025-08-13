@@ -25,7 +25,7 @@ export default function DeploymentNodeTitle({ name }: DeploymentNodeTitleProps) 
               App Launchpad
             </span>
             <span className="text-lg font-bold text-foreground leading-tight truncate w-full">
-              {name.length > 8 ? `${name.slice(0, 8)}...` : name}
+              {name.length > 15 ? `${name.slice(0, 15)}...` : name}
             </span>
           </span>
         </span>

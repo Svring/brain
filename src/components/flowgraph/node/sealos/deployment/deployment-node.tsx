@@ -10,6 +10,7 @@ import NodeMonitor from "../node-components/node-monitor";
 import DeploymentNodeTitle from "./deployment-node-title";
 import DeploymentNodeMenu from "./deployment-node-menu";
 import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-object-schema";
+import { truncateImage } from "@/lib/sealos/sealos-utils";
 
 export default function DeploymentNode({ data }: { data: DeploymentObject }) {
   const { name, image, status, ports, pods } = data;
@@ -29,7 +30,7 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
         <div className="flex items-center gap-2 mt-2">
           <Package className="h-4 w-4 text-muted-foreground" />
           <div className="text-sm text-muted-foreground truncate flex-1">
-            Image: {image}
+            Image: {image ? truncateImage(image) : "N/A"}
           </div>
         </div>
 

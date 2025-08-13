@@ -28,3 +28,19 @@ export function transformRegionUrl(url: string): string {
   // Return original if pattern doesn't match
   return url;
 }
+
+/**
+ * Transforms a Docker image URL to extract only the image name
+ * @param imageUrl - The full Docker image URL (e.g., 'ghcr.io/labring-actions/devbox/cpp-gcc-12.2.0:13aacd8')
+ * @returns The extracted image name (e.g., 'cpp-gcc-12.2.0')
+ */
+export function truncateImage(imageUrl: string): string {
+  // Split by '/' to get the last part which contains the image name and tag
+  const parts = imageUrl.split("/");
+  const imageWithTag = parts[parts.length - 1];
+
+  // Split by ':' to remove the tag and get only the image name
+  const imageName = imageWithTag.split(":")[0];
+
+  return imageName;
+}

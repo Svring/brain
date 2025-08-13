@@ -1,6 +1,7 @@
 import { activateDevboxActions } from "@/lib/copilot/sealos/devbox/copilot-devbox-actions";
 import { activateClusterActions } from "@/lib/copilot/sealos/cluster/copilot-cluster-actions";
 import { activateObjectStorageBucketActions } from "@/lib/copilot/sealos/objectstoragebucket/copilot-objectstoragebucket-actions";
+import { activateProjectActions } from "@/lib/copilot/brain/project/copilot-project-actions";
 
 import {
   createK8sContext,
@@ -13,7 +14,8 @@ export default function useCopilotActions() {
   const devboxContext = createDevboxContext();
   const sealosContext = createSealosContext();
 
-  activateDevboxActions(k8sContext, devboxContext);
-  activateClusterActions(k8sContext, sealosContext);
-  activateObjectStorageBucketActions(k8sContext, sealosContext);
+  // activateDevboxActions(k8sContext, devboxContext);
+  // activateClusterActions(k8sContext, sealosContext);
+  // activateObjectStorageBucketActions(k8sContext, sealosContext);
+  activateProjectActions(k8sContext);
 }

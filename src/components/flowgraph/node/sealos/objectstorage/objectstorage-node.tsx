@@ -1,13 +1,13 @@
 "use client";
 
 import BaseNode from "../../base-node-wrapper";
-import Image from "next/image";
 import { Globe, Copy } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import ObjectStoragePolicyBadge from "./objectstorage-policy-badge";
 import ObjectStorageNodeMenu from "./objectstorage-node-menu";
+import ObjectStorageNodeTitle from "./objectstorage-node-title";
 import { ObjectStorageObject } from "@/lib/sealos/resources/objectstorage/objectstorage-schemas/objectstorage-object-schema";
 
 export default function ObjectStorageNode({
@@ -27,28 +27,7 @@ export default function ObjectStorageNode({
         <div className="flex flex-col gap-4">
           {/* Header with Name and Menu */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 truncate font-medium">
-              <div className="flex flex-col items-start">
-                <span className="flex items-center gap-2">
-                  <Image
-                    src="https://objectstorageapi.hzh.sealos.run/cyhipdvv-logos/objectstorage.svg"
-                    alt="Object Storage Icon"
-                    width={24}
-                    height={24}
-                    className="rounded-lg border border-muted bg-white h-9 w-9"
-                    priority
-                  />
-                  <span className="flex flex-col">
-                    <span className="text-xs text-muted-foreground leading-none">
-                      Object Storage
-                    </span>
-                    <span className="text-lg font-bold text-foreground leading-tight w-full overflow-hidden text-ellipsis text-left">
-                      {name}
-                    </span>
-                  </span>
-                </span>
-              </div>
-            </div>
+            <ObjectStorageNodeTitle name={name} />
             <div className="flex-shrink-0">
               <ObjectStorageNodeMenu />
             </div>

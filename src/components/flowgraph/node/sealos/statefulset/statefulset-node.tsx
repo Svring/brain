@@ -9,6 +9,7 @@ import NodeMonitor from "../node-components/node-monitor";
 import StatefulsetNodeTitle from "./statefulset-node-title";
 import StatefulsetNodeMenu from "./statefulset-node-menu";
 import { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulset-object-schema";
+import { truncateImage } from "@/lib/sealos/sealos-utils";
 
 export default function StatefulsetNode({ data }: { data: StatefulsetObject }) {
   const { name, image, status, ports, pods } = data;
@@ -26,7 +27,7 @@ export default function StatefulsetNode({ data }: { data: StatefulsetObject }) {
         <div className="flex items-center gap-2 mt-2">
           <Package className="h-4 w-4 text-muted-foreground" />
           <div className="text-sm text-muted-foreground truncate flex-1">
-            Image: {image}
+            Image: {image ? truncateImage(image) : "N/A"}
           </div>
         </div>
 

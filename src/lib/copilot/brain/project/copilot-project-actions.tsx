@@ -9,6 +9,14 @@ import {
   useCreateProjectMutation,
 } from "@/lib/brain/resources/project/project-method/project-mutation";
 import { useCopilotAction } from "@copilotkit/react-core";
+import {
+  AITool,
+  AIToolContent,
+  AIToolHeader,
+  AIToolParameters,
+  AIToolResult,
+} from "@/components/shadcn-io/ai/tool";
+import { AIResponse } from "@/components/shadcn-io/ai/response";
 
 export const activateProjectActions = (context: K8sApiContext) => {
   listProjectAction(context);
@@ -57,8 +65,25 @@ export const createProjectAction = (context: K8sApiContext) => {
         ],
       },
     ],
-    renderAndWaitForResponse(props) {
-      return <></>;
+    // handler: ({ name, resources }) => {
+    //   createProject.mutateAsync({ name, resources });
+    // },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"createProject"}>
+          <AIToolHeader
+            description={"Create a new project"}
+            name={"createProject"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
     },
   });
 };
@@ -71,6 +96,23 @@ export const listProjectAction = (context: K8sApiContext) => {
     description: "List all projects",
     handler: () => {
       return queryClient.fetchQuery(listProjectsOptions(context));
+    },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"listProjects"}>
+          <AIToolHeader
+            description={"List all projects"}
+            name={"listProjects"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
     },
   });
 };
@@ -85,12 +127,28 @@ export const getProjectResourcesAction = (context: K8sApiContext) => {
       {
         name: "name",
         type: "string",
+        required: true,
         description: "Name of the project",
       },
     ],
     handler: ({ name }) => {
-      return queryClient.fetchQuery(
-        getProjectResourcesOptions(context, name)
+      return queryClient.fetchQuery(getProjectResourcesOptions(context, name));
+    },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"getProjectResources"}>
+          <AIToolHeader
+            description={"Get all resources of a project"}
+            name={"getProjectResources"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
+            )}
+          </AIToolContent>
+        </AITool>
       );
     },
   });
@@ -106,11 +164,29 @@ export const deleteProjectAction = (context: K8sApiContext) => {
       {
         name: "name",
         type: "string",
+        required: true,
         description: "Name of the project to delete",
       },
     ],
     handler: ({ name }) => {
-      deleteProject.mutateAsync({ name: name });
+      // deleteProject.mutateAsync({ name: name });
+    },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"deleteProject"}>
+          <AIToolHeader
+            description={"Delete a project by its name"}
+            name={"deleteProject"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
     },
   });
 };
