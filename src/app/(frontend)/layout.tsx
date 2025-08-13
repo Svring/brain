@@ -8,6 +8,7 @@ import QueryProvider from "@/components/provider/query-provider";
 import AppSidebar from "@/components/sidebar/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ChatProvider } from "@/contexts/chat/chat-context";
+import { ProjectProvider } from "@/contexts/project/project-context";
 import { ReactScan } from "@/components/provider/react-scan-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/auth/auth-context";
@@ -67,10 +68,12 @@ export default async function RootLayout({
             <QueryProvider>
               <CopilotProvider>
                 <ChatProvider>
-                  <SidebarProvider defaultOpen={false}>
-                    <AppSidebar />
-                    {children}
-                  </SidebarProvider>
+                  <ProjectProvider>
+                    <SidebarProvider defaultOpen={false}>
+                      <AppSidebar />
+                      {children}
+                    </SidebarProvider>
+                  </ProjectProvider>
                 </ChatProvider>
               </CopilotProvider>
             </QueryProvider>

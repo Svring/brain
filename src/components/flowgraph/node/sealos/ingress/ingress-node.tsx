@@ -59,23 +59,24 @@ export default function IngressNode({
   const displayAddress = publicAddress || privateAddress;
   const url = displayAddress;
   const hasPublicAddress = !!publicAddress;
+  const shouldCheckUrl = hasPublicAddress && protocol === "HTTP";
 
   useInterval(
     async () => {
-      if (!url || !hasPublicAddress) {
+      if (!url || !shouldCheckUrl) {
         return;
       }
       const result = await checkUrl(url);
       setUrlAvailable(result.available);
     },
-    url && hasPublicAddress ? 20000 : null, // Only run if url exists and has public address
+    url && shouldCheckUrl ? 20000 : null, // Only run if url exists, has public address, and is HTTP
     { immediate: true }
   );
 
   return (
     <BaseNode
       nodeData={data}
-      className={cn("p-4 h-27", hasPublicAddress && !urlAvailable && "bg-theme-yellow/10")}
+      className={cn("p-4 h-27", shouldCheckUrl && !urlAvailable && "bg-theme-yellow/10")}
     >
       <div className="flex h-full flex-col justify-between">
         {/* Header with Name and Dropdown */}
@@ -130,14 +131,9 @@ export default function IngressNode({
 
         {/* Status and Address Display */}
         <div className="flex items-center gap-2 mt-2">
-          {hasPublicAddress ? (
+          {shouldCheckUrl ? (
             urlAvailable ? (
-              <Globe
-                className={cn(
-                  "h-4 w-4",
-                  protocol === "TCP" ? "text-theme-blue" : "text-theme-green"
-                )}
-              />
+              <Globe className="h-4 w-4 text-theme-green" />
             ) : (
               <TooltipProvider>
                 <Tooltip>
@@ -158,14 +154,14 @@ export default function IngressNode({
             <span
               className={cn(
                 "text-sm truncate transition-colors",
-                hasPublicAddress && urlAvailable
+                shouldCheckUrl
                   ? "text-foreground cursor-pointer hover:text-foreground"
                   : "text-muted-foreground cursor-not-allowed"
               )}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                if (hasPublicAddress && urlAvailable) {
+                if (shouldCheckUrl) {
                   window.open(url, "_blank");
                 }
               }}

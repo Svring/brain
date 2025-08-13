@@ -1,5 +1,7 @@
 // Langgraph Schema Types
 
+import { ProjectContextState } from "../project/project-machine";
+
 export type DevBox = {
   runtime: string;
   description: string;
@@ -33,16 +35,11 @@ export type ProjectPlanWithStatus = {
   status: "pending" | "active" | "completed";
 };
 
-export type LanggraphAgentAiState = {
+export type LanggraphAgentState = {
   base_url: string;
   api_key: string;
   model: string;
-};
-
-export type LanggraphAgentNewProjectState = {
-  base_url: string;
-  api_key: string;
-  model: string;
+  project_context: ProjectContextState;
   project_plan?: ProjectPlanWithStatus;
   project_brief?: ProjectBrief;
 };

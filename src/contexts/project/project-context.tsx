@@ -5,6 +5,9 @@ import { useMachine } from "@xstate/react";
 import { createContext, type ReactNode, useContext } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import { projectMachine } from "@/contexts/project/project-machine";
+import { useEffect } from "react";
+import { useLanggraphAgent } from "@/hooks/langgraph/use-langgraph-agent";
+import _ from "lodash";
 
 // const inspector = createBrowserInspector();
 
@@ -22,6 +25,17 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
   const [state, send, actorRef] = useMachine(projectMachine, {
     // inspect: inspector.inspect,
   });
+
+  const { state: langgraphState, setState: setLanggraphState } =
+    useLanggraphAgent();
+
+  useEffect(() => {
+    const newState = _.cloneDeep(langgraphState);
+    _.set(newState, "project_context.allProjects", state.context.allProjects);
+    _.set(newState, "project_context.selectedProject", state.context.selectedProject);
+    _.set(newState, "project_context.selectedProjectResources", state.context.selectedProjectResources);
+    setLanggraphState(newState);
+  }, [state]);
 
   return (
     <ProjectContext.Provider value={{ state, send, actorRef }}>
@@ -61,5 +75,3 @@ export function useProjectActions() {
       send({ type: "CLEAR_SELECTED_PROJECT_RESOURCES" }),
   };
 }
-
-

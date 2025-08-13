@@ -46,7 +46,7 @@ export const getProjectOptions = (context: K8sApiContext, name: string) => {
 
 export const getProjectResourcesOptions = (
   context: K8sApiContext,
-  projectName: string,
+  name: string,
   enabledSubModules: string[] = [
     "devbox",
     "cluster",
@@ -55,18 +55,18 @@ export const getProjectResourcesOptions = (
   ]
 ) => {
   return queryOptions({
-    queryKey: ["project", "resources", projectName],
+    queryKey: ["project", "resources", name],
     queryFn: async () => {
       const resources = await getProjectRelatedResources(
         context,
-        projectName,
+        name,
         enabledSubModules
       );
       return flattenListAllResourcesResponse(resources).map(
         convertResourceToTarget
       );
     },
-    enabled: !!context.namespace && !!projectName && !!context.kubeconfig,
+    enabled: !!context.namespace && !!name && !!context.kubeconfig,
     staleTime: 60 * 1000, // 5 minutes
   });
 };

@@ -1,30 +1,15 @@
 import { useCoAgent, useCoAgentStateRender } from "@copilotkit/react-core";
-import {
-  LanggraphAgentAiState,
-  LanggraphAgentNewProjectState,
-} from "@/contexts/langgraph/langgraph-schema";
+import { LanggraphAgentState } from "@/contexts/langgraph/langgraph-schema";
 import ProjectPlanCard from "@/components/chat/state-cards/project-plan-card";
 
-export function useLanggraphAgentAi() {
-  const agent = useCoAgent<LanggraphAgentAiState>({
-    name: "ai",
-    initialState: {
-      base_url: "",
-      api_key: "",
-      model: "",
-    },
-  });
-
-  return agent;
-}
-
-export function useLanggraphAgentNewProject() {
-  const agent = useCoAgent<LanggraphAgentNewProjectState>({
+export function useLanggraphAgent() {
+  const agent = useCoAgent<LanggraphAgentState>({
     name: "sealos_brain",
     initialState: {
       base_url: "",
       api_key: "",
       model: "",
+      project_context: {},
       project_plan: {
         name: "",
         description: "",
@@ -42,12 +27,10 @@ export function useLanggraphAgentNewProject() {
     },
   });
 
-  useCoAgentStateRender<LanggraphAgentNewProjectState>({
+  useCoAgentStateRender<LanggraphAgentState>({
     name: "sealos_brain",
     render: ({ status, state }) => {
       const hasAnyData = state.project_brief || state.project_plan;
-
-      console.log("state", state);
 
       if (!hasAnyData || state.project_brief?.status === "pending") {
         return null;

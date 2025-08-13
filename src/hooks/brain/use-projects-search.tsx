@@ -30,6 +30,7 @@ export default function useProjectSearch(context: K8sApiContext) {
   }, [projects, lowerSearchTerm]);
 
   return {
+    projects,
     searchTerm,
     setSearchTerm,
     filteredProjects,

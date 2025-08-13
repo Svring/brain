@@ -1,19 +1,20 @@
 import { assign, createMachine } from "xstate";
-import type {
-  LanggraphAgentAiState,
-  LanggraphAgentNewProjectState,
-  LanggraphEvent,
-} from "./langgraph-schema";
+import type { LanggraphAgentState, LanggraphEvent } from "./langgraph-schema";
 
 export const langgraphMachine = createMachine({
   /** XState v5 generics */
-  types: {} as { context: LanggraphAgentAiState; events: LanggraphEvent },
+  types: {} as { context: LanggraphAgentState; events: LanggraphEvent },
   id: "langgraph",
   initial: "idle",
   context: {
     base_url: "",
     api_key: "",
     model: "",
+    project_context: {
+      allProjects: [],
+      selectedProject: null,
+      selectedProjectResources: null,
+    },
   },
   states: {
     idle: {

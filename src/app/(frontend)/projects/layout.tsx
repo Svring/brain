@@ -28,9 +28,9 @@ export default async function ChatLayout({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <ProjectProvider>
+      {/* <ProjectProvider> */}
         {children}
-      </ProjectProvider>
+      {/* </ProjectProvider> */}
     </HydrationBoundary>
   );
 }
