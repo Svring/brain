@@ -18,6 +18,7 @@ export default function NodeStack({
   onSubCardClick,
 }: NodeStackProps) {
   const [isMainInFront, setIsMainInFront] = useState(showMainFirst);
+  const [isHovered, setIsHovered] = useState(false);
 
   const frontCard = isMainInFront ? mainCard : subCard;
   const backCard = isMainInFront ? subCard : mainCard;
@@ -32,12 +33,16 @@ export default function NodeStack({
   };
 
   return (
-    <div className={`relative ${className}`}>
-      {/* Background card with static offset */}
+    <div 
+      className={`relative ${className}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Background card with animated offset */}
       <div
-        className="absolute inset-0 cursor-pointer"
+        className="absolute inset-0 cursor-pointer transition-transform duration-200 ease-out"
         style={{
-          transform: "translate(8px, -8px)",
+          transform: isHovered ? "translate(20px, -20px)" : "translate(12px, -12px)",
           zIndex: 0,
         }}
         onClick={handleBackCardClick}

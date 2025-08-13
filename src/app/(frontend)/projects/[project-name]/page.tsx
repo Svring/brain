@@ -176,7 +176,7 @@ export default function ProjectPage({
 
   useEffect(() => {
     // Set the selected project when the component mounts
-    selectProject({ name: projectName });
+    selectProject(projectName);
 
     // Cleanup: clear the selected project when the component unmounts
     return () => {

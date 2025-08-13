@@ -22,6 +22,10 @@ interface Release {
   id: string;
   tag: string;
   createTime: string;
+  status?: {
+    value: string;
+    label: string;
+  };
 }
 
 interface DevboxNodeReleaseListProps {
@@ -52,6 +56,12 @@ export default function DevboxNodeReleaseList({
   const [openDeletePopovers, setOpenDeletePopovers] = useState<
     Record<string, boolean>
   >({});
+  const [confirmDeleteState, setConfirmDeleteState] = useState<
+    Record<string, boolean>
+  >({});
+  const [deleteConfirmInput, setDeleteConfirmInput] = useState<
+    Record<string, string>
+  >({});
 
   const handleDeploy = async (releaseTag: string) => {
     try {
@@ -68,16 +78,30 @@ export default function DevboxNodeReleaseList({
 
   const setDeletePopoverOpen = (releaseTag: string, open: boolean) => {
     setOpenDeletePopovers((prev) => ({ ...prev, [releaseTag]: open }));
+    // Reset confirmation state when popover closes
+    if (!open) {
+      setConfirmDeleteState((prev) => ({ ...prev, [releaseTag]: false }));
+      setDeleteConfirmInput((prev) => ({ ...prev, [releaseTag]: "" }));
+    }
+  };
+
+  const setConfirmDelete = (releaseTag: string, confirmed: boolean) => {
+    setConfirmDeleteState((prev) => ({ ...prev, [releaseTag]: confirmed }));
   };
 
   const handleDelete = async (releaseTag: string) => {
+    console.log("handleDelete called with releaseTag:", releaseTag);
     if (onDelete) {
       try {
+        console.log("Calling onDelete function");
         await onDelete(releaseTag);
+        console.log("onDelete completed, closing popover");
         setDeletePopoverOpen(releaseTag, false);
       } catch (error) {
         console.error("Delete failed:", error);
       }
+    } else {
+      console.warn("onDelete function not provided");
     }
   };
 
@@ -119,6 +143,12 @@ export default function DevboxNodeReleaseList({
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
+                  {/* Status indicator */}
+                  {release.status?.value === "Pending" && (
+                    <span className="text-xs text-amber-500 font-medium">
+                      Pending
+                    </span>
+                  )}
                   <Popover
                     open={openPopovers[release.tag] || false}
                     onOpenChange={(open) => setPopoverOpen(release.tag, open)}
@@ -131,12 +161,13 @@ export default function DevboxNodeReleaseList({
                         size="sm"
                         variant="ghost"
                         className="h-6 w-6 p-0"
+                        disabled={release.status?.value === "Pending"}
                       >
                         <ArrowBigUpDash className="h-3 w-3" />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent
-                      className="w-80 z-[9999]"
+                      className="w-80 z-[9999] bg-background-secondary"
                       side="top"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -214,13 +245,18 @@ export default function DevboxNodeReleaseList({
                             Cancel
                           </Button>
                           <Button
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.stopPropagation();
-                              handleDeploy(release.tag);
+                              try {
+                                await handleDeploy(release.tag);
+                                // Popover will be closed in handleDeploy
+                              } catch (error) {
+                                console.error("Deploy failed:", error);
+                              }
                             }}
                             size="sm"
                             className="flex-1 h-8 text-xs"
-                            disabled={isDeploying}
+                            disabled={isDeploying || release.status?.value === "Pending"}
                           >
                             {isDeploying ? "Deploying..." : "Deploy"}
                           </Button>
@@ -230,37 +266,37 @@ export default function DevboxNodeReleaseList({
                   </Popover>
                   <Popover
                     open={openDeletePopovers[release.tag] || false}
-                    onOpenChange={(open) =>
-                      setDeletePopoverOpen(release.tag, open)
-                    }
+                    onOpenChange={(open) => {
+                      console.log("Delete popover state change", {
+                        releaseTag: release.tag,
+                        open,
+                        previousState: openDeletePopovers[release.tag]
+                      });
+                      setDeletePopoverOpen(release.tag, open);
+                    }}
                   >
                     <PopoverTrigger asChild>
-                      <TooltipProvider delayDuration={0}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                              }}
-                              size="sm"
-                              variant="ghost"
-                              className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                              disabled={!onDelete}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent
-                            side="top"
-                            className="bg-background-secondary rounded-lg z-[9999]"
-                          >
-                            <span className="text-xs">Delete</span>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          console.log("Delete trigger button clicked", {
+                            releaseTag: release.tag,
+                            onDeleteExists: !!onDelete,
+                            isPending: release.status?.value === "Pending",
+                            disabled: !onDelete || release.status?.value === "Pending"
+                          });
+                        }}
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                        disabled={!onDelete || release.status?.value === "Pending"}
+                        title="Delete"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </PopoverTrigger>
                     <PopoverContent
-                      className="w-80 z-[9999]"
+                      className="w-80 z-[9999] bg-background-secondary"
                       side="top"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -269,38 +305,97 @@ export default function DevboxNodeReleaseList({
                       <div className="space-y-4">
                         <div className="space-y-2">
                           <h4 className="font-medium text-sm text-destructive">
-                            Delete Release
+                            {confirmDeleteState[release.tag] ? "Confirm Delete" : "Delete Release"}
                           </h4>
                           <p className="text-xs text-muted-foreground">
-                            Are you sure you want to delete release{" "}
-                            {release.tag}? This action cannot be undone.
+                            {confirmDeleteState[release.tag] 
+                              ? `This will permanently delete release ${release.tag}. Type the release tag to confirm:`
+                              : `Are you sure you want to delete release ${release.tag}? This action cannot be undone.`
+                            }
                           </p>
                         </div>
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              setDeletePopoverOpen(release.tag, false);
-                            }}
-                            variant="outline"
-                            size="sm"
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleDelete(release.tag);
-                            }}
-                            variant="destructive"
-                            size="sm"
-                            disabled={isDeleting}
-                          >
-                            {isDeleting ? "Deleting..." : "Delete"}
-                          </Button>
-                        </div>
+                        {!confirmDeleteState[release.tag] ? (
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setDeletePopoverOpen(release.tag, false);
+                              }}
+                              variant="outline"
+                              size="sm"
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setConfirmDelete(release.tag, true);
+                              }}
+                              variant="destructive"
+                              size="sm"
+                              disabled={release.status?.value === "Pending"}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <Input
+                              placeholder={`Type "${release.tag}" to confirm`}
+                              value={deleteConfirmInput[release.tag] || ""}
+                              onChange={(e) => {
+                                setDeleteConfirmInput((prev) => ({
+                                  ...prev,
+                                  [release.tag]: e.target.value,
+                                }));
+                              }}
+                              className="text-sm"
+                            />
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setConfirmDelete(release.tag, false);
+                                  setDeleteConfirmInput((prev) => ({
+                                    ...prev,
+                                    [release.tag]: "",
+                                  }));
+                                }}
+                                variant="outline"
+                                size="sm"
+                              >
+                                Back
+                              </Button>
+                              <Button
+                                onClick={async (e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  console.log("Confirm delete button clicked", {
+                                    releaseTag: release.tag,
+                                    inputValue: deleteConfirmInput[release.tag],
+                                    isMatch: deleteConfirmInput[release.tag] === release.tag
+                                  });
+                                  if (deleteConfirmInput[release.tag] === release.tag) {
+                                    try {
+                                      await handleDelete(release.tag);
+                                      // Popover will be closed in handleDelete
+                                    } catch (error) {
+                                      console.error("Delete failed:", error);
+                                    }
+                                  }
+                                }}
+                                variant="destructive"
+                                size="sm"
+                                disabled={isDeleting || deleteConfirmInput[release.tag] !== release.tag}
+                              >
+                                {isDeleting ? "Deleting..." : "Confirm Delete"}
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </PopoverContent>
                   </Popover>

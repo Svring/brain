@@ -4,7 +4,7 @@ import { assign, createMachine } from "xstate";
 
 export interface ProjectContextState {
   allProjects: unknown[];
-  selectedProject: unknown | null;
+  selectedProject: string | null;
   selectedProjectResources: unknown | null;
 }
 
@@ -33,7 +33,9 @@ export const projectMachine = createMachine({
       actions: assign({ allProjects: ({ event }) => event.projects }),
     },
     SELECT_PROJECT: {
-      actions: assign({ selectedProject: ({ event }) => event.project }),
+      actions: assign({
+        selectedProject: ({ event }) => event.project as string,
+      }),
     },
     CLEAR_SELECTED_PROJECT: {
       actions: assign({ selectedProject: () => null }),

@@ -101,7 +101,8 @@ export function useDeployDevboxMutation(context: DevboxApiContext) {
   return useMutation({
     mutationFn: (request: DevboxDeployRequest) =>
       runParallelAction(deployDevbox(request, context)),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("deployed data:", data);
       queryClient.invalidateQueries({ queryKey: ["project"] });
       queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
@@ -138,6 +139,7 @@ export function useCreateAppMutation(context: DevboxApiContext) {
     mutationFn: (appForm: AppFormConfig) =>
       runParallelAction(createApp(appForm, context)),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project"] });
       queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
   });
@@ -149,6 +151,7 @@ export function useDeleteAppMutation(context: DevboxApiContext) {
     mutationFn: (appName: string) =>
       runParallelAction(deleteApp(appName, context)),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project"] });
       queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
   });
@@ -160,6 +163,8 @@ export function useDeleteDevboxReleaseMutation(context: DevboxApiContext) {
     mutationFn: (versionName: string) =>
       runParallelAction(deleteDevboxRelease(context, versionName)),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project"] });
+      queryClient.invalidateQueries({ queryKey: ["devbox"] });
       queryClient.invalidateQueries({ queryKey: ["release"] });
     },
   });

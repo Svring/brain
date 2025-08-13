@@ -101,6 +101,8 @@ export default function useResourceObjects(
     fetchAllResources();
   }, [filteredTargets, context.kubeconfig, context.namespace]);
 
+  console.log("fetchedObjects", fetchedObjects);
+
   return {
     resourceObjects: fetchedObjects,
     isLoading,

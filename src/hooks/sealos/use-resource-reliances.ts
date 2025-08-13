@@ -1,8 +1,11 @@
 import { useMemo } from "react";
+import { inferRelianceFromEnv } from "@/lib/sealos/services/reliances/env-reliance";
+import { inferRelianceFromImage } from "@/lib/sealos/services/reliances/image-reliance";
 
 interface ResourceObject {
   name: string;
   kind: string;
+  image?: string;
   env?: Array<{
     name: string;
     value?: string;
@@ -25,84 +28,53 @@ interface ResourceReliances {
   };
 }
 
+/**
+ * Merges two resource reliance objects
+ * @param envReliances Reliances inferred from environment variables
+ * @param imageReliances Reliances inferred from image names
+ * @returns Merged reliances object
+ */
+function mergeReliances(
+  envReliances: ResourceReliances,
+  imageReliances: ResourceReliances
+): ResourceReliances {
+  const merged: ResourceReliances = { ...envReliances };
+
+  // Merge image reliances into env reliances
+  for (const kind in imageReliances) {
+    if (!merged[kind]) {
+      merged[kind] = {};
+    }
+
+    for (const resourceName in imageReliances[kind]) {
+      if (!merged[kind][resourceName]) {
+        merged[kind][resourceName] = [];
+      }
+
+      // Add image-based reliances that don't already exist
+      for (const reliance of imageReliances[kind][resourceName]) {
+        if (
+          !merged[kind][resourceName].some(
+            (r) => r.name === reliance.name && r.kind === reliance.kind
+          )
+        ) {
+          merged[kind][resourceName].push(reliance);
+        }
+      }
+    }
+  }
+
+  return merged;
+}
+
 export default function useResourceReliances(
   resourceObjects: ResourceObject[]
 ) {
   const reliances = useMemo(() => {
-    const result: ResourceReliances = {};
+    const envReliances = inferRelianceFromEnv(resourceObjects);
+    const imageReliances = inferRelianceFromImage(resourceObjects);
 
-    // Filter owner resources (deployment and statefulset only)
-    const ownerResources = resourceObjects.filter(
-      (resource) =>
-        resource.kind.toLowerCase() === "deployment" ||
-        resource.kind.toLowerCase() === "statefulset"
-    );
-
-    // All resources can be dependencies (including other deployments/statefulsets)
-    const dependencyResources = resourceObjects;
-
-    for (const ownerResource of ownerResources) {
-      const ownerKind = ownerResource.kind.toLowerCase();
-      const ownerName = ownerResource.name;
-
-      // Initialize result structure
-      if (!result[ownerKind]) {
-        result[ownerKind] = {};
-      }
-      result[ownerKind][ownerName] = [];
-
-      // Extract env values
-      const envValues: string[] = [];
-      if (ownerResource.env) {
-        for (const envVar of ownerResource.env) {
-          // Type 1: direct value
-          if (envVar.value) {
-            envValues.push(envVar.value);
-          }
-          // Type 2: valueFrom.secretKeyRef.name
-          if (envVar.valueFrom?.secretKeyRef?.name) {
-            envValues.push(envVar.valueFrom.secretKeyRef.name);
-          }
-        }
-      }
-
-      // Match env values against dependency resource names
-      for (const envValue of envValues) {
-        let bestMatch: ResourceObject | null = null;
-        let bestMatchLength = 0;
-
-        for (const depResource of dependencyResources) {
-          const depName = depResource.name;
-
-          // Skip self-reference (a resource cannot depend on itself)
-          if (
-            depResource.name === ownerName &&
-            depResource.kind.toLowerCase() === ownerKind
-          ) {
-            continue;
-          }
-
-          // Check if env value contains the dependency resource name
-          if (envValue.includes(depName) && depName.length > bestMatchLength) {
-            bestMatch = depResource;
-            bestMatchLength = depName.length;
-          }
-        }
-
-        // Add the best match if found and not already added
-        if (
-          bestMatch &&
-          !result[ownerKind][ownerName].some((r) => r.name === bestMatch!.name)
-        ) {
-          result[ownerKind][ownerName].push({
-            name: bestMatch.name,
-            kind: bestMatch.kind,
-          });
-        }
-      }
-    }
-
-    return result;
+    return mergeReliances(envReliances, imageReliances);
   }, [resourceObjects]);
 
   return { reliances };
