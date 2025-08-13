@@ -28,6 +28,7 @@ import { TextShimmer } from "@/components/ui/text-shimmer";
 import AiCoin from "@/components/chat/ai-coin";
 import AiChatbox from "@/components/chat/ai-chatbox";
 import AddResourceTabs from "@/components/project/add-resource/add-resource-tabs";
+import DisplayEnvPanel from "@/components/project/display-env/display-env-panel";
 
 import FloatingConnectionLine from "@/components/flowgraph/edge/floating-connection-line";
 
@@ -56,21 +57,38 @@ import { REACT_FLOW_CONFIG } from "@/lib/flowgraph/flowgraph-constant/flowgraph-
 // Floating UI Component
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [sheetContent, setSheetContent] = useState<'add-resource' | 'display-env'>('add-resource');
+
+  const handleAddNew = () => {
+    setSheetContent('add-resource');
+    onOpen();
+  };
+
+  const handleDisplayEnv = () => {
+    setSheetContent('display-env');
+    onOpen();
+  };
 
   return (
     <>
       <FlowgraphHeader projectName={projectName} />
-      <FlowgraphMenuActions onAddNew={onOpen} />
+      <FlowgraphMenuActions onAddNew={handleAddNew} onDisplayEnv={handleDisplayEnv} />
       <Sheet onOpenChange={onClose} open={isOpen}>
         <SheetContent className="w-[40vw]! max-w-none! fade-in-0 animate-in flex flex-col">
           <SheetHeader className="shrink-0">
-            <SheetTitle>Add Resource</SheetTitle>
+            <SheetTitle>
+              {sheetContent === 'add-resource' ? 'Add Resource' : 'Display Environment'}
+            </SheetTitle>
             <VisuallyHidden>
               <SheetDescription />
             </VisuallyHidden>
           </SheetHeader>
           <div className="flex-1 overflow-y-auto">
-            <AddResourceTabs />
+            {sheetContent === 'add-resource' ? (
+              <AddResourceTabs />
+            ) : (
+              <DisplayEnvPanel />
+            )}
           </div>
         </SheetContent>
       </Sheet>

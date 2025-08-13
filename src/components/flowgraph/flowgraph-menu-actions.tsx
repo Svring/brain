@@ -1,14 +1,21 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Plus, Eye } from "lucide-react";
 import { MenuBar, MenuBarItem } from "../project/menu-bar";
 
 interface FlowgraphMenuActionsProps {
   onAddNew: () => void;
+  onDisplayEnv: () => void;
 }
 
-export function FlowgraphMenuActions({ onAddNew }: FlowgraphMenuActionsProps) {
+export function FlowgraphMenuActions({ onAddNew, onDisplayEnv }: FlowgraphMenuActionsProps) {
   const menuItemsRight: MenuBarItem[] = [
+    {
+      icon: Eye,
+      label: "Display Env",
+      onClick: onDisplayEnv,
+      isToggle: false,
+    },
     {
       icon: Plus,
       label: "Add New",
