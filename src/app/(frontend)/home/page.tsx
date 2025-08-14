@@ -97,7 +97,7 @@ export default function HomePage() {
               onWheel={disableAutoScroll}
               onTouchMove={disableAutoScroll}
             >
-              <div className="max-w-3xl mx-auto w-full">
+              <div className="max-w-4xl mx-auto w-full">
                 <AiMessages />
               </div>
             </div>

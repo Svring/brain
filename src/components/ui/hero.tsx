@@ -49,7 +49,7 @@ const Hero = React.forwardRef<HTMLElement, HeroProps>(
       <section
         ref={ref}
         className={cn(
-          "relative z-0 flex h-[50vh] w-full items-end justify-center overflow-hidden rounded-md bg-transparent",
+          "relative z-0 flex h-[40vh] w-full items-end justify-center overflow-hidden rounded-md bg-transparent",
           className
         )}
         {...props}

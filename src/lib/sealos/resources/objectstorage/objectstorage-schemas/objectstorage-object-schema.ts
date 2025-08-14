@@ -11,9 +11,9 @@ export const ObjectStorageAccessSchema = z.object({
 
 // Object Storage Policy Enum
 export const ObjectStoragePolicySchema = z.enum([
-  "Private",
-  "PublicRead",
-  "PublicReadwrite",
+  "private",
+  "publicRead",
+  "publicReadwrite",
 ]);
 
 // Main Object Storage Object Schema

@@ -12,6 +12,7 @@ import {
   convertResourceToTarget,
 } from "@/lib/k8s/k8s-method/k8s-utils";
 import { buildQueryKey } from "@/lib/k8s/k8s-constant/k8s-constant-query-key";
+import { convertObjectStorageListToSimplified } from "../objectstorage-utils";
 
 export const getObjectStorage = async (
   context: K8sApiContext,
@@ -29,13 +30,7 @@ export const listObjectStorage = async (context: K8sApiContext) => {
   const objectStorageResourceList = await runParallelAction(
     listCustomResources(context, target)
   );
-  const objectStorageTargetList = objectStorageResourceList.items.map((item) =>
-    CustomResourceTargetSchema.parse(convertResourceToTarget(item))
-  );
-  const objectStoragePromises = objectStorageTargetList.map(
-    async (target) => await getObjectStorage(context, target)
-  );
-  return await Promise.all(objectStoragePromises);
+  return convertObjectStorageListToSimplified(objectStorageResourceList.items);
 };
 
 // ============================================================================
@@ -67,6 +62,17 @@ export const getObjectStorageOptions = (
 export const listObjectStorageOptions = (context: K8sApiContext) =>
   queryOptions({
     queryKey: buildQueryKey.listObjectStorages(context.namespace),
+    queryFn: async () => await listObjectStorage(context),
+    enabled: !!context.namespace && !!context.kubeconfig,
+    staleTime: 1000 * 30,
+  });
+
+/**
+ * Query options for listing object storage options (simplified list for add resource tabs)
+ */
+export const listObjectStorageOptionsOptions = (context: K8sApiContext) =>
+  queryOptions({
+    queryKey: ["objectstorage"],
     queryFn: async () => await listObjectStorage(context),
     enabled: !!context.namespace && !!context.kubeconfig,
     staleTime: 1000 * 30,

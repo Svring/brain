@@ -277,3 +277,33 @@ export function createObjectStorageEnvVars(
     },
   ];
 }
+
+/**
+ * Converts an object storage resource to a simplified list item with only essential fields
+ * @param objectStorageResource - The full object storage K8s resource object
+ * @returns A simplified object storage list item with name, kind, policy, and inProject
+ */
+export const convertObjectStorageToSimplifiedList = (
+  objectStorageResource: any
+) => {
+  return {
+    name: objectStorageResource.metadata?.name,
+    kind: objectStorageResource.kind,
+    policy: objectStorageResource.spec?.policy,
+    inProject:
+      objectStorageResource.metadata?.labels?.[
+        "cloud.sealos.io/deploy-on-sealos"
+      ],
+  };
+};
+
+/**
+ * Converts an array of object storage resources to a simplified list
+ * @param objectStorageResources - Array of full object storage resource objects
+ * @returns Array of simplified object storage list items
+ */
+export const convertObjectStorageListToSimplified = (
+  objectStorageResources: any[]
+) => {
+  return objectStorageResources.map(convertObjectStorageToSimplifiedList);
+};

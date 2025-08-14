@@ -15,6 +15,7 @@ import { listDevboxOptions } from "@/lib/sealos/resources/devbox/devbox-method/d
 import { listClusterOptions } from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
 import { listDeploymentOptions } from "@/lib/sealos/resources/deployment/deployment-method/deployment-query";
 import { listStatefulSetOptions } from "@/lib/sealos/resources/statefulset/statefulset-method/statefulset-query";
+import { listObjectStorageOptionsOptions } from "@/lib/sealos/resources/objectstorage/objectstorage-method/objectstorage-query";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -75,6 +76,12 @@ export default function AddResourceTabs() {
     isLoading: deploymentLoading,
     error: deploymentError,
   } = useQuery(listDeploymentOptions(k8sContext));
+
+  const {
+    data: objectStorages = [],
+    isLoading: objectStorageLoading,
+    error: objectStorageError,
+  } = useQuery(listObjectStorageOptionsOptions(k8sContext));
 
   // const {
   //   data: statefulSets = [],
@@ -376,13 +383,105 @@ export default function AddResourceTabs() {
     </Card>
   );
 
+  const ObjectStorageTable = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle>Object Storage</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {objectStorageLoading ? (
+          <div className="text-center py-4">Loading object storage...</div>
+        ) : objectStorageError ? (
+          <div className="text-center py-4 text-red-500">
+            Error loading object storage: {objectStorageError.message}
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Policy</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {objectStorages.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={3}
+                    className="text-center py-4 text-muted-foreground"
+                  >
+                    No object storage found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                objectStorages.map((storage: any) => {
+                  const resourceKey = createResourceKey(
+                    "objectstoragebucket",
+                    storage.name
+                  );
+                  const isAdding = addingResources.has(resourceKey);
+
+                  return (
+                    <TableRow key={storage.name}>
+                      <TableCell className="font-medium">
+                        {storage.name}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">
+                          {storage.policy || "Unknown"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {storage.inProject ? (
+                          <span className="text-sm text-muted-foreground">
+                            {(
+                              allProjects.find(
+                                (project: any) =>
+                                  project.name === storage.inProject
+                              ) as any
+                            )?.displayName || storage.inProject}
+                          </span>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={isAdding}
+                            className="hover:brightness-110 transition-all duration-200"
+                            onClick={() =>
+                              handleAddResource("objectstoragebucket", storage.name)
+                            }
+                          >
+                            {isAdding ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Adding...
+                              </>
+                            ) : (
+                              "Add"
+                            )}
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        )}
+      </CardContent>
+    </Card>
+  );
+
   return (
     <div className="w-full">
       <Tabs defaultValue="devbox" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="devbox">Devbox</TabsTrigger>
           <TabsTrigger value="cluster">Cluster</TabsTrigger>
           <TabsTrigger value="launchpad">Launchpad</TabsTrigger>
+          <TabsTrigger value="objectstorage">Object Storage</TabsTrigger>
         </TabsList>
 
         <TabsContent value="devbox" className="">
@@ -395,6 +494,10 @@ export default function AddResourceTabs() {
 
         <TabsContent value="launchpad" className="">
           <LaunchpadTable />
+        </TabsContent>
+
+        <TabsContent value="objectstorage" className="">
+          <ObjectStorageTable />
         </TabsContent>
       </Tabs>
     </div>

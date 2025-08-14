@@ -17,8 +17,6 @@ export default function ObjectStorageNode({
 }) {
   const [staticHosting, setStaticHosting] = useState(false);
 
-  // console.log("data", data);
-
   const { name, policy } = data;
 
   return (
@@ -34,29 +32,31 @@ export default function ObjectStorageNode({
           </div>
 
           {/* Static Hosting Toggle and Copy Button */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <Globe className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">
-                Static Hosting
-              </span>
-              <Switch
-                checked={staticHosting}
-                onCheckedChange={setStaticHosting}
-                className="scale-75"
-              />
+          {policy !== "private" && (
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Globe className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  Static Hosting
+                </span>
+                <Switch
+                  checked={staticHosting}
+                  onCheckedChange={setStaticHosting}
+                  className="scale-75"
+                />
+              </div>
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+                size="sm"
+                variant="ghost"
+                className="h-6 w-6 p-0"
+              >
+                <Copy className="h-3 w-3" />
+              </Button>
             </div>
-            <Button
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-              size="sm"
-              variant="ghost"
-              className="h-6 w-6 p-0"
-            >
-              <Copy className="h-3 w-3" />
-            </Button>
-          </div>
+          )}
         </div>
 
         {/* Policy Badge */}
