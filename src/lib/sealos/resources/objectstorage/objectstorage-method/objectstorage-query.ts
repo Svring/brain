@@ -78,6 +78,7 @@ export const initObjectStorageUserOptions = (
     queryKey: ["sealos", "objectstorage", "user", "init"],
     queryFn: async () =>
       await runParallelAction(initObjectStorageUser(context)),
+    select: (data) => data.data.secret,
     enabled: !!context.baseURL && !!context.authorization,
     staleTime: 1000 * 60 * 5, // 5 minutes - user credentials don't change often
   });

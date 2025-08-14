@@ -3,10 +3,10 @@
 import BaseNode from "../../base-node-wrapper";
 // import useDeploymentNode from "@/hooks/sealos/deployment/use-deployment-node";
 import { Package } from "lucide-react";
-import NodeStatusLight from "../node-components/node-status-light";
-import NodeInternalUrl from "../node-components/node-internal-url";
-import NodePods from "../node-components/node-pods";
-import NodeMonitor from "../node-components/node-monitor";
+import NodeStatusLight from "../../components/node-status-light";
+import NodeInternalUrl from "../../components/node-internal-url";
+import NodePods from "../../components/node-pods";
+import NodeMonitor from "../../components/node-monitor";
 import DeploymentNodeTitle from "./deployment-node-title";
 import DeploymentNodeMenu from "./deployment-node-menu";
 import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-object-schema";

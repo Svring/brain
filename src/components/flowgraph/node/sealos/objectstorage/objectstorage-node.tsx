@@ -1,7 +1,8 @@
 "use client";
 
 import BaseNode from "../../base-node-wrapper";
-import { Globe, Copy, KeyRound } from "lucide-react";
+import NodeHem from "../../components/node-hem";
+import { Globe, Copy, KeyRound, Wifi, WifiOff } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
@@ -16,6 +17,10 @@ import {
   createObjectStorageContext,
 } from "@/lib/auth/auth-utils";
 import { initObjectStorageUserOptions } from "@/lib/sealos/resources/objectstorage/objectstorage-method/objectstorage-query";
+import {
+  useCloseObjectStorageHostMutation,
+  useOpenObjectStorageHostMutation,
+} from "@/lib/sealos/resources/objectstorage/objectstorage-method/objectstorage-mutation";
 
 export default function ObjectStorageNode({
   data,
@@ -36,8 +41,11 @@ export default function ObjectStorageNode({
     error: userInitError,
   } = useQuery(initObjectStorageUserOptions(objectStorageContext));
 
-  // Log the result when data changes
-  console.log("userInitData", userInitData);
+  // Add host mutations
+  const closeHostMutation =
+    useCloseObjectStorageHostMutation(objectStorageContext);
+  const openHostMutation =
+    useOpenObjectStorageHostMutation(objectStorageContext);
 
   // Check if this object storage is being deleted
   const isDeletingObjectStorage =
@@ -53,7 +61,34 @@ export default function ObjectStorageNode({
       },
     }) > 0;
 
-  return (
+  // Create hem component showing API connection status
+  const hemComponent = (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        {userInitLoading ? (
+          <WifiOff className="h-3 w-3 text-muted-foreground animate-pulse" />
+        ) : userInitData ? (
+          <Wifi className="h-3 w-3 text-green-500" />
+        ) : (
+          <WifiOff className="h-3 w-3 text-red-500" />
+        )}
+        <span className="text-muted-foreground">
+          {userInitLoading
+            ? "Connecting..."
+            : userInitData
+            ? "API Connected"
+            : "API Error"}
+        </span>
+      </div>
+      {userInitData && (
+        <span className="text-muted-foreground">
+          {userInitData.CONSOLE_ACCESS_KEY.slice(0, 8)}...
+        </span>
+      )}
+    </div>
+  );
+
+  const mainCard = (
     <BaseNode
       nodeData={data}
       className={isDeletingObjectStorage ? "border-theme-red" : ""}
@@ -69,7 +104,7 @@ export default function ObjectStorageNode({
           </div>
 
           {/* Static Hosting Toggle and Copy Button */}
-          {policy !== "private" && (
+          {/* {policy !== "private" && (
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <Globe className="h-4 w-4 text-muted-foreground" />
@@ -93,7 +128,7 @@ export default function ObjectStorageNode({
                 <Copy className="h-3 w-3" />
               </Button>
             </div>
-          )}
+          )} */}
         </div>
 
         {/* Policy Badge */}
@@ -103,4 +138,6 @@ export default function ObjectStorageNode({
       </div>
     </BaseNode>
   );
+
+  return <NodeHem mainCard={mainCard} hemComponent={hemComponent} />;
 }

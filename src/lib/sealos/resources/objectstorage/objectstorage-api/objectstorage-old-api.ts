@@ -77,7 +77,7 @@ export const deleteObjectStorage = createParallelAction(
   ): Promise<ObjectStorageDeleteResponse> => {
     const validatedRequest = ObjectStorageDeleteRequestSchema.parse(request);
     const api = createObjectStorageApi(context);
-    const response = await api.post("/bucket/delete", validatedRequest);
+    const response = await api.post("/delete", validatedRequest);
     return ObjectStorageDeleteResponseSchema.parse(response.data);
   }
 );

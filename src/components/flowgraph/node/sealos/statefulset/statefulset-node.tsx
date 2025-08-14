@@ -2,10 +2,10 @@
 
 import BaseNode from "../../base-node-wrapper";
 import { Package } from "lucide-react";
-import NodeStatusLight from "../node-components/node-status-light";
-import NodeInternalUrl from "../node-components/node-internal-url";
-import NodePods from "../node-components/node-pods";
-import NodeMonitor from "../node-components/node-monitor";
+import NodeStatusLight from "../../components/node-status-light";
+import NodeInternalUrl from "../../components/node-internal-url";
+import NodePods from "../../components/node-pods";
+import NodeMonitor from "../../components/node-monitor";
 import StatefulsetNodeTitle from "./statefulset-node-title";
 import StatefulsetNodeMenu from "./statefulset-node-menu";
 import { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulset-object-schema";
