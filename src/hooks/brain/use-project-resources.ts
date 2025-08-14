@@ -36,7 +36,7 @@ export default function useProjectResources(projectName: string) {
     return flattenListAllResourcesResponse(allResourcesResponse)
       .map(convertResourceToTarget)
       .filter(Boolean);
-  }, [allResourcesResponse]);
+  }, [allResourcesResponse, projectName]);
 
   return {
     resources,

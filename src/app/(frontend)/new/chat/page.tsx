@@ -14,13 +14,22 @@ import {
   getClusterVersions,
   getCluster,
 } from "@/lib/sealos/resources/cluster/cluster-api/cluster-open-api";
+import { getClusterLogs } from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
 import { useEffect, useState } from "react";
 import { runParallelAction } from "next-server-actions-parallel";
+import { createK8sContext } from "@/lib/auth/auth-utils";
+import {
+  BuiltinResourceTargetSchema,
+  CustomResourceTargetSchema,
+} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { getLaunchpadLogs } from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-query";
 
 export default function ChatPage() {
   const { messages } = useCopilotChatHeadless_c({ id: "chat" });
   const hasMessages = messages.length > 0;
 
+  const k8sContext = createK8sContext();
   const context = createSealosContext();
 
   useCopilotActions();
@@ -51,8 +60,25 @@ export default function ChatPage() {
   //     const cluster = await runParallelAction(
   //       getCluster("affine-kssnwpeh-pg", context)
   //     );
+  //     const clusterLogs = await getClusterLogs(
+  //       k8sContext,
+  //       context,
+  //       CustomResourceTargetSchema.parse(
+  //         convertResourceTypeToTarget("cluster", "ai-redis-l62cye")
+  //       )
+  //     );
   //     console.log(clusterVersions);
   //     console.log(cluster);
+  //     console.log("clusterLogs", clusterLogs);
+
+  //     const launchpadLogs = await getLaunchpadLogs(
+  //       k8sContext,
+  //       context,
+  //       BuiltinResourceTargetSchema.parse(
+  //         convertResourceTypeToTarget("deployment", "nginx-hi")
+  //       )
+  //     );
+  //     console.log("launchpadLogs", launchpadLogs);
   //   };
   //   fetchClusterVersions();
   // }, []);

@@ -59,7 +59,8 @@ export function usePauseLaunchpadMutation(context: SealosApiContext) {
   return useMutation({
     mutationFn: (request: LaunchpadPauseRequest) =>
       runParallelAction(pauseLaunchpad(request, context)),
-    onSuccess: () => {
+    onSuccess: (_, request) => {
+      // Immediate invalidation
       queryClient.invalidateQueries({
         queryKey: ["project"],
       });
@@ -69,6 +70,34 @@ export function usePauseLaunchpadMutation(context: SealosApiContext) {
       queryClient.invalidateQueries({
         queryKey: ["statefulset"],
       });
+
+      // Start polling for status changes after lifecycle actions
+      const startPolling = () => {
+        let pollCount = 0;
+        const maxPolls = 30; // Poll for up to 150 seconds
+        const pollInterval = 5000; // Poll every 5 seconds
+
+        const poll = () => {
+          pollCount++;
+          queryClient.invalidateQueries({
+            queryKey: ["project"],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["deployment"],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["statefulset"],
+          });
+
+          if (pollCount < maxPolls) {
+            setTimeout(poll, pollInterval);
+          }
+        };
+
+        setTimeout(poll, pollInterval);
+      };
+
+      startPolling();
     },
   });
 }
@@ -78,7 +107,8 @@ export function useStartLaunchpadMutation(context: SealosApiContext) {
   return useMutation({
     mutationFn: (request: LaunchpadStartRequest) =>
       runParallelAction(startLaunchpad(request, context)),
-    onSuccess: () => {
+    onSuccess: (_, request) => {
+      // Immediate invalidation
       queryClient.invalidateQueries({
         queryKey: ["project"],
       });
@@ -88,6 +118,34 @@ export function useStartLaunchpadMutation(context: SealosApiContext) {
       queryClient.invalidateQueries({
         queryKey: ["statefulset"],
       });
+
+      // Start polling for status changes after lifecycle actions
+      const startPolling = () => {
+        let pollCount = 0;
+        const maxPolls = 30; // Poll for up to 150 seconds
+        const pollInterval = 5000; // Poll every 5 seconds
+
+        const poll = () => {
+          pollCount++;
+          queryClient.invalidateQueries({
+            queryKey: ["project"],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["deployment"],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["statefulset"],
+          });
+
+          if (pollCount < maxPolls) {
+            setTimeout(poll, pollInterval);
+          }
+        };
+
+        setTimeout(poll, pollInterval);
+      };
+
+      startPolling();
     },
   });
 }

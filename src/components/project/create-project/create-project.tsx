@@ -60,13 +60,10 @@ export default function CreateProject({ closeDialog }: CreateProjectProps) {
       { name: projectName },
       {
         onSuccess: () => {
-          toast.success(`Project "${projectName}" created successfully!`);
-          closeDialog?.();
-        },
-        onError: (error: Error) => {
-          toast.error(
-            error.message || "Failed to create project. Please try again."
-          );
+          // Close the dialog after successful project creation
+          if (closeDialog) {
+            closeDialog();
+          }
         },
       }
     );
@@ -106,8 +103,8 @@ export default function CreateProject({ closeDialog }: CreateProjectProps) {
               Select from available app templates.
             </p>
           </div>
-          <Button 
-            onClick={handleCreateProject} 
+          <Button
+            onClick={handleCreateProject}
             size="lg"
             disabled={createProjectMutation.isPending}
           >

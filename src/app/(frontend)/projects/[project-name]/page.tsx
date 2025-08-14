@@ -108,6 +108,12 @@ function ProjectFlow({ projectName }: { projectName: string }) {
   const { reliances } = useResourceReliances(resourceObjects);
   const { edges: computedEdges } = useFlowgraphEdges(reliances);
 
+  console.log("resources", resources);
+  console.log("resourceObjects", resourceObjects);
+  console.log("computedNodes", computedNodes);
+  console.log("reliances", reliances);
+  console.log("computedEdges", computedEdges);
+
   const { setNodes, setEdges, onNodesChange, onEdgesChange } =
     useFlowgraphActions();
   const { nodes, edges } = useFlowgraphState();
@@ -139,7 +145,7 @@ function ProjectFlow({ projectName }: { projectName: string }) {
       finalNodes: allNodes,
       finalEdges: allEdges,
     };
-  }, [computedNodes, computedEdges]);
+  }, [computedNodes, computedEdges, resources]);
 
   useEffect(() => {
     // Set nodes and edges with ingress nodes included

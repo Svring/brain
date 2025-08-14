@@ -107,7 +107,7 @@ export const deleteLaunchpad = createParallelAction(
     const validatedRequest = LaunchpadDeleteRequestSchema.parse(request);
     const api = createLaunchpadApi(context);
     const response = await api.get("/delApp", {
-      params: { appName: validatedRequest.name },
+      params: { name: validatedRequest.name },
     });
     return LaunchpadDeleteResponseSchema.parse(response.data);
   }

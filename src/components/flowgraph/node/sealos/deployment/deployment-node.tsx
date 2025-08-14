@@ -11,15 +11,31 @@ import DeploymentNodeTitle from "./deployment-node-title";
 import DeploymentNodeMenu from "./deployment-node-menu";
 import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-object-schema";
 import { truncateImage } from "@/lib/sealos/sealos-utils";
+import { useIsMutating } from "@tanstack/react-query";
 
 export default function DeploymentNode({ data }: { data: DeploymentObject }) {
   const { name, image, status, ports, pods } = data;
+
+  // Check if this deployment is being deleted
+  const isDeletingDeployment = useIsMutating({
+    predicate: (mutation) => {
+      // Check if this is a delete launchpad mutation for this specific deployment
+      const isDeleteMutation =
+        mutation.options.mutationFn?.toString().includes("deleteLaunchpad") ??
+        false;
+      const variables = mutation.state.variables as any;
+      return isDeleteMutation && variables?.name === name;
+    },
+  }) > 0;
 
   // console.log("status", status);
   // console.log("pods", pods);
 
   return (
-    <BaseNode nodeData={data}>
+    <BaseNode 
+      nodeData={data}
+      className={isDeletingDeployment ? "border-theme-red" : ""}
+    >
       <div className="flex h-full flex-col gap-2 justify-between">
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
@@ -51,8 +67,8 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
 
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
-            <NodeInternalUrl ports={ports || []} />
-            <NodePods pods={pods || []} />
+            {/* <NodeInternalUrl ports={ports || []} />
+            <NodePods pods={pods || []} /> */}
             <NodeMonitor />
           </div>
         </div>

@@ -49,8 +49,15 @@ export default function useResourceObjects(
 
   // Filter and fetch all resource types
   useEffect(() => {
-    if (!context.kubeconfig || !context.namespace || resources.length === 0)
+    // If no resources, immediately clear objects and return
+    if (resources.length === 0) {
+      setFetchedObjects([]);
+      setSelectedProjectResources([]);
+      setIsLoading(false);
       return;
+    }
+
+    if (!context.kubeconfig || !context.namespace) return;
 
     const fetchAllResources = async () => {
       setIsLoading(true);
@@ -99,7 +106,12 @@ export default function useResourceObjects(
     };
 
     fetchAllResources();
-  }, [filteredTargets, context.kubeconfig, context.namespace]);
+  }, [
+    filteredTargets,
+    context.kubeconfig,
+    context.namespace,
+    resources.length,
+  ]);
 
   return {
     resourceObjects: fetchedObjects,

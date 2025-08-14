@@ -33,9 +33,9 @@ export const useCreateProjectMutation = (context: K8sApiContext) => {
       return convertInstanceToProject(instanceResource);
     },
     onSuccess: (data, { name }) => {
-      toast.success(`project "${name}" created successfully`);
+      toast.success(`Project "${name}" created successfully`);
       queryClient.invalidateQueries({
-        queryKey: ["project"],
+        queryKey: ["projects"],
       });
     },
     onError: (error) => {

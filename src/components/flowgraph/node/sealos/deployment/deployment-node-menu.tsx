@@ -36,15 +36,17 @@ export default function DeploymentNodeMenu({
   const sealosContext = createSealosContext();
   const k8sContext = createK8sContext();
 
-  const deleteApp = useDeleteLaunchpadMutation(sealosContext);
-  const startApp = useStartLaunchpadMutation(sealosContext);
-  const stopApp = usePauseLaunchpadMutation(sealosContext);
+  const deleteLaunchpad = useDeleteLaunchpadMutation(sealosContext);
+  const startLaunchpad = useStartLaunchpadMutation(sealosContext);
+  const pauseLaunchpad = usePauseLaunchpadMutation(sealosContext);
   const removeFromProject = useRemoveFromProjectMutation(k8sContext);
 
-  const { name, status } = object;
+  const {
+    name,
+    status: { replicas, unavailableReplicas, readyReplicas, paused },
+  } = object;
 
-  const isRunning =
-    status?.replicas && status.replicas > 0 && status.unavailableReplicas === 0;
+  const isRunning = replicas === readyReplicas;
 
   return (
     <DropdownMenu>
@@ -62,29 +64,53 @@ export default function DeploymentNodeMenu({
         className="rounded-xl bg-background-secondary"
         align="start"
       >
-        {!isRunning && name && (
+        {paused && name && (
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
-              startApp.mutate({ name });
+              startLaunchpad.mutate({ name });
             }}
-            disabled={startApp.isPending}
+            disabled={startLaunchpad.isPending}
           >
             <Power className="mr-2 h-4 w-4" />
             Start
           </DropdownMenuItem>
         )}
-        {isRunning && name && (
+        {!paused && isRunning && name && (
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
-              stopApp.mutate({ name });
+              pauseLaunchpad.mutate({ name });
             }}
-            disabled={stopApp.isPending}
+            disabled={pauseLaunchpad.isPending}
           >
             <Pause className="mr-2 h-4 w-4" />
-            Stop
+            Pause
           </DropdownMenuItem>
+        )}
+        {unavailableReplicas && unavailableReplicas > 0 && name && (
+          <>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                startLaunchpad.mutate({ name });
+              }}
+              disabled={true}
+            >
+              <Power className="mr-2 h-4 w-4" />
+              Start
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                pauseLaunchpad.mutate({ name });
+              }}
+              disabled={true}
+            >
+              <Pause className="mr-2 h-4 w-4" />
+              Pause
+            </DropdownMenuItem>
+          </>
         )}
         <DropdownMenuItem disabled>
           <PencilLine className="mr-2 h-4 w-4" />
@@ -97,7 +123,10 @@ export default function DeploymentNodeMenu({
         <DropdownMenuItem
           onClick={(e) => {
             e.stopPropagation();
-            const deploymentTarget = convertResourceTypeToTarget("deployment", name);
+            const deploymentTarget = convertResourceTypeToTarget(
+              "deployment",
+              name
+            );
             removeFromProject.mutate({
               resources: [deploymentTarget],
             });
@@ -112,10 +141,10 @@ export default function DeploymentNodeMenu({
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
-              deleteApp.mutate({ name });
+              deleteLaunchpad.mutate({ name });
             }}
             className="text-destructive"
-            disabled={deleteApp.isPending}
+            disabled={deleteLaunchpad.isPending}
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Delete

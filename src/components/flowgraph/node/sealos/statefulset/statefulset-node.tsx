@@ -10,12 +10,28 @@ import StatefulsetNodeTitle from "./statefulset-node-title";
 import StatefulsetNodeMenu from "./statefulset-node-menu";
 import { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulset-object-schema";
 import { truncateImage } from "@/lib/sealos/sealos-utils";
+import { useIsMutating } from "@tanstack/react-query";
 
 export default function StatefulsetNode({ data }: { data: StatefulsetObject }) {
   const { name, image, status, ports, pods } = data;
 
+  // Check if this statefulset is being deleted
+  const isDeletingStatefulset = useIsMutating({
+    predicate: (mutation) => {
+      // Check if this is a delete launchpad mutation for this specific statefulset
+      const isDeleteMutation =
+        mutation.options.mutationFn?.toString().includes("deleteLaunchpad") ??
+        false;
+      const variables = mutation.state.variables as any;
+      return isDeleteMutation && variables?.name === name;
+    },
+  }) > 0;
+
   return (
-    <BaseNode nodeData={data}>
+    <BaseNode 
+      nodeData={data}
+      className={isDeletingStatefulset ? "border-theme-red" : ""}
+    >
       <div className="flex h-full flex-col gap-2 justify-between">
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
@@ -46,8 +62,8 @@ export default function StatefulsetNode({ data }: { data: StatefulsetObject }) {
 
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
-            <NodeInternalUrl ports={ports || []} />
-            <NodePods pods={pods || []} />
+            {/* <NodeInternalUrl ports={ports || []} />
+            <NodePods pods={pods || []} /> */}
             <NodeMonitor />
           </div>
         </div>

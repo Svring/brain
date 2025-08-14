@@ -9,7 +9,7 @@ export const ClusterResourceSchema = z.object({
 
 export const ClusterComponentSchema = z.object({
   name: z.string(),
-  status: z.string(),
+  status: z.string().nullable(),
   resource: ClusterResourceSchema,
 });
 

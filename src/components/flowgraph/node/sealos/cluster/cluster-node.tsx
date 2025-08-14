@@ -17,6 +17,8 @@ import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cl
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { useChatActions } from "@/contexts/chat/chat-context";
 import { randomId } from "@copilotkit/shared";
+import { createClusterContext } from "@/lib/auth/auth-utils";
+import { useIsMutating } from "@tanstack/react-query";
 
 export default function ClusterNode({ data }: { data: ClusterObject }) {
   const [publicAccess, setPublicAccess] = useState(false);
@@ -24,6 +26,22 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
   const { openSidebarChat } = useChatActions();
 
   const { name, type, status, pods } = data;
+
+  // Check if this cluster is being deleted
+  // Either by status or by mutation state
+  const isDeletingCluster =
+    status === "Deleting" ||
+    status === "Terminating" ||
+    useIsMutating({
+      predicate: (mutation) => {
+        // Check if this is a delete cluster mutation for this specific cluster
+        const isDeleteMutation =
+          mutation.options.mutationFn?.toString().includes("deleteCluster") ??
+          false;
+        const variables = mutation.state.variables as any;
+        return isDeleteMutation && variables?.name === name;
+      },
+    }) > 0;
 
   // console.log("pods", pods);
 
@@ -39,7 +57,10 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
   // };
 
   const mainCard = (
-    <BaseNode nodeData={data}>
+    <BaseNode
+      nodeData={data}
+      className={isDeletingCluster ? "border-theme-red" : ""}
+    >
       <div className="flex h-full flex-col gap-4 justify-between">
         {/* Header with Name and Menu */}
         <div className="flex items-center justify-between">
@@ -78,8 +99,8 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
 
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
-            <NodeInternalUrl ports={[]} />
-            <NodePods pods={pods} />
+            {/* <NodeInternalUrl ports={[]} /> */}
+            {/* <NodePods pods={pods} /> */}
             <NodeMonitor />
           </div>
         </div>

@@ -3,7 +3,6 @@
 import { ArrowBigUpDash, Tag, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Tooltip,
@@ -56,12 +55,6 @@ export default function DevboxNodeReleaseList({
   const [openDeletePopovers, setOpenDeletePopovers] = useState<
     Record<string, boolean>
   >({});
-  const [confirmDeleteState, setConfirmDeleteState] = useState<
-    Record<string, boolean>
-  >({});
-  const [deleteConfirmInput, setDeleteConfirmInput] = useState<
-    Record<string, string>
-  >({});
 
   const handleDeploy = async (releaseTag: string) => {
     try {
@@ -78,15 +71,6 @@ export default function DevboxNodeReleaseList({
 
   const setDeletePopoverOpen = (releaseTag: string, open: boolean) => {
     setOpenDeletePopovers((prev) => ({ ...prev, [releaseTag]: open }));
-    // Reset confirmation state when popover closes
-    if (!open) {
-      setConfirmDeleteState((prev) => ({ ...prev, [releaseTag]: false }));
-      setDeleteConfirmInput((prev) => ({ ...prev, [releaseTag]: "" }));
-    }
-  };
-
-  const setConfirmDelete = (releaseTag: string, confirmed: boolean) => {
-    setConfirmDeleteState((prev) => ({ ...prev, [releaseTag]: confirmed }));
   };
 
   const handleDelete = async (releaseTag: string) => {
@@ -305,97 +289,42 @@ export default function DevboxNodeReleaseList({
                       <div className="space-y-4">
                         <div className="space-y-2">
                           <h4 className="font-medium text-sm text-destructive">
-                            {confirmDeleteState[release.tag] ? "Confirm Delete" : "Delete Release"}
+                            Delete Release
                           </h4>
                           <p className="text-xs text-muted-foreground">
-                            {confirmDeleteState[release.tag] 
-                              ? `This will permanently delete release ${release.tag}. Type the release tag to confirm:`
-                              : `Are you sure you want to delete release ${release.tag}? This action cannot be undone.`
-                            }
+                            Are you sure you want to delete release {release.tag}? This action cannot be undone.
                           </p>
                         </div>
-                        {!confirmDeleteState[release.tag] ? (
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setDeletePopoverOpen(release.tag, false);
-                              }}
-                              variant="outline"
-                              size="sm"
-                            >
-                              Cancel
-                            </Button>
-                            <Button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setConfirmDelete(release.tag, true);
-                              }}
-                              variant="destructive"
-                              size="sm"
-                              disabled={release.status?.value === "Pending"}
-                            >
-                              Delete
-                            </Button>
-                          </div>
-                        ) : (
-                          <div className="space-y-3">
-                            <Input
-                              placeholder={`Type "${release.tag}" to confirm`}
-                              value={deleteConfirmInput[release.tag] || ""}
-                              onChange={(e) => {
-                                setDeleteConfirmInput((prev) => ({
-                                  ...prev,
-                                  [release.tag]: e.target.value,
-                                }));
-                              }}
-                              className="text-sm"
-                            />
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  setConfirmDelete(release.tag, false);
-                                  setDeleteConfirmInput((prev) => ({
-                                    ...prev,
-                                    [release.tag]: "",
-                                  }));
-                                }}
-                                variant="outline"
-                                size="sm"
-                              >
-                                Back
-                              </Button>
-                              <Button
-                                onClick={async (e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  console.log("Confirm delete button clicked", {
-                                    releaseTag: release.tag,
-                                    inputValue: deleteConfirmInput[release.tag],
-                                    isMatch: deleteConfirmInput[release.tag] === release.tag
-                                  });
-                                  if (deleteConfirmInput[release.tag] === release.tag) {
-                                    try {
-                                      await handleDelete(release.tag);
-                                      // Popover will be closed in handleDelete
-                                    } catch (error) {
-                                      console.error("Delete failed:", error);
-                                    }
-                                  }
-                                }}
-                                variant="destructive"
-                                size="sm"
-                                disabled={isDeleting || deleteConfirmInput[release.tag] !== release.tag}
-                              >
-                                {isDeleting ? "Deleting..." : "Confirm Delete"}
-                              </Button>
-                            </div>
-                          </div>
-                        )}
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setDeletePopoverOpen(release.tag, false);
+                            }}
+                            variant="outline"
+                            size="sm"
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              try {
+                                await handleDelete(release.tag);
+                                // Popover will be closed in handleDelete
+                              } catch (error) {
+                                console.error("Delete failed:", error);
+                              }
+                            }}
+                            variant="destructive"
+                            size="sm"
+                            disabled={isDeleting || release.status?.value === "Pending"}
+                          >
+                            {isDeleting ? "Deleting..." : "Delete"}
+                          </Button>
+                        </div>
                       </div>
                     </PopoverContent>
                   </Popover>

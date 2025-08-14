@@ -183,10 +183,10 @@ export function useDeleteBackupMutation(context: ClusterApiContext) {
   >({
     mutationFn: (request: ClusterBackupDeleteRequest) =>
       runParallelAction(deleteBackup(request, context)),
-    onSuccess: () => {
+    onSuccess: (data) => {
       // Invalidate backup list queries to refresh the backup list
       queryClient.invalidateQueries({
-        queryKey: ["cluster", "backup"],
+        queryKey: ["cluster", "backup", data.data.metadata.name],
       });
       queryClient.invalidateQueries({
         queryKey: ["project"],

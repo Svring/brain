@@ -2,9 +2,16 @@
 
 import { Database, Clock, History, Trash2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { formatDistanceToNow } from "date-fns";
 import { useDeleteBackupMutation } from "@/lib/sealos/resources/cluster/cluster-method/cluster-mutation";
 import { createSealosContext } from "@/lib/auth/auth-utils";
+import { useState } from "react";
 
 interface Backup {
   name: string;
@@ -24,16 +31,27 @@ export default function ClusterNodeBackupList({
 }: ClusterNodeBackupListProps) {
   const sealosContext = createSealosContext();
   const deleteBackupMutation = useDeleteBackupMutation(sealosContext);
+  
+  const [openDeletePopovers, setOpenDeletePopovers] = useState<
+    Record<string, boolean>
+  >({});
 
   const handleDeleteBackup = async (backupName: string) => {
     console.log("Attempting to delete backup:", backupName);
     try {
       const result = await deleteBackupMutation.mutateAsync({ backupName });
       console.log("Delete backup result:", result);
+      // Close popover after successful deletion
+      setDeletePopoverOpen(backupName, false);
     } catch (error) {
       console.error("Failed to delete backup:", error);
     }
   };
+
+  const setDeletePopoverOpen = (backupName: string, open: boolean) => {
+    setOpenDeletePopovers((prev) => ({ ...prev, [backupName]: open }));
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       month: "short",
@@ -94,28 +112,73 @@ export default function ClusterNodeBackupList({
                     >
                       <History className="h-3 w-3 text-muted-foreground hover:text-foreground" />
                     </button>
-                    <button
-                      className={`p-1 hover:bg-muted rounded transition-colors ${
-                        deleteBackupMutation.isPending
-                          ? "opacity-50 cursor-not-allowed"
-                          : ""
-                      }`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        console.log("Delete button clicked for:", backup.name);
-                        handleDeleteBackup(backup.name);
-                      }}
-                      title="Delete backup"
-                      disabled={deleteBackupMutation.isPending}
+                    <Popover
+                      open={openDeletePopovers[backup.name] || false}
+                      onOpenChange={(open) => setDeletePopoverOpen(backup.name, open)}
                     >
-                      <Trash2
-                        className={`h-3 w-3 ${
-                          deleteBackupMutation.isPending
-                            ? "text-muted-foreground/50"
-                            : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      />
-                    </button>
+                      <PopoverTrigger asChild>
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                          disabled={deleteBackupMutation.isPending}
+                          title="Delete backup"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-80 z-[9999] bg-background-secondary"
+                        side="top"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
+                      >
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <h4 className="font-medium text-sm text-destructive">
+                              Delete Backup
+                            </h4>
+                            <p className="text-xs text-muted-foreground">
+                              Are you sure you want to delete backup {backup.name}? This action cannot be undone.
+                            </p>
+                          </div>
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setDeletePopoverOpen(backup.name, false);
+                              }}
+                              variant="outline"
+                              size="sm"
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              onClick={async (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                try {
+                                  await handleDeleteBackup(backup.name);
+                                  // Popover will be closed in handleDeleteBackup
+                                } catch (error) {
+                                  console.error("Delete failed:", error);
+                                }
+                              }}
+                              variant="destructive"
+                              size="sm"
+                              disabled={deleteBackupMutation.isPending}
+                            >
+                              {deleteBackupMutation.isPending ? "Deleting..." : "Delete"}
+                            </Button>
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
               </div>
