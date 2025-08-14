@@ -1,5 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
+import { ObjectStorageApiContext } from "../schemas/objectstorage-api-context-schemas";
 import {
   CustomResourceTarget,
   CustomResourceTargetSchema,
@@ -7,12 +8,12 @@ import {
 import { getObjectStorageObject } from "@/lib/sealos/services/bridge/bridge-resources/bridge-sealos/objectstorage/objectstorage-bridge-query";
 import { listCustomResources } from "@/lib/k8s/k8s-api/k8s-api-query";
 import { runParallelAction } from "next-server-actions-parallel";
-import {
-  convertResourceTypeToTarget,
-  convertResourceToTarget,
-} from "@/lib/k8s/k8s-method/k8s-utils";
-import { buildQueryKey } from "@/lib/k8s/k8s-constant/k8s-constant-query-key";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { convertObjectStorageListToSimplified } from "../objectstorage-utils";
+import {
+  initObjectStorageUser,
+  getObjectStorageStatus,
+} from "../objectstorage-api/objectstorage-old-api";
 
 export const getObjectStorage = async (
   context: K8sApiContext,
@@ -45,7 +46,7 @@ export const getObjectStorageOptions = (
   target: CustomResourceTarget
 ) =>
   queryOptions({
-    queryKey: buildQueryKey.getObjectStorage(context.namespace, target.name!),
+    queryKey: ["objectstoragebucket", target.name!],
     queryFn: async () => await getObjectStorage(context, target),
     enabled:
       !!target.group &&
@@ -61,19 +62,37 @@ export const getObjectStorageOptions = (
  */
 export const listObjectStorageOptions = (context: K8sApiContext) =>
   queryOptions({
-    queryKey: buildQueryKey.listObjectStorages(context.namespace),
+    queryKey: ["objectstoragebucket"],
     queryFn: async () => await listObjectStorage(context),
     enabled: !!context.namespace && !!context.kubeconfig,
     staleTime: 1000 * 30,
   });
 
 /**
- * Query options for listing object storage options (simplified list for add resource tabs)
+ * Query options for initializing object storage user
  */
-export const listObjectStorageOptionsOptions = (context: K8sApiContext) =>
+export const initObjectStorageUserOptions = (
+  context: ObjectStorageApiContext
+) =>
   queryOptions({
-    queryKey: ["objectstorage"],
-    queryFn: async () => await listObjectStorage(context),
-    enabled: !!context.namespace && !!context.kubeconfig,
-    staleTime: 1000 * 30,
+    queryKey: ["sealos", "objectstorage", "user", "init"],
+    queryFn: async () =>
+      await runParallelAction(initObjectStorageUser(context)),
+    enabled: !!context.baseURL && !!context.authorization,
+    staleTime: 1000 * 60 * 5, // 5 minutes - user credentials don't change often
+  });
+
+/**
+ * Query options for getting object storage status (static hosting)
+ */
+export const getObjectStorageStatusOptions = (
+  context: ObjectStorageApiContext,
+  bucket: string
+) =>
+  queryOptions({
+    queryKey: ["sealos", "objectstorage", "status", bucket],
+    queryFn: async () =>
+      await runParallelAction(getObjectStorageStatus({ bucket }, context)),
+    enabled: !!context.baseURL && !!context.authorization && !!bucket,
+    staleTime: 1000 * 30, // 30 seconds - status can change frequently
   });

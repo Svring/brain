@@ -20,6 +20,7 @@ import { DeployApiContextSchema } from "@/lib/sealos/resources/deployment/schema
 import { AiProxyApiContextSchema } from "@/lib/sealos/resources/ai-proxy/schemas/ai-proxy-api-context";
 import { SealosApiContextSchema } from "@/lib/sealos/sealos-api-context-schema";
 import { TemplateApiContextSchema } from "@/lib/sealos/resources/template/schemas/template-api-context-schemas";
+import { ObjectStorageApiContextSchema } from "../sealos/resources/objectstorage/schemas/objectstorage-api-context-schemas";
 
 export async function extractAuthFromSession(
   session: SessionV1
@@ -132,6 +133,20 @@ export function createSealosContext() {
     authorization: auth.kubeconfig,
   });
   return sealosContext;
+}
+
+export function createObjectStorageContext() {
+  const { auth } = useAuthState();
+  if (!auth) {
+    throw new Error("User not found");
+  }
+  const objectStorageContext = ObjectStorageApiContextSchema.parse({
+    baseURL: auth.regionUrl,
+    authorization: auth.kubeconfig,
+    authorizationBearer: auth.appToken,
+  });
+  setCookie(null, "appToken", auth.appToken);
+  return objectStorageContext;
 }
 
 export function createDevboxContext() {

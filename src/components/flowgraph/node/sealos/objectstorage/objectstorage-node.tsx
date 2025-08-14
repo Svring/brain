@@ -1,15 +1,21 @@
 "use client";
 
 import BaseNode from "../../base-node-wrapper";
-import { Globe, Copy } from "lucide-react";
+import { Globe, Copy, KeyRound } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ObjectStoragePolicyBadge from "./objectstorage-policy-badge";
 import ObjectStorageNodeMenu from "./objectstorage-node-menu";
 import ObjectStorageNodeTitle from "./objectstorage-node-title";
 import { ObjectStorageObject } from "@/lib/sealos/resources/objectstorage/objectstorage-schemas/objectstorage-object-schema";
 import { useIsMutating } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import {
+  createSealosContext,
+  createObjectStorageContext,
+} from "@/lib/auth/auth-utils";
+import { initObjectStorageUserOptions } from "@/lib/sealos/resources/objectstorage/objectstorage-method/objectstorage-query";
 
 export default function ObjectStorageNode({
   data,
@@ -20,20 +26,35 @@ export default function ObjectStorageNode({
 
   const { name, policy } = data;
 
+  // Get Sealos context for API calls
+  const objectStorageContext = createObjectStorageContext();
+
+  // Call the user init query and log the result
+  const {
+    data: userInitData,
+    isLoading: userInitLoading,
+    error: userInitError,
+  } = useQuery(initObjectStorageUserOptions(objectStorageContext));
+
+  // Log the result when data changes
+  console.log("userInitData", userInitData);
+
   // Check if this object storage is being deleted
-  const isDeletingObjectStorage = useIsMutating({
-    predicate: (mutation) => {
-      // Check if this is a delete object storage mutation for this specific bucket
-      const isDeleteMutation =
-        mutation.options.mutationFn?.toString().includes("deleteObjectStorage") ??
-        false;
-      const variables = mutation.state.variables as any;
-      return isDeleteMutation && variables?.bucketName === name;
-    },
-  }) > 0;
+  const isDeletingObjectStorage =
+    useIsMutating({
+      predicate: (mutation) => {
+        // Check if this is a delete object storage mutation for this specific bucket
+        const isDeleteMutation =
+          mutation.options.mutationFn
+            ?.toString()
+            .includes("deleteObjectStorage") ?? false;
+        const variables = mutation.state.variables as any;
+        return isDeleteMutation && variables?.bucketName === name;
+      },
+    }) > 0;
 
   return (
-    <BaseNode 
+    <BaseNode
       nodeData={data}
       className={isDeletingObjectStorage ? "border-theme-red" : ""}
     >

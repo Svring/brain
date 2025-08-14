@@ -27,16 +27,29 @@ import {
   ObjectStorageOpenHostRequestSchema,
   ObjectStorageOpenHostResponseSchema,
 } from "../schemas/req-res-schemas/req-res-openhost-schemas";
+import {
+  ObjectStorageStatusRequest,
+  ObjectStorageStatusResponse,
+  ObjectStorageStatusRequestSchema,
+  ObjectStorageStatusResponseSchema,
+} from "../schemas/req-res-schemas/req-res-status-schemas";
+import {
+  ObjectStorageInitResponse,
+  ObjectStorageInitResponseSchema,
+} from "../schemas/req-res-schemas/req-res-init-schemas";
 import https from "https";
 
 function createObjectStorageApi(context: ObjectStorageApiContext) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
   return axios.create({
-    baseURL: `https://objectstorage.${context.baseURL}/api/bucket`,
+    baseURL: `https://objectstorage.${context.baseURL}/api`,
     headers: {
       "Content-Type": "application/json",
       ...(context.authorization
         ? { Authorization: context.authorization }
+        : {}),
+      ...(context.authorizationBearer
+        ? { "app-token": `${context.authorizationBearer}` }
         : {}),
     },
     httpsAgent: isDevelopment
@@ -52,7 +65,7 @@ export const createObjectStorage = createParallelAction(
   ): Promise<ObjectStorageCreateResponse> => {
     const validatedRequest = ObjectStorageCreateRequestSchema.parse(request);
     const api = createObjectStorageApi(context);
-    const response = await api.post("/create", validatedRequest);
+    const response = await api.post("/bucket/create", validatedRequest);
     return ObjectStorageCreateResponseSchema.parse(response.data);
   }
 );
@@ -64,7 +77,7 @@ export const deleteObjectStorage = createParallelAction(
   ): Promise<ObjectStorageDeleteResponse> => {
     const validatedRequest = ObjectStorageDeleteRequestSchema.parse(request);
     const api = createObjectStorageApi(context);
-    const response = await api.post("/delete", validatedRequest);
+    const response = await api.post("/bucket/delete", validatedRequest);
     return ObjectStorageDeleteResponseSchema.parse(response.data);
   }
 );
@@ -90,5 +103,27 @@ export const openObjectStorageHost = createParallelAction(
     const api = createObjectStorageApi(context);
     const response = await api.post("/site/openHost", validatedRequest);
     return ObjectStorageOpenHostResponseSchema.parse(response.data);
+  }
+);
+
+export const getObjectStorageStatus = createParallelAction(
+  async (
+    request: ObjectStorageStatusRequest,
+    context: ObjectStorageApiContext
+  ): Promise<ObjectStorageStatusResponse> => {
+    const validatedRequest = ObjectStorageStatusRequestSchema.parse(request);
+    const api = createObjectStorageApi(context);
+    const response = await api.post("/site/status", validatedRequest);
+    return ObjectStorageStatusResponseSchema.parse(response.data);
+  }
+);
+
+export const initObjectStorageUser = createParallelAction(
+  async (
+    context: ObjectStorageApiContext
+  ): Promise<ObjectStorageInitResponse> => {
+    const api = createObjectStorageApi(context);
+    const response = await api.get("/user/init");
+    return ObjectStorageInitResponseSchema.parse(response.data);
   }
 );

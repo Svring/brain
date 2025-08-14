@@ -15,7 +15,7 @@ import { listDevboxOptions } from "@/lib/sealos/resources/devbox/devbox-method/d
 import { listClusterOptions } from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
 import { listDeploymentOptions } from "@/lib/sealos/resources/deployment/deployment-method/deployment-query";
 import { listStatefulSetOptions } from "@/lib/sealos/resources/statefulset/statefulset-method/statefulset-query";
-import { listObjectStorageOptionsOptions } from "@/lib/sealos/resources/objectstorage/objectstorage-method/objectstorage-query";
+import { listObjectStorageOptions } from "@/lib/sealos/resources/objectstorage/objectstorage-method/objectstorage-query";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -81,7 +81,7 @@ export default function AddResourceTabs() {
     data: objectStorages = [],
     isLoading: objectStorageLoading,
     error: objectStorageError,
-  } = useQuery(listObjectStorageOptionsOptions(k8sContext));
+  } = useQuery(listObjectStorageOptions(k8sContext));
 
   // const {
   //   data: statefulSets = [],
@@ -308,7 +308,6 @@ export default function AddResourceTabs() {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Image</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -316,7 +315,7 @@ export default function AddResourceTabs() {
               {deployments.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={3}
+                    colSpan={2}
                     className="text-center py-4 text-muted-foreground"
                   >
                     No launchpad resources found
@@ -334,9 +333,6 @@ export default function AddResourceTabs() {
                     <TableRow key={`${resource.kind}-${resource.name}`}>
                       <TableCell className="font-medium">
                         {resource.name}
-                      </TableCell>
-                      <TableCell className="max-w-xs truncate">
-                        {resource.image || "N/A"}
                       </TableCell>
                       <TableCell>
                         {resource.inProject ? (
