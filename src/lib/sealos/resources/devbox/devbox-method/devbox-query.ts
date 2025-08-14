@@ -83,7 +83,7 @@ export const getDevboxOptions = (
  */
 export const listDevboxOptions = (context: K8sApiContext) =>
   queryOptions({
-    queryKey: ["devbox"],
+    queryKey: ["devboxes"],
     queryFn: async () => await listDevbox(context),
     enabled: !!context.namespace && !!context.kubeconfig,
     staleTime: 1000 * 30,

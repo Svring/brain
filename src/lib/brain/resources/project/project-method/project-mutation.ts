@@ -71,6 +71,10 @@ export const useAddToProjectMutation = (context: K8sApiContext) => {
     onSuccess: (_, { name }) => {
       toast.success(`Resources added to project ${name}`);
       queryClient.invalidateQueries({ queryKey: ["project"] });
+      queryClient.invalidateQueries({ queryKey: ["devboxes"] });
+      queryClient.invalidateQueries({ queryKey: ["clusters"] });
+      queryClient.invalidateQueries({ queryKey: ["deployments"] });
+      queryClient.invalidateQueries({ queryKey: ["statefulsets"] });
     },
   });
 };
@@ -106,6 +110,10 @@ export const useRemoveFromProjectMutation = (context: K8sApiContext) => {
         toast.success(`Resources removed from project`);
       }
       queryClient.invalidateQueries({ queryKey: ["project"] });
+      queryClient.invalidateQueries({ queryKey: ["devboxes"] });
+      queryClient.invalidateQueries({ queryKey: ["clusters"] });
+      queryClient.invalidateQueries({ queryKey: ["deployments"] });
+      queryClient.invalidateQueries({ queryKey: ["statefulsets"] });
     },
   });
 };

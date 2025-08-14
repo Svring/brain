@@ -45,7 +45,10 @@ export function useCreateClusterMutation(context: ClusterApiContext) {
       runParallelAction(createCluster(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [["cluster"], ["project"]],
+        queryKey: ["cluster"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["project"],
       });
     },
   });
@@ -62,7 +65,10 @@ export function useUpdateClusterMutation(context: ClusterApiContext) {
       runParallelAction(updateCluster(clusterName, request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [["cluster"], ["project"]],
+        queryKey: ["cluster"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["project"],
       });
     },
   });
@@ -73,23 +79,81 @@ export function useStartClusterMutation(context: ClusterApiContext) {
   return useMutation<ClusterStartResponse, unknown, ClusterStartRequest>({
     mutationFn: (request: ClusterStartRequest) =>
       runParallelAction(startClusterOld(request, context)),
-    onSuccess: () => {
+    onSuccess: (_, request) => {
+      // Immediate invalidation
       queryClient.invalidateQueries({
-        queryKey: [["cluster"], ["project"]],
+        queryKey: ["cluster"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["project"],
+      });
+
+      // Start polling for status changes after lifecycle actions
+      const startPolling = () => {
+        let pollCount = 0;
+        const maxPolls = 30; // Poll for up to 20 seconds
+        const pollInterval = 5000; // Poll every 2 seconds
+
+        const poll = () => {
+          pollCount++;
+          queryClient.invalidateQueries({
+            queryKey: ["cluster"],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["project"],
+          });
+
+          if (pollCount < maxPolls) {
+            setTimeout(poll, pollInterval);
+          }
+        };
+
+        setTimeout(poll, pollInterval);
+      };
+
+      startPolling();
     },
   });
 }
 
-export function useStopClusterMutation(context: ClusterApiContext) {
+export function usePauseClusterMutation(context: ClusterApiContext) {
   const queryClient = useQueryClient();
   return useMutation<ClusterPauseResponse, unknown, ClusterPauseRequest>({
     mutationFn: (request: ClusterPauseRequest) =>
       runParallelAction(pauseClusterOld(request, context)),
-    onSuccess: () => {
+    onSuccess: (_, request) => {
+      // Immediate invalidation
       queryClient.invalidateQueries({
         queryKey: ["cluster"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["project"],
+      });
+
+      // Start polling for status changes after lifecycle actions
+      const startPolling = () => {
+        let pollCount = 0;
+        const maxPolls = 30; // Poll for up to 20 seconds
+        const pollInterval = 5000; // Poll every 2 seconds
+
+        const poll = () => {
+          pollCount++;
+          queryClient.invalidateQueries({
+            queryKey: ["cluster"],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["project"],
+          });
+
+          if (pollCount < maxPolls) {
+            setTimeout(poll, pollInterval);
+          }
+        };
+
+        setTimeout(poll, pollInterval);
+      };
+
+      startPolling();
     },
   });
 }
@@ -101,7 +165,10 @@ export function useDeleteClusterMutation(context: ClusterApiContext) {
       runParallelAction(deleteClusterOld(request, context)),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [["cluster"], ["project"]],
+        queryKey: ["cluster"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["project"],
       });
     },
   });
@@ -119,7 +186,10 @@ export function useDeleteBackupMutation(context: ClusterApiContext) {
     onSuccess: () => {
       // Invalidate backup list queries to refresh the backup list
       queryClient.invalidateQueries({
-        queryKey: ["backup"],
+        queryKey: ["cluster", "backup"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["project"],
       });
     },
   });

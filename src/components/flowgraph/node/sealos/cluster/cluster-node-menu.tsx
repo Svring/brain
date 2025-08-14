@@ -12,7 +12,7 @@ import { createClusterContext } from "@/lib/auth/auth-utils";
 import {
   useDeleteClusterMutation,
   useStartClusterMutation,
-  useStopClusterMutation,
+  usePauseClusterMutation,
 } from "@/lib/sealos/resources/cluster/cluster-method/cluster-mutation";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { useRemoveFromProjectMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
@@ -25,7 +25,7 @@ export default function ClusterNodeMenu({ object }: { object: ClusterObject }) {
 
   const deleteCluster = useDeleteClusterMutation(clusterContext);
   const startCluster = useStartClusterMutation(clusterContext);
-  const stopCluster = useStopClusterMutation(clusterContext);
+  const pauseCluster = usePauseClusterMutation(clusterContext);
   const removeFromProject = useRemoveFromProjectMutation(k8sContext);
 
   const { name: clusterName, status } = object;
@@ -68,7 +68,7 @@ export default function ClusterNodeMenu({ object }: { object: ClusterObject }) {
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
-              stopCluster.mutate({ dbName: clusterName, dbType: object.type });
+              pauseCluster.mutate({ dbName: clusterName, dbType: object.type });
             }}
             disabled={status === "Creating" || status === "Updating"}
             className={
@@ -76,7 +76,7 @@ export default function ClusterNodeMenu({ object }: { object: ClusterObject }) {
             }
           >
             <Pause className="mr-2 h-4 w-4" />
-            Stop
+            Pause
           </DropdownMenuItem>
         )}
         <DropdownMenuItem

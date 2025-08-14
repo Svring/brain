@@ -8,7 +8,7 @@ import {
 } from "@/lib/k8s/k8s-method/k8s-utils";
 import { INSTANCE_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
 
-export function useProjectResources(projectName: string) {
+export default function useProjectResources(projectName: string) {
   const k8sContext = createK8sContext();
 
   const labelSelector = useMemo(

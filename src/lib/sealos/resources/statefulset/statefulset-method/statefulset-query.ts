@@ -115,7 +115,7 @@ export const getStatefulSetOptions = (
  */
 export const listStatefulSetOptions = (context: K8sApiContext) =>
   queryOptions({
-    queryKey: ["statefulset"],
+    queryKey: ["statefulsets"],
     queryFn: async () => await listStatefulSet(context),
     enabled: !!context.namespace && !!context.kubeconfig,
     staleTime: 1000 * 30,

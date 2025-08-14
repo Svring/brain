@@ -49,8 +49,8 @@ export function useManageDevboxLifecycleMutation(context: DevboxApiContext) {
       // Start polling for status changes after lifecycle actions
       const startPolling = () => {
         let pollCount = 0;
-        const maxPolls = 10; // Poll for up to 20 seconds
-        const pollInterval = 2000; // Poll every 1 second
+        const maxPolls = 30; // Poll for up to 20 seconds
+        const pollInterval = 5000; // Poll every 1 second
 
         const poll = () => {
           pollCount++;

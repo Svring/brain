@@ -184,7 +184,7 @@ export const getClusterRelatedResources = async (
         // "pod",
         // "cronjob",
       ],
-    customResources ?? ["backups"]
+    customResources ?? ["backup"]
   );
 };
 
@@ -221,7 +221,7 @@ export const getClusterOptions = (
  */
 export const listClusterOptions = (context: K8sApiContext) =>
   queryOptions({
-    queryKey: ["cluster", "list"],
+    queryKey: ["clusters"],
     queryFn: async () => await listCluster(context),
     enabled: !!context.namespace && !!context.kubeconfig,
     staleTime: 1000 * 30,
@@ -268,7 +268,7 @@ export const getClusterLogsOptions = (
  */
 export const getClusterVersionsOptions = (context: SealosApiContext) =>
   queryOptions({
-    queryKey: ["cluster", "versions"],
+    queryKey: ["cluster", "version"],
     queryFn: async () => await fetchClusterVersions(context),
     enabled: !!context.baseURL,
     staleTime: 1000 * 60 * 60, // 1 hour - versions don't change frequently

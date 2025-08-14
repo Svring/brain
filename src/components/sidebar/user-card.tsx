@@ -141,7 +141,7 @@ export function UserCard({
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup> */}
-            <DropdownMenuSeparator />
+            {/* <DropdownMenuSeparator /> */}
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut />
               Log out

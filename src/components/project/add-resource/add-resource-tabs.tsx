@@ -21,12 +21,41 @@ import { Button } from "@/components/ui/button";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useAddToProjectMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { Loader2 } from "lucide-react";
+import { useState } from "react";
 
 export default function AddResourceTabs() {
   const k8sContext = createK8sContext();
   const { selectedProject } = useProjectState();
+  const [addingResources, setAddingResources] = useState<Set<string>>(
+    new Set()
+  );
 
   const addToProjectMutation = useAddToProjectMutation(k8sContext);
+
+  // Helper function to create resource key
+  const createResourceKey = (type: string, name: string) => `${type}-${name}`;
+
+  // Helper function to handle add resource
+  const handleAddResource = async (type: string, name: string) => {
+    if (selectedProject) {
+      const resourceKey = createResourceKey(type, name);
+      setAddingResources((prev) => new Set(prev).add(resourceKey));
+
+      try {
+        await addToProjectMutation.mutateAsync({
+          resources: [convertResourceTypeToTarget(type, name)],
+          name: selectedProject,
+        });
+      } finally {
+        setAddingResources((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(resourceKey);
+          return newSet;
+        });
+      }
+    }
+  };
 
   // Fetch data for all resource types
   const {
@@ -90,51 +119,55 @@ export default function AddResourceTabs() {
                   </TableCell>
                 </TableRow>
               ) : (
-                devboxes.map((devbox: any) => (
-                  <TableRow key={devbox.name}>
-                    <TableCell className="font-medium">{devbox.name}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          devbox.status === "Running" ? "default" : "secondary"
-                        }
-                      >
-                        {devbox.status || "Unknown"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {devbox.inProject ? (
-                        <span className="text-sm text-muted-foreground">
-                          {devbox.inProject}
-                        </span>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            if (
-                              selectedProject &&
-                              typeof selectedProject === "object" &&
-                              "name" in selectedProject
-                            ) {
-                              addToProjectMutation.mutate({
-                                resources: [
-                                  convertResourceTypeToTarget(
-                                    "devbox",
-                                    devbox.name
-                                  ),
-                                ],
-                                name: selectedProject.name as string,
-                              });
-                            }
-                          }}
+                devboxes.map((devbox: any) => {
+                  const resourceKey = createResourceKey("devbox", devbox.name);
+                  const isAdding = addingResources.has(resourceKey);
+
+                  return (
+                    <TableRow key={devbox.name}>
+                      <TableCell className="font-medium">
+                        {devbox.name}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            devbox.status === "Running"
+                              ? "default"
+                              : "secondary"
+                          }
                         >
-                          Add
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))
+                          {devbox.status || "Unknown"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {devbox.inProject ? (
+                          <span className="text-sm text-muted-foreground">
+                            {devbox.inProject}
+                          </span>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={isAdding}
+                            className="hover:brightness-110 transition-all duration-200"
+                            onClick={() =>
+                              handleAddResource("devbox", devbox.name)
+                            }
+                          >
+                            {isAdding ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Adding...
+                              </>
+                            ) : (
+                              "Add"
+                            )}
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
@@ -176,58 +209,63 @@ export default function AddResourceTabs() {
                   </TableCell>
                 </TableRow>
               ) : (
-                clusters.map((cluster: any) => (
-                  <TableRow key={cluster.name}>
-                    <TableCell className="font-medium">
-                      {cluster.name}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">
-                        {cluster.type || "Unknown"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          cluster.status === "Running" ? "default" : "secondary"
-                        }
-                      >
-                        {cluster.status || "Unknown"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {cluster.inProject ? (
-                        <span className="text-sm text-muted-foreground">
-                          {cluster.inProject}
-                        </span>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            if (
-                              selectedProject &&
-                              typeof selectedProject === "object" &&
-                              "name" in selectedProject
-                            ) {
-                              addToProjectMutation.mutate({
-                                resources: [
-                                  convertResourceTypeToTarget(
-                                    "cluster",
-                                    cluster.name
-                                  ),
-                                ],
-                                name: selectedProject.name as string,
-                              });
-                            }
-                          }}
+                clusters.map((cluster: any) => {
+                  const resourceKey = createResourceKey(
+                    "cluster",
+                    cluster.name
+                  );
+                  const isAdding = addingResources.has(resourceKey);
+
+                  return (
+                    <TableRow key={cluster.name}>
+                      <TableCell className="font-medium">
+                        {cluster.name}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">
+                          {cluster.type || "Unknown"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            cluster.status === "Running"
+                              ? "default"
+                              : "secondary"
+                          }
                         >
-                          Add
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))
+                          {cluster.status || "Unknown"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {cluster.inProject ? (
+                          <span className="text-sm text-muted-foreground">
+                            {cluster.inProject}
+                          </span>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={isAdding}
+                            className="hover:brightness-110 transition-all duration-200"
+                            onClick={() =>
+                              handleAddResource("cluster", cluster.name)
+                            }
+                          >
+                            {isAdding ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Adding...
+                              </>
+                            ) : (
+                              "Add"
+                            )}
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
@@ -268,47 +306,53 @@ export default function AddResourceTabs() {
                   </TableCell>
                 </TableRow>
               ) : (
-                deployments.map((resource: any) => (
-                  <TableRow key={`${resource.kind}-${resource.name}`}>
-                    <TableCell className="font-medium">
-                      {resource.name}
-                    </TableCell>
-                    <TableCell className="max-w-xs truncate">
-                      {resource.image || "N/A"}
-                    </TableCell>
-                    <TableCell>
-                      {resource.inProject ? (
-                        <span className="text-sm text-muted-foreground">
-                          {resource.inProject}
-                        </span>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            if (
-                              selectedProject &&
-                              typeof selectedProject === "object" &&
-                              "name" in selectedProject
-                            ) {
-                              addToProjectMutation.mutate({
-                                resources: [
-                                  convertResourceTypeToTarget(
-                                    resource.kind.toLowerCase(),
-                                    resource.name
-                                  ),
-                                ],
-                                name: selectedProject.name as string,
-                              });
+                deployments.map((resource: any) => {
+                  const resourceKey = createResourceKey(
+                    resource.kind.toLowerCase(),
+                    resource.name
+                  );
+                  const isAdding = addingResources.has(resourceKey);
+
+                  return (
+                    <TableRow key={`${resource.kind}-${resource.name}`}>
+                      <TableCell className="font-medium">
+                        {resource.name}
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate">
+                        {resource.image || "N/A"}
+                      </TableCell>
+                      <TableCell>
+                        {resource.inProject ? (
+                          <span className="text-sm text-muted-foreground">
+                            {resource.inProject}
+                          </span>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={isAdding}
+                            className="hover:brightness-150 transition-all duration-200"
+                            onClick={() =>
+                              handleAddResource(
+                                resource.kind.toLowerCase(),
+                                resource.name
+                              )
                             }
-                          }}
-                        >
-                          Add
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))
+                          >
+                            {isAdding ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Adding...
+                              </>
+                            ) : (
+                              "Add"
+                            )}
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>

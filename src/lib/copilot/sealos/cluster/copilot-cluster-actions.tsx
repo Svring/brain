@@ -9,7 +9,7 @@ import {
 import {
   useCreateClusterMutation,
   useStartClusterMutation,
-  useStopClusterMutation,
+  usePauseClusterMutation,
   useDeleteClusterMutation,
   useUpdateClusterMutation,
 } from "@/lib/sealos/resources/cluster/cluster-method/cluster-mutation";
@@ -471,7 +471,7 @@ export const startClusterAction = (context: SealosApiContext) => {
 };
 
 export const stopClusterAction = (context: SealosApiContext) => {
-  const pauseCluster = useStopClusterMutation(context);
+  const pauseCluster = usePauseClusterMutation(context);
 
   useCopilotAction({
     name: "stopCluster",

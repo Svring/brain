@@ -1,10 +1,6 @@
 "use client";
 
-import { useState, use, useEffect, useMemo } from "react";
-import { createK8sContext } from "@/lib/auth/auth-utils";
-
-import { useDisclosure } from "@reactuses/core";
-import { useProjectActions } from "@/contexts/project/project-context";
+import { useEffect, useMemo, useState, use } from "react";
 
 // React Flow imports
 import { Background, ReactFlow, ReactFlowProvider } from "@xyflow/react";
@@ -14,77 +10,83 @@ import "@xyflow/react/dist/style.css";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
 } from "@/components/ui/sheet";
-
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 // Custom component imports
+import AddResourceTabs from "@/components/project/add-resource/add-resource-tabs";
+import AiChatbox from "@/components/chat/ai-chatbox";
+import AiCoin from "@/components/chat/ai-coin";
+import DisplayEnvPanel from "@/components/project/display-env/display-env-panel";
+import FloatingConnectionLine from "@/components/flowgraph/edge/floating-connection-line";
 import { FlowgraphHeader } from "@/components/flowgraph/flowgraph-menu-header";
 import { FlowgraphMenuActions } from "@/components/flowgraph/flowgraph-menu-actions";
 import { TextShimmer } from "@/components/ui/text-shimmer";
-import AiCoin from "@/components/chat/ai-coin";
-import AiChatbox from "@/components/chat/ai-chatbox";
-import AddResourceTabs from "@/components/project/add-resource/add-resource-tabs";
-import DisplayEnvPanel from "@/components/project/display-env/display-env-panel";
 
-import FloatingConnectionLine from "@/components/flowgraph/edge/floating-connection-line";
-
-import { useProjectResources } from "@/hooks/brain/use-project-resources";
-import useResourceObjects from "@/hooks/sealos/use-resource-objects";
-import useFlowgraphNodes from "@/hooks/flowgraph/use-flowgraph-nodes";
-import useResourceReliances from "@/hooks/sealos/use-resource-reliances";
-import useFlowgraphEdges from "@/hooks/flowgraph/use-flowgraph-edges";
-import { convertPortsToIngressNodes } from "@/lib/flowgraph/nodes/flowgraph-nodes-utils";
+// Custom hooks
 import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
+import useFlowgraphEdges from "@/hooks/flowgraph/use-flowgraph-edges";
+import useFlowgraphNodes from "@/hooks/flowgraph/use-flowgraph-nodes";
+import useProjectResources from "@/hooks/brain/use-project-resources";
+import useResourceObjects from "@/hooks/sealos/use-resource-objects";
+import useResourceReliances from "@/hooks/sealos/use-resource-reliances";
 
-// Custom types
-import edgeTypes from "@/components/flowgraph/edge/edge-types";
-import nodeTypes from "@/components/flowgraph/node/node-types";
-
-// Flow context
-import { FlowgraphProvider } from "@/contexts/flowgraph/flowgraph-context";
+// Context and utilities
+import { convertPortsToIngressNodes } from "@/lib/flowgraph/nodes/flowgraph-nodes-utils";
 import {
+  FlowgraphProvider,
   useFlowgraphActions,
   useFlowgraphState,
 } from "@/contexts/flowgraph/flowgraph-context";
+import { useProjectActions } from "@/contexts/project/project-context";
+import { useDisclosure } from "@reactuses/core";
 
-// Constants
+// Types and constants
 import { REACT_FLOW_CONFIG } from "@/lib/flowgraph/flowgraph-constant/flowgraph-constant-config";
+import edgeTypes from "@/components/flowgraph/edge/edge-types";
+import nodeTypes from "@/components/flowgraph/node/node-types";
 
 // Floating UI Component
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [sheetContent, setSheetContent] = useState<'add-resource' | 'display-env'>('add-resource');
+  const [sheetContent, setSheetContent] = useState<
+    "add-resource" | "display-env"
+  >("add-resource");
 
   const handleAddNew = () => {
-    setSheetContent('add-resource');
+    setSheetContent("add-resource");
     onOpen();
   };
 
   const handleDisplayEnv = () => {
-    setSheetContent('display-env');
+    setSheetContent("display-env");
     onOpen();
   };
 
   return (
     <>
       <FlowgraphHeader projectName={projectName} />
-      <FlowgraphMenuActions onAddNew={handleAddNew} onDisplayEnv={handleDisplayEnv} />
+      <FlowgraphMenuActions
+        onAddNew={handleAddNew}
+        onDisplayEnv={handleDisplayEnv}
+      />
       <Sheet onOpenChange={onClose} open={isOpen}>
         <SheetContent className="w-[40vw]! max-w-none! fade-in-0 animate-in flex flex-col">
           <SheetHeader className="shrink-0">
             <SheetTitle>
-              {sheetContent === 'add-resource' ? 'Add Resource' : 'Display Environment'}
+              {sheetContent === "add-resource"
+                ? "Add Resource"
+                : "Display Environment"}
             </SheetTitle>
             <VisuallyHidden>
               <SheetDescription />
             </VisuallyHidden>
           </SheetHeader>
           <div className="flex-1 overflow-y-auto">
-            {sheetContent === 'add-resource' ? (
+            {sheetContent === "add-resource" ? (
               <AddResourceTabs />
             ) : (
               <DisplayEnvPanel />
@@ -100,7 +102,7 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
 
 // Flow Component
 function ProjectFlow({ projectName }: { projectName: string }) {
-  const { resources, isLoading, error } = useProjectResources(projectName);
+  const { resources, isLoading } = useProjectResources(projectName);
   const { resourceObjects } = useResourceObjects(resources ?? []);
   const { nodes: computedNodes } = useFlowgraphNodes(resourceObjects);
   const { reliances } = useResourceReliances(resourceObjects);
@@ -165,8 +167,8 @@ function ProjectFlow({ projectName }: { projectName: string }) {
       fitViewOptions={REACT_FLOW_CONFIG.fitViewOptions}
       nodes={nodes}
       nodeTypes={nodeTypes}
-      onEdgesChange={onEdgesChange}
-      onNodesChange={onNodesChange}
+      // onEdgesChange={onEdgesChange}
+      // onNodesChange={onNodesChange}
       panOnScroll
       snapToGrid
       snapGrid={REACT_FLOW_CONFIG.snapGrid}
