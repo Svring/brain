@@ -17,22 +17,23 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
   const { name, image, status, ports, pods } = data;
 
   // Check if this deployment is being deleted
-  const isDeletingDeployment = useIsMutating({
-    predicate: (mutation) => {
-      // Check if this is a delete launchpad mutation for this specific deployment
-      const isDeleteMutation =
-        mutation.options.mutationFn?.toString().includes("deleteLaunchpad") ??
-        false;
-      const variables = mutation.state.variables as any;
-      return isDeleteMutation && variables?.name === name;
-    },
-  }) > 0;
+  const isDeletingDeployment =
+    useIsMutating({
+      predicate: (mutation) => {
+        // Check if this is a delete launchpad mutation for this specific deployment
+        const isDeleteMutation =
+          mutation.options.mutationFn?.toString().includes("deleteLaunchpad") ??
+          false;
+        const variables = mutation.state.variables as any;
+        return isDeleteMutation && variables?.name === name;
+      },
+    }) > 0;
 
   // console.log("status", status);
   // console.log("pods", pods);
 
   return (
-    <BaseNode 
+    <BaseNode
       nodeData={data}
       className={isDeletingDeployment ? "border-theme-red" : ""}
     >
@@ -61,7 +62,10 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
                 : status.unavailableReplicas !== undefined &&
                   status.unavailableReplicas > 0
                 ? "Error"
-                : "Running"
+                : status.readyReplicas === status.replicas &&
+                  status.unavailableReplicas === 0
+                ? "Running"
+                : "Pending"
             }
           />
 

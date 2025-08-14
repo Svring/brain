@@ -4,15 +4,12 @@ import { Plus } from "lucide-react";
 import { useEffect } from "react";
 import ProjectCard from "@/components/project/project-card";
 import { Button } from "@/components/ui/button";
-import { TextShimmer } from "@/components/ui/text-shimmer";
-// import AiCoin from "@/components/chat/ai-coin";
-// import AiChatbox from "@/components/chat/ai-chatbox";
 import SearchBar from "@/components/ui/search-bar";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import useProjectSearch from "@/hooks/brain/use-projects-search";
 import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
 import { useProjectActions } from "@/contexts/project/project-context";
-import ProjectPlanCard from "@/components/chat/state-cards/project-plan-card";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function Page() {
   const context = createK8sContext();
@@ -58,9 +55,7 @@ export default function Page() {
         <div className="grid grid-cols-3 gap-6">
           {isLoading && (
             <div className="col-span-full flex h-32 items-center justify-center">
-              <TextShimmer className="font-mono text-md" duration={1.2}>
-                Loading projects...
-              </TextShimmer>
+              <Spinner variant="bars" size={24} />
             </div>
           )}
 

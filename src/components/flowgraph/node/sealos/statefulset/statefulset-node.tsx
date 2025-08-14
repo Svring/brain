@@ -54,9 +54,13 @@ export default function StatefulsetNode({ data }: { data: StatefulsetObject }) {
             status={
               status.paused
                 ? "Stopped"
-                : status.unavailableReplicas > 0
+                : status.unavailableReplicas !== undefined &&
+                  status.unavailableReplicas > 0
                 ? "Error"
-                : "Running"
+                : status.readyReplicas === status.replicas &&
+                  status.unavailableReplicas === 0
+                ? "Running"
+                : "Pending"
             }
           />
 

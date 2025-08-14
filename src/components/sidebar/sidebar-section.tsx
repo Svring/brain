@@ -36,7 +36,7 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
     title: "chat",
     icon: MessageCirclePlus,
     group: "overview",
-    path: "/new/chat",
+    path: "/home",
   },
   {
     title: "projects",
@@ -48,23 +48,28 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
 
 export const MainSection: React.FC<MainSectionProps> = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const { data: projects } = useQuery(listProjectsOptions(createK8sContext()));
 
-  // const handleNavigation = async (path: string) => {
-  //   if (path === "/new/chat" && pathname === "/new/chat") {
-  //     createThread(undefined, {
-  //       onSuccess: (thread) => {
-  //         setThreadId(thread.thread_id);
-  //         reset();
-  //       },
-  //       onError: (error) => {
-  //         console.error("Failed to create thread:", error);
-  //       },
-  //     });
-  //   } else {
-  //     router.push(path);
-  //   }
-  // };
+  const { mutate: createThread } = useCreateThreadMutation();
+  const { setThreadId } = useCopilotContext();
+  const { reset } = useCopilotChatHeadless_c();
+
+  const handleNavigation = async (path: string) => {
+    if (path === "/home" && pathname === "/home") {
+      createThread(undefined, {
+        onSuccess: (thread) => {
+          setThreadId(thread.thread_id);
+          reset();
+        },
+        onError: (error) => {
+          console.error("Failed to create thread:", error);
+        },
+      });
+    } else {
+      router.push(path);
+    }
+  };
 
   return (
     <SidebarGroup>
@@ -75,7 +80,9 @@ export const MainSection: React.FC<MainSectionProps> = () => {
               <SidebarMenuItem key={item.title}>
                 <Tooltip delayDuration={0}>
                   <TooltipTrigger asChild>
-                    <SidebarMenuButton onClick={() => router.push(item.path)}>
+                    <SidebarMenuButton
+                      onClick={() => handleNavigation(item.path)}
+                    >
                       <item.icon />
                       <span>{item.title}</span>
                     </SidebarMenuButton>

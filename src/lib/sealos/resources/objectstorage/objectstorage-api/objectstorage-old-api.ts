@@ -15,6 +15,18 @@ import {
   ObjectStorageDeleteRequestSchema,
   ObjectStorageDeleteResponseSchema,
 } from "../schemas/req-res-schemas/req-res-delete-schemas";
+import {
+  ObjectStorageCloseHostRequest,
+  ObjectStorageCloseHostResponse,
+  ObjectStorageCloseHostRequestSchema,
+  ObjectStorageCloseHostResponseSchema,
+} from "../schemas/req-res-schemas/req-res-closehost-schemas";
+import {
+  ObjectStorageOpenHostRequest,
+  ObjectStorageOpenHostResponse,
+  ObjectStorageOpenHostRequestSchema,
+  ObjectStorageOpenHostResponseSchema,
+} from "../schemas/req-res-schemas/req-res-openhost-schemas";
 import https from "https";
 
 function createObjectStorageApi(context: ObjectStorageApiContext) {
@@ -54,5 +66,29 @@ export const deleteObjectStorage = createParallelAction(
     const api = createObjectStorageApi(context);
     const response = await api.post("/delete", validatedRequest);
     return ObjectStorageDeleteResponseSchema.parse(response.data);
+  }
+);
+
+export const closeObjectStorageHost = createParallelAction(
+  async (
+    request: ObjectStorageCloseHostRequest,
+    context: ObjectStorageApiContext
+  ): Promise<ObjectStorageCloseHostResponse> => {
+    const validatedRequest = ObjectStorageCloseHostRequestSchema.parse(request);
+    const api = createObjectStorageApi(context);
+    const response = await api.post("/site/closeHost", validatedRequest);
+    return ObjectStorageCloseHostResponseSchema.parse(response.data);
+  }
+);
+
+export const openObjectStorageHost = createParallelAction(
+  async (
+    request: ObjectStorageOpenHostRequest,
+    context: ObjectStorageApiContext
+  ): Promise<ObjectStorageOpenHostResponse> => {
+    const validatedRequest = ObjectStorageOpenHostRequestSchema.parse(request);
+    const api = createObjectStorageApi(context);
+    const response = await api.post("/site/openHost", validatedRequest);
+    return ObjectStorageOpenHostResponseSchema.parse(response.data);
   }
 );

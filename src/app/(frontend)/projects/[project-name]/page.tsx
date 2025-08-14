@@ -48,6 +48,7 @@ import { useDisclosure } from "@reactuses/core";
 import { REACT_FLOW_CONFIG } from "@/lib/flowgraph/flowgraph-constant/flowgraph-constant-config";
 import edgeTypes from "@/components/flowgraph/edge/edge-types";
 import nodeTypes from "@/components/flowgraph/node/node-types";
+import { Spinner } from "@/components/ui/spinner";
 
 // Floating UI Component
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
@@ -157,9 +158,7 @@ function ProjectFlow({ projectName }: { projectName: string }) {
   if (isLoading || (resources.length > 0 && !nodes.length)) {
     return (
       <div className="flex items-center justify-center h-full w-full">
-        <TextShimmer className="font-mono text-md" duration={1.2}>
-          Loading flowgraph...
-        </TextShimmer>
+        <Spinner variant="bars" size={24} />
       </div>
     );
   }

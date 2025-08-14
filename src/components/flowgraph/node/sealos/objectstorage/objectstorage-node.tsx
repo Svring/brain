@@ -9,6 +9,7 @@ import ObjectStoragePolicyBadge from "./objectstorage-policy-badge";
 import ObjectStorageNodeMenu from "./objectstorage-node-menu";
 import ObjectStorageNodeTitle from "./objectstorage-node-title";
 import { ObjectStorageObject } from "@/lib/sealos/resources/objectstorage/objectstorage-schemas/objectstorage-object-schema";
+import { useIsMutating } from "@tanstack/react-query";
 
 export default function ObjectStorageNode({
   data,
@@ -19,15 +20,30 @@ export default function ObjectStorageNode({
 
   const { name, policy } = data;
 
+  // Check if this object storage is being deleted
+  const isDeletingObjectStorage = useIsMutating({
+    predicate: (mutation) => {
+      // Check if this is a delete object storage mutation for this specific bucket
+      const isDeleteMutation =
+        mutation.options.mutationFn?.toString().includes("deleteObjectStorage") ??
+        false;
+      const variables = mutation.state.variables as any;
+      return isDeleteMutation && variables?.bucketName === name;
+    },
+  }) > 0;
+
   return (
-    <BaseNode nodeData={data}>
+    <BaseNode 
+      nodeData={data}
+      className={isDeletingObjectStorage ? "border-theme-red" : ""}
+    >
       <div className="flex h-full flex-col justify-between">
         <div className="flex flex-col gap-4">
           {/* Header with Name and Menu */}
           <div className="flex items-center justify-between">
             <ObjectStorageNodeTitle name={name} />
             <div className="flex-shrink-0">
-              <ObjectStorageNodeMenu />
+              <ObjectStorageNodeMenu object={data} />
             </div>
           </div>
 
