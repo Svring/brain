@@ -13,6 +13,12 @@ import {
   type K8sApiContext,
   K8sApiContextSchema,
 } from "../k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
+import {
+  LAUNCHPAD_METRICS_TEST_URL,
+  LAUNCHPAD_METRICS_URL,
+  CLUSTER_METRICS_TEST_URL,
+  CLUSTER_METRICS_URL,
+} from "../sealos/services/metrics";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { ClusterApiContextSchema } from "@/lib/sealos/resources/cluster/schemas/cluster-api-context-schemas";
 import { DevboxApiContextSchema } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas";
@@ -21,6 +27,12 @@ import { AiProxyApiContextSchema } from "@/lib/sealos/resources/ai-proxy/schemas
 import { SealosApiContextSchema } from "@/lib/sealos/sealos-api-context-schema";
 import { TemplateApiContextSchema } from "@/lib/sealos/resources/template/schemas/template-api-context-schemas";
 import { ObjectStorageApiContextSchema } from "../sealos/resources/objectstorage/schemas/objectstorage-api-context-schemas";
+import { MetricsApiContextSchema } from "../sealos/services/metrics/schemas/metrics-api-context-schema";
+import { TrafficApiContextSchema } from "../sealos/services/traffic/schemas/traffic-api-context-schema";
+import {
+  TRAFFIC_TEST_URL,
+  TRAFFIC_URL,
+} from "../sealos/services/traffic/traffic-constant/traffic-constant-url";
 
 export async function extractAuthFromSession(
   session: SessionV1
@@ -199,7 +211,51 @@ export function createTemplateApiContext() {
   });
 }
 
+export function createTrafficApiContext() {
+  const { auth } = useAuthState();
+  const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
+
+  if (!auth) {
+    throw new Error("Auth context is not available");
+  }
+
+  return TrafficApiContextSchema.parse({
+    baseURL: isDevelopment ? TRAFFIC_TEST_URL : TRAFFIC_URL,
+    kubeconfig: auth.kubeconfig,
+  });
+}
+
+export function createLaunchPadMetricsContext() {
+  const { auth } = useAuthState();
+  const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
+
+  if (!auth) {
+    throw new Error("User not found");
+  }
+
+  return MetricsApiContextSchema.parse({
+    baseURL: isDevelopment ? LAUNCHPAD_METRICS_TEST_URL : LAUNCHPAD_METRICS_URL,
+    kubeconfig: auth.kubeconfig,
+  });
+}
+
+export function createClusterMetricsContext() {
+  const { auth } = useAuthState();
+  const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
+
+  if (!auth) {
+    throw new Error("User not found");
+  }
+
+  return MetricsApiContextSchema.parse({
+    baseURL: isDevelopment ? CLUSTER_METRICS_TEST_URL : CLUSTER_METRICS_URL,
+    kubeconfig: auth.kubeconfig,
+  });
+}
+
 export function activateContextCookies() {
   createK8sContext();
   createAiProxyContext();
+  createLaunchPadMetricsContext();
+  createClusterMetricsContext();
 }

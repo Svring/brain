@@ -218,3 +218,9 @@ export const useDeleteProjectMutation = (context: K8sApiContext) => {
     },
   });
 };
+
+export const useStartProjectResourcesMutation = () => {};
+
+export const usePauseProjectResourcesMutation = () => {};
+
+export const useRestartProjectResourcesMutation = () => {};
