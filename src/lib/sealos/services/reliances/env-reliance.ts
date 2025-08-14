@@ -1,16 +1,9 @@
+import type { EnvVar } from "@/lib/k8s/k8s-method/k8s-utils";
+
 interface ResourceObject {
   name: string;
   kind: string;
-  env?: Array<{
-    name: string;
-    value?: string;
-    valueFrom?: {
-      secretKeyRef?: {
-        name: string;
-        key: string;
-      };
-    };
-  }>;
+  env?: EnvVar[];
   [key: string]: any;
 }
 
@@ -57,13 +50,12 @@ export function inferRelianceFromEnv(
     const envValues: string[] = [];
     if (ownerResource.env) {
       for (const envVar of ownerResource.env) {
-        // Type 1: direct value
-        if (envVar.value) {
+        if (envVar.type === "value") {
+          // Direct value environment variable
           envValues.push(envVar.value);
-        }
-        // Type 2: valueFrom.secretKeyRef.name
-        if (envVar.valueFrom?.secretKeyRef?.name) {
-          envValues.push(envVar.valueFrom.secretKeyRef.name);
+        } else if (envVar.type === "secretKeyRef") {
+          // Secret reference environment variable
+          envValues.push(envVar.secretName);
         }
       }
     }

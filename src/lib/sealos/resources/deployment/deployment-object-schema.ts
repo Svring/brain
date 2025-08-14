@@ -1,17 +1,5 @@
 import { z } from "zod";
-
-const EnvVarSchema = z.object({
-  name: z.string(),
-  value: z.string().optional(),
-  valueFrom: z
-    .object({
-      secretKeyRef: z.object({
-        key: z.string(),
-        name: z.string(),
-      }),
-    })
-    .optional(),
-});
+import type { EnvVar } from "@/lib/k8s/k8s-method/k8s-utils";
 
 const PortSchema = z.object({
   number: z.number(),
@@ -51,7 +39,7 @@ export const DeploymentObjectSchema = z.object({
   image: z.string(),
   resource: ResourceSchema,
   status: StatusSchema,
-  env: z.array(EnvVarSchema).optional(),
+  env: z.any().optional(),
   ports: z.array(PortSchema).optional(),
   pods: z.array(PodSchema).optional(),
 });

@@ -14,7 +14,9 @@ import { truncateImage } from "@/lib/sealos/sealos-utils";
 import { useIsMutating } from "@tanstack/react-query";
 
 export default function DeploymentNode({ data }: { data: DeploymentObject }) {
-  const { name, image, status, ports, pods } = data;
+  const { name, image, status, ports, pods, env } = data;
+
+  console.log("env", env);
 
   // Check if this deployment is being deleted
   const isDeletingDeployment =

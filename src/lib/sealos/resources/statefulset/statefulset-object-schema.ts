@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { EnvVar } from "@/lib/k8s/k8s-method/k8s-utils";
 
 export const StatefulsetObjectSchema = z.object({
   name: z.string().describe(
@@ -74,9 +75,36 @@ export const StatefulsetObjectSchema = z.object({
         path: ["spec.template.spec.containers"],
       })
     )
-    .transform((containers) => {
+    .transform((containers): EnvVar[] => {
       if (Array.isArray(containers) && containers.length > 0) {
-        return containers[0].env;
+        const env = containers[0].env;
+        if (!Array.isArray(env)) return [];
+
+        return env.map((envVar: any): EnvVar => {
+          if (envVar.value) {
+            // Direct value environment variable
+            return {
+              type: "value" as const,
+              key: envVar.name,
+              value: envVar.value,
+            };
+          } else if (envVar.valueFrom?.secretKeyRef) {
+            // Secret reference environment variable
+            return {
+              type: "secretKeyRef" as const,
+              key: envVar.name,
+              secretName: envVar.valueFrom.secretKeyRef.name,
+              secretKey: envVar.valueFrom.secretKeyRef.key,
+            };
+          } else {
+            // Unknown type, return as value with placeholder
+            return {
+              type: "value" as const,
+              key: envVar.name,
+              value: `[UNKNOWN_ENV_TYPE: ${JSON.stringify(envVar)}]`,
+            };
+          }
+        });
       }
       return [];
     })

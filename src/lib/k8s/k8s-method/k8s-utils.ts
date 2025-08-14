@@ -17,7 +17,9 @@ import { INSTANCE_RELATE_RESOURCE_LABELS } from "../k8s-constant/k8s-constant-la
 import { buildQueryKey } from "../k8s-constant/k8s-constant-query-key";
 
 import _ from "lodash";
+import { Buffer } from "buffer";
 import { ListAllResourcesResponse } from "../k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
+import { getResource } from "./k8s-query";
 
 /**
  * Simplified resource annotation interface
@@ -461,6 +463,81 @@ export function invalidateQueriesAfterMutation(
       queryKey: buildQueryKey.inventory(),
     });
   }
+}
+
+/**
+ * Resolves environment variables by fetching secret values for secretKeyRef types
+ * Converts EnvVarSecretRef to EnvVarValue with resolved secret data
+ * Caches fetched secrets to avoid duplicate API calls
+ */
+export async function resolveEnvVars(
+  context: K8sApiContext,
+  envVars: EnvVar[]
+): Promise<EnvVarValue[]> {
+  const resolvedEnvVars: EnvVarValue[] = [];
+  const secretCache = new Map<string, any>();
+
+  for (const envVar of envVars) {
+    if (envVar.type === "value") {
+      // Direct value, no resolution needed
+      resolvedEnvVars.push(envVar);
+    } else if (envVar.type === "secretKeyRef") {
+      // Check if secret is already cached
+      if (!secretCache.has(envVar.secretName)) {
+        // Create a target for the secret resource
+        const secretTarget = {
+          type: "builtin" as const,
+          resourceType: "secret",
+          name: envVar.secretName,
+        };
+
+        // Fetch the secret and cache it
+        const secret = await getResource(context, secretTarget);
+        secretCache.set(envVar.secretName, secret);
+      }
+
+      const secret = secretCache.get(envVar.secretName);
+
+      if (secret && secret.data && secret.data[envVar.secretKey]) {
+        // Decode base64 secret value
+        const secretValue = secret.data[envVar.secretKey];
+        if (typeof secretValue === "string") {
+          const decodedValue = Buffer.from(secretValue, "base64").toString(
+            "utf-8"
+          );
+
+          // Convert to EnvVarValue
+          resolvedEnvVars.push({
+            type: "value",
+            key: envVar.key,
+            value: decodedValue,
+          });
+        } else {
+          console.warn(
+            `Secret key '${envVar.secretKey}' has invalid type in secret '${envVar.secretName}'`
+          );
+          // Keep original secret ref if resolution fails
+          resolvedEnvVars.push({
+            type: "value",
+            key: envVar.key,
+            value: `[SECRET_REF_ERROR: ${envVar.secretName}.${envVar.secretKey}]`,
+          });
+        }
+      } else {
+        console.warn(
+          `Secret key '${envVar.secretKey}' not found in secret '${envVar.secretName}'`
+        );
+        // Keep original secret ref if resolution fails
+        resolvedEnvVars.push({
+          type: "value",
+          key: envVar.key,
+          value: `[SECRET_REF_ERROR: ${envVar.secretName}.${envVar.secretKey}]`,
+        });
+      }
+    }
+  }
+
+  return resolvedEnvVars;
 }
 
 /**

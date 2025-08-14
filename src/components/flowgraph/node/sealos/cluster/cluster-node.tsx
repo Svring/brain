@@ -46,6 +46,11 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
       ...messages,
       {
         id: randomId(),
+        role: "assistant",
+        content: `This is your database.`,
+      },
+      {
+        id: randomId(),
         role: "system",
         content: JSON.stringify({
           type: "info.clusterInfo",
