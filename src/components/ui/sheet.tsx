@@ -51,29 +51,27 @@ const sheetVariants = cva(
   }
 );
 
-interface SheetRailProps extends React.ComponentProps<"button"> {
-  onClose?: () => void;
-}
-const SheetRail = React.forwardRef<HTMLButtonElement, SheetRailProps>(
-  ({ className, onClose, ...props }, ref) => (
-    <button
-      aria-label="Close Sheet"
-      className={cn(
-        "absolute -left-4 top-0 z-50 h-full w-4 bg-transparent transition-colors group/rail cursor-e-resize",
-        className
-      )}
-      onClick={onClose}
-      ref={ref}
-      tabIndex={0}
-      title="Close Sheet"
-      {...props}
-    >
-      <span
+const SheetRail = React.forwardRef<HTMLButtonElement, React.ComponentProps<"button">>(
+  ({ className, ...props }, ref) => (
+    <SheetPrimitive.Close asChild>
+      <button
+        aria-label="Close Sheet"
         className={cn(
-          "pointer-events-none absolute left-1/2 top-0 h-full w-0.5 -translate-x-1/2 rounded bg-muted opacity-0 transition-opacity group-hover/rail:opacity-100"
+          "absolute -left-4 top-0 z-50 h-full w-4 bg-transparent transition-colors group/rail cursor-e-resize",
+          className
         )}
-      />
-    </button>
+        ref={ref}
+        tabIndex={0}
+        title="Close Sheet"
+        {...props}
+      >
+        <span
+          className={cn(
+            "pointer-events-none absolute left-1/2 top-0 h-full w-0.5 -translate-x-1/2 rounded bg-muted opacity-0 transition-opacity group-hover/rail:opacity-100"
+          )}
+        />
+      </button>
+    </SheetPrimitive.Close>
   )
 );
 SheetRail.displayName = "SheetRail";
@@ -88,39 +86,23 @@ const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
 >(({ side = "right", className, children, onClose, ...props }, ref) => {
-  // Create a handler for closing the sheet when clicked outside
-  const handleOutsideClick = (event: Event) => {
-    // Don't prevent the event, which allows scrolling to work
-    // Instead, close the sheet using the onClose prop or SheetClose
-    if (onClose) {
-      onClose();
-    } else {
-      // Find the closest SheetClose button and click it
-      const closeButton = document.querySelector(
-        '[data-state="open"] [aria-label="Close"]'
-      ) as HTMLElement;
-      if (closeButton) {
-        closeButton.click();
-      }
-    }
-  };
-
   return (
     <SheetPortal>
       {/* <SheetOverlay /> */}
       <SheetPrimitive.Content
         className={cn(sheetVariants({ side }), className)}
         ref={ref}
-        onPointerDownOutside={handleOutsideClick}
+        onPointerDownOutside={(event) => {
+          // Prevent closing when clicking outside
+          event.preventDefault();
+        }}
         onInteractOutside={(event) => {
-          // Allow scrolling and other interactions, but close on click
-          if (event.type === "pointerdown") {
-            handleOutsideClick(event);
-          }
+          // Prevent closing when clicking outside
+          event.preventDefault();
         }}
         {...props}
       >
-        {/* <SheetRail onClose={onClose} /> */}
+        <SheetRail />
         {children}
         <SheetPrimitive.Close className="absolute top-4 right-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
           <X className="h-4 w-4" />

@@ -7,12 +7,39 @@ import { flattenResourceList } from "@/lib/k8s/k8s-method/k8s-utils";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import { PROJECT_DISPLAY_NAME_ANNOTATION_KEY } from "../project-constant/project-constant-annotation";
 
+// Type for project resource items used in mutations
+export type ProjectResourceItem = {
+  name: string;
+  kind: string; // devbox | cluster | deployment | statefulset
+  // For clusters, dbType is required by API
+  type?: string;
+};
+
 export const composeProjectMetadata = (): ProjectObjectMetadata => {
   return ProjectObjectMetadataSchema.parse({
     compatibility: "brain",
     resources: [],
   });
 };
+
+/**
+ * Transform project resources to ProjectResourceItem format for mutations
+ * @param resources - Array of project resources from context
+ * @returns Array of ProjectResourceItem objects ready for mutation calls
+ */
+export function transformProjectResourcesToItems(
+  resources: any[]
+): ProjectResourceItem[] {
+  if (!Array.isArray(resources) || resources.length === 0) {
+    return [];
+  }
+
+  return resources.map((resource: any) => ({
+    name: resource.name,
+    kind: resource.kind?.toLowerCase(),
+    type: resource.type, // For clusters
+  }));
+}
 
 /**
  * Convert instanceResourceList to simplified project list

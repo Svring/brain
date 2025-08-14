@@ -33,6 +33,10 @@ import useFlowgraphNodes from "@/hooks/flowgraph/use-flowgraph-nodes";
 import useProjectResources from "@/hooks/brain/use-project-resources";
 import useResourceObjects from "@/hooks/sealos/use-resource-objects";
 import useResourceReliances from "@/hooks/sealos/use-resource-reliances";
+import {
+  useStartProjectResourcesMutation,
+  usePauseProjectResourcesMutation,
+} from "@/lib/brain/resources/project/project-method/project-mutation";
 
 // Context and utilities
 import { convertPortsToIngressNodes } from "@/lib/flowgraph/nodes/flowgraph-nodes-utils";
@@ -41,8 +45,13 @@ import {
   useFlowgraphActions,
   useFlowgraphState,
 } from "@/contexts/flowgraph/flowgraph-context";
-import { useProjectActions } from "@/contexts/project/project-context";
+import {
+  useProjectActions,
+  useProjectState,
+} from "@/contexts/project/project-context";
 import { useDisclosure } from "@reactuses/core";
+import { createSealosContext } from "@/lib/auth/auth-utils";
+import { transformProjectResourcesToItems } from "@/lib/brain/resources/project/project-method/project-utils";
 
 // Types and constants
 import { REACT_FLOW_CONFIG } from "@/lib/flowgraph/flowgraph-constant/flowgraph-constant-config";
@@ -52,10 +61,21 @@ import { Spinner } from "@/components/ui/spinner";
 
 // Floating UI Component
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [sheetContent, setSheetContent] = useState<
     "add-resource" | "display-env"
   >("add-resource");
+
+  // Create context for mutations
+  const sealosContext = createSealosContext();
+
+  // Get project resources from context
+  const { selectedProjectResources } = useProjectState();
+
+  // Initialize mutations
+  const startProjectResources = useStartProjectResourcesMutation(sealosContext);
+
+  const pauseProjectResources = usePauseProjectResourcesMutation(sealosContext);
 
   const handleAddNew = () => {
     setSheetContent("add-resource");
@@ -67,14 +87,58 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
     onOpen();
   };
 
+  const handleStartAll = () => {
+    if (
+      !selectedProjectResources ||
+      !Array.isArray(selectedProjectResources) ||
+      selectedProjectResources.length === 0
+    ) {
+      return;
+    }
+
+    // Transform resources to ProjectResourceItem format
+    const resources = transformProjectResourcesToItems(
+      selectedProjectResources
+    );
+
+    console.log("resources", resources);
+
+    startProjectResources.mutate({ resources });
+  };
+
+  const handlePauseAll = () => {
+    if (
+      !selectedProjectResources ||
+      !Array.isArray(selectedProjectResources) ||
+      selectedProjectResources.length === 0
+    ) {
+      return;
+    }
+
+    // Transform resources to ProjectResourceItem format
+    const resources = transformProjectResourcesToItems(
+      selectedProjectResources
+    );
+
+    pauseProjectResources.mutate({ resources });
+  };
+
+  // Check if mutations are in progress
+  const isStarting = startProjectResources.isPending;
+  const isPausing = pauseProjectResources.isPending;
+
   return (
     <>
       <FlowgraphHeader projectName={projectName} />
       <FlowgraphMenuActions
         onAddNew={handleAddNew}
         onDisplayEnv={handleDisplayEnv}
+        onStartAll={handleStartAll}
+        onPauseAll={handlePauseAll}
+        isStarting={isStarting}
+        isPausing={isPausing}
       />
-      <Sheet onOpenChange={onClose} open={isOpen}>
+      <Sheet onOpenChange={onOpenChange} open={isOpen}>
         <SheetContent className="w-[40vw]! max-w-none! fade-in-0 animate-in flex flex-col">
           <SheetHeader className="shrink-0">
             <SheetTitle>

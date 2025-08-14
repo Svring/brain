@@ -68,6 +68,8 @@ export default function ClusterNodeMenu({ object }: { object: ClusterObject }) {
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
+              console.log("clusterName", clusterName);
+              console.log("object.type", object.type);
               pauseCluster.mutate({ dbName: clusterName, dbType: object.type });
             }}
             disabled={status === "Creating" || status === "Updating"}

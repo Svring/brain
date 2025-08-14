@@ -1,19 +1,42 @@
 "use client";
 
-import { Plus, Eye } from "lucide-react";
+import { Plus, Eye, Play, Pause } from "lucide-react";
 import { MenuBar, MenuBarItem } from "../project/menu-bar";
 
 interface FlowgraphMenuActionsProps {
   onAddNew: () => void;
   onDisplayEnv: () => void;
+  onStartAll: () => void;
+  onPauseAll: () => void;
+  isStarting?: boolean;
+  isPausing?: boolean;
 }
 
-export function FlowgraphMenuActions({ onAddNew, onDisplayEnv }: FlowgraphMenuActionsProps) {
+export function FlowgraphMenuActions({ 
+  onAddNew, 
+  onDisplayEnv, 
+  onStartAll, 
+  onPauseAll,
+  isStarting = false,
+  isPausing = false
+}: FlowgraphMenuActionsProps) {
   const menuItemsRight: MenuBarItem[] = [
     {
       icon: Eye,
       label: "Display Env",
       onClick: onDisplayEnv,
+      isToggle: false,
+    },
+    {
+      icon: Play,
+      label: isStarting ? "Starting..." : "Start All",
+      onClick: onStartAll,
+      isToggle: false,
+    },
+    {
+      icon: Pause,
+      label: isPausing ? "Pausing..." : "Pause All",
+      onClick: onPauseAll,
       isToggle: false,
     },
     {
