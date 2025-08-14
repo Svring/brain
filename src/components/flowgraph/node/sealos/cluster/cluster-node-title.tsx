@@ -30,7 +30,7 @@ export default function ClusterNodeTitle({
           />
           <span className="flex flex-col min-w-0">
             <span className="text-xs text-muted-foreground leading-none">
-              Database Provider
+              Database
             </span>
             <span className="text-lg font-bold text-foreground leading-tight truncate">
               {name.length > 15 ? `${name.slice(0, 15)}...` : name}

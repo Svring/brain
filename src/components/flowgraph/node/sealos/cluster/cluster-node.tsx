@@ -22,19 +22,16 @@ import { useIsMutating } from "@tanstack/react-query";
 
 export default function ClusterNode({ data }: { data: ClusterObject }) {
   const [publicAccess, setPublicAccess] = useState(false);
-  const { sendMessage } = useCopilotChatHeadless_c();
+  const { sendMessage, setMessages, messages } = useCopilotChatHeadless_c();
   const { openSidebarChat } = useChatActions();
 
   const { name, type, status, pods } = data;
 
-  // Check if this cluster is being deleted
-  // Either by status or by mutation state
   const isDeletingCluster =
     status === "Deleting" ||
     status === "Terminating" ||
     useIsMutating({
       predicate: (mutation) => {
-        // Check if this is a delete cluster mutation for this specific cluster
         const isDeleteMutation =
           mutation.options.mutationFn?.toString().includes("deleteCluster") ??
           false;
@@ -43,25 +40,32 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
       },
     }) > 0;
 
-  // console.log("pods", pods);
-
-  // const handleNodeClick = () => {
-  //   // Send a message about the cluster
-  //   sendMessage({
-  //     id: randomId(),
-  //     role: "user",
-  //     content: `Tell me about the cluster ${name} of type ${type}. What can I do with it?`,
-  //   });
-  //   // Open the sidebar chat
-  //   openSidebarChat();
-  // };
+  const handleNodeClick = () => {
+    // Send a message about the cluster
+    setMessages([
+      ...messages,
+      {
+        id: randomId(),
+        role: "system",
+        content: JSON.stringify({
+          type: "info.clusterInfo",
+          payload: data,
+        }),
+      },
+    ]);
+    // Open the sidebar chat
+    openSidebarChat();
+  };
 
   const mainCard = (
     <BaseNode
       nodeData={data}
       className={isDeletingCluster ? "border-theme-red" : ""}
     >
-      <div className="flex h-full flex-col gap-4 justify-between">
+      <div
+        className="flex h-full flex-col gap-4 justify-between"
+        onClick={handleNodeClick}
+      >
         {/* Header with Name and Menu */}
         <div className="flex items-center justify-between">
           <ClusterNodeTitle name={name} type={type} />
