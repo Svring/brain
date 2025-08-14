@@ -7,6 +7,30 @@ import { flattenResourceList } from "@/lib/k8s/k8s-method/k8s-utils";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import { PROJECT_DISPLAY_NAME_ANNOTATION_KEY } from "../project-constant/project-constant-annotation";
 
+/**
+ * Generates a random string of lowercase alphabets
+ * @param length - The length of the random string (default: 5)
+ * @returns A random string of lowercase alphabets
+ */
+function generateRandomString(length: number = 5): string {
+  const chars = "abcdefghijklmnopqrstuvwxyz";
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+/**
+ * Generates an automatic name for a project
+ * @param prefix - Optional prefix for the name (default: 'project')
+ * @returns A generated name in the format 'project-XXXXX' where XXXXX is random lowercase alphabets
+ */
+export const generateProjectName = (prefix: string = "project"): string => {
+  const randomString = generateRandomString(5);
+  return `${prefix}-${randomString}`;
+};
+
 // Type for project resource items used in mutations
 export type ProjectResourceItem = {
   name: string;

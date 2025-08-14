@@ -2,13 +2,16 @@
 
 import { ProjectContextState } from "../project/project-machine";
 
+// All possible runtime names from the langgraph schema
+export type LanggraphRuntime = "C++" | "Nuxt3" | "Hugo" | "Java" | "Chi" | "PHP" | "Rocket" | "Quarkus" | "Debian" | "Ubuntu" | "Spring Boot" | "Flask" | "Nginx" | "Vue.js" | "Python" | "VitePress" | "Node.js" | "Echo" | "Next.js" | "Angular" | "React" | "Svelte" | "Gin" | "Rust" | "UmiJS" | "Docusaurus" | "Hexo" | "Vert.x" | "Go" | "C" | "Iris" | "Astro" | "MCP" | "Django" | "Express.js" | ".Net";
+
 export type DevBox = {
-  runtime: string;
+  runtime: LanggraphRuntime;
   description: string;
 };
 
 export type Database = {
-  type: string;
+  type: "postgresql" | "mongodb" | "apecloud-mysql" | "redis" | "kafka" | "weaviate" | "milvus" | "pulsar";
   description: string;
 };
 

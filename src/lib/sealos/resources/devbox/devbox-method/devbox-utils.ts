@@ -1,6 +1,20 @@
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 
+/**
+ * Generates a random string of lowercase alphabets
+ * @param length - The length of the random string (default: 5)
+ * @returns A random string of lowercase alphabets
+ */
+function generateRandomString(length: number = 5): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyz';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
 interface SshConfig {
   host: string | null;
   port: number;
@@ -94,4 +108,14 @@ export const convertDevboxListToSimplified = (
   devboxResources: K8sResource[]
 ) => {
   return devboxResources.map(convertDevboxToSimplifiedList);
+};
+
+/**
+ * Generates an automatic name for a devbox resource
+ * @param prefix - Optional prefix for the name (default: 'devbox')
+ * @returns A generated name in the format 'devbox-XXXXX' where XXXXX is random lowercase alphabets
+ */
+export const generateDevboxName = (prefix: string = 'devbox'): string => {
+  const randomString = generateRandomString(5);
+  return `${prefix}-${randomString}`;
 };
