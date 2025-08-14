@@ -177,7 +177,7 @@ What could be causing the connectivity issue and how can I fix it?`,
             <Globe className="h-4 w-4 text-theme-blue" />
           )}
 
-          <div className="flex items-center gap-1 flex-1 min-w-0">
+          <div className="flex justify-between items-center gap-1 flex-1 min-w-0">
             <span
               className={cn(
                 "text-sm truncate transition-colors",

@@ -26,7 +26,7 @@ import { useState } from "react";
 
 export default function AddResourceTabs() {
   const k8sContext = createK8sContext();
-  const { selectedProject } = useProjectState();
+  const { selectedProject, allProjects } = useProjectState();
   const [addingResources, setAddingResources] = useState<Set<string>>(
     new Set()
   );
@@ -142,7 +142,12 @@ export default function AddResourceTabs() {
                       <TableCell>
                         {devbox.inProject ? (
                           <span className="text-sm text-muted-foreground">
-                            {devbox.inProject}
+                            {(
+                              allProjects.find(
+                                (project: any) =>
+                                  project.name === devbox.inProject
+                              ) as any
+                            )?.displayName || devbox.inProject}
                           </span>
                         ) : (
                           <Button
@@ -240,7 +245,12 @@ export default function AddResourceTabs() {
                       <TableCell>
                         {cluster.inProject ? (
                           <span className="text-sm text-muted-foreground">
-                            {cluster.inProject}
+                            {(
+                              allProjects.find(
+                                (project: any) =>
+                                  project.name === cluster.inProject
+                              ) as any
+                            )?.displayName || cluster.inProject}
                           </span>
                         ) : (
                           <Button
@@ -324,7 +334,12 @@ export default function AddResourceTabs() {
                       <TableCell>
                         {resource.inProject ? (
                           <span className="text-sm text-muted-foreground">
-                            {resource.inProject}
+                            {(
+                              allProjects.find(
+                                (project: any) =>
+                                  project.name === resource.inProject
+                              ) as any
+                            )?.displayName || resource.inProject}
                           </span>
                         ) : (
                           <Button
