@@ -7,6 +7,12 @@ export const ObjectStorageBucketObjectQuerySchema = z.object({
       path: ["metadata.name"],
     })
   ),
+  displayName: z.string().describe(
+    JSON.stringify({
+      resourceType: "objectstoragebucket",
+      path: ["status.name"],
+    })
+  ),
   kind: z.string().describe(
     JSON.stringify({
       resourceType: "objectstoragebucket",

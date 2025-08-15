@@ -40,10 +40,14 @@ export default function AddNewResourceTab() {
     memory: "1024Mi",
     storage: "3Gi",
     replicas: "1",
-    port: "80",
-    protocol: "TCP",
-    appProtocol: "HTTP",
-    exposesPublicDomain: "true",
+    ports: [
+      {
+        port: "8080",
+        protocol: "TCP",
+        appProtocol: "HTTP",
+        exposesPublicDomain: false,
+      }
+    ],
     command: "",
     args: "",
     env: [],
@@ -132,10 +136,14 @@ export default function AddNewResourceTab() {
       memory: "1024Mi",
       storage: "3Gi",
       replicas: "1",
-      port: "80",
-      protocol: "TCP",
-      appProtocol: "HTTP",
-      exposesPublicDomain: "true",
+      ports: [
+        {
+          port: "8080",
+          protocol: "TCP",
+          appProtocol: "HTTP",
+          exposesPublicDomain: false,
+        }
+      ],
       command: "",
       args: "",
       env: [],
@@ -150,10 +158,14 @@ export default function AddNewResourceTab() {
       memory: "1024Mi",
       storage: "3Gi",
       replicas: "1",
-      port: "80",
-      protocol: "TCP",
-      appProtocol: "HTTP",
-      exposesPublicDomain: "true",
+      ports: [
+        {
+          port: "8080",
+          protocol: "TCP",
+          appProtocol: "HTTP",
+          exposesPublicDomain: false,
+        }
+      ],
       command: "",
       args: "",
       env: [],
@@ -210,12 +222,12 @@ export default function AddNewResourceTab() {
             env: configData.env || [],
             command: configData.command || "",
             args: configData.args || "",
-            ports: [{
-              port: parseInt(configData.port) || 80,
-              protocol: (configData.protocol as "TCP" | "UDP" | "SCTP") || "TCP",
-              appProtocol: (configData.appProtocol as "HTTP" | "GRPC" | "WS") || "HTTP",
-              exposesPublicDomain: configData.exposesPublicDomain !== "false",
-            }],
+            ports: (configData.ports || []).map((port: any) => ({
+              port: parseInt(port.port) || 80,
+              protocol: (port.protocol as "TCP" | "UDP" | "SCTP") || "TCP",
+              appProtocol: (port.appProtocol as "HTTP" | "GRPC" | "WS") || "HTTP",
+              exposesPublicDomain: port.exposesPublicDomain === true,
+            })),
             configMap: [],
             hpa: null,
             imageRegistry: null,
@@ -230,7 +242,26 @@ export default function AddNewResourceTab() {
       }
 
       // Add the created resource to the project
-      const resourceTarget = convertResourceTypeToTarget(selectedResource, configData.name);
+      // Map resource types to their correct Kubernetes resource types
+      const getResourceTypeForTarget = (resourceType: string) => {
+        switch (resourceType) {
+          case "database":
+            return "cluster";
+          case "applaunchpad":
+            return "deployment";
+          case "devbox":
+            return "devbox";
+          case "objectstoragebucket":
+            return "objectstoragebucket";
+          default:
+            return resourceType;
+        }
+      };
+      
+      const resourceTarget = convertResourceTypeToTarget(
+        getResourceTypeForTarget(selectedResource), 
+        configData.name
+      );
       await addToProject.mutateAsync({
         resources: [resourceTarget],
         name: selectedProject,
@@ -399,13 +430,21 @@ export default function AddNewResourceTab() {
                         Loading versions...
                       </SelectItem>
                     ) : configData.type && clusterVersions?.data?.[configData.type] ? (
-                      clusterVersions.data[configData.type].map((version: string) => (
-                        <SelectItem key={version} value={version}>
-                          {version}
+                      // Deduplicate versions by ID to prevent duplicates
+                      Array.from(
+                        new Map(
+                          clusterVersions.data[configData.type].map((version: any) => [
+                            version.id || version,
+                            version
+                          ])
+                        ).values()
+                      ).map((version: any, index: number) => (
+                        <SelectItem key={`${configData.type}-${version.id || version}-${index}`} value={version.id || version}>
+                          {version.label || version.id || version}
                         </SelectItem>
                       ))
                     ) : (
-                      <SelectItem value="" disabled>
+                      <SelectItem value="no-versions" disabled>
                         {!configData.type ? "Select database type first" : "No versions available"}
                       </SelectItem>
                     )}
@@ -575,71 +614,123 @@ export default function AddNewResourceTab() {
 
               {/* Port Configuration */}
               <div className="space-y-3">
-                <Label className="text-sm font-medium">Port Configuration</Label>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="app-port" className="text-xs">Port</Label>
-                    <Select
-                      value={configData.port || ""}
-                      onValueChange={(value) => handleConfigChange("port", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Port" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {[80, 443, 3000, 8080, 9000, 5000, 4000, 6000, 7000, 8000].map((port) => (
-                          <SelectItem key={port} value={port.toString()}>
-                            {port}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="app-protocol" className="text-xs">Protocol</Label>
-                    <Select
-                      value={configData.protocol || "TCP"}
-                      onValueChange={(value) => handleConfigChange("protocol", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Protocol" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="TCP">TCP</SelectItem>
-                        <SelectItem value="UDP">UDP</SelectItem>
-                        <SelectItem value="SCTP">SCTP</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="app-appProtocol" className="text-xs">App Protocol</Label>
-                    <Select
-                      value={configData.appProtocol || "HTTP"}
-                      onValueChange={(value) => handleConfigChange("appProtocol", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select App Protocol" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="HTTP">HTTP</SelectItem>
-                        <SelectItem value="GRPC">gRPC</SelectItem>
-                        <SelectItem value="WS">WebSocket</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium">Port Configuration</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const newPorts = [...(configData.ports || []), {
+                        port: "8080",
+                        protocol: "TCP",
+                        appProtocol: "HTTP",
+                        exposesPublicDomain: false,
+                      }];
+                      handleConfigChange("ports", newPorts);
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Port
+                  </Button>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="app-exposesPublicDomain"
-                    checked={configData.exposesPublicDomain !== false}
-                                         onChange={(e) => handleConfigChange("exposesPublicDomain", e.target.checked.toString())}
-                    className="rounded border-gray-300"
-                  />
-                  <Label htmlFor="app-exposesPublicDomain" className="text-sm">
-                    Expose Public Domain
-                  </Label>
-                </div>
+                {(configData.ports || []).map((port: any, index: number) => (
+                  <div key={index} className="border rounded-lg p-3 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">Port {index + 1}</Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const newPorts = (configData.ports || []).filter((_: any, i: number) => i !== index);
+                          handleConfigChange("ports", newPorts);
+                        }}
+                        disabled={(configData.ports || []).length === 1}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-xs">Port</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="65535"
+                          placeholder="1-65535"
+                          value={port.port || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            // Only allow valid port numbers
+                            if (value === "" || (parseInt(value) >= 1 && parseInt(value) <= 65535)) {
+                              const newPorts = [...(configData.ports || [])];
+                              newPorts[index] = { ...port, port: value };
+                              handleConfigChange("ports", newPorts);
+                            }
+                          }}
+                          className="text-xs"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">Protocol</Label>
+                        <Select
+                          value={port.protocol || "TCP"}
+                          onValueChange={(value) => {
+                            const newPorts = [...(configData.ports || [])];
+                            newPorts[index] = { ...port, protocol: value };
+                            handleConfigChange("ports", newPorts);
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Protocol" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="TCP">TCP</SelectItem>
+                            <SelectItem value="UDP">UDP</SelectItem>
+                            <SelectItem value="SCTP">SCTP</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">App Protocol</Label>
+                        <Select
+                          value={port.appProtocol || "HTTP"}
+                          onValueChange={(value) => {
+                            const newPorts = [...(configData.ports || [])];
+                            newPorts[index] = { ...port, appProtocol: value };
+                            handleConfigChange("ports", newPorts);
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select App Protocol" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="HTTP">HTTP</SelectItem>
+                            <SelectItem value="GRPC">gRPC</SelectItem>
+                            <SelectItem value="WS">WebSocket</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={`app-exposesPublicDomain-${index}`}
+                        checked={port.exposesPublicDomain === true}
+                        onChange={(e) => {
+                          const newPorts = [...(configData.ports || [])];
+                          newPorts[index] = { ...port, exposesPublicDomain: e.target.checked };
+                          handleConfigChange("ports", newPorts);
+                        }}
+                        className="rounded border-gray-300"
+                      />
+                      <Label htmlFor={`app-exposesPublicDomain-${index}`} className="text-sm">
+                        Expose Public Domain
+                      </Label>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* Command & Args */}
@@ -831,7 +922,7 @@ export default function AddNewResourceTab() {
                 !configData.name || 
                 (selectedResource === "devbox" && !configData.runtimeName) ||
                 (selectedResource === "database" && (!configData.type || !configData.version)) ||
-                (selectedResource === "applaunchpad" && (!configData.image || !configData.replicas || !configData.port || !configData.cpu || !configData.memory)) ||
+                (selectedResource === "applaunchpad" && (!configData.image || !configData.replicas || !configData.cpu || !configData.memory || !configData.ports || configData.ports.length === 0)) ||
                 (selectedResource === "objectstoragebucket" && !configData.policy)
               }
             >

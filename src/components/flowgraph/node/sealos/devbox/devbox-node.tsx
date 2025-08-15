@@ -15,21 +15,60 @@ import NodeStack from "../../components/node-stack";
 import DevboxNodeRelease from "./devbox-node-release";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import { useDeleteDevboxMutation } from "@/lib/sealos/resources/devbox/devbox-method/devbox-mutation";
+import { getDevboxReleasesOptions } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
+import { useQuery } from "@tanstack/react-query";
+import { randomId } from "@copilotkit/shared";
+import { useChatActions } from "@/contexts/chat/chat-context";
+import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 
 // TODO: Devbox nodes would cause maximum call stack error
 export default function DevboxNode({ data }: { data: DevboxObject }) {
   const { name, image, status, ports, pods } = data;
-
+  const { sendMessage, setMessages, messages } = useCopilotChatHeadless_c();
+  const { openSidebarChat } = useChatActions();
   const context = createK8sContext();
   const devboxContext = createDevboxContext();
   const deleteDevbox = useDeleteDevboxMutation(devboxContext);
 
+  // Fetch devbox releases
+  const { data: releasesResponse } = useQuery(
+    getDevboxReleasesOptions(devboxContext, name)
+  );
+
+  // Extract the releases array from the response
+  const releases = releasesResponse?.data || [];
+
+  const handleNodeClick = () => {
+    // Send a message about the cluster
+    setMessages([
+      ...messages,
+      {
+        id: randomId(),
+        role: "assistant",
+        content: `This is your devbox.`,
+      },
+      {
+        id: randomId(),
+        role: "system",
+        content: JSON.stringify({
+          type: "info.devboxInfo",
+          payload: data,
+        }),
+      },
+    ]);
+    // Open the sidebar chat
+    openSidebarChat();
+  };
+
   const mainCard = (
-    <BaseNode 
+    <BaseNode
       nodeData={data}
       className={deleteDevbox.isPending ? "border-theme-red" : ""}
     >
-      <div className="flex h-full flex-col gap-2 justify-between">
+      <div
+        className="flex h-full flex-col gap-2 justify-between"
+        onClick={handleNodeClick}
+      >
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
           <DevboxNodeTitle
@@ -75,7 +114,5 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
     </BaseNode>
   );
 
-  // const subCard = <DevboxNodeRelease object={data} />;
-
-  return <NodeStack mainCard={mainCard} data={[1, 2, 3, 4, 5]} />;
+  return <NodeStack mainCard={mainCard} data={releases} />;
 }

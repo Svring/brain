@@ -17,15 +17,33 @@ import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cl
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { useChatActions } from "@/contexts/chat/chat-context";
 import { randomId } from "@copilotkit/shared";
-import { createClusterContext } from "@/lib/auth/auth-utils";
+import { createClusterContext, createK8sContext } from "@/lib/auth/auth-utils";
 import { useIsMutating } from "@tanstack/react-query";
+import { getClusterBackupListOptions } from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
+import { useQuery } from "@tanstack/react-query";
 
 export default function ClusterNode({ data }: { data: ClusterObject }) {
   const [publicAccess, setPublicAccess] = useState(false);
   const { sendMessage, setMessages, messages } = useCopilotChatHeadless_c();
   const { openSidebarChat } = useChatActions();
 
-  const { name, type, status, pods } = data;
+  const { name, type, status, pods, backup } = data;
+
+  // Create contexts for API calls
+  const k8sContext = createK8sContext();
+  const clusterContext = createClusterContext();
+
+  // Fetch cluster backup list
+  const { data: backupList = [] } = useQuery(
+    getClusterBackupListOptions(clusterContext, {
+      type: "custom",
+      group: "cluster.sealos.io",
+      version: "v1",
+      resourceType: "cluster",
+      plural: "clusters",
+      name: name,
+    })
+  );
 
   const isDeletingCluster =
     status === "Deleting" ||
@@ -117,7 +135,5 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
     </BaseNode>
   );
 
-  const subCard = <ClusterNodeBackup object={data} />;
-
-  return <NodeStack mainCard={mainCard} data={[1]} />;
+  return <NodeStack mainCard={mainCard} data={backupList} />;
 }

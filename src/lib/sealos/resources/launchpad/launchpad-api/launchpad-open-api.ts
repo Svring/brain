@@ -62,7 +62,7 @@ export const createApplication = createParallelAction(
   async (context: SealosApiContext, data: LaunchpadCreateRequest) => {
     const api = createLaunchpadApi(context);
     const response = await api.post<LaunchpadCreateSuccessResponse>(
-      "/launchpad",
+      "/app",
       data
     );
     return response.data;
@@ -73,7 +73,7 @@ export const createApplication = createParallelAction(
 export const getApplication = createParallelAction(
   async (context: SealosApiContext, name: string) => {
     const api = createLaunchpadApi(context);
-    const response = await api.get<LaunchpadGetResponse>(`/launchpad/${name}`);
+    const response = await api.get<LaunchpadGetResponse>(`/app/${name}`);
     return response.data;
   }
 );
@@ -87,7 +87,7 @@ export const updateApplication = createParallelAction(
   ) => {
     const api = createLaunchpadApi(context);
     const response = await api.patch<LaunchpadPatchResponse>(
-      `/launchpad/${name}`,
+      `/app/${name}`,
       data
     );
     return response.data;
@@ -98,9 +98,7 @@ export const updateApplication = createParallelAction(
 export const deleteApplication = createParallelAction(
   async (context: SealosApiContext, name: string) => {
     const api = createLaunchpadApi(context);
-    const response = await api.delete<LaunchpadDeleteResponse>(
-      `/launchpad/${name}`
-    );
+    const response = await api.delete<LaunchpadDeleteResponse>(`/app/${name}`);
     return response.data;
   }
 );
@@ -109,12 +107,9 @@ export const deleteApplication = createParallelAction(
 export const startApplication = createParallelAction(
   async (context: SealosApiContext, name: string) => {
     const api = createLaunchpadApi(context);
-    const response = await api.get<AppControlSuccessResponse>(
-      "/launchpad/startApp",
-      {
-        params: { name },
-      }
-    );
+    const response = await api.get<AppControlSuccessResponse>("/app/startApp", {
+      params: { name },
+    });
     return response.data;
   }
 );
@@ -123,12 +118,9 @@ export const startApplication = createParallelAction(
 export const pauseApplication = createParallelAction(
   async (context: SealosApiContext, name: string) => {
     const api = createLaunchpadApi(context);
-    const response = await api.get<AppControlSuccessResponse>(
-      "/launchpad/pauseApp",
-      {
-        params: { name },
-      }
-    );
+    const response = await api.get<AppControlSuccessResponse>("/app/pauseApp", {
+      params: { name },
+    });
     return response.data;
   }
 );

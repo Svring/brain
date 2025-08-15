@@ -7,25 +7,27 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  MoreHorizontal,
-  Trash2,
-  PencilLine,
-} from "lucide-react";
+import { MoreHorizontal, Trash2, PencilLine } from "lucide-react";
 import { createK8sContext, createSealosContext } from "@/lib/auth/auth-utils";
 import { useDeleteObjectStorageMutation } from "@/lib/sealos/resources/objectstorage/objectstorage-method/objectstorage-mutation";
 import { ObjectStorageObject } from "@/lib/sealos/resources/objectstorage/objectstorage-schemas/objectstorage-object-schema";
 import { useRemoveFromProjectMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
-export default function ObjectStorageNodeMenu({ object }: { object: ObjectStorageObject }) {
+export default function ObjectStorageNodeMenu({
+  object,
+}: {
+  object: ObjectStorageObject;
+}) {
   const sealosContext = createSealosContext();
   const k8sContext = createK8sContext();
-  
+
   const deleteObjectStorage = useDeleteObjectStorageMutation(sealosContext);
   const removeFromProject = useRemoveFromProjectMutation(k8sContext);
 
-  const { name } = object;
+  const { name, displayName } = object;
+
+  console.log("object", object);
 
   return (
     <DropdownMenu>
@@ -50,7 +52,10 @@ export default function ObjectStorageNodeMenu({ object }: { object: ObjectStorag
         <DropdownMenuItem
           onClick={(e) => {
             e.stopPropagation();
-            const objectStorageTarget = convertResourceTypeToTarget("objectstoragebucket", name);
+            const objectStorageTarget = convertResourceTypeToTarget(
+              "objectstoragebucket",
+              name
+            );
             removeFromProject.mutate({
               resources: [objectStorageTarget],
             });
@@ -63,7 +68,7 @@ export default function ObjectStorageNodeMenu({ object }: { object: ObjectStorag
         <DropdownMenuItem
           onClick={(e) => {
             e.stopPropagation();
-            deleteObjectStorage.mutate({ bucketName: name });
+            deleteObjectStorage.mutate({ bucketName: displayName });
           }}
           className="text-destructive"
         >
