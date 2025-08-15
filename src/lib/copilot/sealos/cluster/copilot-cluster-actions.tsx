@@ -139,18 +139,16 @@ export const createClusterAction = (context: SealosApiContext) => {
       }
 
       const createRequest: CreateClusterRequest = {
-        dbForm: {
-          terminationPolicy:
-            (terminationPolicy as "Delete" | "WipeOut") || "Delete",
-          name: dbName,
-          type: dbType as any, // Cast to ClusterType
-          version: dbVersion,
-          resource: {
-            cpu: `${cpu ?? 1000}m`,
-            memory: `${memory ?? 1024}Mi`,
-            storage: `${storage ?? 3}Gi`,
-            replicas: replicas ?? 1,
-          },
+        terminationPolicy:
+          (terminationPolicy as "Delete" | "WipeOut") || "Delete",
+        name: dbName,
+        type: dbType as any, // Cast to ClusterType
+        version: dbVersion,
+        resource: {
+          cpu: `${cpu ?? 1000}m`,
+          memory: `${memory ?? 1024}Mi`,
+          storage: `${storage ?? 3}Gi`,
+          replicas: replicas ?? 1,
         },
       };
 
@@ -354,9 +352,7 @@ export const updateClusterAction = (context: SealosApiContext) => {
       }
 
       const updateRequest = {
-        dbForm: {
-          resource: resourceUpdates,
-        },
+        resource: resourceUpdates,
       };
 
       return updateCluster.mutateAsync({ clusterName, request: updateRequest });

@@ -79,23 +79,33 @@ export const ClusterFormSchema = z.object({
   type: ClusterTypeSchema,
   version: z.string(),
   resource: ResourceSchema,
+  autoBackup: AutoBackupSchema.optional(),
 });
 
-// Create cluster request schema
+// Create cluster request schema - new structure matches the API
 export const CreateClusterRequestSchema = z.object({
-  dbForm: ClusterFormSchema,
+  terminationPolicy: TerminationPolicySchema.default("Delete"),
+  name: z.string(),
+  type: ClusterTypeSchema,
+  version: z.string(),
+  resource: ResourceSchema,
+  autoBackup: AutoBackupSchema.optional(),
 });
 
 // Update cluster request schema (only resource can be updated)
 export const UpdateClusterRequestSchema = z.object({
-  dbForm: z.object({
-    resource: ResourceSchema,
-  }),
+  resource: ResourceSchema,
 });
 
 // Cluster response data schema
-export const ClusterResponseDataSchema = ClusterFormSchema.extend({
+export const ClusterResponseDataSchema = z.object({
   id: z.string(),
+  name: z.string(),
+  type: ClusterTypeSchema,
+  version: z.string(),
+  terminationPolicy: TerminationPolicySchema,
+  resource: ResourceSchema,
+  autoBackup: AutoBackupSchema.optional(),
   status: ClusterStatusSchema,
   createTime: z.string(),
   totalResource: z.object({
@@ -105,7 +115,6 @@ export const ClusterResponseDataSchema = ClusterFormSchema.extend({
   }),
   isDiskSpaceOverflow: z.boolean(),
   source: SourceSchema,
-  autoBackup: AutoBackupSchema,
 });
 
 // Create cluster response schema

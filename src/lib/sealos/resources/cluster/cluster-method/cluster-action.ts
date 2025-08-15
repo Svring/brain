@@ -47,19 +47,19 @@ export function useCreateClusterAction(context: ClusterApiContext) {
 
         // Create the request with default values
         const request: CreateClusterRequest = {
-          dbForm: {
-            name,
-            type,
-            version,
-            terminationPolicy: "Delete", // Default from schema
-            resource: {
-              cpu: "1000m", // Default from schema
-              memory: "1024Mi", // Default from schema
-              storage: "3Gi", // Default from schema
-              replicas: 1, // Default from schema
-            },
+          name,
+          type,
+          version,
+          terminationPolicy: "Delete", // Default from schema
+          resource: {
+            cpu: "1000m", // Default from schema
+            memory: "1024Mi", // Default from schema
+            storage: "3Gi", // Default from schema
+            replicas: 1, // Default from schema
           },
         };
+
+        console.log("request", request);
 
         // Create the cluster
         const response = await runParallelAction(

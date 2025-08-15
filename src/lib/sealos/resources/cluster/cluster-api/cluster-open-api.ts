@@ -59,27 +59,23 @@ function createClusterApi(context: ClusterApiContext) {
  * ```typescript
  * // Create a PostgreSQL cluster with minimal configuration
  * const result = await createCluster({
- *   dbForm: {
- *     name: "my-postgres",
- *     type: "postgresql",
- *     version: "14.0"
- *     // Uses defaults: terminationPolicy: "Delete", resource: { cpu: "1000m", memory: "1024Mi", storage: "3Gi", replicas: 1 }
- *   }
+ *   name: "my-postgres",
+ *   type: "postgresql",
+ *   version: "14.0"
+ *   // Uses defaults: terminationPolicy: "Delete", resource: { cpu: "1000m", memory: "1024Mi", storage: "3Gi", replicas: 1 }
  * }, context);
  *
  * // Create a MongoDB cluster with custom resources
  * const result = await createCluster({
- *   dbForm: {
- *     terminationPolicy: "WipeOut",
- *     name: "my-mongodb",
- *     type: "mongodb",
- *     version: "6.0",
- *     resource: {
- *       cpu: "2000m",
- *       memory: "4096Mi",
- *       storage: "10Gi",
- *       replicas: 2
- *     }
+ *   terminationPolicy: "WipeOut",
+ *   name: "my-mongodb",
+ *   type: "mongodb",
+ *   version: "6.0",
+ *   resource: {
+ *     cpu: "2000m",
+ *     memory: "4096Mi",
+ *     storage: "10Gi",
+ *     replicas: 2
  *   }
  * }, context);
  * ```
@@ -125,25 +121,21 @@ export const getCluster = createParallelAction(
  * ```typescript
  * // Scale up cluster resources
  * const result = await updateCluster("my-postgres", {
- *   dbForm: {
- *     resource: {
- *       cpu: "2000m",      // Increase from 1000m to 2000m
- *       memory: "2048Mi",  // Increase from 1024Mi to 2048Mi
- *       storage: "5Gi",    // Increase from 3Gi to 5Gi
- *       replicas: 2        // Increase from 1 to 2
- *     }
+ *   resource: {
+ *     cpu: "2000m",      // Increase from 1000m to 2000m
+ *     memory: "2048Mi",  // Increase from 1024Mi to 2048Mi
+ *     storage: "5Gi",    // Increase from 3Gi to 5Gi
+ *     replicas: 2        // Increase from 1 to 2
  *   }
  * }, context);
  *
  * // Scale down cluster resources
  * const result = await updateCluster("my-postgres", {
- *   dbForm: {
- *     resource: {
- *       cpu: "500m",       // Decrease to 500m
- *       memory: "512Mi",   // Decrease to 512Mi
- *       storage: "2Gi",    // Decrease to 2Gi
- *       replicas: 1        // Keep at 1
- *     }
+ *   resource: {
+ *     cpu: "500m",       // Decrease to 500m
+ *     memory: "512Mi",   // Decrease to 512Mi
+ *     storage: "2Gi",    // Decrease to 2Gi
+ *     replicas: 1        // Keep at 1
  *   }
  * }, context);
  * ```

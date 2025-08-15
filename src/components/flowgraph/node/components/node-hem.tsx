@@ -24,7 +24,7 @@ export default function NodeHem({
         
         {/* Hem component - additional row beneath main card */}
         {hemComponent && (
-          <div className="mt-2 px-4 pb-2">
+          <div className="pb-2">
             <div className="bg-muted/50 rounded-lg px-3 py-2 text-xs">
               {hemComponent}
             </div>

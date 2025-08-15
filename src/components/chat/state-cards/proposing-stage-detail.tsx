@@ -17,6 +17,7 @@ import type { ClusterType } from "@/lib/sealos/resources/cluster/cluster-api/clu
 import { useCreateProjectMutation, useAddToProjectMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { generateProjectName } from "@/lib/brain/resources/project/project-method/project-utils";
+import { useRouter } from "next/navigation";
 
 interface ProposingStageDetailProps {
   proposingData: ProjectPlanWithStatus;
@@ -30,6 +31,7 @@ export function ProposingStageDetail({
   const [isCreating, setIsCreating] = useState(false);
   const [creationProgress, setCreationProgress] = useState<string>("");
   const [createdResources, setCreatedResources] = useState<Array<{ name: string; kind: string; type?: string }>>([]);
+  const router = useRouter();
   
   const sealosContext = createSealosContext();
   const objectStorageContext = createObjectStorageContext();
@@ -185,6 +187,9 @@ export function ProposingStageDetail({
       });
 
       toast.success(`Project "${projectName}" created successfully with all resources!`);
+      
+      // Navigate to the newly created project
+      router.push(`/projects/${projectName}`);
     } catch (error) {
       console.error("Failed to create project:", error);
       toast.error("Failed to create project or add resources");

@@ -89,6 +89,7 @@ export const useAddToProjectMutation = (context: K8sApiContext) => {
       queryClient.invalidateQueries({ queryKey: ["clusters"] });
       queryClient.invalidateQueries({ queryKey: ["deployments"] });
       queryClient.invalidateQueries({ queryKey: ["statefulsets"] });
+      queryClient.invalidateQueries({ queryKey: ["objectstoragebuckets"] });
     },
   });
 };
@@ -128,6 +129,7 @@ export const useRemoveFromProjectMutation = (context: K8sApiContext) => {
       queryClient.invalidateQueries({ queryKey: ["clusters"] });
       queryClient.invalidateQueries({ queryKey: ["deployments"] });
       queryClient.invalidateQueries({ queryKey: ["statefulsets"] });
+      queryClient.invalidateQueries({ queryKey: ["objectstoragebuckets"] });
     },
   });
 };
@@ -294,6 +296,7 @@ export const useStartProjectResourcesMutation = (context: SealosApiContext) => {
       queryClient.invalidateQueries({ queryKey: ["clusters"] });
       queryClient.invalidateQueries({ queryKey: ["deployments"] });
       queryClient.invalidateQueries({ queryKey: ["statefulsets"] });
+      queryClient.invalidateQueries({ queryKey: ["objectstoragebuckets"] });
     },
     onError: (error) => {
       toast.error("Failed to start some project resources");
@@ -363,6 +366,7 @@ export const usePauseProjectResourcesMutation = (context: SealosApiContext) => {
       queryClient.invalidateQueries({ queryKey: ["clusters"] });
       queryClient.invalidateQueries({ queryKey: ["deployments"] });
       queryClient.invalidateQueries({ queryKey: ["statefulsets"] });
+      queryClient.invalidateQueries({ queryKey: ["objectstoragebuckets"] });
     },
     onError: (error) => {
       toast.error("Failed to pause some project resources");

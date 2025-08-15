@@ -57,7 +57,7 @@ export function useCreateClusterAction(context: ClusterApiContext) {
       };
 
       const fullRequest: CreateClusterRequest = {
-        dbForm,
+        ...dbForm,
       };
 
       // Use the base mutation function
@@ -82,17 +82,15 @@ export function useUpdateClusterAction(context: ClusterApiContext) {
     }) => {
       // Build the update request with only the provided fields
       const updateRequest: UpdateClusterRequest = {
-        dbForm: {
-          resource: {
-            cpu: partialRequest.cpu ? `${partialRequest.cpu}m` : "1000m",
-            memory: partialRequest.memory
-              ? `${partialRequest.memory}Mi`
-              : "2048Mi",
-            storage: partialRequest.storage
-              ? `${partialRequest.storage}Gi`
-              : "10Gi",
-            replicas: partialRequest.replicas || 1,
-          },
+        resource: {
+          cpu: partialRequest.cpu ? `${partialRequest.cpu}m` : "1000m",
+          memory: partialRequest.memory
+            ? `${partialRequest.memory}Mi`
+            : "2048Mi",
+          storage: partialRequest.storage
+            ? `${partialRequest.storage}Gi`
+            : "10Gi",
+          replicas: partialRequest.replicas || 1,
         },
       };
 

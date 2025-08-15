@@ -9,6 +9,16 @@ import { resolveEnvVars } from "@/lib/k8s/k8s-method/k8s-utils";
 import type { EnvVar } from "@/lib/k8s/k8s-method/k8s-utils";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
 export default function DisplayEnvPanel() {
   const { selectedProjectResources } = useProjectState();
   const [resolvedEnvs, setResolvedEnvs] = useState<Record<string, any[]>>({});
@@ -112,65 +122,67 @@ export default function DisplayEnvPanel() {
                               Resolving environment variables...
                             </div>
                           ) : (
-                            <div className="space-y-2">
-                              {resolvedEnvs[
-                                deployment.metadata?.name || deployment.name
-                              ]?.map((envVar: any, envIndex: number) => (
-                                <div
-                                  key={envIndex}
-                                  className="flex items-center gap-2 text-sm"
-                                >
-                                  <span className="font-mono bg-muted px-2 py-1 rounded">
-                                    {envVar.key}
-                                  </span>
-                                  <span>=</span>
-                                  {envVar.type === "value" ? (
-                                    <span className="font-mono bg-muted px-2 py-1 rounded">
-                                      {envVar.value}
-                                    </span>
-                                  ) : envVar.type === "secretKeyRef" ? (
-                                    <span className="text-muted-foreground">
-                                      From: {envVar.secretName}.
-                                      {envVar.secretKey}
-                                    </span>
-                                  ) : (
-                                    <span className="text-muted-foreground">
-                                      Unknown type
-                                    </span>
+                            <Table>
+                              <TableCaption>
+                                Environment variables for {deployment.name}
+                              </TableCaption>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead className="w-1/3">Variable Name</TableHead>
+                                  <TableHead className="w-2/3">Value</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {resolvedEnvs[
+                                  deployment.metadata?.name || deployment.name
+                                ]?.map((envVar: any, envIndex: number) => (
+                                  <TableRow key={envIndex}>
+                                    <TableCell className="font-mono text-sm">
+                                      {envVar.key}
+                                    </TableCell>
+                                    <TableCell className="text-sm">
+                                      {envVar.type === "value" ? (
+                                        <span className="font-mono bg-muted px-2 py-1 rounded text-sm">
+                                          {envVar.value}
+                                        </span>
+                                      ) : envVar.type === "secretKeyRef" ? (
+                                        <span className="text-muted-foreground text-sm">
+                                          From: {envVar.secretName}.{envVar.secretKey}
+                                        </span>
+                                      ) : (
+                                        <span className="text-muted-foreground text-sm">
+                                          Unknown type
+                                        </span>
+                                      )}
+                                    </TableCell>
+                                  </TableRow>
+                                )) ||
+                                  deployment.env.map(
+                                    (envVar: any, envIndex: number) => (
+                                      <TableRow key={envIndex}>
+                                        <TableCell className="font-mono text-sm">
+                                          {envVar.name}
+                                        </TableCell>
+                                        <TableCell className="text-sm">
+                                          {envVar.value ? (
+                                            <span className="font-mono bg-muted px-2 py-1 rounded text-sm">
+                                              {envVar.value}
+                                            </span>
+                                          ) : envVar.valueFrom?.secretKeyRef ? (
+                                            <span className="text-muted-foreground text-sm">
+                                              From: {envVar.valueFrom.secretKeyRef.name}
+                                            </span>
+                                          ) : (
+                                            <span className="text-muted-foreground text-sm">
+                                              No value set
+                                            </span>
+                                          )}
+                                        </TableCell>
+                                      </TableRow>
+                                    )
                                   )}
-                                </div>
-                              )) ||
-                                deployment.env.map(
-                                  (envVar: any, envIndex: number) => (
-                                    <div
-                                      key={envIndex}
-                                      className="flex items-center gap-2 text-sm"
-                                    >
-                                      <span className="font-mono bg-muted px-2 py-1 rounded">
-                                        {envVar.name}
-                                      </span>
-                                      {envVar.value && (
-                                        <>
-                                          <span>=</span>
-                                          <span className="font-mono bg-muted px-2 py-1 rounded">
-                                            {envVar.value}
-                                          </span>
-                                        </>
-                                      )}
-                                      {envVar.valueFrom && (
-                                        <>
-                                          <span>=</span>
-                                          <span className="text-muted-foreground">
-                                            From:{" "}
-                                            {envVar.valueFrom.secretKeyRef
-                                              ?.name || "Unknown"}
-                                          </span>
-                                        </>
-                                      )}
-                                    </div>
-                                  )
-                                )}
-                            </div>
+                              </TableBody>
+                            </Table>
                           )}
                         </div>
                       ) : (
