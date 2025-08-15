@@ -9,12 +9,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   MoreHorizontal,
-  Settings,
-  Download,
-  Upload,
   Trash2,
   PencilLine,
-  Key,
 } from "lucide-react";
 import { createK8sContext, createSealosContext } from "@/lib/auth/auth-utils";
 import { useDeleteObjectStorageMutation } from "@/lib/sealos/resources/objectstorage/objectstorage-method/objectstorage-mutation";
@@ -48,29 +44,13 @@ export default function ObjectStorageNodeMenu({ object }: { object: ObjectStorag
         align="start"
       >
         <DropdownMenuItem>
-          <Upload className="mr-2 h-4 w-4" />
-          Upload Files
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Download className="mr-2 h-4 w-4" />
-          Download
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Key className="mr-2 h-4 w-4" />
-          Access Keys
-        </DropdownMenuItem>
-        <DropdownMenuItem>
           <PencilLine className="mr-2 h-4 w-4" />
           Edit
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Settings className="mr-2 h-4 w-4" />
-          Settings
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={(e) => {
             e.stopPropagation();
-            const objectStorageTarget = convertResourceTypeToTarget("objectstorage", name);
+            const objectStorageTarget = convertResourceTypeToTarget("objectstoragebucket", name);
             removeFromProject.mutate({
               resources: [objectStorageTarget],
             });

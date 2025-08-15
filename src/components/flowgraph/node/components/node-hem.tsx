@@ -15,21 +15,21 @@ export default function NodeHem({
 }: NodeHemProps) {
   return (
     <div className={`relative ${className}`}>
-      {/* Main card with hem */}
-      <div className="flex flex-col">
-        {/* Main card */}
-        <div className="flex-1">
-          {mainCard}
-        </div>
-        
-        {/* Hem component - additional row beneath main card */}
-        {hemComponent && (
-          <div className="pb-2">
-            <div className="bg-muted/50 rounded-lg px-3 py-2 text-xs">
-              {hemComponent}
+      {/* Hem component - positioned behind main card */}
+              {hemComponent && (
+          <div className="absolute inset-x-0 top-0 z-0">
+            <div className="bg-node-background border rounded-lg px-3 pt-8 pb-1 text-xs flex flex-col h-58">
+              <div className="flex-1"></div>
+              <div className="flex-shrink-0">
+                {hemComponent}
+              </div>
             </div>
           </div>
         )}
+      
+      {/* Main card - positioned above hem */}
+      <div className="relative z-10">
+        {mainCard}
       </div>
     </div>
   );

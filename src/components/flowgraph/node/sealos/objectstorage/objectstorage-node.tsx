@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import ObjectStoragePolicyBadge from "./objectstorage-policy-badge";
 import ObjectStorageNodeMenu from "./objectstorage-node-menu";
 import ObjectStorageNodeTitle from "./objectstorage-node-title";
+import NodeMonitor from "../../components/node-monitor";
 import { ObjectStorageObject } from "@/lib/sealos/resources/objectstorage/objectstorage-schemas/objectstorage-object-schema";
 import { useIsMutating } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
@@ -61,32 +62,32 @@ export default function ObjectStorageNode({
       },
     }) > 0;
 
-  // Create hem component showing API connection status
-  const hemComponent = (
-    <div className="flex items-center justify-between">
+  // Create hem component with static hosting controls
+  const hemComponent = policy !== "private" ? (
+    <div className="flex items-center justify-between gap-2">
       <div className="flex items-center gap-2">
-        {userInitLoading ? (
-          <WifiOff className="h-3 w-3 text-muted-foreground animate-pulse" />
-        ) : userInitData ? (
-          <Wifi className="h-3 w-3 text-green-500" />
-        ) : (
-          <WifiOff className="h-3 w-3 text-red-500" />
-        )}
-        <span className="text-muted-foreground">
-          {userInitLoading
-            ? "Connecting..."
-            : userInitData
-            ? "API Connected"
-            : "API Error"}
+        <Globe className="h-4 w-4 text-muted-foreground" />
+        <span className="text-sm text-muted-foreground">
+          Static Hosting
         </span>
+        <Switch
+          checked={staticHosting}
+          onCheckedChange={setStaticHosting}
+          className="scale-75"
+        />
       </div>
-      {userInitData && (
-        <span className="text-muted-foreground">
-          {userInitData.CONSOLE_ACCESS_KEY.slice(0, 8)}...
-        </span>
-      )}
+      <Button
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+        size="sm"
+        variant="ghost"
+        className="h-6 w-6 p-0"
+      >
+        <Copy className="h-3 w-3" />
+      </Button>
     </div>
-  );
+  ) : null;
 
   const mainCard = (
     <BaseNode
@@ -103,37 +104,16 @@ export default function ObjectStorageNode({
             </div>
           </div>
 
-          {/* Static Hosting Toggle and Copy Button */}
-          {/* {policy !== "private" && (
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
-                  Static Hosting
-                </span>
-                <Switch
-                  checked={staticHosting}
-                  onCheckedChange={setStaticHosting}
-                  className="scale-75"
-                />
-              </div>
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-                size="sm"
-                variant="ghost"
-                className="h-6 w-6 p-0"
-              >
-                <Copy className="h-3 w-3" />
-              </Button>
-            </div>
-          )} */}
+
         </div>
 
-        {/* Policy Badge */}
-        <div className="flex justify-start">
+        {/* Bottom section with policy badge and monitor */}
+        <div className="flex justify-between items-center">
+          {/* Left: Policy Badge */}
           <ObjectStoragePolicyBadge policy={policy} />
+          
+          {/* Right: Monitor */}
+          <NodeMonitor />
         </div>
       </div>
     </BaseNode>
