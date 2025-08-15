@@ -43,7 +43,6 @@ export function useManageDevboxLifecycleMutation(context: DevboxApiContext) {
       runParallelAction(manageDevboxLifecycle(request, context)),
     onSuccess: (_, request) => {
       // Immediate invalidation
-      queryClient.invalidateQueries({ queryKey: ["project"] });
       queryClient.invalidateQueries({ queryKey: ["devbox"] });
 
       // Start polling for status changes after lifecycle actions
@@ -54,7 +53,6 @@ export function useManageDevboxLifecycleMutation(context: DevboxApiContext) {
 
         const poll = () => {
           pollCount++;
-          queryClient.invalidateQueries({ queryKey: ["project"] });
           queryClient.invalidateQueries({
             queryKey: ["devbox", request.devboxName],
           });
@@ -103,7 +101,6 @@ export function useDeployDevboxMutation(context: DevboxApiContext) {
       runParallelAction(deployDevbox(request, context)),
     onSuccess: (data) => {
       console.log("deployed data:", data);
-      queryClient.invalidateQueries({ queryKey: ["project"] });
       queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
   });
@@ -139,7 +136,6 @@ export function useCreateAppMutation(context: DevboxApiContext) {
     mutationFn: (appForm: AppFormConfig) =>
       runParallelAction(createApp(appForm, context)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["project"] });
       queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
   });

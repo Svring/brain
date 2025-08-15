@@ -62,9 +62,6 @@ export function usePauseLaunchpadMutation(context: SealosApiContext) {
     onSuccess: (_, request) => {
       // Immediate invalidation
       queryClient.invalidateQueries({
-        queryKey: ["project"],
-      });
-      queryClient.invalidateQueries({
         queryKey: ["deployment"],
       });
       queryClient.invalidateQueries({
@@ -79,9 +76,6 @@ export function usePauseLaunchpadMutation(context: SealosApiContext) {
 
         const poll = () => {
           pollCount++;
-          queryClient.invalidateQueries({
-            queryKey: ["project"],
-          });
           queryClient.invalidateQueries({
             queryKey: ["deployment"],
           });
@@ -110,9 +104,6 @@ export function useStartLaunchpadMutation(context: SealosApiContext) {
     onSuccess: (_, request) => {
       // Immediate invalidation
       queryClient.invalidateQueries({
-        queryKey: ["project"],
-      });
-      queryClient.invalidateQueries({
         queryKey: ["deployment"],
       });
       queryClient.invalidateQueries({
@@ -127,9 +118,6 @@ export function useStartLaunchpadMutation(context: SealosApiContext) {
 
         const poll = () => {
           pollCount++;
-          queryClient.invalidateQueries({
-            queryKey: ["project"],
-          });
           queryClient.invalidateQueries({
             queryKey: ["deployment"],
           });

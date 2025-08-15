@@ -6,6 +6,16 @@ import {
 import { flattenResourceList } from "@/lib/k8s/k8s-method/k8s-utils";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import { PROJECT_DISPLAY_NAME_ANNOTATION_KEY } from "../project-constant/project-constant-annotation";
+import { manageDevboxLifecycle } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api";
+import {
+  startCluster,
+  pauseCluster,
+} from "@/lib/sealos/resources/cluster/cluster-api/cluster-open-api";
+import {
+  startLaunchpad,
+  pauseLaunchpad,
+} from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-old-api";
+import type { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
 
 /**
  * Generates a random string of lowercase alphabets
@@ -48,7 +58,7 @@ export const composeProjectMetadata = (): ProjectObjectMetadata => {
 
 /**
  * Transform project resources to ProjectResourceItem format for mutations
- * @param resources - Array of project resources from context
+ * @param resources - Array of project resources from context (resource objects, not targets)
  * @returns Array of ProjectResourceItem objects ready for mutation calls
  */
 export function transformProjectResourcesToItems(
@@ -61,7 +71,7 @@ export function transformProjectResourcesToItems(
   return resources.map((resource: any) => ({
     name: resource.name,
     kind: resource.kind?.toLowerCase(),
-    type: resource.type, // For clusters
+    type: resource.type, // For clusters, this is the dbType (postgresql, mongodb, etc.)
   }));
 }
 
@@ -109,3 +119,51 @@ export function convertInstanceToProject(
     return null;
   }
 }
+
+/**
+ * Helper function to create resource operation tasks for start/stop operations
+ * @param resources - Array of project resources to operate on
+ * @param action - The action to perform: "start" or "stop"
+ * @param sealosContext - The Sealos API context for authentication
+ * @returns Array of promises for the resource operations
+ */
+export const createResourceOperationTasks = (
+  resources: ProjectResourceItem[],
+  action: "start" | "stop",
+  sealosContext: SealosApiContext
+): Promise<unknown>[] => {
+  const tasks: Promise<unknown>[] = [];
+
+  for (const resource of resources) {
+    const kind = resource.kind.toLowerCase();
+    if (!resource.name) continue;
+
+    switch (kind) {
+      case "devbox": {
+        tasks.push(
+          manageDevboxLifecycle(
+            { devboxName: resource.name, action },
+            sealosContext
+          )
+        );
+        break;
+      }
+      case "cluster": {
+        const clusterFn = action === "start" ? startCluster : pauseCluster;
+        tasks.push(clusterFn(resource.name, sealosContext));
+        break;
+      }
+      case "deployment":
+      case "statefulset": {
+        const launchpadFn =
+          action === "start" ? startLaunchpad : pauseLaunchpad;
+        tasks.push(launchpadFn({ name: resource.name }, sealosContext));
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  return tasks;
+};

@@ -64,8 +64,7 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
                 : status.unavailableReplicas !== undefined &&
                   status.unavailableReplicas > 0
                 ? "Error"
-                : status.readyReplicas === status.replicas &&
-                  status.unavailableReplicas === 0
+                : status.readyReplicas === status.replicas
                 ? "Running"
                 : "Pending"
             }

@@ -22,15 +22,7 @@ import {
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { INSTANCE_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
 import type { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
-import { useManageDevboxLifecycleMutation } from "@/lib/sealos/resources/devbox/devbox-method/devbox-mutation";
-import {
-  useStartClusterMutation,
-  usePauseClusterMutation,
-} from "@/lib/sealos/resources/cluster/cluster-method/cluster-mutation";
-import {
-  useStartLaunchpadMutation,
-  usePauseLaunchpadMutation,
-} from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-mutation";
+import { createResourceOperationTasks } from "./project-utils";
 
 export const useCreateProjectMutation = (context: K8sApiContext) => {
   const queryClient = useQueryClient();
@@ -53,7 +45,6 @@ export const useCreateProjectMutation = (context: K8sApiContext) => {
       });
     },
     onError: (error) => {
-      console.log("error", error);
       toast.error("Failed to create project");
       throw error;
     },
@@ -84,12 +75,13 @@ export const useAddToProjectMutation = (context: K8sApiContext) => {
     },
     onSuccess: (_, { name }) => {
       toast.success(`Resources added to project ${name}`);
-      queryClient.invalidateQueries({ queryKey: ["project"] });
+      // Invalidate project query since resources are added to project
       queryClient.invalidateQueries({ queryKey: ["devboxes"] });
       queryClient.invalidateQueries({ queryKey: ["clusters"] });
       queryClient.invalidateQueries({ queryKey: ["deployments"] });
       queryClient.invalidateQueries({ queryKey: ["statefulsets"] });
       queryClient.invalidateQueries({ queryKey: ["objectstoragebuckets"] });
+      queryClient.invalidateQueries({ queryKey: ["resources"] });
     },
   });
 };
@@ -124,12 +116,13 @@ export const useRemoveFromProjectMutation = (context: K8sApiContext) => {
       } else {
         toast.success(`Resources removed from project`);
       }
-      queryClient.invalidateQueries({ queryKey: ["project"] });
+      // Invalidate project query since resources are removed from project
       queryClient.invalidateQueries({ queryKey: ["devboxes"] });
       queryClient.invalidateQueries({ queryKey: ["clusters"] });
       queryClient.invalidateQueries({ queryKey: ["deployments"] });
       queryClient.invalidateQueries({ queryKey: ["statefulsets"] });
       queryClient.invalidateQueries({ queryKey: ["objectstoragebuckets"] });
+      queryClient.invalidateQueries({ queryKey: ["resources"] });
     },
   });
 };
@@ -164,39 +157,6 @@ export const useUpdateProjectNameMutation = (context: K8sApiContext) => {
     },
   });
 };
-
-// export const useUpdateProjectMetadataMutation = (context: K8sApiContext) => {
-//   const queryClient = useQueryClient();
-//   const patchMutation = usePatchResourceMetadataMutation(context);
-
-//   return useMutation({
-//     mutationFn: async ({
-//       name,
-//       newMetadata,
-//     }: {
-//       name: string;
-//       newMetadata: ProjectObjectMetadata;
-//     }) => {
-//       const target = convertResourceTypeToTarget("instance", name);
-//       return await patchMutation.mutateAsync({
-//         target,
-//         metadataType: "annotations",
-//         key: PROJECT_METADATA_ANNOTATION_KEY,
-//         value: JSON.stringify(newMetadata),
-//       });
-//     },
-//     onSuccess: (_, { name, newMetadata }) => {
-//       toast.success(`Project "${name}" metadata updated`);
-//       queryClient.invalidateQueries({
-//         queryKey: ["projects"],
-//       });
-//     },
-//     onError: (error, { name }) => {
-//       toast.error(`Failed to update project "${name}" metadata`);
-//       throw error;
-//     },
-//   });
-// };
 
 export const useDeleteProjectMutation = (context: K8sApiContext) => {
   const queryClient = useQueryClient();
@@ -238,65 +198,19 @@ export const useDeleteProjectMutation = (context: K8sApiContext) => {
 export const useStartProjectResourcesMutation = (context: SealosApiContext) => {
   const queryClient = useQueryClient();
 
-  // Initialize all underlying mutations (hooks must be called unconditionally)
-  const startCluster = useStartClusterMutation(context);
-  const devboxLifecycle = useManageDevboxLifecycleMutation(context);
-  const startLaunchpad = useStartLaunchpadMutation(context);
-
   return useMutation({
     mutationFn: async ({ resources }: { resources: ProjectResourceItem[] }) => {
-      const tasks: Promise<unknown>[] = [];
-
-      for (const resource of resources) {
-        const kind = resource.kind.toLowerCase();
-        if (!resource.name) continue;
-
-        switch (kind) {
-          case "devbox": {
-            tasks.push(
-              devboxLifecycle.mutateAsync({
-                devboxName: resource.name,
-                action: "start",
-              })
-            );
-            break;
-          }
-          case "cluster": {
-            if (!resource.type) {
-              // dbType is required; skip if missing
-              continue;
-            }
-            tasks.push(
-              startCluster.mutateAsync({
-                dbName: resource.name,
-                dbType: resource.type,
-              })
-            );
-            break;
-          }
-          case "deployment": {
-            tasks.push(startLaunchpad.mutateAsync({ name: resource.name }));
-            break;
-          }
-          case "statefulset": {
-            tasks.push(startLaunchpad.mutateAsync({ name: resource.name }));
-            break;
-          }
-          default:
-            break;
-        }
-      }
-
+      const tasks = createResourceOperationTasks(resources, "start", context);
       await Promise.allSettled(tasks);
     },
     onSuccess: () => {
       toast.success("Start actions dispatched for selected resources");
-      queryClient.invalidateQueries({ queryKey: ["project"] });
       queryClient.invalidateQueries({ queryKey: ["devboxes"] });
       queryClient.invalidateQueries({ queryKey: ["clusters"] });
       queryClient.invalidateQueries({ queryKey: ["deployments"] });
       queryClient.invalidateQueries({ queryKey: ["statefulsets"] });
       queryClient.invalidateQueries({ queryKey: ["objectstoragebuckets"] });
+      queryClient.invalidateQueries({ queryKey: ["resources"] });
     },
     onError: (error) => {
       toast.error("Failed to start some project resources");
@@ -308,67 +222,22 @@ export const useStartProjectResourcesMutation = (context: SealosApiContext) => {
 export const usePauseProjectResourcesMutation = (context: SealosApiContext) => {
   const queryClient = useQueryClient();
 
-  // Initialize all underlying mutations (hooks must be called unconditionally)
-  const pauseCluster = usePauseClusterMutation(context);
-  const devboxLifecycle = useManageDevboxLifecycleMutation(context);
-  const pauseLaunchpad = usePauseLaunchpadMutation(context);
-
   return useMutation({
     mutationFn: async ({ resources }: { resources: ProjectResourceItem[] }) => {
-      const tasks: Promise<unknown>[] = [];
-
-      for (const resource of resources) {
-        const kind = resource.kind.toLowerCase();
-        if (!resource.name) continue;
-
-        switch (kind) {
-          case "devbox": {
-            tasks.push(
-              devboxLifecycle.mutateAsync({
-                devboxName: resource.name,
-                action: "stop",
-              })
-            );
-            break;
-          }
-          case "cluster": {
-            if (!resource.type) {
-              // dbType is required; skip if missing
-              continue;
-            }
-            tasks.push(
-              pauseCluster.mutateAsync({
-                dbName: resource.name,
-                dbType: resource.type,
-              })
-            );
-            break;
-          }
-          case "deployment": {
-            tasks.push(pauseLaunchpad.mutateAsync({ name: resource.name }));
-            break;
-          }
-          case "statefulset": {
-            tasks.push(pauseLaunchpad.mutateAsync({ name: resource.name }));
-            break;
-          }
-          default:
-            break;
-        }
-      }
-
+      const tasks = createResourceOperationTasks(resources, "stop", context);
       await Promise.allSettled(tasks);
     },
     onSuccess: () => {
       toast.success("Pause actions dispatched for selected resources");
-      queryClient.invalidateQueries({ queryKey: ["project"] });
       queryClient.invalidateQueries({ queryKey: ["devboxes"] });
       queryClient.invalidateQueries({ queryKey: ["clusters"] });
       queryClient.invalidateQueries({ queryKey: ["deployments"] });
       queryClient.invalidateQueries({ queryKey: ["statefulsets"] });
       queryClient.invalidateQueries({ queryKey: ["objectstoragebuckets"] });
+      queryClient.invalidateQueries({ queryKey: ["resources"] });
     },
     onError: (error) => {
+      console.log("error", error);
       toast.error("Failed to pause some project resources");
       throw error;
     },

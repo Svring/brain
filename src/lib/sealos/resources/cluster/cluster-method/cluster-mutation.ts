@@ -89,9 +89,6 @@ export function useStartClusterMutation(context: ClusterApiContext) {
       queryClient.invalidateQueries({
         queryKey: ["cluster"],
       });
-      queryClient.invalidateQueries({
-        queryKey: ["project"],
-      });
 
       // Start polling for status changes after lifecycle actions
       const startPolling = () => {
@@ -103,9 +100,6 @@ export function useStartClusterMutation(context: ClusterApiContext) {
           pollCount++;
           queryClient.invalidateQueries({
             queryKey: ["cluster"],
-          });
-          queryClient.invalidateQueries({
-            queryKey: ["project"],
           });
 
           if (pollCount < maxPolls) {
@@ -131,9 +125,6 @@ export function usePauseClusterMutation(context: ClusterApiContext) {
       queryClient.invalidateQueries({
         queryKey: ["cluster"],
       });
-      queryClient.invalidateQueries({
-        queryKey: ["project"],
-      });
 
       // Start polling for status changes after lifecycle actions
       const startPolling = () => {
@@ -145,9 +136,6 @@ export function usePauseClusterMutation(context: ClusterApiContext) {
           pollCount++;
           queryClient.invalidateQueries({
             queryKey: ["cluster"],
-          });
-          queryClient.invalidateQueries({
-            queryKey: ["project"],
           });
 
           if (pollCount < maxPolls) {

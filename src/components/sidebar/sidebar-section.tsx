@@ -16,9 +16,8 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { listProjectsOptions } from "@/lib/brain/resources/project/project-method/project-query";
 import { createK8sContext } from "@/lib/auth/auth-utils";
-import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
-import { useCreateThreadMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { useCopilotContext } from "@copilotkit/react-core";
+
+import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
 // Types
 export interface NavigationItem {
@@ -51,21 +50,11 @@ export const MainSection: React.FC<MainSectionProps> = () => {
   const pathname = usePathname();
   const { data: projects } = useQuery(listProjectsOptions(createK8sContext()));
 
-  const { mutate: createThread } = useCreateThreadMutation();
-  const { setThreadId } = useCopilotContext();
-  const { reset } = useCopilotChatHeadless_c();
+  const { mutate: createNewChatSession } = useCreateNewChatSessionMutation();
 
   const handleNavigation = async (path: string) => {
     if (path === "/home" && pathname === "/home") {
-      createThread(undefined, {
-        onSuccess: (thread) => {
-          setThreadId(thread.thread_id);
-          reset();
-        },
-        onError: (error) => {
-          console.error("Failed to create thread:", error);
-        },
-      });
+      createNewChatSession();
     } else {
       router.push(path);
     }

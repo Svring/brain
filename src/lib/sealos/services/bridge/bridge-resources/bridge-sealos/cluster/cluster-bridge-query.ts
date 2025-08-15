@@ -9,5 +9,6 @@ export const getClusterObject = async (
 ) => {
   // Test the new composeObjectFromTarget function
   const clusterObject = await composeObjectFromTarget(context, target);
-  return ClusterObjectSchema.parse(clusterObject);
+  // return ClusterObjectSchema.parse(clusterObject);
+  return clusterObject;
 };

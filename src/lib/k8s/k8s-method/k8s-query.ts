@@ -280,7 +280,7 @@ export const listAllResourcesOptions = (
   customResourceTypes?: string[]
 ) =>
   queryOptions({
-    queryKey: ["project"],
+    queryKey: ["resources", labelSelector],
     queryFn: async () => {
       const result = await listAllResources(
         context,

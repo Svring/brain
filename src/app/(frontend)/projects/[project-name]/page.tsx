@@ -101,8 +101,6 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
       selectedProjectResources
     );
 
-    console.log("resources", resources);
-
     startProjectResources.mutate({ resources });
   };
 
