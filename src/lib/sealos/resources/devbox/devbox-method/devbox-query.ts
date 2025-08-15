@@ -15,6 +15,8 @@ import { getSshConnectionInfo } from "@/lib/sealos/resources/devbox/devbox-api/d
 import { DevboxApiContext } from "../devbox-api/devbox-open-api-schemas";
 import { getDevboxReleases } from "../devbox-api/devbox-open-api";
 import { convertDevboxListToSimplified } from "./devbox-utils";
+import { listFolderFiles } from "../devbox-api/devbox-ssh-api";
+import type { DevboxSsh } from "../devbox-schemas/devbox-object-schema";
 
 export const getDevbox = async (
   context: K8sApiContext,
@@ -53,6 +55,13 @@ export const getDevboxReleasesQuery = async (
     getDevboxReleases(devboxName, context)
   );
   return releases;
+};
+
+export const listDevboxFolderFilesQuery = async (
+  sshConfig: DevboxSsh,
+  relativePath: string = ""
+) => {
+  return await listFolderFiles(sshConfig, relativePath);
 };
 
 // ============================================================================
@@ -101,4 +110,25 @@ export const getDevboxReleasesOptions = (
     queryFn: async () => await getDevboxReleasesQuery(context, devboxName),
     enabled: !!devboxName && !!context.baseURL,
     staleTime: 1000 * 60,
+  });
+
+/**
+ * Query options for listing devbox folder files
+ */
+export const listDevboxFolderFilesOptions = (
+  sshConfig: DevboxSsh,
+  relativePath: string = ""
+) =>
+  queryOptions({
+    queryKey: [
+      "devbox",
+      "files",
+      sshConfig.host,
+      sshConfig.workingDir,
+      relativePath,
+    ],
+    queryFn: async () =>
+      await listDevboxFolderFilesQuery(sshConfig, relativePath),
+    enabled: !!sshConfig.host && !!sshConfig.workingDir,
+    staleTime: 1000 * 30, // 30 seconds
   });

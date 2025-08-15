@@ -90,6 +90,7 @@
     "next": "15.2.4",
     "next-server-actions-parallel": "^1.2.2",
     "next-themes": "latest",
+    "node-ssh": "^13.2.1",
     "nookies": "^2.5.2",
     "payload": "3.41.0",
     "process": "^0.11.10",

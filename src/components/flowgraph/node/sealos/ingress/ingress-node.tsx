@@ -96,7 +96,7 @@ export default function IngressNode({
               <span className="flex items-center gap-4">
                 <Network className="rounded-lg h-9 w-9 p-1.5 bg-muted" />
                 <span className="flex flex-col">
-                  <span className="text-lg leading-none">Ingress</span>
+                  <span className="text-lg leading-none">Network</span>
                 </span>
               </span>
             </div>
