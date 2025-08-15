@@ -487,6 +487,10 @@ const PromptInputTextarea = React.forwardRef<
     React.useEffect(() => {
       if (value !== localValue) {
         setLocalValue(value);
+        // Also update the textarea ref directly for immediate visual feedback
+        if (textareaRef.current) {
+          textareaRef.current.value = value;
+        }
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value]);
@@ -750,6 +754,10 @@ export const PromptInputBox = React.forwardRef(
         setInput("");
         setFiles([]);
         setFilePreviews({});
+        // Force the textarea to clear by updating the ref directly
+        if (internalTextareaRef.current) {
+          internalTextareaRef.current.value = "";
+        }
       }
     };
 

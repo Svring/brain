@@ -26,7 +26,8 @@ import {
 import { AIResponse } from "@/components/shadcn-io/ai/response";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Check, X } from "lucide-react";
+import { Check, X, Hammer } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 
 export const activateDevboxActions = (
   k8sContext: K8sApiContext,
@@ -176,9 +177,18 @@ export const startDevboxAction = (context: DevboxApiContext) => {
     renderAndWaitForResponse: (props) => {
       const { status, args, result, respond } = props;
       return (
-        <div className="bg-muted border border-border-primary rounded-2xl rounded-bl-md p-4 gap-2 flex flex-col shadow-sm">
+        <div className="bg-background-secondary border border-border-primary rounded-2xl rounded-bl-md p-4 py-2 gap-2 flex flex-col shadow-sm">
           <div className="flex items-center justify-between">
-            <h4 className="text-md font-semibold">startDevbox</h4>
+            <div className="flex items-center gap-2">
+              <Hammer className="h-4 w-4 text-muted-foreground" />
+              <h4 className="text-md font-semibold">startDevbox</h4>
+              {status !== "complete" && (
+                <Spinner
+                  variant="bars"
+                  className="h-4 w-4 text-muted-foreground"
+                />
+              )}
+            </div>
             <div className="flex gap-2">
               <Button
                 variant={"outline"}
@@ -192,14 +202,14 @@ export const startDevboxAction = (context: DevboxApiContext) => {
               <Button
                 variant={"outline"}
                 className="px-2 py-1 rounded-xl border hover:brightness-135"
-                onClick={() => respond?.(`${args.devboxName} failed to start`)}
+                onClick={() => respond?.(`user cancelled the action`)}
               >
                 <X className="h-4 w-4" />
               </Button>
             </div>
           </div>
           <Separator />
-          <div>
+          <div className="py-2">
             <p className="text-muted-foreground">
               starting devbox {args.devboxName}
             </p>
