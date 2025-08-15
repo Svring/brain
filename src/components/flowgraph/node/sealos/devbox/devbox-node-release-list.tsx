@@ -56,6 +56,8 @@ export default function DevboxNodeReleaseList({
     Record<string, boolean>
   >({});
 
+  console.log("releases", releases);
+
   const handleDeploy = async (releaseTag: string) => {
     try {
       await onDeploy(releaseTag, deployConfig);

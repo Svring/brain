@@ -75,7 +75,7 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
     </BaseNode>
   );
 
-  const subCard = <DevboxNodeRelease object={data} />;
+  // const subCard = <DevboxNodeRelease object={data} />;
 
-  return <NodeStack mainCard={mainCard} subCard={subCard} />;
+  return <NodeStack mainCard={mainCard} data={[1, 2, 3, 4, 5]} />;
 }

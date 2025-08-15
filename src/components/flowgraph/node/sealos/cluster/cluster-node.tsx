@@ -119,5 +119,5 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
 
   const subCard = <ClusterNodeBackup object={data} />;
 
-  return <NodeStack mainCard={mainCard} subCard={subCard} />;
+  return <NodeStack mainCard={mainCard} data={[1]} />;
 }

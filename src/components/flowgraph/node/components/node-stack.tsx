@@ -1,66 +1,65 @@
 "use client";
 
 import { useRef, ReactNode, useState } from "react";
+import BaseNode from "../base-node-wrapper";
 
 interface NodeStackProps {
   mainCard: ReactNode;
-  subCard: ReactNode;
+  data: any[]; // Array of data to create background cards
   className?: string;
-  showMainFirst?: boolean;
-  onSubCardClick?: () => void;
+  maxBackgroundCards?: number; // Maximum number of background cards (default: 5)
 }
 
 export default function NodeStack({
   mainCard,
-  subCard,
+  data,
   className = "",
-  showMainFirst = true,
-  onSubCardClick,
+  maxBackgroundCards = 3,
 }: NodeStackProps) {
-  const [isMainInFront, setIsMainInFront] = useState(showMainFirst);
-  const [isHovered, setIsHovered] = useState(false);
+  // Calculate how many background cards to show (limited by maxBackgroundCards)
+  const backgroundCardCount = Math.min(data.length, maxBackgroundCards);
 
-  const frontCard = isMainInFront ? mainCard : subCard;
-  const backCard = isMainInFront ? subCard : mainCard;
-
-  const handleBackCardClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!isMainInFront && onSubCardClick) {
-      onSubCardClick();
-    } else {
-      setIsMainInFront(!isMainInFront);
+  // Generate background cards with incremental offsets
+  const backgroundCards = Array.from(
+    { length: backgroundCardCount },
+    (_, index) => {
+      const offset = (index + 1) * 8; // Incremental offset: 8px, 16px, 24px, etc.
+      return (
+        <div
+          key={index}
+          className="absolute inset-0 cursor-pointer"
+          style={{
+            transform: `translate(${offset}px, -${offset}px)`,
+            zIndex: backgroundCardCount - index, // Inverted z-index: higher index = lower z-index
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            // You can add custom click handling for each background card here
+          }}
+        >
+          <BaseNode nodeData={{}} className="" active={false}>
+            {/* Empty content for background cards */}
+            <div className="w-full h-full" />
+          </BaseNode>
+        </div>
+      );
     }
-  };
+  );
 
   return (
-    <div 
-      className={`relative ${className}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* Background card with animated offset */}
-      <div
-        className="absolute inset-0 cursor-pointer transition-transform duration-200 ease-out"
-        style={{
-          transform: isHovered ? "translate(20px, -20px)" : "translate(12px, -12px)",
-          zIndex: 0,
-        }}
-        onClick={handleBackCardClick}
-      >
-        <div className="bg-transparent rounded-xl shadow-sm h-full w-full">
-          {backCard}
-        </div>
-      </div>
+    <div className={`relative ${className}`}>
+      {/* Background cards with incremental offsets */}
+      {backgroundCards}
 
-      {/* Front card */}
+      {/* Front card (main component) */}
       <div
         style={{
-          zIndex: 1,
+          zIndex: backgroundCardCount,
           position: "relative",
         }}
         className="cursor-default"
       >
-        {frontCard}
+        {mainCard}
       </div>
     </div>
   );
