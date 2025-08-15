@@ -24,6 +24,9 @@ import {
   AIToolResult,
 } from "@/components/shadcn-io/ai/tool";
 import { AIResponse } from "@/components/shadcn-io/ai/response";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Check, X } from "lucide-react";
 
 export const activateDevboxActions = (
   k8sContext: K8sApiContext,
@@ -107,9 +110,7 @@ export const getDevboxAction = (context: K8sApiContext) => {
           <AIToolContent>
             <AIToolParameters parameters={args} />
             {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
             )}
           </AIToolContent>
         </AITool>
@@ -146,9 +147,7 @@ export const deleteDevboxAction = (context: DevboxApiContext) => {
           <AIToolContent>
             <AIToolParameters parameters={args} />
             {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
             )}
           </AIToolContent>
         </AITool>
@@ -171,26 +170,41 @@ export const startDevboxAction = (context: DevboxApiContext) => {
         description: "Name of the devbox to start",
       },
     ],
-    handler: ({ devboxName }) => {
-      manageDevboxLifecycle.mutateAsync({ devboxName, action: "start" });
-    },
-    render: ({ args, result, status }) => {
+    // handler: ({ devboxName }) => {
+    //   manageDevboxLifecycle.mutateAsync({ devboxName, action: "start" });
+    // },
+    renderAndWaitForResponse: (props) => {
+      const { status, args, result, respond } = props;
       return (
-        <AITool key={"startDevbox"}>
-          <AIToolHeader
-            description={"Start a devbox"}
-            name={"startDevbox"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
-            )}
-          </AIToolContent>
-        </AITool>
+        <div className="bg-muted border border-border-primary rounded-2xl rounded-bl-md p-4 gap-2 flex flex-col shadow-sm">
+          <div className="flex items-center justify-between">
+            <h4 className="text-md font-semibold">startDevbox</h4>
+            <div className="flex gap-2">
+              <Button
+                variant={"outline"}
+                className="px-2 py-1 rounded-xl border hover:brightness-135"
+                onClick={() =>
+                  respond?.(`${args.devboxName} started successfully`)
+                }
+              >
+                <Check className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={"outline"}
+                className="px-2 py-1 rounded-xl border hover:brightness-135"
+                onClick={() => respond?.(`${args.devboxName} failed to start`)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          <Separator />
+          <div>
+            <p className="text-muted-foreground">
+              starting devbox {args.devboxName}
+            </p>
+          </div>
+        </div>
       );
     },
   });
@@ -224,9 +238,7 @@ export const stopDevboxAction = (context: DevboxApiContext) => {
           <AIToolContent>
             <AIToolParameters parameters={args} />
             {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
             )}
           </AIToolContent>
         </AITool>
@@ -263,9 +275,7 @@ export const restartDevboxAction = (context: DevboxApiContext) => {
           <AIToolContent>
             <AIToolParameters parameters={args} />
             {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
             )}
           </AIToolContent>
         </AITool>
@@ -326,9 +336,7 @@ export const deployDevboxAction = (context: DevboxApiContext) => {
           <AIToolContent>
             <AIToolParameters parameters={args} />
             {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
             )}
           </AIToolContent>
         </AITool>
@@ -385,9 +393,7 @@ export const releaseDevboxAction = (context: DevboxApiContext) => {
           <AIToolContent>
             <AIToolParameters parameters={args} />
             {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
             )}
           </AIToolContent>
         </AITool>
@@ -426,9 +432,7 @@ export const listDevboxReleasesAction = (context: DevboxApiContext) => {
           <AIToolContent>
             <AIToolParameters parameters={args} />
             {result && (
-              <AIToolResult
-                result={<AIResponse>{result}</AIResponse>}
-              />
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
             )}
           </AIToolContent>
         </AITool>

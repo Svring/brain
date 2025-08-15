@@ -52,7 +52,6 @@ export default function ClusterNodeMenu({ object }: { object: ClusterObject }) {
               e.stopPropagation();
               startCluster.mutate({
                 dbName: clusterName,
-                dbType: object.type,
               });
             }}
             disabled={status === "Creating" || status === "Updating"}
@@ -68,9 +67,7 @@ export default function ClusterNodeMenu({ object }: { object: ClusterObject }) {
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
-              console.log("clusterName", clusterName);
-              console.log("object.type", object.type);
-              pauseCluster.mutate({ dbName: clusterName, dbType: object.type });
+              pauseCluster.mutate({ dbName: clusterName });
             }}
             disabled={status === "Creating" || status === "Updating"}
             className={
@@ -93,12 +90,17 @@ export default function ClusterNodeMenu({ object }: { object: ClusterObject }) {
         <DropdownMenuItem
           onClick={(e) => {
             e.stopPropagation();
-            const clusterTarget = convertResourceTypeToTarget("cluster", clusterName);
+            const clusterTarget = convertResourceTypeToTarget(
+              "cluster",
+              clusterName
+            );
             removeFromProject.mutate({
               resources: [clusterTarget],
             });
           }}
-          disabled={status === "Creating" || status === "Updating" || !clusterName}
+          disabled={
+            status === "Creating" || status === "Updating" || !clusterName
+          }
           className={
             status === "Creating" || status === "Updating" ? "opacity-50" : ""
           }

@@ -436,15 +436,9 @@ export const startClusterAction = (context: SealosApiContext) => {
         required: true,
         description: "Name of the database to start",
       },
-      {
-        name: "dbType",
-        type: "string",
-        required: true,
-        description: "Database type (e.g., kafka, postgresql, mongodb)",
-      },
     ],
-    handler: ({ dbName, dbType }) => {
-      return startCluster.mutateAsync({ dbName, dbType });
+    handler: ({ dbName }) => {
+      return startCluster.mutateAsync({ dbName });
     },
     render: ({ args, result, status }) => {
       return (
@@ -479,15 +473,9 @@ export const stopClusterAction = (context: SealosApiContext) => {
         required: true,
         description: "Name of the database to stop",
       },
-      {
-        name: "dbType",
-        type: "string",
-        required: true,
-        description: "Database type (e.g., kafka, postgresql, mongodb)",
-      },
     ],
-    handler: ({ dbName, dbType }) => {
-      return pauseCluster.mutateAsync({ dbName, dbType });
+    handler: ({ dbName }) => {
+      return pauseCluster.mutateAsync({ dbName });
     },
     render: ({ args, result, status }) => {
       return (

@@ -4,12 +4,15 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { runParallelAction } from "next-server-actions-parallel";
 import {
   createCluster as createClusterOld,
-  startCluster as startClusterOld,
-  pauseCluster as pauseClusterOld,
   deleteCluster as deleteClusterOld,
   deleteBackup,
 } from "../cluster-api/cluster-old-api";
-import { createCluster, updateCluster } from "../cluster-api/cluster-open-api";
+import {
+  createCluster,
+  updateCluster,
+  startCluster,
+  pauseCluster,
+} from "../cluster-api/cluster-open-api";
 import type { ClusterApiContext } from "../schemas/cluster-api-context-schemas";
 import type {
   ClusterCreateRequest,
@@ -36,6 +39,8 @@ import type {
   CreateClusterResponse,
   UpdateClusterRequest,
   UpdateClusterResponse,
+  StartClusterResponse,
+  PauseClusterResponse,
 } from "../cluster-api/cluster-open-api-schemas";
 
 export function useCreateClusterMutation(context: ClusterApiContext) {
@@ -76,9 +81,9 @@ export function useUpdateClusterMutation(context: ClusterApiContext) {
 
 export function useStartClusterMutation(context: ClusterApiContext) {
   const queryClient = useQueryClient();
-  return useMutation<ClusterStartResponse, unknown, ClusterStartRequest>({
-    mutationFn: (request: ClusterStartRequest) =>
-      runParallelAction(startClusterOld(request, context)),
+  return useMutation<StartClusterResponse, unknown, { dbName: string }>({
+    mutationFn: (request: { dbName: string }) =>
+      runParallelAction(startCluster(request.dbName, context)),
     onSuccess: (_, request) => {
       // Immediate invalidation
       queryClient.invalidateQueries({
@@ -118,9 +123,9 @@ export function useStartClusterMutation(context: ClusterApiContext) {
 
 export function usePauseClusterMutation(context: ClusterApiContext) {
   const queryClient = useQueryClient();
-  return useMutation<ClusterPauseResponse, unknown, ClusterPauseRequest>({
-    mutationFn: (request: ClusterPauseRequest) =>
-      runParallelAction(pauseClusterOld(request, context)),
+  return useMutation<PauseClusterResponse, unknown, { dbName: string }>({
+    mutationFn: (request: { dbName: string }) =>
+      runParallelAction(pauseCluster(request.dbName, context)),
     onSuccess: (_, request) => {
       // Immediate invalidation
       queryClient.invalidateQueries({
