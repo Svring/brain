@@ -13,6 +13,7 @@ import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-o
 import { truncateImage } from "@/lib/sealos/sealos-utils";
 import { useIsMutating } from "@tanstack/react-query";
 import { useEmitSystemMessage } from "@/lib/copilot/message/message-utils";
+import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 export default function DeploymentNode({ data }: { data: DeploymentObject }) {
   const { name, image, status, ports, pods, env } = data;
@@ -34,25 +35,16 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
     }) > 0;
 
   const handleNodeClick = () => {
+    const target = convertResourceObjectToTarget({
+      kind: data.kind,
+      name: data.name,
+    });
+
     emitMessage(
       `This is your deployment "${name}".`,
       {
         type: "info.launchpadInfo",
-        payload: {
-          name: name,
-          image: image,
-          status: status.paused ? "Stopped" : 
-                 status.unavailableReplicas !== undefined && status.unavailableReplicas > 0 ? "Error" :
-                 status.readyReplicas === status.replicas ? "Running" : "Pending",
-          resource: {
-            cpu: "N/A", // Deployment objects don't have direct CPU/memory specs
-            memory: "N/A",
-            replicas: status.replicas || 0
-          },
-          ports: ports || [],
-          createTime: undefined,
-          kind: "deployment"
-        },
+        payload: target,
       }
     );
   };

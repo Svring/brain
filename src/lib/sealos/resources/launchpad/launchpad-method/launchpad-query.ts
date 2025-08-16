@@ -31,6 +31,7 @@ import type {
   GetLaunchPadMetricsRequest,
   GetLaunchPadMetricsResponse,
 } from "@/lib/sealos/services/metrics/schemas/metrics-query-schema";
+import { extractPodMetricsData } from "@/lib/sealos/services/metrics/metrics-utils";
 
 export const getLaunchpad = async (
   context: K8sApiContext,
@@ -167,10 +168,15 @@ export const getLaunchpadInstantMonitorOptions = (
       launchpadName,
       currentTime,
     ],
-    queryFn: async (): Promise<{
-      cpu: GetLaunchPadMetricsResponse;
-      memory: GetLaunchPadMetricsResponse;
-    }> => {
+    queryFn: async (): Promise<
+      Record<
+        string,
+        {
+          cpu: Array<[string, string]>;
+          memory: Array<[string, string]>;
+        }
+      >
+    > => {
       // Query both CPU and memory metrics simultaneously
       const [cpuMetrics, memoryMetrics] = await Promise.all([
         runParallelAction(
@@ -197,10 +203,11 @@ export const getLaunchpadInstantMonitorOptions = (
         ),
       ]);
 
-      return {
+      // Process and return the pod metrics data directly
+      return extractPodMetricsData({
         cpu: cpuMetrics,
         memory: memoryMetrics,
-      };
+      });
     },
     enabled: !!context.baseURL && !!context.namespace && !!launchpadName,
     staleTime: 1000 * 30, // 30 seconds
@@ -229,10 +236,15 @@ export const getLaunchpadRangedMonitorOptions = (
       end,
       step,
     ],
-    queryFn: async (): Promise<{
-      cpu: GetLaunchPadMetricsResponse;
-      memory: GetLaunchPadMetricsResponse;
-    }> => {
+    queryFn: async (): Promise<
+      Record<
+        string,
+        {
+          cpu: Array<[string, string]>;
+          memory: Array<[string, string]>;
+        }
+      >
+    > => {
       // Query both CPU and memory metrics simultaneously with time range
       const [cpuMetrics, memoryMetrics] = await Promise.all([
         runParallelAction(
@@ -263,10 +275,11 @@ export const getLaunchpadRangedMonitorOptions = (
         ),
       ]);
 
-      return {
+      // Process and return the pod metrics data directly
+      return extractPodMetricsData({
         cpu: cpuMetrics,
         memory: memoryMetrics,
-      };
+      });
     },
     enabled: !!context.baseURL && !!context.namespace && !!launchpadName,
     staleTime: 1000 * 30, // 30 seconds

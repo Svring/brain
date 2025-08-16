@@ -12,6 +12,7 @@ import { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulse
 import { truncateImage } from "@/lib/sealos/sealos-utils";
 import { useIsMutating } from "@tanstack/react-query";
 import { useEmitSystemMessage } from "@/lib/copilot/message/message-utils";
+import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 export default function StatefulsetNode({ data }: { data: StatefulsetObject }) {
   const { name, image, status, ports, pods } = data;
@@ -30,25 +31,16 @@ export default function StatefulsetNode({ data }: { data: StatefulsetObject }) {
   }) > 0;
 
   const handleNodeClick = () => {
+    const target = convertResourceObjectToTarget({
+      kind: data.kind,
+      name: data.name,
+    });
+
     emitMessage(
       `This is your statefulset "${name}".`,
       {
         type: "info.launchpadInfo",
-        payload: {
-          name: name,
-          image: image,
-          status: status.paused ? "Stopped" : 
-                 status.unavailableReplicas !== undefined && status.unavailableReplicas > 0 ? "Error" :
-                 status.readyReplicas === status.replicas && status.unavailableReplicas === 0 ? "Running" : "Pending",
-          resource: {
-            cpu: "N/A", // Statefulset objects don't have direct CPU/memory specs
-            memory: "N/A",
-            replicas: status.replicas || 0
-          },
-          ports: ports || [],
-          createTime: undefined,
-          kind: "statefulset"
-        },
+        payload: target,
       }
     );
   };

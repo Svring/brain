@@ -23,7 +23,7 @@ export const GetLaunchPadMetricsRequestSchema = z
     // Auto-set start, end, and step only if time is not provided (range query)
     if (!data.time && (!data.start || !data.end || !data.step)) {
       const currentTime = getCurrentUnixTime();
-      const timespan = getMonitorTimespan(currentTime); // 1 hour earlier
+      const timespan = getMonitorTimespan(currentTime, 3); // 1 hour earlier
 
       return {
         ...data,
