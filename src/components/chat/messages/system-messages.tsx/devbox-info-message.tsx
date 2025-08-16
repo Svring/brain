@@ -1,127 +1,258 @@
-import React from "react";
-import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
+import React, { useState } from "react";
+import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { Cpu, MemoryStick, GitBranch, Copy, Check } from "lucide-react";
+import { useEmitSystemMessage } from "@/lib/copilot/message/message-utils";
+import { createK8sContext } from "@/lib/auth/auth-utils";
+import {
+  getDevboxOptions,
+  getDevboxRangedMonitorOptions,
+} from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
+import { useQuery } from "@tanstack/react-query";
+import { createMetricsContext } from "@/lib/auth/auth-utils";
+
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface DevboxInfoMessageProps {
-  payload: DevboxObject;
+  payload: CustomResourceTarget;
 }
 
 export const DevboxInfoMessageCard: React.FC<DevboxInfoMessageProps> = ({
   payload,
 }) => {
+  const { emitMessage } = useEmitSystemMessage();
+  const context = createK8sContext();
+  const metricsContext = createMetricsContext();
+  const [copyStates, setCopyStates] = useState<{ [key: string]: boolean }>({});
+
+  // Fetch devbox data using the target
+  const {
+    data: devboxData,
+    isLoading,
+    error,
+  } = useQuery(getDevboxOptions(context, payload));
+
+  // Fetch devbox monitor data
+  const { data: monitorData } = useQuery(
+    getDevboxRangedMonitorOptions(metricsContext, devboxData?.name || "")
+  );
+
+  console.log("monitorData", monitorData);
+
+  // Get region URL from the K8s context
+  const regionUrl = context.regionUrl;
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <Card className="w-full bg-background-secondary">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center">
+            <span className="text-muted-foreground">
+              Loading devbox information...
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show error state
+  if (error || !devboxData) {
+    return (
+      <Card className="w-full bg-background-secondary">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center">
+            <span className="text-destructive">
+              Failed to load devbox information
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const copyToClipboard = (text: string, label: string, key: string) => {
+    navigator.clipboard.writeText(text);
+    console.log(`${label} copied to clipboard`);
+
+    // Set the copy state to true (show check icon)
+    setCopyStates((prev) => ({ ...prev, [key]: true }));
+
+    // Reset back to copy icon after 5 seconds
+    setTimeout(() => {
+      setCopyStates((prev) => ({ ...prev, [key]: false }));
+    }, 5000);
+  };
+
+  const handleReleasesClick = () => {
+    emitMessage(`Fetching releases for your devbox "${devboxData.name}"...`, {
+      type: "info.devboxRelease",
+      payload: {
+        devboxName: devboxData.name,
+        releases: [], // The system will fetch and populate this
+      },
+    });
+  };
+
   return (
-    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-4">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-        <h3 className="font-semibold text-blue-900 text-lg">{payload.name}</h3>
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          payload.status === 'Running' ? 'bg-green-100 text-green-800' :
-          payload.status === 'Stopped' ? 'bg-red-100 text-red-800' :
-          payload.status === 'Creating' ? 'bg-yellow-100 text-yellow-800' :
-          'bg-gray-100 text-gray-800'
-        }`}>
-          {payload.status}
-        </span>
-      </div>
-
-      {/* Basic Info */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <p className="text-sm text-blue-700">
-            <span className="font-medium">Kind:</span> {payload.kind}
-          </p>
-          <p className="text-sm text-blue-700">
-            <span className="font-medium">Image:</span> {payload.image}
-          </p>
-        </div>
-        <div className="space-y-2">
-          <p className="text-sm text-blue-700">
-            <span className="font-medium">CPU:</span> {payload.resources.cpu}
-          </p>
-          <p className="text-sm text-blue-700">
-            <span className="font-medium">Memory:</span> {payload.resources.memory}
-          </p>
-        </div>
-      </div>
-
-      {/* SSH Connection Info */}
-      {payload.ssh && (
-        <div className="bg-blue-100 p-3 rounded-md">
-          <h4 className="font-medium text-blue-800 mb-2">SSH Connection</h4>
-          <div className="grid grid-cols-2 gap-2 text-sm text-blue-700">
-            <p><span className="font-medium">Host:</span> {payload.ssh.host}</p>
-            <p><span className="font-medium">Port:</span> {payload.ssh.port}</p>
-            <p><span className="font-medium">User:</span> {payload.ssh.user}</p>
-            <p><span className="font-medium">Working Dir:</span> {payload.ssh.workingDir}</p>
-          </div>
-          {payload.ssh.privateKey && (
-            <p className="text-xs text-blue-600 mt-2">
-              <span className="font-medium">Private Key:</span> Available
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Ports */}
-      {payload.ports && payload.ports.length > 0 && (
-        <div className="bg-blue-100 p-3 rounded-md">
-          <h4 className="font-medium text-blue-800 mb-2">Ports ({payload.ports.length})</h4>
-          <div className="space-y-2">
-            {payload.ports.map((port, index) => (
-              <div key={index} className="bg-white p-2 rounded border border-blue-200">
-                <div className="grid grid-cols-2 gap-2 text-sm text-blue-700">
-                  <p><span className="font-medium">Port:</span> {port.number}</p>
-                  {port.name && <p><span className="font-medium">Name:</span> {port.name}</p>}
-                  {port.protocol && <p><span className="font-medium">Protocol:</span> {port.protocol}</p>}
-                  {port.serviceName && <p><span className="font-medium">Service:</span> {port.serviceName}</p>}
-                </div>
-                {port.privateAddress && (
-                  <p className="text-xs text-blue-600 mt-1">
-                    <span className="font-medium">Private:</span> {port.privateAddress}
-                  </p>
-                )}
-                {port.publicAddress && (
-                  <p className="text-xs text-green-600 mt-1">
-                    <span className="font-medium">Public:</span> {port.publicAddress}
-                  </p>
-                )}
-                {port.host && (
-                  <p className="text-xs text-purple-600 mt-1">
-                    <span className="font-medium">Host:</span> {port.host}
-                  </p>
-                )}
+    <Card className="w-full bg-background-secondary">
+      <CardHeader className="pb-4">
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <div className="flex items-center gap-4">
+              <Image
+                src={`https://devbox.${regionUrl}/images/runtime/${
+                  devboxData.image.split("-")[0]
+                }.svg`}
+                alt="Devbox Icon"
+                width={24}
+                height={24}
+                className="rounded-lg h-9 w-9 flex-shrink-0"
+                priority
+              />
+              <div className="flex flex-col min-w-0">
+                <span className="text-xs text-muted-foreground leading-none">
+                  Devbox
+                </span>
+                <span className="text-lg font-bold text-foreground leading-tight truncate">
+                  {devboxData.name}
+                </span>
               </div>
-            ))}
+            </div>
           </div>
+          <Badge>{devboxData.status}</Badge>
         </div>
-      )}
+      </CardHeader>
 
-      {/* Pods */}
-      {payload.pods && payload.pods.length > 0 && (
-        <div className="bg-blue-100 p-3 rounded-md">
-          <h4 className="font-medium text-blue-800 mb-2">Pods ({payload.pods.length})</h4>
-          <div className="space-y-2">
-            {payload.pods.map((pod, index) => (
-              <div key={index} className="bg-white p-2 rounded border border-blue-200">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-blue-700">
-                    <span className="font-medium">Name:</span> {pod.name}
-                  </p>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    pod.status === 'Running' ? 'bg-green-100 text-green-800' :
-                    pod.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                    pod.status === 'Failed' ? 'bg-red-100 text-red-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {pod.status}
-                  </span>
-                </div>
-              </div>
-            ))}
+      <CardContent className="space-y-4">
+        {/* CPU and Memory */}
+        <div className="grid grid-cols-2 gap-4 p-4 border rounded-lg">
+          <div className="flex flex-col items-center text-center p-3">
+            <Cpu className="w-6 h-6 mb-2" />
+            <span className="text-xs text-muted-foreground mb-1">CPU</span>
+            <span className="text-lg font-medium">
+              {devboxData.resources.cpu}
+            </span>
+          </div>
+          <div className="flex flex-col items-center text-center p-3">
+            <MemoryStick className="w-6 h-6 mb-2" />
+            <span className="text-xs text-muted-foreground mb-1">Memory</span>
+            <span className="text-lg font-medium">
+              {devboxData.resources.memory}
+            </span>
           </div>
         </div>
-      )}
-    </div>
+
+        {/* Ports */}
+        {devboxData.ports && devboxData.ports.length > 0 && (
+          <div className="space-y-3">
+            <h4 className="font-medium">Ports ({devboxData.ports.length})</h4>
+            <div className="w-full overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-20">Number</TableHead>
+                    <TableHead className="w-1/2">Private Address</TableHead>
+                    <TableHead className="w-1/2">Public Address</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {devboxData.ports.map((port: any, index: number) => (
+                    <TableRow key={index}>
+                      <TableCell className="font-mono">{port.number}</TableCell>
+                      <TableCell className="max-w-0">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="truncate"
+                            title={port.privateAddress || "-"}
+                          >
+                            {port.privateAddress || "-"}
+                          </span>
+                          {port.privateAddress && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0 flex-shrink-0"
+                              onClick={() =>
+                                copyToClipboard(
+                                  port.privateAddress!,
+                                  "Private Address",
+                                  `private-${port.number}`
+                                )
+                              }
+                            >
+                              {copyStates[`private-${port.number}`] ? (
+                                <Check className="w-3 h-3" />
+                              ) : (
+                                <Copy className="w-3 h-3" />
+                              )}
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-0">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="truncate"
+                            title={port.publicAddress || "-"}
+                          >
+                            {port.publicAddress || "-"}
+                          </span>
+                          {port.publicAddress && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0 flex-shrink-0"
+                              onClick={() =>
+                                copyToClipboard(
+                                  port.publicAddress!,
+                                  "Public Address",
+                                  `public-${port.number}`
+                                )
+                              }
+                            >
+                              {copyStates[`public-${port.number}`] ? (
+                                <Check className="w-3 h-3" />
+                              ) : (
+                                <Copy className="w-3 h-3" />
+                              )}
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex gap-3 pt-4">
+          <Button
+            className="flex-1"
+            variant="outline"
+            onClick={handleReleasesClick}
+          >
+            <GitBranch className="w-4 h-4 mr-2" />
+            Releases
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

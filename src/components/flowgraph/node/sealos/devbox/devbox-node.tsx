@@ -17,15 +17,13 @@ import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbo
 import { useDeleteDevboxMutation } from "@/lib/sealos/resources/devbox/devbox-method/devbox-mutation";
 import { getDevboxReleasesOptions } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
 import { useQuery } from "@tanstack/react-query";
-import { randomId } from "@copilotkit/shared";
-import { useChatActions } from "@/contexts/chat/chat-context";
-import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
+import { useEmitSystemMessage } from "@/lib/copilot/message/message-utils";
+import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 // TODO: Devbox nodes would cause maximum call stack error
 export default function DevboxNode({ data }: { data: DevboxObject }) {
   const { name, image, status, ports, pods } = data;
-  const { sendMessage, setMessages, messages } = useCopilotChatHeadless_c();
-  const { openSidebarChat } = useChatActions();
+  const { emitMessage } = useEmitSystemMessage();
   const context = createK8sContext();
   const devboxContext = createDevboxContext();
   const deleteDevbox = useDeleteDevboxMutation(devboxContext);
@@ -39,25 +37,15 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
   const releases = releasesResponse?.data || [];
 
   const handleNodeClick = () => {
-    // Send a message about the cluster
-    setMessages([
-      ...messages,
-      {
-        id: randomId(),
-        role: "assistant",
-        content: `This is your devbox.`,
-      },
-      {
-        id: randomId(),
-        role: "system",
-        content: JSON.stringify({
-          type: "info.devboxInfo",
-          payload: data,
-        }),
-      },
-    ]);
-    // Open the sidebar chat
-    openSidebarChat();
+    const target = convertResourceObjectToTarget({
+      kind: data.kind,
+      name: data.name,
+    });
+
+    emitMessage("This is your devbox.", {
+      type: "info.devboxInfo",
+      payload: target,
+    });
   };
 
   const mainCard = (
@@ -107,7 +95,7 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={ports} /> */}
-            <NodeMonitor />
+            {/* <NodeMonitor /> */}
           </div>
         </div>
       </div>

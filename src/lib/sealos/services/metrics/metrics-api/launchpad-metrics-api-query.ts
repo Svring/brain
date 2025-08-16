@@ -61,6 +61,14 @@ export const getLaunchPadMetrics = createParallelAction(
       },
     });
 
-    return GetLaunchPadMetricsResponseSchema.parse(response.data);
+    console.log("response", response.data);
+
+    try {
+      return GetLaunchPadMetricsResponseSchema.parse(response.data);
+    } catch (error) {
+      console.error("Schema validation failed:", error);
+      console.error("Response data:", JSON.stringify(response.data, null, 2));
+      throw error;
+    }
   }
 );

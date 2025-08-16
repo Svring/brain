@@ -1,5 +1,5 @@
 import React from "react";
-import { HardDrive, Globe, Shield, Copy, Wifi, WifiOff } from "lucide-react";
+import { HardDrive, Globe, Shield, Copy, Wifi, WifiOff, Monitor, FolderOpen } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -212,6 +212,18 @@ export const ObjectStorageInfoMessageCard: React.FC<ObjectStorageInfoMessageProp
             <p>This bucket allows public read and write access. Anyone can view and modify objects.</p>
           )}
         </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex gap-3 pt-2">
+        <Button className="flex-1" variant="outline" size="sm">
+          <Monitor className="w-4 h-4 mr-2" />
+          Monitor
+        </Button>
+        <Button className="flex-1" variant="outline" size="sm">
+          <FolderOpen className="w-4 h-4 mr-2" />
+          Files
+        </Button>
       </div>
     </div>
   );

@@ -30,7 +30,9 @@ export default function ObjectStorageNode({
 }) {
   const [staticHosting, setStaticHosting] = useState(false);
 
-  const { name, policy } = data;
+  const { name, policy, access } = data;
+
+  console.log("access", access);
 
   // Get Sealos context for API calls
   const objectStorageContext = createObjectStorageContext();

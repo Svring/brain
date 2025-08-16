@@ -190,6 +190,54 @@ export const convertResourceToTarget = (
 };
 
 /**
+ * Convert a resource object with kind and name properties to a resource target.
+ * This function is similar to convertResourceToTarget but takes the name directly from the object.
+ *
+ * @param resourceObject - Object containing kind and name properties
+ * @returns A complete resourceTarget
+ * @throws Error if resource kind is not found or name is missing
+ */
+export const convertResourceObjectToTarget = (resourceObject: {
+  kind: string;
+  name: string;
+}): CustomResourceTarget | BuiltinResourceTarget => {
+  if (!resourceObject.name) {
+    throw new Error("Resource name is required");
+  }
+
+  if (!resourceObject.kind) {
+    throw new Error("Resource kind is required");
+  }
+
+  const lowerKind = resourceObject.kind.toLowerCase();
+
+  // Check builtin resources first
+  const builtinConfig = BUILTIN_RESOURCES[lowerKind];
+  if (builtinConfig) {
+    return {
+      type: "builtin",
+      resourceType: builtinConfig.resourceType,
+      name: resourceObject.name,
+    };
+  }
+
+  // Check custom resources
+  const customConfig = CUSTOM_RESOURCES[lowerKind];
+  if (customConfig) {
+    return {
+      type: "custom",
+      resourceType: customConfig.resourceType,
+      group: customConfig.group,
+      version: customConfig.version,
+      plural: customConfig.plural,
+      name: resourceObject.name,
+    };
+  }
+
+  throw new Error(`Unknown resource kind: ${resourceObject.kind}`);
+};
+
+/**
  * Helper function to invalidate resource queries for both custom and builtin resources
  * Note: This function should only be called from client-side code where QueryClient is available
  */

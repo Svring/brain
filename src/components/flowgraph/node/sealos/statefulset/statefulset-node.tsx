@@ -11,9 +11,11 @@ import StatefulsetNodeMenu from "./statefulset-node-menu";
 import { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulset-object-schema";
 import { truncateImage } from "@/lib/sealos/sealos-utils";
 import { useIsMutating } from "@tanstack/react-query";
+import { useEmitSystemMessage } from "@/lib/copilot/message/message-utils";
 
 export default function StatefulsetNode({ data }: { data: StatefulsetObject }) {
   const { name, image, status, ports, pods } = data;
+  const { emitMessage } = useEmitSystemMessage();
 
   // Check if this statefulset is being deleted
   const isDeletingStatefulset = useIsMutating({
@@ -27,12 +29,39 @@ export default function StatefulsetNode({ data }: { data: StatefulsetObject }) {
     },
   }) > 0;
 
+  const handleNodeClick = () => {
+    emitMessage(
+      `This is your statefulset "${name}".`,
+      {
+        type: "info.launchpadInfo",
+        payload: {
+          name: name,
+          image: image,
+          status: status.paused ? "Stopped" : 
+                 status.unavailableReplicas !== undefined && status.unavailableReplicas > 0 ? "Error" :
+                 status.readyReplicas === status.replicas && status.unavailableReplicas === 0 ? "Running" : "Pending",
+          resource: {
+            cpu: "N/A", // Statefulset objects don't have direct CPU/memory specs
+            memory: "N/A",
+            replicas: status.replicas || 0
+          },
+          ports: ports || [],
+          createTime: undefined,
+          kind: "statefulset"
+        },
+      }
+    );
+  };
+
   return (
     <BaseNode 
       nodeData={data}
       className={isDeletingStatefulset ? "border-theme-red" : ""}
     >
-      <div className="flex h-full flex-col gap-2 justify-between">
+      <div 
+        className="flex h-full flex-col gap-2 justify-between"
+        onClick={handleNodeClick}
+      >
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
           <StatefulsetNodeTitle name={name} />

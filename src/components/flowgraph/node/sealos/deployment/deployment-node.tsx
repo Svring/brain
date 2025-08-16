@@ -12,9 +12,11 @@ import DeploymentNodeMenu from "./deployment-node-menu";
 import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-object-schema";
 import { truncateImage } from "@/lib/sealos/sealos-utils";
 import { useIsMutating } from "@tanstack/react-query";
+import { useEmitSystemMessage } from "@/lib/copilot/message/message-utils";
 
 export default function DeploymentNode({ data }: { data: DeploymentObject }) {
   const { name, image, status, ports, pods, env } = data;
+  const { emitMessage } = useEmitSystemMessage();
 
   // console.log("env", env);
 
@@ -31,6 +33,30 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
       },
     }) > 0;
 
+  const handleNodeClick = () => {
+    emitMessage(
+      `This is your deployment "${name}".`,
+      {
+        type: "info.launchpadInfo",
+        payload: {
+          name: name,
+          image: image,
+          status: status.paused ? "Stopped" : 
+                 status.unavailableReplicas !== undefined && status.unavailableReplicas > 0 ? "Error" :
+                 status.readyReplicas === status.replicas ? "Running" : "Pending",
+          resource: {
+            cpu: "N/A", // Deployment objects don't have direct CPU/memory specs
+            memory: "N/A",
+            replicas: status.replicas || 0
+          },
+          ports: ports || [],
+          createTime: undefined,
+          kind: "deployment"
+        },
+      }
+    );
+  };
+
   // console.log("status", status);
   // console.log("pods", pods);
 
@@ -39,7 +65,10 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
       nodeData={data}
       className={isDeletingDeployment ? "border-theme-red" : ""}
     >
-      <div className="flex h-full flex-col gap-2 justify-between">
+      <div 
+        className="flex h-full flex-col gap-2 justify-between"
+        onClick={handleNodeClick}
+      >
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
           <DeploymentNodeTitle name={name} />

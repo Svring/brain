@@ -65,15 +65,22 @@ export const GetLaunchPadMetricsResponseSchema = z.object({
   data: z.object({
     resultType: z.string(),
     result: z.array(
-      z.object({
-        metric: z.record(z.string(), z.string()),
-        value: z.tuple([z.number(), z.string()]).optional(), // For instant queries
-        values: z.array(z.tuple([z.number(), z.string()])).optional(), // For range queries
-      })
+      z
+        .object({
+          metric: z.record(z.string(), z.string()),
+          value: z.tuple([z.number(), z.string()]).nullable().optional(), // For instant queries
+          values: z
+            .array(z.tuple([z.number(), z.string()]))
+            .nullable()
+            .optional(), // For range queries, can be null
+        })
+        .passthrough() // Allow additional fields that might be present in the response
     ),
   }),
   stats: z.object({
-    execTime: z.number(),
+    seriesFetched: z.string().optional(),
+    executionTimeMsec: z.number().optional(), // The actual field name from response
+    execTime: z.number().optional(), // Keep for backward compatibility
   }),
 });
 

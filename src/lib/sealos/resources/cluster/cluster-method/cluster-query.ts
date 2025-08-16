@@ -378,16 +378,6 @@ export const getClusterRangedMonitorOptions = (
   end?: string,
   step?: string
 ) => {
-  // Log all parameters
-  console.log("[getClusterRangedMonitorOptions] called with:", {
-    context,
-    clusterName,
-    clusterType,
-    start,
-    end,
-    step,
-  });
-
   return queryOptions({
     queryKey: [
       "cluster",
@@ -450,10 +440,6 @@ export const getClusterRangedMonitorOptions = (
           )
         ),
       ]);
-
-      console.log("cpuMetrics", cpuMetrics);
-      console.log("memoryMetrics", memoryMetrics);
-      console.log("diskMetrics", diskMetrics);
 
       return {
         cpu: cpuMetrics,

@@ -28,7 +28,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
   const { sendMessage, setMessages, messages } = useCopilotChatHeadless_c();
   const { openSidebarChat } = useChatActions();
 
-  const { name, type, status, pods, backup } = data;
+  const { name, type, status, pods, backup, connection } = data;
 
   // Create contexts for API calls
   const k8sContext = createK8sContext();
@@ -129,11 +129,11 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={[]} /> */}
             {/* <NodePods pods={pods} /> */}
-            <NodeMonitor 
+            {/* <NodeMonitor 
               resourceType="cluster"
               resourceName={name}
               clusterType={type}
-            />
+            /> */}
             <NodeLog />
           </div>
         </div>
