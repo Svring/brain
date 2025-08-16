@@ -7,6 +7,7 @@ import NodeStatusLight from "../../components/node-status-light";
 import NodeInternalUrl from "../../components/node-internal-url";
 import NodePods from "../../components/node-pods";
 import NodeMonitor from "../../components/node-monitor";
+import NodeStack from "../../components/node-stack";
 import DeploymentNodeTitle from "./deployment-node-title";
 import DeploymentNodeMenu from "./deployment-node-menu";
 import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-object-schema";
@@ -16,10 +17,11 @@ import { useEmitSystemMessage } from "@/lib/copilot/message/message-utils";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 export default function DeploymentNode({ data }: { data: DeploymentObject }) {
-  const { name, image, status, ports, pods, env } = data;
+  const { name, image, status, ports, pods, env, resource } = data;
   const { emitMessage } = useEmitSystemMessage();
 
   // console.log("env", env);
+  console.log("resource", resource);
 
   // Check if this deployment is being deleted
   const isDeletingDeployment =
@@ -52,7 +54,7 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
   // console.log("status", status);
   // console.log("pods", pods);
 
-  return (
+  const mainCard = (
     <BaseNode
       nodeData={data}
       className={isDeletingDeployment ? "border-theme-red" : ""}
@@ -101,4 +103,9 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
       </div>
     </BaseNode>
   );
+
+  // Create an array with length equal to resource.replicas for the stack
+  const replicasArray = Array.from({ length: resource?.replicas - 1 || 0 }, (_, i) => i);
+
+  return <NodeStack mainCard={mainCard} data={replicasArray} />;
 }

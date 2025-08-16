@@ -293,10 +293,6 @@ export const ClusterInfoMessageCard: React.FC<ClusterInfoMessageProps> = ({
         {/* Action Buttons */}
         <Separator />
         <div className="flex gap-3 pt-2">
-          <Button className="flex-1" variant="outline" size="sm">
-            <Monitor className="w-4 h-4 mr-2" />
-            Monitor
-          </Button>
           <Button className="flex-1" variant="outline" size="sm" onClick={handleBackupClick}>
             <Save className="w-4 h-4 mr-2" />
             Backup
