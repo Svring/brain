@@ -17,6 +17,12 @@ import { getDevboxReleases } from "../devbox-api/devbox-open-api";
 import { convertDevboxListToSimplified } from "./devbox-utils";
 import { listFolderFiles } from "../devbox-api/devbox-ssh-api";
 import type { DevboxSsh } from "../devbox-schemas/devbox-object-schema";
+import { getLaunchPadMetrics } from "@/lib/sealos/services/metrics/metrics-api/launchpad-metrics-api-query";
+import type { MetricsApiContext } from "@/lib/sealos/services/metrics/schemas/metrics-api-context-schema";
+import type {
+  GetLaunchPadMetricsRequest,
+  GetLaunchPadMetricsResponse,
+} from "@/lib/sealos/services/metrics/schemas/metrics-query-schema";
 
 export const getDevbox = async (
   context: K8sApiContext,
@@ -132,3 +138,133 @@ export const listDevboxFolderFilesOptions = (
     enabled: !!sshConfig.host && !!sshConfig.workingDir,
     staleTime: 1000 * 30, // 30 seconds
   });
+
+// ============================================================================
+// DEVOBOX MONITORING OPTIONS FUNCTIONS
+// ============================================================================
+
+/**
+ * Query options for getting devbox instant monitor data (CPU and memory)
+ * Uses launchpad metrics API to query both cpu and memory in the same request
+ */
+export const getDevboxInstantMonitorOptions = (
+  context: MetricsApiContext,
+  devboxName: string,
+  time?: string
+) => {
+  const currentTime = time || Math.floor(Date.now() / 1000).toString();
+
+  return queryOptions({
+    queryKey: [
+      "devbox",
+      "monitor",
+      "instant",
+      context.namespace,
+      devboxName,
+      currentTime,
+    ],
+    queryFn: async (): Promise<{
+      cpu: GetLaunchPadMetricsResponse;
+      memory: GetLaunchPadMetricsResponse;
+    }> => {
+      // Query both CPU and memory metrics simultaneously
+      const [cpuMetrics, memoryMetrics] = await Promise.all([
+        runParallelAction(
+          getLaunchPadMetrics(
+            {
+              namespace: context.namespace,
+              type: "cpu",
+              launchPadName: devboxName,
+              time: currentTime,
+            },
+            context
+          )
+        ),
+        runParallelAction(
+          getLaunchPadMetrics(
+            {
+              namespace: context.namespace,
+              type: "memory",
+              launchPadName: devboxName,
+              time: currentTime,
+            },
+            context
+          )
+        ),
+      ]);
+
+      return {
+        cpu: cpuMetrics,
+        memory: memoryMetrics,
+      };
+    },
+    enabled: !!context.baseURL && !!context.namespace && !!devboxName,
+    staleTime: 1000 * 30, // 30 seconds
+  });
+};
+
+/**
+ * Query options for getting devbox ranged monitor data (CPU and memory over timespan)
+ * Uses launchpad metrics API to query both cpu and memory in the same request with time range
+ */
+export const getDevboxRangedMonitorOptions = (
+  context: MetricsApiContext,
+  devboxName: string,
+  start?: string,
+  end?: string,
+  step?: string
+) => {
+  return queryOptions({
+    queryKey: [
+      "devbox",
+      "monitor",
+      "ranged",
+      context.namespace,
+      devboxName,
+      start,
+      end,
+      step,
+    ],
+    queryFn: async (): Promise<{
+      cpu: GetLaunchPadMetricsResponse;
+      memory: GetLaunchPadMetricsResponse;
+    }> => {
+      // Query both CPU and memory metrics simultaneously with time range
+      const [cpuMetrics, memoryMetrics] = await Promise.all([
+        runParallelAction(
+          getLaunchPadMetrics(
+            {
+              namespace: context.namespace,
+              type: "cpu",
+              launchPadName: devboxName,
+              start,
+              end,
+              step,
+            },
+            context
+          )
+        ),
+        runParallelAction(
+          getLaunchPadMetrics(
+            {
+              namespace: context.namespace,
+              type: "memory",
+              launchPadName: devboxName,
+              start,
+              end,
+              step,
+            },
+            context
+          )
+        ),
+      ]);
+
+      return {
+        cpu: cpuMetrics,
+        memory: memoryMetrics,
+      };
+    },
+    enabled: !!context.baseURL && !!context.namespace && !!devboxName,
+    staleTime: 1000 * 30, // 30 seconds
+  });
+};

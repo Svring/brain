@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { getCurrentUnixTime, getMonitorTimespan } from "@/lib/date/date-utils";
 
 // LaunchPad metrics query request schema
 export const GetLaunchPadMetricsRequestSchema = z
@@ -17,6 +18,22 @@ export const GetLaunchPadMetricsRequestSchema = z
     step: z.string().optional(),
     // For instant queries
     time: z.string().optional(),
+  })
+  .transform((data) => {
+    // Auto-set start, end, and step only if time is not provided (range query)
+    if (!data.time && (!data.start || !data.end || !data.step)) {
+      const currentTime = getCurrentUnixTime();
+      const timespan = getMonitorTimespan(currentTime); // 1 hour earlier
+
+      return {
+        ...data,
+        start: data.start || timespan.start.toString(),
+        end: data.end || timespan.end.toString(),
+        step: data.step || "120s", // 120 seconds
+      };
+    }
+
+    return data;
   })
   .refine(
     (data) => {
@@ -61,5 +78,9 @@ export const GetLaunchPadMetricsResponseSchema = z.object({
 });
 
 // Type exports
-export type GetLaunchPadMetricsRequest = z.infer<typeof GetLaunchPadMetricsRequestSchema>;
-export type GetLaunchPadMetricsResponse = z.infer<typeof GetLaunchPadMetricsResponseSchema>;
+export type GetLaunchPadMetricsRequest = z.infer<
+  typeof GetLaunchPadMetricsRequestSchema
+>;
+export type GetLaunchPadMetricsResponse = z.infer<
+  typeof GetLaunchPadMetricsResponseSchema
+>;

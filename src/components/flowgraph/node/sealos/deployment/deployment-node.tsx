@@ -74,7 +74,7 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={ports || []} />
             <NodePods pods={pods || []} /> */}
-            <NodeMonitor />
+            {/* <NodeMonitor /> */}
           </div>
         </div>
       </div>

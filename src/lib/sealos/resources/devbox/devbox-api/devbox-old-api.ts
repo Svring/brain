@@ -67,3 +67,18 @@ export const deleteDevboxRelease = createParallelAction(
     return response.data;
   }
 );
+
+export const authCname = createParallelAction(
+  async (
+    context: DevboxApiContext,
+    publicDomain: string,
+    customDomain: string
+  ) => {
+    const api = createDevboxApi(context);
+    const response = await api.post("/platform/authCname", {
+      publicDomain,
+      customDomain,
+    });
+    return response.data;
+  }
+);

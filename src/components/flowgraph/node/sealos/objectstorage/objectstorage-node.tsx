@@ -113,7 +113,7 @@ export default function ObjectStorageNode({
           <ObjectStoragePolicyBadge policy={policy} />
           
           {/* Right: Monitor */}
-          <NodeMonitor />
+          {/* <NodeMonitor /> */}
         </div>
       </div>
     </BaseNode>

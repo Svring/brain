@@ -12,7 +12,7 @@ const client = new S3Client({
 });
 
 // Function to list objects in a bucket folder
-async function listS3FolderObjects(
+export async function listS3FolderObjects(
   bucket: string,
   prefix: string
 ): Promise<string[]> {
@@ -29,9 +29,3 @@ async function listS3FolderObjects(
     throw error;
   }
 }
-
-// Example usage
-const bucketName = "your-bucket-name"; // Replace with your bucket name
-listS3FolderObjects(bucketName, "my-folder/")
-  .then((files) => console.log("S3 Files:", files))
-  .catch((err) => console.error("Error:", err));

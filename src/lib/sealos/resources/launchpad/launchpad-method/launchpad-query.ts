@@ -25,6 +25,12 @@ import {
   convertResourceToTarget,
 } from "@/lib/k8s/k8s-method/k8s-utils";
 import { buildQueryKey } from "@/lib/k8s/k8s-constant/k8s-constant-query-key";
+import { getLaunchPadMetrics } from "@/lib/sealos/services/metrics/metrics-api/launchpad-metrics-api-query";
+import type { MetricsApiContext } from "@/lib/sealos/services/metrics/schemas/metrics-api-context-schema";
+import type {
+  GetLaunchPadMetricsRequest,
+  GetLaunchPadMetricsResponse,
+} from "@/lib/sealos/services/metrics/schemas/metrics-query-schema";
 
 export const getLaunchpad = async (
   context: K8sApiContext,
@@ -136,3 +142,133 @@ export const getLaunchpadLogsOptions = (
     enabled: !!k8sContext.namespace && !!target.name && !!k8sContext.kubeconfig,
     staleTime: 1000 * 10, // Logs are more dynamic, shorter stale time
   });
+
+// ============================================================================
+// LAUNCHPAD MONITORING OPTIONS FUNCTIONS
+// ============================================================================
+
+/**
+ * Query options for getting launchpad instant monitor data (CPU and memory)
+ * Uses launchpad metrics API to query both cpu and memory in the same request
+ */
+export const getLaunchpadInstantMonitorOptions = (
+  context: MetricsApiContext,
+  launchpadName: string,
+  time?: string
+) => {
+  const currentTime = time || Math.floor(Date.now() / 1000).toString();
+
+  return queryOptions({
+    queryKey: [
+      "launchpad",
+      "monitor",
+      "instant",
+      context.namespace,
+      launchpadName,
+      currentTime,
+    ],
+    queryFn: async (): Promise<{
+      cpu: GetLaunchPadMetricsResponse;
+      memory: GetLaunchPadMetricsResponse;
+    }> => {
+      // Query both CPU and memory metrics simultaneously
+      const [cpuMetrics, memoryMetrics] = await Promise.all([
+        runParallelAction(
+          getLaunchPadMetrics(
+            {
+              namespace: context.namespace,
+              type: "cpu",
+              launchPadName: launchpadName,
+              time: currentTime,
+            },
+            context
+          )
+        ),
+        runParallelAction(
+          getLaunchPadMetrics(
+            {
+              namespace: context.namespace,
+              type: "memory",
+              launchPadName: launchpadName,
+              time: currentTime,
+            },
+            context
+          )
+        ),
+      ]);
+
+      return {
+        cpu: cpuMetrics,
+        memory: memoryMetrics,
+      };
+    },
+    enabled: !!context.baseURL && !!context.namespace && !!launchpadName,
+    staleTime: 1000 * 30, // 30 seconds
+  });
+};
+
+/**
+ * Query options for getting launchpad ranged monitor data (CPU and memory over timespan)
+ * Uses launchpad metrics API to query both cpu and memory in the same request with time range
+ */
+export const getLaunchpadRangedMonitorOptions = (
+  context: MetricsApiContext,
+  launchpadName: string,
+  start?: string,
+  end?: string,
+  step?: string
+) => {
+  return queryOptions({
+    queryKey: [
+      "launchpad",
+      "monitor",
+      "ranged",
+      context.namespace,
+      launchpadName,
+      start,
+      end,
+      step,
+    ],
+    queryFn: async (): Promise<{
+      cpu: GetLaunchPadMetricsResponse;
+      memory: GetLaunchPadMetricsResponse;
+    }> => {
+      // Query both CPU and memory metrics simultaneously with time range
+      const [cpuMetrics, memoryMetrics] = await Promise.all([
+        runParallelAction(
+          getLaunchPadMetrics(
+            {
+              namespace: context.namespace,
+              type: "cpu",
+              launchPadName: launchpadName,
+              start,
+              end,
+              step,
+            },
+            context
+          )
+        ),
+        runParallelAction(
+          getLaunchPadMetrics(
+            {
+              namespace: context.namespace,
+              type: "memory",
+              launchPadName: launchpadName,
+              start,
+              end,
+              step,
+            },
+            context
+          )
+        ),
+      ]);
+
+      return {
+        cpu: cpuMetrics,
+        memory: memoryMetrics,
+      };
+    },
+    enabled: !!context.baseURL && !!context.namespace && !!launchpadName,
+    staleTime: 1000 * 30, // 30 seconds
+  });
+};

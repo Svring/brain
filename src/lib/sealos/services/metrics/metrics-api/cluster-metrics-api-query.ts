@@ -14,8 +14,10 @@ import https from "https";
 function createClusterMetricsApi(context: MetricsApiContext) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
 
+  const protocol = isDevelopment ? "http" : "https";
+
   return axios.create({
-    baseURL: context.baseURL,
+    baseURL: `${protocol}://${context.baseURL}`,
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
       ...(context.kubeconfig ? { Authorization: `${context.kubeconfig}` } : {}),
@@ -64,7 +66,15 @@ export const getClusterMetrics = createParallelAction(
       formData.append("step", validatedRequest.step);
     }
 
-    const response = await api.post("/", formData, {
+    // Log the complete request body before making the request
+    // Convert formData to a plain object for easier logging
+    const formDataObj: Record<string, string> = {};
+    for (const [key, value] of formData.entries()) {
+      formDataObj[key] = value;
+    }
+    console.log("[getClusterMetrics] Request body:", formDataObj);
+
+    const response = await api.post("/q", formData, {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },

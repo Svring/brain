@@ -8,6 +8,7 @@ import { Copy } from "lucide-react";
 import NodeStatusLight from "../../components/node-status-light";
 import NodeInternalUrl from "../../components/node-internal-url";
 import NodeMonitor from "../../components/node-monitor";
+import NodeLog from "../../components/node-log";
 import NodePods from "../../components/node-pods";
 import NodeStack from "../../components/node-stack";
 import ClusterNodeTitle from "./cluster-node-title";
@@ -128,7 +129,12 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={[]} /> */}
             {/* <NodePods pods={pods} /> */}
-            <NodeMonitor />
+            <NodeMonitor 
+              resourceType="cluster"
+              resourceName={name}
+              clusterType={type}
+            />
+            <NodeLog />
           </div>
         </div>
       </div>

@@ -26,6 +26,12 @@ import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/
 import { CLUSTER_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
 import { getRelatedResources } from "@/lib/sealos/services/relevance/relevance-utils";
 import { convertClusterListToSimplified } from "./cluster-utils";
+import { getClusterMetrics } from "@/lib/sealos/services/metrics/metrics-api/cluster-metrics-api-query";
+import type { MetricsApiContext } from "@/lib/sealos/services/metrics/schemas/metrics-api-context-schema";
+import type {
+  GetClusterMetricsRequest,
+  GetClusterMetricsResponse,
+} from "@/lib/sealos/services/metrics/schemas/cluster-metrics-schema";
 
 export const getCluster = async (
   context: K8sApiContext,
@@ -273,3 +279,193 @@ export const getClusterVersionsOptions = (context: SealosApiContext) =>
     enabled: !!context.baseURL,
     staleTime: 1000 * 60 * 60, // 1 hour - versions don't change frequently
   });
+
+// ============================================================================
+// CLUSTER MONITORING OPTIONS FUNCTIONS
+// ============================================================================
+
+/**
+ * Query options for getting cluster instant monitor data (CPU, memory, and disk usage)
+ * Uses cluster metrics API to query cpu, memory, and disk_used in the same request
+ */
+export const getClusterInstantMonitorOptions = (
+  context: MetricsApiContext,
+  clusterName: string,
+  clusterType: string,
+  time?: string
+) => {
+  const currentTime = time || Math.floor(Date.now() / 1000).toString();
+
+  return queryOptions({
+    queryKey: [
+      "cluster",
+      "monitor",
+      "instant",
+      context.namespace,
+      clusterName,
+      clusterType,
+      currentTime,
+    ],
+    queryFn: async (): Promise<{
+      cpu: GetClusterMetricsResponse;
+      memory: GetClusterMetricsResponse;
+      disk_used: GetClusterMetricsResponse;
+    }> => {
+      // Query CPU, memory, and disk_used metrics simultaneously
+      const [cpuMetrics, memoryMetrics, diskMetrics] = await Promise.all([
+        runParallelAction(
+          getClusterMetrics(
+            {
+              namespace: context.namespace,
+              app: clusterName,
+              type: clusterType,
+              query: "cpu",
+              time: currentTime,
+            },
+            context
+          )
+        ),
+        runParallelAction(
+          getClusterMetrics(
+            {
+              namespace: context.namespace,
+              app: clusterName,
+              type: clusterType,
+              query: "memory",
+              time: currentTime,
+            },
+            context
+          )
+        ),
+        runParallelAction(
+          getClusterMetrics(
+            {
+              namespace: context.namespace,
+              app: clusterName,
+              type: clusterType,
+              query: "disk_used",
+              time: currentTime,
+            },
+            context
+          )
+        ),
+      ]);
+
+      return {
+        cpu: cpuMetrics,
+        memory: memoryMetrics,
+        disk_used: diskMetrics,
+      };
+    },
+    enabled:
+      !!context.baseURL &&
+      !!context.namespace &&
+      !!clusterName &&
+      !!clusterType,
+    staleTime: 1000 * 30, // 30 seconds
+  });
+};
+
+/**
+ * Query options for getting cluster ranged monitor data (CPU, memory, and disk usage over timespan)
+ * Uses cluster metrics API to query cpu, memory, and disk_used in the same request with time range
+ */
+export const getClusterRangedMonitorOptions = (
+  context: MetricsApiContext,
+  clusterName: string,
+  clusterType: string,
+  start?: string,
+  end?: string,
+  step?: string
+) => {
+  // Log all parameters
+  console.log("[getClusterRangedMonitorOptions] called with:", {
+    context,
+    clusterName,
+    clusterType,
+    start,
+    end,
+    step,
+  });
+
+  return queryOptions({
+    queryKey: [
+      "cluster",
+      "monitor",
+      "ranged",
+      context.namespace,
+      clusterName,
+      clusterType,
+      start,
+      end,
+      step,
+    ],
+    queryFn: async (): Promise<{
+      cpu: GetClusterMetricsResponse;
+      memory: GetClusterMetricsResponse;
+      disk_used: GetClusterMetricsResponse;
+    }> => {
+      // Query CPU, memory, and disk_used metrics simultaneously with time range
+      const [cpuMetrics, memoryMetrics, diskMetrics] = await Promise.all([
+        runParallelAction(
+          getClusterMetrics(
+            {
+              namespace: context.namespace,
+              app: clusterName,
+              type: clusterType,
+              query: "cpu",
+              start,
+              end,
+              step,
+            },
+            context
+          )
+        ),
+        runParallelAction(
+          getClusterMetrics(
+            {
+              namespace: context.namespace,
+              app: clusterName,
+              type: clusterType,
+              query: "memory",
+              start,
+              end,
+              step,
+            },
+            context
+          )
+        ),
+        runParallelAction(
+          getClusterMetrics(
+            {
+              namespace: context.namespace,
+              app: clusterName,
+              type: clusterType,
+              query: "disk_used",
+              start,
+              end,
+              step,
+            },
+            context
+          )
+        ),
+      ]);
+
+      console.log("cpuMetrics", cpuMetrics);
+      console.log("memoryMetrics", memoryMetrics);
+      console.log("diskMetrics", diskMetrics);
+
+      return {
+        cpu: cpuMetrics,
+        memory: memoryMetrics,
+        disk_used: diskMetrics,
+      };
+    },
+    enabled:
+      !!context.baseURL &&
+      !!context.namespace &&
+      !!clusterName &&
+      !!clusterType,
+    staleTime: 1000 * 30, // 30 seconds
+  });
+};

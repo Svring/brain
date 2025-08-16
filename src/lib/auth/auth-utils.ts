@@ -225,7 +225,9 @@ export function createTrafficApiContext() {
   });
 }
 
-export function createLaunchPadMetricsContext() {
+export function createMetricsContext(
+  metricsType: "launchpad" | "cluster" = "launchpad"
+) {
   const { auth } = useAuthState();
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
 
@@ -233,29 +235,24 @@ export function createLaunchPadMetricsContext() {
     throw new Error("User not found");
   }
 
-  return MetricsApiContextSchema.parse({
-    baseURL: isDevelopment ? LAUNCHPAD_METRICS_TEST_URL : LAUNCHPAD_METRICS_URL,
-    kubeconfig: auth.kubeconfig,
-  });
-}
-
-export function createClusterMetricsContext() {
-  const { auth } = useAuthState();
-  const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
-
-  if (!auth) {
-    throw new Error("User not found");
-  }
+  const baseURL =
+    metricsType === "launchpad"
+      ? isDevelopment
+        ? LAUNCHPAD_METRICS_TEST_URL
+        : LAUNCHPAD_METRICS_URL
+      : isDevelopment
+      ? CLUSTER_METRICS_TEST_URL
+      : CLUSTER_METRICS_URL;
 
   return MetricsApiContextSchema.parse({
-    baseURL: isDevelopment ? CLUSTER_METRICS_TEST_URL : CLUSTER_METRICS_URL,
+    baseURL,
     kubeconfig: auth.kubeconfig,
+    namespace: auth.namespace,
   });
 }
 
 export function activateContextCookies() {
   createK8sContext();
   createAiProxyContext();
-  createLaunchPadMetricsContext();
-  createClusterMetricsContext();
+  createMetricsContext("launchpad");
 }

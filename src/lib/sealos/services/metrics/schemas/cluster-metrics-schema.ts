@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { getCurrentUnixTime, getMonitorTimespan } from "@/lib/date/date-utils";
+import { CLUSTER_TYPE_VERSION_MAP } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-versions";
 
 // Database types enum
 export const DatabaseTypeSchema = z.enum([
@@ -99,7 +101,9 @@ export const GetClusterMetricsRequestSchema = z
   .object({
     namespace: z.string().min(1, "Namespace is required"),
     query: z.string().optional(), // Custom query expression
-    type: z.string().optional(), // Predefined query type
+    type: z
+      .enum(Object.keys(CLUSTER_TYPE_VERSION_MAP) as [string, ...string[]])
+      .optional(), // Predefined query type
     app: z.string().min(1, "App name is required"),
     // For instant queries
     time: z.string().optional(),
@@ -107,6 +111,22 @@ export const GetClusterMetricsRequestSchema = z
     start: z.string().optional(),
     end: z.string().optional(),
     step: z.string().optional(),
+  })
+  .transform((data) => {
+    // Auto-set start, end, and step only if time is not provided (range query)
+    if (!data.time && (!data.start || !data.end || !data.step)) {
+      const currentTime = getCurrentUnixTime();
+      const timespan = getMonitorTimespan(currentTime); // 1 hour earlier
+
+      return {
+        ...data,
+        start: data.start || timespan.start.toString(),
+        end: data.end || timespan.end.toString(),
+        step: data.step || "120s", // 120 seconds
+      };
+    }
+
+    return data;
   })
   .refine(
     (data) => {
@@ -134,25 +154,73 @@ export const GetClusterMetricsRequestSchema = z
         "Must provide either 'query' or 'type', and either 'time' for instant query or 'start/end/step' for range query",
       path: ["query"],
     }
+  )
+  .refine(
+    (data) => {
+      // If cluster type is specified, validate that query type is valid for that cluster
+      if (data.type && data.query) {
+        const clusterType = data.type;
+        const queryType = data.query;
+
+        // Get the valid query types for the specified cluster type
+        let validQueryTypes: string[] = [];
+
+        switch (clusterType) {
+          case "apecloud-mysql":
+            validQueryTypes = MySQLQueryTypeSchema.options;
+            break;
+          case "postgresql":
+            validQueryTypes = PostgreSQLQueryTypeSchema.options;
+            break;
+          case "mongodb":
+            validQueryTypes = MongoDBQueryTypeSchema.options;
+            break;
+          case "redis":
+            validQueryTypes = RedisQueryTypeSchema.options;
+            break;
+          case "kafka":
+            validQueryTypes = KafkaQueryTypeSchema.options;
+            break;
+          case "weaviate":
+          case "milvus":
+          case "pulsar":
+            // These don't have specific query type schemas, so any query is valid
+            return true;
+          default:
+            return false; // Invalid cluster type
+        }
+
+        // Check if the query type is valid for the cluster type
+        return validQueryTypes.includes(queryType);
+      }
+
+      return true; // No validation needed if no cluster type or no query
+    },
+    {
+      message: "Query type is not valid for the specified cluster type",
+      path: ["query"],
+    }
   );
 
 // Cluster metrics query response schema (same as LaunchPad)
 export const GetClusterMetricsResponseSchema = z.object({
   status: z.string(),
-  isPartial: z.boolean(),
+  isPartial: z.boolean().optional(), // Made optional since API doesn't always return it
   data: z.object({
     resultType: z.string(),
     result: z.array(
       z.object({
         metric: z.record(z.string(), z.string()),
-        value: z.tuple([z.number(), z.string()]).optional(), // For instant queries
+        value: z.tuple([z.number(), z.string()]).nullable().optional(), // Allow null for matrix results
         values: z.array(z.tuple([z.number(), z.string()])).optional(), // For range queries
       })
     ),
   }),
-  stats: z.object({
-    execTime: z.number(),
-  }),
+  stats: z
+    .object({
+      execTime: z.number(),
+    })
+    .optional(), // Made optional since API doesn't always return it
 });
 
 // Type exports

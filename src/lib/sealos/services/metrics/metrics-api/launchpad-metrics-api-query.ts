@@ -18,11 +18,10 @@ import https from "https";
 function createLaunchPadMetricsApi(context: MetricsApiContext) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
 
-  // In development, try HTTP first, then HTTPS if needed
   const protocol = isDevelopment ? "http" : "https";
 
   return axios.create({
-    baseURL: context.baseURL,
+    baseURL: `${protocol}://${context.baseURL}`,
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
       ...(context.kubeconfig ? { Authorization: `${context.kubeconfig}` } : {}),
@@ -56,7 +55,7 @@ export const getLaunchPadMetrics = createParallelAction(
     if (validatedRequest.step) formData.append("step", validatedRequest.step);
     if (validatedRequest.time) formData.append("time", validatedRequest.time);
 
-    const response = await api.post(LAUNCHPAD_METRICS_URL, formData, {
+    const response = await api.post("/query", formData, {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },

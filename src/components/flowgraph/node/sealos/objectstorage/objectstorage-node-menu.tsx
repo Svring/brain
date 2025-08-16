@@ -27,7 +27,7 @@ export default function ObjectStorageNodeMenu({
 
   const { name, displayName } = object;
 
-  console.log("object", object);
+  // console.log("object", object);
 
   return (
     <DropdownMenu>

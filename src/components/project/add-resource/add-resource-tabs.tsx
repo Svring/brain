@@ -1,8 +1,8 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import AddExistedResourceTab from "./add-existed-resource-tab";
-import AddNewResourceTab from "./add-new-resource-tab";
+import AddExistedResourceTab from "./add-existed-resource/add-existed-resource-tab";
+import AddNewResourceTab from "./add-new-resource/add-new-resource-tab";
 
 export default function AddResourceTabs() {
   return (
