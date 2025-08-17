@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Activity } from "lucide-react";
+import { DatabaseBackup } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -9,10 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-// This component has been deprecated in favor of MetricRow
-// All chart rendering logic has been moved to src/components/chat/messages/components/metric-row.tsx
-
-export default function NodeMonitor() {
+export default function NodeBackup() {
   return (
     <TooltipProvider delayDuration={0}>
       <Tooltip>
@@ -24,14 +21,14 @@ export default function NodeMonitor() {
               e.stopPropagation();
             }}
           >
-            <Activity className="h-4 w-4 text-theme-green" />
+            <DatabaseBackup className="h-4 w-4 text-theme-green" />
           </div>
         </TooltipTrigger>
         <TooltipContent
           side="bottom"
           className="bg-background-secondary rounded-lg p-2"
         >
-          <p className="font-medium">View metrics</p>
+          <p className="font-medium">View backups</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

@@ -88,7 +88,7 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={ports} /> */}
-            {/* <NodeMonitor /> */}
+            <NodeMonitor />
           </div>
         </div>
       </div>

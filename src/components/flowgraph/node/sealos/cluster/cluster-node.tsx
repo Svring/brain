@@ -10,6 +10,7 @@ import NodeInternalUrl from "../../components/node-internal-url";
 import NodeMonitor from "../../components/node-monitor";
 import NodeLog from "../../components/node-log";
 import NodePods from "../../components/node-pods";
+import NodeBackup from "../../components/node-backup";
 import NodeStack from "../../components/node-stack";
 import ClusterNodeTitle from "./cluster-node-title";
 import ClusterNodeMenu from "./cluster-node-menu";
@@ -20,7 +21,10 @@ import { useChatActions } from "@/contexts/chat/chat-context";
 import { randomId } from "@copilotkit/shared";
 import { createClusterContext, createK8sContext } from "@/lib/auth/auth-utils";
 import { useIsMutating } from "@tanstack/react-query";
-import { getClusterBackupListOptions, getClusterOptions } from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
+import {
+  getClusterBackupListOptions,
+  getClusterOptions,
+} from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
 import { useQuery } from "@tanstack/react-query";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
@@ -134,12 +138,9 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={[]} /> */}
             {/* <NodePods pods={pods} /> */}
-            {/* <NodeMonitor 
-              resourceType="cluster"
-              resourceName={name}
-              clusterType={type}
-            /> */}
             <NodeLog />
+            <NodeBackup />
+            <NodeMonitor />
           </div>
         </div>
       </div>

@@ -6,6 +6,7 @@ import { Package } from "lucide-react";
 import NodeStatusLight from "../../components/node-status-light";
 import NodeInternalUrl from "../../components/node-internal-url";
 import NodePods from "../../components/node-pods";
+import NodeLog from "../../components/node-log";
 import NodeMonitor from "../../components/node-monitor";
 import NodeStack from "../../components/node-stack";
 import DeploymentNodeTitle from "./deployment-node-title";
@@ -97,7 +98,8 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={ports || []} />
             <NodePods pods={pods || []} /> */}
-            {/* <NodeMonitor /> */}
+            <NodeLog />
+            <NodeMonitor />
           </div>
         </div>
       </div>
