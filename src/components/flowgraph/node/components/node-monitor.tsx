@@ -134,9 +134,6 @@ export default function NodeMonitor({
   if (!data || data.length === 0) {
     return (
       <div className="w-full h-full">
-        <div className="mb-3">
-          <h3 className="text-sm font-medium">{label} Monitor</h3>
-        </div>
         <ChartContainer config={chartConfig} className="h-full w-full">
           <AreaChart
             data={(() => {
@@ -228,7 +225,6 @@ export default function NodeMonitor({
               stroke={color}
               stackId="a"
             />
-            {/* <ChartLegend content={<ChartLegendContent />} /> */}
           </AreaChart>
         </ChartContainer>
       </div>
@@ -237,9 +233,6 @@ export default function NodeMonitor({
 
   return (
     <div className="w-full h-full">
-      <div className="mb-3">
-        <h3 className="text-sm font-medium">{label} Monitor</h3>
-      </div>
       <ChartContainer config={chartConfig} className="h-full w-full">
         <AreaChart 
           data={chartData}
@@ -285,7 +278,6 @@ export default function NodeMonitor({
             stroke={color}
             stackId="a"
           />
-          <ChartLegend content={<ChartLegendContent />} />
         </AreaChart>
       </ChartContainer>
     </div>

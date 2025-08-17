@@ -27,6 +27,8 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
   const devboxContext = createDevboxContext();
   const deleteDevbox = useDeleteDevboxMutation(devboxContext);
 
+  // console.log("data", data);
+
   // Fetch devbox releases
   const { data: releasesResponse } = useQuery(
     getDevboxReleasesOptions(devboxContext, name)

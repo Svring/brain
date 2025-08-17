@@ -38,6 +38,7 @@ export const DevboxObjectSchema = z.object({
   ssh: DevboxSshSchema,
   ports: z.array(DevboxPortSchema),
   pods: z.array(PodSchema).optional(),
+  operationalStatus: z.any().optional(),
 });
 
 export type DevboxResource = z.infer<typeof DevboxResourceSchema>;

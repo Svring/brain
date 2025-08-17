@@ -1,5 +1,5 @@
 import { ClusterInfoMessageCard } from "./cluster-info-message";
-import { DevboxInfoMessageCard } from "./devbox-info-message";
+import { DevboxInfoMessageCard } from "./devbox-info-message/devbox-info-message";
 import { ClusterBackupMessageCard } from "./cluster-backup-message";
 import { DevboxReleaseMessageCard } from "./devbox-release-message";
 import { LaunchpadInfoMessageCard } from "./launchpad-info-message";

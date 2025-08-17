@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  formatIsoDateToReadable,
+  formatDurationToReadable,
+} from "@/lib/date/date-utils";
 
 export const DevboxObjectQuerySchema = z.object({
   name: z.any().describe(
@@ -19,6 +23,37 @@ export const DevboxObjectQuerySchema = z.object({
       path: ["spec.image"],
     })
   ),
+  operationalStatus: z
+    .any()
+    .describe(
+      JSON.stringify({
+        resourceType: "devbox",
+        path: [""],
+      })
+    )
+    .transform((resource) => {
+      const metadata = resource.metadata;
+      const status = resource.status;
+
+      // Get createdAt from metadata and format it
+      const createdAt = formatIsoDateToReadable(metadata.creationTimestamp);
+
+      // Calculate upTime from state.running.startedAt
+      let upTime: string | undefined;
+      if (status?.state?.running?.startedAt) {
+        const startedAt = new Date(status.state.running.startedAt);
+        const currentTime = new Date();
+        const upTimeSeconds = Math.floor(
+          (currentTime.getTime() - startedAt.getTime()) / 1000
+        ); // Convert to seconds
+        upTime = formatDurationToReadable(upTimeSeconds);
+      }
+
+      return {
+        createdAt,
+        upTime,
+      };
+    }),
   status: z.any().describe(
     JSON.stringify({
       resourceType: "devbox",

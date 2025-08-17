@@ -4,13 +4,13 @@ import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context
 export async function createProjectContext(opts: {
   req: Request;
 }): Promise<K8sApiContext> {
-  const authorization = opts.req.headers.get("authorization");
-  const baseUrl = opts.req.headers.get("baseurl");
+  const kubeconfig = opts.req.headers.get("kubeconfig");
+  const regionUrl = opts.req.headers.get("regionUrl");
   const namespace = opts.req.headers.get("namespace");
 
   return {
-    kubeconfig: decodeURIComponent(authorization as string),
-    regionUrl: baseUrl as string,
+    kubeconfig: decodeURIComponent(kubeconfig as string),
+    regionUrl: regionUrl as string,
     namespace: namespace as string,
   };
 }

@@ -162,7 +162,6 @@ export const devboxRouter = t.router({
   getDevbox: t.procedure
     .input(
       z.object({
-        context: K8sApiContextSchema,
         target: CustomResourceTargetSchema,
       })
     )
