@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { ClusterInfoHeader } from "./cluster-info-header";
-import { MetricsMonitor } from "@/components/chat/messages/components/metrics-monitor";
+import { MetricRow } from "@/components/chat/messages/components/metric-row";
 import { ClusterInfoConnection } from "./cluster-info-connection";
 import { ClusterInfoActions } from "./cluster-info-actions";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
@@ -61,11 +61,9 @@ export const ClusterInfoMessage: React.FC<ClusterInfoMessageProps> = ({
     <Card className="w-full bg-background-secondary">
       <ClusterInfoHeader clusterData={finalData} />
       <CardContent className="space-y-4">
-        <MetricsMonitor 
-          resource={finalData.resource}
-          monitorData={monitorData}
-          isMonitorLoading={isMonitorLoading}
-        />
+        <MetricRow metric="cpu" resource={finalData.resource} monitorData={monitorData} isLoading={isMonitorLoading} />
+        <MetricRow metric="memory" resource={finalData.resource} monitorData={monitorData} isLoading={isMonitorLoading} />
+        <MetricRow metric="storage" resource={finalData.resource} monitorData={monitorData} isLoading={isMonitorLoading} />
         <ClusterInfoConnection clusterData={finalData} />
       </CardContent>
       <ClusterInfoActions clusterData={finalData} />

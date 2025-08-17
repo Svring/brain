@@ -8,10 +8,10 @@ import {
   getLaunchpadRangedMonitorOptions,
 } from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-query";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { LaunchpadInfoHeader } from "./launchpad-info-message/launchpad-info-header";
-import { MetricsMonitor } from "@/components/chat/messages/components/metrics-monitor";
-import { LaunchpadInfoPorts } from "./launchpad-info-message/launchpad-info-ports";
-import { LaunchpadInfoActions } from "./launchpad-info-message/launchpad-info-actions";
+import { LaunchpadInfoHeader } from "./launchpad-info-header";
+import { MetricRow } from "@/components/chat/messages/components/metric-row";
+import { LaunchpadInfoPorts } from "./launchpad-info-ports";
+import { LaunchpadInfoActions } from "./launchpad-info-actions";
 
 interface LaunchpadInfoMessageProps {
   payload: BuiltinResourceTarget;
@@ -105,11 +105,8 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
         launchpadData={launchpadData}
       />
       <CardContent className="space-y-4">
-        <MetricsMonitor 
-          resource={resourceInfo}
-          monitorData={monitorData}
-          isMonitorLoading={isMonitorLoading}
-        />
+        <MetricRow metric="cpu" resource={resourceInfo} monitorData={monitorData} isLoading={isMonitorLoading} />
+        <MetricRow metric="memory" resource={resourceInfo} monitorData={monitorData} isLoading={isMonitorLoading} />
         <LaunchpadInfoPorts ports={ports} />
       </CardContent>
       <LaunchpadInfoActions 
