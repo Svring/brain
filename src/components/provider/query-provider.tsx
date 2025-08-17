@@ -9,12 +9,7 @@ import {
 } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
-import { activateContextCookies } from "@/lib/auth/auth-utils";
-
-import { createTRPCReact, httpBatchLink } from "@trpc/react-query";
-import type { DevboxRouter } from "@/lib/trpc/routers/devbox-router";
-import { useState } from "react";
-import { useAuthState } from "@/contexts/auth/auth-context";
+import TRPCProvider from "./trpc-provider";
 
 function makeQueryClient() {
   return new QueryClient({
@@ -30,8 +25,6 @@ function makeQueryClient() {
 }
 
 let browserQueryClient: QueryClient | undefined = undefined;
-
-export const devboxClient = createTRPCReact<DevboxRouter>();
 
 function getQueryClient() {
   if (isServer) {
@@ -50,35 +43,9 @@ export default function QueryProvider({
 }) {
   const queryClient = getQueryClient();
 
-  const { auth } = useAuthState();
-  if (!auth) {
-    throw new Error("User not found");
-  }
-
-  const [devboxTrpcClient] = useState(() =>
-    devboxClient.createClient({
-      links: [
-        httpBatchLink({
-          url: "/api/trpc/devbox",
-          headers: () => ({
-            authorization: auth.kubeconfig,
-            baseurl: auth.regionUrl,
-          }),
-        }),
-      ],
-    })
-  );
-
-  // activateContextCookies();
-
   return (
     <QueryClientProvider client={queryClient}>
-      <devboxClient.Provider
-        client={devboxTrpcClient}
-        queryClient={queryClient}
-      >
-        {children}
-      </devboxClient.Provider>
+      <TRPCProvider queryClient={queryClient}>{children}</TRPCProvider>
       <ReactQueryDevtools buttonPosition="bottom-left" initialIsOpen={false} />
     </QueryClientProvider>
   );

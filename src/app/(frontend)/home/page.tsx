@@ -10,7 +10,6 @@ import { useLanggraphAgent } from "@/hooks/langgraph/use-langgraph-agent";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import useProjectSearch from "@/hooks/brain/use-projects-search";
 import RecentProjects from "@/components/project/recent-projects";
-import { devboxClient } from "@/components/provider/query-provider";
 
 export default function HomePage() {
   const { messages } = useCopilotChatHeadless_c({ id: "chat" });
@@ -23,10 +22,6 @@ export default function HomePage() {
 
   useCopilotActions();
   useLanggraphAgent();
-
-  const { data: devboxes } = devboxClient.listDevboxes.useQuery();
-
-  console.log("devboxes", devboxes);
 
   return (
     <div className="min-h-screen w-full flex flex-col">

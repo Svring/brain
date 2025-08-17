@@ -1,0 +1,358 @@
+import axios from "axios";
+import https from "https";
+import type {
+  DevboxApiContext,
+  DevboxListResponse,
+  DevboxCreateRequest,
+  DevboxCreateResponse,
+  DevboxDeleteResponse,
+  DevboxLifecycleRequest,
+  DevboxLifecycleResponse,
+  DevboxReleaseRequest,
+  DevboxReleaseResponse,
+  DevboxReleasesResponse,
+  DevboxDeployRequest,
+  DevboxDeployResponse,
+  DevboxPortCreateRequest,
+  DevboxPortCreateResponse,
+  DevboxPortRemoveResponse,
+  AppFormConfig,
+  CreateAppResponse,
+  DeleteAppResponse,
+  GetAppsResponse,
+  GetAppByNameResponse,
+  GetAppPodsResponse,
+} from "./devbox-open-api-schemas";
+import {
+  DevboxListResponseSchema,
+  DevboxCreateResponseSchema,
+  DevboxDeleteResponseSchema,
+  DevboxLifecycleResponseSchema,
+  DevboxReleaseResponseSchema,
+  DevboxReleasesResponseSchema,
+  DevboxDeployResponseSchema,
+  DevboxPortCreateResponseSchema,
+  DevboxPortRemoveResponseSchema,
+  CreateAppResponseSchema,
+  DeleteAppResponseSchema,
+  GetAppsResponseSchema,
+  GetAppByNameResponseSchema,
+  GetAppPodsResponseSchema,
+} from "./devbox-open-api-schemas";
+import type { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
+import type { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { getDevboxObject } from "../devbox-method/devbox-bridge";
+import { listCustomResources } from "@/lib/k8s/k8s-api/k8s-api-query";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { convertDevboxListToSimplified } from "../devbox-method/devbox-utils";
+import { getSshConnectionInfo } from "./devbox-old-api";
+import { listFolderFiles } from "./devbox-ssh-api";
+import type { DevboxSsh } from "../devbox-schemas/devbox-object-schema";
+import type { MetricsApiContext } from "@/lib/sealos/services/metrics/schemas/metrics-api-context-schema";
+import { getLaunchPadMetrics } from "@/lib/sealos/services/metrics/metrics-api/launchpad-metrics-api-query";
+import { extractPodMetricsData } from "@/lib/sealos/services/metrics/metrics-utils";
+import { runParallelAction } from "next-server-actions-parallel";
+
+function createHttpsAgent() {
+  const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
+  return new https.Agent({
+    keepAlive: true,
+    rejectUnauthorized: isDevelopment ? false : true,
+  });
+}
+
+function createDevboxAxios(context: DevboxApiContext) {
+  return axios.create({
+    baseURL: `https://devbox.${context.baseUrl}/api/v1/DevBox`,
+    headers: {
+      "Content-Type": "application/json",
+      ...(context.authorization
+        ? { Authorization: context.authorization }
+        : {}),
+    },
+    httpsAgent: createHttpsAgent(),
+  });
+}
+
+function createAppAxios(context: DevboxApiContext) {
+  return axios.create({
+    baseURL: `https://devbox.${context.baseUrl}/api/`,
+    headers: {
+      "Content-Type": "application/json",
+      ...(context.authorization
+        ? { Authorization: context.authorization }
+        : {}),
+    },
+    httpsAgent: createHttpsAgent(),
+  });
+}
+
+// DevBox Lifecycle Management
+export async function createDevbox(
+  request: DevboxCreateRequest,
+  context: DevboxApiContext
+): Promise<DevboxCreateResponse> {
+  const api = createDevboxAxios(context);
+  const response = await api.post("/create", request);
+  return DevboxCreateResponseSchema.parse(response.data);
+}
+
+export async function manageDevboxLifecycle(
+  request: DevboxLifecycleRequest,
+  context: DevboxApiContext
+): Promise<DevboxLifecycleResponse> {
+  const api = createDevboxAxios(context);
+  const response = await api.post("/lifecycle", request);
+  return DevboxLifecycleResponseSchema.parse(response.data);
+}
+
+export async function deleteDevbox(
+  devboxName: string,
+  context: DevboxApiContext
+): Promise<DevboxDeleteResponse> {
+  const api = createDevboxAxios(context);
+  const response = await api.delete("/delete", {
+    params: { devboxName },
+  });
+  return DevboxDeleteResponseSchema.parse(response.data);
+}
+
+// DevBox Release Management
+export async function releaseDevbox(
+  request: DevboxReleaseRequest,
+  context: DevboxApiContext
+): Promise<DevboxReleaseResponse> {
+  const api = createDevboxAxios(context);
+  const response = await api.post("/release", request);
+  return DevboxReleaseResponseSchema.parse(response.data);
+}
+
+export async function getDevboxReleases(
+  devboxName: string,
+  context: DevboxApiContext
+): Promise<DevboxReleasesResponse> {
+  const api = createDevboxAxios(context);
+  const response = await api.get("/releases", {
+    params: { devboxName },
+  });
+  return DevboxReleasesResponseSchema.parse(response.data);
+}
+
+export async function deployDevbox(
+  request: DevboxDeployRequest,
+  context: DevboxApiContext
+): Promise<DevboxDeployResponse> {
+  const api = createAppAxios(context);
+  const response = await api.post("/deployDevbox", request);
+  return DevboxDeployResponseSchema.parse(response.data);
+}
+
+// DevBox Query Operations
+export async function getDevboxList(
+  context: DevboxApiContext
+): Promise<DevboxListResponse> {
+  const api = createDevboxAxios(context);
+  const response = await api.get("/list");
+  return DevboxListResponseSchema.parse(response.data);
+}
+
+export async function getDevboxByName(
+  devboxName: string,
+  context: DevboxApiContext
+): Promise<any> {
+  const api = createDevboxAxios(context);
+  const response = await api.get("/get", {
+    params: { devboxName },
+  });
+  return response.data;
+}
+
+// Port Management
+export async function createDevboxPort(
+  request: DevboxPortCreateRequest,
+  context: DevboxApiContext
+): Promise<DevboxPortCreateResponse> {
+  const api = createDevboxAxios(context);
+  const response = await api.post("/ports/create", request);
+  return DevboxPortCreateResponseSchema.parse(response.data);
+}
+
+export async function removeDevboxPort(
+  devboxName: string,
+  port: number,
+  context: DevboxApiContext
+): Promise<DevboxPortRemoveResponse> {
+  const api = createDevboxAxios(context);
+  const response = await api.post("/ports/remove", {
+    devboxName,
+    port,
+  });
+  return DevboxPortRemoveResponseSchema.parse(response.data);
+}
+
+// Application Management
+export async function createApp(
+  appForm: AppFormConfig,
+  context: DevboxApiContext
+): Promise<CreateAppResponse> {
+  const api = createAppAxios(context);
+  const response = await api.post("/v1/createApp", { appForm });
+  return CreateAppResponseSchema.parse(response.data);
+}
+
+export async function getApps(
+  context: DevboxApiContext
+): Promise<GetAppsResponse> {
+  const api = createAppAxios(context);
+  const response = await api.get("/v1/getApps");
+  return GetAppsResponseSchema.parse(response.data);
+}
+
+export async function getAppByName(
+  appName: string,
+  context: DevboxApiContext
+): Promise<GetAppByNameResponse> {
+  const api = createAppAxios(context);
+  const response = await api.get("/v1/getAppByAppName", {
+    params: { appName },
+  });
+  return GetAppByNameResponseSchema.parse(response.data);
+}
+
+export async function deleteApp(
+  name: string,
+  context: DevboxApiContext
+): Promise<DeleteAppResponse> {
+  const api = createAppAxios(context);
+  const response = await api.delete("/v1/delAppByName", {
+    params: { name },
+  });
+  return DeleteAppResponseSchema.parse(response.data);
+}
+
+export async function getAppPods(
+  name: string,
+  context: DevboxApiContext
+): Promise<GetAppPodsResponse> {
+  const api = createAppAxios(context);
+  const response = await api.get("/v1/getAppPodsByAppName", {
+    params: { name },
+  });
+  return GetAppPodsResponseSchema.parse(response.data);
+}
+
+// K8s Operations
+export async function getDevbox(
+  context: K8sApiContext,
+  target: CustomResourceTarget
+) {
+  return await getDevboxObject(context, target);
+}
+
+export async function listDevbox(context: K8sApiContext) {
+  const target = CustomResourceTargetSchema.parse(
+    convertResourceTypeToTarget("devbox")
+  );
+  const devboxResourceList = await runParallelAction(
+    listCustomResources(context, target)
+  );
+  return convertDevboxListToSimplified(devboxResourceList.items);
+}
+
+// SSH Operations
+export async function getDevboxSshInfo(
+  context: DevboxApiContext,
+  target: CustomResourceTarget
+) {
+  const sshInfo = await runParallelAction(
+    getSshConnectionInfo(context, target.name!)
+  );
+  return sshInfo.data.token;
+}
+
+export async function listDevboxFolderFiles(
+  sshConfig: DevboxSsh,
+  relativePath: string = ""
+) {
+  return await listFolderFiles(sshConfig, relativePath);
+}
+
+// Metrics Operations
+export async function getDevboxInstantMonitor(
+  context: MetricsApiContext,
+  devboxName: string,
+  time?: string
+) {
+  const currentTime = time || Math.floor(Date.now() / 1000).toString();
+
+  const cpuMetrics = await runParallelAction(
+    getLaunchPadMetrics(
+      {
+        namespace: context.namespace,
+        type: "cpu",
+        launchPadName: devboxName,
+        time: currentTime,
+      },
+      context
+    )
+  );
+
+  const memoryMetrics = await runParallelAction(
+    getLaunchPadMetrics(
+      {
+        namespace: context.namespace,
+        type: "memory",
+        launchPadName: devboxName,
+        time: currentTime,
+      },
+      context
+    )
+  );
+
+  return extractPodMetricsData({
+    cpu: cpuMetrics,
+    memory: memoryMetrics,
+  });
+}
+
+export async function getDevboxRangedMonitor(
+  context: MetricsApiContext,
+  devboxName: string,
+  start?: string,
+  end?: string,
+  step?: string
+) {
+  const cpuMetrics = await runParallelAction(
+    getLaunchPadMetrics(
+      {
+        namespace: context.namespace,
+        type: "cpu",
+        launchPadName: devboxName,
+        start,
+        end,
+        step,
+      },
+      context
+    )
+  );
+
+  const memoryMetrics = await runParallelAction(
+    getLaunchPadMetrics(
+      {
+        namespace: context.namespace,
+        type: "memory",
+        launchPadName: devboxName,
+        start,
+        end,
+        step,
+      },
+      context
+    )
+  );
+
+  return extractPodMetricsData({
+    cpu: cpuMetrics,
+    memory: memoryMetrics,
+  });
+}
