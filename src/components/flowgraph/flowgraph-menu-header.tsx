@@ -4,10 +4,8 @@ import { ArrowLeft, Edit2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { MenuBar, MenuBarItem } from "../project/menu-bar";
-import { getProjectOptions } from "@/lib/brain/resources/project/project-method/project-query";
-import { useUpdateProjectNameMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
-import { useQuery } from "@tanstack/react-query";
-import { createK8sContext } from "@/lib/auth/auth-utils";
+import { projectClient } from "@/components/provider/trpc-provider";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -17,9 +15,14 @@ interface FlowgraphHeaderProps {
 
 export function FlowgraphHeader({ projectName }: FlowgraphHeaderProps) {
   const router = useRouter();
-  const context = createK8sContext();
-  const { data: project } = useQuery(getProjectOptions(context, projectName));
-  const renameMutation = useUpdateProjectNameMutation(context);
+  const projectTrpcClient = projectClient.useTRPC();
+
+  const { data: project } = useQuery(
+    projectTrpcClient.getProject.queryOptions(projectName)
+  );
+  const renameMutation = useMutation(
+    projectTrpcClient.updateProjectName.mutationOptions()
+  );
 
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState("");

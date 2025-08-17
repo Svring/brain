@@ -18,13 +18,9 @@ export const ProjectObjectQuerySchema = z.object({
       })
     )
     .transform((resourceMetadata) => {
-      // Safely get projectDisplayName using lodash get with fallback to undefined
-      const projectDisplayName = get(
-        resourceMetadata,
-        `annotations.${PROJECT_DISPLAY_NAME_ANNOTATION_KEY}`,
-        undefined
-      );
-      // Return projectDisplayName if found, otherwise fall back to resource name
+      // Safely get projectDisplayName using bracket notation to handle dots in key names
+      const projectDisplayName =
+        resourceMetadata?.annotations?.[PROJECT_DISPLAY_NAME_ANNOTATION_KEY];
       return projectDisplayName ?? resourceMetadata["name"];
     }),
   // metadata: z

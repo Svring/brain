@@ -21,7 +21,7 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
   const { emitMessage } = useEmitSystemMessage();
 
   // console.log("env", env);
-  console.log("resource", resource);
+  // console.log("resource", resource);
 
   // Check if this deployment is being deleted
   const isDeletingDeployment =
