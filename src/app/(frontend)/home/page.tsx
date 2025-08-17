@@ -7,10 +7,10 @@ import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { motion } from "framer-motion";
 import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
 import { useLanggraphAgent } from "@/hooks/langgraph/use-langgraph-agent";
-import { useAutoScroll } from "@/hooks/use-auto-scroll";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import useProjectSearch from "@/hooks/brain/use-projects-search";
 import RecentProjects from "@/components/project/recent-projects";
+import { devboxClient } from "@/components/provider/query-provider";
 
 export default function HomePage() {
   const { messages } = useCopilotChatHeadless_c({ id: "chat" });
@@ -24,19 +24,9 @@ export default function HomePage() {
   useCopilotActions();
   useLanggraphAgent();
 
-  // Create a content key that changes when message content actually changes
-  const contentKey = messages
-    .map((m) => `${m.id}-${m.content?.length || 0}-${m.role}`)
-    .join("|");
+  const { data: devboxes } = devboxClient.listDevboxes.useQuery();
 
-  const { scrollRef, disableAutoScroll } = useAutoScroll({
-    offset: 50,
-    smooth: true,
-    content: contentKey,
-  });
-
-  // Show maximum 3 projects
-  const displayProjects = filteredProjects.slice(0, 3);
+  console.log("devboxes", devboxes);
 
   return (
     <div className="min-h-screen w-full flex flex-col">
@@ -68,13 +58,7 @@ export default function HomePage() {
             transition={{ duration: 0.5 }}
             className="flex-1 flex flex-col"
           >
-            <div
-              ref={scrollRef}
-              className="flex-1 overflow-y-auto pt-8 pb-4"
-              onScroll={disableAutoScroll}
-              onWheel={disableAutoScroll}
-              onTouchMove={disableAutoScroll}
-            >
+            <div className="flex-1 overflow-y-auto pt-8 pb-4">
               <div className="max-w-3xl mx-auto w-full">
                 <AiMessages />
               </div>
@@ -105,7 +89,7 @@ export default function HomePage() {
             projects={projects}
             isLoading={isLoading}
             isError={isError}
-            displayProjects={displayProjects}
+            displayProjects={filteredProjects.slice(0, 3)}
           />
         )}
       </div>

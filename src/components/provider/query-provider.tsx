@@ -11,11 +11,16 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { activateContextCookies } from "@/lib/auth/auth-utils";
 
+import { createTRPCReact, httpBatchLink } from "@trpc/react-query";
+import type { DevboxRouter } from "@/lib/trpc/routers/devbox-router";
+import { useState } from "react";
+import { useAuthState } from "@/contexts/auth/auth-context";
+
 function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 20 * 1000, // Reduced from 60s to 5s
+        staleTime: 30 * 1000, // Reduced from 60s to 5s
         refetchOnMount: true,
         refetchOnWindowFocus: true,
         refetchOnReconnect: true,
@@ -25,6 +30,8 @@ function makeQueryClient() {
 }
 
 let browserQueryClient: QueryClient | undefined = undefined;
+
+export const devboxClient = createTRPCReact<DevboxRouter>();
 
 function getQueryClient() {
   if (isServer) {
@@ -42,11 +49,36 @@ export default function QueryProvider({
   children: React.ReactNode;
 }) {
   const queryClient = getQueryClient();
-  activateContextCookies();
+
+  const { auth } = useAuthState();
+  if (!auth) {
+    throw new Error("User not found");
+  }
+
+  const [devboxTrpcClient] = useState(() =>
+    devboxClient.createClient({
+      links: [
+        httpBatchLink({
+          url: "/api/trpc/devbox",
+          headers: () => ({
+            authorization: auth.kubeconfig,
+            baseurl: auth.regionUrl,
+          }),
+        }),
+      ],
+    })
+  );
+
+  // activateContextCookies();
 
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      <devboxClient.Provider
+        client={devboxTrpcClient}
+        queryClient={queryClient}
+      >
+        {children}
+      </devboxClient.Provider>
       <ReactQueryDevtools buttonPosition="bottom-left" initialIsOpen={false} />
     </QueryClientProvider>
   );
