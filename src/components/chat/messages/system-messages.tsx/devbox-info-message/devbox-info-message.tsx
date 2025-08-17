@@ -76,7 +76,7 @@ export const DevboxInfoMessageCard: React.FC<DevboxInfoMessageProps> = ({
 
   return (
     <Card className="w-full bg-background-secondary">
-      <DevboxInfoHeader devboxData={devboxData} regionUrl={regionUrl} />
+      <DevboxInfoHeader devboxData={devboxData} />
       
       <CardContent className="space-y-4">
         <DevboxInfoMetrics devboxData={devboxData} monitorData={monitorData} />

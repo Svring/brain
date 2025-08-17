@@ -13,7 +13,7 @@ export const DevboxInfoMetrics: React.FC<DevboxInfoMetricsProps> = ({
   monitorData,
 }) => {
   return (
-    <div className="space-y-4 p-4 border rounded-lg">
+    <div className="space-y-4 p-4 border border-dashed rounded-lg">
       {/* CPU Group */}
       <div className="grid grid-cols-5 gap-4 items-center">
         {/* CPU Info */}
@@ -34,7 +34,7 @@ export const DevboxInfoMetrics: React.FC<DevboxInfoMetricsProps> = ({
                 const firstPod = podNames[0];
                 const cpuData = monitorData[firstPod]?.cpu || [];
                 return (
-                  <div className="h-40">
+                  <div className="h-32">
                     <NodeMonitor
                       data={cpuData}
                       label="CPU"
@@ -45,7 +45,7 @@ export const DevboxInfoMetrics: React.FC<DevboxInfoMetricsProps> = ({
                 );
               }
               return (
-                <div className="flex items-center justify-center h-40 text-xs text-muted-foreground">
+                <div className="flex items-center justify-center h-32 text-xs text-muted-foreground">
                   No CPU data
                 </div>
               );
@@ -78,7 +78,7 @@ export const DevboxInfoMetrics: React.FC<DevboxInfoMetricsProps> = ({
                 const firstPod = podNames[0];
                 const memoryData = monitorData[firstPod]?.memory || [];
                 return (
-                  <div className="h-40">
+                  <div className="h-32">
                     <NodeMonitor
                       data={memoryData}
                       label="Memory"
@@ -89,13 +89,13 @@ export const DevboxInfoMetrics: React.FC<DevboxInfoMetricsProps> = ({
                 );
               }
               return (
-                <div className="flex items-center justify-center h-40 text-xs text-muted-foreground">
+                <div className="flex items-center justify-center h-32 text-xs text-muted-foreground">
                   No Memory data
                 </div>
               );
             })()
           ) : (
-            <div className="flex items-center justify-center h-40 text-xs text-muted-foreground">
+            <div className="flex items-center justify-center h-32 text-xs text-muted-foreground">
               Loading...
             </div>
           )}

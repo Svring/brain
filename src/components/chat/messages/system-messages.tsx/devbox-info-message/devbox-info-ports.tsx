@@ -37,7 +37,7 @@ export const DevboxInfoPorts: React.FC<DevboxInfoPortsProps> = ({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 border border-dashed rounded-lg p-4">
       <h4 className="font-medium">Ports ({devboxData.ports.length})</h4>
       <div className="w-full overflow-hidden">
         <Table>

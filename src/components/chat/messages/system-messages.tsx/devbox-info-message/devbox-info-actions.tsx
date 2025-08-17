@@ -14,7 +14,7 @@ export const DevboxInfoActions: React.FC<DevboxInfoActionsProps> = ({
   const { emitMessage } = useEmitSystemMessage();
 
   const handleReleasesClick = () => {
-    emitMessage(`Fetching releases for your devbox "${devboxData.name}"...`, {
+    emitMessage("", {
       type: "info.devboxRelease",
       payload: {
         devboxName: devboxData.name,
