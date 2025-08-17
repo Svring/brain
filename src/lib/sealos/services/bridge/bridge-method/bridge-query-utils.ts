@@ -30,6 +30,29 @@ export function parseFieldDescription(description: string): ObjectQuery {
 }
 
 /**
+ * Try to resolve a name pattern to an exact name. If the pattern becomes a plain
+ * string (no regex meta) after replacing {{instanceName}}, return it. Otherwise null.
+ */
+function deriveExactNameFromPattern(
+  rawNamePattern: string | undefined,
+  instanceName: string
+): string | null {
+  if (!rawNamePattern) return null;
+  const replaced = rawNamePattern.replace(
+    /\{\{instanceName\}\}/g,
+    instanceName
+  );
+
+  // Support optional anchors ^...$
+  const anchored = replaced.match(/^\^(.*)\$$/);
+  const candidate = anchored ? anchored[1] : replaced;
+
+  // Contains regex meta? If so, not exact
+  if (/[.*+?^${}()|\[\]\\]/.test(candidate)) return null;
+  return candidate;
+}
+
+/**
  * Extracts data from any object based on the specified path
  * @param data - The object to extract data from
  * @param path - The path to extract data from (array of strings)
@@ -164,6 +187,18 @@ async function getResourceByFieldValue(
 
   const baseTarget = convertResourceTypeToTarget(fieldValue.resourceType);
 
+  // Optimization: if name pattern resolves to an exact name, fetch directly
+  if (fieldValue.name) {
+    const exactName = deriveExactNameFromPattern(fieldValue.name, instanceName);
+    if (exactName) {
+      try {
+        return await getResource(context, { ...baseTarget, name: exactName });
+      } catch (error) {
+        // Proceed to other strategies if direct fetch fails
+      }
+    }
+  }
+
   if (fieldValue.label) {
     // Construct the complete label selector by combining label key with instance name
     const labelSelector = `${fieldValue.label}=${instanceName}`;
@@ -178,16 +213,24 @@ async function getResourceByFieldValue(
     const flattenedResources = flattenResourcesResult(labelSearchResult);
 
     const filteredResources = fieldValue.name
-      ? flattenedResources.filter((resource) => {
-          if (!fieldValue.name) return false;
-          // Replace {{instanceName}} placeholder with actual instance name
-          const namePattern = fieldValue.name.replace(
+      ? (() => {
+          const exactName = deriveExactNameFromPattern(
+            fieldValue.name!,
+            instanceName
+          );
+          if (exactName) {
+            return flattenedResources.filter(
+              (resource) => resource.metadata.name === exactName
+            );
+          }
+          const namePattern = fieldValue.name!.replace(
             /\{\{instanceName\}\}/g,
             instanceName
           );
-          // Use regex matching for the pattern
-          return new RegExp(namePattern).test(resource.metadata.name || "");
-        })
+          return flattenedResources.filter((resource) =>
+            new RegExp(namePattern).test(resource.metadata.name || "")
+          );
+        })()
       : flattenedResources;
 
     // If no path is specified, return the list of resources
@@ -216,6 +259,15 @@ async function getResourceByFieldValue(
 
   // If no label is present but a name pattern is specified, list all resources and filter by name regex
   if (fieldValue.name) {
+    const exactName = deriveExactNameFromPattern(fieldValue.name, instanceName);
+    if (exactName) {
+      try {
+        return await getResource(context, { ...baseTarget, name: exactName });
+      } catch (error) {
+        // Fall back to list
+      }
+    }
+
     const allResourcesResult = await listAllResources(
       context,
       undefined, // No label selector - list all resources
@@ -225,15 +277,13 @@ async function getResourceByFieldValue(
 
     const flattenedResources = flattenResourcesResult(allResourcesResult);
 
-    const filteredResources = flattenedResources.filter((resource) => {
-      // Replace {{instanceName}} placeholder with actual instance name
-      const namePattern = fieldValue.name!.replace(
-        /\{\{instanceName\}\}/g,
-        instanceName
-      );
-      // Use regex matching for the pattern
-      return new RegExp(namePattern).test(resource.metadata.name || "");
-    });
+    const namePattern = fieldValue.name.replace(
+      /\{\{instanceName\}\}/g,
+      instanceName
+    );
+    const filteredResources = flattenedResources.filter((resource) =>
+      new RegExp(namePattern).test(resource.metadata.name || "")
+    );
 
     // If no path is specified, return the list of resources
     if (
@@ -286,11 +336,16 @@ function createResourceLocatorKey(
   }
 
   if (fieldValue.name) {
-    const namePattern = fieldValue.name.replace(
-      /\{\{instanceName\}\}/g,
-      instanceName
-    );
-    parts.push(`name:${namePattern}`);
+    const exactName = deriveExactNameFromPattern(fieldValue.name, instanceName);
+    if (exactName) {
+      parts.push(`exactName:${exactName}`);
+    } else {
+      const namePattern = fieldValue.name.replace(
+        /\{\{instanceName\}\}/g,
+        instanceName
+      );
+      parts.push(`name:${namePattern}`);
+    }
   } else if (!fieldValue.label) {
     // Fall back to exact name match
     parts.push(`exact:${instanceName}`);

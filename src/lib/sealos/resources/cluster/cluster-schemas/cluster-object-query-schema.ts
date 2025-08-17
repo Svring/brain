@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { transformComponentSpecsToResources } from "../cluster-utils";
+import { formatIsoDateToReadable } from "@/lib/date/date-utils";
 
 export const ClusterObjectQuerySchema = z.object({
   name: z.string().describe(
@@ -41,12 +42,24 @@ export const ClusterObjectQuerySchema = z.object({
       })
     )
     .transform((data) => transformComponentSpecsToResources(data)),
-  createdAt: z.string().describe(
-    JSON.stringify({
-      resourceType: "cluster",
-      path: ["metadata.creationTimestamp"],
-    })
-  ),
+  operationalStatus: z
+    .any()
+    .describe(
+      JSON.stringify({
+        resourceType: "cluster",
+        path: [""],
+      })
+    )
+    .transform((resource) => {
+      const metadata = resource.metadata;
+
+      // Get createdAt from metadata and format it
+      const createdAt = formatIsoDateToReadable(metadata.creationTimestamp);
+
+      return {
+        createdAt,
+      };
+    }),
   uptime: z.any().optional(),
   components: z
     .any()

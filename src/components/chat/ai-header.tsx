@@ -29,10 +29,10 @@ export function AiChatHeader({
 
   return (
     <SheetHeader className={className}>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center gap-4">
         <div>
           <SheetTitle>{title}</SheetTitle>
-          <SheetDescription>{description}</SheetDescription>
+          {/* <SheetDescription>{description}</SheetDescription> */}
         </div>
         <Button
           onClick={handleNewChat}

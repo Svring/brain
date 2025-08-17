@@ -52,6 +52,7 @@ export const ClusterObjectSchema = z.object({
     "milvus",
   ]),
   version: z.string(),
+  operationalStatus: z.any().optional(),
   status: z.string().nullable(),
   resource: ClusterResourceSchema,
   createdAt: z.string(),

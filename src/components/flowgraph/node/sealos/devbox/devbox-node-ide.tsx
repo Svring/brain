@@ -58,19 +58,19 @@ export default function DevboxNodeIde({
             console.error("Failed to get SSH info:", error);
           }
         }}
-        className="p-1 hover:bg-muted transition-colors flex items-center"
+        className="p-1.5 hover:bg-muted transition-colors flex items-center"
       >
         <Image
           src={`https://devbox.${context.regionUrl}/images/ide/${selectedIde}.svg`}
           alt={`${selectedIde} icon`}
           width={16}
           height={16}
-          className="h-5 w-6"
+          className="h-5.5 w-6.5"
         />
       </button>
 
       {/* Separator */}
-      <div className="w-px h-4 bg-border" />
+      <div className="w-px h-4.5 bg-border" />
 
       {/* Dropdown Arrow */}
       <DropdownMenu>
@@ -79,7 +79,7 @@ export default function DevboxNodeIde({
             onClick={(e) => {
               e.stopPropagation();
             }}
-            className="p-1 hover:bg-muted transition-colors flex items-center"
+            className="p-1.5 hover:bg-muted transition-colors flex items-center"
           >
             <ChevronDown className="h-5 w-3" />
           </button>

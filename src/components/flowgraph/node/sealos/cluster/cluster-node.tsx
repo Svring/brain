@@ -20,31 +20,36 @@ import { useChatActions } from "@/contexts/chat/chat-context";
 import { randomId } from "@copilotkit/shared";
 import { createClusterContext, createK8sContext } from "@/lib/auth/auth-utils";
 import { useIsMutating } from "@tanstack/react-query";
-import { getClusterBackupListOptions } from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
+import { getClusterBackupListOptions, getClusterOptions } from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
 import { useQuery } from "@tanstack/react-query";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 export default function ClusterNode({ data }: { data: ClusterObject }) {
   const [publicAccess, setPublicAccess] = useState(false);
   const { sendMessage, setMessages, messages } = useCopilotChatHeadless_c();
   const { openSidebarChat } = useChatActions();
 
-  const { name, type, status, pods, backup, connection } = data;
-
   // Create contexts for API calls
   const k8sContext = createK8sContext();
   const clusterContext = createClusterContext();
 
+  // Create target for the cluster
+  const target = CustomResourceTargetSchema.parse(
+    convertResourceTypeToTarget("cluster", data.name)
+  );
+
+  // Fetch real-time cluster data
+  const { data: clusterData = data } = useQuery(
+    getClusterOptions(k8sContext, target)
+  );
+
   // Fetch cluster backup list
   const { data: backupList = [] } = useQuery(
-    getClusterBackupListOptions(clusterContext, {
-      type: "custom",
-      group: "cluster.sealos.io",
-      version: "v1",
-      resourceType: "cluster",
-      plural: "clusters",
-      name: name,
-    })
+    getClusterBackupListOptions(clusterContext, target)
   );
+
+  const { name, type, status, pods, backup, connection } = clusterData;
 
   const isDeletingCluster =
     status === "Deleting" ||
@@ -73,7 +78,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
         role: "system",
         content: JSON.stringify({
           type: "info.clusterInfo",
-          payload: data,
+          payload: target,
         }),
       },
     ]);
@@ -83,7 +88,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
 
   const mainCard = (
     <BaseNode
-      nodeData={data}
+      nodeData={clusterData}
       className={isDeletingCluster ? "border-theme-red" : ""}
     >
       <div
@@ -94,7 +99,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
         <div className="flex items-center justify-between">
           <ClusterNodeTitle name={name} type={type} />
           <div className="flex-shrink-0">
-            <ClusterNodeMenu object={data} />
+            <ClusterNodeMenu object={clusterData} />
           </div>
         </div>
 
