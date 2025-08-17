@@ -11,7 +11,7 @@ export async function createProjectContext(opts: {
   return {
     kubeconfig: decodeURIComponent(authorization as string),
     regionUrl: baseUrl as string,
-    namespace: (namespace as string) || "default",
+    namespace: namespace as string,
   };
 }
 

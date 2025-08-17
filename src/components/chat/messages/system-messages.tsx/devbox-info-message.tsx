@@ -15,7 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createMetricsContext } from "@/lib/auth/auth-utils";
 import NodeMonitor from "@/components/flowgraph/node/components/node-monitor";
 import DevboxNodeIde from "@/components/flowgraph/node/sealos/devbox/devbox-node-ide";
-import { createDevboxContext } from "@/lib/auth/auth-utils";
+import { devboxClient } from "@/components/provider/trpc-provider";
 
 import {
   Table,
@@ -36,26 +36,27 @@ export const DevboxInfoMessageCard: React.FC<DevboxInfoMessageProps> = ({
 }) => {
   const { emitMessage } = useEmitSystemMessage();
   const context = createK8sContext();
-  const devboxContext = createDevboxContext();
   const metricsContext = createMetricsContext();
   const [copyStates, setCopyStates] = useState<{ [key: string]: boolean }>({});
-  
-  console.log("context", context);
-  console.log("devboxContext", devboxContext);
+
+  const devboxTrpcClient = devboxClient.useTRPC();
 
   // Fetch devbox data using the target
   const {
     data: devboxData,
     isLoading,
     error,
-  } = useQuery(getDevboxOptions(context, payload));
+  } = useQuery(
+    devboxTrpcClient.getDevbox.queryOptions({
+      context,
+      target: payload,
+    })
+  );
 
   // Fetch devbox monitor data
   const { data: monitorData } = useQuery(
     getDevboxRangedMonitorOptions(metricsContext, devboxData?.name || "")
   );
-
-  console.log("monitorData", monitorData);
 
   // Get region URL from the K8s context
   const regionUrl = context.regionUrl;
@@ -139,11 +140,7 @@ export const DevboxInfoMessageCard: React.FC<DevboxInfoMessageProps> = ({
             </div>
           </div>
           <Badge>{devboxData.status}</Badge>
-          <DevboxNodeIde
-            context={context}
-            devboxContext={devboxContext}
-            object={devboxData}
-          />
+          <DevboxNodeIde object={devboxData} />
         </div>
       </CardHeader>
 
@@ -160,7 +157,7 @@ export const DevboxInfoMessageCard: React.FC<DevboxInfoMessageProps> = ({
                 {devboxData.resources.cpu}m
               </div>
             </div>
-            
+
             {/* CPU Chart */}
             <div className="col-span-4">
               {monitorData && Object.keys(monitorData).length > 0 ? (
@@ -204,7 +201,7 @@ export const DevboxInfoMessageCard: React.FC<DevboxInfoMessageProps> = ({
                 {devboxData.resources.memory}MB
               </div>
             </div>
-            
+
             {/* Memory Chart */}
             <div className="col-span-4">
               {monitorData && Object.keys(monitorData).length > 0 ? (

@@ -159,15 +159,22 @@ export const devboxRouter = t.router({
     }),
 
   // K8s Operations
-  getDevboxK8s: t.procedure
+  getDevbox: t.procedure
     .input(
       z.object({
         context: K8sApiContextSchema,
         target: CustomResourceTargetSchema,
       })
     )
-    .query(async ({ input }) => {
-      return await getDevbox(input.context, input.target);
+    .query(async ({ input, ctx }) => {
+      return await getDevbox(
+        {
+          kubeconfig: ctx.kubeconfig,
+          regionUrl: ctx.baseUrl,
+          namespace: ctx.namespace,
+        },
+        input.target
+      );
     }),
 
   listDevboxK8s: t.procedure

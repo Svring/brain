@@ -1,11 +1,15 @@
 // trpc/contexts/devboxContext.ts
 export async function createDevboxContext(opts: { req: Request }) {
-  const authorization = opts.req.headers.get("authorization");
-  const baseUrl = opts.req.headers.get("baseurl");
+  const regionUrl = opts.req.headers.get("regionUrl");
+  const namespace = opts.req.headers.get("namespace");
+  const kubeconfig = opts.req.headers.get("kubeconfig");
 
   return {
-    authorization: authorization as string,
-    baseUrl: baseUrl as string,
+    authorization: kubeconfig as string,
+    baseUrl: regionUrl as string,
+    kubeconfig: decodeURIComponent(kubeconfig as string),
+    namespace: namespace as string,
+    regionUrl: regionUrl as string,
   };
 }
 

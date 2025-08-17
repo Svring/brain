@@ -15,21 +15,18 @@ import { getDevboxSshInfo } from "@/lib/sealos/resources/devbox/devbox-method/de
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { createK8sContext, createDevboxContext } from "@/lib/auth/auth-utils";
 
 interface DevboxNodeIdeProps {
-  context: any;
-  devboxContext: any;
   object: DevboxObject;
-  className?: string;
 }
 
 export default function DevboxNodeIde({
-  context,
-  devboxContext,
   object,
-  className = "",
 }: DevboxNodeIdeProps) {
   const [selectedIde, setSelectedIde] = useState<string>("vscode");
+  const context = createK8sContext();
+  const devboxContext = createDevboxContext();
 
   const target = CustomResourceTargetSchema.parse(
     convertResourceTypeToTarget("devbox", object.name)
@@ -37,7 +34,7 @@ export default function DevboxNodeIde({
 
   return (
     <div
-      className={`flex items-center border border-border rounded-lg overflow-hidden ${className}`}
+      className={`flex items-center border border-border rounded-lg overflow-hidden`}
     >
       {/* IDE Icon - Click to open IDE */}
       <button

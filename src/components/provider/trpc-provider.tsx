@@ -33,8 +33,9 @@ export default function TRPCProvider({
         httpBatchLink({
           url: "/api/trpc/devbox",
           headers: () => ({
-            authorization: auth.kubeconfig,
-            baseurl: auth.regionUrl,
+            namespace: auth.namespace,
+            kubeconfig: auth.kubeconfig,
+            regionUrl: auth.regionUrl,
           }),
         }),
       ],
@@ -47,9 +48,9 @@ export default function TRPCProvider({
         httpBatchLink({
           url: "/api/trpc/project",
           headers: () => ({
-            authorization: auth.kubeconfig,
-            baseurl: auth.regionUrl,
             namespace: auth.namespace,
+            kubeconfig: auth.kubeconfig,
+            regionUrl: auth.regionUrl,
           }),
         }),
       ],
@@ -62,9 +63,9 @@ export default function TRPCProvider({
         httpBatchLink({
           url: "/api/trpc/k8s",
           headers: () => ({
-            authorization: auth.kubeconfig,
-            baseurl: auth.regionUrl,
             namespace: auth.namespace,
+            kubeconfig: auth.kubeconfig,
+            regionUrl: auth.regionUrl,
           }),
         }),
       ],
