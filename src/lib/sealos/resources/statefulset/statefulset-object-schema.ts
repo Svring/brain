@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { EnvVar } from "@/lib/k8s/k8s-method/k8s-utils";
+import { formatIsoDateToReadable } from "@/lib/date/date-utils";
 
 export const StatefulsetObjectSchema = z.object({
   name: z.string().describe(
@@ -65,6 +66,24 @@ export const StatefulsetObjectSchema = z.object({
         unavailableReplicas: status.unavailableReplicas,
         availableReplicas: status.availableReplicas,
         paused: paused ? true : false,
+      };
+    }),
+  operationalStatus: z
+    .any()
+    .describe(
+      JSON.stringify({
+        resourceType: "statefulset",
+        path: [""],
+      })
+    )
+    .transform((resource) => {
+      const metadata = resource.metadata;
+
+      // Get createdAt from metadata and format it
+      const createdAt = formatIsoDateToReadable(metadata.creationTimestamp);
+
+      return {
+        createdAt,
       };
     }),
   env: z

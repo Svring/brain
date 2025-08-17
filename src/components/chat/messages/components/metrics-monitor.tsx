@@ -1,17 +1,33 @@
 import React from "react";
 import { Cpu, MemoryStick } from "lucide-react";
 import NodeMonitor from "@/components/flowgraph/node/components/node-monitor";
-import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 
-interface DevboxInfoMetricsProps {
-  devboxData: DevboxObject;
+interface MetricsMonitorProps {
+  resource: any;
   monitorData: any;
+  isMonitorLoading?: boolean;
+  showReplicas?: boolean;
 }
 
-export const DevboxInfoMetrics: React.FC<DevboxInfoMetricsProps> = ({
-  devboxData,
+export const MetricsMonitor: React.FC<MetricsMonitorProps> = ({
+  resource,
   monitorData,
+  isMonitorLoading = false,
+  showReplicas = false,
 }) => {
+  if (!resource) {
+    return null;
+  }
+
+  // Helper function to normalize monitoring data for NodeMonitor
+  // NodeMonitor multiplies values by 100, so we need to divide by 100 first
+  const normalizeMonitorData = (data: Array<[string, string]>): Array<[string, string]> => {
+    return data.map(([timestamp, value]) => [
+      timestamp,
+      (parseFloat(value) / 100).toString()
+    ]);
+  };
+
   return (
     <div className="space-y-4 p-4 border border-dashed rounded-lg">
       {/* CPU Group */}
@@ -21,7 +37,7 @@ export const DevboxInfoMetrics: React.FC<DevboxInfoMetricsProps> = ({
           <Cpu className="w-4 h-4" />
           <span className="text-xs text-muted-foreground">CPU</span>
           <div className="text-sm font-medium">
-            {devboxData.resources.cpu}m
+            {resource.cpu}m
           </div>
         </div>
 
@@ -33,10 +49,11 @@ export const DevboxInfoMetrics: React.FC<DevboxInfoMetricsProps> = ({
               if (podNames.length > 0) {
                 const firstPod = podNames[0];
                 const cpuData = monitorData[firstPod]?.cpu || [];
+                const normalizedCpuData = normalizeMonitorData(cpuData);
                 return (
                   <div className="h-32">
                     <NodeMonitor
-                      data={cpuData}
+                      data={normalizedCpuData}
                       label="CPU"
                       color="hsl(var(--chart-1))"
                       showTimespan={true}
@@ -65,7 +82,7 @@ export const DevboxInfoMetrics: React.FC<DevboxInfoMetricsProps> = ({
           <MemoryStick className="w-4 h-4" />
           <span className="text-xs text-muted-foreground">Memory</span>
           <div className="text-sm font-medium">
-            {devboxData.resources.memory}MB
+            {resource.memory}MB
           </div>
         </div>
 
@@ -77,10 +94,11 @@ export const DevboxInfoMetrics: React.FC<DevboxInfoMetricsProps> = ({
               if (podNames.length > 0) {
                 const firstPod = podNames[0];
                 const memoryData = monitorData[firstPod]?.memory || [];
+                const normalizedMemoryData = normalizeMonitorData(memoryData);
                 return (
                   <div className="h-32">
                     <NodeMonitor
-                      data={memoryData}
+                      data={normalizedMemoryData}
                       label="Memory"
                       color="hsl(var(--chart-2))"
                       showTimespan={true}

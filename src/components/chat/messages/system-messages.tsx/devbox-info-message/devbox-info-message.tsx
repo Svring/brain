@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createMetricsContext } from "@/lib/auth/auth-utils";
 import { devboxClient } from "@/components/provider/trpc-provider";
 import { DevboxInfoHeader } from "./devbox-info-header";
-import { DevboxInfoMetrics } from "./devbox-info-metrics";
+import { MetricsMonitor } from "@/components/chat/messages/components/metrics-monitor";
 import { DevboxInfoPorts } from "./devbox-info-ports";
 import { DevboxInfoActions } from "./devbox-info-actions";
 
@@ -79,7 +79,7 @@ export const DevboxInfoMessageCard: React.FC<DevboxInfoMessageProps> = ({
       <DevboxInfoHeader devboxData={devboxData} />
       
       <CardContent className="space-y-4">
-        <DevboxInfoMetrics devboxData={devboxData} monitorData={monitorData} />
+        <MetricsMonitor resource={devboxData.resources} monitorData={monitorData} />
         <DevboxInfoPorts devboxData={devboxData} />
         <DevboxInfoActions devboxData={devboxData} />
       </CardContent>
