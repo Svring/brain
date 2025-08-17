@@ -2,12 +2,14 @@
 
 import { createTRPCContext } from "@trpc/tanstack-react-query";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
-import type { DevboxRouter } from "@/lib/trpc/routers/devbox-router";
+import type { DevboxRouter } from "@/lib/trpc/sealos/devbox/devbox-router";
+import type { ProjectRouter } from "@/lib/trpc/brain/project/project-router";
 import { useState } from "react";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { QueryClient } from "@tanstack/react-query";
 
 export const devboxClient = createTRPCContext<DevboxRouter>();
+export const projectClient = createTRPCContext<ProjectRouter>();
 
 interface TRPCProviderProps {
   children: React.ReactNode;
@@ -37,12 +39,32 @@ export default function TRPCProvider({
     })
   );
 
+  const [projectTrpcClient] = useState(() =>
+    createTRPCClient<ProjectRouter>({
+      links: [
+        httpBatchLink({
+          url: "/api/trpc/project",
+          headers: () => ({
+            authorization: auth.kubeconfig,
+            baseurl: auth.regionUrl,
+            namespace: auth.namespace,
+          }),
+        }),
+      ],
+    })
+  );
+
   return (
     <devboxClient.TRPCProvider
       trpcClient={devboxTrpcClient}
       queryClient={queryClient}
     >
-      {children}
+      <projectClient.TRPCProvider
+        trpcClient={projectTrpcClient}
+        queryClient={queryClient}
+      >
+        {children}
+      </projectClient.TRPCProvider>
     </devboxClient.TRPCProvider>
   );
 }

@@ -10,6 +10,8 @@ import { useLanggraphAgent } from "@/hooks/langgraph/use-langgraph-agent";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import useProjectSearch from "@/hooks/brain/use-projects-search";
 import RecentProjects from "@/components/project/recent-projects";
+import { devboxClient, projectClient } from "@/components/provider/trpc-provider";
+import { useQuery } from "@tanstack/react-query";
 
 export default function HomePage() {
   const { messages } = useCopilotChatHeadless_c({ id: "chat" });
@@ -22,6 +24,20 @@ export default function HomePage() {
 
   useCopilotActions();
   useLanggraphAgent();
+
+  const devboxTrpcClient = devboxClient.useTRPC();
+  const projectTrpcClient = projectClient.useTRPC();
+  
+  const { data: devboxes } = useQuery(
+    devboxTrpcClient.listDevboxes.queryOptions()
+  );
+
+  const { data: projectsFromTrpc } = useQuery(
+    projectTrpcClient.listProjects.queryOptions()
+  );
+
+  console.log("devboxes", devboxes);
+  console.log("projects from trpc", projectsFromTrpc);
 
   return (
     <div className="min-h-screen w-full flex flex-col">

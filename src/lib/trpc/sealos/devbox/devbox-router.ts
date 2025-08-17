@@ -1,6 +1,6 @@
 import { initTRPC } from "@trpc/server";
 import { z } from "zod";
-import type { DevboxContext } from "../contexts/devbox-context";
+import type { DevboxContext } from "./devbox-context";
 
 import {
   DevboxListResponseSchema,

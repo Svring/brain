@@ -1,7 +1,7 @@
 // app/api/trpc/devbox/[trpc]/route.ts
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { devboxRouter } from "@/lib/trpc/routers/devbox-router";
-import { createDevboxContext } from "@/lib/trpc/contexts/devbox-context";
+import { devboxRouter } from "@/lib/trpc/sealos/devbox/devbox-router";
+import { createDevboxContext } from "@/lib/trpc/sealos/devbox/devbox-context";
 
 const handler = (req: Request) =>
   fetchRequestHandler({
