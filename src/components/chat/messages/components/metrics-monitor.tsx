@@ -1,5 +1,5 @@
 import React from "react";
-import { Cpu, MemoryStick } from "lucide-react";
+import { Cpu, MemoryStick, HardDrive } from "lucide-react";
 import NodeMonitor from "@/components/flowgraph/node/components/node-monitor";
 
 interface MetricsMonitorProps {
@@ -119,6 +119,47 @@ export const MetricsMonitor: React.FC<MetricsMonitorProps> = ({
           )}
         </div>
       </div>
+
+      {/* Storage Group */}
+      {monitorData && Object.keys(monitorData).length > 0 && (() => {
+        const podNames = Object.keys(monitorData);
+        if (podNames.length > 0) {
+          const firstPod = podNames[0];
+          const storageData = monitorData[firstPod]?.storage || [];
+          if (storageData.length > 0) {
+            return (
+              <div className="grid grid-cols-5 gap-4 items-center">
+                {/* Storage Info */}
+                <div className="col-span-1 flex flex-col items-center gap-1 text-center">
+                  <HardDrive className="w-4 h-4" />
+                  <span className="text-xs text-muted-foreground">Storage</span>
+                  <div className="text-sm font-medium">
+                    {resource.storage || "N/A"}
+                  </div>
+                </div>
+
+                {/* Storage Chart */}
+                <div className="col-span-4">
+                  {(() => {
+                    const normalizedStorageData = normalizeMonitorData(storageData);
+                    return (
+                      <div className="h-32">
+                        <NodeMonitor
+                          data={normalizedStorageData}
+                          label="Storage"
+                          color="hsl(var(--chart-3))"
+                          showTimespan={true}
+                        />
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            );
+          }
+        }
+        return null;
+      })()}
     </div>
   );
 };

@@ -4,20 +4,14 @@ import { Badge } from "@/components/ui/badge";
 import { Rocket } from "lucide-react";
 
 interface LaunchpadInfoHeaderProps {
-  name: string;
-  kind: string;
-  status: any;
-  resource: any;
-  image: string;
+  launchpadData: any;
 }
 
 export const LaunchpadInfoHeader: React.FC<LaunchpadInfoHeaderProps> = ({
-  name,
-  kind,
-  status,
-  image,
-  resource,
+  launchpadData,
 }) => {
+  const { name, kind, status, resource, image, operationalStatus } =
+    launchpadData;
   // Helper function to get status string from different status objects
   const getStatusString = (status: any): string => {
     if (typeof status === "string") return status;
@@ -84,17 +78,33 @@ export const LaunchpadInfoHeader: React.FC<LaunchpadInfoHeaderProps> = ({
         <Badge>{statusString}</Badge>
       </div>
 
-      {/* Replicas Info */}
-      {resource && (
-        <div className="pt-4">
-          <div className="flex flex-col">
-            <span className="text-sm text-muted-foreground">Replicas</span>
-            <span className="text-sm font-medium">
-              {resource.replicas || "N/A"}
-            </span>
-          </div>
+      {/* Replicas and Created At Info */}
+      <div className="pt-4 space-y-3">
+        <div className="grid grid-cols-2 gap-6">
+          {resource && (
+            <div className="flex flex-col">
+              <span className="text-sm text-muted-foreground">Replicas</span>
+              <span className="text-sm font-medium">
+                {resource.replicas || "N/A"}
+              </span>
+            </div>
+          )}
+          {operationalStatus && (
+            <div className="flex flex-col">
+              <span className="text-sm text-muted-foreground">Created At</span>
+              <span className="text-sm font-medium truncate">
+                {operationalStatus.createdAt}
+              </span>
+            </div>
+          )}
         </div>
-      )}
+        {image && (
+          <div className="flex flex-col">
+            <span className="text-sm text-muted-foreground">Image</span>
+            <span className="text-sm font-medium truncate">{image}</span>
+          </div>
+        )}
+      </div>
     </CardHeader>
   );
 };

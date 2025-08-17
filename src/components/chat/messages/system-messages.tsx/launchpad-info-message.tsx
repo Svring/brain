@@ -102,11 +102,7 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
   return (
     <Card className="w-full bg-background-secondary">
       <LaunchpadInfoHeader 
-        name={name}
-        kind={kind}
-        status={status}
-        image={image}
-        resource={resourceInfo}
+        launchpadData={launchpadData}
       />
       <CardContent className="space-y-4">
         <MetricsMonitor 

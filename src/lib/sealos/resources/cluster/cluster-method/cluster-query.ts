@@ -32,6 +32,7 @@ import type {
   GetClusterMetricsRequest,
   GetClusterMetricsResponse,
 } from "@/lib/sealos/services/metrics/schemas/cluster-metrics-schema";
+import { extractClusterMetricsData } from "@/lib/sealos/services/metrics/metrics-utils";
 
 export const getCluster = async (
   context: K8sApiContext,
@@ -306,13 +307,17 @@ export const getClusterInstantMonitorOptions = (
       clusterType,
       currentTime,
     ],
-    queryFn: async (): Promise<{
-      cpu: GetClusterMetricsResponse;
-      memory: GetClusterMetricsResponse;
-      disk_used: GetClusterMetricsResponse;
-    }> => {
-      // Query CPU, memory, and disk_used metrics simultaneously
-      const [cpuMetrics, memoryMetrics, diskMetrics] = await Promise.all([
+    queryFn: async (): Promise<
+      Record<
+        string,
+        {
+          cpu: Array<[string, string]>;
+          memory: Array<[string, string]>;
+        }
+      >
+    > => {
+      // Query CPU, memory, and storage metrics simultaneously
+      const [cpuMetrics, memoryMetrics, storageMetrics] = await Promise.all([
         runParallelAction(
           getClusterMetrics(
             {
@@ -351,11 +356,12 @@ export const getClusterInstantMonitorOptions = (
         ),
       ]);
 
-      return {
+      // Process and return the pod metrics data directly
+      return extractClusterMetricsData({
         cpu: cpuMetrics,
         memory: memoryMetrics,
-        disk_used: diskMetrics,
-      };
+        storage: storageMetrics,
+      });
     },
     enabled:
       !!context.baseURL &&
@@ -390,13 +396,17 @@ export const getClusterRangedMonitorOptions = (
       end,
       step,
     ],
-    queryFn: async (): Promise<{
-      cpu: GetClusterMetricsResponse;
-      memory: GetClusterMetricsResponse;
-      disk_used: GetClusterMetricsResponse;
-    }> => {
-      // Query CPU, memory, and disk_used metrics simultaneously with time range
-      const [cpuMetrics, memoryMetrics, diskMetrics] = await Promise.all([
+    queryFn: async (): Promise<
+      Record<
+        string,
+        {
+          cpu: Array<[string, string]>;
+          memory: Array<[string, string]>;
+        }
+      >
+    > => {
+      // Query CPU, memory, and storage metrics simultaneously with time range
+      const [cpuMetrics, memoryMetrics, storageMetrics] = await Promise.all([
         runParallelAction(
           getClusterMetrics(
             {
@@ -431,7 +441,7 @@ export const getClusterRangedMonitorOptions = (
               namespace: context.namespace,
               app: clusterName,
               type: clusterType,
-              query: "disk_used",
+              query: "disk",
               start,
               end,
               step,
@@ -441,11 +451,12 @@ export const getClusterRangedMonitorOptions = (
         ),
       ]);
 
-      return {
+      // Process and return the pod metrics data directly
+      return extractClusterMetricsData({
         cpu: cpuMetrics,
         memory: memoryMetrics,
-        disk_used: diskMetrics,
-      };
+        storage: storageMetrics,
+      });
     },
     enabled:
       !!context.baseURL &&
