@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const DevboxApiContextSchema = z.object({
-  baseURL: z.string().optional(),
+  baseUrl: z.string().optional(),
   authorization: z.string().optional(),
   authorizationBearer: z.string().optional(),
 });

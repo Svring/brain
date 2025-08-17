@@ -167,7 +167,7 @@ export function createDevboxContext() {
     throw new Error("User not found");
   }
   const devboxContext = DevboxApiContextSchema.parse({
-    baseURL: auth.regionUrl,
+    baseUrl: auth.regionUrl,
     authorization: auth.kubeconfig,
     authorizationBearer: auth.appToken,
   });

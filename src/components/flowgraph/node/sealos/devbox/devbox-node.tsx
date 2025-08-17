@@ -6,7 +6,6 @@ import BaseNode from "../../base-node-wrapper";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import { createDevboxContext } from "@/lib/auth/auth-utils";
 import NodeStatusLight from "../../components/node-status-light";
-import DevboxNodeIde from "./devbox-node-ide";
 import DevboxNodeTitle from "./devbox-node-title";
 import DevboxNodeMenu from "./devbox-node-menu";
 import NodeInternalUrl from "../../components/node-internal-url";
@@ -65,16 +64,8 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
             regionUrl={context.regionUrl}
           />
 
-          {/* IDE Selector and Dropdown Menu */}
+          {/* Actions Dropdown Menu */}
           <div className="flex flex-row items-center gap-2 flex-shrink-0">
-            {/* IDE Selector */}
-            <DevboxNodeIde
-              context={context}
-              devboxContext={devboxContext}
-              object={data}
-            />
-
-            {/* Actions Dropdown Menu */}
             <DevboxNodeMenu object={data} />
           </div>
         </div>

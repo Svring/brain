@@ -14,6 +14,8 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { createMetricsContext } from "@/lib/auth/auth-utils";
 import NodeMonitor from "@/components/flowgraph/node/components/node-monitor";
+import DevboxNodeIde from "@/components/flowgraph/node/sealos/devbox/devbox-node-ide";
+import { createDevboxContext } from "@/lib/auth/auth-utils";
 
 import {
   Table,
@@ -34,8 +36,12 @@ export const DevboxInfoMessageCard: React.FC<DevboxInfoMessageProps> = ({
 }) => {
   const { emitMessage } = useEmitSystemMessage();
   const context = createK8sContext();
+  const devboxContext = createDevboxContext();
   const metricsContext = createMetricsContext();
   const [copyStates, setCopyStates] = useState<{ [key: string]: boolean }>({});
+  
+  console.log("context", context);
+  console.log("devboxContext", devboxContext);
 
   // Fetch devbox data using the target
   const {
@@ -133,6 +139,11 @@ export const DevboxInfoMessageCard: React.FC<DevboxInfoMessageProps> = ({
             </div>
           </div>
           <Badge>{devboxData.status}</Badge>
+          <DevboxNodeIde
+            context={context}
+            devboxContext={devboxContext}
+            object={devboxData}
+          />
         </div>
       </CardHeader>
 
