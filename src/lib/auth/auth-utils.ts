@@ -141,7 +141,7 @@ export function createSealosContext() {
     throw new Error("User not found");
   }
   const sealosContext = SealosApiContextSchema.parse({
-    baseURL: auth.regionUrl,
+    baseUrl: auth.regionUrl,
     authorization: auth.kubeconfig,
   });
   return sealosContext;

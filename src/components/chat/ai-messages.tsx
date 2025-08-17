@@ -13,7 +13,7 @@ export function AiMessages() {
   return (
     <>
       {messages.length !== 0 && (
-        <div className="w-full px-4 py-0 pb-4">
+        <div className="w-full px-4 py-0 pb-4 h-full">
           {messages.map((message, index) => {
             const isCurrentMessage = index === messages.length - 1;
 

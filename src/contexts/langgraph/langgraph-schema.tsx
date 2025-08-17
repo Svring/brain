@@ -26,11 +26,6 @@ export type ProjectResources = {
   buckets: ObjectStorageBucket[];
 };
 
-export type ProjectBrief = {
-  briefs: string[];
-  status: "pending" | "active" | "completed";
-};
-
 export type ProjectPlanWithStatus = {
   name: string;
   description: string;
@@ -44,7 +39,6 @@ export type LanggraphAgentState = {
   model: string;
   project_context: ProjectContextState;
   project_plan?: ProjectPlanWithStatus;
-  project_brief?: ProjectBrief;
 };
 
 export type LanggraphEvent =

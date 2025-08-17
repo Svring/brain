@@ -20,30 +20,24 @@ export function useLanggraphAgent() {
         },
         status: "pending",
       },
-      project_brief: {
-        briefs: [""],
-        status: "pending",
-      },
     },
   });
 
   useCoAgentStateRender<LanggraphAgentState>({
     name: "sealos_brain",
     render: ({ status, state }) => {
-      const hasAnyData = state.project_brief || state.project_plan;
-
-      if (!hasAnyData || state.project_brief?.status === "pending") {
+      if (!state.project_plan || state.project_plan.status === "pending") {
         return null;
       }
 
+      console.log("state.project_plan", state.project_plan);
+
       return (
-        <div className="h-96 m-4">
+        <div className="h-96">
           <ProjectPlanCard
             title="AI Project Planning"
-            analyzingStatus={state.project_brief?.status}
-            proposingStatus={state.project_plan?.status}
-            analyzingData={state.project_brief}
-            proposingData={state.project_plan}
+            projectData={state.project_plan}
+            projectStatus={state.project_plan.status}
           />
         </div>
       );

@@ -1,98 +1,33 @@
 "use client";
 
 import * as React from "react";
-import {
-  CopilotStepper,
-  StepperStage,
-} from "@/components/chat/copilot-stepper";
-import { ProjectBrief } from "@/contexts/langgraph/langgraph-schema";
 import { ProjectPlanWithStatus } from "@/contexts/langgraph/langgraph-schema";
-import { AnalyzingStageDetail } from "./analyzing-stage-detail";
 import { ProposingStageDetail } from "./proposing-stage-detail";
 
-// Type definitions based on the provided data structure
-interface DevBox {
-  runtime: string;
-  description: string;
-}
-
-interface Database {
-  type: string;
-  description: string;
-}
-
-interface ObjectStorageBucket {
-  policy: string;
-  description: string;
-}
-
-interface ProjectResources {
-  devboxes: DevBox[];
-  databases: Database[];
-  buckets: ObjectStorageBucket[];
-}
-
-interface ProjectInfo {
-  name?: string;
-  description?: string;
-  resources?: ProjectResources;
-}
-
 export interface ProjectPlanCardProps {
-  analyzingStatus?: "pending" | "active" | "completed";
-  proposingStatus?: "pending" | "active" | "completed";
+  projectStatus?: "pending" | "active" | "completed";
   title?: string;
-  analyzingData?: ProjectBrief; // List of strings for analyzing stage
-  proposingData?: ProjectPlanWithStatus; // ProjectInfo for proposing stage
+  projectData?: ProjectPlanWithStatus;
 }
 
 export function ProjectPlanCard({
-  analyzingStatus = "pending",
-  proposingStatus = "pending",
+  projectStatus = "pending",
   title = "Project Plan",
-  analyzingData = {
-    briefs: [""],
-    status: "pending",
-  },
-  proposingData = {
-    name: "",
-    description: "",
-    resources: {
-      devboxes: [],
-      databases: [],
-      buckets: [],
-    },
-    status: "pending",
-  },
+  projectData,
 }: ProjectPlanCardProps) {
-  const stages: StepperStage[] = [
-    {
-      id: "1",
-      title: "Analyzing",
-      description: "",
-      status: analyzingStatus,
-      details: () => (
-        <AnalyzingStageDetail 
-          analyzingData={analyzingData} 
-          analyzingStatus={analyzingStatus} 
-        />
-      ),
-    },
-    {
-      id: "2",
-      title: "Proposing",
-      description: "",
-      status: proposingStatus,
-      details: () => (
+  return (
+    <div className="h-full flex flex-col border border-dashed rounded-2xl p-4">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold">{title}</h3>
+      </div>
+      {projectData && (
         <ProposingStageDetail 
-          proposingData={proposingData} 
-          proposingStatus={proposingStatus} 
+          proposingData={projectData} 
+          proposingStatus={projectStatus} 
         />
-      ),
-    },
-  ];
-
-  return <CopilotStepper title={title} stages={stages} />;
+      )}
+    </div>
+  );
 }
 
 export default ProjectPlanCard;

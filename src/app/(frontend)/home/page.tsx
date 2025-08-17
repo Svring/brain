@@ -24,8 +24,8 @@ export default function HomePage() {
   useLanggraphAgent();
 
   return (
-    <div className="min-h-screen w-full flex flex-col">
-      <div className="flex-1 flex flex-col">
+    <div className="h-screen w-full flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col min-h-0">
         {/* Hero overlays the content area and fades out when messages exist */}
         {!hasMessages && (
           <motion.div
@@ -33,7 +33,7 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className=" flex flex-col"
+            className="flex-shrink-0"
           >
             <Hero
               heroTitle="Sealos Brain"
@@ -51,9 +51,9 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="flex-1 flex flex-col"
+            className="flex-1 flex flex-col min-h-0"
           >
-            <div className="flex-1 overflow-y-auto pt-8 pb-4">
+            <div className="flex-1 overflow-y-auto pt-8">
               <div className="max-w-3xl mx-auto w-full">
                 <AiMessages />
               </div>
@@ -71,7 +71,7 @@ export default function HomePage() {
             duration: hasMessages ? 0.4 : 0.8,
             ease: "easeOut",
           }}
-          className={hasMessages ? "py-8" : "py-0"}
+          className={`flex-shrink-0 ${hasMessages ? "pb-8" : "py-0"}`}
         >
           <div className="container mx-auto px-4">
             <AiChatInput className="max-w-3xl mx-auto" />
@@ -80,12 +80,14 @@ export default function HomePage() {
 
         {/* Projects section - hidden when messages appear */}
         {!hasMessages && (
-          <RecentProjects
-            projects={projects}
-            isLoading={isLoading}
-            isError={isError}
-            displayProjects={filteredProjects.slice(0, 3)}
-          />
+          <div className="flex-shrink-0">
+            <RecentProjects
+              projects={projects}
+              isLoading={isLoading}
+              isError={isError}
+              displayProjects={filteredProjects.slice(0, 3)}
+            />
+          </div>
         )}
       </div>
     </div>

@@ -12,10 +12,10 @@ import { createDevboxContext, createSealosContext, createK8sContext } from "@/li
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useProjectState } from "@/contexts/project/project-context";
 import { toast } from "sonner";
-import DevboxConfig from "./configs/devbox-config";
-import DatabaseConfig from "./configs/database-config";
-import AppLaunchpadConfig from "./configs/app-launchpad-config";
-import ObjectStorageConfig from "./configs/object-storage-config";
+import DevboxConfig from "@/components/project/add-resource/add-new-resource/configs/devbox-config";
+import DatabaseConfig from "@/components/project/add-resource/add-new-resource/configs/database-config";
+import AppLaunchpadConfig from "@/components/project/add-resource/add-new-resource/configs/app-launchpad-config";
+import ObjectStorageConfig from "@/components/project/add-resource/add-new-resource/configs/object-storage-config";
 
 interface ResourceConfigCardProps {
   resourceType: string;
