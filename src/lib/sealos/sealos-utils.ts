@@ -1,5 +1,3 @@
-"use client";
-
 /**
  * Transforms URL format from subdomain.sealos.run to sealossubdomain.site
  * Example: bja.sealos.run -> sealosbja.site
@@ -34,6 +32,8 @@ export function transformRegionUrl(url: string): string {
  * @param imageUrl - The full Docker image URL (e.g., 'ghcr.io/labring-actions/devbox/cpp-gcc-12.2.0:13aacd8')
  * @returns The extracted image name (e.g., 'cpp-gcc-12.2.0')
  */
+import { formatUnixTimeInLocalTimezone } from "@/lib/date/date-utils";
+
 export function truncateImage(imageUrl: string): string {
   // Split by '/' to get the last part which contains the image name and tag
   const parts = imageUrl.split("/");
@@ -43,4 +43,85 @@ export function truncateImage(imageUrl: string): string {
   const imageName = imageWithTag.split(":")[0];
 
   return imageName;
+}
+
+/**
+ * Transforms combined monitor data into a more usable format
+ * @param monitorData - The combined monitor data from API responses
+ * @returns Transformed data with timepoint-value pairs
+ */
+export function transformCombinedMonitorData(monitorData: {
+  cpu: any;
+  memory: any;
+  disk?: any;
+}) {
+  // Handle simple format (devbox/launchpad)
+  const simpleCpuData = monitorData.cpu?.data?.[0];
+  const simpleMemoryData = monitorData.memory?.data?.[0];
+  if (
+    (simpleCpuData?.xData && simpleCpuData?.yData) ||
+    (simpleMemoryData?.xData && simpleMemoryData?.yData)
+  ) {
+    const xSeries = simpleCpuData?.xData ?? simpleMemoryData?.xData ?? [];
+    return xSeries.map((timestamp: number, index: number) => ({
+      timestamp,
+      readableTime: formatUnixTimeInLocalTimezone(
+        timestamp,
+        "yyyy/MM/dd HH:mm"
+      ),
+      cpu: simpleCpuData?.yData?.[index]
+        ? parseFloat(simpleCpuData.yData[index]) || 0
+        : 0,
+      memory: simpleMemoryData?.yData?.[index]
+        ? parseFloat(simpleMemoryData.yData[index]) || 0
+        : 0,
+    }));
+  }
+
+  // Handle complex format (cluster)
+  if (monitorData.cpu?.data?.result) {
+    const cpuResult = monitorData.cpu.data.result;
+    const memoryResult = monitorData.memory?.data?.result;
+    const diskResult = monitorData.disk?.data?.result;
+
+    if (cpuResult?.xData && cpuResult?.yData) {
+      const result: Record<
+        string,
+        Array<{
+          timestamp: number;
+          readableTime: string;
+          cpu: number;
+          memory: number;
+          disk?: number;
+        }>
+      > = {};
+
+      cpuResult.yData.forEach((podData: { name: string; data: number[] }) => {
+        const podName = podData.name;
+        const memoryPodData = memoryResult?.yData?.find(
+          (m: any) => m.name === podName
+        );
+        const diskPodData = diskResult?.yData?.find(
+          (d: any) => d.name === podName
+        );
+
+        result[podName] = cpuResult.xData.map(
+          (timestamp: number, index: number) => ({
+            timestamp,
+            readableTime: formatUnixTimeInLocalTimezone(
+              timestamp,
+              "yyyy/MM/dd HH:mm"
+            ),
+            cpu: podData.data[index] || 0,
+            memory: memoryPodData?.data?.[index] || 0,
+            disk: diskPodData?.data?.[index] || 0,
+          })
+        );
+      });
+
+      return result;
+    }
+  }
+
+  return null;
 }

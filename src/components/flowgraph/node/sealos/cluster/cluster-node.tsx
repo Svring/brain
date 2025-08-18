@@ -74,6 +74,16 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
   //   })
   // );
 
+  // const { data: monitorDataNew } = useQuery({
+  //   ...clusterTrpcClient.getClusterCombinedMonitorData.queryOptions({
+  //     context: sealosContext,
+  //     dbName: name,
+  //     dbType: type,
+  //   }),
+  // });
+
+  // console.log("monitorDataNew", monitorDataNew);
+
   // console.log("monitorData", monitorData);
 
   const isDeletingCluster =

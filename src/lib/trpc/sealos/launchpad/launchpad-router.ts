@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { LaunchpadContext } from "./launchpad-context";
 import { getLaunchpadMonitorData } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-api-service";
 import { SealosApiContextSchema } from "@/lib/sealos/sealos-api-context-schema";
+import { transformCombinedMonitorData } from "@/lib/sealos/sealos-utils";
 
 const t = initTRPC.context<LaunchpadContext>().create();
 
@@ -23,6 +24,36 @@ export const launchpadRouter = t.router({
         input.queryName,
         input.step
       );
+    }),
+
+  getLaunchpadCombinedMonitorData: t.procedure
+    .input(
+      z.object({
+        context: SealosApiContextSchema,
+        queryName: z.string(),
+        step: z.string().optional().default("2m"),
+      })
+    )
+    .query(async ({ input }) => {
+      const [cpuData, memoryData] = await Promise.all([
+        getLaunchpadMonitorData(
+          input.context,
+          "average_cpu",
+          input.queryName,
+          input.step
+        ),
+        getLaunchpadMonitorData(
+          input.context,
+          "average_memory",
+          input.queryName,
+          input.step
+        ),
+      ]);
+
+      return transformCombinedMonitorData({
+        cpu: cpuData,
+        memory: memoryData,
+      });
     }),
 });
 

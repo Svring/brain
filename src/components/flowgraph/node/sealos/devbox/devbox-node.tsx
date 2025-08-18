@@ -60,6 +60,14 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
   //   enabled: !!pods?.[0]?.name,
   // });
 
+  // const { data: monitorDataNew2 } = useQuery({
+  //   ...devboxTrpcClient.getDevboxCombinedMonitorData.queryOptions({
+  //     context: devboxContext,
+  //     devboxName: pods?.[0]?.name || "",
+  //   }),
+  //   enabled: !!pods?.[0]?.name,
+  // });
+
   // console.log("monitorDataNew", monitorDataNew);
 
   // Log the monitor data

@@ -52,6 +52,7 @@ import {
 } from "@/lib/sealos/resources/devbox/devbox-api/devbox-api-service";
 import { MetricsApiContextSchema } from "@/lib/sealos/services/metrics/schemas/metrics-api-context-schema";
 import { DevboxApiContextSchema } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas";
+import { transformCombinedMonitorData } from "@/lib/sealos/sealos-utils";
 
 const t = initTRPC.context<DevboxContext>().create();
 
@@ -252,6 +253,44 @@ export const devboxRouter = t.router({
         input.queryName,
         input.step
       );
+    }),
+
+  getDevboxCombinedMonitorData: t.procedure
+    .input(
+      z.object({
+        context: DevboxApiContextSchema,
+        devboxName: z.string(),
+        step: z.string().optional().default("2m"),
+      })
+    )
+    .query(async ({ input }) => {
+      const [cpuResult, memoryResult] = await Promise.allSettled([
+        getDevboxMonitorData(
+          input.context,
+          "average_cpu",
+          input.devboxName,
+          input.step
+        ),
+        getDevboxMonitorData(
+          input.context,
+          "average_memory",
+          input.devboxName,
+          input.step
+        ),
+      ]);
+
+      console.log("cpuResult", JSON.stringify(cpuResult, null, 2));
+      console.log("memoryResult", JSON.stringify(memoryResult, null, 2));
+
+      const cpuData =
+        cpuResult.status === "fulfilled" ? cpuResult.value : undefined;
+      const memoryData =
+        memoryResult.status === "fulfilled" ? memoryResult.value : undefined;
+
+      return transformCombinedMonitorData({
+        cpu: cpuData,
+        memory: memoryData,
+      });
     }),
 });
 
