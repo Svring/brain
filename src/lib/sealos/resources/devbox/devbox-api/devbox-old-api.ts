@@ -82,3 +82,29 @@ export const authCname = createParallelAction(
     return response.data;
   }
 );
+
+/**
+ * Get monitor data for a devbox
+ * @example
+ * queryKey: "average_cpu" | "average_memory"
+ * queryName(pod name): "devbox-p2hrz"
+ * step: "2m"
+ */
+export const getMonitorData = createParallelAction(
+  async (
+    context: DevboxApiContext,
+    queryKey: string,
+    queryName: string,
+    step: string
+  ) => {
+    const api = createDevboxApi(context);
+    const response = await api.get("/monitor/getMonitorData", {
+      params: {
+        queryKey,
+        queryName,
+        step,
+      },
+    });
+    return response.data;
+  }
+);

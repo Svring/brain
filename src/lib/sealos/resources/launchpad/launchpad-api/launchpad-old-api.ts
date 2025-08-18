@@ -45,7 +45,7 @@ import https from "https";
 function createLaunchpadApi(context: SealosApiContext) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
   return axios.create({
-    baseURL: `https://applaunchpad.${context.baseURL}/api`,
+    baseURL: `https://applaunchpad.${context.baseUrl}/api`,
     headers: {
       "Content-Type": "application/json",
       ...(context.authorization
@@ -136,5 +136,31 @@ export const getLaunchpadLogs = createParallelAction(
     const api = createLaunchpadApi(context);
     const response = await api.post("/log/queryLogs", validatedRequest);
     return QueryLogsResponseSchema.parse(response.data);
+  }
+);
+
+/**
+ * Get monitor data for a launchpad
+ * @example
+ * queryKey: "average_memory"
+ * queryName(pod name): "ai-7f57558949-275qj"
+ * step: "2m"
+ */
+export const getMonitorData = createParallelAction(
+  async (
+    context: SealosApiContext,
+    queryKey: string,
+    queryName: string,
+    step: string
+  ) => {
+    const api = createLaunchpadApi(context);
+    const response = await api.get("/monitor/getMonitorData", {
+      params: {
+        queryKey,
+        queryName,
+        step,
+      },
+    });
+    return response.data;
   }
 );

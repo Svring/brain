@@ -48,6 +48,7 @@ import {
   listDevboxFolderFiles,
   getDevboxInstantMonitor,
   getDevboxRangedMonitor,
+  getDevboxMonitorData,
 } from "@/lib/sealos/resources/devbox/devbox-api/devbox-api-service";
 import { MetricsApiContextSchema } from "@/lib/sealos/services/metrics/schemas/metrics-api-context-schema";
 
@@ -230,6 +231,24 @@ export const devboxRouter = t.router({
         input.devboxName,
         input.start,
         input.end,
+        input.step
+      );
+    }),
+
+  getDevboxMonitorData: t.procedure
+    .input(
+      z.object({
+        context: MetricsApiContextSchema,
+        queryKey: z.string(),
+        queryName: z.string(),
+        step: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      return await getDevboxMonitorData(
+        input.context,
+        input.queryKey,
+        input.queryName,
         input.step
       );
     }),

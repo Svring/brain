@@ -47,6 +47,7 @@ import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { convertDevboxListToSimplified } from "../devbox-method/devbox-utils";
 import { getSshConnectionInfo } from "./devbox-old-api";
+import { getMonitorData } from "./devbox-old-api";
 import { listFolderFiles } from "./devbox-ssh-api";
 import type { DevboxSsh } from "../devbox-schemas/devbox-object-schema";
 import type { MetricsApiContext } from "@/lib/sealos/services/metrics/schemas/metrics-api-context-schema";
@@ -380,4 +381,16 @@ export async function getDevboxRangedMonitor(
   }
 
   return filteredData;
+}
+
+// Monitor Data Operations
+export async function getDevboxMonitorData(
+  context: DevboxApiContext,
+  queryKey: string,
+  queryName: string,
+  step: string
+): Promise<any> {
+  return await runParallelAction(
+    getMonitorData(context, queryKey, queryName, step)
+  );
 }

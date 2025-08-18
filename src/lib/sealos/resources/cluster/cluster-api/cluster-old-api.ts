@@ -57,7 +57,7 @@ import https from "https";
 function createClusterApi(context: SealosApiContext) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
   return axios.create({
-    baseURL: `https://dbprovider.${context.baseURL}/api`,
+    baseURL: `https://dbprovider.${context.baseUrl}/api`,
     headers: {
       "Content-Type": "application/json",
       ...(context.authorization
@@ -175,5 +175,31 @@ export const deleteBackup = createParallelAction(
       params: { backupName: validatedRequest.backupName },
     });
     return ClusterBackupDeleteResponseSchema.parse(response.data);
+  }
+);
+
+/**
+ * Get monitor data for a cluster
+ * @example
+ * dbName(cluster name): "ai-postgresql"
+ * dbType: "postgresql"
+ * queryKey: "cpu" | "memory" | "disk"
+ */
+export const getMonitorData = createParallelAction(
+  async (
+    context: SealosApiContext,
+    dbName: string,
+    dbType: string,
+    queryKey: string
+  ) => {
+    const api = createClusterApi(context);
+    const response = await api.get("/monitor/getMonitorData", {
+      params: {
+        dbName,
+        dbType,
+        queryKey,
+      },
+    });
+    return response.data;
   }
 );
