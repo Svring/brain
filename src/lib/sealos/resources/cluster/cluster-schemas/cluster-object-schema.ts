@@ -55,7 +55,6 @@ export const ClusterObjectSchema = z.object({
   operationalStatus: z.any().optional(),
   status: z.string().nullable(),
   resource: ClusterResourceSchema,
-  createdAt: z.string(),
   components: z.array(ClusterComponentSchema),
   connection: ClusterConnectionSchema,
   backup: ClusterBackupSchema.optional().nullable(),

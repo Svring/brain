@@ -2,24 +2,47 @@ import { initTRPC } from "@trpc/server";
 import { z } from "zod";
 import type { ClusterContext } from "./cluster-context";
 import { getClusterMonitorData } from "@/lib/sealos/resources/cluster/cluster-api/cluster-api-service";
-import { SealosApiContextSchema } from "@/lib/sealos/sealos-api-context-schema";
 import { transformCombinedMonitorData } from "@/lib/sealos/sealos-utils";
+import {
+  getCluster,
+  getClusterBackupList,
+} from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
+import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 const t = initTRPC.context<ClusterContext>().create();
 
 export const clusterRouter = t.router({
+  getCluster: t.procedure
+    .input(
+      z.object({
+        target: CustomResourceTargetSchema,
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      return await getCluster(ctx, input.target);
+    }),
+
+  getClusterBackupList: t.procedure
+    .input(
+      z.object({
+        target: CustomResourceTargetSchema,
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      return await getClusterBackupList(ctx, input.target);
+    }),
+
   getClusterMonitorData: t.procedure
     .input(
       z.object({
-        context: SealosApiContextSchema,
         dbName: z.string(),
         dbType: z.string(),
         queryKey: z.string(),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       return await getClusterMonitorData(
-        input.context,
+        ctx,
         input.dbName,
         input.dbType,
         input.queryKey
@@ -29,31 +52,20 @@ export const clusterRouter = t.router({
   getClusterCombinedMonitorData: t.procedure
     .input(
       z.object({
-        context: SealosApiContextSchema,
         dbName: z.string(),
         dbType: z.string(),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const [cpuResult, memoryResult, diskResult] = await Promise.allSettled([
-        getClusterMonitorData(input.context, input.dbName, input.dbType, "cpu"),
-        getClusterMonitorData(
-          input.context,
-          input.dbName,
-          input.dbType,
-          "memory"
-        ),
-        getClusterMonitorData(
-          input.context,
-          input.dbName,
-          input.dbType,
-          "disk"
-        ),
+        getClusterMonitorData(ctx, input.dbName, input.dbType, "cpu"),
+        getClusterMonitorData(ctx, input.dbName, input.dbType, "memory"),
+        getClusterMonitorData(ctx, input.dbName, input.dbType, "disk"),
       ]);
 
       // console.log("cpuResult", JSON.stringify(cpuResult, null, 2));
       // console.log("memoryResult", JSON.stringify(memoryResult, null, 2));
-      console.log("diskResult", JSON.stringify(diskResult, null, 2));
+      // console.log("diskResult", JSON.stringify(diskResult, null, 2));
 
       const cpuData =
         cpuResult.status === "fulfilled" ? cpuResult.value : undefined;

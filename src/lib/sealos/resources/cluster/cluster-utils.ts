@@ -1,5 +1,3 @@
-"use client";
-
 import { nanoid } from "nanoid";
 import { ClusterResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/cluster-schemas";
 import { ClusterNodeData } from "./schemas/cluster-node-schemas";

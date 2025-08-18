@@ -25,10 +25,6 @@ import {
   createSealosContext,
 } from "@/lib/auth/auth-utils";
 import { useIsMutating } from "@tanstack/react-query";
-import {
-  getClusterBackupListOptions,
-  getClusterOptions,
-} from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
 import { useQuery } from "@tanstack/react-query";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
@@ -41,8 +37,6 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
   const { openSidebarChat } = useChatActions();
   const sendMessageMutation = useSendMessageMutation();
 
-  const clusterTrpcClient = clusterClient.useTRPC();
-
   // Create contexts for API calls
   const k8sContext = createK8sContext();
   const clusterContext = createClusterContext();
@@ -53,17 +47,26 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
     convertResourceTypeToTarget("cluster", data.name)
   );
 
+  const clusterTrpcClient = clusterClient.useTRPC();
+
   // Fetch real-time cluster data
-  const { data: clusterData = data } = useQuery(
-    getClusterOptions(k8sContext, target)
-  );
+  const { data: clusterData = data } = useQuery({
+    ...clusterTrpcClient.getCluster.queryOptions({
+      target: target,
+    }),
+  });
 
   // Fetch cluster backup list
-  const { data: backupList = [] } = useQuery(
-    getClusterBackupListOptions(clusterContext, target)
-  );
+  const { data: backupList = [] } = useQuery({
+    ...clusterTrpcClient.getClusterBackupList.queryOptions({
+      target: target,
+    }),
+  });
 
-  const { name, type, status, pods, backup, connection } = clusterData;
+  const clusterDataTyped = clusterData as typeof data | undefined;
+  const { name, type, status, pods, connection } = clusterDataTyped || data;
+
+  console.log("clusterDataTyped", clusterDataTyped);
 
   // const { data: monitorData } = useQuery(
   //   clusterTrpcClient.getClusterMonitorData.queryOptions({
@@ -125,7 +128,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
         <div className="flex items-center justify-between">
           <ClusterNodeTitle name={name} type={type} />
           <div className="flex-shrink-0">
-            <ClusterNodeMenu object={clusterData} />
+            <ClusterNodeMenu object={clusterDataTyped || data} />
           </div>
         </div>
 

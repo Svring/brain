@@ -36,6 +36,7 @@ export default function TRPCProvider({
       links: [
         httpBatchLink({
           url: "/api/trpc/devbox",
+          maxURLLength: 4000,
           headers: () => ({
             namespace: auth.namespace,
             kubeconfig: auth.kubeconfig,
@@ -51,6 +52,7 @@ export default function TRPCProvider({
       links: [
         httpBatchLink({
           url: "/api/trpc/project",
+          maxURLLength: 6000,
           headers: () => ({
             namespace: auth.namespace,
             kubeconfig: auth.kubeconfig,
@@ -66,6 +68,7 @@ export default function TRPCProvider({
       links: [
         httpBatchLink({
           url: "/api/trpc/k8s",
+          maxURLLength: 6000,
           headers: () => ({
             namespace: auth.namespace,
             kubeconfig: auth.kubeconfig,
@@ -81,6 +84,7 @@ export default function TRPCProvider({
       links: [
         httpBatchLink({
           url: "/api/trpc/cluster",
+          maxURLLength: 6000,
           headers: () => ({
             namespace: auth.namespace,
             kubeconfig: auth.kubeconfig,
@@ -96,6 +100,7 @@ export default function TRPCProvider({
       links: [
         httpBatchLink({
           url: "/api/trpc/launchpad",
+          maxURLLength: 6000,
           headers: () => ({
             namespace: auth.namespace,
             kubeconfig: auth.kubeconfig,
