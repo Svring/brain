@@ -8,8 +8,18 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
-export default function NodeBackup() {
+interface NodeBackupProps {
+  resource: {
+    name: string;
+    backups?: any[];
+  };
+}
+
+export default function NodeBackup({ resource }: NodeBackupProps) {
+  const { sendSystemMessage } = useSendSystemMessageMutation();
+
   return (
     <TooltipProvider delayDuration={0}>
       <Tooltip>
@@ -19,6 +29,13 @@ export default function NodeBackup() {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              sendSystemMessage({
+                type: "info.clusterBackup",
+                payload: {
+                  backups: resource.backups || [],
+                  clusterName: resource.name,
+                },
+              });
             }}
           >
             <DatabaseBackup className="h-4 w-4 text-theme-green" />

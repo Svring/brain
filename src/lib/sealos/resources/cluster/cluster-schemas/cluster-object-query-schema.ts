@@ -1,6 +1,9 @@
 import { z } from "zod";
 import { transformComponentSpecsToResources } from "../cluster-utils";
-import { formatIsoDateToReadable } from "@/lib/date/date-utils";
+import {
+  formatIsoDateToReadable,
+  formatDurationToReadable,
+} from "@/lib/date/date-utils";
 
 export const ClusterObjectQuerySchema = z.object({
   name: z.string().describe(
@@ -186,9 +189,21 @@ export const ClusterObjectQuerySchema = z.object({
     )
     .transform((pods) => {
       return pods.map((pod: any) => {
+        // Calculate upTime from pod startTime
+        let upTime: string | undefined;
+        if (pod.status?.startTime) {
+          const startedAt = new Date(pod.status.startTime);
+          const currentTime = new Date();
+          const upTimeSeconds = Math.floor(
+            (currentTime.getTime() - startedAt.getTime()) / 1000
+          ); // Convert to seconds
+          upTime = formatDurationToReadable(upTimeSeconds);
+        }
+
         return {
           name: pod.metadata.name,
           status: pod.status.phase,
+          upTime,
           containers:
             pod.status.containerStatuses?.map((container: any) => ({
               name: container.name,

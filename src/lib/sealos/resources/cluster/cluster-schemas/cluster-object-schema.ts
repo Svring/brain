@@ -43,6 +43,7 @@ export const ClusterBackupSchema = z
 const PodSchema = z.object({
   name: z.string(),
   status: z.string(),
+  upTime: z.string().optional(),
   containers: z.any(),
 });
 

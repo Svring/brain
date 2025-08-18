@@ -54,7 +54,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
     }),
   });
 
-  // console.log("clusterData", clusterData);
+  console.log("clusterData", clusterData);
 
   // Fetch cluster backup list
   const { data: backupList = [] } = useQuery({
@@ -156,12 +156,18 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
 
         {/* Public Access Indicator */}
         <div className="flex items-center gap-2 text-md">
-          <Globe 
+          <Globe
             className={`h-4 w-4 ${
               connectionString ? "text-theme-green" : "text-theme-gray"
-            }`} 
+            }`}
           />
-          <span className="text-muted-foreground">Public Access</span>
+          <span
+            className={`${
+              connectionString ? "text-foreground" : "text-muted-foreground"
+            }`}
+          >
+            Public Access
+          </span>
         </div>
 
         {/* Bottom section with status and icons */}
@@ -174,7 +180,8 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
             {/* <NodeInternalUrl ports={[]} /> */}
             <NodePods resource={clusterData || data} />
             <NodeLog />
-            <NodeBackup />
+            <ClusterNodeBackup object={clusterData} />
+            {/* <NodeBackup /> */}
             <NodeMonitor resource={data} />
           </div>
         </div>

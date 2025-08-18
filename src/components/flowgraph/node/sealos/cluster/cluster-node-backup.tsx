@@ -4,7 +4,13 @@ import { getClusterBackupListOptions } from "@/lib/sealos/resources/cluster/clus
 import { createSealosContext } from "@/lib/auth/auth-utils";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import BaseNode from "../../base-node-wrapper";
+import { DatabaseBackup } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import ClusterNodeBackupTitle from "./cluster-node-backup-title";
 import ClusterNodeBackupList from "./cluster-node-backup-list";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
@@ -41,20 +47,26 @@ export default function ClusterNodeBackup({
   }));
 
   return (
-    <BaseNode nodeData={object} expand={isExpanded}>
-      <div className="flex h-full flex-col gap-3 p-1">
-        <ClusterNodeBackupTitle
-          backupsCount={backupList?.length || 0}
-          clusterName={clusterName}
-          onToggleExpand={handleToggleExpand}
-          isExpanded={isExpanded}
-        />
-        <ClusterNodeBackupList
-          backups={transformedBackups}
-          isLoading={isLoading}
-          isExpanded={isExpanded}
-        />
-      </div>
-    </BaseNode>
+    <TooltipProvider delayDuration={0}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div
+            className="p-1 border-2 border-muted-foreground/20 rounded-full cursor-pointer hover:border-muted-foreground/40 transition-colors"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
+            <DatabaseBackup className="h-4 w-4 text-theme-green" />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent
+          side="bottom"
+          className="bg-background-secondary rounded-lg p-2"
+        >
+          <p className="font-medium">View backup</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

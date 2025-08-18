@@ -92,50 +92,8 @@ export default function NodePods({ resource }: NodePodsProps) {
           className="bg-background-secondary rounded-lg"
           onPointerDownOutside={(e) => e.preventDefault()}
         >
-          <div className="space-y-2 p-2">
-            {podList && podList.length > 0 ? (
-              <>
-                <div className="text-sm font-medium">Pod Status</div>
-                <div className="flex gap-1">
-                  {displayedPods.map((pod, index) => (
-                    <TooltipProvider key={index}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="flex flex-col items-center gap-1">
-                            <div
-                              className={`h-2 w-8 rounded-full ${getPodStatusColor(
-                                pod.status
-                              )} cursor-pointer`}
-                            />
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent
-                          side="top"
-                          className="bg-background-secondary"
-                        >
-                          <div className="text-sm">
-                            <div className="font-medium">{pod.name}</div>
-                            <div className="text-muted-foreground">
-                              {pod.status}
-                            </div>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  ))}
-                  {podList.length > 5 && (
-                    <div className="flex flex-col items-center gap-1">
-                      <div className="h-2 w-8 rounded-full bg-muted" />
-                      <div className="text-xs text-muted-foreground">
-                        +{podList.length - 5}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </>
-            ) : (
-              <div className="text-sm">No pods available</div>
-            )}
+          <div className="p-0">
+            <div className="text-xs">View pods</div>
           </div>
         </TooltipContent>
       </Tooltip>

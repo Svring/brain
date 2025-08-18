@@ -1,7 +1,14 @@
 import React from "react";
-import { Box } from "lucide-react";
+import { Box, Square } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { inferStatusColor } from "@/lib/sealos/sealos-utils";
 
 interface Container {
   name: string;
@@ -83,8 +90,8 @@ export const PodOverview: React.FC<PodOverviewProps> = ({ resource }) => {
   const totalPods = podList.length;
 
   return (
-    <Card className="w-full bg-background-secondary">
-      <CardHeader className="pb-3">
+    <Card className="w-full bg-node-background">
+      <CardHeader className="">
         <CardTitle className="flex items-center gap-2 text-base">
           <Box className={`h-5 w-5 ${getStatusColor()}`} />
           Pod Overview ({totalPods} total)
@@ -93,107 +100,70 @@ export const PodOverview: React.FC<PodOverviewProps> = ({ resource }) => {
       <CardContent className="space-y-4">
         {podList && podList.length > 0 ? (
           <>
-            {/* Summary */}
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-muted-foreground">
-                Running: {runningPods}/{totalPods}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {((runningPods / totalPods) * 100).toFixed(0)}% healthy
-              </div>
-            </div>
-
             {/* Pod List */}
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium">Pod Status</h4>
+            <div className="space-y-2 border border-border-primary rounded-xl">
               <div className="grid gap-2">
                 {podList.map((pod, index) => (
-                  <div
-                    key={index}
-                    className="p-3 rounded-lg border bg-background space-y-2"
-                  >
+                  <div key={index} className="p-3 rounded-xl border space-y-2">
+                    {/* Pod Name Row */}
                     <div className="flex items-center justify-between">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium truncate max-w-48">
-                          {pod.name}
-                        </span>
-                      </div>
-                      <Badge variant={getStatusVariant(pod.status)}>
+                      <span className="text-sm font-medium">
+                        Pod: {pod.name}
+                      </span>
+                      {/* <Badge variant={getStatusVariant(pod.status)}>
                         {pod.status}
-                      </Badge>
+                      </Badge> */}
                     </div>
 
-                    {/* Container Details */}
+                    {/* Container Squares */}
                     {pod.containers && pod.containers.length > 0 && (
-                      <div className="space-y-1">
-                        {pod.containers.map((container, containerIndex) => (
-                          <div
-                            key={containerIndex}
-                            className="flex items-center justify-between text-xs"
-                          >
-                            <div className="flex items-center gap-2">
-                              <div
-                                className={`w-2 h-2 rounded-full ${
-                                  container.ready
-                                    ? "bg-theme-green"
-                                    : "bg-theme-red"
-                                }`}
-                              />
-                              <span className="text-muted-foreground">
-                                {container.name}
-                              </span>
-                            </div>
-                            <div className="text-muted-foreground">
-                              {container.state.running ? (
-                                <span className="text-theme-green">
-                                  Running
-                                </span>
-                              ) : container.state.waiting ? (
-                                <span className="text-theme-yellow">
-                                  {container.state.waiting.reason}
-                                </span>
-                              ) : container.state.terminated ? (
-                                <span className="text-theme-red">
-                                  {container.state.terminated.reason}
-                                </span>
-                              ) : (
-                                <span>Unknown</span>
-                              )}
-                            </div>
-                          </div>
-                        ))}
+                      <div className="flex items-center gap-1">
+                        {pod.containers.map((container, containerIndex) => {
+                          // Determine container status for color
+                          let containerStatus = "unknown";
+                          if (container.state.running) {
+                            containerStatus = "running";
+                          } else if (container.state.waiting) {
+                            containerStatus = "pending";
+                          } else if (container.state.terminated) {
+                            containerStatus = "error";
+                          }
+
+                          return (
+                            <TooltipProvider key={containerIndex}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="group relative">
+                                    <Square
+                                      className={`h-4 w-4 fill-current ${inferStatusColor(
+                                        containerStatus,
+                                        "text"
+                                      )}`}
+                                    />
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent
+                                  side="top"
+                                  className="bg-background-secondary"
+                                >
+                                  <div className="text-sm">
+                                    <div className="font-medium">
+                                      {container.name}
+                                    </div>
+                                    <div className="text-muted-foreground">
+                                      {containerStatus}
+                                    </div>
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
                 ))}
               </div>
-            </div>
-
-            {/* Status Summary */}
-            <div className="flex gap-1">
-              {podList.slice(0, 10).map((pod, index) => (
-                <div
-                  key={index}
-                  className={`h-2 w-8 rounded-full ${
-                    pod.status.toLowerCase() === "running"
-                      ? "bg-theme-green"
-                      : pod.status.toLowerCase() === "error"
-                      ? "bg-theme-red"
-                      : pod.status.toLowerCase() === "pending"
-                      ? "bg-theme-gray"
-                      : "bg-theme-yellow"
-                  }`}
-                  title={`${pod.name}: ${pod.status}`}
-                />
-              ))}
-              {podList.length > 10 && (
-                <div className="flex flex-col items-center gap-1">
-                  <div className="h-2 w-8 rounded-full bg-muted" />
-                  <div className="text-xs text-muted-foreground">
-                    +{podList.length - 10}
-                  </div>
-                </div>
-              )}
             </div>
           </>
         ) : (

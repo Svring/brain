@@ -9,7 +9,6 @@ import useProjectSearch from "@/hooks/brain/use-projects-search";
 import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
 import { useProjectActions } from "@/contexts/project/project-context";
 import { Spinner } from "@/components/ui/spinner";
-import { MetricsChartExample } from "@/components/chat/messages/components/metrics-chart-example";
 
 export default function Page() {
   const { openDialog, CreateProjectDialog } = useProjectCreateDialog();
@@ -73,8 +72,6 @@ export default function Page() {
           )}
         </div>
       </div>
-
-      <MetricsChartExample />
 
       {/* <div className="pt-8 pb-4 flex-1 min-h-0">
         <div className="w-3xl mx-auto px-4 h-full">

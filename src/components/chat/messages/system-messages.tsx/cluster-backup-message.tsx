@@ -1,10 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import { Database, Clock, History, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { formatDistanceToNow } from "date-fns";
+import { useDeleteBackupMutation } from "@/lib/sealos/resources/cluster/cluster-method/cluster-mutation";
+import { createSealosContext } from "@/lib/auth/auth-utils";
 
 interface Backup {
   name: string;
@@ -22,6 +30,27 @@ export const ClusterBackupMessageCard: React.FC<ClusterBackupMessageProps> = ({
   payload,
 }) => {
   const { backups = [], clusterName = "Unknown Cluster" } = payload;
+  const [openDeletePopovers, setOpenDeletePopovers] = useState<
+    Record<string, boolean>
+  >({});
+
+  const sealosContext = createSealosContext();
+  const deleteBackupMutation = useDeleteBackupMutation(sealosContext);
+
+  const handleDeleteBackup = async (backupName: string) => {
+    console.log("Attempting to delete backup:", backupName);
+    try {
+      const result = await deleteBackupMutation.mutateAsync({ backupName });
+      console.log("Delete backup result:", result);
+      setDeletePopoverOpen(backupName, false);
+    } catch (error) {
+      console.error("Failed to delete backup:", error);
+    }
+  };
+
+  const setDeletePopoverOpen = (backupName: string, open: boolean) => {
+    setOpenDeletePopovers((prev) => ({ ...prev, [backupName]: open }));
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -52,58 +81,108 @@ export const ClusterBackupMessageCard: React.FC<ClusterBackupMessageProps> = ({
 
       <CardContent className="space-y-4">
         {/* Backups List */}
-        {backups.length > 0 ? (
-          <div className="space-y-3">
-            {backups.map((backup, index) => (
-              <Card key={backup.name || index} className="p-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Database className="h-4 w-4 text-blue-600" />
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium">
-                        {backup.name}
-                      </span>
-                      {backup.time && (
-                        <div className="flex items-center gap-1 text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          <span className="text-xs">
-                            {formatDate(backup.time)}
+        <ScrollArea className="max-h-64">
+            {backups.length > 0 ? (
+              <div className="space-y-2">
+                {backups.map((backup, index) => (
+                  <div
+                    key={backup.name || index}
+                    className="border rounded-lg p-2 hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <Database className="h-3 w-3 text-muted-foreground" />
+                        <div className="flex flex-col max-w-[120px]">
+                          <span className="text-xs font-medium truncate">
+                            {backup.name}
                           </span>
+                          {backup.time && (
+                            <div className="flex items-center gap-1 text-muted-foreground">
+                              <Clock className="h-3 w-3" />
+                              <span className="text-xs">
+                                {formatDate(backup.time)}
+                              </span>
+                            </div>
+                          )}
                         </div>
-                      )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          className="p-1 hover:bg-muted rounded transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Handle restore action
+                          }}
+                          title="Restore backup"
+                        >
+                          <History className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                        </button>
+                        <Popover
+                          open={openDeletePopovers[backup.name] || false}
+                          onOpenChange={(open) => setDeletePopoverOpen(backup.name, open)}
+                        >
+                          <PopoverTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                              disabled={deleteBackupMutation.isPending}
+                              title="Delete backup"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            className="w-80 z-[9999] bg-background-secondary"
+                            side="top"
+                          >
+                            <div className="space-y-4">
+                              <div className="space-y-2">
+                                <h4 className="font-medium text-sm text-destructive">
+                                  Delete Backup
+                                </h4>
+                                <p className="text-xs text-muted-foreground">
+                                  Are you sure you want to delete backup {backup.name}? This action cannot be undone.
+                                </p>
+                              </div>
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  onClick={() => setDeletePopoverOpen(backup.name, false)}
+                                  variant="outline"
+                                  size="sm"
+                                >
+                                  Cancel
+                                </Button>
+                                <Button
+                                  onClick={async () => {
+                                    try {
+                                      await handleDeleteBackup(backup.name);
+                                    } catch (error) {
+                                      console.error("Delete failed:", error);
+                                    }
+                                  }}
+                                  variant="destructive"
+                                  size="sm"
+                                  disabled={deleteBackupMutation.isPending}
+                                >
+                                  {deleteBackupMutation.isPending ? "Deleting..." : "Delete"}
+                                </Button>
+                              </div>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 px-2 text-xs"
-                      title="Restore backup"
-                    >
-                      <History className="h-3 w-3 mr-1" />
-                      Restore
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 px-2 text-xs text-red-600 hover:text-red-700"
-                      title="Delete backup"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <Database className="h-8 w-8 text-muted-foreground mb-2" />
-            <div className="text-sm text-muted-foreground">No backups available</div>
-            <div className="text-xs text-muted-foreground mt-1">Create your first backup to get started</div>
-          </div>
-        )}
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-20 text-center">
+                <Database className="h-6 w-6 text-muted-foreground mb-2" />
+                <div className="text-xs text-muted-foreground">No backups yet</div>
+              </div>
+            )}
+          </ScrollArea>
 
         {/* Backup Info */}
         <Separator />
