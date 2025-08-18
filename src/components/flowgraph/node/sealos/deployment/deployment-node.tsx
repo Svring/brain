@@ -14,12 +14,12 @@ import DeploymentNodeMenu from "./deployment-node-menu";
 import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-object-schema";
 import { truncateImage } from "@/lib/sealos/sealos-utils";
 import { useIsMutating } from "@tanstack/react-query";
-import { useEmitSystemMessage } from "@/lib/copilot/message/message-utils";
+import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 export default function DeploymentNode({ data }: { data: DeploymentObject }) {
   const { name, image, status, ports, pods, env, resource } = data;
-  const { emitMessage } = useEmitSystemMessage();
+  const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 
   // console.log("env", env);
   // console.log("resource", resource);

@@ -11,12 +11,12 @@ import StatefulsetNodeMenu from "./statefulset-node-menu";
 import { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulset-object-schema";
 import { truncateImage } from "@/lib/sealos/sealos-utils";
 import { useIsMutating } from "@tanstack/react-query";
-import { useEmitSystemMessage } from "@/lib/copilot/message/message-utils";
+import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 export default function StatefulsetNode({ data }: { data: StatefulsetObject }) {
   const { name, image, status, ports, pods } = data;
-  const { emitMessage } = useEmitSystemMessage();
+  const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 
   // Check if this statefulset is being deleted
   const isDeletingStatefulset = useIsMutating({

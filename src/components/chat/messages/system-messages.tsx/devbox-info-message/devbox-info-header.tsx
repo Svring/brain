@@ -8,7 +8,7 @@ import DevboxNodeMenu from "@/components/flowgraph/node/sealos/devbox/devbox-nod
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
-import { useEmitSystemMessage } from "@/lib/copilot/message/message-utils";
+import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 interface DevboxInfoHeaderProps {
@@ -19,7 +19,7 @@ export const DevboxInfoHeader: React.FC<DevboxInfoHeaderProps> = ({
   devboxData,
 }) => {
   const { auth } = useAuthState();
-  const { emitMessage } = useEmitSystemMessage();
+  const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
   const namespace = auth?.namespace;
   const regionUrl = auth?.regionUrl;
 

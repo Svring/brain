@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Save, FileText, Container, BarChart3 } from "lucide-react";
-import { useEmitSystemMessage } from "@/lib/copilot/message/message-utils";
+import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 
 interface ClusterInfoActionsProps {
@@ -11,7 +11,7 @@ interface ClusterInfoActionsProps {
 export const ClusterInfoActions: React.FC<ClusterInfoActionsProps> = ({
   clusterData,
 }) => {
-  const { emitMessage } = useEmitSystemMessage();
+  const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 
   const handleBackupClick = () => {
     emitMessage({

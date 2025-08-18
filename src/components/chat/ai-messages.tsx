@@ -43,8 +43,7 @@ export function AiMessages() {
                       }
                     }
 
-                    // Fallback: display as text if component not found
-                    return <>{message.content}</>;
+                    return null;
                   })()}
               </div>
             );

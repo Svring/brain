@@ -10,6 +10,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { createMetricsContext } from "@/lib/auth/auth-utils";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
 interface DiagnoseNetworkMessageProps {
   payload: CustomResourceTarget | BuiltinResourceTarget;
@@ -19,7 +20,9 @@ export const DiagnoseNetworkMessageCard: React.FC<
   DiagnoseNetworkMessageProps
 > = ({ payload }) => {
   const [devboxStatus, setDevboxStatus] = useState<string>("");
+  const [hasSentMonitorData, setHasSentMonitorData] = useState(false);
   const devboxTrpcClient = devboxClient.useTRPC();
+  const sendMessageMutation = useSendMessageMutation();
 
   // Mutation for managing devbox lifecycle
   const startDevbox = useMutation(
@@ -49,6 +52,23 @@ export const DiagnoseNetworkMessageCard: React.FC<
       setDevboxStatus(devboxData.status.toLowerCase());
     }
   }, [devboxData?.status]);
+
+  // Send monitor data message when it's ready
+  useEffect(() => {
+    if (rangedMonitorData && !hasSentMonitorData) {
+      sendMessageMutation.mutate([
+        {
+          role: "assistant",
+          content: `Network diagnosis completed for ${payload.resourceType} "${
+            payload.name
+          }". Here are the monitoring results: ${JSON.stringify(
+            rangedMonitorData
+          )}`,
+        },
+      ]);
+      setHasSentMonitorData(true);
+    }
+  }, [rangedMonitorData, hasSentMonitorData, payload, sendMessageMutation]);
 
   // console.log("devboxData", devboxData);
   console.log("rangedMonitorData", rangedMonitorData);

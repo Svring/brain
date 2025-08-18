@@ -28,11 +28,13 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
 export default function ClusterNode({ data }: { data: ClusterObject }) {
   const [publicAccess, setPublicAccess] = useState(false);
   const { sendMessage, setMessages, messages } = useCopilotChatHeadless_c();
   const { openSidebarChat } = useChatActions();
+  const sendMessageMutation = useSendMessageMutation();
 
   // Create contexts for API calls
   const k8sContext = createK8sContext();
@@ -69,16 +71,13 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
     }) > 0;
 
   const handleNodeClick = () => {
-    // Send a message about the cluster
-    setMessages([
-      ...messages,
+    // Use the new mutation hook to send messages
+    sendMessageMutation.mutate([
       {
-        id: randomId(),
         role: "assistant",
         content: `This is your database.`,
       },
       {
-        id: randomId(),
         role: "system",
         content: JSON.stringify({
           type: "info.clusterInfo",
@@ -86,8 +85,6 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
         }),
       },
     ]);
-    // Open the sidebar chat
-    openSidebarChat();
   };
 
   const mainCard = (

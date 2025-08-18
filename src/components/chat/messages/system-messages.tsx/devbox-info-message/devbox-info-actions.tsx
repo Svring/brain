@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { GitBranch, BarChart3 } from "lucide-react";
-import { useEmitSystemMessage } from "@/lib/copilot/message/message-utils";
+import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import { useQuery } from "@tanstack/react-query";
 import { createMetricsContext } from "@/lib/auth/auth-utils";
@@ -14,7 +14,7 @@ interface DevboxInfoActionsProps {
 export const DevboxInfoActions: React.FC<DevboxInfoActionsProps> = ({
   devboxData,
 }) => {
-  const { emitMessage } = useEmitSystemMessage();
+  const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
   const metricsContext = createMetricsContext();
 
   // Fetch devbox monitor data for metrics

@@ -16,7 +16,7 @@ import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbo
 import { useDeleteDevboxMutation } from "@/lib/sealos/resources/devbox/devbox-method/devbox-mutation";
 import { getDevboxReleasesOptions, getDevboxInstantMonitorOptions } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
 import { useQuery } from "@tanstack/react-query";
-import { useEmitSystemMessage } from "@/lib/copilot/message/message-utils";
+import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 import { createMetricsContext } from "@/lib/auth/auth-utils";
@@ -24,7 +24,7 @@ import { createMetricsContext } from "@/lib/auth/auth-utils";
 // TODO: Devbox nodes would cause maximum call stack error
 export default function DevboxNode({ data }: { data: DevboxObject }) {
   const { name, image, status, ports, pods } = data;
-  const { emitMessage } = useEmitSystemMessage();
+  const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
   const context = createK8sContext();
   const devboxContext = createDevboxContext();
   const metricsContext = createMetricsContext();

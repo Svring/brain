@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { FileText, Container } from "lucide-react";
-import { useEmitSystemMessage } from "@/lib/copilot/message/message-utils";
+import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
 interface LaunchpadInfoActionsProps {
   name: string;
@@ -14,7 +14,7 @@ export const LaunchpadInfoActions: React.FC<LaunchpadInfoActionsProps> = ({
   kind,
   resource,
 }) => {
-  const { emitMessage } = useEmitSystemMessage();
+  const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 
   const handleLogsClick = () => {
     emitMessage({
