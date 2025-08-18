@@ -206,7 +206,7 @@ export function createTemplateApiContext() {
     throw new Error("User not found");
   }
   return TemplateApiContextSchema.parse({
-    baseURL: auth.regionUrl,
+    baseUrl: auth.regionUrl,
     authorization: auth.kubeconfig,
   });
 }

@@ -13,11 +13,15 @@ export function useTemplates(context: TemplateApiContext) {
   const [selectedTemplate, setSelectedTemplate] =
     useState<TemplateResource | null>(null);
 
+  console.log("context", context);
+
   const {
     data: templatesResponse,
     isLoading,
     error,
   } = useQuery(listTemplatesOptions(context));
+
+  console.log("templatesResponse", templatesResponse);
 
   const templates = useMemo(
     () => (templatesResponse as ListTemplateResponse)?.data?.templates ?? [],

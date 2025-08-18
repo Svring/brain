@@ -88,7 +88,11 @@ export function FlowgraphHeader({ projectName }: FlowgraphHeaderProps) {
             />
           ) : (
             <div className="flex items-center gap-1">
-              <span>{projectDisplayName}</span>
+              <span>
+                {projectDisplayName.length > 14
+                  ? projectDisplayName.slice(0, 14) + "..."
+                  : projectDisplayName}
+              </span>
               <Button
                 size="sm"
                 variant="ghost"

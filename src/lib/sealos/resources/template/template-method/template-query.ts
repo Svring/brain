@@ -20,7 +20,7 @@ export const listTemplatesOptions = (
     queryKey: ["templates"],
     queryFn: () => runParallelAction(listTemplates(context)),
     select: (data) => postprocess?.(data) ?? data,
-    enabled: !!context.baseURL,
+    enabled: !!context.baseUrl,
   });
 
 export const getTemplateSourceOptions = (
@@ -32,5 +32,5 @@ export const getTemplateSourceOptions = (
     queryKey: ["template", templateName],
     queryFn: () => runParallelAction(getTemplateSource(context, templateName)),
     select: (data) => postprocess?.(data) ?? data,
-    enabled: !!context.baseURL && !!templateName,
+    enabled: !!context.baseUrl && !!templateName,
   });

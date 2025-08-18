@@ -95,12 +95,9 @@ export const DevboxReleaseMessageCard: React.FC<DevboxReleaseMessageProps> = ({
         });
       }
 
-
-
       setOpenPopovers((prev) => ({ ...prev, [releaseTag]: false }));
     } catch (error) {
       console.error("Deploy failed:", error);
-
     }
   };
 
@@ -112,13 +109,10 @@ export const DevboxReleaseMessageCard: React.FC<DevboxReleaseMessageProps> = ({
         releaseDes: config.releaseDes,
       });
 
-
-
       setIsReleasePopoverOpen(false);
       setReleaseConfig({ tag: "", releaseDes: "" });
     } catch (error) {
       console.error("Release failed:", error);
-
     }
   };
 
@@ -127,12 +121,9 @@ export const DevboxReleaseMessageCard: React.FC<DevboxReleaseMessageProps> = ({
       const versionName = `${devboxName}-${releaseTag}`;
       await deleteReleaseMutation.mutateAsync(versionName);
 
-
-
       setDeletePopoverOpen(releaseTag, false);
     } catch (error) {
       console.error("Delete failed:", error);
-
     }
   };
 
@@ -154,7 +145,7 @@ export const DevboxReleaseMessageCard: React.FC<DevboxReleaseMessageProps> = ({
   };
 
   return (
-    <div className="p-4 bg-background-secondary border rounded-lg space-y-4">
+    <div className="p-4 bg-node-background border rounded-lg space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -301,7 +292,7 @@ export const DevboxReleaseMessageCard: React.FC<DevboxReleaseMessageProps> = ({
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent
-                        className="w-80 z-[9999] bg-background-secondary"
+                        className="w-80 z-[9999] bg-node-background"
                         side="top"
                       >
                         <div className="space-y-4">
@@ -418,7 +409,7 @@ export const DevboxReleaseMessageCard: React.FC<DevboxReleaseMessageProps> = ({
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent
-                        className="w-80 z-[9999] bg-background-secondary"
+                        className="w-80 z-[9999] bg-node-background"
                         side="top"
                       >
                         <div className="space-y-4">

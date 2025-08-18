@@ -5,8 +5,6 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
 } from "@/components/ui/chart";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
@@ -15,14 +13,7 @@ type MetricType = "cpu" | "memory" | "storage";
 interface MetricRowProps {
   metric: MetricType;
   resource?: any;
-  monitorData?: Record<
-    string,
-    {
-      cpu: Array<[string, string]>;
-      memory: Array<[string, string]>;
-      storage?: Array<[string, string]>;
-    }
-  >;
+  monitorData?: Array<[string, string]>;
   isLoading?: boolean;
   color?: string;
 }
@@ -50,34 +41,42 @@ export const MetricRow: React.FC<MetricRowProps> = ({
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [yAxisDomain, setYAxisDomain] = useState<[number, number]>([0, 100]);
 
-  const Icon = metric === "cpu" ? Cpu : metric === "memory" ? MemoryStick : HardDrive;
-  const label = metric === "cpu" ? "CPU" : metric === "memory" ? "Memory" : "Storage";
-  const defaultColor =
-    metric === "cpu"
-      ? "hsl(var(--chart-1))"
+  const metricConfig = {
+    cpu: { Icon: Cpu, label: "CPU", color: "hsl(var(--chart-1))" },
+    memory: {
+      Icon: MemoryStick,
+      label: "Memory",
+      color: "hsl(var(--chart-2))",
+    },
+    storage: {
+      Icon: HardDrive,
+      label: "Storage",
+      color: "hsl(var(--chart-3))",
+    },
+  }[metric];
+
+  const resourceValue = resource
+    ? metric === "cpu"
+      ? `${resource.cpu ?? "N/A"}m`
       : metric === "memory"
-      ? "hsl(var(--chart-2))"
-      : "hsl(var(--chart-3))";
+      ? `${resource.memory ?? "N/A"}MB`
+      : resource.storage ?? "N/A"
+    : "N/A";
 
-  const resourceValue = (() => {
-    if (!resource) return "N/A";
-    if (metric === "cpu") return `${resource.cpu ?? "N/A"}m`;
-    if (metric === "memory") return `${resource.memory ?? "N/A"}MB`;
-    return resource.storage ?? "N/A";
-  })();
-
-  const normalizeMonitorData = (data: Array<[string, string]>): Array<[string, string]> => {
-    return data.map(([timestamp, value]) => [timestamp, (parseFloat(value) / 100).toString()]);
+  const normalizeMonitorData = (
+    data: Array<[string, string]>
+  ): Array<[string, string]> => {
+    return data.map(([timestamp, value]) => [
+      timestamp,
+      parseFloat(value).toString(),
+    ]);
   };
 
   // Process data and create chart data points
   useEffect(() => {
-    if (!monitorData || Object.keys(monitorData).length === 0) return;
+    if (!monitorData || monitorData.length === 0) return;
 
-    const podNames = Object.keys(monitorData);
-    const firstPod = podNames[0];
-    const rawData = (monitorData[firstPod]?.[metric] || []) as Array<[string, string]>;
-    const data = normalizeMonitorData(rawData);
+    const data = normalizeMonitorData(monitorData);
 
     if (!data || data.length === 0) return;
 
@@ -109,14 +108,12 @@ export const MetricRow: React.FC<MetricRowProps> = ({
       const matchingData = data.find(([timestamp]) => {
         const dataTime = new Date(timestamp);
         // Check if the data time is within 1 minute of the time point
-        return (
-          Math.abs(dataTime.getTime() - timePoint.getTime()) <= 60 * 1000
-        );
+        return Math.abs(dataTime.getTime() - timePoint.getTime()) <= 60 * 1000;
       });
 
       processedData.push({
         time: timeString,
-        value: matchingData ? parseFloat(matchingData[1]) * 100 : 0, // Convert to percentage
+        value: matchingData ? parseFloat(matchingData[1]) * 100 : 0, // Convert decimal to percentage
         valueFormatted: matchingData
           ? `${(parseFloat(matchingData[1]) * 100).toFixed(2)}%`
           : "0%",
@@ -127,9 +124,9 @@ export const MetricRow: React.FC<MetricRowProps> = ({
 
     // Calculate Y-axis domain based on maximum value
     if (processedData.length > 0) {
-      const maxValue = Math.max(...processedData.map(d => d.value));
+      const maxValue = Math.max(...processedData.map((d) => d.value));
       let ceiling = 100; // Default ceiling for percentage values
-      
+
       if (maxValue > 0) {
         // Calculate appropriate ceiling based on maximum value
         if (maxValue <= 10) {
@@ -144,7 +141,7 @@ export const MetricRow: React.FC<MetricRowProps> = ({
           ceiling = 100;
         }
       }
-      
+
       setYAxisDomain([0, ceiling]);
     }
   }, [monitorData, metric]);
@@ -152,134 +149,90 @@ export const MetricRow: React.FC<MetricRowProps> = ({
   const renderChart = () => {
     if (isLoading) {
       return (
-        <div className="flex items-center justify-center h-16 text-xs text-muted-foreground">
+        <div className="flex items-center justify-center h-8 text-xs text-muted-foreground">
           Loading...
         </div>
       );
     }
 
-    if (!monitorData || Object.keys(monitorData).length === 0) {
+    if (!monitorData || monitorData.length === 0) {
       return (
-        <div className="flex items-center justify-center h-32 text-xs text-muted-foreground">
-          No {label} data
+        <div className="flex items-center justify-center h-12 text-xs text-muted-foreground">
+          No {metricConfig.label} data
         </div>
       );
     }
 
-    // Handle empty data state - show empty chart
-    if (!chartData || chartData.length === 0) {
-      return (
-        <div className="w-full h-full">
-          <ChartContainer config={chartConfig} className="h-full w-full">
-            <AreaChart
-              data={(() => {
-                const now = new Date();
-                const threeHoursAgo = new Date(
-                  now.getTime() - 3 * 60 * 60 * 1000
-                );
-                const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
-                const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-
-                return [
-                  {
-                    time: threeHoursAgo.toLocaleTimeString("en-US", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: false,
-                    }),
-                    value: 0,
-                    valueFormatted: "0%",
-                  },
-                  {
-                    time: twoHoursAgo.toLocaleTimeString("en-US", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: false,
-                    }),
-                    value: 0,
-                    valueFormatted: "0%",
-                  },
-                  {
-                    time: oneHourAgo.toLocaleTimeString("en-US", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: false,
-                    }),
-                    value: 0,
-                    valueFormatted: "0%",
-                  },
-                  {
-                    time: now.toLocaleTimeString("en-US", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: false,
-                    }),
-                    value: 0,
-                    valueFormatted: "0%",
-                  },
-                ];
-              })()}
-              margin={{ left: 0, right: 10, top: 10, bottom: 15 }}
-              width={undefined}
-              height={undefined}
-            >
-              <defs>
-                <linearGradient id="fillValue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={color || defaultColor} stopOpacity={0.8} />
-                  <stop offset="95%" stopColor={color || defaultColor} stopOpacity={0.1} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid vertical={false} />
-              <XAxis
-                dataKey="time"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                minTickGap={20}
-              />
-              <YAxis
-                domain={yAxisDomain}
-                tickLine={false}
-                axisLine={false}
-                tickMargin={4}
-                tickFormatter={(value) => `${value}%`}
-                width={40}
-              />
-              <ChartTooltip
-                cursor={false}
-                content={
-                  <ChartTooltipContent
-                    labelFormatter={(value) => `Time: ${value}`}
-                    indicator="dot"
-                  />
-                }
-              />
-              <Area
-                dataKey="value"
-                type="natural"
-                fill="url(#fillValue)"
-                stroke={color || defaultColor}
-                stackId="a"
-              />
-            </AreaChart>
-          </ChartContainer>
-        </div>
-      );
-    }
+    const chartHeight = !chartData || chartData.length === 0 ? "h-48" : "h-32";
+    const chartDataToUse =
+      !chartData || chartData.length === 0
+        ? (() => {
+            const now = new Date();
+            const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+            const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+            const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+            return [
+              {
+                time: threeHoursAgo.toLocaleTimeString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                }),
+                value: 0,
+                valueFormatted: "0%",
+              },
+              {
+                time: twoHoursAgo.toLocaleTimeString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                }),
+                value: 0,
+                valueFormatted: "0%",
+              },
+              {
+                time: oneHourAgo.toLocaleTimeString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                }),
+                value: 0,
+                valueFormatted: "0%",
+              },
+              {
+                time: now.toLocaleTimeString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                }),
+                value: 0,
+                valueFormatted: "0%",
+              },
+            ];
+          })()
+        : chartData;
 
     return (
-      <div className="w-full h-full">
+      <div className={`w-full ${chartHeight}`}>
         <ChartContainer config={chartConfig} className="h-full w-full">
-          <AreaChart 
-            data={chartData}
-            margin={{ left: 0, right: 10, top: 10, bottom: 30 }}
+          <AreaChart
+            data={chartDataToUse}
+            margin={{ left: 0, right: 10, top: 2, bottom: 10 }}
             width={undefined}
-            height={undefined}
+            height={50}
           >
             <defs>
               <linearGradient id="fillValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={color || defaultColor} stopOpacity={0.8} />
-                <stop offset="95%" stopColor={color || defaultColor} stopOpacity={0.1} />
+                <stop
+                  offset="5%"
+                  stopColor={color || metricConfig.color}
+                  stopOpacity={0.8}
+                />
+                <stop
+                  offset="95%"
+                  stopColor={color || metricConfig.color}
+                  stopOpacity={0.1}
+                />
               </linearGradient>
             </defs>
             <CartesianGrid vertical={false} />
@@ -311,7 +264,7 @@ export const MetricRow: React.FC<MetricRowProps> = ({
               dataKey="value"
               type="natural"
               fill="url(#fillValue)"
-              stroke={color || defaultColor}
+              stroke={color || metricConfig.color}
               stackId="a"
             />
           </AreaChart>
@@ -321,11 +274,13 @@ export const MetricRow: React.FC<MetricRowProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-5 gap-4 items-center">
-      <div className="col-span-1 flex flex-col items-center gap-1 text-center">
-        <Icon className="w-4 h-4" />
-        <span className="text-xs text-muted-foreground">{label}</span>
-        <div className="text-sm font-medium">{resourceValue}</div>
+    <div className="grid grid-cols-5 gap-3 items-center py-1 border border-dashed rounded-md">
+      <div className="col-span-1 flex flex-col items-center gap-0.5 text-center">
+        <metricConfig.Icon className="w-3 h-3" />
+        <span className="text-xs text-muted-foreground">
+          {metricConfig.label}
+        </span>
+        <div className="text-xs font-medium">{resourceValue}</div>
       </div>
 
       <div className="col-span-4">{renderChart()}</div>
@@ -334,5 +289,3 @@ export const MetricRow: React.FC<MetricRowProps> = ({
 };
 
 export default MetricRow;
-
-

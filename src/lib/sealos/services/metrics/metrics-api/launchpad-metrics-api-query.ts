@@ -55,6 +55,8 @@ export const getLaunchPadMetrics = createParallelAction(
     if (validatedRequest.step) formData.append("step", validatedRequest.step);
     if (validatedRequest.time) formData.append("time", validatedRequest.time);
 
+    // console.log("formData", formData);
+
     const response = await api.post("/query", formData, {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",

@@ -271,9 +271,6 @@ export const getDevboxRangedMonitorOptions = (
         ),
       ]);
 
-      console.log("cpuMetrics", cpuMetrics);
-      console.log("memoryMetrics", memoryMetrics);
-
       // Process and return the pod metrics data directly
       return extractPodMetricsData({
         cpu: cpuMetrics,

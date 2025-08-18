@@ -5,7 +5,7 @@ import { K8sMetadataSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-sc
 // 1. API Context Schema
 // =====================
 export const TemplateApiContextSchema = z.object({
-  baseURL: z.string().optional(),
+  baseUrl: z.string().optional(),
   authorization: z.string().optional(),
 });
 
