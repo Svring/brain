@@ -209,7 +209,7 @@ export const getLaunchpadInstantMonitorOptions = (
         memory: memoryMetrics,
       });
     },
-    enabled: !!context.baseURL && !!context.namespace && !!launchpadName,
+    enabled: !!context.baseUrl && !!context.namespace && !!launchpadName,
     staleTime: 1000 * 30, // 30 seconds
   });
 };
@@ -281,7 +281,7 @@ export const getLaunchpadRangedMonitorOptions = (
         memory: memoryMetrics,
       });
     },
-    enabled: !!context.baseURL && !!context.namespace && !!launchpadName,
+    enabled: !!context.baseUrl && !!context.namespace && !!launchpadName,
     staleTime: 1000 * 30, // 30 seconds
   });
 };

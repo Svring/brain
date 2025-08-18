@@ -4,21 +4,16 @@ import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context
 export async function createK8sContext(opts: {
   req: Request;
 }): Promise<K8sApiContext> {
-  const authorization = opts.req.headers.get("authorization");
-  const baseUrl = opts.req.headers.get("baseurl");
+  const kubeconfig = opts.req.headers.get("kubeconfig");
+  const regionUrl = opts.req.headers.get("regionUrl");
   const namespace = opts.req.headers.get("namespace");
 
   // Decode kubeconfig if it was percent-encoded when sent via headers
-  let kubeconfig = (authorization as string) || "";
-  try {
-    kubeconfig = decodeURIComponent(kubeconfig);
-  } catch (_) {
-    // ignore decode issues; use raw value
-  }
+  const decodedKubeconfig = decodeURIComponent(kubeconfig as string);
 
   return {
-    kubeconfig,
-    regionUrl: baseUrl as string,
+    kubeconfig: decodedKubeconfig as string,
+    regionUrl: regionUrl as string,
     namespace: (namespace as string) || "default",
   };
 }

@@ -22,7 +22,7 @@ interface CombinedMessageProps {
 
 export const CombinedMessage: React.FC<CombinedMessageProps> = ({
   resource,
-  height = "h-80",
+  height,
 }) => {
   const { monitorData, isLoading } = useResourceMetrics(resource);
 

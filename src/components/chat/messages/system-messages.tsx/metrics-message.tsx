@@ -28,7 +28,7 @@ export const MetricsMessageCard: React.FC<MetricsMessageProps> = ({
     isLoading = false,
   } = payload;
 
-  console.log("monitorData", monitorData);
+  // console.log("monitorData", monitorData);
 
   // Determine which metrics to show based on available data
   const showCpu = monitorData && Object.keys(monitorData).length > 0;

@@ -55,6 +55,9 @@ export const listAllResources = async (
     ? _.pick(CUSTOM_RESOURCES, customResourceTypes)
     : {};
 
+  // console.log("builtinResourcesToFetch", builtinResourcesToFetch);
+  // console.log("customResourcesToFetch", customResourcesToFetch);
+
   // Prepare builtin resource promises only if there are resources to fetch
   const builtinPromises = _.isEmpty(builtinResourcesToFetch)
     ? []
@@ -89,6 +92,9 @@ export const listAllResources = async (
     Promise.all(builtinPromises),
     Promise.all(customPromises),
   ]);
+
+  // console.log("builtinResults", builtinResults);
+  // console.log("customResults", customResults);
 
   return ListAllResourcesResponseSchema.parse({
     builtin: _.fromPairs(builtinResults),

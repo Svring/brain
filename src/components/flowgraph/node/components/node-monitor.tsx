@@ -25,7 +25,7 @@ export default function NodeMonitor({ resource }: NodeMonitorProps) {
   const { monitorData, isLoading } = useResourceMetrics(resource);
   const { sendSystemMessage } = useSendSystemMessageMutation();
 
-  console.log("monitorData", monitorData);
+  // console.log("monitorData", monitorData);
 
   // Get the latest data point for current values
   const latestData =
