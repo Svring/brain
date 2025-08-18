@@ -25,10 +25,12 @@ export default function NodeMonitor({ resource }: NodeMonitorProps) {
   const { monitorData, isLoading } = useResourceMetrics(resource);
   const { sendSystemMessage } = useSendSystemMessageMutation();
 
+  console.log("monitorData", monitorData);
+
   // Get the latest data point for current values
   const latestData =
     monitorData && Array.isArray(monitorData) && monitorData.length > 0
-      ? monitorData[monitorData.length - 1]
+      ? monitorData[monitorData.length - 3]
       : null;
 
   // Determine icon color based on monitor values

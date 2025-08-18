@@ -30,6 +30,7 @@ interface Container {
 interface Pod {
   name: string;
   status: string;
+  upTime?: string;
   containers?: Container[];
 }
 
@@ -110,9 +111,11 @@ export const PodOverview: React.FC<PodOverviewProps> = ({ resource }) => {
                       <span className="text-sm font-medium">
                         Pod: {pod.name}
                       </span>
-                      {/* <Badge variant={getStatusVariant(pod.status)}>
-                        {pod.status}
-                      </Badge> */}
+                      {pod.upTime && (
+                        <span className="text-xs text-muted-foreground">
+                          {pod.upTime}
+                        </span>
+                      )}
                     </div>
 
                     {/* Container Squares */}

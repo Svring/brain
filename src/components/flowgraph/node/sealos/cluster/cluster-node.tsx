@@ -54,7 +54,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
     }),
   });
 
-  console.log("clusterData", clusterData);
+  // console.log("clusterData", clusterData);
 
   // Fetch cluster backup list
   const { data: backupList = [] } = useQuery({

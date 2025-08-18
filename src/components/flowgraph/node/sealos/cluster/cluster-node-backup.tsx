@@ -11,6 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import ClusterNodeBackupTitle from "./cluster-node-backup-title";
 import ClusterNodeBackupList from "./cluster-node-backup-list";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
@@ -24,6 +25,7 @@ export default function ClusterNodeBackup({
 }) {
   const sealosContext = createSealosContext();
   const [isExpanded, setIsExpanded] = useState(false);
+  const { sendSystemMessage } = useSendSystemMessageMutation();
 
   const { data: backupList, isLoading } = useQuery(
     getClusterBackupListOptions(
@@ -55,6 +57,13 @@ export default function ClusterNodeBackup({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              sendSystemMessage({
+                type: "info.clusterBackup",
+                payload: {
+                  backups: transformedBackups,
+                  clusterName: clusterName,
+                },
+              });
             }}
           >
             <DatabaseBackup className="h-4 w-4 text-theme-green" />
