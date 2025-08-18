@@ -149,7 +149,25 @@ export const ClusterObjectQuerySchema = z.object({
         )
         .transform((val) => Buffer.from(val, "base64").toString("utf-8")),
     }),
-    publicConnection: z.string().optional(),
+    publicConnection: z
+      .any()
+      .optional()
+      .describe(
+        JSON.stringify({
+          resourceType: "service",
+          label: "app.kubernetes.io/instance",
+          name: "^{{instanceName}}-export$",
+          path: [""],
+        })
+      )
+      .transform((service) => {
+        if (!service || !service.spec?.ports?.[0]?.nodePort) {
+          return null;
+        }
+        return {
+          port: service.spec.ports[0].nodePort,
+        };
+      }),
   }),
   backup: z.any().describe(
     JSON.stringify({

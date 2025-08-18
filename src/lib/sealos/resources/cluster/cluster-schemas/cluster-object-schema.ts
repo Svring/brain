@@ -21,6 +21,12 @@ export const ClusterConnectionSchema = z.object({
     username: z.string(),
     password: z.string(),
   }),
+  publicConnection: z
+    .object({
+      port: z.number(),
+    })
+    .nullable()
+    .optional(),
 });
 
 export const ClusterBackupSchema = z

@@ -27,6 +27,8 @@ import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { clusterClient } from "@/components/provider/trpc-provider";
+import { convertToDbconnUrl } from "@/lib/sealos/sealos-utils";
+import { Globe } from "lucide-react";
 
 export default function ClusterNode({ data }: { data: ClusterObject }) {
   const { sendMessage, setMessages, messages } = useCopilotChatHeadless_c();
@@ -52,6 +54,8 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
     }),
   });
 
+  // console.log("clusterData", clusterData);
+
   // Fetch cluster backup list
   const { data: backupList = [] } = useQuery({
     ...clusterTrpcClient.getClusterBackupList.queryOptions({
@@ -60,6 +64,29 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
   });
 
   const { name, type, status } = clusterData;
+
+  // Construct connection string
+  const connectionString = (() => {
+    try {
+      const regionUrl = k8sContext.regionUrl;
+      const publicConnection = clusterData.connection?.publicConnection;
+      const privateConnection = clusterData.connection?.privateConnection;
+
+      if (!regionUrl || !publicConnection?.port || !privateConnection) {
+        return null;
+      }
+
+      const dbconnUrl = convertToDbconnUrl(regionUrl);
+      const { username, password } = privateConnection;
+
+      return `${type}://${username}:${password}@${dbconnUrl}:${publicConnection.port}/?directConnection=true`;
+    } catch (error) {
+      console.error("Error constructing connection string:", error);
+      return null;
+    }
+  })();
+
+  // console.log("Connection string:", connectionString);
 
   // console.log("clusterDataTyped", clusterDataTyped);
 
@@ -125,6 +152,16 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
           <div className="flex-shrink-0">
             <ClusterNodeMenu object={clusterData} />
           </div>
+        </div>
+
+        {/* Public Access Indicator */}
+        <div className="flex items-center gap-2 text-md">
+          <Globe 
+            className={`h-4 w-4 ${
+              connectionString ? "text-theme-green" : "text-theme-gray"
+            }`} 
+          />
+          <span className="text-muted-foreground">Public Access</span>
         </div>
 
         {/* Bottom section with status and icons */}
