@@ -125,3 +125,58 @@ export function transformCombinedMonitorData(monitorData: {
 
   return null;
 }
+
+/**
+ * Infers the appropriate color class based on a status string
+ * @param status - The status string to evaluate
+ * @param type - The type of color to return ('text', 'bg', or 'border')
+ * @returns The appropriate color class string
+ */
+export function inferStatusColor(
+  status: string,
+  type: "text" | "bg" | "border" = "text"
+): string {
+  const normalizedStatus = status.toLowerCase();
+
+  // Define status to color mappings
+  const statusColorMap: Record<string, string> = {
+    running: "theme-green",
+    ready: "theme-green",
+    active: "theme-green",
+    healthy: "theme-green",
+    success: "theme-green",
+
+    error: "theme-red",
+    failed: "theme-red",
+    terminated: "theme-red",
+    crashloopbackoff: "theme-red",
+    unhealthy: "theme-red",
+
+    pending: "theme-gray",
+    waiting: "theme-gray",
+    unknown: "theme-gray",
+    stopped: "theme-gray",
+    shutdown: "theme-gray",
+    deleting: "theme-gray",
+
+    warning: "theme-yellow",
+    imagepullbackoff: "theme-yellow",
+    containercreating: "theme-yellow",
+    podinitializing: "theme-yellow",
+  };
+
+  // Get the base color
+  const baseColor = statusColorMap[normalizedStatus] || "theme-gray";
+
+  // Return the appropriate color class based on type
+  switch (type) {
+    case "text":
+      return `text-${baseColor}`;
+    case "bg":
+      return `bg-${baseColor}`;
+    case "border":
+      return `border-${baseColor}`;
+    default:
+      return `text-${baseColor}`;
+  }
+}

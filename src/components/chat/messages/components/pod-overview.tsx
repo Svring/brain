@@ -3,16 +3,38 @@ import { Box } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+interface Container {
+  name: string;
+  ready: boolean;
+  state: {
+    running?: {
+      startedAt: string;
+    };
+    waiting?: {
+      reason: string;
+    };
+    terminated?: {
+      reason: string;
+      exitCode: number;
+    };
+  };
+}
+
 interface Pod {
   name: string;
   status: string;
+  containers?: Container[];
 }
 
 interface PodOverviewProps {
-  pods?: Pod[];
+  resource: {
+    pods?: Pod[];
+  };
 }
 
-export const PodOverview: React.FC<PodOverviewProps> = ({ pods = [] }) => {
+export const PodOverview: React.FC<PodOverviewProps> = ({ resource }) => {
+  // Extract pods from resource
+  const podList = resource?.pods || [];
   const getStatusVariant = (status: string) => {
     const normalizedStatus = status.toLowerCase();
     switch (normalizedStatus) {
@@ -34,16 +56,18 @@ export const PodOverview: React.FC<PodOverviewProps> = ({ pods = [] }) => {
   };
 
   const getStatusColor = () => {
-    if (pods.length === 0) {
+    if (podList.length === 0) {
       return "text-muted-foreground";
     }
 
-    const hasError = pods.some((pod) => pod.status.toLowerCase() === "error");
+    const hasError = podList.some(
+      (pod) => pod.status.toLowerCase() === "error"
+    );
     if (hasError) {
       return "text-theme-red";
     }
 
-    const allRunning = pods.every(
+    const allRunning = podList.every(
       (pod) => pod.status.toLowerCase() === "running"
     );
     if (allRunning) {
@@ -53,8 +77,10 @@ export const PodOverview: React.FC<PodOverviewProps> = ({ pods = [] }) => {
     return "text-theme-gray";
   };
 
-  const runningPods = pods.filter(pod => pod.status.toLowerCase() === "running").length;
-  const totalPods = pods.length;
+  const runningPods = podList.filter(
+    (pod) => pod.status.toLowerCase() === "running"
+  ).length;
+  const totalPods = podList.length;
 
   return (
     <Card className="w-full bg-background-secondary">
@@ -65,7 +91,7 @@ export const PodOverview: React.FC<PodOverviewProps> = ({ pods = [] }) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {pods && pods.length > 0 ? (
+        {podList && podList.length > 0 ? (
           <>
             {/* Summary */}
             <div className="flex items-center justify-between">
@@ -81,21 +107,63 @@ export const PodOverview: React.FC<PodOverviewProps> = ({ pods = [] }) => {
             <div className="space-y-2">
               <h4 className="text-sm font-medium">Pod Status</h4>
               <div className="grid gap-2">
-                {pods.map((pod, index) => (
+                {podList.map((pod, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between p-2 rounded-lg border bg-background"
+                    className="p-3 rounded-lg border bg-background space-y-2"
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between">
                       <div className="flex flex-col">
                         <span className="text-sm font-medium truncate max-w-48">
                           {pod.name}
                         </span>
                       </div>
+                      <Badge variant={getStatusVariant(pod.status)}>
+                        {pod.status}
+                      </Badge>
                     </div>
-                    <Badge variant={getStatusVariant(pod.status)}>
-                      {pod.status}
-                    </Badge>
+
+                    {/* Container Details */}
+                    {pod.containers && pod.containers.length > 0 && (
+                      <div className="space-y-1">
+                        {pod.containers.map((container, containerIndex) => (
+                          <div
+                            key={containerIndex}
+                            className="flex items-center justify-between text-xs"
+                          >
+                            <div className="flex items-center gap-2">
+                              <div
+                                className={`w-2 h-2 rounded-full ${
+                                  container.ready
+                                    ? "bg-theme-green"
+                                    : "bg-theme-red"
+                                }`}
+                              />
+                              <span className="text-muted-foreground">
+                                {container.name}
+                              </span>
+                            </div>
+                            <div className="text-muted-foreground">
+                              {container.state.running ? (
+                                <span className="text-theme-green">
+                                  Running
+                                </span>
+                              ) : container.state.waiting ? (
+                                <span className="text-theme-yellow">
+                                  {container.state.waiting.reason}
+                                </span>
+                              ) : container.state.terminated ? (
+                                <span className="text-theme-red">
+                                  {container.state.terminated.reason}
+                                </span>
+                              ) : (
+                                <span>Unknown</span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -103,7 +171,7 @@ export const PodOverview: React.FC<PodOverviewProps> = ({ pods = [] }) => {
 
             {/* Status Summary */}
             <div className="flex gap-1">
-              {pods.slice(0, 10).map((pod, index) => (
+              {podList.slice(0, 10).map((pod, index) => (
                 <div
                   key={index}
                   className={`h-2 w-8 rounded-full ${
@@ -118,11 +186,11 @@ export const PodOverview: React.FC<PodOverviewProps> = ({ pods = [] }) => {
                   title={`${pod.name}: ${pod.status}`}
                 />
               ))}
-              {pods.length > 10 && (
+              {podList.length > 10 && (
                 <div className="flex flex-col items-center gap-1">
                   <div className="h-2 w-8 rounded-full bg-muted" />
                   <div className="text-xs text-muted-foreground">
-                    +{pods.length - 10}
+                    +{podList.length - 10}
                   </div>
                 </div>
               )}

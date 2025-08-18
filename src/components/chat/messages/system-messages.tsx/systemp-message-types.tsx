@@ -9,6 +9,7 @@ import { PodMessageCard } from "./pod-message";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { DiagnoseNetworkMessageCard } from "./diagnose-network-message";
 import { CombinedMessage } from "./combined-metrics-message";
+import { PodOverview } from "../components/pod-overview";
 
 export const SystemMessageType = {
   info: {
@@ -27,6 +28,7 @@ export const SystemMessageType = {
     ),
     metrics: (payload: any) => <MetricsMessageCard payload={payload} />,
     combinedMetrics: (payload: any) => <CombinedMessage resource={payload} />,
+    podOverview: (payload: any) => <PodOverview resource={payload} />,
     objectStorageInfo: (payload: any) => (
       <ObjectStorageInfoMessageCard payload={payload} />
     ),

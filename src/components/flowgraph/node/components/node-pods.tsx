@@ -9,6 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
 interface Pod {
   name: string;
@@ -16,21 +17,27 @@ interface Pod {
 }
 
 interface NodePodsProps {
-  pods?: Pod[];
+  resource: {
+    pods?: Pod[];
+  };
 }
 
-export default function NodePods({ pods = [] }: NodePodsProps) {
+export default function NodePods({ resource }: NodePodsProps) {
+  const { sendSystemMessage } = useSendSystemMessageMutation();
+  
+  // Extract pods from resource
+  const podList = resource?.pods || [];
   const getStatusColor = () => {
-    if (pods.length === 0) {
+    if (podList.length === 0) {
       return "text-muted-foreground";
     }
 
-    const hasError = pods.some((pod) => pod.status.toLowerCase() === "error");
+    const hasError = podList.some((pod) => pod.status.toLowerCase() === "error");
     if (hasError) {
       return "text-theme-red";
     }
 
-    const allRunning = pods.every(
+    const allRunning = podList.every(
       (pod) => pod.status.toLowerCase() === "running"
     );
     if (allRunning) {
@@ -60,13 +67,23 @@ export default function NodePods({ pods = [] }: NodePodsProps) {
     }
   };
 
-  const displayedPods = pods.slice(0, 5);
+  const displayedPods = podList.slice(0, 5);
 
   return (
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="p-1 border-2 border-muted-foreground/20 rounded-full">
+          <div 
+            className="p-1 border-2 border-muted-foreground/20 rounded-full cursor-pointer hover:border-muted-foreground/40 transition-colors"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              sendSystemMessage({
+                type: "info.podOverview",
+                payload: resource,
+              });
+            }}
+          >
             <Box className={`h-4 w-4 ${getStatusColor()}`} />
           </div>
         </TooltipTrigger>
@@ -76,7 +93,7 @@ export default function NodePods({ pods = [] }: NodePodsProps) {
           onPointerDownOutside={(e) => e.preventDefault()}
         >
           <div className="space-y-2 p-2">
-            {pods && pods.length > 0 ? (
+            {podList && podList.length > 0 ? (
               <>
                 <div className="text-sm font-medium">Pod Status</div>
                 <div className="flex gap-1">
@@ -106,11 +123,11 @@ export default function NodePods({ pods = [] }: NodePodsProps) {
                       </Tooltip>
                     </TooltipProvider>
                   ))}
-                  {pods.length > 5 && (
+                  {podList.length > 5 && (
                     <div className="flex flex-col items-center gap-1">
                       <div className="h-2 w-8 rounded-full bg-muted" />
                       <div className="text-xs text-muted-foreground">
-                        +{pods.length - 5}
+                        +{podList.length - 5}
                       </div>
                     </div>
                   )}

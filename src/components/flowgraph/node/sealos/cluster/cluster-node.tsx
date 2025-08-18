@@ -1,10 +1,6 @@
 "use client";
 
 import BaseNode from "../../base-node-wrapper";
-import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { Copy } from "lucide-react";
 import NodeStatusLight from "../../components/node-status-light";
 import NodeInternalUrl from "../../components/node-internal-url";
 import NodeMonitor from "../../components/node-monitor";
@@ -12,6 +8,7 @@ import NodeLog from "../../components/node-log";
 import NodePods from "../../components/node-pods";
 import NodeBackup from "../../components/node-backup";
 import NodeStack from "../../components/node-stack";
+import NodeHem from "../../components/node-hem";
 import ClusterNodeTitle from "./cluster-node-title";
 import ClusterNodeMenu from "./cluster-node-menu";
 import ClusterNodeBackup from "./cluster-node-backup";
@@ -32,7 +29,6 @@ import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgra
 import { clusterClient } from "@/components/provider/trpc-provider";
 
 export default function ClusterNode({ data }: { data: ClusterObject }) {
-  const [publicAccess, setPublicAccess] = useState(false);
   const { sendMessage, setMessages, messages } = useCopilotChatHeadless_c();
   const { openSidebarChat } = useChatActions();
   const sendMessageMutation = useSendMessageMutation();
@@ -63,10 +59,9 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
     }),
   });
 
-  const clusterDataTyped = clusterData as typeof data | undefined;
-  const { name, type, status, pods, connection } = clusterDataTyped || data;
+  const { name, type, status } = clusterData;
 
-  console.log("clusterDataTyped", clusterDataTyped);
+  // console.log("clusterDataTyped", clusterDataTyped);
 
   // const { data: monitorData } = useQuery(
   //   clusterTrpcClient.getClusterMonitorData.queryOptions({
@@ -128,30 +123,8 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
         <div className="flex items-center justify-between">
           <ClusterNodeTitle name={name} type={type} />
           <div className="flex-shrink-0">
-            <ClusterNodeMenu object={clusterDataTyped || data} />
+            <ClusterNodeMenu object={clusterData} />
           </div>
-        </div>
-
-        {/* Public Access Toggle and Copy Button */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Public Access</span>
-            <Switch
-              checked={publicAccess}
-              onCheckedChange={setPublicAccess}
-              className="scale-75"
-            />
-          </div>
-          <Button
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-            size="sm"
-            variant="ghost"
-            className="h-6 w-6 p-0"
-          >
-            <Copy className="h-3 w-3" />
-          </Button>
         </div>
 
         {/* Bottom section with status and icons */}
@@ -162,7 +135,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={[]} /> */}
-            {/* <NodePods pods={pods} /> */}
+            <NodePods resource={clusterData || data} />
             <NodeLog />
             <NodeBackup />
             <NodeMonitor resource={data} />
@@ -172,5 +145,18 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
     </BaseNode>
   );
 
-  return <NodeStack mainCard={mainCard} data={backupList} />;
+  // Hem component displaying storage information
+  const hemComponent = (
+    <div className="text-center text-muted-foreground flex">
+      <div className="text-xs font-medium">Storage:</div>
+      <div className="text-xs">{clusterData.resource?.storage || "N/A"}</div>
+    </div>
+  );
+
+  return (
+    <NodeHem
+      mainCard={<NodeStack mainCard={mainCard} data={backupList} />}
+      hemComponent={hemComponent}
+    />
+  );
 }

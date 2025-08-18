@@ -23,6 +23,8 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
   const { name, image, status, ports, pods, env, resource } = data;
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 
+  // console.log("data", data);
+
   const launchpadTrpcClient = launchpadClient.useTRPC();
 
   const sealosContext = createSealosContext();
@@ -120,8 +122,8 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
 
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
-            {/* <NodeInternalUrl ports={ports || []} />
-            <NodePods pods={pods || []} /> */}
+            {/* <NodeInternalUrl ports={ports || []} /> */}
+            <NodePods resource={data} />
             <NodeLog />
             <NodeMonitor resource={data} />
           </div>
