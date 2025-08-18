@@ -21,9 +21,9 @@ const serviceAdapter = g.__copilot_serviceAdapter;
 if (!g.__copilot_runtime) {
   g.__copilot_runtime = new CopilotRuntime({
     agents: {
-      sealos_brain: new LangGraphAgent({
+      brain: new LangGraphAgent({
         deploymentUrl: process.env.NEXT_PUBLIC_LANGGRAPH_DEPLOYMENT_URL || "",
-        graphId: "sealos_brain",
+        graphId: "brain",
         langsmithApiKey: process.env.LANGSMITH_API_KEY || "",
       }),
     },

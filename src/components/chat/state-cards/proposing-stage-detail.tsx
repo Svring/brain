@@ -1,6 +1,6 @@
 "use client";
 
-import { ProjectPlanWithStatus } from "@/contexts/langgraph/langgraph-schema";
+import { ProjectProposal } from "@/contexts/langgraph/langgraph-schema";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { useCreateDevboxAction } from "@/lib/sealos/resources/devbox/devbox-method/devbox-action";
@@ -20,13 +20,11 @@ import { generateProjectName } from "@/lib/brain/resources/project/project-metho
 import { useRouter } from "next/navigation";
 
 interface ProposingStageDetailProps {
-  proposingData: ProjectPlanWithStatus;
-  proposingStatus: "pending" | "active" | "completed";
+  proposingData: ProjectProposal;
 }
 
 export function ProposingStageDetail({
   proposingData,
-  proposingStatus,
 }: ProposingStageDetailProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [creationProgress, setCreationProgress] = useState<string>("");
@@ -204,11 +202,7 @@ export function ProposingStageDetail({
       {proposingData ? (
         <div className="h-full flex flex-col relative">
           {/* Scrollable content */}
-          <div
-            className={`flex-1 overflow-y-auto pr-2 ${
-              proposingStatus === "completed" ? "pb-16" : "pb-4"
-            }`}
-          >
+          <div className="flex-1 overflow-y-auto pr-2 pb-4">
             <div className="space-y-4">
               {proposingData.name && (
                 <div>
@@ -324,30 +318,21 @@ export function ProposingStageDetail({
               </div>
             </div>
 
-          {/* Fixed button at bottom right - only show when completed */}
-          {proposingStatus === "completed" && (
-            <div className="absolute bottom-2 right-2 p-3">
-              {isCreating && creationProgress && (
-                <div className="mb-2 text-xs text-muted-foreground text-center max-w-48">
-                  {creationProgress}
-                </div>
-              )}
-              <Button
-                size="sm"
-                onClick={handleCreateProject}
-                disabled={isCreating}
-              >
-                {isCreating ? "Creating..." : "Create Project"}
-              </Button>
-            </div>
-          )}
-        </div>
-      ) : proposingStatus === "active" ? (
-        <div className="flex flex-col items-center justify-center py-8">
-          <Spinner variant="bars" size={32} className="mb-4" />
-          <p className="text-sm text-muted-foreground">
-            Generating project proposal...
-          </p>
+          {/* Fixed button at bottom right */}
+          <div className="absolute bottom-2 right-2 p-3">
+            {isCreating && creationProgress && (
+              <div className="mb-2 text-xs text-muted-foreground text-center max-w-48">
+                {creationProgress}
+              </div>
+            )}
+            <Button
+              size="sm"
+              onClick={handleCreateProject}
+              disabled={isCreating}
+            >
+              {isCreating ? "Creating..." : "Create Project"}
+            </Button>
+          </div>
         </div>
       ) : (
         <p className="text-sm text-muted-foreground">

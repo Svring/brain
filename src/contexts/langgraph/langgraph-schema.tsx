@@ -16,7 +16,7 @@ export type Database = {
 };
 
 export type ObjectStorageBucket = {
-  policy: string;
+  policy: "Private" | "PublicRead" | "PublicReadwrite";
   description: string;
 };
 
@@ -26,19 +26,20 @@ export type ProjectResources = {
   buckets: ObjectStorageBucket[];
 };
 
-export type ProjectPlanWithStatus = {
+export type ProjectProposal = {
   name: string;
   description: string;
   resources: ProjectResources;
-  status: "pending" | "active" | "completed";
 };
 
-export type LanggraphAgentState = {
+export type BrainState = {
   base_url: string;
   api_key: string;
   model: string;
+  stage: "project" | "resource";
+  project_proposal: ProjectProposal;
+  resource_context: any;
   project_context: ProjectContextState;
-  project_plan?: ProjectPlanWithStatus;
 };
 
 export type LanggraphEvent =
@@ -49,4 +50,16 @@ export type LanggraphEvent =
       base_url?: string;
       api_key?: string;
       model?: string;
+    }
+  | {
+      type: "SET_STAGE";
+      stage: "project" | "resource";
+    }
+  | {
+      type: "SET_PROJECT_PROPOSAL";
+      project_proposal: ProjectProposal;
+    }
+  | {
+      type: "SET_RESOURCE_CONTEXT";
+      resource_context: any;
     };

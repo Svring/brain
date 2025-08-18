@@ -244,7 +244,7 @@ export const getClusterBackupListOptions = (
   queryOptions({
     queryKey: ["cluster", "backup", target.name],
     queryFn: async () => await getClusterBackupList(clusterContext, target),
-    enabled: !!target.name && !!clusterContext.baseURL,
+    enabled: !!target.name && !!clusterContext.baseUrl,
     staleTime: 1000 * 60, // 1 minute
   });
 
@@ -267,7 +267,7 @@ export const getClusterLogsOptions = (
       !!target.plural &&
       !!target.name &&
       !!k8sContext.kubeconfig &&
-      !!clusterContext.baseURL,
+      !!clusterContext.baseUrl,
   });
 
 /**
@@ -277,7 +277,7 @@ export const getClusterVersionsOptions = (context: SealosApiContext) =>
   queryOptions({
     queryKey: ["cluster", "version"],
     queryFn: async () => await fetchClusterVersions(context),
-    enabled: !!context.baseURL,
+    enabled: !!context.baseUrl,
     staleTime: 1000 * 60 * 60, // 1 hour - versions don't change frequently
   });
 

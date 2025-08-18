@@ -1,17 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { ProjectPlanWithStatus } from "@/contexts/langgraph/langgraph-schema";
+import { ProjectProposal } from "@/contexts/langgraph/langgraph-schema";
 import { ProposingStageDetail } from "./proposing-stage-detail";
 
 export interface ProjectPlanCardProps {
-  projectStatus?: "pending" | "active" | "completed";
   title?: string;
-  projectData?: ProjectPlanWithStatus;
+  projectData?: ProjectProposal;
 }
 
 export function ProjectPlanCard({
-  projectStatus = "pending",
   title = "Project Plan",
   projectData,
 }: ProjectPlanCardProps) {
@@ -23,7 +21,6 @@ export function ProjectPlanCard({
       {projectData && (
         <ProposingStageDetail 
           proposingData={projectData} 
-          proposingStatus={projectStatus} 
         />
       )}
     </div>

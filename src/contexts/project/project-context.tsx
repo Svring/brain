@@ -5,7 +5,6 @@ import { useMachine } from "@xstate/react";
 import { createContext, type ReactNode, useContext } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import { projectMachine } from "@/contexts/project/project-machine";
-import { useEffect } from "react";
 import { useLanggraphAgent } from "@/hooks/langgraph/use-langgraph-agent";
 import _ from "lodash";
 
@@ -25,17 +24,6 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
   const [state, send, actorRef] = useMachine(projectMachine, {
     // inspect: inspector.inspect,
   });
-
-  const { state: langgraphState, setState: setLanggraphState } =
-    useLanggraphAgent();
-
-  useEffect(() => {
-    const newState = _.cloneDeep(langgraphState);
-    _.set(newState, "project_context.allProjects", state.context.allProjects);
-    _.set(newState, "project_context.selectedProject", state.context.selectedProject);
-    _.set(newState, "project_context.selectedProjectResources", state.context.selectedProjectResources);
-    setLanggraphState(newState);
-  }, [state]);
 
   return (
     <ProjectContext.Provider value={{ state, send, actorRef }}>
@@ -61,17 +49,46 @@ export function useProjectState() {
 }
 
 export function useProjectActions() {
-  const { send } = useProjectContext();
+  const { send, state } = useProjectContext();
+  const { state: langgraphState, setState: setLanggraphState } =
+    useLanggraphAgent();
+
+  const syncStateToLanggraph = () => {
+    const newState = _.cloneDeep(langgraphState);
+    _.set(newState, "resource_context.allProjects", state.context.allProjects);
+    _.set(
+      newState,
+      "resource_context.selectedProject",
+      state.context.selectedProject
+    );
+    _.set(
+      newState,
+      "resource_context.selectedProjectResources",
+      state.context.selectedProjectResources
+    );
+    setLanggraphState(newState);
+  };
 
   return {
-    setAllProjects: (projects: unknown[]) =>
-      send({ type: "SET_ALL_PROJECTS", projects }),
-    selectProject: (project: unknown) =>
-      send({ type: "SELECT_PROJECT", project }),
-    clearSelectedProject: () => send({ type: "CLEAR_SELECTED_PROJECT" }),
-    setSelectedProjectResources: (resources: unknown) =>
-      send({ type: "SET_SELECTED_PROJECT_RESOURCES", resources }),
-    clearSelectedProjectResources: () =>
-      send({ type: "CLEAR_SELECTED_PROJECT_RESOURCES" }),
+    setAllProjects: (projects: unknown[]) => {
+      send({ type: "SET_ALL_PROJECTS", projects });
+      syncStateToLanggraph();
+    },
+    selectProject: (project: unknown) => {
+      send({ type: "SELECT_PROJECT", project });
+      syncStateToLanggraph();
+    },
+    clearSelectedProject: () => {
+      send({ type: "CLEAR_SELECTED_PROJECT" });
+      syncStateToLanggraph();
+    },
+    setSelectedProjectResources: (resources: unknown) => {
+      send({ type: "SET_SELECTED_PROJECT_RESOURCES", resources });
+      syncStateToLanggraph();
+    },
+    clearSelectedProjectResources: () => {
+      send({ type: "CLEAR_SELECTED_PROJECT_RESOURCES" });
+      syncStateToLanggraph();
+    },
   };
 }
