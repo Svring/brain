@@ -1,12 +1,13 @@
 import React from "react";
 import { CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Copy, Download } from "lucide-react";
 import Image from "next/image";
 import DevboxNodeIde from "@/components/flowgraph/node/sealos/devbox/devbox-node-ide";
+import DevboxNodeMenu from "@/components/flowgraph/node/sealos/devbox/devbox-node-menu";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import { useAuthState } from "@/contexts/auth/auth-context";
+import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 
 interface DevboxInfoHeaderProps {
   devboxData: DevboxObject;
@@ -18,15 +19,15 @@ export const DevboxInfoHeader: React.FC<DevboxInfoHeaderProps> = ({
   const { auth } = useAuthState();
   const namespace = auth?.namespace;
   const regionUrl = auth?.regionUrl;
-  
+
   return (
-    <CardHeader className="">
-      <div className="flex items-center gap-3">
-        <div className="flex-1">
-          <div className="flex items-center gap-4">
+    <CardHeader className="w-full">
+      <div className="flex items-center gap-3 w-full">
+        <div className="flex-1 w-full">
+          <div className="flex items-center gap-4 w-full">
             <Image
               src={`https://devbox.${regionUrl}/images/runtime/${
-                devboxData.image.split("-")[0]
+                transformDevboxImage(devboxData.image).split("-")[0]
               }.svg`}
               alt="Devbox Icon"
               width={24}
@@ -44,8 +45,14 @@ export const DevboxInfoHeader: React.FC<DevboxInfoHeaderProps> = ({
             </div>
           </div>
         </div>
-        <Badge>{devboxData.status}</Badge>
         <DevboxNodeIde object={devboxData} />
+        <DevboxNodeMenu object={devboxData} />
+      </div>
+
+      {/* Image Info */}
+      <div className="flex flex-col gap-1 pt-2">
+        <span className="text-sm text-muted-foreground">Image:</span>
+        <span className="text-sm rounded">{devboxData.image}</span>
       </div>
 
       {/* Created At and Up Time Info */}
@@ -71,7 +78,7 @@ export const DevboxInfoHeader: React.FC<DevboxInfoHeaderProps> = ({
       {/* SSH Connection Info */}
       {devboxData.ssh && (
         <div className="pt-2">
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">
                 SSH Connection
@@ -83,9 +90,11 @@ export const DevboxInfoHeader: React.FC<DevboxInfoHeaderProps> = ({
                 onClick={() => {
                   if (devboxData.ssh.privateKey) {
                     const fileName = `${regionUrl}_${namespace}_${devboxData.name}`;
-                    const blob = new Blob([devboxData.ssh.privateKey], { type: 'text/plain' });
+                    const blob = new Blob([devboxData.ssh.privateKey], {
+                      type: "text/plain",
+                    });
                     const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
+                    const a = document.createElement("a");
                     a.href = url;
                     a.download = fileName;
                     document.body.appendChild(a);
@@ -99,15 +108,16 @@ export const DevboxInfoHeader: React.FC<DevboxInfoHeaderProps> = ({
                 Download Key
               </Button>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-mono py-1 rounded text-foreground">
-                ssh -i {regionUrl}_{namespace}_{devboxData.name} {devboxData.ssh.user}@{devboxData.ssh.host} -p{" "}
+            <div className="flex items-center justify-between min-w-0 w-full bg-muted border rounded-md p-1">
+              <span className="text-sm font-mono p-1 rounded text-foreground flex-1 truncate mr-2 min-w-0 max-w-md">
+                ssh -i {regionUrl}_{namespace}_{devboxData.name}{" "}
+                {devboxData.ssh.user}@{devboxData.ssh.host} -p{" "}
                 {devboxData.ssh.port}
               </span>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0"
+                className="h-6 w-6 p-0 flex-shrink-0"
                 onClick={() => {
                   const sshCommand = `ssh -i ${regionUrl}_${namespace}_${devboxData.name} ${devboxData.ssh.user}@${devboxData.ssh.host} -p ${devboxData.ssh.port}`;
                   navigator.clipboard.writeText(sshCommand);

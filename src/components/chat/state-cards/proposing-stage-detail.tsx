@@ -9,12 +9,19 @@ import { useCreateObjectStorageMutation } from "@/lib/sealos/resources/objectsto
 import { generateDevboxName } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 import { generateClusterName } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
 import { generateBucketName } from "@/lib/sealos/resources/objectstorage/objectstorage-method/objectstorage-utils";
-import { createSealosContext, createObjectStorageContext, createK8sContext } from "@/lib/auth/auth-utils";
+import {
+  createSealosContext,
+  createObjectStorageContext,
+  createK8sContext,
+} from "@/lib/auth/auth-utils";
 import { useState } from "react";
 import { toast } from "sonner";
 import type { RuntimeName } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas";
 import type { ClusterType } from "@/lib/sealos/resources/cluster/cluster-api/cluster-open-api-schemas";
-import { useCreateProjectMutation, useAddToProjectMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
+import {
+  useCreateProjectMutation,
+  useAddToProjectMutation,
+} from "@/lib/brain/resources/project/project-method/project-mutation";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { generateProjectName } from "@/lib/brain/resources/project/project-method/project-utils";
 import { useRouter } from "next/navigation";
@@ -28,16 +35,19 @@ export function ProposingStageDetail({
 }: ProposingStageDetailProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [creationProgress, setCreationProgress] = useState<string>("");
-  const [createdResources, setCreatedResources] = useState<Array<{ name: string; kind: string; type?: string }>>([]);
+  const [createdResources, setCreatedResources] = useState<
+    Array<{ name: string; kind: string; type?: string }>
+  >([]);
   const router = useRouter();
-  
+
   const sealosContext = createSealosContext();
   const objectStorageContext = createObjectStorageContext();
   const k8sContext = createK8sContext();
 
   const createDevbox = useCreateDevboxAction(sealosContext);
   const createCluster = useCreateClusterAction(sealosContext);
-  const createObjectStorage = useCreateObjectStorageMutation(objectStorageContext);
+  const createObjectStorage =
+    useCreateObjectStorageMutation(objectStorageContext);
   const createProject = useCreateProjectMutation(k8sContext);
   const addToProject = useAddToProjectMutation(k8sContext);
 
@@ -126,7 +136,11 @@ export function ProposingStageDetail({
 
     setIsCreating(true);
     try {
-      const createdResourcesList: Array<{ name: string; kind: string; type?: string }> = [];
+      const createdResourcesList: Array<{
+        name: string;
+        kind: string;
+        type?: string;
+      }> = [];
 
       // Create devboxes
       for (const devbox of proposingData.resources.devboxes) {
@@ -147,10 +161,10 @@ export function ProposingStageDetail({
           name: clusterName,
           type: mapDatabaseTypeToEnum(database.type),
         });
-        createdResourcesList.push({ 
-          name: clusterName, 
-          kind: "cluster", 
-          type: mapDatabaseTypeToEnum(database.type) 
+        createdResourcesList.push({
+          name: clusterName,
+          kind: "cluster",
+          type: mapDatabaseTypeToEnum(database.type),
         });
       }
 
@@ -162,7 +176,10 @@ export function ProposingStageDetail({
           bucketName,
           bucketPolicy: mapBucketPolicyToEnum(bucket.policy),
         });
-        createdResourcesList.push({ name: bucketName, kind: "objectstoragebucket" });
+        createdResourcesList.push({
+          name: bucketName,
+          kind: "objectstoragebucket",
+        });
       }
 
       // Store created resources for project creation
@@ -175,17 +192,22 @@ export function ProposingStageDetail({
 
       // Add all resources to the project
       setCreationProgress(`Adding resources to project: ${projectName}...`);
-      const resourceTargets = createdResourcesList.map(resource => 
+      const resourceTargets = createdResourcesList.map((resource) =>
         convertResourceTypeToTarget(resource.kind, resource.name)
       );
-      
+
       await addToProject.mutateAsync({
         resources: resourceTargets,
         name: projectName,
       });
 
-      toast.success(`Project "${projectName}" created successfully with all resources!`);
-      
+      toast.success(
+        `Project "${projectName}" created successfully with all resources!`
+      );
+
+      // Clear the created resources indicator
+      setCreatedResources([]);
+
       // Navigate to the newly created project
       router.push(`/projects/${projectName}`);
     } catch (error) {
@@ -294,37 +316,19 @@ export function ProposingStageDetail({
                           </span>
                         </div>
                       )}
-                                         </div>
-                   </div>
-                 )}
-
-                 {/* Show created resources summary */}
-                 {createdResources.length > 0 && (
-                   <div className="mt-4 p-3 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
-                     <h4 className="font-medium text-green-800 dark:text-green-200 mb-2">
-                       Created Resources
-                     </h4>
-                     <div className="space-y-1">
-                       {createdResources.map((resource, index) => (
-                         <div key={index} className="flex items-center gap-2 text-sm text-green-700 dark:text-green-300">
-                           <span className="text-green-600 dark:text-green-400">•</span>
-                           <span className="capitalize">{resource.kind}:</span>
-                           <span className="font-mono">{resource.name}</span>
-                         </div>
-                       ))}
-                     </div>
-                   </div>
-                 )}
-              </div>
+                    </div>
+                  </div>
+                )}
             </div>
+          </div>
 
           {/* Fixed button at bottom right */}
           <div className="absolute bottom-2 right-2 p-3">
-            {isCreating && creationProgress && (
+            {/* {isCreating && creationProgress && (
               <div className="mb-2 text-xs text-muted-foreground text-center max-w-48">
                 {creationProgress}
               </div>
-            )}
+            )} */}
             <Button
               size="sm"
               onClick={handleCreateProject}

@@ -37,7 +37,6 @@ export default function StatefulsetNode({ data }: { data: StatefulsetObject }) {
     });
 
     emitMessage(
-      `This is your statefulset "${name}".`,
       {
         type: "info.launchpadInfo",
         payload: target,

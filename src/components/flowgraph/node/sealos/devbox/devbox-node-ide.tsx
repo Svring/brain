@@ -65,12 +65,12 @@ export default function DevboxNodeIde({
           alt={`${selectedIde} icon`}
           width={16}
           height={16}
-          className="h-5.5 w-6.5"
+          className="h-5 w-5"
         />
       </button>
 
       {/* Separator */}
-      <div className="w-px h-4.5 bg-border" />
+      <div className="w-px h-4 bg-border" />
 
       {/* Dropdown Arrow */}
       <DropdownMenu>

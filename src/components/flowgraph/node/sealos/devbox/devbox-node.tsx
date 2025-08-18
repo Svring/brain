@@ -18,6 +18,7 @@ import { getDevboxReleasesOptions } from "@/lib/sealos/resources/devbox/devbox-m
 import { useQuery } from "@tanstack/react-query";
 import { useEmitSystemMessage } from "@/lib/copilot/message/message-utils";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 
 // TODO: Devbox nodes would cause maximum call stack error
 export default function DevboxNode({ data }: { data: DevboxObject }) {
@@ -43,7 +44,7 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
       name: data.name,
     });
 
-    emitMessage("This is your devbox.", {
+    emitMessage({
       type: "info.devboxInfo",
       payload: target,
     });
@@ -76,7 +77,7 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
         <div className="flex items-center gap-2 mt-2">
           <Package className="h-4 w-4 text-muted-foreground" />
           <div className="text-sm text-muted-foreground truncate flex-1">
-            Image: {image}
+            Image: {transformDevboxImage(image)}
           </div>
         </div>
 

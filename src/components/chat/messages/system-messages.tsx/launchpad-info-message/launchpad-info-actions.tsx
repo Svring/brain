@@ -17,7 +17,7 @@ export const LaunchpadInfoActions: React.FC<LaunchpadInfoActionsProps> = ({
   const { emitMessage } = useEmitSystemMessage();
 
   const handleLogsClick = () => {
-    emitMessage(`Fetching logs for your ${kind} "${name}"...`, {
+    emitMessage({
       type: "info.logs",
       payload: {
         resourceName: name,
@@ -28,7 +28,7 @@ export const LaunchpadInfoActions: React.FC<LaunchpadInfoActionsProps> = ({
   };
 
   const handlePodClick = () => {
-    emitMessage(`Displaying pods for your ${kind} "${name}":`, {
+    emitMessage({
       type: "info.pod",
       payload: {
         pods: [], // This will be populated by the system
@@ -40,11 +40,7 @@ export const LaunchpadInfoActions: React.FC<LaunchpadInfoActionsProps> = ({
 
   return (
     <div className="flex gap-3 px-6 pb-6">
-      <Button
-        className="flex-1"
-        variant="outline"
-        onClick={handleLogsClick}
-      >
+      <Button className="flex-1" variant="outline" onClick={handleLogsClick}>
         <FileText className="w-4 h-4 mr-2" />
         Logs
       </Button>

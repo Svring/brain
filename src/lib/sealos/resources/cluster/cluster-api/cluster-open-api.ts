@@ -37,7 +37,7 @@ import https from "https";
 function createClusterApi(context: ClusterApiContext) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
   return axios.create({
-    baseURL: `https://dbprovider.${context.baseURL}/api/v1`,
+    baseURL: `https://dbprovider.${context.baseUrl}/api/v1`,
     headers: {
       "Content-Type": "application/json",
       ...(context.authorization

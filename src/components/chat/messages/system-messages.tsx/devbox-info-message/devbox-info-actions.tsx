@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { GitBranch } from "lucide-react";
+import { GitBranch, BarChart3 } from "lucide-react";
 import { useEmitSystemMessage } from "@/lib/copilot/message/message-utils";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 
@@ -14,7 +14,7 @@ export const DevboxInfoActions: React.FC<DevboxInfoActionsProps> = ({
   const { emitMessage } = useEmitSystemMessage();
 
   const handleReleasesClick = () => {
-    emitMessage("", {
+    emitMessage({
       type: "info.devboxRelease",
       payload: {
         devboxName: devboxData.name,
@@ -23,16 +23,44 @@ export const DevboxInfoActions: React.FC<DevboxInfoActionsProps> = ({
     });
   };
 
+  const handleViewMetricsClick = () => {
+    emitMessage({
+      type: "info.devboxMetrics",
+      payload: {
+        devboxName: devboxData.name,
+        target: {
+          name: devboxData.name,
+          type: "devbox",
+        },
+      },
+    });
+  };
+
   return (
-    <div className="flex gap-3 pt-4">
-      <Button
-        className="flex-1"
-        variant="outline"
-        onClick={handleReleasesClick}
-      >
-        <GitBranch className="w-4 h-4 mr-2" />
-        Releases
-      </Button>
+    <div className="space-y-3 pt-4">
+      <div className="text-center">
+        <p className="text-sm text-muted-foreground">
+          View detailed information about releases and resource metrics
+        </p>
+      </div>
+      <div className="flex gap-3">
+        <Button
+          className="flex-1"
+          variant="outline"
+          onClick={handleReleasesClick}
+        >
+          <GitBranch className="w-4 h-4 mr-2" />
+          Releases
+        </Button>
+        <Button
+          className="flex-1"
+          variant="outline"
+          onClick={handleViewMetricsClick}
+        >
+          <BarChart3 className="w-4 h-4 mr-2" />
+          View Metrics
+        </Button>
+      </div>
     </div>
   );
 };

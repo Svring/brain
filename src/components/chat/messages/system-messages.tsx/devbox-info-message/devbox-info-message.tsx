@@ -2,14 +2,12 @@ import React from "react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { Card, CardContent } from "@/components/ui/card";
 import { createK8sContext } from "@/lib/auth/auth-utils";
-import {
-  getDevboxRangedMonitorOptions,
-} from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
+import { getDevboxRangedMonitorOptions } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
 import { useQuery } from "@tanstack/react-query";
 import { createMetricsContext } from "@/lib/auth/auth-utils";
 import { devboxClient } from "@/components/provider/trpc-provider";
 import { DevboxInfoHeader } from "./devbox-info-header";
-import { MetricRow } from "@/components/chat/messages/components/metric-row";
+import { ResourceQuotaRow } from "@/components/chat/messages/components/resource-quota-row";
 import { DevboxInfoPorts } from "./devbox-info-ports";
 import { DevboxInfoActions } from "./devbox-info-actions";
 
@@ -47,7 +45,7 @@ export const DevboxInfoMessageCard: React.FC<DevboxInfoMessageProps> = ({
   // Show loading state
   if (isLoading) {
     return (
-      <Card className="w-full bg-background-secondary">
+      <Card className="w-full bg-node-background">
         <CardContent className="p-6">
           <div className="flex items-center justify-center">
             <span className="text-muted-foreground">
@@ -62,7 +60,7 @@ export const DevboxInfoMessageCard: React.FC<DevboxInfoMessageProps> = ({
   // Show error state
   if (error || !devboxData) {
     return (
-      <Card className="w-full bg-background-secondary">
+      <Card className="w-full bg-node-background">
         <CardContent className="p-6">
           <div className="flex items-center justify-center">
             <span className="text-destructive">
@@ -75,12 +73,16 @@ export const DevboxInfoMessageCard: React.FC<DevboxInfoMessageProps> = ({
   }
 
   return (
-    <Card className="w-full bg-background-secondary">
+    <Card className="w-full bg-node-background">
       <DevboxInfoHeader devboxData={devboxData} />
-      
+
       <CardContent className="space-y-4">
-        <MetricRow metric="cpu" resource={devboxData.resources} monitorData={monitorData} />
-        <MetricRow metric="memory" resource={devboxData.resources} monitorData={monitorData} />
+        <ResourceQuotaRow
+          cpu={devboxData.resources?.cpu}
+          memory={devboxData.resources?.memory}
+        />
+        {/* <MetricRow metric="cpu" resource={devboxData.resources} monitorData={monitorData} />
+        <MetricRow metric="memory" resource={devboxData.resources} monitorData={monitorData} /> */}
         <DevboxInfoPorts devboxData={devboxData} />
         <DevboxInfoActions devboxData={devboxData} />
       </CardContent>

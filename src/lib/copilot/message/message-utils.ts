@@ -19,23 +19,29 @@ export const emitSystemMessage = (
   setMessages: ReturnType<typeof useCopilotChatHeadless_c>["setMessages"],
   messages: ReturnType<typeof useCopilotChatHeadless_c>["messages"],
   openSidebarChat: ReturnType<typeof useChatActions>["openSidebarChat"],
-  assistantContent: string,
-  systemMessageData: SystemMessageData
+  systemMessageData: SystemMessageData,
+  assistantContent?: string
 ) => {
   // Send a message about the resource
-  setMessages([
+  const newMessages = [
     ...messages,
     {
       id: randomId(),
-      role: "assistant",
-      content: assistantContent,
-    },
-    {
-      id: randomId(),
-      role: "system",
+      role: "system" as const,
       content: JSON.stringify(systemMessageData),
     },
-  ]);
+  ];
+
+  // Only add assistant message if content is provided
+  if (assistantContent) {
+    newMessages.splice(-1, 0, {
+      id: randomId(),
+      role: "assistant" as const,
+      content: assistantContent,
+    });
+  }
+
+  setMessages(newMessages);
 
   // Open the sidebar chat
   openSidebarChat();
@@ -50,15 +56,15 @@ export const useEmitSystemMessage = () => {
   const { openSidebarChat } = useChatActions();
 
   const emitMessage = (
-    assistantContent: string,
-    systemMessageData: SystemMessageData
+    systemMessageData: SystemMessageData,
+    assistantContent?: string
   ) => {
     emitSystemMessage(
       setMessages,
       messages,
       openSidebarChat,
-      assistantContent,
-      systemMessageData
+      systemMessageData,
+      assistantContent
     );
   };
 

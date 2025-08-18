@@ -43,13 +43,10 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
       name: data.name,
     });
 
-    emitMessage(
-      `This is your deployment "${name}".`,
-      {
-        type: "info.launchpadInfo",
-        payload: target,
-      }
-    );
+    emitMessage({
+      type: "info.launchpadInfo",
+      payload: target,
+    });
   };
 
   // console.log("status", status);
@@ -60,7 +57,7 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
       nodeData={data}
       className={isDeletingDeployment ? "border-theme-red" : ""}
     >
-      <div 
+      <div
         className="flex h-full flex-col gap-2 justify-between"
         onClick={handleNodeClick}
       >
@@ -107,7 +104,10 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
   );
 
   // Create an array with length equal to resource.replicas for the stack
-  const replicasArray = Array.from({ length: resource?.replicas - 1 || 0 }, (_, i) => i);
+  const replicasArray = Array.from(
+    { length: resource?.replicas - 1 || 0 },
+    (_, i) => i
+  );
 
   return <NodeStack mainCard={mainCard} data={replicasArray} />;
 }

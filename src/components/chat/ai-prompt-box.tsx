@@ -464,7 +464,7 @@ const PromptInputTextarea = React.forwardRef<
     const { value, setValue, maxHeight, onSubmit, disabled } = usePromptInput();
     const textareaRef = React.useRef<HTMLTextAreaElement>(null);
     const [localValue, setLocalValue] = React.useState(value);
-    const debouncedValue = useDebounce(localValue, 500);
+    const debouncedValue = useDebounce(localValue, 100);
 
     React.useEffect(() => {
       if (disableAutosize || !textareaRef.current) return;
@@ -481,7 +481,7 @@ const PromptInputTextarea = React.forwardRef<
         setValue(debouncedValue);
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [debouncedValue]);
+    }, [debouncedValue, setValue]);
 
     // When the external value changes (e.g., cleared after send), reflect it locally
     React.useEffect(() => {
@@ -490,14 +490,29 @@ const PromptInputTextarea = React.forwardRef<
         // Also update the textarea ref directly for immediate visual feedback
         if (textareaRef.current) {
           textareaRef.current.value = value;
+          // Reset height when clearing
+          if (value === "") {
+            textareaRef.current.style.height = "auto";
+          }
         }
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value]);
 
+    // Add effect to sync when the textarea is manually cleared
+    React.useEffect(() => {
+      if (textareaRef.current && textareaRef.current.value === "" && localValue !== "") {
+        setLocalValue("");
+      }
+    });
+
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
+        // Immediately sync the current local value before submitting
+        if (localValue !== value) {
+          setValue(localValue);
+        }
         onSubmit?.();
       }
       if (e.key === "Escape") {
@@ -742,7 +757,7 @@ export const PromptInputBox = React.forwardRef(
       return () => document.removeEventListener("paste", handlePaste);
     }, [handlePaste]);
 
-    const handleSubmit = () => {
+    const handleSubmit = React.useCallback(() => {
       const liveText = (internalTextareaRef.current?.value ?? input).trim();
       if ((liveText || files.length > 0) && !disableSend) {
         let messagePrefix = "";
@@ -750,16 +765,22 @@ export const PromptInputBox = React.forwardRef(
         else if (showThink) messagePrefix = "[Think: ";
         else if (showCanvas) messagePrefix = "[Canvas: ";
         const formattedInput = messagePrefix ? `${messagePrefix}${liveText}]` : liveText;
+        
+        // Send the message
         onSend(formattedInput, files);
+        
+        // Clear all state and force immediate UI clearing
         setInput("");
         setFiles([]);
         setFilePreviews({});
-        // Force the textarea to clear by updating the ref directly
+        
+        // Force immediate clearing of the textarea to prevent race conditions
         if (internalTextareaRef.current) {
           internalTextareaRef.current.value = "";
+          internalTextareaRef.current.style.height = "auto";
         }
       }
-    };
+    }, [input, files, showSearch, showThink, showCanvas, onSend, disableSend]);
 
     const handleStartRecording = () => console.log("Started recording");
 

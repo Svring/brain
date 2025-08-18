@@ -59,6 +59,8 @@ import edgeTypes from "@/components/flowgraph/edge/edge-types";
 import nodeTypes from "@/components/flowgraph/node/node-types";
 import { Spinner } from "@/components/ui/spinner";
 
+import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
+
 // Floating UI Component
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -258,8 +260,11 @@ export default function ProjectPage({
 }) {
   const { "project-name": projectName } = use(params);
   const { selectProject, clearSelectedProject } = useProjectActions();
+  // const { setStage } = useLanggraphActions();
 
   useCopilotActions();
+
+  // setStage("resource");
 
   useEffect(() => {
     // Set the selected project when the component mounts

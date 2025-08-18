@@ -129,7 +129,7 @@ export function createClusterContext() {
     throw new Error("User not found");
   }
   const clusterContext = ClusterApiContextSchema.parse({
-    baseURL: auth?.regionUrl,
+    baseUrl: auth?.regionUrl,
     authorization: auth?.kubeconfig,
   });
   return clusterContext;

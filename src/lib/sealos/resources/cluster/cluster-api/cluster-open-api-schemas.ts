@@ -213,7 +213,7 @@ export const ClusterVersionsResponseSchema = z.object({
 
 // Cluster API context schema
 export const ClusterApiContextSchema = z.object({
-  baseURL: z.string().optional(),
+  baseUrl: z.string().optional(),
   authorization: z.string().optional(),
 });
 

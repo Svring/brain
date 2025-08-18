@@ -5,20 +5,17 @@ import { useEffect } from "react";
 import ProjectCard from "@/components/project/project-card";
 import { Button } from "@/components/ui/button";
 import SearchBar from "@/components/ui/search-bar";
-import { createK8sContext } from "@/lib/auth/auth-utils";
 import useProjectSearch from "@/hooks/brain/use-projects-search";
 import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
 import { useProjectActions } from "@/contexts/project/project-context";
 import { Spinner } from "@/components/ui/spinner";
 
 export default function Page() {
-  const context = createK8sContext();
-
   const { openDialog, CreateProjectDialog } = useProjectCreateDialog();
   const { setAllProjects } = useProjectActions();
 
   const { setSearchTerm, filteredProjects, projects, isLoading, isError } =
-    useProjectSearch(context);
+    useProjectSearch();
 
   // Update the global project context with all projects when they're loaded
   useEffect(() => {

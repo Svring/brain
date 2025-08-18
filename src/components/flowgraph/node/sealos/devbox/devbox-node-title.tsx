@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 
 interface DevboxNodeTitleProps {
   name: string;
@@ -16,7 +17,7 @@ export default function DevboxNodeTitle({ name, image, regionUrl }: DevboxNodeTi
         <span className="flex items-center gap-4">
           <Image
             src={`https://devbox.${regionUrl}/images/runtime/${
-              image.split("-")[0]
+              transformDevboxImage(image).split("-")[0]
             }.svg`}
             alt="Devbox Icon"
             width={24}

@@ -24,7 +24,7 @@ export const getDevboxObject = async (
     []
   );
 
-  devboxObject.image = transformDevboxImage(devboxObject.image);
+  // devboxObject.image = transformDevboxImage(devboxObject.image);
 
   devboxObject.ports = _.chain(devboxObject.ports)
     .thru((ports) =>
