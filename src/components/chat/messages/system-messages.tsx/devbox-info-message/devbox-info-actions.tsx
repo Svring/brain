@@ -38,7 +38,6 @@ export const DevboxInfoActions: React.FC<DevboxInfoActionsProps> = ({
       type: "info.devboxRelease",
       payload: {
         devboxName: devboxData.name,
-        releases: [], // The system will fetch and populate this
       },
     });
   };
@@ -56,7 +55,7 @@ export const DevboxInfoActions: React.FC<DevboxInfoActionsProps> = ({
   };
 
   return (
-    <div className="space-y-3 pt-4">
+    <div className="space-y-3">
       <div className="text-center">
         <p className="text-sm text-muted-foreground">
           View detailed information about releases and resource metrics

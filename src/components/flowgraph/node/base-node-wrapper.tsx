@@ -27,9 +27,6 @@ export default function BaseNodeWrapper({
 }: BaseNodeProps) {
   const nodeRef = useRef(null);
 
-  // Handle node click to open chat sidebar and set selected node
-  const { openSidebarChat } = useChatActions();
-
   const { selectedNode } = useFlowgraphState();
   const { selectNode } = useFlowgraphActions();
 

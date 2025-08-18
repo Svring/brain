@@ -73,14 +73,10 @@ export const DevboxInfoMessageCard: React.FC<DevboxInfoMessageProps> = ({
   }
 
   return (
-    <Card className="w-full bg-node-background">
+    <Card className="w-full bg-node-background border border-border-primary">
       <DevboxInfoHeader devboxData={devboxData} />
 
       <CardContent className="space-y-4">
-        <ResourceQuotaRow
-          cpu={devboxData.resources?.cpu}
-          memory={devboxData.resources?.memory}
-        />
         {/* <MetricRow metric="cpu" resource={devboxData.resources} monitorData={monitorData} />
         <MetricRow metric="memory" resource={devboxData.resources} monitorData={monitorData} /> */}
         <DevboxInfoPorts devboxData={devboxData} />

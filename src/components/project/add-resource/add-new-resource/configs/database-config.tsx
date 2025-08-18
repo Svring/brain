@@ -76,7 +76,7 @@ export default function DatabaseConfig({ configData, onConfigChange }: DatabaseC
           </SelectTrigger>
           <SelectContent>
             {clusterVersionsLoading ? (
-              <SelectItem value="" disabled>
+              <SelectItem value="loading" disabled>
                 Loading versions...
               </SelectItem>
             ) : configData.type && clusterVersions?.data?.[configData.type] ? (
@@ -88,11 +88,21 @@ export default function DatabaseConfig({ configData, onConfigChange }: DatabaseC
                     version
                   ])
                 ).values()
-              ).map((version: any, index: number) => (
-                <SelectItem key={`${configData.type}-${version.id || version}-${index}`} value={version.id || version}>
-                  {version.label || version.id || version}
-                </SelectItem>
-              ))
+              ).map((version: any, index: number) => {
+                const versionValue = version.id || version;
+                const versionLabel = version.label || version.id || version;
+                
+                // Ensure we have a valid non-empty value
+                if (!versionValue || versionValue === "") {
+                  return null;
+                }
+                
+                return (
+                  <SelectItem key={`${configData.type}-${versionValue}-${index}`} value={versionValue}>
+                    {versionLabel}
+                  </SelectItem>
+                );
+              }).filter(Boolean)
             ) : (
               <SelectItem value="no-versions" disabled>
                 {!configData.type ? "Select database type first" : "No versions available"}

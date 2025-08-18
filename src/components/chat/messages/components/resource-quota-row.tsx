@@ -25,26 +25,15 @@ export const ResourceQuotaRow: React.FC<ResourceQuotaRowProps> = ({
   const storageValue = formatValue(storage, "storage");
 
   return (
-    <div className="flex items-center justify-around px-4 py-3 border border-dashed rounded-xl">
-      <div className="flex flex-col items-center gap-1 text-center">
-        <Cpu className="w-4 h-4" />
-        <span className="text-xs text-muted-foreground">CPU</span>
-        <div className="text-sm font-medium">{cpuValue}</div>
+    <div className="grid grid-cols-2 gap-6">
+      <div className="flex flex-col">
+        <span className="text-sm text-muted-foreground">CPU</span>
+        <span className="text-sm font-medium">{cpuValue}</span>
       </div>
-
-      <div className="flex flex-col items-center gap-1 text-center">
-        <MemoryStick className="w-4 h-4" />
-        <span className="text-xs text-muted-foreground">Memory</span>
-        <div className="text-sm font-medium">{memoryValue}</div>
+      <div className="flex flex-col">
+        <span className="text-sm text-muted-foreground">Memory</span>
+        <span className="text-sm font-medium">{memoryValue}</span>
       </div>
-
-      {storage && (
-        <div className="flex flex-col items-center gap-1 text-center">
-          <HardDrive className="w-4 h-4" />
-          <span className="text-xs text-muted-foreground">Storage</span>
-          <div className="text-sm font-medium">{storageValue}</div>
-        </div>
-      )}
     </div>
   );
 };

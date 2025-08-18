@@ -36,15 +36,15 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
   //   })
   // );
 
-  const { data: monitorDataNew } = useQuery({
-    ...launchpadTrpcClient.getLaunchpadCombinedMonitorData.queryOptions({
-      context: sealosContext,
-      queryName: pods?.[0]?.name || "",
-    }),
-    enabled: !!pods?.[0]?.name,
-  });
+  // const { data: monitorDataNew } = useQuery({
+  //   ...launchpadTrpcClient.getLaunchpadCombinedMonitorData.queryOptions({
+  //     context: sealosContext,
+  //     queryName: pods?.[0]?.name || "",
+  //   }),
+  //   enabled: !!pods?.[0]?.name,
+  // });
 
-  console.log("monitorDataNew", monitorDataNew);
+  // console.log("monitorDataNew", monitorDataNew);
 
   // console.log("launchpad monitorData", monitorData);
 

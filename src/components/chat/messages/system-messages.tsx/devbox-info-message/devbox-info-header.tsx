@@ -78,7 +78,7 @@ export const DevboxInfoHeader: React.FC<DevboxInfoHeaderProps> = ({
 
       {/* Created At and Up Time Info */}
       {devboxData.operationalStatus && (
-        <div className="grid grid-cols-2 gap-6 pt-4">
+        <div className="grid grid-cols-2 gap-6 pt-2">
           <div className="flex flex-col">
             <span className="text-sm text-muted-foreground">Created At</span>
             <span className="text-sm font-medium">
@@ -87,7 +87,7 @@ export const DevboxInfoHeader: React.FC<DevboxInfoHeaderProps> = ({
           </div>
           {devboxData.operationalStatus.upTime && (
             <div className="flex flex-col">
-              <span className="text-sm text-muted-foreground">Start Time</span>
+              <span className="text-sm text-muted-foreground">Uptime</span>
               <span className="text-sm font-medium">
                 {devboxData.operationalStatus.upTime}
               </span>
@@ -95,6 +95,24 @@ export const DevboxInfoHeader: React.FC<DevboxInfoHeaderProps> = ({
           )}
         </div>
       )}
+
+      {/* CPU and Memory Info */}
+      <div className="grid grid-cols-2 gap-6 pt-2">
+        <div className="flex flex-col">
+          <span className="text-sm text-muted-foreground">CPU</span>
+          <span className="text-sm font-medium">
+            {devboxData.resources?.cpu ? `${devboxData.resources.cpu}m` : "N/A"}
+          </span>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-sm text-muted-foreground">Memory</span>
+          <span className="text-sm font-medium">
+            {devboxData.resources?.memory
+              ? `${devboxData.resources.memory}MB`
+              : "N/A"}
+          </span>
+        </div>
+      </div>
 
       {/* SSH Connection Info */}
       {devboxData.ssh && (
@@ -129,7 +147,7 @@ export const DevboxInfoHeader: React.FC<DevboxInfoHeaderProps> = ({
                 Download Key
               </Button>
             </div>
-            <div className="flex items-center justify-between min-w-0 w-full bg-muted border rounded-md p-1">
+            <div className="flex items-center justify-between min-w-0 w-full bg-muted border border-border-primary rounded-md p-1">
               <span className="text-sm font-mono p-1 rounded text-foreground flex-1 truncate mr-2 min-w-0 max-w-md">
                 ssh -i {regionUrl}_{namespace}_{devboxData.name}{" "}
                 {devboxData.ssh.user}@{devboxData.ssh.host} -p{" "}

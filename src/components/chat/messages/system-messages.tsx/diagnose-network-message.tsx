@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
 interface DiagnoseNetworkMessageProps {
-  payload: CustomResourceTarget | BuiltinResourceTarget;
+  payload: CustomResourceTarget | (BuiltinResourceTarget & { pod: any[] });
 }
 
 export const DiagnoseNetworkMessageCard: React.FC<
@@ -35,15 +35,18 @@ export const DiagnoseNetworkMessageCard: React.FC<
     })
   );
 
+  // console.log("devboxData", devboxData);
+
   // Fetch ranged monitor data (only if devbox is running)
-  const { data: rangedMonitorData } = useQuery({
-    ...devboxTrpcClient.getDevboxRangedMonitor.queryOptions({
-      devboxName: payload.name!,
+  const { data: monitorData } = useQuery({
+    ...devboxTrpcClient.getDevboxCombinedMonitorData.queryOptions({
       context: createMetricsContext(),
+      devboxName: devboxData?.pods?.[0]?.name || "",
     }),
-    enabled:
-      !!devboxData &&
-      !["stopped", "shutdown"].includes(devboxStatus.toLowerCase() || ""),
+    // enabled:
+    //   !!devboxData &&
+    //   !!devboxData?.pods?.[0]?.name &&
+    //   !["stopped", "shutdown"].includes(devboxStatus.toLowerCase() || ""),
   });
 
   // Update devbox status when data changes
@@ -55,23 +58,21 @@ export const DiagnoseNetworkMessageCard: React.FC<
 
   // Send monitor data message when it's ready
   useEffect(() => {
-    if (rangedMonitorData && !hasSentMonitorData) {
+    if (monitorData && !hasSentMonitorData) {
       sendMessageMutation.mutate([
         {
           role: "assistant",
           content: `Network diagnosis completed for ${payload.resourceType} "${
             payload.name
-          }". Here are the monitoring results: ${JSON.stringify(
-            rangedMonitorData
-          )}`,
+          }". Here are the monitoring results: ${JSON.stringify(monitorData)}`,
         },
       ]);
       setHasSentMonitorData(true);
     }
-  }, [rangedMonitorData, hasSentMonitorData, payload, sendMessageMutation]);
+  }, [monitorData, hasSentMonitorData, payload, sendMessageMutation]);
 
   // console.log("devboxData", devboxData);
-  console.log("rangedMonitorData", rangedMonitorData);
+  console.log("monitorData", monitorData);
 
   return (
     <Card className="w-full bg-node-background">
@@ -135,15 +136,13 @@ export const DiagnoseNetworkMessageCard: React.FC<
                   <div className="flex items-center gap-2">
                     <div
                       className={`w-2 h-2 rounded-full ${
-                        rangedMonitorData ? "bg-theme-green" : "bg-theme-yellow"
+                        monitorData ? "bg-theme-green" : "bg-theme-yellow"
                       }`}
                     ></div>
                     <span className="text-sm font-medium">Resource Usage</span>
                   </div>
                   <span className="text-sm text-muted-foreground">
-                    {rangedMonitorData
-                      ? "Completed"
-                      : "Checking resource usage..."}
+                    {monitorData ? "Completed" : "Checking resource usage..."}
                   </span>
                 </div>
               )}
