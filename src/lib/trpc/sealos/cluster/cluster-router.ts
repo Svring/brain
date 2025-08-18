@@ -53,7 +53,7 @@ export const clusterRouter = t.router({
 
       // console.log("cpuResult", JSON.stringify(cpuResult, null, 2));
       // console.log("memoryResult", JSON.stringify(memoryResult, null, 2));
-      // console.log("diskResult", JSON.stringify(diskResult, null, 2));
+      console.log("diskResult", JSON.stringify(diskResult, null, 2));
 
       const cpuData =
         cpuResult.status === "fulfilled" ? cpuResult.value : undefined;
@@ -65,7 +65,7 @@ export const clusterRouter = t.router({
       return transformCombinedMonitorData({
         cpu: cpuData,
         memory: memoryData,
-        disk: diskData,
+        storage: diskData,
       });
     }),
 });

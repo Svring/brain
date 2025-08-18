@@ -35,8 +35,6 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
     getLaunchpadRangedMonitorOptions(metricsContext, launchpadData?.name || "")
   );
 
-  console.log("monitorData", monitorData);
-
   // Show loading state
   if (isLoading) {
     return (
@@ -101,19 +99,11 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
 
   return (
     <Card className="w-full bg-background-secondary">
-      <LaunchpadInfoHeader 
-        launchpadData={launchpadData}
-      />
+      <LaunchpadInfoHeader launchpadData={launchpadData} />
       <CardContent className="space-y-4">
-        <MetricRow metric="cpu" resource={resourceInfo} monitorData={monitorData} isLoading={isMonitorLoading} />
-        <MetricRow metric="memory" resource={resourceInfo} monitorData={monitorData} isLoading={isMonitorLoading} />
         <LaunchpadInfoPorts ports={ports} />
       </CardContent>
-      <LaunchpadInfoActions 
-        name={name}
-        kind={kind}
-        resource={resourceInfo}
-      />
+      <LaunchpadInfoActions name={name} kind={kind} resource={launchpadData} />
     </Card>
   );
 };

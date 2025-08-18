@@ -123,7 +123,7 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
             {/* <NodeInternalUrl ports={ports || []} />
             <NodePods pods={pods || []} /> */}
             <NodeLog />
-            {/* <NodeMonitor /> */}
+            <NodeMonitor resource={data} />
           </div>
         </div>
       </div>

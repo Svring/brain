@@ -36,14 +36,11 @@ export const ClusterInfoActions: React.FC<ClusterInfoActionsProps> = ({
 
   const handleViewMetricsClick = () => {
     emitMessage({
-      type: "info.clusterMetrics",
+      type: "info.combinedMetrics",
       payload: {
-        clusterName: clusterData.name,
-        clusterType: clusterData.type,
-        target: {
-          name: clusterData.name,
-          type: clusterData.type,
-        },
+        name: clusterData.name,
+        kind: "cluster",
+        type: clusterData.type,
       },
     });
   };

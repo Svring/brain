@@ -49,6 +49,7 @@ import {
   getDevboxInstantMonitor,
   getDevboxRangedMonitor,
   getDevboxMonitorData,
+  checkDevboxReady,
 } from "@/lib/sealos/resources/devbox/devbox-api/devbox-api-service";
 import { MetricsApiContextSchema } from "@/lib/sealos/services/metrics/schemas/metrics-api-context-schema";
 import { DevboxApiContextSchema } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas";
@@ -279,8 +280,8 @@ export const devboxRouter = t.router({
         ),
       ]);
 
-      console.log("cpuResult", JSON.stringify(cpuResult, null, 2));
-      console.log("memoryResult", JSON.stringify(memoryResult, null, 2));
+      // console.log("cpuResult", JSON.stringify(cpuResult, null, 2));
+      // console.log("memoryResult", JSON.stringify(memoryResult, null, 2));
 
       const cpuData =
         cpuResult.status === "fulfilled" ? cpuResult.value : undefined;
@@ -291,6 +292,17 @@ export const devboxRouter = t.router({
         cpu: cpuData,
         memory: memoryData,
       });
+    }),
+
+  checkDevboxReady: t.procedure
+    .input(
+      z.object({
+        context: DevboxApiContextSchema,
+        devboxName: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      return await checkDevboxReady(input.context, input.devboxName);
     }),
 });
 

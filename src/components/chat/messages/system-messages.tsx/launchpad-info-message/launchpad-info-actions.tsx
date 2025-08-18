@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { FileText, Container } from "lucide-react";
+import { FileText, Container, BarChart3 } from "lucide-react";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
 interface LaunchpadInfoActionsProps {
@@ -38,6 +38,17 @@ export const LaunchpadInfoActions: React.FC<LaunchpadInfoActionsProps> = ({
     });
   };
 
+  const handleViewMetricsClick = () => {
+    emitMessage({
+      type: "info.combinedMetrics",
+      payload: {
+        name: resource.name,
+        kind: resource.kind,
+        pods: resource.pods,
+      },
+    });
+  };
+
   return (
     <div className="flex gap-3 px-6 pb-6">
       <Button className="flex-1" variant="outline" onClick={handleLogsClick}>
@@ -47,6 +58,10 @@ export const LaunchpadInfoActions: React.FC<LaunchpadInfoActionsProps> = ({
       <Button className="flex-1" variant="outline" onClick={handlePodClick}>
         <Container className="w-4 h-4 mr-2" />
         Pods
+      </Button>
+      <Button className="flex-1" variant="outline" onClick={handleViewMetricsClick}>
+        <BarChart3 className="w-4 h-4 mr-2" />
+        Metrics
       </Button>
     </div>
   );

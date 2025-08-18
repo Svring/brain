@@ -103,10 +103,6 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
     // Use the new mutation hook to send messages
     sendMessageMutation.mutate([
       {
-        role: "assistant",
-        content: `This is your database.`,
-      },
-      {
         role: "system",
         content: JSON.stringify({
           type: "info.clusterInfo",
@@ -166,7 +162,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
             {/* <NodePods pods={pods} /> */}
             <NodeLog />
             <NodeBackup />
-            {/* <NodeMonitor /> */}
+            <NodeMonitor resource={data} />
           </div>
         </div>
       </div>

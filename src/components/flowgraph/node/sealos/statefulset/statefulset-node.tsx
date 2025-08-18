@@ -88,7 +88,7 @@ export default function StatefulsetNode({ data }: { data: StatefulsetObject }) {
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={ports || []} />
             <NodePods pods={pods || []} /> */}
-            {/* <NodeMonitor /> */}
+            <NodeMonitor resource={data} />
           </div>
         </div>
       </div>

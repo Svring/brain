@@ -1,13 +1,25 @@
 import { initTRPC } from "@trpc/server";
 import { z } from "zod";
 import type { LaunchpadContext } from "./launchpad-context";
-import { getLaunchpadMonitorData } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-api-service";
+import { getLaunchpadMonitorData, checkLaunchpadReady } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-api-service";
 import { SealosApiContextSchema } from "@/lib/sealos/sealos-api-context-schema";
 import { transformCombinedMonitorData } from "@/lib/sealos/sealos-utils";
+import { LaunchpadCheckReadyRequestSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-old-api-schemas/req-res-check-ready-schemas";
 
 const t = initTRPC.context<LaunchpadContext>().create();
 
 export const launchpadRouter = t.router({
+  checkLaunchpadReady: t.procedure
+    .input(
+      z.object({
+        request: LaunchpadCheckReadyRequestSchema,
+        context: SealosApiContextSchema,
+      })
+    )
+    .query(async ({ input }) => {
+      return await checkLaunchpadReady(input.request, input.context);
+    }),
+
   getLaunchpadMonitorData: t.procedure
     .input(
       z.object({

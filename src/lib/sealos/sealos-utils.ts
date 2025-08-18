@@ -53,7 +53,7 @@ export function truncateImage(imageUrl: string): string {
 export function transformCombinedMonitorData(monitorData: {
   cpu: any;
   memory: any;
-  disk?: any;
+  storage?: any;
 }) {
   // Handle simple format (devbox/launchpad)
   const simpleCpuData = monitorData.cpu?.data?.[0];
@@ -82,7 +82,7 @@ export function transformCombinedMonitorData(monitorData: {
   if (monitorData.cpu?.data?.result) {
     const cpuResult = monitorData.cpu.data.result;
     const memoryResult = monitorData.memory?.data?.result;
-    const diskResult = monitorData.disk?.data?.result;
+    const diskResult = monitorData.storage?.data?.result;
 
     if (cpuResult?.xData && cpuResult?.yData) {
       const result: Record<
@@ -92,7 +92,7 @@ export function transformCombinedMonitorData(monitorData: {
           readableTime: string;
           cpu: number;
           memory: number;
-          disk?: number;
+          storage?: number;
         }>
       > = {};
 
@@ -102,7 +102,7 @@ export function transformCombinedMonitorData(monitorData: {
           (m: any) => m.name === podName
         );
         const diskPodData = diskResult?.yData?.find(
-          (d: any) => d.name === podName
+          (d: any) => d.name === podName || d.name === `data-${podName}`
         );
 
         result[podName] = cpuResult.xData.map(
@@ -114,7 +114,7 @@ export function transformCombinedMonitorData(monitorData: {
             ),
             cpu: podData.data[index] || 0,
             memory: memoryPodData?.data?.[index] || 0,
-            disk: diskPodData?.data?.[index] || 0,
+            storage: diskPodData?.data?.[index] || 0,
           })
         );
       });

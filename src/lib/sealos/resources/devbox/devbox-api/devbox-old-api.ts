@@ -108,3 +108,21 @@ export const getMonitorData = createParallelAction(
     return response.data;
   }
 );
+
+/**
+ * Check if a devbox is ready
+ * @example
+ * devboxName: "devbox124"
+ * @returns Array with ready status and URL, or error information
+ */
+export const checkReady = createParallelAction(
+  async (context: DevboxApiContext, devboxName: string) => {
+    const api = createDevboxApi(context);
+    const response = await api.get("/checkReady", {
+      params: {
+        devboxName,
+      },
+    });
+    return response.data;
+  }
+);

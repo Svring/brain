@@ -8,6 +8,7 @@ import { ObjectStorageInfoMessageCard } from "./objectstorage-info-message";
 import { PodMessageCard } from "./pod-message";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { DiagnoseNetworkMessageCard } from "./diagnose-network-message";
+import { CombinedMessage } from "./combined-metrics-message";
 
 export const SystemMessageType = {
   info: {
@@ -25,6 +26,7 @@ export const SystemMessageType = {
       <LaunchpadInfoMessageCard payload={payload} />
     ),
     metrics: (payload: any) => <MetricsMessageCard payload={payload} />,
+    combinedMetrics: (payload: any) => <CombinedMessage resource={payload} />,
     objectStorageInfo: (payload: any) => (
       <ObjectStorageInfoMessageCard payload={payload} />
     ),

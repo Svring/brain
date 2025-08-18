@@ -48,6 +48,7 @@ import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/re
 import { convertDevboxListToSimplified } from "../devbox-method/devbox-utils";
 import { getSshConnectionInfo } from "./devbox-old-api";
 import { getMonitorData } from "./devbox-old-api";
+import { checkReady } from "./devbox-old-api";
 import { listFolderFiles } from "./devbox-ssh-api";
 import type { DevboxSsh } from "../devbox-schemas/devbox-object-schema";
 import type { MetricsApiContext } from "@/lib/sealos/services/metrics/schemas/metrics-api-context-schema";
@@ -393,4 +394,12 @@ export async function getDevboxMonitorData(
   return await runParallelAction(
     getMonitorData(context, queryKey, queryName, step)
   );
+}
+
+// Check Ready Operations
+export async function checkDevboxReady(
+  context: DevboxApiContext,
+  devboxName: string
+): Promise<any> {
+  return await runParallelAction(checkReady(context, devboxName));
 }

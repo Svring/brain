@@ -44,12 +44,11 @@ export const DevboxInfoActions: React.FC<DevboxInfoActionsProps> = ({
 
   const handleViewMetricsClick = () => {
     emitMessage({
-      type: "info.metrics",
+      type: "info.combinedMetrics",
       payload: {
-        resourceName: devboxData.name,
-        resource: devboxData.resources,
-        monitorData: filteredMonitorData,
-        isLoading: false,
+        name: devboxData.name,
+        kind: "devbox",
+        pods: devboxData.pods,
       },
     });
   };

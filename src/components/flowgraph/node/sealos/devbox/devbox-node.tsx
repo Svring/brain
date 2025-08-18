@@ -8,7 +8,6 @@ import { createDevboxContext } from "@/lib/auth/auth-utils";
 import NodeStatusLight from "../../components/node-status-light";
 import DevboxNodeTitle from "./devbox-node-title";
 import DevboxNodeMenu from "./devbox-node-menu";
-import NodeInternalUrl from "../../components/node-internal-url";
 import NodeMonitor from "../../components/node-monitor";
 import NodeStack from "../../components/node-stack";
 import DevboxNodeRelease from "./devbox-node-release";
@@ -31,11 +30,15 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
   const { name, image, status, ports, pods } = data;
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 
+  const target = convertResourceObjectToTarget({
+    kind: data.kind,
+    name: data.name,
+  });
+
   const context = createK8sContext();
   const devboxTrpcClient = devboxClient.useTRPC();
 
   const devboxContext = createDevboxContext();
-  const metricsContext = createMetricsContext();
   const deleteDevbox = useDeleteDevboxMutation(devboxContext);
 
   // console.log("data", data);
@@ -45,43 +48,20 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
     getDevboxReleasesOptions(devboxContext, name)
   );
 
-  // Fetch devbox instant monitor data
-  // const { data: monitorData } = useQuery(
-  //   getDevboxInstantMonitorOptions(metricsContext, name)
-  // );
+  const { data: monitorData } = useQuery({
+    ...devboxTrpcClient.getDevboxCombinedMonitorData.queryOptions({
+      context: devboxContext,
+      devboxName: pods?.[0]?.name || "",
+    }),
+    enabled: !!pods?.[0]?.name,
+  });
 
-  // const { data: monitorDataNew } = useQuery({
-  //   ...devboxTrpcClient.getDevboxMonitorData.queryOptions({
-  //     context: devboxContext,
-  //     queryKey: "average_memory",
-  //     queryName: pods?.[0]?.name || "",
-  //     step: "2m",
-  //   }),
-  //   enabled: !!pods?.[0]?.name,
-  // });
-
-  // const { data: monitorDataNew2 } = useQuery({
-  //   ...devboxTrpcClient.getDevboxCombinedMonitorData.queryOptions({
-  //     context: devboxContext,
-  //     devboxName: pods?.[0]?.name || "",
-  //   }),
-  //   enabled: !!pods?.[0]?.name,
-  // });
-
-  // console.log("monitorDataNew", monitorDataNew);
-
-  // Log the monitor data
-  // console.log("devbox instant monitor data:", monitorData);
+  // console.log("monitorData", monitorData);
 
   // Extract the releases array from the response
   const releases = releasesResponse?.data || [];
 
   const handleNodeClick = () => {
-    const target = convertResourceObjectToTarget({
-      kind: data.kind,
-      name: data.name,
-    });
-
     emitMessage({
       type: "info.devboxInfo",
       payload: target,
@@ -127,7 +107,7 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={ports} /> */}
-            {/* <NodeMonitor monitorData={monitorData} /> */}
+            <NodeMonitor resource={data} />
           </div>
         </div>
       </div>

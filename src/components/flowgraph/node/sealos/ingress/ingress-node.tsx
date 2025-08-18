@@ -52,7 +52,7 @@ export default function IngressNode({
   };
 }) {
   const { object } = data;
-  const [urlAvailable, setUrlAvailable] = useState(false);
+  const [urlAvailable, setUrlAvailable] = useState(true);
 
   // console.log("ingress node", object);
   // console.log("object", object);
@@ -65,16 +65,16 @@ export default function IngressNode({
   const hasPublicAddress = !!publicAddress;
   const shouldCheckUrl = hasPublicAddress && protocol === "HTTP";
 
-  useInterval(
-    async () => {
-      if (!url || !shouldCheckUrl) {
-        return;
-      }
-      const result = await checkUrl(url);
-      setUrlAvailable(result.available);
-    },
-    url && shouldCheckUrl ? 5000 : null,
-  );
+  // useInterval(
+  //   async () => {
+  //     if (!url || !shouldCheckUrl) {
+  //       return;
+  //     }
+  //     const result = await checkUrl(url);
+  //     setUrlAvailable(result.available);
+  //   },
+  //   url && shouldCheckUrl ? 5000 : null,
+  // );
 
   return (
     <BaseNode
