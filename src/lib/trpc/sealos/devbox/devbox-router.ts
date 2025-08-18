@@ -51,6 +51,7 @@ import {
   getDevboxMonitorData,
 } from "@/lib/sealos/resources/devbox/devbox-api/devbox-api-service";
 import { MetricsApiContextSchema } from "@/lib/sealos/services/metrics/schemas/metrics-api-context-schema";
+import { DevboxApiContextSchema } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas";
 
 const t = initTRPC.context<DevboxContext>().create();
 
@@ -238,7 +239,7 @@ export const devboxRouter = t.router({
   getDevboxMonitorData: t.procedure
     .input(
       z.object({
-        context: MetricsApiContextSchema,
+        context: DevboxApiContextSchema,
         queryKey: z.string(),
         queryName: z.string(),
         step: z.string(),

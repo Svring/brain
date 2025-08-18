@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Package } from "lucide-react";
 import BaseNode from "../../base-node-wrapper";
 import { createK8sContext } from "@/lib/auth/auth-utils";
@@ -14,18 +14,26 @@ import NodeStack from "../../components/node-stack";
 import DevboxNodeRelease from "./devbox-node-release";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import { useDeleteDevboxMutation } from "@/lib/sealos/resources/devbox/devbox-method/devbox-mutation";
-import { getDevboxReleasesOptions, getDevboxInstantMonitorOptions } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
+import {
+  getDevboxReleasesOptions,
+  getDevboxInstantMonitorOptions,
+} from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
 import { useQuery } from "@tanstack/react-query";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 import { createMetricsContext } from "@/lib/auth/auth-utils";
+import { devboxClient } from "@/components/provider/trpc-provider";
+import { listBuiltinResources } from "@/lib/k8s/k8s-api/k8s-api-query";
 
 // TODO: Devbox nodes would cause maximum call stack error
 export default function DevboxNode({ data }: { data: DevboxObject }) {
   const { name, image, status, ports, pods } = data;
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
+
   const context = createK8sContext();
+  const devboxTrpcClient = devboxClient.useTRPC();
+
   const devboxContext = createDevboxContext();
   const metricsContext = createMetricsContext();
   const deleteDevbox = useDeleteDevboxMutation(devboxContext);
@@ -38,9 +46,21 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
   );
 
   // Fetch devbox instant monitor data
-  const { data: monitorData } = useQuery(
-    getDevboxInstantMonitorOptions(metricsContext, name)
-  );
+  // const { data: monitorData } = useQuery(
+  //   getDevboxInstantMonitorOptions(metricsContext, name)
+  // );
+
+  // const { data: monitorDataNew } = useQuery({
+  //   ...devboxTrpcClient.getDevboxMonitorData.queryOptions({
+  //     context: devboxContext,
+  //     queryKey: "average_memory",
+  //     queryName: pods?.[0]?.name || "",
+  //     step: "2m",
+  //   }),
+  //   enabled: !!pods?.[0]?.name,
+  // });
+
+  // console.log("monitorDataNew", monitorDataNew);
 
   // Log the monitor data
   // console.log("devbox instant monitor data:", monitorData);
@@ -99,7 +119,7 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={ports} /> */}
-            <NodeMonitor monitorData={monitorData} />
+            {/* <NodeMonitor monitorData={monitorData} /> */}
           </div>
         </div>
       </div>

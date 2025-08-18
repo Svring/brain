@@ -19,7 +19,11 @@ import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cl
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { useChatActions } from "@/contexts/chat/chat-context";
 import { randomId } from "@copilotkit/shared";
-import { createClusterContext, createK8sContext } from "@/lib/auth/auth-utils";
+import {
+  createClusterContext,
+  createK8sContext,
+  createSealosContext,
+} from "@/lib/auth/auth-utils";
 import { useIsMutating } from "@tanstack/react-query";
 import {
   getClusterBackupListOptions,
@@ -29,6 +33,7 @@ import { useQuery } from "@tanstack/react-query";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { clusterClient } from "@/components/provider/trpc-provider";
 
 export default function ClusterNode({ data }: { data: ClusterObject }) {
   const [publicAccess, setPublicAccess] = useState(false);
@@ -36,9 +41,12 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
   const { openSidebarChat } = useChatActions();
   const sendMessageMutation = useSendMessageMutation();
 
+  const clusterTrpcClient = clusterClient.useTRPC();
+
   // Create contexts for API calls
   const k8sContext = createK8sContext();
   const clusterContext = createClusterContext();
+  const sealosContext = createSealosContext();
 
   // Create target for the cluster
   const target = CustomResourceTargetSchema.parse(
@@ -56,6 +64,17 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
   );
 
   const { name, type, status, pods, backup, connection } = clusterData;
+
+  // const { data: monitorData } = useQuery(
+  //   clusterTrpcClient.getClusterMonitorData.queryOptions({
+  //     context: sealosContext,
+  //     queryKey: "cpu",
+  //     dbName: name,
+  //     dbType: type,
+  //   })
+  // );
+
+  // console.log("monitorData", monitorData);
 
   const isDeletingCluster =
     status === "Deleting" ||

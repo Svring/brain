@@ -13,13 +13,30 @@ import DeploymentNodeTitle from "./deployment-node-title";
 import DeploymentNodeMenu from "./deployment-node-menu";
 import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-object-schema";
 import { truncateImage } from "@/lib/sealos/sealos-utils";
-import { useIsMutating } from "@tanstack/react-query";
+import { useIsMutating, useQuery } from "@tanstack/react-query";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { launchpadClient } from "@/components/provider/trpc-provider";
+import { createSealosContext } from "@/lib/auth/auth-utils";
 
 export default function DeploymentNode({ data }: { data: DeploymentObject }) {
   const { name, image, status, ports, pods, env, resource } = data;
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
+
+  const launchpadTrpcClient = launchpadClient.useTRPC();
+
+  const sealosContext = createSealosContext();
+
+  // const { data: monitorData } = useQuery(
+  //   launchpadTrpcClient.getLaunchpadMonitorData.queryOptions({
+  //     context: sealosContext,
+  //     queryKey: "average_memory",
+  //     queryName: pods?.[0]?.name || "",
+  //     step: "2m",
+  //   })
+  // );
+
+  // console.log("launchpad monitorData", monitorData);
 
   // console.log("env", env);
   // console.log("resource", resource);

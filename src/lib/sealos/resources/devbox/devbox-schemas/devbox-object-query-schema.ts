@@ -135,7 +135,7 @@ export const DevboxObjectQuerySchema = z.object({
     .describe(
       JSON.stringify({
         resourceType: "pod",
-        label: "app.kubernetes.io/instance",
+        label: "app.kubernetes.io/name",
       })
     )
     .transform((pods) => {
