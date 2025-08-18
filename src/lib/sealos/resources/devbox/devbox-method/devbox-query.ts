@@ -164,15 +164,7 @@ export const getDevboxInstantMonitorOptions = (
       devboxName,
       currentTime,
     ],
-    queryFn: async (): Promise<
-      Record<
-        string,
-        {
-          cpu: Array<[string, string]>;
-          memory: Array<[string, string]>;
-        }
-      >
-    > => {
+    queryFn: async () => {
       // Query both CPU and memory metrics simultaneously
       const [cpuMetrics, memoryMetrics] = await Promise.all([
         runParallelAction(
@@ -199,11 +191,15 @@ export const getDevboxInstantMonitorOptions = (
         ),
       ]);
 
-      // Process and return the pod metrics data directly
-      return extractPodMetricsData({
-        cpu: cpuMetrics,
-        memory: memoryMetrics,
-      });
+      // console.log("cpuMetrics", cpuMetrics);
+      // console.log("memoryMetrics", memoryMetrics);
+
+      // Extract values from the metrics response
+      const cpuValue = cpuMetrics?.data?.result?.[0]?.value?.[1] || "0";
+      const memoryValue = memoryMetrics?.data?.result?.[0]?.value?.[1] || "0";
+
+      // Return simplified format with just the values
+      return { cpu: cpuValue, memory: memoryValue };
     },
     enabled: !!context.baseURL && !!context.namespace && !!devboxName,
     staleTime: 1000 * 30, // 30 seconds

@@ -14,11 +14,12 @@ import NodeStack from "../../components/node-stack";
 import DevboxNodeRelease from "./devbox-node-release";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import { useDeleteDevboxMutation } from "@/lib/sealos/resources/devbox/devbox-method/devbox-mutation";
-import { getDevboxReleasesOptions } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
+import { getDevboxReleasesOptions, getDevboxInstantMonitorOptions } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
 import { useQuery } from "@tanstack/react-query";
 import { useEmitSystemMessage } from "@/lib/copilot/message/message-utils";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
+import { createMetricsContext } from "@/lib/auth/auth-utils";
 
 // TODO: Devbox nodes would cause maximum call stack error
 export default function DevboxNode({ data }: { data: DevboxObject }) {
@@ -26,6 +27,7 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
   const { emitMessage } = useEmitSystemMessage();
   const context = createK8sContext();
   const devboxContext = createDevboxContext();
+  const metricsContext = createMetricsContext();
   const deleteDevbox = useDeleteDevboxMutation(devboxContext);
 
   // console.log("data", data);
@@ -34,6 +36,14 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
   const { data: releasesResponse } = useQuery(
     getDevboxReleasesOptions(devboxContext, name)
   );
+
+  // Fetch devbox instant monitor data
+  const { data: monitorData } = useQuery(
+    getDevboxInstantMonitorOptions(metricsContext, name)
+  );
+
+  // Log the monitor data
+  console.log("devbox instant monitor data:", monitorData);
 
   // Extract the releases array from the response
   const releases = releasesResponse?.data || [];
@@ -89,7 +99,7 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={ports} /> */}
-            <NodeMonitor />
+            <NodeMonitor monitorData={monitorData} />
           </div>
         </div>
       </div>
