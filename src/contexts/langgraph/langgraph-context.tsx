@@ -61,26 +61,14 @@ export function useLanggraphActions() {
   const { state: langgraphState, setState: setLanggraphState } =
     useLanggraphAgent();
 
-  const syncStateToLanggraph = () => {
-    const newState = _.cloneDeep(langgraphState);
-    _.set(newState, "base_url", state.context.base_url);
-    _.set(newState, "api_key", state.context.api_key);
-    _.set(newState, "model", state.context.model);
-    _.set(newState, "stage", state.context.stage);
-    _.set(newState, "project_proposal", state.context.project_proposal);
-    _.set(newState, "resource_context", state.context.resource_context);
-    _.set(newState, "project_context", state.context.project_context);
-    setLanggraphState(newState);
-  };
-
   return {
     activate: () => {
       send({ type: "ACTIVATE" });
-      syncStateToLanggraph();
+      setLanggraphState({ ...state.context, stage: "resource" });
     },
     deactivate: () => {
       send({ type: "DEACTIVATE" });
-      syncStateToLanggraph();
+      setLanggraphState({ ...state.context, stage: "project" });
     },
     setConfig: (config: {
       base_url?: string;
@@ -88,19 +76,25 @@ export function useLanggraphActions() {
       model?: string;
     }) => {
       send({ type: "SET_CONFIG", ...config });
-      syncStateToLanggraph();
+      setLanggraphState({ ...state.context, ...config });
     },
     setStage: (stage: "project" | "resource") => {
       send({ type: "SET_STAGE", stage });
-      syncStateToLanggraph();
+      setLanggraphState({ ...state.context, stage });
     },
     setProjectProposal: (projectProposal: ProjectProposal) => {
       send({ type: "SET_PROJECT_PROPOSAL", project_proposal: projectProposal });
-      syncStateToLanggraph();
+      setLanggraphState({
+        ...state.context,
+        project_proposal: projectProposal,
+      });
     },
     setResourceContext: (resourceContext: any) => {
       send({ type: "SET_RESOURCE_CONTEXT", resource_context: resourceContext });
-      syncStateToLanggraph();
+      setLanggraphState({
+        ...state.context,
+        resource_context: resourceContext,
+      });
     },
   };
 }

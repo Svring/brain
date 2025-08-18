@@ -11,18 +11,21 @@ import { createK8sContext } from "@/lib/auth/auth-utils";
 import useProjectSearch from "@/hooks/brain/use-projects-search";
 import RecentProjects from "@/components/project/recent-projects";
 import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
+import { useMount } from "@reactuses/core";
 
 export default function HomePage() {
   const { messages } = useCopilotChatHeadless_c({ id: "chat" });
   const hasMessages = messages.length > 0;
   const { filteredProjects, projects, isLoading, isError } = useProjectSearch();
 
-  // const { setStage } = useLanggraphActions();
+  const { setStage } = useLanggraphActions();
 
   useCopilotActions();
-  useLanggraphAgent();
+  useLanggraphAgent("project");
 
-  // setStage("project");
+  useMount(() => {
+    setStage("project");
+  });
 
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden">

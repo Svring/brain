@@ -260,15 +260,14 @@ export default function ProjectPage({
 }) {
   const { "project-name": projectName } = use(params);
   const { selectProject, clearSelectedProject } = useProjectActions();
-  // const { setStage } = useLanggraphActions();
+  const { setStage } = useLanggraphActions();
 
   useCopilotActions();
-
-  // setStage("resource");
 
   useEffect(() => {
     // Set the selected project when the component mounts
     selectProject(projectName);
+    setStage("resource");
 
     // Cleanup: clear the selected project when the component unmounts
     return () => {

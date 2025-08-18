@@ -51,9 +51,12 @@ import { listFolderFiles } from "./devbox-ssh-api";
 import type { DevboxSsh } from "../devbox-schemas/devbox-object-schema";
 import type { MetricsApiContext } from "@/lib/sealos/services/metrics/schemas/metrics-api-context-schema";
 import { getLaunchPadMetrics } from "@/lib/sealos/services/metrics/metrics-api/launchpad-metrics-api-query";
-import { extractPodMetricsData } from "@/lib/sealos/services/metrics/metrics-utils";
+import {
+  extractPodMetricsData,
+  filterExternalPods,
+  convertMetricsTimeToReadable,
+} from "@/lib/sealos/services/metrics/metrics-utils";
 import { runParallelAction } from "next-server-actions-parallel";
-import { filterExternalPods } from "@/lib/sealos/services/metrics/metrics-utils";
 
 function createHttpsAgent() {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
@@ -352,11 +355,29 @@ export async function getDevboxRangedMonitor(
     )
   );
 
-  return filterExternalPods(
-    extractPodMetricsData({
-      cpu: cpuMetrics,
-      memory: memoryMetrics,
-    }),
-    devboxName
-  );
+  const rawMetricsData = extractPodMetricsData({
+    cpu: cpuMetrics,
+    memory: memoryMetrics,
+  });
+
+  const filteredData = filterExternalPods(rawMetricsData, devboxName);
+
+  // Convert timestamps to readable format for each pod's metrics
+  if (filteredData) {
+    const processedData: typeof filteredData = {};
+
+    Object.entries(filteredData).forEach(([podName, podData]) => {
+      processedData[podName] = {
+        cpu: convertMetricsTimeToReadable(podData.cpu, "yyyy/MM/dd HH:mm"),
+        memory: convertMetricsTimeToReadable(
+          podData.memory,
+          "yyyy/MM/dd HH:mm"
+        ),
+      };
+    });
+
+    return processedData;
+  }
+
+  return filteredData;
 }

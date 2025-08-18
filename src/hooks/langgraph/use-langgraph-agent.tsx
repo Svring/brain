@@ -2,25 +2,11 @@ import { useCoAgent, useCoAgentStateRender } from "@copilotkit/react-core";
 import { BrainState } from "@/contexts/langgraph/langgraph-schema";
 import ProjectPlanCard from "@/components/chat/state-cards/project-plan-card";
 
-export function useLanggraphAgent() {
+export function useLanggraphAgent(stage: "project" | "resource") {
   const agent = useCoAgent<BrainState>({
     name: "brain",
     initialState: {
-      // base_url: "",
-      // api_key: "",
-      // model: "",
-      stage: "project",
-      // project_proposal: {
-      //   name: "",
-      //   description: "",
-      //   resources: {
-      //     devboxes: [],
-      //     databases: [],
-      //     buckets: [],
-      //   },
-      // },
-      // resource_context: null,
-      // project_context: {},
+      stage: stage,
     },
   });
 

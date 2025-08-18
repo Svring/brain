@@ -104,13 +104,6 @@ export const devboxRouter = t.router({
       return await deployDevbox(input, ctx);
     }),
 
-  // DevBox Query Operations
-  getDevboxByName: t.procedure
-    .input(z.string())
-    .query(async ({ ctx, input }) => {
-      return await getDevboxByName(input, ctx);
-    }),
-
   // Port Management
   createDevboxPort: t.procedure
     .input(DevboxPortCreateRequestSchema)

@@ -140,7 +140,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
             {/* <NodePods pods={pods} /> */}
             <NodeLog />
             <NodeBackup />
-            <NodeMonitor />
+            {/* <NodeMonitor /> */}
           </div>
         </div>
       </div>
