@@ -9,10 +9,6 @@ import {
   GetLaunchPadMetricsRequest,
   GetLaunchPadMetricsResponse,
 } from "../schemas/metrics-query-schema";
-import {
-  LAUNCHPAD_METRICS_URL,
-  LAUNCHPAD_METRICS_TEST_URL,
-} from "../metrics-constant/metrics-constant-url";
 import https from "https";
 
 function createLaunchPadMetricsApi(context: MetricsApiContext) {
@@ -21,10 +17,12 @@ function createLaunchPadMetricsApi(context: MetricsApiContext) {
   const protocol = isDevelopment ? "http" : "https";
 
   return axios.create({
-    baseURL: `${protocol}://${context.baseURL}`,
+    baseURL: `${protocol}://${context.baseUrl}`,
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
-      ...(context.kubeconfig ? { Authorization: `${context.kubeconfig}` } : {}),
+      ...(context.kubeconfig
+        ? { Authorization: `${decodeURIComponent(context.kubeconfig)}` }
+        : {}),
     },
     httpsAgent: isDevelopment
       ? new https.Agent({
@@ -42,6 +40,8 @@ export const getLaunchPadMetrics = createParallelAction(
   ): Promise<GetLaunchPadMetricsResponse> => {
     const validatedRequest = GetLaunchPadMetricsRequestSchema.parse(request);
     const api = createLaunchPadMetricsApi(context);
+
+    // console.log("api in getLaunchPadMetrics", api);
 
     // Convert the request to form data format as specified in the interface
     const formData = new URLSearchParams();

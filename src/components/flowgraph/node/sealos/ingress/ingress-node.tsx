@@ -54,9 +54,6 @@ export default function IngressNode({
   const { object } = data;
   const [urlAvailable, setUrlAvailable] = useState(false);
 
-  const { sendMessage } = useCopilotChatHeadless_c();
-  const { openSidebarChat } = useChatActions();
-
   // console.log("ingress node", object);
   // console.log("object", object);
   // console.log("parent", data.parent);
@@ -76,8 +73,7 @@ export default function IngressNode({
       const result = await checkUrl(url);
       setUrlAvailable(result.available);
     },
-    url && shouldCheckUrl ? 20000 : null, // Only run if url exists, has public address, and is HTTP
-    { immediate: true }
+    url && shouldCheckUrl ? 5000 : null,
   );
 
   return (
@@ -153,17 +149,6 @@ export default function IngressNode({
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        openSidebarChat();
-                        sendMessage({
-                          role: "user",
-                          id: "diagnose-ingress",
-                          content: `The ingress URL is not accessible. Please help diagnose and fix this issue based on the following information:
-
-Ingress Object: ${JSON.stringify(object, null, 2)}
-Parent Data: ${JSON.stringify(data.parent, null, 2)}
-
-What could be causing the connectivity issue and how can I fix it?`,
-                        });
                       }}
                     />
                   </TooltipTrigger>

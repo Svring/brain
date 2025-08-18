@@ -22,7 +22,7 @@ export const DevboxInfoActions: React.FC<DevboxInfoActionsProps> = ({
     getDevboxRangedMonitorOptions(metricsContext, devboxData.name)
   );
 
-  console.log("monitorData", monitorData);
+  // console.log("monitorData", monitorData);
 
   // Filter monitor data to only include pods that start with the devbox name
   const filteredMonitorData = monitorData

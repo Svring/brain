@@ -43,7 +43,7 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
   );
 
   // Log the monitor data
-  console.log("devbox instant monitor data:", monitorData);
+  // console.log("devbox instant monitor data:", monitorData);
 
   // Extract the releases array from the response
   const releases = releasesResponse?.data || [];

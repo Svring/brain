@@ -49,6 +49,7 @@ import {
   getDevboxInstantMonitor,
   getDevboxRangedMonitor,
 } from "@/lib/sealos/resources/devbox/devbox-api/devbox-api-service";
+import { MetricsApiContextSchema } from "@/lib/sealos/services/metrics/schemas/metrics-api-context-schema";
 
 const t = initTRPC.context<DevboxContext>().create();
 
@@ -166,14 +167,7 @@ export const devboxRouter = t.router({
       })
     )
     .query(async ({ input, ctx }) => {
-      return await getDevbox(
-        {
-          kubeconfig: ctx.kubeconfig,
-          regionUrl: ctx.baseUrl,
-          namespace: ctx.namespace,
-        },
-        input.target
-      );
+      return await getDevbox(ctx, input.target);
     }),
 
   listDevboxK8s: t.procedure
@@ -214,11 +208,7 @@ export const devboxRouter = t.router({
   getDevboxInstantMonitor: t.procedure
     .input(
       z.object({
-        context: z.object({
-          baseURL: z.string(),
-          namespace: z.string(),
-          kubeconfig: z.string(),
-        }),
+        context: MetricsApiContextSchema,
         devboxName: z.string(),
         time: z.string().optional(),
       })
@@ -234,11 +224,7 @@ export const devboxRouter = t.router({
   getDevboxRangedMonitor: t.procedure
     .input(
       z.object({
-        context: z.object({
-          baseURL: z.string(),
-          namespace: z.string(),
-          kubeconfig: z.string(),
-        }),
+        context: MetricsApiContextSchema,
         devboxName: z.string(),
         start: z.string().optional(),
         end: z.string().optional(),

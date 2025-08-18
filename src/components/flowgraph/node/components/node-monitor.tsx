@@ -8,6 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Spinner } from "@/components/ui/spinner";
 
 interface NodeMonitorProps {
   monitorData?: {
@@ -52,7 +53,11 @@ export default function NodeMonitor({ monitorData }: NodeMonitorProps) {
               e.stopPropagation();
             }}
           >
-            <Activity className={`h-4 w-4 ${getIconColor()}`} />
+            {monitorData ? (
+              <Activity className={`h-4 w-4 ${getIconColor()}`} />
+            ) : (
+              <Spinner variant="circle" className="h-4 w-4 text-muted-foreground" />
+            )}
           </div>
         </TooltipTrigger>
         <TooltipContent

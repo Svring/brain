@@ -1,5 +1,8 @@
 import type { GetLaunchPadMetricsResponse } from "./schemas/metrics-query-schema";
-import { formatUnixTimeInLocalTimezone } from "@/lib/date/date-utils";
+import {
+  formatUnixTimeInLocalTimezone,
+  formatIsoDateToReadable,
+} from "@/lib/date/date-utils";
 
 /**
  * Extract monitoring data organized by pod from metrics response
@@ -340,4 +343,40 @@ export const extractClusterMetricsData = (response: {
   }
 
   return result;
+};
+
+/**
+ * Convert formatted time in metrics data to more readable format
+ * Takes data in the shape of [formatted_time, value] and converts the time to a more readable format
+ * @param data - Array of [formatted_time, value] tuples
+ * @param formatString - Date format string (default: 'HH:mm')
+ * @returns Array of [readable_time, value] tuples
+ */
+export const convertMetricsTimeToReadable = (
+  data: Array<[string, string]>,
+  formatString: string = "HH:mm"
+): Array<[string, string]> => {
+  return data.map(([formattedTime, value]) => [
+    formatIsoDateToReadable(formattedTime, formatString),
+    value,
+  ]);
+};
+
+/**
+ * Filter monitor data to only include pods that start with the specified name
+ * @param monitorData - Monitor data object with pod names as keys
+ * @param podNamePrefix - The prefix to filter by (e.g., devbox name)
+ * @returns Filtered monitor data object
+ */
+export const filterExternalPods = <T extends Record<string, any>>(
+  monitorData: T | undefined,
+  podNamePrefix: string
+): T | undefined => {
+  if (!monitorData) return undefined;
+
+  return Object.fromEntries(
+    Object.entries(monitorData).filter(([podName]) =>
+      podName.startsWith(podNamePrefix)
+    )
+  ) as T;
 };

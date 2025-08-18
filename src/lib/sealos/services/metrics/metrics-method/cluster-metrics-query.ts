@@ -51,7 +51,7 @@ export const getClusterMetricsOptions = (
     ],
     queryFn: () => getClusterMetricsData(context, request),
     enabled:
-      !!context.baseURL &&
+      !!context.baseUrl &&
       !!request.namespace &&
       !!request.app &&
       (!!request.type || !!request.query), // Must have either type or query

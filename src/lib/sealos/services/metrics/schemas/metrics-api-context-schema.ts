@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const MetricsApiContextSchema = z.object({
-  baseURL: z.string(),
+  baseUrl: z.string(),
   kubeconfig: z.string(),
   namespace: z.string(),
 });

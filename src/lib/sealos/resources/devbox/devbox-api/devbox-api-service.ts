@@ -53,6 +53,7 @@ import type { MetricsApiContext } from "@/lib/sealos/services/metrics/schemas/me
 import { getLaunchPadMetrics } from "@/lib/sealos/services/metrics/metrics-api/launchpad-metrics-api-query";
 import { extractPodMetricsData } from "@/lib/sealos/services/metrics/metrics-utils";
 import { runParallelAction } from "next-server-actions-parallel";
+import { filterExternalPods } from "@/lib/sealos/services/metrics/metrics-utils";
 
 function createHttpsAgent() {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
@@ -351,8 +352,11 @@ export async function getDevboxRangedMonitor(
     )
   );
 
-  return extractPodMetricsData({
-    cpu: cpuMetrics,
-    memory: memoryMetrics,
-  });
+  return filterExternalPods(
+    extractPodMetricsData({
+      cpu: cpuMetrics,
+      memory: memoryMetrics,
+    }),
+    devboxName
+  );
 }

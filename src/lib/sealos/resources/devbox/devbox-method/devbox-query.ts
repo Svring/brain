@@ -201,7 +201,7 @@ export const getDevboxInstantMonitorOptions = (
       // Return simplified format with just the values
       return { cpu: cpuValue, memory: memoryValue };
     },
-    enabled: !!context.baseURL && !!context.namespace && !!devboxName,
+    enabled: !!context.baseUrl && !!context.namespace && !!devboxName,
     staleTime: 1000 * 30, // 30 seconds
   });
 };
@@ -273,7 +273,7 @@ export const getDevboxRangedMonitorOptions = (
         memory: memoryMetrics,
       });
     },
-    enabled: !!context.baseURL && !!context.namespace && !!devboxName,
+    enabled: !!context.baseUrl && !!context.namespace && !!devboxName,
     staleTime: 1000 * 30, // 30 seconds
   });
 };

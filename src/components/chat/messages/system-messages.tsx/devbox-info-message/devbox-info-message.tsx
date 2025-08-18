@@ -35,9 +35,9 @@ export const DevboxInfoMessageCard: React.FC<DevboxInfoMessageProps> = ({
   );
 
   // Fetch devbox monitor data
-  const { data: monitorData } = useQuery(
-    getDevboxRangedMonitorOptions(metricsContext, devboxData?.name || "")
-  );
+  // const { data: monitorData } = useQuery(
+  //   getDevboxRangedMonitorOptions(metricsContext, devboxData?.name || "")
+  // );
 
   // Get region URL from the K8s context
   const regionUrl = context.regionUrl;

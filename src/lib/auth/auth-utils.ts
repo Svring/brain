@@ -235,7 +235,7 @@ export function createMetricsContext(
     throw new Error("User not found");
   }
 
-  const baseURL =
+  const baseUrl =
     metricsType === "launchpad"
       ? isDevelopment
         ? LAUNCHPAD_METRICS_TEST_URL
@@ -245,8 +245,8 @@ export function createMetricsContext(
       : CLUSTER_METRICS_URL;
 
   return MetricsApiContextSchema.parse({
-    baseURL,
-    kubeconfig: auth.kubeconfig,
+    baseUrl,
+    kubeconfig: encodeURIComponent(auth.kubeconfig),
     namespace: auth.namespace,
   });
 }
