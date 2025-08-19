@@ -9,6 +9,7 @@ import useProjectSearch from "@/hooks/brain/use-projects-search";
 import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
 import { useProjectActions } from "@/contexts/project/project-context";
 import { Spinner } from "@/components/ui/spinner";
+import { ProjectProposalDemo } from "@/components/chat/state-cards/project-proposal-demo";
 
 export default function Page() {
   const { openDialog, CreateProjectDialog } = useProjectCreateDialog();
@@ -73,33 +74,7 @@ export default function Page() {
         </div>
       </div>
 
-      {/* <div className="pt-8 pb-4 flex-1 min-h-0">
-        <div className="w-3xl mx-auto px-4 h-full">
-          <div className="h-96">
-            <ProjectPlanCard
-              analyzingStatus="active"
-              proposingStatus="completed"
-              analyzingData={["Requirement 1", "Requirement 2"]}
-              proposingData={{
-                name: "My Project",
-                description: "A sample project",
-                resources: {
-                  devboxes: [
-                    { runtime: "React", description: "Frontend framework" },
-                  ],
-                  databases: [
-                    { type: "postgresql", description: "Primary database" },
-                  ],
-                  buckets: [{ policy: "Private", description: "Secure storage" }],
-                },
-              }}
-            />
-          </div>
-        </div>
-      </div> */}
-
-      {/* <AiCoin />
-      <AiChatbox /> */}
+      <ProjectProposalDemo />
       <CreateProjectDialog />
     </div>
   );

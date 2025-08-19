@@ -17,6 +17,10 @@ import {
   AIToolResult,
 } from "@/components/shadcn-io/ai/tool";
 import { AIResponse } from "@/components/shadcn-io/ai/response";
+import {
+  ProjectProposalCard,
+  type ProjectProposal,
+} from "@/components/chat/state-cards/project-proposal";
 
 export const activateProjectActions = (context: K8sApiContext) => {
   listProjectAction(context);
@@ -31,22 +35,29 @@ export const proposeProjectAction = (context: K8sApiContext) => {
     name: "propose_project",
     // available: "disabled",
     render: ({ status, args, result }) => {
-      console.log("proposeProjectAction", status, args, result);
-      return (
-        <AITool key="propose_project">
-          <AIToolHeader
-            status={status}
-            name="Propose Project"
-            description="Propose a new project based on the provided requirements."
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
-      );
+      // Parse the result as ProjectProposal if it exists
+      let projectProposal: ProjectProposal | null = null;
+      if (result) {
+        try {
+          // If result is already an object, use it directly
+          if (typeof result === "object" && result !== null) {
+            projectProposal = result as ProjectProposal;
+          } else {
+            // If result is a string, try to parse it as JSON
+            projectProposal = JSON.parse(result as string) as ProjectProposal;
+          }
+        } catch (error) {
+          console.error("Failed to parse project proposal:", error);
+        }
+      }
+
+      // Only render when we have a valid project proposal
+      if (projectProposal) {
+        return <ProjectProposalCard proposal={projectProposal} />;
+      }
+
+      // Return empty div if no valid proposal data
+      return <div />;
     },
   });
 };

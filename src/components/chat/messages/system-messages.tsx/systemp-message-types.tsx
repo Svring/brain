@@ -12,6 +12,7 @@ import { DiagnoseNetworkMessageCard } from "./diagnose-network-message";
 import { CombinedMessage } from "./combined-metrics-message";
 import { PodOverview } from "../components/pod-overview";
 import { DevboxDeployResponse } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas/devbox-release-schema";
+import { CustomDomainMessage } from "./custom-domain-message";
 
 export const SystemMessageType = {
   info: {
@@ -38,6 +39,7 @@ export const SystemMessageType = {
       <ObjectStorageInfoMessageCard payload={payload} />
     ),
     pod: (payload: any) => <PodMessageCard payload={payload} />,
+    customDomain: (payload: any) => <CustomDomainMessage {...payload} />,
   },
   diagnose: {
     network: (payload: CustomResourceTarget) => (

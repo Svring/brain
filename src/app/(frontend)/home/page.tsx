@@ -9,14 +9,21 @@ import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
 import { useLanggraphAgent } from "@/hooks/langgraph/use-langgraph-agent";
 import useProjectSearch from "@/hooks/brain/use-projects-search";
 import RecentProjects from "@/components/project/recent-projects";
+import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
+import { useMount } from "@reactuses/core";
 
 export default function HomePage() {
   const { messages } = useCopilotChatHeadless_c();
   const hasMessages = messages.length > 0;
   const { filteredProjects, projects, isLoading, isError } = useProjectSearch();
+  const { setStage } = useLanggraphActions();
 
   useCopilotActions();
   useLanggraphAgent("propose_project");
+
+  useMount(() => {
+    setStage("propose_project");
+  });
 
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden">
