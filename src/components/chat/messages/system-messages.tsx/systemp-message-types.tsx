@@ -14,6 +14,9 @@ import { PodOverview } from "../components/pod-overview";
 import { DevboxDeployResponse } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas/devbox-release-schema";
 import { CustomDomainMessage } from "./custom-domain-message";
 import { NetworkInfoMessage } from "./network/network-message";
+import { DevboxCreateMessage } from "./manage/devbox-create-message";
+import { ClusterCreateMessage } from "./manage/cluster-create-message";
+import { DeploymentCreateMessage } from "./manage/deployment-create-message";
 
 export const SystemMessageType = {
   info: {
@@ -42,6 +45,11 @@ export const SystemMessageType = {
     pod: (payload: any) => <PodMessageCard payload={payload} />,
     customDomain: (payload: any) => <CustomDomainMessage {...payload} />,
     networkInfo: (payload: any) => <NetworkInfoMessage resource={payload} />,
+  },
+  manage: {
+    devboxCreate: (payload: any) => <DevboxCreateMessage payload={payload} />,
+    clusterCreate: (payload: any) => <ClusterCreateMessage payload={payload} />,
+    deploymentCreate: (payload: any) => <DeploymentCreateMessage payload={payload} />,
   },
   diagnose: {
     network: (payload: CustomResourceTarget) => (

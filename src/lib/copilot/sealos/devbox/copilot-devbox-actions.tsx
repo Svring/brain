@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Check, X, Hammer } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
+import { DevboxCreateMessage } from "@/components/chat/messages/system-messages.tsx/manage/devbox-create-message";
 
 export const activateDevboxActions = (
   k8sContext: K8sApiContext,
@@ -45,7 +46,72 @@ export const activateDevboxActions = (
   listDevboxReleasesAction(devboxContext);
 };
 
-export const createDevboxAction = (context: DevboxApiContext) => {};
+export const createDevboxAction = (context: DevboxApiContext) => {
+  useCopilotAction({
+    name: "createDevbox",
+    description: "Create a new devbox with specified configuration",
+    followUp: false,
+    parameters: [
+      {
+        name: "name",
+        type: "string",
+        required: true,
+        description: "Name of the devbox to create",
+      },
+      {
+        name: "runtimeName",
+        type: "string",
+        required: false,
+        description:
+          "Runtime for the devbox (e.g., nodejs, python, java, go, rust, php, ruby, debian, c++, .net, c)",
+        enum: [
+          "nodejs",
+          "python",
+          "java",
+          "go",
+          "rust",
+          "php",
+          "ruby",
+          "debian",
+          "c++",
+          ".net",
+          "c",
+        ],
+      },
+      {
+        name: "cpu",
+        type: "number",
+        required: false,
+        description: "CPU allocation in millicores (default: 2000)",
+      },
+      {
+        name: "memory",
+        type: "number",
+        required: false,
+        description: "Memory allocation in MB (default: 4096)",
+      },
+    ],
+    handler: ({ name, runtimeName, cpu, memory }) => {
+      // This will be handled by the UI component
+      return `Creating devbox "${name}" with ${
+        runtimeName || "nodejs"
+      } runtime`;
+    },
+    render: ({ status, args }) => {
+      // Always render the component, but pass undefined for incomplete parameters
+      return (
+        <DevboxCreateMessage
+          payload={{
+            name: args.name || undefined,
+            runtimeName: args.runtimeName || undefined,
+            cpu: args.cpu || undefined,
+            memory: args.memory || undefined,
+          }}
+        />
+      );
+    },
+  });
+};
 
 export const listDevboxAction = (context: K8sApiContext) => {
   const queryClient = useQueryClient();

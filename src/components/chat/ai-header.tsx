@@ -6,8 +6,18 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, ChevronDown } from "lucide-react";
 import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface AiChatHeaderProps {
   title?: string;
@@ -22,9 +32,17 @@ export function AiChatHeader({
 }: AiChatHeaderProps) {
   const { mutate: createNewChatSession, isPending } =
     useCreateNewChatSessionMutation();
+  const { sendSystemMessage } = useSendSystemMessageMutation();
 
   const handleNewChat = () => {
     createNewChatSession();
+  };
+
+  const handleCreateResource = (resourceType: string) => {
+    sendSystemMessage({
+      type: `manage.${resourceType}Create` as any,
+      payload: {},
+    });
   };
 
   return (
@@ -34,16 +52,40 @@ export function AiChatHeader({
           <SheetTitle>{title}</SheetTitle>
           {/* <SheetDescription>{description}</SheetDescription> */}
         </div>
-        <Button
-          onClick={handleNewChat}
-          disabled={isPending}
-          size="sm"
-          variant="outline"
-          className="shrink-0"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          {isPending ? "Creating..." : "New Chat"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handleNewChat}
+            disabled={isPending}
+            size="sm"
+            variant="outline"
+            className="shrink-0"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            {isPending ? "Creating..." : "New Chat"}
+          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" variant="outline" className="shrink-0">
+                New Resource
+                <ChevronDown className="h-4 w-4 ml-2" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleCreateResource("devbox")}>
+                Devbox
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleCreateResource("cluster")}>
+                Database Cluster
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleCreateResource("deployment")}
+              >
+                Deployment
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </SheetHeader>
   );
