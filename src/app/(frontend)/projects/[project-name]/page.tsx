@@ -39,7 +39,7 @@ import {
 } from "@/lib/brain/resources/project/project-method/project-mutation";
 
 // Context and utilities
-import { convertPortsToIngressNodes } from "@/lib/flowgraph/nodes/flowgraph-nodes-utils";
+import { convertResourceToNetworkNodes } from "@/lib/flowgraph/nodes/flowgraph-nodes-utils";
 import {
   FlowgraphProvider,
   useFlowgraphActions,
@@ -189,15 +189,14 @@ function ProjectFlow({ projectName }: { projectName: string }) {
     let allNodes = [...computedNodes];
     let allEdges = [...computedEdges];
 
-    // Process each computed node to extract ports and generate ingress nodes
+    // Process each computed node to extract ports and generate network nodes
     for (const node of computedNodes) {
       const { data } = node;
       if (data && data.ports) {
-        const { newNodes, newEdges } = convertPortsToIngressNodes(
-          data.ports,
+        const { newNodes, newEdges } = convertResourceToNetworkNodes(
+          data,
           data.name,
           data.kind,
-          data,
           allNodes,
           allEdges
         );
@@ -267,7 +266,7 @@ export default function ProjectPage({
   useEffect(() => {
     // Set the selected project when the component mounts
     selectProject(projectName);
-    setStage("resource");
+    setStage("manage_project");
 
     // Cleanup: clear the selected project when the component unmounts
     return () => {

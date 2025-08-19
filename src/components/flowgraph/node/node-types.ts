@@ -4,6 +4,7 @@ import DevboxNode from "./sealos/devbox/devbox-node";
 import IngressNode from "./sealos/ingress/ingress-node";
 import ObjectStorageNode from "./sealos/objectstorage/objectstorage-node";
 import StatefulsetNode from "./sealos/statefulset/statefulset-node";
+import NetworkNode from "./brain/network/network-node";
 import { NodeTypes } from "@xyflow/react";
 
 const nodeTypes: NodeTypes = {
@@ -13,6 +14,7 @@ const nodeTypes: NodeTypes = {
   ingress: IngressNode,
   objectstoragebucket: ObjectStorageNode,
   statefulset: StatefulsetNode,
+  network: NetworkNode,
 };
 
 export default nodeTypes;
