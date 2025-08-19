@@ -8,6 +8,7 @@ interface NodeStackProps {
   data: any[]; // Array of data to create background cards
   height?: string;
   maxBackgroundCards?: number; // Maximum number of background cards (default: 5)
+  backgroundColor?: string; // Background color class for the main card
 }
 
 export default function NodeStack({
@@ -15,6 +16,7 @@ export default function NodeStack({
   data,
   height,
   maxBackgroundCards = 2,
+  backgroundColor,
 }: NodeStackProps) {
   // Calculate how many background cards to show (limited by maxBackgroundCards)
   const backgroundCardCount = Math.min(data.length, maxBackgroundCards);
@@ -23,7 +25,7 @@ export default function NodeStack({
   const backgroundCards = Array.from(
     { length: backgroundCardCount },
     (_, index) => {
-      const offset = (index + 1) * 8; // Incremental offset: 8px, 16px, 24px, etc.
+      const offset = (index + 1) * 6; // Incremental offset: 8px, 16px, 24px, etc.
       return (
         <div
           key={index}
@@ -39,7 +41,7 @@ export default function NodeStack({
         >
           <BaseNode
             nodeData={{}}
-            className={height ? `h-${height}` : ""}
+            className={`${height ? `h-${height}` : ""} ${backgroundColor || ""}`}
             active={false}
           >
             {/* Empty content for background cards */}

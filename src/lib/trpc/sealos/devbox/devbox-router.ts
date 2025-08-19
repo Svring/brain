@@ -297,12 +297,11 @@ export const devboxRouter = t.router({
   checkDevboxReady: t.procedure
     .input(
       z.object({
-        context: DevboxApiContextSchema,
         devboxName: z.string(),
       })
     )
-    .query(async ({ input }) => {
-      return await checkDevboxReady(input.context, input.devboxName);
+    .query(async ({ input, ctx }) => {
+      return await checkDevboxReady(ctx, input.devboxName);
     }),
 });
 

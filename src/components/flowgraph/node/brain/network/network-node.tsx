@@ -1,9 +1,11 @@
 "use client";
 
 import BaseNode from "../../base-node-wrapper";
+import NodeStack from "../../components/node-stack";
 import { cn } from "@/lib/utils";
 import { Network, Globe } from "lucide-react";
 import type { DevboxPort } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
+import { useNetworkStatus } from "@/hooks/sealos/use-network-status";
 
 interface NetworkResource {
   ports: DevboxPort[];
@@ -20,42 +22,59 @@ export default function NetworkNode({
 }) {
   const { resource, parent } = data;
 
-  return (
-    <BaseNode nodeData={data} className={cn("p-4 h-27")}>
-      <div className="flex h-full flex-col justify-between">
-        {/* Header */}
-        <div className="flex items-center gap-2 truncate font-medium">
-          <div className="flex flex-col items-start">
-            <span className="flex items-center gap-4">
-              <Network className="rounded-lg h-9 w-9 p-1.5 bg-muted" />
-              <span className="flex flex-col">
-                <span className="text-lg leading-none">Network</span>
-              </span>
-            </span>
-          </div>
-        </div>
+  const { readyStatus, getBackgroundColor } = useNetworkStatus({ parent });
 
-        {/* Ports List */}
-        <div className="flex flex-col gap-1 mt-2">
-          {resource.ports?.map((port, index) => {
-            const hasPublicAddress = !!port.publicAddress;
-            const address = port.publicAddress || port.privateAddress;
-            
-            return (
-              <div key={index} className="flex items-center gap-2 text-sm">
-                <Globe 
-                  className={cn(
-                    "h-4 w-4",
-                    hasPublicAddress ? "text-green-500" : "text-blue-500"
-                  )} 
-                />
-                <span className="font-mono">{port.number}</span>
-                <span className="text-muted-foreground truncate">{address}</span>
-              </div>
-            );
-          })}
+  // console.log("readyStatus", readyStatus);
+
+  const mainCard = (
+    <BaseNode nodeData={data} className={cn("h-14 p-2", getBackgroundColor())}>
+      <div className="flex h-full flex-col justify-between">
+        {/* Single Port Display */}
+        <div className="flex items-center justify-center h-full">
+          {resource.ports?.[0] &&
+            (() => {
+              const port = resource.ports[0];
+              const hasPublicAddress = !!port.publicAddress;
+              const address = port.publicAddress || port.privateAddress;
+
+              return (
+                <div className="flex items-center gap-2 text-sm w-full">
+                  <Globe
+                    className={cn(
+                      "h-4 w-4 flex-shrink-0",
+                      hasPublicAddress ? "text-theme-green" : "text-theme-blue"
+                    )}
+                  />
+                  <span
+                    className={cn(
+                      "truncate min-w-0 flex-1",
+                      hasPublicAddress
+                        ? "text-foreground cursor-pointer hover:text-foreground/80"
+                        : "text-foreground"
+                    )}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (hasPublicAddress && address) {
+                        window.open(address, "_blank");
+                      }
+                    }}
+                  >
+                    {address}
+                  </span>
+                </div>
+              );
+            })()}
         </div>
       </div>
     </BaseNode>
+  );
+
+  return (
+    <NodeStack
+      mainCard={mainCard}
+      data={resource.ports || []}
+      height="14"
+      backgroundColor={getBackgroundColor()}
+    />
   );
 }

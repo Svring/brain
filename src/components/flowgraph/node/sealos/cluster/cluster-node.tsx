@@ -212,7 +212,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
       {/* Hem component - positioned above background cards */}
       {hemComponent && (
         <div className="absolute inset-x-0 top-0 z-10">
-          <div className="bg-node-background border rounded-lg px-3 pt-8 pb-1 text-xs flex flex-col h-60">
+          <div className="bg-node-background border border-border-primary rounded-lg px-3 pt-8 pb-1 text-xs flex flex-col h-60">
             <div className="flex-1"></div>
             <div className="flex-shrink-0">{hemComponent}</div>
           </div>

@@ -66,12 +66,11 @@ export const launchpadRouter = t.router({
   checkLaunchpadReady: t.procedure
     .input(
       z.object({
-        request: LaunchpadCheckReadyRequestSchema,
-        context: SealosApiContextSchema,
+        launchpadName: z.string(),
       })
     )
-    .query(async ({ input }) => {
-      return await checkLaunchpadReady(input.request, input.context);
+    .query(async ({ input, ctx }) => {
+      return await checkLaunchpadReady({ name: input.launchpadName }, ctx);
     }),
 
   getLaunchpadMonitorData: t.procedure

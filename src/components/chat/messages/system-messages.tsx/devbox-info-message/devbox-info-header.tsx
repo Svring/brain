@@ -116,7 +116,7 @@ export const DevboxInfoHeader: React.FC<DevboxInfoHeaderProps> = ({
 
       {/* SSH Connection Info */}
       {devboxData.ssh && (
-        <div className="pt-2">
+        <div className="pt-2 flex-1">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">
