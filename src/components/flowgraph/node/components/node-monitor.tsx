@@ -33,6 +33,8 @@ export default function NodeMonitor({ resource }: NodeMonitorProps) {
       ? monitorData[monitorData.length - 3]
       : null;
 
+  console.log("latestData", latestData);
+
   // Determine icon color based on monitor values
   const getIconColor = () => {
     if (!latestData) return "text-theme-green";

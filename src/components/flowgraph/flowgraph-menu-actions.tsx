@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Eye, Play, Pause, RefreshCw } from "lucide-react";
+import { Plus, Eye, Settings,Play, Pause, RefreshCw } from "lucide-react";
 import { MenuBar, MenuBarItem } from "../project/menu-bar";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -29,30 +29,30 @@ export function FlowgraphMenuActions({
   };
 
   const menuItemsRight: MenuBarItem[] = [
+    // {
+    //   icon: RefreshCw,
+    //   label: "Refresh",
+    //   onClick: handleRefresh,
+    //   isToggle: false,
+    // },
     {
-      icon: RefreshCw,
-      label: "Refresh",
-      onClick: handleRefresh,
-      isToggle: false,
-    },
-    {
-      icon: Eye,
+      icon: Settings,
       label: "Display Env",
       onClick: onDisplayEnv,
       isToggle: false,
     },
-    {
-      icon: Play,
-      label: isStarting ? "Starting..." : "Start All",
-      onClick: onStartAll,
-      isToggle: false,
-    },
-    {
-      icon: Pause,
-      label: isPausing ? "Pausing..." : "Pause All",
-      onClick: onPauseAll,
-      isToggle: false,
-    },
+    // {
+    //   icon: Play,
+    //   label: isStarting ? "Starting..." : "Start All",
+    //   onClick: onStartAll,
+    //   isToggle: false,
+    // },
+    // {
+    //   icon: Pause,
+    //   label: isPausing ? "Pausing..." : "Pause All",
+    //   onClick: onPauseAll,
+    //   isToggle: false,
+    // },
     {
       icon: Plus,
       label: "Add New",

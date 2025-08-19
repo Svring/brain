@@ -13,6 +13,7 @@ import { truncateImage } from "@/lib/sealos/sealos-utils";
 import { useIsMutating } from "@tanstack/react-query";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import NodeLog from "../../components/node-log";
 
 export default function StatefulsetNode({ data }: { data: StatefulsetObjectQuery }) {
   const { name, image, status, ports, pods } = data;
@@ -87,7 +88,8 @@ export default function StatefulsetNode({ data }: { data: StatefulsetObjectQuery
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={ports || []} /> */}
-            <NodePods resource={data} />
+            {/* <NodePods resource={data} /> */}
+            <NodeLog />
             <NodeMonitor resource={data} />
           </div>
         </div>

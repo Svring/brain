@@ -70,14 +70,10 @@ export const useNetworkStatus = ({ parent }: UseNetworkStatusProps) => {
   useEffect(() => {
     if (statusKey === "unknown") return;
 
-    const desiredStroke = statusKey === "allNotReady" ? "#ef4444" : "#3b82f6";
+    // Only change color to red if status is not ready
+    // Otherwise, keep the original stroke color
+    const shouldChangeToRed = statusKey === "allNotReady";
     const desiredType = "floating" as const;
-    const desiredMarker = {
-      type: MarkerType.Arrow as const,
-      width: 30,
-      height: 30,
-      color: desiredStroke,
-    };
 
     connectedEdges.forEach((edge) => {
       const currentStroke = edge.style?.stroke as string | undefined;
@@ -86,22 +82,34 @@ export const useNetworkStatus = ({ parent }: UseNetworkStatusProps) => {
         | string
         | undefined;
 
-      const needsUpdate =
-        currentStroke !== desiredStroke ||
-        currentType !== desiredType ||
-        currentMarkerColor !== desiredStroke;
+      // Only update if we need to change to red (error state)
+      if (shouldChangeToRed) {
+        const desiredStroke = "#ef4444"; // Red for error state
+        const desiredMarker = {
+          type: MarkerType.Arrow as const,
+          width: 30,
+          height: 30,
+          color: desiredStroke,
+        };
 
-      if (!needsUpdate) return;
+        const needsUpdate =
+          currentStroke !== desiredStroke ||
+          currentType !== desiredType ||
+          currentMarkerColor !== desiredStroke;
 
-      updateEdge({
-        ...edge,
-        style: {
-          ...edge.style,
-          stroke: desiredStroke,
-        },
-        markerEnd: desiredMarker,
-        type: desiredType,
-      });
+        if (needsUpdate) {
+          updateEdge({
+            ...edge,
+            style: {
+              ...edge.style,
+              stroke: desiredStroke,
+            },
+            markerEnd: desiredMarker,
+            type: desiredType,
+          });
+        }
+      }
+      // If status is normal, don't update the edge at all - keep original colors
     });
   }, [statusKey, networkNodeId, connectedEdges]);
 

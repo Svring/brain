@@ -123,7 +123,7 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={ports || []} /> */}
-            <NodePods resource={data} />
+            {/* <NodePods resource={data} /> */}
             <NodeLog />
             <NodeMonitor resource={data} />
           </div>

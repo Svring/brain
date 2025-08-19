@@ -21,7 +21,8 @@ import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/re
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { clusterClient } from "@/components/provider/trpc-provider";
 import { convertToDbconnUrl } from "@/lib/sealos/sealos-utils";
-import { Globe } from "lucide-react";
+import { Globe, HardDrive } from "lucide-react";
+import { useResourceMetrics } from "@/hooks/sealos/use-resource-metrics";
 
 export default function ClusterNode({ data }: { data: ClusterObject }) {
   const { sendSystemMessage } = useSendSystemMessageMutation();
@@ -44,6 +45,27 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
   );
 
   // console.log("clusterData", clusterData);
+
+  // Get resource metrics data
+  const { monitorData, isLoading: isMetricsLoading } = useResourceMetrics(data);
+
+  // Get the latest data point for current values
+  const latestData =
+    monitorData && Array.isArray(monitorData) && monitorData.length > 0
+      ? monitorData[monitorData.length - 3]
+      : null;
+
+  // Derive a safe storage percentage (0-100). Accepts values in 0-1 or 0-100.
+  const storagePercent: number = (() => {
+    const raw = latestData?.storage;
+    if (raw === undefined || raw === null || Number.isNaN(raw as number)) {
+      return 0;
+    }
+    const value = Number(raw);
+    // If it's a fraction (0-1), convert to percent; else clamp to 0-100
+    const percent = value <= 1 ? value * 100 : value;
+    return Math.max(0, Math.min(100, percent));
+  })();
 
   // Fetch cluster backup list
   const { data: backupList = [] } = useQuery(
@@ -162,7 +184,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={[]} /> */}
-            <NodePods resource={clusterData || data} />
+            {/* <NodePods resource={clusterData || data} /> */}
             <NodeLog />
             <ClusterNodeBackup object={clusterData} />
             {/* <NodeBackup /> */}
@@ -173,11 +195,26 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
     </BaseNode>
   );
 
-  // Hem component displaying storage information
+  // Hem component displaying storage information as a progress bar (left-to-right fill)
   const hemComponent = (
-    <div className="text-center text-muted-foreground flex">
-      <div className="text-xs font-medium">Storage:</div>
-      <div className="text-xs">{clusterData.resource?.storage || "N/A"}</div>
+    <div className="relative bg-node-background w-full h-full flex items-center rounded text-xs text-muted-foreground overflow-hidden px-2 py-1">
+      {/* Filled background representing used percentage */}
+      <div
+        className="absolute inset-y-0 left-0 bg-muted"
+        style={{ width: `${storagePercent}%` }}
+      />
+
+      {/* Foreground content row */}
+      <div className="relative z-10 flex items-center justify-between w-full">
+        {/* Left side: Volume icon and label */}
+        <div className="flex items-center gap-1">
+          <HardDrive className="h-5 w-5" />
+          <span className="text-md">Volume</span>
+        </div>
+
+        {/* Right side: Resource storage label (capacity) */}
+        <div className="text-xs">{clusterData.resource?.storage || "N/A"}</div>
+      </div>
     </div>
   );
 
@@ -186,23 +223,20 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
       {/* Background cards from NodeStack - positioned at the bottom */}
       {Array.from({ length: Math.min(backupList.length, 2) }, (_, index) => {
         const offset = (index + 1) * 8;
+        const backgroundCardCount = Math.min(backupList.length, 2);
         return (
           <div
             key={index}
             className="absolute inset-0 cursor-pointer"
             style={{
               transform: `translate(${offset}px, -${offset}px)`,
-              zIndex: 1, // Lowest z-index - behind everything
+              zIndex: backgroundCardCount - index, // Inverted z-index: higher index = lower z-index
             }}
             onClick={(e) => {
               e.stopPropagation();
             }}
           >
-            <BaseNode
-              nodeData={{}}
-              className="h-60"
-              active={false}
-            >
+            <BaseNode nodeData={{}} className="h-60" active={false}>
               <div className="w-full h-full" />
             </BaseNode>
           </div>
@@ -212,17 +246,15 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
       {/* Hem component - positioned above background cards */}
       {hemComponent && (
         <div className="absolute inset-x-0 top-0 z-10">
-          <div className="bg-node-background border border-border-primary rounded-lg px-3 pt-8 pb-1 text-xs flex flex-col h-60">
+          <div className="bg-muted border border-border-primary rounded-lg pt-8 text-xs flex flex-col h-60">
             <div className="flex-1"></div>
-            <div className="flex-shrink-0">{hemComponent}</div>
+            <div className="h-10">{hemComponent}</div>
           </div>
         </div>
       )}
 
       {/* Main card - positioned at the top */}
-      <div className="relative z-20">
-        {mainCard}
-      </div>
+      <div className="relative z-20">{mainCard}</div>
     </div>
   );
 }
