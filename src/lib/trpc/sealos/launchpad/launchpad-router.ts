@@ -206,13 +206,10 @@ export const launchpadRouter = t.router({
     .input(
       z.object({
         request: LaunchpadStartRequestSchema,
-        context: SealosApiContextSchema,
       })
     )
-    .mutation(async ({ input }) => {
-      return await runParallelAction(
-        startLaunchpad(input.request, input.context)
-      );
+    .mutation(async ({ input, ctx }) => {
+      return await runParallelAction(startLaunchpad(input.request, ctx));
     }),
 
   checkReadyLaunchpad: t.procedure

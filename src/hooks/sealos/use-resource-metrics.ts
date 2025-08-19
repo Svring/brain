@@ -31,7 +31,6 @@ export const useResourceMetrics = (resource: Resource) => {
   // Fetch monitor data based on resource kind
   const { data: devboxMonitorData } = useQuery({
     ...devboxTrpcClient.getDevboxCombinedMonitorData.queryOptions({
-      context: sealosContext,
       devboxName: resource.pods?.[0]?.name || "",
     }),
     enabled:
@@ -40,7 +39,6 @@ export const useResourceMetrics = (resource: Resource) => {
 
   const { data: clusterMonitorData } = useQuery({
     ...clusterTrpcClient.getClusterCombinedMonitorData.queryOptions({
-      context: sealosContext,
       dbName: resource.name,
       dbType: resource.type!,
     }),

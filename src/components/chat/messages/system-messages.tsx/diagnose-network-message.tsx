@@ -40,7 +40,6 @@ export const DiagnoseNetworkMessageCard: React.FC<
   // Fetch ranged monitor data (only if devbox is running)
   const { data: monitorData } = useQuery({
     ...devboxTrpcClient.getDevboxCombinedMonitorData.queryOptions({
-      context: createMetricsContext(),
       devboxName: devboxData?.pods?.[0]?.name || "",
     }),
     // enabled:

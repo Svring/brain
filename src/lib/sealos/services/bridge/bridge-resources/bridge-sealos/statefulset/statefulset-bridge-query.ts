@@ -5,15 +5,15 @@ import { getStatefulsetRelatedResources } from "@/lib/sealos/resources/statefuls
 import { enrichPortsWithService } from "@/lib/sealos/resources/service/service-method/service-utils";
 import { enrichPortsWithIngress } from "@/lib/sealos/resources/ingress/ingress-method/ingress-utils";
 import {
-  StatefulsetObjectSchema,
-  StatefulsetObject,
-} from "@/lib/sealos/resources/statefulset/statefulset-object-schema";
+  StatefulsetObjectQuerySchema,
+  StatefulsetObjectQuery,
+} from "@/lib/sealos/resources/statefulset/statefulset-object-query-schema";
 import _ from "lodash";
 
 export const getStatefulSetObject = async (
   context: K8sApiContext,
   target: BuiltinResourceTarget
-): Promise<StatefulsetObject> => {
+): Promise<StatefulsetObjectQuery> => {
   const statefulSetObject = await composeObjectFromTarget(context, target);
   console.log("statefulSetObject", statefulSetObject);
   const relatedResources = await getStatefulsetRelatedResources(

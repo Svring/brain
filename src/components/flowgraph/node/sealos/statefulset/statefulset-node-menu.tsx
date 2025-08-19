@@ -22,7 +22,7 @@ import {
   useStartLaunchpadMutation,
   usePauseLaunchpadMutation,
 } from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-mutation";
-import { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulset-object-schema";
+import { StatefulsetObjectQuery } from "@/lib/sealos/resources/statefulset/statefulset-object-query-schema";
 import { useRemoveFromProjectMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
@@ -30,7 +30,7 @@ import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 export default function StatefulsetNodeMenu({
   object,
 }: {
-  object: StatefulsetObject;
+  object: StatefulsetObjectQuery;
 }) {
   const sealosContext = createSealosContext();
   const k8sContext = createK8sContext();

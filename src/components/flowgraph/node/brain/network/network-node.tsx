@@ -28,10 +28,6 @@ export default function NetworkNode({
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 
   const handleNodeClick = () => {
-    // const target = convertResourceObjectToTarget({
-    //   kind: parent.kind,
-    //   name: parent.name,
-    // });
     emitMessage({
       type: "info.networkInfo",
       payload: parent,

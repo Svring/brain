@@ -8,13 +8,13 @@ import NodePods from "../../components/node-pods";
 import NodeMonitor from "../../components/node-monitor";
 import StatefulsetNodeTitle from "./statefulset-node-title";
 import StatefulsetNodeMenu from "./statefulset-node-menu";
-import { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulset-object-schema";
+import { StatefulsetObjectQuery } from "@/lib/sealos/resources/statefulset/statefulset-object-query-schema";
 import { truncateImage } from "@/lib/sealos/sealos-utils";
 import { useIsMutating } from "@tanstack/react-query";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
-export default function StatefulsetNode({ data }: { data: StatefulsetObject }) {
+export default function StatefulsetNode({ data }: { data: StatefulsetObjectQuery }) {
   const { name, image, status, ports, pods } = data;
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 

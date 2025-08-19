@@ -259,21 +259,15 @@ export const devboxRouter = t.router({
   getDevboxCombinedMonitorData: t.procedure
     .input(
       z.object({
-        context: DevboxApiContextSchema,
         devboxName: z.string(),
         step: z.string().optional().default("2m"),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const [cpuResult, memoryResult] = await Promise.allSettled([
+        getDevboxMonitorData(ctx, "average_cpu", input.devboxName, input.step),
         getDevboxMonitorData(
-          input.context,
-          "average_cpu",
-          input.devboxName,
-          input.step
-        ),
-        getDevboxMonitorData(
-          input.context,
+          ctx,
           "average_memory",
           input.devboxName,
           input.step
