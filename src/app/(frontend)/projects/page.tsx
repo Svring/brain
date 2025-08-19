@@ -74,7 +74,7 @@ export default function Page() {
         </div>
       </div>
 
-      <ProjectProposalDemo />
+      {/* <ProjectProposalDemo /> */}
       <CreateProjectDialog />
     </div>
   );

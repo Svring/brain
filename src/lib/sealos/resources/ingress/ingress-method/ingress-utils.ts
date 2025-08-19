@@ -39,7 +39,7 @@ export interface IngressResource extends K8sResource {
 }
 
 export interface TransformedIngress {
-  ingressName: string;
+  networkName: string;
   port: number;
   protocol?: string;
   host: string;
@@ -51,7 +51,7 @@ export interface PortWithNumber {
 }
 
 export interface EnrichedPort extends PortWithNumber {
-  ingressName?: string;
+  networkName?: string;
   protocol?: string;
   host?: string;
   privateAddress?: string;
@@ -87,7 +87,7 @@ export const transformIngressResources = (
   const result: TransformedIngress[] = [];
 
   resources.forEach((resource) => {
-    const ingressName = resource.metadata.name;
+    const networkName = resource.metadata.name;
     const protocol =
       resource.metadata.annotations?.[
         "nginx.ingress.kubernetes.io/backend-protocol"
@@ -100,7 +100,7 @@ export const transformIngressResources = (
         const port = path.backend.service.port.number;
 
         result.push({
-          ingressName,
+          networkName,
           port,
           protocol,
           host,
@@ -172,7 +172,7 @@ export function enrichPortsWithIngress(
       // Merge ingress data into port object, overwriting existing properties
       return {
         ...port,
-        ingressName: matchingIngress.ingressName,
+        networkName: matchingIngress.networkName,
         protocol: matchingIngress.protocol,
         host: matchingIngress.host,
       };

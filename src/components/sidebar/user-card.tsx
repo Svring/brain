@@ -97,7 +97,7 @@ export function UserCard({
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-24 rounded-lg"
+            className="rounded-lg"
             side={isMobile ? "bottom" : "right"}
             sideOffset={4}
           >

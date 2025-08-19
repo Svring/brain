@@ -19,7 +19,7 @@ export const DevboxPortSchema = z.object({
   protocol: z.string().optional(),
   serviceName: z.string().optional(),
   privateAddress: z.string().optional(),
-  ingressName: z.string().optional(),
+  networkName: z.string().optional(),
   host: z.string().optional(),
   publicAddress: z.string().optional(),
 });
