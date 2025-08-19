@@ -22,59 +22,22 @@ export const activateProjectActions = (context: K8sApiContext) => {
   listProjectAction(context);
   deleteProjectAction(context);
   getProjectResourcesAction(context);
-  createProjectAction(context);
+  proposeProjectAction(context);
+  // createProjectAction(context);
 };
 
-export const createProjectAction = (context: K8sApiContext) => {
-  const createProject = useCreateProjectMutation(context);
-
+export const proposeProjectAction = (context: K8sApiContext) => {
   useCopilotAction({
-    name: "createProject",
-    description: "Create a new project",
-    parameters: [
-      {
-        name: "projectName",
-        type: "string",
-        required: true,
-        description: "Name of the project",
-      },
-      {
-        name: "resources",
-        type: "object[]",
-        attributes: [
-          {
-            name: "resourceName",
-            type: "string",
-            required: true,
-            description: "Name of the resource",
-          },
-          {
-            name: "resourceKind",
-            type: "string",
-            enum: ["devbox", "cluster", "app", "objectstoragebucket"],
-            required: true,
-            description: "Type of the resource",
-          },
-          {
-            name: "resourceType",
-            type: "string",
-            required: true,
-            description:
-              "Type of the resource, available values differ based on different resourceKind.",
-          },
-        ],
-      },
-    ],
-    // handler: ({ name, resources }) => {
-    //   createProject.mutateAsync({ name, resources });
-    // },
-    render: ({ args, result, status }) => {
+    name: "propose_project",
+    // available: "disabled",
+    render: ({ status, args, result }) => {
+      console.log("proposeProjectAction", status, args, result);
       return (
-        <AITool key={"createProject"}>
+        <AITool key="propose_project">
           <AIToolHeader
-            description={"Create a new project"}
-            name={"createProject"}
             status={status}
+            name="Propose Project"
+            description="Propose a new project based on the provided requirements."
           />
           <AIToolContent>
             <AIToolParameters parameters={args} />
@@ -87,6 +50,69 @@ export const createProjectAction = (context: K8sApiContext) => {
     },
   });
 };
+
+// export const createProjectAction = (context: K8sApiContext) => {
+//   const createProject = useCreateProjectMutation(context);
+
+//   useCopilotAction({
+//     name: "createProject",
+//     description: "Create a new project",
+//     parameters: [
+//       {
+//         name: "projectName",
+//         type: "string",
+//         required: true,
+//         description: "Name of the project",
+//       },
+//       {
+//         name: "resources",
+//         type: "object[]",
+//         attributes: [
+//           {
+//             name: "resourceName",
+//             type: "string",
+//             required: true,
+//             description: "Name of the resource",
+//           },
+//           {
+//             name: "resourceKind",
+//             type: "string",
+//             enum: ["devbox", "cluster", "app", "objectstoragebucket"],
+//             required: true,
+//             description: "Type of the resource",
+//           },
+//           {
+//             name: "resourceType",
+//             type: "string",
+//             required: true,
+//             description:
+//               "Type of the resource, available values differ based on different resourceKind.",
+//           },
+//         ],
+//       },
+//     ],
+//     // handler: ({ name, resources }) => {
+//     //   createProject.mutateAsync({ name, resources });
+//     // },
+//     render: ({ args, result, status }) => {
+//       return (
+//         <AITool key={"createProject"}>
+//           <AIToolHeader
+//             description={"Create a new project"}
+//             name={"createProject"}
+//             status={status}
+//           />
+//           <AIToolContent>
+//             <AIToolParameters parameters={args} />
+//             {result && (
+//               <AIToolResult result={<AIResponse>{result}</AIResponse>} />
+//             )}
+//           </AIToolContent>
+//         </AITool>
+//       );
+//     },
+//   });
+// };
 
 export const listProjectAction = (context: K8sApiContext) => {
   const queryClient = useQueryClient();

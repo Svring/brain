@@ -5,9 +5,7 @@ import { useMachine } from "@xstate/react";
 import { createContext, type ReactNode, useContext } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import { langgraphMachine } from "@/contexts/langgraph/langgraph-machine";
-import type { BrainState, ProjectProposal } from "./langgraph-schema";
 import { useLanggraphAgent } from "@/hooks/langgraph/use-langgraph-agent";
-import _ from "lodash";
 
 // const inspector = createBrowserInspector();
 
@@ -49,8 +47,6 @@ export function useLanggraphState() {
     apiKey: state.context.api_key,
     model: state.context.model,
     stage: state.context.stage,
-    projectProposal: state.context.project_proposal,
-    resourceContext: state.context.resource_context,
     isIdle: state.matches("idle"),
     isActive: state.matches("active"),
   };
@@ -59,17 +55,17 @@ export function useLanggraphState() {
 export function useLanggraphActions() {
   const { send, state } = useLanggraphContext();
   const { state: langgraphState, setState: setLanggraphState } =
-    useLanggraphAgent();
+    useLanggraphAgent(state.context.stage);
 
   return {
-    activate: () => {
-      send({ type: "ACTIVATE" });
-      setLanggraphState({ ...state.context, stage: "resource" });
-    },
-    deactivate: () => {
-      send({ type: "DEACTIVATE" });
-      setLanggraphState({ ...state.context, stage: "project" });
-    },
+    // activate: () => {
+    //   send({ type: "ACTIVATE" });
+    //   setLanggraphState({ ...state.context, stage: "resource" });
+    // },
+    // deactivate: () => {
+    //   send({ type: "DEACTIVATE" });
+    //   setLanggraphState({ ...state.context, stage: "project" });
+    // },
     setConfig: (config: {
       base_url?: string;
       api_key?: string;
@@ -78,23 +74,9 @@ export function useLanggraphActions() {
       send({ type: "SET_CONFIG", ...config });
       setLanggraphState({ ...state.context, ...config });
     },
-    setStage: (stage: "project" | "resource") => {
+    setStage: (stage: "propose_project" | "manage_project") => {
       send({ type: "SET_STAGE", stage });
       setLanggraphState({ ...state.context, stage });
-    },
-    setProjectProposal: (projectProposal: ProjectProposal) => {
-      send({ type: "SET_PROJECT_PROPOSAL", project_proposal: projectProposal });
-      setLanggraphState({
-        ...state.context,
-        project_proposal: projectProposal,
-      });
-    },
-    setResourceContext: (resourceContext: any) => {
-      send({ type: "SET_RESOURCE_CONTEXT", resource_context: resourceContext });
-      setLanggraphState({
-        ...state.context,
-        resource_context: resourceContext,
-      });
     },
   };
 }

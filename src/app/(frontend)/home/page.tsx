@@ -16,7 +16,7 @@ export default function HomePage() {
   const { filteredProjects, projects, isLoading, isError } = useProjectSearch();
 
   useCopilotActions();
-  useLanggraphAgent("project");
+  useLanggraphAgent("propose_project");
 
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden">

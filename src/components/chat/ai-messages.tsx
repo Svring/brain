@@ -10,6 +10,8 @@ export function AiMessages() {
     id: "chat",
   });
 
+  console.log("messages", messages);
+
   return (
     <>
       {messages.length !== 0 && (

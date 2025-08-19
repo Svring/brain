@@ -3,7 +3,43 @@
 import { ProjectContextState } from "../project/project-machine";
 
 // All possible runtime names from the langgraph schema
-export type LanggraphRuntime = "C++" | "Nuxt3" | "Hugo" | "Java" | "Chi" | "PHP" | "Rocket" | "Quarkus" | "Debian" | "Ubuntu" | "Spring Boot" | "Flask" | "Nginx" | "Vue.js" | "Python" | "VitePress" | "Node.js" | "Echo" | "Next.js" | "Angular" | "React" | "Svelte" | "Gin" | "Rust" | "UmiJS" | "Docusaurus" | "Hexo" | "Vert.x" | "Go" | "C" | "Iris" | "Astro" | "MCP" | "Django" | "Express.js" | ".Net";
+export type LanggraphRuntime =
+  | "C++"
+  | "Nuxt3"
+  | "Hugo"
+  | "Java"
+  | "Chi"
+  | "PHP"
+  | "Rocket"
+  | "Quarkus"
+  | "Debian"
+  | "Ubuntu"
+  | "Spring Boot"
+  | "Flask"
+  | "Nginx"
+  | "Vue.js"
+  | "Python"
+  | "VitePress"
+  | "Node.js"
+  | "Echo"
+  | "Next.js"
+  | "Angular"
+  | "React"
+  | "Svelte"
+  | "Gin"
+  | "Rust"
+  | "UmiJS"
+  | "Docusaurus"
+  | "Hexo"
+  | "Vert.x"
+  | "Go"
+  | "C"
+  | "Iris"
+  | "Astro"
+  | "MCP"
+  | "Django"
+  | "Express.js"
+  | ".Net";
 
 export type DevBox = {
   runtime: LanggraphRuntime;
@@ -11,7 +47,15 @@ export type DevBox = {
 };
 
 export type Database = {
-  type: "postgresql" | "mongodb" | "apecloud-mysql" | "redis" | "kafka" | "weaviate" | "milvus" | "pulsar";
+  type:
+    | "postgresql"
+    | "mongodb"
+    | "apecloud-mysql"
+    | "redis"
+    | "kafka"
+    | "weaviate"
+    | "milvus"
+    | "pulsar";
   description: string;
 };
 
@@ -36,9 +80,7 @@ export type BrainState = {
   base_url: string;
   api_key: string;
   model: string;
-  stage: "project" | "resource";
-  project_proposal: ProjectProposal;
-  resource_context: any;
+  stage: "propose_project" | "manage_project";
   project_context: ProjectContextState;
 };
 
@@ -53,13 +95,5 @@ export type LanggraphEvent =
     }
   | {
       type: "SET_STAGE";
-      stage: "project" | "resource";
-    }
-  | {
-      type: "SET_PROJECT_PROPOSAL";
-      project_proposal: ProjectProposal;
-    }
-  | {
-      type: "SET_RESOURCE_CONTEXT";
-      resource_context: any;
+      stage: "propose_project" | "manage_project";
     };
