@@ -33,7 +33,7 @@ export const ClusterInfoMessage: React.FC<ClusterInfoMessageProps> = ({
   // Show loading state
   if (isLoading) {
     return (
-      <Card className="w-full bg-background-secondary">
+      <Card className="w-full bg-node-background">
         <CardContent className="p-6">
           <div className="flex items-center justify-center">
             <span className="text-muted-foreground">
@@ -48,7 +48,7 @@ export const ClusterInfoMessage: React.FC<ClusterInfoMessageProps> = ({
   // Show error state
   if (error || !clusterData) {
     return (
-      <Card className="w-full bg-background-secondary">
+      <Card className="w-full bg-node-background">
         <CardContent className="p-6">
           <div className="flex items-center justify-center">
             <span className="text-destructive">
@@ -61,7 +61,7 @@ export const ClusterInfoMessage: React.FC<ClusterInfoMessageProps> = ({
   }
 
   return (
-    <Card className="w-full bg-background-secondary">
+    <Card className="w-full bg-node-background">
       <ClusterInfoHeader clusterData={clusterData} />
       <CardContent className="space-y-4">
         <ResourceQuotaRow
