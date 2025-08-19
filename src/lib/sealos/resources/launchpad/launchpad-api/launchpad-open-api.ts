@@ -15,6 +15,10 @@ import {
   LaunchpadGetPodsResponse,
   LaunchpadPodsMetricsRequest,
   LaunchpadPodsMetricsResponse,
+  LaunchpadConfigMapUpdateRequest,
+  LaunchpadConfigMapUpdateResponse,
+  LaunchpadPortsUpdateRequest,
+  LaunchpadPortsUpdateResponse,
 } from "./launchpad-open-api-schemas/launchpad-create-schema";
 
 function createLaunchpadApi(context: SealosApiContext) {
@@ -145,6 +149,38 @@ export const getPodsMetrics = createParallelAction(
     const api = createLaunchpadApi(context);
     const response = await api.post<LaunchpadPodsMetricsResponse>(
       "/pod/getPodsMetrics",
+      data
+    );
+    return response.data;
+  }
+);
+
+// PATCH /api/v1/app/{name}/configmap - Update application ConfigMap
+export const updateApplicationConfigMap = createParallelAction(
+  async (
+    context: SealosApiContext,
+    name: string,
+    data: LaunchpadConfigMapUpdateRequest
+  ) => {
+    const api = createLaunchpadApi(context);
+    const response = await api.patch<LaunchpadConfigMapUpdateResponse>(
+      `/app/${name}/configmap`,
+      data
+    );
+    return response.data;
+  }
+);
+
+// PATCH /api/v1/app/{name}/ports - Update application ports
+export const updateApplicationPorts = createParallelAction(
+  async (
+    context: SealosApiContext,
+    name: string,
+    data: LaunchpadPortsUpdateRequest
+  ) => {
+    const api = createLaunchpadApi(context);
+    const response = await api.patch<LaunchpadPortsUpdateResponse>(
+      `/app/${name}/ports`,
       data
     );
     return response.data;

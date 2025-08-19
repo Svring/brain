@@ -240,6 +240,56 @@ export const LaunchpadPodsMetricsResponseSchema = z.object({
   data: z.any(), // Generic object as the schema doesn't specify structure
 });
 
+// ============= PATCH /api/v1/app/{name}/configmap SCHEMAS =============
+
+// ConfigMap update request schema
+export const LaunchpadConfigMapUpdateRequestSchema = z.object({
+  configMap: z
+    .array(
+      z.object({
+        path: z.string().describe("Mount path in the container"),
+        value: z
+          .string()
+          .optional()
+          .describe("Configuration value or file content"),
+      })
+    )
+    .default([])
+    .describe("ConfigMap configurations"),
+});
+
+// ConfigMap update response schema (same as patch response for now)
+export const LaunchpadConfigMapUpdateResponseSchema = z.object({
+  data: z.any(), // The response contains the full application data
+});
+
+// ============= PATCH /api/v1/app/{name}/ports SCHEMAS =============
+
+// Port update request schema
+export const LaunchpadPortsUpdateRequestSchema = z.object({
+  ports: z
+    .array(
+      z.object({
+        port: z.number().default(80),
+        protocol: z.enum(["TCP", "UDP", "SCTP"]),
+        appProtocol: z.enum(["HTTP", "GRPC", "WS"]).optional(),
+        exposesPublicDomain: z.boolean(),
+        networkName: z.string().optional(),
+        portName: z.string().optional(),
+        serviceName: z.string().optional(),
+      })
+    )
+    .min(1)
+    .describe(
+      "Port/Network configurations to update. Include networkName/portName/serviceName for updates, omit for new ports"
+    ),
+});
+
+// Port update response schema (same as patch response for now)
+export const LaunchpadPortsUpdateResponseSchema = z.object({
+  data: z.any(), // The response contains the full application data
+});
+
 // Export types
 export type LaunchpadCreateRequest = z.infer<
   typeof LaunchpadCreateRequestSchema
@@ -266,6 +316,18 @@ export type LaunchpadPodsMetricsRequest = z.infer<
 >;
 export type LaunchpadPodsMetricsResponse = z.infer<
   typeof LaunchpadPodsMetricsResponseSchema
+>;
+export type LaunchpadConfigMapUpdateRequest = z.infer<
+  typeof LaunchpadConfigMapUpdateRequestSchema
+>;
+export type LaunchpadConfigMapUpdateResponse = z.infer<
+  typeof LaunchpadConfigMapUpdateResponseSchema
+>;
+export type LaunchpadPortsUpdateRequest = z.infer<
+  typeof LaunchpadPortsUpdateRequestSchema
+>;
+export type LaunchpadPortsUpdateResponse = z.infer<
+  typeof LaunchpadPortsUpdateResponseSchema
 >;
 
 // Re-export individual schemas for flexibility

@@ -1,5 +1,6 @@
 import { ClusterInfoMessage } from "./cluster-info-message/cluster-info-message";
 import { DevboxInfoMessageCard } from "./devbox-info-message/devbox-info-message";
+import { DevboxDeployMessageCard } from "./devbox-deploy-message";
 import { ClusterBackupMessageCard } from "./cluster-backup-message";
 import { DevboxReleaseMessageCard } from "./devbox-release-message";
 import { LaunchpadInfoMessageCard } from "./launchpad-info-message/launchpad-info-message";
@@ -10,12 +11,16 @@ import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-
 import { DiagnoseNetworkMessageCard } from "./diagnose-network-message";
 import { CombinedMessage } from "./combined-metrics-message";
 import { PodOverview } from "../components/pod-overview";
+import { DevboxDeployResponse } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas/devbox-release-schema";
 
 export const SystemMessageType = {
   info: {
     clusterInfo: (payload: CustomResourceTarget) => <ClusterInfoMessage payload={payload} />,
     devboxInfo: (payload: CustomResourceTarget) => (
       <DevboxInfoMessageCard payload={payload} />
+    ),
+    devboxDeploy: (payload: DevboxDeployResponse) => (
+      <DevboxDeployMessageCard payload={payload} />
     ),
     clusterBackup: (payload: any) => (
       <ClusterBackupMessageCard payload={payload} />

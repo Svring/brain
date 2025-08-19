@@ -182,9 +182,47 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
   );
 
   return (
-    <NodeHem
-      mainCard={<NodeStack mainCard={mainCard} data={backupList} />}
-      hemComponent={hemComponent}
-    />
+    <div className="relative">
+      {/* Background cards from NodeStack - positioned at the bottom */}
+      {Array.from({ length: Math.min(backupList.length, 2) }, (_, index) => {
+        const offset = (index + 1) * 8;
+        return (
+          <div
+            key={index}
+            className="absolute inset-0 cursor-pointer"
+            style={{
+              transform: `translate(${offset}px, -${offset}px)`,
+              zIndex: 1, // Lowest z-index - behind everything
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            <BaseNode
+              nodeData={{}}
+              className="h-60"
+              active={false}
+            >
+              <div className="w-full h-full" />
+            </BaseNode>
+          </div>
+        );
+      })}
+
+      {/* Hem component - positioned above background cards */}
+      {hemComponent && (
+        <div className="absolute inset-x-0 top-0 z-10">
+          <div className="bg-node-background border rounded-lg px-3 pt-8 pb-1 text-xs flex flex-col h-60">
+            <div className="flex-1"></div>
+            <div className="flex-shrink-0">{hemComponent}</div>
+          </div>
+        </div>
+      )}
+
+      {/* Main card - positioned at the top */}
+      <div className="relative z-20">
+        {mainCard}
+      </div>
+    </div>
   );
 }

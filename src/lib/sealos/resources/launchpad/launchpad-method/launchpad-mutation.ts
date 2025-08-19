@@ -8,9 +8,19 @@ import {
   startLaunchpad,
   checkReadyLaunchpad,
 } from "../launchpad-api/launchpad-old-api";
-import { createApplication } from "../launchpad-api/launchpad-open-api";
+import {
+  createApplication,
+  updateApplication,
+  updateApplicationConfigMap,
+  updateApplicationPorts,
+} from "../launchpad-api/launchpad-open-api";
 import type { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
-import type { LaunchpadCreateRequest } from "../launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
+import type {
+  LaunchpadCreateRequest,
+  LaunchpadPatchRequest,
+  LaunchpadConfigMapUpdateRequest,
+  LaunchpadPortsUpdateRequest,
+} from "../launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
 import type { LaunchpadDeleteRequest } from "../launchpad-api/launchpad-old-api-schemas/req-res-delete-schemas";
 import type { LaunchpadPauseRequest } from "../launchpad-api/launchpad-old-api-schemas/req-res-pause-schemas";
 import type { LaunchpadStartRequest } from "../launchpad-api/launchpad-old-api-schemas/req-res-start-schemas";
@@ -21,6 +31,73 @@ export function useCreateLaunchpadMutation(context: SealosApiContext) {
   return useMutation({
     mutationFn: (request: LaunchpadCreateRequest) =>
       runParallelAction(createApplication(context, request)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["project"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["deployment"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["statefulset"],
+      });
+    },
+  });
+}
+
+export function useUpdateLaunchpadMutation(context: SealosApiContext) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: { name: string; data: LaunchpadPatchRequest }) =>
+      runParallelAction(updateApplication(context, request.name, request.data)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["project"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["deployment"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["statefulset"],
+      });
+    },
+  });
+}
+
+export function useUpdateLaunchpadConfigMapMutation(context: SealosApiContext) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: {
+      name: string;
+      data: LaunchpadConfigMapUpdateRequest;
+    }) =>
+      runParallelAction(
+        updateApplicationConfigMap(context, request.name, request.data)
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["project"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["deployment"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["statefulset"],
+      });
+    },
+  });
+}
+
+export function useUpdateLaunchpadPortsMutation(context: SealosApiContext) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: {
+      name: string;
+      data: LaunchpadPortsUpdateRequest;
+    }) =>
+      runParallelAction(
+        updateApplicationPorts(context, request.name, request.data)
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["project"],

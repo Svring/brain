@@ -47,11 +47,6 @@ export const ClusterInfoHeader: React.FC<ClusterInfoHeaderProps> = ({
                 <span className="text-xs text-muted-foreground">
                   {clusterData.type.charAt(0).toUpperCase() + clusterData.type.slice(1)}
                 </span>
-                {clusterData.status && (
-                  <Badge variant={getStatusVariant(clusterData.status)}>
-                    {clusterData.status}
-                  </Badge>
-                )}
               </div>
               <span className="text-lg font-bold text-foreground leading-tight truncate">
                 {clusterData.name}

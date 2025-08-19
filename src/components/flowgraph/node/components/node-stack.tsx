@@ -6,15 +6,15 @@ import BaseNode from "../base-node-wrapper";
 interface NodeStackProps {
   mainCard: ReactNode;
   data: any[]; // Array of data to create background cards
-  className?: string;
+  height?: string;
   maxBackgroundCards?: number; // Maximum number of background cards (default: 5)
 }
 
 export default function NodeStack({
   mainCard,
   data,
-  className = "",
-  maxBackgroundCards = 3,
+  height,
+  maxBackgroundCards = 2,
 }: NodeStackProps) {
   // Calculate how many background cards to show (limited by maxBackgroundCards)
   const backgroundCardCount = Math.min(data.length, maxBackgroundCards);
@@ -37,7 +37,11 @@ export default function NodeStack({
             // You can add custom click handling for each background card here
           }}
         >
-          <BaseNode nodeData={{}} className="" active={false}>
+          <BaseNode
+            nodeData={{}}
+            className={height ? `h-${height}` : ""}
+            active={false}
+          >
             {/* Empty content for background cards */}
             <div className="w-full h-full" />
           </BaseNode>
@@ -47,7 +51,7 @@ export default function NodeStack({
   );
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative`}>
       {/* Background cards with incremental offsets */}
       {backgroundCards}
 

@@ -21,8 +21,18 @@ import {
   startLaunchpad,
   checkReadyLaunchpad,
 } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-old-api";
-import { createApplication } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api";
-import { LaunchpadCreateRequestSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
+import {
+  createApplication,
+  updateApplication,
+  updateApplicationConfigMap,
+  updateApplicationPorts,
+} from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api";
+import {
+  LaunchpadCreateRequestSchema,
+  LaunchpadPatchRequestSchema,
+  LaunchpadConfigMapUpdateRequestSchema,
+  LaunchpadPortsUpdateRequestSchema,
+} from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
 import { LaunchpadDeleteRequestSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-old-api-schemas/req-res-delete-schemas";
 import { LaunchpadPauseRequestSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-old-api-schemas/req-res-pause-schemas";
 import { LaunchpadStartRequestSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-old-api-schemas/req-res-start-schemas";
@@ -123,6 +133,47 @@ export const launchpadRouter = t.router({
     .mutation(async ({ input }) => {
       return await runParallelAction(
         createApplication(input.context, input.request)
+      );
+    }),
+
+  updateLaunchpad: t.procedure
+    .input(
+      z.object({
+        name: z.string(),
+        request: LaunchpadPatchRequestSchema,
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      return await runParallelAction(
+        updateApplication(ctx, input.name, input.request)
+      );
+    }),
+
+  updateLaunchpadConfigMap: t.procedure
+    .input(
+      z.object({
+        name: z.string(),
+        request: LaunchpadConfigMapUpdateRequestSchema,
+        context: SealosApiContextSchema,
+      })
+    )
+    .mutation(async ({ input }) => {
+      return await runParallelAction(
+        updateApplicationConfigMap(input.context, input.name, input.request)
+      );
+    }),
+
+  updateLaunchpadPorts: t.procedure
+    .input(
+      z.object({
+        name: z.string(),
+        request: LaunchpadPortsUpdateRequestSchema,
+        context: SealosApiContextSchema,
+      })
+    )
+    .mutation(async ({ input }) => {
+      return await runParallelAction(
+        updateApplicationPorts(input.context, input.name, input.request)
       );
     }),
 
