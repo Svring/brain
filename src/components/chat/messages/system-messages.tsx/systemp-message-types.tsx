@@ -1,9 +1,9 @@
-import { ClusterInfoMessage } from "./cluster-info-message/cluster-info-message";
-import { DevboxInfoMessageCard } from "./devbox-info-message/devbox-info-message";
+import { ClusterInfoMessage } from "./info/cluster-info-message/cluster-info-message";
+import { DevboxInfoMessageCard } from "./info/devbox-info-message/devbox-info-message";
 import { DevboxDeployMessageCard } from "./devbox-deploy-message";
 import { ClusterBackupMessageCard } from "./cluster-backup-message";
 import { DevboxReleaseMessageCard } from "./devbox-release-message";
-import { LaunchpadInfoMessageCard } from "./launchpad-info-message/launchpad-info-message";
+import { LaunchpadInfoMessageCard } from "./info/launchpad-info-message/launchpad-info-message";
 import { MetricsMessageCard } from "./metrics-message";
 import { ObjectStorageInfoMessageCard } from "./objectstorage-info-message";
 import { PodMessageCard } from "./pod-message";
@@ -13,6 +13,7 @@ import { CombinedMessage } from "./combined-metrics-message";
 import { PodOverview } from "../components/pod-overview";
 import { DevboxDeployResponse } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas/devbox-release-schema";
 import { CustomDomainMessage } from "./custom-domain-message";
+import { NetworkInfoMessage } from "./network/network-message";
 
 export const SystemMessageType = {
   info: {
@@ -40,6 +41,7 @@ export const SystemMessageType = {
     ),
     pod: (payload: any) => <PodMessageCard payload={payload} />,
     customDomain: (payload: any) => <CustomDomainMessage {...payload} />,
+    networkInfo: (payload: any) => <NetworkInfoMessage resource={payload} />,
   },
   diagnose: {
     network: (payload: CustomResourceTarget) => (

@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, HelpCircle } from "lucide-react";
+import { useCopy } from "@/hooks/use-copy";
 import {
   Table,
   TableBody,
@@ -9,35 +10,31 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { DevboxPort } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 
-interface LaunchpadInfoPortsProps {
-  ports: any[];
+interface NetworkResource {
+  ports: DevboxPort[];
+  [key: string]: any;
 }
 
-export const LaunchpadInfoPorts: React.FC<LaunchpadInfoPortsProps> = ({
-  ports,
+interface NetworkInfoMessageProps {
+  resource: NetworkResource;
+}
+
+export const NetworkInfoMessage: React.FC<NetworkInfoMessageProps> = ({
+  resource,
 }) => {
-  const [copyStates, setCopyStates] = useState<{ [key: string]: boolean }>({});
-
-  const copyToClipboard = (text: string, label: string, key: string) => {
-    navigator.clipboard.writeText(text);
-
-    // Set the copy state to true (show check icon)
-    setCopyStates((prev) => ({ ...prev, [key]: true }));
-
-    // Reset back to copy icon after 5 seconds
-    setTimeout(() => {
-      setCopyStates((prev) => ({ ...prev, [key]: false }));
-    }, 5000);
-  };
+  const { copyToClipboard, isCopied } = useCopy();
+  
+  const ports = resource.ports || [];
 
   if (!ports || ports.length === 0) {
     return null;
   }
 
   return (
-    <div className="space-y-3">
-      <h4 className="font-medium">Ports ({ports.length})</h4>
+    <div className="space-y-3 border border-dashed rounded-lg p-4">
+      <h4 className="font-medium">Network Ports ({ports.length})</h4>
       <div className="w-full overflow-hidden">
         <Table>
           <TableHeader>
@@ -67,12 +64,11 @@ export const LaunchpadInfoPorts: React.FC<LaunchpadInfoPortsProps> = ({
                         onClick={() =>
                           copyToClipboard(
                             port.privateAddress!,
-                            "Private Address",
                             `private-${port.number}`
                           )
                         }
                       >
-                        {copyStates[`private-${port.number}`] ? (
+                        {isCopied(`private-${port.number}`) ? (
                           <Check className="w-3 h-3" />
                         ) : (
                           <Copy className="w-3 h-3" />
@@ -97,12 +93,11 @@ export const LaunchpadInfoPorts: React.FC<LaunchpadInfoPortsProps> = ({
                         onClick={() =>
                           copyToClipboard(
                             port.publicAddress!,
-                            "Public Address",
                             `public-${port.number}`
                           )
                         }
                       >
-                        {copyStates[`public-${port.number}`] ? (
+                        {isCopied(`public-${port.number}`) ? (
                           <Check className="w-3 h-3" />
                         ) : (
                           <Copy className="w-3 h-3" />

@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, Check } from "lucide-react";
+import { useCopy } from "@/hooks/use-copy";
 import {
   Table,
   TableBody,
@@ -9,36 +10,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 
-interface DevboxInfoPortsProps {
-  devboxData: DevboxObject;
+interface LaunchpadInfoPortsProps {
+  ports: any[];
 }
 
-export const DevboxInfoPorts: React.FC<DevboxInfoPortsProps> = ({
-  devboxData,
+export const LaunchpadInfoPorts: React.FC<LaunchpadInfoPortsProps> = ({
+  ports,
 }) => {
-  const [copyStates, setCopyStates] = useState<{ [key: string]: boolean }>({});
+  const { copyToClipboard, isCopied } = useCopy();
 
-  const copyToClipboard = (text: string, label: string, key: string) => {
-    navigator.clipboard.writeText(text);
-
-    // Set the copy state to true (show check icon)
-    setCopyStates((prev) => ({ ...prev, [key]: true }));
-
-    // Reset back to copy icon after 5 seconds
-    setTimeout(() => {
-      setCopyStates((prev) => ({ ...prev, [key]: false }));
-    }, 5000);
-  };
-
-  if (!devboxData.ports || devboxData.ports.length === 0) {
+  if (!ports || ports.length === 0) {
     return null;
   }
 
   return (
-    <div className="space-y-3 border border-dashed rounded-lg p-4">
-      <h4 className="font-medium">Ports ({devboxData.ports.length})</h4>
+    <div className="space-y-3">
+      <h4 className="font-medium">Ports ({ports.length})</h4>
       <div className="w-full overflow-hidden">
         <Table>
           <TableHeader>
@@ -49,7 +37,7 @@ export const DevboxInfoPorts: React.FC<DevboxInfoPortsProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {devboxData.ports.map((port: any, index: number) => (
+            {ports.map((port: any, index: number) => (
               <TableRow key={index}>
                 <TableCell className="font-mono">{port.number}</TableCell>
                 <TableCell className="max-w-0">
@@ -68,12 +56,11 @@ export const DevboxInfoPorts: React.FC<DevboxInfoPortsProps> = ({
                         onClick={() =>
                           copyToClipboard(
                             port.privateAddress!,
-                            "Private Address",
                             `private-${port.number}`
                           )
                         }
                       >
-                        {copyStates[`private-${port.number}`] ? (
+                        {isCopied(`private-${port.number}`) ? (
                           <Check className="w-3 h-3" />
                         ) : (
                           <Copy className="w-3 h-3" />
@@ -98,12 +85,11 @@ export const DevboxInfoPorts: React.FC<DevboxInfoPortsProps> = ({
                         onClick={() =>
                           copyToClipboard(
                             port.publicAddress!,
-                            "Public Address",
                             `public-${port.number}`
                           )
                         }
                       >
-                        {copyStates[`public-${port.number}`] ? (
+                        {isCopied(`public-${port.number}`) ? (
                           <Check className="w-3 h-3" />
                         ) : (
                           <Copy className="w-3 h-3" />
