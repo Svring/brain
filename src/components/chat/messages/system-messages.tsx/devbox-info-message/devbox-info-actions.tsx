@@ -3,9 +3,6 @@ import { Button } from "@/components/ui/button";
 import { GitBranch, BarChart3 } from "lucide-react";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
-import { useQuery } from "@tanstack/react-query";
-import { createMetricsContext } from "@/lib/auth/auth-utils";
-import { getDevboxRangedMonitorOptions } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
 
 interface DevboxInfoActionsProps {
   devboxData: DevboxObject;
@@ -15,23 +12,6 @@ export const DevboxInfoActions: React.FC<DevboxInfoActionsProps> = ({
   devboxData,
 }) => {
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
-  const metricsContext = createMetricsContext();
-
-  // Fetch devbox monitor data for metrics
-  const { data: monitorData } = useQuery(
-    getDevboxRangedMonitorOptions(metricsContext, devboxData.name)
-  );
-
-  // console.log("monitorData", monitorData);
-
-  // Filter monitor data to only include pods that start with the devbox name
-  const filteredMonitorData = monitorData
-    ? Object.fromEntries(
-        Object.entries(monitorData).filter(([podName]) =>
-          podName.startsWith(devboxData.name)
-        )
-      )
-    : undefined;
 
   const handleReleasesClick = () => {
     emitMessage({

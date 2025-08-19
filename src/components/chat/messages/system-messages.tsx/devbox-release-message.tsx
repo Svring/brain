@@ -145,7 +145,7 @@ export const DevboxReleaseMessageCard: React.FC<DevboxReleaseMessageProps> = ({
   };
 
   return (
-    <div className="p-4 bg-node-background border rounded-lg space-y-4">
+    <div className="p-4 bg-node-background border border-border-primary rounded-xl space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">

@@ -8,50 +8,52 @@ import { ClusterInfoConnection } from "./cluster-info-connection";
 import { ClusterInfoActions } from "./cluster-info-actions";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useQuery } from "@tanstack/react-query";
-import { 
-  getClusterOptions, 
-  getClusterRangedMonitorOptions 
-} from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
-import { createK8sContext, createMetricsContext } from "@/lib/auth/auth-utils";
+import { clusterClient } from "@/components/provider/trpc-provider";
 
 interface ClusterInfoMessageProps {
-  payload: ClusterObject | CustomResourceTarget;
+  payload: CustomResourceTarget;
 }
 
 export const ClusterInfoMessage: React.FC<ClusterInfoMessageProps> = ({
   payload,
 }) => {
-  const k8sContext = createK8sContext();
-  const metricsContext = createMetricsContext('cluster');
-  
-  // Check if payload is a target or cluster object
-  const isTarget = 'name' in payload && 'group' in payload && 'version' in payload;
-  
-  // If it's a target, fetch the cluster data
-  const { data: clusterData } = useQuery(
-    isTarget 
-      ? getClusterOptions(k8sContext, payload as CustomResourceTarget)
-      : { queryKey: ['cluster-data'], queryFn: () => payload as ClusterObject }
+  const clusterTrpcClient = clusterClient.useTRPC();
+
+  // Fetch the cluster data using the target
+  const {
+    data: clusterData,
+    isLoading,
+    error,
+  } = useQuery(
+    clusterTrpcClient.getCluster.queryOptions({
+      target: payload,
+    })
   );
 
-  // Fetch cluster monitoring data
-  const { data: monitorData, isLoading: isMonitorLoading } = useQuery(
-    getClusterRangedMonitorOptions(
-      metricsContext, 
-      clusterData?.name || "", 
-      clusterData?.type || ""
-    )
-  );
-
-  // Use the fetched data or fallback to the original payload
-  const finalData = clusterData || (isTarget ? null : payload as ClusterObject);
-
-  if (!finalData) {
+  // Show loading state
+  if (isLoading) {
     return (
       <Card className="w-full bg-background-secondary">
         <CardContent className="p-6">
-          <div className="text-center text-muted-foreground">
-            Loading cluster information...
+          <div className="flex items-center justify-center">
+            <span className="text-muted-foreground">
+              Loading cluster information...
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show error state
+  if (error || !clusterData) {
+    return (
+      <Card className="w-full bg-background-secondary">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center">
+            <span className="text-destructive">
+              Failed to load cluster information
+            </span>
           </div>
         </CardContent>
       </Card>
@@ -60,19 +62,19 @@ export const ClusterInfoMessage: React.FC<ClusterInfoMessageProps> = ({
 
   return (
     <Card className="w-full bg-background-secondary">
-      <ClusterInfoHeader clusterData={finalData} />
+      <ClusterInfoHeader clusterData={clusterData} />
       <CardContent className="space-y-4">
-        <ResourceQuotaRow 
-          cpu={finalData.resource?.cpu} 
-          memory={finalData.resource?.memory} 
-          storage={finalData.resource?.storage} 
+        <ResourceQuotaRow
+          cpu={clusterData.resource?.cpu}
+          memory={clusterData.resource?.memory}
+          storage={clusterData.resource?.storage}
         />
-        {/* <MetricRow metric="cpu" resource={finalData.resource} monitorData={monitorData} isLoading={isMonitorLoading} />
-        <MetricRow metric="memory" resource={finalData.resource} monitorData={monitorData} isLoading={isMonitorLoading} />
-        <MetricRow metric="storage" resource={finalData.resource} monitorData={monitorData} isLoading={isMonitorLoading} /> */}
-        <ClusterInfoConnection clusterData={finalData} />
+        {/* <MetricRow metric="cpu" resource={clusterData.resource} monitorData={monitorData} isLoading={isMonitorLoading} />
+        <MetricRow metric="memory" resource={clusterData.resource} monitorData={monitorData} isLoading={isMonitorLoading} />
+        <MetricRow metric="storage" resource={clusterData.resource} monitorData={monitorData} isLoading={isMonitorLoading} /> */}
+        <ClusterInfoConnection clusterData={clusterData} />
       </CardContent>
-      <ClusterInfoActions clusterData={finalData} />
+      <ClusterInfoActions clusterData={clusterData} />
     </Card>
   );
 };

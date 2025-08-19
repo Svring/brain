@@ -17,7 +17,7 @@ function createClusterMetricsApi(context: MetricsApiContext) {
   const protocol = isDevelopment ? "http" : "https";
 
   return axios.create({
-    baseURL: `${protocol}://${context.baseURL}`,
+    baseURL: `${protocol}://${context.baseUrl}`,
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
       ...(context.kubeconfig ? { Authorization: `${context.kubeconfig}` } : {}),

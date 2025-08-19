@@ -364,7 +364,7 @@ export const getClusterInstantMonitorOptions = (
       });
     },
     enabled:
-      !!context.baseURL &&
+      !!context.baseUrl &&
       !!context.namespace &&
       !!clusterName &&
       !!clusterType,
@@ -459,7 +459,7 @@ export const getClusterRangedMonitorOptions = (
       });
     },
     enabled:
-      !!context.baseURL &&
+      !!context.baseUrl &&
       !!context.namespace &&
       !!clusterName &&
       !!clusterType,

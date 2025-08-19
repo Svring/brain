@@ -21,9 +21,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
-import { createMetricsContext } from "@/lib/auth/auth-utils";
 import { devboxClient } from "@/components/provider/trpc-provider";
-import { listBuiltinResources } from "@/lib/k8s/k8s-api/k8s-api-query";
 
 // TODO: Devbox nodes would cause maximum call stack error
 export default function DevboxNode({ data }: { data: DevboxObject }) {

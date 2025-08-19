@@ -1,4 +1,4 @@
-import { ClusterInfoMessageCard } from "./cluster-info-message";
+import { ClusterInfoMessage } from "./cluster-info-message/cluster-info-message";
 import { DevboxInfoMessageCard } from "./devbox-info-message/devbox-info-message";
 import { ClusterBackupMessageCard } from "./cluster-backup-message";
 import { DevboxReleaseMessageCard } from "./devbox-release-message";
@@ -13,7 +13,7 @@ import { PodOverview } from "../components/pod-overview";
 
 export const SystemMessageType = {
   info: {
-    clusterInfo: (payload: any) => <ClusterInfoMessageCard payload={payload} />,
+    clusterInfo: (payload: CustomResourceTarget) => <ClusterInfoMessage payload={payload} />,
     devboxInfo: (payload: CustomResourceTarget) => (
       <DevboxInfoMessageCard payload={payload} />
     ),

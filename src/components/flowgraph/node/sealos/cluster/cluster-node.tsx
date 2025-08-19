@@ -13,32 +13,21 @@ import ClusterNodeTitle from "./cluster-node-title";
 import ClusterNodeMenu from "./cluster-node-menu";
 import ClusterNodeBackup from "./cluster-node-backup";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
-import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
-import { useChatActions } from "@/contexts/chat/chat-context";
-import { randomId } from "@copilotkit/shared";
-import {
-  createClusterContext,
-  createK8sContext,
-  createSealosContext,
-} from "@/lib/auth/auth-utils";
+import { createK8sContext } from "@/lib/auth/auth-utils";
 import { useIsMutating } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { clusterClient } from "@/components/provider/trpc-provider";
 import { convertToDbconnUrl } from "@/lib/sealos/sealos-utils";
 import { Globe } from "lucide-react";
 
 export default function ClusterNode({ data }: { data: ClusterObject }) {
-  const { sendMessage, setMessages, messages } = useCopilotChatHeadless_c();
-  const { openSidebarChat } = useChatActions();
-  const sendMessageMutation = useSendMessageMutation();
+  const { sendSystemMessage } = useSendSystemMessageMutation();
 
   // Create contexts for API calls
   const k8sContext = createK8sContext();
-  const clusterContext = createClusterContext();
-  const sealosContext = createSealosContext();
 
   // Create target for the cluster
   const target = CustomResourceTargetSchema.parse(
@@ -48,20 +37,20 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
   const clusterTrpcClient = clusterClient.useTRPC();
 
   // Fetch real-time cluster data
-  const { data: clusterData = data } = useQuery({
-    ...clusterTrpcClient.getCluster.queryOptions({
+  const { data: clusterData = data } = useQuery(
+    clusterTrpcClient.getCluster.queryOptions({
       target: target,
-    }),
-  });
+    })
+  );
 
   // console.log("clusterData", clusterData);
 
   // Fetch cluster backup list
-  const { data: backupList = [] } = useQuery({
-    ...clusterTrpcClient.getClusterBackupList.queryOptions({
+  const { data: backupList = [] } = useQuery(
+    clusterTrpcClient.getClusterBackupList.queryOptions({
       target: target,
-    }),
-  });
+    })
+  );
 
   const { name, type, status } = clusterData;
 
@@ -126,15 +115,10 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
 
   const handleNodeClick = () => {
     // Use the new mutation hook to send messages
-    sendMessageMutation.mutate([
-      {
-        role: "system",
-        content: JSON.stringify({
-          type: "info.clusterInfo",
-          payload: target,
-        }),
-      },
-    ]);
+    sendSystemMessage({
+      type: "info.clusterInfo",
+      payload: target,
+    });
   };
 
   const mainCard = (

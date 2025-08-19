@@ -173,11 +173,11 @@ function ProjectFlow({ projectName }: { projectName: string }) {
   const { reliances } = useResourceReliances(resourceObjects);
   const { edges: computedEdges } = useFlowgraphEdges(reliances);
 
-  console.log("resources", resources);
-  console.log("resourceObjects", resourceObjects);
-  console.log("computedNodes", computedNodes);
-  console.log("reliances", reliances);
-  console.log("computedEdges", computedEdges);
+  // console.log("resources", resources);
+  // console.log("resourceObjects", resourceObjects);
+  // console.log("computedNodes", computedNodes);
+  // console.log("reliances", reliances);
+  // console.log("computedEdges", computedEdges);
 
   const { setNodes, setEdges, onNodesChange, onEdgesChange } =
     useFlowgraphActions();

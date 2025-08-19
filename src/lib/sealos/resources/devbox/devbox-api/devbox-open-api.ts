@@ -56,8 +56,11 @@ import https from "https";
 // Helper to create axios instance per request
 export const createDevboxApi = async (context: DevboxApiContext) => {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
+
+  const protocol = isDevelopment ? "http" : "https";
+
   return axios.create({
-    baseURL: `https://devbox.${context.baseUrl}/api/v1/DevBox`,
+    baseURL: `${protocol}://devbox.${context.baseUrl}/api/v1/DevBox`,
     headers: {
       "Content-Type": "application/json",
       ...(context.authorization
@@ -75,8 +78,12 @@ export const createDevboxApi = async (context: DevboxApiContext) => {
 
 // Helper to create axios instance for Application APIs
 export const createAppApi = async (context: DevboxApiContext) => {
+  const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
+
+  const protocol = isDevelopment ? "http" : "https";
+
   return axios.create({
-    baseURL: `https://devbox.${context.baseUrl}/api/`,
+    baseURL: `${protocol}://devbox.${context.baseUrl}/api`,
     headers: {
       "Content-Type": "application/json",
       ...(context.authorization
@@ -161,6 +168,7 @@ export const deployDevbox = createParallelAction(
     const validatedRequest = DevboxDeployRequestSchema.parse(request);
     const api = await createAppApi(context);
     const response = await api.post("/deployDevbox", validatedRequest);
+    console.log("response", response);
     return DevboxDeployResponseSchema.parse(response.data);
   }
 );
