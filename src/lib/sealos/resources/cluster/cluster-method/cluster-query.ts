@@ -38,8 +38,10 @@ export const getCluster = async (
   context: K8sApiContext,
   target: CustomResourceTarget
 ) => {
+  console.log("getCluster", context, target);
   // Test the new composeObjectFromTarget function
   const clusterObject = await getClusterObject(context, target);
+  console.log("clusterObject", clusterObject);
   return clusterObject;
 };
 
@@ -78,7 +80,7 @@ export const getClusterLogs = async (
   const logTypes = CLUSTER_LOG_TYPES[type as keyof typeof CLUSTER_LOG_TYPES];
 
   // Check if pods are available
-  if (!pods.length) {
+  if (!pods?.length) {
     return {
       supported: false,
       message: `No pods available for cluster: ${target.name}`,
@@ -120,7 +122,7 @@ export const getClusterLogs = async (
 
       const logRequestsWithMetadata = _.chain(logFilePaths)
         .flatMap((logPath) =>
-          pods.flatMap((pod: { name: string }) =>
+          (pods || []).flatMap((pod: { name: string }) =>
             logTypes.map((logType) => ({
               request: runParallelAction(
                 getLog(
@@ -159,7 +161,7 @@ export const getClusterLogs = async (
       return processLogData(
         logFileResponses,
         logResponsesWithMetadata,
-        pods.map((pod: { name: string }) => pod.name)
+        (pods || []).map((pod: { name: string }) => pod.name)
       );
     })
     .value();

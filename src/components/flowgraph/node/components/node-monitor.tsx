@@ -23,10 +23,9 @@ interface NodeMonitorProps {
 
 export default function NodeMonitor({ resource }: NodeMonitorProps) {
   const { sendSystemMessage } = useSendSystemMessageMutation();
-  const { color, latestData, monitorData } =
-    useResourceMetricsStatus({
-      resource,
-    });
+  const { color, latestData, monitorData } = useResourceMetricsStatus({
+    resource,
+  });
 
   // console.log("monitorData", monitorData);
   // console.log("latestData", latestData);

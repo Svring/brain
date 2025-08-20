@@ -3,6 +3,7 @@ import { createDevboxContext } from "@/lib/auth/auth-utils";
 import {
   useReleaseDevboxMutation,
   useDeleteDevboxReleaseMutation,
+  useManageDevboxLifecycleMutation,
 } from "@/lib/sealos/resources/devbox/devbox-method/devbox-mutation";
 import { getDevboxReleasesOptions } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
 import { useQuery } from "@tanstack/react-query";
@@ -27,6 +28,8 @@ export const useDevboxRelease = (devboxName: string) => {
 
   const releaseMutation = useReleaseDevboxMutation(devboxContext);
   const deleteReleaseMutation = useDeleteDevboxReleaseMutation(devboxContext);
+  const manageDevboxLifecycleMutation =
+    useManageDevboxLifecycleMutation(devboxContext);
 
   // Fetch devbox releases
   const { data: releases, isLoading } = useQuery(
@@ -38,10 +41,20 @@ export const useDevboxRelease = (devboxName: string) => {
 
   const handleRelease = async (config: ReleaseConfig) => {
     try {
+      await manageDevboxLifecycleMutation.mutateAsync({
+        devboxName,
+        action: "stop",
+      });
+
       await releaseMutation.mutateAsync({
         devboxName,
         tag: config.tag,
         releaseDes: config.releaseDes,
+      });
+
+      await manageDevboxLifecycleMutation.mutateAsync({
+        devboxName,
+        action: "start",
       });
 
       setIsReleasePopoverOpen(false);
