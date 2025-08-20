@@ -8,9 +8,9 @@ import {
 export const useResourceStatus = (
   target: CustomResourceTarget | BuiltinResourceTarget
 ) => {
-  const { devbox, cluster, launchpad } = useTRPCClients();
+  const { devbox, cluster, launchpad, objectStorage } = useTRPCClients();
 
-  // Handle custom resources (devbox, cluster)
+  // Handle custom resources (devbox, cluster, objectstorage)
   if (target.type === "custom") {
     if (target.resourceType === "devbox") {
       const { data: resource, ...rest } = useQuery(
@@ -32,6 +32,15 @@ export const useResourceStatus = (
         status: resource?.status,
       };
     }
+    if (target.resourceType === "objectstorage") {
+      const { data: resource, ...rest } = useQuery(
+        objectStorage.getObjectStorage.queryOptions({ target })
+      );
+      return {
+        ...rest,
+        resource,
+      };
+    }
   }
 
   // Handle builtin resources (deployment, statefulset)
@@ -43,7 +52,7 @@ export const useResourceStatus = (
     return {
       ...rest,
       resource,
-      status: resource?.status?.status || "Pending",
+      status: resource?.status,
     };
   }
 

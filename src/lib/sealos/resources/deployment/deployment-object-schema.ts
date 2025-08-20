@@ -19,15 +19,6 @@ const ResourceSchema = z.object({
   memory: z.string(),
 });
 
-const StatusSchema = z.object({
-  paused: z.boolean().optional(),
-  replicas: z.number().optional(),
-  unavailableReplicas: z.number().optional(),
-  readyReplicas: z.number().optional(),
-  availableReplicas: z.number().optional(),
-  status: z.string(),
-});
-
 const PodSchema = z.object({
   name: z.string(),
   status: z.string(),
@@ -39,7 +30,7 @@ export const DeploymentObjectSchema = z.object({
   kind: z.string(),
   image: z.string(),
   resource: ResourceSchema,
-  status: StatusSchema,
+  status: z.string(),
   env: z.any().optional(),
   ports: z.array(PortSchema).optional(),
   pods: z.array(PodSchema).optional(),

@@ -69,10 +69,7 @@ export const DeploymentObjectQuerySchema = z.object({
         paused: paused ? true : false,
       };
 
-      return {
-        ...statusObject,
-        status: determineLaunchpadStatus(statusObject),
-      };
+      return determineLaunchpadStatus(statusObject);
     }),
   operationalStatus: z
     .any()

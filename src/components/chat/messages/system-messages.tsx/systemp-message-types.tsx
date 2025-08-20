@@ -8,7 +8,7 @@ import { MetricsMessageCard } from "./metrics-message";
 import { ObjectStorageInfoMessageCard } from "./objectstorage-info-message";
 import { PodMessageCard } from "./pod-message";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { DiagnoseNetworkMessageCard } from "./diagnose-network-message";
+import { DiagnoseNetworkMessageCard } from "./diagnose/diagnose-network";
 import { CombinedMessage } from "./combined-metrics-message";
 import { PodOverview } from "../components/pod-overview";
 import { DevboxDeployResponse } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas/devbox-release-schema";

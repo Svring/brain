@@ -1,5 +1,9 @@
 import { useMemo } from "react";
 import { useResourceMetrics } from "./use-resource-metrics";
+import {
+  CustomResourceTarget,
+  BuiltinResourceTarget,
+} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 export type MetricsStatus = "low" | "medium" | "high";
 
@@ -23,20 +27,10 @@ interface MetricsStatusResult {
 }
 
 interface UseResourceMetricsStatusProps {
-  resource: {
-    name: string;
-    kind: string;
-    type?: string;
-    pods?: Array<{ name: string }>;
-  };
-  thresholds?: {
-    low: number;
-    medium: number;
-    high: number;
-  };
+  target: CustomResourceTarget | BuiltinResourceTarget;
 }
 
-const DEFAULT_THRESHOLDS = {
+const THRESHOLDS = {
   low: 30,
   medium: 70,
   high: 90,
@@ -48,12 +42,9 @@ const STATUS_COLORS = {
   high: "text-theme-red",
 };
 
-const getStatusForValue = (
-  value: number,
-  thresholds: typeof DEFAULT_THRESHOLDS
-): MetricsStatus => {
-  if (value >= thresholds.high) return "high";
-  if (value >= thresholds.medium) return "medium";
+const getStatusForValue = (value: number): MetricsStatus => {
+  if (value >= THRESHOLDS.high) return "high";
+  if (value >= THRESHOLDS.medium) return "medium";
   return "low";
 };
 
@@ -64,10 +55,9 @@ const getOverallStatus = (statuses: MetricsStatus[]): MetricsStatus => {
 };
 
 export const useResourceMetricsStatus = ({
-  resource,
-  thresholds = DEFAULT_THRESHOLDS,
+  target,
 }: UseResourceMetricsStatusProps): MetricsStatusResult => {
-  const { monitorData, isLoading } = useResourceMetrics(resource);
+  const { monitorData, isLoading } = useResourceMetrics(target);
 
   return useMemo(() => {
     if (
@@ -106,11 +96,11 @@ export const useResourceMetricsStatus = ({
     }
 
     // Calculate individual statuses
-    const cpuStatus = getStatusForValue(latestData.cpu, thresholds);
-    const memoryStatus = getStatusForValue(latestData.memory, thresholds);
+    const cpuStatus = getStatusForValue(latestData.cpu);
+    const memoryStatus = getStatusForValue(latestData.memory);
     const storageStatus =
       latestData.storage !== undefined
-        ? getStatusForValue(latestData.storage, thresholds)
+        ? getStatusForValue(latestData.storage)
         : undefined;
 
     // Calculate overall status
@@ -129,5 +119,5 @@ export const useResourceMetricsStatus = ({
       monitorData,
       isLoading,
     };
-  }, [monitorData, thresholds]);
+  }, [monitorData]);
 };
