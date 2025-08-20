@@ -55,9 +55,8 @@ export const MainSection: React.FC<MainSectionProps> = () => {
   const handleNavigation = async (path: string) => {
     if (path === "/home") {
       createNewChatSession();
-    } else {
-      router.push(path);
     }
+    router.push(path);
   };
 
   return (

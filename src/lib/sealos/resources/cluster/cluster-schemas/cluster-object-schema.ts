@@ -62,10 +62,10 @@ export const ClusterObjectSchema = z.object({
   operationalStatus: z.any().optional(),
   status: z.string().nullable(),
   resource: ClusterResourceSchema,
-  components: z.array(ClusterComponentSchema),
+  components: z.array(ClusterComponentSchema).optional().nullable(),
   connection: ClusterConnectionSchema,
   backup: ClusterBackupSchema.optional().nullable(),
-  pods: z.array(PodSchema),
+  pods: z.array(PodSchema).optional().nullable(),
 });
 
 export type ClusterResource = z.infer<typeof ClusterResourceSchema>;

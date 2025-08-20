@@ -8,7 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Spinner } from "@/components/ui/spinner";
+
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useResourceMetrics } from "@/hooks/sealos/use-resource-metrics";
 
@@ -71,16 +71,15 @@ export default function NodeMonitor({ resource }: NodeMonitorProps) {
               });
             }}
           >
-            {monitorData &&
-            Array.isArray(monitorData) &&
-            monitorData.length > 0 ? (
-              <Activity className={`h-4 w-4 ${getIconColor()}`} />
-            ) : (
-              <Spinner
-                variant="circle"
-                className="h-4 w-4 text-muted-foreground"
-              />
-            )}
+            <Activity
+              className={`h-4 w-4 ${
+                monitorData &&
+                Array.isArray(monitorData) &&
+                monitorData.length > 0
+                  ? getIconColor()
+                  : "text-theme-gray"
+              }`}
+            />
           </div>
         </TooltipTrigger>
         <TooltipContent

@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Database, Settings } from "lucide-react";
+import { Database, Settings, CheckCircle, ExternalLink } from "lucide-react";
 import Image from "next/image";
 import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,7 @@ import {
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { generateProjectName } from "@/lib/brain/resources/project/project-method/project-utils";
 import { useRouter } from "next/navigation";
+import { useChatActions } from "@/contexts/chat/chat-context";
 
 // TypeScript interfaces matching the Python data structure
 interface DevBox {
@@ -117,58 +118,7 @@ interface ProjectProposalCardProps {
   className?: string;
 }
 
-// Runtime color mapping for badges
-const getRuntimeColor = (runtime: DevBox["runtime"]): string => {
-  const colorMap: Record<string, string> = {
-    "Node.js": "bg-green-100 text-green-800 hover:bg-green-200",
-    React: "bg-blue-100 text-blue-800 hover:bg-blue-200",
-    "Next.js": "bg-black text-white hover:bg-gray-800",
-    Python: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
-    Java: "bg-red-100 text-red-800 hover:bg-red-200",
-    Go: "bg-cyan-100 text-cyan-800 hover:bg-cyan-200",
-    Rust: "bg-orange-100 text-orange-800 hover:bg-orange-200",
-    "C++": "bg-blue-100 text-blue-800 hover:bg-blue-200",
-    C: "bg-gray-100 text-gray-800 hover:bg-gray-200",
-    PHP: "bg-purple-100 text-purple-800 hover:bg-purple-200",
-    "Vue.js": "bg-emerald-100 text-emerald-800 hover:bg-emerald-200",
-    Angular: "bg-red-100 text-red-800 hover:bg-red-200",
-    Svelte: "bg-orange-100 text-orange-800 hover:bg-orange-200",
-    Django: "bg-green-100 text-green-800 hover:bg-green-200",
-    Flask: "bg-gray-100 text-gray-800 hover:bg-gray-200",
-    "Spring Boot": "bg-green-100 text-green-800 hover:bg-green-200",
-    "Express.js": "bg-green-100 text-green-800 hover:bg-green-200",
-    ".Net": "bg-purple-100 text-purple-800 hover:bg-purple-200",
-  };
 
-  return colorMap[runtime] || "bg-gray-100 text-gray-800 hover:bg-gray-200";
-};
-
-// Database type color mapping
-const getDatabaseColor = (type: Database["type"]): string => {
-  const colorMap: Record<string, string> = {
-    postgresql: "bg-blue-100 text-blue-800 hover:bg-blue-200",
-    mongodb: "bg-green-100 text-green-800 hover:bg-green-200",
-    "apecloud-mysql": "bg-orange-100 text-orange-800 hover:bg-orange-200",
-    redis: "bg-red-100 text-red-800 hover:bg-red-200",
-    kafka: "bg-purple-100 text-purple-800 hover:bg-purple-200",
-    weaviate: "bg-indigo-100 text-indigo-800 hover:bg-indigo-200",
-    milvus: "bg-pink-100 text-pink-800 hover:bg-pink-200",
-    pulsar: "bg-cyan-100 text-cyan-800 hover:bg-cyan-200",
-  };
-
-  return colorMap[type] || "bg-gray-100 text-gray-800 hover:bg-gray-200";
-};
-
-// Policy color mapping
-const getPolicyColor = (policy: ObjectStorageBucket["policy"]): string => {
-  const colorMap: Record<string, string> = {
-    Private: "bg-red-100 text-red-800 hover:bg-red-200",
-    PublicRead: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
-    PublicReadwrite: "bg-green-100 text-green-800 hover:bg-green-200",
-  };
-
-  return colorMap[policy] || "bg-gray-100 text-gray-800 hover:bg-gray-200";
-};
 
 export function ProjectProposalCard({
   proposal,
@@ -178,10 +128,12 @@ export function ProjectProposalCard({
   const { devboxes, databases, buckets } = resources;
 
   const [isCreating, setIsCreating] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
   const [creationProgress, setCreationProgress] = useState<string>("");
   const [createdResources, setCreatedResources] = useState<
     Array<{ name: string; kind: string; type?: string }>
   >([]);
+  const [projectName, setProjectName] = useState<string>("");
   const router = useRouter();
 
   const sealosContext = createSealosContext();
@@ -194,6 +146,8 @@ export function ProjectProposalCard({
     useCreateObjectStorageMutation(objectStorageContext);
   const createProject = useCreateProjectMutation(k8sContext);
   const addToProject = useAddToProjectMutation(k8sContext);
+
+  const { openSidebarChat } = useChatActions();
 
   // Helper function to map langgraph runtime names to supported API runtime names
   const mapRuntimeToEnum = (runtime: string): RuntimeName => {
@@ -328,30 +282,35 @@ export function ProjectProposalCard({
       setCreatedResources(createdResourcesList);
 
       // Create project
-      const projectName = generateProjectName();
-      setCreationProgress(`Creating project: ${projectName}...`);
-      await createProject.mutateAsync({ name: projectName });
+      const generatedProjectName = generateProjectName();
+      setProjectName(generatedProjectName);
+      setCreationProgress(`Creating project: ${generatedProjectName}...`);
+      await createProject.mutateAsync({ name: generatedProjectName });
 
       // Add all resources to the project
-      setCreationProgress(`Adding resources to project: ${projectName}...`);
+      setCreationProgress(`Adding resources to project: ${generatedProjectName}...`);
       const resourceTargets = createdResourcesList.map((resource) =>
         convertResourceTypeToTarget(resource.kind, resource.name)
       );
 
       await addToProject.mutateAsync({
         resources: resourceTargets,
-        name: projectName,
+        name: generatedProjectName,
       });
 
       toast.success(
-        `Project "${projectName}" created successfully with all resources!`
+        `Project "${generatedProjectName}" created successfully with all resources!`
       );
 
-      // Clear the created resources indicator
-      setCreatedResources([]);
+      // Store created resources for display
+      setCreatedResources(createdResourcesList);
+      setIsCompleted(true);
 
-      // Navigate to the newly created project
-      router.push(`/projects/${projectName}`);
+      // Navigate to the newly created project after a short delay
+      setTimeout(() => {
+        openSidebarChat();
+        router.push(`/projects/${generatedProjectName}`);
+      }, 2000);
     } catch (error) {
       console.error("Failed to create project:", error);
       toast.error("Failed to create project or add resources");
@@ -360,6 +319,13 @@ export function ProjectProposalCard({
       setCreationProgress("");
     }
   };
+
+  // Reset completion state when proposal changes
+  React.useEffect(() => {
+    setIsCompleted(false);
+    setCreatedResources([]);
+    setProjectName("");
+  }, [proposal]);
 
   return (
     <Card className={`w-full max-w-3xl mx-auto ${className}`}>
@@ -377,7 +343,69 @@ export function ProjectProposalCard({
       </CardHeader>
 
       <CardContent className="space-y-4 relative">
-        <div className="space-y-4 pb-16">
+        {isCompleted ? (
+          // Completion State
+          <div className="space-y-6 pb-16">
+            <div className="text-center space-y-4">
+              <div className="flex justify-center">
+                <CheckCircle className="h-16 w-16 text-green-500" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold text-green-600">
+                  Project Created Successfully!
+                </h3>
+                <p className="text-muted-foreground">
+                  Project "{projectName}" has been created with all resources.
+                </p>
+              </div>
+            </div>
+
+            {/* Created Resources Summary */}
+            <div className="space-y-4">
+              <h4 className="text-lg font-semibold">Created Resources:</h4>
+              <div className="space-y-3">
+                {createdResources.map((resource, index) => (
+                  <Card key={index} className="p-3 bg-green-50 border-green-200">
+                    <div className="flex items-center gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-green-800">
+                            {resource.name}
+                          </span>
+                          <Badge variant="secondary" className="text-xs">
+                            {resource.kind}
+                          </Badge>
+                          {resource.type && (
+                            <Badge variant="outline" className="text-xs">
+                              {resource.type}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* Navigation Button */}
+            <div className="flex justify-center pt-4">
+              <Button 
+                onClick={() => {
+                  openSidebarChat();
+                  router.push(`/projects/${projectName}`);
+                }}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Go to Project
+              </Button>
+            </div>
+          </div>
+        ) : (
+          // Original Content
+          <div className="space-y-4 pb-16">
           {/* DevBoxes Section */}
           {devboxes.length > 0 && (
             <div className="space-y-3">
@@ -387,10 +415,10 @@ export function ProjectProposalCard({
                 </h3>
               </div>
               <div className="space-y-2">
-                                  {devboxes.map((devbox, index) => (
-                    <Card key={index} className="p-3">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-4">
+                {devboxes.map((devbox, index) => (
+                  <Card key={index} className="p-3">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-4">
                         <div className="flex-shrink-0">
                           <Image
                             src="https://devbox.bja.sealos.run/logo.svg"
@@ -410,14 +438,14 @@ export function ProjectProposalCard({
                           </span>
                         </div>
                         <div className="flex-shrink-0">
-                          <Badge className={getRuntimeColor(devbox.runtime)}>
+                          <Badge>
                             {devbox.runtime}
                           </Badge>
                         </div>
                       </div>
-                                              <p className="text-sm text-muted-foreground pl-1 break-words">
-                          {devbox.description}
-                        </p>
+                      <p className="text-sm text-muted-foreground pl-1 break-words">
+                        {devbox.description}
+                      </p>
                     </div>
                   </Card>
                 ))}
@@ -435,17 +463,21 @@ export function ProjectProposalCard({
                 {databases.map((database, index) => (
                   <Card key={index} className="p-3">
                     <div className="space-y-2">
-                                              <div className="flex items-center gap-4">
-                          <div className="flex-shrink-0">
-                            <Image
-                              src={CLUSTER_TYPE_ICON_MAP[database.type as keyof typeof CLUSTER_TYPE_ICON_MAP] || "https://dbprovider.bja.sealos.run/logo.svg"}
-                              alt={`${database.type} Icon`}
-                              width={36}
-                              height={36}
-                              className="rounded-lg h-9 w-9 flex-shrink-0"
-                              priority
-                            />
-                          </div>
+                      <div className="flex items-center gap-4">
+                        <div className="flex-shrink-0">
+                          <Image
+                            src={
+                              CLUSTER_TYPE_ICON_MAP[
+                                database.type as keyof typeof CLUSTER_TYPE_ICON_MAP
+                              ] || "https://dbprovider.bja.sealos.run/logo.svg"
+                            }
+                            alt={`${database.type} Icon`}
+                            width={36}
+                            height={36}
+                            className="rounded-lg h-9 w-9 flex-shrink-0"
+                            priority
+                          />
+                        </div>
                         <div className="flex flex-col min-w-0 flex-1">
                           <span className="text-xs text-muted-foreground leading-none">
                             Database
@@ -455,14 +487,14 @@ export function ProjectProposalCard({
                           </span>
                         </div>
                         <div className="flex-shrink-0">
-                          <Badge className={getDatabaseColor(database.type)}>
+                          <Badge>
                             {database.type}
                           </Badge>
                         </div>
                       </div>
-                                              <p className="text-sm text-muted-foreground pl-1 break-words">
-                          {database.description}
-                        </p>
+                      <p className="text-sm text-muted-foreground pl-1 break-words">
+                        {database.description}
+                      </p>
                     </div>
                   </Card>
                 ))}
@@ -500,14 +532,14 @@ export function ProjectProposalCard({
                           </span>
                         </div>
                         <div className="flex-shrink-0">
-                          <Badge className={getPolicyColor(bucket.policy)}>
+                          <Badge>
                             {bucket.policy}
                           </Badge>
                         </div>
                       </div>
-                                              <p className="text-sm text-muted-foreground pl-1 break-words">
-                          {bucket.description}
-                        </p>
+                      <p className="text-sm text-muted-foreground pl-1 break-words">
+                        {bucket.description}
+                      </p>
                     </div>
                   </Card>
                 ))}
@@ -526,7 +558,8 @@ export function ProjectProposalCard({
                 </div>
               </div>
             )}
-        </div>
+          </div>
+        )}
 
         {/* Fixed button at bottom right */}
         <div className="absolute bottom-2 right-2 p-3">
@@ -534,6 +567,7 @@ export function ProjectProposalCard({
             {isCreating ? "Creating..." : "Create Project"}
           </Button>
         </div>
+      {/* )} */}
       </CardContent>
     </Card>
   );
