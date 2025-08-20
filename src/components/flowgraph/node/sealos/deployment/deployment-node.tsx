@@ -16,9 +16,9 @@ import { truncateImage } from "@/lib/sealos/sealos-utils";
 import { useIsMutating } from "@tanstack/react-query";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import { useResourceMetrics } from "@/hooks/sealos/use-resource-metrics";
-import { useLaunchpadObject } from "@/hooks/sealos/use-launchpad-object";
-import { useResourceStatus } from "@/hooks/sealos/use-resource-status";
+import { useResourceMetrics } from "@/hooks/sealos/resource/use-resource-metrics";
+import { useLaunchpadObject } from "@/hooks/sealos/launchpad/use-launchpad-object";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 
 export default function DeploymentNode({ data }: { data: DeploymentObject }) {
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();

@@ -1,11 +1,13 @@
+import { convertToDbconnUrl } from "@/lib/sealos/sealos-utils";
+
 /**
  * Generates a random string of lowercase alphabets
  * @param length - The length of the random string (default: 5)
  * @returns A random string of lowercase alphabets
  */
 function generateRandomString(length: number = 5): string {
-  const chars = 'abcdefghijklmnopqrstuvwxyz';
-  let result = '';
+  const chars = "abcdefghijklmnopqrstuvwxyz";
+  let result = "";
   for (let i = 0; i < length; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
@@ -17,9 +19,38 @@ function generateRandomString(length: number = 5): string {
  * @param prefix - Optional prefix for the name (default: 'cluster')
  * @returns A generated name in the format 'cluster-XXXXX' where XXXXX is random lowercase alphabets
  */
-export const generateClusterName = (prefix: string = 'cluster'): string => {
+export const generateClusterName = (prefix: string = "cluster"): string => {
   const randomString = generateRandomString(5);
   return `${prefix}-${randomString}`;
+};
+
+/**
+ * Composes a connection string for a cluster resource
+ * @param clusterData - The cluster object containing connection information
+ * @param regionUrl - The region URL for the cluster
+ * @returns A connection string or null if the required data is not available
+ */
+export const composeClusterConnectionString = (
+  clusterData: any,
+  regionUrl: string
+): string | null => {
+  try {
+    const publicConnection = clusterData.connection?.publicConnection;
+    const privateConnection = clusterData.connection?.privateConnection;
+    const type = clusterData.type;
+
+    if (!regionUrl || !publicConnection?.port || !privateConnection || !type) {
+      return null;
+    }
+
+    const dbconnUrl = convertToDbconnUrl(regionUrl);
+    const { username, password } = privateConnection;
+
+    return `${type}://${username}:${password}@${dbconnUrl}:${publicConnection.port}/?directConnection=true`;
+  } catch (error) {
+    console.error("Error constructing connection string:", error);
+    return null;
+  }
 };
 
 /**

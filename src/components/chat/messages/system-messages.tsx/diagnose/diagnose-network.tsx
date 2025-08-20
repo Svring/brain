@@ -8,9 +8,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { useResourceStatus } from "@/hooks/sealos/use-resource-status";
-import { useResourceMetricsStatus } from "@/hooks/sealos/use-resource-metrics-status";
-import { useResourceStart } from "@/hooks/sealos/use-resource-start";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
+import { useResourceStart } from "@/hooks/sealos/resource/use-resource-start";
 
 interface DiagnoseNetworkMessageProps {
   payload: CustomResourceTarget | (BuiltinResourceTarget & { pod: any[] });

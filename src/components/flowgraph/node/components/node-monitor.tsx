@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/tooltip";
 
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { useResourceMetricsStatus } from "@/hooks/sealos/use-resource-metrics-status";
+import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 
 interface NodeMonitorProps {
   resource: {

@@ -38,10 +38,10 @@ export const getCluster = async (
   context: K8sApiContext,
   target: CustomResourceTarget
 ) => {
-  console.log("getCluster", context, target);
+  // console.log("getCluster", context, target);
   // Test the new composeObjectFromTarget function
   const clusterObject = await getClusterObject(context, target);
-  console.log("clusterObject", clusterObject);
+  // console.log("clusterObject", clusterObject);
   return clusterObject;
 };
 

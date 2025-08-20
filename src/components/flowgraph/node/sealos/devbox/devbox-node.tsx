@@ -14,32 +14,59 @@ import { createDevboxContext } from "@/lib/auth/auth-utils";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
-import { useResourceMetrics } from "@/hooks/sealos/use-resource-metrics";
+import { useResourceMetrics } from "@/hooks/sealos/resource/use-resource-metrics";
 import { useDevboxRelease } from "@/hooks/sealos/devbox/use-devbox-release";
 import { useMutation } from "@tanstack/react-query";
-import { useResourceStatus } from "@/hooks/sealos/use-resource-status";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 
-// TODO: Devbox nodes would cause maximum call stack error
-export default function DevboxNode({ data }: { data: DevboxObject }) {
-  const { name, image, ports, pods } = data;
-  const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
-
+// Wrapper component that handles loading state
+function DevboxNodeWrapper({ data }: { data: DevboxObject }) {
   const target = convertResourceObjectToTarget({
     kind: data.kind,
     name: data.name,
   });
 
   // Get resource status using the new hook
-  const { status } = useResourceStatus(target);
+  const { status, resource, isLoading } = useResourceStatus(target);
+
+  // Return loading state while resource status is being fetched
+  if (isLoading) {
+    return <DevboxNode resource={data} status="Pending" />;
+  }
+
+  // Once loaded, render the main component with the fetched resource data
+  return (
+    <DevboxNode resource={resource as DevboxObject} status={status || "Pending"} />
+  );
+}
+
+// Main component that receives the loaded resource data
+function DevboxNode({
+  resource,
+  status,
+}: {
+  resource: DevboxObject;
+  status?: string;
+}) {
+  // const { name, image, ports, pods } = data;
+  const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
+
+  const target = convertResourceObjectToTarget({
+    kind: resource.kind,
+    name: resource.name,
+  });
+
+  const { name, image } = resource;
+
+  // console.log("resource", resource);
+  // console.log("status", status);
 
   const context = createK8sContext();
   const { devbox } = useTRPCClients();
 
   // Use devbox router for delete mutation
-  const deleteDevbox = useMutation(
-    devbox.deleteDevbox.mutationOptions()
-  );
+  const deleteDevbox = useMutation(devbox.deleteDevbox.mutationOptions());
 
   const { releases } = useDevboxRelease(name);
 
@@ -55,7 +82,7 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
 
   const mainCard = (
     <BaseNode
-      nodeData={data}
+      nodeData={resource}
       className={deleteDevbox.isPending ? "border-theme-red" : ""}
     >
       <div
@@ -72,7 +99,7 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
 
           {/* Actions Dropdown Menu */}
           <div className="flex flex-row items-center gap-2 flex-shrink-0">
-            <DevboxNodeMenu object={data} />
+            <DevboxNodeMenu object={resource} />
           </div>
         </div>
 
@@ -92,7 +119,7 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={ports} /> */}
-            <NodeMonitor resource={data} />
+            {/* <NodeMonitor resource={data} /> */}
           </div>
         </div>
       </div>
@@ -101,3 +128,6 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
 
   return <NodeStack mainCard={mainCard} data={releasesData} />;
 }
+
+// Export the wrapper as the default component
+export default DevboxNodeWrapper;

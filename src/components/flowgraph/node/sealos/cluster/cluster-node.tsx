@@ -20,11 +20,12 @@ import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertToDbconnUrl } from "@/lib/sealos/sealos-utils";
+import { composeClusterConnectionString } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
 import { Globe, HardDrive } from "lucide-react";
-import { useResourceMetrics } from "@/hooks/sealos/use-resource-metrics";
-import { useClusterObject } from "@/hooks/sealos/use-cluster-object";
-import { useResourceStatus } from "@/hooks/sealos/use-resource-status";
-import { useResourceMetricsStatus } from "@/hooks/sealos/use-resource-metrics-status";
+import { useResourceMetrics } from "@/hooks/sealos/resource/use-resource-metrics";
+import { useClusterObject } from "@/hooks/sealos/cluster/use-cluster-object";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import {
   Tooltip,
   TooltipContent,
@@ -32,7 +33,38 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-export default function ClusterNode({ data }: { data: ClusterObject }) {
+// Wrapper component that handles loading state
+function ClusterNodeWrapper({ data }: { data: ClusterObject }) {
+  // Create target for the cluster
+  const target = CustomResourceTargetSchema.parse(
+    convertResourceTypeToTarget("cluster", data.name)
+  );
+
+  // Get resource status using the new hook
+  const { status, resource, isLoading } = useResourceStatus(target);
+
+  // Return loading state while resource status is being fetched
+  if (isLoading) {
+    return <ClusterNode resource={data} status="Pending" />;
+  }
+
+  // Once loaded, render the main component with the fetched resource data
+  return (
+    <ClusterNode
+      resource={resource as ClusterObject}
+      status={status || "Pending"}
+    />
+  );
+}
+
+// Main component that receives the loaded resource data
+function ClusterNode({
+  resource,
+  status,
+}: {
+  resource: ClusterObject;
+  status?: string;
+}) {
   const { sendSystemMessage } = useSendSystemMessageMutation();
 
   // Create contexts for API calls
@@ -40,70 +72,55 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
 
   // Create target for the cluster
   const target = CustomResourceTargetSchema.parse(
-    convertResourceTypeToTarget("cluster", data.name)
+    convertResourceTypeToTarget("cluster", resource.name)
   );
 
   // Use the new hook to get cluster data
-  const { data: clusterData = data } = useClusterObject(data.name);
+  const { data: clusterData = resource } = useClusterObject(resource.name);
 
-  // Get resource status using the new hook
-  const { status: resourceStatus } = useResourceStatus(target);
+  console.log("resource cluster", resource);
+  console.log("status", status);
 
   // Get resource metrics status using the new hook
-  const { latestData } = useResourceMetricsStatus({
-    resource: {
-      ...data,
-      pods: data.pods || undefined,
-    },
-  });
+  // const { latestData } = useResourceMetricsStatus({
+  //   resource: {
+  //     ...data,
+  //     pods: data.pods || undefined,
+  //   },
+  // });
 
-  // Derive a safe storage percentage (0-100). Accepts values in 0-1 or 0-100.
-  const storagePercent: number = (() => {
-    const raw = latestData?.storage;
-    if (raw === undefined || raw === null || Number.isNaN(raw as number)) {
-      return 0;
-    }
-    const value = Number(raw);
-    // If it's a fraction (0-1), convert to percent; else clamp to 0-100
-    const percent = value <= 1 ? value * 100 : value;
-    return Math.max(0, Math.min(100, percent));
-  })();
+  // // Derive a safe storage percentage (0-100). Accepts values in 0-1 or 0-100.
+  // const storagePercent: number = (() => {
+  //   const raw = latestData?.storage;
+  //   if (raw === undefined || raw === null || Number.isNaN(raw as number)) {
+  //     return 0;
+  //   }
+  //   const value = Number(raw);
+  //   // If it's a fraction (0-1), convert to percent; else clamp to 0-100
+  //   const percent = value <= 1 ? value * 100 : value;
+  //   return Math.max(0, Math.min(100, percent));
+  // })();
 
   const { name, type } = clusterData;
 
   // Construct connection string
-  const connectionString = (() => {
-    try {
-      const regionUrl = k8sContext.regionUrl;
-      const publicConnection = clusterData.connection?.publicConnection;
-      const privateConnection = clusterData.connection?.privateConnection;
+  const connectionString = composeClusterConnectionString(
+    clusterData,
+    k8sContext.regionUrl
+  );
 
-      if (!regionUrl || !publicConnection?.port || !privateConnection) {
-        return null;
-      }
-
-      const dbconnUrl = convertToDbconnUrl(regionUrl);
-      const { username, password } = privateConnection;
-
-      return `${type}://${username}:${password}@${dbconnUrl}:${publicConnection.port}/?directConnection=true`;
-    } catch (error) {
-      console.error("Error constructing connection string:", error);
-      return null;
-    }
-  })();
-
-  const isDeletingCluster =
-    resourceStatus === "Deleting" ||
-    resourceStatus === "Terminating" ||
-    useIsMutating({
-      predicate: (mutation) => {
-        const isDeleteMutation =
-          mutation.options.mutationFn?.toString().includes("deleteCluster") ??
-          false;
-        const variables = mutation.state.variables as any;
-        return isDeleteMutation && variables?.name === name;
-      },
-    }) > 0;
+  // const isDeletingCluster =
+  //   resourceStatus === "Deleting" ||
+  //   resourceStatus === "Terminating" ||
+  //   useIsMutating({
+  //     predicate: (mutation) => {
+  //       const isDeleteMutation =
+  //         mutation.options.mutationFn?.toString().includes("deleteCluster") ??
+  //         false;
+  //       const variables = mutation.state.variables as any;
+  //       return isDeleteMutation && variables?.name === name;
+  //     },
+  //   }) > 0;
 
   const handleNodeClick = () => {
     // Use the new mutation hook to send messages
@@ -116,7 +133,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
   const mainCard = (
     <BaseNode
       nodeData={clusterData}
-      className={isDeletingCluster ? "border-theme-red" : ""}
+      // className={isDeletingCluster ? "border-theme-red" : ""}
     >
       <div
         className="flex h-full flex-col gap-4 justify-between"
@@ -149,7 +166,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
         {/* Bottom section with status and icons */}
         <div className="mt-auto flex justify-between items-center">
           {/* Left: Status light */}
-          <NodeStatusLight status={resourceStatus || "Pending"} />
+          <NodeStatusLight status={status || "Pending"} />
 
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
@@ -158,7 +175,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
             <NodeLog target={target} resourceType="cluster" />
             <ClusterNodeBackup object={clusterData} />
             {/* <NodeBackup /> */}
-            <NodeMonitor resource={{ ...data, pods: data.pods || undefined }} />
+            {/* <NodeMonitor resource={{ ...data, pods: data.pods || undefined }} /> */}
           </div>
         </div>
       </div>
@@ -172,10 +189,10 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
         <TooltipTrigger asChild>
           <div className="relative bg-node-background w-full h-full flex items-center rounded-b-xl text-xs text-muted-foreground overflow-hidden px-2 py-1 cursor-pointer hover:brightness-120">
             {/* Filled background representing used percentage */}
-            <div
+            {/* <div
               className="absolute inset-y-0 left-0 bg-muted"
               style={{ width: `${storagePercent}%` }}
-            />
+            /> */}
 
             {/* Foreground content row */}
             <div className="relative z-10 flex items-center justify-between w-full">
@@ -198,7 +215,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
         >
           <div className="text-xs">
             <div className="">Storage Usage</div>
-            <div>{storagePercent.toFixed(1)}% used</div>
+            {/* <div>{storagePercent.toFixed(1)}% used</div> */}
             <div className="text-muted-foreground">
               Capacity: {clusterData.resource?.storage || "N/A"}
             </div>
@@ -236,3 +253,6 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
     </div>
   );
 }
+
+// Export the wrapper as the default component
+export default ClusterNodeWrapper;

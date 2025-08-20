@@ -26,6 +26,7 @@ export const useResourceStatus = (
       const { data: resource, ...rest } = useQuery(
         cluster.getCluster.queryOptions({ target })
       );
+      // console.log("resource cluster", resource);
       return {
         ...rest,
         resource,

@@ -5,7 +5,7 @@ import NodeStack from "../../components/node-stack";
 import { cn } from "@/lib/utils";
 import { Network, Globe, HelpCircle } from "lucide-react";
 import type { DevboxPort } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
-import { useNetworkStatus } from "@/hooks/sealos/use-network-status";
+import { useNetworkStatus } from "@/hooks/sealos/network/use-network-status";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 

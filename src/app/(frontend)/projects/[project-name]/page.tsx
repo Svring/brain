@@ -31,8 +31,8 @@ import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
 import useFlowgraphEdges from "@/hooks/flowgraph/use-flowgraph-edges";
 import useFlowgraphNodes from "@/hooks/flowgraph/use-flowgraph-nodes";
 import useProjectResources from "@/hooks/brain/use-project-resources";
-import useResourceObjects from "@/hooks/sealos/use-resource-objects";
-import useResourceReliances from "@/hooks/sealos/use-resource-reliances";
+import useResourceObjects from "@/hooks/sealos/resource/use-resource-objects";
+import useResourceReliances from "@/hooks/sealos/resource/use-resource-reliances";
 import {
   useStartProjectResourcesMutation,
   usePauseProjectResourcesMutation,

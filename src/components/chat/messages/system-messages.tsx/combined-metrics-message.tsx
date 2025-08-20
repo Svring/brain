@@ -1,6 +1,6 @@
 import React from "react";
 import { CombinedMetricsChart } from "../components/combined-metrics-chart";
-import { useResourceMetrics } from "@/hooks/sealos/use-resource-metrics";
+import { useResourceMetrics } from "@/hooks/sealos/resource/use-resource-metrics";
 
 interface MetricsDataPoint {
   timestamp: number;
