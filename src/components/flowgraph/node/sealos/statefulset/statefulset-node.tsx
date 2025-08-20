@@ -15,21 +15,28 @@ import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/l
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import NodeLog from "../../components/node-log";
 
-export default function StatefulsetNode({ data }: { data: StatefulsetObjectQuery }) {
+export default function StatefulsetNode({
+  data,
+}: {
+  data: StatefulsetObjectQuery;
+}) {
   const { name, image, status, ports, pods } = data;
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 
+  console.log("data", data);
+
   // Check if this statefulset is being deleted
-  const isDeletingStatefulset = useIsMutating({
-    predicate: (mutation) => {
-      // Check if this is a delete launchpad mutation for this specific statefulset
-      const isDeleteMutation =
-        mutation.options.mutationFn?.toString().includes("deleteLaunchpad") ??
-        false;
-      const variables = mutation.state.variables as any;
-      return isDeleteMutation && variables?.name === name;
-    },
-  }) > 0;
+  const isDeletingStatefulset =
+    useIsMutating({
+      predicate: (mutation) => {
+        // Check if this is a delete launchpad mutation for this specific statefulset
+        const isDeleteMutation =
+          mutation.options.mutationFn?.toString().includes("deleteLaunchpad") ??
+          false;
+        const variables = mutation.state.variables as any;
+        return isDeleteMutation && variables?.name === name;
+      },
+    }) > 0;
 
   const handleNodeClick = () => {
     const target = convertResourceObjectToTarget({
@@ -37,20 +44,18 @@ export default function StatefulsetNode({ data }: { data: StatefulsetObjectQuery
       name: data.name,
     });
 
-    emitMessage(
-      {
-        type: "info.launchpadInfo",
-        payload: target,
-      }
-    );
+    emitMessage({
+      type: "info.launchpadInfo",
+      payload: target,
+    });
   };
 
   return (
-    <BaseNode 
+    <BaseNode
       nodeData={data}
       className={isDeletingStatefulset ? "border-theme-red" : ""}
     >
-      <div 
+      <div
         className="flex h-full flex-col gap-2 justify-between"
         onClick={handleNodeClick}
       >
@@ -78,8 +83,7 @@ export default function StatefulsetNode({ data }: { data: StatefulsetObjectQuery
                 : status.unavailableReplicas !== undefined &&
                   status.unavailableReplicas > 0
                 ? "Error"
-                : status.readyReplicas === status.replicas &&
-                  status.unavailableReplicas === 0
+                : status.readyReplicas === status.replicas
                 ? "Running"
                 : "Pending"
             }

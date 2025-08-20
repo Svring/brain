@@ -17,6 +17,7 @@ const ResourceSchema = z.object({
   replicas: z.number(),
   cpu: z.string(),
   memory: z.string(),
+  storage: z.string(),
 });
 
 const StatusSchema = z.object({

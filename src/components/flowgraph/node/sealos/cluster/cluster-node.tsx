@@ -197,7 +197,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
 
   // Hem component displaying storage information as a progress bar (left-to-right fill)
   const hemComponent = (
-    <div className="relative bg-node-background w-full h-full flex items-center rounded text-xs text-muted-foreground overflow-hidden px-2 py-1">
+    <div className="relative bg-node-background w-full h-full flex items-center rounded-b-lg text-xs text-muted-foreground overflow-hidden px-2 py-1">
       {/* Filled background representing used percentage */}
       <div
         className="absolute inset-y-0 left-0 bg-muted"

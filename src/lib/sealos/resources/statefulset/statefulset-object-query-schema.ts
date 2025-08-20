@@ -40,13 +40,25 @@ export const StatefulsetObjectQuerySchema = z.object({
     .transform((spec) => {
       const replicas = spec.replicas;
       const containers = spec.template.spec.containers;
+      const volumeClaimTemplates = spec.volumeClaimTemplates;
+
+      // Extract storage request from the first volumeClaimTemplate
+      const storage =
+        Array.isArray(volumeClaimTemplates) && volumeClaimTemplates.length > 0
+          ? volumeClaimTemplates[0].spec?.resources?.requests?.storage || ""
+          : "";
+
       if (Array.isArray(containers) && containers.length > 0) {
         return {
           replicas,
           ...containers[0].resources.limits,
+          storage,
         };
       }
-      return {};
+      return {
+        replicas,
+        storage,
+      };
     }),
   status: z
     .any()

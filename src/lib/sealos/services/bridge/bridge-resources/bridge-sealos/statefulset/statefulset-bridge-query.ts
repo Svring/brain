@@ -15,7 +15,7 @@ export const getStatefulSetObject = async (
   target: BuiltinResourceTarget
 ): Promise<StatefulsetObjectQuery> => {
   const statefulSetObject = await composeObjectFromTarget(context, target);
-  console.log("statefulSetObject", statefulSetObject);
+  // console.log("statefulSetObject", statefulSetObject);
   const relatedResources = await getStatefulsetRelatedResources(
     context,
     statefulSetObject.name,
