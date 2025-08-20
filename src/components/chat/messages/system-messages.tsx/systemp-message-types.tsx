@@ -1,9 +1,9 @@
-import { ClusterInfoMessage } from "./info/cluster-info-message/cluster-info-message";
-import { DevboxInfoMessageCard } from "./info/devbox-info-message/devbox-info-message";
+import { ClusterInfoMessage } from "./info/cluster-info/cluster-info-message";
+import { DevboxInfoMessageCard } from "./info/devbox-info/devbox-info-message";
 import { DevboxDeployMessageCard } from "./devbox-deploy-message";
 import { ClusterBackupMessageCard } from "./cluster-backup-message";
-import { DevboxReleaseMessageCard } from "./devbox-release-message";
-import { LaunchpadInfoMessageCard } from "./info/launchpad-info-message/launchpad-info-message";
+import { DevboxReleaseMessageCard } from "./info/devbox-info/devbox-info-release";
+import { LaunchpadInfoMessageCard } from "./info/launchpad-info/launchpad-info-message";
 import { MetricsMessageCard } from "./metrics-message";
 import { ObjectStorageInfoMessageCard } from "./objectstorage-info-message";
 import { PodMessageCard } from "./pod-message";
@@ -17,8 +17,8 @@ import { NetworkInfoMessage } from "./network/network-message";
 import { DevboxCreateMessage } from "./manage/devbox-create-message";
 import { ClusterCreateMessage } from "./manage/cluster-create-message";
 import { DeploymentCreateMessage } from "./manage/deployment-create-message";
-import { ClusterInfoLog } from "./info/cluster-info-message/cluster-info-log";
-import { LaunchpadInfoLog } from "./info/launchpad-info-message/launchpad-info-log";
+import { ClusterInfoLog } from "./info/cluster-info/cluster-info-log";
+import { LaunchpadInfoLog } from "./info/launchpad-info/launchpad-info-log";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 export const SystemMessageType = {

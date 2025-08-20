@@ -13,45 +13,20 @@ import DeploymentNodeTitle from "./deployment-node-title";
 import DeploymentNodeMenu from "./deployment-node-menu";
 import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-object-schema";
 import { truncateImage } from "@/lib/sealos/sealos-utils";
-import { useIsMutating, useQuery } from "@tanstack/react-query";
+import { useIsMutating } from "@tanstack/react-query";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import { launchpadClient } from "@/components/provider/trpc-provider";
-import { createSealosContext } from "@/lib/auth/auth-utils";
+import { useResourceMetrics } from "@/hooks/sealos/use-resource-metrics";
+import { useLaunchpadObject } from "@/hooks/sealos/use-launchpad-object";
 
 export default function DeploymentNode({ data }: { data: DeploymentObject }) {
-  const { name, image, status, ports, pods, env, resource } = data;
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 
-  // console.log("data", data);
+  // Use the new hook to get deployment data
+  const { data: deploymentData = data } = useLaunchpadObject(data.name, data.kind);
 
-  const launchpadTrpcClient = launchpadClient.useTRPC();
-
-  const sealosContext = createSealosContext();
-
-  // const { data: monitorData } = useQuery(
-  //   launchpadTrpcClient.getLaunchpadMonitorData.queryOptions({
-  //     context: sealosContext,
-  //     queryKey: "average_memory",
-  //     queryName: pods?.[0]?.name || "",
-  //     step: "2m",
-  //   })
-  // );
-
-  // const { data: monitorDataNew } = useQuery({
-  //   ...launchpadTrpcClient.getLaunchpadCombinedMonitorData.queryOptions({
-  //     context: sealosContext,
-  //     queryName: pods?.[0]?.name || "",
-  //   }),
-  //   enabled: !!pods?.[0]?.name,
-  // });
-
-  // console.log("monitorDataNew", monitorDataNew);
-
-  // console.log("launchpad monitorData", monitorData);
-
-  // console.log("env", env);
-  // console.log("resource", resource);
+  // Get resource metrics data using the hook data
+  const { monitorData, isLoading: isMetricsLoading } = useResourceMetrics(deploymentData);
 
   // Check if this deployment is being deleted
   const isDeletingDeployment =
@@ -62,14 +37,14 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
           mutation.options.mutationFn?.toString().includes("deleteLaunchpad") ??
           false;
         const variables = mutation.state.variables as any;
-        return isDeleteMutation && variables?.name === name;
+        return isDeleteMutation && variables?.name === deploymentData.name;
       },
     }) > 0;
 
   const handleNodeClick = () => {
     const target = convertResourceObjectToTarget({
-      kind: data.kind,
-      name: data.name,
+      kind: deploymentData.kind,
+      name: deploymentData.name,
     });
 
     emitMessage({
@@ -80,12 +55,9 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
 
   // Create target for the NodeLog component
   const logTarget = convertResourceObjectToTarget({
-    kind: data.kind,
-    name: data.name,
+    kind: deploymentData.kind,
+    name: deploymentData.name,
   });
-
-  // console.log("status", status);
-  // console.log("pods", pods);
 
   const mainCard = (
     <BaseNode
@@ -98,7 +70,7 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
       >
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
-          <DeploymentNodeTitle name={name} />
+          <DeploymentNodeTitle name={deploymentData.name} />
           <DeploymentNodeMenu object={data} />
         </div>
 
@@ -106,7 +78,7 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
         <div className="flex items-center gap-2 mt-2">
           <Package className="h-4 w-4 text-muted-foreground" />
           <div className="text-md text-muted-foreground truncate flex-1">
-            Image: {image ? truncateImage(image) : "N/A"}
+            Image: {deploymentData.image ? truncateImage(deploymentData.image) : "N/A"}
           </div>
         </div>
 
@@ -115,12 +87,12 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
           {/* Left: Status light */}
           <NodeStatusLight
             status={
-              status.paused
+              deploymentData.status.paused
                 ? "Stopped"
-                : status.unavailableReplicas !== undefined &&
-                  status.unavailableReplicas > 0
+                : deploymentData.status.unavailableReplicas !== undefined &&
+                  deploymentData.status.unavailableReplicas > 0
                 ? "Error"
-                : status.readyReplicas === status.replicas
+                : deploymentData.status.readyReplicas === deploymentData.status.replicas
                 ? "Running"
                 : "Pending"
             }
@@ -128,10 +100,10 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
 
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
-            {/* <NodeInternalUrl ports={ports || []} /> */}
-            {/* <NodePods resource={data} /> */}
+            {/* <NodeInternalUrl ports={deploymentData.ports || []} /> */}
+            {/* <NodePods resource={deploymentData} /> */}
             <NodeLog target={logTarget} resourceType="launchpad" />
-            <NodeMonitor resource={data} />
+            <NodeMonitor resource={deploymentData} />
           </div>
         </div>
       </div>
@@ -140,7 +112,7 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
 
   // Create an array with length equal to resource.replicas for the stack
   const replicasArray = Array.from(
-    { length: resource?.replicas - 1 || 0 },
+    { length: deploymentData.resource?.replicas - 1 || 0 },
     (_, i) => i
   );
 

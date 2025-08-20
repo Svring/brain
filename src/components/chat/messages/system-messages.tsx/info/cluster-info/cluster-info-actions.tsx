@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Save, FileText, Container, BarChart3 } from "lucide-react";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface ClusterInfoActionsProps {
   clusterData: ClusterObject;
@@ -40,6 +42,17 @@ export const ClusterInfoActions: React.FC<ClusterInfoActionsProps> = ({
     });
   };
 
+  const handleLogsClick = () => {
+    const target = CustomResourceTargetSchema.parse(
+      convertResourceTypeToTarget("cluster", clusterData.name)
+    );
+    
+    emitMessage({
+      type: "info.clusterLog",
+      payload: target,
+    });
+  };
+
   return (
     <div className="flex gap-3 px-6 pb-6">
       <Button
@@ -51,7 +64,12 @@ export const ClusterInfoActions: React.FC<ClusterInfoActionsProps> = ({
         <Save className="w-4 h-4 mr-2" />
         Backup
       </Button>
-      <Button className="flex-1" variant="outline" size="sm">
+      <Button 
+        className="flex-1" 
+        variant="outline" 
+        size="sm"
+        onClick={handleLogsClick}
+      >
         <FileText className="w-4 h-4 mr-2" />
         Logs
       </Button>

@@ -14,16 +14,21 @@ import { useIsMutating } from "@tanstack/react-query";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import NodeLog from "../../components/node-log";
+import { useResourceMetrics } from "@/hooks/sealos/use-resource-metrics";
+import { useLaunchpadObject } from "@/hooks/sealos/use-launchpad-object";
 
 export default function StatefulsetNode({
   data,
 }: {
   data: StatefulsetObjectQuery;
 }) {
-  const { name, image, status, ports, pods, resource } = data;
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 
-  // console.log("data", data);
+  // Use the new hook to get statefulset data
+  const { data: statefulsetData = data } = useLaunchpadObject(data.name, data.kind);
+
+  // Get resource metrics data using the hook data
+  const { monitorData, isLoading: isMetricsLoading } = useResourceMetrics(statefulsetData);
 
   // Check if this statefulset is being deleted
   const isDeletingStatefulset =
@@ -34,14 +39,14 @@ export default function StatefulsetNode({
           mutation.options.mutationFn?.toString().includes("deleteLaunchpad") ??
           false;
         const variables = mutation.state.variables as any;
-        return isDeleteMutation && variables?.name === name;
+        return isDeleteMutation && variables?.name === statefulsetData.name;
       },
     }) > 0;
 
   const handleNodeClick = () => {
     const target = convertResourceObjectToTarget({
-      kind: data.kind,
-      name: data.name,
+      kind: statefulsetData.kind,
+      name: statefulsetData.name,
     });
 
     emitMessage({
@@ -52,8 +57,8 @@ export default function StatefulsetNode({
 
   // Create target for the NodeLog component
   const logTarget = convertResourceObjectToTarget({
-    kind: data.kind,
-    name: data.name,
+    kind: statefulsetData.kind,
+    name: statefulsetData.name,
   });
 
   const mainCard = (
@@ -67,7 +72,7 @@ export default function StatefulsetNode({
       >
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
-          <StatefulsetNodeTitle name={name} />
+          <StatefulsetNodeTitle name={statefulsetData.name} />
           <StatefulsetNodeMenu object={data} />
         </div>
 
@@ -75,7 +80,7 @@ export default function StatefulsetNode({
         <div className="flex items-center gap-2 mt-2">
           <Package className="h-4 w-4 text-muted-foreground" />
           <div className="text-sm text-muted-foreground truncate flex-1">
-            Image: {image ? truncateImage(image) : "N/A"}
+            Image: {statefulsetData.image ? truncateImage(statefulsetData.image) : "N/A"}
           </div>
         </div>
 
@@ -84,12 +89,12 @@ export default function StatefulsetNode({
           {/* Left: Status light */}
           <NodeStatusLight
             status={
-              status.paused
+              statefulsetData.status.paused
                 ? "Stopped"
-                : status.unavailableReplicas !== undefined &&
-                  status.unavailableReplicas > 0
+                : statefulsetData.status.unavailableReplicas !== undefined &&
+                  statefulsetData.status.unavailableReplicas > 0
                 ? "Error"
-                : status.readyReplicas === status.replicas
+                : statefulsetData.status.readyReplicas === statefulsetData.status.replicas
                 ? "Running"
                 : "Pending"
             }
@@ -97,10 +102,10 @@ export default function StatefulsetNode({
 
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
-            {/* <NodeInternalUrl ports={ports || []} /> */}
-            {/* <NodePods resource={data} /> */}
+            {/* <NodeInternalUrl ports={statefulsetData.ports || []} /> */}
+            {/* <NodePods resource={statefulsetData} /> */}
             <NodeLog target={logTarget} resourceType="launchpad" />
-            <NodeMonitor resource={data} />
+            <NodeMonitor resource={statefulsetData} />
           </div>
         </div>
       </div>
@@ -119,7 +124,7 @@ export default function StatefulsetNode({
         </div>
 
         {/* Right side: Storage capacity */}
-        <div className="text-xs">{resource?.storage || "N/A"}</div>
+        <div className="text-xs">{statefulsetData.resource?.storage || "N/A"}</div>
       </div>
     </div>
   );

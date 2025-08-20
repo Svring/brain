@@ -4,24 +4,20 @@ import React, { useEffect } from "react";
 import { Package } from "lucide-react";
 import BaseNode from "../../base-node-wrapper";
 import { createK8sContext } from "@/lib/auth/auth-utils";
-import { createDevboxContext } from "@/lib/auth/auth-utils";
 import NodeStatusLight from "../../components/node-status-light";
 import DevboxNodeTitle from "./devbox-node-title";
 import DevboxNodeMenu from "./devbox-node-menu";
 import NodeMonitor from "../../components/node-monitor";
 import NodeStack from "../../components/node-stack";
-import DevboxNodeRelease from "./devbox-node-release";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
-import { useDeleteDevboxMutation } from "@/lib/sealos/resources/devbox/devbox-method/devbox-mutation";
-import {
-  getDevboxReleasesOptions,
-  getDevboxInstantMonitorOptions,
-} from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
-import { useQuery } from "@tanstack/react-query";
+import { createDevboxContext } from "@/lib/auth/auth-utils";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
+import { useResourceMetrics } from "@/hooks/sealos/use-resource-metrics";
+import { useDevboxRelease } from "@/hooks/sealos/use-devbox-release";
 import { devboxClient } from "@/components/provider/trpc-provider";
+import { useMutation } from "@tanstack/react-query";
 
 // TODO: Devbox nodes would cause maximum call stack error
 export default function DevboxNode({ data }: { data: DevboxObject }) {
@@ -36,27 +32,15 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
   const context = createK8sContext();
   const devboxTrpcClient = devboxClient.useTRPC();
 
-  const devboxContext = createDevboxContext();
-  const deleteDevbox = useDeleteDevboxMutation(devboxContext);
-
-  // console.log("data", data);
-
-  // Fetch devbox releases
-  const { data: releasesResponse } = useQuery(
-    getDevboxReleasesOptions(devboxContext, name)
+  // Use devbox router for delete mutation
+  const deleteDevbox = useMutation(
+    devboxTrpcClient.deleteDevbox.mutationOptions()
   );
 
-  const { data: monitorData } = useQuery({
-    ...devboxTrpcClient.getDevboxCombinedMonitorData.queryOptions({
-      devboxName: pods?.[0]?.name || "",
-    }),
-    enabled: !!pods?.[0]?.name,
-  });
-
-  // console.log("monitorData", monitorData);
+  const { releases } = useDevboxRelease(name);
 
   // Extract the releases array from the response
-  const releases = releasesResponse?.data || [];
+  const releasesData = releases?.data || [];
 
   const handleNodeClick = () => {
     emitMessage({
@@ -111,5 +95,5 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
     </BaseNode>
   );
 
-  return <NodeStack mainCard={mainCard} data={releases} />;
+  return <NodeStack mainCard={mainCard} data={releasesData} />;
 }

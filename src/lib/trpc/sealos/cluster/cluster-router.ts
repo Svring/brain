@@ -8,6 +8,10 @@ import {
   getClusterBackupList,
 } from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import {
+  startCluster,
+  pauseCluster,
+} from "@/lib/sealos/resources/cluster/cluster-api/cluster-open-api";
 
 const t = initTRPC.context<ClusterContext>().create();
 
@@ -79,6 +83,18 @@ export const clusterRouter = t.router({
         memory: memoryData,
         storage: diskData,
       });
+    }),
+
+  startCluster: t.procedure
+    .input(z.string())
+    .mutation(async ({ input, ctx }) => {
+      return await startCluster(input, ctx);
+    }),
+
+  pauseCluster: t.procedure
+    .input(z.string())
+    .mutation(async ({ input, ctx }) => {
+      return await pauseCluster(input, ctx);
     }),
 });
 

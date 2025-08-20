@@ -1,15 +1,13 @@
 import React from "react";
 import { CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Copy, Download, Stethoscope } from "lucide-react";
+import { Copy, Download } from "lucide-react";
 import Image from "next/image";
 import DevboxNodeIde from "@/components/flowgraph/node/sealos/devbox/devbox-node-ide";
 import DevboxNodeMenu from "@/components/flowgraph/node/sealos/devbox/devbox-node-menu";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
-import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 interface DevboxInfoHeaderProps {
   devboxData: DevboxObject;
@@ -19,7 +17,6 @@ export const DevboxInfoHeader: React.FC<DevboxInfoHeaderProps> = ({
   devboxData,
 }) => {
   const { auth } = useAuthState();
-  const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
   const namespace = auth?.namespace;
   const regionUrl = auth?.regionUrl;
 
@@ -49,24 +46,6 @@ export const DevboxInfoHeader: React.FC<DevboxInfoHeaderProps> = ({
           </div>
         </div>
         <DevboxNodeIde object={devboxData} />
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-8 text-xs"
-          onClick={() => {
-            const target = convertResourceObjectToTarget({
-              kind: devboxData.kind,
-              name: devboxData.name,
-            });
-            emitMessage({
-              type: "diagnose.network",
-              payload: target,
-            });
-          }}
-        >
-          <Stethoscope className="h-3 w-3 mr-1" />
-          Diagnose
-        </Button>
         <DevboxNodeMenu object={devboxData} />
       </div>
 

@@ -16,14 +16,13 @@ import ClusterNodeBackup from "./cluster-node-backup";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import { useIsMutating } from "@tanstack/react-query";
-import { useQuery } from "@tanstack/react-query";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { clusterClient } from "@/components/provider/trpc-provider";
 import { convertToDbconnUrl } from "@/lib/sealos/sealos-utils";
 import { Globe, HardDrive } from "lucide-react";
 import { useResourceMetrics } from "@/hooks/sealos/use-resource-metrics";
+import { useClusterObject } from "@/hooks/sealos/use-cluster-object";
 import {
   Tooltip,
   TooltipContent,
@@ -42,16 +41,8 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
     convertResourceTypeToTarget("cluster", data.name)
   );
 
-  const clusterTrpcClient = clusterClient.useTRPC();
-
-  // Fetch real-time cluster data
-  const { data: clusterData = data } = useQuery(
-    clusterTrpcClient.getCluster.queryOptions({
-      target: target,
-    })
-  );
-
-  // console.log("clusterData", clusterData);
+  // Use the new hook to get cluster data
+  const { data: clusterData = data } = useClusterObject(data.name);
 
   // Get resource metrics data
   const { monitorData, isLoading: isMetricsLoading } = useResourceMetrics({
@@ -99,31 +90,6 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
       return null;
     }
   })();
-
-  // console.log("Connection string:", connectionString);
-
-  // console.log("clusterDataTyped", clusterDataTyped);
-
-  // const { data: monitorData } = useQuery(
-  //   clusterTrpcClient.getClusterMonitorData.queryOptions({
-  //     context: sealosContext,
-  //     queryKey: "cpu",
-  //     dbName: name,
-  //     dbType: type,
-  //   })
-  // );
-
-  // const { data: monitorDataNew } = useQuery({
-  //   ...clusterTrpcClient.getClusterCombinedMonitorData.queryOptions({
-  //     context: sealosContext,
-  //     dbName: name,
-  //     dbType: type,
-  //   }),
-  // });
-
-  // console.log("monitorDataNew", monitorDataNew);
-
-  // console.log("monitorData", monitorData);
 
   const isDeletingCluster =
     status === "Deleting" ||

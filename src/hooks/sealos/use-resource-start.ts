@@ -1,15 +1,17 @@
 import {
   devboxClient,
   launchpadClient,
+  clusterClient,
 } from "@/components/provider/trpc-provider";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import { LaunchpadObject } from "@/lib/sealos/resources/launchpad/launchpad-object-schema";
+import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import type { LaunchpadStartRequest } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-old-api-schemas/req-res-start-schemas";
 import type { DevboxLifecycleRequest } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas";
 import { useMutation } from "@tanstack/react-query";
 
-// Union type for the parameter that can be either devbox or launchpad
-type ResourceStartTarget = DevboxObject | LaunchpadObject;
+// Union type for the parameter that can be either devbox, launchpad, or cluster
+type ResourceStartTarget = DevboxObject | LaunchpadObject | ClusterObject;
 
 interface UseResourceStartOptions {
   onSuccess?: () => void;
@@ -22,11 +24,13 @@ export const useResourceStart = (
 ) => {
   const devboxTrpcClient = devboxClient.useTRPC();
   const launchpadTrpcClient = launchpadClient.useTRPC();
+  const clusterTrpcClient = clusterClient.useTRPC();
 
   // Determine which type of resource we're dealing with
   const isDevbox = target.kind === "Devbox";
   const isLaunchpad =
     target.kind === "Deployment" || target.kind === "StatefulSet";
+  const isCluster = target.kind === "Cluster";
 
   // Use existing mutation hooks
   const devboxStartMutation = useMutation(
@@ -34,6 +38,9 @@ export const useResourceStart = (
   );
   const launchpadStartMutation = useMutation(
     launchpadTrpcClient.startLaunchpad.mutationOptions()
+  );
+  const clusterStartMutation = useMutation(
+    clusterTrpcClient.startCluster.mutationOptions()
   );
 
   // Return the appropriate mutation based on resource type
@@ -56,6 +63,16 @@ export const useResourceStart = (
       isError: launchpadStartMutation.isError,
       error: launchpadStartMutation.error,
       resourceType: "launchpad" as const,
+    };
+  } else if (isCluster) {
+    return {
+      start: (clusterName: string) => {
+        clusterStartMutation.mutate(clusterName);
+      },
+      isPending: clusterStartMutation.isPending,
+      isError: clusterStartMutation.isError,
+      error: clusterStartMutation.error,
+      resourceType: "cluster" as const,
     };
   }
 
