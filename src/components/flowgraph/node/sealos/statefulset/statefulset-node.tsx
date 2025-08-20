@@ -23,7 +23,7 @@ export default function StatefulsetNode({
   const { name, image, status, ports, pods, resource } = data;
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 
-  console.log("data", data);
+  // console.log("data", data);
 
   // Check if this statefulset is being deleted
   const isDeletingStatefulset =

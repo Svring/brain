@@ -105,7 +105,7 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
         {/* Image with Package Icon */}
         <div className="flex items-center gap-2 mt-2">
           <Package className="h-4 w-4 text-muted-foreground" />
-          <div className="text-sm text-muted-foreground truncate flex-1">
+          <div className="text-md text-muted-foreground truncate flex-1">
             Image: {image ? truncateImage(image) : "N/A"}
           </div>
         </div>

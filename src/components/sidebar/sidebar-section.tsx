@@ -32,13 +32,13 @@ export interface MainSectionProps {}
 // Constants
 const NAVIGATION_ITEMS: NavigationItem[] = [
   {
-    title: "chat",
+    title: "New",
     icon: MessageCirclePlus,
     group: "overview",
     path: "/home",
   },
   {
-    title: "projects",
+    title: "Projects",
     icon: LayoutGrid,
     group: "overview",
     path: "/projects",

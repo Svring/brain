@@ -12,6 +12,7 @@ import NodeHem from "../../components/node-hem";
 import ClusterNodeTitle from "./cluster-node-title";
 import ClusterNodeMenu from "./cluster-node-menu";
 import ClusterNodeBackup from "./cluster-node-backup";
+
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import { useIsMutating } from "@tanstack/react-query";
@@ -53,7 +54,10 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
   // console.log("clusterData", clusterData);
 
   // Get resource metrics data
-  const { monitorData, isLoading: isMetricsLoading } = useResourceMetrics(data);
+  const { monitorData, isLoading: isMetricsLoading } = useResourceMetrics({
+    ...data,
+    pods: data.pods || undefined,
+  });
 
   // Get the latest data point for current values
   const latestData =
@@ -72,13 +76,6 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
     const percent = value <= 1 ? value * 100 : value;
     return Math.max(0, Math.min(100, percent));
   })();
-
-  // Fetch cluster backup list
-  const { data: backupList = [] } = useQuery(
-    clusterTrpcClient.getClusterBackupList.queryOptions({
-      target: target,
-    })
-  );
 
   const { name, type, status } = clusterData;
 
@@ -194,7 +191,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
             <NodeLog target={target} resourceType="cluster" />
             <ClusterNodeBackup object={clusterData} />
             {/* <NodeBackup /> */}
-            <NodeMonitor resource={data} />
+            <NodeMonitor resource={{ ...data, pods: data.pods || undefined }} />
           </div>
         </div>
       </div>
@@ -246,28 +243,16 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
 
   return (
     <div className="relative">
-      {/* Background cards from NodeStack - positioned at the bottom */}
-      {Array.from({ length: Math.min(backupList.length, 2) }, (_, index) => {
-        const offset = (index + 1) * 8;
-        const backgroundCardCount = Math.min(backupList.length, 2);
-        return (
-          <div
-            key={index}
-            className="absolute inset-0 cursor-pointer"
-            style={{
-              transform: `translate(${offset}px, -${offset}px)`,
-              zIndex: backgroundCardCount - index, // Inverted z-index: higher index = lower z-index
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-          >
-            <BaseNode nodeData={{}} className="h-60" active={false}>
-              <div className="w-full h-full" />
-            </BaseNode>
-          </div>
-        );
-      })}
+      {/* NodeStack with replicas-based background cards - positioned at the bottom */}
+      <div className="relative z-0">
+        <NodeStack
+          mainCard={null}
+          data={Array.from({ length: clusterData.resource?.replicas - 1 || 0 })}
+          maxBackgroundCards={2}
+          height="60"
+          backgroundColor="bg-node-background"
+        />
+      </div>
 
       {/* Hem component - positioned above background cards */}
       {hemComponent && (

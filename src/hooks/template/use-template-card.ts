@@ -3,13 +3,14 @@ import { toast } from "sonner";
 import type { TemplateResource } from "@/lib/sealos/resources/template/schemas/template-api-context-schemas";
 import { useCreateInstanceMutation } from "@/lib/sealos/resources/template/template-method/template-mutation";
 import { createTemplateApiContext } from "@/lib/auth/auth-utils";
+import { useRouter } from "next/navigation";
 
 export function useTemplateCard(
   template: TemplateResource,
   closeDialog?: () => void
 ) {
   const [showInputDialog, setShowInputDialog] = useState(false);
-
+  const router = useRouter();
   const apiContext = createTemplateApiContext();
 
   const createInstanceMutation = useCreateInstanceMutation(apiContext);
@@ -33,18 +34,17 @@ export function useTemplateCard(
         templateForm,
       },
       {
-        onSuccess: () => {
-          toast.success(
-            `${template.spec.title} has been deployed to your project.`
-          );
+        onSuccess: (data) => {
+          toast(`${template.spec.title} has been deployed to your project.`);
           setShowInputDialog(false);
           // Only call closeDialog if it was passed
           if (closeDialog) {
             closeDialog();
           }
+          router.push(`/projects/${data.data[0].metadata.name}`);
         },
         onError: (error: Error) => {
-          toast.error(
+          toast(
             error.message || "Failed to deploy template. Please try again."
           );
           setShowInputDialog(false);

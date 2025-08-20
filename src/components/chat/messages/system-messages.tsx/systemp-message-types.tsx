@@ -23,7 +23,9 @@ import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res
 
 export const SystemMessageType = {
   info: {
-    clusterInfo: (payload: CustomResourceTarget) => <ClusterInfoMessage payload={payload} />,
+    clusterInfo: (payload: CustomResourceTarget) => (
+      <ClusterInfoMessage payload={payload} />
+    ),
     devboxInfo: (payload: CustomResourceTarget) => (
       <DevboxInfoMessageCard payload={payload} />
     ),
@@ -39,22 +41,27 @@ export const SystemMessageType = {
     launchpadInfo: (payload: any) => (
       <LaunchpadInfoMessageCard payload={payload} />
     ),
-    clusterLog: (payload: CustomResourceTarget) => <ClusterInfoLog payload={payload} />,
-    launchpadLog: (payload: BuiltinResourceTarget) => <LaunchpadInfoLog payload={payload} />,
+    clusterLog: (payload: CustomResourceTarget) => (
+      <ClusterInfoLog payload={payload} />
+    ),
+    launchpadLog: (payload: BuiltinResourceTarget) => (
+      <LaunchpadInfoLog payload={payload} />
+    ),
     metrics: (payload: any) => <MetricsMessageCard payload={payload} />,
     combinedMetrics: (payload: any) => <CombinedMessage resource={payload} />,
     podOverview: (payload: any) => <PodOverview resource={payload} />,
     objectStorageInfo: (payload: any) => (
       <ObjectStorageInfoMessageCard payload={payload} />
     ),
-    pod: (payload: any) => <PodMessageCard payload={payload} />,
     customDomain: (payload: any) => <CustomDomainMessage {...payload} />,
     networkInfo: (payload: any) => <NetworkInfoMessage resource={payload} />,
   },
   manage: {
     devboxCreate: (payload: any) => <DevboxCreateMessage payload={payload} />,
     clusterCreate: (payload: any) => <ClusterCreateMessage payload={payload} />,
-    deploymentCreate: (payload: any) => <DeploymentCreateMessage payload={payload} />,
+    deploymentCreate: (payload: any) => (
+      <DeploymentCreateMessage payload={payload} />
+    ),
   },
   diagnose: {
     network: (payload: CustomResourceTarget) => (

@@ -13,8 +13,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import { useDeleteProjectMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
-import { createK8sContext } from "@/lib/auth/auth-utils";
+import { projectClient } from "@/components/provider/trpc-provider";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ProjectObjectSchema } from "@/lib/brain/resources/project/project-schemas/project-object-schema";
 import { z } from "zod";
 
@@ -23,14 +23,24 @@ interface ProjectCardProps {
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
-  const context = createK8sContext();
+  const projectTrpcClient = projectClient.useTRPC();
+  const queryClient = useQueryClient();
   const {
     isOpen: isDropdownOpen,
     onClose: closeDropdown,
     onOpen: openDropdown,
   } = useDisclosure();
 
-  const deleteProjectMutation = useDeleteProjectMutation(context);
+  const deleteProjectMutation = useMutation(
+    projectTrpcClient.deleteProject.mutationOptions({
+      onSuccess: (_, name) => {
+        queryClient.invalidateQueries({
+          queryKey: projectTrpcClient.listProjects.queryKey(),
+        });
+        toast.success(`Project ${name} deleted successfully`);
+      },
+    })
+  );
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -39,7 +49,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
     // Close the dropdown menu immediately
     closeDropdown();
 
-    deleteProjectMutation.mutate({ name: project.name });
+    deleteProjectMutation.mutate(project.name);
   };
 
   return (

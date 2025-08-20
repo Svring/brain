@@ -103,7 +103,7 @@ export default function CreateProject({ closeDialog }: CreateProjectProps) {
               Select from available app templates.
             </p>
           </div>
-          <Button
+          {/* <Button
             onClick={handleCreateProject}
             size="lg"
             disabled={createProjectMutation.isPending}
@@ -111,7 +111,7 @@ export default function CreateProject({ closeDialog }: CreateProjectProps) {
             {createProjectMutation.isPending
               ? "Creating Project..."
               : "Create Project"}
-          </Button>
+          </Button> */}
         </div>
         <div className="my-4 flex items-end justify-between sm:my-0 sm:items-center">
           <div className="flex flex-col gap-4 sm:my-4 sm:flex-row">

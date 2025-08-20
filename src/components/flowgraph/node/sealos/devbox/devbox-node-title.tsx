@@ -30,7 +30,7 @@ export default function DevboxNodeTitle({ name, image, regionUrl }: DevboxNodeTi
               Devbox
             </span>
             <span className="text-lg font-bold text-foreground leading-tight truncate">
-              {name.length > 8 ? `${name.slice(0, 8)}...` : name}
+              {name.length > 8 ? `${name.slice(0, 15)}...` : name}
             </span>
           </span>
         </span>

@@ -48,7 +48,6 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
 
   const { data: monitorData } = useQuery({
     ...devboxTrpcClient.getDevboxCombinedMonitorData.queryOptions({
-      context: devboxContext,
       devboxName: pods?.[0]?.name || "",
     }),
     enabled: !!pods?.[0]?.name,
@@ -92,7 +91,7 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
         {/* Image with Package Icon */}
         <div className="flex items-center gap-2 mt-2">
           <Package className="h-4 w-4 text-muted-foreground" />
-          <div className="text-sm text-muted-foreground truncate flex-1">
+          <div className="text-md text-muted-foreground truncate flex-1">
             Image: {transformDevboxImage(image)}
           </div>
         </div>

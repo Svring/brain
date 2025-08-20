@@ -18,19 +18,14 @@ export const ClusterInfoActions: React.FC<ClusterInfoActionsProps> = ({
       type: "info.clusterBackup",
       payload: {
         clusterName: clusterData.name,
-        backups: [], // The system will fetch and populate this
       },
     });
   };
 
   const handlePodsClick = () => {
     emitMessage({
-      type: "info.pod",
-      payload: {
-        pods: clusterData.pods || [],
-        resourceName: clusterData.name,
-        resourceType: clusterData.type,
-      },
+      type: "info.podOverview",
+      payload: clusterData,
     });
   };
 

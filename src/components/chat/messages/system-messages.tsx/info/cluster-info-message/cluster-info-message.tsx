@@ -1,12 +1,9 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { ClusterInfoHeader } from "./cluster-info-header";
-import { MetricRow } from "@/components/chat/messages/components/metric-row";
 import { ResourceQuotaRow } from "@/components/chat/messages/components/resource-quota-row";
 import { ClusterInfoConnection } from "./cluster-info-connection";
 import { ClusterInfoActions } from "./cluster-info-actions";
-import { ClusterInfoLog } from "./cluster-info-log";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useQuery } from "@tanstack/react-query";
 import { clusterClient } from "@/components/provider/trpc-provider";
@@ -70,11 +67,7 @@ export const ClusterInfoMessage: React.FC<ClusterInfoMessageProps> = ({
           memory={clusterData.resource?.memory}
           storage={clusterData.resource?.storage}
         />
-        {/* <MetricRow metric="cpu" resource={clusterData.resource} monitorData={monitorData} isLoading={isMonitorLoading} />
-        <MetricRow metric="memory" resource={clusterData.resource} monitorData={monitorData} isLoading={isMonitorLoading} />
-        <MetricRow metric="storage" resource={clusterData.resource} monitorData={monitorData} isLoading={isMonitorLoading} /> */}
         <ClusterInfoConnection clusterData={clusterData} />
-        <ClusterInfoLog payload={payload} />
       </CardContent>
       <ClusterInfoActions clusterData={clusterData} />
     </Card>

@@ -12,7 +12,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { ProjectProposalDemo } from "@/components/chat/state-cards/project-proposal-demo";
 
 export default function Page() {
-  const { openDialog, CreateProjectDialog } = useProjectCreateDialog();
+  // const { openDialog, CreateProjectDialog } = useProjectCreateDialog();
   const { setAllProjects } = useProjectActions();
 
   const { setSearchTerm, filteredProjects, projects, isLoading, isError } =
@@ -41,9 +41,9 @@ export default function Page() {
               onSearchChange={setSearchTerm}
               placeholder="Search projects..."
             />
-            <Button variant="ghost" onClick={openDialog}>
+            {/* <Button variant="ghost" onClick={openDialog}>
               <Plus />
-            </Button>
+            </Button> */}
           </div>
         </div>
       </div>
@@ -75,7 +75,7 @@ export default function Page() {
       </div>
 
       {/* <ProjectProposalDemo /> */}
-      <CreateProjectDialog />
+      {/* <CreateProjectDialog /> */}
     </div>
   );
 }

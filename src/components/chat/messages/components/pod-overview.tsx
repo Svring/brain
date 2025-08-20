@@ -43,25 +43,8 @@ interface PodOverviewProps {
 export const PodOverview: React.FC<PodOverviewProps> = ({ resource }) => {
   // Extract pods from resource
   const podList = resource?.pods || [];
-  const getStatusVariant = (status: string) => {
-    const normalizedStatus = status.toLowerCase();
-    switch (normalizedStatus) {
-      case "running":
-        return "default";
-      case "stopped":
-      case "shutdown":
-        return "secondary";
-      case "pending":
-      case "waiting":
-        return "outline";
-      case "error":
-        return "destructive";
-      case "deleting":
-        return "secondary";
-      default:
-        return "outline";
-    }
-  };
+
+  // console.log("resource", resource);
 
   const getStatusColor = () => {
     if (podList.length === 0) {

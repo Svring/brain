@@ -1,54 +1,15 @@
 "use client";
 
-import * as DialogPrimitive from "@radix-ui/react-dialog";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUp, Mic, Square, StopCircle, X } from "lucide-react";
+import { ArrowUp, Square, Plus, LayoutPanelTop } from "lucide-react";
 import React from "react";
-import SpeechRecognition, {
-  useSpeechRecognition,
-} from "react-speech-recognition";
 import { useDebounce } from "@reactuses/core";
+import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
 
 // Utility function for className merging
 const cn = (...classes: (string | undefined | null | false)[]) =>
   classes.filter(Boolean).join(" ");
-
-// Embedded CSS for minimal custom styles
-const styles = `
-  *:focus-visible {
-    outline-offset: 0 !important;
-    --ring-offset: 0 !important;
-  }
-  textarea::-webkit-scrollbar {
-    width: 6px;
-  }
-  textarea::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  textarea::-webkit-scrollbar-thumb {
-    background-color: #444444;
-    border-radius: 3px;
-  }
-  textarea::-webkit-scrollbar-thumb:hover {
-    background-color: #555555;
-  }
-`;
-
-// Create a StyleInjector component
-const StyleInjector: React.FC = () => {
-  React.useEffect(() => {
-    if (typeof window !== "undefined") {
-      const styleSheet = document.createElement("style");
-      styleSheet.innerText = styles;
-      document.head.appendChild(styleSheet);
-      return () => {
-        document.head.removeChild(styleSheet);
-      };
-    }
-  }, []);
-  return null;
-};
 
 // Textarea Component
 interface TextareaProps
@@ -59,7 +20,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, ...props }, ref) => (
     <textarea
       className={cn(
-        "scrollbar-thin scrollbar-thumb-[#444444] scrollbar-track-transparent hover:scrollbar-thumb-[#555555] flex min-h-[44px] w-full resize-none rounded-md border-none bg-transparent px-3 py-2.5 text-gray-100 placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
+        "flex min-h-[44px] w-full resize-none rounded-md border-none bg-transparent px-3 py-2.5 text-gray-100 placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
         className
       )}
       ref={ref}
@@ -89,63 +50,6 @@ const TooltipContent = React.forwardRef<
   />
 ));
 TooltipContent.displayName = TooltipPrimitive.Content.displayName;
-
-// Dialog Components
-const Dialog = DialogPrimitive.Root;
-const DialogPortal = DialogPrimitive.Portal;
-const DialogOverlay = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Overlay
-    className={cn(
-      "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=closed]:animate-out data-[state=open]:animate-in",
-      className
-    )}
-    ref={ref}
-    {...props}
-  />
-));
-DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
-
-const DialogContent = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-  <DialogPortal>
-    <DialogOverlay />
-    <DialogPrimitive.Content
-      className={cn(
-        "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[90vw] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-2xl border border-[#333333] bg-[#1F2023] p-0 shadow-xl duration-300 data-[state=closed]:animate-out data-[state=open]:animate-in md:max-w-[800px]",
-        className
-      )}
-      ref={ref}
-      {...props}
-    >
-      {children}
-      <DialogPrimitive.Close className="absolute top-4 right-4 z-10 rounded-full bg-[#2E3033]/80 p-2 transition-all hover:bg-[#2E3033]">
-        <X className="h-5 w-5 text-gray-200 hover:text-white" />
-        <span className="sr-only">Close</span>
-      </DialogPrimitive.Close>
-    </DialogPrimitive.Content>
-  </DialogPortal>
-));
-DialogContent.displayName = DialogPrimitive.Content.displayName;
-
-const DialogTitle = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Title
-    className={cn(
-      "text-gray-100 text-md leading-none tracking-tight",
-      className
-    )}
-    ref={ref}
-    {...props}
-  />
-));
-DialogTitle.displayName = DialogPrimitive.Title.displayName;
 
 // Button Component
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -181,183 +85,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 Button.displayName = "Button";
 
-// VoiceRecorder Component
-interface VoiceRecorderProps {
-  isRecording: boolean;
-  onStartRecording: () => void;
-  onStopRecording: (transcript: string, duration: number) => void;
-  visualizerBars?: number;
-}
-const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
-  isRecording,
-  onStartRecording,
-  onStopRecording,
-  visualizerBars = 32,
-}) => {
-  const [time, setTime] = React.useState(0);
-  const timerRef = React.useRef<NodeJS.Timeout | null>(null);
-  const lastTranscriptRef = React.useRef("");
-  const lastTimeRef = React.useRef(0);
-  const {
-    transcript,
-    listening,
-    resetTranscript,
-    browserSupportsSpeechRecognition,
-  } = useSpeechRecognition();
-
-  // Stable callback references
-  const stableOnStartRecording = React.useCallback(onStartRecording, []);
-  const stableOnStopRecording = React.useCallback(onStopRecording, []);
-  const stableResetTranscript = React.useCallback(resetTranscript, []);
-
-  // Effect for starting recording
-  React.useEffect(() => {
-    if (isRecording && browserSupportsSpeechRecognition) {
-      stableOnStartRecording();
-      stableResetTranscript();
-      SpeechRecognition.startListening({
-        continuous: true,
-      });
-      timerRef.current = setInterval(() => {
-        setTime((t) => {
-          const newTime = t + 1;
-          lastTimeRef.current = newTime;
-          return newTime;
-        });
-      }, 1000);
-    }
-  }, [
-    isRecording,
-    browserSupportsSpeechRecognition,
-    stableOnStartRecording,
-    stableResetTranscript,
-  ]);
-
-  // Effect for stopping recording
-  React.useEffect(() => {
-    if (!isRecording) {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-      if (listening) {
-        SpeechRecognition.stopListening();
-      }
-      if (lastTimeRef.current > 0) {
-        stableOnStopRecording(lastTranscriptRef.current, lastTimeRef.current);
-        setTime(0);
-        lastTimeRef.current = 0;
-        lastTranscriptRef.current = "";
-      }
-    }
-  }, [isRecording, listening, stableOnStopRecording]);
-
-  // Update transcript ref when transcript changes
-  React.useEffect(() => {
-    lastTranscriptRef.current = transcript;
-  }, [transcript]);
-
-  // Cleanup effect
-  React.useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (listening) SpeechRecognition.stopListening();
-    };
-  }, []);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
-  };
-
-  if (!browserSupportsSpeechRecognition) {
-    return (
-      <div
-        className={cn(
-          "flex w-full flex-col items-center justify-center py-3 transition-all duration-300",
-          isRecording ? "opacity-100" : "h-0 opacity-0"
-        )}
-      >
-        <div className="text-sm text-red-400">
-          Browser doesn't support speech recognition
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={cn(
-        "flex w-full flex-col items-center justify-center py-3 transition-all duration-300",
-        isRecording ? "opacity-100" : "h-0 opacity-0"
-      )}
-    >
-      <div className="mb-3 flex items-center gap-2">
-        <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-        <span className="font-mono text-sm text-white/80">
-          {formatTime(time)}
-        </span>
-      </div>
-
-      {/* Show live transcript */}
-      {transcript && (
-        <div className="mb-2 max-w-full px-4 text-center text-sm text-white/70">
-          {transcript}
-        </div>
-      )}
-
-      <div className="flex h-10 w-full items-center justify-center gap-0.5 px-4">
-        {[...Array(visualizerBars)].map((_, i) => (
-          <div
-            className="w-0.5 animate-pulse rounded-full bg-white/50"
-            key={i}
-            style={{
-              height: `${Math.max(15, Math.random() * 100)}%`,
-              animationDelay: `${i * 0.05}s`,
-              animationDuration: `${0.5 + Math.random() * 0.5}s`,
-            }}
-          />
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// ImageViewDialog Component
-interface ImageViewDialogProps {
-  imageUrl: string | null;
-  onClose: () => void;
-}
-const ImageViewDialog: React.FC<ImageViewDialogProps> = ({
-  imageUrl,
-  onClose,
-}) => {
-  if (!imageUrl) return null;
-  return (
-    <Dialog onOpenChange={onClose} open={!!imageUrl}>
-      <DialogContent className="max-w-[90vw] border-none bg-transparent p-0 shadow-none md:max-w-[800px]">
-        <DialogTitle className="sr-only">Image Preview</DialogTitle>
-        <motion.div
-          animate={{ opacity: 1, scale: 1 }}
-          className="relative overflow-hidden rounded-2xl bg-[#1F2023] shadow-2xl"
-          exit={{ opacity: 0, scale: 0.95 }}
-          initial={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
-        >
-          <img
-            alt="Full preview"
-            className="max-h-[80vh] w-full rounded-2xl object-contain"
-            src={imageUrl}
-          />
-        </motion.div>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
 // PromptInput Context and Components
 interface PromptInputContextType {
   isLoading: boolean;
@@ -391,9 +118,6 @@ interface PromptInputProps {
   children: React.ReactNode;
   className?: string;
   disabled?: boolean;
-  onDragOver?: (e: React.DragEvent) => void;
-  onDragLeave?: (e: React.DragEvent) => void;
-  onDrop?: (e: React.DragEvent) => void;
 }
 const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(
   (
@@ -406,9 +130,6 @@ const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(
       onSubmit,
       children,
       disabled = false,
-      onDragOver,
-      onDragLeave,
-      onDrop,
     },
     ref
   ) => {
@@ -435,9 +156,6 @@ const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(
               isLoading && "border border-gray-400 animate-shimmer-border",
               className
             )}
-            onDragLeave={onDragLeave}
-            onDragOver={onDragOver}
-            onDrop={onDrop}
             ref={ref}
           >
             {children}
@@ -501,7 +219,11 @@ const PromptInputTextarea = React.forwardRef<
 
     // Add effect to sync when the textarea is manually cleared
     React.useEffect(() => {
-      if (textareaRef.current && textareaRef.current.value === "" && localValue !== "") {
+      if (
+        textareaRef.current &&
+        textareaRef.current.value === "" &&
+        localValue !== ""
+      ) {
         setLocalValue("");
       }
     });
@@ -582,22 +304,9 @@ const PromptInputAction: React.FC<PromptInputActionProps> = ({
   );
 };
 
-// Custom Divider Component
-const CustomDivider: React.FC = () => (
-  <div className="relative mx-1 h-6 w-[1.5px]">
-    <div
-      className="absolute inset-0 rounded-full bg-linear-to-t from-transparent via-[#9b87f5]/70 to-transparent"
-      style={{
-        clipPath:
-          "polygon(0% 0%, 100% 0%, 100% 40%, 140% 50%, 100% 60%, 100% 100%, 0% 100%, 0% 60%, -40% 50%, 0% 40%)",
-      }}
-    />
-  </div>
-);
-
 // Main PromptInputBox Component
 interface PromptInputBoxProps {
-  onSend?: (message: string, files?: File[]) => void;
+  onSend?: (message: string) => void;
   isLoading?: boolean;
   placeholder?: string;
   className?: string;
@@ -618,26 +327,13 @@ export const PromptInputBox = React.forwardRef(
       disableInput = false,
       disableSend = false,
     } = props;
+
+    const { openDialog, CreateProjectDialog } = useProjectCreateDialog();
     const [input, setInput] = React.useState("");
-    const [files, setFiles] = React.useState<File[]>([]);
-    const [filePreviews, setFilePreviews] = React.useState<{
-      [key: string]: string;
-    }>({});
-    const [selectedImage, setSelectedImage] = React.useState<string | null>(
-      null
-    );
-    const [isRecording, setIsRecording] = React.useState(false);
-    const [showSearch, setShowSearch] = React.useState(false);
-    const [showThink, setShowThink] = React.useState(false);
-    const [showCanvas, setShowCanvas] = React.useState(false);
-    const uploadInputRef = React.useRef<HTMLInputElement>(null);
     const promptBoxRef = React.useRef<HTMLDivElement>(null);
     const internalTextareaRef = React.useRef<HTMLTextAreaElement>(null);
     // For tracking previous loading state
     const prevLoading = React.useRef(isLoading);
-
-    // Speech recognition support check
-    const { browserSupportsSpeechRecognition } = useSpeechRecognition();
 
     // Focus when loading finishes
     React.useEffect(() => {
@@ -681,403 +377,114 @@ export const PromptInputBox = React.forwardRef(
       return () => window.removeEventListener("keydown", handleGlobalKeydown);
     }, [disableInput]);
 
-    const handleToggleChange = (value: string) => {
-      if (value === "search") {
-        setShowSearch((prev) => !prev);
-        setShowThink(false);
-      } else if (value === "think") {
-        setShowThink((prev) => !prev);
-        setShowSearch(false);
-      }
-    };
-
-    const handleCanvasToggle = () => setShowCanvas((prev) => !prev);
-
-    const isImageFile = (file: File) => file.type.startsWith("image/");
-
-    const processFile = (file: File) => {
-      if (!isImageFile(file)) {
-        console.log("Only image files are allowed");
-        return;
-      }
-      if (file.size > 10 * 1024 * 1024) {
-        console.log("File too large (max 10MB)");
-        return;
-      }
-      setFiles([file]);
-      const reader = new FileReader();
-      reader.onload = (e) =>
-        setFilePreviews({ [file.name]: e.target?.result as string });
-      reader.readAsDataURL(file);
-    };
-
-    const handleDragOver = React.useCallback((e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-    }, []);
-
-    const handleDragLeave = React.useCallback((e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-    }, []);
-
-    const handleDrop = React.useCallback((e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const files = Array.from(e.dataTransfer.files);
-      const imageFiles = files.filter((file) => isImageFile(file));
-      if (imageFiles.length > 0) processFile(imageFiles[0]);
-    }, []);
-
-    const handleRemoveFile = (index: number) => {
-      const fileToRemove = files[index];
-      if (fileToRemove && filePreviews[fileToRemove.name]) setFilePreviews({});
-      setFiles([]);
-    };
-
-    const openImageModal = (imageUrl: string) => setSelectedImage(imageUrl);
-
-    const handlePaste = React.useCallback((e: ClipboardEvent) => {
-      const items = e.clipboardData?.items;
-      if (!items) return;
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf("image") !== -1) {
-          const file = items[i].getAsFile();
-          if (file) {
-            e.preventDefault();
-            processFile(file);
-            break;
-          }
-        }
-      }
-    }, []);
-
-    React.useEffect(() => {
-      document.addEventListener("paste", handlePaste);
-      return () => document.removeEventListener("paste", handlePaste);
-    }, [handlePaste]);
-
     const handleSubmit = React.useCallback(() => {
       const liveText = (internalTextareaRef.current?.value ?? input).trim();
-      if ((liveText || files.length > 0) && !disableSend) {
-        let messagePrefix = "";
-        if (showSearch) messagePrefix = "[Search: ";
-        else if (showThink) messagePrefix = "[Think: ";
-        else if (showCanvas) messagePrefix = "[Canvas: ";
-        const formattedInput = messagePrefix ? `${messagePrefix}${liveText}]` : liveText;
-        
+      if (liveText && !disableSend) {
         // Send the message
-        onSend(formattedInput, files);
-        
+        onSend(liveText);
+
         // Clear all state and force immediate UI clearing
         setInput("");
-        setFiles([]);
-        setFilePreviews({});
-        
+
         // Force immediate clearing of the textarea to prevent race conditions
         if (internalTextareaRef.current) {
           internalTextareaRef.current.value = "";
           internalTextareaRef.current.style.height = "auto";
         }
       }
-    }, [input, files, showSearch, showThink, showCanvas, onSend, disableSend]);
+    }, [input, onSend, disableSend]);
 
-    const handleStartRecording = () => console.log("Started recording");
-
-    const handleStopRecording = (transcript: string, duration: number) => {
-      console.log(`Stopped recording after ${duration} seconds`);
-      setIsRecording(false);
-      // If we have a transcript, append it to existing input or set as new input
-      if (transcript.trim()) {
-        const currentInput = input.trim();
-        const newInput = currentInput
-          ? `${currentInput} ${transcript}`
-          : transcript;
-        setInput(newInput);
-      } else {
-        onSend(`[Voice message - ${duration} seconds]`, []);
-      }
-    };
-
-    const hasContent = input.trim() !== "" || files.length > 0;
+    const hasContent = input.trim() !== "";
 
     return (
       <>
-        <StyleInjector />
         <PromptInput
           className={cn(
-            "w-full border-border bg-background shadow-[0_8px_30px_rgba(0,0,0,0.24)] transition-all duration-300 ease-in-out",
-            isRecording && "border-text-foreground",
+            "w-full border-border shadow-[0_8px_30px_rgba(0,0,0,0.24)] transition-all duration-300 ease-in-out",
             className
           )}
           disabled={disableInput}
           isLoading={isLoading}
-          onDragLeave={handleDragLeave}
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
           onSubmit={handleSubmit}
           onValueChange={setInput}
           ref={ref || promptBoxRef}
           value={input}
         >
-          {files.length > 0 && !isRecording && (
-            <div className="flex flex-wrap gap-2 p-0 pb-1 transition-all duration-300">
-              {files.map((file, index) => (
-                <div className="group relative" key={index}>
-                  {file.type.startsWith("image/") &&
-                    filePreviews[file.name] && (
-                      <div
-                        className="h-16 w-16 cursor-pointer overflow-hidden rounded-xl transition-all duration-300"
-                        onClick={() => openImageModal(filePreviews[file.name])}
-                      >
-                        <img
-                          alt={file.name}
-                          className="h-full w-full object-cover"
-                          src={filePreviews[file.name]}
-                        />
-                        <button
-                          className="absolute top-1 right-1 rounded-full bg-black/70 p-0.5 opacity-100 transition-opacity"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemoveFile(index);
-                          }}
-                        >
-                          <X className="h-3 w-3 text-white" />
-                        </button>
-                      </div>
-                    )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div
-            className={cn(
-              "transition-all duration-300",
-              isRecording ? "h-0 overflow-hidden opacity-0" : "opacity-100"
-            )}
-          >
-            <PromptInputTextarea
-              // className="text-base"
-              placeholder={
-                showSearch
-                  ? "Search the web..."
-                  : showThink
-                  ? "Think deeply..."
-                  : showCanvas
-                  ? "Create on canvas..."
-                  : placeholder
-              }
-              ref={(node) => {
-                internalTextareaRef.current = node;
-                if (typeof textareaRef === "function") textareaRef(node);
-                else if (textareaRef)
-                  (
-                    textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>
-                  ).current = node;
-              }}
-            />
-          </div>
-
-          {isRecording && (
-            <VoiceRecorder
-              isRecording={isRecording}
-              onStartRecording={handleStartRecording}
-              onStopRecording={handleStopRecording}
-            />
-          )}
+          <PromptInputTextarea
+            placeholder={placeholder}
+            ref={(node) => {
+              internalTextareaRef.current = node;
+              if (typeof textareaRef === "function") textareaRef(node);
+              else if (textareaRef)
+                (
+                  textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>
+                ).current = node;
+            }}
+          />
 
           <PromptInputActions className="flex items-center justify-between gap-2 p-0 pt-2">
-            <div
-              className={cn(
-                "flex items-center gap-1 transition-opacity duration-300",
-                isRecording ? "invisible h-0 opacity-0" : "visible opacity-100"
-              )}
-            >
-              {/* <PromptInputAction tooltip="Upload image">
-              <button
-                onClick={() => uploadInputRef.current?.click()}
-                className="flex h-8 w-8 text-[#9CA3AF] cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-gray-600/30 hover:text-[#D1D5DB]"
-                disabled={isRecording}
+            <PromptInputAction tooltip="Create project from template">
+              <Button
+                className="h-8 px-3 text-sm bg-background-secondary text-foreground border border-border-primary transition-all duration-200 rounded-lg"
+                onClick={() => openDialog()}
+                size="sm"
+                variant="outline"
               >
-                <Paperclip className="h-5 w-5 transition-colors" />
-                <input
-                  ref={uploadInputRef}
-                  type="file"
-                  className="hidden"
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files.length > 0) processFile(e.target.files[0]);
-                    if (e.target) e.target.value = "";
-                  }}
-                  accept="image/*"
-                />
-              </button>
-            </PromptInputAction> */}
-
-              <div className="flex items-center">
-                {/* <button
-                type="button"
-                onClick={() => handleToggleChange("search")}
-                className={cn(
-                  "rounded-full transition-all flex items-center gap-1 px-2 py-1 border h-8",
-                  showSearch
-                    ? "bg-[#1EAEDB]/15 border-[#1EAEDB] text-[#1EAEDB]"
-                    : "bg-transparent border-transparent text-[#9CA3AF] hover:text-[#D1D5DB]"
-                )}
-              >
-                <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                  <motion.div
-                    animate={{ rotate: showSearch ? 360 : 0, scale: showSearch ? 1.1 : 1 }}
-                    whileHover={{ rotate: showSearch ? 360 : 15, scale: 1.1, transition: { type: "spring", stiffness: 300, damping: 10 } }}
-                    transition={{ type: "spring", stiffness: 260, damping: 25 }}
-                  >
-                    <Globe className={cn("w-4 h-4", showSearch ? "text-[#1EAEDB]" : "text-inherit")} />
-                  </motion.div>
-                </div>
-                <AnimatePresence>
-                  {showSearch && (
-                    <motion.span
-                      initial={{ width: 0, opacity: 0 }}
-                      animate={{ width: "auto", opacity: 1 }}
-                      exit={{ width: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="text-xs overflow-hidden whitespace-nowrap text-[#1EAEDB] shrink-0"
-                    >
-                      Search
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </button>
-
-              <CustomDivider /> */}
-
-                {/* <button
-                type="button"
-                onClick={() => handleToggleChange("think")}
-                className={cn(
-                  "rounded-full transition-all flex items-center gap-1 px-2 py-1 border h-8",
-                  showThink
-                    ? "bg-[#8B5CF6]/15 border-[#8B5CF6] text-[#8B5CF6]"
-                    : "bg-transparent border-transparent text-[#9CA3AF] hover:text-[#D1D5DB]"
-                )}
-              >
-                <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                  <motion.div
-                    animate={{ rotate: showThink ? 360 : 0, scale: showThink ? 1.1 : 1 }}
-                    whileHover={{ rotate: showThink ? 360 : 15, scale: 1.1, transition: { type: "spring", stiffness: 300, damping: 10 } }}
-                    transition={{ type: "spring", stiffness: 260, damping: 25 }}
-                  >
-                    <BrainCog className={cn("w-4 h-4", showThink ? "text-[#8B5CF6]" : "text-inherit")} />
-                  </motion.div>
-                </div>
-                <AnimatePresence>
-                  {showThink && (
-                    <motion.span
-                      initial={{ width: 0, opacity: 0 }}
-                      animate={{ width: "auto", opacity: 1 }}
-                      exit={{ width: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="text-xs overflow-hidden whitespace-nowrap text-[#8B5CF6] shrink-0"
-                    >
-                      Think
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </button>
-
-              <CustomDivider /> */}
-
-                {/* <button
-                type="button"
-                onClick={handleCanvasToggle}
-                className={cn(
-                  "rounded-full transition-all flex items-center gap-1 px-2 py-1 border h-8",
-                  showCanvas
-                    ? "bg-[#F97316]/15 border-[#F97316] text-[#F97316]"
-                    : "bg-transparent border-transparent text-[#9CA3AF] hover:text-[#D1D5DB]"
-                )}
-              >
-                <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                  <motion.div
-                    animate={{ rotate: showCanvas ? 360 : 0, scale: showCanvas ? 1.1 : 1 }}
-                    whileHover={{ rotate: showCanvas ? 360 : 15, scale: 1.1, transition: { type: "spring", stiffness: 300, damping: 10 } }}
-                    transition={{ type: "spring", stiffness: 260, damping: 25 }}
-                  >
-                    <FolderCode className={cn("w-4 h-4", showCanvas ? "text-[#F97316]" : "text-inherit")} />
-                  </motion.div>
-                </div>
-                <AnimatePresence>
-                  {showCanvas && (
-                    <motion.span
-                      initial={{ width: 0, opacity: 0 }}
-                      animate={{ width: "auto", opacity: 1 }}
-                      exit={{ width: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="text-xs overflow-hidden whitespace-nowrap text-[#F97316] shrink-0"
-                    >
-                      Canvas
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </button> */}
-              </div>
-            </div>
+                <LayoutPanelTop className="h-3 w-3 mr-1" />
+                From Template
+              </Button>
+            </PromptInputAction>
 
             <PromptInputAction
               tooltip={
                 isLoading
                   ? "Stop generation"
-                  : isRecording
-                  ? "Stop recording"
                   : hasContent
                   ? "Send message"
-                  : !browserSupportsSpeechRecognition
-                  ? "Voice not supported"
-                  : "Voice message"
+                  : "Type a message to send"
               }
             >
               <Button
                 className={cn(
                   "h-8 w-8 rounded-full transition-all duration-200",
-                  isRecording
-                    ? "bg-transparent text-red-500 hover:bg-gray-600/30 hover:text-red-400"
-                    : hasContent
+                  hasContent
                     ? "bg-white text-[#1F2023] hover:bg-white/80"
-                    : !browserSupportsSpeechRecognition
-                    ? "bg-transparent text-gray-500 cursor-not-allowed"
-                    : "bg-transparent text-[#9CA3AF] hover:bg-gray-600/30 hover:text-[#D1D5DB]"
+                    : "bg-transparent text-gray-500 cursor-not-allowed"
                 )}
-                disabled={
-                  (disableSend && !hasContent) ||
-                  (!hasContent && !browserSupportsSpeechRecognition)
-                }
-                onClick={() => {
-                  if (isRecording) setIsRecording(false);
-                  else if (hasContent) handleSubmit();
-                  else if (browserSupportsSpeechRecognition)
-                    setIsRecording(true);
-                }}
+                disabled={disableSend || !hasContent}
+                onClick={handleSubmit}
                 size="icon"
                 variant="default"
               >
-                {isLoading ? (
-                  <Square className="h-4 w-4 animate-pulse fill-[#1F2023]" />
-                ) : isRecording ? (
-                  <StopCircle className="h-5 w-5 text-red-500" />
-                ) : hasContent ? (
-                  <ArrowUp className="h-4 w-4 text-[#1F2023]" />
-                ) : (
-                  <Mic className="h-5 w-5 text-[#1F2023] transition-colors" />
-                )}
+                <AnimatePresence mode="wait">
+                  {isLoading ? (
+                    <motion.div
+                      key="stop"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.8, opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <Square className="h-4 w-4 animate-pulse fill-[#1F2023]" />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="send"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.8, opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <ArrowUp className="h-4 w-4 text-[#1F2023]" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </Button>
             </PromptInputAction>
           </PromptInputActions>
         </PromptInput>
 
-        <ImageViewDialog
-          imageUrl={selectedImage}
-          onClose={() => setSelectedImage(null)}
-        />
+        <CreateProjectDialog />
       </>
     );
   }
