@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { k8sClient } from "@/components/provider/trpc-provider";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import {
   flattenListAllResourcesResponse,
   convertResourceToTarget,
@@ -8,7 +8,7 @@ import {
 import { INSTANCE_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
 
 export default function useProjectResources(projectName: string) {
-  const k8sTrpcClient = k8sClient.useTRPC();
+  const { k8s } = useTRPCClients();
 
   const labelSelector = useMemo(
     () => `${INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS}=${projectName}`,
@@ -20,7 +20,7 @@ export default function useProjectResources(projectName: string) {
     isLoading,
     error,
   } = useQuery({
-    ...k8sTrpcClient.listAllResources.queryOptions({
+    ...k8s.listAllResources.queryOptions({
       labelSelector,
       builtinResourceTypes: ["deployment", "statefulset"],
       customResourceTypes: ["devbox", "cluster", "objectstoragebucket"],

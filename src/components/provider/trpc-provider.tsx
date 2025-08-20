@@ -5,6 +5,7 @@ import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import type { DevboxRouter } from "@/lib/trpc/sealos/devbox/devbox-router";
 import type { ClusterRouter } from "@/lib/trpc/sealos/cluster/cluster-router";
 import type { LaunchpadRouter } from "@/lib/trpc/sealos/launchpad/launchpad-router";
+import type { ObjectStorageRouter } from "@/lib/trpc/sealos/objectstorage/objectstorage-router";
 import type { ProjectRouter } from "@/lib/trpc/brain/project/project-router";
 import type { K8sRouter } from "@/lib/trpc/k8s/k8s-router";
 import { useState } from "react";
@@ -14,6 +15,7 @@ import { QueryClient } from "@tanstack/react-query";
 export const devboxClient = createTRPCContext<DevboxRouter>();
 export const clusterClient = createTRPCContext<ClusterRouter>();
 export const launchpadClient = createTRPCContext<LaunchpadRouter>();
+export const objectStorageClient = createTRPCContext<ObjectStorageRouter>();
 export const projectClient = createTRPCContext<ProjectRouter>();
 export const k8sClient = createTRPCContext<K8sRouter>();
 
@@ -111,6 +113,22 @@ export default function TRPCProvider({
     })
   );
 
+  const [objectStorageTrpcClient] = useState(() =>
+    createTRPCClient<ObjectStorageRouter>({
+      links: [
+        httpBatchLink({
+          url: "/api/trpc/objectstorage",
+          maxURLLength: 6000,
+          headers: () => ({
+            namespace: auth.namespace,
+            kubeconfig: auth.kubeconfig,
+            regionUrl: auth.regionUrl,
+          }),
+        }),
+      ],
+    })
+  );
+
   return (
     <devboxClient.TRPCProvider
       trpcClient={devboxTrpcClient}
@@ -124,17 +142,22 @@ export default function TRPCProvider({
           trpcClient={launchpadTrpcClient}
           queryClient={queryClient}
         >
-          <projectClient.TRPCProvider
-            trpcClient={projectTrpcClient}
+          <objectStorageClient.TRPCProvider
+            trpcClient={objectStorageTrpcClient}
             queryClient={queryClient}
           >
-            <k8sClient.TRPCProvider
-              trpcClient={k8sTrpcClient}
+            <projectClient.TRPCProvider
+              trpcClient={projectTrpcClient}
               queryClient={queryClient}
             >
-              {children}
-            </k8sClient.TRPCProvider>
-          </projectClient.TRPCProvider>
+              <k8sClient.TRPCProvider
+                trpcClient={k8sTrpcClient}
+                queryClient={queryClient}
+              >
+                {children}
+              </k8sClient.TRPCProvider>
+            </projectClient.TRPCProvider>
+          </objectStorageClient.TRPCProvider>
         </launchpadClient.TRPCProvider>
       </clusterClient.TRPCProvider>
     </devboxClient.TRPCProvider>

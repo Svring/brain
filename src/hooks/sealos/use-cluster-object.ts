@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { clusterClient } from "@/components/provider/trpc-provider";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 
 export const useClusterObject = (clusterName: string) => {
-  const clusterTrpcClient = clusterClient.useTRPC();
+  const { cluster } = useTRPCClients();
 
   // Create target for the cluster
   const target = CustomResourceTargetSchema.parse(
@@ -13,7 +13,7 @@ export const useClusterObject = (clusterName: string) => {
   );
 
   return useQuery(
-    clusterTrpcClient.getCluster.queryOptions({
+    cluster.getCluster.queryOptions({
       target: target,
     })
   );

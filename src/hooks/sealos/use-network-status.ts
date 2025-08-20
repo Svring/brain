@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
-import { devboxClient } from "@/components/provider/trpc-provider";
-import { launchpadClient } from "@/components/provider/trpc-provider";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import {
   useFlowgraphActions,
   useFlowgraphState,
@@ -13,8 +12,7 @@ interface UseNetworkStatusProps {
 }
 
 export const useNetworkStatus = ({ parent }: UseNetworkStatusProps) => {
-  const devboxTrpcClient = devboxClient.useTRPC();
-  const launchpadTrpcClient = launchpadClient.useTRPC();
+  const { devbox, launchpad } = useTRPCClients();
   const { edges } = useFlowgraphState();
   const { updateEdge } = useFlowgraphActions();
 
@@ -37,10 +35,10 @@ export const useNetworkStatus = ({ parent }: UseNetworkStatusProps) => {
   // Call the appropriate ready check
   const { data: readyStatus } = useQuery({
     ...(isDevbox
-      ? devboxTrpcClient.checkDevboxReady.queryOptions({
+      ? devbox.checkDevboxReady.queryOptions({
           devboxName: parent?.name || "",
         })
-      : launchpadTrpcClient.checkLaunchpadReady.queryOptions({
+      : launchpad.checkLaunchpadReady.queryOptions({
           launchpadName: parent?.name || "",
         })),
     enabled: !!parent?.name,

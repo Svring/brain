@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import { projectClient } from "@/components/provider/trpc-provider";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ProjectObjectSchema } from "@/lib/brain/resources/project/project-schemas/project-object-schema";
 import { z } from "zod";
@@ -23,7 +23,7 @@ interface ProjectCardProps {
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
-  const projectTrpcClient = projectClient.useTRPC();
+  const { project: projectClient } = useTRPCClients();
   const queryClient = useQueryClient();
   const {
     isOpen: isDropdownOpen,
@@ -32,10 +32,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
   } = useDisclosure();
 
   const deleteProjectMutation = useMutation(
-    projectTrpcClient.deleteProject.mutationOptions({
+    projectClient.deleteProject.mutationOptions({
       onSuccess: (_, name) => {
         queryClient.invalidateQueries({
-          queryKey: projectTrpcClient.listProjects.queryKey(),
+          queryKey: projectClient.listProjects.queryKey(),
         });
         toast.success(`Project ${name} deleted successfully`);
       },

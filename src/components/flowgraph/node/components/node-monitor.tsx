@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/tooltip";
 
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { useResourceMetrics } from "@/hooks/sealos/use-resource-metrics";
+import { useResourceMetricsStatus } from "@/hooks/sealos/use-resource-metrics-status";
 
 interface NodeMonitorProps {
   resource: {
@@ -22,39 +22,14 @@ interface NodeMonitorProps {
 }
 
 export default function NodeMonitor({ resource }: NodeMonitorProps) {
-  const { monitorData, isLoading } = useResourceMetrics(resource);
   const { sendSystemMessage } = useSendSystemMessageMutation();
+  const { color, latestData, monitorData } =
+    useResourceMetricsStatus({
+      resource,
+    });
 
   // console.log("monitorData", monitorData);
-
-  // Get the latest data point for current values
-  const latestData =
-    monitorData && Array.isArray(monitorData) && monitorData.length > 0
-      ? monitorData[monitorData.length - 3]
-      : null;
-
   // console.log("latestData", latestData);
-
-  // Determine icon color based on monitor values
-  const getIconColor = () => {
-    if (!latestData) return "text-theme-green";
-
-    const cpuValue = latestData.cpu;
-    const memoryValue = latestData.memory;
-    const storageValue = latestData.storage || 0;
-
-    // Check if any value exceeds 90%
-    if (cpuValue > 90 || memoryValue > 90 || storageValue > 90) {
-      return "text-theme-red";
-    }
-
-    // Check if any value exceeds 50%
-    if (cpuValue > 50 || memoryValue > 50 || storageValue > 50) {
-      return "text-theme-yellow";
-    }
-
-    return "text-theme-green";
-  };
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -76,7 +51,7 @@ export default function NodeMonitor({ resource }: NodeMonitorProps) {
                 monitorData &&
                 Array.isArray(monitorData) &&
                 monitorData.length > 0
-                  ? getIconColor()
+                  ? color
                   : "text-theme-gray"
               }`}
             />

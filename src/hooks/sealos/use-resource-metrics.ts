@@ -1,9 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  devboxClient,
-  clusterClient,
-  launchpadClient,
-} from "@/components/provider/trpc-provider";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { createSealosContext } from "@/lib/auth/auth-utils";
 import _ from "lodash";
 
@@ -24,13 +20,11 @@ interface Resource {
 
 export const useResourceMetrics = (resource: Resource) => {
   const sealosContext = createSealosContext();
-  const devboxTrpcClient = devboxClient.useTRPC();
-  const clusterTrpcClient = clusterClient.useTRPC();
-  const launchpadTrpcClient = launchpadClient.useTRPC();
+  const { devbox, cluster, launchpad } = useTRPCClients();
 
   // Fetch monitor data based on resource kind
   const { data: devboxMonitorData } = useQuery({
-    ...devboxTrpcClient.getDevboxCombinedMonitorData.queryOptions({
+    ...devbox.getDevboxCombinedMonitorData.queryOptions({
       devboxName: resource.pods?.[0]?.name || "",
     }),
     enabled:
@@ -38,7 +32,7 @@ export const useResourceMetrics = (resource: Resource) => {
   });
 
   const { data: clusterMonitorData } = useQuery({
-    ...clusterTrpcClient.getClusterCombinedMonitorData.queryOptions({
+    ...cluster.getClusterCombinedMonitorData.queryOptions({
       dbName: resource.name,
       dbType: resource.type!,
     }),
@@ -46,7 +40,7 @@ export const useResourceMetrics = (resource: Resource) => {
   });
 
   const { data: launchpadMonitorData } = useQuery({
-    ...launchpadTrpcClient.getLaunchpadCombinedMonitorData.queryOptions({
+    ...launchpad.getLaunchpadCombinedMonitorData.queryOptions({
       context: sealosContext,
       queryName: resource.pods?.[0]?.name || "",
     }),
