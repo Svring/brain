@@ -23,6 +23,8 @@ import { convertToDbconnUrl } from "@/lib/sealos/sealos-utils";
 import { Globe, HardDrive } from "lucide-react";
 import { useResourceMetrics } from "@/hooks/sealos/use-resource-metrics";
 import { useClusterObject } from "@/hooks/sealos/use-cluster-object";
+import { useResourceStatus } from "@/hooks/sealos/use-resource-status";
+import { useResourceMetricsStatus } from "@/hooks/sealos/use-resource-metrics-status";
 import {
   Tooltip,
   TooltipContent,
@@ -44,17 +46,16 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
   // Use the new hook to get cluster data
   const { data: clusterData = data } = useClusterObject(data.name);
 
-  // Get resource metrics data
-  const { monitorData, isLoading: isMetricsLoading } = useResourceMetrics({
-    ...data,
-    pods: data.pods || undefined,
-  });
+  // Get resource status using the new hook
+  const { status: resourceStatus } = useResourceStatus(target);
 
-  // Get the latest data point for current values
-  const latestData =
-    monitorData && Array.isArray(monitorData) && monitorData.length > 0
-      ? monitorData[monitorData.length - 3]
-      : null;
+  // Get resource metrics status using the new hook
+  const { latestData } = useResourceMetricsStatus({
+    resource: {
+      ...data,
+      pods: data.pods || undefined,
+    },
+  });
 
   // Derive a safe storage percentage (0-100). Accepts values in 0-1 or 0-100.
   const storagePercent: number = (() => {
@@ -68,7 +69,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
     return Math.max(0, Math.min(100, percent));
   })();
 
-  const { name, type, status } = clusterData;
+  const { name, type } = clusterData;
 
   // Construct connection string
   const connectionString = (() => {
@@ -92,8 +93,8 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
   })();
 
   const isDeletingCluster =
-    status === "Deleting" ||
-    status === "Terminating" ||
+    resourceStatus === "Deleting" ||
+    resourceStatus === "Terminating" ||
     useIsMutating({
       predicate: (mutation) => {
         const isDeleteMutation =
@@ -148,7 +149,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
         {/* Bottom section with status and icons */}
         <div className="mt-auto flex justify-between items-center">
           {/* Left: Status light */}
-          <NodeStatusLight status={status!} />
+          <NodeStatusLight status={resourceStatus || "Pending"} />
 
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">

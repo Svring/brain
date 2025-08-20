@@ -18,12 +18,20 @@ import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/l
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useResourceMetrics } from "@/hooks/sealos/use-resource-metrics";
 import { useLaunchpadObject } from "@/hooks/sealos/use-launchpad-object";
+import { useResourceStatus } from "@/hooks/sealos/use-resource-status";
 
 export default function DeploymentNode({ data }: { data: DeploymentObject }) {
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 
   // Use the new hook to get deployment data
   const { data: deploymentData = data } = useLaunchpadObject(data.name, data.kind);
+
+  // Get resource status using the new hook
+  const target = convertResourceObjectToTarget({
+    kind: deploymentData.kind,
+    name: deploymentData.name,
+  });
+  const { status } = useResourceStatus(target);
 
   // Get resource metrics data using the hook data
   const { monitorData, isLoading: isMetricsLoading } = useResourceMetrics(deploymentData);
@@ -85,18 +93,7 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
         {/* Bottom section with status and icons */}
         <div className="mt-auto flex justify-between items-center">
           {/* Left: Status light */}
-          <NodeStatusLight
-            status={
-              deploymentData.status.paused
-                ? "Stopped"
-                : deploymentData.status.unavailableReplicas !== undefined &&
-                  deploymentData.status.unavailableReplicas > 0
-                ? "Error"
-                : deploymentData.status.readyReplicas === deploymentData.status.replicas
-                ? "Running"
-                : "Pending"
-            }
-          />
+          <NodeStatusLight status={status || "Pending"} />
 
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">

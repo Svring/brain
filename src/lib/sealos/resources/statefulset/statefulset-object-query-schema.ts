@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { EnvVar } from "@/lib/k8s/k8s-method/k8s-utils";
 import { formatIsoDateToReadable } from "@/lib/date/date-utils";
+import { determineLaunchpadStatus } from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-utils";
 
 export const StatefulsetObjectQuerySchema = z.object({
   name: z.string().describe(
@@ -72,12 +73,17 @@ export const StatefulsetObjectQuerySchema = z.object({
       const status = resource.status;
       const paused =
         resource.metadata.annotations?.["deploy.cloud.sealos.io/pause"];
-      return {
+      const statusObject = {
         replicas: status.replicas,
         readyReplicas: status.readyReplicas,
         unavailableReplicas: status.unavailableReplicas,
         availableReplicas: status.availableReplicas,
         paused: paused ? true : false,
+      };
+
+      return {
+        ...statusObject,
+        status: determineLaunchpadStatus(statusObject),
       };
     }),
   operationalStatus: z

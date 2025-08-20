@@ -16,6 +16,7 @@ import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import NodeLog from "../../components/node-log";
 import { useResourceMetrics } from "@/hooks/sealos/use-resource-metrics";
 import { useLaunchpadObject } from "@/hooks/sealos/use-launchpad-object";
+import { useResourceStatus } from "@/hooks/sealos/use-resource-status";
 
 export default function StatefulsetNode({
   data,
@@ -26,6 +27,13 @@ export default function StatefulsetNode({
 
   // Use the new hook to get statefulset data
   const { data: statefulsetData = data } = useLaunchpadObject(data.name, data.kind);
+
+  // Get resource status using the new hook
+  const target = convertResourceObjectToTarget({
+    kind: statefulsetData.kind,
+    name: statefulsetData.name,
+  });
+  const { status } = useResourceStatus(target);
 
   // Get resource metrics data using the hook data
   const { monitorData, isLoading: isMetricsLoading } = useResourceMetrics(statefulsetData);
@@ -87,18 +95,7 @@ export default function StatefulsetNode({
         {/* Bottom section with status and icons */}
         <div className="mt-auto flex justify-between items-center">
           {/* Left: Status light */}
-          <NodeStatusLight
-            status={
-              statefulsetData.status.paused
-                ? "Stopped"
-                : statefulsetData.status.unavailableReplicas !== undefined &&
-                  statefulsetData.status.unavailableReplicas > 0
-                ? "Error"
-                : statefulsetData.status.readyReplicas === statefulsetData.status.replicas
-                ? "Running"
-                : "Pending"
-            }
-          />
+          <NodeStatusLight status={status || "Pending"} />
 
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">

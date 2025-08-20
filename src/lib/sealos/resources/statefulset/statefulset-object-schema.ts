@@ -26,6 +26,7 @@ const StatusSchema = z.object({
   unavailableReplicas: z.number().optional(),
   readyReplicas: z.number().optional(),
   availableReplicas: z.number().optional(),
+  status: z.string(),
 });
 
 const PodSchema = z.object({

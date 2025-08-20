@@ -16,12 +16,13 @@ import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 import { useResourceMetrics } from "@/hooks/sealos/use-resource-metrics";
 import { useDevboxRelease } from "@/hooks/sealos/use-devbox-release";
-import { devboxClient } from "@/components/provider/trpc-provider";
 import { useMutation } from "@tanstack/react-query";
+import { useResourceStatus } from "@/hooks/sealos/use-resource-status";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 
 // TODO: Devbox nodes would cause maximum call stack error
 export default function DevboxNode({ data }: { data: DevboxObject }) {
-  const { name, image, status, ports, pods } = data;
+  const { name, image, ports, pods } = data;
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 
   const target = convertResourceObjectToTarget({
@@ -29,12 +30,15 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
     name: data.name,
   });
 
+  // Get resource status using the new hook
+  const { status } = useResourceStatus(target);
+
   const context = createK8sContext();
-  const devboxTrpcClient = devboxClient.useTRPC();
+  const { devbox } = useTRPCClients();
 
   // Use devbox router for delete mutation
   const deleteDevbox = useMutation(
-    devboxTrpcClient.deleteDevbox.mutationOptions()
+    devbox.deleteDevbox.mutationOptions()
   );
 
   const { releases } = useDevboxRelease(name);
@@ -83,7 +87,7 @@ export default function DevboxNode({ data }: { data: DevboxObject }) {
         {/* Bottom section with status and icons */}
         <div className="mt-auto flex justify-between items-center">
           {/* Left: Status light */}
-          <NodeStatusLight status={status} />
+          <NodeStatusLight status={status || "Pending"} />
 
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
