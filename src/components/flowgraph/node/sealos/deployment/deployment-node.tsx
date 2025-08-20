@@ -78,6 +78,12 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
     });
   };
 
+  // Create target for the NodeLog component
+  const logTarget = convertResourceObjectToTarget({
+    kind: data.kind,
+    name: data.name,
+  });
+
   // console.log("status", status);
   // console.log("pods", pods);
 
@@ -124,7 +130,7 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={ports || []} /> */}
             {/* <NodePods resource={data} /> */}
-            <NodeLog />
+            <NodeLog target={logTarget} resourceType="launchpad" />
             <NodeMonitor resource={data} />
           </div>
         </div>

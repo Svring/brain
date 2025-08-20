@@ -17,6 +17,9 @@ import { NetworkInfoMessage } from "./network/network-message";
 import { DevboxCreateMessage } from "./manage/devbox-create-message";
 import { ClusterCreateMessage } from "./manage/cluster-create-message";
 import { DeploymentCreateMessage } from "./manage/deployment-create-message";
+import { ClusterInfoLog } from "./info/cluster-info-message/cluster-info-log";
+import { LaunchpadInfoLog } from "./info/launchpad-info-message/launchpad-info-log";
+import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 export const SystemMessageType = {
   info: {
@@ -36,6 +39,8 @@ export const SystemMessageType = {
     launchpadInfo: (payload: any) => (
       <LaunchpadInfoMessageCard payload={payload} />
     ),
+    clusterLog: (payload: CustomResourceTarget) => <ClusterInfoLog payload={payload} />,
+    launchpadLog: (payload: BuiltinResourceTarget) => <LaunchpadInfoLog payload={payload} />,
     metrics: (payload: any) => <MetricsMessageCard payload={payload} />,
     combinedMetrics: (payload: any) => <CombinedMessage resource={payload} />,
     podOverview: (payload: any) => <PodOverview resource={payload} />,

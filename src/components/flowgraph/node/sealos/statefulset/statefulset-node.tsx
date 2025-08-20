@@ -50,6 +50,12 @@ export default function StatefulsetNode({
     });
   };
 
+  // Create target for the NodeLog component
+  const logTarget = convertResourceObjectToTarget({
+    kind: data.kind,
+    name: data.name,
+  });
+
   const mainCard = (
     <BaseNode
       nodeData={data}
@@ -93,7 +99,7 @@ export default function StatefulsetNode({
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={ports || []} /> */}
             {/* <NodePods resource={data} /> */}
-            <NodeLog />
+            <NodeLog target={logTarget} resourceType="launchpad" />
             <NodeMonitor resource={data} />
           </div>
         </div>

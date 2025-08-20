@@ -53,7 +53,7 @@ export const MainSection: React.FC<MainSectionProps> = () => {
   const { mutate: createNewChatSession } = useCreateNewChatSessionMutation();
 
   const handleNavigation = async (path: string) => {
-    if (path === "/home" && pathname === "/home") {
+    if (path === "/home") {
       createNewChatSession();
     } else {
       router.push(path);

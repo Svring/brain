@@ -191,7 +191,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={[]} /> */}
             {/* <NodePods resource={clusterData || data} /> */}
-            <NodeLog />
+            <NodeLog target={target} resourceType="cluster" />
             <ClusterNodeBackup object={clusterData} />
             {/* <NodeBackup /> */}
             <NodeMonitor resource={data} />

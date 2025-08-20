@@ -12,6 +12,7 @@ import { LaunchpadInfoHeader } from "./launchpad-info-header";
 import { MetricRow } from "@/components/chat/messages/components/metric-row";
 import { LaunchpadInfoPorts } from "./launchpad-info-ports";
 import { LaunchpadInfoActions } from "./launchpad-info-actions";
+import { LaunchpadInfoLog } from "./launchpad-info-log";
 
 interface LaunchpadInfoMessageProps {
   payload: BuiltinResourceTarget;
@@ -102,6 +103,7 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
       <LaunchpadInfoHeader launchpadData={launchpadData} />
       <CardContent className="space-y-4">
         <LaunchpadInfoPorts ports={ports} />
+        <LaunchpadInfoLog payload={payload} />
       </CardContent>
       <LaunchpadInfoActions name={name} kind={kind} resource={launchpadData} />
     </Card>
