@@ -36,7 +36,7 @@ export default function StatefulsetNode({
   const { status } = useResourceStatus(target);
 
   // Get resource metrics data using the hook data
-  const { monitorData, isLoading: isMetricsLoading } = useResourceMetrics(statefulsetData);
+  const { monitorData, isLoading: isMetricsLoading } = useResourceMetrics(target);
 
   // Check if this statefulset is being deleted
   const isDeletingStatefulset =
@@ -102,7 +102,7 @@ export default function StatefulsetNode({
             {/* <NodeInternalUrl ports={statefulsetData.ports || []} /> */}
             {/* <NodePods resource={statefulsetData} /> */}
             <NodeLog target={logTarget} resourceType="launchpad" />
-            <NodeMonitor resource={statefulsetData} />
+            <NodeMonitor target={target}/>
           </div>
         </div>
       </div>

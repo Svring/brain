@@ -49,6 +49,7 @@ import { convertDevboxListToSimplified } from "../devbox-method/devbox-utils";
 import { getSshConnectionInfo } from "./devbox-old-api";
 import { getMonitorData } from "./devbox-old-api";
 import { checkReady } from "./devbox-old-api";
+import { deleteDevboxRelease as deleteDevboxReleaseOld } from "./devbox-old-api";
 import { listFolderFiles } from "./devbox-ssh-api";
 import type { DevboxSsh } from "../devbox-schemas/devbox-object-schema";
 import type { MetricsApiContext } from "@/lib/sealos/services/metrics/schemas/metrics-api-context-schema";
@@ -402,4 +403,12 @@ export async function checkDevboxReady(
   devboxName: string
 ): Promise<any> {
   return await runParallelAction(checkReady(context, devboxName));
+}
+
+// Delete Devbox Release Operations
+export async function deleteDevboxRelease(
+  versionName: string,
+  context: DevboxApiContext
+): Promise<any> {
+  return await runParallelAction(deleteDevboxReleaseOld(context, versionName));
 }

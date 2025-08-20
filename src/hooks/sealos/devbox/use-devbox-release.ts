@@ -1,13 +1,10 @@
 import { useState } from "react";
-import { createDevboxContext } from "@/lib/auth/auth-utils";
-import {
-  useReleaseDevboxMutation,
-  useDeleteDevboxReleaseMutation,
-  useManageDevboxLifecycleMutation,
-} from "@/lib/sealos/resources/devbox/devbox-method/devbox-mutation";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useMutation } from "@tanstack/react-query";
 import { getDevboxReleasesOptions } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
 import { useQuery } from "@tanstack/react-query";
 import { useDevboxDeploy } from "@/hooks/sealos/devbox/use-devbox-deploy";
+import { createDevboxContext } from "@/lib/auth/auth-utils";
 
 interface ReleaseConfig {
   tag: string;
@@ -15,6 +12,7 @@ interface ReleaseConfig {
 }
 
 export const useDevboxRelease = (devboxName: string) => {
+  const { devbox } = useTRPCClients();
   const devboxContext = createDevboxContext();
 
   const [releaseConfig, setReleaseConfig] = useState<ReleaseConfig>({
@@ -26,10 +24,13 @@ export const useDevboxRelease = (devboxName: string) => {
   >({});
   const [isReleasePopoverOpen, setIsReleasePopoverOpen] = useState(false);
 
-  const releaseMutation = useReleaseDevboxMutation(devboxContext);
-  const deleteReleaseMutation = useDeleteDevboxReleaseMutation(devboxContext);
-  const manageDevboxLifecycleMutation =
-    useManageDevboxLifecycleMutation(devboxContext);
+  const releaseMutation = useMutation(devbox.releaseDevbox.mutationOptions());
+  const deleteReleaseMutation = useMutation(
+    devbox.deleteDevboxRelease.mutationOptions()
+  );
+  const manageDevboxLifecycleMutation = useMutation(
+    devbox.manageDevboxLifecycle.mutationOptions()
+  );
 
   // Fetch devbox releases
   const { data: releases, isLoading } = useQuery(

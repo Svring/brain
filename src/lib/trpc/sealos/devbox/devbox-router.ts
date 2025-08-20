@@ -33,6 +33,7 @@ import {
   deleteDevbox,
   releaseDevbox,
   getDevboxReleases,
+  deleteDevboxRelease,
   deployDevbox,
   getDevboxByName,
   createDevboxPort,
@@ -99,6 +100,13 @@ export const devboxRouter = t.router({
     .output(DevboxReleasesResponseSchema)
     .query(async ({ ctx, input }) => {
       return await getDevboxReleases(input, ctx);
+    }),
+
+  deleteDevboxRelease: t.procedure
+    .input(z.string())
+    .output(DevboxReleaseResponseSchema)
+    .mutation(async ({ ctx, input }) => {
+      return await deleteDevboxRelease(input, ctx);
     }),
 
   deployDevbox: t.procedure

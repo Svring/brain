@@ -10,14 +10,18 @@ interface DevboxNodeTitleProps {
   regionUrl: string;
 }
 
-export default function DevboxNodeTitle({ name, image, regionUrl }: DevboxNodeTitleProps) {
+export default function DevboxNodeTitle({
+  name,
+  image,
+  regionUrl,
+}: DevboxNodeTitleProps) {
   return (
     <div className="flex items-center gap-2 truncate font-medium flex-1 min-w-0">
       <div className="flex flex-col items-start">
         <span className="flex items-center gap-4">
           <Image
             src={`https://devbox.${regionUrl}/images/runtime/${
-              transformDevboxImage(image).split("-")[0]
+              transformDevboxImage(image).split("-").slice(0, -1).join("-")
             }.svg`}
             alt="Devbox Icon"
             width={24}

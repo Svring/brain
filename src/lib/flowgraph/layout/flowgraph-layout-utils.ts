@@ -160,3 +160,242 @@ function getNodePosition(
       return { x: centerOffset, y: rankOffset };
   }
 }
+
+export interface SplitLayoutOptions {
+  groupId?: string;
+  groupPadding?: number;
+  gapBetweenGroupAndRest?: number;
+  groupPosition?: { x: number; y: number };
+  childNodeWidth?: number;
+  childNodeHeight?: number;
+  // Optional per-child size resolver; falls back to childNodeWidth/childNodeHeight
+  getChildNodeSize?: (node: Node) => { width: number; height: number };
+  // Optional per-outside size resolver; falls back to outsideLayoutOptions width/height
+  getOutsideNodeSize?: (node: Node) => { width: number; height: number };
+  // Extra breathing room inside the group for edges/handles
+  edgeClearance?: number;
+  // If true, recompute group size every layout ignoring existing style sizes
+  autoResizeGroup?: boolean;
+  groupLayoutOptions?: LayoutOptions;
+  outsideLayoutOptions?: LayoutOptions;
+}
+
+function computeBoundingBox(
+  nodes: Node[],
+  nodeWidth: number,
+  nodeHeight: number
+): {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+  width: number;
+  height: number;
+} {
+  if (nodes.length === 0) {
+    return { minX: 0, minY: 0, maxX: 0, maxY: 0, width: 0, height: 0 };
+  }
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  for (const n of nodes) {
+    const left = n.position.x;
+    const top = n.position.y;
+    const right = left + nodeWidth;
+    const bottom = top + nodeHeight;
+
+    if (left < minX) minX = left;
+    if (top < minY) minY = top;
+    if (right > maxX) maxX = right;
+    if (bottom > maxY) maxY = bottom;
+  }
+
+  return { minX, minY, maxX, maxY, width: maxX - minX, height: maxY - minY };
+}
+
+function computeBoundingBoxForNodes(
+  nodes: Node[],
+  getSize: (n: Node) => { width: number; height: number }
+): {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+  width: number;
+  height: number;
+} {
+  if (nodes.length === 0) {
+    return { minX: 0, minY: 0, maxX: 0, maxY: 0, width: 0, height: 0 };
+  }
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  for (const n of nodes) {
+    const { width, height } = getSize(n);
+    const left = n.position.x;
+    const top = n.position.y;
+    const right = left + width;
+    const bottom = top + height;
+
+    if (left < minX) minX = left;
+    if (top < minY) minY = top;
+    if (right > maxX) maxX = right;
+    if (bottom > maxY) maxY = bottom;
+  }
+
+  return { minX, minY, maxX, maxY, width: maxX - minX, height: maxY - minY };
+}
+
+/**
+ * Layout nodes by splitting them into a left-side group (e.g., devbox group)
+ * and right-side remaining nodes. The children of the group are laid out within
+ * the group's bounding box, and the rest are laid out normally and offset to
+ * the right of the group.
+ */
+export const applySplitLayout = (
+  nodes: Node[],
+  edges: Edge[],
+  options: SplitLayoutOptions = {}
+): Node[] => {
+  const {
+    groupId = "devbox-group",
+    groupPadding = 20,
+    gapBetweenGroupAndRest = 200,
+    groupPosition = { x: -700, y: 0 },
+    childNodeWidth = 280,
+    childNodeHeight = 200,
+    getChildNodeSize,
+    getOutsideNodeSize,
+    edgeClearance = 80,
+    autoResizeGroup = true,
+    groupLayoutOptions = {
+      direction: "TB",
+      nodeWidth: childNodeWidth,
+      nodeHeight: childNodeHeight,
+      rankSep: 40,
+      nodeSep: 20,
+    },
+    outsideLayoutOptions = {},
+  } = options;
+
+  const groupNode = nodes.find((n) => n.id === groupId);
+  if (!groupNode) {
+    // No group present; fallback to normal layout
+    return applyLayout(nodes, edges, outsideLayoutOptions);
+  }
+
+  const children = nodes.filter((n) => (n as any).parentId === groupId);
+  const childIds = new Set(children.map((n) => n.id));
+  const groupEdges = edges.filter(
+    (e) => childIds.has(e.source) && childIds.has(e.target)
+  );
+
+  const outsideNodes = nodes.filter(
+    (n) => n.id !== groupId && (n as any).parentId !== groupId
+  );
+  const outsideEdges = edges.filter(
+    (e) => !childIds.has(e.source) || !childIds.has(e.target)
+  );
+
+  // 1) Layout children relative to origin
+  const laidOutChildren = applyLayout(
+    children.map((n) => ({ ...n, position: { x: 0, y: 0 } })),
+    groupEdges,
+    {
+      ...groupLayoutOptions,
+      nodeWidth: childNodeWidth,
+      nodeHeight: childNodeHeight,
+    }
+  );
+
+  // 2) Determine group size - prefer existing style if present, otherwise fit to children + padding
+  const sizeForChild =
+    getChildNodeSize ??
+    (() => ({ width: childNodeWidth, height: childNodeHeight }));
+  const childBBox = computeBoundingBoxForNodes(laidOutChildren, sizeForChild);
+  const proposedWidth = childBBox.width + groupPadding * 2 + edgeClearance;
+  const proposedHeight = childBBox.height + groupPadding * 2 + edgeClearance;
+
+  const existingWidth = Number((groupNode as any).style?.width) || undefined;
+  const existingHeight = Number((groupNode as any).style?.height) || undefined;
+  const groupWidth = autoResizeGroup
+    ? proposedWidth
+    : existingWidth ?? proposedWidth;
+  const groupHeight = autoResizeGroup
+    ? proposedHeight
+    : existingHeight ?? proposedHeight;
+
+  const groupLeft = groupPosition.x;
+  const groupTop = groupPosition.y;
+
+  const positionedGroupNode: Node = {
+    ...groupNode,
+    position: { x: groupLeft, y: groupTop },
+    style: {
+      ...(groupNode as any).style,
+      width: groupWidth,
+      height: groupHeight,
+    },
+  } as Node;
+
+  // 3) Translate children inside the group with padding
+  const childOffsetX = groupLeft + groupPadding - childBBox.minX;
+  const childOffsetY = groupTop + groupPadding - childBBox.minY;
+
+  const positionedChildren = laidOutChildren.map((n) => ({
+    ...n,
+    position: {
+      x: n.position.x + childOffsetX,
+      y: n.position.y + childOffsetY,
+    },
+  }));
+
+  // 4) Layout outside nodes and offset to the right of the group
+  const laidOutOutside = applyLayout(
+    outsideNodes.map((n) => ({ ...n, position: { x: 0, y: 0 } })),
+    outsideEdges,
+    outsideLayoutOptions
+  );
+
+  const outsideBBox = computeBoundingBox(
+    laidOutOutside,
+    outsideLayoutOptions.nodeWidth ?? DEFAULT_OPTIONS.nodeWidth,
+    outsideLayoutOptions.nodeHeight ?? DEFAULT_OPTIONS.nodeHeight
+  );
+
+  // Allow per-node outside sizes for more accurate bbox if provided
+  if (getOutsideNodeSize) {
+    const customOutsideBBox = computeBoundingBoxForNodes(
+      laidOutOutside,
+      getOutsideNodeSize
+    );
+    // Overwrite with custom bbox if any custom sizes are used
+    (outsideBBox as any).minX = customOutsideBBox.minX;
+    (outsideBBox as any).minY = customOutsideBBox.minY;
+    (outsideBBox as any).maxX = customOutsideBBox.maxX;
+    (outsideBBox as any).maxY = customOutsideBBox.maxY;
+    (outsideBBox as any).width = customOutsideBBox.width;
+    (outsideBBox as any).height = customOutsideBBox.height;
+  }
+
+  const outsideOffsetX =
+    groupLeft + groupWidth + gapBetweenGroupAndRest - outsideBBox.minX;
+  const outsideOffsetY = 0 - outsideBBox.minY; // align tops
+
+  const positionedOutside = laidOutOutside.map((n) => ({
+    ...n,
+    position: {
+      x: n.position.x + outsideOffsetX,
+      y: n.position.y + outsideOffsetY,
+    },
+  }));
+
+  // 5) Combine results
+  return [positionedGroupNode, ...positionedChildren, ...positionedOutside];
+};

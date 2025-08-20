@@ -39,7 +39,6 @@ import {
 } from "@/lib/brain/resources/project/project-method/project-mutation";
 
 // Context and utilities
-import { convertResourceToNetworkNodes } from "@/lib/flowgraph/nodes/flowgraph-nodes-utils";
 import {
   FlowgraphProvider,
   useFlowgraphActions,
@@ -169,7 +168,7 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
 function ProjectFlow({ projectName }: { projectName: string }) {
   const { resources, isLoading } = useProjectResources(projectName);
   const { resourceObjects } = useResourceObjects(resources ?? []);
-  const { nodes: computedNodes } = useFlowgraphNodes(resourceObjects);
+  const { nodes: computedNodes, edges: networkEdges } = useFlowgraphNodes(resourceObjects);
   const { reliances } = useResourceReliances(resourceObjects);
   const { edges: computedEdges } = useFlowgraphEdges(reliances);
 
@@ -183,39 +182,16 @@ function ProjectFlow({ projectName }: { projectName: string }) {
     useFlowgraphActions();
   const { nodes, edges } = useFlowgraphState();
 
-  // Memoize ingress node processing to avoid heavy computation on every render
-  const { finalNodes, finalEdges } = useMemo(() => {
-    // Generate ingress nodes and edges from ports of all resource nodes
-    let allNodes = [...computedNodes];
-    let allEdges = [...computedEdges];
-
-    // Process each computed node to extract ports and generate network nodes
-    for (const node of computedNodes) {
-      const { data } = node;
-      if (data && data.ports) {
-        const { newNodes, newEdges } = convertResourceToNetworkNodes(
-          data,
-          data.name,
-          data.kind,
-          allNodes,
-          allEdges
-        );
-        allNodes = [...allNodes, ...newNodes];
-        allEdges = [...allEdges, ...newEdges];
-      }
-    }
-
-    return {
-      finalNodes: allNodes,
-      finalEdges: allEdges,
-    };
-  }, [computedNodes, computedEdges, resources]);
+  // Combine network edges (from ports) with computed edges (from reliances)
+  const finalEdges = useMemo(() => {
+    return [...networkEdges, ...computedEdges];
+  }, [networkEdges, computedEdges]);
 
   useEffect(() => {
-    // Set nodes and edges with ingress nodes included
-    setNodes(finalNodes);
+    // Set nodes and edges (network nodes are now included in computedNodes)
+    setNodes(computedNodes);
     setEdges(finalEdges);
-  }, [finalNodes, finalEdges]);
+  }, [computedNodes, finalEdges]);
 
   // Show loading state only when resources exist but nodes haven't been computed yet
   if (isLoading || (resources.length > 0 && !nodes.length)) {

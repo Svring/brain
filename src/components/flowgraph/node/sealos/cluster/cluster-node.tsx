@@ -86,7 +86,7 @@ function ClusterNode({
     target,
   });
 
-  console.log("latestData", latestData);
+  // console.log("latestData", latestData);
 
   // // Derive a safe storage percentage (0-100). Accepts values in 0-1 or 0-100.
   const storagePercent: number = (() => {

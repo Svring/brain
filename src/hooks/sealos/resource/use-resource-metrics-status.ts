@@ -69,8 +69,8 @@ export const useResourceMetricsStatus = ({
   // Get the resource using useResourceStatus
   const { resource, isLoading: isResourceLoading } = useResourceStatus(target);
 
-  console.log("resource", resource);
-  console.log("isResourceLoading", isResourceLoading);
+  // console.log("resource", resource);
+  // console.log("isResourceLoading", isResourceLoading);
 
   // Fetch monitor data based on resource kind
   const { data: devboxMonitorData } = useQuery({
@@ -136,7 +136,7 @@ export const useResourceMetricsStatus = ({
     ) &&
       !launchpadMonitorData);
 
-  console.log("monitorData", monitorData);
+  // console.log("monitorData", monitorData);
 
   return useMemo(() => {
     if (

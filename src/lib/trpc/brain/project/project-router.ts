@@ -1,7 +1,11 @@
 import { initTRPC } from "@trpc/server";
 import { z } from "zod";
 import type { ProjectContext } from "./project-context";
-import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import {
+  CustomResourceTargetSchema,
+  BuiltinResourceTargetSchema,
+  BuiltinResourceTarget,
+} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import {
   listProjects,
   getProject,
@@ -153,7 +157,9 @@ export const projectRouter = t.router({
   addToProject: t.procedure
     .input(
       z.object({
-        resources: z.array(CustomResourceTargetSchema),
+        resources: z.array(
+          CustomResourceTargetSchema.or(BuiltinResourceTargetSchema)
+        ),
         name: z.string(),
       })
     )
@@ -169,11 +175,9 @@ export const projectRouter = t.router({
             input.name
           );
         } else {
-          // Type assertion for builtin resources
-          const builtinResource = resource as any;
           await patchBuiltinResourceMetadata(
             ctx,
-            builtinResource,
+            resource,
             "labels",
             INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS,
             input.name

@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { createK8sContext } from "@/lib/auth/auth-utils";
-import { createDevboxContext } from "@/lib/auth/auth-utils";
-import { useDeployDevboxMutation } from "@/lib/sealos/resources/devbox/devbox-method/devbox-mutation";
-import { useAddToProjectMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { BuiltinResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useProjectState } from "@/contexts/project/project-context";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useMutation } from "@tanstack/react-query";
 
 interface DeployConfig {
   cpu: number;
@@ -13,9 +11,8 @@ interface DeployConfig {
 }
 
 export const useDevboxDeploy = (devboxName: string) => {
-  const devboxContext = createDevboxContext();
-  const k8sContext = createK8sContext();
   const { selectedProject } = useProjectState();
+  const { devbox, project } = useTRPCClients();
 
   const [deployConfig, setDeployConfig] = useState<DeployConfig>({
     cpu: 2000,
@@ -23,12 +20,12 @@ export const useDevboxDeploy = (devboxName: string) => {
   });
   const [openPopovers, setOpenPopovers] = useState<Record<string, boolean>>({});
 
-  const deployMutation = useDeployDevboxMutation(devboxContext);
-  const addToProjectMutation = useAddToProjectMutation(k8sContext);
+  const deployDevbox = useMutation(devbox.deployDevbox.mutationOptions());
+  const addToProject = useMutation(project.addToProject.mutationOptions());
 
   const handleDeploy = async (releaseTag: string, config: DeployConfig) => {
     try {
-      const deployResult = await deployMutation.mutateAsync({
+      const deployResult = await deployDevbox.mutateAsync({
         devboxName,
         tag: releaseTag,
         cpu: config.cpu,
@@ -40,7 +37,7 @@ export const useDevboxDeploy = (devboxName: string) => {
       );
 
       if (selectedProject) {
-        await addToProjectMutation.mutateAsync({
+        await addToProject.mutateAsync({
           resources: [target],
           name: selectedProject,
         });
@@ -63,7 +60,8 @@ export const useDevboxDeploy = (devboxName: string) => {
     openPopovers,
 
     // Mutations
-    deployMutation,
+    deployDevbox,
+    addToProject,
 
     // Actions
     handleDeploy,
