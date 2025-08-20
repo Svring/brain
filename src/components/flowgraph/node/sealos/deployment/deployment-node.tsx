@@ -16,15 +16,18 @@ import { truncateImage } from "@/lib/sealos/sealos-utils";
 import { useIsMutating } from "@tanstack/react-query";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import { useResourceMetrics } from "@/hooks/sealos/resource/use-resource-metrics";
 import { useLaunchpadObject } from "@/hooks/sealos/launchpad/use-launchpad-object";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 
 export default function DeploymentNode({ data }: { data: DeploymentObject }) {
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 
   // Use the new hook to get deployment data
-  const { data: deploymentData = data } = useLaunchpadObject(data.name, data.kind);
+  const { data: deploymentData = data } = useLaunchpadObject(
+    data.name,
+    data.kind
+  );
 
   // Get resource status using the new hook
   const target = convertResourceObjectToTarget({
@@ -34,7 +37,11 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
   const { status } = useResourceStatus(target);
 
   // Get resource metrics data using the hook data
-  const { monitorData, isLoading: isMetricsLoading } = useResourceMetrics(deploymentData);
+  const { monitorData, isLoading: isMetricsLoading } = useResourceMetricsStatus(
+    {
+      target,
+    }
+  );
 
   // Check if this deployment is being deleted
   const isDeletingDeployment =
@@ -86,7 +93,8 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
         <div className="flex items-center gap-2 mt-2">
           <Package className="h-4 w-4 text-muted-foreground" />
           <div className="text-md text-muted-foreground truncate flex-1">
-            Image: {deploymentData.image ? truncateImage(deploymentData.image) : "N/A"}
+            Image:{" "}
+            {deploymentData.image ? truncateImage(deploymentData.image) : "N/A"}
           </div>
         </div>
 
@@ -100,7 +108,7 @@ export default function DeploymentNode({ data }: { data: DeploymentObject }) {
             {/* <NodeInternalUrl ports={deploymentData.ports || []} /> */}
             {/* <NodePods resource={deploymentData} /> */}
             <NodeLog target={logTarget} resourceType="launchpad" />
-            <NodeMonitor resource={deploymentData} />
+            <NodeMonitor target={target} />
           </div>
         </div>
       </div>

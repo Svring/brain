@@ -37,7 +37,10 @@ function DevboxNodeWrapper({ data }: { data: DevboxObject }) {
 
   // Once loaded, render the main component with the fetched resource data
   return (
-    <DevboxNode resource={resource as DevboxObject} status={status || "Pending"} />
+    <DevboxNode
+      resource={resource as DevboxObject}
+      status={status || "Pending"}
+    />
   );
 }
 
@@ -119,7 +122,7 @@ function DevboxNode({
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={ports} /> */}
-            {/* <NodeMonitor resource={data} /> */}
+            <NodeMonitor target={target} />
           </div>
         </div>
       </div>

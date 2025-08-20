@@ -11,21 +11,22 @@ import {
 
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import {
+  CustomResourceTarget,
+  BuiltinResourceTarget,
+} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface NodeMonitorProps {
-  resource: {
-    name: string;
-    kind: string;
-    type?: string;
-    pods?: Array<{ name: string }>;
-  };
+  target: CustomResourceTarget | BuiltinResourceTarget;
 }
 
-export default function NodeMonitor({ resource }: NodeMonitorProps) {
+export default function NodeMonitor({ target }: NodeMonitorProps) {
   const { sendSystemMessage } = useSendSystemMessageMutation();
   const { color, latestData, monitorData } = useResourceMetricsStatus({
-    resource,
+    target,
   });
+  const { resource } = useResourceStatus(target);
 
   // console.log("monitorData", monitorData);
   // console.log("latestData", latestData);
@@ -41,7 +42,7 @@ export default function NodeMonitor({ resource }: NodeMonitorProps) {
               e.stopPropagation();
               sendSystemMessage({
                 type: "info.combinedMetrics",
-                payload: resource,
+                payload: resource || target,
               });
             }}
           >

@@ -78,28 +78,27 @@ function ClusterNode({
   // Use the new hook to get cluster data
   const { data: clusterData = resource } = useClusterObject(resource.name);
 
-  console.log("resource cluster", resource);
-  console.log("status", status);
+  // console.log("resource cluster", resource);
+  // console.log("status", status);
 
   // Get resource metrics status using the new hook
-  // const { latestData } = useResourceMetricsStatus({
-  //   resource: {
-  //     ...data,
-  //     pods: data.pods || undefined,
-  //   },
-  // });
+  const { latestData } = useResourceMetricsStatus({
+    target,
+  });
+
+  console.log("latestData", latestData);
 
   // // Derive a safe storage percentage (0-100). Accepts values in 0-1 or 0-100.
-  // const storagePercent: number = (() => {
-  //   const raw = latestData?.storage;
-  //   if (raw === undefined || raw === null || Number.isNaN(raw as number)) {
-  //     return 0;
-  //   }
-  //   const value = Number(raw);
-  //   // If it's a fraction (0-1), convert to percent; else clamp to 0-100
-  //   const percent = value <= 1 ? value * 100 : value;
-  //   return Math.max(0, Math.min(100, percent));
-  // })();
+  const storagePercent: number = (() => {
+    const raw = latestData?.storage;
+    if (raw === undefined || raw === null || Number.isNaN(raw as number)) {
+      return 0;
+    }
+    const value = Number(raw);
+    // If it's a fraction (0-1), convert to percent; else clamp to 0-100
+    const percent = value <= 1 ? value * 100 : value;
+    return Math.max(0, Math.min(100, percent));
+  })();
 
   const { name, type } = clusterData;
 
@@ -109,18 +108,18 @@ function ClusterNode({
     k8sContext.regionUrl
   );
 
-  // const isDeletingCluster =
-  //   resourceStatus === "Deleting" ||
-  //   resourceStatus === "Terminating" ||
-  //   useIsMutating({
-  //     predicate: (mutation) => {
-  //       const isDeleteMutation =
-  //         mutation.options.mutationFn?.toString().includes("deleteCluster") ??
-  //         false;
-  //       const variables = mutation.state.variables as any;
-  //       return isDeleteMutation && variables?.name === name;
-  //     },
-  //   }) > 0;
+  const isDeletingCluster =
+    status === "Deleting" ||
+    status === "Terminating" ||
+    useIsMutating({
+      predicate: (mutation) => {
+        const isDeleteMutation =
+          mutation.options.mutationFn?.toString().includes("deleteCluster") ??
+          false;
+        const variables = mutation.state.variables as any;
+        return isDeleteMutation && variables?.name === name;
+      },
+    }) > 0;
 
   const handleNodeClick = () => {
     // Use the new mutation hook to send messages
@@ -175,7 +174,7 @@ function ClusterNode({
             <NodeLog target={target} resourceType="cluster" />
             <ClusterNodeBackup object={clusterData} />
             {/* <NodeBackup /> */}
-            {/* <NodeMonitor resource={{ ...data, pods: data.pods || undefined }} /> */}
+            <NodeMonitor target={target} />
           </div>
         </div>
       </div>
