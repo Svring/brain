@@ -23,6 +23,12 @@ import { clusterClient } from "@/components/provider/trpc-provider";
 import { convertToDbconnUrl } from "@/lib/sealos/sealos-utils";
 import { Globe, HardDrive } from "lucide-react";
 import { useResourceMetrics } from "@/hooks/sealos/use-resource-metrics";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function ClusterNode({ data }: { data: ClusterObject }) {
   const { sendSystemMessage } = useSendSystemMessageMutation();
@@ -197,25 +203,45 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
 
   // Hem component displaying storage information as a progress bar (left-to-right fill)
   const hemComponent = (
-    <div className="relative bg-node-background w-full h-full flex items-center rounded-b-lg text-xs text-muted-foreground overflow-hidden px-2 py-1">
-      {/* Filled background representing used percentage */}
-      <div
-        className="absolute inset-y-0 left-0 bg-muted"
-        style={{ width: `${storagePercent}%` }}
-      />
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="relative bg-node-background w-full h-full flex items-center rounded-b-xl text-xs text-muted-foreground overflow-hidden px-2 py-1 cursor-pointer hover:brightness-120">
+            {/* Filled background representing used percentage */}
+            <div
+              className="absolute inset-y-0 left-0 bg-muted"
+              style={{ width: `${storagePercent}%` }}
+            />
 
-      {/* Foreground content row */}
-      <div className="relative z-10 flex items-center justify-between w-full">
-        {/* Left side: Volume icon and label */}
-        <div className="flex items-center gap-1">
-          <HardDrive className="h-5 w-5" />
-          <span className="text-md">Volume</span>
-        </div>
+            {/* Foreground content row */}
+            <div className="relative z-10 flex items-center justify-between w-full">
+              {/* Left side: Volume icon and label */}
+              <div className="flex items-center gap-1">
+                <HardDrive className="h-5 w-5" />
+                <span className="text-md">Volume</span>
+              </div>
 
-        {/* Right side: Resource storage label (capacity) */}
-        <div className="text-xs">{clusterData.resource?.storage || "N/A"}</div>
-      </div>
-    </div>
+              {/* Right side: Resource storage label (capacity) */}
+              <div className="text-xs">
+                {clusterData.resource?.storage || "N/A"}
+              </div>
+            </div>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent
+          side="bottom"
+          className="bg-background-secondary rounded-lg p-2"
+        >
+          <div className="text-xs">
+            <div className="">Storage Usage</div>
+            <div>{storagePercent.toFixed(1)}% used</div>
+            <div className="text-muted-foreground">
+              Capacity: {clusterData.resource?.storage || "N/A"}
+            </div>
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 
   return (
@@ -246,7 +272,7 @@ export default function ClusterNode({ data }: { data: ClusterObject }) {
       {/* Hem component - positioned above background cards */}
       {hemComponent && (
         <div className="absolute inset-x-0 top-0 z-10">
-          <div className="bg-muted border border-border-primary rounded-lg pt-8 text-xs flex flex-col h-60">
+          <div className="bg-muted border border-border-primary rounded-xl pt-8 text-xs flex flex-col h-60">
             <div className="flex-1"></div>
             <div className="h-10">{hemComponent}</div>
           </div>

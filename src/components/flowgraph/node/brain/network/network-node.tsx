@@ -38,7 +38,7 @@ export default function NetworkNode({
 
   const mainCard = (
     <BaseNode nodeData={data} className={cn("h-14 p-2", getBackgroundColor())}>
-      <div 
+      <div
         className="flex h-full flex-col justify-between cursor-pointer"
         onClick={handleNodeClick}
       >
@@ -49,10 +49,12 @@ export default function NetworkNode({
               const port = resource.ports[0];
               const hasPublicAddress = !!port.publicAddress;
               const address = port.publicAddress || port.privateAddress;
-              
+
               // Check if network is not ready
               const statusData = readyStatus as any;
-              const isNetworkNotReady = statusData?.data?.some((item: any) => !item.ready);
+              const isNetworkNotReady = statusData?.data?.some(
+                (item: any) => !item.ready
+              );
 
               const handleIconClick = (e: React.MouseEvent) => {
                 e.stopPropagation();
@@ -73,9 +75,9 @@ export default function NetworkNode({
                   {isNetworkNotReady ? (
                     <HelpCircle
                       className={cn(
-                        "h-4 w-4 flex-shrink-0 cursor-pointer",
-                        getBackgroundColor() === "bg-status-error/20" 
-                          ? "text-red-500" 
+                        "h-4 w-4 flex-shrink-0 cursor-help",
+                        getBackgroundColor() === "bg-status-error/20"
+                          ? "text-red-500"
                           : "text-yellow-500"
                       )}
                       onClick={handleIconClick}
@@ -84,7 +86,9 @@ export default function NetworkNode({
                     <Globe
                       className={cn(
                         "h-4 w-4 flex-shrink-0",
-                        hasPublicAddress ? "text-theme-green" : "text-theme-blue"
+                        hasPublicAddress
+                          ? "text-theme-green"
+                          : "text-theme-blue"
                       )}
                     />
                   )}
@@ -115,7 +119,7 @@ export default function NetworkNode({
   return (
     <NodeStack
       mainCard={mainCard}
-      data={resource.ports || []}
+      data={resource.ports.slice(1) || []}
       height="14"
       backgroundColor={getBackgroundColor()}
     />

@@ -41,7 +41,9 @@ export default function NodeStack({
         >
           <BaseNode
             nodeData={{}}
-            className={`${height ? `h-${height}` : ""} ${backgroundColor || ""}`}
+            className={`${height ? `h-${height}` : ""} ${
+              backgroundColor || ""
+            }`}
             active={false}
           >
             {/* Empty content for background cards */}

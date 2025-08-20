@@ -1,7 +1,7 @@
 "use client";
 
 import BaseNode from "../../base-node-wrapper";
-import { Package } from "lucide-react";
+import { Package, HardDrive } from "lucide-react";
 import NodeStatusLight from "../../components/node-status-light";
 import NodeInternalUrl from "../../components/node-internal-url";
 import NodePods from "../../components/node-pods";
@@ -20,7 +20,7 @@ export default function StatefulsetNode({
 }: {
   data: StatefulsetObjectQuery;
 }) {
-  const { name, image, status, ports, pods } = data;
+  const { name, image, status, ports, pods, resource } = data;
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 
   console.log("data", data);
@@ -50,7 +50,7 @@ export default function StatefulsetNode({
     });
   };
 
-  return (
+  const mainCard = (
     <BaseNode
       nodeData={data}
       className={isDeletingStatefulset ? "border-theme-red" : ""}
@@ -99,5 +99,39 @@ export default function StatefulsetNode({
         </div>
       </div>
     </BaseNode>
+  );
+
+  // Hem component displaying storage information
+  const hemComponent = (
+    <div className="relative bg-node-background w-full h-full flex items-center rounded-b-xl text-xs text-muted-foreground overflow-hidden px-2 py-1">
+      {/* Foreground content row */}
+      <div className="relative z-10 flex items-center justify-between w-full">
+        {/* Left side: Volume icon and label */}
+        <div className="flex items-center gap-1">
+          <HardDrive className="h-5 w-5" />
+          <span className="text-md">Storage</span>
+        </div>
+
+        {/* Right side: Storage capacity */}
+        <div className="text-xs">{resource?.storage || "N/A"}</div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="relative">
+      {/* Hem component - positioned above main card */}
+      {hemComponent && (
+        <div className="absolute inset-x-0 top-0 z-10">
+          <div className="bg-muted border border-border-primary rounded-xl pt-8 text-xs flex flex-col h-60">
+            <div className="flex-1"></div>
+            <div className="h-10">{hemComponent}</div>
+          </div>
+        </div>
+      )}
+
+      {/* Main card - positioned at the top */}
+      <div className="relative z-20">{mainCard}</div>
+    </div>
   );
 }
