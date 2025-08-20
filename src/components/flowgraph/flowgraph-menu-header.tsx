@@ -4,8 +4,8 @@ import { ArrowLeft, Edit2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { MenuBar, MenuBarItem } from "../project/menu-bar";
-import { projectClient } from "@/components/provider/trpc-provider";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -15,23 +15,23 @@ interface FlowgraphHeaderProps {
 
 export function FlowgraphHeader({ projectName }: FlowgraphHeaderProps) {
   const router = useRouter();
-  const projectTrpcClient = projectClient.useTRPC();
+  const { project } = useTRPCClients();
 
-  const { data: project } = useQuery(
-    projectTrpcClient.getProject.queryOptions(projectName)
+  const { data: projectData } = useQuery(
+    project.getProject.queryOptions(projectName)
   );
   const renameMutation = useMutation(
-    projectTrpcClient.updateProjectName.mutationOptions()
+    project.updateProjectName.mutationOptions()
   );
 
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState("");
 
-  if (!project) {
+  if (!projectData) {
     return null;
   }
 
-  const projectDisplayName = project.displayName;
+  const projectDisplayName = projectData.displayName;
 
   const handleEditClick = () => {
     setEditValue(projectDisplayName);

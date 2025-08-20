@@ -6,6 +6,7 @@ import { transformCombinedMonitorData } from "@/lib/sealos/sealos-utils";
 import {
   getCluster,
   getClusterBackupList,
+  getClusterLogs,
 } from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import {
@@ -34,6 +35,16 @@ export const clusterRouter = t.router({
     )
     .query(async ({ input, ctx }) => {
       return await getClusterBackupList(ctx, input.target);
+    }),
+
+  getClusterLog: t.procedure
+    .input(
+      z.object({
+        target: CustomResourceTargetSchema,
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      return await getClusterLogs(ctx, ctx, input.target);
     }),
 
   getClusterMonitorData: t.procedure

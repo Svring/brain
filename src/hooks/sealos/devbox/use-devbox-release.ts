@@ -6,7 +6,7 @@ import {
 } from "@/lib/sealos/resources/devbox/devbox-method/devbox-mutation";
 import { getDevboxReleasesOptions } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
 import { useQuery } from "@tanstack/react-query";
-import { useDevboxDeploy } from "./use-devbox-deploy";
+import { useDevboxDeploy } from "@/hooks/sealos/devbox/use-devbox-deploy";
 
 interface ReleaseConfig {
   tag: string;

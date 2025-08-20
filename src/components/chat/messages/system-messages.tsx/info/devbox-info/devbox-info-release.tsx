@@ -1,6 +1,6 @@
 import React from "react";
-import { useDevboxRelease } from "@/hooks/sealos/use-devbox-release";
-import { useDevboxDeploy } from "@/hooks/sealos/use-devbox-deploy";
+import { useDevboxRelease } from "@/hooks/sealos/devbox/use-devbox-release";
+import { useDevboxDeploy } from "@/hooks/sealos/devbox/use-devbox-deploy";
 import {
   DevboxReleaseHeader,
   CreateReleaseForm,

@@ -56,11 +56,10 @@ export const launchpadRouter = t.router({
     .input(
       z.object({
         target: BuiltinResourceTargetSchema,
-        sealosContext: SealosApiContextSchema,
       })
     )
     .query(async ({ ctx, input }) => {
-      return await getLaunchpadLogs(ctx, input.sealosContext, input.target);
+      return await getLaunchpadLogs(ctx, ctx, input.target);
     }),
 
   checkLaunchpadReady: t.procedure

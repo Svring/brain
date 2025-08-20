@@ -15,7 +15,7 @@ import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/l
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 import { useResourceMetrics } from "@/hooks/sealos/use-resource-metrics";
-import { useDevboxRelease } from "@/hooks/sealos/use-devbox-release";
+import { useDevboxRelease } from "@/hooks/sealos/devbox/use-devbox-release";
 import { useMutation } from "@tanstack/react-query";
 import { useResourceStatus } from "@/hooks/sealos/use-resource-status";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
