@@ -81,12 +81,14 @@ export const createDevboxAction = (context: DevboxApiContext) => {
       {
         name: "cpu",
         type: "number",
+        enum: [500, 1000, 2000, 4000, 6000, 8000],
         required: false,
         description: "CPU allocation in millicores (default: 2000)",
       },
       {
         name: "memory",
         type: "number",
+        enum: [512, 1024, 2048, 4096, 8192, 16000],
         required: false,
         description: "Memory allocation in MB (default: 4096)",
       },

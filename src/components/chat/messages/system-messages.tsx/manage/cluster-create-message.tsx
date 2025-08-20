@@ -14,7 +14,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCreateClusterMutation } from "@/lib/sealos/resources/cluster/cluster-method/cluster-mutation";
 import { createSealosContext } from "@/lib/auth/auth-utils";
+import { useQuery } from "@tanstack/react-query";
+import { getClusterVersionsOptions } from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
+import { generateClusterName } from "@/lib/sealos/resources/cluster/cluster-utils";
 import { toast } from "sonner";
+import { CheckCircle, Database } from "lucide-react";
 
 interface ClusterCreateMessageProps {
   payload?: {
@@ -30,18 +34,25 @@ interface ClusterCreateMessageProps {
 }
 
 export function ClusterCreateMessage({ payload }: ClusterCreateMessageProps) {
-  const [name, setName] = useState(payload?.name || "");
+  const [name, setName] = useState(payload?.name || generateClusterName());
   const [dbType, setDbType] = useState<string>(payload?.type || "postgresql");
-  const [dbVersion, setDbVersion] = useState<string>(payload?.version || "15");
-  const [cpu, setCpu] = useState<number>(payload?.cpu || 1000);
-  const [memory, setMemory] = useState<number>(payload?.memory || 2048);
+  const [dbVersion, setDbVersion] = useState<string>(payload?.version || "");
+  const [cpu, setCpu] = useState<number>(payload?.cpu || 500);
+  const [memory, setMemory] = useState<number>(payload?.memory || 512);
   const [storage, setStorage] = useState<number>(payload?.storage || 10);
   const [replicas, setReplicas] = useState<number>(payload?.replicas || 1);
   const [terminationPolicy, setTerminationPolicy] = useState<"Delete" | "WipeOut">(payload?.terminationPolicy || "Delete");
   const [isCreating, setIsCreating] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [createdClusterName, setCreatedClusterName] = useState<string>("");
 
   const context = createSealosContext();
   const createClusterMutation = useCreateClusterMutation(context);
+  
+  // Fetch cluster versions when a type is selected
+  const { data: clusterVersions, isLoading: clusterVersionsLoading } = useQuery(
+    getClusterVersionsOptions(context)
+  );
 
   // Update state when payload changes (for streaming parameters)
   useEffect(() => {
@@ -82,23 +93,13 @@ export function ClusterCreateMessage({ payload }: ClusterCreateMessageProps) {
     { value: "pulsar", label: "Pulsar" },
   ];
 
-  const getVersionOptions = (type: string) => {
-    const versions: Record<string, string[]> = {
-      postgresql: ["15", "14", "13", "12"],
-      mongodb: ["7.0", "6.0", "5.0"],
-      "apecloud-mysql": ["8.0", "5.7"],
-      redis: ["7.2", "7.0", "6.2"],
-      kafka: ["3.5", "3.4", "3.3"],
-      weaviate: ["1.22", "1.21", "1.20"],
-      milvus: ["2.3", "2.2", "2.1"],
-      pulsar: ["3.0", "2.11", "2.10"],
-    };
-    return versions[type] || ["latest"];
-  };
+  // Remove the hardcoded getVersionOptions function since we're now fetching dynamically
 
   const handleCreate = async () => {
-    if (!name.trim()) {
-      toast.error("Please enter a cluster name");
+    const clusterName = name.trim() || generateClusterName();
+    
+    if (!dbVersion) {
+      toast.error("Please select a version");
       return;
     }
 
@@ -106,7 +107,7 @@ export function ClusterCreateMessage({ payload }: ClusterCreateMessageProps) {
     try {
       await createClusterMutation.mutateAsync({
         terminationPolicy,
-        name: name.trim(),
+        name: clusterName,
         type: dbType as any,
         version: dbVersion,
         resource: {
@@ -117,15 +118,9 @@ export function ClusterCreateMessage({ payload }: ClusterCreateMessageProps) {
         },
       });
 
-      // Reset form
-      setName("");
-      setDbType("postgresql");
-      setDbVersion("15");
-      setCpu(1000);
-      setMemory(2048);
-      setStorage(10);
-      setReplicas(1);
-      setTerminationPolicy("Delete");
+      // Set completion state
+      setCreatedClusterName(clusterName);
+      setIsCompleted(true);
       toast.success("Cluster created successfully!");
     } catch (error) {
       console.error("Failed to create cluster:", error);
@@ -133,6 +128,36 @@ export function ClusterCreateMessage({ payload }: ClusterCreateMessageProps) {
       setIsCreating(false);
     }
   };
+
+  if (isCompleted) {
+    return (
+      <Card className="w-full bg-node-background border border-border-primary">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-green-500" />
+            Database Cluster Created Successfully
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
+            <Database className="h-8 w-8 text-green-600 dark:text-green-400" />
+            <div>
+              <div className="font-medium text-green-900 dark:text-green-100">
+                {createdClusterName}
+              </div>
+              <div className="text-sm text-green-700 dark:text-green-300">
+                Type: {dbType} • Version: {dbVersion} • CPU: {cpu}m • Memory: {memory}Mi • Storage: {storage}Gi
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-sm text-muted-foreground">
+            <p>Your database cluster is now ready to use. You can access it from the project dashboard.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full bg-node-background border border-border-primary">
@@ -154,7 +179,7 @@ export function ClusterCreateMessage({ payload }: ClusterCreateMessageProps) {
           <Label htmlFor="db-type">Database Type</Label>
           <Select value={dbType} onValueChange={(value) => {
             setDbType(value);
-            setDbVersion(getVersionOptions(value)[0]);
+            setDbVersion(""); // Reset version when type changes
           }}>
             <SelectTrigger>
               <SelectValue placeholder="Select database type" />
@@ -171,16 +196,52 @@ export function ClusterCreateMessage({ payload }: ClusterCreateMessageProps) {
 
         <div className="space-y-2">
           <Label htmlFor="db-version">Version</Label>
-          <Select value={dbVersion} onValueChange={setDbVersion}>
+          <Select 
+            value={dbVersion} 
+            onValueChange={setDbVersion}
+            disabled={!dbType}
+          >
             <SelectTrigger>
-              <SelectValue placeholder="Select version" />
+              <SelectValue placeholder={
+                !dbType 
+                  ? "Select database type first" 
+                  : "Select version"
+              } />
             </SelectTrigger>
             <SelectContent>
-              {getVersionOptions(dbType).map((version) => (
-                <SelectItem key={version} value={version}>
-                  {version}
+              {clusterVersionsLoading ? (
+                <SelectItem value="loading" disabled>
+                  Loading versions...
                 </SelectItem>
-              ))}
+              ) : dbType && clusterVersions?.data?.[dbType] ? (
+                // Deduplicate versions by ID to prevent duplicates
+                Array.from(
+                  new Map(
+                    clusterVersions.data[dbType].map((version: any) => [
+                      version.id || version,
+                      version
+                    ])
+                  ).values()
+                ).map((version: any, index: number) => {
+                  const versionValue = version.id || version;
+                  const versionLabel = version.label || version.id || version;
+                  
+                  // Ensure we have a valid non-empty value
+                  if (!versionValue || versionValue === "") {
+                    return null;
+                  }
+                  
+                  return (
+                    <SelectItem key={`${dbType}-${versionValue}-${index}`} value={versionValue}>
+                      {versionLabel}
+                    </SelectItem>
+                  );
+                }).filter(Boolean)
+              ) : (
+                <SelectItem value="no-versions" disabled>
+                  {!dbType ? "Select database type first" : "No versions available"}
+                </SelectItem>
+              )}
             </SelectContent>
           </Select>
         </div>
@@ -201,26 +262,40 @@ export function ClusterCreateMessage({ payload }: ClusterCreateMessageProps) {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="cpu">CPU (m)</Label>
-            <Input
-              id="cpu"
-              type="number"
-              value={cpu}
-              onChange={(e) => setCpu(Number(e.target.value))}
-              min="100"
-              step="100"
-            />
+            <Select
+              value={cpu.toString()}
+              onValueChange={(value) => setCpu(Number(value))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select CPU" />
+              </SelectTrigger>
+              <SelectContent>
+                {[500, 1000, 2000, 4000, 6000, 8000].map((cpuValue) => (
+                  <SelectItem key={cpuValue} value={cpuValue.toString()}>
+                    {cpuValue}m ({cpuValue / 1000} cores)
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="memory">Memory (Mi)</Label>
-            <Input
-              id="memory"
-              type="number"
-              value={memory}
-              onChange={(e) => setMemory(Number(e.target.value))}
-              min="512"
-              step="512"
-            />
+            <Select
+              value={memory.toString()}
+              onValueChange={(value) => setMemory(Number(value))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Memory" />
+              </SelectTrigger>
+              <SelectContent>
+                {[512, 1024, 2048, 4096, 8192, 16000].map((memoryValue) => (
+                  <SelectItem key={memoryValue} value={memoryValue.toString()}>
+                    {memoryValue}Mi ({memoryValue / 1024}GB)
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -262,7 +337,7 @@ export function ClusterCreateMessage({ payload }: ClusterCreateMessageProps) {
 
         <Button
           onClick={handleCreate}
-          disabled={isCreating || !name.trim()}
+          disabled={isCreating || !dbVersion}
           className="w-full"
         >
           {isCreating ? "Creating..." : "Create Cluster"}

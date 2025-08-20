@@ -14,7 +14,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCreateDevboxMutation } from "@/lib/sealos/resources/devbox/devbox-method/devbox-mutation";
 import { createSealosContext } from "@/lib/auth/auth-utils";
+import { generateDevboxName } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 import { toast } from "sonner";
+import { CheckCircle, Package } from "lucide-react";
 
 interface DevboxCreateMessageProps {
   payload?: {
@@ -26,11 +28,15 @@ interface DevboxCreateMessageProps {
 }
 
 export function DevboxCreateMessage({ payload }: DevboxCreateMessageProps) {
-  const [name, setName] = useState(payload?.name || "");
-  const [runtimeName, setRuntimeName] = useState<string>(payload?.runtimeName || "nodejs");
-  const [cpu, setCpu] = useState<number>(payload?.cpu || 2000);
-  const [memory, setMemory] = useState<number>(payload?.memory || 4096);
+  const [name, setName] = useState(payload?.name || generateDevboxName());
+  const [runtimeName, setRuntimeName] = useState<string>(
+    payload?.runtimeName || "Node.js"
+  );
+  const [cpu, setCpu] = useState<number>(payload?.cpu || 500);
+  const [memory, setMemory] = useState<number>(payload?.memory || 512);
   const [isCreating, setIsCreating] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [createdDevboxName, setCreatedDevboxName] = useState<string>("");
 
   const context = createSealosContext();
   const createDevboxMutation = useCreateDevboxMutation(context);
@@ -52,39 +58,33 @@ export function DevboxCreateMessage({ payload }: DevboxCreateMessageProps) {
   }, [payload]);
 
   const runtimeOptions = [
-    { value: "nodejs", label: "Node.js" },
-    { value: "python", label: "Python" },
-    { value: "java", label: "Java" },
-    { value: "go", label: "Go" },
-    { value: "rust", label: "Rust" },
-    { value: "php", label: "PHP" },
-    { value: "ruby", label: "Ruby" },
-    { value: "debian", label: "Debian" },
-    { value: "c++", label: "C++" },
-    { value: ".net", label: ".NET" },
-    { value: "c", label: "C" },
+    { value: "Node.js", label: "Node.js" },
+    { value: "Python", label: "Python" },
+    { value: "Java", label: "Java" },
+    { value: "Go", label: "Go" },
+    { value: "Rust", label: "Rust" },
+    { value: "PHP", label: "PHP" },
+    { value: "Debian", label: "Debian" },
+    { value: "C++", label: "C++" },
+    { value: ".Net", label: ".NET" },
+    { value: "C", label: "C" },
   ];
 
   const handleCreate = async () => {
-    if (!name.trim()) {
-      toast.error("Please enter a devbox name");
-      return;
-    }
-
+    const devboxName = name.trim() || generateDevboxName();
+    
     setIsCreating(true);
     try {
       await createDevboxMutation.mutateAsync({
-        name: name.trim(),
+        name: devboxName,
         runtimeName: runtimeName as any,
         cpu,
         memory,
       });
 
-      // Reset form
-      setName("");
-      setRuntimeName("nodejs");
-      setCpu(2000);
-      setMemory(4096);
+      // Set completion state
+      setCreatedDevboxName(devboxName);
+      setIsCompleted(true);
       toast.success("Devbox created successfully!");
     } catch (error) {
       console.error("Failed to create devbox:", error);
@@ -92,6 +92,36 @@ export function DevboxCreateMessage({ payload }: DevboxCreateMessageProps) {
       setIsCreating(false);
     }
   };
+
+  if (isCompleted) {
+    return (
+      <Card className="w-full bg-node-background border border-border-primary">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-green-500" />
+            Devbox Created Successfully
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
+            <Package className="h-8 w-8 text-green-600 dark:text-green-400" />
+            <div>
+              <div className="font-medium text-green-900 dark:text-green-100">
+                {createdDevboxName}
+              </div>
+              <div className="text-sm text-green-700 dark:text-green-300">
+                Runtime: {runtimeName} • CPU: {cpu}m • Memory: {memory}Mi
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-sm text-muted-foreground">
+            <p>Your devbox is now ready to use. You can access it from the project dashboard.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full bg-node-background border border-border-primary">
@@ -128,40 +158,56 @@ export function DevboxCreateMessage({ payload }: DevboxCreateMessageProps) {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="cpu">CPU (m)</Label>
-            <Input
-              id="cpu"
-              type="number"
-              value={cpu}
-              onChange={(e) => setCpu(Number(e.target.value))}
-              min="100"
-              step="100"
-              placeholder="2000"
-            />
+            <Select
+              value={cpu.toString()}
+              onValueChange={(value) => setCpu(Number(value))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select CPU" />
+              </SelectTrigger>
+              <SelectContent>
+                {[500, 1000, 2000, 4000, 6000, 8000].map((cpuValue) => (
+                  <SelectItem key={cpuValue} value={cpuValue.toString()}>
+                    {cpuValue}m ({cpuValue / 1000} cores)
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="memory">Memory (Mi)</Label>
-            <Input
-              id="memory"
-              type="number"
-              value={memory}
-              onChange={(e) => setMemory(Number(e.target.value))}
-              min="512"
-              step="512"
-              placeholder="4096"
-            />
+            <Select
+              value={memory.toString()}
+              onValueChange={(value) => setMemory(Number(value))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Memory" />
+              </SelectTrigger>
+              <SelectContent>
+                {[512, 1024, 2048, 4096, 8192, 16000].map((memoryValue) => (
+                  <SelectItem key={memoryValue} value={memoryValue.toString()}>
+                    {memoryValue}Mi ({memoryValue / 1024}GB)
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
         <div className="text-sm text-muted-foreground">
           <p>Resource configuration:</p>
-          <p>• CPU: {cpu}m ({cpu/1000} cores)</p>
-          <p>• Memory: {memory}Mi ({memory/1024}GB)</p>
+          <p>
+            • CPU: {cpu}m ({cpu / 1000} cores)
+          </p>
+          <p>
+            • Memory: {memory}Mi ({memory / 1024}GB)
+          </p>
         </div>
 
         <Button
           onClick={handleCreate}
-          disabled={isCreating || !name.trim()}
+          disabled={isCreating}
           className="w-full"
         >
           {isCreating ? "Creating..." : "Create Devbox"}
