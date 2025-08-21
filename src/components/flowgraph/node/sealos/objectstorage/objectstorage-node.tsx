@@ -62,8 +62,6 @@ function ObjectStorageNodeWrapper({
       <ObjectStorageNode
         resource={data as ObjectStorageObject}
         status={status || "Pending"}
-        isLoadingStatus={isLoadingStatus}
-        isLoadingComplete={false}
       />
     );
   }
@@ -78,8 +76,6 @@ function ObjectStorageNodeWrapper({
       <ObjectStorageNode
         resource={completeResource as unknown as ObjectStorageObject}
         status={status || "Pending"}
-        isLoadingStatus={isLoadingStatus}
-        isLoadingComplete={false}
       />
     );
   }
@@ -98,13 +94,9 @@ function ObjectStorageNodeWrapper({
 function ObjectStorageNode({
   resource,
   status,
-  isLoadingStatus = false,
-  isLoadingComplete = false,
 }: {
   resource: ObjectStorageObject;
   status?: string;
-  isLoadingStatus?: boolean;
-  isLoadingComplete?: boolean;
 }) {
   const [staticHosting, setStaticHosting] = useState(false);
 

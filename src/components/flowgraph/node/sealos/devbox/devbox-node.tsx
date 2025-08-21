@@ -28,72 +28,61 @@ function DevboxNodeWrapper({ data }: { data: DevboxObject | K8sResource }) {
   // Check if we have a complete DevboxObject or just a basic K8sResource
   const isCompleteObject = "ports" in data && "ssh" in data && "image" in data;
 
+  // Always extract resource data to ensure consistent hook calls
+  const resourceData = {
+    kind: data.kind,
+    name: isCompleteObject
+      ? (data as DevboxObject).name
+      : (data as K8sResource).metadata?.name || "",
+  };
+
+  // Always call hooks in the same order
+  const { completeResource, isLoadingComplete } =
+    useResourceNodeEnhancer(resourceData);
+  const target = convertResourceObjectToTarget(resourceData);
+  const { status, isLoading: isLoadingStatus } = useResourceStatus(target);
+
+  // If we have complete object data, render the full node
   if (isCompleteObject) {
-    // We have complete object data, render directly
-    const target = convertResourceObjectToTarget({
-      kind: data.kind,
-      name: (data as DevboxObject).name,
-    });
-
-    const { status, isLoading } = useResourceStatus(target);
-
     return (
       <DevboxNode
         resource={data as DevboxObject}
         status={status || "Pending"}
-        isLoadingStatus={isLoading}
       />
     );
-  } else {
-    // We have basic K8sResource, need to enhance progressively
-    const resourceData = {
-      kind: data.kind,
-      name: data.metadata?.name || "",
-    };
+  }
 
-    const { completeResource, isLoadingComplete } =
-      useResourceNodeEnhancer(resourceData);
-    const target = convertResourceObjectToTarget(resourceData);
-    const { status, isLoading: isLoadingStatus } = useResourceStatus(target);
-
-    // If we have complete resource data, render the full node
-    if (
-      completeResource &&
-      "image" in completeResource &&
-      "ports" in completeResource
-    ) {
-      return (
-        <DevboxNode
-          resource={completeResource as DevboxObject}
-          status={status || "Pending"}
-          isLoadingStatus={isLoadingStatus}
-          isLoadingComplete={false}
-        />
-      );
-    }
-
-    // Otherwise, show loading state
+  // If we have complete resource data from enhancement, render the full node
+  if (
+    completeResource &&
+    "image" in completeResource &&
+    "ports" in completeResource
+  ) {
     return (
-      <NodeLoading
-        kind={resourceData.kind}
-        name={resourceData.name}
+      <DevboxNode
+        resource={completeResource as DevboxObject}
         status={status || "Pending"}
       />
     );
   }
+
+  // Otherwise, show loading state
+  return (
+    <NodeLoading
+      kind={resourceData.kind}
+      name={resourceData.name}
+      status={status || "Pending"}
+    />
+  );
 }
 
 // Main component that receives the loaded resource data
 function DevboxNode({
   resource,
   status,
-  isLoadingStatus = false,
-  isLoadingComplete = false,
 }: {
   resource: DevboxObject;
   status?: string;
-  isLoadingStatus?: boolean;
-  isLoadingComplete?: boolean;
 }) {
   // const { name, image, ports, pods } = data;
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();

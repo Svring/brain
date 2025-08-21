@@ -64,8 +64,6 @@ function ClusterNodeWrapper({ data }: { data: ClusterObject | K8sResource }) {
       <ClusterNode
         resource={data as ClusterObject}
         status={status || "Pending"}
-        isLoadingStatus={isLoadingStatus}
-        isLoadingComplete={false}
       />
     );
   }
@@ -80,8 +78,6 @@ function ClusterNodeWrapper({ data }: { data: ClusterObject | K8sResource }) {
       <ClusterNode
         resource={completeResource as ClusterObject}
         status={status || "Pending"}
-        isLoadingStatus={isLoadingStatus}
-        isLoadingComplete={false}
       />
     );
   }
@@ -100,13 +96,9 @@ function ClusterNodeWrapper({ data }: { data: ClusterObject | K8sResource }) {
 function ClusterNode({
   resource,
   status,
-  isLoadingStatus = false,
-  isLoadingComplete = false,
 }: {
   resource: ClusterObject;
   status?: string;
-  isLoadingStatus?: boolean;
-  isLoadingComplete?: boolean;
 }) {
   const { sendSystemMessage } = useSendSystemMessageMutation();
 

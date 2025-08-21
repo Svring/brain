@@ -89,11 +89,15 @@ export const clusterRouter = t.router({
       const diskData =
         diskResult.status === "fulfilled" ? diskResult.value : undefined;
 
-      return transformCombinedMonitorData({
+      const result = transformCombinedMonitorData({
         cpu: cpuData,
         memory: memoryData,
         storage: diskData,
       });
+
+      // console.log("result", JSON.stringify(result, null, 2));
+
+      return result;
     }),
 
   startCluster: t.procedure

@@ -290,10 +290,14 @@ export const devboxRouter = t.router({
       const memoryData =
         memoryResult.status === "fulfilled" ? memoryResult.value : undefined;
 
-      return transformCombinedMonitorData({
+      const result = transformCombinedMonitorData({
         cpu: cpuData,
         memory: memoryData,
       });
+
+      // console.log("result", JSON.stringify(result, null, 2));
+
+      return result;
     }),
 
   checkDevboxReady: t.procedure

@@ -45,8 +45,6 @@ function StatefulsetNodeWrapper({ data }: { data: StatefulsetObjectQuery | K8sRe
       <StatefulsetNode
         resource={data as StatefulsetObjectQuery}
         status={status || "Pending"}
-        isLoadingStatus={isLoadingStatus}
-        isLoadingComplete={false}
       />
     );
   }
@@ -57,8 +55,6 @@ function StatefulsetNodeWrapper({ data }: { data: StatefulsetObjectQuery | K8sRe
       <StatefulsetNode
         resource={completeResource as StatefulsetObjectQuery}
         status={status || "Pending"}
-        isLoadingStatus={isLoadingStatus}
-        isLoadingComplete={false}
       />
     );
   }
@@ -77,13 +73,9 @@ function StatefulsetNodeWrapper({ data }: { data: StatefulsetObjectQuery | K8sRe
 function StatefulsetNode({
   resource,
   status,
-  isLoadingStatus = false,
-  isLoadingComplete = false,
 }: {
   resource: StatefulsetObjectQuery;
   status?: string;
-  isLoadingStatus?: boolean;
-  isLoadingComplete?: boolean;
 }) {
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 

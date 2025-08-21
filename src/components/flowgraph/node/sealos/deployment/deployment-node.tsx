@@ -47,8 +47,6 @@ function DeploymentNodeWrapper({ data }: { data: DeploymentObject | K8sResource 
       <DeploymentNode
         resource={data as DeploymentObject}
         status={status || "Pending"}
-        isLoadingStatus={isLoadingStatus}
-        isLoadingComplete={false}
       />
     );
   }
@@ -59,8 +57,6 @@ function DeploymentNodeWrapper({ data }: { data: DeploymentObject | K8sResource 
       <DeploymentNode
         resource={completeResource as DeploymentObject}
         status={status || "Pending"}
-        isLoadingStatus={isLoadingStatus}
-        isLoadingComplete={false}
       />
     );
   }
@@ -79,13 +75,9 @@ function DeploymentNodeWrapper({ data }: { data: DeploymentObject | K8sResource 
 function DeploymentNode({
   resource,
   status,
-  isLoadingStatus = false,
-  isLoadingComplete = false,
 }: {
   resource: DeploymentObject;
   status?: string;
-  isLoadingStatus?: boolean;
-  isLoadingComplete?: boolean;
 }) {
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 

@@ -107,23 +107,27 @@ export function transformCombinedMonitorData(monitorData: {
   }
 
   // Handle complex format (cluster)
-  if (monitorData.cpu?.data?.result) {
-    const cpuResult = monitorData.cpu.data.result;
-    const memoryResult = monitorData.memory?.data?.result;
-    const diskResult = monitorData.storage?.data?.result;
+  const cpuResult = monitorData.cpu?.data?.result;
+  const memoryResult = monitorData.memory?.data?.result;
+  const diskResult = monitorData.storage?.data?.result;
 
-    if (cpuResult?.xData && cpuResult?.yData) {
-      const result: Record<
-        string,
-        Array<{
-          timestamp: number;
-          readableTime: string;
-          cpu: number;
-          memory: number;
-          storage?: number;
-        }>
-      > = {};
+  // Find the first result with valid data to get timestamps
+  const validResult = cpuResult || memoryResult || diskResult;
 
+  if (validResult?.xData && validResult?.yData) {
+    const result: Record<
+      string,
+      Array<{
+        timestamp: number;
+        readableTime: string;
+        cpu: number;
+        memory: number;
+        storage?: number;
+      }>
+    > = {};
+
+    // Process CPU data if available
+    if (cpuResult?.yData && cpuResult.yData.length > 0) {
       cpuResult.yData.forEach((podData: { name: string; data: number[] }) => {
         const podName = podData.name;
         const memoryPodData = memoryResult?.yData?.find(
@@ -146,12 +150,67 @@ export function transformCombinedMonitorData(monitorData: {
           })
         );
       });
-
-      return result;
     }
+
+    // Process memory data if available (and not already processed with CPU)
+    if (
+      memoryResult?.yData &&
+      memoryResult.yData.length > 0 &&
+      (!cpuResult?.yData || cpuResult.yData.length === 0)
+    ) {
+      memoryResult.yData.forEach(
+        (podData: { name: string; data: number[] }) => {
+          const podName = podData.name;
+          const diskPodData = diskResult?.yData?.find(
+            (d: any) => d.name === podName || d.name === `data-${podName}`
+          );
+
+          result[podName] = memoryResult.xData.map(
+            (timestamp: number, index: number) => ({
+              timestamp,
+              readableTime: formatUnixTimeInLocalTimezone(
+                timestamp,
+                "yyyy/MM/dd HH:mm"
+              ),
+              cpu: 0, // No CPU data available
+              memory: podData.data[index] || 0,
+              storage: diskPodData?.data?.[index] || 0,
+            })
+          );
+        }
+      );
+    }
+
+    // Process disk data if available (and not already processed with CPU or memory)
+    if (
+      diskResult?.yData &&
+      diskResult.yData.length > 0 &&
+      (!cpuResult?.yData || cpuResult.yData.length === 0) &&
+      (!memoryResult?.yData || memoryResult.yData.length === 0)
+    ) {
+      diskResult.yData.forEach((podData: { name: string; data: number[] }) => {
+        const podName = podData.name;
+
+        result[podName] = diskResult.xData.map(
+          (timestamp: number, index: number) => ({
+            timestamp,
+            readableTime: formatUnixTimeInLocalTimezone(
+              timestamp,
+              "yyyy/MM/dd HH:mm"
+            ),
+            cpu: 0, // No CPU data available
+            memory: 0, // No memory data available
+            storage: podData.data[index] || 0,
+          })
+        );
+      });
+    }
+
+    return result;
   }
 
-  return null;
+  // Return empty array instead of null when no data is available
+  return [];
 }
 
 /**
