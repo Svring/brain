@@ -35,6 +35,13 @@ export const MonitorMessage: React.FC<CombinedMessageProps> = ({ target }) => {
           role: "assistant",
           content: message,
         },
+        {
+          role: "system",
+          content: {
+            type: "manage.resourceQuotaUpdateButton",
+            payload: target,
+          },
+        },
       ]);
     }
   });

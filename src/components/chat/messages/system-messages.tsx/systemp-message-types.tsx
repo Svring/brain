@@ -16,6 +16,8 @@ import { NetworkInfoMessage } from "./network/network-message";
 import { DevboxCreateMessage } from "./manage/devbox-create-message";
 import { ClusterCreateMessage } from "./manage/cluster-create-message";
 import { DeploymentCreateMessage } from "./manage/deployment-create-message";
+import { ResourceQuotaUpdateButton } from "./manage/resource-quota-update-button";
+import { ResourceQuotaUpdate } from "./manage/resource-quota-update";
 import { ClusterInfoLog } from "./info/cluster-info/cluster-info-log";
 import { LaunchpadInfoLog } from "./info/launchpad-info/launchpad-info-log";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
@@ -60,12 +62,16 @@ export const SystemMessageType = {
     deploymentCreate: (payload: any) => (
       <DeploymentCreateMessage payload={payload} />
     ),
+    resourceQuotaUpdateButton: (payload: any) => (
+      <ResourceQuotaUpdateButton payload={payload} />
+    ),
+    resourceQuotaUpdate: (payload: any) => (
+      <ResourceQuotaUpdate payload={payload} />
+    ),
   },
   diagnose: {
     network: (payload: CustomResourceTarget) => (
       <DiagnoseNetworkMessageCard payload={payload} />
     ),
   },
-  warning: {},
-  error: {},
 };
