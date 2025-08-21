@@ -11,6 +11,8 @@ import { Pod } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-obje
 import { inferStatusColor } from "@/lib/sealos/sealos-utils";
 import { useAppendMessagesMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useOnceEffect } from "@/hooks/use-once-effect";
+import MessageHeader from "./message-header";
+import { v4 as uuidv4 } from "uuid";
 
 interface PodOverviewProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -19,6 +21,9 @@ interface PodOverviewProps {
 export const PodOverview: React.FC<PodOverviewProps> = ({ target }) => {
   const { resource, isLoading, error } = useResourceStatus(target);
   const appendMessagesMutation = useAppendMessagesMutation();
+
+  // Generate unique key for this component instance
+  const componentKey = `${target.type}-${target.resourceType}-${target.name || 'overview'}-pods`;
 
   // Extract pods from resource based on resource type
   const getPodList = (): Pod[] => {
@@ -46,7 +51,7 @@ export const PodOverview: React.FC<PodOverviewProps> = ({ target }) => {
         },
       },
     ]);
-  });
+  }, componentKey);
 
   // console.log("resource", resource);
 
@@ -85,12 +90,6 @@ export const PodOverview: React.FC<PodOverviewProps> = ({ target }) => {
   if (isLoading) {
     return (
       <Card className="w-full bg-node-background">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Box className="h-5 w-5 text-muted-foreground" />
-            Pod Overview
-          </CardTitle>
-        </CardHeader>
         <CardContent>
           <div className="text-center py-4">
             <p className="text-sm text-muted-foreground">Loading pods...</p>
@@ -104,12 +103,6 @@ export const PodOverview: React.FC<PodOverviewProps> = ({ target }) => {
   if (error) {
     return (
       <Card className="w-full bg-node-background">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Box className="h-5 w-5 text-theme-red" />
-            Pod Overview
-          </CardTitle>
-        </CardHeader>
         <CardContent>
           <div className="text-center py-4">
             <p className="text-sm text-theme-red">Failed to load pods</p>
@@ -122,10 +115,9 @@ export const PodOverview: React.FC<PodOverviewProps> = ({ target }) => {
   return (
     <Card className="w-full bg-node-background">
       <CardHeader className="">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Box className={`h-5 w-5 ${getStatusColor()}`} />
-          Pod Overview ({totalPods} total)
-        </CardTitle>
+        <div className="space-y-4">
+          <MessageHeader target={target} />
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {podList && podList.length > 0 ? (
@@ -140,12 +132,7 @@ export const PodOverview: React.FC<PodOverviewProps> = ({ target }) => {
               </div>
               <Progress
                 value={runningPercentage}
-                className="h-2"
-                style={
-                  {
-                    "--progress-background": "hsl(var(--theme-green))",
-                  } as React.CSSProperties
-                }
+                className="h-2 [&>div]:bg-theme-green"
               />
             </div>
           </>

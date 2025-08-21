@@ -8,6 +8,7 @@ import {
 import MessageHeader from "../components/message-header";
 import { useAppendMessagesMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useOnceEffect } from "@/hooks/use-once-effect";
+import { v4 as uuidv4 } from "uuid";
 
 interface CombinedMessageProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -20,30 +21,39 @@ export const MonitorMessage: React.FC<CombinedMessageProps> = ({ target }) => {
 
   const appendMessagesMutation = useAppendMessagesMutation();
 
-  useOnceEffect(status ? status : null, (status) => {
-    const messages = {
-      low: "The resource usage is low, everything is good.",
-      medium: "The resource usage is medium, consider monitoring closely.",
-      high: "The resource usage is high, immediate attention may be required.",
-    };
+  // Generate unique key for this component instance
+  const componentKey = `${target.type}-${target.resourceType}-${
+    target.name || "monitor"
+  }-status`;
 
-    const message = messages[status as keyof typeof messages];
-    if (message) {
-      appendMessagesMutation.mutate([
-        {
-          role: "assistant",
-          content: message,
-        },
-        {
-          role: "system",
-          content: {
-            type: "manage.resourceQuotaUpdateButton",
-            payload: target,
+  useOnceEffect(
+    status ? status : null,
+    (status) => {
+      const messages = {
+        low: "The resource usage is low, everything is good.",
+        medium: "The resource usage is medium, consider monitoring closely.",
+        high: "The resource usage is high, immediate attention may be required.",
+      };
+
+      const message = messages[status as keyof typeof messages];
+      if (message) {
+        appendMessagesMutation.mutate([
+          {
+            role: "assistant",
+            content: message,
           },
-        },
-      ]);
-    }
-  });
+          {
+            role: "system",
+            content: {
+              type: "manage.resourceQuotaUpdateButton",
+              payload: target,
+            },
+          },
+        ]);
+      }
+    },
+    componentKey
+  );
 
   return (
     <div className="space-y-4 bg-node-background border border-border-primary rounded-xl p-4">
