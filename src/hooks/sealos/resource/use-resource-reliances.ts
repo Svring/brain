@@ -1,23 +1,7 @@
 import { useMemo } from "react";
 import { inferRelianceFromEnv } from "@/lib/sealos/services/reliances/env-reliance";
 import { inferRelianceFromImage } from "@/lib/sealos/services/reliances/image-reliance";
-
-interface ResourceObject {
-  name: string;
-  kind: string;
-  image?: string;
-  env?: Array<{
-    name: string;
-    value?: string;
-    valueFrom?: {
-      secretKeyRef?: {
-        name: string;
-        key: string;
-      };
-    };
-  }>;
-  [key: string]: any;
-}
+import type { ResourceObject } from "@/contexts/project/project-context";
 
 interface ResourceReliances {
   [kind: string]: {

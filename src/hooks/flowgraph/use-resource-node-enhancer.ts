@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNetworkNodeUpdater } from "./use-network-node-updater";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
-import { useResourceData } from "@/contexts/flowgraph/resource-data-context";
+import { useProjectActions } from "@/contexts/project/project-context";
 
 /**
  * Hook for resource nodes to progressively enhance themselves with complete object data
@@ -15,7 +15,7 @@ export function useResourceNodeEnhancer(resourceData: {
   const [hasCreatedNetworkNodes, setHasCreatedNetworkNodes] = useState(false);
   const [hasReportedResource, setHasReportedResource] = useState(false);
   const { addNetworkNodesForResource } = useNetworkNodeUpdater();
-  const { updateResource } = useResourceData();
+  const { updateResource } = useProjectActions();
 
   const target = convertResourceObjectToTarget({
     kind: resourceData.kind,

@@ -44,10 +44,6 @@ import {
   useFlowgraphState,
 } from "@/contexts/flowgraph/flowgraph-context";
 import {
-  ResourceDataProvider,
-  useResourceData,
-} from "@/contexts/flowgraph/resource-data-context";
-import {
   useProjectActions,
   useProjectState,
 } from "@/contexts/project/project-context";
@@ -172,26 +168,27 @@ function ProjectFlow({ projectName }: { projectName: string }) {
   const { resources, k8sResources, isLoading } =
     useProjectResources(projectName);
 
-  // Get centralized resource data from individual nodes
-  const { resourceObjects, clearResources } = useResourceData();
+  // Get project resources from project state
+  const { selectedProjectResources } = useProjectState();
+  const { clearSelectedProjectResources } = useProjectActions();
 
   // Clear resource data when project changes
   useEffect(() => {
-    clearResources();
-  }, [projectName, clearResources]);
+    clearSelectedProjectResources();
+  }, [projectName]);
 
   // Phase 1: Generate basic nodes from K8sResource objects immediately
   const { nodes: basicNodes } = useFlowgraphNodes(k8sResources ?? [], true);
 
   // Phase 2: Generate enhanced nodes with network nodes from complete objects
   const { nodes: enhancedNodes, edges: networkEdges } =
-    useFlowgraphNodes(resourceObjects);
+    useFlowgraphNodes(selectedProjectResources);
 
-  const { reliances } = useResourceReliances(resourceObjects);
+  const { reliances } = useResourceReliances(selectedProjectResources);
   const { edges: computedEdges } = useFlowgraphEdges(reliances);
 
   // console.log("resources", resources);
-  // console.log("resourceObjects", resourceObjects);
+  // console.log("selectedProjectResources", selectedProjectResources);
   // console.log("basicNodes", basicNodes);
   // console.log("enhancedNodes", enhancedNodes);
   // console.log("reliances", reliances);
@@ -202,7 +199,7 @@ function ProjectFlow({ projectName }: { projectName: string }) {
 
   // Merge basic nodes with enhanced nodes (enhanced nodes replace basic nodes when available)
   const currentNodes = useMemo(() => {
-    if (resourceObjects.length === 0) {
+    if (selectedProjectResources.length === 0) {
       return basicNodes;
     }
 
@@ -226,7 +223,7 @@ function ProjectFlow({ projectName }: { projectName: string }) {
     const result = [...mergedNodes, ...additionalEnhancedNodes];
     // console.log("currentNodes result:", result);
     return result;
-  }, [basicNodes, enhancedNodes, resourceObjects.length]);
+  }, [basicNodes, enhancedNodes, selectedProjectResources.length]);
 
   // Combine network edges (from ports) with computed edges (from reliances)
   const finalEdges = useMemo(() => {
@@ -298,14 +295,12 @@ export default function ProjectPage({
 
   return (
     <FlowgraphProvider>
-      <ResourceDataProvider>
-        <div className="relative h-screen w-full">
-          <ReactFlowProvider>
-            <ProjectFlow projectName={projectName} />
-          </ReactFlowProvider>
-          <ProjectFloatingUI projectName={projectName} />
-        </div>
-      </ResourceDataProvider>
+      <div className="relative h-screen w-full">
+        <ReactFlowProvider>
+          <ProjectFlow projectName={projectName} />
+        </ReactFlowProvider>
+        <ProjectFloatingUI projectName={projectName} />
+      </div>
     </FlowgraphProvider>
   );
 }

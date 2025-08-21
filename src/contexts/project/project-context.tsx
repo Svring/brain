@@ -4,7 +4,10 @@ import { createBrowserInspector } from "@statelyai/inspect";
 import { useMachine } from "@xstate/react";
 import { createContext, type ReactNode, useContext } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
-import { projectMachine } from "@/contexts/project/project-machine";
+import {
+  projectMachine,
+  type ResourceObject,
+} from "@/contexts/project/project-machine";
 import { useLanggraphAgent } from "@/hooks/langgraph/use-langgraph-agent";
 import _ from "lodash";
 
@@ -51,7 +54,7 @@ export function useProjectState() {
 export function useProjectActions() {
   const { send, state } = useProjectContext();
   const { state: langgraphState, setState: setLanggraphState } =
-    useLanggraphAgent();
+    useLanggraphAgent("manage_project");
 
   const syncStateToLanggraph = () => {
     const newState = _.cloneDeep(langgraphState);
@@ -82,7 +85,7 @@ export function useProjectActions() {
       send({ type: "CLEAR_SELECTED_PROJECT" });
       syncStateToLanggraph();
     },
-    setSelectedProjectResources: (resources: unknown) => {
+    setSelectedProjectResources: (resources: ResourceObject[]) => {
       send({ type: "SET_SELECTED_PROJECT_RESOURCES", resources });
       syncStateToLanggraph();
     },
@@ -90,5 +93,16 @@ export function useProjectActions() {
       send({ type: "CLEAR_SELECTED_PROJECT_RESOURCES" });
       syncStateToLanggraph();
     },
+    updateResource: (resource: ResourceObject) => {
+      send({ type: "UPDATE_RESOURCE", resource });
+      syncStateToLanggraph();
+    },
+    removeResource: (name: string, kind: string) => {
+      send({ type: "REMOVE_RESOURCE", name, kind });
+      syncStateToLanggraph();
+    },
   };
 }
+
+// Export the ResourceObject type for use in other files
+export type { ResourceObject };

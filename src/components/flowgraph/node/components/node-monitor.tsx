@@ -28,9 +28,9 @@ export default function NodeMonitor({ target }: NodeMonitorProps) {
   });
   const { resource } = useResourceStatus(target);
 
-  console.log("resource", resource);
-  console.log("monitorData", monitorData);
-  console.log("latestData", latestData);
+  // console.log("resource", resource);
+  // console.log("monitorData", monitorData);
+  // console.log("latestData", latestData);
 
   return (
     <TooltipProvider delayDuration={0}>
