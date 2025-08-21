@@ -58,7 +58,7 @@ export default function MessageHeader({
 
   const getDisplayName = () => {
     const name = target.name || "Unknown";
-    const maxLength = 15;
+    const maxLength = 30;
     return name.length > maxLength ? `${name.slice(0, maxLength)}...` : name;
   };
 

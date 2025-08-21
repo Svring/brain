@@ -116,6 +116,45 @@ export const useSendSystemMessageMutation = () => {
 
   return { sendSystemMessage };
 };
+
+/**
+ * Hook for appending new messages of any role to the chat
+ */
+export const useAppendMessagesMutation = () => {
+  const { setMessages, messages } = useCopilotChatHeadless_c();
+  const { openSidebarChat } = useChatActions();
+
+  return useMutation({
+    mutationFn: async (
+      newMessages: Array<{
+        role: "user" | "assistant" | "system";
+        content: string | object;
+      }>
+    ) => {
+      // Create message objects with random IDs
+      const messageObjects = newMessages.map((message) => ({
+        id: randomId(),
+        role: message.role,
+        content:
+          message.role === "system"
+            ? JSON.stringify(message.content)
+            : String(message.content),
+      }));
+
+      // Append new messages to existing messages
+      const updatedMessages = [...messages, ...messageObjects];
+      setMessages(updatedMessages);
+
+      // Open the sidebar chat
+      openSidebarChat();
+
+      return messageObjects;
+    },
+    onError: (error) => {
+      console.error("Failed to append messages:", error);
+    },
+  });
+};
 /**
  * Utility function to emit a system message and open the sidebar chat
  * @param setMessages - Function to set messages from useCopilotChatHeadless_c

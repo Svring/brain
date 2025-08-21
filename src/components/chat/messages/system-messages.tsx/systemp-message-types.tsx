@@ -4,7 +4,6 @@ import { DevboxDeployMessageCard } from "./devbox-deploy-message";
 import { ClusterBackupMessageCard } from "./cluster-backup-message";
 import { DevboxReleaseMessageCard } from "./info/devbox-info/devbox-info-release";
 import { LaunchpadInfoMessageCard } from "./info/launchpad-info/launchpad-info-message";
-import { MetricsMessageCard } from "./metrics-message";
 import { ObjectStorageInfoMessageCard } from "./objectstorage-info-message";
 import { PodMessageCard } from "./pod-message";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
@@ -47,7 +46,6 @@ export const SystemMessageType = {
     launchpadLog: (payload: BuiltinResourceTarget) => (
       <LaunchpadInfoLog payload={payload} />
     ),
-    metrics: (payload: any) => <MetricsMessageCard payload={payload} />,
     combinedMetrics: (payload: any) => <MonitorMessage target={payload} />,
     podOverview: (payload: any) => <PodOverview resource={payload} />,
     objectStorageInfo: (payload: any) => (
