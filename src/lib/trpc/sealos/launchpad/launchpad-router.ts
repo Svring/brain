@@ -5,7 +5,6 @@ import {
   getLaunchpadMonitorData,
   checkLaunchpadReady,
 } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-api-service";
-import { SealosApiContextSchema } from "@/lib/sealos/sealos-api-context-schema";
 import { transformCombinedMonitorData } from "@/lib/sealos/sealos-utils";
 import { LaunchpadCheckReadyRequestSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-old-api-schemas/req-res-check-ready-schemas";
 import { BuiltinResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
@@ -72,42 +71,23 @@ export const launchpadRouter = t.router({
       return await checkLaunchpadReady({ name: input.launchpadName }, ctx);
     }),
 
-  getLaunchpadMonitorData: t.procedure
-    .input(
-      z.object({
-        context: SealosApiContextSchema,
-        queryKey: z.string(),
-        queryName: z.string(),
-        step: z.string(),
-      })
-    )
-    .query(async ({ input }) => {
-      return await getLaunchpadMonitorData(
-        input.context,
-        input.queryKey,
-        input.queryName,
-        input.step
-      );
-    }),
-
   getLaunchpadCombinedMonitorData: t.procedure
     .input(
       z.object({
-        context: SealosApiContextSchema,
         queryName: z.string(),
         step: z.string().optional().default("2m"),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const [cpuData, memoryData] = await Promise.all([
         getLaunchpadMonitorData(
-          input.context,
+          ctx,
           "average_cpu",
           input.queryName,
           input.step
         ),
         getLaunchpadMonitorData(
-          input.context,
+          ctx,
           "average_memory",
           input.queryName,
           input.step
@@ -125,13 +105,10 @@ export const launchpadRouter = t.router({
     .input(
       z.object({
         request: LaunchpadCreateRequestSchema,
-        context: SealosApiContextSchema,
       })
     )
-    .mutation(async ({ input }) => {
-      return await runParallelAction(
-        createApplication(input.context, input.request)
-      );
+    .mutation(async ({ input, ctx }) => {
+      return await runParallelAction(createApplication(ctx, input.request));
     }),
 
   updateLaunchpad: t.procedure
@@ -152,12 +129,11 @@ export const launchpadRouter = t.router({
       z.object({
         name: z.string(),
         request: LaunchpadConfigMapUpdateRequestSchema,
-        context: SealosApiContextSchema,
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       return await runParallelAction(
-        updateApplicationConfigMap(input.context, input.name, input.request)
+        updateApplicationConfigMap(ctx, input.name, input.request)
       );
     }),
 
@@ -166,12 +142,11 @@ export const launchpadRouter = t.router({
       z.object({
         name: z.string(),
         request: LaunchpadPortsUpdateRequestSchema,
-        context: SealosApiContextSchema,
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       return await runParallelAction(
-        updateApplicationPorts(input.context, input.name, input.request)
+        updateApplicationPorts(ctx, input.name, input.request)
       );
     }),
 
@@ -179,26 +154,20 @@ export const launchpadRouter = t.router({
     .input(
       z.object({
         request: LaunchpadDeleteRequestSchema,
-        context: SealosApiContextSchema,
       })
     )
-    .mutation(async ({ input }) => {
-      return await runParallelAction(
-        deleteLaunchpad(input.request, input.context)
-      );
+    .mutation(async ({ input, ctx }) => {
+      return await runParallelAction(deleteLaunchpad(input.request, ctx));
     }),
 
   pauseLaunchpad: t.procedure
     .input(
       z.object({
         request: LaunchpadPauseRequestSchema,
-        context: SealosApiContextSchema,
       })
     )
-    .mutation(async ({ input }) => {
-      return await runParallelAction(
-        pauseLaunchpad(input.request, input.context)
-      );
+    .mutation(async ({ input, ctx }) => {
+      return await runParallelAction(pauseLaunchpad(input.request, ctx));
     }),
 
   startLaunchpad: t.procedure
@@ -215,13 +184,10 @@ export const launchpadRouter = t.router({
     .input(
       z.object({
         request: LaunchpadCheckReadyRequestSchema,
-        context: SealosApiContextSchema,
       })
     )
-    .mutation(async ({ input }) => {
-      return await runParallelAction(
-        checkReadyLaunchpad(input.request, input.context)
-      );
+    .mutation(async ({ input, ctx }) => {
+      return await runParallelAction(checkReadyLaunchpad(input.request, ctx));
     }),
 });
 

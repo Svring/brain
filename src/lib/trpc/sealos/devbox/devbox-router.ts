@@ -24,7 +24,6 @@ import {
   GetAppByNameResponseSchema,
   GetAppPodsResponseSchema,
 } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas";
-import { K8sApiContextSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import {
   getDevboxList,
@@ -47,13 +46,9 @@ import {
   listDevbox,
   getDevboxSshInfo,
   listDevboxFolderFiles,
-  getDevboxInstantMonitor,
-  getDevboxRangedMonitor,
   getDevboxMonitorData,
   checkDevboxReady,
 } from "@/lib/sealos/resources/devbox/devbox-api/devbox-api-service";
-import { MetricsApiContextSchema } from "@/lib/sealos/services/metrics/schemas/metrics-api-context-schema";
-import { DevboxApiContextSchema } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas";
 import { transformCombinedMonitorData } from "@/lib/sealos/sealos-utils";
 
 const t = initTRPC.context<DevboxContext>().create();
@@ -175,11 +170,9 @@ export const devboxRouter = t.router({
       return await getDevbox(ctx, input.target);
     }),
 
-  listDevboxK8s: t.procedure
-    .input(K8sApiContextSchema)
-    .query(async ({ input }) => {
-      return await listDevbox(input);
-    }),
+  listDevboxK8s: t.procedure.query(async ({ ctx }) => {
+    return await listDevbox(ctx);
+  }),
 
   // SSH Operations
   getDevboxSshInfo: t.procedure
@@ -207,61 +200,6 @@ export const devboxRouter = t.router({
     )
     .query(async ({ input }) => {
       return await listDevboxFolderFiles(input.sshConfig, input.relativePath);
-    }),
-
-  // Metrics Operations
-  getDevboxInstantMonitor: t.procedure
-    .input(
-      z.object({
-        context: MetricsApiContextSchema,
-        devboxName: z.string(),
-        time: z.string().optional(),
-      })
-    )
-    .query(async ({ input }) => {
-      return await getDevboxInstantMonitor(
-        input.context,
-        input.devboxName,
-        input.time
-      );
-    }),
-
-  getDevboxRangedMonitor: t.procedure
-    .input(
-      z.object({
-        context: MetricsApiContextSchema,
-        devboxName: z.string(),
-        start: z.string().optional(),
-        end: z.string().optional(),
-        step: z.string().optional(),
-      })
-    )
-    .query(async ({ input }) => {
-      return await getDevboxRangedMonitor(
-        input.context,
-        input.devboxName,
-        input.start,
-        input.end,
-        input.step
-      );
-    }),
-
-  getDevboxMonitorData: t.procedure
-    .input(
-      z.object({
-        context: DevboxApiContextSchema,
-        queryKey: z.string(),
-        queryName: z.string(),
-        step: z.string(),
-      })
-    )
-    .query(async ({ input }) => {
-      return await getDevboxMonitorData(
-        input.context,
-        input.queryKey,
-        input.queryName,
-        input.step
-      );
     }),
 
   getDevboxCombinedMonitorData: t.procedure

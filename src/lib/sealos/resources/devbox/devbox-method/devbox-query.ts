@@ -7,10 +7,7 @@ import {
 import { getDevboxObject } from "@/lib/sealos/resources/devbox/devbox-method/devbox-bridge";
 import { listCustomResources } from "@/lib/k8s/k8s-api/k8s-api-query";
 import { runParallelAction } from "next-server-actions-parallel";
-import {
-  convertResourceTypeToTarget,
-  convertResourceToTarget,
-} from "@/lib/k8s/k8s-method/k8s-utils";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { getSshConnectionInfo } from "@/lib/sealos/resources/devbox/devbox-api/devbox-old-api";
 import { DevboxApiContext } from "../devbox-api/devbox-open-api-schemas";
 import { getDevboxReleases } from "../devbox-api/devbox-open-api";
@@ -19,10 +16,6 @@ import { listFolderFiles } from "../devbox-api/devbox-ssh-api";
 import type { DevboxSsh } from "../devbox-schemas/devbox-object-schema";
 import { getLaunchPadMetrics } from "@/lib/sealos/services/metrics/metrics-api/launchpad-metrics-api-query";
 import type { MetricsApiContext } from "@/lib/sealos/services/metrics/schemas/metrics-api-context-schema";
-import type {
-  GetLaunchPadMetricsRequest,
-  GetLaunchPadMetricsResponse,
-} from "@/lib/sealos/services/metrics/schemas/metrics-query-schema";
 import { extractPodMetricsData } from "@/lib/sealos/services/metrics/metrics-utils";
 
 export const getDevbox = async (
