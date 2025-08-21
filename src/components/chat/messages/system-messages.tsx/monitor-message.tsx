@@ -5,7 +5,6 @@ import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { Badge } from "@/components/ui/badge";
 import MessageHeader from "../components/message-header";
 import { useAppendMessagesMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useOnceEffect } from "@/hooks/use-once-effect";

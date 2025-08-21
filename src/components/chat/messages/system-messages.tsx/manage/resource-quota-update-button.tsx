@@ -28,21 +28,15 @@ export const ResourceQuotaUpdateButton: React.FC<
   };
 
   return (
-    <div className="space-y-4 bg-node-background border border-border-primary rounded-xl p-4">
-      <div className="flex flex-col gap-2">
-        <h3 className="text-lg font-semibold">Resource Quota Management</h3>
-        <p className="text-sm text-muted-foreground">
-          Update resource quotas for your cluster resources
-        </p>
-      </div>
-      <Button
-        onClick={handleUpdateResourceQuota}
-        className="w-full"
-        variant="outline"
-      >
-        Update Resource Quota
-      </Button>
-    </div>
+    // <div className="space-y-4 bg-node-background border border-border-primary rounded-xl">
+    <Button
+      onClick={handleUpdateResourceQuota}
+      className="w-full space-y-4 bg-node-background border border-border-primary"
+      variant="outline"
+    >
+      Update Resource Quota
+    </Button>
+    // </div>
   );
 };
 

@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { useResourceQuotaUpdate } from "@/hooks/sealos/resource/use-resource-quota-update";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { toast } from "sonner";
+import MessageHeader from "../../components/message-header";
 
 interface ResourceQuotaUpdateProps {
   payload: CustomResourceTarget | BuiltinResourceTarget;
@@ -20,14 +21,19 @@ export const ResourceQuotaUpdate: React.FC<ResourceQuotaUpdateProps> = ({
   const { updateResourceQuota, mutation, isSupported } =
     useResourceQuotaUpdate(payload);
 
+  // Predefined option sets for each resource type
+  const cpuOptions = [0.5, 1, 2, 4, 8, 16];
+  const memoryOptions = [1, 2, 4, 8, 16, 32];
+  const replicaOptions = [1, 2, 3, 4, 5, 10];
+
   const [quotaData, setQuotaData] = useState({
     cpu: 1,
     memory: 2,
     replicas: 1,
   });
 
-  const handleInputChange = (field: keyof typeof quotaData, value: string) => {
-    const numValue = parseFloat(value) || 0;
+  const handleSelectChange = (field: keyof typeof quotaData, value: string) => {
+    const numValue = parseFloat(value);
     setQuotaData((prev) => ({
       ...prev,
       [field]: numValue,
@@ -69,48 +75,64 @@ export const ResourceQuotaUpdate: React.FC<ResourceQuotaUpdateProps> = ({
   return (
     <Card className="bg-node-background border border-border-primary">
       <CardHeader>
-        <CardTitle className="text-lg">Resource Quota Update</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Update resource quotas for {payload.name || payload.resourceType}
-        </p>
+        <div className="space-y-4">
+          <MessageHeader target={payload} />
+        </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="cpu">CPU (cores)</Label>
-            <Input
-              id="cpu"
-              type="number"
-              min="0.1"
-              step="0.1"
-              value={quotaData.cpu}
-              onChange={(e) => handleInputChange("cpu", e.target.value)}
-              placeholder="1.0"
-            />
+      <CardContent className="space-y-6">
+        {/* CPU Section */}
+        <div className="space-y-3">
+          <Label className="text-base font-medium">CPU (cores)</Label>
+          <div className="grid grid-cols-6 gap-2">
+            {cpuOptions.map((option) => (
+              <Button
+                key={option}
+                variant={quotaData.cpu === option ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleSelectChange("cpu", option.toString())}
+                className="h-12"
+              >
+                {option}
+              </Button>
+            ))}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="memory">Memory (GB)</Label>
-            <Input
-              id="memory"
-              type="number"
-              min="0.1"
-              step="0.1"
-              value={quotaData.memory}
-              onChange={(e) => handleInputChange("memory", e.target.value)}
-              placeholder="2.0"
-            />
+        </div>
+
+        {/* Memory Section */}
+        <div className="space-y-3">
+          <Label className="text-base font-medium">Memory (GB)</Label>
+          <div className="grid grid-cols-6 gap-2">
+            {memoryOptions.map((option) => (
+              <Button
+                key={option}
+                variant={quotaData.memory === option ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleSelectChange("memory", option.toString())}
+                className="h-12"
+              >
+                {option}
+              </Button>
+            ))}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="replicas">Replicas</Label>
-            <Input
-              id="replicas"
-              type="number"
-              min="1"
-              step="1"
-              value={quotaData.replicas}
-              onChange={(e) => handleInputChange("replicas", e.target.value)}
-              placeholder="1"
-            />
+        </div>
+
+        {/* Replicas Section */}
+        <div className="space-y-3">
+          <Label className="text-base font-medium">Replicas</Label>
+          <div className="grid grid-cols-6 gap-2">
+            {replicaOptions.map((option) => (
+              <Button
+                key={option}
+                variant={quotaData.replicas === option ? "default" : "outline"}
+                size="sm"
+                onClick={() =>
+                  handleSelectChange("replicas", option.toString())
+                }
+                className="h-12"
+              >
+                {option}
+              </Button>
+            ))}
           </div>
         </div>
 
