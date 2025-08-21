@@ -5,7 +5,6 @@ import { ClusterBackupMessageCard } from "./cluster-backup-message";
 import { DevboxReleaseMessageCard } from "./info/devbox-info/devbox-info-release";
 import { LaunchpadInfoMessageCard } from "./info/launchpad-info/launchpad-info-message";
 import { ObjectStorageInfoMessageCard } from "./objectstorage-info-message";
-import { PodMessageCard } from "./pod-message";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { DiagnoseNetworkMessageCard } from "./diagnose/diagnose-network";
 import { MonitorMessage } from "./monitor-message";
@@ -22,6 +21,7 @@ import { PodDetailsButton } from "./manage/pod-details-button";
 import { PodDetails } from "./manage/pod-details";
 import { ClusterInfoLog } from "./info/cluster-info/cluster-info-log";
 import { LaunchpadInfoLog } from "./info/launchpad-info/launchpad-info-log";
+import { ResourceLog } from "./resource-log";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 export const SystemMessageType = {
@@ -50,6 +50,9 @@ export const SystemMessageType = {
     launchpadLog: (payload: BuiltinResourceTarget) => (
       <LaunchpadInfoLog payload={payload} />
     ),
+    resourceLog: (payload: CustomResourceTarget | BuiltinResourceTarget) => (
+      <ResourceLog payload={payload} />
+    ),
     combinedMetrics: (payload: any) => <MonitorMessage target={payload} />,
     podOverview: (payload: any) => <PodOverview target={payload} />,
     objectStorageInfo: (payload: any) => (
@@ -70,12 +73,8 @@ export const SystemMessageType = {
     resourceQuotaUpdate: (payload: any) => (
       <ResourceQuotaUpdate payload={payload} />
     ),
-    podDetailsButton: (payload: any) => (
-      <PodDetailsButton payload={payload} />
-    ),
-    podDetails: (payload: any) => (
-      <PodDetails payload={payload} />
-    ),
+    podDetailsButton: (payload: any) => <PodDetailsButton payload={payload} />,
+    podDetails: (payload: any) => <PodDetails payload={payload} />,
   },
   diagnose: {
     network: (payload: CustomResourceTarget) => (

@@ -1,9 +1,6 @@
 "use client";
 
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
-import { createK8sContext, createSealosContext } from "@/lib/auth/auth-utils";
-import { getClusterLogsOptions } from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,22 +14,17 @@ import {
   Bot,
 } from "lucide-react";
 import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import MessageHeader from "@/components/chat/messages/components/message-header";
+import { useResourceLogs } from "@/hooks/sealos/resource/use-resource-logs";
 
 interface ClusterInfoLogProps {
   payload: CustomResourceTarget;
 }
 
 export const ClusterInfoLog: React.FC<ClusterInfoLogProps> = ({ payload }) => {
-  const k8sContext = createK8sContext();
-  const sealosContext = createSealosContext();
-
   const sendMessageMutation = useSendMessageMutation();
 
-  const {
-    data: logsData,
-    isLoading,
-    error,
-  } = useQuery(getClusterLogsOptions(k8sContext, sealosContext, payload));
+  const { data: logsData, isLoading, error } = useResourceLogs(payload);
 
   // Log the results as requested
   React.useEffect(() => {
@@ -44,19 +36,31 @@ export const ClusterInfoLog: React.FC<ClusterInfoLogProps> = ({ payload }) => {
     }
   }, [logsData, error]);
 
+  const handleAnalyze = () => {
+    if (logsData) {
+      sendMessageMutation.mutate([
+        {
+          role: "user",
+          content: `Analyze the logs and tell me what you found. Please provide a detailed analysis of the logs.
+            Here are the logs:
+            ${JSON.stringify(logsData)}`,
+        },
+      ]);
+    }
+  };
+
   if (isLoading) {
     return (
       <Card className="w-full bg-node-background">
-        <CardContent className="p-3">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Database className="h-4 w-4" />
-              <span className="text-sm font-medium">Database Logs: {payload.name}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span className="text-xs text-muted-foreground">Loading logs...</span>
-            </div>
+        <CardHeader className="pb-3">
+          <MessageHeader target={payload} />
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span className="text-xs text-muted-foreground">
+              Loading logs...
+            </span>
           </div>
         </CardContent>
       </Card>
@@ -66,44 +70,49 @@ export const ClusterInfoLog: React.FC<ClusterInfoLogProps> = ({ payload }) => {
   if (error) {
     return (
       <Card className="w-full bg-node-background">
-        <CardContent className="p-3">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Database className="h-4 w-4" />
-              <span className="text-sm font-medium">Database Logs: {payload.name}</span>
-            </div>
-            <div className="flex items-center gap-2 text-destructive">
-              <AlertCircle className="h-4 w-4" />
-              <span className="text-xs">Failed to load logs</span>
-            </div>
+        <CardHeader className="pb-3">
+          <MessageHeader target={payload} />
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="flex items-center gap-2 text-destructive">
+            <AlertCircle className="h-4 w-4" />
+            <span className="text-xs">Failed to load logs</span>
           </div>
         </CardContent>
       </Card>
     );
   }
 
-  if (!logsData || !logsData.supported) {
+  if (
+    !logsData ||
+    (typeof logsData === "object" &&
+      "supported" in logsData &&
+      !logsData.supported)
+  ) {
     return (
       <Card className="w-full bg-node-background">
-        <CardContent className="p-3">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Database className="h-4 w-4" />
-              <span className="text-sm font-medium">Database Logs: {payload.name}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">
-                {(logsData && "message" in logsData && logsData.message) ||
-                  "No logs available"}
-              </span>
-            </div>
+        <CardHeader className="pb-3">
+          <MessageHeader target={payload} />
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">
+              {(logsData &&
+                typeof logsData === "object" &&
+                "message" in logsData &&
+                logsData.message) ||
+                "No logs available"}
+            </span>
           </div>
         </CardContent>
       </Card>
     );
   }
 
-  const logs = "data" in logsData ? logsData.data : {};
+  const logs =
+    logsData && typeof logsData === "object" && "data" in logsData
+      ? logsData.data
+      : {};
   const pods = Object.keys(logs || {});
   const totalLogEntries = Object.values(logs || {}).reduce(
     (total: number, podLogs: any) => {
@@ -116,58 +125,62 @@ export const ClusterInfoLog: React.FC<ClusterInfoLogProps> = ({ payload }) => {
   if (pods.length === 0) {
     return (
       <Card className="w-full bg-node-background">
-        <CardContent className="p-3">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Database className="h-4 w-4" />
-              <span className="text-sm font-medium">Database Logs: {payload.name}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">
-                No pods with logs available
-              </span>
-            </div>
+        <CardHeader className="pb-3">
+          <MessageHeader target={payload} />
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">
+              No pods with logs available
+            </span>
           </div>
         </CardContent>
       </Card>
     );
   }
 
+  // Convert logs to string and truncate to 3 lines
+  const logsString = JSON.stringify(logs, null, 2);
+  const lines = logsString.split("\n");
+  const truncatedLogs = lines.slice(0, 3).join("\n");
+  const hasMoreLines = lines.length > 3;
+
   return (
     <Card className="w-full bg-node-background">
-      <CardContent className="p-3">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <MessageHeader target={payload} />
+          <Button
+            size="sm"
+            variant="outline"
+            className="flex items-center gap-1"
+            onClick={handleAnalyze}
+          >
+            <Bot className="h-3 w-3" />
+            Analyze
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
         <div className="space-y-2">
-          {/* First row: Resource name */}
+          {/* Status */}
           <div className="flex items-center gap-2">
-            <Database className="h-4 w-4" />
-            <span className="text-sm font-medium">Database Logs: {payload.name}</span>
+            <CheckCircle className="h-4 w-4 text-green-500" />
+            <span className="text-xs text-muted-foreground">
+              {totalLogEntries} entries across {pods.length} pods
+            </span>
           </div>
-          
-          {/* Second row: Status */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-500" />
-              <span className="text-xs text-muted-foreground">
-                {totalLogEntries} entries across {pods.length} pods
-              </span>
-            </div>
-            <Button
-              size="sm"
-              className="flex items-center gap-1"
-              onClick={() => {
-                sendMessageMutation.mutate([
-                  {
-                    role: "user",
-                    content: `Analyze the logs and tell me what you found. Please provide a detailed analysis of the logs.
-                      Here are the logs:
-                      ${JSON.stringify(logs)}`,
-                  },
-                ]);
-              }}
-            >
-              <Bot className="h-3 w-3" />
-              Analyze
-            </Button>
+
+          {/* Logs display */}
+          <div className="bg-muted/50 rounded-md p-2">
+            <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-mono">
+              {truncatedLogs}
+              {hasMoreLines && (
+                <span className="text-muted-foreground/60">
+                  {"\n"}... (truncated)
+                </span>
+              )}
+            </pre>
           </div>
         </div>
       </CardContent>

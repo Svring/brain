@@ -9,7 +9,7 @@ export const JsonQuerySchema = z.object({
 
 // Request schema for queryLogs API
 export const QueryLogsRequestSchema = z.object({
-  time: z.string().optional().default("24h"), // 查询的时间范围，例如：1h, 1m, 1d
+  time: z.string().optional().default("7d"), // 查询的时间范围，例如：1h, 1m, 1d
   namespace: z.string().optional(), // 查询的命名空间名称
   app: z.string(), // 查询的app
   limit: z.string().optional().default("50"), // 返回的日志条数限制，默认值为 100
