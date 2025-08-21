@@ -70,8 +70,8 @@ export const useResourceMetricsStatus = ({
   // Get the resource using useResourceStatus
   const { resource, isLoading: isResourceLoading } = useResourceStatus(target);
 
-  console.log("resource", resource);
-  console.log("isResourceLoading", isResourceLoading);
+  // console.log("resource", resource);
+  // console.log("isResourceLoading", isResourceLoading);
 
   // Fetch monitor data based on resource kind
   const { data: devboxMonitorData } = useQuery({
@@ -84,7 +84,7 @@ export const useResourceMetricsStatus = ({
       !!(resource as DevboxObject)?.pods?.[0]?.name,
   });
 
-  console.log("devboxMonitorData", devboxMonitorData);
+  // console.log("devboxMonitorData", devboxMonitorData);
 
   const { data: clusterMonitorData } = useQuery({
     ...cluster.getClusterCombinedMonitorData.queryOptions({
@@ -95,7 +95,7 @@ export const useResourceMetricsStatus = ({
       !isResourceLoading && target.resourceType.toLowerCase() === "cluster",
   });
 
-  console.log("clusterMonitorData", clusterMonitorData);
+  // console.log("clusterMonitorData", clusterMonitorData);
 
   const { data: launchpadMonitorData } = useQuery({
     ...launchpad.getLaunchpadCombinedMonitorData.queryOptions({
@@ -108,7 +108,7 @@ export const useResourceMetricsStatus = ({
         target.resourceType.toLowerCase() === "statefulset"),
   });
 
-  console.log("launchpadMonitorData", launchpadMonitorData);
+  // console.log("launchpadMonitorData", launchpadMonitorData);
 
   // Get the appropriate monitor data based on resource type
   const getMonitorData = (): MetricsDataPoint[] | undefined => {
@@ -143,7 +143,7 @@ export const useResourceMetricsStatus = ({
     ) &&
       !launchpadMonitorData);
 
-  console.log("monitorData", monitorData);
+  // console.log("monitorData", monitorData);
 
   return useMemo(() => {
     if (
