@@ -15,7 +15,6 @@ import ClusterNodeBackup from "./cluster-node-backup";
 
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { createK8sContext } from "@/lib/auth/auth-utils";
-import { useIsMutating } from "@tanstack/react-query";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
@@ -26,6 +25,7 @@ import { useResourceMetrics } from "@/hooks/sealos/resource/use-resource-metrics
 import { useClusterObject } from "@/hooks/sealos/cluster/use-cluster-object";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
+import { useResourceDelete } from "@/hooks/sealos/resource/use-resource-delete";
 import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import NodeLoading from "../../components/node-loading";
@@ -143,18 +143,10 @@ function ClusterNode({
     k8sContext.regionUrl
   );
 
-  const isDeletingCluster =
-    status === "Deleting" ||
-    status === "Terminating" ||
-    useIsMutating({
-      predicate: (mutation) => {
-        const isDeleteMutation =
-          mutation.options.mutationFn?.toString().includes("deleteCluster") ??
-          false;
-        const variables = mutation.state.variables as any;
-        return isDeleteMutation && variables?.name === name;
-      },
-    }) > 0;
+  const { isDeleting: isDeletingCluster } = useResourceDelete({
+    status,
+    target,
+  });
 
   const handleNodeClick = () => {
     // Use the new mutation hook to send messages
@@ -167,7 +159,7 @@ function ClusterNode({
   const mainCard = (
     <BaseNode
       nodeData={clusterData}
-      // className={isDeletingCluster ? "border-theme-red" : ""}
+      className={isDeletingCluster ? "border-theme-red" : ""}
     >
       <div
         className="flex h-full flex-col gap-4 justify-between"
@@ -223,10 +215,10 @@ function ClusterNode({
         <TooltipTrigger asChild>
           <div className="relative bg-node-background w-full h-full flex items-center rounded-b-xl text-xs text-muted-foreground overflow-hidden px-2 py-1 cursor-pointer hover:brightness-120">
             {/* Filled background representing used percentage */}
-            {/* <div
+            <div
               className="absolute inset-y-0 left-0 bg-muted"
               style={{ width: `${storagePercent}%` }}
-            /> */}
+            />
 
             {/* Foreground content row */}
             <div className="relative z-10 flex items-center justify-between w-full">

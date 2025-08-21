@@ -69,5 +69,6 @@ export function useResourceNodeEnhancer(resourceData: {
     completeResource,
     isLoadingComplete: isLoading,
     hasNetworkNodes: hasCreatedNetworkNodes,
+    status: (completeResource as any)?.status,
   };
 }

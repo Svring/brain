@@ -17,7 +17,7 @@ import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-metho
 import { useResourceMetrics } from "@/hooks/sealos/resource/use-resource-metrics";
 import { useDevboxRelease } from "@/hooks/sealos/devbox/use-devbox-release";
 import { useMutation } from "@tanstack/react-query";
-import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useResourceDelete } from "@/hooks/sealos/resource/use-resource-delete";
 import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
@@ -37,10 +37,7 @@ function DevboxNodeWrapper({ data }: { data: DevboxObject | K8sResource }) {
   };
 
   // Always call hooks in the same order
-  const { completeResource, isLoadingComplete } =
-    useResourceNodeEnhancer(resourceData);
-  const target = convertResourceObjectToTarget(resourceData);
-  const { status, isLoading: isLoadingStatus } = useResourceStatus(target);
+  const { completeResource, status } = useResourceNodeEnhancer(resourceData);
 
   // If we have complete object data, render the full node
   if (isCompleteObject) {
@@ -98,10 +95,12 @@ function DevboxNode({
   // console.log("status", status);
 
   const context = createK8sContext();
-  const { devbox } = useTRPCClients();
 
-  // Use devbox router for delete mutation
-  const deleteDevbox = useMutation(devbox.deleteDevbox.mutationOptions());
+  // Use the delete hook
+  const { isDeleting: isDeletingDevbox } = useResourceDelete({
+    status,
+    target,
+  });
 
   const { releases } = useDevboxRelease(name);
 
@@ -118,7 +117,7 @@ function DevboxNode({
   const mainCard = (
     <BaseNode
       nodeData={resource}
-      className={deleteDevbox.isPending ? "border-theme-red" : ""}
+      className={isDeletingDevbox ? "border-theme-red" : ""}
     >
       <div
         className="flex h-full flex-col gap-2 justify-between"

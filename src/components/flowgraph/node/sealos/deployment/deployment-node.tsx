@@ -1,11 +1,8 @@
 "use client";
 
 import BaseNode from "../../base-node-wrapper";
-// import useDeploymentNode from "@/hooks/sealos/deployment/use-deployment-node";
 import { Package } from "lucide-react";
 import NodeStatusLight from "../../components/node-status-light";
-import NodeInternalUrl from "../../components/node-internal-url";
-import NodePods from "../../components/node-pods";
 import NodeLog from "../../components/node-log";
 import NodeMonitor from "../../components/node-monitor";
 import NodeStack from "../../components/node-stack";
@@ -13,35 +10,39 @@ import DeploymentNodeTitle from "./deployment-node-title";
 import DeploymentNodeMenu from "./deployment-node-menu";
 import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-object-schema";
 import { truncateImage } from "@/lib/sealos/sealos-utils";
-import { useIsMutating } from "@tanstack/react-query";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useLaunchpadObject } from "@/hooks/sealos/launchpad/use-launchpad-object";
-import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useResourceDelete } from "@/hooks/sealos/resource/use-resource-delete";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import NodeLoading from "../../components/node-loading";
 
 // Enhanced wrapper that can handle both K8sResource and DeploymentObject
-function DeploymentNodeWrapper({ data }: { data: DeploymentObject | K8sResource }) {
+function DeploymentNodeWrapper({
+  data,
+}: {
+  data: DeploymentObject | K8sResource;
+}) {
   // Check if we have a complete DeploymentObject or just a basic K8sResource
-  const isCompleteObject = 'image' in data && 'resource' in data && 'ports' in data;
-  
+  const isCompleteObject =
+    "image" in data && "resource" in data && "ports" in data;
+
   // Always extract resource data to ensure consistent hook calls
   const resourceData = {
     kind: data.kind,
-    name: isCompleteObject 
-      ? (data as DeploymentObject).name 
-      : (data as K8sResource).metadata?.name || '',
+    name: isCompleteObject
+      ? (data as DeploymentObject).name
+      : (data as K8sResource).metadata?.name || "",
   };
 
   // Always call hooks in the same order
-  const { completeResource, isLoadingComplete } = useResourceNodeEnhancer(resourceData);
+  const { completeResource, status } =
+    useResourceNodeEnhancer(resourceData);
   const target = convertResourceObjectToTarget(resourceData);
-  const { status, isLoading: isLoadingStatus } = useResourceStatus(target);
 
-    // If we have complete object data, render the full node
+  // If we have complete object data, render the full node
   if (isCompleteObject) {
     return (
       <DeploymentNode
@@ -52,7 +53,11 @@ function DeploymentNodeWrapper({ data }: { data: DeploymentObject | K8sResource 
   }
 
   // If we have complete resource data from enhancement, render the full node
-  if (completeResource && 'image' in completeResource && 'resource' in completeResource) {
+  if (
+    completeResource &&
+    "image" in completeResource &&
+    "resource" in completeResource
+  ) {
     return (
       <DeploymentNode
         resource={completeResource as DeploymentObject}
@@ -98,18 +103,11 @@ function DeploymentNode({
     }
   );
 
-  // Check if this deployment is being deleted
-  const isDeletingDeployment =
-    useIsMutating({
-      predicate: (mutation) => {
-        // Check if this is a delete launchpad mutation for this specific deployment
-        const isDeleteMutation =
-          mutation.options.mutationFn?.toString().includes("deleteLaunchpad") ??
-          false;
-        const variables = mutation.state.variables as any;
-        return isDeleteMutation && variables?.name === deploymentData.name;
-      },
-    }) > 0;
+  // Use the delete hook
+  const { isDeleting: isDeletingDeployment } = useResourceDelete({
+    status,
+    target,
+  });
 
   const handleNodeClick = () => {
     const target = convertResourceObjectToTarget({

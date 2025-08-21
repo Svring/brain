@@ -99,7 +99,6 @@ export const useResourceMetricsStatus = ({
 
   const { data: launchpadMonitorData } = useQuery({
     ...launchpad.getLaunchpadCombinedMonitorData.queryOptions({
-      context: sealosContext,
       queryName: (resource as LaunchpadObject)?.pods?.[0]?.name || "",
     }),
     enabled:

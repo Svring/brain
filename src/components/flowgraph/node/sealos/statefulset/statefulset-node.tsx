@@ -10,36 +10,39 @@ import StatefulsetNodeTitle from "./statefulset-node-title";
 import StatefulsetNodeMenu from "./statefulset-node-menu";
 import { StatefulsetObjectQuery } from "@/lib/sealos/resources/statefulset/statefulset-object-query-schema";
 import { truncateImage } from "@/lib/sealos/sealos-utils";
-import { useIsMutating } from "@tanstack/react-query";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import NodeLog from "../../components/node-log";
 import { useResourceMetrics } from "@/hooks/sealos/resource/use-resource-metrics";
 import { useLaunchpadObject } from "@/hooks/sealos/launchpad/use-launchpad-object";
-import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useResourceDelete } from "@/hooks/sealos/resource/use-resource-delete";
 import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import NodeLoading from "../../components/node-loading";
 
 // Enhanced wrapper that can handle both K8sResource and StatefulsetObjectQuery
-function StatefulsetNodeWrapper({ data }: { data: StatefulsetObjectQuery | K8sResource }) {
+function StatefulsetNodeWrapper({
+  data,
+}: {
+  data: StatefulsetObjectQuery | K8sResource;
+}) {
   // Check if we have a complete StatefulsetObjectQuery or just a basic K8sResource
-  const isCompleteObject = 'image' in data && 'resource' in data && 'ports' in data;
-  
+  const isCompleteObject =
+    "image" in data && "resource" in data && "ports" in data;
+
   // Always extract resource data to ensure consistent hook calls
   const resourceData = {
     kind: data.kind,
-    name: isCompleteObject 
-      ? (data as StatefulsetObjectQuery).name 
-      : (data as K8sResource).metadata?.name || '',
+    name: isCompleteObject
+      ? (data as StatefulsetObjectQuery).name
+      : (data as K8sResource).metadata?.name || "",
   };
 
   // Always call hooks in the same order
-  const { completeResource, isLoadingComplete } = useResourceNodeEnhancer(resourceData);
+  const { completeResource, status } = useResourceNodeEnhancer(resourceData);
   const target = convertResourceObjectToTarget(resourceData);
-  const { status, isLoading: isLoadingStatus } = useResourceStatus(target);
 
-    // If we have complete object data, render the full node
+  // If we have complete object data, render the full node
   if (isCompleteObject) {
     return (
       <StatefulsetNode
@@ -50,7 +53,11 @@ function StatefulsetNodeWrapper({ data }: { data: StatefulsetObjectQuery | K8sRe
   }
 
   // If we have complete resource data from enhancement, render the full node
-  if (completeResource && 'image' in completeResource && 'resource' in completeResource) {
+  if (
+    completeResource &&
+    "image" in completeResource &&
+    "resource" in completeResource
+  ) {
     return (
       <StatefulsetNode
         resource={completeResource as StatefulsetObjectQuery}
@@ -80,27 +87,24 @@ function StatefulsetNode({
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 
   // Use the new hook to get statefulset data
-  const { data: statefulsetData = resource } = useLaunchpadObject(resource.name, resource.kind);
+  const { data: statefulsetData = resource } = useLaunchpadObject(
+    resource.name,
+    resource.kind
+  );
 
   // Get resource metrics data using the hook data
   const target = convertResourceObjectToTarget({
     kind: statefulsetData.kind,
     name: statefulsetData.name,
   });
-  const { monitorData, isLoading: isMetricsLoading } = useResourceMetrics(target);
+  const { monitorData, isLoading: isMetricsLoading } =
+    useResourceMetrics(target);
 
-  // Check if this statefulset is being deleted
-  const isDeletingStatefulset =
-    useIsMutating({
-      predicate: (mutation) => {
-        // Check if this is a delete launchpad mutation for this specific statefulset
-        const isDeleteMutation =
-          mutation.options.mutationFn?.toString().includes("deleteLaunchpad") ??
-          false;
-        const variables = mutation.state.variables as any;
-        return isDeleteMutation && variables?.name === statefulsetData.name;
-      },
-    }) > 0;
+  // Use the delete hook
+  const { isDeleting: isDeletingStatefulset } = useResourceDelete({
+    status,
+    target,
+  });
 
   const handleNodeClick = () => {
     const target = convertResourceObjectToTarget({
@@ -139,7 +143,10 @@ function StatefulsetNode({
         <div className="flex items-center gap-2 mt-2">
           <Package className="h-4 w-4 text-muted-foreground" />
           <div className="text-sm text-muted-foreground truncate flex-1">
-            Image: {statefulsetData.image ? truncateImage(statefulsetData.image) : "N/A"}
+            Image:{" "}
+            {statefulsetData.image
+              ? truncateImage(statefulsetData.image)
+              : "N/A"}
           </div>
         </div>
 
@@ -153,7 +160,7 @@ function StatefulsetNode({
             {/* <NodeInternalUrl ports={statefulsetData.ports || []} /> */}
             {/* <NodePods resource={statefulsetData} /> */}
             <NodeLog target={logTarget} resourceType="launchpad" />
-            <NodeMonitor target={target}/>
+            <NodeMonitor target={target} />
           </div>
         </div>
       </div>
@@ -172,7 +179,9 @@ function StatefulsetNode({
         </div>
 
         {/* Right side: Storage capacity */}
-        <div className="text-xs">{statefulsetData.resource?.storage || "N/A"}</div>
+        <div className="text-xs">
+          {statefulsetData.resource?.storage || "N/A"}
+        </div>
       </div>
     </div>
   );
