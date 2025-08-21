@@ -38,6 +38,8 @@ function ObjectStorageNodeWrapper({
   // Check if we have a complete ObjectStorageObject or just a basic K8sResource
   const isCompleteObject = "policy" in data && "access" in data;
 
+  // console.log("data", data);
+
   // Always extract resource data to ensure consistent hook calls
   const resourceData = {
     kind: data.kind,

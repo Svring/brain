@@ -33,7 +33,7 @@ export const useResourceStatus = (
         status: resource?.status,
       };
     }
-    if (target.resourceType === "objectstorage") {
+    if (target.resourceType === "objectstoragebucket") {
       const { data: resource, ...rest } = useQuery(
         objectStorage.getObjectStorage.queryOptions({ target })
       );
@@ -57,5 +57,5 @@ export const useResourceStatus = (
     };
   }
 
-  throw new Error(`Unsupported resource type: ${target.type}`);
+  throw new Error(`Unsupported resource type: ${target.resourceType}`);
 };

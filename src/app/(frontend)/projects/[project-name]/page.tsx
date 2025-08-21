@@ -207,20 +207,24 @@ function ProjectFlow({ projectName }: { projectName: string }) {
     }
 
     // Create a map of enhanced nodes by their IDs
-    const enhancedNodeMap = new Map(enhancedNodes.map(node => [node.id, node]));
-    
+    const enhancedNodeMap = new Map(
+      enhancedNodes.map((node) => [node.id, node])
+    );
+
     // Start with basic nodes and replace with enhanced versions when available
-    const mergedNodes = basicNodes.map(basicNode => {
+    const mergedNodes = basicNodes.map((basicNode) => {
       const enhancedNode = enhancedNodeMap.get(basicNode.id);
       return enhancedNode || basicNode;
     });
 
     // Add any enhanced nodes that don't have basic counterparts (e.g., network nodes)
-    const basicNodeIds = new Set(basicNodes.map(node => node.id));
-    const additionalEnhancedNodes = enhancedNodes.filter(node => !basicNodeIds.has(node.id));
-    
+    const basicNodeIds = new Set(basicNodes.map((node) => node.id));
+    const additionalEnhancedNodes = enhancedNodes.filter(
+      (node) => !basicNodeIds.has(node.id)
+    );
+
     const result = [...mergedNodes, ...additionalEnhancedNodes];
-    console.log("currentNodes result:", result);
+    // console.log("currentNodes result:", result);
     return result;
   }, [basicNodes, enhancedNodes, resourceObjects.length]);
 
