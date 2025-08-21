@@ -1,4 +1,5 @@
 import { Edge, MarkerType, Node } from "@xyflow/react";
+import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 
 interface ResourceObject {
   name: string;
@@ -43,6 +44,39 @@ export const convertResourceObjectsToNodes = (
       type,
       position: { x: 0, y: 0 },
       data: resourceObject,
+    });
+  }
+
+  return nodes;
+};
+
+/**
+ * Convert K8sResource objects into React Flow nodes.
+ *
+ * @param k8sResources Array of K8sResource objects.
+ * @returns Array of nodes compatible with React Flow.
+ */
+export const convertResourceToNodes = (
+  k8sResources: K8sResource[]
+): Node<any>[] => {
+  const nodes: Node<any>[] = [];
+
+  for (const k8sResource of k8sResources) {
+    const { metadata, kind } = k8sResource;
+    const name = metadata?.name;
+
+    if (!name || !kind) {
+      continue;
+    }
+
+    const id = `${kind.toLowerCase()}-${name}`;
+    const type = kind.toLowerCase();
+
+    nodes.push({
+      id,
+      type,
+      position: { x: 0, y: 0 },
+      data: k8sResource,
     });
   }
 

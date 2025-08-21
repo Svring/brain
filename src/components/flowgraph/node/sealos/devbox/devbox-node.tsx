@@ -18,39 +18,74 @@ import { useResourceMetrics } from "@/hooks/sealos/resource/use-resource-metrics
 import { useDevboxRelease } from "@/hooks/sealos/devbox/use-devbox-release";
 import { useMutation } from "@tanstack/react-query";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 
-// Wrapper component that handles loading state
-function DevboxNodeWrapper({ data }: { data: DevboxObject }) {
-  const target = convertResourceObjectToTarget({
-    kind: data.kind,
-    name: data.name,
-  });
+// Enhanced wrapper that can handle both K8sResource and DevboxObject
+function DevboxNodeWrapper({ data }: { data: DevboxObject | K8sResource }) {
+  // Check if we have a complete DevboxObject or just a basic K8sResource
+  const isCompleteObject = 'ports' in data && 'ssh' in data && 'image' in data;
+  
+  if (isCompleteObject) {
+    // We have complete object data, render directly
+    const target = convertResourceObjectToTarget({
+      kind: data.kind,
+      name: (data as DevboxObject).name,
+    });
 
-  // Get resource status using the new hook
-  const { status, resource, isLoading } = useResourceStatus(target);
+    const { status, isLoading } = useResourceStatus(target);
 
-  // Return loading state while resource status is being fetched
-  if (isLoading) {
-    return <DevboxNode resource={data} status="Pending" />;
+    return (
+      <DevboxNode
+        resource={data as DevboxObject}
+        status={status || "Pending"}
+        isLoadingStatus={isLoading}
+      />
+    );
+  } else {
+    // We have basic K8sResource, need to enhance progressively
+    const resourceData = {
+      kind: data.kind,
+      name: data.metadata?.name || '',
+    };
+
+    const { completeResource, isLoadingComplete } = useResourceNodeEnhancer(resourceData);
+    const target = convertResourceObjectToTarget(resourceData);
+    const { status, isLoading: isLoadingStatus } = useResourceStatus(target);
+
+    // Use complete resource if available, otherwise basic resource data
+    const displayResource = completeResource || {
+      ...resourceData,
+      image: 'Loading...',
+      ports: [],
+      ssh: { privateKey: '', publicKey: '', user: '', password: '' },
+      resources: { cpu: '0', memory: '0' },
+      pods: [],
+    };
+
+    return (
+      <DevboxNode
+        resource={displayResource as DevboxObject}
+        status={status || "Pending"}
+        isLoadingStatus={isLoadingStatus}
+        isLoadingComplete={isLoadingComplete}
+      />
+    );
   }
-
-  // Once loaded, render the main component with the fetched resource data
-  return (
-    <DevboxNode
-      resource={resource as DevboxObject}
-      status={status || "Pending"}
-    />
-  );
 }
 
 // Main component that receives the loaded resource data
 function DevboxNode({
   resource,
   status,
+  isLoadingStatus = false,
+  isLoadingComplete = false,
 }: {
   resource: DevboxObject;
   status?: string;
+  isLoadingStatus?: boolean;
+  isLoadingComplete?: boolean;
 }) {
   // const { name, image, ports, pods } = data;
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
@@ -110,8 +145,11 @@ function DevboxNode({
         <div className="flex items-center gap-2 mt-2">
           <Package className="h-4 w-4 text-muted-foreground" />
           <div className="text-md text-muted-foreground truncate flex-1">
-            Image: {transformDevboxImage(image)}
+            Image: {isLoadingComplete ? "Loading..." : transformDevboxImage(image)}
           </div>
+          {isLoadingComplete && (
+            <div className="animate-pulse w-2 h-2 bg-blue-500 rounded-full" />
+          )}
         </div>
 
         {/* Bottom section with status and icons */}

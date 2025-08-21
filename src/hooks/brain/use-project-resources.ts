@@ -28,16 +28,21 @@ export default function useProjectResources(projectName: string) {
   });
 
   // Convert resources to targets (memoized to prevent infinite re-renders)
-  const resources = useMemo(() => {
-    if (!allResourcesResponse) return [];
+  const { resources, k8sResources } = useMemo(() => {
+    if (!allResourcesResponse) return { resources: [], k8sResources: [] };
 
-    return flattenListAllResourcesResponse(allResourcesResponse)
-      .map(convertResourceToTarget)
-      .filter(Boolean);
+    const flattened = flattenListAllResourcesResponse(allResourcesResponse);
+    const targets = flattened.map(convertResourceToTarget).filter(Boolean);
+
+    return {
+      resources: targets,
+      k8sResources: flattened,
+    };
   }, [allResourcesResponse, projectName]);
 
   return {
     resources,
+    k8sResources,
     isLoading,
     error,
   };

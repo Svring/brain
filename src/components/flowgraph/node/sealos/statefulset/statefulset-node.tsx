@@ -17,27 +17,57 @@ import NodeLog from "../../components/node-log";
 import { useResourceMetrics } from "@/hooks/sealos/resource/use-resource-metrics";
 import { useLaunchpadObject } from "@/hooks/sealos/launchpad/use-launchpad-object";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
+import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 
-// Wrapper component that handles loading state
-function StatefulsetNodeWrapper({ data }: { data: StatefulsetObjectQuery }) {
-  const target = convertResourceObjectToTarget({
+// Enhanced wrapper that can handle both K8sResource and StatefulsetObjectQuery
+function StatefulsetNodeWrapper({ data }: { data: StatefulsetObjectQuery | K8sResource }) {
+  // Check if we have a complete StatefulsetObjectQuery or just a basic K8sResource
+  const isCompleteObject = 'image' in data && 'resource' in data && 'ports' in data;
+  
+  // Always extract resource data to ensure consistent hook calls
+  const resourceData = {
     kind: data.kind,
-    name: data.name,
-  });
+    name: isCompleteObject 
+      ? (data as StatefulsetObjectQuery).name 
+      : (data as K8sResource).metadata?.name || '',
+  };
 
-  // Get resource status using the new hook
-  const { status, resource, isLoading } = useResourceStatus(target);
+  // Always call hooks in the same order
+  const { completeResource, isLoadingComplete } = useResourceNodeEnhancer(resourceData);
+  const target = convertResourceObjectToTarget(resourceData);
+  const { status, isLoading: isLoadingStatus } = useResourceStatus(target);
 
-  // Return loading state while resource status is being fetched
-  if (isLoading) {
-    return <StatefulsetNode resource={data} status="Pending" />;
+  // Determine the resource to display
+  let displayResource: StatefulsetObjectQuery;
+  
+  if (isCompleteObject) {
+    // Use the complete object directly
+    displayResource = data as StatefulsetObjectQuery;
+  } else {
+    // Use complete resource if available and it's a StatefulsetObjectQuery, otherwise basic resource data
+    displayResource = (completeResource && 'image' in completeResource && 'resource' in completeResource) 
+      ? (completeResource as StatefulsetObjectQuery)
+              : {
+            ...resourceData,
+            status: 'Loading...',
+            operationalStatus: { createdAt: 'Loading...' },
+            image: 'Loading...',
+            resource: { cpu: '0', memory: '0', replicas: 1, storage: '0' },
+            ports: [],
+            env: [],
+            configMap: [],
+            localStorage: [],
+            pods: [],
+          };
   }
 
-  // Once loaded, render the main component with the fetched resource data
   return (
     <StatefulsetNode
-      resource={resource as StatefulsetObjectQuery}
+      resource={displayResource}
       status={status || "Pending"}
+      isLoadingStatus={isLoadingStatus}
+      isLoadingComplete={isLoadingComplete}
     />
   );
 }
@@ -46,9 +76,13 @@ function StatefulsetNodeWrapper({ data }: { data: StatefulsetObjectQuery }) {
 function StatefulsetNode({
   resource,
   status,
+  isLoadingStatus = false,
+  isLoadingComplete = false,
 }: {
   resource: StatefulsetObjectQuery;
   status?: string;
+  isLoadingStatus?: boolean;
+  isLoadingComplete?: boolean;
 }) {
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 
@@ -105,15 +139,18 @@ function StatefulsetNode({
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
           <StatefulsetNodeTitle name={statefulsetData.name} />
-          <StatefulsetNodeMenu object={resource} />
+          {/* <StatefulsetNodeMenu object={resource} /> */}
         </div>
 
         {/* Image with Package Icon */}
         <div className="flex items-center gap-2 mt-2">
           <Package className="h-4 w-4 text-muted-foreground" />
           <div className="text-sm text-muted-foreground truncate flex-1">
-            Image: {statefulsetData.image ? truncateImage(statefulsetData.image) : "N/A"}
+            Image: {isLoadingComplete ? "Loading..." : (statefulsetData.image ? truncateImage(statefulsetData.image) : "N/A")}
           </div>
+          {isLoadingComplete && (
+            <div className="animate-pulse w-2 h-2 bg-blue-500 rounded-full" />
+          )}
         </div>
 
         {/* Bottom section with status and icons */}

@@ -166,21 +166,32 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
 
 // Flow Component
 function ProjectFlow({ projectName }: { projectName: string }) {
-  const { resources, isLoading } = useProjectResources(projectName);
+  const { resources, k8sResources, isLoading } =
+    useProjectResources(projectName);
   const { resourceObjects } = useResourceObjects(resources ?? []);
-  const { nodes: computedNodes, edges: networkEdges } = useFlowgraphNodes(resourceObjects);
+
+  // Phase 1: Generate basic nodes from K8sResource objects immediately
+  const { nodes: basicNodes } = useFlowgraphNodes(k8sResources ?? [], true);
+
+  // Phase 2: Generate enhanced nodes with network nodes from complete objects
+  const { nodes: enhancedNodes, edges: networkEdges } =
+    useFlowgraphNodes(resourceObjects);
+
   const { reliances } = useResourceReliances(resourceObjects);
   const { edges: computedEdges } = useFlowgraphEdges(reliances);
 
   // console.log("resources", resources);
   // console.log("resourceObjects", resourceObjects);
-  // console.log("computedNodes", computedNodes);
+  // console.log("basicNodes", basicNodes);
+  // console.log("enhancedNodes", enhancedNodes);
   // console.log("reliances", reliances);
   // console.log("computedEdges", computedEdges);
 
-  const { setNodes, setEdges, onNodesChange, onEdgesChange } =
-    useFlowgraphActions();
+  const { setNodes, setEdges } = useFlowgraphActions();
   const { nodes, edges } = useFlowgraphState();
+
+  // Use enhanced nodes if available, otherwise fall back to basic nodes
+  const currentNodes = resourceObjects.length > 0 ? enhancedNodes : basicNodes;
 
   // Combine network edges (from ports) with computed edges (from reliances)
   const finalEdges = useMemo(() => {
@@ -188,13 +199,13 @@ function ProjectFlow({ projectName }: { projectName: string }) {
   }, [networkEdges, computedEdges]);
 
   useEffect(() => {
-    // Set nodes and edges (network nodes are now included in computedNodes)
-    setNodes(computedNodes);
+    // Set nodes and edges (network nodes are now included when objects are ready)
+    setNodes(currentNodes);
     setEdges(finalEdges);
-  }, [computedNodes, finalEdges]);
+  }, [currentNodes, finalEdges]);
 
-  // Show loading state only when resources exist but nodes haven't been computed yet
-  if (isLoading || (resources.length > 0 && !nodes.length)) {
+  // Show loading state only when initially loading resources
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full w-full">
         <Spinner variant="bars" size={24} />

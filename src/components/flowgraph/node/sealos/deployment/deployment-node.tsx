@@ -19,27 +19,55 @@ import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useLaunchpadObject } from "@/hooks/sealos/launchpad/use-launchpad-object";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
+import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
+import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 
-// Wrapper component that handles loading state
-function DeploymentNodeWrapper({ data }: { data: DeploymentObject }) {
-  const target = convertResourceObjectToTarget({
+// Enhanced wrapper that can handle both K8sResource and DeploymentObject
+function DeploymentNodeWrapper({ data }: { data: DeploymentObject | K8sResource }) {
+  // Check if we have a complete DeploymentObject or just a basic K8sResource
+  const isCompleteObject = 'image' in data && 'resource' in data && 'ports' in data;
+  
+  // Always extract resource data to ensure consistent hook calls
+  const resourceData = {
     kind: data.kind,
-    name: data.name,
-  });
+    name: isCompleteObject 
+      ? (data as DeploymentObject).name 
+      : (data as K8sResource).metadata?.name || '',
+  };
 
-  // Get resource status using the new hook
-  const { status, resource, isLoading } = useResourceStatus(target);
+  // Always call hooks in the same order
+  const { completeResource, isLoadingComplete } = useResourceNodeEnhancer(resourceData);
+  const target = convertResourceObjectToTarget(resourceData);
+  const { status, isLoading: isLoadingStatus } = useResourceStatus(target);
 
-  // Return loading state while resource status is being fetched
-  if (isLoading) {
-    return <DeploymentNode resource={data} status="Pending" />;
+  // Determine the resource to display
+  let displayResource: DeploymentObject;
+  
+  if (isCompleteObject) {
+    // Use the complete object directly
+    displayResource = data as DeploymentObject;
+  } else {
+    // Use complete resource if available and it's a DeploymentObject, otherwise basic resource data
+    displayResource = (completeResource && 'image' in completeResource && 'resource' in completeResource) 
+      ? (completeResource as DeploymentObject)
+              : {
+            ...resourceData,
+            image: 'Loading...',
+            status: 'Loading...',
+            resource: { cpu: '0', memory: '0', replicas: 1 },
+            ports: [],
+            env: [],
+            pods: [],
+            operationalStatus: null,
+          };
   }
 
-  // Once loaded, render the main component with the fetched resource data
   return (
     <DeploymentNode
-      resource={resource as DeploymentObject}
+      resource={displayResource}
       status={status || "Pending"}
+      isLoadingStatus={isLoadingStatus}
+      isLoadingComplete={isLoadingComplete}
     />
   );
 }
@@ -48,9 +76,13 @@ function DeploymentNodeWrapper({ data }: { data: DeploymentObject }) {
 function DeploymentNode({
   resource,
   status,
+  isLoadingStatus = false,
+  isLoadingComplete = false,
 }: {
   resource: DeploymentObject;
   status?: string;
+  isLoadingStatus?: boolean;
+  isLoadingComplete?: boolean;
 }) {
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 
@@ -122,8 +154,11 @@ function DeploymentNode({
           <Package className="h-4 w-4 text-muted-foreground" />
           <div className="text-md text-muted-foreground truncate flex-1">
             Image:{" "}
-            {deploymentData.image ? truncateImage(deploymentData.image) : "N/A"}
+            {isLoadingComplete ? "Loading..." : (deploymentData.image ? truncateImage(deploymentData.image) : "N/A")}
           </div>
+          {isLoadingComplete && (
+            <div className="animate-pulse w-2 h-2 bg-blue-500 rounded-full" />
+          )}
         </div>
 
         {/* Bottom section with status and icons */}
