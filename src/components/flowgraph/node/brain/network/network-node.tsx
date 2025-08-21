@@ -71,7 +71,7 @@ export default function NetworkNode({
               };
 
               return (
-                <div className="flex items-center gap-2 text-sm w-full">
+                <div className="flex items-center justify-center gap-2 text-sm w-full">
                   {isNetworkNotReady ? (
                     <HelpCircle
                       className={cn(
@@ -94,7 +94,7 @@ export default function NetworkNode({
                   )}
                   <span
                     className={cn(
-                      "truncate min-w-0 flex-1",
+                      "truncate min-w-0",
                       hasPublicAddress
                         ? "text-foreground cursor-pointer hover:text-foreground/80"
                         : "text-foreground"

@@ -22,7 +22,15 @@ export default function useProjectResources(projectName: string) {
   } = useQuery({
     ...k8s.listAllResources.queryOptions({
       labelSelector,
-      builtinResourceTypes: ["deployment", "statefulset"],
+      builtinResourceTypes: [
+        "deployment",
+        "statefulset",
+        // "service",
+        // "configmap",
+        // "job",
+        // "cronjob",
+        // "pvc",
+      ],
       customResourceTypes: ["devbox", "cluster", "objectstoragebucket"],
     }),
   });

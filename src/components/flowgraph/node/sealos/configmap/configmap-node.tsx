@@ -1,19 +1,19 @@
 "use client";
 
 import React from "react";
-import { Clock } from "lucide-react";
+import { FileText } from "lucide-react";
 import BaseNode from "../../base-node-wrapper";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
-function CronjobNodeTitle({ name }: { name: string }) {
+function ConfigmapNodeTitle({ name }: { name: string }) {
   return (
     <div className="flex items-center gap-2 truncate font-medium flex-1 min-w-0">
       <div className="flex flex-col items-start">
         <span className="flex items-center gap-4">
-          <Clock className="h-9 w-9 text-muted-foreground flex-shrink-0" />
+          <FileText className="h-9 w-9 text-muted-foreground flex-shrink-0" />
           <span className="flex flex-col min-w-0">
             <span className="text-xs text-muted-foreground leading-none">
-              CronJob
+              ConfigMap
             </span>
             <span className="text-lg font-bold text-foreground leading-tight truncate">
               {name.length > 8 ? `${name.slice(0, 15)}...` : name}
@@ -25,7 +25,7 @@ function CronjobNodeTitle({ name }: { name: string }) {
   );
 }
 
-export default function CronjobNode({ data }: { data: BuiltinResourceTarget }) {
+export default function ConfigmapNode({ data }: { data: BuiltinResourceTarget }) {
   const { resourceType, name } = data;
 
   return (
@@ -36,7 +36,7 @@ export default function CronjobNode({ data }: { data: BuiltinResourceTarget }) {
       <div className="flex h-full flex-col gap-2 justify-between">
         {/* Header with Name */}
         <div className="flex items-center justify-between">
-          <CronjobNodeTitle name={name || ""} />
+          <ConfigmapNodeTitle name={name || ""} />
         </div>
       </div>
     </BaseNode>
