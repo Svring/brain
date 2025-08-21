@@ -14,7 +14,7 @@ export default function useCopilotActions() {
   const devboxContext = createDevboxContext();
   const sealosContext = createSealosContext();
 
-  activateDevboxActions(k8sContext, devboxContext);
+  // activateDevboxActions(k8sContext, devboxContext);
   // activateClusterActions(k8sContext, sealosContext);
   // activateObjectStorageBucketActions(k8sContext, sealosContext);
   activateProjectActions(k8sContext);

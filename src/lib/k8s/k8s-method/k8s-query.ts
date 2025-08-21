@@ -11,6 +11,11 @@ import {
   getCustomResource,
   listBuiltinResources,
   listCustomResources,
+  // Direct server-side helpers to avoid spawning multiple Server Action POSTs
+  listBuiltinResourcesDirect,
+  listCustomResourcesDirect,
+  getBuiltinResourceDirect,
+  getCustomResourceDirect,
 } from "../k8s-api/k8s-api-query";
 
 // Kubernetes API schemas
@@ -62,29 +67,25 @@ export const listAllResources = async (
   const builtinPromises = _.isEmpty(builtinResourcesToFetch)
     ? []
     : _.map(builtinResourcesToFetch, (config, name) =>
-        runParallelAction(
-          listBuiltinResources(context, {
-            type: "builtin",
-            resourceType: config.resourceType,
-            labelSelector,
-          })
-        ).then((result) => [name, result])
+        listBuiltinResourcesDirect(context, {
+          type: "builtin",
+          resourceType: config.resourceType,
+          labelSelector,
+        }).then((result) => [name, result])
       );
 
   // Prepare custom resource promises only if there are resources to fetch
   const customPromises = _.isEmpty(customResourcesToFetch)
     ? []
     : _.map(customResourcesToFetch, (config, name) =>
-        runParallelAction(
-          listCustomResources(context, {
-            type: "custom",
-            resourceType: config.resourceType,
-            group: config.group,
-            version: config.version,
-            plural: config.plural,
-            labelSelector,
-          })
-        ).then((result) => [name, result])
+        listCustomResourcesDirect(context, {
+          type: "custom",
+          resourceType: config.resourceType,
+          group: config.group,
+          version: config.version,
+          plural: config.plural,
+          labelSelector,
+        }).then((result) => [name, result])
       );
 
   // Execute all promises in parallel
@@ -110,9 +111,9 @@ export const getResource = async (
   target: CustomResourceTarget | BuiltinResourceTarget
 ) => {
   if (target.type === "custom") {
-    return await runParallelAction(getCustomResource(context, target));
+    return await getCustomResourceDirect(context, target);
   }
-  return await runParallelAction(getBuiltinResource(context, target));
+  return await getBuiltinResourceDirect(context, target);
 };
 
 /**
@@ -132,9 +133,7 @@ export const listAnnotationBasedResources = async (
   // Batch process builtin resources
   const builtinPromises = builtinTargets.map(async ({ key, target }) => {
     try {
-      const result = await runParallelAction(
-        listBuiltinResources(context, target)
-      );
+      const result = await listBuiltinResourcesDirect(context, target);
       return [key, result];
     } catch (error) {
       console.warn(
@@ -148,9 +147,7 @@ export const listAnnotationBasedResources = async (
   // Batch process custom resources
   const customPromises = customTargets.map(async ({ key, target }) => {
     try {
-      const result = await runParallelAction(
-        listCustomResources(context, target)
-      );
+      const result = await listCustomResourcesDirect(context, target);
       return [key, result];
     } catch (error) {
       console.warn(

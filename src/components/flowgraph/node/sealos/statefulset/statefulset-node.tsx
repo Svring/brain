@@ -18,24 +18,48 @@ import { useResourceMetrics } from "@/hooks/sealos/resource/use-resource-metrics
 import { useLaunchpadObject } from "@/hooks/sealos/launchpad/use-launchpad-object";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 
-export default function StatefulsetNode({
-  data,
+// Wrapper component that handles loading state
+function StatefulsetNodeWrapper({ data }: { data: StatefulsetObjectQuery }) {
+  const target = convertResourceObjectToTarget({
+    kind: data.kind,
+    name: data.name,
+  });
+
+  // Get resource status using the new hook
+  const { status, resource, isLoading } = useResourceStatus(target);
+
+  // Return loading state while resource status is being fetched
+  if (isLoading) {
+    return <StatefulsetNode resource={data} status="Pending" />;
+  }
+
+  // Once loaded, render the main component with the fetched resource data
+  return (
+    <StatefulsetNode
+      resource={resource as StatefulsetObjectQuery}
+      status={status || "Pending"}
+    />
+  );
+}
+
+// Main component that receives the loaded resource data
+function StatefulsetNode({
+  resource,
+  status,
 }: {
-  data: StatefulsetObjectQuery;
+  resource: StatefulsetObjectQuery;
+  status?: string;
 }) {
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 
   // Use the new hook to get statefulset data
-  const { data: statefulsetData = data } = useLaunchpadObject(data.name, data.kind);
+  const { data: statefulsetData = resource } = useLaunchpadObject(resource.name, resource.kind);
 
-  // Get resource status using the new hook
+  // Get resource metrics data using the hook data
   const target = convertResourceObjectToTarget({
     kind: statefulsetData.kind,
     name: statefulsetData.name,
   });
-  const { status } = useResourceStatus(target);
-
-  // Get resource metrics data using the hook data
   const { monitorData, isLoading: isMetricsLoading } = useResourceMetrics(target);
 
   // Check if this statefulset is being deleted
@@ -71,7 +95,7 @@ export default function StatefulsetNode({
 
   const mainCard = (
     <BaseNode
-      nodeData={data}
+      nodeData={resource}
       className={isDeletingStatefulset ? "border-theme-red" : ""}
     >
       <div
@@ -81,7 +105,7 @@ export default function StatefulsetNode({
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
           <StatefulsetNodeTitle name={statefulsetData.name} />
-          <StatefulsetNodeMenu object={data} />
+          <StatefulsetNodeMenu object={resource} />
         </div>
 
         {/* Image with Package Icon */}
@@ -143,3 +167,6 @@ export default function StatefulsetNode({
     </div>
   );
 }
+
+// Export the wrapper as the default component
+export default StatefulsetNodeWrapper;
