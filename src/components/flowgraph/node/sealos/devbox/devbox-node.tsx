@@ -26,8 +26,8 @@ import NodeLoading from "../../components/node-loading";
 // Enhanced wrapper that can handle both K8sResource and DevboxObject
 function DevboxNodeWrapper({ data }: { data: DevboxObject | K8sResource }) {
   // Check if we have a complete DevboxObject or just a basic K8sResource
-  const isCompleteObject = 'ports' in data && 'ssh' in data && 'image' in data;
-  
+  const isCompleteObject = "ports" in data && "ssh" in data && "image" in data;
+
   if (isCompleteObject) {
     // We have complete object data, render directly
     const target = convertResourceObjectToTarget({
@@ -48,15 +48,20 @@ function DevboxNodeWrapper({ data }: { data: DevboxObject | K8sResource }) {
     // We have basic K8sResource, need to enhance progressively
     const resourceData = {
       kind: data.kind,
-      name: data.metadata?.name || '',
+      name: data.metadata?.name || "",
     };
 
-    const { completeResource, isLoadingComplete } = useResourceNodeEnhancer(resourceData);
+    const { completeResource, isLoadingComplete } =
+      useResourceNodeEnhancer(resourceData);
     const target = convertResourceObjectToTarget(resourceData);
     const { status, isLoading: isLoadingStatus } = useResourceStatus(target);
 
     // If we have complete resource data, render the full node
-    if (completeResource && 'image' in completeResource && 'ports' in completeResource) {
+    if (
+      completeResource &&
+      "image" in completeResource &&
+      "ports" in completeResource
+    ) {
       return (
         <DevboxNode
           resource={completeResource as DevboxObject}

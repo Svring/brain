@@ -22,15 +22,91 @@ import {
   useCloseObjectStorageHostMutation,
   useOpenObjectStorageHostMutation,
 } from "@/lib/sealos/resources/objectstorage/objectstorage-method/objectstorage-mutation";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
+import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
+import NodeLoading from "../../components/node-loading";
+import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
-export default function ObjectStorageNode({
+// Enhanced wrapper that can handle both K8sResource and ObjectStorageObject
+function ObjectStorageNodeWrapper({
   data,
 }: {
-  data: ObjectStorageObject;
+  data: ObjectStorageObject | K8sResource;
+}) {
+  // Check if we have a complete ObjectStorageObject or just a basic K8sResource
+  const isCompleteObject = "policy" in data && "access" in data;
+
+  // Always extract resource data to ensure consistent hook calls
+  const resourceData = {
+    kind: data.kind,
+    name: isCompleteObject
+      ? (data as ObjectStorageObject).name
+      : (data as K8sResource).metadata?.name || "",
+  };
+
+  // Always call hooks in the same order
+  const { completeResource, isLoadingComplete } =
+    useResourceNodeEnhancer(resourceData);
+  const target = CustomResourceTargetSchema.parse(
+    convertResourceObjectToTarget(resourceData)
+  );
+  const { status, isLoading: isLoadingStatus } = useResourceStatus(target);
+
+  // If we have complete object data, render the full node
+  if (isCompleteObject) {
+    return (
+      <ObjectStorageNode
+        resource={data as ObjectStorageObject}
+        status={status || "Pending"}
+        isLoadingStatus={isLoadingStatus}
+        isLoadingComplete={false}
+      />
+    );
+  }
+
+  // If we have complete resource data from enhancement, render the full node
+  if (
+    completeResource &&
+    "policy" in completeResource &&
+    "access" in completeResource
+  ) {
+    return (
+      <ObjectStorageNode
+        resource={completeResource as unknown as ObjectStorageObject}
+        status={status || "Pending"}
+        isLoadingStatus={isLoadingStatus}
+        isLoadingComplete={false}
+      />
+    );
+  }
+
+  // Otherwise, show loading state
+  return (
+    <NodeLoading
+      kind={resourceData.kind}
+      name={resourceData.name}
+      status={status || "Pending"}
+    />
+  );
+}
+
+// Main component that receives the loaded resource data
+function ObjectStorageNode({
+  resource,
+  status,
+  isLoadingStatus = false,
+  isLoadingComplete = false,
+}: {
+  resource: ObjectStorageObject;
+  status?: string;
+  isLoadingStatus?: boolean;
+  isLoadingComplete?: boolean;
 }) {
   const [staticHosting, setStaticHosting] = useState(false);
 
-  const { name, policy, access } = data;
+  const { name, policy, access } = resource;
 
   // console.log("access", access);
 
@@ -92,7 +168,7 @@ export default function ObjectStorageNode({
 
   const mainCard = (
     <BaseNode
-      nodeData={data}
+      nodeData={resource}
       className={isDeletingObjectStorage ? "border-theme-red" : ""}
     >
       <div className="flex h-full flex-col justify-between">
@@ -101,7 +177,7 @@ export default function ObjectStorageNode({
           <div className="flex items-center justify-between">
             <ObjectStorageNodeTitle name={name} />
             <div className="flex-shrink-0">
-              <ObjectStorageNodeMenu object={data} />
+              <ObjectStorageNodeMenu object={resource} />
             </div>
           </div>
         </div>
@@ -121,3 +197,6 @@ export default function ObjectStorageNode({
   // return <NodeHem mainCard={mainCard} hemComponent={hemComponent} />;
   return mainCard;
 }
+
+// Export the wrapper as the default component
+export default ObjectStorageNodeWrapper;

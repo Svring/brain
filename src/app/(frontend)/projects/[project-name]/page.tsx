@@ -31,7 +31,6 @@ import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
 import useFlowgraphEdges from "@/hooks/flowgraph/use-flowgraph-edges";
 import useFlowgraphNodes from "@/hooks/flowgraph/use-flowgraph-nodes";
 import useProjectResources from "@/hooks/brain/use-project-resources";
-import useResourceObjects from "@/hooks/sealos/resource/use-resource-objects";
 import useResourceReliances from "@/hooks/sealos/resource/use-resource-reliances";
 import {
   useStartProjectResourcesMutation,
@@ -44,6 +43,10 @@ import {
   useFlowgraphActions,
   useFlowgraphState,
 } from "@/contexts/flowgraph/flowgraph-context";
+import {
+  ResourceDataProvider,
+  useResourceData,
+} from "@/contexts/flowgraph/resource-data-context";
 import {
   useProjectActions,
   useProjectState,
@@ -168,7 +171,14 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
 function ProjectFlow({ projectName }: { projectName: string }) {
   const { resources, k8sResources, isLoading } =
     useProjectResources(projectName);
-  const { resourceObjects } = useResourceObjects(resources ?? []);
+
+  // Get centralized resource data from individual nodes
+  const { resourceObjects, clearResources } = useResourceData();
+
+  // Clear resource data when project changes
+  useEffect(() => {
+    clearResources();
+  }, [projectName, clearResources]);
 
   // Phase 1: Generate basic nodes from K8sResource objects immediately
   const { nodes: basicNodes } = useFlowgraphNodes(k8sResources ?? [], true);
@@ -190,8 +200,29 @@ function ProjectFlow({ projectName }: { projectName: string }) {
   const { setNodes, setEdges } = useFlowgraphActions();
   const { nodes, edges } = useFlowgraphState();
 
-  // Use enhanced nodes if available, otherwise fall back to basic nodes
-  const currentNodes = resourceObjects.length > 0 ? enhancedNodes : basicNodes;
+  // Merge basic nodes with enhanced nodes (enhanced nodes replace basic nodes when available)
+  const currentNodes = useMemo(() => {
+    if (resourceObjects.length === 0) {
+      return basicNodes;
+    }
+
+    // Create a map of enhanced nodes by their IDs
+    const enhancedNodeMap = new Map(enhancedNodes.map(node => [node.id, node]));
+    
+    // Start with basic nodes and replace with enhanced versions when available
+    const mergedNodes = basicNodes.map(basicNode => {
+      const enhancedNode = enhancedNodeMap.get(basicNode.id);
+      return enhancedNode || basicNode;
+    });
+
+    // Add any enhanced nodes that don't have basic counterparts (e.g., network nodes)
+    const basicNodeIds = new Set(basicNodes.map(node => node.id));
+    const additionalEnhancedNodes = enhancedNodes.filter(node => !basicNodeIds.has(node.id));
+    
+    const result = [...mergedNodes, ...additionalEnhancedNodes];
+    console.log("currentNodes result:", result);
+    return result;
+  }, [basicNodes, enhancedNodes, resourceObjects.length]);
 
   // Combine network edges (from ports) with computed edges (from reliances)
   const finalEdges = useMemo(() => {
@@ -263,12 +294,14 @@ export default function ProjectPage({
 
   return (
     <FlowgraphProvider>
-      <div className="relative h-screen w-full">
-        <ReactFlowProvider>
-          <ProjectFlow projectName={projectName} />
-        </ReactFlowProvider>
-        <ProjectFloatingUI projectName={projectName} />
-      </div>
+      <ResourceDataProvider>
+        <div className="relative h-screen w-full">
+          <ReactFlowProvider>
+            <ProjectFlow projectName={projectName} />
+          </ReactFlowProvider>
+          <ProjectFloatingUI projectName={projectName} />
+        </div>
+      </ResourceDataProvider>
     </FlowgraphProvider>
   );
 }
