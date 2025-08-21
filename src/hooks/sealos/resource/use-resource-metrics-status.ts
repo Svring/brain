@@ -10,6 +10,7 @@ import { useResourceStatus } from "./use-resource-status";
 import _ from "lodash";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import { LaunchpadObject } from "@/lib/sealos/resources/launchpad/launchpad-object-schema";
+import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 
 export type MetricsStatus = "low" | "medium" | "high";
 
@@ -86,7 +87,7 @@ export const useResourceMetricsStatus = ({
   const { data: clusterMonitorData } = useQuery({
     ...cluster.getClusterCombinedMonitorData.queryOptions({
       dbName: target.name || "",
-      dbType: target.type!,
+      dbType: (resource as ClusterObject).type,
     }),
     enabled:
       !isResourceLoading && target.resourceType.toLowerCase() === "cluster",

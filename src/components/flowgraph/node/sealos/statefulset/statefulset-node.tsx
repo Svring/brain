@@ -19,6 +19,7 @@ import { useLaunchpadObject } from "@/hooks/sealos/launchpad/use-launchpad-objec
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
+import NodeLoading from "../../components/node-loading";
 
 // Enhanced wrapper that can handle both K8sResource and StatefulsetObjectQuery
 function StatefulsetNodeWrapper({ data }: { data: StatefulsetObjectQuery | K8sResource }) {
@@ -38,36 +39,36 @@ function StatefulsetNodeWrapper({ data }: { data: StatefulsetObjectQuery | K8sRe
   const target = convertResourceObjectToTarget(resourceData);
   const { status, isLoading: isLoadingStatus } = useResourceStatus(target);
 
-  // Determine the resource to display
-  let displayResource: StatefulsetObjectQuery;
-  
+    // If we have complete object data, render the full node
   if (isCompleteObject) {
-    // Use the complete object directly
-    displayResource = data as StatefulsetObjectQuery;
-  } else {
-    // Use complete resource if available and it's a StatefulsetObjectQuery, otherwise basic resource data
-    displayResource = (completeResource && 'image' in completeResource && 'resource' in completeResource) 
-      ? (completeResource as StatefulsetObjectQuery)
-              : {
-            ...resourceData,
-            status: 'Loading...',
-            operationalStatus: { createdAt: 'Loading...' },
-            image: 'Loading...',
-            resource: { cpu: '0', memory: '0', replicas: 1, storage: '0' },
-            ports: [],
-            env: [],
-            configMap: [],
-            localStorage: [],
-            pods: [],
-          };
+    return (
+      <StatefulsetNode
+        resource={data as StatefulsetObjectQuery}
+        status={status || "Pending"}
+        isLoadingStatus={isLoadingStatus}
+        isLoadingComplete={false}
+      />
+    );
   }
 
+  // If we have complete resource data from enhancement, render the full node
+  if (completeResource && 'image' in completeResource && 'resource' in completeResource) {
+    return (
+      <StatefulsetNode
+        resource={completeResource as StatefulsetObjectQuery}
+        status={status || "Pending"}
+        isLoadingStatus={isLoadingStatus}
+        isLoadingComplete={false}
+      />
+    );
+  }
+
+  // Otherwise, show loading state
   return (
-    <StatefulsetNode
-      resource={displayResource}
+    <NodeLoading
+      kind={resourceData.kind}
+      name={resourceData.name}
       status={status || "Pending"}
-      isLoadingStatus={isLoadingStatus}
-      isLoadingComplete={isLoadingComplete}
     />
   );
 }
@@ -146,11 +147,8 @@ function StatefulsetNode({
         <div className="flex items-center gap-2 mt-2">
           <Package className="h-4 w-4 text-muted-foreground" />
           <div className="text-sm text-muted-foreground truncate flex-1">
-            Image: {isLoadingComplete ? "Loading..." : (statefulsetData.image ? truncateImage(statefulsetData.image) : "N/A")}
+            Image: {statefulsetData.image ? truncateImage(statefulsetData.image) : "N/A"}
           </div>
-          {isLoadingComplete && (
-            <div className="animate-pulse w-2 h-2 bg-blue-500 rounded-full" />
-          )}
         </div>
 
         {/* Bottom section with status and icons */}

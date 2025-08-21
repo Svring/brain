@@ -48,7 +48,7 @@ export const SystemMessageType = {
       <LaunchpadInfoLog payload={payload} />
     ),
     metrics: (payload: any) => <MetricsMessageCard payload={payload} />,
-    combinedMetrics: (payload: any) => <CombinedMessage resource={payload} />,
+    combinedMetrics: (payload: any) => <CombinedMessage target={payload} />,
     podOverview: (payload: any) => <PodOverview resource={payload} />,
     objectStorageInfo: (payload: any) => (
       <ObjectStorageInfoMessageCard payload={payload} />

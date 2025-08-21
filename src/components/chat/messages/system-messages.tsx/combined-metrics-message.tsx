@@ -1,45 +1,28 @@
 import React from "react";
 import { CombinedMetricsChart } from "../components/combined-metrics-chart";
-import { useResourceMetrics } from "@/hooks/sealos/resource/use-resource-metrics";
-
-interface MetricsDataPoint {
-  timestamp: number;
-  readableTime: string;
-  cpu: number;
-  memory: number;
-  storage?: number;
-}
+import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
+import {
+  CustomResourceTarget,
+  BuiltinResourceTarget,
+} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface CombinedMessageProps {
-  resource: {
-    name: string;
-    kind: string;
-    type?: string;
-    pods?: Array<{ name: string }>;
-  };
-  height?: string;
+  target: CustomResourceTarget | BuiltinResourceTarget;
 }
 
-export const CombinedMessage: React.FC<CombinedMessageProps> = ({
-  resource,
-  height,
-}) => {
-  const { monitorData, isLoading } = useResourceMetrics(resource);
+export const CombinedMessage: React.FC<CombinedMessageProps> = ({ target }) => {
+  const { monitorData, isLoading } = useResourceMetricsStatus({ target });
 
   return (
     <div className="space-y-4 bg-node-background border border-border-primary rounded-xl p-4">
       <div>
         <h3 className="text-lg font-semibold mb-2">
-          {resource.kind} Metrics: {resource.name}
+          {target.resourceType} Metrics: {target.name}
         </h3>
       </div>
 
       <div className="border rounded-lg p-4">
-        <CombinedMetricsChart
-          data={monitorData || []}
-          isLoading={isLoading}
-          height={height}
-        />
+        <CombinedMetricsChart data={monitorData || []} isLoading={isLoading} />
       </div>
     </div>
   );

@@ -28,6 +28,7 @@ export default function NodeMonitor({ target }: NodeMonitorProps) {
   });
   const { resource } = useResourceStatus(target);
 
+  // console.log("resource", resource);
   // console.log("monitorData", monitorData);
   // console.log("latestData", latestData);
 
@@ -42,7 +43,7 @@ export default function NodeMonitor({ target }: NodeMonitorProps) {
               e.stopPropagation();
               sendSystemMessage({
                 type: "info.combinedMetrics",
-                payload: resource || target,
+                payload: target,
               });
             }}
           >

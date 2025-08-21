@@ -21,6 +21,7 @@ import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
+import NodeLoading from "../../components/node-loading";
 
 // Enhanced wrapper that can handle both K8sResource and DeploymentObject
 function DeploymentNodeWrapper({ data }: { data: DeploymentObject | K8sResource }) {
@@ -40,34 +41,36 @@ function DeploymentNodeWrapper({ data }: { data: DeploymentObject | K8sResource 
   const target = convertResourceObjectToTarget(resourceData);
   const { status, isLoading: isLoadingStatus } = useResourceStatus(target);
 
-  // Determine the resource to display
-  let displayResource: DeploymentObject;
-  
+    // If we have complete object data, render the full node
   if (isCompleteObject) {
-    // Use the complete object directly
-    displayResource = data as DeploymentObject;
-  } else {
-    // Use complete resource if available and it's a DeploymentObject, otherwise basic resource data
-    displayResource = (completeResource && 'image' in completeResource && 'resource' in completeResource) 
-      ? (completeResource as DeploymentObject)
-              : {
-            ...resourceData,
-            image: 'Loading...',
-            status: 'Loading...',
-            resource: { cpu: '0', memory: '0', replicas: 1 },
-            ports: [],
-            env: [],
-            pods: [],
-            operationalStatus: null,
-          };
+    return (
+      <DeploymentNode
+        resource={data as DeploymentObject}
+        status={status || "Pending"}
+        isLoadingStatus={isLoadingStatus}
+        isLoadingComplete={false}
+      />
+    );
   }
 
+  // If we have complete resource data from enhancement, render the full node
+  if (completeResource && 'image' in completeResource && 'resource' in completeResource) {
+    return (
+      <DeploymentNode
+        resource={completeResource as DeploymentObject}
+        status={status || "Pending"}
+        isLoadingStatus={isLoadingStatus}
+        isLoadingComplete={false}
+      />
+    );
+  }
+
+  // Otherwise, show loading state
   return (
-    <DeploymentNode
-      resource={displayResource}
+    <NodeLoading
+      kind={resourceData.kind}
+      name={resourceData.name}
       status={status || "Pending"}
-      isLoadingStatus={isLoadingStatus}
-      isLoadingComplete={isLoadingComplete}
     />
   );
 }
@@ -154,11 +157,8 @@ function DeploymentNode({
           <Package className="h-4 w-4 text-muted-foreground" />
           <div className="text-md text-muted-foreground truncate flex-1">
             Image:{" "}
-            {isLoadingComplete ? "Loading..." : (deploymentData.image ? truncateImage(deploymentData.image) : "N/A")}
+            {deploymentData.image ? truncateImage(deploymentData.image) : "N/A"}
           </div>
-          {isLoadingComplete && (
-            <div className="animate-pulse w-2 h-2 bg-blue-500 rounded-full" />
-          )}
         </div>
 
         {/* Bottom section with status and icons */}

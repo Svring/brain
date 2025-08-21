@@ -28,6 +28,7 @@ import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
+import NodeLoading from "../../components/node-loading";
 import {
   Tooltip,
   TooltipContent,
@@ -38,61 +39,59 @@ import {
 // Enhanced wrapper that can handle both K8sResource and ClusterObject
 function ClusterNodeWrapper({ data }: { data: ClusterObject | K8sResource }) {
   // Check if we have a complete ClusterObject or just a basic K8sResource
-  const isCompleteObject = 'type' in data && 'resource' in data && 'connection' in data;
-  
+  const isCompleteObject =
+    "type" in data && "resource" in data && "connection" in data;
+
   // Always extract resource data to ensure consistent hook calls
   const resourceData = {
     kind: data.kind,
-    name: isCompleteObject 
-      ? (data as ClusterObject).name 
-      : (data as K8sResource).metadata?.name || '',
+    name: isCompleteObject
+      ? (data as ClusterObject).name
+      : (data as K8sResource).metadata?.name || "",
   };
 
   // Always call hooks in the same order
-  const { completeResource, isLoadingComplete } = useResourceNodeEnhancer(resourceData);
+  const { completeResource, isLoadingComplete } =
+    useResourceNodeEnhancer(resourceData);
   const target = CustomResourceTargetSchema.parse(
     convertResourceTypeToTarget("cluster", resourceData.name)
   );
   const { status, isLoading: isLoadingStatus } = useResourceStatus(target);
 
-  // Determine the resource to display
-  let displayResource: ClusterObject;
-  
+  // If we have complete object data, render the full node
   if (isCompleteObject) {
-    // Use the complete object directly
-    displayResource = data as ClusterObject;
-  } else {
-    // Use complete resource if available and it's a ClusterObject, otherwise basic resource data
-    displayResource = (completeResource && 'type' in completeResource && 'connection' in completeResource) 
-      ? (completeResource as ClusterObject)
-              : {
-            ...resourceData,
-            type: 'Loading...' as any,
-            version: 'Loading...',
-            status: null,
-            resource: { cpu: '0', memory: '0', storage: '0', replicas: 1 },
-            connection: { 
-              privateConnection: { 
-                endpoint: '', 
-                host: '', 
-                port: '', 
-                username: '', 
-                password: '' 
-              }, 
-              publicConnection: null 
-            },
-            backup: null,
-            pods: null,
-            operationalStatus: null,
-          };
+    return (
+      <ClusterNode
+        resource={data as ClusterObject}
+        status={status || "Pending"}
+        isLoadingStatus={isLoadingStatus}
+        isLoadingComplete={false}
+      />
+    );
   }
 
+  // If we have complete resource data from enhancement, render the full node
+  if (
+    completeResource &&
+    "type" in completeResource &&
+    "connection" in completeResource
+  ) {
+    return (
+      <ClusterNode
+        resource={completeResource as ClusterObject}
+        status={status || "Pending"}
+        isLoadingStatus={isLoadingStatus}
+        isLoadingComplete={false}
+      />
+    );
+  }
+
+  // Otherwise, show loading state
   return (
-    <ClusterNode
-      resource={displayResource}
+    <NodeLoading
+      kind={resourceData.kind}
+      name={resourceData.name}
       status={status || "Pending"}
-      isLoadingStatus={isLoadingStatus}
-      isLoadingComplete={isLoadingComplete}
     />
   );
 }
@@ -184,13 +183,10 @@ function ClusterNode({
       >
         {/* Header with Name and Menu */}
         <div className="flex items-center justify-between">
-          <ClusterNodeTitle name={name} type={isLoadingComplete ? "Loading..." : type} />
+          <ClusterNodeTitle name={name} type={type} />
           <div className="flex-shrink-0">
             <ClusterNodeMenu object={clusterData} />
           </div>
-          {isLoadingComplete && (
-            <div className="animate-pulse w-2 h-2 bg-blue-500 rounded-full" />
-          )}
         </div>
 
         {/* Public Access Indicator */}
