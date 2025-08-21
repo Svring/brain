@@ -228,10 +228,6 @@ export function inferStatusColor(
   // Define status to color mappings
   const statusColorMap: Record<string, string> = {
     running: "theme-green",
-    ready: "theme-green",
-    active: "theme-green",
-    healthy: "theme-green",
-    success: "theme-green",
 
     error: "theme-red",
     failed: "theme-red",
@@ -242,8 +238,8 @@ export function inferStatusColor(
     pending: "theme-gray",
     waiting: "theme-gray",
     unknown: "theme-gray",
-    stopped: "theme-gray",
-    shutdown: "theme-gray",
+    stopped: "theme-purple",
+    shutdown: "theme-purple",
     deleting: "theme-gray",
 
     warning: "theme-yellow",

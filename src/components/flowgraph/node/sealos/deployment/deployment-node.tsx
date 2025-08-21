@@ -18,6 +18,7 @@ import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-m
 import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import NodeLoading from "../../components/node-loading";
+import NodePods from "../../components/node-pods";
 
 // Enhanced wrapper that can handle both K8sResource and DeploymentObject
 function DeploymentNodeWrapper({
@@ -38,8 +39,7 @@ function DeploymentNodeWrapper({
   };
 
   // Always call hooks in the same order
-  const { completeResource, status } =
-    useResourceNodeEnhancer(resourceData);
+  const { completeResource, status } = useResourceNodeEnhancer(resourceData);
   const target = convertResourceObjectToTarget(resourceData);
 
   // If we have complete object data, render the full node
@@ -159,7 +159,7 @@ function DeploymentNode({
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={deploymentData.ports || []} /> */}
-            {/* <NodePods resource={deploymentData} /> */}
+            <NodePods target={target} />
             <NodeLog target={logTarget} resourceType="launchpad" />
             <NodeMonitor target={target} />
           </div>

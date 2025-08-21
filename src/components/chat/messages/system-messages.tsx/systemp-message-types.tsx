@@ -18,6 +18,8 @@ import { ClusterCreateMessage } from "./manage/cluster-create-message";
 import { DeploymentCreateMessage } from "./manage/deployment-create-message";
 import { ResourceQuotaUpdateButton } from "./manage/resource-quota-update-button";
 import { ResourceQuotaUpdate } from "./manage/resource-quota-update";
+import { PodDetailsButton } from "./manage/pod-details-button";
+import { PodDetails } from "./manage/pod-details";
 import { ClusterInfoLog } from "./info/cluster-info/cluster-info-log";
 import { LaunchpadInfoLog } from "./info/launchpad-info/launchpad-info-log";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
@@ -49,7 +51,7 @@ export const SystemMessageType = {
       <LaunchpadInfoLog payload={payload} />
     ),
     combinedMetrics: (payload: any) => <MonitorMessage target={payload} />,
-    podOverview: (payload: any) => <PodOverview resource={payload} />,
+    podOverview: (payload: any) => <PodOverview target={payload} />,
     objectStorageInfo: (payload: any) => (
       <ObjectStorageInfoMessageCard payload={payload} />
     ),
@@ -67,6 +69,12 @@ export const SystemMessageType = {
     ),
     resourceQuotaUpdate: (payload: any) => (
       <ResourceQuotaUpdate payload={payload} />
+    ),
+    podDetailsButton: (payload: any) => (
+      <PodDetailsButton payload={payload} />
+    ),
+    podDetails: (payload: any) => (
+      <PodDetails payload={payload} />
     ),
   },
   diagnose: {

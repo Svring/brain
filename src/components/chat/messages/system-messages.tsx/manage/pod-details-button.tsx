@@ -1,27 +1,25 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowBigUpDash } from "lucide-react";
+import { Container } from "lucide-react";
 import { useAppendMessagesMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
-interface ResourceQuotaUpdateButtonProps {
+interface PodDetailsButtonProps {
   payload: CustomResourceTarget | BuiltinResourceTarget;
 }
 
-export const ResourceQuotaUpdateButton: React.FC<
-  ResourceQuotaUpdateButtonProps
-> = ({ payload }) => {
+export const PodDetailsButton: React.FC<PodDetailsButtonProps> = ({ payload }) => {
   const appendMessagesMutation = useAppendMessagesMutation();
 
-  const handleUpdateResourceQuota = () => {
+  const handleShowPodDetails = () => {
     appendMessagesMutation.mutate([
       {
         role: "system",
         content: {
-          type: "manage.resourceQuotaUpdate",
+          type: "manage.podDetails",
           payload: payload,
         },
       },
@@ -29,17 +27,15 @@ export const ResourceQuotaUpdateButton: React.FC<
   };
 
   return (
-    // <div className="space-y-4 bg-node-background border border-border-primary rounded-xl">
     <Button
-      onClick={handleUpdateResourceQuota}
+      onClick={handleShowPodDetails}
       className="w-full space-y-4 bg-node-background border border-border-primary"
       variant="outline"
     >
-      <ArrowBigUpDash className="w-4 h-4" />
-      Update Resource Quota
+      <Container className="w-4 h-4" />
+      View Pod Details
     </Button>
-    // </div>
   );
 };
 
-export default ResourceQuotaUpdateButton;
+export default PodDetailsButton;

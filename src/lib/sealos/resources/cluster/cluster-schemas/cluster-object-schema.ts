@@ -40,7 +40,7 @@ export const ClusterBackupSchema = z
   })
   .optional();
 
-const PodSchema = z.object({
+export const PodSchema = z.object({
   name: z.string(),
   status: z.string(),
   upTime: z.string().optional(),
@@ -73,3 +73,4 @@ export type ClusterComponent = z.infer<typeof ClusterComponentSchema>;
 export type ClusterConnection = z.infer<typeof ClusterConnectionSchema>;
 export type ClusterBackup = z.infer<typeof ClusterBackupSchema>;
 export type ClusterObject = z.infer<typeof ClusterObjectSchema>;
+export type Pod = z.infer<typeof PodSchema>;

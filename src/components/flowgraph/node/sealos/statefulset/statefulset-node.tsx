@@ -157,8 +157,7 @@ function StatefulsetNode({
 
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
-            {/* <NodeInternalUrl ports={statefulsetData.ports || []} /> */}
-            {/* <NodePods resource={statefulsetData} /> */}
+            <NodePods target={target} />
             <NodeLog target={logTarget} resourceType="launchpad" />
             <NodeMonitor target={target} />
           </div>
