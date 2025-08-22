@@ -1,3 +1,4 @@
+// TODO: Merge this component to the main component
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowBigUpDash } from "lucide-react";

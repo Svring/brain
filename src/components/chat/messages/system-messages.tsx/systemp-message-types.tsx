@@ -53,7 +53,7 @@ export const SystemMessageType = {
     resourceLog: (payload: CustomResourceTarget | BuiltinResourceTarget) => (
       <ResourceLog payload={payload} />
     ),
-    combinedMetrics: (payload: any) => <MonitorMessage target={payload} />,
+    monitor: (payload: any) => <MonitorMessage target={payload} />,
     podOverview: (payload: any) => <PodOverview target={payload} />,
     objectStorageInfo: (payload: any) => (
       <ObjectStorageInfoMessageCard payload={payload} />

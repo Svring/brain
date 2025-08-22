@@ -6,12 +6,13 @@ import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Bot } from "lucide-react";
 import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import MessageHeader from "@/components/chat/messages/components/message-header";
 import { useResourceLogs } from "@/hooks/sealos/resource/use-resource-logs";
+import { BaseSystemMessage } from "@/components/chat/messages/components/base-system-message";
+import { MessageAction } from "@/components/chat/messages/components/message-actions";
 
 interface ResourceLogProps {
   payload: CustomResourceTarget | BuiltinResourceTarget;
@@ -41,35 +42,31 @@ const ResourceLog: React.FC<ResourceLogProps> = ({ payload }) => {
   const truncatedLogs = lines.slice(0, 3).join("\n");
   const hasMoreLines = lines.length > 3;
 
+  const actions: MessageAction[] = [
+    {
+      icon: Bot,
+      label: "Analyze",
+      onClick: handleAnalyze,
+    },
+  ];
+
   return (
-    <Card className="w-full bg-node-background">
-      <CardHeader className="pb-0">
-        <div className="flex items-center justify-between">
-          <MessageHeader target={payload} />
-          <Button
-            size="sm"
-            variant="outline"
-            className="flex items-center gap-1"
-            onClick={handleAnalyze}
-          >
-            <Bot className="h-3 w-3" />
-            Analyze
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="relative bg-muted/50 rounded-md p-2 max-h-24 overflow-hidden">
-          <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-mono">
-            {truncatedLogs}
-            {hasMoreLines && (
-              <span className="text-muted-foreground/60">
-                {"\n"}... (truncated)
-              </span>
-            )}
-          </pre>
-        </div>
-      </CardContent>
-    </Card>
+    <BaseSystemMessage target={payload} actions={actions}>
+      <Card className="w-full bg-node-background">
+        <CardContent className="pt-0">
+          <div className="relative bg-muted/50 rounded-md p-2 max-h-24 overflow-hidden">
+            <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-mono">
+              {truncatedLogs}
+              {hasMoreLines && (
+                <span className="text-muted-foreground/60">
+                  {"\n"}... (truncated)
+                </span>
+              )}
+            </pre>
+          </div>
+        </CardContent>
+      </Card>
+    </BaseSystemMessage>
   );
 };
 

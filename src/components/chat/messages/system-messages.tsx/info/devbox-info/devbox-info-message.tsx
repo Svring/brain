@@ -9,7 +9,11 @@ import { devboxClient } from "@/components/provider/trpc-provider";
 import { DevboxInfoHeader } from "./devbox-info-header";
 import { ResourceQuotaRow } from "@/components/chat/messages/components/resource-quota-row";
 import { DevboxInfoPorts } from "./devbox-info-ports";
-import { DevboxInfoActions } from "./devbox-info-actions";
+import { BaseSystemMessage } from "@/components/chat/messages/components/base-system-message";
+import { MessageAction } from "@/components/chat/messages/components/message-actions";
+import { GitBranch, BarChart3, Container, FileText } from "lucide-react";
+import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 
 interface DevboxInfoMessageProps {
   payload: CustomResourceTarget;
@@ -20,6 +24,7 @@ export const DevboxInfoMessageCard: React.FC<DevboxInfoMessageProps> = ({
 }) => {
   const context = createK8sContext();
   const metricsContext = createMetricsContext();
+  const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 
   const devboxTrpcClient = devboxClient.useTRPC();
 
@@ -42,47 +47,97 @@ export const DevboxInfoMessageCard: React.FC<DevboxInfoMessageProps> = ({
   // Get region URL from the K8s context
   const regionUrl = context.regionUrl;
 
+  const handleReleasesClick = () => {
+    emitMessage({
+      type: "info.devboxRelease",
+      payload: {
+        devboxName: devboxData?.name || "",
+      },
+    });
+  };
+
+  const handleViewMetricsClick = () => {
+    emitMessage({
+      type: "monitor",
+      payload: payload,
+    });
+  };
+
+  const handleViewPodsClick = () => {
+    emitMessage({
+      type: "podOverview",
+      payload: payload,
+    });
+  };
+
+  const handleViewLogsClick = () => {
+    emitMessage({
+      type: "resourceLog",
+      payload: payload,
+    });
+  };
+
+  const actions: MessageAction[] = devboxData
+    ? [
+        {
+          icon: GitBranch,
+          label: "Releases",
+          onClick: handleReleasesClick,
+        },
+        {
+          icon: BarChart3,
+          label: "View Metrics",
+          onClick: handleViewMetricsClick,
+        },
+      ]
+    : [];
+
   // Show loading state
   if (isLoading) {
     return (
-      <Card className="w-full bg-node-background">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-center">
-            <span className="text-muted-foreground">
-              Loading devbox information...
-            </span>
-          </div>
-        </CardContent>
-      </Card>
+      <BaseSystemMessage target={payload}>
+        <Card className="w-full bg-node-background">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-center">
+              <span className="text-muted-foreground">
+                Loading devbox information...
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </BaseSystemMessage>
     );
   }
 
   // Show error state
   if (error || !devboxData) {
     return (
-      <Card className="w-full bg-node-background">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-center">
-            <span className="text-destructive">
-              Failed to load devbox information
-            </span>
-          </div>
-        </CardContent>
-      </Card>
+      <BaseSystemMessage target={payload}>
+        <Card className="w-full bg-node-background">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-center">
+              <span className="text-destructive">
+                Failed to load devbox information
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </BaseSystemMessage>
     );
   }
 
   return (
-    <Card className="w-full bg-node-background border border-border-primary">
-      <DevboxInfoHeader devboxData={devboxData} />
+    <BaseSystemMessage target={payload} actions={actions}>
+      <Card className="w-full bg-node-background border border-border-primary">
+        <DevboxInfoHeader devboxData={devboxData} />
 
-      <CardContent className="space-y-4">
-        {/* <MetricRow metric="cpu" resource={devboxData.resources} monitorData={monitorData} />
-        <MetricRow metric="memory" resource={devboxData.resources} monitorData={monitorData} /> */}
-        <DevboxInfoPorts devboxData={devboxData} />
-        <DevboxInfoActions devboxData={devboxData} />
-      </CardContent>
-    </Card>
+        <CardContent className="space-y-4">
+          {/* <MetricRow metric="cpu" resource={devboxData.resources} monitorData={monitorData} />
+          <MetricRow metric="memory" resource={devboxData.resources} monitorData={monitorData} /> */}
+          <DevboxInfoPorts devboxData={devboxData} />
+        </CardContent>
+      </Card>
+    </BaseSystemMessage>
   );
 };
 

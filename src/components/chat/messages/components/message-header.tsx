@@ -7,17 +7,12 @@ import {
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
-import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 
 interface MessageHeaderProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
-  regionUrl?: string;
 }
 
-export default function MessageHeader({
-  target,
-  regionUrl,
-}: MessageHeaderProps) {
+export default function MessageHeader({ target }: MessageHeaderProps) {
   const getIconUrl = () => {
     switch (target.resourceType) {
       case "devbox":

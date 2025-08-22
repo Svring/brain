@@ -9,10 +9,12 @@ import {
 } from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-query";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { LaunchpadInfoHeader } from "./launchpad-info-header";
-import { MetricRow } from "@/components/chat/messages/components/metric-row";
 import { LaunchpadInfoPorts } from "./launchpad-info-ports";
-import { LaunchpadInfoActions } from "./launchpad-info-actions";
 import { LaunchpadInfoLog } from "./launchpad-info-log";
+import { BaseSystemMessage } from "@/components/chat/messages/components/base-system-message";
+import { MessageAction } from "@/components/chat/messages/components/message-actions";
+import { FileText, Container, BarChart3 } from "lucide-react";
+import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
 interface LaunchpadInfoMessageProps {
   payload: BuiltinResourceTarget;
@@ -23,6 +25,7 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
 }) => {
   const k8sContext = createK8sContext();
   const metricsContext = createMetricsContext();
+  const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 
   // Fetch launchpad data using the target
   const {
@@ -36,33 +39,78 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
     getLaunchpadRangedMonitorOptions(metricsContext, launchpadData?.name || "")
   );
 
+  const handleLogsClick = () => {
+    emitMessage({
+      type: "resourceLog",
+      payload: payload,
+    });
+  };
+
+  const handlePodClick = () => {
+    emitMessage({
+      type: "podOverview",
+      payload: payload,
+    });
+  };
+
+  const handleViewMetricsClick = () => {
+    emitMessage({
+      type: "monitor",
+      payload: payload,
+    });
+  };
+
+  const actions: MessageAction[] = launchpadData
+    ? [
+        {
+          icon: FileText,
+          label: "Logs",
+          onClick: handleLogsClick,
+        },
+        {
+          icon: Container,
+          label: "Pods",
+          onClick: handlePodClick,
+        },
+        {
+          icon: BarChart3,
+          label: "Metrics",
+          onClick: handleViewMetricsClick,
+        },
+      ]
+    : [];
+
   // Show loading state
   if (isLoading) {
     return (
-      <Card className="w-full bg-background-secondary">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-center">
-            <span className="text-muted-foreground">
-              Loading launchpad information...
-            </span>
-          </div>
-        </CardContent>
-      </Card>
+      <BaseSystemMessage target={payload}>
+        <Card className="w-full bg-background-secondary">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-center">
+              <span className="text-muted-foreground">
+                Loading launchpad information...
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </BaseSystemMessage>
     );
   }
 
   // Show error state
   if (error || !launchpadData) {
     return (
-      <Card className="w-full bg-background-secondary">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-center">
-            <span className="text-destructive">
-              Failed to load launchpad information
-            </span>
-          </div>
-        </CardContent>
-      </Card>
+      <BaseSystemMessage target={payload}>
+        <Card className="w-full bg-background-secondary">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-center">
+              <span className="text-destructive">
+                Failed to load launchpad information
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </BaseSystemMessage>
     );
   }
 
@@ -76,37 +124,16 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
     image = "",
   } = launchpadData;
 
-  // Helper function to get resource info
-  const getResourceInfo = () => {
-    if (resource) return resource;
-
-    // For deployment/statefulset, extract from status
-    if (status && typeof status === "object") {
-      return {
-        cpu: "N/A", // These don't have direct CPU/memory specs
-        memory: "N/A",
-        replicas: status.replicas || 0,
-      };
-    }
-
-    return {
-      cpu: "N/A",
-      memory: "N/A",
-      replicas: 0,
-    };
-  };
-
-  const resourceInfo = getResourceInfo();
-
   return (
-    <Card className="w-full bg-background-secondary">
-      <LaunchpadInfoHeader launchpadData={launchpadData} />
-      <CardContent className="space-y-4">
-        <LaunchpadInfoPorts ports={ports} />
-        <LaunchpadInfoLog payload={payload} />
-      </CardContent>
-      <LaunchpadInfoActions name={name} kind={kind} resource={launchpadData} />
-    </Card>
+    <BaseSystemMessage target={payload} actions={actions}>
+      <Card className="w-full bg-background-secondary">
+        <LaunchpadInfoHeader launchpadData={launchpadData} />
+        <CardContent className="space-y-4">
+          <LaunchpadInfoPorts ports={ports} />
+          <LaunchpadInfoLog payload={payload} />
+        </CardContent>
+      </Card>
+    </BaseSystemMessage>
   );
 };
 
