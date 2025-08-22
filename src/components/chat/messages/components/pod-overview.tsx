@@ -65,13 +65,9 @@ export const PodOverview: React.FC<PodOverviewProps> = ({ target }) => {
   if (isLoading) {
     return (
       <BaseSystemMessage target={target}>
-        <Card className="w-full bg-node-background">
-          <CardContent>
-            <div className="text-center py-4">
-              <p className="text-sm text-muted-foreground">Loading pods...</p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="text-center py-4">
+          <p className="text-sm text-muted-foreground">Loading pods...</p>
+        </div>
       </BaseSystemMessage>
     );
   }
@@ -80,45 +76,37 @@ export const PodOverview: React.FC<PodOverviewProps> = ({ target }) => {
   if (error) {
     return (
       <BaseSystemMessage target={target}>
-        <Card className="w-full bg-node-background">
-          <CardContent>
-            <div className="text-center py-4">
-              <p className="text-sm text-theme-red">Failed to load pods</p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="text-center py-4">
+          <p className="text-sm text-theme-red">Failed to load pods</p>
+        </div>
       </BaseSystemMessage>
     );
   }
 
   return (
     <BaseSystemMessage target={target} actions={actions}>
-      <Card className="w-full bg-node-background">
-        <CardContent className="space-y-4">
-          {podList && podList.length > 0 ? (
-            <>
-              {/* Progress Bar */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Running Pods</span>
-                  <span className="font-medium">
-                    {runningPods} / {totalPods}
-                  </span>
-                </div>
-                <Progress
-                  value={runningPercentage}
-                  className="h-2 [&>div]:bg-theme-green"
-                />
-              </div>
-            </>
-          ) : (
-            <div className="text-center py-4">
-              <Box className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">No pods available</p>
+      {podList && podList.length > 0 ? (
+        <>
+          {/* Progress Bar */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground">Running Pods</span>
+              <span className="font-medium">
+                {runningPods} / {totalPods}
+              </span>
             </div>
-          )}
-        </CardContent>
-      </Card>
+            <Progress
+              value={runningPercentage}
+              className="h-2 [&>div]:bg-theme-green"
+            />
+          </div>
+        </>
+      ) : (
+        <div className="text-center py-4">
+          <Box className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">No pods available</p>
+        </div>
+      )}
     </BaseSystemMessage>
   );
 };

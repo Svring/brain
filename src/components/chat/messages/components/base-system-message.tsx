@@ -4,6 +4,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import MessageHeader from "./message-header";
 import MessageActions, { MessageAction } from "./message-actions";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
@@ -23,25 +24,25 @@ export function BaseSystemMessage({
   children,
 }: BaseSystemMessageProps) {
   return (
-    <div className="flex justify-start">
-      <div className="rounded-lg py-2 text-md break-words text-foreground px-1 max-w-full">
+    <div className="flex justify-start w-full">
+      <Card className="w-full bg-node-background">
         {/* Header Section */}
         {showHeader && target && (
-          <div className="mb-3">
+          <div className="px-6">
             <MessageHeader target={target} />
           </div>
         )}
 
         {/* Content Section */}
-        <div className="space-y-3">{children}</div>
+        <CardContent className="px-6">{children}</CardContent>
 
         {/* Actions Section */}
         {actions.length > 0 && (
-          <div className="mt-4 pt-3 border-t border-border/50">
+          <div className="flex gap-3 px-6">
             <MessageActions actions={actions} />
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

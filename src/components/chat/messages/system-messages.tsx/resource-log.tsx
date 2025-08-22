@@ -52,20 +52,16 @@ const ResourceLog: React.FC<ResourceLogProps> = ({ payload }) => {
 
   return (
     <BaseSystemMessage target={payload} actions={actions}>
-      <Card className="w-full bg-node-background">
-        <CardContent className="pt-0">
-          <div className="relative bg-muted/50 rounded-md p-2 max-h-24 overflow-hidden">
-            <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-mono">
-              {truncatedLogs}
-              {hasMoreLines && (
-                <span className="text-muted-foreground/60">
-                  {"\n"}... (truncated)
-                </span>
-              )}
-            </pre>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="relative bg-muted/50 rounded-md p-2 max-h-24 overflow-hidden">
+        <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-mono">
+          {truncatedLogs}
+          {hasMoreLines && (
+            <span className="text-muted-foreground/60">
+              {"\n"}... (truncated)
+            </span>
+          )}
+        </pre>
+      </div>
     </BaseSystemMessage>
   );
 };

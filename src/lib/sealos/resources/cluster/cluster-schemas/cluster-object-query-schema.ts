@@ -209,6 +209,7 @@ export const ClusterObjectQuerySchema = z.object({
               name: container.name,
               ready: container.ready,
               state: container.state,
+              restartCount: container.restartCount,
             })) || [],
         };
       });

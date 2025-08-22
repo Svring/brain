@@ -13,6 +13,7 @@ import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/l
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { ClusterInfoDetails } from "./cluster-info-details";
 
 interface ClusterInfoMessageProps {
   payload: CustomResourceTarget;
@@ -94,15 +95,11 @@ export const ClusterInfoMessage: React.FC<ClusterInfoMessageProps> = ({
   if (isLoading) {
     return (
       <BaseSystemMessage target={payload}>
-        <Card className="w-full bg-node-background">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-center">
-              <span className="text-muted-foreground">
-                Loading cluster information...
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex items-center justify-center">
+          <span className="text-muted-foreground">
+            Loading cluster information...
+          </span>
+        </div>
       </BaseSystemMessage>
     );
   }
@@ -111,32 +108,19 @@ export const ClusterInfoMessage: React.FC<ClusterInfoMessageProps> = ({
   if (error || !clusterData) {
     return (
       <BaseSystemMessage target={payload}>
-        <Card className="w-full bg-node-background">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-center">
-              <span className="text-destructive">
-                Failed to load cluster information
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex items-center justify-center">
+          <span className="text-destructive">
+            Failed to load cluster information
+          </span>
+        </div>
       </BaseSystemMessage>
     );
   }
 
   return (
     <BaseSystemMessage target={payload} actions={actions}>
-      <Card className="w-full bg-node-background">
-        <ClusterInfoHeader clusterData={clusterData} />
-        <CardContent className="space-y-4">
-          <ResourceQuotaRow
-            cpu={clusterData.resource?.cpu}
-            memory={clusterData.resource?.memory}
-            storage={clusterData.resource?.storage}
-          />
-          <ClusterInfoConnection clusterData={clusterData} />
-        </CardContent>
-      </Card>
+      <ClusterInfoDetails clusterData={clusterData} />
+      <ClusterInfoConnection clusterData={clusterData} />
     </BaseSystemMessage>
   );
 };

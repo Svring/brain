@@ -14,6 +14,7 @@ import { MessageAction } from "@/components/chat/messages/components/message-act
 import { GitBranch, BarChart3, Container, FileText } from "lucide-react";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
+import { DevboxInfoDetails } from "./devbox-info-details";
 
 interface DevboxInfoMessageProps {
   payload: CustomResourceTarget;
@@ -89,6 +90,16 @@ export const DevboxInfoMessageCard: React.FC<DevboxInfoMessageProps> = ({
           label: "View Metrics",
           onClick: handleViewMetricsClick,
         },
+        {
+          icon: Container,
+          label: "View Pods",
+          onClick: handleViewPodsClick,
+        },
+        {
+          icon: FileText,
+          label: "View Logs",
+          onClick: handleViewLogsClick,
+        },
       ]
     : [];
 
@@ -96,15 +107,11 @@ export const DevboxInfoMessageCard: React.FC<DevboxInfoMessageProps> = ({
   if (isLoading) {
     return (
       <BaseSystemMessage target={payload}>
-        <Card className="w-full bg-node-background">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-center">
-              <span className="text-muted-foreground">
-                Loading devbox information...
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex items-center justify-center">
+          <span className="text-muted-foreground">
+            Loading devbox information...
+          </span>
+        </div>
       </BaseSystemMessage>
     );
   }
@@ -113,30 +120,19 @@ export const DevboxInfoMessageCard: React.FC<DevboxInfoMessageProps> = ({
   if (error || !devboxData) {
     return (
       <BaseSystemMessage target={payload}>
-        <Card className="w-full bg-node-background">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-center">
-              <span className="text-destructive">
-                Failed to load devbox information
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex items-center justify-center">
+          <span className="text-destructive">
+            Failed to load devbox information
+          </span>
+        </div>
       </BaseSystemMessage>
     );
   }
 
   return (
     <BaseSystemMessage target={payload} actions={actions}>
-      <Card className="w-full bg-node-background border border-border-primary">
-        <DevboxInfoHeader devboxData={devboxData} />
-
-        <CardContent className="space-y-4">
-          {/* <MetricRow metric="cpu" resource={devboxData.resources} monitorData={monitorData} />
-          <MetricRow metric="memory" resource={devboxData.resources} monitorData={monitorData} /> */}
-          <DevboxInfoPorts devboxData={devboxData} />
-        </CardContent>
-      </Card>
+      <DevboxInfoDetails devboxData={devboxData} />
+      <DevboxInfoPorts devboxData={devboxData} />
     </BaseSystemMessage>
   );
 };

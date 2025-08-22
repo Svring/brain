@@ -39,7 +39,7 @@ interface UseResourceMetricsStatusProps {
 
 const THRESHOLDS = {
   low: 30,
-  medium: 70,
+  medium: 50,
   high: 90,
 };
 
@@ -142,7 +142,7 @@ export const useResourceMetricsStatus = ({
     ) &&
       !launchpadMonitorData);
 
-  // console.log("monitorData", monitorData);
+  console.log("monitorData", monitorData);
 
   return useMemo(() => {
     if (
@@ -193,6 +193,8 @@ export const useResourceMetricsStatus = ({
     if (storageStatus) statuses.push(storageStatus);
 
     const overallStatus = getOverallStatus(statuses);
+
+    // console.log("latestData", latestData);
 
     return {
       status: overallStatus,

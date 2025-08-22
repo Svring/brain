@@ -17,22 +17,19 @@ interface MessageActionsProps {
 
 export default function MessageActions({ actions, className }: MessageActionsProps) {
   return (
-    <div className={cn("space-y-3", className)}>
-      <h3 className="text-sm font-medium text-foreground">Actions</h3>
-      <div className="flex flex-wrap gap-2">
-        {actions.map((action, index) => (
-          <Button
-            key={`${action.label}-${index}`}
-            variant="outline"
-            size="sm"
-            onClick={action.onClick}
-            className="flex items-center gap-2"
-          >
-            <action.icon className="h-4 w-4" />
-            {action.label}
-          </Button>
-        ))}
-      </div>
+    <div className={cn("flex gap-3", className)}>
+      {actions.map((action, index) => (
+        <Button
+          key={`${action.label}-${index}`}
+          variant="outline"
+          size="sm"
+          onClick={action.onClick}
+          className="flex-1 flex items-center gap-2"
+        >
+          <action.icon className="h-4 w-4" />
+          {action.label}
+        </Button>
+      ))}
     </div>
   );
 }

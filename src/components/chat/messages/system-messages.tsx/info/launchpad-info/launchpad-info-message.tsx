@@ -15,6 +15,7 @@ import { BaseSystemMessage } from "@/components/chat/messages/components/base-sy
 import { MessageAction } from "@/components/chat/messages/components/message-actions";
 import { FileText, Container, BarChart3 } from "lucide-react";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { LaunchpadInfoDetails } from "./launchpad-info-details";
 
 interface LaunchpadInfoMessageProps {
   payload: BuiltinResourceTarget;
@@ -33,11 +34,6 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
     isLoading,
     error,
   } = useQuery(getLaunchpadOptions(k8sContext, payload));
-
-  // Fetch monitoring data for the last hour
-  const { data: monitorData, isLoading: isMonitorLoading } = useQuery(
-    getLaunchpadRangedMonitorOptions(metricsContext, launchpadData?.name || "")
-  );
 
   const handleLogsClick = () => {
     emitMessage({
@@ -84,15 +80,11 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
   if (isLoading) {
     return (
       <BaseSystemMessage target={payload}>
-        <Card className="w-full bg-background-secondary">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-center">
-              <span className="text-muted-foreground">
-                Loading launchpad information...
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex items-center justify-center">
+          <span className="text-muted-foreground">
+            Loading launchpad information...
+          </span>
+        </div>
       </BaseSystemMessage>
     );
   }
@@ -101,15 +93,11 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
   if (error || !launchpadData) {
     return (
       <BaseSystemMessage target={payload}>
-        <Card className="w-full bg-background-secondary">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-center">
-              <span className="text-destructive">
-                Failed to load launchpad information
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex items-center justify-center">
+          <span className="text-destructive">
+            Failed to load launchpad information
+          </span>
+        </div>
       </BaseSystemMessage>
     );
   }
@@ -126,13 +114,11 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
 
   return (
     <BaseSystemMessage target={payload} actions={actions}>
-      <Card className="w-full bg-background-secondary">
-        <LaunchpadInfoHeader launchpadData={launchpadData} />
-        <CardContent className="space-y-4">
-          <LaunchpadInfoPorts ports={ports} />
-          <LaunchpadInfoLog payload={payload} />
-        </CardContent>
-      </Card>
+      <LaunchpadInfoDetails launchpadData={launchpadData} />
+      <div className="space-y-4">
+        <LaunchpadInfoPorts ports={ports} />
+        <LaunchpadInfoLog payload={payload} />
+      </div>
     </BaseSystemMessage>
   );
 };

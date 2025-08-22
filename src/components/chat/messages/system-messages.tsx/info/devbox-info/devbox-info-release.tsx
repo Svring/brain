@@ -38,7 +38,7 @@ export const DevboxReleaseMessageCard: React.FC<DevboxReleaseMessageProps> = ({
   const {
     deployConfig,
     openPopovers,
-    deployMutation,
+    deployDevbox,
     handleDeploy,
     setPopoverOpen,
     setDeployConfig,
@@ -78,7 +78,7 @@ export const DevboxReleaseMessageCard: React.FC<DevboxReleaseMessageProps> = ({
         setDeletePopoverOpen={setDeletePopoverOpen}
         onDeploy={handleDeploy}
         onDelete={handleDeleteRelease}
-        deployMutationPending={deployMutation.isPending}
+        deployMutationPending={deployDevbox.isPending}
         deleteMutationPending={deleteReleaseMutation.isPending}
       />
     </div>
