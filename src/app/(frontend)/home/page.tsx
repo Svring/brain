@@ -42,7 +42,19 @@ export default function HomePage() {
               subtitle="We have lingered in the chambers of the sea. By sea-girls wreathed with seaweed red and brown"
               titleClassName="text-5xl md:text-6xl font-extrabold"
               subtitleClassName="text-lg md:text-xl max-w-[600px]"
-              actionsClassName="mt-4"
+              actionsClassName="mt-2"
+              actions={[
+                {
+                  label: "From Template",
+                  onClick: () => {},
+                  variant: "outline",
+                },
+                {
+                  label: "From Docker Image",
+                  onClick: () => {},
+                  variant: "outline",
+                },
+              ]}
             />
           </motion.div>
         )}

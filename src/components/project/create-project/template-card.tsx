@@ -39,7 +39,7 @@ export const TemplateCard = memo(function TemplateCard({
         tabIndex={0}
       >
         {/* Ask AI button in upper right */}
-        <Button
+        {/* <Button
           className="absolute top-2 right-2 z-10"
           onClick={(e) => {
             e.stopPropagation();
@@ -50,7 +50,7 @@ export const TemplateCard = memo(function TemplateCard({
           variant="ghost"
         >
           <MessageCircle className="size-4" />
-        </Button>
+        </Button> */}
         {/* Header with icon and title */}
         <div className="mb-3 flex items-center gap-3">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted p-2">

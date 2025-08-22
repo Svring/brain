@@ -49,7 +49,7 @@ const Hero = React.forwardRef<HTMLElement, HeroProps>(
       <section
         ref={ref}
         className={cn(
-          "relative z-0 flex h-[40vh] w-full items-end justify-center overflow-hidden rounded-md bg-transparent",
+          "relative z-0 flex h-[43vh] w-full items-end justify-center overflow-hidden rounded-md bg-transparent",
           className
         )}
         {...props}
@@ -115,10 +115,10 @@ const Hero = React.forwardRef<HTMLElement, HeroProps>(
           whileInView={{ y: 0, opacity: 1 }}
           className="relative  z-50 container flex justify-center flex-1 flex-col px-5 md:px-10 gap-4 -translate-y-7"
         >
-          <div className="flex flex-col items-center text-center space-y-4">
+          <div className="flex flex-col items-center text-center gap-2">
             <h1
               className={cn(
-                "text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight",
+                "text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight p-0 m-0",
                 titleClassName
               )}
             >
@@ -127,7 +127,7 @@ const Hero = React.forwardRef<HTMLElement, HeroProps>(
             {subtitle && (
               <p
                 className={cn(
-                  "text-xl text-muted-foreground",
+                  "text-xl text-muted-foreground p-0 m-0",
                   subtitleClassName
                 )}
               >
@@ -135,7 +135,7 @@ const Hero = React.forwardRef<HTMLElement, HeroProps>(
               </p>
             )}
             {actions && actions.length > 0 && (
-              <div className={cn("flex gap-4", actionsClassName)}>
+              <div className={cn("flex gap-4 p-0 m-0", actionsClassName)}>
                 {actions.map((action: ActionProps, index: number) => (
                   <Button
                     key={index}

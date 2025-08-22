@@ -2,10 +2,10 @@
 
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUp, Square, Plus, LayoutPanelTop } from "lucide-react";
+import { ArrowUp, Square } from "lucide-react";
 import React from "react";
 import { useDebounce } from "@reactuses/core";
-import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
+// import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
 
 // Utility function for className merging
 const cn = (...classes: (string | undefined | null | false)[]) =>
@@ -328,7 +328,7 @@ export const PromptInputBox = React.forwardRef(
       disableSend = false,
     } = props;
 
-    const { openDialog, CreateProjectDialog } = useProjectCreateDialog();
+    // const { openDialog, CreateProjectDialog } = useProjectCreateDialog();
     const [input, setInput] = React.useState("");
     const promptBoxRef = React.useRef<HTMLDivElement>(null);
     const internalTextareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -422,18 +422,18 @@ export const PromptInputBox = React.forwardRef(
             }}
           />
 
-          <PromptInputActions className="flex items-center justify-between gap-2 p-0 pt-2">
-            <PromptInputAction tooltip="Create project from template">
+          <PromptInputActions className="flex items-center justify-end gap-2 p-0 pt-2">
+            {/* <PromptInputAction tooltip="Create project from template">
               <Button
                 className="h-8 px-3 text-sm bg-background-secondary text-foreground border border-border-primary transition-all duration-200 rounded-lg"
-                onClick={() => openDialog()}
+                // onClick={() => openDialog()}
                 size="sm"
                 variant="outline"
               >
                 <LayoutPanelTop className="h-3 w-3 mr-1" />
                 From Template
               </Button>
-            </PromptInputAction>
+            </PromptInputAction> */}
 
             <PromptInputAction
               tooltip={
@@ -484,7 +484,7 @@ export const PromptInputBox = React.forwardRef(
           </PromptInputActions>
         </PromptInput>
 
-        <CreateProjectDialog />
+        {/* <CreateProjectDialog /> */}
       </>
     );
   }
