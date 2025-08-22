@@ -52,6 +52,7 @@ export const StatefulsetObjectSchema = z.object({
   localStorage: z.array(LocalStorageSchema).optional(),
   pods: z.array(PodSchema).optional(),
   operationalStatus: OperationalStatusSchema.optional(),
+  strategy: z.any().optional(),
 });
 
 export type StatefulsetObject = z.infer<typeof StatefulsetObjectSchema>;

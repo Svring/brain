@@ -35,6 +35,7 @@ export const DeploymentObjectSchema = z.object({
   ports: z.array(PortSchema).optional(),
   pods: z.array(PodSchema).optional(),
   operationalStatus: z.any().optional(),
+  strategy: z.any().optional(),
 });
 
 export type DeploymentObject = z.infer<typeof DeploymentObjectSchema>;

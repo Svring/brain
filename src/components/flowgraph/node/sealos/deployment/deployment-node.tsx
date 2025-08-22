@@ -40,7 +40,8 @@ function DeploymentNodeWrapper({
 
   // Always call hooks in the same order
   const { completeResource, status } = useResourceNodeEnhancer(resourceData);
-  const target = convertResourceObjectToTarget(resourceData);
+
+  console.log("completeResource", completeResource);
 
   // If we have complete object data, render the full node
   if (isCompleteObject) {
@@ -121,12 +122,6 @@ function DeploymentNode({
     });
   };
 
-  // Create target for the NodeLog component
-  const logTarget = convertResourceObjectToTarget({
-    kind: deploymentData.kind,
-    name: deploymentData.name,
-  });
-
   const mainCard = (
     <BaseNode
       nodeData={resource}
@@ -160,7 +155,7 @@ function DeploymentNode({
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={deploymentData.ports || []} /> */}
             <NodePods target={target} />
-            <NodeLog target={logTarget} resourceType="launchpad" />
+            <NodeLog target={target} />
             <NodeMonitor target={target} />
           </div>
         </div>

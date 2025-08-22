@@ -49,6 +49,36 @@ export const DeploymentObjectQuerySchema = z.object({
       }
       return {};
     }),
+  strategy: z
+    .any()
+    .describe(
+      JSON.stringify({
+        resourceType: "hpa",
+        path: ["spec"],
+      })
+    )
+    .transform((strategy) => {
+      if (!strategy) {
+        return { type: "fixed" };
+      }
+
+      // Extract threshold information from metrics
+      const threshold =
+        strategy.metrics && strategy.metrics.length > 0
+          ? {
+              resource: strategy.metrics[0].resource.name,
+              usage:
+                strategy.metrics[0].resource.target.averageUtilization / 10,
+            }
+          : null;
+
+      return {
+        type: "flexible",
+        minReplicas: strategy.minReplicas,
+        maxReplicas: strategy.maxReplicas,
+        threshold,
+      };
+    }),
   status: z
     .any()
     .describe(

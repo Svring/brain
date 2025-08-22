@@ -10,7 +10,7 @@ export interface BuiltinResourceConfig {
     | "secret"
     | "pod"
     | "pvc"
-    | "horizontalpodautoscaler"
+    | "hpa"
     | "role"
     | "rolebinding"
     | "serviceaccount"
@@ -151,7 +151,7 @@ export const BUILTIN_RESOURCES: Record<string, BuiltinResourceConfig> = {
   },
   hpa: {
     type: "builtin",
-    resourceType: "horizontalpodautoscaler",
+    resourceType: "hpa",
     apiVersion: "autoscaling/v2",
     kind: "HorizontalPodAutoscaler",
     listMethod: "listNamespacedHorizontalPodAutoscaler",

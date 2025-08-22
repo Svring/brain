@@ -142,7 +142,7 @@ export const useResourceMetricsStatus = ({
     ) &&
       !launchpadMonitorData);
 
-  console.log("monitorData", monitorData);
+  // console.log("monitorData", monitorData);
 
   return useMemo(() => {
     if (
