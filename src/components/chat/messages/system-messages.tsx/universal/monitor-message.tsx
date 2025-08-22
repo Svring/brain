@@ -1,14 +1,14 @@
 import React from "react";
-import { CombinedMetricsChart } from "@/components/chat/messages/components/combined-metrics-chart";
+import { CombinedMetricsChart } from "@/components/chat/messages/system-messages.tsx/components/combined-metrics-chart";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { BaseSystemMessage } from "@/components/chat/messages/components/base-system-message";
+import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { ArrowBigUpDash } from "lucide-react";
-import { MessageAction } from "@/components/chat/messages/components/message-actions";
+import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/message-actions";
 
 interface MonitorMessageProps {
   target: CustomResourceTarget | BuiltinResourceTarget;

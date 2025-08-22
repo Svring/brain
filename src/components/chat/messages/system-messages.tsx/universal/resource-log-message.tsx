@@ -11,8 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Bot } from "lucide-react";
 import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useResourceLogs } from "@/hooks/sealos/resource/use-resource-logs";
-import { BaseSystemMessage } from "@/components/chat/messages/components/base-system-message";
-import { MessageAction } from "@/components/chat/messages/components/message-actions";
+import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
+import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/message-actions";
 
 interface ResourceLogProps {
   payload: CustomResourceTarget | BuiltinResourceTarget;

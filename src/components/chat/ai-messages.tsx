@@ -1,6 +1,6 @@
 "use client";
 
-import { RenderTextMessage } from "./messages";
+import { RenderTextMessage } from "./messages/text-message";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { SystemMessageType } from "./messages/system-messages.tsx/systemp-message-types";
 import { get } from "lodash";
@@ -25,21 +25,13 @@ export function AiMessages() {
     <>
       {messages.length !== 0 && (
         <div className="w-full px-4 py-0 pb-4 h-full relative">
-          <div 
-            ref={scrollRef}
-            className="h-full overflow-y-auto"
-          >
+          <div ref={scrollRef} className="h-full overflow-y-auto">
             {messages.map((message, index) => {
               const isCurrentMessage = index === messages.length - 1;
 
               return (
                 <div key={message.id} className="mb-2">
-                  <RenderTextMessage
-                    message={message}
-                    index={index}
-                    isCurrentMessage={isCurrentMessage}
-                    inProgress={isLoading}
-                  />
+                  <RenderTextMessage message={message} inProgress={isLoading} />
 
                   {/* Generative UI for assistant messages */}
                   {message.role === "assistant" && message.generativeUI?.()}
@@ -64,7 +56,7 @@ export function AiMessages() {
               );
             })}
           </div>
-          
+
           {!isAtBottom && (
             <Button
               size="icon"

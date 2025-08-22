@@ -2,19 +2,21 @@
 
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
-import { MessageRendererProps } from "./types";
 import Markdown from "react-markdown";
 
 import "@/styles/github-markdown-dark.css";
 
+interface RenderTextMessageProps {
+  message: any;
+  inProgress: boolean;
+}
+
 export function RenderTextMessage({
   message,
-  isCurrentMessage,
   inProgress,
-}: MessageRendererProps) {
+}: RenderTextMessageProps) {
   const isUser = message.role === "user";
-  const isLoading =
-    isCurrentMessage && inProgress && !isUser && !message.content;
+  const isLoading = inProgress && !isUser && !message.content;
 
   if (
     (!message.content && !isLoading) ||
