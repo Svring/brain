@@ -5,11 +5,11 @@ import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbo
 import { useAuthState } from "@/contexts/auth/auth-context";
 
 interface DevboxInfoDetailsProps {
-  devboxData: DevboxObject;
+  devboxObject: DevboxObject;
 }
 
 export const DevboxInfoDetails: React.FC<DevboxInfoDetailsProps> = ({
-  devboxData,
+  devboxObject,
 }) => {
   const { auth } = useAuthState();
   const namespace = auth?.namespace;
@@ -20,23 +20,23 @@ export const DevboxInfoDetails: React.FC<DevboxInfoDetailsProps> = ({
       {/* Image Info */}
       <div className="flex flex-col gap-1">
         <span className="text-sm text-muted-foreground">Image:</span>
-        <span className="text-sm rounded">{devboxData.image}</span>
+        <span className="text-sm rounded">{devboxObject.image}</span>
       </div>
 
       {/* Created At and Up Time Info */}
-      {devboxData.operationalStatus && (
+      {devboxObject.operationalStatus && (
         <div className="grid grid-cols-2 gap-6">
           <div className="flex flex-col">
             <span className="text-sm text-muted-foreground">Created At</span>
             <span className="text-sm font-medium">
-              {devboxData.operationalStatus.createdAt}
+              {devboxObject.operationalStatus.createdAt}
             </span>
           </div>
-          {devboxData.operationalStatus.upTime && (
+          {devboxObject.operationalStatus.upTime && (
             <div className="flex flex-col">
               <span className="text-sm text-muted-foreground">Uptime</span>
               <span className="text-sm font-medium">
-                {devboxData.operationalStatus.upTime}
+                {devboxObject.operationalStatus.upTime}
               </span>
             </div>
           )}
@@ -48,21 +48,23 @@ export const DevboxInfoDetails: React.FC<DevboxInfoDetailsProps> = ({
         <div className="flex flex-col">
           <span className="text-sm text-muted-foreground">CPU</span>
           <span className="text-sm font-medium">
-            {devboxData.resources?.cpu ? `${devboxData.resources.cpu}m` : "N/A"}
+            {devboxObject.resources?.cpu
+              ? `${devboxObject.resources.cpu}m`
+              : "N/A"}
           </span>
         </div>
         <div className="flex flex-col">
           <span className="text-sm text-muted-foreground">Memory</span>
           <span className="text-sm font-medium">
-            {devboxData.resources?.memory
-              ? `${devboxData.resources.memory}MB`
+            {devboxObject.resources?.memory
+              ? `${devboxObject.resources.memory}MB`
               : "N/A"}
           </span>
         </div>
       </div>
 
       {/* SSH Connection Info */}
-      {devboxData.ssh && (
+      {devboxObject.ssh && (
         <div className="flex-1">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
@@ -74,9 +76,9 @@ export const DevboxInfoDetails: React.FC<DevboxInfoDetailsProps> = ({
                 size="sm"
                 className="h-6 text-xs"
                 onClick={() => {
-                  if (devboxData.ssh.privateKey) {
-                    const fileName = `${regionUrl}_${namespace}_${devboxData.name}`;
-                    const blob = new Blob([devboxData.ssh.privateKey], {
+                  if (devboxObject.ssh.privateKey) {
+                    const fileName = `${regionUrl}_${namespace}_${devboxObject.name}`;
+                    const blob = new Blob([devboxObject.ssh.privateKey], {
                       type: "text/plain",
                     });
                     const url = URL.createObjectURL(blob);
@@ -96,16 +98,16 @@ export const DevboxInfoDetails: React.FC<DevboxInfoDetailsProps> = ({
             </div>
             <div className="flex items-center justify-between min-w-0 w-full bg-muted border border-border-primary rounded-md p-1">
               <span className="text-sm font-mono p-1 rounded text-foreground flex-1 truncate mr-2 min-w-0 max-w-md">
-                ssh -i {regionUrl}_{namespace}_{devboxData.name}{" "}
-                {devboxData.ssh.user}@{devboxData.ssh.host} -p{" "}
-                {devboxData.ssh.port}
+                ssh -i {regionUrl}_{namespace}_{devboxObject.name}{" "}
+                {devboxObject.ssh.user}@{devboxObject.ssh.host} -p{" "}
+                {devboxObject.ssh.port}
               </span>
               <Button
                 variant="ghost"
                 size="sm"
                 className="h-6 w-6 p-0 flex-shrink-0"
                 onClick={() => {
-                  const sshCommand = `ssh -i ${regionUrl}_${namespace}_${devboxData.name} ${devboxData.ssh.user}@${devboxData.ssh.host} -p ${devboxData.ssh.port}`;
+                  const sshCommand = `ssh -i ${regionUrl}_${namespace}_${devboxObject.name} ${devboxObject.ssh.user}@${devboxObject.ssh.host} -p ${devboxObject.ssh.port}`;
                   navigator.clipboard.writeText(sshCommand);
                 }}
               >

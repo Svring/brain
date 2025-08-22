@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { Network, Globe, HelpCircle } from "lucide-react";
 import type { DevboxPort } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import { useNetworkStatus } from "@/hooks/sealos/network/use-network-status";
-import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 interface NetworkResource {
@@ -25,7 +25,7 @@ export default function NetworkNode({
   const { resource, parent } = data;
 
   const { readyStatus, getBackgroundColor } = useNetworkStatus({ parent });
-  const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
+  const { sendSystemMessage: emitMessage } = useAppendSystemMessageMutation();
 
   const handleNodeClick = () => {
     emitMessage({

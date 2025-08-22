@@ -14,8 +14,8 @@ import { LaunchpadInfoLog } from "./launchpad-info-log";
 import { BaseSystemMessage } from "@/components/chat/messages/components/base-system-message";
 import { MessageAction } from "@/components/chat/messages/components/message-actions";
 import { FileText, Container, BarChart3 } from "lucide-react";
-import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { LaunchpadInfoDetails } from "./launchpad-info-details";
+import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { LaunchpadInfoDetails } from "../../launchpad/components/launchpad-info-details";
 
 interface LaunchpadInfoMessageProps {
   payload: BuiltinResourceTarget;
@@ -26,7 +26,7 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
 }) => {
   const k8sContext = createK8sContext();
   const metricsContext = createMetricsContext();
-  const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
+  const { sendSystemMessage: emitMessage } = useAppendSystemMessageMutation();
 
   // Fetch launchpad data using the target
   const {

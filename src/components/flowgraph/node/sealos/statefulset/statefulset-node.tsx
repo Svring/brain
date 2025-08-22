@@ -10,7 +10,7 @@ import StatefulsetNodeTitle from "./statefulset-node-title";
 import StatefulsetNodeMenu from "./statefulset-node-menu";
 import { StatefulsetObjectQuery } from "@/lib/sealos/resources/statefulset/statefulset-object-query-schema";
 import { truncateImage } from "@/lib/sealos/sealos-utils";
-import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import NodeLog from "../../components/node-log";
 import { useResourceMetrics } from "@/hooks/sealos/resource/use-resource-metrics";
@@ -84,7 +84,7 @@ function StatefulsetNode({
   resource: StatefulsetObjectQuery;
   status?: string;
 }) {
-  const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
+  const { sendSystemMessage: emitMessage } = useAppendSystemMessageMutation();
 
   // Use the new hook to get statefulset data
   const { data: statefulsetData = resource } = useLaunchpadObject(

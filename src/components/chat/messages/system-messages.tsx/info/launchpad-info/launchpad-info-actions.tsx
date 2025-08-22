@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { FileText, Container, BarChart3 } from "lucide-react";
-import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
 interface LaunchpadInfoActionsProps {
   name: string;
@@ -14,7 +14,7 @@ export const LaunchpadInfoActions: React.FC<LaunchpadInfoActionsProps> = ({
   kind,
   resource,
 }) => {
-  const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
+  const { sendSystemMessage: emitMessage } = useAppendSystemMessageMutation();
 
   const handleLogsClick = () => {
     emitMessage({

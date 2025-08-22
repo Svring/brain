@@ -6,7 +6,11 @@ import { useCopilotContext } from "@copilotkit/react-core";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { useChatActions } from "@/contexts/chat/chat-context";
 import { randomId } from "@copilotkit/shared";
-import { SystemMessageData } from "@/lib/copilot/message/message-utils";
+import { SystemMessage } from "@/lib/copilot/message/message-utils";
+import {
+  CustomResourceTarget,
+  BuiltinResourceTarget,
+} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 // ============================================================================
 // MUTATION HOOKS
@@ -93,28 +97,51 @@ export const useSendMessageMutation = () => {
   });
 };
 /**
- * Hook to get the emitSystemMessage function with current context
- * @returns Object containing emitSystemMessage function
+ * Hook to send system messages with type and target parameters
+ * @returns Object containing sendSystemMessage function
  */
 
-export const useSendSystemMessageMutation = () => {
+export const useAppendSystemMessageMutation = () => {
   const { setMessages, messages } = useCopilotChatHeadless_c();
   const { openSidebarChat } = useChatActions();
 
-  const sendSystemMessage = (
-    systemMessageData: SystemMessageData,
+  const appendSystemMessage = (
+    type: string,
+    target: CustomResourceTarget | BuiltinResourceTarget,
     assistantContent?: string
   ) => {
-    emitSystemMessage(
-      setMessages,
-      messages,
-      openSidebarChat,
-      systemMessageData,
-      assistantContent
-    );
+    // Create system message data
+    const systemMessageData: SystemMessage = {
+      type,
+      payload: target,
+    };
+
+    // Send a message about the resource
+    const newMessages = [
+      ...messages,
+      {
+        id: randomId(),
+        role: "system" as const,
+        content: JSON.stringify(systemMessageData),
+      },
+    ];
+
+    // Only add assistant message if content is provided
+    if (assistantContent) {
+      newMessages.splice(-1, 0, {
+        id: randomId(),
+        role: "assistant" as const,
+        content: assistantContent,
+      });
+    }
+
+    setMessages(newMessages);
+
+    // Open the sidebar chat
+    openSidebarChat();
   };
 
-  return { sendSystemMessage };
+  return { appendSystemMessage };
 };
 
 /**
@@ -154,44 +181,4 @@ export const useAppendMessagesMutation = () => {
       console.error("Failed to append messages:", error);
     },
   });
-};
-/**
- * Utility function to emit a system message and open the sidebar chat
- * @param setMessages - Function to set messages from useCopilotChatHeadless_c
- * @param messages - Current messages array from useCopilotChatHeadless_c
- * @param openSidebarChat - Function to open sidebar chat from useChatActions
- * @param assistantContent - Content for the assistant message
- * @param systemMessageData - Data for the system message (type and payload)
- */
-
-export const emitSystemMessage = (
-  setMessages: ReturnType<typeof useCopilotChatHeadless_c>["setMessages"],
-  messages: ReturnType<typeof useCopilotChatHeadless_c>["messages"],
-  openSidebarChat: ReturnType<typeof useChatActions>["openSidebarChat"],
-  systemMessageData: SystemMessageData,
-  assistantContent?: string
-) => {
-  // Send a message about the resource
-  const newMessages = [
-    ...messages,
-    {
-      id: randomId(),
-      role: "system" as const,
-      content: JSON.stringify(systemMessageData),
-    },
-  ];
-
-  // Only add assistant message if content is provided
-  if (assistantContent) {
-    newMessages.splice(-1, 0, {
-      id: randomId(),
-      role: "assistant" as const,
-      content: assistantContent,
-    });
-  }
-
-  setMessages(newMessages);
-
-  // Open the sidebar chat
-  openSidebarChat();
 };

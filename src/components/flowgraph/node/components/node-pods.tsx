@@ -9,7 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import {
   CustomResourceTarget,
@@ -22,7 +22,7 @@ interface NodePodsProps {
 }
 
 export default function NodePods({ target }: NodePodsProps) {
-  const { sendSystemMessage } = useSendSystemMessageMutation();
+  const { sendSystemMessage } = useAppendSystemMessageMutation();
   const { resource, isLoading, error } = useResourceStatus(target);
 
   // Extract pods from resource based on resource type

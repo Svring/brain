@@ -8,7 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
 interface NodeBackupProps {
   resource: {
@@ -18,7 +18,7 @@ interface NodeBackupProps {
 }
 
 export default function NodeBackup({ resource }: NodeBackupProps) {
-  const { sendSystemMessage } = useSendSystemMessageMutation();
+  const { sendSystemMessage } = useAppendSystemMessageMutation();
 
   return (
     <TooltipProvider delayDuration={0}>

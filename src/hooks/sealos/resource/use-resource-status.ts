@@ -8,7 +8,7 @@ import {
 export const useResourceStatus = (
   target: CustomResourceTarget | BuiltinResourceTarget
 ) => {
-  const { devbox, cluster, launchpad, objectStorage } = useTRPCClients();
+  const { devbox, cluster, launchpad, objectstorage } = useTRPCClients();
 
   // Handle custom resources (devbox, cluster, objectstorage)
   if (target.type === "custom") {
@@ -35,7 +35,7 @@ export const useResourceStatus = (
     }
     if (target.resourceType === "objectstoragebucket") {
       const { data: resource, ...rest } = useQuery(
-        objectStorage.getObjectStorage.queryOptions({ target })
+        objectstorage.getObjectStorage.queryOptions({ target })
       );
       return {
         ...rest,

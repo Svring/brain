@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, HelpCircle } from "lucide-react";
+import { Copy, Check } from "lucide-react";
 import { useCopy } from "@/hooks/use-copy";
 import {
   Table,
@@ -10,25 +10,28 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { DevboxPort } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
+import type {
+  DevboxObject,
+  DevboxPort,
+} from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
+import {
+  CustomResourceTarget,
+  BuiltinResourceTarget,
+} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 
-interface NetworkResource {
-  ports: DevboxPort[];
-  [key: string]: any;
+interface NetworkMessageProps {
+  target: CustomResourceTarget | BuiltinResourceTarget;
 }
 
-interface NetworkInfoMessageProps {
-  resource: NetworkResource;
-}
-
-export const NetworkInfoMessage: React.FC<NetworkInfoMessageProps> = ({
-  resource,
-}) => {
+export const NetworkMessage: React.FC<NetworkMessageProps> = ({ target }) => {
   const { copyToClipboard, isCopied } = useCopy();
-  
-  const ports = resource.ports || [];
 
-  if (!ports || ports.length === 0) {
+  const { resource } = useResourceStatus(target);
+
+  const ports = (resource as DevboxObject)?.ports || [];
+
+  if (!resource || !ports || ports.length === 0) {
     return null;
   }
 

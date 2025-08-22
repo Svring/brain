@@ -8,7 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
@@ -19,7 +19,7 @@ interface NodeLogProps {
 }
 
 export default function NodeLog({ target }: NodeLogProps) {
-  const { sendSystemMessage } = useSendSystemMessageMutation();
+  const { sendSystemMessage } = useAppendSystemMessageMutation();
 
   const handleLogClick = useCallback(
     (e: React.MouseEvent) => {

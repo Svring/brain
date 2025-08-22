@@ -11,7 +11,7 @@ import NodeMonitor from "../../components/node-monitor";
 import NodeStack from "../../components/node-stack";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import { createDevboxContext } from "@/lib/auth/auth-utils";
-import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 import { useResourceMetrics } from "@/hooks/sealos/resource/use-resource-metrics";
@@ -82,7 +82,7 @@ function DevboxNode({
   status?: string;
 }) {
   // const { name, image, ports, pods } = data;
-  const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
+  const { sendSystemMessage: emitMessage } = useAppendSystemMessageMutation();
 
   const target = convertResourceObjectToTarget({
     kind: resource.kind,

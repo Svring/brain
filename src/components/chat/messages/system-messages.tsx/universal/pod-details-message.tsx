@@ -16,7 +16,7 @@ import {
 import { Pod } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { ContainerStatus } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/pod-schemas";
 import { inferStatusColor } from "@/lib/sealos/sealos-utils";
-import MessageHeader from "../../components/message-header";
+import MessageHeader from "@/components/chat/messages/components/message-header";
 
 interface PodDetailsProps {
   payload: CustomResourceTarget | BuiltinResourceTarget;

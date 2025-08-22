@@ -9,7 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import {
@@ -22,7 +22,7 @@ interface NodeMonitorProps {
 }
 
 export default function NodeMonitor({ target }: NodeMonitorProps) {
-  const { sendSystemMessage } = useSendSystemMessageMutation();
+  const { sendSystemMessage } = useAppendSystemMessageMutation();
   const { color, latestData, monitorData } = useResourceMetricsStatus({
     target,
   });

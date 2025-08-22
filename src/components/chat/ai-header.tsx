@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Plus, ChevronDown } from "lucide-react";
 import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
 import {
   DropdownMenu,
@@ -32,7 +32,7 @@ export function AiChatHeader({
 }: AiChatHeaderProps) {
   const { mutate: createNewChatSession, isPending } =
     useCreateNewChatSessionMutation();
-  const { sendSystemMessage } = useSendSystemMessageMutation();
+  const { sendSystemMessage } = useAppendSystemMessageMutation();
 
   const handleNewChat = () => {
     createNewChatSession();

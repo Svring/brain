@@ -1,13 +1,13 @@
 import React from "react";
 
-interface LaunchpadInfoDetailsProps {
-  launchpadData: any;
+interface LaunchpadMessageDetailsProps {
+  launchpadObject: any;
 }
 
-export const LaunchpadInfoDetails: React.FC<LaunchpadInfoDetailsProps> = ({
-  launchpadData,
-}) => {
-  const { resource, image, operationalStatus } = launchpadData;
+export const LaunchpadMessageDetails: React.FC<
+  LaunchpadMessageDetailsProps
+> = ({ launchpadObject }) => {
+  const { resource, image, operationalStatus } = launchpadObject;
 
   const formatValue = (value: any, type: "cpu" | "memory" | "storage") => {
     if (!value) return "N/A";
@@ -65,3 +65,5 @@ export const LaunchpadInfoDetails: React.FC<LaunchpadInfoDetailsProps> = ({
     </div>
   );
 };
+
+export default LaunchpadMessageDetails;

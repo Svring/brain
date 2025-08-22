@@ -15,7 +15,7 @@ import {
   BarChart3,
   EthernetPort,
 } from "lucide-react";
-import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
@@ -29,7 +29,7 @@ export const ClusterInfoMessage: React.FC<ClusterInfoMessageProps> = ({
   payload,
 }) => {
   const clusterTrpcClient = clusterClient.useTRPC();
-  const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
+  const { sendSystemMessage: emitMessage } = useAppendSystemMessageMutation();
 
   // Fetch the cluster data using the target
   const {

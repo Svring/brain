@@ -17,7 +17,7 @@ import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cl
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertToDbconnUrl } from "@/lib/sealos/sealos-utils";
 import { composeClusterConnectionString } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
 import { Globe, HardDrive } from "lucide-react";
@@ -100,7 +100,7 @@ function ClusterNode({
   resource: ClusterObject;
   status?: string;
 }) {
-  const { sendSystemMessage } = useSendSystemMessageMutation();
+  const { sendSystemMessage } = useAppendSystemMessageMutation();
 
   // Create contexts for API calls
   const k8sContext = createK8sContext();

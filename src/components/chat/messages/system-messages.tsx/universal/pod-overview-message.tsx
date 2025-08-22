@@ -1,6 +1,5 @@
 import React from "react";
 import { Box, Container } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import {
@@ -8,9 +7,9 @@ import {
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { Pod } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
-import { useAppendMessagesMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { BaseSystemMessage } from "../../components/base-system-message";
-import { MessageAction } from "../../components/message-actions";
+import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { BaseSystemMessage } from "@/components/chat/messages/components/base-system-message";
+import { MessageAction } from "@/components/chat/messages/components/message-actions";
 
 interface PodOverviewProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -18,7 +17,7 @@ interface PodOverviewProps {
 
 export const PodOverview: React.FC<PodOverviewProps> = ({ target }) => {
   const { resource, isLoading, error } = useResourceStatus(target);
-  const appendMessagesMutation = useAppendMessagesMutation();
+  const { appendSystemMessage } = useAppendSystemMessageMutation();
 
   // Extract pods from resource based on resource type
   const getPodList = (): Pod[] => {
@@ -35,25 +34,16 @@ export const PodOverview: React.FC<PodOverviewProps> = ({ target }) => {
 
   const podList = getPodList();
 
-  const handleShowPodDetails = () => {
-    appendMessagesMutation.mutate([
-      {
-        role: "system",
-        content: {
-          type: "manage.podDetails",
-          payload: target,
-        },
-      },
-    ]);
-  };
-
-  const actions: MessageAction[] = podList.length > 0 ? [
-    {
-      icon: Container,
-      label: "View Pod Details",
-      onClick: handleShowPodDetails,
-    },
-  ] : [];
+  const actions: MessageAction[] =
+    podList.length > 0
+      ? [
+          {
+            icon: Container,
+            label: "View Pod Details",
+            onClick: () => appendSystemMessage("manage.podDetails", target),
+          },
+        ]
+      : [];
 
   const runningPods = podList.filter(
     (pod: Pod) => pod.status.toLowerCase() === "running"

@@ -10,7 +10,7 @@ import DeploymentNodeTitle from "./deployment-node-title";
 import DeploymentNodeMenu from "./deployment-node-menu";
 import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-object-schema";
 import { truncateImage } from "@/lib/sealos/sealos-utils";
-import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useLaunchpadObject } from "@/hooks/sealos/launchpad/use-launchpad-object";
 import { useResourceDelete } from "@/hooks/sealos/resource/use-resource-delete";
@@ -85,7 +85,7 @@ function DeploymentNode({
   resource: DeploymentObject;
   status?: string;
 }) {
-  const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
+  const { sendSystemMessage: emitMessage } = useAppendSystemMessageMutation();
 
   // Use the new hook to get deployment data
   const { data: deploymentData = resource } = useLaunchpadObject(

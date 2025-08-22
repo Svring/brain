@@ -19,7 +19,7 @@ export const useTRPCClients = () => {
     devbox: devboxTrpcClient,
     cluster: clusterTrpcClient,
     launchpad: launchpadTrpcClient,
-    objectStorage: objectStorageTrpcClient,
+    objectstorage: objectStorageTrpcClient,
     project: projectTrpcClient,
     k8s: k8sTrpcClient,
   };
