@@ -8,7 +8,13 @@ import { useQuery } from "@tanstack/react-query";
 import { clusterClient } from "@/components/provider/trpc-provider";
 import { BaseSystemMessage } from "@/components/chat/messages/components/base-system-message";
 import { MessageAction } from "@/components/chat/messages/components/message-actions";
-import { Save, FileText, Container, BarChart3 } from "lucide-react";
+import {
+  Save,
+  FileText,
+  Container,
+  BarChart3,
+  EthernetPort,
+} from "lucide-react";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
@@ -36,57 +42,39 @@ export const ClusterInfoMessage: React.FC<ClusterInfoMessageProps> = ({
     })
   );
 
-  const handleBackupClick = () => {
-    emitMessage({
-      type: "info.clusterBackup",
-      payload: {
-        clusterName: clusterData?.name || "",
-      },
-    });
-  };
-
-  const handlePodsClick = () => {
-    emitMessage({
-      type: "podOverview",
-      payload: payload,
-    });
-  };
-
-  const handleViewMetricsClick = () => {
-    emitMessage({
-      type: "monitor",
-      payload: payload,
-    });
-  };
-
-  const handleLogsClick = () => {
-    emitMessage({
-      type: "resourceLog",
-      payload: payload,
-    });
-  };
-
   const actions: MessageAction[] = clusterData
     ? [
         {
           icon: Save,
           label: "Backup",
-          onClick: handleBackupClick,
-        },
-        {
-          icon: FileText,
-          label: "Logs",
-          onClick: handleLogsClick,
-        },
-        {
-          icon: Container,
-          label: "Pods",
-          onClick: handlePodsClick,
+          onClick: () => {
+            emitMessage({
+              type: "info.clusterBackup",
+              payload: {
+                clusterName: clusterData?.name || "",
+              },
+            });
+          },
         },
         {
           icon: BarChart3,
           label: "View Metrics",
-          onClick: handleViewMetricsClick,
+          onClick: () => {
+            emitMessage({
+              type: "info.monitor",
+              payload: payload,
+            });
+          },
+        },
+        {
+          icon: EthernetPort,
+          label: "View Connection",
+          onClick: () => {
+            emitMessage({
+              type: "info.clusterConnection",
+              payload: payload,
+            });
+          },
         },
       ]
     : [];
@@ -120,7 +108,6 @@ export const ClusterInfoMessage: React.FC<ClusterInfoMessageProps> = ({
   return (
     <BaseSystemMessage target={payload} actions={actions}>
       <ClusterInfoDetails clusterData={clusterData} />
-      <ClusterInfoConnection clusterData={clusterData} />
     </BaseSystemMessage>
   );
 };

@@ -23,6 +23,7 @@ import { ClusterInfoLog } from "./info/cluster-info/cluster-info-log";
 import { LaunchpadInfoLog } from "./info/launchpad-info/launchpad-info-log";
 import ResourceLog from "./resource-log";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { ClusterInfoConnection } from "./info/cluster-info/cluster-info-connection";
 
 export const SystemMessageType = {
   info: {
@@ -60,6 +61,9 @@ export const SystemMessageType = {
     ),
     customDomain: (payload: any) => <CustomDomainMessage {...payload} />,
     networkInfo: (payload: any) => <NetworkInfoMessage resource={payload} />,
+    clusterConnection: (payload: CustomResourceTarget) => (
+      <ClusterInfoConnection payload={payload} />
+    ),
   },
   manage: {
     devboxCreate: (payload: any) => <DevboxCreateMessage payload={payload} />,

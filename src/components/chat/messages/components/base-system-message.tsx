@@ -34,7 +34,7 @@ export function BaseSystemMessage({
         )}
 
         {/* Content Section */}
-        <CardContent className="px-6">{children}</CardContent>
+        <CardContent className="px-6 space-y-4">{children}</CardContent>
 
         {/* Actions Section */}
         {actions.length > 0 && (

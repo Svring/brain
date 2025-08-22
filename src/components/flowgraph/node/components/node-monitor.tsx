@@ -42,7 +42,7 @@ export default function NodeMonitor({ target }: NodeMonitorProps) {
               e.preventDefault();
               e.stopPropagation();
               sendSystemMessage({
-                type: "info.combinedMetrics",
+                type: "info.monitor",
                 payload: target,
               });
             }}
