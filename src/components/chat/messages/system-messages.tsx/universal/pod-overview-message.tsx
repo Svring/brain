@@ -9,8 +9,8 @@ import {
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { Pod } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { useAppendMessagesMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { BaseSystemMessage } from "./base-system-message";
-import { MessageAction } from "./message-actions";
+import { BaseSystemMessage } from "../../components/base-system-message";
+import { MessageAction } from "../../components/message-actions";
 
 interface PodOverviewProps {
   target: CustomResourceTarget | BuiltinResourceTarget;

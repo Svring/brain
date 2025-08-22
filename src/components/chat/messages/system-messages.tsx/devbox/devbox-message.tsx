@@ -1,30 +1,20 @@
 import React from "react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { Card, CardContent } from "@/components/ui/card";
 import { createK8sContext } from "@/lib/auth/auth-utils";
-import { getDevboxRangedMonitorOptions } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
 import { useQuery } from "@tanstack/react-query";
-import { createMetricsContext } from "@/lib/auth/auth-utils";
 import { devboxClient } from "@/components/provider/trpc-provider";
-import { DevboxInfoHeader } from "./devbox-info-header";
-import { ResourceQuotaRow } from "@/components/chat/messages/components/resource-quota-row";
-import { DevboxInfoPorts } from "./devbox-info-ports";
 import { BaseSystemMessage } from "@/components/chat/messages/components/base-system-message";
 import { MessageAction } from "@/components/chat/messages/components/message-actions";
 import { GitBranch, BarChart3, Container, FileText } from "lucide-react";
 import { useSendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
-import { DevboxInfoDetails } from "./devbox-info-details";
+import { DevboxInfoDetails } from "./components/devbox-message-details";
 
-interface DevboxInfoMessageProps {
+interface DevboxMessageProps {
   payload: CustomResourceTarget;
 }
 
-export const DevboxInfoMessageCard: React.FC<DevboxInfoMessageProps> = ({
-  payload,
-}) => {
+export const DevboxMessage: React.FC<DevboxMessageProps> = ({ payload }) => {
   const context = createK8sContext();
-  const metricsContext = createMetricsContext();
   const { sendSystemMessage: emitMessage } = useSendSystemMessageMutation();
 
   const devboxTrpcClient = devboxClient.useTRPC();
@@ -44,9 +34,6 @@ export const DevboxInfoMessageCard: React.FC<DevboxInfoMessageProps> = ({
   // const { data: monitorData } = useQuery(
   //   getDevboxRangedMonitorOptions(metricsContext, devboxData?.name || "")
   // );
-
-  // Get region URL from the K8s context
-  const regionUrl = context.regionUrl;
 
   const handleReleasesClick = () => {
     emitMessage({
@@ -132,9 +119,8 @@ export const DevboxInfoMessageCard: React.FC<DevboxInfoMessageProps> = ({
   return (
     <BaseSystemMessage target={payload} actions={actions}>
       <DevboxInfoDetails devboxData={devboxData} />
-      <DevboxInfoPorts devboxData={devboxData} />
     </BaseSystemMessage>
   );
 };
 
-export default DevboxInfoMessageCard;
+export default DevboxMessage;
