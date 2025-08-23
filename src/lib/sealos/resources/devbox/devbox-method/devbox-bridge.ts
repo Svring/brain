@@ -6,7 +6,7 @@ import { enrichPortsWithService } from "@/lib/sealos/resources/service/service-m
 import { enrichPortsWithIngress } from "@/lib/sealos/resources/ingress/ingress-method/ingress-utils";
 import {
   enrichSshWithRegionUrl,
-  transformDevboxImage,
+  enrichEnvWithSsh,
 } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 import { DevboxObjectSchema } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import _ from "lodash";
@@ -48,6 +48,8 @@ export const getDevboxObject = async (
     .value();
 
   devboxObject.ssh = enrichSshWithRegionUrl(devboxObject.ssh, context);
+
+  devboxObject.env = await enrichEnvWithSsh(devboxObject.ssh);
 
   return DevboxObjectSchema.parse(devboxObject);
 };

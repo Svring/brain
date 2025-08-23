@@ -34,4 +34,7 @@ export const SystemMessageType = {
       <ObjectStorageMessage target={target} />
     ),
   },
+  universal: {
+    
+  },
 };

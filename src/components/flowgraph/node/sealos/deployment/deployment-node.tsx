@@ -41,7 +41,7 @@ function DeploymentNodeWrapper({
   // Always call hooks in the same order
   const { completeResource, status } = useResourceNodeEnhancer(resourceData);
 
-  console.log("completeResource", completeResource);
+  // console.log("completeResource", completeResource);
 
   // If we have complete object data, render the full node
   if (isCompleteObject) {

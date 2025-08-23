@@ -11,9 +11,24 @@ import { useProjectActions } from "@/contexts/project/project-context";
 import { Spinner } from "@/components/ui/spinner";
 import { ProjectProposalDemo } from "@/components/chat/state-cards/project-proposal-demo";
 
+import { getLaunchpad } from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-query";
+import {
+  updateApplication,
+  updateApplicationPorts,
+} from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api";
+
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { createK8sContext, createSealosContext } from "@/lib/auth/auth-utils";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { runParallelAction } from "next-server-actions-parallel";
+
 export default function Page() {
   // const { openDialog, CreateProjectDialog } = useProjectCreateDialog();
   const { setAllProjects } = useProjectActions();
+  // const { launchpad } = useTRPCClients();
+  // const context = createK8sContext();
+  // const sealosContext = createSealosContext();
 
   const { setSearchTerm, filteredProjects, projects, isLoading, isError } =
     useProjectSearch();
@@ -24,6 +39,50 @@ export default function Page() {
       setAllProjects(projects);
     }
   }, [projects]);
+
+  // useEffect(() => {
+  //   const fetchProjects = async () => {
+  //     // const projects = await getLaunchpad(
+  //     //   context,
+  //     //   convertResourceTypeToTarget(
+  //     //     "deployment",
+  //     //     "hello-world"
+  //     //   ) as BuiltinResourceTarget
+  //     // );
+  //     const res = await runParallelAction(
+  //       // updateApplication(sealosContext, "hello-world", {
+  //       // image: "cat",
+  //       // resource: {
+  //       //   cpu: 600,
+  //       //   memory: 1024,
+  //       // },
+  //       // env: [
+  //       //   {
+  //       //     name: "hello",
+  //       //     value: "8081",
+  //       //   },
+  //       // ],
+  //       // })
+  //       // updateApplicationPorts(sealosContext, "hello-world", {
+  //       //   ports: [
+  //       //     {
+  //       //       port: 81,
+  //       //       protocol: "TCP",
+  //       //       exposesPublicDomain: true,
+  //       //     },
+  //       //     {
+  //       //       port: 82,
+  //       //       protocol: "TCP",
+  //       //       appProtocol: "HTTP",
+  //       //       exposesPublicDomain: false,
+  //       //     },
+  //       //   ],
+  //       // })
+  //     );
+  //     console.log(res);
+  //   };
+  //   fetchProjects();
+  // }, []);
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center p-8">

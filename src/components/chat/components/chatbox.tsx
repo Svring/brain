@@ -2,9 +2,9 @@
 
 import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { AiMessages } from "./ai-messages";
-import { AiChatInput } from "./ai-input";
-import { AiChatHeader } from "./ai-header";
+import { AiMessages } from "./messages";
+import { AiChatInput } from "./input";
+import { AiChatHeader } from "./header";
 
 export default function AiChatbox() {
   const { sidebarChatOpen } = useChatState();
@@ -19,10 +19,7 @@ export default function AiChatbox() {
         }
       }}
     >
-      <SheetContent
-        side="right"
-        className="w-[40vw]! p-0 flex flex-col"
-      >
+      <SheetContent side="right" className="w-[40vw]! p-0 flex flex-col">
         <AiChatHeader />
 
         <div className="flex-1 min-h-0 overflow-y-auto">

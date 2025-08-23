@@ -1,8 +1,8 @@
 "use client";
 
-import { RenderTextMessage } from "./messages/text-message";
+import { RenderTextMessage } from "../messages/text-message";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
-import { SystemMessageType } from "./messages/system-messages.tsx/systemp-message-types";
+import { SystemMessageType } from "../messages/system-messages.tsx/systemp-message-types";
 import { get } from "lodash";
 import { useAutoScroll } from "@/hooks/use-auto-scroll";
 import { Button } from "@/components/ui/button";

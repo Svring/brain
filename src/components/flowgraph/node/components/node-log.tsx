@@ -19,7 +19,7 @@ interface NodeLogProps {
 }
 
 export default function NodeLog({ target }: NodeLogProps) {
-  const { sendSystemMessage } = useAppendSystemMessageMutation();
+  const { appendSystemMessage } = useAppendSystemMessageMutation();
 
   const handleLogClick = useCallback(
     (e: React.MouseEvent) => {
@@ -28,12 +28,9 @@ export default function NodeLog({ target }: NodeLogProps) {
 
       if (!target) return;
 
-      sendSystemMessage({
-        type: "info.resourceLog",
-        payload: target,
-      });
+      appendSystemMessage("info.resourceLog", target);
     },
-    [target, sendSystemMessage]
+    [target, appendSystemMessage]
   );
 
   return (

@@ -1,5 +1,10 @@
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
+import {
+  getOrCreateEnvFile,
+  EnvVarValue,
+} from "@/lib/sealos/services/env/devbox/devbox-env-utils";
+import { SSHConfig } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-query-schema";
 
 /**
  * Generates a random string of lowercase alphabets
@@ -7,8 +12,8 @@ import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/
  * @returns A random string of lowercase alphabets
  */
 function generateRandomString(length: number = 5): string {
-  const chars = 'abcdefghijklmnopqrstuvwxyz';
-  let result = '';
+  const chars = "abcdefghijklmnopqrstuvwxyz";
+  let result = "";
   for (let i = 0; i < length; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
@@ -37,6 +42,28 @@ export const enrichSshWithRegionUrl = (
     ...ssh,
     host: context.regionUrl,
   };
+};
+
+/**
+ * Fetches environment variables from the remote .env file via SSH
+ * @param ssh - The SSH configuration object
+ * @returns Array of environment variables in EnvVarValue format
+ */
+export const enrichEnvWithSsh = async (
+  ssh: SSHConfig
+): Promise<EnvVarValue[]> => {
+  try {
+    const envVars = await getOrCreateEnvFile(ssh);
+    return envVars;
+  } catch (error) {
+    // If SSH connection fails, return empty array
+    console.warn(
+      `Failed to fetch environment variables via SSH: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
+    return [];
+  }
 };
 
 /**
@@ -115,7 +142,7 @@ export const convertDevboxListToSimplified = (
  * @param prefix - Optional prefix for the name (default: 'devbox')
  * @returns A generated name in the format 'devbox-XXXXX' where XXXXX is random lowercase alphabets
  */
-export const generateDevboxName = (prefix: string = 'devbox'): string => {
+export const generateDevboxName = (prefix: string = "devbox"): string => {
   const randomString = generateRandomString(5);
   return `${prefix}-${randomString}`;
 };

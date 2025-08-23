@@ -82,7 +82,7 @@ function DevboxNode({
   status?: string;
 }) {
   // const { name, image, ports, pods } = data;
-  const { sendSystemMessage: emitMessage } = useAppendSystemMessageMutation();
+  const { appendSystemMessage } = useAppendSystemMessageMutation();
 
   const target = convertResourceObjectToTarget({
     kind: resource.kind,
@@ -108,10 +108,7 @@ function DevboxNode({
   const releasesData = releases?.data || [];
 
   const handleNodeClick = () => {
-    emitMessage({
-      type: "info.devboxInfo",
-      payload: target,
-    });
+    appendSystemMessage("devbox.detail", target);
   };
 
   const mainCard = (

@@ -100,7 +100,7 @@ function ClusterNode({
   resource: ClusterObject;
   status?: string;
 }) {
-  const { sendSystemMessage } = useAppendSystemMessageMutation();
+  const { appendSystemMessage } = useAppendSystemMessageMutation();
 
   // Create contexts for API calls
   const k8sContext = createK8sContext();
@@ -150,10 +150,7 @@ function ClusterNode({
 
   const handleNodeClick = () => {
     // Use the new mutation hook to send messages
-    sendSystemMessage({
-      type: "info.clusterInfo",
-      payload: target,
-    });
+    appendSystemMessage("cluster.detail", target);
   };
 
   const mainCard = (
@@ -198,7 +195,7 @@ function ClusterNode({
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={[]} /> */}
             <NodePods target={target} />
-            <NodeLog target={target} resourceType="cluster" />
+            <NodeLog target={target} />
             <ClusterNodeBackup object={clusterData} />
             {/* <NodeBackup /> */}
             <NodeMonitor target={target} />

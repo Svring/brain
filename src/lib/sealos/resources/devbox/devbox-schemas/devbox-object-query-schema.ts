@@ -4,6 +4,48 @@ import {
   formatDurationToReadable,
 } from "@/lib/date/date-utils";
 
+export const SSHConfigSchema = z.object({
+  host: z
+    .any()
+    .nullable()
+    .describe(
+      JSON.stringify({
+        resourceType: "external",
+        note: "current cluster's domain name",
+      })
+    ),
+  port: z.any().describe(
+    JSON.stringify({
+      resourceType: "devbox",
+      path: ["status.network.nodePort"],
+    })
+  ),
+  user: z.any().describe(
+    JSON.stringify({
+      resourceType: "devbox",
+      path: ["spec.config.user"],
+    })
+  ),
+  workingDir: z.any().describe(
+    JSON.stringify({
+      resourceType: "devbox",
+      path: ["spec.config.workingDir"],
+    })
+  ),
+  privateKey: z
+    .any()
+    .describe(
+      JSON.stringify({
+        resourceType: "secret",
+        path: ["data.SEALOS_DEVBOX_PRIVATE_KEY"],
+      })
+    )
+    .transform((val) => Buffer.from(val, "base64").toString("utf-8"))
+    .optional(),
+});
+
+export type SSHConfig = z.infer<typeof SSHConfigSchema>;
+
 export const DevboxObjectQuerySchema = z.object({
   name: z.any().describe(
     JSON.stringify({
@@ -74,45 +116,7 @@ export const DevboxObjectQuerySchema = z.object({
       })
     ),
   }),
-  ssh: z.object({
-    host: z
-      .any()
-      .nullable()
-      .describe(
-        JSON.stringify({
-          resourceType: "external",
-          note: "current cluster's domain name",
-        })
-      ),
-    port: z.any().describe(
-      JSON.stringify({
-        resourceType: "devbox",
-        path: ["status.network.nodePort"],
-      })
-    ),
-    user: z.any().describe(
-      JSON.stringify({
-        resourceType: "devbox",
-        path: ["spec.config.user"],
-      })
-    ),
-    workingDir: z.any().describe(
-      JSON.stringify({
-        resourceType: "devbox",
-        path: ["spec.config.workingDir"],
-      })
-    ),
-    privateKey: z
-      .any()
-      .describe(
-        JSON.stringify({
-          resourceType: "secret",
-          path: ["data.SEALOS_DEVBOX_PRIVATE_KEY"],
-        })
-      )
-      .transform((val) => Buffer.from(val, "base64").toString("utf-8"))
-      .optional(),
-  }),
+  ssh: SSHConfigSchema,
   ports: z
     .any()
     .describe(

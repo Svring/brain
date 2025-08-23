@@ -36,6 +36,7 @@ export const DevboxObjectSchema = z.object({
   status: z.string(),
   resources: DevboxResourceSchema,
   ssh: DevboxSshSchema,
+  env: z.any().optional(),
   ports: z.array(DevboxPortSchema),
   pods: z.array(PodSchema).optional(),
   operationalStatus: z.any().optional(),

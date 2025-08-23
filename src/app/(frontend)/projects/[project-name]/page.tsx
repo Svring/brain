@@ -18,8 +18,8 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 // Custom component imports
 import AddResourceTabs from "@/components/project/add-resource/add-resource-tabs";
-import AiChatbox from "@/components/chat/ai-chatbox";
-import AiCoin from "@/components/chat/ai-coin";
+import AiChatbox from "@/components/chat/components/chatbox";
+import AiCoin from "@/components/chat/components/coin";
 import DisplayEnvPanel from "@/components/project/display-env/display-env-panel";
 import FloatingConnectionLine from "@/components/flowgraph/edge/floating-connection-line";
 import { FlowgraphHeader } from "@/components/flowgraph/flowgraph-menu-header";
@@ -181,8 +181,9 @@ function ProjectFlow({ projectName }: { projectName: string }) {
   const { nodes: basicNodes } = useFlowgraphNodes(k8sResources ?? [], true);
 
   // Phase 2: Generate enhanced nodes with network nodes from complete objects
-  const { nodes: enhancedNodes, edges: networkEdges } =
-    useFlowgraphNodes(selectedProjectResources);
+  const { nodes: enhancedNodes, edges: networkEdges } = useFlowgraphNodes(
+    selectedProjectResources
+  );
 
   const { reliances } = useResourceReliances(selectedProjectResources);
   const { edges: computedEdges } = useFlowgraphEdges(reliances);

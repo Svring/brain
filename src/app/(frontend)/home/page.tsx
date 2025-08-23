@@ -1,8 +1,8 @@
 "use client";
 
 import { Hero } from "@/components/ui/hero";
-import { AiChatInput } from "@/components/chat/ai-input";
-import { AiMessages } from "@/components/chat/ai-messages";
+import { AiChatInput } from "@/components/chat/components/input";
+import { AiMessages } from "@/components/chat/components/messages";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { motion } from "framer-motion";
 import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
