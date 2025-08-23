@@ -11,6 +11,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useProjectState } from "@/contexts/project/project-context";
+import { deriveEnvVariable } from "@/lib/sealos/services/env/cluster/cluster-env-utils";
+import { deriveObjectStorageEnvVariable } from "@/lib/sealos/services/env/objectstorage/objectstorage-env-utils";
+import { createK8sContext } from "@/lib/auth/auth-utils";
 import _ from "lodash";
 
 interface EnvVariable {
@@ -40,6 +43,35 @@ export function EnvVariablesTable({
     }
   );
 
+  // Generate environment variables for cluster and object storage resources
+  const k8sContext = createK8sContext();
+  const clusterEnvVars = _.map(filteredResources, (resource: any) => {
+    if (resource.kind.toLowerCase() === "cluster") {
+      const derivedEnv = deriveEnvVariable(k8sContext, resource);
+      console.log(`Cluster ${resource.name} derived env vars:`, derivedEnv);
+      return derivedEnv;
+    }
+    return null;
+  }).filter(Boolean);
+
+  const objectStorageEnvVars = _.map(filteredResources, (resource: any) => {
+    if (resource.kind.toLowerCase() === "objectstoragebucket") {
+      const derivedEnv = deriveObjectStorageEnvVariable(resource);
+      console.log(
+        `Object Storage ${resource.name} derived env vars:`,
+        derivedEnv
+      );
+      return derivedEnv;
+    }
+    return null;
+  }).filter(Boolean);
+
+  console.log("All cluster environment variables:", clusterEnvVars);
+  console.log(
+    "All object storage environment variables:",
+    objectStorageEnvVars
+  );
+
   if (!envVars || envVars.length === 0) {
     return (
       <p className="text-muted-foreground">
@@ -64,8 +96,13 @@ export function EnvVariablesTable({
                 <TableCell className="font-mono">{envVar.key}</TableCell>
                 <TableCell className="max-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="truncate" title={envVar.value || "-"}>
-                      {envVar.value || "-"}
+                    <span
+                      className={`truncate ${
+                        !envVar.value ? "text-muted-foreground" : ""
+                      }`}
+                      title={envVar.value || "from secret"}
+                    >
+                      {envVar.value || "from secret"}
                     </span>
                     {envVar.value && (
                       <Button

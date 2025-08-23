@@ -19,7 +19,7 @@ import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertToDbconnUrl } from "@/lib/sealos/sealos-utils";
-import { composeClusterConnectionString } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
+import { composeClusterPublicConnectionString } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
 import { Globe, HardDrive } from "lucide-react";
 import { useResourceMetrics } from "@/hooks/sealos/resource/use-resource-metrics";
 import { useClusterObject } from "@/hooks/sealos/cluster/use-cluster-object";
@@ -138,7 +138,7 @@ function ClusterNode({
   const { name, type } = clusterData;
 
   // Construct connection string
-  const connectionString = composeClusterConnectionString(
+  const connectionString = composeClusterPublicConnectionString(
     clusterData,
     k8sContext.regionUrl
   );

@@ -30,7 +30,7 @@ export const generateClusterName = (prefix: string = "cluster"): string => {
  * @param regionUrl - The region URL for the cluster
  * @returns A connection string or null if the required data is not available
  */
-export const composeClusterConnectionString = (
+export const composeClusterPublicConnectionString = (
   clusterData: any,
   regionUrl: string
 ): string | null => {
