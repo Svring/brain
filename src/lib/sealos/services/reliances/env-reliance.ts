@@ -46,10 +46,14 @@ export function inferRelianceFromEnv(
     }
     result[ownerKind][ownerName] = [];
 
-    // Extract env values
+    // Extract env values and keys
     const envValues: string[] = [];
+    const envKeys: string[] = [];
     if (ownerResource.env) {
       for (const envVar of ownerResource.env) {
+        // Add the key to check
+        envKeys.push(envVar.key);
+
         if (envVar.type === "value") {
           // Direct value environment variable
           envValues.push(envVar.value);
@@ -60,8 +64,9 @@ export function inferRelianceFromEnv(
       }
     }
 
-    // Match env values against dependency resource names
-    for (const envValue of envValues) {
+    // Match env values and keys against dependency resource names
+    const allEnvFields = [...envValues, ...envKeys];
+    for (const envField of allEnvFields) {
       let bestMatch: ResourceObject | null = null;
       let bestMatchLength = 0;
 
@@ -76,8 +81,8 @@ export function inferRelianceFromEnv(
           continue;
         }
 
-        // Check if env value contains the dependency resource name
-        if (envValue.includes(depName) && depName.length > bestMatchLength) {
+        // Check if env field contains the dependency resource name
+        if (envField.includes(depName) && depName.length > bestMatchLength) {
           bestMatch = depResource;
           bestMatchLength = depName.length;
         }

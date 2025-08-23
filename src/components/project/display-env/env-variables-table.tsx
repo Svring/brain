@@ -10,6 +10,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useProjectState } from "@/contexts/project/project-context";
+import _ from "lodash";
 
 interface EnvVariable {
   key: string;
@@ -27,6 +29,16 @@ export function EnvVariablesTable({
   resourceName,
 }: EnvVariablesTableProps) {
   const { copyToClipboard, isCopied } = useCopy();
+  const { selectedProjectResources } = useProjectState();
+
+  // Filter to only get cluster and objectstoragebucket resources
+  const filteredResources = _.filter(
+    selectedProjectResources,
+    (resource: any) => {
+      const resourceType = _.toLower(resource?.kind);
+      return _.includes(["cluster", "objectstoragebucket"], resourceType);
+    }
+  );
 
   if (!envVars || envVars.length === 0) {
     return (
