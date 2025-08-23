@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { TreeView } from "@/components/ui/tree-view";
 import { listDevboxFolderFilesOptions } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
 import type { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
+import { useProjectState } from "@/contexts/project/project-context";
 
 interface DevboxEnvPanelProps {
   devboxResources: DevboxObject[];

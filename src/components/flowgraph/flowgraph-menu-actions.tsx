@@ -11,6 +11,7 @@ interface FlowgraphMenuActionsProps {
   onPauseAll: () => void;
   isStarting?: boolean;
   isPausing?: boolean;
+  disabled?: boolean;
 }
 
 export function FlowgraphMenuActions({ 
@@ -19,7 +20,8 @@ export function FlowgraphMenuActions({
   onStartAll, 
   onPauseAll,
   isStarting = false,
-  isPausing = false
+  isPausing = false,
+  disabled = false
 }: FlowgraphMenuActionsProps) {
   const queryClient = useQueryClient();
 
@@ -63,7 +65,7 @@ export function FlowgraphMenuActions({
 
   return (
     <div className="absolute top-2 right-2 z-20">
-      <MenuBar activeIndex={null} items={menuItemsRight} />
+      <MenuBar activeIndex={null} items={menuItemsRight} disabled={disabled} />
     </div>
   );
 }

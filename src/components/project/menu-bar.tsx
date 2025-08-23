@@ -19,6 +19,7 @@ interface MenuBarProps extends React.HTMLAttributes<HTMLDivElement> {
   activeIndex?: number | null;
   title?: string;
   children?: React.ReactNode;
+  disabled?: boolean;
 }
 
 export function MenuBar({
@@ -27,6 +28,7 @@ export function MenuBar({
   activeIndex: controlledActiveIndex,
   title,
   children,
+  disabled = false,
   ...props
 }: MenuBarProps) {
   const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
@@ -114,13 +116,15 @@ export function MenuBar({
             <Toggle
               className={cn(
                 "flex h-8 w-8 items-center justify-center gap-2 rounded-lg px-3 py-1",
-                effectiveActiveIndex === index && "bg-muted/80"
+                effectiveActiveIndex === index && "bg-muted/80",
+                disabled && "opacity-50 cursor-not-allowed"
               )}
               key={item.label}
-              onMouseEnter={() => setActiveIndex(index)}
-              onMouseLeave={() => setActiveIndex(null)}
-              onPressedChange={item.onPressedChange}
+              onMouseEnter={disabled ? undefined : () => setActiveIndex(index)}
+              onMouseLeave={disabled ? undefined : () => setActiveIndex(null)}
+              onPressedChange={disabled ? undefined : item.onPressedChange}
               pressed={item.pressed}
+              disabled={disabled}
             >
               <div className="flex items-center justify-center">
                 <div className="flex h-[18px] w-[18px] items-center justify-center overflow-hidden">
@@ -133,13 +137,15 @@ export function MenuBar({
             <button
               className={cn(
                 "flex h-8 w-8 items-center justify-center gap-2 rounded-lg px-3 py-1 transition-colors hover:bg-muted/80",
-                effectiveActiveIndex === index && "bg-muted/80"
+                effectiveActiveIndex === index && "bg-muted/80",
+                disabled && "opacity-50 cursor-not-allowed"
               )}
               key={item.label}
-              onClick={item.onClick}
-              onMouseEnter={() => setActiveIndex(index)}
-              onMouseLeave={() => setActiveIndex(null)}
+              onClick={disabled ? undefined : item.onClick}
+              onMouseEnter={disabled ? undefined : () => setActiveIndex(index)}
+              onMouseLeave={disabled ? undefined : () => setActiveIndex(null)}
               type="button"
+              disabled={disabled}
             >
               <div className="flex items-center justify-center">
                 <div className="flex h-[18px] w-[18px] items-center justify-center overflow-hidden">

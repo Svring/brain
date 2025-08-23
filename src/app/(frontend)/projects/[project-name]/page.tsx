@@ -125,6 +125,11 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
   const isStarting = startProjectResources.isPending;
   const isPausing = pauseProjectResources.isPending;
 
+  // Check if resources are available
+  const hasResources = selectedProjectResources && 
+    Array.isArray(selectedProjectResources) && 
+    selectedProjectResources.length > 0;
+
   return (
     <>
       <FlowgraphHeader projectName={projectName} />
@@ -135,6 +140,7 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
         onPauseAll={handlePauseAll}
         isStarting={isStarting}
         isPausing={isPausing}
+        disabled={!hasResources}
       />
       <Sheet onOpenChange={onOpenChange} open={isOpen}>
         <SheetContent className="w-[40vw]! max-w-none! fade-in-0 animate-in flex flex-col">
@@ -153,6 +159,7 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
               <AddResourceTabs />
             ) : (
               <DisplayEnvPanel />
+              // <></>
             )}
           </div>
         </SheetContent>
