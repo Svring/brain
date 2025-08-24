@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -87,17 +87,23 @@ export default function ClusterCreateMessage({
     cluster.getClusterVersions.queryOptions()
   );
 
-  // Define default values, merging with payload
-  const defaultValues: ClusterFormValues = {
-    name: payload?.name || generateClusterName(),
-    type: payload?.type || "postgresql",
-    version: payload?.version || "",
-    cpu: payload?.cpu || 500,
-    memory: payload?.memory || 512,
-    storage: payload?.storage || 10,
-    replicas: payload?.replicas || 1,
-    terminationPolicy: payload?.terminationPolicy || "Delete",
-  };
+  // Stable key for payload to avoid resets on identical content
+  const payloadKey = useMemo(() => JSON.stringify(payload ?? {}), [payload]);
+
+  // Memoize default values to prevent unnecessary re-renders
+  const defaultValues: ClusterFormValues = useMemo(
+    () => ({
+      name: payload?.name || generateClusterName(),
+      type: payload?.type || "postgresql",
+      version: payload?.version || "",
+      cpu: payload?.cpu || 500,
+      memory: payload?.memory || 512,
+      storage: payload?.storage || 10,
+      replicas: payload?.replicas || 1,
+      terminationPolicy: payload?.terminationPolicy || "Delete",
+    }),
+    [payloadKey]
+  );
 
   // Initialize form
   const form = useForm<ClusterFormValues>({
@@ -115,7 +121,7 @@ export default function ClusterCreateMessage({
           ? payload?.version || ""
           : "",
     });
-  }, [payload, form]);
+  }, [payloadKey, form, defaultValues]);
 
   const dbTypeOptions = [
     { value: "postgresql", label: "PostgreSQL" },
@@ -162,7 +168,7 @@ export default function ClusterCreateMessage({
 
   if (isCompleted) {
     return (
-      <Card className="w-full bg-node-background border border-border-primary">
+      <Card className="w-full bg-background-secondary border border-border-primary">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-green-500" />
@@ -197,7 +203,7 @@ export default function ClusterCreateMessage({
   }
 
   return (
-    <Card className="w-full bg-node-background border border-border-primary">
+    <Card className="w-full bg-background-secondary border border-border-primary">
       <CardHeader>
         <CardTitle className="text-lg">Create Database Cluster</CardTitle>
       </CardHeader>

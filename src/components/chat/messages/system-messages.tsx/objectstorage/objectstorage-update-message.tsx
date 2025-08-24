@@ -99,7 +99,7 @@ export const ObjectStorageUpdateMessage: React.FC<
   };
 
   return (
-    <Card className="w-full bg-node-background">
+    <Card className="w-full bg-background-secondary">
       <CardHeader>
         <CardTitle>Object Storage Bucket Policy</CardTitle>
       </CardHeader>

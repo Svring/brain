@@ -276,7 +276,7 @@ export default function DevboxUpdateMessage({
 
   if (isCompleted) {
     return (
-      <Card className="w-full bg-node-background border border-border-primary">
+      <Card className="w-full bg-background-secondary border border-border-primary">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-green-500" />
@@ -307,7 +307,7 @@ export default function DevboxUpdateMessage({
   }
 
   return (
-    <Card className="w-full bg-node-background border border-border-primary">
+    <Card className="w-full bg-background-secondary border border-border-primary">
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Settings className="h-5 w-5" />

@@ -29,6 +29,7 @@ import NetworkMessage from "./universal/network-message";
 import PodOverviewMessage from "./universal/pod-overview-message";
 import PodDetailMessage from "./universal/pod-detail-message";
 import DiagnoseNetworkMessage from "./universal/diagnose-network-message";
+import AddResourceMessage from "./universal/add-resource-message";
 
 export const SystemMessageType = {
   devbox: {
@@ -39,7 +40,7 @@ export const SystemMessageType = {
     release: (target: CustomResourceTarget) => (
       <DevboxReleaseMessage target={target} />
     ),
-    create: (payload: any) => <DevboxCreateMessage payload={payload} />,
+    create: (payload?: any) => <DevboxCreateMessage payload={payload} />,
     update: (target: CustomResourceTarget, payload: any) => (
       <DevboxUpdateMessage target={target} payload={payload} />
     ),
@@ -51,7 +52,7 @@ export const SystemMessageType = {
     backup: (target: CustomResourceTarget) => (
       <ClusterBackupMessage target={target} />
     ),
-    create: (payload: any) => <ClusterCreateMessage payload={payload} />,
+    create: (payload?: any) => <ClusterCreateMessage payload={payload} />,
     update: (target: CustomResourceTarget, payload: any) => (
       <ClusterUpdateMessage target={target} payload={payload} />
     ),
@@ -60,7 +61,7 @@ export const SystemMessageType = {
     detail: (target: BuiltinResourceTarget) => (
       <LaunchpadMessage target={target} />
     ),
-    create: (payload: any) => <LaunchpadCreateMessage payload={payload} />,
+    create: (payload?: any) => <LaunchpadCreateMessage payload={payload} />,
     update: (target: BuiltinResourceTarget, payload: any) => (
       <LaunchpadUpdateMessage target={target} payload={payload} />
     ),
@@ -69,7 +70,7 @@ export const SystemMessageType = {
     detail: (target: CustomResourceTarget) => (
       <ObjectStorageMessage target={target} />
     ),
-    create: (payload: any) => <ObjectStorageCreateMessage payload={payload} />,
+    create: (payload?: any) => <ObjectStorageCreateMessage payload={payload} />,
     update: (target: CustomResourceTarget, payload: any) => (
       <ObjectStorageUpdateMessage target={target} payload={payload} />
     ),
@@ -85,5 +86,6 @@ export const SystemMessageType = {
     diagnoseNetwork: (target: ResourceTarget) => (
       <DiagnoseNetworkMessage target={target} />
     ),
+    addResource: () => <AddResourceMessage />,
   },
 };

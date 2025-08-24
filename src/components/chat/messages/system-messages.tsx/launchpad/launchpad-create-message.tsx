@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -105,81 +105,48 @@ export default function LaunchpadCreateMessage({
     launchpad.createLaunchpad.mutationOptions()
   );
 
-  // Define default values, merging with payload
-  const defaultValues = {
-    name: payload?.name || generateDeployName(),
-    image: payload?.image || "nginx",
-    command: payload?.command || "",
-    args: payload?.args || "",
-    cpu: payload?.cpu || 500,
-    memory: payload?.memory || 512,
-    replicas: payload?.replicas || 1,
-    ports: payload?.ports || "80",
-    portProtocol: payload?.portProtocol || ("TCP" as "TCP" | "UDP" | "SCTP"),
-    appProtocol: payload?.appProtocol || ("HTTP" as "HTTP" | "GRPC" | "WS"),
-    exposesPublicDomain: payload?.exposesPublicDomain ?? true,
-    envVars: payload?.envVars || "",
-    storageName: payload?.storageName || "",
-    storagePath: payload?.storagePath || "",
-    storageSize: payload?.storageSize || "1Gi",
-    configMapPath: payload?.configMapPath || "",
-    configMapValue: payload?.configMapValue || "",
-  };
+  // Stable key for payload to avoid resets on identical content
+  const payloadKey = useMemo(() => JSON.stringify(payload ?? {}), [payload]);
 
-  // Initialize state with default values
-  const [name, setName] = useState(defaultValues.name);
-  const [image, setImage] = useState(defaultValues.image);
-  const [command, setCommand] = useState(defaultValues.command);
-  const [args, setArgs] = useState(defaultValues.args);
-  const [cpu, setCpu] = useState<number>(defaultValues.cpu);
-  const [memory, setMemory] = useState<number>(defaultValues.memory);
-  const [replicas, setReplicas] = useState<number>(defaultValues.replicas);
-  const [ports, setPorts] = useState(defaultValues.ports);
-  const [portProtocol, setPortProtocol] = useState<"TCP" | "UDP" | "SCTP">(
-    defaultValues.portProtocol
-  );
-  const [appProtocol, setAppProtocol] = useState<"HTTP" | "GRPC" | "WS">(
-    defaultValues.appProtocol
-  );
-  const [exposesPublicDomain, setExposesPublicDomain] = useState<boolean>(
-    defaultValues.exposesPublicDomain
-  );
-  const [envVars, setEnvVars] = useState(defaultValues.envVars);
-  const [storageName, setStorageName] = useState(defaultValues.storageName);
-  const [storagePath, setStoragePath] = useState(defaultValues.storagePath);
-  const [storageSize, setStorageSize] = useState(defaultValues.storageSize);
-  const [configMapPath, setConfigMapPath] = useState(
-    defaultValues.configMapPath
-  );
-  const [configMapValue, setConfigMapValue] = useState(
-    defaultValues.configMapValue
+  // Memoize default values; changes only when payload content changes
+  const defaultValues: LaunchpadFormValues = useMemo(
+    () => ({
+      name: payload?.name || generateDeployName(),
+      image: payload?.image || "nginx",
+      command: payload?.command || "",
+      args: payload?.args || "",
+      cpu: payload?.cpu || 500,
+      memory: payload?.memory || 512,
+      replicas: payload?.replicas || 1,
+      ports: payload?.ports || "80",
+      portProtocol: payload?.portProtocol || "TCP",
+      appProtocol: payload?.appProtocol || "HTTP",
+      exposesPublicDomain: payload?.exposesPublicDomain ?? true,
+      envVars: payload?.envVars || "",
+      storageName: payload?.storageName || "",
+      storagePath: payload?.storagePath || "",
+      storageSize: payload?.storageSize || "1Gi",
+      configMapPath: payload?.configMapPath || "",
+      configMapValue: payload?.configMapValue || "",
+    }),
+    [payloadKey]
   );
 
-  // Reset state when payload changes
+  // Initialize form
+  const form = useForm<LaunchpadFormValues>({
+    resolver: zodResolver(launchpadFormSchema),
+    defaultValues,
+  });
+
+  // Reset form when payload changes
   useEffect(() => {
-    setName(defaultValues.name);
-    setImage(defaultValues.image);
-    setCommand(defaultValues.command);
-    setArgs(defaultValues.args);
-    setCpu(defaultValues.cpu);
-    setMemory(defaultValues.memory);
-    setReplicas(defaultValues.replicas);
-    setPorts(defaultValues.ports);
-    setPortProtocol(defaultValues.portProtocol);
-    setAppProtocol(defaultValues.appProtocol);
-    setExposesPublicDomain(defaultValues.exposesPublicDomain);
-    setEnvVars(defaultValues.envVars);
-    setStorageName(defaultValues.storageName);
-    setStoragePath(defaultValues.storagePath);
-    setStorageSize(defaultValues.storageSize);
-    setConfigMapPath(defaultValues.configMapPath);
-    setConfigMapValue(defaultValues.configMapValue);
-  }, [payload]);
+    form.reset(defaultValues);
+  }, [payloadKey, form, defaultValues]);
 
-  const handleCreate = async () => {
-    const deploymentName = name.trim() || generateDeployName();
+  const onSubmit = async (values: LaunchpadFormValues) => {
+    const deploymentName = values.name.trim() || generateDeployName();
 
-    if (!image.trim()) {
+    if (!values.image.trim()) {
       toast.error("Please enter an image");
       return;
     }
@@ -187,10 +154,10 @@ export default function LaunchpadCreateMessage({
     setIsCreating(true);
     try {
       // Parse environment variables
-      const envArray = envVars
+      const envArray = (values.envVars || "")
         .split("\n")
-        .filter((line) => line.trim())
-        .map((line) => {
+        .filter((line: string) => line.trim())
+        .map((line: string) => {
           const [key, ...valueParts] = line.split("=");
           return {
             name: key.trim(),
@@ -199,35 +166,35 @@ export default function LaunchpadCreateMessage({
         });
 
       // Parse ports
-      const portArray = ports
+      const portArray = (values.ports || "")
         .split(",")
-        .map((port) => parseInt(port.trim()))
-        .filter((port) => !isNaN(port))
-        .map((port) => ({
+        .map((port: string) => parseInt(port.trim()))
+        .filter((port: number) => !isNaN(port))
+        .map((port: number) => ({
           port,
-          protocol: portProtocol,
-          appProtocol,
-          exposesPublicDomain,
+          protocol: values.portProtocol,
+          appProtocol: values.appProtocol,
+          exposesPublicDomain: values.exposesPublicDomain,
         }));
 
       // Build storage array
       const storageArray =
-        storageName && storagePath
+        values.storageName && values.storagePath
           ? [
               {
-                name: storageName,
-                path: storagePath,
-                size: storageSize,
+                name: values.storageName,
+                path: values.storagePath,
+                size: values.storageSize,
               },
             ]
           : [];
 
       // Build configMap array
-      const configMapArray = configMapPath
+      const configMapArray = values.configMapPath
         ? [
             {
-              path: configMapPath,
-              value: configMapValue,
+              path: values.configMapPath,
+              value: values.configMapValue,
             },
           ]
         : [];
@@ -235,13 +202,13 @@ export default function LaunchpadCreateMessage({
       await createLaunchpadMutation.mutateAsync({
         request: {
           name: deploymentName,
-          image: image.trim(),
-          command: command.trim(),
-          args: args.trim(),
+          image: values.image.trim(),
+          command: (values.command || "").trim(),
+          args: (values.args || "").trim(),
           resource: {
-            replicas,
-            cpu,
-            memory,
+            replicas: values.replicas,
+            cpu: values.cpu,
+            memory: values.memory,
           },
           ports: portArray,
           env: envArray,
@@ -265,7 +232,7 @@ export default function LaunchpadCreateMessage({
 
   if (isCompleted) {
     return (
-      <Card className="w-full bg-node-background border border-border-primary">
+      <Card className="w-full bg-background-secondary border border-border-primary">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-green-500" />
@@ -280,8 +247,9 @@ export default function LaunchpadCreateMessage({
                 {createdDeploymentName}
               </div>
               <div className="text-sm text-green-700 dark:text-green-300">
-                Image: {image} • CPU: {cpu}m • Memory: {memory}Mi • Replicas:{" "}
-                {replicas}
+                Image: {form.getValues("image")} • CPU: {form.getValues("cpu")}m
+                • Memory: {form.getValues("memory")}Mi • Replicas:{" "}
+                {form.getValues("replicas")}
               </div>
             </div>
           </div>
@@ -298,273 +266,409 @@ export default function LaunchpadCreateMessage({
   }
 
   return (
-    <Card className="w-full bg-node-background border border-border-primary">
+    <Card className="w-full bg-background-secondary border border-border-primary">
       <CardHeader>
         <CardTitle className="text-lg">Create Deployment</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Basic Configuration - Always Visible */}
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <FormLabel htmlFor="deployment-name">Application Name</FormLabel>
-            <Input
-              id="deployment-name"
-              placeholder="Enter application name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <FormLabel htmlFor="image">Container Image</FormLabel>
-            <Input
-              id="image"
-              placeholder="e.g., nginx:latest, node:18-alpine"
-              value={image}
-              onChange={(e) => setImage(e.target.value)}
-            />
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <FormLabel htmlFor="cpu">CPU (m)</FormLabel>
-              <Select
-                value={cpu.toString()}
-                onValueChange={(value) => setCpu(Number(value))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select CPU" />
-                </SelectTrigger>
-                <SelectContent>
-                  {[500, 1000, 2000, 4000, 6000, 8000].map((cpuValue) => (
-                    <SelectItem key={cpuValue} value={cpuValue.toString()}>
-                      {cpuValue}m ({cpuValue / 1000} cores)
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <FormLabel htmlFor="memory">Memory (Mi)</FormLabel>
-              <Select
-                value={memory.toString()}
-                onValueChange={(value) => setMemory(Number(value))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Memory" />
-                </SelectTrigger>
-                <SelectContent>
-                  {[512, 1024, 2048, 4096, 8192, 16000].map((memoryValue) => (
-                    <SelectItem
-                      key={memoryValue}
-                      value={memoryValue.toString()}
-                    >
-                      {memoryValue}Mi ({memoryValue / 1024}GB)
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <FormLabel htmlFor="replicas">Replicas</FormLabel>
-              <Input
-                id="replicas"
-                type="number"
-                value={replicas}
-                onChange={(e) => setReplicas(Number(e.target.value))}
-                min="1"
-                max="10"
-                step="1"
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* Basic Configuration - Always Visible */}
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Application Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter application name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-          </div>
-        </div>
 
-        {/* Collapsible Sections */}
-        <Accordion type="multiple" className="w-full">
-          {/* Command & Arguments */}
-          <AccordionItem value="command-args" className="border rounded-lg">
-            <AccordionTrigger className="px-4 py-3 hover:no-underline">
-              <div className="flex items-center gap-2">
-                <ChevronDown className="h-4 w-4" />
-                <span className="font-medium">Command & Arguments</span>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="px-4 pb-4 space-y-4">
-              <div className="space-y-2">
-                <FormLabel htmlFor="command">Command (optional)</FormLabel>
-                <Input
-                  id="command"
-                  placeholder="e.g., npm start"
-                  value={command}
-                  onChange={(e) => setCommand(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <FormLabel htmlFor="args">Arguments (optional)</FormLabel>
-                <Input
-                  id="args"
-                  placeholder="e.g., --port 3000"
-                  value={args}
-                  onChange={(e) => setArgs(e.target.value)}
-                />
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-
-          {/* Ports & Protocol */}
-          <AccordionItem value="ports-protocol" className="border rounded-lg">
-            <AccordionTrigger className="px-4 py-3 hover:no-underline">
-              <div className="flex items-center gap-2">
-                <ChevronDown className="h-4 w-4" />
-                <span className="font-medium">Ports & Protocol</span>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="px-4 pb-4 space-y-4">
-              <div className="space-y-2">
-                <FormLabel htmlFor="ports">Ports (comma-separated)</FormLabel>
-                <Input
-                  id="ports"
-                  placeholder="e.g., 80, 3000, 8080"
-                  value={ports}
-                  onChange={(e) => setPorts(e.target.value)}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="image"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Container Image</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g., nginx:latest, node:18-alpine"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <FormLabel htmlFor="port-protocol">Protocol</FormLabel>
-                  <Select
-                    value={portProtocol}
-                    onValueChange={(value: "TCP" | "UDP" | "SCTP") =>
-                      setPortProtocol(value)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="TCP">TCP</SelectItem>
-                      <SelectItem value="UDP">UDP</SelectItem>
-                      <SelectItem value="SCTP">SCTP</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <FormField
+                  control={form.control}
+                  name="cpu"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>CPU (m)</FormLabel>
+                      <Select
+                        onValueChange={(value) => field.onChange(Number(value))}
+                        value={field.value.toString()}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select CPU" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {[500, 1000, 2000, 4000, 6000, 8000].map(
+                            (cpuValue) => (
+                              <SelectItem
+                                key={cpuValue}
+                                value={cpuValue.toString()}
+                              >
+                                {cpuValue}m ({cpuValue / 1000} cores)
+                              </SelectItem>
+                            )
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                <div className="space-y-2">
-                  <FormLabel htmlFor="app-protocol">App Protocol</FormLabel>
-                  <Select
-                    value={appProtocol}
-                    onValueChange={(value: "HTTP" | "GRPC" | "WS") =>
-                      setAppProtocol(value)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="HTTP">HTTP</SelectItem>
-                      <SelectItem value="GRPC">GRPC</SelectItem>
-                      <SelectItem value="WS">WS</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <FormField
+                  control={form.control}
+                  name="memory"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Memory (Mi)</FormLabel>
+                      <Select
+                        onValueChange={(value) => field.onChange(Number(value))}
+                        value={field.value.toString()}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Memory" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {[512, 1024, 2048, 4096, 8192, 16000].map(
+                            (memoryValue) => (
+                              <SelectItem
+                                key={memoryValue}
+                                value={memoryValue.toString()}
+                              >
+                                {memoryValue}Mi ({memoryValue / 1024}GB)
+                              </SelectItem>
+                            )
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                <div className="space-y-2">
-                  <FormLabel htmlFor="public-domain">Public Domain</FormLabel>
-                  <Select
-                    value={exposesPublicDomain.toString()}
-                    onValueChange={(value) =>
-                      setExposesPublicDomain(value === "true")
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="true">Yes</SelectItem>
-                      <SelectItem value="false">No</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-
-          {/* Environment Variables, ConfigMap & Storage */}
-          <AccordionItem value="env-storage" className="border rounded-lg">
-            <AccordionTrigger className="px-4 py-3 hover:no-underline">
-              <div className="flex items-center gap-2">
-                <ChevronDown className="h-4 w-4" />
-                <span className="font-medium">
-                  Environment Variables, ConfigMap & Storage
-                </span>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="px-4 pb-4 space-y-4">
-              <div className="space-y-2">
-                <FormLabel htmlFor="env-vars">
-                  Environment Variables (one per line, KEY=VALUE)
-                </FormLabel>
-                <Textarea
-                  id="env-vars"
-                  placeholder="NODE_ENV=production&#10;DATABASE_URL=postgresql://..."
-                  value={envVars}
-                  onChange={(e) => setEnvVars(e.target.value)}
-                  rows={3}
+                <FormField
+                  control={form.control}
+                  name="replicas"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Replicas</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="10"
+                          step="1"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <FormLabel>ConfigMap (optional)</FormLabel>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    placeholder="Config path"
-                    value={configMapPath}
-                    onChange={(e) => setConfigMapPath(e.target.value)}
+            {/* Collapsible Sections */}
+            <Accordion type="multiple" className="w-full">
+              {/* Command & Arguments */}
+              <AccordionItem value="command-args" className="border rounded-lg">
+                <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                  <div className="flex items-center gap-2">
+                    <ChevronDown className="h-4 w-4" />
+                    <span className="font-medium">Command & Arguments</span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pb-4 space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="command"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Command (optional)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., npm start" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  <Input
-                    placeholder="Config value"
-                    value={configMapValue}
-                    onChange={(e) => setConfigMapValue(e.target.value)}
-                  />
-                </div>
-              </div>
 
-              <div className="space-y-2">
-                <FormLabel>Storage (optional)</FormLabel>
-                <div className="grid grid-cols-3 gap-2">
-                  <Input
-                    placeholder="Storage name"
-                    value={storageName}
-                    onChange={(e) => setStorageName(e.target.value)}
+                  <FormField
+                    control={form.control}
+                    name="args"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Arguments (optional)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., --port 3000" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  <Input
-                    placeholder="Mount path"
-                    value={storagePath}
-                    onChange={(e) => setStoragePath(e.target.value)}
-                  />
-                  <Input
-                    placeholder="Size (e.g., 1Gi)"
-                    value={storageSize}
-                    onChange={(e) => setStorageSize(e.target.value)}
-                  />
-                </div>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+                </AccordionContent>
+              </AccordionItem>
 
-        <Button
-          onClick={handleCreate}
-          disabled={isCreating || !image.trim()}
-          className="w-full"
-        >
-          {isCreating ? "Creating..." : "Create Deployment"}
-        </Button>
+              {/* Ports & Protocol */}
+              <AccordionItem
+                value="ports-protocol"
+                className="border rounded-lg"
+              >
+                <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                  <div className="flex items-center gap-2">
+                    <ChevronDown className="h-4 w-4" />
+                    <span className="font-medium">Ports & Protocol</span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pb-4 space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="ports"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Ports (comma-separated)</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., 80, 3000, 8080"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="portProtocol"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Protocol</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="TCP">TCP</SelectItem>
+                              <SelectItem value="UDP">UDP</SelectItem>
+                              <SelectItem value="SCTP">SCTP</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="appProtocol"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>App Protocol</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="HTTP">HTTP</SelectItem>
+                              <SelectItem value="GRPC">GRPC</SelectItem>
+                              <SelectItem value="WS">WS</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="exposesPublicDomain"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Public Domain</FormLabel>
+                          <Select
+                            onValueChange={(value) =>
+                              field.onChange(value === "true")
+                            }
+                            value={field.value.toString()}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="true">Yes</SelectItem>
+                              <SelectItem value="false">No</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Environment Variables, ConfigMap & Storage */}
+              <AccordionItem value="env-storage" className="border rounded-lg">
+                <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                  <div className="flex items-center gap-2">
+                    <ChevronDown className="h-4 w-4" />
+                    <span className="font-medium">
+                      Environment Variables, ConfigMap & Storage
+                    </span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pb-4 space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="envVars"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Environment Variables (one per line, KEY=VALUE)
+                        </FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="NODE_ENV=production&#10;DATABASE_URL=postgresql://..."
+                            rows={3}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="space-y-2">
+                    <FormLabel>ConfigMap (optional)</FormLabel>
+                    <div className="grid grid-cols-2 gap-2">
+                      <FormField
+                        control={form.control}
+                        name="configMapPath"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input placeholder="Config path" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="configMapValue"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input placeholder="Config value" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <FormLabel>Storage (optional)</FormLabel>
+                    <div className="grid grid-cols-3 gap-2">
+                      <FormField
+                        control={form.control}
+                        name="storageName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input placeholder="Storage name" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="storagePath"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input placeholder="Mount path" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="storageSize"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                placeholder="Size (e.g., 1Gi)"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+
+            <Button
+              type="submit"
+              disabled={isCreating || !form.watch("image")?.trim()}
+              className="w-full"
+            >
+              {isCreating ? "Creating..." : "Create Deployment"}
+            </Button>
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );

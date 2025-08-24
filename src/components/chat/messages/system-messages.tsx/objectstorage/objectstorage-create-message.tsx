@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -61,13 +61,16 @@ export const ObjectStorageCreateMessage: React.FC<
     objectstorage.createObjectStorage.mutationOptions()
   );
 
+  // Memoize default values to prevent unnecessary re-renders
+  const defaultValues = useMemo(() => ({
+    name: payload.name || "",
+    policy: payload.policy || "private",
+  }), [payload]);
+
   // Initialize form with default values
   const form = useForm<ObjectStorageFormValues>({
     resolver: zodResolver(objectStorageFormSchema),
-    defaultValues: {
-      name: payload.name || "",
-      policy: payload.policy || "private",
-    },
+    defaultValues,
   });
 
   const onSubmit = async (values: ObjectStorageFormValues) => {
@@ -87,7 +90,7 @@ export const ObjectStorageCreateMessage: React.FC<
   };
 
   return (
-    <Card className="w-full bg-node-background">
+    <Card className="w-full bg-background-secondary">
       <CardHeader>
         <CardTitle>Create Object Storage Bucket</CardTitle>
       </CardHeader>

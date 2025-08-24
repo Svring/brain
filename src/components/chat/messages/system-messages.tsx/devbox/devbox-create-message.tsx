@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -28,21 +28,39 @@ import { generateDevboxName } from "@/lib/sealos/resources/devbox/devbox-method/
 import { toast } from "sonner";
 import { CheckCircle, Package } from "lucide-react";
 
+// Runtime options for devbox
+export const runtimeOptions = [
+  { value: "Node.js", label: "Node.js" },
+  { value: "Python", label: "Python" },
+  { value: "Java", label: "Java" },
+  { value: "Go", label: "Go" },
+  { value: "Rust", label: "Rust" },
+  { value: "PHP", label: "PHP" },
+  { value: "Debian", label: "Debian" },
+  { value: "C++", label: "C++" },
+  { value: ".Net", label: ".NET" },
+  { value: "C", label: "C" },
+] as const;
+
+// CPU options for devbox
+export const cpuOptions = [500, 1000, 2000, 4000, 6000, 8000] as const;
+
+// Memory options for devbox
+export const memoryOptions = [512, 1024, 2048, 4096, 8192, 16000] as const;
+
 // Form schema with Zod validation
-const devboxFormSchema = z.object({
+export const devboxFormSchema = z.object({
   name: z
     .string()
     .min(1, "Name is required")
     .max(50, "Name must be less than 50 characters"),
-  runtimeName: z.string().min(1, "Runtime is required"),
-  cpu: z
-    .number()
-    .min(500, "CPU must be at least 500m")
-    .max(8000, "CPU must be at most 8000m"),
-  memory: z
-    .number()
-    .min(512, "Memory must be at least 512Mi")
-    .max(16000, "Memory must be at most 16000Mi"),
+  runtimeName: z.enum(
+    runtimeOptions.map((opt) => opt.value) as [string, ...string[]]
+  ),
+  cpu: z.enum(cpuOptions.map((val) => val.toString()) as [string, ...string[]]),
+  memory: z.enum(
+    memoryOptions.map((val) => val.toString()) as [string, ...string[]]
+  ),
 });
 
 type DevboxFormValues = z.infer<typeof devboxFormSchema>;
@@ -64,15 +82,25 @@ export default function DevboxCreateMessage({
   const [createdDevboxName, setCreatedDevboxName] = useState<string>("");
 
   const { devbox } = useTRPCClients();
-  const createDevboxMutation = useMutation(devbox.createDevbox.mutationOptions());
+  const createDevboxMutation = useMutation(
+    devbox.createDevbox.mutationOptions()
+  );
 
-  // Define default values, merging with payload
-  const defaultValues: DevboxFormValues = {
-    name: payload?.name || generateDevboxName(),
-    runtimeName: payload?.runtimeName || "Node.js",
-    cpu: payload?.cpu || 500,
-    memory: payload?.memory || 512,
-  };
+  // Stable key for payload to avoid resets on identical content
+  const payloadKey = useMemo(() => JSON.stringify(payload ?? {}), [payload]);
+
+  // Memoize default values to prevent unnecessary re-renders
+  const defaultValues: DevboxFormValues = useMemo(
+    () => ({
+      name: payload?.name || generateDevboxName(),
+      runtimeName: payload?.runtimeName || "Node.js",
+      cpu: (payload?.cpu || 500).toString(),
+      memory: (payload?.memory || 512).toString(),
+    }),
+    [payloadKey]
+  );
+
+  console.log("payload", payload);
 
   // Initialize form
   const form = useForm<DevboxFormValues>({
@@ -83,23 +111,7 @@ export default function DevboxCreateMessage({
   // Reset form when payload changes
   useEffect(() => {
     form.reset(defaultValues);
-  }, [payload, form]);
-
-  const runtimeOptions = [
-    { value: "Node.js", label: "Node.js" },
-    { value: "Python", label: "Python" },
-    { value: "Java", label: "Java" },
-    { value: "Go", label: "Go" },
-    { value: "Rust", label: "Rust" },
-    { value: "PHP", label: "PHP" },
-    { value: "Debian", label: "Debian" },
-    { value: "C++", label: "C++" },
-    { value: ".Net", label: ".NET" },
-    { value: "C", label: "C" },
-  ];
-
-  const cpuOptions = [500, 1000, 2000, 4000, 6000, 8000];
-  const memoryOptions = [512, 1024, 2048, 4096, 8192, 16000];
+  }, [payloadKey, form, defaultValues]);
 
   const onSubmit = async (values: DevboxFormValues) => {
     const devboxName = values.name.trim() || generateDevboxName();
@@ -109,8 +121,8 @@ export default function DevboxCreateMessage({
       await createDevboxMutation.mutateAsync({
         name: devboxName,
         runtimeName: values.runtimeName as any,
-        cpu: values.cpu,
-        memory: values.memory,
+        cpu: parseInt(values.cpu),
+        memory: parseInt(values.memory),
       });
 
       // Set completion state
@@ -127,7 +139,7 @@ export default function DevboxCreateMessage({
 
   if (isCompleted) {
     return (
-      <Card className="w-full bg-node-background border border-border-primary">
+      <Card className="w-full bg-background-secondary border border-border-primary">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-green-500" />
@@ -160,7 +172,7 @@ export default function DevboxCreateMessage({
   }
 
   return (
-    <Card className="w-full bg-node-background border border-border-primary">
+    <Card className="w-full bg-background-secondary border border-border-primary">
       <CardHeader>
         <CardTitle className="text-lg">Create Devbox</CardTitle>
       </CardHeader>
@@ -273,11 +285,12 @@ export default function DevboxCreateMessage({
             <div className="text-sm text-muted-foreground">
               <p>Resource configuration:</p>
               <p>
-                • CPU: {form.watch("cpu")}m ({form.watch("cpu") / 1000} cores)
+                • CPU: {form.watch("cpu")}m (
+                {parseInt(form.watch("cpu")) / 1000} cores)
               </p>
               <p>
                 • Memory: {form.watch("memory")}Mi (
-                {form.watch("memory") / 1024}GB)
+                {parseInt(form.watch("memory")) / 1024}GB)
               </p>
             </div>
 

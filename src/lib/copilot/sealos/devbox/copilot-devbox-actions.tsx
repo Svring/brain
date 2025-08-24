@@ -28,7 +28,11 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Check, X, Hammer } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
-import DevboxCreateMessage from "@/components/chat/messages/system-messages.tsx/devbox/devbox-create-message";
+import DevboxCreateMessage, {
+  devboxFormSchema,
+} from "@/components/chat/messages/system-messages.tsx/devbox/devbox-create-message";
+import { jsonSchemaToActionParameters } from "@copilotkit/shared";
+import { zodToJsonSchema } from "zod-to-json-schema";
 
 export const activateDevboxActions = (
   k8sContext: K8sApiContext,
@@ -51,63 +55,25 @@ export const createDevboxAction = (context: DevboxApiContext) => {
     name: "createDevbox",
     description: "Create a new devbox with specified configuration",
     followUp: false,
-    parameters: [
-      {
-        name: "name",
-        type: "string",
-        required: true,
-        description: "Name of the devbox to create",
-      },
-      {
-        name: "runtimeName",
-        type: "string",
-        required: false,
-        description:
-          "Runtime for the devbox (e.g., nodejs, python, java, go, rust, php, ruby, debian, c++, .net, c)",
-        enum: [
-          "nodejs",
-          "python",
-          "java",
-          "go",
-          "rust",
-          "php",
-          "ruby",
-          "debian",
-          "c++",
-          ".net",
-          "c",
-        ],
-      },
-      {
-        name: "cpu",
-        type: "number",
-        enum: [500, 1000, 2000, 4000, 6000, 8000],
-        required: false,
-        description: "CPU allocation in millicores (default: 2000)",
-      },
-      {
-        name: "memory",
-        type: "number",
-        enum: [512, 1024, 2048, 4096, 8192, 16000],
-        required: false,
-        description: "Memory allocation in MB (default: 4096)",
-      },
-    ],
+    parameters: jsonSchemaToActionParameters(
+      zodToJsonSchema(devboxFormSchema) as any
+    ),
     handler: ({ name, runtimeName, cpu, memory }) => {
       // This will be handled by the UI component
-      return `Creating devbox "${name}" with ${
-        runtimeName || "nodejs"
-      } runtime`;
+      return `Creating devbox "${name}" with ${runtimeName} runtime`;
     },
     render: ({ status, args }) => {
       // Always render the component, but pass undefined for incomplete parameters
       return (
         <DevboxCreateMessage
           payload={{
-            name: args.name || undefined,
-            runtimeName: args.runtimeName || undefined,
-            cpu: args.cpu || undefined,
-            memory: args.memory || undefined,
+            name: typeof args.name === "string" ? args.name : undefined,
+            runtimeName:
+              typeof args.runtimeName === "string"
+                ? args.runtimeName
+                : undefined,
+            cpu: typeof args.cpu === "number" ? args.cpu : undefined,
+            memory: typeof args.memory === "number" ? args.memory : undefined,
           }}
         />
       );

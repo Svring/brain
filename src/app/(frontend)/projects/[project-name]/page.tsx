@@ -17,7 +17,6 @@ import {
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 // Custom component imports
-import AddResourceTabs from "@/components/project/add-resource/add-resource-tabs";
 import AiChatbox from "@/components/chat/components/chatbox";
 import AiCoin from "@/components/chat/components/coin";
 import DisplayEnvPanel from "@/components/project/display-env/display-env-panel";
@@ -58,16 +57,17 @@ import nodeTypes from "@/components/flowgraph/node/node-types";
 import { Spinner } from "@/components/ui/spinner";
 
 import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
+import { useAppendMessagesMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
 // Floating UI Component
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const [sheetContent, setSheetContent] = useState<
-    "add-resource" | "display-env"
-  >("add-resource");
 
   // Create context for mutations
   const sealosContext = createSealosContext();
+
+  // Add resource message mutation
+  const { mutate: appendMessages } = useAppendMessagesMutation();
 
   // Get project resources from context
   const { selectedProjectResources } = useProjectState();
@@ -78,12 +78,18 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
   const pauseProjectResources = usePauseProjectResourcesMutation(sealosContext);
 
   const handleAddNew = () => {
-    setSheetContent("add-resource");
-    onOpen();
+    appendMessages([
+      {
+        role: "system",
+        content: {
+          type: "universal.addResource",
+          payload: {},
+        },
+      },
+    ]);
   };
 
   const handleDisplayEnv = () => {
-    setSheetContent("display-env");
     onOpen();
   };
 
@@ -126,8 +132,9 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
   const isPausing = pauseProjectResources.isPending;
 
   // Check if resources are available
-  const hasResources = selectedProjectResources && 
-    Array.isArray(selectedProjectResources) && 
+  const hasResources =
+    selectedProjectResources &&
+    Array.isArray(selectedProjectResources) &&
     selectedProjectResources.length > 0;
 
   return (
@@ -145,22 +152,13 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
       <Sheet onOpenChange={onOpenChange} open={isOpen}>
         <SheetContent className="w-[40vw]! max-w-none! fade-in-0 animate-in flex flex-col">
           <SheetHeader className="shrink-0">
-            <SheetTitle>
-              {sheetContent === "add-resource"
-                ? "Add Resource"
-                : "Display Environment"}
-            </SheetTitle>
+            <SheetTitle>Display Environment</SheetTitle>
             <VisuallyHidden>
               <SheetDescription />
             </VisuallyHidden>
           </SheetHeader>
           <div className="flex-1 overflow-y-auto">
-            {sheetContent === "add-resource" ? (
-              <AddResourceTabs />
-            ) : (
-              <DisplayEnvPanel />
-              // <></>
-            )}
+            <DisplayEnvPanel />
           </div>
         </SheetContent>
       </Sheet>
