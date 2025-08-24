@@ -25,7 +25,7 @@ export default function NodeStack({
   const backgroundCards = Array.from(
     { length: backgroundCardCount },
     (_, index) => {
-      const offset = (index + 1) * 6; // Incremental offset: 8px, 16px, 24px, etc.
+      const offset = (index + 1) * 8; // Incremental offset: 8px, 16px, 24px, etc.
       return (
         <div
           key={index}

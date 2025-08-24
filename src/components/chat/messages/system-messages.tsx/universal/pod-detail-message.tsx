@@ -19,10 +19,10 @@ import { inferStatusColor } from "@/lib/sealos/sealos-utils";
 import MessageHeader from "@/components/chat/messages/system-messages.tsx/components/message-header";
 
 interface PodDetailsProps {
-  payload: CustomResourceTarget | BuiltinResourceTarget;
+  target: CustomResourceTarget | BuiltinResourceTarget;
 }
 
-export const PodDetails: React.FC<PodDetailsProps> = ({ payload }) => {
+export default function PodDetail({ target: payload }: PodDetailsProps) {
   const { resource, isLoading, error } = useResourceStatus(payload);
 
   // Extract pods from resource based on resource type
@@ -173,6 +173,4 @@ export const PodDetails: React.FC<PodDetailsProps> = ({ payload }) => {
       </CardContent>
     </Card>
   );
-};
-
-export default PodDetails;
+}

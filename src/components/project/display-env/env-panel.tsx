@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import { useProjectState } from "@/contexts/project/project-context";
 import type { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import type { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-object-schema";
@@ -13,6 +14,8 @@ import _ from "lodash";
 
 export default function EnvPanel() {
   const { selectedProjectResources } = useProjectState();
+  const [devboxSearch, setDevboxSearch] = useState("");
+  const [deploymentSearch, setDeploymentSearch] = useState("");
 
   const devboxResources =
     (_.filter(
@@ -25,6 +28,46 @@ export default function EnvPanel() {
       _.includes(["deployment", "statefulset"], _.toLower(resource?.kind))
     ) as (DeploymentObject | StatefulsetObject)[]) || [];
 
+  // Filter devbox resources based on search
+  const filteredDevboxResources = useMemo(() => {
+    if (!devboxSearch.trim()) return devboxResources;
+
+    return _.filter(devboxResources, (devbox: DevboxObject) => {
+      const searchTerm = devboxSearch.toLowerCase();
+      return (
+        devbox.name.toLowerCase().includes(searchTerm) ||
+        _.some(
+          devbox.env || [],
+          (envVar: any) =>
+            envVar.key?.toLowerCase().includes(searchTerm) ||
+            envVar.value?.toLowerCase().includes(searchTerm)
+        )
+      );
+    });
+  }, [devboxResources, devboxSearch]);
+
+  // Filter deployment resources based on search
+  const filteredDeploymentResources = useMemo(() => {
+    if (!deploymentSearch.trim()) return deploymentResources;
+
+    return _.filter(
+      deploymentResources,
+      (deployment: DeploymentObject | StatefulsetObject) => {
+        const searchTerm = deploymentSearch.toLowerCase();
+        return (
+          deployment.name.toLowerCase().includes(searchTerm) ||
+          deployment.kind.toLowerCase().includes(searchTerm) ||
+          _.some(
+            deployment.env || [],
+            (envVar: any) =>
+              envVar.key?.toLowerCase().includes(searchTerm) ||
+              envVar.value?.toLowerCase().includes(searchTerm)
+          )
+        );
+      }
+    );
+  }, [deploymentResources, deploymentSearch]);
+
   return (
     <div>
       <Tabs defaultValue="devbox" className="w-full">
@@ -35,47 +78,75 @@ export default function EnvPanel() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="devbox" className="mt-4">
-          {devboxResources.length === 0 ? (
+        <TabsContent value="devbox" className="">
+          <div className="mb-4">
+            <Input
+              placeholder="Search devbox resources and environment variables..."
+              value={devboxSearch}
+              onChange={(e) => setDevboxSearch(e.target.value)}
+              className="w-full"
+            />
+          </div>
+
+          {filteredDevboxResources.length === 0 ? (
             <p className="text-muted-foreground">
-              No devbox resources found in the selected project.
+              {devboxSearch.trim()
+                ? "No devbox resources match your search."
+                : "No devbox resources found in the selected project."}
             </p>
           ) : (
             <div className="space-y-4">
-              {devboxResources.map((devbox: DevboxObject, index: number) => {
-                const target = convertResourceTypeToTarget("devbox", devbox.name);
-                return (
-                  <div key={index} className="border rounded-lg p-4">
-                    <div className="mb-3">
-                      <MessageHeader target={target} />
-                    </div>
+              {filteredDevboxResources.map(
+                (devbox: DevboxObject, index: number) => {
+                  const target = convertResourceTypeToTarget(
+                    "devbox",
+                    devbox.name
+                  );
+                  return (
+                    <div key={index} className="border rounded-lg p-4">
+                      <div className="mb-3">
+                        <MessageHeader target={target} />
+                      </div>
 
-                    <EnvVariablesTable
-                      envVars={devbox.env || []}
-                      resourceName={devbox.name}
-                    />
-                  </div>
-                );
-              })}
+                      <EnvVariablesTable
+                        envVars={devbox.env || []}
+                        resourceName={devbox.name}
+                      />
+                    </div>
+                  );
+                }
+              )}
             </div>
           )}
         </TabsContent>
 
-        <TabsContent value="deployments" className="mt-4">
-          {deploymentResources.length === 0 ? (
+        <TabsContent value="deployments" className="">
+          <div className="mb-4">
+            <Input
+              placeholder="Search deployment/statefulset resources and environment variables..."
+              value={deploymentSearch}
+              onChange={(e) => setDeploymentSearch(e.target.value)}
+              className="w-full"
+            />
+          </div>
+
+          {filteredDeploymentResources.length === 0 ? (
             <p className="text-muted-foreground">
-              No deployment or statefulset resources found in the selected
-              project.
+              {deploymentSearch.trim()
+                ? "No deployment or statefulset resources match your search."
+                : "No deployment or statefulset resources found in the selected project."}
             </p>
           ) : (
             <div className="space-y-4">
-              {deploymentResources.map(
+              {filteredDeploymentResources.map(
                 (
                   deployment: DeploymentObject | StatefulsetObject,
                   index: number
                 ) => {
                   const target = convertResourceTypeToTarget(
-                    deployment.kind.toLowerCase() as "deployment" | "statefulset",
+                    deployment.kind.toLowerCase() as
+                      | "deployment"
+                      | "statefulset",
                     deployment.name
                   );
                   return (

@@ -13,12 +13,12 @@ import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-m
 import { useResourceStart } from "@/hooks/sealos/resource/use-resource-start";
 
 interface DiagnoseNetworkMessageProps {
-  payload: CustomResourceTarget | (BuiltinResourceTarget & { pod: any[] });
+  target: CustomResourceTarget | BuiltinResourceTarget;
 }
 
 export const DiagnoseNetworkMessageCard: React.FC<
   DiagnoseNetworkMessageProps
-> = ({ payload }) => {
+> = ({ target }) => {
   const sendMessageMutation = useSendMessageMutation();
 
   // Use the resource status hook
@@ -26,11 +26,11 @@ export const DiagnoseNetworkMessageCard: React.FC<
     resource,
     status,
     isLoading: statusLoading,
-  } = useResourceStatus(payload);
+  } = useResourceStatus(target);
 
   // Use the resource metrics status hook
   const metricsStatus = useResourceMetricsStatus({
-    target: payload,
+    target,
   });
 
   // Use the resource start hook
@@ -54,8 +54,8 @@ export const DiagnoseNetworkMessageCard: React.FC<
       sendMessageMutation.mutate([
         {
           role: "assistant",
-          content: `Network diagnosis completed for ${payload.resourceType} "${
-            payload.name
+          content: `Network diagnosis completed for ${target.resourceType} "${
+            target.name
           }". Here are the monitoring results: ${JSON.stringify(
             metricsStatus.monitorData
           )}`,
@@ -65,7 +65,7 @@ export const DiagnoseNetworkMessageCard: React.FC<
   }, [
     metricsStatus.monitorData,
     metricsStatus.isLoading,
-    payload,
+    target,
     sendMessageMutation,
   ]);
 
@@ -83,7 +83,7 @@ export const DiagnoseNetworkMessageCard: React.FC<
             </h3>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            {payload.resourceType}: {payload.name}
+            {target.resourceType}: {target.name}
           </p>
         </div>
 
@@ -111,17 +111,17 @@ export const DiagnoseNetworkMessageCard: React.FC<
                         onClick={() => {
                           if (startResource.resourceType === "devbox") {
                             startResource.start({
-                              devboxName: payload.name || "",
+                              devboxName: target.name || "",
                               action: "start",
                             });
                           } else if (
                             startResource.resourceType === "launchpad"
                           ) {
                             startResource.start({
-                              name: payload.name || "",
+                              name: target.name || "",
                             });
                           } else if (startResource.resourceType === "cluster") {
-                            startResource.start(payload.name || "");
+                            startResource.start(target.name || "");
                           }
                         }}
                         disabled={startResource.isPending}

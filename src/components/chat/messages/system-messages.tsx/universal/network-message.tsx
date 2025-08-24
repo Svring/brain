@@ -24,7 +24,7 @@ interface NetworkMessageProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
 }
 
-export const NetworkMessage: React.FC<NetworkMessageProps> = ({ target }) => {
+export default function NetworkMessage({ target }: NetworkMessageProps) {
   const { copyToClipboard, isCopied } = useCopy();
 
   const { resource } = useResourceStatus(target);
@@ -116,4 +116,4 @@ export const NetworkMessage: React.FC<NetworkMessageProps> = ({ target }) => {
       </div>
     </div>
   );
-};
+}

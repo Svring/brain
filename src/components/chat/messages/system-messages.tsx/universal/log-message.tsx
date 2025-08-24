@@ -15,10 +15,10 @@ import { BaseSystemMessage } from "@/components/chat/messages/system-messages.ts
 import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/message-actions";
 
 interface ResourceLogProps {
-  payload: CustomResourceTarget | BuiltinResourceTarget;
+  target: CustomResourceTarget | BuiltinResourceTarget;
 }
 
-const ResourceLog: React.FC<ResourceLogProps> = ({ payload }) => {
+const ResourceLog: React.FC<ResourceLogProps> = ({ target: payload }) => {
   const { data: logsData } = useResourceLogs(payload);
   const sendMessageMutation = useSendMessageMutation();
 
