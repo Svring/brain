@@ -148,11 +148,6 @@ function ClusterNode({
     target,
   });
 
-  const handleNodeClick = () => {
-    // Use the new mutation hook to send messages
-    appendSystemMessage("cluster.detail", target);
-  };
-
   const mainCard = (
     <BaseNode
       nodeData={clusterData}
@@ -160,7 +155,9 @@ function ClusterNode({
     >
       <div
         className="flex h-full flex-col gap-4 justify-between"
-        onClick={handleNodeClick}
+        onClick={() => {
+          appendSystemMessage("cluster.detail", target);
+        }}
       >
         {/* Header with Name and Menu */}
         <div className="flex items-center justify-between">

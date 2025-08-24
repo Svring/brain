@@ -22,7 +22,7 @@ interface NodeMonitorProps {
 }
 
 export default function NodeMonitor({ target }: NodeMonitorProps) {
-  const { sendSystemMessage } = useAppendSystemMessageMutation();
+  const { appendSystemMessage } = useAppendSystemMessageMutation();
   const { color, latestData, monitorData } = useResourceMetricsStatus({
     target,
   });
@@ -41,10 +41,7 @@ export default function NodeMonitor({ target }: NodeMonitorProps) {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              sendSystemMessage({
-                type: "info.monitor",
-                payload: target,
-              });
+              appendSystemMessage("universal.monitor", target);
             }}
           >
             <Activity

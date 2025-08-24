@@ -84,7 +84,7 @@ function StatefulsetNode({
   resource: StatefulsetObjectQuery;
   status?: string;
 }) {
-  const { sendSystemMessage: emitMessage } = useAppendSystemMessageMutation();
+  const { appendSystemMessage } = useAppendSystemMessageMutation();
 
   // Use the new hook to get statefulset data
   const { data: statefulsetData = resource } = useLaunchpadObject(
@@ -106,18 +106,6 @@ function StatefulsetNode({
     target,
   });
 
-  const handleNodeClick = () => {
-    const target = convertResourceObjectToTarget({
-      kind: statefulsetData.kind,
-      name: statefulsetData.name,
-    });
-
-    emitMessage({
-      type: "info.launchpadInfo",
-      payload: target,
-    });
-  };
-
   // Create target for the NodeLog component
   const logTarget = convertResourceObjectToTarget({
     kind: statefulsetData.kind,
@@ -131,7 +119,9 @@ function StatefulsetNode({
     >
       <div
         className="flex h-full flex-col gap-2 justify-between"
-        onClick={handleNodeClick}
+        onClick={() => {
+          appendSystemMessage("statefulset.detail", target);
+        }}
       >
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
@@ -158,7 +148,7 @@ function StatefulsetNode({
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
             <NodePods target={target} />
-            <NodeLog target={logTarget} resourceType="launchpad" />
+            <NodeLog target={logTarget} />
             <NodeMonitor target={target} />
           </div>
         </div>

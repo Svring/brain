@@ -1,9 +1,19 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   Select,
   SelectContent,
@@ -18,6 +28,25 @@ import { generateDevboxName } from "@/lib/sealos/resources/devbox/devbox-method/
 import { toast } from "sonner";
 import { CheckCircle, Package } from "lucide-react";
 
+// Form schema with Zod validation
+const devboxFormSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Name is required")
+    .max(50, "Name must be less than 50 characters"),
+  runtimeName: z.string().min(1, "Runtime is required"),
+  cpu: z
+    .number()
+    .min(500, "CPU must be at least 500m")
+    .max(8000, "CPU must be at most 8000m"),
+  memory: z
+    .number()
+    .min(512, "Memory must be at least 512Mi")
+    .max(16000, "Memory must be at most 16000Mi"),
+});
+
+type DevboxFormValues = z.infer<typeof devboxFormSchema>;
+
 interface DevboxCreateMessageProps {
   payload?: {
     name?: string;
@@ -30,12 +59,6 @@ interface DevboxCreateMessageProps {
 export default function DevboxCreateMessage({
   payload,
 }: DevboxCreateMessageProps) {
-  const [name, setName] = useState(payload?.name || generateDevboxName());
-  const [runtimeName, setRuntimeName] = useState<string>(
-    payload?.runtimeName || "Node.js"
-  );
-  const [cpu, setCpu] = useState<number>(payload?.cpu || 500);
-  const [memory, setMemory] = useState<number>(payload?.memory || 512);
   const [isCreating, setIsCreating] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [createdDevboxName, setCreatedDevboxName] = useState<string>("");
@@ -43,21 +66,32 @@ export default function DevboxCreateMessage({
   const context = createSealosContext();
   const createDevboxMutation = useCreateDevboxMutation(context);
 
-  // Update state when payload changes (for streaming parameters)
+  // Initialize form with default values
+  const form = useForm<DevboxFormValues>({
+    resolver: zodResolver(devboxFormSchema),
+    defaultValues: {
+      name: payload?.name || generateDevboxName(),
+      runtimeName: payload?.runtimeName || "Node.js",
+      cpu: payload?.cpu || 500,
+      memory: payload?.memory || 512,
+    },
+  });
+
+  // Update form values when payload changes (for streaming parameters)
   useEffect(() => {
     if (payload?.name !== undefined) {
-      setName(payload.name);
+      form.setValue("name", payload.name);
     }
     if (payload?.runtimeName !== undefined) {
-      setRuntimeName(payload.runtimeName);
+      form.setValue("runtimeName", payload.runtimeName);
     }
     if (payload?.cpu !== undefined) {
-      setCpu(payload.cpu);
+      form.setValue("cpu", payload.cpu);
     }
     if (payload?.memory !== undefined) {
-      setMemory(payload.memory);
+      form.setValue("memory", payload.memory);
     }
-  }, [payload]);
+  }, [payload, form]);
 
   const runtimeOptions = [
     { value: "Node.js", label: "Node.js" },
@@ -72,16 +106,19 @@ export default function DevboxCreateMessage({
     { value: "C", label: "C" },
   ];
 
-  const handleCreate = async () => {
-    const devboxName = name.trim() || generateDevboxName();
+  const cpuOptions = [500, 1000, 2000, 4000, 6000, 8000];
+  const memoryOptions = [512, 1024, 2048, 4096, 8192, 16000];
+
+  const onSubmit = async (values: DevboxFormValues) => {
+    const devboxName = values.name.trim() || generateDevboxName();
 
     setIsCreating(true);
     try {
       await createDevboxMutation.mutateAsync({
         name: devboxName,
-        runtimeName: runtimeName as any,
-        cpu,
-        memory,
+        runtimeName: values.runtimeName as any,
+        cpu: values.cpu,
+        memory: values.memory,
       });
 
       // Set completion state
@@ -90,6 +127,7 @@ export default function DevboxCreateMessage({
       toast.success("Devbox created successfully!");
     } catch (error) {
       console.error("Failed to create devbox:", error);
+      toast.error("Failed to create devbox. Please try again.");
     } finally {
       setIsCreating(false);
     }
@@ -112,7 +150,8 @@ export default function DevboxCreateMessage({
                 {createdDevboxName}
               </div>
               <div className="text-sm text-green-700 dark:text-green-300">
-                Runtime: {runtimeName} • CPU: {cpu}m • Memory: {memory}Mi
+                Runtime: {form.getValues("runtimeName")} • CPU:{" "}
+                {form.getValues("cpu")}m • Memory: {form.getValues("memory")}Mi
               </div>
             </div>
           </div>
@@ -133,86 +172,128 @@ export default function DevboxCreateMessage({
       <CardHeader>
         <CardTitle className="text-lg">Create Devbox</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="devbox-name">Name</Label>
-          <Input
-            id="devbox-name"
-            placeholder="Enter devbox name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter devbox name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <div className="space-y-2">
-          <Label htmlFor="runtime">Runtime</Label>
-          <Select value={runtimeName} onValueChange={setRuntimeName}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select runtime" />
-            </SelectTrigger>
-            <SelectContent>
-              {runtimeOptions.map((runtime) => (
-                <SelectItem key={runtime.value} value={runtime.value}>
-                  {runtime.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            <FormField
+              control={form.control}
+              name="runtimeName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Runtime</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select runtime" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {runtimeOptions.map((runtime) => (
+                        <SelectItem key={runtime.value} value={runtime.value}>
+                          {runtime.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="cpu">CPU (m)</Label>
-            <Select
-              value={cpu.toString()}
-              onValueChange={(value) => setCpu(Number(value))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select CPU" />
-              </SelectTrigger>
-              <SelectContent>
-                {[500, 1000, 2000, 4000, 6000, 8000].map((cpuValue) => (
-                  <SelectItem key={cpuValue} value={cpuValue.toString()}>
-                    {cpuValue}m ({cpuValue / 1000} cores)
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="cpu"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>CPU (m)</FormLabel>
+                    <Select
+                      onValueChange={(value) => field.onChange(Number(value))}
+                      value={field.value.toString()}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select CPU" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {cpuOptions.map((cpuValue) => (
+                          <SelectItem
+                            key={cpuValue}
+                            value={cpuValue.toString()}
+                          >
+                            {cpuValue}m ({cpuValue / 1000} cores)
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <div className="space-y-2">
-            <Label htmlFor="memory">Memory (Mi)</Label>
-            <Select
-              value={memory.toString()}
-              onValueChange={(value) => setMemory(Number(value))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select Memory" />
-              </SelectTrigger>
-              <SelectContent>
-                {[512, 1024, 2048, 4096, 8192, 16000].map((memoryValue) => (
-                  <SelectItem key={memoryValue} value={memoryValue.toString()}>
-                    {memoryValue}Mi ({memoryValue / 1024}GB)
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+              <FormField
+                control={form.control}
+                name="memory"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Memory (Mi)</FormLabel>
+                    <Select
+                      onValueChange={(value) => field.onChange(Number(value))}
+                      value={field.value.toString()}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Memory" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {memoryOptions.map((memoryValue) => (
+                          <SelectItem
+                            key={memoryValue}
+                            value={memoryValue.toString()}
+                          >
+                            {memoryValue}Mi ({memoryValue / 1024}GB)
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-        <div className="text-sm text-muted-foreground">
-          <p>Resource configuration:</p>
-          <p>
-            • CPU: {cpu}m ({cpu / 1000} cores)
-          </p>
-          <p>
-            • Memory: {memory}Mi ({memory / 1024}GB)
-          </p>
-        </div>
+            <div className="text-sm text-muted-foreground">
+              <p>Resource configuration:</p>
+              <p>
+                • CPU: {form.watch("cpu")}m ({form.watch("cpu") / 1000} cores)
+              </p>
+              <p>
+                • Memory: {form.watch("memory")}Mi (
+                {form.watch("memory") / 1024}GB)
+              </p>
+            </div>
 
-        <Button onClick={handleCreate} disabled={isCreating} className="w-full">
-          {isCreating ? "Creating..." : "Create Devbox"}
-        </Button>
+            <Button type="submit" disabled={isCreating} className="w-full">
+              {isCreating ? "Creating..." : "Create Devbox"}
+            </Button>
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );

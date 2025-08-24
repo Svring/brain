@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React from "react";
 import { NotebookText } from "lucide-react";
 import {
   Tooltip,
@@ -15,23 +15,11 @@ import {
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface NodeLogProps {
-  target?: CustomResourceTarget | BuiltinResourceTarget;
+  target: CustomResourceTarget | BuiltinResourceTarget;
 }
 
 export default function NodeLog({ target }: NodeLogProps) {
   const { appendSystemMessage } = useAppendSystemMessageMutation();
-
-  const handleLogClick = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      if (!target) return;
-
-      appendSystemMessage("info.resourceLog", target);
-    },
-    [target, appendSystemMessage]
-  );
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -39,7 +27,11 @@ export default function NodeLog({ target }: NodeLogProps) {
         <TooltipTrigger asChild>
           <button
             className="p-1 border-2 border-muted-foreground/20 rounded-full hover:border-muted-foreground/40 transition-colors"
-            onClick={handleLogClick}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              appendSystemMessage("universal.log", target);
+            }}
             type="button"
           >
             <NotebookText className="h-4 w-4 text-theme-green" />

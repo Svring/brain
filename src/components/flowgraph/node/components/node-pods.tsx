@@ -22,18 +22,18 @@ interface NodePodsProps {
 }
 
 export default function NodePods({ target }: NodePodsProps) {
-  const { sendSystemMessage } = useAppendSystemMessageMutation();
+  const { appendSystemMessage } = useAppendSystemMessageMutation();
   const { resource, isLoading, error } = useResourceStatus(target);
 
   // Extract pods from resource based on resource type
   const getPodList = (): Pod[] => {
     if (!resource) return [];
-    
+
     // Handle different resource types
-    if ('pods' in resource && resource.pods) {
+    if ("pods" in resource && resource.pods) {
       return resource.pods as Pod[];
     }
-    
+
     // For resources that don't have pods, return empty array
     return [];
   };
@@ -93,10 +93,7 @@ export default function NodePods({ target }: NodePodsProps) {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              sendSystemMessage({
-                type: "info.podOverview",
-                payload: target,
-              });
+              appendSystemMessage("universal.podOverview", target);
             }}
           >
             <Box className={`h-4 w-4 ${getStatusColor()}`} />

@@ -107,10 +107,6 @@ function DevboxNode({
   // Extract the releases array from the response
   const releasesData = releases?.data || [];
 
-  const handleNodeClick = () => {
-    appendSystemMessage("devbox.detail", target);
-  };
-
   const mainCard = (
     <BaseNode
       nodeData={resource}
@@ -118,7 +114,9 @@ function DevboxNode({
     >
       <div
         className="flex h-full flex-col gap-2 justify-between"
-        onClick={handleNodeClick}
+        onClick={() => {
+          appendSystemMessage("devbox.detail", target);
+        }}
       >
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">

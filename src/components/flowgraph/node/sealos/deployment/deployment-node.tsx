@@ -85,7 +85,7 @@ function DeploymentNode({
   resource: DeploymentObject;
   status?: string;
 }) {
-  const { sendSystemMessage: emitMessage } = useAppendSystemMessageMutation();
+  const { appendSystemMessage } = useAppendSystemMessageMutation();
 
   // Use the new hook to get deployment data
   const { data: deploymentData = resource } = useLaunchpadObject(
@@ -110,18 +110,6 @@ function DeploymentNode({
     target,
   });
 
-  const handleNodeClick = () => {
-    const target = convertResourceObjectToTarget({
-      kind: deploymentData.kind,
-      name: deploymentData.name,
-    });
-
-    emitMessage({
-      type: "info.launchpadInfo",
-      payload: target,
-    });
-  };
-
   const mainCard = (
     <BaseNode
       nodeData={resource}
@@ -129,7 +117,9 @@ function DeploymentNode({
     >
       <div
         className="flex h-full flex-col gap-2 justify-between"
-        onClick={handleNodeClick}
+        onClick={() => {
+          appendSystemMessage("deployment.detail", target);
+        }}
       >
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">

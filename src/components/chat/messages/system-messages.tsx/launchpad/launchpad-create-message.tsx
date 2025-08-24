@@ -1,10 +1,20 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   Select,
   SelectContent,
@@ -24,6 +34,41 @@ import { createSealosContext } from "@/lib/auth/auth-utils";
 import { generateDeployName } from "@/lib/sealos/resources/deployment/deploy-utils";
 import { toast } from "sonner";
 import { CheckCircle, Rocket, ChevronDown } from "lucide-react";
+
+// Form schema with Zod validation
+const launchpadFormSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Name is required")
+    .max(50, "Name must be less than 50 characters"),
+  image: z.string().min(1, "Image is required"),
+  command: z.string().optional(),
+  args: z.string().optional(),
+  cpu: z
+    .number()
+    .min(500, "CPU must be at least 500m")
+    .max(8000, "CPU must be at most 8000m"),
+  memory: z
+    .number()
+    .min(512, "Memory must be at least 512Mi")
+    .max(16000, "Memory must be at most 16000Mi"),
+  replicas: z
+    .number()
+    .min(1, "Replicas must be at least 1")
+    .max(10, "Replicas must be at most 10"),
+  ports: z.string().optional(),
+  portProtocol: z.enum(["TCP", "UDP", "SCTP"]),
+  appProtocol: z.enum(["HTTP", "GRPC", "WS"]),
+  exposesPublicDomain: z.boolean(),
+  envVars: z.string().optional(),
+  storageName: z.string().optional(),
+  storagePath: z.string().optional(),
+  storageSize: z.string().optional(),
+  configMapPath: z.string().optional(),
+  configMapValue: z.string().optional(),
+});
+
+type LaunchpadFormValues = z.infer<typeof launchpadFormSchema>;
 
 interface DeploymentCreateMessageProps {
   payload?: {

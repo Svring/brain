@@ -1,9 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -11,6 +21,13 @@ import { Info } from "lucide-react";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useQuery } from "@tanstack/react-query";
 import { ObjectStorageObject } from "@/lib/sealos/resources/objectstorage/objectstorage-schemas/objectstorage-object-schema";
+
+// Form schema with Zod validation
+const objectStorageUpdateFormSchema = z.object({
+  policy: z.enum(["private", "publicRead", "publicReadWrite"]),
+});
+
+type ObjectStorageUpdateFormValues = z.infer<typeof objectStorageUpdateFormSchema>;
 
 interface ObjectStorageUpdatePayload {
   policy?: "private" | "publicRead" | "publicReadWrite";
@@ -25,7 +42,6 @@ export const ObjectStorageUpdateMessage: React.FC<ObjectStorageUpdateMessageProp
   target,
   payload,
 }) => {
-  const [currentPolicy, setCurrentPolicy] = useState<"private" | "publicRead" | "publicReadWrite">(payload.policy || "private");
   const { objectstorage } = useTRPCClients();
 
   const { data: objectstorageObject, isLoading } = useQuery(
@@ -33,6 +49,21 @@ export const ObjectStorageUpdateMessage: React.FC<ObjectStorageUpdateMessageProp
       target,
     })
   );
+
+  // Initialize form with default values
+  const form = useForm<ObjectStorageUpdateFormValues>({
+    resolver: zodResolver(objectStorageUpdateFormSchema),
+    defaultValues: {
+      policy: payload.policy || "private",
+    },
+  });
+
+  // Update form values when payload changes
+  useEffect(() => {
+    if (payload.policy !== undefined) {
+      form.setValue("policy", payload.policy);
+    }
+  }, [payload, form]);
 
   const getPolicyDisplayName = (policy: string) => {
     switch (policy) {
@@ -70,31 +101,44 @@ export const ObjectStorageUpdateMessage: React.FC<ObjectStorageUpdateMessageProp
           <div className="text-center py-4">Loading bucket information...</div>
         ) : (
           <>
-            <div className="space-y-2">
-              <Label>Current Policy</Label>
-              <div className="flex items-center gap-2">
-                <Badge variant={getPolicyBadgeVariant(currentPolicy)}>
-                  {getPolicyDisplayName(currentPolicy)}
-                </Badge>
-              </div>
-            </div>
+            <Form {...form}>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <FormLabel>Current Policy</FormLabel>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={getPolicyBadgeVariant(form.watch("policy"))}>
+                      {getPolicyDisplayName(form.watch("policy"))}
+                    </Badge>
+                  </div>
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="policy-select">Policy Selection</Label>
-              <Select
-                value={currentPolicy}
-                onValueChange={(value: "private" | "publicRead" | "publicReadWrite") => setCurrentPolicy(value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select bucket policy" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="private">Private</SelectItem>
-                  <SelectItem value="publicRead">Public Read</SelectItem>
-                  <SelectItem value="publicReadWrite">Public Read/Write</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+                <FormField
+                  control={form.control}
+                  name="policy"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Policy Selection</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select bucket policy" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="private">Private</SelectItem>
+                          <SelectItem value="publicRead">Public Read</SelectItem>
+                          <SelectItem value="publicReadWrite">Public Read/Write</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </Form>
 
             <Alert>
               <Info className="h-4 w-4" />

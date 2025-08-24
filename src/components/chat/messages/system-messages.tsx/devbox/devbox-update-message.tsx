@@ -88,9 +88,19 @@
  */
 
 import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   Select,
   SelectContent,
@@ -116,6 +126,27 @@ import {
 import type { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import type { DevboxPort } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 
+// Form schema with Zod validation
+const devboxUpdateFormSchema = z.object({
+  cpu: z
+    .number()
+    .min(500, "CPU must be at least 500m")
+    .max(8000, "CPU must be at most 8000m"),
+  memory: z
+    .number()
+    .min(512, "Memory must be at least 512Mi")
+    .max(16000, "Memory must be at most 16000Mi"),
+  ports: z.array(
+    z.object({
+      number: z.number().min(1).max(65535),
+      name: z.string().optional(),
+      protocol: z.string().transform((val) => val as "TCP" | "UDP"),
+    })
+  ),
+});
+
+type DevboxUpdateFormValues = z.infer<typeof devboxUpdateFormSchema>;
+
 interface DevboxResource {
   cpu: number;
   memory: number;
@@ -135,11 +166,6 @@ export default function DevboxUpdateMessage({
   target,
   payload,
 }: DevboxUpdateMessageProps) {
-  const [cpu, setCpu] = useState<number>(payload?.resource?.cpu || 2000);
-  const [memory, setMemory] = useState<number>(
-    payload?.resource?.memory || 4096
-  );
-  const [ports, setPorts] = useState<DevboxPort[]>(payload?.ports || []);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
 
@@ -149,30 +175,57 @@ export default function DevboxUpdateMessage({
 
   const updateMutation = useStrategicMergePatchResourceMutation(context);
 
-  // Update state when payload changes (for streaming parameters)
+  // Initialize form with default values
+  const form = useForm<DevboxUpdateFormValues>({
+    resolver: zodResolver(devboxUpdateFormSchema),
+    defaultValues: {
+      cpu: payload?.resource?.cpu || 2000,
+      memory: payload?.resource?.memory || 4096,
+      ports:
+        payload?.ports?.map((port) => ({
+          number: port.number,
+          name: port.name,
+          protocol: (port.protocol as "TCP" | "UDP") || "TCP",
+        })) || [],
+    },
+  });
+
+  // Update form values when payload changes (for streaming parameters)
   useEffect(() => {
     if (payload?.resource?.cpu !== undefined) {
-      setCpu(payload.resource.cpu);
+      form.setValue("cpu", payload.resource.cpu);
     }
     if (payload?.resource?.memory !== undefined) {
-      setMemory(payload.resource.memory);
+      form.setValue("memory", payload.resource.memory);
     }
     if (payload?.ports !== undefined) {
-      setPorts(payload.ports);
+      form.setValue(
+        "ports",
+        payload.ports.map((port) => ({
+          number: port.number,
+          name: port.name,
+          protocol: (port.protocol as "TCP" | "UDP") || "TCP",
+        }))
+      );
     }
-  }, [payload]);
+  }, [payload, form]);
 
   const handleAddPort = () => {
-    const newPort: DevboxPort = {
+    const currentPorts = form.getValues("ports");
+    const newPort = {
       number: 8080,
-      name: `port-${ports.length + 1}`,
-      protocol: "TCP",
+      name: `port-${currentPorts.length + 1}`,
+      protocol: "TCP" as const,
     };
-    setPorts([...ports, newPort]);
+    form.setValue("ports", [...currentPorts, newPort]);
   };
 
   const handleRemovePort = (index: number) => {
-    setPorts(ports.filter((_, i) => i !== index));
+    const currentPorts = form.getValues("ports");
+    form.setValue(
+      "ports",
+      currentPorts.filter((_, i) => i !== index)
+    );
   };
 
   const handleUpdatePort = (
@@ -180,12 +233,13 @@ export default function DevboxUpdateMessage({
     field: keyof DevboxPort,
     value: any
   ) => {
-    const updatedPorts = [...ports];
+    const currentPorts = form.getValues("ports");
+    const updatedPorts = [...currentPorts];
     updatedPorts[index] = { ...updatedPorts[index], [field]: value };
-    setPorts(updatedPorts);
+    form.setValue("ports", updatedPorts);
   };
 
-  const handleUpdate = async () => {
+  const onSubmit = async (values: DevboxUpdateFormValues) => {
     if (!target) {
       toast.error("No target specified for update");
       return;
@@ -201,18 +255,18 @@ export default function DevboxUpdateMessage({
         ...patchBody.spec,
         resource: {
           ...patchBody.spec?.resource,
-          cpu: `${cpu}m`,
-          memory: `${memory}Mi`,
+          cpu: `${values.cpu}m`,
+          memory: `${values.memory}Mi`,
         },
       };
 
       // Update ports if any are configured
-      if (ports.length > 0) {
+      if (values.ports.length > 0) {
         patchBody.spec = {
           ...patchBody.spec,
           network: {
             ...patchBody.spec?.network,
-            extraPorts: ports.map((port) => port.number).join(","),
+            extraPorts: values.ports.map((port) => port.number).join(","),
           },
         };
       }
@@ -249,7 +303,9 @@ export default function DevboxUpdateMessage({
                 {devboxName}
               </div>
               <div className="text-sm text-green-700 dark:text-green-300">
-                CPU: {cpu}m • Memory: {memory}Mi • Ports: {ports.length}
+                CPU: {form.getValues("cpu")}m • Memory:{" "}
+                {form.getValues("memory")}Mi • Ports:{" "}
+                {form.getValues("ports").length}
               </div>
             </div>
           </div>
@@ -284,176 +340,212 @@ export default function DevboxUpdateMessage({
         <Separator />
 
         {/* Resources Section */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Cpu className="h-4 w-4" />
-            <Label className="text-base font-medium">Resources</Label>
-          </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Cpu className="h-4 w-4" />
+                <FormLabel className="text-base font-medium">
+                  Resources
+                </FormLabel>
+              </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="cpu">CPU (m)</Label>
-              <Select
-                value={cpu.toString()}
-                onValueChange={(value) => setCpu(Number(value))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select CPU" />
-                </SelectTrigger>
-                <SelectContent>
-                  {[500, 1000, 2000, 4000, 6000, 8000].map((cpuValue) => (
-                    <SelectItem key={cpuValue} value={cpuValue.toString()}>
-                      {cpuValue}m ({cpuValue / 1000} cores)
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="memory">Memory (Mi)</Label>
-              <Select
-                value={memory.toString()}
-                onValueChange={(value) => setMemory(Number(value))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Memory" />
-                </SelectTrigger>
-                <SelectContent>
-                  {[512, 1024, 2048, 4096, 8192, 16000].map((memoryValue) => (
-                    <SelectItem
-                      key={memoryValue}
-                      value={memoryValue.toString()}
-                    >
-                      {memoryValue}Mi ({memoryValue / 1024}GB)
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="text-sm text-muted-foreground">
-            <p>Resource configuration:</p>
-            <p>
-              • CPU: {cpu}m ({cpu / 1000} cores)
-            </p>
-            <p>
-              • Memory: {memory}Mi ({memory / 1024}GB)
-            </p>
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Ports Section */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Network className="h-4 w-4" />
-              <Label className="text-base font-medium">Ports</Label>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleAddPort}
-              className="flex items-center gap-1"
-            >
-              <Plus className="h-3 w-3" />
-              Add Port
-            </Button>
-          </div>
-
-          {ports.length === 0 ? (
-            <div className="text-center py-4 text-muted-foreground">
-              No ports configured
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {ports.map((port, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-3 p-3 border rounded-lg"
-                >
-                  <div className="flex-1 grid grid-cols-3 gap-2">
-                    <div>
-                      <Label className="text-xs">Port Number</Label>
-                      <Input
-                        type="number"
-                        value={port.number}
-                        onChange={(e) =>
-                          handleUpdatePort(
-                            index,
-                            "number",
-                            parseInt(e.target.value)
-                          )
-                        }
-                        className="h-8"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs">Name</Label>
-                      <Input
-                        value={port.name || ""}
-                        onChange={(e) =>
-                          handleUpdatePort(index, "name", e.target.value)
-                        }
-                        placeholder="port-name"
-                        className="h-8"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs">Protocol</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="cpu"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>CPU (m)</FormLabel>
                       <Select
-                        value={port.protocol || "TCP"}
-                        onValueChange={(value) =>
-                          handleUpdatePort(index, "protocol", value)
-                        }
+                        onValueChange={(value) => field.onChange(Number(value))}
+                        value={field.value.toString()}
                       >
-                        <SelectTrigger className="h-8">
-                          <SelectValue />
-                        </SelectTrigger>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select CPU" />
+                          </SelectTrigger>
+                        </FormControl>
                         <SelectContent>
-                          <SelectItem value="TCP">TCP</SelectItem>
-                          <SelectItem value="UDP">UDP</SelectItem>
+                          {[500, 1000, 2000, 4000, 6000, 8000].map(
+                            (cpuValue) => (
+                              <SelectItem
+                                key={cpuValue}
+                                value={cpuValue.toString()}
+                              >
+                                {cpuValue}m ({cpuValue / 1000} cores)
+                              </SelectItem>
+                            )
+                          )}
                         </SelectContent>
                       </Select>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemovePort(index)}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="memory"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Memory (Mi)</FormLabel>
+                      <Select
+                        onValueChange={(value) => field.onChange(Number(value))}
+                        value={field.value.toString()}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Memory" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {[512, 1024, 2048, 4096, 8192, 16000].map(
+                            (memoryValue) => (
+                              <SelectItem
+                                key={memoryValue}
+                                value={memoryValue.toString()}
+                              >
+                                {memoryValue}Mi ({memoryValue / 1024}GB)
+                              </SelectItem>
+                            )
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="text-sm text-muted-foreground">
+                <p>Resource configuration:</p>
+                <p>
+                  • CPU: {form.watch("cpu")}m ({form.watch("cpu") / 1000} cores)
+                </p>
+                <p>
+                  • Memory: {form.watch("memory")}Mi (
+                  {form.watch("memory") / 1024}GB)
+                </p>
+              </div>
             </div>
-          )}
-        </div>
 
-        <Separator />
+            <Separator />
 
-        {/* Update Button */}
-        <Button
-          onClick={handleUpdate}
-          disabled={isUpdating || !target}
-          className="w-full"
-        >
-          {isUpdating
-            ? "Updating..."
-            : target
-            ? "Update Devbox"
-            : "No Target Specified"}
-        </Button>
+            <Separator />
 
-        {!target && (
-          <div className="text-sm text-muted-foreground text-center">
-            <p>Target is required to update devbox configuration.</p>
-          </div>
-        )}
+            {/* Ports Section */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Network className="h-4 w-4" />
+                  <FormLabel className="text-base font-medium">Ports</FormLabel>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddPort}
+                  className="flex items-center gap-1"
+                >
+                  <Plus className="h-3 w-3" />
+                  Add Port
+                </Button>
+              </div>
+
+              {form.watch("ports").length === 0 ? (
+                <div className="text-center py-4 text-muted-foreground">
+                  No ports configured
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {form.watch("ports").map((port, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-3 p-3 border rounded-lg"
+                    >
+                      <div className="flex-1 grid grid-cols-3 gap-2">
+                        <div>
+                          <FormLabel className="text-xs">Port Number</FormLabel>
+                          <Input
+                            type="number"
+                            value={port.number}
+                            onChange={(e) =>
+                              handleUpdatePort(
+                                index,
+                                "number",
+                                parseInt(e.target.value)
+                              )
+                            }
+                            className="h-8"
+                          />
+                        </div>
+                        <div>
+                          <FormLabel className="text-xs">Name</FormLabel>
+                          <Input
+                            value={port.name || ""}
+                            onChange={(e) =>
+                              handleUpdatePort(index, "name", e.target.value)
+                            }
+                            placeholder="port-name"
+                            className="h-8"
+                          />
+                        </div>
+                        <div>
+                          <FormLabel className="text-xs">Protocol</FormLabel>
+                          <Select
+                            value={port.protocol || "TCP"}
+                            onValueChange={(value) =>
+                              handleUpdatePort(index, "protocol", value)
+                            }
+                          >
+                            <SelectTrigger className="h-8">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="TCP">TCP</SelectItem>
+                              <SelectItem value="UDP">UDP</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemovePort(index)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Separator />
+
+            {/* Update Button */}
+            <Button
+              type="submit"
+              disabled={isUpdating || !target}
+              className="w-full"
+            >
+              {isUpdating
+                ? "Updating..."
+                : target
+                ? "Update Devbox"
+                : "No Target Specified"}
+            </Button>
+
+            {!target && (
+              <div className="text-sm text-muted-foreground text-center">
+                <p>Target is required to update devbox configuration.</p>
+              </div>
+            )}
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );
