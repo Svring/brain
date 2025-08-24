@@ -27,8 +27,11 @@ import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+// Policy options for object storage
+const policyOptions = ["private", "publicRead", "publicReadWrite"] as const;
+
 // Form schema with Zod validation
-const objectStorageFormSchema = z.object({
+export const objectStorageFormSchema = z.object({
   name: z
     .string()
     .min(1, "Bucket name is required")
@@ -37,7 +40,7 @@ const objectStorageFormSchema = z.object({
       /^[a-z0-9][a-z0-9-]*[a-z0-9]$/,
       "Bucket name must contain only lowercase letters, numbers, and hyphens"
     ),
-  policy: z.enum(["private", "publicRead", "publicReadWrite"]),
+  policy: z.enum(policyOptions),
 });
 
 type ObjectStorageFormValues = z.infer<typeof objectStorageFormSchema>;

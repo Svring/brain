@@ -35,8 +35,26 @@ import { generateDeployName } from "@/lib/sealos/resources/deployment/deploy-uti
 import { toast } from "sonner";
 import { CheckCircle, Rocket, ChevronDown } from "lucide-react";
 
+// CPU options for launchpad
+const cpuOptions = [500, 1000, 2000, 4000, 6000, 8000] as const;
+
+// Memory options for launchpad
+const memoryOptions = [512, 1024, 2048, 4096, 8192, 16000] as const;
+
+// Replicas options for launchpad
+const replicasOptions = [1, 2, 3, 5, 7, 10] as const;
+
+// Port protocol options for launchpad
+const portProtocolOptions = ["TCP", "UDP", "SCTP"] as const;
+
+// App protocol options for launchpad
+const appProtocolOptions = ["HTTP", "GRPC", "WS"] as const;
+
+// Storage size options for launchpad
+const storageSizeOptions = ["1Gi", "5Gi", "10Gi", "20Gi", "50Gi", "100Gi"] as const;
+
 // Form schema with Zod validation
-const launchpadFormSchema = z.object({
+export const launchpadFormSchema = z.object({
   name: z
     .string()
     .min(1, "Name is required")
@@ -44,26 +62,17 @@ const launchpadFormSchema = z.object({
   image: z.string().min(1, "Image is required"),
   command: z.string().optional(),
   args: z.string().optional(),
-  cpu: z
-    .number()
-    .min(500, "CPU must be at least 500m")
-    .max(8000, "CPU must be at most 8000m"),
-  memory: z
-    .number()
-    .min(512, "Memory must be at least 512Mi")
-    .max(16000, "Memory must be at most 16000Mi"),
-  replicas: z
-    .number()
-    .min(1, "Replicas must be at least 1")
-    .max(10, "Replicas must be at most 10"),
+  cpu: z.enum(cpuOptions.map(val => val.toString()) as [string, ...string[]]),
+  memory: z.enum(memoryOptions.map(val => val.toString()) as [string, ...string[]]),
+  replicas: z.enum(replicasOptions.map(val => val.toString()) as [string, ...string[]]),
   ports: z.string().optional(),
-  portProtocol: z.enum(["TCP", "UDP", "SCTP"]),
-  appProtocol: z.enum(["HTTP", "GRPC", "WS"]),
+  portProtocol: z.enum(portProtocolOptions),
+  appProtocol: z.enum(appProtocolOptions),
   exposesPublicDomain: z.boolean(),
   envVars: z.string().optional(),
   storageName: z.string().optional(),
   storagePath: z.string().optional(),
-  storageSize: z.string().optional(),
+  storageSize: z.enum(storageSizeOptions),
   configMapPath: z.string().optional(),
   configMapValue: z.string().optional(),
 });
@@ -115,9 +124,9 @@ export default function LaunchpadCreateMessage({
       image: payload?.image || "nginx",
       command: payload?.command || "",
       args: payload?.args || "",
-      cpu: payload?.cpu || 500,
-      memory: payload?.memory || 512,
-      replicas: payload?.replicas || 1,
+      cpu: (payload?.cpu || 500).toString(),
+      memory: (payload?.memory || 512).toString(),
+      replicas: (payload?.replicas || 1).toString(),
       ports: payload?.ports || "80",
       portProtocol: payload?.portProtocol || "TCP",
       appProtocol: payload?.appProtocol || "HTTP",
@@ -125,7 +134,7 @@ export default function LaunchpadCreateMessage({
       envVars: payload?.envVars || "",
       storageName: payload?.storageName || "",
       storagePath: payload?.storagePath || "",
-      storageSize: payload?.storageSize || "1Gi",
+      storageSize: (payload?.storageSize as any) || "1Gi",
       configMapPath: payload?.configMapPath || "",
       configMapValue: payload?.configMapValue || "",
     }),
@@ -206,9 +215,9 @@ export default function LaunchpadCreateMessage({
           command: (values.command || "").trim(),
           args: (values.args || "").trim(),
           resource: {
-            replicas: values.replicas,
-            cpu: values.cpu,
-            memory: values.memory,
+            replicas: parseInt(values.replicas),
+            cpu: parseInt(values.cpu),
+            memory: parseInt(values.memory),
           },
           ports: portArray,
           env: envArray,
@@ -323,16 +332,14 @@ export default function LaunchpadCreateMessage({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {[500, 1000, 2000, 4000, 6000, 8000].map(
-                            (cpuValue) => (
-                              <SelectItem
-                                key={cpuValue}
-                                value={cpuValue.toString()}
-                              >
-                                {cpuValue}m ({cpuValue / 1000} cores)
-                              </SelectItem>
-                            )
-                          )}
+                                                  {cpuOptions.map((cpuValue) => (
+                          <SelectItem
+                            key={cpuValue}
+                            value={cpuValue.toString()}
+                          >
+                            {cpuValue}m ({cpuValue / 1000} cores)
+                          </SelectItem>
+                        ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -356,16 +363,14 @@ export default function LaunchpadCreateMessage({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {[512, 1024, 2048, 4096, 8192, 16000].map(
-                            (memoryValue) => (
-                              <SelectItem
-                                key={memoryValue}
-                                value={memoryValue.toString()}
-                              >
-                                {memoryValue}Mi ({memoryValue / 1024}GB)
-                              </SelectItem>
-                            )
-                          )}
+                                                  {memoryOptions.map((memoryValue) => (
+                          <SelectItem
+                            key={memoryValue}
+                            value={memoryValue.toString()}
+                          >
+                            {memoryValue}Mi ({memoryValue / 1024}GB)
+                          </SelectItem>
+                        ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -379,18 +384,26 @@ export default function LaunchpadCreateMessage({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Replicas</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min="1"
-                          max="10"
-                          step="1"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(Number(e.target.value))
-                          }
-                        />
-                      </FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Replicas" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {replicasOptions.map((replicaValue) => (
+                            <SelectItem
+                              key={replicaValue}
+                              value={replicaValue.toString()}
+                            >
+                              {replicaValue}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -645,10 +658,24 @@ export default function LaunchpadCreateMessage({
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <Input
-                                placeholder="Size (e.g., 1Gi)"
-                                {...field}
-                              />
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select Size" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {storageSizeOptions.map((sizeValue) => (
+                                    <SelectItem
+                                      key={sizeValue}
+                                      value={sizeValue}
+                                    >
+                                      {sizeValue}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                             </FormControl>
                             <FormMessage />
                           </FormItem>

@@ -26,6 +26,11 @@ import {
   AIToolResult,
 } from "@/components/shadcn-io/ai/tool";
 import { AIResponse } from "@/components/shadcn-io/ai/response";
+import { jsonSchemaToActionParameters } from "@copilotkit/shared";
+import { zodToJsonSchema } from "zod-to-json-schema";
+import LaunchpadCreateMessage, {
+  launchpadFormSchema,
+} from "@/components/chat/messages/system-messages.tsx/launchpad/launchpad-create-message";
 
 export function activateLaunchpadActions(
   sealosContext: SealosApiContext,
@@ -42,72 +47,41 @@ export function activateLaunchpadActions(
 }
 
 function createLaunchpadAction(context: SealosApiContext) {
-  const createLaunchpad = useCreateLaunchpadMutation(context);
-
   useCopilotAction({
     name: "createLaunchpad",
-    description: "Create a new launchpad",
-    parameters: [
-      {
-        name: "name",
-        type: "string",
-        description: "Name of the launchpad to create",
-        required: true,
-      },
-      {
-        name: "image",
-        type: "string",
-        description: "Docker image name for the launchpad",
-        required: true,
-      },
-      {
-        name: "cpu",
-        type: "number",
-        description: "CPU allocation in millicores (e.g., 1000 for 1 CPU)",
-        required: false,
-      },
-      {
-        name: "memory",
-        type: "number",
-        description: "Memory allocation in MB",
-        required: false,
-      },
-      {
-        name: "replicas",
-        type: "number",
-        description: "Number of replicas",
-        required: false,
-      },
-    ],
-    handler: async ({ name, image, cpu, memory, replicas }) => {
-      const createRequest = {
-        name,
-        image,
-        env: {},
-        ports: [],
-        cpu: cpu || 1000,
-        memory: memory || 1024,
-        replicas: replicas || 1,
-      };
-
-      await createLaunchpad.mutateAsync(createRequest);
-      return `Launchpad '${name}' created successfully with image '${image}'.`;
+    description: "Create a new launchpad with specified configuration",
+    followUp: false,
+    parameters: jsonSchemaToActionParameters(
+      zodToJsonSchema(launchpadFormSchema) as any
+    ),
+    handler: ({ name, image, cpu, memory, replicas }) => {
+      // This will be handled by the UI component
+      return `Creating launchpad "${name}" with image ${image}`;
     },
-    render: ({ args, result, status }) => {
+    render: ({ status, args }) => {
+      // Always render the component, but pass undefined for incomplete parameters
       return (
-        <AITool key={"createLaunchpad"}>
-          <AIToolHeader
-            description={"Create a new launchpad"}
-            name={"createLaunchpad"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
+        <LaunchpadCreateMessage
+          payload={{
+            name: typeof args.name === "string" ? args.name : undefined,
+            image: typeof args.image === "string" ? args.image : undefined,
+            command: typeof args.command === "string" ? args.command : undefined,
+            args: typeof args.args === "string" ? args.args : undefined,
+            cpu: typeof args.cpu === "string" ? parseInt(args.cpu) : undefined,
+            memory: typeof args.memory === "string" ? parseInt(args.memory) : undefined,
+            replicas: typeof args.replicas === "string" ? parseInt(args.replicas) : undefined,
+            ports: typeof args.ports === "string" ? args.ports : undefined,
+            portProtocol: typeof args.portProtocol === "string" ? args.portProtocol as "TCP" | "UDP" | "SCTP" : undefined,
+            appProtocol: typeof args.appProtocol === "string" ? args.appProtocol as "HTTP" | "GRPC" | "WS" : undefined,
+            exposesPublicDomain: typeof args.exposesPublicDomain === "boolean" ? args.exposesPublicDomain : undefined,
+            envVars: typeof args.envVars === "string" ? args.envVars : undefined,
+            storageName: typeof args.storageName === "string" ? args.storageName : undefined,
+            storagePath: typeof args.storagePath === "string" ? args.storagePath : undefined,
+            storageSize: typeof args.storageSize === "string" ? args.storageSize as "1Gi" | "5Gi" | "10Gi" | "20Gi" | "50Gi" | "100Gi" : undefined,
+            configMapPath: typeof args.configMapPath === "string" ? args.configMapPath : undefined,
+            configMapValue: typeof args.configMapValue === "string" ? args.configMapValue : undefined,
+          }}
+        />
       );
     },
   });

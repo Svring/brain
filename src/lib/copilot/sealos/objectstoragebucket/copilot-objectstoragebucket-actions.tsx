@@ -22,6 +22,11 @@ import {
   AIToolResult,
 } from "@/components/shadcn-io/ai/tool";
 import { AIResponse } from "@/components/shadcn-io/ai/response";
+import { jsonSchemaToActionParameters } from "@copilotkit/shared";
+import { zodToJsonSchema } from "zod-to-json-schema";
+import ObjectStorageCreateMessage, {
+  objectStorageFormSchema,
+} from "@/components/chat/messages/system-messages.tsx/objectstorage/objectstorage-create-message";
 
 export function activateObjectStorageBucketActions(
   k8sContext: K8sApiContext,
@@ -34,51 +39,26 @@ export function activateObjectStorageBucketActions(
 }
 
 function createObjectStorageBucketAction(sealosContext: SealosApiContext) {
-  const createObjectStorage = useCreateObjectStorageMutation(sealosContext);
-
   useCopilotAction({
     name: "createObjectStorageBucket",
-    description: "Create a new object storage bucket",
-    parameters: [
-      {
-        name: "bucketName",
-        type: "string",
-        description: "Name of the bucket to create",
-        required: true,
-      },
-      {
-        name: "bucketPolicy",
-        type: "string",
-        enum: ["private", "publicRead", "publicReadWrite"],
-        description: "Bucket policy (private, publicRead, publicReadWrite)",
-        required: false,
-      },
-    ],
-    handler: async ({ bucketName, bucketPolicy }) => {
-      const createRequest = {
-        bucketName,
-        bucketPolicy:
-          (bucketPolicy as "private" | "publicRead" | "publicReadWrite") ||
-          "private",
-      };
-
-      return await createObjectStorage.mutateAsync(createRequest);
+    description: "Create a new object storage bucket with specified configuration",
+    followUp: false,
+    parameters: jsonSchemaToActionParameters(
+      zodToJsonSchema(objectStorageFormSchema) as any
+    ),
+    handler: ({ name, policy }) => {
+      // This will be handled by the UI component
+      return `Creating object storage bucket "${name}" with ${policy} policy`;
     },
-    render: ({ args, result, status }) => {
+    render: ({ status, args }) => {
+      // Always render the component, but pass undefined for incomplete parameters
       return (
-        <AITool key={"createObjectStorageBucket"}>
-          <AIToolHeader
-            description={"Create a new object storage bucket"}
-            name={"createObjectStorageBucket"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
+        <ObjectStorageCreateMessage
+          payload={{
+            name: typeof args.name === "string" ? args.name : undefined,
+            policy: typeof args.policy === "string" ? args.policy as "private" | "publicRead" | "publicReadWrite" : undefined,
+          }}
+        />
       );
     },
   });

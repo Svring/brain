@@ -126,21 +126,24 @@ import {
 import type { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import type { DevboxPort } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 
+// CPU options for devbox update
+const cpuOptions = [500, 1000, 2000, 4000, 6000, 8000] as const;
+
+// Memory options for devbox update
+const memoryOptions = [512, 1024, 2048, 4096, 8192, 16000] as const;
+
+// Protocol options for devbox ports
+const protocolOptions = ["TCP", "UDP"] as const;
+
 // Form schema with Zod validation
-const devboxUpdateFormSchema = z.object({
-  cpu: z
-    .number()
-    .min(500, "CPU must be at least 500m")
-    .max(8000, "CPU must be at most 8000m"),
-  memory: z
-    .number()
-    .min(512, "Memory must be at least 512Mi")
-    .max(16000, "Memory must be at most 16000Mi"),
+export const devboxUpdateFormSchema = z.object({
+  cpu: z.enum(cpuOptions.map(val => val.toString()) as [string, ...string[]]),
+  memory: z.enum(memoryOptions.map(val => val.toString()) as [string, ...string[]]),
   ports: z.array(
     z.object({
       number: z.number().min(1).max(65535),
       name: z.string().optional(),
-      protocol: z.string().transform((val) => val as "TCP" | "UDP"),
+      protocol: z.enum(protocolOptions),
     })
   ),
 });
@@ -177,8 +180,8 @@ export default function DevboxUpdateMessage({
 
   // Define default values, merging with payload
   const defaultValues: DevboxUpdateFormValues = {
-    cpu: payload?.resource?.cpu || 2000,
-    memory: payload?.resource?.memory || 4096,
+    cpu: (payload?.resource?.cpu || 2000).toString(),
+    memory: (payload?.resource?.memory || 4096).toString(),
     ports:
       payload?.ports?.map((port) => ({
         number: port.number,
@@ -243,8 +246,8 @@ export default function DevboxUpdateMessage({
         ...patchBody.spec,
         resource: {
           ...patchBody.spec?.resource,
-          cpu: `${values.cpu}m`,
-          memory: `${values.memory}Mi`,
+          cpu: `${parseInt(values.cpu)}m`,
+          memory: `${parseInt(values.memory)}Mi`,
         },
       };
 
@@ -346,8 +349,8 @@ export default function DevboxUpdateMessage({
                     <FormItem>
                       <FormLabel>CPU (m)</FormLabel>
                       <Select
-                        onValueChange={(value) => field.onChange(Number(value))}
-                        value={field.value.toString()}
+                        onValueChange={field.onChange}
+                        value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -355,16 +358,14 @@ export default function DevboxUpdateMessage({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {[500, 1000, 2000, 4000, 6000, 8000].map(
-                            (cpuValue) => (
-                              <SelectItem
-                                key={cpuValue}
-                                value={cpuValue.toString()}
-                              >
-                                {cpuValue}m ({cpuValue / 1000} cores)
-                              </SelectItem>
-                            )
-                          )}
+                          {cpuOptions.map((cpuValue) => (
+                            <SelectItem
+                              key={cpuValue}
+                              value={cpuValue.toString()}
+                            >
+                              {cpuValue}m ({cpuValue / 1000} cores)
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -379,8 +380,8 @@ export default function DevboxUpdateMessage({
                     <FormItem>
                       <FormLabel>Memory (Mi)</FormLabel>
                       <Select
-                        onValueChange={(value) => field.onChange(Number(value))}
-                        value={field.value.toString()}
+                        onValueChange={field.onChange}
+                        value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -388,16 +389,14 @@ export default function DevboxUpdateMessage({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {[512, 1024, 2048, 4096, 8192, 16000].map(
-                            (memoryValue) => (
-                              <SelectItem
-                                key={memoryValue}
-                                value={memoryValue.toString()}
-                              >
-                                {memoryValue}Mi ({memoryValue / 1024}GB)
-                              </SelectItem>
-                            )
-                          )}
+                          {memoryOptions.map((memoryValue) => (
+                            <SelectItem
+                              key={memoryValue}
+                              value={memoryValue.toString()}
+                            >
+                              {memoryValue}Mi ({memoryValue / 1024}GB)
+                          </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -409,11 +408,11 @@ export default function DevboxUpdateMessage({
               <div className="text-sm text-muted-foreground">
                 <p>Resource configuration:</p>
                 <p>
-                  • CPU: {form.watch("cpu")}m ({form.watch("cpu") / 1000} cores)
+                  • CPU: {form.watch("cpu")}m ({parseInt(form.watch("cpu")) / 1000} cores)
                 </p>
                 <p>
                   • Memory: {form.watch("memory")}Mi (
-                  {form.watch("memory") / 1024}GB)
+                  {parseInt(form.watch("memory")) / 1024}GB)
                 </p>
               </div>
             </div>

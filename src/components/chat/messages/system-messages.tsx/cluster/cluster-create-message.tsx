@@ -28,31 +28,46 @@ import { generateClusterName } from "@/lib/sealos/resources/cluster/cluster-util
 import { toast } from "sonner";
 import { CheckCircle, Database } from "lucide-react";
 
+// Database type options for cluster
+const dbTypeOptions = [
+  { value: "postgresql", label: "PostgreSQL" },
+  { value: "mongodb", label: "MongoDB" },
+  { value: "apecloud-mysql", label: "MySQL" },
+  { value: "redis", label: "Redis" },
+  { value: "kafka", label: "Kafka" },
+  { value: "weaviate", label: "Weaviate" },
+  { value: "milvus", label: "Milvus" },
+  { value: "pulsar", label: "Pulsar" },
+] as const;
+
+// CPU options for cluster
+const cpuOptions = [500, 1000, 2000, 4000, 6000, 8000] as const;
+
+// Memory options for cluster
+const memoryOptions = [512, 1024, 2048, 4096, 8192, 16000] as const;
+
+// Storage options for cluster
+const storageOptions = [10, 20, 50, 100, 200, 500, 1000] as const;
+
+// Replicas options for cluster
+const replicasOptions = [1, 2, 3, 5, 7, 10] as const;
+
+// Termination policy options for cluster
+const terminationPolicyOptions = ["Delete", "WipeOut"] as const;
+
 // Form schema with Zod validation
-const clusterFormSchema = z.object({
+export const clusterFormSchema = z.object({
   name: z
     .string()
     .min(1, "Name is required")
     .max(50, "Name must be less than 50 characters"),
-  type: z.string().min(1, "Database type is required"),
+  type: z.enum(dbTypeOptions.map(opt => opt.value) as [string, ...string[]]),
   version: z.string().min(1, "Version is required"),
-  cpu: z
-    .number()
-    .min(500, "CPU must be at least 500m")
-    .max(8000, "CPU must be at most 8000m"),
-  memory: z
-    .number()
-    .min(512, "Memory must be at least 512Mi")
-    .max(16000, "Memory must be at most 16000Mi"),
-  storage: z
-    .number()
-    .min(1, "Storage must be at least 1Gi")
-    .max(1000, "Storage must be at most 1000Gi"),
-  replicas: z
-    .number()
-    .min(1, "Replicas must be at least 1")
-    .max(10, "Replicas must be at most 10"),
-  terminationPolicy: z.enum(["Delete", "WipeOut"]),
+  cpu: z.enum(cpuOptions.map(val => val.toString()) as [string, ...string[]]),
+  memory: z.enum(memoryOptions.map(val => val.toString()) as [string, ...string[]]),
+  storage: z.enum(storageOptions.map(val => val.toString()) as [string, ...string[]]),
+  replicas: z.enum(replicasOptions.map(val => val.toString()) as [string, ...string[]]),
+  terminationPolicy: z.enum(terminationPolicyOptions),
 });
 
 type ClusterFormValues = z.infer<typeof clusterFormSchema>;
@@ -96,10 +111,10 @@ export default function ClusterCreateMessage({
       name: payload?.name || generateClusterName(),
       type: payload?.type || "postgresql",
       version: payload?.version || "",
-      cpu: payload?.cpu || 500,
-      memory: payload?.memory || 512,
-      storage: payload?.storage || 10,
-      replicas: payload?.replicas || 1,
+      cpu: (payload?.cpu || 500).toString(),
+      memory: (payload?.memory || 512).toString(),
+      storage: (payload?.storage || 10).toString(),
+      replicas: (payload?.replicas || 1).toString(),
       terminationPolicy: payload?.terminationPolicy || "Delete",
     }),
     [payloadKey]
@@ -123,16 +138,7 @@ export default function ClusterCreateMessage({
     });
   }, [payloadKey, form, defaultValues]);
 
-  const dbTypeOptions = [
-    { value: "postgresql", label: "PostgreSQL" },
-    { value: "mongodb", label: "MongoDB" },
-    { value: "apecloud-mysql", label: "MySQL" },
-    { value: "redis", label: "Redis" },
-    { value: "kafka", label: "Kafka" },
-    { value: "weaviate", label: "Weaviate" },
-    { value: "milvus", label: "Milvus" },
-    { value: "pulsar", label: "Pulsar" },
-  ];
+
 
   // Remove the hardcoded getVersionOptions function since we're now fetching dynamically
 
@@ -147,10 +153,10 @@ export default function ClusterCreateMessage({
         type: values.type as any,
         version: values.version,
         resource: {
-          cpu: `${values.cpu}m`,
-          memory: `${values.memory}Mi`,
-          storage: `${values.storage}Gi`,
-          replicas: values.replicas,
+          cpu: `${parseInt(values.cpu)}m`,
+          memory: `${parseInt(values.memory)}Mi`,
+          storage: `${parseInt(values.storage)}Gi`,
+          replicas: parseInt(values.replicas),
         },
       });
 
@@ -358,8 +364,8 @@ export default function ClusterCreateMessage({
                   <FormItem>
                     <FormLabel>CPU (m)</FormLabel>
                     <Select
-                      onValueChange={(value) => field.onChange(Number(value))}
-                      value={field.value.toString()}
+                      onValueChange={field.onChange}
+                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -367,7 +373,7 @@ export default function ClusterCreateMessage({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {[500, 1000, 2000, 4000, 6000, 8000].map((cpuValue) => (
+                        {cpuOptions.map((cpuValue) => (
                           <SelectItem
                             key={cpuValue}
                             value={cpuValue.toString()}
@@ -389,8 +395,8 @@ export default function ClusterCreateMessage({
                   <FormItem>
                     <FormLabel>Memory (Mi)</FormLabel>
                     <Select
-                      onValueChange={(value) => field.onChange(Number(value))}
-                      value={field.value.toString()}
+                      onValueChange={field.onChange}
+                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -398,16 +404,14 @@ export default function ClusterCreateMessage({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {[512, 1024, 2048, 4096, 8192, 16000].map(
-                          (memoryValue) => (
-                            <SelectItem
-                              key={memoryValue}
-                              value={memoryValue.toString()}
-                            >
-                              {memoryValue}Mi ({memoryValue / 1024}GB)
-                            </SelectItem>
-                          )
-                        )}
+                        {memoryOptions.map((memoryValue) => (
+                          <SelectItem
+                            key={memoryValue}
+                            value={memoryValue.toString()}
+                          >
+                            {memoryValue}Mi ({memoryValue / 1024}GB)
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -417,56 +421,77 @@ export default function ClusterCreateMessage({
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="storage"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Storage (Gi)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="1"
-                        step="1"
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                              <FormField
+                  control={form.control}
+                  name="storage"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Storage (Gi)</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Storage" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {storageOptions.map((storageValue) => (
+                            <SelectItem
+                              key={storageValue}
+                              value={storageValue.toString()}
+                            >
+                              {storageValue}Gi
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="replicas"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Replicas</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="1"
-                        max="10"
-                        step="1"
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                              <FormField
+                  control={form.control}
+                  name="replicas"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Replicas</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Replicas" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {replicasOptions.map((replicaValue) => (
+                            <SelectItem
+                              key={replicaValue}
+                              value={replicaValue.toString()}
+                            >
+                              {replicaValue}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
             </div>
 
             <div className="text-sm text-muted-foreground">
               <p>Resource configuration:</p>
               <p>
-                • CPU: {form.watch("cpu")}m ({form.watch("cpu") / 1000} cores)
+                • CPU: {form.watch("cpu")}m ({parseInt(form.watch("cpu")) / 1000} cores)
               </p>
               <p>
                 • Memory: {form.watch("memory")}Mi (
-                {form.watch("memory") / 1024}GB)
+                {parseInt(form.watch("memory")) / 1024}GB)
               </p>
               <p>• Storage: {form.watch("storage")}Gi</p>
               <p>• Replicas: {form.watch("replicas")}</p>

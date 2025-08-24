@@ -30,6 +30,11 @@ import {
   generateClusterMemoryOptions,
   generateClusterStorageOptions,
 } from "@/lib/sealos/resources/cluster/cluster-utils";
+import { jsonSchemaToActionParameters } from "@copilotkit/shared";
+import { zodToJsonSchema } from "zod-to-json-schema";
+import ClusterCreateMessage, {
+  clusterFormSchema,
+} from "@/components/chat/messages/system-messages.tsx/cluster/cluster-create-message";
 
 export const activateClusterActions = (
   k8sContext: K8sApiContext,
@@ -45,130 +50,54 @@ export const activateClusterActions = (
 };
 
 export const createClusterAction = (context: SealosApiContext) => {
-  const createCluster = useCreateClusterMutation(context);
-
   useCopilotAction({
     name: "createCluster",
-    description: "Create a new database cluster",
-    parameters: [
-      {
-        name: "dbType",
-        type: "string",
-        required: true,
-        description: "Database type (e.g., postgresql, mongodb, redis, kafka)",
-      },
-      {
-        name: "dbVersion",
-        type: "string",
-        required: true,
-        description: "Database version (e.g., 14.0, 6.0, 7.0)",
-      },
-      {
-        name: "dbName",
-        type: "string",
-        required: true,
-        description: "Database name",
-      },
-      {
-        name: "replicas",
-        type: "number",
-        enum: Array.from({ length: 10 }, (_, i) => i + 1),
-        required: false,
-        description: "Number of replicas (default: 1, max: 10)",
-      },
-      {
-        name: "cpu",
-        type: "string",
-        enum: generateClusterCpuOptions(),
-        required: false,
-        description: "CPU in millicores (default: 1000m, range: 500m to 8000m)",
-      },
-      {
-        name: "memory",
-        type: "string",
-        enum: generateClusterMemoryOptions(),
-        required: false,
-        description: "Memory (default: 1024Mi, range: 512Mi to 32Gi)",
-      },
-      {
-        name: "storage",
-        type: "string",
-        enum: generateClusterStorageOptions(),
-        required: false,
-        description: "Storage (default: 3Gi, range: 3Gi to 300Gi)",
-      },
-      {
-        name: "terminationPolicy",
-        type: "string",
-        required: false,
-        description:
-          "Termination policy: 'Delete' or 'WipeOut' (default: 'Delete')",
-      },
-    ],
+    description: "Create a new database cluster with specified configuration",
+    followUp: false,
+    parameters: jsonSchemaToActionParameters(
+      zodToJsonSchema(clusterFormSchema) as any
+    ),
     handler: ({
-      dbType,
-      dbVersion,
-      dbName,
-      replicas,
+      name,
+      type,
+      version,
       cpu,
       memory,
       storage,
+      replicas,
       terminationPolicy,
     }) => {
-      // Validate dbType against allowed values
-      const validDbTypes = [
-        "postgresql",
-        "mongodb",
-        "apecloud-mysql",
-        "redis",
-        "kafka",
-        "qdrant",
-        "nebula",
-        "weaviate",
-        "milvus",
-        "pulsar",
-        "clickhouse",
-      ] as const;
-
-      if (!validDbTypes.includes(dbType as any)) {
-        throw new Error(
-          `Invalid database type: ${dbType}. Valid types are: ${validDbTypes.join(
-            ", "
-          )}`
-        );
-      }
-
-      const createRequest: CreateClusterRequest = {
-        terminationPolicy:
-          (terminationPolicy as "Delete" | "WipeOut") || "Delete",
-        name: dbName,
-        type: dbType as any, // Cast to ClusterType
-        version: dbVersion,
-        resource: {
-          cpu: `${cpu ?? 1000}m`,
-          memory: `${memory ?? 1024}Mi`,
-          storage: `${storage ?? 3}Gi`,
-          replicas: replicas ?? 1,
-        },
-      };
-
-      return createCluster.mutateAsync(createRequest);
+      // This will be handled by the UI component
+      return `Creating cluster "${name}" with ${type} version ${version}`;
     },
-    render: ({ args, result, status }) => {
+    render: ({ status, args }) => {
+      // Always render the component, but pass undefined for incomplete parameters
       return (
-        <AITool key={"createCluster"}>
-          <AIToolHeader
-            description={"Create a new database cluster"}
-            name={"createCluster"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
+        <ClusterCreateMessage
+          payload={{
+            name: typeof args.name === "string" ? args.name : undefined,
+            type: typeof args.type === "string" ? args.type : undefined,
+            version:
+              typeof args.version === "string" ? args.version : undefined,
+            cpu: typeof args.cpu === "string" ? parseInt(args.cpu) : undefined,
+            memory:
+              typeof args.memory === "string"
+                ? parseInt(args.memory)
+                : undefined,
+            storage:
+              typeof args.storage === "string"
+                ? parseInt(args.storage)
+                : undefined,
+            replicas:
+              typeof args.replicas === "string"
+                ? parseInt(args.replicas)
+                : undefined,
+            terminationPolicy:
+              typeof args.terminationPolicy === "string"
+                ? (args.terminationPolicy as "Delete" | "WipeOut")
+                : undefined,
+          }}
+        />
       );
     },
   });
@@ -306,7 +235,8 @@ export const updateClusterAction = (context: SealosApiContext) => {
         type: "string",
         enum: generateClusterCpuOptions(),
         required: false,
-        description: "CPU in millicores (500m to 8000m, leave empty to keep current)",
+        description:
+          "CPU in millicores (500m to 8000m, leave empty to keep current)",
       },
       {
         name: "memory",
@@ -323,16 +253,10 @@ export const updateClusterAction = (context: SealosApiContext) => {
         description: "Storage (3Gi to 300Gi, leave empty to keep current)",
       },
     ],
-    handler: ({
-      clusterName,
-      replicas,
-      cpu,
-      memory,
-      storage,
-    }) => {
+    handler: ({ clusterName, replicas, cpu, memory, storage }) => {
       // Only include fields that are actually provided
       const resourceUpdates: any = {};
-      
+
       if (replicas !== undefined) {
         resourceUpdates.replicas = replicas;
       }
@@ -348,7 +272,9 @@ export const updateClusterAction = (context: SealosApiContext) => {
 
       // If no resource updates provided, throw error
       if (Object.keys(resourceUpdates).length === 0) {
-        throw new Error("At least one resource field must be specified for update");
+        throw new Error(
+          "At least one resource field must be specified for update"
+        );
       }
 
       const updateRequest = {
