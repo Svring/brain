@@ -2,13 +2,13 @@
 
 /**
  * LaunchpadUpdateMessage Component
- * 
+ *
  * A flexible component for updating launchpad configurations including image, resources, ports, and environment variables.
- * 
+ *
  * Usage Examples:
- * 
+ *
  * 1. Update existing launchpad with target:
- * <LaunchpadUpdateMessage 
+ * <LaunchpadUpdateMessage
  *   payload={{
  *     target: { type: "builtin", resourceType: "deployment", name: "my-app", namespace: "default" },
  *     resource: { cpu: 2000, memory: 4096, replicas: 3 },
@@ -17,22 +17,22 @@
  *     env: [{ name: "NODE_ENV", value: "production" }],
  *     launchpadName: "my-app",
  *     status: "Running"
- *   }} 
+ *   }}
  * />
- * 
+ *
  * 2. Create new configuration (no target):
- * <LaunchpadUpdateMessage 
+ * <LaunchpadUpdateMessage
  *   payload={{
  *     resource: { cpu: 1000, memory: 2048, replicas: 1 },
  *     image: "node:18",
  *     ports: [{ port: 3000, protocol: "TCP", exposesPublicDomain: true }],
  *     env: [{ name: "PORT", value: "3000" }],
  *     launchpadName: "New App"
- *   }} 
+ *   }}
  * />
- * 
+ *
  * 3. Update with streaming parameters:
- * <LaunchpadUpdateMessage 
+ * <LaunchpadUpdateMessage
  *   payload={{
  *     target: target,
  *     resource: { cpu: 4000, memory: 8192, replicas: 5 },
@@ -41,11 +41,11 @@
  *     env: [],
  *     launchpadName: "High-Performance App",
  *     status: "Running"
- *   }} 
+ *   }}
  * />
- * 
+ *
  * 4. Integration with Copilot Actions:
- * 
+ *
  * export const updateLaunchpadAction = (context: SealosApiContext) => {
  *   useCopilotAction({
  *     name: "updateLaunchpad",
@@ -65,7 +65,7 @@
  *       },
  *       {
  *         name: "memory",
- *         type: "number", 
+ *         type: "number",
  *         required: false,
  *         description: "Memory allocation in MB",
  *       },
@@ -96,20 +96,20 @@
  *     ],
  *     handler: ({ target, cpu, memory, replicas, image, ports, env }) => {
  *       return (
- *         <LaunchpadUpdateMessage 
+ *         <LaunchpadUpdateMessage
  *           payload={{
  *             target,
- *             resource: { 
- *               cpu: cpu || 2000, 
- *               memory: memory || 4096, 
- *               replicas: replicas || 1 
+ *             resource: {
+ *               cpu: cpu || 2000,
+ *               memory: memory || 4096,
+ *               replicas: replicas || 1
  *             },
  *             image: image || "nginx:latest",
  *             ports: ports || [],
  *             env: env || [],
  *             launchpadName: target.name,
  *             status: "Running"
- *           }} 
+ *           }}
  *         />
  *       );
  *     },
@@ -133,10 +133,20 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
 import { Switch } from "@/components/ui/switch";
-import { useUpdateLaunchpadMutation } from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-mutation";
-import { createSealosContext } from "@/lib/auth/auth-utils";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CheckCircle, Settings, Cpu, HardDrive, Network, Plus, X, Image as ImageIcon, Database } from "lucide-react";
+import {
+  CheckCircle,
+  Settings,
+  Cpu,
+  HardDrive,
+  Network,
+  Plus,
+  X,
+  Image as ImageIcon,
+  Database,
+} from "lucide-react";
 import type { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import type { LaunchpadPatchRequest } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
 
@@ -177,42 +187,47 @@ interface LaunchpadUpdateMessageProps {
   };
 }
 
-export default function LaunchpadUpdateMessage({ target, payload }: LaunchpadUpdateMessageProps) {
-  const [cpu, setCpu] = useState<number>(payload?.resource?.cpu || 2000);
-  const [memory, setMemory] = useState<number>(payload?.resource?.memory || 4096);
-  const [replicas, setReplicas] = useState<number>(payload?.resource?.replicas || 1);
-  const [image, setImage] = useState<string>(payload?.image || "nginx:latest");
-  const [ports, setPorts] = useState<LaunchpadPort[]>(payload?.ports || []);
-  const [env, setEnv] = useState<LaunchpadEnv[]>(payload?.env || []);
+export default function LaunchpadUpdateMessage({
+  target,
+  payload,
+}: LaunchpadUpdateMessageProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
 
-  const context = createSealosContext();
+  const { launchpad } = useTRPCClients();
   const launchpadName = payload?.launchpadName || target?.name || "Launchpad";
   const status = payload?.status || "Unknown";
 
-  const updateMutation = useUpdateLaunchpadMutation(context);
+  const updateMutation = useMutation(
+    launchpad.updateLaunchpad.mutationOptions()
+  );
 
-  // Update state when payload changes (for streaming parameters)
+  // Define default values, merging with payload
+  const defaultValues = {
+    cpu: payload?.resource?.cpu || 2000,
+    memory: payload?.resource?.memory || 4096,
+    replicas: payload?.resource?.replicas || 1,
+    image: payload?.image || "nginx:latest",
+    ports: payload?.ports || [],
+    env: payload?.env || [],
+  };
+
+  // Initialize state with default values
+  const [cpu, setCpu] = useState<number>(defaultValues.cpu);
+  const [memory, setMemory] = useState<number>(defaultValues.memory);
+  const [replicas, setReplicas] = useState<number>(defaultValues.replicas);
+  const [image, setImage] = useState<string>(defaultValues.image);
+  const [ports, setPorts] = useState<LaunchpadPort[]>(defaultValues.ports);
+  const [env, setEnv] = useState<LaunchpadEnv[]>(defaultValues.env);
+
+  // Reset state when payload changes
   useEffect(() => {
-    if (payload?.resource?.cpu !== undefined) {
-      setCpu(payload.resource.cpu);
-    }
-    if (payload?.resource?.memory !== undefined) {
-      setMemory(payload.resource.memory);
-    }
-    if (payload?.resource?.replicas !== undefined) {
-      setReplicas(payload.resource.replicas);
-    }
-    if (payload?.image !== undefined) {
-      setImage(payload.image);
-    }
-    if (payload?.ports !== undefined) {
-      setPorts(payload.ports);
-    }
-    if (payload?.env !== undefined) {
-      setEnv(payload.env);
-    }
+    setCpu(defaultValues.cpu);
+    setMemory(defaultValues.memory);
+    setReplicas(defaultValues.replicas);
+    setImage(defaultValues.image);
+    setPorts(defaultValues.ports);
+    setEnv(defaultValues.env);
   }, [payload]);
 
   const handleAddPort = () => {
@@ -228,7 +243,11 @@ export default function LaunchpadUpdateMessage({ target, payload }: LaunchpadUpd
     setPorts(ports.filter((_, i) => i !== index));
   };
 
-  const handleUpdatePort = (index: number, field: keyof LaunchpadPort, value: any) => {
+  const handleUpdatePort = (
+    index: number,
+    field: keyof LaunchpadPort,
+    value: any
+  ) => {
     const updatedPorts = [...ports];
     updatedPorts[index] = { ...updatedPorts[index], [field]: value };
     setPorts(updatedPorts);
@@ -246,7 +265,11 @@ export default function LaunchpadUpdateMessage({ target, payload }: LaunchpadUpd
     setEnv(env.filter((_, i) => i !== index));
   };
 
-  const handleUpdateEnv = (index: number, field: keyof LaunchpadEnv, value: any) => {
+  const handleUpdateEnv = (
+    index: number,
+    field: keyof LaunchpadEnv,
+    value: any
+  ) => {
     const updatedEnv = [...env];
     updatedEnv[index] = { ...updatedEnv[index], [field]: value };
     setEnv(updatedEnv);
@@ -264,7 +287,11 @@ export default function LaunchpadUpdateMessage({ target, payload }: LaunchpadUpd
       const patchRequest: LaunchpadPatchRequest = {};
 
       // Update resources
-      if (cpu !== payload?.resource?.cpu || memory !== payload?.resource?.memory || replicas !== payload?.resource?.replicas) {
+      if (
+        cpu !== payload?.resource?.cpu ||
+        memory !== payload?.resource?.memory ||
+        replicas !== payload?.resource?.replicas
+      ) {
         patchRequest.resource = {
           cpu,
           memory,
@@ -278,13 +305,16 @@ export default function LaunchpadUpdateMessage({ target, payload }: LaunchpadUpd
       }
 
       // Update environment variables
-      if (env.length > 0 && JSON.stringify(env) !== JSON.stringify(payload?.env)) {
+      if (
+        env.length > 0 &&
+        JSON.stringify(env) !== JSON.stringify(payload?.env)
+      ) {
         patchRequest.env = env;
       }
 
       await updateMutation.mutateAsync({
         name: target.name || "",
-        data: patchRequest,
+        request: patchRequest,
       });
 
       setIsCompleted(true);
@@ -314,11 +344,12 @@ export default function LaunchpadUpdateMessage({ target, payload }: LaunchpadUpd
                 {launchpadName}
               </div>
               <div className="text-sm text-green-700 dark:text-green-300">
-                CPU: {cpu}m • Memory: {memory}MB • Replicas: {replicas} • Ports: {ports.length} • Env: {env.length}
+                CPU: {cpu}m • Memory: {memory}MB • Replicas: {replicas} • Ports:{" "}
+                {ports.length} • Env: {env.length}
               </div>
             </div>
           </div>
-          
+
           <div className="text-sm text-muted-foreground">
             <p>Your launchpad configuration has been updated successfully.</p>
           </div>
@@ -410,7 +441,10 @@ export default function LaunchpadUpdateMessage({ target, payload }: LaunchpadUpd
                 </SelectTrigger>
                 <SelectContent>
                   {[512, 1024, 2048, 4096, 8192, 16000].map((memoryValue) => (
-                    <SelectItem key={memoryValue} value={memoryValue.toString()}>
+                    <SelectItem
+                      key={memoryValue}
+                      value={memoryValue.toString()}
+                    >
                       {memoryValue}MB ({memoryValue / 1024}GB)
                     </SelectItem>
                   ))}
@@ -429,7 +463,10 @@ export default function LaunchpadUpdateMessage({ target, payload }: LaunchpadUpd
                 </SelectTrigger>
                 <SelectContent>
                   {[1, 2, 3, 5, 10].map((replicaValue) => (
-                    <SelectItem key={replicaValue} value={replicaValue.toString()}>
+                    <SelectItem
+                      key={replicaValue}
+                      value={replicaValue.toString()}
+                    >
                       {replicaValue}
                     </SelectItem>
                   ))}
@@ -440,8 +477,12 @@ export default function LaunchpadUpdateMessage({ target, payload }: LaunchpadUpd
 
           <div className="text-sm text-muted-foreground">
             <p>Resource configuration:</p>
-            <p>• CPU: {cpu}m ({cpu / 1000} cores)</p>
-            <p>• Memory: {memory}MB ({memory / 1024}GB)</p>
+            <p>
+              • CPU: {cpu}m ({cpu / 1000} cores)
+            </p>
+            <p>
+              • Memory: {memory}MB ({memory / 1024}GB)
+            </p>
             <p>• Replicas: {replicas}</p>
           </div>
         </div>
@@ -473,14 +514,23 @@ export default function LaunchpadUpdateMessage({ target, payload }: LaunchpadUpd
           ) : (
             <div className="space-y-3">
               {ports.map((port, index) => (
-                <div key={index} className="flex items-center gap-3 p-3 border rounded-lg">
+                <div
+                  key={index}
+                  className="flex items-center gap-3 p-3 border rounded-lg"
+                >
                   <div className="flex-1 grid grid-cols-4 gap-2">
                     <div>
                       <Label className="text-xs">Port</Label>
                       <Input
                         type="number"
                         value={port.port}
-                        onChange={(e) => handleUpdatePort(index, "port", parseInt(e.target.value))}
+                        onChange={(e) =>
+                          handleUpdatePort(
+                            index,
+                            "port",
+                            parseInt(e.target.value)
+                          )
+                        }
                         className="h-8"
                       />
                     </div>
@@ -488,7 +538,13 @@ export default function LaunchpadUpdateMessage({ target, payload }: LaunchpadUpd
                       <Label className="text-xs">Protocol</Label>
                       <Select
                         value={port.protocol}
-                        onValueChange={(value) => handleUpdatePort(index, "protocol", value as "TCP" | "UDP" | "SCTP")}
+                        onValueChange={(value) =>
+                          handleUpdatePort(
+                            index,
+                            "protocol",
+                            value as "TCP" | "UDP" | "SCTP"
+                          )
+                        }
                       >
                         <SelectTrigger className="h-8">
                           <SelectValue />
@@ -504,7 +560,13 @@ export default function LaunchpadUpdateMessage({ target, payload }: LaunchpadUpd
                       <Label className="text-xs">App Protocol</Label>
                       <Select
                         value={port.appProtocol || ""}
-                        onValueChange={(value) => handleUpdatePort(index, "appProtocol", value || undefined)}
+                        onValueChange={(value) =>
+                          handleUpdatePort(
+                            index,
+                            "appProtocol",
+                            value || undefined
+                          )
+                        }
                       >
                         <SelectTrigger className="h-8">
                           <SelectValue placeholder="None" />
@@ -520,7 +582,13 @@ export default function LaunchpadUpdateMessage({ target, payload }: LaunchpadUpd
                     <div className="flex items-center gap-2">
                       <Switch
                         checked={port.exposesPublicDomain}
-                        onCheckedChange={(checked) => handleUpdatePort(index, "exposesPublicDomain", checked)}
+                        onCheckedChange={(checked) =>
+                          handleUpdatePort(
+                            index,
+                            "exposesPublicDomain",
+                            checked
+                          )
+                        }
                       />
                       <Label className="text-xs">Public Domain</Label>
                     </div>
@@ -546,7 +614,9 @@ export default function LaunchpadUpdateMessage({ target, payload }: LaunchpadUpd
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Database className="h-4 w-4" />
-              <Label className="text-base font-medium">Environment Variables</Label>
+              <Label className="text-base font-medium">
+                Environment Variables
+              </Label>
             </div>
             <Button
               variant="outline"
@@ -566,13 +636,18 @@ export default function LaunchpadUpdateMessage({ target, payload }: LaunchpadUpd
           ) : (
             <div className="space-y-3">
               {env.map((envVar, index) => (
-                <div key={index} className="flex items-center gap-3 p-3 border rounded-lg">
+                <div
+                  key={index}
+                  className="flex items-center gap-3 p-3 border rounded-lg"
+                >
                   <div className="flex-1 grid grid-cols-2 gap-2">
                     <div>
                       <Label className="text-xs">Name</Label>
                       <Input
                         value={envVar.name}
-                        onChange={(e) => handleUpdateEnv(index, "name", e.target.value)}
+                        onChange={(e) =>
+                          handleUpdateEnv(index, "name", e.target.value)
+                        }
                         placeholder="VARIABLE_NAME"
                         className="h-8"
                       />
@@ -581,7 +656,9 @@ export default function LaunchpadUpdateMessage({ target, payload }: LaunchpadUpd
                       <Label className="text-xs">Value</Label>
                       <Input
                         value={envVar.value || ""}
-                        onChange={(e) => handleUpdateEnv(index, "value", e.target.value)}
+                        onChange={(e) =>
+                          handleUpdateEnv(index, "value", e.target.value)
+                        }
                         placeholder="variable_value"
                         className="h-8"
                       />
@@ -609,9 +686,13 @@ export default function LaunchpadUpdateMessage({ target, payload }: LaunchpadUpd
           disabled={isUpdating || !target}
           className="w-full"
         >
-          {isUpdating ? "Updating..." : target ? "Update Launchpad" : "No Target Specified"}
+          {isUpdating
+            ? "Updating..."
+            : target
+            ? "Update Launchpad"
+            : "No Target Specified"}
         </Button>
-        
+
         {!target && (
           <div className="text-sm text-muted-foreground text-center">
             <p>Target is required to update launchpad configuration.</p>

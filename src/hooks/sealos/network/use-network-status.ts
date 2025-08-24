@@ -6,20 +6,28 @@ import {
   useFlowgraphState,
 } from "@/contexts/flowgraph/flowgraph-context";
 import { MarkerType } from "@xyflow/react";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import {
+  CustomResourceTarget,
+  BuiltinResourceTarget,
+} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface UseNetworkStatusProps {
-  parent: any;
+  target: CustomResourceTarget | BuiltinResourceTarget;
 }
 
-export const useNetworkStatus = ({ parent }: UseNetworkStatusProps) => {
+export const useNetworkStatus = ({ target }: UseNetworkStatusProps) => {
   const { devbox, launchpad } = useTRPCClients();
   const { edges } = useFlowgraphState();
   const { updateEdge } = useFlowgraphActions();
 
+  // Use resource status hook to get the resource data
+  const { resource } = useResourceStatus(target);
+
   // Memoize the network node ID to prevent unnecessary recalculations
   const networkNodeId = useMemo(
-    () => `network-${parent?.name}`,
-    [parent?.name]
+    () => `network-${resource?.name || target.name}`,
+    [resource?.name, target.name]
   );
 
   // Memoize connected edges to prevent infinite re-renders when edges array identity changes
@@ -29,19 +37,19 @@ export const useNetworkStatus = ({ parent }: UseNetworkStatusProps) => {
     );
   }, [edges, networkNodeId]);
 
-  // Determine which ready check to call based on parent kind
-  const isDevbox = parent?.kind?.toLowerCase() === "devbox";
+  // Determine which ready check to call based on target type and resource kind
+  const isDevbox = target.type === "custom" && target.resourceType === "devbox";
 
   // Call the appropriate ready check
   const { data: readyStatus } = useQuery({
     ...(isDevbox
       ? devbox.checkDevboxReady.queryOptions({
-          devboxName: parent?.name || "",
+          devboxName: resource?.name || target.name || "",
         })
       : launchpad.checkLaunchpadReady.queryOptions({
-          launchpadName: parent?.name || "",
+          launchpadName: resource?.name || target.name || "",
         })),
-    enabled: !!parent?.name,
+    enabled: !!(resource?.name || target.name),
   });
 
   // Derive a stable status key from response for effect dependency

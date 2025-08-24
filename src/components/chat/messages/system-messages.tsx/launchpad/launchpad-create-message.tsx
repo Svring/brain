@@ -29,8 +29,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { useCreateLaunchpadMutation } from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-mutation";
-import { createSealosContext } from "@/lib/auth/auth-utils";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useMutation } from "@tanstack/react-query";
 import { generateDeployName } from "@/lib/sealos/resources/deployment/deploy-utils";
 import { toast } from "sonner";
 import { CheckCircle, Rocket, ChevronDown } from "lucide-react";
@@ -95,94 +95,85 @@ interface DeploymentCreateMessageProps {
 export default function LaunchpadCreateMessage({
   payload,
 }: DeploymentCreateMessageProps) {
-  const [name, setName] = useState(payload?.name || generateDeployName());
-  const [image, setImage] = useState(payload?.image || "nginx");
-  const [command, setCommand] = useState(payload?.command || "");
-  const [args, setArgs] = useState(payload?.args || "");
-  const [cpu, setCpu] = useState<number>(payload?.cpu || 500);
-  const [memory, setMemory] = useState<number>(payload?.memory || 512);
-  const [replicas, setReplicas] = useState<number>(payload?.replicas || 1);
-  const [ports, setPorts] = useState(payload?.ports || "80");
-  const [portProtocol, setPortProtocol] = useState<"TCP" | "UDP" | "SCTP">(
-    payload?.portProtocol || "TCP"
-  );
-  const [appProtocol, setAppProtocol] = useState<"HTTP" | "GRPC" | "WS">(
-    payload?.appProtocol || "HTTP"
-  );
-  const [exposesPublicDomain, setExposesPublicDomain] = useState<boolean>(
-    payload?.exposesPublicDomain ?? true
-  );
-  const [envVars, setEnvVars] = useState(payload?.envVars || "");
-  const [storageName, setStorageName] = useState(payload?.storageName || "");
-  const [storagePath, setStoragePath] = useState(payload?.storagePath || "");
-  const [storageSize, setStorageSize] = useState(payload?.storageSize || "1Gi");
-  const [configMapPath, setConfigMapPath] = useState(
-    payload?.configMapPath || ""
-  );
-  const [configMapValue, setConfigMapValue] = useState(
-    payload?.configMapValue || ""
-  );
   const [isCreating, setIsCreating] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [createdDeploymentName, setCreatedDeploymentName] =
     useState<string>("");
 
-  const context = createSealosContext();
-  const createLaunchpadMutation = useCreateLaunchpadMutation(context);
+  const { launchpad } = useTRPCClients();
+  const createLaunchpadMutation = useMutation(
+    launchpad.createLaunchpad.mutationOptions()
+  );
 
-  // Update state when payload changes (for streaming parameters)
+  // Define default values, merging with payload
+  const defaultValues = {
+    name: payload?.name || generateDeployName(),
+    image: payload?.image || "nginx",
+    command: payload?.command || "",
+    args: payload?.args || "",
+    cpu: payload?.cpu || 500,
+    memory: payload?.memory || 512,
+    replicas: payload?.replicas || 1,
+    ports: payload?.ports || "80",
+    portProtocol: payload?.portProtocol || ("TCP" as "TCP" | "UDP" | "SCTP"),
+    appProtocol: payload?.appProtocol || ("HTTP" as "HTTP" | "GRPC" | "WS"),
+    exposesPublicDomain: payload?.exposesPublicDomain ?? true,
+    envVars: payload?.envVars || "",
+    storageName: payload?.storageName || "",
+    storagePath: payload?.storagePath || "",
+    storageSize: payload?.storageSize || "1Gi",
+    configMapPath: payload?.configMapPath || "",
+    configMapValue: payload?.configMapValue || "",
+  };
+
+  // Initialize state with default values
+  const [name, setName] = useState(defaultValues.name);
+  const [image, setImage] = useState(defaultValues.image);
+  const [command, setCommand] = useState(defaultValues.command);
+  const [args, setArgs] = useState(defaultValues.args);
+  const [cpu, setCpu] = useState<number>(defaultValues.cpu);
+  const [memory, setMemory] = useState<number>(defaultValues.memory);
+  const [replicas, setReplicas] = useState<number>(defaultValues.replicas);
+  const [ports, setPorts] = useState(defaultValues.ports);
+  const [portProtocol, setPortProtocol] = useState<"TCP" | "UDP" | "SCTP">(
+    defaultValues.portProtocol
+  );
+  const [appProtocol, setAppProtocol] = useState<"HTTP" | "GRPC" | "WS">(
+    defaultValues.appProtocol
+  );
+  const [exposesPublicDomain, setExposesPublicDomain] = useState<boolean>(
+    defaultValues.exposesPublicDomain
+  );
+  const [envVars, setEnvVars] = useState(defaultValues.envVars);
+  const [storageName, setStorageName] = useState(defaultValues.storageName);
+  const [storagePath, setStoragePath] = useState(defaultValues.storagePath);
+  const [storageSize, setStorageSize] = useState(defaultValues.storageSize);
+  const [configMapPath, setConfigMapPath] = useState(
+    defaultValues.configMapPath
+  );
+  const [configMapValue, setConfigMapValue] = useState(
+    defaultValues.configMapValue
+  );
+
+  // Reset state when payload changes
   useEffect(() => {
-    if (payload?.name !== undefined) {
-      setName(payload.name);
-    }
-    if (payload?.image !== undefined) {
-      setImage(payload.image);
-    }
-    if (payload?.command !== undefined) {
-      setCommand(payload.command);
-    }
-    if (payload?.args !== undefined) {
-      setArgs(payload.args);
-    }
-    if (payload?.cpu !== undefined) {
-      setCpu(payload.cpu);
-    }
-    if (payload?.memory !== undefined) {
-      setMemory(payload.memory);
-    }
-    if (payload?.replicas !== undefined) {
-      setReplicas(payload.replicas);
-    }
-    if (payload?.ports !== undefined) {
-      setPorts(payload.ports);
-    }
-    if (payload?.portProtocol !== undefined) {
-      setPortProtocol(payload.portProtocol);
-    }
-    if (payload?.appProtocol !== undefined) {
-      setAppProtocol(payload.appProtocol);
-    }
-    if (payload?.exposesPublicDomain !== undefined) {
-      setExposesPublicDomain(payload.exposesPublicDomain);
-    }
-    if (payload?.envVars !== undefined) {
-      setEnvVars(payload.envVars);
-    }
-    if (payload?.storageName !== undefined) {
-      setStorageName(payload.storageName);
-    }
-    if (payload?.storagePath !== undefined) {
-      setStoragePath(payload.storagePath);
-    }
-    if (payload?.storageSize !== undefined) {
-      setStorageSize(payload.storageSize);
-    }
-    if (payload?.configMapPath !== undefined) {
-      setConfigMapPath(payload.configMapPath);
-    }
-    if (payload?.configMapValue !== undefined) {
-      setConfigMapValue(payload.configMapValue);
-    }
+    setName(defaultValues.name);
+    setImage(defaultValues.image);
+    setCommand(defaultValues.command);
+    setArgs(defaultValues.args);
+    setCpu(defaultValues.cpu);
+    setMemory(defaultValues.memory);
+    setReplicas(defaultValues.replicas);
+    setPorts(defaultValues.ports);
+    setPortProtocol(defaultValues.portProtocol);
+    setAppProtocol(defaultValues.appProtocol);
+    setExposesPublicDomain(defaultValues.exposesPublicDomain);
+    setEnvVars(defaultValues.envVars);
+    setStorageName(defaultValues.storageName);
+    setStoragePath(defaultValues.storagePath);
+    setStorageSize(defaultValues.storageSize);
+    setConfigMapPath(defaultValues.configMapPath);
+    setConfigMapValue(defaultValues.configMapValue);
   }, [payload]);
 
   const handleCreate = async () => {
@@ -242,21 +233,23 @@ export default function LaunchpadCreateMessage({
         : [];
 
       await createLaunchpadMutation.mutateAsync({
-        name: deploymentName,
-        image: image.trim(),
-        command: command.trim(),
-        args: args.trim(),
-        resource: {
-          replicas,
-          cpu,
-          memory,
+        request: {
+          name: deploymentName,
+          image: image.trim(),
+          command: command.trim(),
+          args: args.trim(),
+          resource: {
+            replicas,
+            cpu,
+            memory,
+          },
+          ports: portArray,
+          env: envArray,
+          hpa: null,
+          imageRegistry: null,
+          storage: storageArray,
+          configMap: configMapArray,
         },
-        ports: portArray,
-        env: envArray,
-        hpa: null,
-        imageRegistry: null,
-        storage: storageArray,
-        configMap: configMapArray,
       });
 
       // Set completion state
@@ -313,7 +306,7 @@ export default function LaunchpadCreateMessage({
         {/* Basic Configuration - Always Visible */}
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="deployment-name">Application Name</Label>
+            <FormLabel htmlFor="deployment-name">Application Name</FormLabel>
             <Input
               id="deployment-name"
               placeholder="Enter application name"
@@ -323,7 +316,7 @@ export default function LaunchpadCreateMessage({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="image">Container Image</Label>
+            <FormLabel htmlFor="image">Container Image</FormLabel>
             <Input
               id="image"
               placeholder="e.g., nginx:latest, node:18-alpine"
@@ -334,7 +327,7 @@ export default function LaunchpadCreateMessage({
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="cpu">CPU (m)</Label>
+              <FormLabel htmlFor="cpu">CPU (m)</FormLabel>
               <Select
                 value={cpu.toString()}
                 onValueChange={(value) => setCpu(Number(value))}
@@ -353,7 +346,7 @@ export default function LaunchpadCreateMessage({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="memory">Memory (Mi)</Label>
+              <FormLabel htmlFor="memory">Memory (Mi)</FormLabel>
               <Select
                 value={memory.toString()}
                 onValueChange={(value) => setMemory(Number(value))}
@@ -375,7 +368,7 @@ export default function LaunchpadCreateMessage({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="replicas">Replicas</Label>
+              <FormLabel htmlFor="replicas">Replicas</FormLabel>
               <Input
                 id="replicas"
                 type="number"
@@ -401,7 +394,7 @@ export default function LaunchpadCreateMessage({
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4 space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="command">Command (optional)</Label>
+                <FormLabel htmlFor="command">Command (optional)</FormLabel>
                 <Input
                   id="command"
                   placeholder="e.g., npm start"
@@ -411,7 +404,7 @@ export default function LaunchpadCreateMessage({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="args">Arguments (optional)</Label>
+                <FormLabel htmlFor="args">Arguments (optional)</FormLabel>
                 <Input
                   id="args"
                   placeholder="e.g., --port 3000"
@@ -432,7 +425,7 @@ export default function LaunchpadCreateMessage({
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4 space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="ports">Ports (comma-separated)</Label>
+                <FormLabel htmlFor="ports">Ports (comma-separated)</FormLabel>
                 <Input
                   id="ports"
                   placeholder="e.g., 80, 3000, 8080"
@@ -443,7 +436,7 @@ export default function LaunchpadCreateMessage({
 
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="port-protocol">Protocol</Label>
+                  <FormLabel htmlFor="port-protocol">Protocol</FormLabel>
                   <Select
                     value={portProtocol}
                     onValueChange={(value: "TCP" | "UDP" | "SCTP") =>
@@ -462,7 +455,7 @@ export default function LaunchpadCreateMessage({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="app-protocol">App Protocol</Label>
+                  <FormLabel htmlFor="app-protocol">App Protocol</FormLabel>
                   <Select
                     value={appProtocol}
                     onValueChange={(value: "HTTP" | "GRPC" | "WS") =>
@@ -481,7 +474,7 @@ export default function LaunchpadCreateMessage({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="public-domain">Public Domain</Label>
+                  <FormLabel htmlFor="public-domain">Public Domain</FormLabel>
                   <Select
                     value={exposesPublicDomain.toString()}
                     onValueChange={(value) =>
@@ -513,9 +506,9 @@ export default function LaunchpadCreateMessage({
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4 space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="env-vars">
+                <FormLabel htmlFor="env-vars">
                   Environment Variables (one per line, KEY=VALUE)
-                </Label>
+                </FormLabel>
                 <Textarea
                   id="env-vars"
                   placeholder="NODE_ENV=production&#10;DATABASE_URL=postgresql://..."
@@ -526,7 +519,7 @@ export default function LaunchpadCreateMessage({
               </div>
 
               <div className="space-y-2">
-                <Label>ConfigMap (optional)</Label>
+                <FormLabel>ConfigMap (optional)</FormLabel>
                 <div className="grid grid-cols-2 gap-2">
                   <Input
                     placeholder="Config path"
@@ -542,7 +535,7 @@ export default function LaunchpadCreateMessage({
               </div>
 
               <div className="space-y-2">
-                <Label>Storage (optional)</Label>
+                <FormLabel>Storage (optional)</FormLabel>
                 <div className="grid grid-cols-3 gap-2">
                   <Input
                     placeholder="Storage name"

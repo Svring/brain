@@ -8,31 +8,75 @@ import type { DevboxPort } from "@/lib/sealos/resources/devbox/devbox-schemas/de
 import { useNetworkStatus } from "@/hooks/sealos/network/use-network-status";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-
-interface NetworkResource {
-  ports: DevboxPort[];
-  [key: string]: any;
-}
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import {
+  CustomResourceTarget,
+  BuiltinResourceTarget,
+} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 export default function NetworkNode({
   data,
 }: {
   data: {
-    resource: NetworkResource;
-    parent: any;
+    target: CustomResourceTarget | BuiltinResourceTarget;
   };
 }) {
-  const { resource, parent } = data;
+  const { target } = data;
 
-  const { readyStatus, getBackgroundColor } = useNetworkStatus({ parent });
-  const { sendSystemMessage: emitMessage } = useAppendSystemMessageMutation();
+  // Use the resource status hook to get the resource data
+  const { resource, isLoading, error } = useResourceStatus(target);
+
+  // Extract ports from the fetched resource - handle different resource types
+  const ports = (() => {
+    if (!resource) return [];
+
+    // Handle different resource types that might have ports
+    if ("ports" in resource && Array.isArray(resource.ports)) {
+      return resource.ports;
+    }
+
+    // For builtin resources, check if they have ports in a different structure
+    if (target.type === "builtin" && resource && typeof resource === "object") {
+      // Try to find ports in various possible locations
+      const possiblePorts =
+        (resource as any).ports || (resource as any).spec?.ports || [];
+      return Array.isArray(possiblePorts) ? possiblePorts : [];
+    }
+
+    return [];
+  })();
+
+  const { readyStatus, getBackgroundColor } = useNetworkStatus({ target });
+  const { appendSystemMessage } = useAppendSystemMessageMutation();
 
   const handleNodeClick = () => {
-    emitMessage({
-      type: "info.networkInfo",
-      payload: parent,
-    });
+    appendSystemMessage("universal.network", target);
   };
+
+  // Show loading state if resource is still loading
+  if (isLoading) {
+    return (
+      <BaseNode nodeData={data} className={cn("h-14 p-2", "bg-muted")}>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-sm text-muted-foreground">Loading...</div>
+        </div>
+      </BaseNode>
+    );
+  }
+
+  // Show error state if resource failed to load
+  if (error || !resource) {
+    return (
+      <BaseNode
+        nodeData={data}
+        className={cn("h-14 p-2", "bg-status-error/20")}
+      >
+        <div className="flex items-center justify-center h-full">
+          <div className="text-sm text-red-500">Error loading resource</div>
+        </div>
+      </BaseNode>
+    );
+  }
 
   // console.log("readyStatus", readyStatus);
 
@@ -44,9 +88,9 @@ export default function NetworkNode({
       >
         {/* Single Port Display */}
         <div className="flex items-center justify-center h-full">
-          {resource.ports?.[0] &&
+          {ports.length > 0 ? (
             (() => {
-              const port = resource.ports[0];
+              const port = ports[0];
               const hasPublicAddress = !!port.publicAddress;
               const address = port.publicAddress || port.privateAddress;
 
@@ -59,14 +103,7 @@ export default function NetworkNode({
               const handleIconClick = (e: React.MouseEvent) => {
                 e.stopPropagation();
                 if (isNetworkNotReady) {
-                  const target = convertResourceObjectToTarget({
-                    kind: parent.kind,
-                    name: parent.name,
-                  });
-                  emitMessage({
-                    type: "diagnose.network",
-                    payload: target,
-                  });
+                  appendSystemMessage("universal.diagnoseNetwork", target);
                 }
               };
 
@@ -110,7 +147,13 @@ export default function NetworkNode({
                   </span>
                 </div>
               );
-            })()}
+            })()
+          ) : (
+            <div className="flex items-center justify-center gap-2 text-sm w-full">
+              <Globe className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+              <span className="text-muted-foreground">No ports available</span>
+            </div>
+          )}
         </div>
       </div>
     </BaseNode>
@@ -119,7 +162,7 @@ export default function NetworkNode({
   return (
     <NodeStack
       mainCard={mainCard}
-      data={resource.ports.slice(1) || []}
+      data={ports.length > 1 ? ports.slice(1) : []}
       height="14"
       backgroundColor={getBackgroundColor()}
     />

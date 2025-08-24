@@ -175,39 +175,27 @@ export default function DevboxUpdateMessage({
 
   const updateMutation = useStrategicMergePatchResourceMutation(context);
 
-  // Initialize form with default values
+  // Define default values, merging with payload
+  const defaultValues: DevboxUpdateFormValues = {
+    cpu: payload?.resource?.cpu || 2000,
+    memory: payload?.resource?.memory || 4096,
+    ports:
+      payload?.ports?.map((port) => ({
+        number: port.number,
+        name: port.name,
+        protocol: (port.protocol as "TCP" | "UDP") || "TCP",
+      })) || [],
+  };
+
+  // Initialize form
   const form = useForm<DevboxUpdateFormValues>({
     resolver: zodResolver(devboxUpdateFormSchema),
-    defaultValues: {
-      cpu: payload?.resource?.cpu || 2000,
-      memory: payload?.resource?.memory || 4096,
-      ports:
-        payload?.ports?.map((port) => ({
-          number: port.number,
-          name: port.name,
-          protocol: (port.protocol as "TCP" | "UDP") || "TCP",
-        })) || [],
-    },
+    defaultValues,
   });
 
-  // Update form values when payload changes (for streaming parameters)
+  // Reset form when payload changes
   useEffect(() => {
-    if (payload?.resource?.cpu !== undefined) {
-      form.setValue("cpu", payload.resource.cpu);
-    }
-    if (payload?.resource?.memory !== undefined) {
-      form.setValue("memory", payload.resource.memory);
-    }
-    if (payload?.ports !== undefined) {
-      form.setValue(
-        "ports",
-        payload.ports.map((port) => ({
-          number: port.number,
-          name: port.name,
-          protocol: (port.protocol as "TCP" | "UDP") || "TCP",
-        }))
-      );
-    }
+    form.reset(defaultValues);
   }, [payload, form]);
 
   const handleAddPort = () => {

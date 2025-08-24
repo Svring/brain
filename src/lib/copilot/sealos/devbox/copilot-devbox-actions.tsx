@@ -28,7 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Check, X, Hammer } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
-import { DevboxCreateMessage } from "@/components/chat/messages/system-messages.tsx/manage/devbox-create-message";
+import DevboxCreateMessage from "@/components/chat/messages/system-messages.tsx/devbox/devbox-create-message";
 
 export const activateDevboxActions = (
   k8sContext: K8sApiContext,

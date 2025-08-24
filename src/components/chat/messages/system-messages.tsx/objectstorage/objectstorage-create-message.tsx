@@ -14,11 +14,17 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-import { useCreateObjectStorageAction } from "@/lib/sealos/resources/objectstorage/objectstorage-action/objectstorage-action";
-import { createObjectStorageContext } from "@/lib/sealos/resources/objectstorage/objectstorage-utils";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 // Form schema with Zod validation
@@ -27,7 +33,10 @@ const objectStorageFormSchema = z.object({
     .string()
     .min(1, "Bucket name is required")
     .max(63, "Bucket name must be less than 63 characters")
-    .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$/, "Bucket name must contain only lowercase letters, numbers, and hyphens"),
+    .regex(
+      /^[a-z0-9][a-z0-9-]*[a-z0-9]$/,
+      "Bucket name must contain only lowercase letters, numbers, and hyphens"
+    ),
   policy: z.enum(["private", "publicRead", "publicReadWrite"]),
 });
 
@@ -42,13 +51,15 @@ interface ObjectStorageCreateMessageProps {
   payload: ObjectStorageCreatePayload;
 }
 
-export const ObjectStorageCreateMessage: React.FC<ObjectStorageCreateMessageProps> = ({
-  payload,
-}) => {
+export const ObjectStorageCreateMessage: React.FC<
+  ObjectStorageCreateMessageProps
+> = ({ payload }) => {
   const [isCreating, setIsCreating] = useState(false);
 
-  const objectStorageContext = createObjectStorageContext();
-  const createObjectStorage = useCreateObjectStorageAction(objectStorageContext);
+  const { objectstorage } = useTRPCClients();
+  const createObjectStorageMutation = useMutation(
+    objectstorage.createObjectStorage.mutationOptions()
+  );
 
   // Initialize form with default values
   const form = useForm<ObjectStorageFormValues>({
@@ -62,7 +73,7 @@ export const ObjectStorageCreateMessage: React.FC<ObjectStorageCreateMessageProp
   const onSubmit = async (values: ObjectStorageFormValues) => {
     setIsCreating(true);
     try {
-      await createObjectStorage.mutateAsync({
+      await createObjectStorageMutation.mutateAsync({
         bucketName: values.name.trim(),
         bucketPolicy: values.policy,
       });
@@ -100,7 +111,7 @@ export const ObjectStorageCreateMessage: React.FC<ObjectStorageCreateMessageProp
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="policy"
@@ -120,7 +131,9 @@ export const ObjectStorageCreateMessage: React.FC<ObjectStorageCreateMessageProp
                     <SelectContent>
                       <SelectItem value="private">Private</SelectItem>
                       <SelectItem value="publicRead">Public Read</SelectItem>
-                      <SelectItem value="publicReadWrite">Public Read/Write</SelectItem>
+                      <SelectItem value="publicReadWrite">
+                        Public Read/Write
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -129,11 +142,7 @@ export const ObjectStorageCreateMessage: React.FC<ObjectStorageCreateMessageProp
             />
 
             <div className="flex gap-3 pt-4">
-              <Button 
-                type="submit"
-                className="flex-1"
-                disabled={isCreating}
-              >
+              <Button type="submit" className="flex-1" disabled={isCreating}>
                 {isCreating ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

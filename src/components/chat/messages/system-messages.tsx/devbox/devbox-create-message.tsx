@@ -22,8 +22,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useCreateDevboxMutation } from "@/lib/sealos/resources/devbox/devbox-method/devbox-mutation";
-import { createSealosContext } from "@/lib/auth/auth-utils";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useMutation } from "@tanstack/react-query";
 import { generateDevboxName } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 import { toast } from "sonner";
 import { CheckCircle, Package } from "lucide-react";
@@ -63,34 +63,26 @@ export default function DevboxCreateMessage({
   const [isCompleted, setIsCompleted] = useState(false);
   const [createdDevboxName, setCreatedDevboxName] = useState<string>("");
 
-  const context = createSealosContext();
-  const createDevboxMutation = useCreateDevboxMutation(context);
+  const { devbox } = useTRPCClients();
+  const createDevboxMutation = useMutation(devbox.createDevbox.mutationOptions());
 
-  // Initialize form with default values
+  // Define default values, merging with payload
+  const defaultValues: DevboxFormValues = {
+    name: payload?.name || generateDevboxName(),
+    runtimeName: payload?.runtimeName || "Node.js",
+    cpu: payload?.cpu || 500,
+    memory: payload?.memory || 512,
+  };
+
+  // Initialize form
   const form = useForm<DevboxFormValues>({
     resolver: zodResolver(devboxFormSchema),
-    defaultValues: {
-      name: payload?.name || generateDevboxName(),
-      runtimeName: payload?.runtimeName || "Node.js",
-      cpu: payload?.cpu || 500,
-      memory: payload?.memory || 512,
-    },
+    defaultValues,
   });
 
-  // Update form values when payload changes (for streaming parameters)
+  // Reset form when payload changes
   useEffect(() => {
-    if (payload?.name !== undefined) {
-      form.setValue("name", payload.name);
-    }
-    if (payload?.runtimeName !== undefined) {
-      form.setValue("runtimeName", payload.runtimeName);
-    }
-    if (payload?.cpu !== undefined) {
-      form.setValue("cpu", payload.cpu);
-    }
-    if (payload?.memory !== undefined) {
-      form.setValue("memory", payload.memory);
-    }
+    form.reset(defaultValues);
   }, [payload, form]);
 
   const runtimeOptions = [

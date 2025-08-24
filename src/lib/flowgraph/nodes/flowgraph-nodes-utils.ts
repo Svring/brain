@@ -1,5 +1,6 @@
 import { Edge, MarkerType, Node } from "@xyflow/react";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
+import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 interface ResourceObject {
   name: string;
@@ -84,7 +85,7 @@ export const convertResourceToNodes = (
 };
 
 /**
- * Convert ports to network nodes and edges for a given resource.
+ * Convert resource to network nodes and edges for a given resource.
  *
  * @param resourceData Data of the parent resource containing ports
  * @param resourceName Name of the parent resource
@@ -103,19 +104,30 @@ export const convertResourceToNetworkNodes = (
   const newNodes: Node<any>[] = [];
   const newEdges: Edge[] = [];
 
+  // Check if the resource has ports or if it's a resource type that typically has network connectivity
   const ports = resourceData.ports;
-  if (!ports || ports.length === 0) return { newNodes, newEdges };
+  const hasNetworkConnectivity = ports && ports.length > 0;
+
+  // For resources without explicit ports, we'll still create a network node
+  // as the useResourceStatus hook will fetch the latest data and extract ports
+  if (!hasNetworkConnectivity && !resourceData.spec?.ports) {
+    // Only skip if we're certain there are no ports
+    return { newNodes, newEdges };
+  }
 
   const networkNodeId = `network-${resourceName}`;
   const resourceNodeId = `${resourceKind.toLowerCase()}-${resourceName}`;
   const edgeId = `${resourceKind.toLowerCase()}-${resourceName}-to-${networkNodeId}`;
 
+  // Create target for the parent resource
+  const target = convertResourceObjectToTarget({
+    kind: resourceKind,
+    name: resourceName,
+  });
+
   // Node data shape expected by NetworkNode component
   const networkData = {
-    resource: {
-      ports: ports,
-    },
-    parent: resourceData,
+    target,
   };
 
   // Append network node if missing

@@ -12,7 +12,14 @@ import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/re
 import {
   startCluster,
   pauseCluster,
+  createCluster,
+  getClusterVersions,
 } from "@/lib/sealos/resources/cluster/cluster-api/cluster-open-api";
+import {
+  CreateClusterRequestSchema,
+  CreateClusterResponseSchema,
+} from "@/lib/sealos/resources/cluster/cluster-api/cluster-open-api-schemas";
+import { runParallelAction } from "next-server-actions-parallel";
 
 const t = initTRPC.context<ClusterContext>().create();
 
@@ -46,6 +53,10 @@ export const clusterRouter = t.router({
     .query(async ({ input, ctx }) => {
       return await getClusterLogs(ctx, ctx, input.target);
     }),
+
+  getClusterVersions: t.procedure.query(async ({ ctx }) => {
+    return await runParallelAction(getClusterVersions(ctx));
+  }),
 
   getClusterMonitorData: t.procedure
     .input(
@@ -98,6 +109,13 @@ export const clusterRouter = t.router({
       // console.log("result", JSON.stringify(result, null, 2));
 
       return result;
+    }),
+
+  createCluster: t.procedure
+    .input(CreateClusterRequestSchema)
+    .output(CreateClusterResponseSchema)
+    .mutation(async ({ input, ctx }) => {
+      return await runParallelAction(createCluster(input, ctx));
     }),
 
   startCluster: t.procedure

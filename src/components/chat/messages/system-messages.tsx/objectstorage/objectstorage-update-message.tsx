@@ -14,7 +14,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
@@ -27,7 +33,9 @@ const objectStorageUpdateFormSchema = z.object({
   policy: z.enum(["private", "publicRead", "publicReadWrite"]),
 });
 
-type ObjectStorageUpdateFormValues = z.infer<typeof objectStorageUpdateFormSchema>;
+type ObjectStorageUpdateFormValues = z.infer<
+  typeof objectStorageUpdateFormSchema
+>;
 
 interface ObjectStorageUpdatePayload {
   policy?: "private" | "publicRead" | "publicReadWrite";
@@ -38,10 +46,9 @@ interface ObjectStorageUpdateMessageProps {
   payload: ObjectStorageUpdatePayload;
 }
 
-export const ObjectStorageUpdateMessage: React.FC<ObjectStorageUpdateMessageProps> = ({
-  target,
-  payload,
-}) => {
+export const ObjectStorageUpdateMessage: React.FC<
+  ObjectStorageUpdateMessageProps
+> = ({ target, payload }) => {
   const { objectstorage } = useTRPCClients();
 
   const { data: objectstorageObject, isLoading } = useQuery(
@@ -106,7 +113,9 @@ export const ObjectStorageUpdateMessage: React.FC<ObjectStorageUpdateMessageProp
                 <div className="space-y-2">
                   <FormLabel>Current Policy</FormLabel>
                   <div className="flex items-center gap-2">
-                    <Badge variant={getPolicyBadgeVariant(form.watch("policy"))}>
+                    <Badge
+                      variant={getPolicyBadgeVariant(form.watch("policy"))}
+                    >
                       {getPolicyDisplayName(form.watch("policy"))}
                     </Badge>
                   </div>
@@ -129,8 +138,12 @@ export const ObjectStorageUpdateMessage: React.FC<ObjectStorageUpdateMessageProp
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="private">Private</SelectItem>
-                          <SelectItem value="publicRead">Public Read</SelectItem>
-                          <SelectItem value="publicReadWrite">Public Read/Write</SelectItem>
+                          <SelectItem value="publicRead">
+                            Public Read
+                          </SelectItem>
+                          <SelectItem value="publicReadWrite">
+                            Public Read/Write
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -143,17 +156,22 @@ export const ObjectStorageUpdateMessage: React.FC<ObjectStorageUpdateMessageProp
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
-                Object storage bucket policies can be configured here. Note that policy updates may require 
-                additional API support. The current selection reflects the desired policy configuration.
+                Object storage bucket policies can be configured here. Note that
+                policy updates may require additional API support. The current
+                selection reflects the desired policy configuration.
               </AlertDescription>
             </Alert>
 
             {objectstorageObject && (
               <div className="space-y-2">
-                <Label>Bucket Details</Label>
+                <FormLabel>Bucket Details</FormLabel>
                 <div className="text-sm space-y-1">
-                  <div><strong>Name:</strong> {target.name}</div>
-                  <div><strong>Kind:</strong> {target.plural}</div>
+                  <div>
+                    <strong>Name:</strong> {target.name}
+                  </div>
+                  <div>
+                    <strong>Kind:</strong> {target.plural}
+                  </div>
                 </div>
               </div>
             )}

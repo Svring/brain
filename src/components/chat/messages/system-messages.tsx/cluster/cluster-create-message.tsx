@@ -22,10 +22,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useCreateClusterMutation } from "@/lib/sealos/resources/cluster/cluster-method/cluster-mutation";
-import { createSealosContext } from "@/lib/auth/auth-utils";
-import { useQuery } from "@tanstack/react-query";
-import { getClusterVersionsOptions } from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { generateClusterName } from "@/lib/sealos/resources/cluster/cluster-utils";
 import { toast } from "sonner";
 import { CheckCircle, Database } from "lucide-react";
@@ -72,61 +70,51 @@ interface ClusterCreateMessageProps {
   };
 }
 
-export default function ClusterCreateMessage({ payload }: ClusterCreateMessageProps) {
+export default function ClusterCreateMessage({
+  payload,
+}: ClusterCreateMessageProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [createdClusterName, setCreatedClusterName] = useState<string>("");
 
-  const context = createSealosContext();
-  const createClusterMutation = useCreateClusterMutation(context);
-  
-  // Fetch cluster versions when a type is selected
-  const { data: clusterVersions, isLoading: clusterVersionsLoading } = useQuery(
-    getClusterVersionsOptions(context)
+  const { cluster } = useTRPCClients();
+  const createClusterMutation = useMutation(
+    cluster.createCluster.mutationOptions()
   );
 
-  // Initialize form with default values
+  // Fetch cluster versions using TRPC router
+  const { data: clusterVersions, isLoading: clusterVersionsLoading } = useQuery(
+    cluster.getClusterVersions.queryOptions()
+  );
+
+  // Define default values, merging with payload
+  const defaultValues: ClusterFormValues = {
+    name: payload?.name || generateClusterName(),
+    type: payload?.type || "postgresql",
+    version: payload?.version || "",
+    cpu: payload?.cpu || 500,
+    memory: payload?.memory || 512,
+    storage: payload?.storage || 10,
+    replicas: payload?.replicas || 1,
+    terminationPolicy: payload?.terminationPolicy || "Delete",
+  };
+
+  // Initialize form
   const form = useForm<ClusterFormValues>({
     resolver: zodResolver(clusterFormSchema),
-    defaultValues: {
-      name: payload?.name || generateClusterName(),
-      type: payload?.type || "postgresql",
-      version: payload?.version || "",
-      cpu: payload?.cpu || 500,
-      memory: payload?.memory || 512,
-      storage: payload?.storage || 10,
-      replicas: payload?.replicas || 1,
-      terminationPolicy: payload?.terminationPolicy || "Delete",
-    },
+    defaultValues,
   });
 
-  // Update form values when payload changes (for streaming parameters)
+  // Reset form when payload changes
   useEffect(() => {
-    if (payload?.name !== undefined) {
-      form.setValue("name", payload.name);
-    }
-    if (payload?.type !== undefined) {
-      form.setValue("type", payload.type);
-      form.setValue("version", ""); // Reset version when type changes
-    }
-    if (payload?.version !== undefined) {
-      form.setValue("version", payload.version);
-    }
-    if (payload?.cpu !== undefined) {
-      form.setValue("cpu", payload.cpu);
-    }
-    if (payload?.memory !== undefined) {
-      form.setValue("memory", payload.memory);
-    }
-    if (payload?.storage !== undefined) {
-      form.setValue("storage", payload.storage);
-    }
-    if (payload?.replicas !== undefined) {
-      form.setValue("replicas", payload.replicas);
-    }
-    if (payload?.terminationPolicy !== undefined) {
-      form.setValue("terminationPolicy", payload.terminationPolicy);
-    }
+    form.reset({
+      ...defaultValues,
+      // Ensure version is reset if type changes or is invalid
+      version:
+        payload?.type && payload?.type === form.getValues("type")
+          ? payload?.version || ""
+          : "",
+    });
   }, [payload, form]);
 
   const dbTypeOptions = [
@@ -189,13 +177,19 @@ export default function ClusterCreateMessage({ payload }: ClusterCreateMessagePr
                 {createdClusterName}
               </div>
               <div className="text-sm text-green-700 dark:text-green-300">
-                Type: {form.getValues("type")} • Version: {form.getValues("version")} • CPU: {form.getValues("cpu")}m • Memory: {form.getValues("memory")}Mi • Storage: {form.getValues("storage")}Gi
+                Type: {form.getValues("type")} • Version:{" "}
+                {form.getValues("version")} • CPU: {form.getValues("cpu")}m •
+                Memory: {form.getValues("memory")}Mi • Storage:{" "}
+                {form.getValues("storage")}Gi
               </div>
             </div>
           </div>
-          
+
           <div className="text-sm text-muted-foreground">
-            <p>Your database cluster is now ready to use. You can access it from the project dashboard.</p>
+            <p>
+              Your database cluster is now ready to use. You can access it from
+              the project dashboard.
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -217,10 +211,7 @@ export default function ClusterCreateMessage({ payload }: ClusterCreateMessagePr
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Enter cluster name"
-                      {...field}
-                    />
+                    <Input placeholder="Enter cluster name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -233,10 +224,13 @@ export default function ClusterCreateMessage({ payload }: ClusterCreateMessagePr
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Database Type</FormLabel>
-                  <Select onValueChange={(value) => {
-                    field.onChange(value);
-                    form.setValue("version", ""); // Reset version when type changes
-                  }} value={field.value}>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      form.setValue("version", ""); // Reset version when type changes
+                    }}
+                    value={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select database type" />
@@ -261,18 +255,20 @@ export default function ClusterCreateMessage({ payload }: ClusterCreateMessagePr
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Version</FormLabel>
-                  <Select 
+                  <Select
                     onValueChange={field.onChange}
                     value={field.value}
                     disabled={!form.watch("type")}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder={
-                          !form.watch("type") 
-                            ? "Select database type first" 
-                            : "Select version"
-                        } />
+                        <SelectValue
+                          placeholder={
+                            !form.watch("type")
+                              ? "Select database type first"
+                              : "Select version"
+                          }
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -280,33 +276,43 @@ export default function ClusterCreateMessage({ payload }: ClusterCreateMessagePr
                         <SelectItem value="loading" disabled>
                           Loading versions...
                         </SelectItem>
-                      ) : form.watch("type") && clusterVersions?.data?.[form.watch("type")] ? (
+                      ) : form.watch("type") &&
+                        clusterVersions?.data?.[form.watch("type")] ? (
                         // Deduplicate versions by ID to prevent duplicates
                         Array.from(
                           new Map(
-                            clusterVersions.data[form.watch("type")].map((version: any) => [
-                              version.id || version,
-                              version
-                            ])
+                            clusterVersions.data[form.watch("type")].map(
+                              (version: any) => [version.id || version, version]
+                            )
                           ).values()
-                        ).map((version: any, index: number) => {
-                          const versionValue = version.id || version;
-                          const versionLabel = version.label || version.id || version;
-                          
-                          // Ensure we have a valid non-empty value
-                          if (!versionValue || versionValue === "") {
-                            return null;
-                          }
-                          
-                          return (
-                            <SelectItem key={`${form.watch("type")}-${versionValue}-${index}`} value={versionValue}>
-                              {versionLabel}
-                            </SelectItem>
-                          );
-                        }).filter(Boolean)
+                        )
+                          .map((version: any, index: number) => {
+                            const versionValue = version.id || version;
+                            const versionLabel =
+                              version.label || version.id || version;
+
+                            // Ensure we have a valid non-empty value
+                            if (!versionValue || versionValue === "") {
+                              return null;
+                            }
+
+                            return (
+                              <SelectItem
+                                key={`${form.watch(
+                                  "type"
+                                )}-${versionValue}-${index}`}
+                                value={versionValue}
+                              >
+                                {versionLabel}
+                              </SelectItem>
+                            );
+                          })
+                          .filter(Boolean)
                       ) : (
                         <SelectItem value="no-versions" disabled>
-                          {!form.watch("type") ? "Select database type first" : "No versions available"}
+                          {!form.watch("type")
+                            ? "Select database type first"
+                            : "No versions available"}
                         </SelectItem>
                       )}
                     </SelectContent>
@@ -356,7 +362,10 @@ export default function ClusterCreateMessage({ payload }: ClusterCreateMessagePr
                       </FormControl>
                       <SelectContent>
                         {[500, 1000, 2000, 4000, 6000, 8000].map((cpuValue) => (
-                          <SelectItem key={cpuValue} value={cpuValue.toString()}>
+                          <SelectItem
+                            key={cpuValue}
+                            value={cpuValue.toString()}
+                          >
                             {cpuValue}m ({cpuValue / 1000} cores)
                           </SelectItem>
                         ))}
@@ -383,11 +392,16 @@ export default function ClusterCreateMessage({ payload }: ClusterCreateMessagePr
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {[512, 1024, 2048, 4096, 8192, 16000].map((memoryValue) => (
-                          <SelectItem key={memoryValue} value={memoryValue.toString()}>
-                            {memoryValue}Mi ({memoryValue / 1024}GB)
-                          </SelectItem>
-                        ))}
+                        {[512, 1024, 2048, 4096, 8192, 16000].map(
+                          (memoryValue) => (
+                            <SelectItem
+                              key={memoryValue}
+                              value={memoryValue.toString()}
+                            >
+                              {memoryValue}Mi ({memoryValue / 1024}GB)
+                            </SelectItem>
+                          )
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -441,8 +455,13 @@ export default function ClusterCreateMessage({ payload }: ClusterCreateMessagePr
 
             <div className="text-sm text-muted-foreground">
               <p>Resource configuration:</p>
-              <p>• CPU: {form.watch("cpu")}m ({form.watch("cpu")/1000} cores)</p>
-              <p>• Memory: {form.watch("memory")}Mi ({form.watch("memory")/1024}GB)</p>
+              <p>
+                • CPU: {form.watch("cpu")}m ({form.watch("cpu") / 1000} cores)
+              </p>
+              <p>
+                • Memory: {form.watch("memory")}Mi (
+                {form.watch("memory") / 1024}GB)
+              </p>
               <p>• Storage: {form.watch("storage")}Gi</p>
               <p>• Replicas: {form.watch("replicas")}</p>
               <p>• Termination Policy: {form.watch("terminationPolicy")}</p>
