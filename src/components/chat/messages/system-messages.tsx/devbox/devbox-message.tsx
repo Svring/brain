@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { devboxClient } from "@/components/provider/trpc-provider";
 import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/message-actions";
-import { GitBranch, BarChart3 } from "lucide-react";
+import { GitBranch, BarChart3, Pencil } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { DevboxInfoDetails } from "./components/devbox-message-details";
 import DevboxMessageMenu from "./components/devbox-message-menu";
@@ -30,6 +30,13 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
 
   const actions: MessageAction[] = devboxObject
     ? [
+        {
+          icon: Pencil,
+          label: "Update",
+          onClick: () => {
+            appendSystemMessage("devbox.update", target);
+          },
+        },
         {
           icon: GitBranch,
           label: "Releases",

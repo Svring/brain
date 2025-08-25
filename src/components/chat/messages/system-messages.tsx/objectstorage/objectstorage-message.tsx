@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/message-actions";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { Edit } from "lucide-react";
+import { Pencil } from "lucide-react";
 import ObjectStorageMessageDetails from "./components/objectstorage-message-details";
 import ObjectStorageMessageMenu from "./components/objectstorage-message-menu";
 
@@ -34,7 +34,7 @@ export const ObjectStorageMessage: React.FC<ObjectStorageMessageProps> = ({
   const actions: MessageAction[] = objectstorageObject
     ? [
         {
-          icon: Edit,
+          icon: Pencil,
           label: "Update",
           onClick: () => {
             appendSystemMessage("objectstorage.update", target);
@@ -70,8 +70,8 @@ export const ObjectStorageMessage: React.FC<ObjectStorageMessageProps> = ({
   }
 
   return (
-    <BaseSystemMessage 
-      target={target} 
+    <BaseSystemMessage
+      target={target}
       actions={actions}
       headerSlot={<ObjectStorageMessageMenu target={target} />}
     >

@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/message-actions";
-import { FileText, Container, BarChart3 } from "lucide-react";
+import { FileText, Container, BarChart3, Pencil } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import LaunchpadMessageDetails from "./components/launchpad-info-details";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
@@ -28,6 +28,13 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
 
   const actions: MessageAction[] = launchpadObject
     ? [
+        {
+          icon: Pencil,
+          label: "Update",
+          onClick: () => {
+            appendSystemMessage("launchpad.update", target);
+          },
+        },
         {
           icon: FileText,
           label: "Logs",
@@ -79,8 +86,8 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
   }
 
   return (
-    <BaseSystemMessage 
-      target={target} 
+    <BaseSystemMessage
+      target={target}
       actions={actions}
       headerSlot={<LaunchpadMessageMenu target={target} />}
     >

@@ -86,7 +86,7 @@ export function EnvVariablesTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-1/3">Variable Name</TableHead>
+              <TableHead className="w-1/3">Key</TableHead>
               <TableHead className="w-2/3">Value</TableHead>
             </TableRow>
           </TableHeader>
