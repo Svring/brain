@@ -5,6 +5,7 @@ import {
   objectStorageClient,
   projectClient,
   k8sClient,
+  langgraphClient,
 } from "@/components/provider/trpc-provider";
 
 export const useTRPCClients = () => {
@@ -14,6 +15,7 @@ export const useTRPCClients = () => {
   const objectStorageTrpcClient = objectStorageClient.useTRPC();
   const projectTrpcClient = projectClient.useTRPC();
   const k8sTrpcClient = k8sClient.useTRPC();
+  const langgraphTrpcClient = langgraphClient.useTRPC();
 
   return {
     devbox: devboxTrpcClient,
@@ -22,5 +24,6 @@ export const useTRPCClients = () => {
     objectstorage: objectStorageTrpcClient,
     project: projectTrpcClient,
     k8s: k8sTrpcClient,
+    langgraph: langgraphTrpcClient,
   };
 };

@@ -18,6 +18,7 @@ import { listProjectsOptions } from "@/lib/brain/resources/project/project-metho
 import { createK8sContext } from "@/lib/auth/auth-utils";
 
 import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useAuthState } from "@/contexts/auth/auth-context";
 
 // Types
 export interface NavigationItem {
@@ -49,12 +50,14 @@ export const MainSection: React.FC<MainSectionProps> = () => {
   const router = useRouter();
   const pathname = usePathname();
   const { data: projects } = useQuery(listProjectsOptions(createK8sContext()));
-
+  const { auth } = useAuthState();
   const { mutate: createNewChatSession } = useCreateNewChatSessionMutation();
 
   const handleNavigation = async (path: string) => {
     if (path === "/home") {
-      createNewChatSession();
+      createNewChatSession({
+        kubeconfig: auth!.kubeconfig,
+      });
     }
     router.push(path);
   };

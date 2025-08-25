@@ -8,6 +8,7 @@ import type { LaunchpadRouter } from "@/lib/trpc/sealos/launchpad/launchpad-rout
 import type { ObjectStorageRouter } from "@/lib/trpc/sealos/objectstorage/objectstorage-router";
 import type { ProjectRouter } from "@/lib/trpc/brain/project/project-router";
 import type { K8sRouter } from "@/lib/trpc/k8s/k8s-router";
+import type { LanggraphRouter } from "@/lib/trpc/langgraph/langgraph-router";
 import { useState } from "react";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { QueryClient } from "@tanstack/react-query";
@@ -18,6 +19,7 @@ export const launchpadClient = createTRPCContext<LaunchpadRouter>();
 export const objectStorageClient = createTRPCContext<ObjectStorageRouter>();
 export const projectClient = createTRPCContext<ProjectRouter>();
 export const k8sClient = createTRPCContext<K8sRouter>();
+export const langgraphClient = createTRPCContext<LanggraphRouter>();
 
 interface TRPCProviderProps {
   children: React.ReactNode;
@@ -129,6 +131,20 @@ export default function TRPCProvider({
     })
   );
 
+  const [langgraphTrpcClient] = useState(() =>
+    createTRPCClient<LanggraphRouter>({
+      links: [
+        httpBatchLink({
+          url: "/api/trpc/langgraph",
+          maxURLLength: 6000,
+          headers: () => ({
+            apiUrl: process.env.NEXT_PUBLIC_LANGGRAPH_DEPLOYMENT_URL,
+          }),
+        }),
+      ],
+    })
+  );
+
   return (
     <devboxClient.TRPCProvider
       trpcClient={devboxTrpcClient}
@@ -154,7 +170,12 @@ export default function TRPCProvider({
                 trpcClient={k8sTrpcClient}
                 queryClient={queryClient}
               >
-                {children}
+                <langgraphClient.TRPCProvider
+                  trpcClient={langgraphTrpcClient}
+                  queryClient={queryClient}
+                >
+                  {children}
+                </langgraphClient.TRPCProvider>
               </k8sClient.TRPCProvider>
             </projectClient.TRPCProvider>
           </objectStorageClient.TRPCProvider>

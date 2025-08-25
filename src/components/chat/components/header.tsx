@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { Spinner } from "@/components/ui/spinner";
+import { useAuthState } from "@/contexts/auth/auth-context";
+import { useProjectState } from "@/contexts/project/project-context";
 
 interface AiChatHeaderProps {
   title?: string;
@@ -17,6 +19,8 @@ export function AiChatHeader({
   description = "Chat with Sealos Brain AI to help with your projects",
   className = "p-6 pb-0 shrink-0",
 }: AiChatHeaderProps) {
+  const { auth } = useAuthState();
+  const { selectedProject } = useProjectState();
   const { mutate: createNewChatSession, isPending } =
     useCreateNewChatSessionMutation();
 
@@ -28,7 +32,12 @@ export function AiChatHeader({
         </div>
         <div className="flex items-center gap-2">
           <Button
-            onClick={() => createNewChatSession()}
+            onClick={() =>
+              createNewChatSession({
+                kubeconfig: auth!.kubeconfig,
+                projectName: selectedProject!,
+              })
+            }
             disabled={isPending}
             size="icon"
             variant="ghost"

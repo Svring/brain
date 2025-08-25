@@ -33,7 +33,7 @@ import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation } from "@tanstack/react-query";
 import { generateDeployName } from "@/lib/sealos/resources/deployment/deploy-utils";
 import { toast } from "sonner";
-import { CheckCircle, Rocket, ChevronDown } from "lucide-react";
+import { CheckCircle, Rocket, ChevronDown, Plus, Trash2 } from "lucide-react";
 import { useProjectState } from "@/contexts/project/project-context";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
@@ -53,7 +53,22 @@ const portProtocolOptions = ["TCP", "UDP", "SCTP"] as const;
 const appProtocolOptions = ["HTTP", "GRPC", "WS"] as const;
 
 // Storage size options for launchpad
-const storageSizeOptions = ["1Gi", "5Gi", "10Gi", "20Gi", "50Gi", "100Gi"] as const;
+const storageSizeOptions = [
+  "1Gi",
+  "5Gi",
+  "10Gi",
+  "20Gi",
+  "50Gi",
+  "100Gi",
+] as const;
+
+// Port interface
+interface Port {
+  port: number;
+  protocol: "TCP" | "UDP" | "SCTP";
+  appProtocol: "HTTP" | "GRPC" | "WS";
+  exposesPublicDomain: boolean;
+}
 
 // Form schema with Zod validation
 export const launchpadFormSchema = z.object({
@@ -64,19 +79,19 @@ export const launchpadFormSchema = z.object({
   image: z.string().min(1, "Image is required"),
   command: z.string().optional(),
   args: z.string().optional(),
-  cpu: z.enum(cpuOptions.map(val => val.toString()) as [string, ...string[]]),
-  memory: z.enum(memoryOptions.map(val => val.toString()) as [string, ...string[]]),
-  replicas: z.enum(replicasOptions.map(val => val.toString()) as [string, ...string[]]),
-  ports: z.string().optional(),
-  portProtocol: z.enum(portProtocolOptions),
-  appProtocol: z.enum(appProtocolOptions),
-  exposesPublicDomain: z.boolean(),
+  cpu: z.enum(cpuOptions.map((val) => val.toString()) as [string, ...string[]]),
+  memory: z.enum(
+    memoryOptions.map((val) => val.toString()) as [string, ...string[]]
+  ),
+  replicas: z.enum(
+    replicasOptions.map((val) => val.toString()) as [string, ...string[]]
+  ),
   envVars: z.string().optional(),
+  configMapPath: z.string().optional(),
+  configMapValue: z.string().optional(),
   storageName: z.string().optional(),
   storagePath: z.string().optional(),
   storageSize: z.enum(storageSizeOptions),
-  configMapPath: z.string().optional(),
-  configMapValue: z.string().optional(),
 });
 
 type LaunchpadFormValues = z.infer<typeof launchpadFormSchema>;
@@ -110,6 +125,14 @@ export default function LaunchpadCreateMessage({
   const [isCompleted, setIsCompleted] = useState(false);
   const [createdDeploymentName, setCreatedDeploymentName] =
     useState<string>("");
+  const [ports, setPorts] = useState<Port[]>([
+    {
+      port: 80,
+      protocol: "TCP",
+      appProtocol: "HTTP",
+      exposesPublicDomain: true,
+    },
+  ]);
 
   const { launchpad, project } = useTRPCClients();
   const createLaunchpadMutation = useMutation(
@@ -137,10 +160,6 @@ export default function LaunchpadCreateMessage({
       cpu: (payload?.cpu || 500).toString(),
       memory: (payload?.memory || 512).toString(),
       replicas: (payload?.replicas || 1).toString(),
-      ports: payload?.ports || "80",
-      portProtocol: payload?.portProtocol || "TCP",
-      appProtocol: payload?.appProtocol || "HTTP",
-      exposesPublicDomain: payload?.exposesPublicDomain ?? true,
       envVars: payload?.envVars || "",
       storageName: payload?.storageName || "",
       storagePath: payload?.storagePath || "",
@@ -161,6 +180,31 @@ export default function LaunchpadCreateMessage({
   useEffect(() => {
     form.reset(defaultValues);
   }, [payloadKey, form, defaultValues]);
+
+  // Port management functions
+  const addPort = () => {
+    setPorts([
+      ...ports,
+      {
+        port: 8080,
+        protocol: "TCP",
+        appProtocol: "HTTP",
+        exposesPublicDomain: false,
+      },
+    ]);
+  };
+
+  const removePort = (index: number) => {
+    if (ports.length > 1) {
+      setPorts(ports.filter((_, i) => i !== index));
+    }
+  };
+
+  const updatePort = (index: number, field: keyof Port, value: any) => {
+    const newPorts = [...ports];
+    newPorts[index] = { ...newPorts[index], [field]: value };
+    setPorts(newPorts);
+  };
 
   const onSubmit = async (values: LaunchpadFormValues) => {
     const deploymentName = values.name.trim() || generateDeployName();
@@ -188,18 +232,6 @@ export default function LaunchpadCreateMessage({
             value: valueParts.join("=").trim(),
           };
         });
-
-      // Parse ports
-      const portArray = (values.ports || "")
-        .split(",")
-        .map((port: string) => parseInt(port.trim()))
-        .filter((port: number) => !isNaN(port))
-        .map((port: number) => ({
-          port,
-          protocol: values.portProtocol,
-          appProtocol: values.appProtocol,
-          exposesPublicDomain: values.exposesPublicDomain,
-        }));
 
       // Build storage array
       const storageArray =
@@ -235,7 +267,7 @@ export default function LaunchpadCreateMessage({
             cpu: parseInt(values.cpu),
             memory: parseInt(values.memory),
           },
-          ports: portArray,
+          ports: ports,
           env: envArray,
           hpa: null,
           imageRegistry: null,
@@ -245,7 +277,10 @@ export default function LaunchpadCreateMessage({
       });
 
       // Add the created deployment to the project
-      const resourceTarget = convertResourceTypeToTarget("deployment", deploymentName);
+      const resourceTarget = convertResourceTypeToTarget(
+        "deployment",
+        deploymentName
+      );
       await addToProjectMutation.mutateAsync({
         resources: [resourceTarget],
         name: selectedProject,
@@ -356,14 +391,14 @@ export default function LaunchpadCreateMessage({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                                                  {cpuOptions.map((cpuValue) => (
-                          <SelectItem
-                            key={cpuValue}
-                            value={cpuValue.toString()}
-                          >
-                            {cpuValue}m ({cpuValue / 1000} cores)
-                          </SelectItem>
-                        ))}
+                          {cpuOptions.map((cpuValue) => (
+                            <SelectItem
+                              key={cpuValue}
+                              value={cpuValue.toString()}
+                            >
+                              {cpuValue}m ({cpuValue / 1000} cores)
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -387,14 +422,14 @@ export default function LaunchpadCreateMessage({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                                                  {memoryOptions.map((memoryValue) => (
-                          <SelectItem
-                            key={memoryValue}
-                            value={memoryValue.toString()}
-                          >
-                            {memoryValue}Mi ({memoryValue / 1024}GB)
-                          </SelectItem>
-                        ))}
+                          {memoryOptions.map((memoryValue) => (
+                            <SelectItem
+                              key={memoryValue}
+                              value={memoryValue.toString()}
+                            >
+                              {memoryValue}Mi ({memoryValue / 1024}GB)
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -436,9 +471,12 @@ export default function LaunchpadCreateMessage({
             </div>
 
             {/* Collapsible Sections */}
-            <Accordion type="multiple" className="w-full p-2">
+            <Accordion type="multiple" className="w-full space-y-1">
               {/* Command & Arguments */}
-              <AccordionItem value="command-args" className="border rounded-lg">
+              <AccordionItem
+                value="command-args"
+                className="inset-ring inset-ring-border rounded-lg"
+              >
                 <AccordionTrigger className="px-4 py-3 hover:no-underline">
                   <div className="flex items-center gap-2">
                     <ChevronDown className="h-4 w-4" />
@@ -479,7 +517,7 @@ export default function LaunchpadCreateMessage({
               {/* Ports & Protocol */}
               <AccordionItem
                 value="ports-protocol"
-                className="border rounded-lg"
+                className="inset-ring inset-ring-border rounded-lg"
               >
                 <AccordionTrigger className="px-4 py-3 hover:no-underline">
                   <div className="flex items-center gap-2">
@@ -488,114 +526,91 @@ export default function LaunchpadCreateMessage({
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-4 pb-4 space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="ports"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Ports (comma-separated)</FormLabel>
-                        <FormControl>
+                  <div className="space-y-3">
+                    {ports.map((port, index) => (
+                      <div key={index} className="flex items-center gap-2 p-3 border rounded-lg">
+                        <div className="flex-1 grid grid-cols-4 gap-2">
                           <Input
-                            placeholder="e.g., 80, 3000, 8080"
-                            {...field}
+                            type="number"
+                            placeholder="Port"
+                            value={port.port}
+                            onChange={(e) => updatePort(index, "port", parseInt(e.target.value) || 0)}
+                            className="col-span-1"
                           />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="grid grid-cols-3 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="portProtocol"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Protocol</FormLabel>
                           <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
+                            value={port.protocol}
+                            onValueChange={(value) => updatePort(index, "protocol", value as "TCP" | "UDP" | "SCTP")}
                           >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
+                            <SelectTrigger className="col-span-1">
+                              <SelectValue />
+                            </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="TCP">TCP</SelectItem>
                               <SelectItem value="UDP">UDP</SelectItem>
                               <SelectItem value="SCTP">SCTP</SelectItem>
                             </SelectContent>
                           </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="appProtocol"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>App Protocol</FormLabel>
                           <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
+                            value={port.appProtocol}
+                            onValueChange={(value) => updatePort(index, "appProtocol", value as "HTTP" | "GRPC" | "WS")}
                           >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
+                            <SelectTrigger className="col-span-1">
+                              <SelectValue />
+                            </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="HTTP">HTTP</SelectItem>
                               <SelectItem value="GRPC">GRPC</SelectItem>
                               <SelectItem value="WS">WS</SelectItem>
                             </SelectContent>
                           </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="exposesPublicDomain"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Public Domain</FormLabel>
                           <Select
-                            onValueChange={(value) =>
-                              field.onChange(value === "true")
-                            }
-                            value={field.value.toString()}
+                            value={port.exposesPublicDomain.toString()}
+                            onValueChange={(value) => updatePort(index, "exposesPublicDomain", value === "true")}
                           >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
+                            <SelectTrigger className="col-span-1">
+                              <SelectValue />
+                            </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="true">Yes</SelectItem>
-                              <SelectItem value="false">No</SelectItem>
+                              <SelectItem value="true">Public</SelectItem>
+                              <SelectItem value="false">Private</SelectItem>
                             </SelectContent>
                           </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                        </div>
+                        {ports.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removePort(index)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={addPort}
+                      className="w-full"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Port
+                    </Button>
                   </div>
                 </AccordionContent>
               </AccordionItem>
 
-              {/* Environment Variables, ConfigMap & Storage */}
-              <AccordionItem value="env-storage" className="border rounded-lg">
+              {/* Environment Variables */}
+              <AccordionItem
+                value="env-vars"
+                className="inset-ring inset-ring-border rounded-lg"
+              >
                 <AccordionTrigger className="px-4 py-3 hover:no-underline">
                   <div className="flex items-center gap-2">
                     <ChevronDown className="h-4 w-4" />
-                    <span className="font-medium">
-                      Environment Variables, ConfigMap & Storage
-                    </span>
+                    <span className="font-medium">Environment Variables</span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-4 pb-4 space-y-4">
@@ -618,94 +633,121 @@ export default function LaunchpadCreateMessage({
                       </FormItem>
                     )}
                   />
+                </AccordionContent>
+              </AccordionItem>
 
-                  <div className="space-y-2">
-                    <FormLabel>ConfigMap (optional)</FormLabel>
-                    <div className="grid grid-cols-2 gap-2">
-                      <FormField
-                        control={form.control}
-                        name="configMapPath"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input placeholder="Config path" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="configMapValue"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input placeholder="Config value" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+              {/* ConfigMap */}
+              <AccordionItem
+                value="configmap"
+                className="inset-ring inset-ring-border rounded-lg"
+              >
+                <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                  <div className="flex items-center gap-2">
+                    <ChevronDown className="h-4 w-4" />
+                    <span className="font-medium">ConfigMap</span>
                   </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pb-4 space-y-4">
+                  <div className="grid grid-cols-2 gap-2">
+                    <FormField
+                      control={form.control}
+                      name="configMapPath"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Config Path</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Config path" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="configMapValue"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Config Value</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Config value" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
 
-                  <div className="space-y-2">
-                    <FormLabel>Storage (optional)</FormLabel>
-                    <div className="grid grid-cols-3 gap-2">
-                      <FormField
-                        control={form.control}
-                        name="storageName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input placeholder="Storage name" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="storagePath"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input placeholder="Mount path" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="storageSize"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Select
-                                onValueChange={field.onChange}
-                                value={field.value}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select Size" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {storageSizeOptions.map((sizeValue) => (
-                                    <SelectItem
-                                      key={sizeValue}
-                                      value={sizeValue}
-                                    >
-                                      {sizeValue}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+              {/* Storage */}
+              <AccordionItem
+                value="storage"
+                className="inset-ring inset-ring-border rounded-lg"
+              >
+                <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                  <div className="flex items-center gap-2">
+                    <ChevronDown className="h-4 w-4" />
+                    <span className="font-medium">Storage</span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pb-4 space-y-4">
+                  <div className="grid grid-cols-3 gap-2">
+                    <FormField
+                      control={form.control}
+                      name="storageName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Storage Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Storage name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="storagePath"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Mount Path</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Mount path" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="storageSize"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Size</FormLabel>
+                          <FormControl>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select Size" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {storageSizeOptions.map((sizeValue) => (
+                                  <SelectItem
+                                    key={sizeValue}
+                                    value={sizeValue}
+                                  >
+                                    {sizeValue}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </AccordionContent>
               </AccordionItem>

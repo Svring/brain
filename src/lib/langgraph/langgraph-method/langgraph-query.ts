@@ -1,7 +1,11 @@
 "use client";
 
 import { queryOptions } from "@tanstack/react-query";
-import { listThreads, getThread } from "../langgraph-api/langgraph-api";
+import {
+  listThreads,
+  getThread,
+  searchThreads,
+} from "../langgraph-api/langgraph-api";
 
 // ============================================================================
 // OPTIONS FUNCTIONS (React Query wrappers)
@@ -24,4 +28,13 @@ export const getThreadOptions = (threadId: string) =>
     queryKey: ["langgraph", "thread", threadId],
     queryFn: async () => await getThread(threadId),
     enabled: !!threadId,
+  });
+
+/**
+ * Query options for searching threads
+ */
+export const searchThreadsByKubeconfigOptions = (kubeconfig: string) =>
+  queryOptions({
+    queryKey: ["langgraph", "threads", "search", "kubeconfig", kubeconfig],
+    queryFn: async () => await searchThreads({ kubeconfig: kubeconfig }),
   });

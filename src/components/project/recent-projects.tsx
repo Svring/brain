@@ -34,7 +34,7 @@ export default function RecentProjects({
         {/* Projects Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold">Recent Projects</h2>
-          {!isError && projects && projects.length > 3 && (
+          {!isError && projects && (
             <Button variant="ghost" size="sm" asChild>
               <a href="/projects">View All Projects ({projects.length})</a>
             </Button>
