@@ -6,6 +6,7 @@ import { createContext, type ReactNode, useContext } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import { langgraphMachine } from "@/contexts/langgraph/langgraph-machine";
 import { useLanggraphAgent } from "@/hooks/langgraph/use-langgraph-agent";
+import { ProjectContextState } from "../project/project-machine";
 
 // const inspector = createBrowserInspector();
 
@@ -58,14 +59,6 @@ export function useLanggraphActions() {
     useLanggraphAgent(state.context.stage);
 
   return {
-    // activate: () => {
-    //   send({ type: "ACTIVATE" });
-    //   setLanggraphState({ ...state.context, stage: "resource" });
-    // },
-    // deactivate: () => {
-    //   send({ type: "DEACTIVATE" });
-    //   setLanggraphState({ ...state.context, stage: "project" });
-    // },
     setConfig: (config: {
       base_url?: string;
       api_key?: string;
@@ -77,6 +70,10 @@ export function useLanggraphActions() {
     setStage: (stage: "propose_project" | "manage_project") => {
       send({ type: "SET_STAGE", stage });
       setLanggraphState({ ...state.context, stage });
+    },
+    setProjectContext: (projectContext: ProjectContextState) => {
+      send({ type: "SET_PROJECT_CONTEXT", project_context: projectContext });
+      setLanggraphState({ ...state.context, project_context: projectContext });
     },
   };
 }

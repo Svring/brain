@@ -5,6 +5,7 @@ import { useMachine } from "@xstate/react";
 import { createContext, type ReactNode, useContext } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import { chatMachine } from "@/contexts/chat/chat-machine";
+import { useProjectActions } from "../project/project-context";
 
 // const inspector = createBrowserInspector();
 
@@ -46,11 +47,14 @@ export function useChatState() {
 
 export function useChatActions() {
   const { send } = useChatContext();
+  const { clearSelectedResource } = useProjectActions();
 
   return {
     openSidebarChat: () => send({ type: "SET_SIDEBAR_CHAT_OPEN", open: true }),
-    closeSidebarChat: () =>
-      send({ type: "SET_SIDEBAR_CHAT_OPEN", open: false }),
+    closeSidebarChat: () => {
+      send({ type: "SET_SIDEBAR_CHAT_OPEN", open: false });
+      clearSelectedResource();
+    },
 
     openFloatingChat: () =>
       send({ type: "SET_FLOATING_CHAT_OPEN", open: true }),

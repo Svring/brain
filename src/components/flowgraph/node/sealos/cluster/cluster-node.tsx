@@ -150,6 +150,7 @@ function ClusterNode({
 
   const mainCard = (
     <BaseNode
+      target={target}
       nodeData={clusterData}
       className={isDeletingCluster ? "border-theme-red" : ""}
     >

@@ -26,7 +26,7 @@ export interface ResourceObject {
 export interface ProjectContextState {
   allProjects: unknown[];
   selectedProject: string | null;
-  selectedProjectResources: ResourceObject[];
+  selectedProjectResources: ResourceObject[] | null;
   selectedResource: ResourceTarget | null;
 }
 
@@ -78,26 +78,30 @@ export const projectMachine = createMachine({
     UPDATE_RESOURCE: {
       actions: assign({
         selectedProjectResources: ({ context, event }) => {
-          const existingIndex = context.selectedProjectResources.findIndex(
-            (resource) =>
-              resource.name === event.resource.name &&
-              resource.kind === event.resource.kind
-          );
+          const existingIndex =
+            context.selectedProjectResources?.findIndex(
+              (resource) =>
+                resource.name === event.resource.name &&
+                resource.kind === event.resource.kind
+            ) ?? -1;
 
           if (existingIndex >= 0) {
             // Check if the resource actually changed before updating
-            const existing = context.selectedProjectResources[existingIndex];
+            const existing = context.selectedProjectResources?.[existingIndex];
             if (JSON.stringify(existing) === JSON.stringify(event.resource)) {
               return context.selectedProjectResources; // No change, return the same array
             }
 
             // Update existing resource
-            const updated = [...context.selectedProjectResources];
+            const updated = [...(context.selectedProjectResources || [])];
             updated[existingIndex] = event.resource;
             return updated;
           } else {
             // Add new resource
-            return [...context.selectedProjectResources, event.resource];
+            return [
+              ...(context.selectedProjectResources || []),
+              event.resource,
+            ];
           }
         },
       }),
@@ -105,10 +109,10 @@ export const projectMachine = createMachine({
     REMOVE_RESOURCE: {
       actions: assign({
         selectedProjectResources: ({ context, event }) =>
-          context.selectedProjectResources.filter(
+          context.selectedProjectResources?.filter(
             (resource) =>
               !(resource.name === event.name && resource.kind === event.kind)
-          ),
+          ) || [],
       }),
     },
     SELECT_RESOURCE: {

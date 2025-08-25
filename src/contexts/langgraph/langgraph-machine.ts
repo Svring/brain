@@ -10,34 +10,17 @@ export const langgraphMachine = createMachine({
     base_url: "",
     api_key: "",
     model: "",
-    stage: "project",
-    project_proposal: {
-      name: "",
-      description: "",
-      resources: {
-        devboxes: [],
-        databases: [],
-        buckets: [],
-      },
-    },
-    resource_context: null,
+    stage: "propose_project",
     project_context: {
       allProjects: [],
-      selectedProject: null,
-      selectedProjectResources: null,
+      selectedProject: "",
+      selectedResource: null,
+      selectedProjectResources: [],
     },
   },
   states: {
-    idle: {
-      on: {
-        ACTIVATE: "active",
-      },
-    },
-    active: {
-      on: {
-        DEACTIVATE: "idle",
-      },
-    },
+    idle: {},
+    active: {},
   },
   on: {
     SET_CONFIG: {
@@ -52,14 +35,9 @@ export const langgraphMachine = createMachine({
         stage: ({ event }) => event.stage,
       }),
     },
-    SET_PROJECT_PROPOSAL: {
+    SET_PROJECT_CONTEXT: {
       actions: assign({
-        project_proposal: ({ event }) => event.project_proposal,
-      }),
-    },
-    SET_RESOURCE_CONTEXT: {
-      actions: assign({
-        resource_context: ({ event }) => event.resource_context,
+        project_context: ({ event }) => event.project_context,
       }),
     },
   },

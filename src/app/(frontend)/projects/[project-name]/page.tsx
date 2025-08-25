@@ -187,10 +187,10 @@ function ProjectFlow({ projectName }: { projectName: string }) {
 
   // Phase 2: Generate enhanced nodes with network nodes from complete objects
   const { nodes: enhancedNodes, edges: networkEdges } = useFlowgraphNodes(
-    selectedProjectResources
+    selectedProjectResources ?? []
   );
 
-  const { reliances } = useResourceReliances(selectedProjectResources);
+  const { reliances } = useResourceReliances(selectedProjectResources ?? []);
   const { edges: computedEdges } = useFlowgraphEdges(reliances);
 
   // console.log("resources", resources);
@@ -205,7 +205,7 @@ function ProjectFlow({ projectName }: { projectName: string }) {
 
   // Merge basic nodes with enhanced nodes (enhanced nodes replace basic nodes when available)
   const currentNodes = useMemo(() => {
-    if (selectedProjectResources.length === 0) {
+    if (selectedProjectResources?.length === 0) {
       return basicNodes;
     }
 
@@ -229,7 +229,7 @@ function ProjectFlow({ projectName }: { projectName: string }) {
     const result = [...mergedNodes, ...additionalEnhancedNodes];
     // console.log("currentNodes result:", result);
     return result;
-  }, [basicNodes, enhancedNodes, selectedProjectResources.length]);
+  }, [basicNodes, enhancedNodes, selectedProjectResources?.length]);
 
   // Combine network edges (from ports) with computed edges (from reliances)
   const finalEdges = useMemo(() => {
@@ -283,10 +283,11 @@ export default function ProjectPage({
   params: Promise<{ "project-name": string }>;
 }) {
   const { "project-name": projectName } = use(params);
-  const { selectProject, clearSelectedProject, selectResource } = useProjectActions();
+  const { selectProject, clearSelectedProject } = useProjectActions();
+  const { selectedResource } = useProjectState();
   const { setStage } = useLanggraphActions();
 
-  console.log("selectResource", selectResource);
+  console.log("selectedResource", selectedResource);
 
   useCopilotActions();
 

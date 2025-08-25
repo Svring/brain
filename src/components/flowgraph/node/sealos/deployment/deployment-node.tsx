@@ -112,6 +112,7 @@ function DeploymentNode({
 
   const mainCard = (
     <BaseNode
+      target={target}
       nodeData={resource}
       className={isDeletingDeployment ? "border-theme-red" : ""}
     >

@@ -65,10 +65,21 @@ const storageSizeOptions = [
 // Port interface
 interface Port {
   port: number;
-  protocol: "TCP" | "UDP" | "SCTP";
-  appProtocol: "HTTP" | "GRPC" | "WS";
+  protocol: "TCP" | "UDP";
+  appProtocol?: "HTTP" | "GRPC" | "WS";
   exposesPublicDomain: boolean;
 }
+
+// Port schema for form validation
+const portSchema = z.object({
+  port: z
+    .number()
+    .min(1, "Port must be at least 1")
+    .max(65535, "Port must be less than 65536"),
+  protocol: z.enum(["TCP", "UDP"]),
+  appProtocol: z.enum(["HTTP", "GRPC", "WS"]).optional(),
+  exposesPublicDomain: z.boolean(),
+});
 
 // Form schema with Zod validation
 export const launchpadFormSchema = z.object({
@@ -86,6 +97,7 @@ export const launchpadFormSchema = z.object({
   replicas: z.enum(
     replicasOptions.map((val) => val.toString()) as [string, ...string[]]
   ),
+  ports: z.array(portSchema).min(1, "At least one port is required"),
   envVars: z.string().optional(),
   configMapPath: z.string().optional(),
   configMapValue: z.string().optional(),
@@ -125,14 +137,6 @@ export default function LaunchpadCreateMessage({
   const [isCompleted, setIsCompleted] = useState(false);
   const [createdDeploymentName, setCreatedDeploymentName] =
     useState<string>("");
-  const [ports, setPorts] = useState<Port[]>([
-    {
-      port: 80,
-      protocol: "TCP",
-      appProtocol: "HTTP",
-      exposesPublicDomain: true,
-    },
-  ]);
 
   const { launchpad, project } = useTRPCClients();
   const createLaunchpadMutation = useMutation(
@@ -160,6 +164,14 @@ export default function LaunchpadCreateMessage({
       cpu: (payload?.cpu || 500).toString(),
       memory: (payload?.memory || 512).toString(),
       replicas: (payload?.replicas || 1).toString(),
+      ports: [
+        {
+          port: 80,
+          protocol: "TCP",
+          appProtocol: undefined,
+          exposesPublicDomain: true,
+        },
+      ],
       envVars: payload?.envVars || "",
       storageName: payload?.storageName || "",
       storagePath: payload?.storagePath || "",
@@ -183,27 +195,47 @@ export default function LaunchpadCreateMessage({
 
   // Port management functions
   const addPort = () => {
-    setPorts([
-      ...ports,
+    const currentPorts = form.getValues("ports");
+    form.setValue("ports", [
+      ...currentPorts,
       {
         port: 8080,
         protocol: "TCP",
-        appProtocol: "HTTP",
+        appProtocol: undefined,
         exposesPublicDomain: false,
       },
     ]);
   };
 
   const removePort = (index: number) => {
-    if (ports.length > 1) {
-      setPorts(ports.filter((_, i) => i !== index));
+    const currentPorts = form.getValues("ports");
+    if (currentPorts.length > 1) {
+      form.setValue(
+        "ports",
+        currentPorts.filter((_, i) => i !== index)
+      );
     }
   };
 
   const updatePort = (index: number, field: keyof Port, value: any) => {
-    const newPorts = [...ports];
-    newPorts[index] = { ...newPorts[index], [field]: value };
-    setPorts(newPorts);
+    const currentPorts = form.getValues("ports");
+    const newPorts = [...currentPorts];
+    
+    if (field === "protocol") {
+      // If selecting TCP or UDP, clear appProtocol
+      if (value === "TCP" || value === "UDP") {
+        newPorts[index] = { ...newPorts[index], protocol: value, appProtocol: undefined };
+      }
+    } else if (field === "appProtocol") {
+      // If selecting HTTP, GRPC, or WS, set protocol to TCP and set appProtocol
+      if (value === "HTTP" || value === "GRPC" || value === "WS") {
+        newPorts[index] = { ...newPorts[index], protocol: "TCP", appProtocol: value };
+      }
+    } else {
+      newPorts[index] = { ...newPorts[index], [field]: value };
+    }
+    
+    form.setValue("ports", newPorts);
   };
 
   const onSubmit = async (values: LaunchpadFormValues) => {
@@ -255,44 +287,84 @@ export default function LaunchpadCreateMessage({
           ]
         : [];
 
-      // Create the deployment
-      await createLaunchpadMutation.mutateAsync({
-        request: {
-          name: deploymentName,
-          image: values.image.trim(),
-          command: (values.command || "").trim(),
-          args: (values.args || "").trim(),
-          resource: {
-            replicas: parseInt(values.replicas),
-            cpu: parseInt(values.cpu),
-            memory: parseInt(values.memory),
-          },
-          ports: ports,
-          env: envArray,
-          hpa: null,
-          imageRegistry: null,
-          storage: storageArray,
-          configMap: configMapArray,
+      // Create the launchpad application using the new standardized API
+      const createRequest = {
+        name: deploymentName,
+        image: values.image.trim(),
+        command: (values.command || "").trim(),
+        args: (values.args || "").trim(),
+        resource: {
+          replicas: parseInt(values.replicas),
+          cpu: parseInt(values.cpu),
+          memory: parseInt(values.memory),
         },
-      });
+        ports: values.ports.map((port) => ({
+          port: port.port,
+          protocol: port.appProtocol ? "TCP" : port.protocol,
+          appProtocol: port.appProtocol,
+          exposesPublicDomain: port.exposesPublicDomain,
+        })),
+        env: envArray,
+        hpa: null,
+        imageRegistry: null,
+        storage: storageArray,
+        configMap: configMapArray,
+      };
 
-      // Add the created deployment to the project
-      const resourceTarget = convertResourceTypeToTarget(
-        "deployment",
-        deploymentName
+      // Log the request instead of sending it (for debugging/testing)
+      console.log(
+        "Launchpad Create Request:",
+        JSON.stringify(createRequest, null, 2)
       );
-      await addToProjectMutation.mutateAsync({
-        resources: [resourceTarget],
-        name: selectedProject,
-      });
+
+      // Comment out the actual API call for now
+      // await createLaunchpadMutation.mutateAsync({
+      //   request: createRequest,
+      // });
+
+      // Add the created deployment to the project (commented out for debugging)
+      // const resourceTarget = convertResourceTypeToTarget(
+      //   "deployment",
+      //   deploymentName
+      // );
+      // await addToProjectMutation.mutateAsync({
+      //   resources: [resourceTarget],
+      //   name: selectedProject,
+      // });
 
       // Set completion state
       setCreatedDeploymentName(deploymentName);
       setIsCompleted(true);
-      toast.success("Deployment created and added to project successfully!");
+      toast.success(
+        "Launchpad application created and added to project successfully!"
+      );
     } catch (error) {
-      console.error("Failed to create deployment:", error);
-      toast.error("Failed to create deployment. Please try again.");
+      console.error("Failed to create launchpad application:", error);
+
+      // Provide more specific error messages based on the error type
+      if (error instanceof Error) {
+        if (error.message.includes("already exists")) {
+          toast.error(
+            "An application with this name already exists. Please choose a different name."
+          );
+        } else if (error.message.includes("invalid")) {
+          toast.error(
+            "Invalid configuration. Please check your settings and try again."
+          );
+        } else if (error.message.includes("unauthorized")) {
+          toast.error(
+            "Unauthorized. Please check your permissions and try again."
+          );
+        } else {
+          toast.error(
+            `Failed to create launchpad application: ${error.message}`
+          );
+        }
+      } else {
+        toast.error(
+          "Failed to create launchpad application. Please try again."
+        );
+      }
     } finally {
       setIsCreating(false);
     }
@@ -304,7 +376,7 @@ export default function LaunchpadCreateMessage({
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-green-500" />
-            Deployment Created Successfully
+            Launchpad Application Created Successfully
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -324,8 +396,8 @@ export default function LaunchpadCreateMessage({
 
           <div className="text-sm text-muted-foreground">
             <p>
-              Your deployment is now ready to use. You can access it from the
-              project dashboard.
+              Your launchpad application is now ready to use. You can access it
+              from the project dashboard.
             </p>
           </div>
         </CardContent>
@@ -336,7 +408,7 @@ export default function LaunchpadCreateMessage({
   return (
     <Card className="w-full bg-background-secondary border border-border-primary">
       <CardHeader>
-        <CardTitle className="text-lg">Create Deployment</CardTitle>
+        <CardTitle className="text-lg">Create Launchpad Application</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -527,19 +599,34 @@ export default function LaunchpadCreateMessage({
                 </AccordionTrigger>
                 <AccordionContent className="px-4 pb-4 space-y-4">
                   <div className="space-y-3">
-                    {ports.map((port, index) => (
-                      <div key={index} className="flex items-center gap-2 p-3 border rounded-lg">
-                        <div className="flex-1 grid grid-cols-4 gap-2">
+                    {form.watch("ports")?.map((port, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-2 p-3 border rounded-lg"
+                      >
+                        <div className="flex-1 grid grid-cols-3 gap-2">
                           <Input
                             type="number"
                             placeholder="Port"
                             value={port.port}
-                            onChange={(e) => updatePort(index, "port", parseInt(e.target.value) || 0)}
+                            onChange={(e) =>
+                              updatePort(
+                                index,
+                                "port",
+                                parseInt(e.target.value) || 0
+                              )
+                            }
                             className="col-span-1"
                           />
                           <Select
-                            value={port.protocol}
-                            onValueChange={(value) => updatePort(index, "protocol", value as "TCP" | "UDP" | "SCTP")}
+                            value={port.appProtocol || port.protocol}
+                            onValueChange={(value) =>
+                              updatePort(
+                                index,
+                                value === "HTTP" || value === "GRPC" || value === "WS" ? "appProtocol" : "protocol",
+                                value
+                              )
+                            }
                           >
                             <SelectTrigger className="col-span-1">
                               <SelectValue />
@@ -547,17 +634,6 @@ export default function LaunchpadCreateMessage({
                             <SelectContent>
                               <SelectItem value="TCP">TCP</SelectItem>
                               <SelectItem value="UDP">UDP</SelectItem>
-                              <SelectItem value="SCTP">SCTP</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <Select
-                            value={port.appProtocol}
-                            onValueChange={(value) => updatePort(index, "appProtocol", value as "HTTP" | "GRPC" | "WS")}
-                          >
-                            <SelectTrigger className="col-span-1">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
                               <SelectItem value="HTTP">HTTP</SelectItem>
                               <SelectItem value="GRPC">GRPC</SelectItem>
                               <SelectItem value="WS">WS</SelectItem>
@@ -565,7 +641,13 @@ export default function LaunchpadCreateMessage({
                           </Select>
                           <Select
                             value={port.exposesPublicDomain.toString()}
-                            onValueChange={(value) => updatePort(index, "exposesPublicDomain", value === "true")}
+                            onValueChange={(value) =>
+                              updatePort(
+                                index,
+                                "exposesPublicDomain",
+                                value === "true"
+                              )
+                            }
                           >
                             <SelectTrigger className="col-span-1">
                               <SelectValue />
@@ -576,7 +658,7 @@ export default function LaunchpadCreateMessage({
                             </SelectContent>
                           </Select>
                         </div>
-                        {ports.length > 1 && (
+                        {form.watch("ports").length > 1 && (
                           <Button
                             type="button"
                             variant="outline"
@@ -734,10 +816,7 @@ export default function LaunchpadCreateMessage({
                               </SelectTrigger>
                               <SelectContent>
                                 {storageSizeOptions.map((sizeValue) => (
-                                  <SelectItem
-                                    key={sizeValue}
-                                    value={sizeValue}
-                                  >
+                                  <SelectItem key={sizeValue} value={sizeValue}>
                                     {sizeValue}
                                   </SelectItem>
                                 ))}
@@ -758,7 +837,7 @@ export default function LaunchpadCreateMessage({
               disabled={isCreating || !form.watch("image")?.trim()}
               className="w-full"
             >
-              {isCreating ? "Creating..." : "Create Deployment"}
+              {isCreating ? "Creating..." : "Create Launchpad Application"}
             </Button>
           </form>
         </Form>

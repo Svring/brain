@@ -117,10 +117,21 @@
  * };
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { useForm, useFieldArray } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   Select,
   SelectContent,
@@ -155,6 +166,62 @@ import {
 import type { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import type { LaunchpadPatchRequest } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
 import BaseSystemMessage from "../components/base-system-message";
+
+// CPU options for launchpad
+const cpuOptions = [500, 1000, 2000, 4000, 6000, 8000] as const;
+
+// Memory options for launchpad
+const memoryOptions = [512, 1024, 2048, 4096, 8192, 16000] as const;
+
+// Replicas options for launchpad
+const replicasOptions = [1, 2, 3, 5, 10] as const;
+
+// Port protocol options for launchpad
+const portProtocolOptions = ["TCP", "UDP", "SCTP"] as const;
+
+// App protocol options for launchpad
+const appProtocolOptions = ["HTTP", "GRPC", "WS"] as const;
+
+// Port schema for form validation
+const portSchema = z.object({
+  port: z
+    .number()
+    .min(1, "Port must be at least 1")
+    .max(65535, "Port must be less than 65536"),
+  protocol: z.enum(["TCP", "UDP", "SCTP"]),
+  appProtocol: z.enum(["HTTP", "GRPC", "WS"]).optional(),
+  exposesPublicDomain: z.boolean(),
+});
+
+// Environment variable schema
+const envSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  value: z.string().optional(),
+  valueFrom: z
+    .object({
+      secretKeyRef: z.object({
+        key: z.string(),
+        name: z.string(),
+      }),
+    })
+    .optional(),
+});
+
+// Form schema with Zod validation
+const launchpadUpdateFormSchema = z.object({
+  image: z.string().min(1, "Image is required"),
+  cpu: z.enum(cpuOptions.map((val) => val.toString()) as [string, ...string[]]),
+  memory: z.enum(
+    memoryOptions.map((val) => val.toString()) as [string, ...string[]]
+  ),
+  replicas: z.enum(
+    replicasOptions.map((val) => val.toString()) as [string, ...string[]]
+  ),
+  ports: z.array(portSchema),
+  env: z.array(envSchema),
+});
+
+type LaunchpadUpdateFormValues = z.infer<typeof launchpadUpdateFormSchema>;
 
 interface LaunchpadResource {
   cpu: number;
@@ -208,80 +275,76 @@ export default function LaunchpadUpdateMessage({
     launchpad.updateLaunchpad.mutationOptions()
   );
 
-  // Define default values, merging with payload
-  const defaultValues = {
-    cpu: payload?.resource?.cpu || 2000,
-    memory: payload?.resource?.memory || 4096,
-    replicas: payload?.resource?.replicas || 1,
-    image: payload?.image || "nginx:latest",
-    ports: payload?.ports || [],
-    env: payload?.env || [],
-  };
+  // Stable key for payload to avoid resets on identical content
+  const payloadKey = useMemo(() => JSON.stringify(payload ?? {}), [payload]);
 
-  // Initialize state with default values
-  const [cpu, setCpu] = useState<number>(defaultValues.cpu);
-  const [memory, setMemory] = useState<number>(defaultValues.memory);
-  const [replicas, setReplicas] = useState<number>(defaultValues.replicas);
-  const [image, setImage] = useState<string>(defaultValues.image);
-  const [ports, setPorts] = useState<LaunchpadPort[]>(defaultValues.ports);
-  const [env, setEnv] = useState<LaunchpadEnv[]>(defaultValues.env);
+  // Memoize default values; changes only when payload content changes
+  const defaultValues: LaunchpadUpdateFormValues = useMemo(
+    () => ({
+      image: payload?.image || "nginx:latest",
+      cpu: (payload?.resource?.cpu || 2000).toString(),
+      memory: (payload?.resource?.memory || 4096).toString(),
+      replicas: (payload?.resource?.replicas || 1).toString(),
+      ports: payload?.ports || [
+        {
+          port: 80,
+          protocol: "TCP",
+          appProtocol: "HTTP",
+          exposesPublicDomain: true,
+        },
+      ],
+      env: payload?.env || [],
+    }),
+    [payloadKey]
+  );
 
-  // Reset state when payload changes
+  // Initialize form
+  const form = useForm<LaunchpadUpdateFormValues>({
+    resolver: zodResolver(launchpadUpdateFormSchema),
+    defaultValues,
+  });
+
+  // Initialize field arrays for dynamic fields
+  const {
+    fields: portFields,
+    append: appendPort,
+    remove: removePort,
+  } = useFieldArray({
+    control: form.control,
+    name: "ports",
+  });
+
+  const {
+    fields: envFields,
+    append: appendEnv,
+    remove: removeEnv,
+  } = useFieldArray({
+    control: form.control,
+    name: "env",
+  });
+
+  // Reset form when payload changes
   useEffect(() => {
-    setCpu(defaultValues.cpu);
-    setMemory(defaultValues.memory);
-    setReplicas(defaultValues.replicas);
-    setImage(defaultValues.image);
-    setPorts(defaultValues.ports);
-    setEnv(defaultValues.env);
-  }, [payload]);
+    form.reset(defaultValues);
+  }, [payloadKey, form, defaultValues]);
 
   const handleAddPort = () => {
-    const newPort: LaunchpadPort = {
+    appendPort({
       port: 8080,
       protocol: "TCP",
+      appProtocol: "HTTP",
       exposesPublicDomain: true,
-    };
-    setPorts([...ports, newPort]);
-  };
-
-  const handleRemovePort = (index: number) => {
-    setPorts(ports.filter((_, i) => i !== index));
-  };
-
-  const handleUpdatePort = (
-    index: number,
-    field: keyof LaunchpadPort,
-    value: any
-  ) => {
-    const updatedPorts = [...ports];
-    updatedPorts[index] = { ...updatedPorts[index], [field]: value };
-    setPorts(updatedPorts);
+    });
   };
 
   const handleAddEnv = () => {
-    const newEnv: LaunchpadEnv = {
-      name: `ENV_${env.length + 1}`,
+    appendEnv({
+      name: `ENV_${envFields.length + 1}`,
       value: "",
-    };
-    setEnv([...env, newEnv]);
+    });
   };
 
-  const handleRemoveEnv = (index: number) => {
-    setEnv(env.filter((_, i) => i !== index));
-  };
-
-  const handleUpdateEnv = (
-    index: number,
-    field: keyof LaunchpadEnv,
-    value: any
-  ) => {
-    const updatedEnv = [...env];
-    updatedEnv[index] = { ...updatedEnv[index], [field]: value };
-    setEnv(updatedEnv);
-  };
-
-  const handleUpdate = async () => {
+  const onSubmit = async (values: LaunchpadUpdateFormValues) => {
     if (!target) {
       toast.error("No target specified for update");
       return;
@@ -294,28 +357,28 @@ export default function LaunchpadUpdateMessage({
 
       // Update resources
       if (
-        cpu !== payload?.resource?.cpu ||
-        memory !== payload?.resource?.memory ||
-        replicas !== payload?.resource?.replicas
+        parseInt(values.cpu) !== payload?.resource?.cpu ||
+        parseInt(values.memory) !== payload?.resource?.memory ||
+        parseInt(values.replicas) !== payload?.resource?.replicas
       ) {
         patchRequest.resource = {
-          cpu,
-          memory,
-          replicas,
+          cpu: parseInt(values.cpu),
+          memory: parseInt(values.memory),
+          replicas: parseInt(values.replicas),
         };
       }
 
       // Update image
-      if (image !== payload?.image) {
-        patchRequest.image = image;
+      if (values.image !== payload?.image) {
+        patchRequest.image = values.image;
       }
 
       // Update environment variables
       if (
-        env.length > 0 &&
-        JSON.stringify(env) !== JSON.stringify(payload?.env)
+        values.env.length > 0 &&
+        JSON.stringify(values.env) !== JSON.stringify(payload?.env)
       ) {
-        patchRequest.env = env;
+        patchRequest.env = values.env;
       }
 
       await updateMutation.mutateAsync({
@@ -343,8 +406,9 @@ export default function LaunchpadUpdateMessage({
               {launchpadName} Updated Successfully
             </div>
             <div className="text-sm text-green-700 dark:text-green-300">
-              CPU: {cpu}m • Memory: {memory}MB • Replicas: {replicas} • Ports:{" "}
-              {ports.length} • Env: {env.length}
+              CPU: {form.getValues("cpu")}m • Memory: {form.getValues("memory")}
+              MB • Replicas: {form.getValues("replicas")} • Ports:{" "}
+              {portFields.length} • Env: {envFields.length}
             </div>
           </div>
         </div>
@@ -358,312 +422,383 @@ export default function LaunchpadUpdateMessage({
 
   return (
     <BaseSystemMessage target={target}>
-      {/* Image Section */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <ImageIcon className="h-4 w-4" />
-          <Label className="text-sm font-medium">Container Image</Label>
-        </div>
-        <Input
-          value={image}
-          onChange={(e) => setImage(e.target.value)}
-          placeholder="nginx:latest"
-          className="w-full"
-        />
-      </div>
-
-      <Separator />
-
-      {/* Resources Section */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Cpu className="h-4 w-4" />
-          <Label className="text-sm font-medium">Resources</Label>
-        </div>
-
-        <div className="grid grid-cols-3 gap-3">
-          <div className="space-y-2">
-            <Label className="text-xs">CPU (m)</Label>
-            <Select
-              value={cpu.toString()}
-              onValueChange={(value) => setCpu(Number(value))}
-            >
-              <SelectTrigger className="h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {[500, 1000, 2000, 4000, 6000, 8000].map((cpuValue) => (
-                  <SelectItem key={cpuValue} value={cpuValue.toString()}>
-                    {cpuValue}m
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-xs">Memory (MB)</Label>
-            <Select
-              value={memory.toString()}
-              onValueChange={(value) => setMemory(Number(value))}
-            >
-              <SelectTrigger className="h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {[512, 1024, 2048, 4096, 8192, 16000].map((memoryValue) => (
-                  <SelectItem key={memoryValue} value={memoryValue.toString()}>
-                    {memoryValue}MB
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-xs">Replicas</Label>
-            <Select
-              value={replicas.toString()}
-              onValueChange={(value) => setReplicas(Number(value))}
-            >
-              <SelectTrigger className="h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {[1, 2, 3, 5, 10].map((replicaValue) => (
-                  <SelectItem
-                    key={replicaValue}
-                    value={replicaValue.toString()}
-                  >
-                    {replicaValue}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
-
-      <Separator />
-
-      {/* Collapsible Sections */}
-      <Accordion type="multiple" className="w-full space-y-1">
-        {/* Ports Section */}
-        <AccordionItem
-          value="ports"
-          className="inset-ring inset-ring-border rounded-lg"
-        >
-          <AccordionTrigger className="px-4 py-3 hover:no-underline">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          {/* Image Section */}
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <ChevronDown className="h-4 w-4" />
-              <Network className="h-4 w-4" />
-              <span className="font-medium">Ports ({ports.length})</span>
+              <ImageIcon className="h-4 w-4" />
+              <Label className="text-sm font-medium">Container Image</Label>
             </div>
-          </AccordionTrigger>
-          <AccordionContent className="px-4 pb-4 space-y-4">
-            <div className="space-y-3">
-              {ports.length === 0 ? (
-                <div className="text-center py-4 text-muted-foreground">
-                  No ports configured
-                </div>
-              ) : (
-                ports.map((port, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-3 p-3 border rounded-lg"
-                  >
-                    <div className="flex-1 grid grid-cols-4 gap-2">
-                      <div>
-                        <Label className="text-xs">Port</Label>
-                        <Input
-                          type="number"
-                          value={port.port}
-                          onChange={(e) =>
-                            handleUpdatePort(
-                              index,
-                              "port",
-                              parseInt(e.target.value)
-                            )
-                          }
-                          className="h-8"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-xs">Protocol</Label>
-                        <Select
-                          value={port.protocol}
-                          onValueChange={(value) =>
-                            handleUpdatePort(
-                              index,
-                              "protocol",
-                              value as "TCP" | "UDP" | "SCTP"
-                            )
-                          }
-                        >
-                          <SelectTrigger className="h-8">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="TCP">TCP</SelectItem>
-                            <SelectItem value="UDP">UDP</SelectItem>
-                            <SelectItem value="SCTP">SCTP</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label className="text-xs">App Protocol</Label>
-                        <Select
-                          value={port.appProtocol || ""}
-                          onValueChange={(value) =>
-                            handleUpdatePort(
-                              index,
-                              "appProtocol",
-                              value || undefined
-                            )
-                          }
-                        >
-                          <SelectTrigger className="h-8">
-                            <SelectValue placeholder="None" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="">None</SelectItem>
-                            <SelectItem value="HTTP">HTTP</SelectItem>
-                            <SelectItem value="GRPC">GRPC</SelectItem>
-                            <SelectItem value="WS">WS</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          checked={port.exposesPublicDomain}
-                          onCheckedChange={(checked) =>
-                            handleUpdatePort(
-                              index,
-                              "exposesPublicDomain",
-                              checked
-                            )
-                          }
-                        />
-                        <Label className="text-xs">Public Domain</Label>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemovePort(index)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))
+            <FormField
+              control={form.control}
+              name="image"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      placeholder="nginx:latest"
+                      className="w-full"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-              <Button
-                variant="outline"
-                onClick={handleAddPort}
-                className="w-full"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Port
-              </Button>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
+            />
+          </div>
 
-        {/* Environment Variables Section */}
-        <AccordionItem
-          value="env"
-          className="inset-ring inset-ring-border rounded-lg"
-        >
-          <AccordionTrigger className="px-4 py-3 hover:no-underline">
+          <Separator />
+
+          {/* Resources Section */}
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <ChevronDown className="h-4 w-4" />
-              <Database className="h-4 w-4" />
-              <span className="font-medium">
-                Environment Variables ({env.length})
-              </span>
+              <Cpu className="h-4 w-4" />
+              <Label className="text-sm font-medium">Resources</Label>
             </div>
-          </AccordionTrigger>
-          <AccordionContent className="px-4 pb-4 space-y-4">
-            <div className="space-y-3">
-              {env.length === 0 ? (
-                <div className="text-center py-4 text-muted-foreground">
-                  No environment variables configured
+
+            <div className="grid grid-cols-3 gap-3">
+              <FormField
+                control={form.control}
+                name="cpu"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs">CPU (m)</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {cpuOptions.map((cpuValue) => (
+                          <SelectItem
+                            key={cpuValue}
+                            value={cpuValue.toString()}
+                          >
+                            {cpuValue}m
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="memory"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs">Memory (MB)</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {memoryOptions.map((memoryValue) => (
+                          <SelectItem
+                            key={memoryValue}
+                            value={memoryValue.toString()}
+                          >
+                            {memoryValue}MB
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="replicas"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs">Replicas</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {replicasOptions.map((replicaValue) => (
+                          <SelectItem
+                            key={replicaValue}
+                            value={replicaValue.toString()}
+                          >
+                            {replicaValue}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Collapsible Sections */}
+          <Accordion type="multiple" className="w-full space-y-1">
+            {/* Ports Section */}
+            <AccordionItem
+              value="ports"
+              className="inset-ring inset-ring-border rounded-lg"
+            >
+              <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                <div className="flex items-center gap-2">
+                  <ChevronDown className="h-4 w-4" />
+                  <Network className="h-4 w-4" />
+                  <span className="font-medium">
+                    Ports ({portFields.length})
+                  </span>
                 </div>
-              ) : (
-                env.map((envVar, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-3 p-3 border rounded-lg"
-                  >
-                    <div className="flex-1 grid grid-cols-2 gap-2">
-                      <div>
-                        <Label className="text-xs">Name</Label>
-                        <Input
-                          value={envVar.name}
-                          onChange={(e) =>
-                            handleUpdateEnv(index, "name", e.target.value)
-                          }
-                          placeholder="VARIABLE_NAME"
-                          className="h-8"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-xs">Value</Label>
-                        <Input
-                          value={envVar.value || ""}
-                          onChange={(e) =>
-                            handleUpdateEnv(index, "value", e.target.value)
-                          }
-                          placeholder="variable_value"
-                          className="h-8"
-                        />
-                      </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-4 pb-4 space-y-4">
+                <div className="space-y-3">
+                  {portFields.length === 0 ? (
+                    <div className="text-center py-4 text-muted-foreground">
+                      No ports configured
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveEnv(index)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))
-              )}
-              <Button
-                variant="outline"
-                onClick={handleAddEnv}
-                className="w-full"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Environment Variable
-              </Button>
+                  ) : (
+                    portFields.map((field, index) => (
+                      <div
+                        key={field.id}
+                        className="flex items-center gap-3 p-3 border rounded-lg"
+                      >
+                        <div className="flex-1 grid grid-cols-4 gap-2">
+                          <FormField
+                            control={form.control}
+                            name={`ports.${index}.port`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    className="h-8"
+                                    {...field}
+                                    onChange={(e) =>
+                                      field.onChange(
+                                        parseInt(e.target.value) || 0
+                                      )
+                                    }
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`ports.${index}.protocol`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger className="h-8">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="TCP">TCP</SelectItem>
+                                    <SelectItem value="UDP">UDP</SelectItem>
+                                    <SelectItem value="SCTP">SCTP</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`ports.${index}.appProtocol`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  value={field.value || ""}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger className="h-8">
+                                      <SelectValue placeholder="None" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="">None</SelectItem>
+                                    <SelectItem value="HTTP">HTTP</SelectItem>
+                                    <SelectItem value="GRPC">GRPC</SelectItem>
+                                    <SelectItem value="WS">WS</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`ports.${index}.exposesPublicDomain`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="flex items-center gap-2">
+                                  <FormControl>
+                                    <Switch
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <Label className="text-xs">
+                                    Public Domain
+                                  </Label>
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removePort(index)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))
+                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAddPort}
+                    className="w-full"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Port
+                  </Button>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Environment Variables Section */}
+            <AccordionItem
+              value="env"
+              className="inset-ring inset-ring-border rounded-lg"
+            >
+              <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                <div className="flex items-center gap-2">
+                  <ChevronDown className="h-4 w-4" />
+                  <Database className="h-4 w-4" />
+                  <span className="font-medium">
+                    Environment Variables ({envFields.length})
+                  </span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-4 pb-4 space-y-4">
+                <div className="space-y-3">
+                  {envFields.length === 0 ? (
+                    <div className="text-center py-4 text-muted-foreground">
+                      No environment variables configured
+                    </div>
+                  ) : (
+                    envFields.map((field, index) => (
+                      <div
+                        key={field.id}
+                        className="flex items-center gap-3 p-3 border rounded-lg"
+                      >
+                        <div className="flex-1 grid grid-cols-2 gap-2">
+                          <FormField
+                            control={form.control}
+                            name={`env.${index}.name`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input
+                                    placeholder="VARIABLE_NAME"
+                                    className="h-8"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`env.${index}.value`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input
+                                    placeholder="variable_value"
+                                    className="h-8"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeEnv(index)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))
+                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAddEnv}
+                    className="w-full"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Environment Variable
+                  </Button>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+
+          <Separator />
+
+          {/* Update Button */}
+          <Button
+            type="submit"
+            disabled={isUpdating || !target}
+            className="w-full"
+          >
+            {isUpdating
+              ? "Updating..."
+              : target
+              ? "Update Launchpad"
+              : "No Target Specified"}
+          </Button>
+
+          {!target && (
+            <div className="text-sm text-muted-foreground text-center">
+              <p>Target is required to update launchpad configuration.</p>
             </div>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
-
-      <Separator />
-
-      {/* Update Button */}
-      <Button
-        onClick={handleUpdate}
-        disabled={isUpdating || !target}
-        className="w-full"
-      >
-        {isUpdating
-          ? "Updating..."
-          : target
-          ? "Update Launchpad"
-          : "No Target Specified"}
-      </Button>
-
-      {!target && (
-        <div className="text-sm text-muted-foreground text-center">
-          <p>Target is required to update launchpad configuration.</p>
-        </div>
-      )}
+          )}
+        </form>
+      </Form>
     </BaseSystemMessage>
   );
 }

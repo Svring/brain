@@ -29,7 +29,7 @@ export const ObjectStorageMessage: React.FC<ObjectStorageMessageProps> = ({
     })
   );
 
-  console.log("objectstorageObject", objectstorageObject);
+  // console.log("objectstorageObject", objectstorageObject);
 
   const actions: MessageAction[] = objectstorageObject
     ? [

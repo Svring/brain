@@ -85,8 +85,6 @@ export type BrainState = {
 };
 
 export type LanggraphEvent =
-  | { type: "ACTIVATE" }
-  | { type: "DEACTIVATE" }
   | {
       type: "SET_CONFIG";
       base_url?: string;
@@ -96,4 +94,8 @@ export type LanggraphEvent =
   | {
       type: "SET_STAGE";
       stage: "propose_project" | "manage_project";
+    }
+  | {
+      type: "SET_PROJECT_CONTEXT";
+      project_context: ProjectContextState;
     };

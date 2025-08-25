@@ -55,7 +55,7 @@ export function useProjectState() {
 
 export function useProjectActions() {
   const { send, state } = useProjectContext();
-  // const { setState: setLanggraphState } = useLanggraphActions();
+  const { setProjectContext } = useLanggraphActions();
 
   return {
     setAllProjects: (projects: unknown[]) => {
@@ -69,6 +69,10 @@ export function useProjectActions() {
     },
     setSelectedProjectResources: (resources: ResourceObject[]) => {
       send({ type: "SET_SELECTED_PROJECT_RESOURCES", resources });
+      setProjectContext({
+        ...state.context,
+        selectedProjectResources: resources,
+      });
     },
     clearSelectedProjectResources: () => {
       send({ type: "CLEAR_SELECTED_PROJECT_RESOURCES" });
@@ -81,9 +85,17 @@ export function useProjectActions() {
     },
     selectResource: (target: ResourceTarget) => {
       send({ type: "SELECT_RESOURCE", target });
+      setProjectContext({
+        ...state.context,
+        selectedResource: target,
+      });
     },
     clearSelectedResource: () => {
       send({ type: "CLEAR_SELECTED_RESOURCE" });
+      setProjectContext({
+        ...state.context,
+        selectedResource: null,
+      });
     },
   };
 }

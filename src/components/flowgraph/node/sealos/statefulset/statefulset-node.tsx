@@ -116,6 +116,7 @@ function StatefulsetNode({
 
   const mainCard = (
     <BaseNode
+      target={target}
       nodeData={resource}
       className={isDeletingStatefulset ? "border-theme-red" : ""}
     >
