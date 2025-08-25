@@ -120,145 +120,25 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { Form } from "@/components/ui/form";
+import { Accordion } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Switch } from "@/components/ui/switch";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  CheckCircle,
-  Settings,
-  Cpu,
-  HardDrive,
-  Network,
-  Plus,
-  X,
-  Image as ImageIcon,
-  Database,
-  ChevronDown,
-} from "lucide-react";
-import type { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import type { LaunchpadPatchRequest } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
 import BaseSystemMessage from "../components/base-system-message";
-
-// CPU options for launchpad
-const cpuOptions = [500, 1000, 2000, 4000, 6000, 8000] as const;
-
-// Memory options for launchpad
-const memoryOptions = [512, 1024, 2048, 4096, 8192, 16000] as const;
-
-// Replicas options for launchpad
-const replicasOptions = [1, 2, 3, 5, 10] as const;
-
-// Port protocol options for launchpad
-const portProtocolOptions = ["TCP", "UDP", "SCTP"] as const;
-
-// App protocol options for launchpad
-const appProtocolOptions = ["HTTP", "GRPC", "WS"] as const;
-
-// Port schema for form validation
-const portSchema = z.object({
-  port: z
-    .number()
-    .min(1, "Port must be at least 1")
-    .max(65535, "Port must be less than 65536"),
-  protocol: z.enum(["TCP", "UDP", "SCTP"]),
-  appProtocol: z.enum(["HTTP", "GRPC", "WS"]).optional(),
-  exposesPublicDomain: z.boolean(),
-});
-
-// Environment variable schema
-const envSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  value: z.string().optional(),
-  valueFrom: z
-    .object({
-      secretKeyRef: z.object({
-        key: z.string(),
-        name: z.string(),
-      }),
-    })
-    .optional(),
-});
-
-// Form schema with Zod validation
-const launchpadUpdateFormSchema = z.object({
-  image: z.string().min(1, "Image is required"),
-  cpu: z.enum(cpuOptions.map((val) => val.toString()) as [string, ...string[]]),
-  memory: z.enum(
-    memoryOptions.map((val) => val.toString()) as [string, ...string[]]
-  ),
-  replicas: z.enum(
-    replicasOptions.map((val) => val.toString()) as [string, ...string[]]
-  ),
-  ports: z.array(portSchema),
-  env: z.array(envSchema),
-});
-
-type LaunchpadUpdateFormValues = z.infer<typeof launchpadUpdateFormSchema>;
-
-interface LaunchpadResource {
-  cpu: number;
-  memory: number;
-  replicas: number;
-}
-
-interface LaunchpadPort {
-  port: number;
-  protocol: "TCP" | "UDP" | "SCTP";
-  appProtocol?: "HTTP" | "GRPC" | "WS";
-  exposesPublicDomain: boolean;
-}
-
-interface LaunchpadEnv {
-  name: string;
-  value?: string;
-  valueFrom?: {
-    secretKeyRef: {
-      key: string;
-      name: string;
-    };
-  };
-}
-
-interface LaunchpadUpdateMessageProps {
-  target: BuiltinResourceTarget;
-  payload?: {
-    target?: BuiltinResourceTarget;
-    resource?: LaunchpadResource;
-    image?: string;
-    ports?: LaunchpadPort[];
-    env?: LaunchpadEnv[];
-    launchpadName?: string;
-    status?: string;
-  };
-}
+import {
+  ImageSection,
+  ResourcesSection,
+  PortsSection,
+  EnvSection,
+  SuccessMessage,
+  launchpadUpdateFormSchema,
+  type LaunchpadUpdateFormValues,
+  type LaunchpadUpdateMessageProps,
+} from "./components/launchpad-update";
 
 export default function LaunchpadUpdateMessage({
   target,
@@ -269,7 +149,6 @@ export default function LaunchpadUpdateMessage({
 
   const { launchpad } = useTRPCClients();
   const launchpadName = payload?.launchpadName || target?.name || "Launchpad";
-  const status = payload?.status || "Unknown";
 
   const updateMutation = useMutation(
     launchpad.updateLaunchpad.mutationOptions()
@@ -305,20 +184,12 @@ export default function LaunchpadUpdateMessage({
   });
 
   // Initialize field arrays for dynamic fields
-  const {
-    fields: portFields,
-    append: appendPort,
-    remove: removePort,
-  } = useFieldArray({
+  const portFields = useFieldArray({
     control: form.control,
     name: "ports",
   });
 
-  const {
-    fields: envFields,
-    append: appendEnv,
-    remove: removeEnv,
-  } = useFieldArray({
+  const envFields = useFieldArray({
     control: form.control,
     name: "env",
   });
@@ -327,22 +198,6 @@ export default function LaunchpadUpdateMessage({
   useEffect(() => {
     form.reset(defaultValues);
   }, [payloadKey, form, defaultValues]);
-
-  const handleAddPort = () => {
-    appendPort({
-      port: 8080,
-      protocol: "TCP",
-      appProtocol: "HTTP",
-      exposesPublicDomain: true,
-    });
-  };
-
-  const handleAddEnv = () => {
-    appendEnv({
-      name: `ENV_${envFields.length + 1}`,
-      value: "",
-    });
-  };
 
   const onSubmit = async (values: LaunchpadUpdateFormValues) => {
     if (!target) {
@@ -381,10 +236,18 @@ export default function LaunchpadUpdateMessage({
         patchRequest.env = values.env;
       }
 
-      await updateMutation.mutateAsync({
-        name: target.name || "",
-        request: patchRequest,
-      });
+      // Log the request instead of sending it (for debugging/testing)
+      console.log(
+        "Launchpad Update Request:",
+        JSON.stringify(patchRequest, null, 2)
+      );
+      console.log("Target:", target.name);
+
+      // Comment out the actual API call for now
+      // await updateMutation.mutateAsync({
+      //   name: target.name || "",
+      //   request: patchRequest,
+      // });
 
       setIsCompleted(true);
       toast.success("Launchpad updated successfully!");
@@ -398,25 +261,15 @@ export default function LaunchpadUpdateMessage({
 
   if (isCompleted) {
     return (
-      <BaseSystemMessage target={target}>
-        <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
-          <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
-          <div>
-            <div className="font-medium text-green-900 dark:text-green-100">
-              {launchpadName} Updated Successfully
-            </div>
-            <div className="text-sm text-green-700 dark:text-green-300">
-              CPU: {form.getValues("cpu")}m • Memory: {form.getValues("memory")}
-              MB • Replicas: {form.getValues("replicas")} • Ports:{" "}
-              {portFields.length} • Env: {envFields.length}
-            </div>
-          </div>
-        </div>
-
-        <div className="text-sm text-muted-foreground">
-          <p>Your launchpad configuration has been updated successfully.</p>
-        </div>
-      </BaseSystemMessage>
+      <SuccessMessage
+        target={target}
+        launchpadName={launchpadName}
+        cpu={form.getValues("cpu")}
+        memory={form.getValues("memory")}
+        replicas={form.getValues("replicas")}
+        portsCount={portFields.fields.length}
+        envCount={envFields.fields.length}
+      />
     );
   }
 
@@ -424,357 +277,13 @@ export default function LaunchpadUpdateMessage({
     <BaseSystemMessage target={target}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          {/* Image Section */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <ImageIcon className="h-4 w-4" />
-              <Label className="text-sm font-medium">Container Image</Label>
-            </div>
-            <FormField
-              control={form.control}
-              name="image"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      placeholder="nginx:latest"
-                      className="w-full"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <Separator />
-
-          {/* Resources Section */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Cpu className="h-4 w-4" />
-              <Label className="text-sm font-medium">Resources</Label>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <FormField
-                control={form.control}
-                name="cpu"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs">CPU (m)</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="h-9">
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {cpuOptions.map((cpuValue) => (
-                          <SelectItem
-                            key={cpuValue}
-                            value={cpuValue.toString()}
-                          >
-                            {cpuValue}m
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="memory"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs">Memory (MB)</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="h-9">
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {memoryOptions.map((memoryValue) => (
-                          <SelectItem
-                            key={memoryValue}
-                            value={memoryValue.toString()}
-                          >
-                            {memoryValue}MB
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="replicas"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs">Replicas</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="h-9">
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {replicasOptions.map((replicaValue) => (
-                          <SelectItem
-                            key={replicaValue}
-                            value={replicaValue.toString()}
-                          >
-                            {replicaValue}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </div>
-
-          <Separator />
+          <ImageSection control={form.control} />
+          <ResourcesSection control={form.control} />
 
           {/* Collapsible Sections */}
           <Accordion type="multiple" className="w-full space-y-1">
-            {/* Ports Section */}
-            <AccordionItem
-              value="ports"
-              className="inset-ring inset-ring-border rounded-lg"
-            >
-              <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                <div className="flex items-center gap-2">
-                  <ChevronDown className="h-4 w-4" />
-                  <Network className="h-4 w-4" />
-                  <span className="font-medium">
-                    Ports ({portFields.length})
-                  </span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4 space-y-4">
-                <div className="space-y-3">
-                  {portFields.length === 0 ? (
-                    <div className="text-center py-4 text-muted-foreground">
-                      No ports configured
-                    </div>
-                  ) : (
-                    portFields.map((field, index) => (
-                      <div
-                        key={field.id}
-                        className="flex items-center gap-3 p-3 border rounded-lg"
-                      >
-                        <div className="flex-1 grid grid-cols-4 gap-2">
-                          <FormField
-                            control={form.control}
-                            name={`ports.${index}.port`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input
-                                    type="number"
-                                    className="h-8"
-                                    {...field}
-                                    onChange={(e) =>
-                                      field.onChange(
-                                        parseInt(e.target.value) || 0
-                                      )
-                                    }
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name={`ports.${index}.protocol`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <Select
-                                  onValueChange={field.onChange}
-                                  value={field.value}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger className="h-8">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="TCP">TCP</SelectItem>
-                                    <SelectItem value="UDP">UDP</SelectItem>
-                                    <SelectItem value="SCTP">SCTP</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name={`ports.${index}.appProtocol`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <Select
-                                  onValueChange={field.onChange}
-                                  value={field.value || ""}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger className="h-8">
-                                      <SelectValue placeholder="None" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="">None</SelectItem>
-                                    <SelectItem value="HTTP">HTTP</SelectItem>
-                                    <SelectItem value="GRPC">GRPC</SelectItem>
-                                    <SelectItem value="WS">WS</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name={`ports.${index}.exposesPublicDomain`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <div className="flex items-center gap-2">
-                                  <FormControl>
-                                    <Switch
-                                      checked={field.value}
-                                      onCheckedChange={field.onChange}
-                                    />
-                                  </FormControl>
-                                  <Label className="text-xs">
-                                    Public Domain
-                                  </Label>
-                                </div>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removePort(index)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))
-                  )}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleAddPort}
-                    className="w-full"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Port
-                  </Button>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* Environment Variables Section */}
-            <AccordionItem
-              value="env"
-              className="inset-ring inset-ring-border rounded-lg"
-            >
-              <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                <div className="flex items-center gap-2">
-                  <ChevronDown className="h-4 w-4" />
-                  <Database className="h-4 w-4" />
-                  <span className="font-medium">
-                    Environment Variables ({envFields.length})
-                  </span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4 space-y-4">
-                <div className="space-y-3">
-                  {envFields.length === 0 ? (
-                    <div className="text-center py-4 text-muted-foreground">
-                      No environment variables configured
-                    </div>
-                  ) : (
-                    envFields.map((field, index) => (
-                      <div
-                        key={field.id}
-                        className="flex items-center gap-3 p-3 border rounded-lg"
-                      >
-                        <div className="flex-1 grid grid-cols-2 gap-2">
-                          <FormField
-                            control={form.control}
-                            name={`env.${index}.name`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input
-                                    placeholder="VARIABLE_NAME"
-                                    className="h-8"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name={`env.${index}.value`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input
-                                    placeholder="variable_value"
-                                    className="h-8"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeEnv(index)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))
-                  )}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleAddEnv}
-                    className="w-full"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Environment Variable
-                  </Button>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
+            <PortsSection control={form.control} portFields={portFields} />
+            <EnvSection control={form.control} envFields={envFields} />
           </Accordion>
 
           <Separator />

@@ -284,12 +284,7 @@ export default function ProjectPage({
 }) {
   const { "project-name": projectName } = use(params);
   const { selectProject, clearSelectedProject } = useProjectActions();
-  const { selectedResource } = useProjectState();
   const { setStage } = useLanggraphActions();
-
-  console.log("selectedResource", selectedResource);
-
-  useCopilotActions();
 
   useEffect(() => {
     // Set the selected project when the component mounts
