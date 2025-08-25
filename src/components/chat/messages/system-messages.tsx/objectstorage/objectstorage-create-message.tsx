@@ -30,7 +30,7 @@ import { useProjectState } from "@/contexts/project/project-context";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 // Policy options for object storage
-const policyOptions = ["private", "publicRead", "publicReadWrite"] as const;
+export const bucketPolicyOptions = ["private", "publicRead", "publicReadWrite"] as const;
 
 // Form schema with Zod validation
 export const objectStorageFormSchema = z.object({
@@ -42,7 +42,7 @@ export const objectStorageFormSchema = z.object({
       /^[a-z0-9][a-z0-9-]*[a-z0-9]$/,
       "Bucket name must contain only lowercase letters, numbers, and hyphens"
     ),
-  policy: z.enum(policyOptions),
+  policy: z.enum(bucketPolicyOptions),
 });
 
 type ObjectStorageFormValues = z.infer<typeof objectStorageFormSchema>;

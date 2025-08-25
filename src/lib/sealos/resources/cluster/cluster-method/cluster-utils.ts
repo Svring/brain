@@ -77,3 +77,22 @@ export const convertClusterToSimplifiedList = (clusterResource: any) => {
 export const convertClusterListToSimplified = (clusterResources: any[]) => {
   return clusterResources.map(convertClusterToSimplifiedList);
 };
+
+/**
+ * Maps database type names to supported API cluster types
+ * @param type - The database type name to map
+ * @returns The mapped cluster type for API calls
+ */
+export const mapDatabaseTypeToEnum = (type: string): string => {
+  const typeMap: Record<string, string> = {
+    postgresql: "postgresql",
+    mongodb: "mongodb",
+    "apecloud-mysql": "apecloud-mysql",
+    redis: "redis",
+    kafka: "kafka",
+    weaviate: "weaviate",
+    milvus: "milvus",
+    pulsar: "pulsar",
+  };
+  return typeMap[type] || "postgresql";
+};

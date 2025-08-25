@@ -146,3 +146,53 @@ export const generateDevboxName = (prefix: string = "devbox"): string => {
   const randomString = generateRandomString(5);
   return `${prefix}-${randomString}`;
 };
+
+/**
+ * Maps runtime names to supported API runtime names
+ * @param runtime - The runtime name to map
+ * @returns The mapped runtime name for API calls
+ */
+export const mapRuntimeToEnum = (runtime: string): string => {
+  // Map the runtime to supported API runtime names
+  const runtimeMap: Record<string, string> = {
+    // Direct matches
+    "Node.js": "Node.js",
+    Python: "Python",
+    Java: "Java",
+    Go: "Go",
+    Rust: "Rust",
+    PHP: "PHP",
+    Debian: "Debian",
+    "C++": "C++",
+    ".Net": ".Net",
+    C: "C",
+    // Mappings for similar runtimes
+    "Spring Boot": "Java",
+    Flask: "Python",
+    Django: "Python",
+    "Express.js": "Node.js",
+    "Next.js": "Node.js",
+    Nuxt3: "Node.js",
+    "Vue.js": "Node.js",
+    React: "Node.js",
+    Angular: "Node.js",
+    Svelte: "Node.js",
+    VitePress: "Node.js",
+    Docusaurus: "Node.js",
+    Hexo: "Node.js",
+    Astro: "Node.js",
+    UmiJS: "Node.js",
+    Echo: "Go",
+    Gin: "Go",
+    Iris: "Go",
+    Chi: "Go",
+    Rocket: "Rust",
+    Quarkus: "Java",
+    "Vert.x": "Java",
+    Hugo: "Go",
+    Nginx: "Debian",
+    MCP: "Python",
+    Ubuntu: "Debian",
+  };
+  return runtimeMap[runtime] || "Debian";
+};

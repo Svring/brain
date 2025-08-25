@@ -31,7 +31,7 @@ import { useProjectState } from "@/contexts/project/project-context";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 // Database type options for cluster
-const dbTypeOptions = [
+export const clusterTypeOptions = [
   { value: "postgresql", label: "PostgreSQL" },
   { value: "mongodb", label: "MongoDB" },
   { value: "apecloud-mysql", label: "MySQL" },
@@ -63,7 +63,7 @@ export const clusterFormSchema = z.object({
     .string()
     .min(1, "Name is required")
     .max(50, "Name must be less than 50 characters"),
-  type: z.enum(dbTypeOptions.map(opt => opt.value) as [string, ...string[]]),
+  type: z.enum(clusterTypeOptions.map(opt => opt.value) as [string, ...string[]]),
   version: z.string().min(1, "Version is required"),
   cpu: z.enum(cpuOptions.map(val => val.toString()) as [string, ...string[]]),
   memory: z.enum(memoryOptions.map(val => val.toString()) as [string, ...string[]]),
