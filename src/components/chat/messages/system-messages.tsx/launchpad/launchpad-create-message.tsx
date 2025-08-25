@@ -436,7 +436,7 @@ export default function LaunchpadCreateMessage({
             </div>
 
             {/* Collapsible Sections */}
-            <Accordion type="multiple" className="w-full">
+            <Accordion type="multiple" className="w-full p-2">
               {/* Command & Arguments */}
               <AccordionItem value="command-args" className="border rounded-lg">
                 <AccordionTrigger className="px-4 py-3 hover:no-underline">

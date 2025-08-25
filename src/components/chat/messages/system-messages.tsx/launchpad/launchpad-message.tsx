@@ -7,6 +7,7 @@ import { FileText, Container, BarChart3 } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import LaunchpadMessageDetails from "./components/launchpad-info-details";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import LaunchpadMessageMenu from "./components/launchpad-message-menu";
 
 interface LaunchpadInfoMessageProps {
   target: BuiltinResourceTarget;
@@ -78,7 +79,11 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
   }
 
   return (
-    <BaseSystemMessage target={target} actions={actions}>
+    <BaseSystemMessage 
+      target={target} 
+      actions={actions}
+      headerSlot={<LaunchpadMessageMenu target={target} />}
+    >
       <LaunchpadMessageDetails launchpadObject={launchpadObject} />
     </BaseSystemMessage>
   );

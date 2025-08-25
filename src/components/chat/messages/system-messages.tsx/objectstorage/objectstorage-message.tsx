@@ -7,6 +7,7 @@ import { MessageAction } from "@/components/chat/messages/system-messages.tsx/co
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { Edit } from "lucide-react";
 import ObjectStorageMessageDetails from "./components/objectstorage-message-details";
+import ObjectStorageMessageMenu from "./components/objectstorage-message-menu";
 
 interface ObjectStorageMessageProps {
   target: CustomResourceTarget;
@@ -69,7 +70,11 @@ export const ObjectStorageMessage: React.FC<ObjectStorageMessageProps> = ({
   }
 
   return (
-    <BaseSystemMessage target={target} actions={actions}>
+    <BaseSystemMessage 
+      target={target} 
+      actions={actions}
+      headerSlot={<ObjectStorageMessageMenu target={target} />}
+    >
       <ObjectStorageMessageDetails
         objectstorageObject={objectstorageObject as any}
       />

@@ -5,6 +5,7 @@ import {
   CustomResourceTargetSchema,
   BuiltinResourceTargetSchema,
   BuiltinResourceTarget,
+  ResourceTargetSchema,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import {
   listProjects,
@@ -26,6 +27,7 @@ import { PROJECT_DISPLAY_NAME_ANNOTATION_KEY } from "@/lib/brain/resources/proje
 import { INSTANCE_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
 import { getProjectRelatedResources } from "@/lib/brain/resources/project/project-method/project-relevance";
 import { convertInstanceToProject } from "@/lib/brain/resources/project/project-method/project-utils";
+import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 const t = initTRPC.context<ProjectContext>().create();
 
@@ -191,8 +193,7 @@ export const projectRouter = t.router({
   removeFromProject: t.procedure
     .input(
       z.object({
-        resources: z.array(CustomResourceTargetSchema),
-        name: z.string(),
+        resources: z.array(ResourceTargetSchema),
       })
     )
     .mutation(async ({ ctx, input }) => {

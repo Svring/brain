@@ -276,19 +276,6 @@ export function ProjectProposalCard({
 
   return (
     <Card className={`w-full max-w-3xl mx-auto ${className}`}>
-      <CardHeader className="space-y-3">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <CardTitle className="text-xl font-bold flex items-center gap-2">
-              Project Proposal
-            </CardTitle>
-            <CardDescription className="text-sm text-muted-foreground break-words">
-              Review and configure your project before creation
-            </CardDescription>
-          </div>
-        </div>
-      </CardHeader>
-
       <CardContent className="space-y-4 relative">
         {isCompleted ? (
           // Completion State
@@ -362,8 +349,6 @@ export function ProjectProposalCard({
             >
               {/* Project Configuration Form */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Project Configuration</h3>
-
                 <FormField
                   control={form.control}
                   name="projectName"
@@ -579,7 +564,7 @@ export function ProjectProposalCard({
                             <div className="flex items-center gap-4">
                               <div className="flex-shrink-0">
                                 <Image
-                                  src="https://devbox.bja.sealos.run/logo.svg"
+                                  src="https://applaunchpad.bja.sealos.run/logo.svg"
                                   alt="App Icon"
                                   width={36}
                                   height={36}

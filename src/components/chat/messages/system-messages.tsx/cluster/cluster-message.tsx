@@ -7,6 +7,7 @@ import { MessageAction } from "@/components/chat/messages/system-messages.tsx/co
 import { Save, BarChart3, EthernetPort } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import ClusterMessageDetails from "./components/cluster-message-details";
+import ClusterMessageMenu from "./components/cluster-message-menu";
 
 interface ClusterMessageProps {
   target: CustomResourceTarget;
@@ -80,7 +81,11 @@ export const ClusterMessage: React.FC<ClusterMessageProps> = ({ target }) => {
   }
 
   return (
-    <BaseSystemMessage target={target} actions={actions}>
+    <BaseSystemMessage 
+      target={target} 
+      actions={actions}
+      headerSlot={<ClusterMessageMenu target={target} />}
+    >
       <ClusterMessageDetails clusterObject={clusterObject} />
     </BaseSystemMessage>
   );

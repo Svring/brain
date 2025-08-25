@@ -20,6 +20,11 @@ import {
   CreateClusterResponseSchema,
 } from "@/lib/sealos/resources/cluster/cluster-api/cluster-open-api-schemas";
 import { runParallelAction } from "next-server-actions-parallel";
+import { deleteCluster as deleteClusterOld } from "@/lib/sealos/resources/cluster/cluster-api/cluster-old-api";
+import {
+  ClusterDeleteRequestSchema,
+  ClusterDeleteResponseSchema,
+} from "@/lib/sealos/resources/cluster/schemas/req-res-schemas/req-res-delete-schemas";
 
 const t = initTRPC.context<ClusterContext>().create();
 
@@ -128,6 +133,13 @@ export const clusterRouter = t.router({
     .input(z.string())
     .mutation(async ({ input, ctx }) => {
       return await pauseCluster(input, ctx);
+    }),
+
+  deleteCluster: t.procedure
+    .input(ClusterDeleteRequestSchema)
+    .output(ClusterDeleteResponseSchema)
+    .mutation(async ({ input, ctx }) => {
+      return await runParallelAction(deleteClusterOld(input, ctx));
     }),
 });
 

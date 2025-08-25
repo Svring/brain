@@ -272,7 +272,7 @@ export default function ClusterCreateMessage({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {dbTypeOptions.map((type) => (
+                      {clusterTypeOptions.map((type) => (
                         <SelectItem key={type.value} value={type.value}>
                           {type.label}
                         </SelectItem>

@@ -14,6 +14,7 @@ export interface BaseSystemMessageProps {
   target?: CustomResourceTarget | BuiltinResourceTarget;
   actions?: MessageAction[];
   showHeader?: boolean;
+  headerSlot?: React.ReactNode;
   children?: React.ReactNode;
 }
 
@@ -21,6 +22,7 @@ export function BaseSystemMessage({
   target,
   actions = [],
   showHeader = true,
+  headerSlot,
   children,
 }: BaseSystemMessageProps) {
   return (
@@ -29,7 +31,14 @@ export function BaseSystemMessage({
         {/* Header Section */}
         {showHeader && target && (
           <div className="px-6">
-            <MessageHeader target={target} />
+            <div className="flex items-center justify-between">
+              <MessageHeader target={target} />
+              {headerSlot && (
+                <div className="flex-shrink-0">
+                  {headerSlot}
+                </div>
+              )}
+            </div>
           </div>
         )}
 

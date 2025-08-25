@@ -7,6 +7,7 @@ import { MessageAction } from "@/components/chat/messages/system-messages.tsx/co
 import { GitBranch, BarChart3 } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { DevboxInfoDetails } from "./components/devbox-message-details";
+import DevboxMessageMenu from "./components/devbox-message-menu";
 
 interface DevboxMessageProps {
   target: CustomResourceTarget;
@@ -73,7 +74,11 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
   }
 
   return (
-    <BaseSystemMessage target={target} actions={actions}>
+    <BaseSystemMessage 
+      target={target} 
+      actions={actions}
+      headerSlot={<DevboxMessageMenu target={target} />}
+    >
       <DevboxInfoDetails devboxObject={devboxObject} />
     </BaseSystemMessage>
   );
