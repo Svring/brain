@@ -1,6 +1,6 @@
 import React from "react";
 import { CheckCircle } from "lucide-react";
-import BaseSystemMessage from "../../components/base-system-message";
+import BaseSystemMessage from "../../../components/base-system-message";
 import type { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface SuccessMessageProps {
@@ -31,7 +31,8 @@ export function SuccessMessage({
             {launchpadName} Updated Successfully
           </div>
           <div className="text-sm text-green-700 dark:text-green-300">
-            CPU: {cpu}m • Memory: {memory}MB • Replicas: {replicas} • Ports: {portsCount} • Env: {envCount}
+            CPU: {cpu}m • Memory: {memory}MB • Replicas: {replicas} • Ports:{" "}
+            {portsCount} • Env: {envCount}
           </div>
         </div>
       </div>

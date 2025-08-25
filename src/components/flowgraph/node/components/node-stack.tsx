@@ -9,6 +9,7 @@ interface NodeStackProps {
   height?: string;
   maxBackgroundCards?: number; // Maximum number of background cards (default: 5)
   backgroundColor?: string; // Background color class for the main card
+  onBackgroundCardClick?: (index: number, data: any) => void; // Optional click handler for background cards
 }
 
 export default function NodeStack({
@@ -17,6 +18,7 @@ export default function NodeStack({
   height,
   maxBackgroundCards = 2,
   backgroundColor,
+  onBackgroundCardClick,
 }: NodeStackProps) {
   // Calculate how many background cards to show (limited by maxBackgroundCards)
   const backgroundCardCount = Math.min(data.length, maxBackgroundCards);
@@ -36,7 +38,10 @@ export default function NodeStack({
           }}
           onClick={(e) => {
             e.stopPropagation();
-            // You can add custom click handling for each background card here
+            // Call the provided click handler if available
+            if (onBackgroundCardClick) {
+              onBackgroundCardClick(index, data[index]);
+            }
           }}
         >
           <BaseNode
@@ -44,7 +49,6 @@ export default function NodeStack({
             className={`${height ? `h-${height}` : ""} ${
               backgroundColor || ""
             }`}
-            active={false}
           >
             {/* Empty content for background cards */}
             <div className="w-full h-full" />

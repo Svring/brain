@@ -50,13 +50,11 @@ export default function NetworkNode({
   const { appendSystemMessage } = useAppendSystemMessageMutation();
 
   const handleNodeClick = () => {
-    console.log("handleNodeClick", target);
     appendSystemMessage("universal.network", target);
   };
 
   const handleIconClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log("handleIconClick", target);
     // Execute only the specific icon action
     const statusData = readyStatus as any;
     const isNetworkNotReady = statusData?.data?.some(
@@ -72,7 +70,6 @@ export default function NetworkNode({
     address: string,
     hasPublicAddress: boolean
   ) => {
-    console.log("handleAddressClick", address, hasPublicAddress);
     e.stopPropagation();
     // Execute only the address click action
     if (hasPublicAddress && address) {

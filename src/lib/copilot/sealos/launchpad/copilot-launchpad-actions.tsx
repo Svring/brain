@@ -28,9 +28,8 @@ import {
 import { AIResponse } from "@/components/shadcn-io/ai/response";
 import { jsonSchemaToActionParameters } from "@copilotkit/shared";
 import { zodToJsonSchema } from "zod-to-json-schema";
-import LaunchpadCreateMessage, {
-  launchpadFormSchema,
-} from "@/components/chat/messages/system-messages.tsx/launchpad/launchpad-create-message";
+import LaunchpadCreateMessage from "@/components/chat/messages/system-messages.tsx/launchpad/components/launchpad-create";
+import { launchpadFormSchema } from "@/components/chat/messages/system-messages.tsx/launchpad/components/launchpad-create/types";
 
 export function activateLaunchpadActions(
   sealosContext: SealosApiContext,
@@ -65,21 +64,59 @@ function createLaunchpadAction(context: SealosApiContext) {
           payload={{
             name: typeof args.name === "string" ? args.name : undefined,
             image: typeof args.image === "string" ? args.image : undefined,
-            command: typeof args.command === "string" ? args.command : undefined,
+            command:
+              typeof args.command === "string" ? args.command : undefined,
             args: typeof args.args === "string" ? args.args : undefined,
             cpu: typeof args.cpu === "string" ? parseInt(args.cpu) : undefined,
-            memory: typeof args.memory === "string" ? parseInt(args.memory) : undefined,
-            replicas: typeof args.replicas === "string" ? parseInt(args.replicas) : undefined,
+            memory:
+              typeof args.memory === "string"
+                ? parseInt(args.memory)
+                : undefined,
+            replicas:
+              typeof args.replicas === "string"
+                ? parseInt(args.replicas)
+                : undefined,
             ports: typeof args.ports === "string" ? args.ports : undefined,
-            portProtocol: typeof args.portProtocol === "string" ? args.portProtocol as "TCP" | "UDP" | "SCTP" : undefined,
-            appProtocol: typeof args.appProtocol === "string" ? args.appProtocol as "HTTP" | "GRPC" | "WS" : undefined,
-            exposesPublicDomain: typeof args.exposesPublicDomain === "boolean" ? args.exposesPublicDomain : undefined,
-            envVars: typeof args.envVars === "string" ? args.envVars : undefined,
-            storageName: typeof args.storageName === "string" ? args.storageName : undefined,
-            storagePath: typeof args.storagePath === "string" ? args.storagePath : undefined,
-            storageSize: typeof args.storageSize === "string" ? args.storageSize as "1Gi" | "5Gi" | "10Gi" | "20Gi" | "50Gi" | "100Gi" : undefined,
-            configMapPath: typeof args.configMapPath === "string" ? args.configMapPath : undefined,
-            configMapValue: typeof args.configMapValue === "string" ? args.configMapValue : undefined,
+            portProtocol:
+              typeof args.portProtocol === "string"
+                ? (args.portProtocol as "TCP" | "UDP" | "SCTP")
+                : undefined,
+            appProtocol:
+              typeof args.appProtocol === "string"
+                ? (args.appProtocol as "HTTP" | "GRPC" | "WS")
+                : undefined,
+            exposesPublicDomain:
+              typeof args.exposesPublicDomain === "boolean"
+                ? args.exposesPublicDomain
+                : undefined,
+            envVars:
+              typeof args.envVars === "string" ? args.envVars : undefined,
+            storageName:
+              typeof args.storageName === "string"
+                ? args.storageName
+                : undefined,
+            storagePath:
+              typeof args.storagePath === "string"
+                ? args.storagePath
+                : undefined,
+            storageSize:
+              typeof args.storageSize === "string"
+                ? (args.storageSize as
+                    | "1Gi"
+                    | "5Gi"
+                    | "10Gi"
+                    | "20Gi"
+                    | "50Gi"
+                    | "100Gi")
+                : undefined,
+            configMapPath:
+              typeof args.configMapPath === "string"
+                ? args.configMapPath
+                : undefined,
+            configMapValue:
+              typeof args.configMapValue === "string"
+                ? args.configMapValue
+                : undefined,
           }}
         />
       );

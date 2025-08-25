@@ -156,7 +156,15 @@ function DevboxNode({
     </BaseNode>
   );
 
-  return <NodeStack mainCard={mainCard} data={releasesData} />;
+  return (
+    <NodeStack
+      mainCard={mainCard}
+      data={releasesData}
+      onBackgroundCardClick={() => {
+        appendSystemMessage("devbox.release", target);
+      }}
+    />
+  );
 }
 
 // Export the wrapper as the default component

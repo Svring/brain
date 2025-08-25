@@ -4,13 +4,9 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Accordion,
-} from "@/components/ui/accordion";
+import { Accordion } from "@/components/ui/accordion";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation } from "@tanstack/react-query";
 import { generateDeployName } from "@/lib/sealos/resources/deployment/deploy-utils";
@@ -197,31 +193,6 @@ export default function LaunchpadCreateMessage({
       );
     } catch (error) {
       console.error("Failed to create launchpad application:", error);
-
-      // Provide more specific error messages based on the error type
-      if (error instanceof Error) {
-        if (error.message.includes("already exists")) {
-          toast.error(
-            "An application with this name already exists. Please choose a different name."
-          );
-        } else if (error.message.includes("invalid")) {
-          toast.error(
-            "Invalid configuration. Please check your settings and try again."
-          );
-        } else if (error.message.includes("unauthorized")) {
-          toast.error(
-            "Unauthorized. Please check your permissions and try again."
-          );
-        } else {
-          toast.error(
-            `Failed to create launchpad application: ${error.message}`
-          );
-        }
-      } else {
-        toast.error(
-          "Failed to create launchpad application. Please try again."
-        );
-      }
     } finally {
       setIsCreating(false);
     }
@@ -229,10 +200,7 @@ export default function LaunchpadCreateMessage({
 
   if (isCompleted) {
     return (
-      <SuccessState 
-        createdDeploymentName={createdDeploymentName} 
-        form={form} 
-      />
+      <SuccessState createdDeploymentName={createdDeploymentName} form={form} />
     );
   }
 

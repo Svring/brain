@@ -1,15 +1,16 @@
-import React, { useEffect } from "react";
-import { Stethoscope, Play } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Stethoscope, Play, Pencil, Loader2 } from "lucide-react";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import { useResourceStart } from "@/hooks/sealos/resource/use-resource-start";
+import { useResourceLogs } from "@/hooks/sealos/resource/use-resource-logs";
 import BaseSystemMessage from "../components/base-system-message";
 
 interface DiagnoseNetworkMessageProps {
@@ -19,7 +20,8 @@ interface DiagnoseNetworkMessageProps {
 export const DiagnoseNetworkMessageCard: React.FC<
   DiagnoseNetworkMessageProps
 > = ({ target }) => {
-  const sendMessageMutation = useSendMessageMutation();
+  const { appendSystemMessage } = useAppendSystemMessageMutation();
+  const [isDiagnosing, setIsDiagnosing] = useState(false);
 
   // Use the resource status hook
   const {
@@ -29,9 +31,70 @@ export const DiagnoseNetworkMessageCard: React.FC<
   } = useResourceStatus(target);
 
   // Use the resource metrics status hook
-  const metricsStatus = useResourceMetricsStatus({
+  const {
+    latestData,
+    status: metricsStatus,
+    isLoading: metricsLoading,
+  } = useResourceMetricsStatus({
     target,
   });
+
+  const isStopped = Boolean(
+    status && ["stopped", "shutdown"].includes(status.toLowerCase())
+  );
+
+  const isHighUsage = Boolean(!metricsLoading && metricsStatus === "high");
+
+  // Use the resource logs hook for builtin resources
+  const { data: resourceLogs, isLoading: logsLoading } =
+    useResourceLogs(target);
+
+  const getUpdateMessageId = (): string | undefined => {
+    // devbox (custom) and launchpad (builtin: deployment/statefulset)
+    if (target.type === "custom") {
+      if (target.resourceType.toLowerCase() === "devbox")
+        return "devbox.update";
+    }
+    if (target.type === "builtin") {
+      // deployment or statefulset
+      return "launchpad.update";
+    }
+    return undefined;
+  };
+
+  const handleUpdate = () => {
+    const messageId = getUpdateMessageId();
+    if (messageId) {
+      appendSystemMessage(messageId, target as any);
+    }
+  };
+
+  const runDiagnosis = async () => {
+    setIsDiagnosing(true);
+    try {
+      // For builtin resources, analyze logs if available
+      if (target.type === "builtin" && resourceLogs) {
+        console.log("Analyzing launchpad logs:", resourceLogs);
+        // TODO: Add log analysis logic here
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      } else {
+        // Simulate diagnosis process for other resources
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
+      console.log("runDiagnosis completed");
+    } catch (error) {
+      console.error("Diagnosis failed:", error);
+    } finally {
+      setIsDiagnosing(false);
+    }
+  };
+
+  // Auto-run diagnosis when component mounts and conditions are met
+  useEffect(() => {
+    if (!isStopped && !isHighUsage && !metricsLoading && latestData) {
+      runDiagnosis();
+    }
+  }, [isStopped, isHighUsage, metricsLoading, latestData]);
 
   // Use the resource start hook
   const startResource = useResourceStart(resource as any, {
@@ -44,43 +107,11 @@ export const DiagnoseNetworkMessageCard: React.FC<
     },
   });
 
-  // Send monitor data message when it's ready
-  useEffect(() => {
-    if (
-      metricsStatus.monitorData &&
-      metricsStatus.monitorData.length > 0 &&
-      !metricsStatus.isLoading
-    ) {
-      sendMessageMutation.mutate([
-        {
-          role: "assistant",
-          content: `Network diagnosis completed for ${target.resourceType} "${
-            target.name
-          }". Here are the monitoring results: ${JSON.stringify(
-            metricsStatus.monitorData
-          )}`,
-        },
-      ]);
-    }
-  }, [
-    metricsStatus.monitorData,
-    metricsStatus.isLoading,
-    target,
-    sendMessageMutation,
-  ]);
-
-  console.log("metricsStatus", metricsStatus);
-
   return (
     <BaseSystemMessage target={target}>
       <div className="space-y-3">
-        <div className="flex items-center gap-2 mb-4">
-          <Stethoscope className="h-4 w-4 text-theme-blue" />
-          <span className="font-medium">Network Diagnosis</span>
-        </div>
-
         <div className="space-y-3">
-          {/* Resource Status */}
+          {/* 1) Resource Status */}
           <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-dashed">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-theme-green"></div>
@@ -90,135 +121,176 @@ export const DiagnoseNetworkMessageCard: React.FC<
               <span className="text-sm text-muted-foreground">
                 {statusLoading ? "Loading..." : status || "Unknown"}
               </span>
-              {status &&
-                ["stopped", "shutdown"].includes(status.toLowerCase()) && (
+              {isStopped && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-6 text-xs"
+                  onClick={() => {
+                    if (startResource.resourceType === "devbox") {
+                      startResource.start({
+                        devboxName: target.name || "",
+                        action: "start",
+                      });
+                    } else if (startResource.resourceType === "launchpad") {
+                      startResource.start({
+                        name: target.name || "",
+                      });
+                    }
+                  }}
+                  disabled={startResource.isPending}
+                >
+                  <Play className="h-3 w-3 mr-1" />
+                  Start
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* 2) Resource Usage Check with optional Update action */}
+          {!isStopped && (
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-dashed">
+              <div className="flex items-center gap-2">
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    metricsLoading
+                      ? "bg-theme-yellow"
+                      : metricsStatus === "high"
+                      ? "bg-theme-red"
+                      : metricsStatus === "medium"
+                      ? "bg-theme-yellow"
+                      : "bg-theme-green"
+                  }`}
+                ></div>
+                <span className="text-sm font-medium">Resource Usage</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  {metricsLoading
+                    ? "Checking resource usage..."
+                    : latestData
+                    ? `CPU: ${latestData.cpu.toFixed(
+                        1
+                      )}%, Memory: ${latestData.memory.toFixed(1)}%`
+                    : "No data available"}
+                </span>
+                {isHighUsage && (
                   <Button
                     size="sm"
                     variant="outline"
                     className="h-6 text-xs"
-                    onClick={() => {
-                      if (startResource.resourceType === "devbox") {
-                        startResource.start({
-                          devboxName: target.name || "",
-                          action: "start",
-                        });
-                      } else if (startResource.resourceType === "launchpad") {
-                        startResource.start({
-                          name: target.name || "",
-                        });
-                      } else if (startResource.resourceType === "cluster") {
-                        startResource.start(target.name || "");
-                      }
-                    }}
-                    disabled={startResource.isPending}
+                    onClick={handleUpdate}
                   >
-                    <Play className="h-3 w-3 mr-1" />
-                    Start
+                    <Pencil className="h-3 w-3 mr-1" />
+                    Update
                   </Button>
                 )}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Resource Usage Check */}
-          {status &&
-            !["stopped", "shutdown"].includes(status.toLowerCase()) && (
-              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-dashed">
+          {/* Stop further procedure if we already showed Update button */}
+          {!isStopped && !isHighUsage && latestData && (
+            <div className="space-y-2 border border-dashed rounded-lg p-3">
+              {/* CPU Status */}
+              <div className="flex items-center justify-between p-2 bg-muted/30 rounded">
+                <span className="text-xs text-muted-foreground">CPU</span>
                 <div className="flex items-center gap-2">
                   <div
                     className={`w-2 h-2 rounded-full ${
-                      metricsStatus.isLoading
-                        ? "bg-theme-yellow"
-                        : metricsStatus.status === "high"
+                      metricsStatus === "high"
                         ? "bg-theme-red"
-                        : metricsStatus.status === "medium"
+                        : metricsStatus === "medium"
                         ? "bg-theme-yellow"
                         : "bg-theme-green"
                     }`}
                   ></div>
-                  <span className="text-sm font-medium">Resource Usage</span>
+                  <span className="text-xs">{latestData.cpu.toFixed(1)}%</span>
                 </div>
-                <span className="text-sm text-muted-foreground">
-                  {metricsStatus.isLoading
-                    ? "Checking resource usage..."
-                    : metricsStatus.latestData
-                    ? `CPU: ${metricsStatus.latestData.cpu.toFixed(
-                        1
-                      )}%, Memory: ${metricsStatus.latestData.memory.toFixed(
-                        1
-                      )}%`
-                    : "No data available"}
-                </span>
               </div>
-            )}
 
-          {/* Detailed Metrics Status */}
-          {status &&
-            !["stopped", "shutdown"].includes(status.toLowerCase()) &&
-            metricsStatus.latestData && (
-              <div className="space-y-2 border border-dashed rounded-lg p-3">
-                {/* CPU Status */}
+              {/* Memory Status */}
+              <div className="flex items-center justify-between p-2 bg-muted/30 rounded">
+                <span className="text-xs text-muted-foreground">Memory</span>
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      metricsStatus === "high"
+                        ? "bg-theme-red"
+                        : metricsStatus === "medium"
+                        ? "bg-theme-yellow"
+                        : "bg-theme-green"
+                    }`}
+                  ></div>
+                  <span className="text-xs">
+                    {latestData.memory.toFixed(1)}%
+                  </span>
+                </div>
+              </div>
+
+              {/* Storage Status (if available) */}
+              {metricsStatus && latestData.storage !== undefined && (
                 <div className="flex items-center justify-between p-2 bg-muted/30 rounded">
-                  <span className="text-xs text-muted-foreground">CPU</span>
+                  <span className="text-xs text-muted-foreground">Storage</span>
                   <div className="flex items-center gap-2">
                     <div
                       className={`w-2 h-2 rounded-full ${
-                        metricsStatus.cpuStatus === "high"
+                        metricsStatus === "high"
                           ? "bg-theme-red"
-                          : metricsStatus.cpuStatus === "medium"
+                          : metricsStatus === "medium"
                           ? "bg-theme-yellow"
                           : "bg-theme-green"
                       }`}
                     ></div>
                     <span className="text-xs">
-                      {metricsStatus.latestData.cpu.toFixed(1)}%
+                      {latestData.storage.toFixed(1)}%
                     </span>
                   </div>
                 </div>
+              )}
+            </div>
+          )}
 
-                {/* Memory Status */}
-                <div className="flex items-center justify-between p-2 bg-muted/30 rounded">
-                  <span className="text-xs text-muted-foreground">Memory</span>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`w-2 h-2 rounded-full ${
-                        metricsStatus.memoryStatus === "high"
-                          ? "bg-theme-red"
-                          : metricsStatus.memoryStatus === "medium"
-                          ? "bg-theme-yellow"
-                          : "bg-theme-green"
-                      }`}
-                    ></div>
-                    <span className="text-xs">
-                      {metricsStatus.latestData.memory.toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-
-                {/* Storage Status (if available) */}
-                {metricsStatus.storageStatus &&
-                  metricsStatus.latestData.storage !== undefined && (
-                    <div className="flex items-center justify-between p-2 bg-muted/30 rounded">
-                      <span className="text-xs text-muted-foreground">
-                        Storage
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`w-2 h-2 rounded-full ${
-                            metricsStatus.storageStatus === "high"
-                              ? "bg-theme-red"
-                              : metricsStatus.storageStatus === "medium"
-                              ? "bg-theme-yellow"
-                              : "bg-theme-green"
-                          }`}
-                        ></div>
-                        <span className="text-xs">
-                          {metricsStatus.latestData.storage.toFixed(1)}%
-                        </span>
-                      </div>
-                    </div>
-                  )}
+          {/* 3) Diagnosis row (only if not stopped and not high usage) */}
+          {!isStopped && !isHighUsage && (
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-dashed">
+              <div className="flex items-center gap-2">
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    isDiagnosing ? "bg-theme-yellow" : "bg-theme-green"
+                  }`}
+                ></div>
+                <span className="text-sm font-medium">Diagnosis</span>
+                {target.type === "builtin" && (
+                  <span className="text-xs text-muted-foreground">
+                    {logsLoading
+                      ? "Loading logs..."
+                      : resourceLogs
+                      ? "Logs available"
+                      : "No logs"}
+                  </span>
+                )}
               </div>
-            )}
+              <div className="flex items-center gap-2">
+                {isDiagnosing ? (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span>Running diagnosis...</span>
+                  </div>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-6 text-xs"
+                    onClick={runDiagnosis}
+                    disabled={target.type === "builtin" && logsLoading}
+                  >
+                    Re-run Diagnosis
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </BaseSystemMessage>

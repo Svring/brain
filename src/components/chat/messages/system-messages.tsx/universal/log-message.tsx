@@ -8,7 +8,7 @@ import {
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bot } from "lucide-react";
+import { Bot, Loader2 } from "lucide-react";
 import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useResourceLogs } from "@/hooks/sealos/resource/use-resource-logs";
 import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
@@ -19,7 +19,7 @@ interface ResourceLogProps {
 }
 
 const ResourceLog: React.FC<ResourceLogProps> = ({ target: payload }) => {
-  const { data: logsData } = useResourceLogs(payload);
+  const { data: logsData, isLoading } = useResourceLogs(payload);
   const sendMessageMutation = useSendMessageMutation();
 
   const handleAnalyze = useCallback(() => {
@@ -47,20 +47,28 @@ const ResourceLog: React.FC<ResourceLogProps> = ({ target: payload }) => {
       icon: Bot,
       label: "Analyze",
       onClick: handleAnalyze,
+      disabled: isLoading || !logsData,
     },
   ];
 
   return (
     <BaseSystemMessage target={payload} actions={actions}>
       <div className="relative bg-muted/50 rounded-md p-2 max-h-24 overflow-hidden">
-        <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-mono">
-          {truncatedLogs}
-          {hasMoreLines && (
-            <span className="text-muted-foreground/60">
-              {"\n"}... (truncated)
-            </span>
-          )}
-        </pre>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-4">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            <span className="ml-2 text-sm text-muted-foreground">Loading logs...</span>
+          </div>
+        ) : (
+          <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-mono">
+            {truncatedLogs}
+            {hasMoreLines && (
+              <span className="text-muted-foreground/60">
+                {"\n"}... (truncated)
+              </span>
+            )}
+          </pre>
+        )}
       </div>
     </BaseSystemMessage>
   );
