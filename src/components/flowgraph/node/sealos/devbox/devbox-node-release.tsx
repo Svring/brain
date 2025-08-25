@@ -87,7 +87,7 @@ export default function DevboxNodeRelease({ object }: DevboxNodeReleaseProps) {
   };
 
   return (
-    <BaseNode nodeData={{}} expand={isExpanded}>
+    <BaseNode nodeData={{}}>
       <div className="flex h-full flex-col gap-3 p-1">
         <DevboxNodeReleaseTitle
           releasesCount={releases?.data?.length || 0}

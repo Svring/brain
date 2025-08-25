@@ -4,12 +4,12 @@ import { useQuery } from "@tanstack/react-query";
 import { devboxClient } from "@/components/provider/trpc-provider";
 import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/message-actions";
-import { Play, Trash2, Calendar, Tag } from "lucide-react";
+import { Play, Trash2, Calendar, Tag, ArrowBigUpDash } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { DevboxReleaseItem } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas/devbox-release-schema";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatDistanceToNow } from "date-fns";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface DevboxReleaseMessageProps {
   target: CustomResourceTarget;
@@ -42,66 +42,67 @@ const ReleaseItem: React.FC<{ release: DevboxReleaseItem }> = ({ release }) => {
 
   const formatDate = (dateString: string) => {
     try {
-      return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+      return new Date(dateString).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
     } catch {
       return "Unknown";
     }
   };
 
   return (
-    <div className="flex items-center justify-between p-4 border rounded-lg bg-card">
-      <div className="flex items-center gap-4 flex-1 min-w-0">
-        <div className="flex flex-col gap-1 flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <Tag className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium text-sm">{release.tag}</span>
-            <Badge 
-              variant={release.status.value === "ready" ? "default" : "secondary"}
-              className="text-xs"
-            >
-              {release.status.label}
-            </Badge>
-          </div>
-          
-          {release.description && (
-            <p className="text-sm text-muted-foreground truncate">
-              {release.description}
-            </p>
-          )}
-          
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              <span>{formatDate(release.createTime)}</span>
-            </div>
-            <span>ID: {release.id}</span>
+    <div className="border rounded-lg p-2 hover:bg-muted/50 transition-colors">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Tag className="h-3 w-3 text-muted-foreground" />
+          <div className="flex flex-col">
+            <span className="text-xs font-medium truncate">{release.tag}</span>
+            <span className="text-xs text-muted-foreground">
+              {formatDate(release.createTime)}
+            </span>
           </div>
         </div>
-      </div>
-      
-      <div className="flex items-center gap-2 ml-4">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handleDeploy}
-          disabled={release.status.value !== "ready"}
-        >
-          <Play className="h-4 w-4 mr-1" />
-          Deploy
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handleDelete}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          {/* Status indicator */}
+          {release.status?.value === "ready" && (
+            <Badge variant="default" className="text-xs px-1.5 py-0.5">
+              Ready
+            </Badge>
+          )}
+          {release.status?.value === "pending" && (
+            <span className="text-xs text-amber-500 font-medium">Pending</span>
+          )}
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-6 w-6 p-0"
+            onClick={handleDeploy}
+            disabled={release.status.value !== "ready"}
+            title="Deploy"
+          >
+            <ArrowBigUpDash className="h-3 w-3" />
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+            onClick={handleDelete}
+            title="Delete"
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        </div>
       </div>
     </div>
   );
 };
 
-export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({ target }) => {
+export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
+  target,
+}) => {
   const devboxTrpcClient = devboxClient.useTRPC();
 
   const {
@@ -112,25 +113,12 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({ targ
     devboxTrpcClient.getDevboxReleases.queryOptions(target.name || "")
   );
 
-  const actions: MessageAction[] = [
-    {
-      icon: Play,
-      label: "Create Release",
-      onClick: () => {
-        // This would trigger a release creation flow
-        console.log("Create release for:", target.name);
-      },
-    },
-  ];
-
   // Show loading state
   if (isLoading) {
     return (
       <BaseSystemMessage target={target}>
-        <div className="flex items-center justify-center py-8">
-          <span className="text-muted-foreground">
-            Loading devbox releases...
-          </span>
+        <div className="flex items-center justify-center h-20">
+          <div className="text-xs text-muted-foreground">Loading...</div>
         </div>
       </BaseSystemMessage>
     );
@@ -140,8 +128,8 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({ targ
   if (error || !releasesData) {
     return (
       <BaseSystemMessage target={target}>
-        <div className="flex items-center justify-center py-8">
-          <span className="text-destructive">
+        <div className="flex items-center justify-center h-20">
+          <span className="text-destructive text-xs">
             Failed to load devbox releases
           </span>
         </div>
@@ -152,27 +140,28 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({ targ
   const releases = releasesData.data || [];
 
   return (
-    <BaseSystemMessage target={target} actions={actions}>
-      <div className="space-y-4">
+    <BaseSystemMessage target={target}>
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Devbox Releases</h3>
-          <Badge variant="outline">
-            {releases.length} release{releases.length !== 1 ? 's' : ''}
+          <h3 className="text-sm font-medium">Devbox Releases</h3>
+          <Badge variant="outline" className="text-xs">
+            {releases.length} release{releases.length !== 1 ? "s" : ""}
           </Badge>
         </div>
-        
+
         {releases.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <Tag className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No releases found for this devbox</p>
-            <p className="text-sm">Create a release to get started</p>
+          <div className="flex flex-col items-center justify-center h-20 text-center">
+            <ArrowBigUpDash className="h-6 w-6 text-muted-foreground mb-2" />
+            <div className="text-xs text-muted-foreground">No releases yet</div>
           </div>
         ) : (
-          <div className="space-y-3">
-            {releases.map((release) => (
-              <ReleaseItem key={release.id} release={release} />
-            ))}
-          </div>
+          <ScrollArea className="max-h-60">
+            <div className="space-y-2">
+              {releases.map((release) => (
+                <ReleaseItem key={release.id} release={release} />
+              ))}
+            </div>
+          </ScrollArea>
         )}
       </div>
     </BaseSystemMessage>

@@ -70,11 +70,12 @@ export default function NetworkNode({
     address: string,
     hasPublicAddress: boolean
   ) => {
-    e.stopPropagation();
+    // e.stopPropagation();
     // Execute only the address click action
-    if (hasPublicAddress && address) {
-      window.open(address, "_blank");
-    }
+    // if (hasPublicAddress && address) {
+    //   window.open(address, "_blank");
+    // }
+    appendSystemMessage("universal.network", target);
   };
 
   // Show loading state if resource is still loading
@@ -105,7 +106,11 @@ export default function NetworkNode({
   // console.log("readyStatus", readyStatus);
 
   const mainCard = (
-    <BaseNode nodeData={data} className={cn("h-14 p-2", getBackgroundColor())}>
+    <BaseNode
+      target={target}
+      nodeData={data}
+      className={cn("h-14 p-2", getBackgroundColor())}
+    >
       <div
         className="flex h-full flex-col justify-between cursor-pointer"
         onClick={handleNodeClick}

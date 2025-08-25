@@ -32,23 +32,13 @@ export default function useCopilotActions(actionTypes?: ActionType[]) {
   ];
 
   // Activate actions based on the provided types
-  if (actionsToActivate.includes("devbox")) {
-    activateDevboxActions(k8sContext, devboxContext);
-  }
+  // activateDevboxActions(k8sContext, devboxContext);
 
-  if (actionsToActivate.includes("cluster")) {
-    activateClusterActions(k8sContext, sealosContext);
-  }
+  // activateClusterActions(k8sContext, sealosContext);
 
-  if (actionsToActivate.includes("launchpad")) {
-    activateLaunchpadActions(sealosContext, k8sContext);
-  }
+  // activateLaunchpadActions(sealosContext, k8sContext);
 
-  if (actionsToActivate.includes("objectstoragebucket")) {
-    activateObjectStorageBucketActions(k8sContext, sealosContext);
-  }
+  // activateObjectStorageBucketActions(k8sContext, sealosContext);
 
-  if (actionsToActivate.includes("project")) {
-    activateProjectActions(k8sContext);
-  }
+  activateProjectActions(k8sContext);
 }

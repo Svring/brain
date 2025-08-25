@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Globe } from "lucide-react";
 import { useCopy } from "@/hooks/use-copy";
 import {
   Table,
@@ -19,6 +19,8 @@ import {
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { MessageAction } from "../components/message-actions";
 import BaseSystemMessage from "../components/base-system-message";
 
 interface NetworkMessageProps {
@@ -27,17 +29,28 @@ interface NetworkMessageProps {
 
 export default function NetworkMessage({ target }: NetworkMessageProps) {
   const { copyToClipboard, isCopied } = useCopy();
+  const { appendSystemMessage } = useAppendSystemMessageMutation();
 
   const { resource } = useResourceStatus(target);
 
   const ports = (resource as DevboxObject)?.ports || [];
+
+  const actions: MessageAction[] = [
+    {
+      icon: Globe,
+      label: "Custom Domain",
+      onClick: () => {
+        appendSystemMessage("universal.customDomain", target);
+      },
+    },
+  ];
 
   if (!resource || !ports || ports.length === 0) {
     return null;
   }
 
   return (
-    <BaseSystemMessage target={target}>
+    <BaseSystemMessage target={target} actions={actions}>
       <div className="space-y-3">
         <div className="w-full overflow-hidden">
           <Table className="border border-dashed rounded-lg">
