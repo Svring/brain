@@ -193,7 +193,7 @@ function ClusterNode({
             {/* <NodeInternalUrl ports={[]} /> */}
             <NodePods target={target} />
             <NodeLog target={target} />
-            <ClusterNodeBackup object={clusterData} />
+            <ClusterNodeBackup target={target} />
             {/* <NodeBackup /> */}
             <NodeMonitor target={target} />
           </div>

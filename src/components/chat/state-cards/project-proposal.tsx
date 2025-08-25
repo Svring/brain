@@ -1,6 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Card,
   CardContent,
@@ -25,7 +27,6 @@ import {
   createObjectStorageContext,
   createK8sContext,
 } from "@/lib/auth/auth-utils";
-import { useState } from "react";
 import { toast } from "sonner";
 import type { RuntimeName } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas";
 import type { ClusterType } from "@/lib/sealos/resources/cluster/cluster-api/cluster-open-api-schemas";
@@ -37,95 +38,38 @@ import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { generateProjectName } from "@/lib/brain/resources/project/project-method/project-utils";
 import { useRouter } from "next/navigation";
 import { useChatActions } from "@/contexts/chat/chat-context";
-
-// TypeScript interfaces matching the Python data structure
-interface DevBox {
-  name: string;
-  runtime:
-    | "C++"
-    | "Nuxt3"
-    | "Hugo"
-    | "Java"
-    | "Chi"
-    | "PHP"
-    | "Rocket"
-    | "Quarkus"
-    | "Debian"
-    | "Ubuntu"
-    | "Spring Boot"
-    | "Flask"
-    | "Nginx"
-    | "Vue.js"
-    | "Python"
-    | "VitePress"
-    | "Node.js"
-    | "Echo"
-    | "Next.js"
-    | "Angular"
-    | "React"
-    | "Svelte"
-    | "Gin"
-    | "Rust"
-    | "UmiJS"
-    | "Docusaurus"
-    | "Hexo"
-    | "Vert.x"
-    | "Go"
-    | "C"
-    | "Iris"
-    | "Astro"
-    | "MCP"
-    | "Django"
-    | "Express.js"
-    | ".Net";
-  description: string;
-}
-
-interface Database {
-  name: string;
-  type:
-    | "postgresql"
-    | "mongodb"
-    | "apecloud-mysql"
-    | "redis"
-    | "kafka"
-    | "weaviate"
-    | "milvus"
-    | "pulsar";
-  description: string;
-}
-
-interface ObjectStorageBucket {
-  name: string;
-  policy: "Private" | "PublicRead" | "PublicReadwrite";
-  description: string;
-}
-
-interface ProjectResources {
-  devboxes: DevBox[];
-  databases: Database[];
-  buckets: ObjectStorageBucket[];
-}
-
-interface ProjectProposal {
-  name: string;
-  description: string;
-  resources: ProjectResources;
-}
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  ProjectProposal,
+  ProjectResources,
+  DevBox,
+  Database as DatabaseType,
+  ObjectStorageBucket,
+  App,
+  Reliances,
+  projectProposalFormSchema,
+  ProjectProposalFormValues,
+} from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 
 interface ProjectProposalCardProps {
   proposal: ProjectProposal;
   className?: string;
 }
 
-
-
 export function ProjectProposalCard({
   proposal,
   className = "",
 }: ProjectProposalCardProps) {
   const { name, description, resources } = proposal;
-  const { devboxes, databases, buckets } = resources;
 
   const [isCreating, setIsCreating] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -149,64 +93,48 @@ export function ProjectProposalCard({
 
   const { openSidebarChat } = useChatActions();
 
-  // Helper function to map langgraph runtime names to supported API runtime names
-  const mapRuntimeToEnum = (runtime: string): RuntimeName => {
-    const runtimeMap: Record<string, RuntimeName> = {
-      // Direct matches
-      Debian: "Debian",
-      "C++": "C++",
-      Rust: "Rust",
-      Java: "Java",
-      Go: "Go",
-      Python: "Python",
-      "Node.js": "Node.js",
-      ".Net": ".Net",
-      C: "C",
-      PHP: "PHP",
-      // Mappings for similar runtimes
-      "Spring Boot": "Java",
-      Flask: "Python",
-      Django: "Python",
-      "Express.js": "Node.js",
-      "Next.js": "Node.js",
-      Nuxt3: "Node.js",
-      "Vue.js": "Node.js",
-      React: "Node.js",
-      Angular: "Node.js",
-      Svelte: "Node.js",
-      VitePress: "Node.js",
-      Docusaurus: "Node.js",
-      Hexo: "Node.js",
-      Astro: "Node.js",
-      UmiJS: "Node.js",
-      Echo: "Go",
-      Gin: "Go",
-      Iris: "Go",
-      Chi: "Go",
-      Rocket: "Rust",
-      Quarkus: "Java",
-      "Vert.x": "Java",
-      Hugo: "Go",
-      Nginx: "Debian",
-      MCP: "Python",
-      Ubuntu: "Debian",
+  // Stable key for proposal to avoid resets on identical content
+  const proposalKey = useMemo(() => JSON.stringify(proposal), [proposal]);
+
+  // Memoize default values to prevent unnecessary re-renders
+  const defaultValues: ProjectProposalFormValues = useMemo(
+    () => ({
+      projectName: proposal.name || generateProjectName(),
+      description: proposal.description || "",
+      resources: proposal.resources || {},
+    }),
+    [proposalKey]
+  );
+
+  // Initialize form
+  const form = useForm<ProjectProposalFormValues>({
+    resolver: zodResolver(projectProposalFormSchema),
+    defaultValues,
+  });
+
+  // Reset form when proposal changes
+  useEffect(() => {
+    form.reset(defaultValues);
+  }, [proposalKey, form, defaultValues]);
+
+  // Helper function to map resource type to runtime name for devboxes
+  const mapResourceTypeToRuntime = (type: string): RuntimeName => {
+    const typeMap: Record<string, RuntimeName> = {
+      app: "Node.js", // Default for app type
+      database: "Debian", // Default for database type
+      oss: "Debian", // Default for oss type
     };
-    return runtimeMap[runtime] || "Debian"; // Default to Debian if no match
+    return typeMap[type] || "Debian";
   };
 
-  // Helper function to map langgraph database types to supported API cluster types
-  const mapDatabaseTypeToEnum = (dbType: string): ClusterType => {
-    const dbTypeMap: Record<string, ClusterType> = {
-      postgresql: "postgresql",
-      mongodb: "mongodb",
-      "apecloud-mysql": "apecloud-mysql",
-      redis: "redis",
-      kafka: "kafka",
-      weaviate: "weaviate",
-      milvus: "milvus",
-      pulsar: "pulsar",
+  // Helper function to map resource type to cluster type for databases
+  const mapResourceTypeToClusterType = (type: string): ClusterType => {
+    const typeMap: Record<string, ClusterType> = {
+      database: "postgresql", // Default for database type
+      app: "postgresql", // Default for app type
+      oss: "postgresql", // Default for oss type
     };
-    return dbTypeMap[dbType] || "postgresql"; // Default to postgresql if no match
+    return typeMap[type] || "postgresql";
   };
 
   // Helper function to map bucket policy string to ObjectStorageCreateRequest policy enum
@@ -227,8 +155,11 @@ export function ProjectProposalCard({
     return policyMap[policy.toLowerCase()] || "private"; // Default to private if no match
   };
 
-  const handleCreateProject = async () => {
-    if (!resources) return;
+  const onSubmit = async (values: ProjectProposalFormValues) => {
+    if (!values.resources || Object.keys(values.resources).length === 0) {
+      toast.error("No resources to create");
+      return;
+    }
 
     setIsCreating(true);
     try {
@@ -238,57 +169,84 @@ export function ProjectProposalCard({
         type?: string;
       }> = [];
 
-      // Create devboxes
-      for (const devbox of devboxes) {
-        const devboxName = generateDevboxName();
-        setCreationProgress(`Creating devbox: ${devboxName}...`);
-        await createDevbox.mutateAsync({
-          name: devboxName,
-          runtimeName: mapRuntimeToEnum(devbox.runtime),
-        });
-        createdResourcesList.push({ name: devboxName, kind: "devbox" });
-      }
+      // Create resources based on their type
+      for (const resourceType in values.resources) {
+        const resourcesOfType =
+          values.resources[resourceType as keyof ProjectResources];
+        if (!resourcesOfType || resourcesOfType.length === 0) {
+          continue;
+        }
 
-      // Create clusters
-      for (const database of databases) {
-        const clusterName = generateClusterName();
-        setCreationProgress(`Creating cluster: ${clusterName}...`);
-        await createCluster.mutateAsync({
-          name: clusterName,
-          type: mapDatabaseTypeToEnum(database.type),
-        });
-        createdResourcesList.push({
-          name: clusterName,
-          kind: "cluster",
-          type: mapDatabaseTypeToEnum(database.type),
-        });
-      }
-
-      // Create object storage buckets
-      for (const bucket of buckets) {
-        const bucketName = generateBucketName();
-        setCreationProgress(`Creating bucket: ${bucketName}...`);
-        await createObjectStorage.mutateAsync({
-          bucketName,
-          bucketPolicy: mapBucketPolicyToEnum(bucket.policy),
-        });
-        createdResourcesList.push({
-          name: bucketName,
-          kind: "objectstoragebucket",
-        });
+        for (const resource of resourcesOfType) {
+          if (resourceType === "devbox") {
+            const devboxResource = resource as DevBox;
+            // Create devbox for app type
+            const devboxName = generateDevboxName();
+            setCreationProgress(`Creating devbox: ${devboxName}...`);
+            await createDevbox.mutateAsync({
+              name: devboxName,
+              runtimeName: mapResourceTypeToRuntime(devboxResource.runtime),
+            });
+            createdResourcesList.push({ name: devboxName, kind: "devbox" });
+          } else if (resourceType === "database") {
+            const databaseResource = resource as DatabaseType;
+            // Create cluster for database type
+            const clusterName = generateClusterName();
+            setCreationProgress(`Creating cluster: ${clusterName}...`);
+            await createCluster.mutateAsync({
+              name: clusterName,
+              type: mapResourceTypeToClusterType(databaseResource.type),
+            });
+            createdResourcesList.push({
+              name: clusterName,
+              kind: "cluster",
+              type: mapResourceTypeToClusterType(databaseResource.type),
+            });
+          } else if (resourceType === "bucket") {
+            const bucketResource = resource as ObjectStorageBucket;
+            // Create object storage bucket for oss type
+            const bucketName = generateBucketName();
+            setCreationProgress(`Creating bucket: ${bucketName}...`);
+            await createObjectStorage.mutateAsync({
+              bucketName,
+              bucketPolicy: mapBucketPolicyToEnum(bucketResource.policy),
+            });
+            createdResourcesList.push({
+              name: bucketName,
+              kind: "objectstoragebucket",
+            });
+          } else if (resourceType === "app") {
+            const appResource = resource as App;
+            // Create app resource
+            const appName = generateDevboxName(); // Use generateDevboxName for app name
+            setCreationProgress(`Creating app: ${appName}...`);
+            await createDevbox.mutateAsync({
+              name: appName,
+              runtimeName: "Node.js", // Default runtime for apps
+            });
+            createdResourcesList.push({
+              name: appName,
+              kind: "devbox",
+              type: "app", // Explicitly set type for app
+            });
+          }
+        }
       }
 
       // Store created resources for project creation
       setCreatedResources(createdResourcesList);
 
       // Create project
-      const generatedProjectName = generateProjectName();
+      const generatedProjectName =
+        values.projectName.trim() || generateProjectName();
       setProjectName(generatedProjectName);
       setCreationProgress(`Creating project: ${generatedProjectName}...`);
       await createProject.mutateAsync({ name: generatedProjectName });
 
       // Add all resources to the project
-      setCreationProgress(`Adding resources to project: ${generatedProjectName}...`);
+      setCreationProgress(
+        `Adding resources to project: ${generatedProjectName}...`
+      );
       const resourceTargets = createdResourcesList.map((resource) =>
         convertResourceTypeToTarget(resource.kind, resource.name)
       );
@@ -321,11 +279,16 @@ export function ProjectProposalCard({
   };
 
   // Reset completion state when proposal changes
-  React.useEffect(() => {
+  useEffect(() => {
     setIsCompleted(false);
     setCreatedResources([]);
     setProjectName("");
   }, [proposal]);
+
+  // Group resources by type for display
+  const appResources = form.watch("resources").app || [];
+  const databaseResources = form.watch("resources").database || [];
+  const ossResources = form.watch("resources").bucket || [];
 
   return (
     <Card className={`w-full max-w-3xl mx-auto ${className}`}>
@@ -333,10 +296,10 @@ export function ProjectProposalCard({
         <div className="flex items-start justify-between">
           <div className="space-y-1">
             <CardTitle className="text-xl font-bold flex items-center gap-2">
-              {name}
+              Project Proposal
             </CardTitle>
             <CardDescription className="text-sm text-muted-foreground break-words">
-              {description}
+              Review and configure your project before creation
             </CardDescription>
           </div>
         </div>
@@ -365,7 +328,10 @@ export function ProjectProposalCard({
               <h4 className="text-lg font-semibold">Created Resources:</h4>
               <div className="space-y-3">
                 {createdResources.map((resource, index) => (
-                  <Card key={index} className="p-3 bg-green-50 border-green-200">
+                  <Card
+                    key={index}
+                    className="p-3 bg-green-50 border-green-200"
+                  >
                     <div className="flex items-center gap-3">
                       <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
                       <div className="flex-1">
@@ -391,7 +357,7 @@ export function ProjectProposalCard({
 
             {/* Navigation Button */}
             <div className="flex justify-center pt-4">
-              <Button 
+              <Button
                 onClick={() => {
                   openSidebarChat();
                   router.push(`/projects/${projectName}`);
@@ -404,170 +370,241 @@ export function ProjectProposalCard({
             </div>
           </div>
         ) : (
-          // Original Content
-          <div className="space-y-4 pb-16">
-          {/* DevBoxes Section */}
-          {devboxes.length > 0 && (
-            <div className="space-y-3">
-              <div className="space-y-1">
+          // Form Content
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-6 pb-16"
+            >
+              {/* Project Configuration Form */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Project Configuration</h3>
+
+                <FormField
+                  control={form.control}
+                  name="projectName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Project Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter project name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Enter project description"
+                          className="min-h-[80px]"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Resources Preview */}
+              <div className="space-y-4">
                 <h3 className="text-lg font-semibold">
-                  Development Environments
+                  Resources to be Created
                 </h3>
-              </div>
-              <div className="space-y-2">
-                {devboxes.map((devbox, index) => (
-                  <Card key={index} className="p-3">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-4">
-                        <div className="flex-shrink-0">
-                          <Image
-                            src="https://devbox.bja.sealos.run/logo.svg"
-                            alt="DevBox Icon"
-                            width={36}
-                            height={36}
-                            className="rounded-lg h-9 w-9 flex-shrink-0"
-                            priority
-                          />
-                        </div>
-                        <div className="flex flex-col min-w-0 flex-1">
-                          <span className="text-xs text-muted-foreground leading-none">
-                            DevBox
-                          </span>
-                          <span className="text-lg font-bold text-foreground leading-tight truncate">
-                            {devbox.name}
-                          </span>
-                        </div>
-                        <div className="flex-shrink-0">
-                          <Badge>
-                            {devbox.runtime}
-                          </Badge>
-                        </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground pl-1 break-words">
-                        {devbox.description}
-                      </p>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
 
-          {/* Databases Section */}
-          {databases.length > 0 && (
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <h3 className="text-lg font-semibold">Databases</h3>
-              </div>
-              <div className="space-y-2">
-                {databases.map((database, index) => (
-                  <Card key={index} className="p-3">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-4">
-                        <div className="flex-shrink-0">
-                          <Image
-                            src={
-                              CLUSTER_TYPE_ICON_MAP[
-                                database.type as keyof typeof CLUSTER_TYPE_ICON_MAP
-                              ] || "https://dbprovider.bja.sealos.run/logo.svg"
-                            }
-                            alt={`${database.type} Icon`}
-                            width={36}
-                            height={36}
-                            className="rounded-lg h-9 w-9 flex-shrink-0"
-                            priority
-                          />
-                        </div>
-                        <div className="flex flex-col min-w-0 flex-1">
-                          <span className="text-xs text-muted-foreground leading-none">
-                            Database
-                          </span>
-                          <span className="text-lg font-bold text-foreground leading-tight truncate">
-                            {database.name}
-                          </span>
-                        </div>
-                        <div className="flex-shrink-0">
-                          <Badge>
-                            {database.type}
-                          </Badge>
-                        </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground pl-1 break-words">
-                        {database.description}
-                      </p>
+                {/* App Resources Section */}
+                {appResources.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <h4 className="text-md font-medium">
+                        Application Resources ({appResources.length})
+                      </h4>
                     </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Storage Buckets Section */}
-          {buckets.length > 0 && (
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <h3 className="text-lg font-semibold">Object Storage</h3>
-              </div>
-              <div className="space-y-2">
-                {buckets.map((bucket, index) => (
-                  <Card key={index} className="p-3">
                     <div className="space-y-2">
-                      <div className="flex items-center gap-4">
-                        <div className="flex-shrink-0">
-                          <Image
-                            src="https://objectstorageapi.hzh.sealos.run/cyhipdvv-logos/objectstorage.svg"
-                            alt="Object Storage Icon"
-                            width={36}
-                            height={36}
-                            className="rounded-lg border border-muted h-9 w-9 flex-shrink-0"
-                            priority
-                          />
-                        </div>
-                        <div className="flex flex-col min-w-0 flex-1">
-                          <span className="text-xs text-muted-foreground leading-none">
-                            Object Storage
-                          </span>
-                          <span className="text-lg font-bold text-foreground leading-tight truncate">
-                            {bucket.name}
-                          </span>
-                        </div>
-                        <div className="flex-shrink-0">
-                          <Badge>
-                            {bucket.policy}
-                          </Badge>
-                        </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground pl-1 break-words">
-                        {bucket.description}
-                      </p>
+                      {appResources.map((resource, index) => (
+                        <Card key={index} className="p-3">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-4">
+                              <div className="flex-shrink-0">
+                                <Image
+                                  src="https://devbox.bja.sealos.run/logo.svg"
+                                  alt="App Icon"
+                                  width={36}
+                                  height={36}
+                                  className="rounded-lg h-9 w-9 flex-shrink-0"
+                                  priority
+                                />
+                              </div>
+                              <div className="flex flex-col min-w-0 flex-1">
+                                <span className="text-xs text-muted-foreground leading-none">
+                                  Application
+                                </span>
+                                <span className="text-lg font-bold text-foreground leading-tight truncate">
+                                  {resource.name}
+                                </span>
+                              </div>
+                              <div className="flex-shrink-0">
+                                <Badge>App</Badge>
+                              </div>
+                            </div>
+                            <p className="text-sm text-muted-foreground pl-1 break-words">
+                              {resource.description}
+                            </p>
+                            <p className="text-xs text-muted-foreground pl-1">
+                              Image: {resource.image}
+                            </p>
+                            {resource.reliances && (
+                              <div className="pl-1">
+                                <div className="text-sm text-muted-foreground">
+                                  <strong>Dependencies:</strong>
+                                </div>
+                                {resource.reliances.database &&
+                                  resource.reliances.database.length > 0 && (
+                                    <div className="text-xs text-muted-foreground mt-1">
+                                      <strong>Database:</strong>{" "}
+                                      {resource.reliances.database.join(", ")}
+                                    </div>
+                                  )}
+                                {resource.reliances.bucket &&
+                                  resource.reliances.bucket.length > 0 && (
+                                    <div className="text-xs text-muted-foreground mt-1">
+                                      <strong>Object Storage:</strong>{" "}
+                                      {resource.reliances.bucket.join(", ")}
+                                    </div>
+                                  )}
+                              </div>
+                            )}
+                          </div>
+                        </Card>
+                      ))}
                     </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
+                  </div>
+                )}
 
-          {/* Empty State */}
-          {devboxes.length === 0 &&
-            databases.length === 0 &&
-            buckets.length === 0 && (
-              <div className="flex items-center justify-center py-12 text-muted-foreground">
-                <div className="text-center">
-                  <Settings className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No resources configured for this project</p>
-                </div>
+                {/* Database Resources Section */}
+                {databaseResources.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <h4 className="text-md font-medium">
+                        Database Resources ({databaseResources.length})
+                      </h4>
+                    </div>
+                    <div className="space-y-2">
+                      {databaseResources.map((resource, index) => (
+                        <Card key={index} className="p-3">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-4">
+                              <div className="flex-shrink-0">
+                                <Image
+                                  src={
+                                    CLUSTER_TYPE_ICON_MAP[
+                                      resource.type as keyof typeof CLUSTER_TYPE_ICON_MAP
+                                    ] ||
+                                    "https://dbprovider.bja.sealos.run/logo.svg"
+                                  }
+                                  alt={`${resource.type} Icon`}
+                                  width={36}
+                                  height={36}
+                                  className="rounded-lg h-9 w-9 flex-shrink-0"
+                                  priority
+                                />
+                              </div>
+                              <div className="flex flex-col min-w-0 flex-1">
+                                <span className="text-xs text-muted-foreground leading-none">
+                                  Database
+                                </span>
+                                <span className="text-lg font-bold text-foreground leading-tight truncate">
+                                  {resource.name}
+                                </span>
+                              </div>
+                              <div className="flex-shrink-0">
+                                <Badge>{resource.type}</Badge>
+                              </div>
+                            </div>
+                            <p className="text-sm text-muted-foreground pl-1 break-words">
+                              {resource.description}
+                            </p>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Object Storage Resources Section */}
+                {ossResources.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <h4 className="text-md font-medium">
+                        Object Storage Resources ({ossResources.length})
+                      </h4>
+                    </div>
+                    <div className="space-y-2">
+                      {ossResources.map((resource, index) => (
+                        <Card key={index} className="p-3">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-4">
+                              <div className="flex-shrink-0">
+                                <Image
+                                  src="https://objectstorageapi.hzh.sealos.run/cyhipdvv-logos/objectstorage.svg"
+                                  alt="Object Storage Icon"
+                                  width={36}
+                                  height={36}
+                                  className="rounded-lg border border-muted h-9 w-9 flex-shrink-0"
+                                  priority
+                                />
+                              </div>
+                              <div className="flex flex-col min-w-0 flex-1">
+                                <span className="text-xs text-muted-foreground leading-none">
+                                  Object Storage
+                                </span>
+                                <span className="text-lg font-bold text-foreground leading-tight truncate">
+                                  {resource.name}
+                                </span>
+                              </div>
+                              <div className="flex-shrink-0">
+                                <Badge>{resource.policy}</Badge>
+                              </div>
+                            </div>
+                            <p className="text-sm text-muted-foreground pl-1 break-words">
+                              {resource.description}
+                            </p>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Empty State */}
+                {appResources.length === 0 &&
+                  databaseResources.length === 0 &&
+                  ossResources.length === 0 && (
+                    <div className="flex items-center justify-center py-12 text-muted-foreground">
+                      <div className="text-center">
+                        <Settings className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p>No resources configured for this project</p>
+                      </div>
+                    </div>
+                  )}
               </div>
-            )}
-          </div>
+
+              {/* Fixed button at bottom right */}
+              <div className="absolute bottom-2 right-2 p-3">
+                <Button type="submit" size="sm" disabled={isCreating}>
+                  {isCreating ? "Creating..." : "Create Project"}
+                </Button>
+              </div>
+            </form>
+          </Form>
         )}
-
-        {/* Fixed button at bottom right */}
-        <div className="absolute bottom-2 right-2 p-3">
-          <Button size="sm" onClick={handleCreateProject} disabled={isCreating}>
-            {isCreating ? "Creating..." : "Create Project"}
-          </Button>
-        </div>
-      {/* )} */}
       </CardContent>
     </Card>
   );
@@ -576,8 +613,10 @@ export function ProjectProposalCard({
 // Export types for use in other components
 export type {
   ProjectProposal,
-  DevBox,
-  Database,
-  ObjectStorageBucket,
   ProjectResources,
+  DevBox,
+  Database as DatabaseType,
+  ObjectStorageBucket,
+  App,
+  Reliances,
 };

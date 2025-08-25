@@ -40,7 +40,7 @@ export const PodOverview: React.FC<PodOverviewProps> = ({ target }) => {
           {
             icon: Container,
             label: "View Pod Details",
-            onClick: () => appendSystemMessage("manage.podDetails", target),
+            onClick: () => appendSystemMessage("universal.podDetail", target),
           },
         ]
       : [];

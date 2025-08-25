@@ -11,12 +11,15 @@ import useProjectSearch from "@/hooks/brain/use-projects-search";
 import RecentProjects from "@/components/project/recent-projects";
 import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
 import { useMount } from "@reactuses/core";
+import CreateProject from "@/components/project/create-project/create-project";
+import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
 
 export default function HomePage() {
   const { messages } = useCopilotChatHeadless_c();
   const hasMessages = messages.length > 0;
   const { filteredProjects, projects, isLoading, isError } = useProjectSearch();
   const { setStage } = useLanggraphActions();
+  const { CreateProjectDialog, openDialog } = useProjectCreateDialog();
 
   useCopilotActions();
   useLanggraphAgent("propose_project");
@@ -27,6 +30,7 @@ export default function HomePage() {
 
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden">
+      <CreateProjectDialog />
       <div className="flex-1 flex flex-col min-h-0">
         {/* Hero overlays the content area and fades out when messages exist */}
         {!hasMessages && (
@@ -46,7 +50,7 @@ export default function HomePage() {
               actions={[
                 {
                   label: "From Template",
-                  onClick: () => {},
+                  onClick: openDialog,
                   variant: "outline",
                 },
                 {

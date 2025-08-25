@@ -35,7 +35,9 @@ interface Backup {
   time?: unknown;
 }
 
-export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({ target }) => {
+export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
+  target,
+}) => {
   const clusterTrpcClient = clusterClient.useTRPC();
   const { appendSystemMessage } = useAppendSystemMessageMutation();
   const sealosContext = createSealosContext();
@@ -77,20 +79,10 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({ targ
     }
   };
 
-  const actions: MessageAction[] = [
-    {
-      icon: RefreshCw,
-      label: "Refresh",
-      onClick: () => {
-        refetch();
-      },
-    },
-  ];
-
   // Show loading state
   if (isLoading) {
     return (
-      <BaseSystemMessage target={target} actions={actions}>
+      <BaseSystemMessage target={target}>
         <div className="flex items-center justify-center py-8">
           <div className="flex items-center gap-2 text-muted-foreground">
             <DatabaseBackup className="h-4 w-4 animate-spin" />
@@ -104,7 +96,7 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({ targ
   // Show error state
   if (error) {
     return (
-      <BaseSystemMessage target={target} actions={actions}>
+      <BaseSystemMessage target={target}>
         <div className="flex items-center justify-center py-8">
           <div className="flex items-center gap-2 text-destructive">
             <DatabaseBackup className="h-4 w-4" />
@@ -116,7 +108,7 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({ targ
   }
 
   return (
-    <BaseSystemMessage target={target} actions={actions}>
+    <BaseSystemMessage target={target}>
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <DatabaseBackup className="h-5 w-5 text-theme-green" />
@@ -132,9 +124,10 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({ targ
           <ScrollArea className="h-64">
             <div className="space-y-2">
               {backupList.map((backup: Backup, index: number) => {
-                const backupTime = backup.time && typeof backup.time === "string" 
-                  ? new Date(backup.time) 
-                  : null;
+                const backupTime =
+                  backup.time && typeof backup.time === "string"
+                    ? new Date(backup.time)
+                    : null;
                 const isValidTime = backupTime && !isNaN(backupTime.getTime());
 
                 return (
@@ -146,16 +139,23 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({ targ
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <DatabaseBackup className="h-4 w-4 text-theme-green flex-shrink-0" />
-                          <span className="font-medium truncate">{backup.name}</span>
+                          <span className="font-medium truncate">
+                            {backup.name}
+                          </span>
                         </div>
-                                                 {isValidTime && (
-                           <div className="text-sm text-muted-foreground mt-1">
-                             Created {formatDate(backup.time as string)}
-                           </div>
-                         )}
+                        {isValidTime && (
+                          <div className="text-sm text-muted-foreground mt-1">
+                            Created {formatDate(backup.time as string)}
+                          </div>
+                        )}
                       </div>
-                      
-                      <AlertDialog open={deleteDialogOpen === backup.name} onOpenChange={(open) => setDeleteDialogOpen(open ? backup.name : null)}>
+
+                      <AlertDialog
+                        open={deleteDialogOpen === backup.name}
+                        onOpenChange={(open) =>
+                          setDeleteDialogOpen(open ? backup.name : null)
+                        }
+                      >
                         <AlertDialogTrigger asChild>
                           <Button
                             variant="ghost"
@@ -169,7 +169,8 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({ targ
                           <AlertDialogHeader>
                             <AlertDialogTitle>Delete Backup</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Are you sure you want to delete the backup "{backup.name}"? This action cannot be undone.
+                              Are you sure you want to delete the backup "
+                              {backup.name}"? This action cannot be undone.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>

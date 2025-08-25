@@ -15,28 +15,27 @@ import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method
 import ClusterNodeBackupTitle from "./cluster-node-backup-title";
 import ClusterNodeBackupList from "./cluster-node-backup-list";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
-import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 
 export default function ClusterNodeBackup({
-  object,
+  target,
 }: {
-  object: ClusterObject;
+  target: CustomResourceTarget;
 }) {
   const sealosContext = createSealosContext();
   const [isExpanded, setIsExpanded] = useState(false);
-  const { sendSystemMessage } = useAppendSystemMessageMutation();
+  const { appendSystemMessage } = useAppendSystemMessageMutation();
+
+  // Get cluster object using resource status hook
+  const { resource, isLoading: isLoadingResource } = useResourceStatus(target);
+  const clusterObject = resource as ClusterObject;
 
   const { data: backupList, isLoading } = useQuery(
-    getClusterBackupListOptions(
-      sealosContext,
-      CustomResourceTargetSchema.parse(
-        convertResourceTypeToTarget("cluster", object.name)
-      )
-    )
+    getClusterBackupListOptions(sealosContext, target)
   );
 
-  const clusterName = object.name || "Unknown Cluster";
+  const clusterName = clusterObject?.name || "Unknown Cluster";
 
   const handleToggleExpand = () => {
     setIsExpanded(!isExpanded);
@@ -57,13 +56,7 @@ export default function ClusterNodeBackup({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              sendSystemMessage({
-                type: "info.clusterBackup",
-                payload: {
-                  backups: transformedBackups,
-                  clusterName: clusterName,
-                },
-              });
+              appendSystemMessage("cluster.backup", target);
             }}
           >
             <DatabaseBackup className="h-4 w-4 text-theme-green" />

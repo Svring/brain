@@ -3,6 +3,10 @@ import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useQuery } from "@tanstack/react-query";
 import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
+import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/message-actions";
+import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { Edit } from "lucide-react";
+import ObjectStorageMessageDetails from "./components/objectstorage-message-details";
 
 interface ObjectStorageMessageProps {
   target: CustomResourceTarget;
@@ -12,8 +16,13 @@ export const ObjectStorageMessage: React.FC<ObjectStorageMessageProps> = ({
   target,
 }) => {
   const { objectstorage } = useTRPCClients();
+  const { appendSystemMessage } = useAppendSystemMessageMutation();
 
-  const { data: objectstorageObject } = useQuery(
+  const {
+    data: objectstorageObject,
+    isLoading,
+    error,
+  } = useQuery(
     objectstorage.getObjectStorage.queryOptions({
       target,
     })
@@ -21,9 +30,49 @@ export const ObjectStorageMessage: React.FC<ObjectStorageMessageProps> = ({
 
   console.log("objectstorageObject", objectstorageObject);
 
+  const actions: MessageAction[] = objectstorageObject
+    ? [
+        {
+          icon: Edit,
+          label: "Update",
+          onClick: () => {
+            appendSystemMessage("objectstorage.update", target);
+          },
+        },
+      ]
+    : [];
+
+  // Handle loading state
+  if (isLoading) {
+    return (
+      <BaseSystemMessage target={target}>
+        <div className="flex items-center justify-center">
+          <span className="text-muted-foreground">
+            Loading object storage information...
+          </span>
+        </div>
+      </BaseSystemMessage>
+    );
+  }
+
+  // Handle error state
+  if (error || !objectstorageObject) {
+    return (
+      <BaseSystemMessage target={target}>
+        <div className="flex items-center justify-center">
+          <span className="text-destructive">
+            Failed to load object storage information
+          </span>
+        </div>
+      </BaseSystemMessage>
+    );
+  }
+
   return (
-    <BaseSystemMessage target={target}>
-      {/* <ObjectStorageMessageDetails objectstorageObject={objectstorageObject} /> */}
+    <BaseSystemMessage target={target} actions={actions}>
+      <ObjectStorageMessageDetails
+        objectstorageObject={objectstorageObject as any}
+      />
     </BaseSystemMessage>
   );
 };

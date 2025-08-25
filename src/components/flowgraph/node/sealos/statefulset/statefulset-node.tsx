@@ -86,6 +86,8 @@ function StatefulsetNode({
 }) {
   const { appendSystemMessage } = useAppendSystemMessageMutation();
 
+  // console.log("resource", resource);
+
   // Use the new hook to get statefulset data
   const { data: statefulsetData = resource } = useLaunchpadObject(
     resource.name,

@@ -23,7 +23,7 @@ interface NodePodsProps {
 
 export default function NodePods({ target }: NodePodsProps) {
   const { appendSystemMessage } = useAppendSystemMessageMutation();
-  const { resource, isLoading, error } = useResourceStatus(target);
+  const { resource } = useResourceStatus(target);
 
   // Extract pods from resource based on resource type
   const getPodList = (): Pod[] => {
@@ -60,26 +60,6 @@ export default function NodePods({ target }: NodePodsProps) {
     }
 
     return "text-theme-gray";
-  };
-
-  const getPodStatusColor = (status: string) => {
-    const normalizedStatus = status.toLowerCase();
-    switch (normalizedStatus) {
-      case "running":
-        return "bg-theme-green";
-      case "stopped":
-      case "shutdown":
-        return "bg-theme-purple";
-      case "pending":
-      case "waiting":
-        return "bg-theme-gray";
-      case "error":
-        return "bg-theme-red";
-      case "deleting":
-        return "bg-theme-yellow";
-      default:
-        return "bg-theme-gray";
-    }
   };
 
   const displayedPods = podList.slice(0, 5);

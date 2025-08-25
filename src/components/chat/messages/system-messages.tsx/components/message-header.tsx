@@ -29,6 +29,9 @@ export default function MessageHeader({ target }: MessageHeaderProps) {
       case "statefulset":
         return "https://applaunchpad.bja.sealos.run/logo.svg";
 
+      case "objectstoragebucket":
+        return "https://objectstorage.bja.sealos.run/logo.svg";
+
       default:
         return "https://sealos.run/logo.svg";
     }
