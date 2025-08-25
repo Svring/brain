@@ -2,6 +2,7 @@
 
 import { assign, createMachine } from "xstate";
 import type { EnvVar } from "@/lib/k8s/k8s-method/k8s-utils";
+import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 export interface ResourceObject {
   name: string;
@@ -26,6 +27,7 @@ export interface ProjectContextState {
   allProjects: unknown[];
   selectedProject: string | null;
   selectedProjectResources: ResourceObject[];
+  selectedResource: ResourceTarget | null;
 }
 
 export type ProjectEvent =
@@ -35,7 +37,9 @@ export type ProjectEvent =
   | { type: "SET_SELECTED_PROJECT_RESOURCES"; resources: ResourceObject[] }
   | { type: "CLEAR_SELECTED_PROJECT_RESOURCES" }
   | { type: "UPDATE_RESOURCE"; resource: ResourceObject }
-  | { type: "REMOVE_RESOURCE"; name: string; kind: string };
+  | { type: "REMOVE_RESOURCE"; name: string; kind: string }
+  | { type: "SELECT_RESOURCE"; target: ResourceTarget }
+  | { type: "CLEAR_SELECTED_RESOURCE" };
 
 export const projectMachine = createMachine({
   /** XState v5 generics */
@@ -46,6 +50,7 @@ export const projectMachine = createMachine({
     allProjects: [],
     selectedProject: null,
     selectedProjectResources: [],
+    selectedResource: null,
   },
   states: {
     idle: {},
@@ -105,6 +110,14 @@ export const projectMachine = createMachine({
               !(resource.name === event.name && resource.kind === event.kind)
           ),
       }),
+    },
+    SELECT_RESOURCE: {
+      actions: assign({
+        selectedResource: ({ event }) => event.target,
+      }),
+    },
+    CLEAR_SELECTED_RESOURCE: {
+      actions: assign({ selectedResource: () => null }),
     },
   },
 });

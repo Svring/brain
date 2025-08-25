@@ -9,34 +9,37 @@ import {
   useFlowgraphState,
   useFlowgraphActions,
 } from "@/contexts/flowgraph/flowgraph-context";
+import { useProjectActions } from "@/contexts/project/project-context";
+import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface BaseNodeProps {
   children: React.ReactNode;
   nodeData: any;
+  target?: ResourceTarget;
   className?: string;
-  active?: boolean;
-  expand?: boolean;
 }
 
 export default function BaseNodeWrapper({
   children,
   nodeData,
+  target,
   className,
-  active = true,
-  expand = false,
 }: BaseNodeProps) {
   const nodeRef = useRef(null);
 
   const { selectedNode } = useFlowgraphState();
   const { selectNode } = useFlowgraphActions();
 
+  const { selectResource } = useProjectActions();
+
   const alreadySelected = selectedNode === nodeData;
 
   const handleNodeClick = () => {
-    if (active) {
-      selectNode(nodeData);
-      // openSidebarChat();
+    selectNode(nodeData);
+    if (target) {
+      selectResource(target);
     }
+    // openSidebarChat();
   };
 
   return (
@@ -47,7 +50,6 @@ export default function BaseNodeWrapper({
           className={className}
           ref={nodeRef}
           onClick={handleNodeClick}
-          expand={expand}
         >
           <Handle position={Position.Top} type="source" />
           {children}

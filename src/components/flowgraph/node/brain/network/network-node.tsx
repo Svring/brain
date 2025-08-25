@@ -50,7 +50,34 @@ export default function NetworkNode({
   const { appendSystemMessage } = useAppendSystemMessageMutation();
 
   const handleNodeClick = () => {
+    console.log("handleNodeClick", target);
     appendSystemMessage("universal.network", target);
+  };
+
+  const handleIconClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log("handleIconClick", target);
+    // Execute only the specific icon action
+    const statusData = readyStatus as any;
+    const isNetworkNotReady = statusData?.data?.some(
+      (item: any) => !item.ready
+    );
+    if (isNetworkNotReady) {
+      appendSystemMessage("universal.diagnoseNetwork", target);
+    }
+  };
+
+  const handleAddressClick = (
+    e: React.MouseEvent,
+    address: string,
+    hasPublicAddress: boolean
+  ) => {
+    console.log("handleAddressClick", address, hasPublicAddress);
+    e.stopPropagation();
+    // Execute only the address click action
+    if (hasPublicAddress && address) {
+      window.open(address, "_blank");
+    }
   };
 
   // Show loading state if resource is still loading
@@ -100,13 +127,6 @@ export default function NetworkNode({
                 (item: any) => !item.ready
               );
 
-              const handleIconClick = (e: React.MouseEvent) => {
-                e.stopPropagation();
-                if (isNetworkNotReady) {
-                  appendSystemMessage("universal.diagnoseNetwork", target);
-                }
-              };
-
               return (
                 <div className="flex items-center justify-center gap-2 text-sm w-full">
                   {isNetworkNotReady ? (
@@ -136,12 +156,9 @@ export default function NetworkNode({
                         ? "text-foreground cursor-pointer hover:text-foreground/80"
                         : "text-foreground"
                     )}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (hasPublicAddress && address) {
-                        window.open(address, "_blank");
-                      }
-                    }}
+                    onClick={(e) =>
+                      handleAddressClick(e, address, hasPublicAddress)
+                    }
                   >
                     {address}
                   </span>

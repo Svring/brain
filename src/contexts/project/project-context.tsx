@@ -10,6 +10,7 @@ import {
 } from "@/contexts/project/project-machine";
 import { useLanggraphAgent } from "@/hooks/langgraph/use-langgraph-agent";
 import _ from "lodash";
+import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 // const inspector = createBrowserInspector();
 
@@ -48,6 +49,7 @@ export function useProjectState() {
     allProjects: state.context.allProjects,
     selectedProject: state.context.selectedProject,
     selectedProjectResources: state.context.selectedProjectResources,
+    selectedResource: state.context.selectedResource,
   };
 }
 
@@ -68,6 +70,11 @@ export function useProjectActions() {
       newState,
       "resource_context.selectedProjectResources",
       state.context.selectedProjectResources
+    );
+    _.set(
+      newState,
+      "resource_context.selectedResource",
+      state.context.selectedResource
     );
     setLanggraphState(newState);
   };
@@ -99,6 +106,14 @@ export function useProjectActions() {
     },
     removeResource: (name: string, kind: string) => {
       send({ type: "REMOVE_RESOURCE", name, kind });
+      syncStateToLanggraph();
+    },
+    selectResource: (target: ResourceTarget) => {
+      send({ type: "SELECT_RESOURCE", target });
+      syncStateToLanggraph();
+    },
+    clearSelectedResource: () => {
+      send({ type: "CLEAR_SELECTED_RESOURCE" });
       syncStateToLanggraph();
     },
   };

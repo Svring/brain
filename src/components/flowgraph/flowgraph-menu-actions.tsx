@@ -1,8 +1,9 @@
 "use client";
 
-import { Plus, Eye, Settings,Play, Pause, RefreshCw } from "lucide-react";
+import { Plus, Eye, Settings, Play, Pause, RefreshCw } from "lucide-react";
 import { MenuBar, MenuBarItem } from "../project/menu-bar";
 import { useQueryClient } from "@tanstack/react-query";
+import { useChatState } from "@/contexts/chat/chat-context";
 
 interface FlowgraphMenuActionsProps {
   onAddNew: () => void;
@@ -14,21 +15,16 @@ interface FlowgraphMenuActionsProps {
   disabled?: boolean;
 }
 
-export function FlowgraphMenuActions({ 
-  onAddNew, 
-  onDisplayEnv, 
-  onStartAll, 
+export function FlowgraphMenuActions({
+  onAddNew,
+  onDisplayEnv,
+  onStartAll,
   onPauseAll,
   isStarting = false,
   isPausing = false,
-  disabled = false
+  disabled = false,
 }: FlowgraphMenuActionsProps) {
-  const queryClient = useQueryClient();
-
-  const handleRefresh = () => {
-    // Invalidate the resources query to refresh project resources
-    queryClient.invalidateQueries({ queryKey: ["resources"] });
-  };
+  const { sidebarChatOpen } = useChatState();
 
   const menuItemsRight: MenuBarItem[] = [
     // {
