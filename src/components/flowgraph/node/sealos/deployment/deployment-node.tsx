@@ -118,7 +118,7 @@ function DeploymentNode({
       <div
         className="flex h-full flex-col gap-2 justify-between"
         onClick={() => {
-          appendSystemMessage("deployment.detail", target);
+          appendSystemMessage("launchpad.detail", target);
         }}
       >
         {/* Header with Name and Dropdown */}

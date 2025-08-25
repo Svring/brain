@@ -27,6 +27,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { generateClusterName } from "@/lib/sealos/resources/cluster/cluster-utils";
 import { toast } from "sonner";
 import { CheckCircle, Database } from "lucide-react";
+import { useProjectState } from "@/contexts/project/project-context";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 // Database type options for cluster
 const dbTypeOptions = [
@@ -92,9 +94,17 @@ export default function ClusterCreateMessage({
   const [isCompleted, setIsCompleted] = useState(false);
   const [createdClusterName, setCreatedClusterName] = useState<string>("");
 
-  const { cluster } = useTRPCClients();
+  const { cluster, project } = useTRPCClients();
   const createClusterMutation = useMutation(
     cluster.createCluster.mutationOptions()
+  );
+
+  // Get selected project from context
+  const { selectedProject } = useProjectState();
+
+  // Initialize add to project mutation
+  const addToProjectMutation = useMutation(
+    project.addToProject.mutationOptions()
   );
 
   // Fetch cluster versions using TRPC router
@@ -145,8 +155,14 @@ export default function ClusterCreateMessage({
   const onSubmit = async (values: ClusterFormValues) => {
     const clusterName = values.name.trim() || generateClusterName();
 
+    if (!selectedProject) {
+      toast.error("No project selected. Please select a project first.");
+      return;
+    }
+
     setIsCreating(true);
     try {
+      // Create the cluster
       await createClusterMutation.mutateAsync({
         terminationPolicy: values.terminationPolicy,
         name: clusterName,
@@ -160,10 +176,17 @@ export default function ClusterCreateMessage({
         },
       });
 
+      // Add the created cluster to the project
+      const resourceTarget = convertResourceTypeToTarget("cluster", clusterName);
+      await addToProjectMutation.mutateAsync({
+        resources: [resourceTarget],
+        name: selectedProject,
+      });
+
       // Set completion state
       setCreatedClusterName(clusterName);
       setIsCompleted(true);
-      toast.success("Cluster created successfully!");
+      toast.success("Cluster created and added to project successfully!");
     } catch (error) {
       console.error("Failed to create cluster:", error);
       toast.error("Failed to create cluster. Please try again.");

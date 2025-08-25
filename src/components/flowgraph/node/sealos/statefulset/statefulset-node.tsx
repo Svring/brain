@@ -120,7 +120,7 @@ function StatefulsetNode({
       <div
         className="flex h-full flex-col gap-2 justify-between"
         onClick={() => {
-          appendSystemMessage("statefulset.detail", target);
+          appendSystemMessage("launchpad.detail", target);
         }}
       >
         {/* Header with Name and Dropdown */}

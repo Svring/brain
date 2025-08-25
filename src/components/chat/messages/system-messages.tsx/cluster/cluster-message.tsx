@@ -33,21 +33,21 @@ export const ClusterMessage: React.FC<ClusterMessageProps> = ({ target }) => {
           icon: Save,
           label: "Backup",
           onClick: () => {
-            appendSystemMessage("info.clusterBackup", target);
+            appendSystemMessage("cluster.backup", target);
           },
         },
         {
           icon: BarChart3,
           label: "View Metrics",
           onClick: () => {
-            appendSystemMessage("info.monitor", target);
+            appendSystemMessage("universal.monitor", target);
           },
         },
         {
           icon: EthernetPort,
           label: "View Connection",
           onClick: () => {
-            appendSystemMessage("info.clusterConnection", target);
+            appendSystemMessage("cluster.connection", target);
           },
         },
       ]

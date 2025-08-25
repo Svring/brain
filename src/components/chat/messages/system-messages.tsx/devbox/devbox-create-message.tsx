@@ -27,6 +27,8 @@ import { useMutation } from "@tanstack/react-query";
 import { generateDevboxName } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 import { toast } from "sonner";
 import { CheckCircle, Package } from "lucide-react";
+import { useProjectState } from "@/contexts/project/project-context";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 // Runtime options for devbox
 export const runtimeOptions = [
@@ -81,9 +83,17 @@ export default function DevboxCreateMessage({
   const [isCompleted, setIsCompleted] = useState(false);
   const [createdDevboxName, setCreatedDevboxName] = useState<string>("");
 
-  const { devbox } = useTRPCClients();
+  const { devbox, project } = useTRPCClients();
   const createDevboxMutation = useMutation(
     devbox.createDevbox.mutationOptions()
+  );
+
+  // Get selected project from context
+  const { selectedProject } = useProjectState();
+
+  // Initialize add to project mutation
+  const addToProjectMutation = useMutation(
+    project.addToProject.mutationOptions()
   );
 
   // Stable key for payload to avoid resets on identical content
@@ -116,8 +126,14 @@ export default function DevboxCreateMessage({
   const onSubmit = async (values: DevboxFormValues) => {
     const devboxName = values.name.trim() || generateDevboxName();
 
+    if (!selectedProject) {
+      toast.error("No project selected. Please select a project first.");
+      return;
+    }
+
     setIsCreating(true);
     try {
+      // Create the devbox
       await createDevboxMutation.mutateAsync({
         name: devboxName,
         runtimeName: values.runtimeName as any,
@@ -125,10 +141,17 @@ export default function DevboxCreateMessage({
         memory: parseInt(values.memory),
       });
 
+      // Add the created devbox to the project
+      const resourceTarget = convertResourceTypeToTarget("devbox", devboxName);
+      await addToProjectMutation.mutateAsync({
+        resources: [resourceTarget],
+        name: selectedProject,
+      });
+
       // Set completion state
       setCreatedDevboxName(devboxName);
       setIsCompleted(true);
-      toast.success("Devbox created successfully!");
+      toast.success("Devbox created and added to project successfully!");
     } catch (error) {
       console.error("Failed to create devbox:", error);
       toast.error("Failed to create devbox. Please try again.");

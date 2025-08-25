@@ -34,6 +34,8 @@ import { useMutation } from "@tanstack/react-query";
 import { generateDeployName } from "@/lib/sealos/resources/deployment/deploy-utils";
 import { toast } from "sonner";
 import { CheckCircle, Rocket, ChevronDown } from "lucide-react";
+import { useProjectState } from "@/contexts/project/project-context";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 // CPU options for launchpad
 const cpuOptions = [500, 1000, 2000, 4000, 6000, 8000] as const;
@@ -109,9 +111,17 @@ export default function LaunchpadCreateMessage({
   const [createdDeploymentName, setCreatedDeploymentName] =
     useState<string>("");
 
-  const { launchpad } = useTRPCClients();
+  const { launchpad, project } = useTRPCClients();
   const createLaunchpadMutation = useMutation(
     launchpad.createLaunchpad.mutationOptions()
+  );
+
+  // Get selected project from context
+  const { selectedProject } = useProjectState();
+
+  // Initialize add to project mutation
+  const addToProjectMutation = useMutation(
+    project.addToProject.mutationOptions()
   );
 
   // Stable key for payload to avoid resets on identical content
@@ -157,6 +167,11 @@ export default function LaunchpadCreateMessage({
 
     if (!values.image.trim()) {
       toast.error("Please enter an image");
+      return;
+    }
+
+    if (!selectedProject) {
+      toast.error("No project selected. Please select a project first.");
       return;
     }
 
@@ -208,6 +223,7 @@ export default function LaunchpadCreateMessage({
           ]
         : [];
 
+      // Create the deployment
       await createLaunchpadMutation.mutateAsync({
         request: {
           name: deploymentName,
@@ -228,12 +244,20 @@ export default function LaunchpadCreateMessage({
         },
       });
 
+      // Add the created deployment to the project
+      const resourceTarget = convertResourceTypeToTarget("deployment", deploymentName);
+      await addToProjectMutation.mutateAsync({
+        resources: [resourceTarget],
+        name: selectedProject,
+      });
+
       // Set completion state
       setCreatedDeploymentName(deploymentName);
       setIsCompleted(true);
-      toast.success("Deployment created successfully!");
+      toast.success("Deployment created and added to project successfully!");
     } catch (error) {
       console.error("Failed to create deployment:", error);
+      toast.error("Failed to create deployment. Please try again.");
     } finally {
       setIsCreating(false);
     }

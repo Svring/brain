@@ -28,6 +28,7 @@ import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/
 import NodeLoading from "../../components/node-loading";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
 // Enhanced wrapper that can handle both K8sResource and ObjectStorageObject
 function ObjectStorageNodeWrapper({
@@ -99,8 +100,14 @@ function ObjectStorageNode({
   status?: string;
 }) {
   const [staticHosting, setStaticHosting] = useState(false);
+  const { appendSystemMessage } = useAppendSystemMessageMutation();
 
   const { name, policy, access } = resource;
+
+  const target = convertResourceObjectToTarget({
+    kind: resource.kind,
+    name: resource.name,
+  });
 
   // console.log("access", access);
 
@@ -165,7 +172,12 @@ function ObjectStorageNode({
       nodeData={resource}
       className={isDeletingObjectStorage ? "border-theme-red" : ""}
     >
-      <div className="flex h-full flex-col justify-between">
+      <div 
+        className="flex h-full flex-col justify-between"
+        onClick={() => {
+          appendSystemMessage("objectstorage.detail", target);
+        }}
+      >
         <div className="flex flex-col gap-4">
           {/* Header with Name and Menu */}
           <div className="flex items-center justify-between">

@@ -3,46 +3,37 @@ import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/message-actions";
-import { Copy, ExternalLink, Database } from "lucide-react";
+import { Copy, ExternalLink, Database, Check } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useCopy } from "@/hooks/use-copy";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
+import { Button } from "@/components/ui/button";
 
 interface ClusterConnectionMessageProps {
   target: CustomResourceTarget;
 }
 
-export const ClusterConnectionMessage: React.FC<ClusterConnectionMessageProps> = ({ target }) => {
-  const { copyToClipboard } = useCopy();
+export const ClusterConnectionMessage: React.FC<
+  ClusterConnectionMessageProps
+> = ({ target }) => {
+  const { copyToClipboard, isCopied } = useCopy();
   const { appendSystemMessage } = useAppendSystemMessageMutation();
-  
+
   const { resource, isLoading, error } = useResourceStatus(target);
   const clusterObject = resource as ClusterObject;
 
-  const handleCopyConnection = (connectionString: string) => {
-    copyToClipboard(connectionString, "cluster-connection");
-  };
-
-  const actions: MessageAction[] = clusterObject && clusterObject.connection
-    ? [
-        {
-          icon: Copy,
-          label: "Copy Private Connection",
-          onClick: () => {
-            const privateConn = clusterObject.connection.privateConnection;
-            const connectionString = `${privateConn.host}:${privateConn.port}`;
-            handleCopyConnection(connectionString);
+  const actions: MessageAction[] =
+    clusterObject && clusterObject.connection
+      ? [
+          {
+            icon: Database,
+            label: "View Details",
+            onClick: () => {
+              appendSystemMessage("cluster.detail", target);
+            },
           },
-        },
-        {
-          icon: Database,
-          label: "View Details",
-          onClick: () => {
-            appendSystemMessage("info.cluster", target);
-          },
-        },
-      ]
-    : [];
+        ]
+      : [];
 
   // Show loading state
   if (isLoading) {
@@ -84,15 +75,21 @@ export const ClusterConnectionMessage: React.FC<ClusterConnectionMessageProps> =
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">
               <span className="text-sm text-muted-foreground">Host</span>
-              <span className="text-sm font-medium">{privateConnection.host}</span>
+              <span className="text-sm font-medium">
+                {privateConnection.host}
+              </span>
             </div>
             <div className="flex flex-col">
               <span className="text-sm text-muted-foreground">Port</span>
-              <span className="text-sm font-medium">{privateConnection.port}</span>
+              <span className="text-sm font-medium">
+                {privateConnection.port}
+              </span>
             </div>
             <div className="flex flex-col">
               <span className="text-sm text-muted-foreground">Username</span>
-              <span className="text-sm font-medium">{privateConnection.username}</span>
+              <span className="text-sm font-medium">
+                {privateConnection.username}
+              </span>
             </div>
             <div className="flex flex-col">
               <span className="text-sm text-muted-foreground">Password</span>
@@ -103,7 +100,9 @@ export const ClusterConnectionMessage: React.FC<ClusterConnectionMessageProps> =
           </div>
           <div className="flex flex-col">
             <span className="text-sm text-muted-foreground">Endpoint</span>
-            <span className="text-sm font-medium break-all">{privateConnection.endpoint}</span>
+            <span className="text-sm font-medium break-all">
+              {privateConnection.endpoint}
+            </span>
           </div>
         </div>
 
@@ -116,18 +115,39 @@ export const ClusterConnectionMessage: React.FC<ClusterConnectionMessageProps> =
             </h3>
             <div className="flex flex-col">
               <span className="text-sm text-muted-foreground">Port</span>
-              <span className="text-sm font-medium">{publicConnection.port}</span>
+              <span className="text-sm font-medium">
+                {publicConnection.port}
+              </span>
             </div>
           </div>
         )}
 
         {/* Connection String */}
         <div className="space-y-2">
-          <span className="text-sm text-muted-foreground">Connection String</span>
-          <div className="bg-muted p-3 rounded-md">
-            <code className="text-sm break-all">
+          <span className="text-sm text-muted-foreground">
+            Connection String
+          </span>
+          <div className="bg-muted p-3 rounded-md flex items-center justify-between">
+            <code className="text-sm break-all flex-1">
               {`${privateConnection.host}:${privateConnection.port}`}
             </code>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0 ml-2 flex-shrink-0"
+              onClick={() =>
+                copyToClipboard(
+                  `${privateConnection.host}:${privateConnection.port}`,
+                  "connection-string"
+                )
+              }
+            >
+              {isCopied("connection-string") ? (
+                <Check className="w-3 h-3" />
+              ) : (
+                <Copy className="w-3 h-3" />
+              )}
+            </Button>
           </div>
         </div>
       </div>

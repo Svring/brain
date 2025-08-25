@@ -25,7 +25,7 @@ export function BaseSystemMessage({
 }: BaseSystemMessageProps) {
   return (
     <div className="flex justify-start w-full">
-      <Card className="w-full bg-node-background">
+      <Card className="w-full bg-background-secondary border border-border-primary">
         {/* Header Section */}
         {showHeader && target && (
           <div className="px-6">

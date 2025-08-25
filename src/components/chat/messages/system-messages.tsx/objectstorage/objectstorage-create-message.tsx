@@ -26,6 +26,8 @@ import { Loader2 } from "lucide-react";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useProjectState } from "@/contexts/project/project-context";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 // Policy options for object storage
 const policyOptions = ["private", "publicRead", "publicReadWrite"] as const;
@@ -59,9 +61,17 @@ export const ObjectStorageCreateMessage: React.FC<
 > = ({ payload }) => {
   const [isCreating, setIsCreating] = useState(false);
 
-  const { objectstorage } = useTRPCClients();
+  const { objectstorage, project } = useTRPCClients();
   const createObjectStorageMutation = useMutation(
     objectstorage.createObjectStorage.mutationOptions()
+  );
+
+  // Get selected project from context
+  const { selectedProject } = useProjectState();
+
+  // Initialize add to project mutation
+  const addToProjectMutation = useMutation(
+    project.addToProject.mutationOptions()
   );
 
   // Memoize default values to prevent unnecessary re-renders
@@ -77,13 +87,27 @@ export const ObjectStorageCreateMessage: React.FC<
   });
 
   const onSubmit = async (values: ObjectStorageFormValues) => {
+    if (!selectedProject) {
+      toast.error("No project selected. Please select a project first.");
+      return;
+    }
+
     setIsCreating(true);
     try {
+      // Create the object storage bucket
       await createObjectStorageMutation.mutateAsync({
         bucketName: values.name.trim(),
         bucketPolicy: values.policy,
       });
-      toast.success("Object storage bucket created successfully");
+
+      // Add the created object storage to the project
+      const resourceTarget = convertResourceTypeToTarget("objectstoragebucket", values.name.trim());
+      await addToProjectMutation.mutateAsync({
+        resources: [resourceTarget],
+        name: selectedProject,
+      });
+
+      toast.success("Object storage bucket created and added to project successfully");
     } catch (error) {
       console.error("Failed to create object storage:", error);
       toast.error("Failed to create object storage bucket");
