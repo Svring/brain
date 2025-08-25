@@ -8,9 +8,9 @@ import {
   projectMachine,
   type ResourceObject,
 } from "@/contexts/project/project-machine";
-import { useLanggraphAgent } from "@/hooks/langgraph/use-langgraph-agent";
 import _ from "lodash";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
 
 // const inspector = createBrowserInspector();
 
@@ -55,66 +55,35 @@ export function useProjectState() {
 
 export function useProjectActions() {
   const { send, state } = useProjectContext();
-  const { state: langgraphState, setState: setLanggraphState } =
-    useLanggraphAgent("manage_project");
-
-  const syncStateToLanggraph = () => {
-    const newState = _.cloneDeep(langgraphState);
-    _.set(newState, "resource_context.allProjects", state.context.allProjects);
-    _.set(
-      newState,
-      "resource_context.selectedProject",
-      state.context.selectedProject
-    );
-    _.set(
-      newState,
-      "resource_context.selectedProjectResources",
-      state.context.selectedProjectResources
-    );
-    _.set(
-      newState,
-      "resource_context.selectedResource",
-      state.context.selectedResource
-    );
-    setLanggraphState(newState);
-  };
+  // const { setState: setLanggraphState } = useLanggraphActions();
 
   return {
     setAllProjects: (projects: unknown[]) => {
       send({ type: "SET_ALL_PROJECTS", projects });
-      syncStateToLanggraph();
     },
     selectProject: (project: unknown) => {
       send({ type: "SELECT_PROJECT", project });
-      syncStateToLanggraph();
     },
     clearSelectedProject: () => {
       send({ type: "CLEAR_SELECTED_PROJECT" });
-      syncStateToLanggraph();
     },
     setSelectedProjectResources: (resources: ResourceObject[]) => {
       send({ type: "SET_SELECTED_PROJECT_RESOURCES", resources });
-      syncStateToLanggraph();
     },
     clearSelectedProjectResources: () => {
       send({ type: "CLEAR_SELECTED_PROJECT_RESOURCES" });
-      syncStateToLanggraph();
     },
     updateResource: (resource: ResourceObject) => {
       send({ type: "UPDATE_RESOURCE", resource });
-      syncStateToLanggraph();
     },
     removeResource: (name: string, kind: string) => {
       send({ type: "REMOVE_RESOURCE", name, kind });
-      syncStateToLanggraph();
     },
     selectResource: (target: ResourceTarget) => {
       send({ type: "SELECT_RESOURCE", target });
-      syncStateToLanggraph();
     },
     clearSelectedResource: () => {
       send({ type: "CLEAR_SELECTED_RESOURCE" });
-      syncStateToLanggraph();
     },
   };
 }

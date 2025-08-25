@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Plus } from "lucide-react";
 import { useCopy } from "@/hooks/use-copy";
 import {
   Table,
@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
 import { useProjectState } from "@/contexts/project/project-context";
 import { deriveEnvVariable } from "@/lib/sealos/services/env/cluster/cluster-env-utils";
 import { deriveObjectStorageEnvVariable } from "@/lib/sealos/services/env/objectstorage/objectstorage-env-utils";
@@ -25,14 +26,22 @@ interface EnvVariable {
 interface EnvVariablesTableProps {
   envVars: EnvVariable[];
   resourceName: string;
+  onEnvVarsChange?: (envVars: EnvVariable[]) => void;
 }
 
 export function EnvVariablesTable({
   envVars,
   resourceName,
+  onEnvVarsChange,
 }: EnvVariablesTableProps) {
   const { copyToClipboard, isCopied } = useCopy();
   const { selectedProjectResources } = useProjectState();
+  const [localEnvVars, setLocalEnvVars] = useState<EnvVariable[]>(envVars);
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [newEnvVar, setNewEnvVar] = useState<EnvVariable>({
+    key: "",
+    value: "",
+  });
 
   // Filter to only get cluster and objectstoragebucket resources
   const filteredResources = _.filter(
@@ -48,7 +57,6 @@ export function EnvVariablesTable({
   const clusterEnvVars = _.map(filteredResources, (resource: any) => {
     if (resource.kind.toLowerCase() === "cluster") {
       const derivedEnv = deriveEnvVariable(k8sContext, resource);
-      console.log(`Cluster ${resource.name} derived env vars:`, derivedEnv);
       return derivedEnv;
     }
     return null;
@@ -57,26 +65,62 @@ export function EnvVariablesTable({
   const objectStorageEnvVars = _.map(filteredResources, (resource: any) => {
     if (resource.kind.toLowerCase() === "objectstoragebucket") {
       const derivedEnv = deriveObjectStorageEnvVariable(resource);
-      console.log(
-        `Object Storage ${resource.name} derived env vars:`,
-        derivedEnv
-      );
       return derivedEnv;
     }
     return null;
   }).filter(Boolean);
 
-  console.log("All cluster environment variables:", clusterEnvVars);
-  console.log(
-    "All object storage environment variables:",
-    objectStorageEnvVars
-  );
+  // console.log("All cluster environment variables:", clusterEnvVars);
+  // console.log(
+  //   "All object storage environment variables:",
+  //   objectStorageEnvVars
+  // );
 
-  if (!envVars || envVars.length === 0) {
+  const handleAddNewRow = () => {
+    setIsAddingNew(true);
+  };
+
+  const handleSaveNewRow = () => {
+    if (newEnvVar.key.trim()) {
+      const updatedEnvVars = [...localEnvVars, { ...newEnvVar }];
+      setLocalEnvVars(updatedEnvVars);
+      onEnvVarsChange?.(updatedEnvVars);
+      setNewEnvVar({ key: "", value: "" });
+      setIsAddingNew(false);
+    }
+  };
+
+  const handleCancelNewRow = () => {
+    setNewEnvVar({ key: "", value: "" });
+    setIsAddingNew(false);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSaveNewRow();
+    } else if (e.key === "Escape") {
+      handleCancelNewRow();
+    }
+  };
+
+  const displayEnvVars = localEnvVars.length > 0 ? localEnvVars : envVars;
+
+  if (!displayEnvVars || displayEnvVars.length === 0) {
     return (
-      <p className="text-muted-foreground">
-        No environment variables configured for this resource.
-      </p>
+      <div className="space-y-3 border border-dashed rounded-lg p-4">
+        <p className="text-muted-foreground">
+          No environment variables configured for this resource.
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleAddNewRow}
+          className="flex items-center gap-2"
+        >
+          <Plus className="w-4 h-4" />
+          Add Environment Variable
+        </Button>
+      </div>
     );
   }
 
@@ -91,7 +135,7 @@ export function EnvVariablesTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {envVars.map((envVar, index) => (
+            {displayEnvVars.map((envVar, index) => (
               <TableRow key={index}>
                 <TableCell className="font-mono">{envVar.key}</TableCell>
                 <TableCell className="max-w-0">
@@ -127,6 +171,63 @@ export function EnvVariablesTable({
                 </TableCell>
               </TableRow>
             ))}
+            {isAddingNew && (
+              <TableRow>
+                <TableCell>
+                  <Input
+                    placeholder="Enter key"
+                    value={newEnvVar.key}
+                    onChange={(e) =>
+                      setNewEnvVar({ ...newEnvVar, key: e.target.value })
+                    }
+                    onKeyDown={handleKeyPress}
+                    className="font-mono"
+                    autoFocus
+                  />
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      placeholder="Enter value"
+                      value={newEnvVar.value}
+                      onChange={(e) =>
+                        setNewEnvVar({ ...newEnvVar, value: e.target.value })
+                      }
+                      onKeyDown={handleKeyPress}
+                    />
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={handleSaveNewRow}
+                      disabled={!newEnvVar.key.trim()}
+                    >
+                      <Check className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={handleCancelNewRow}
+                    >
+                      ×
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+            <TableRow>
+              <TableCell colSpan={2}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleAddNewRow}
+                  className="w-full text-muted-foreground"
+                  disabled={isAddingNew}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Environment Variable
+                </Button>
+              </TableCell>
+            </TableRow>
           </TableBody>
         </Table>
       </div>

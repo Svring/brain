@@ -17,6 +17,7 @@ import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ProjectObjectSchema } from "@/lib/brain/resources/project/project-schemas/project-object-schema";
 import { z } from "zod";
+import useProjectResources from "@/hooks/brain/use-project-resources";
 
 interface ProjectCardProps {
   project: z.infer<typeof ProjectObjectSchema>;
@@ -30,6 +31,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
     onClose: closeDropdown,
     onOpen: openDropdown,
   } = useDisclosure();
+
+  // const { resources } = useProjectResources(project.name);
+
+  // console.log("resources", resources);
 
   const deleteProjectMutation = useMutation(
     projectClient.deleteProject.mutationOptions({

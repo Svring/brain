@@ -2,7 +2,7 @@
 
 import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Eraser } from "lucide-react";
 import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { Spinner } from "@/components/ui/spinner";
 import { useAuthState } from "@/contexts/auth/auth-context";
@@ -45,7 +45,7 @@ export function AiChatHeader({
             {isPending ? (
               <Spinner className="h-4 w-4" />
             ) : (
-              <Plus className="h-4 w-4" />
+              <Eraser className="h-4 w-4" />
             )}
           </Button>
         </div>

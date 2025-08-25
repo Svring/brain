@@ -50,8 +50,35 @@ import {
   checkDevboxReady,
 } from "@/lib/sealos/resources/devbox/devbox-api/devbox-api-service";
 import { transformCombinedMonitorData } from "@/lib/sealos/sealos-utils";
+import {
+  getOrCreateEnvFile,
+  upsertEnvVar,
+  deleteEnvVar,
+  type EnvVarValue,
+} from "@/lib/sealos/services/env/devbox/devbox-env-utils";
+import { SSHConfigSchema } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-query-schema";
 
 const t = initTRPC.context<DevboxContext>().create();
+
+// Environment variable schemas
+const EnvVarValueSchema = z.object({
+  type: z.literal("value"),
+  key: z.string(),
+  value: z.string(),
+});
+
+const EnvVarListResponseSchema = z.array(EnvVarValueSchema);
+
+const UpsertEnvVarRequestSchema = z.object({
+  sshConfig: SSHConfigSchema,
+  key: z.string(),
+  value: z.string(),
+});
+
+const DeleteEnvVarRequestSchema = z.object({
+  sshConfig: SSHConfigSchema,
+  key: z.string(),
+});
 
 export const devboxRouter = t.router({
   // DevBox Lifecycle Management
@@ -246,6 +273,32 @@ export const devboxRouter = t.router({
     )
     .query(async ({ input, ctx }) => {
       return await checkDevboxReady(ctx, input.devboxName);
+    }),
+
+  // Environment Variable Operations
+  getDevboxEnvVars: t.procedure
+    .input(
+      z.object({
+        sshConfig: SSHConfigSchema,
+      })
+    )
+    .output(EnvVarListResponseSchema)
+    .query(async ({ input }) => {
+      return await getOrCreateEnvFile(input.sshConfig);
+    }),
+
+  upsertDevboxEnvVar: t.procedure
+    .input(UpsertEnvVarRequestSchema)
+    .mutation(async ({ input }) => {
+      await upsertEnvVar(input.sshConfig, input.key, input.value);
+      return { success: true };
+    }),
+
+  deleteDevboxEnvVar: t.procedure
+    .input(DeleteEnvVarRequestSchema)
+    .mutation(async ({ input }) => {
+      await deleteEnvVar(input.sshConfig, input.key);
+      return { success: true };
     }),
 });
 

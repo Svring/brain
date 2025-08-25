@@ -88,6 +88,15 @@ const ExtendedConfigMapSchema = z.object({
   value: z.string().optional(),
 });
 
+// Application status schema
+const ApplicationStatusSchema = z.object({
+  observedGeneration: z.number(),
+  replicas: z.number(),
+  availableReplicas: z.number(),
+  updatedReplicas: z.number(),
+  isPause: z.boolean().default(false),
+});
+
 // Main request schema for creating launchpad application
 export const LaunchpadCreateRequestSchema = z.object({
   name: z.string().default("hello-world"),
@@ -113,8 +122,26 @@ export const LaunchpadCreateRequestSchema = z.object({
 // Success response schema
 export const LaunchpadCreateSuccessResponseSchema = z.object({
   data: z.object({
-    message: z.string(),
     name: z.string(),
+    image: z.string(),
+    command: z.string().optional(),
+    args: z.string().optional(),
+    resource: z.object({
+      replicas: z.number(),
+      cpu: z.number(),
+      memory: z.number(),
+      gpu: GpuResourceSchema.optional(),
+    }),
+    ports: z.array(ExtendedPortSchema),
+    env: z.array(EnvSchema),
+    hpa: HpaSchema.optional(),
+    imageRegistry: ImageRegistrySchema.optional(),
+    storage: z.array(StorageSchema),
+    configMap: z.array(ExtendedConfigMapSchema),
+    kind: z.enum(["deployment", "statefulset"]),
+    id: z.string(),
+    createTime: z.string(),
+    status: ApplicationStatusSchema,
   }),
 });
 
@@ -153,7 +180,7 @@ export const LaunchpadGetResponseSchema = z.object({
     kind: z.enum(["deployment", "statefulset"]).optional(),
     id: z.string(),
     createTime: z.string(),
-    isPause: z.boolean(),
+    status: ApplicationStatusSchema,
   }),
 });
 
@@ -258,10 +285,9 @@ export const LaunchpadConfigMapUpdateRequestSchema = z.object({
     .describe("ConfigMap configurations"),
 });
 
-// ConfigMap update response schema (same as patch response for now)
-export const LaunchpadConfigMapUpdateResponseSchema = z.object({
-  data: z.any(), // The response contains the full application data
-});
+// ConfigMap update response schema (same as GET response)
+export const LaunchpadConfigMapUpdateResponseSchema =
+  LaunchpadGetResponseSchema;
 
 // ============= PATCH /api/v1/app/{name}/ports SCHEMAS =============
 
@@ -285,10 +311,31 @@ export const LaunchpadPortsUpdateRequestSchema = z.object({
     ),
 });
 
-// Port update response schema (same as patch response for now)
-export const LaunchpadPortsUpdateResponseSchema = z.object({
-  data: z.any(), // The response contains the full application data
+// Port update response schema (same as GET response)
+export const LaunchpadPortsUpdateResponseSchema = LaunchpadGetResponseSchema;
+
+// ============= PATCH /api/v1/app/{name}/storage SCHEMAS =============
+
+// Storage update request schema
+export const LaunchpadStorageUpdateRequestSchema = z.object({
+  storage: z
+    .array(
+      z.object({
+        path: z.string().describe("Mount path in the container"),
+        size: z
+          .string()
+          .default("1Gi")
+          .describe('Storage size (e.g., "10Gi", "1Ti")'),
+      })
+    )
+    .default([])
+    .describe(
+      "Storage configurations to update (incremental). Only includes storage to add or modify, existing storage not listed will be preserved. Name is auto-generated from path."
+    ),
 });
+
+// Storage update response schema (same as GET response)
+export const LaunchpadStorageUpdateResponseSchema = LaunchpadGetResponseSchema;
 
 // Export types
 export type LaunchpadCreateRequest = z.infer<
@@ -329,6 +376,12 @@ export type LaunchpadPortsUpdateRequest = z.infer<
 export type LaunchpadPortsUpdateResponse = z.infer<
   typeof LaunchpadPortsUpdateResponseSchema
 >;
+export type LaunchpadStorageUpdateRequest = z.infer<
+  typeof LaunchpadStorageUpdateRequestSchema
+>;
+export type LaunchpadStorageUpdateResponse = z.infer<
+  typeof LaunchpadStorageUpdateResponseSchema
+>;
 
 // Re-export individual schemas for flexibility
 export {
@@ -343,6 +396,7 @@ export {
   ConfigMapSchema,
   ExtendedConfigMapSchema,
   ExtendedResourceSchema,
+  ApplicationStatusSchema,
   PodStatusSchema,
   PodMetricsSchema,
   PodSchema,

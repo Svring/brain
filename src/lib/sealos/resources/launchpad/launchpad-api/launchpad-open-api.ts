@@ -19,6 +19,8 @@ import {
   LaunchpadConfigMapUpdateResponse,
   LaunchpadPortsUpdateRequest,
   LaunchpadPortsUpdateResponse,
+  LaunchpadStorageUpdateRequest,
+  LaunchpadStorageUpdateResponse,
 } from "./launchpad-open-api-schemas/launchpad-create-schema";
 
 function createLaunchpadApi(context: SealosApiContext) {
@@ -39,29 +41,9 @@ function createLaunchpadApi(context: SealosApiContext) {
   });
 }
 
-export const startLaunchpad = createParallelAction(
-  async (context: SealosApiContext, name: string) => {
-    const api = createLaunchpadApi(context);
-    const response = await api.get<AppControlSuccessResponse>("/app/start", {
-      params: { name },
-    });
-    return response.data;
-  }
-);
+// ============= APPLICATION LIFECYCLE MANAGEMENT =============
 
-export const pauseLaunchpad = createParallelAction(
-  async (context: SealosApiContext, name: string) => {
-    const api = createLaunchpadApi(context);
-    const response = await api.get<AppControlSuccessResponse>("/app/pause", {
-      params: { name },
-    });
-    return response.data;
-  }
-);
-
-// ============= NEW STANDARDIZED API ENDPOINTS =============
-
-// POST /api/v1/launchpad - Create a new application
+// POST /api/v1/app - Create a new application
 export const createApplication = createParallelAction(
   async (context: SealosApiContext, data: LaunchpadCreateRequest) => {
     const api = createLaunchpadApi(context);
@@ -73,7 +55,7 @@ export const createApplication = createParallelAction(
   }
 );
 
-// GET /api/v1/launchpad/{name} - Get application by name
+// GET /api/v1/app/{name} - Get application by name
 export const getApplication = createParallelAction(
   async (context: SealosApiContext, name: string) => {
     const api = createLaunchpadApi(context);
@@ -82,7 +64,7 @@ export const getApplication = createParallelAction(
   }
 );
 
-// PATCH /api/v1/launchpad/{name} - Update application resources
+// PATCH /api/v1/app/{name} - Update application resources
 export const updateApplication = createParallelAction(
   async (
     context: SealosApiContext,
@@ -98,7 +80,7 @@ export const updateApplication = createParallelAction(
   }
 );
 
-// DELETE /api/v1/launchpad/{name} - Delete application
+// DELETE /api/v1/app/{name} - Delete application
 export const deleteApplication = createParallelAction(
   async (context: SealosApiContext, name: string) => {
     const api = createLaunchpadApi(context);
@@ -107,27 +89,117 @@ export const deleteApplication = createParallelAction(
   }
 );
 
-// GET /api/v1/launchpad/startApp - Start application
+// ============= APPLICATION CONTROL ENDPOINTS =============
+
+// POST /api/v1/app/{name}/start - Start application
 export const startApplication = createParallelAction(
   async (context: SealosApiContext, name: string) => {
     const api = createLaunchpadApi(context);
-    const response = await api.get<AppControlSuccessResponse>("/app/startApp", {
-      params: { name },
-    });
+    const response = await api.post<AppControlSuccessResponse>(
+      `/app/${name}/start`
+    );
     return response.data;
   }
 );
 
-// GET /api/v1/launchpad/pauseApp - Pause application
+// POST /api/v1/app/{name}/pause - Pause application
 export const pauseApplication = createParallelAction(
   async (context: SealosApiContext, name: string) => {
     const api = createLaunchpadApi(context);
-    const response = await api.get<AppControlSuccessResponse>("/app/pauseApp", {
-      params: { name },
-    });
+    const response = await api.post<AppControlSuccessResponse>(
+      `/app/${name}/pause`
+    );
     return response.data;
   }
 );
+
+// ============= CONFIGMAP MANAGEMENT =============
+
+// PATCH /api/v1/app/{name}/configmap - Update application ConfigMap
+export const updateApplicationConfigMap = createParallelAction(
+  async (
+    context: SealosApiContext,
+    name: string,
+    data: LaunchpadConfigMapUpdateRequest
+  ) => {
+    const api = createLaunchpadApi(context);
+    const response = await api.patch<LaunchpadConfigMapUpdateResponse>(
+      `/app/${name}/configmap`,
+      data
+    );
+    return response.data;
+  }
+);
+
+// ============= PORTS MANAGEMENT =============
+
+// POST /api/v1/app/{name}/ports - Create new application ports
+export const createApplicationPorts = createParallelAction(
+  async (
+    context: SealosApiContext,
+    name: string,
+    data: LaunchpadPortsUpdateRequest
+  ) => {
+    const api = createLaunchpadApi(context);
+    const response = await api.post<LaunchpadPortsUpdateResponse>(
+      `/app/${name}/ports`,
+      data
+    );
+    return response.data;
+  }
+);
+
+// PATCH /api/v1/app/{name}/ports - Update existing application ports
+export const updateApplicationPorts = createParallelAction(
+  async (
+    context: SealosApiContext,
+    name: string,
+    data: LaunchpadPortsUpdateRequest
+  ) => {
+    const api = createLaunchpadApi(context);
+    const response = await api.patch<LaunchpadPortsUpdateResponse>(
+      `/app/${name}/ports`,
+      data
+    );
+    return response.data;
+  }
+);
+
+// DELETE /api/v1/app/{name}/ports - Delete application ports
+export const deleteApplicationPorts = createParallelAction(
+  async (
+    context: SealosApiContext,
+    name: string,
+    data: { ports: number[] }
+  ) => {
+    const api = createLaunchpadApi(context);
+    const response = await api.delete<LaunchpadPortsUpdateResponse>(
+      `/app/${name}/ports`,
+      { data }
+    );
+    return response.data;
+  }
+);
+
+// ============= STORAGE MANAGEMENT =============
+
+// PATCH /api/v1/app/{name}/storage - Update application storage
+export const updateApplicationStorage = createParallelAction(
+  async (
+    context: SealosApiContext,
+    name: string,
+    data: LaunchpadStorageUpdateRequest
+  ) => {
+    const api = createLaunchpadApi(context);
+    const response = await api.patch<LaunchpadStorageUpdateResponse>(
+      `/app/${name}/storage`,
+      data
+    );
+    return response.data;
+  }
+);
+
+// ============= PODS AND METRICS =============
 
 // GET /api/v1/pod/getAppPodsByAppName - Get application pods
 export const getApplicationPods = createParallelAction(
@@ -155,34 +227,26 @@ export const getPodsMetrics = createParallelAction(
   }
 );
 
-// PATCH /api/v1/app/{name}/configmap - Update application ConfigMap
-export const updateApplicationConfigMap = createParallelAction(
-  async (
-    context: SealosApiContext,
-    name: string,
-    data: LaunchpadConfigMapUpdateRequest
-  ) => {
+// ============= LEGACY ENDPOINTS (DEPRECATED) =============
+
+// @deprecated Use startApplication instead
+export const startLaunchpad = createParallelAction(
+  async (context: SealosApiContext, name: string) => {
     const api = createLaunchpadApi(context);
-    const response = await api.patch<LaunchpadConfigMapUpdateResponse>(
-      `/app/${name}/configmap`,
-      data
-    );
+    const response = await api.get<AppControlSuccessResponse>("/app/start", {
+      params: { name },
+    });
     return response.data;
   }
 );
 
-// PATCH /api/v1/app/{name}/ports - Update application ports
-export const updateApplicationPorts = createParallelAction(
-  async (
-    context: SealosApiContext,
-    name: string,
-    data: LaunchpadPortsUpdateRequest
-  ) => {
+// @deprecated Use pauseApplication instead
+export const pauseLaunchpad = createParallelAction(
+  async (context: SealosApiContext, name: string) => {
     const api = createLaunchpadApi(context);
-    const response = await api.patch<LaunchpadPortsUpdateResponse>(
-      `/app/${name}/ports`,
-      data
-    );
+    const response = await api.get<AppControlSuccessResponse>("/app/pause", {
+      params: { name },
+    });
     return response.data;
   }
 );

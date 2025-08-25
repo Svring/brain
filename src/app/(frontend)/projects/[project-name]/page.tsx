@@ -283,8 +283,10 @@ export default function ProjectPage({
   params: Promise<{ "project-name": string }>;
 }) {
   const { "project-name": projectName } = use(params);
-  const { selectProject, clearSelectedProject } = useProjectActions();
+  const { selectProject, clearSelectedProject, selectResource } = useProjectActions();
   const { setStage } = useLanggraphActions();
+
+  console.log("selectResource", selectResource);
 
   useCopilotActions();
 

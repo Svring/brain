@@ -109,6 +109,7 @@ function DevboxNode({
 
   const mainCard = (
     <BaseNode
+      target={target}
       nodeData={resource}
       className={isDeletingDevbox ? "border-theme-red" : ""}
     >
