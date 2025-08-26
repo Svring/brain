@@ -41,6 +41,21 @@ export function useCommandActions({
         setSelectedCommand("add-resource");
         setIsDetailMode(true);
         break;
+
+      case "display-env":
+        setSelectedCommand("display-env");
+        setIsDetailMode(true);
+        break;
+
+      case "manage-status":
+        setSelectedCommand("manage-status");
+        setIsDetailMode(true);
+        break;
+
+      case "add-new":
+        setSelectedCommand("add-new");
+        setIsDetailMode(true);
+        break;
     }
   };
 

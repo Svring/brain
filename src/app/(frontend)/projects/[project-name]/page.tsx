@@ -53,63 +53,30 @@ import edgeTypes from "@/components/flowgraph/edge/edge-types";
 import nodeTypes from "@/components/flowgraph/node/node-types";
 import { Spinner } from "@/components/ui/spinner";
 
-import { useLanggraphActions, useLanggraphState } from "@/contexts/langgraph/langgraph-context";
+import {
+  useLanggraphActions,
+  useLanggraphState,
+} from "@/contexts/langgraph/langgraph-context";
 import { useAppendMessagesMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
 // Floating UI Component
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-
-  // Create context for mutations
-  const sealosContext = createSealosContext();
-
-  // Add resource message mutation
-  const { mutate: appendMessages } = useAppendMessagesMutation();
+  const { isOpen, onOpenChange } = useDisclosure();
 
   // Get project resources from context
   const { selectedProjectResources } = useProjectState();
 
-  // Manage status dialog hook
-  const { openDialog: openManageStatusDialog, ManageStatusDialogComponent } = useManageStatusDialog();
-
   // Command dialog hook
-  const { isOpen: isCommandOpen, onOpenChange: onCommandOpenChange } = useFlowgraphCommand();
-
-  const handleAddNew = () => {
-    appendMessages([
-      {
-        role: "system",
-        content: {
-          type: "universal.addResource",
-          payload: {},
-        },
-      },
-    ]);
-  };
-
-  const handleDisplayEnv = () => {
-    onOpen();
-  };
-
-  const handleManageStatus = () => {
-    openManageStatusDialog();
-  };
-
-  // Check if resources are available
-  const hasResources =
-    selectedProjectResources &&
-    Array.isArray(selectedProjectResources) &&
-    selectedProjectResources.length > 0;
+  const {
+    isOpen: isCommandOpen,
+    onOpenChange: onCommandOpenChange,
+    onOpen: onCommandOpen,
+  } = useFlowgraphCommand();
 
   return (
     <>
       <FlowgraphHeader projectName={projectName} />
-      <FlowgraphMenuActions
-        onAddNew={handleAddNew}
-        onDisplayEnv={handleDisplayEnv}
-        onManageStatus={handleManageStatus}
-        disabled={!hasResources}
-      />
+      <FlowgraphMenuActions onOpen={onCommandOpen} />
       <Sheet onOpenChange={onOpenChange} open={isOpen}>
         <SheetContent className="w-[40vw]! max-w-none! fade-in-0 animate-in flex flex-col">
           <SheetHeader className="shrink-0">
@@ -123,10 +90,9 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
           </div>
         </SheetContent>
       </Sheet>
-      <ManageStatusDialogComponent />
-      <FlowgraphCommandDialog 
-        isOpen={isCommandOpen} 
-        onOpenChange={onCommandOpenChange} 
+      <FlowgraphCommandDialog
+        isOpen={isCommandOpen}
+        onOpenChange={onCommandOpenChange}
       />
       <AiCoin />
       <AiChatbox />

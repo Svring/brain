@@ -4,6 +4,13 @@ import { ArrowLeft, Play, Settings, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import DevboxCreateMessage from "@/components/chat/messages/system-messages.tsx/devbox/devbox-create-message";
+import ClusterCreateMessage from "@/components/chat/messages/system-messages.tsx/cluster/cluster-create-message";
+import LaunchpadCreateMessage from "@/components/chat/messages/system-messages.tsx/launchpad/launchpad-create-message";
+import ObjectStorageCreateMessage from "@/components/chat/messages/system-messages.tsx/objectstorage/objectstorage-create-message";
+import DisplayEnvPanel from "@/components/project/display-env/display-env-panel";
+import { AddResourcePreview } from "./command-panel-add-resource";
+import { ManageStatusDetail } from "./manage-status-detail";
 
 interface CommandDetailsProps {
   command: string;
@@ -238,6 +245,115 @@ const commandInfoMap: Record<string, CommandInfo> = {
 };
 
 export function CommandDetails({ command, onExecute, onBack }: CommandDetailsProps) {
+  // Check if this is one of the four resource creation commands
+  const isResourceCreationCommand = [
+    "add-devbox",
+    "add-database", 
+    "add-app-launchpad",
+    "add-object-storage"
+  ].includes(command);
+
+  // Check if this is a project command
+  const isProjectCommand = [
+    "display-env",
+    "manage-status",
+    "add-new"
+  ].includes(command);
+
+  // If it's a resource creation command, show the appropriate create component
+  if (isResourceCreationCommand) {
+    return (
+      <div className="flex flex-col h-full">
+        {/* Header */}
+        <div className="p-6 border-b border-border">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onBack}
+              className="p-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded bg-blue-500 flex items-center justify-center text-white">
+                {command === "add-devbox" && "📦"}
+                {command === "add-database" && "DB"}
+                {command === "add-app-launchpad" && "🚀"}
+                {command === "add-object-storage" && "💾"}
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold">
+                  {command === "add-devbox" && "Create Devbox"}
+                  {command === "add-database" && "Create Database"}
+                  {command === "add-app-launchpad" && "Create App Launchpad"}
+                  {command === "add-object-storage" && "Create Object Storage"}
+                </h2>
+                <Badge variant="secondary" className="text-xs">
+                  Resource Creation
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto">
+          {command === "add-devbox" && <DevboxCreateMessage />}
+          {command === "add-database" && <ClusterCreateMessage />}
+          {command === "add-app-launchpad" && <LaunchpadCreateMessage />}
+          {command === "add-object-storage" && <ObjectStorageCreateMessage payload={{}} />}
+        </div>
+      </div>
+    );
+  }
+
+  // If it's a project command, show the appropriate component
+  if (isProjectCommand) {
+    return (
+      <div className="flex flex-col h-full">
+        {/* Header */}
+        <div className="p-6 border-b border-border">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onBack}
+              className="p-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded bg-green-500 flex items-center justify-center text-white">
+                {command === "display-env" && "👁️"}
+                {command === "manage-status" && "⚙️"}
+                {command === "add-new" && "➕"}
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold">
+                  {command === "display-env" && "Display Environment"}
+                  {command === "manage-status" && "Manage Status"}
+                  {command === "add-new" && "Add New Resource"}
+                </h2>
+                <Badge variant="secondary" className="text-xs">
+                  Project Management
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {command === "display-env" && <DisplayEnvPanel />}
+          {command === "manage-status" && <ManageStatusDetail />}
+          {command === "add-new" && <AddResourcePreview onSelect={onExecute} autoFocus={true} />}
+        </div>
+      </div>
+    );
+  }
+
+  // For other commands, show the standard details view
   const commandInfo = commandInfoMap[command] || {
     title: command.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase()),
     description: "Command details not available.",

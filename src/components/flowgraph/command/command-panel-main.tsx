@@ -1,7 +1,21 @@
 "use client";
 
-import { Plus, Trash2, Settings, Link, Search, FolderPlus, FolderOpen, ChevronRight } from "lucide-react";
-import { CommandGroup, CommandItem, CommandShortcut } from "@/components/ui/command";
+import {
+  Plus,
+  Trash2,
+  Settings,
+  Link,
+  Search,
+  FolderPlus,
+  FolderOpen,
+  ChevronRight,
+  Eye,
+} from "lucide-react";
+import {
+  CommandGroup,
+  CommandItem,
+  CommandShortcut,
+} from "@/components/ui/command";
 
 interface CommandPanelMainProps {
   onSelect: (value: string) => void;
@@ -9,12 +23,16 @@ interface CommandPanelMainProps {
   onKeyboardSelect?: (value: string | null) => void;
 }
 
-export function CommandPanelMain({ onSelect, onHover, onKeyboardSelect }: CommandPanelMainProps) {
+export function CommandPanelMain({
+  onSelect,
+  onHover,
+  onKeyboardSelect,
+}: CommandPanelMainProps) {
   return (
     <>
       <CommandGroup heading="Project">
-        <CommandItem 
-          value="add-resource" 
+        <CommandItem
+          value="add-resource"
           onSelect={onSelect}
           onFocus={() => onKeyboardSelect?.("add-resource")}
           onBlur={() => onKeyboardSelect?.(null)}
@@ -39,6 +57,24 @@ export function CommandPanelMain({ onSelect, onHover, onKeyboardSelect }: Comman
         <CommandItem value="connect-resource" onSelect={onSelect}>
           <Link className="mr-2 h-4 w-4" />
           <span>Connect Resource</span>
+          <ChevronRight className="ml-auto h-4 w-4" />
+        </CommandItem>
+
+        <CommandItem value="display-env" onSelect={onSelect}>
+          <Eye className="mr-2 h-4 w-4" />
+          <span>Display Environment</span>
+          <ChevronRight className="ml-auto h-4 w-4" />
+        </CommandItem>
+
+        <CommandItem value="manage-status" onSelect={onSelect}>
+          <Settings className="mr-2 h-4 w-4" />
+          <span>Manage Status</span>
+          <ChevronRight className="ml-auto h-4 w-4" />
+        </CommandItem>
+
+        <CommandItem value="add-new" onSelect={onSelect}>
+          <Plus className="mr-2 h-4 w-4" />
+          <span>Add New Resource</span>
           <ChevronRight className="ml-auto h-4 w-4" />
         </CommandItem>
       </CommandGroup>

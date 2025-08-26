@@ -1,55 +1,25 @@
 "use client";
 
-import { Plus, Eye, Settings, Play, Pause, RefreshCw } from "lucide-react";
+import { Command } from "lucide-react";
 import { MenuBar, MenuBarItem } from "../project/menu-bar";
-import { useQueryClient } from "@tanstack/react-query";
-import { useChatState } from "@/contexts/chat/chat-context";
+import { useFlowgraphCommand } from "@/hooks/flowgraph/use-flowgraph-command";
 
 interface FlowgraphMenuActionsProps {
-  onAddNew: () => void;
-  onDisplayEnv: () => void;
-  onManageStatus: () => void;
-  disabled?: boolean;
+  onOpen: () => void;
 }
 
-export function FlowgraphMenuActions({
-  onAddNew,
-  onDisplayEnv,
-  onManageStatus,
-  disabled = false,
-}: FlowgraphMenuActionsProps) {
-  const { sidebarChatOpen } = useChatState();
-
-  const menuItemsRight: MenuBarItem[] = [
-    // {
-    //   icon: RefreshCw,
-    //   label: "Refresh",
-    //   onClick: handleRefresh,
-    //   isToggle: false,
-    // },
+export function FlowgraphMenuActions({ onOpen }: FlowgraphMenuActionsProps) {
+  const menuItems: MenuBarItem[] = [
     {
-      icon: Settings,
-      label: "Display Env",
-      onClick: onDisplayEnv,
-      isToggle: false,
-    },
-    {
-      icon: Play,
-      label: "Manage Status",
-      onClick: onManageStatus,
-      isToggle: false,
-    },
-    {
-      icon: Plus,
-      label: "Add New",
-      onClick: onAddNew,
-      isToggle: false,
+      icon: Command,
+      label: "Command",
+      onClick: () => onOpen(),
     },
   ];
 
   return (
     <div className="absolute top-2 right-2 z-20">
-      <MenuBar activeIndex={null} items={menuItemsRight} disabled={disabled} />
+      <MenuBar items={menuItems} />
     </div>
   );
 }
