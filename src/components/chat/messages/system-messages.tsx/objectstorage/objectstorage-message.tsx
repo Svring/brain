@@ -3,7 +3,7 @@ import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useQuery } from "@tanstack/react-query";
 import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
-import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/message-actions";
+import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { Pencil } from "lucide-react";
 import ObjectStorageMessageDetails from "./components/objectstorage-message-details";

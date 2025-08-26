@@ -9,6 +9,11 @@ import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
 import React, { useMemo, memo } from "react";
 
+import { Tiktoken } from "js-tiktoken/lite";
+import o200k_base from "js-tiktoken/ranks/o200k_base";
+
+const enc = new Tiktoken(o200k_base);
+
 // Renders a system message component from serialized content. Memoized so it
 // doesn't re-mount on scroll re-renders when props are unchanged.
 const SystemMessageRenderer = memo(function SystemMessageRenderer({
@@ -43,6 +48,12 @@ export function AiMessages() {
     id: "chat",
   });
 
+  // const totalTokens = messages.reduce(
+  //   (sum, message) => sum + enc.encode(message.content ?? "").length + 4,
+  //   0
+  // );
+  // console.log("Total tokens:", totalTokens);
+
   const { scrollRef, isAtBottom, scrollToBottom } = useAutoScroll({
     offset: 20,
     smooth: true,
@@ -54,7 +65,7 @@ export function AiMessages() {
     return messages.map((message, index) => {
       const isLastMessage = index === messages.length - 1;
       const isCurrentMessage = isLastMessage && isLoading;
-      
+
       return (
         <div key={message.id} className="mb-2">
           <RenderTextMessage message={message} inProgress={isCurrentMessage} />
@@ -75,7 +86,10 @@ export function AiMessages() {
     <>
       {messages.length !== 0 && (
         <div className="w-full px-4 h-full relative">
-          <div ref={scrollRef} className="h-full overflow-y-auto scrollbar-hide">
+          <div
+            ref={scrollRef}
+            className="h-full overflow-y-auto scrollbar-hide"
+          >
             {memoizedMessages}
           </div>
 

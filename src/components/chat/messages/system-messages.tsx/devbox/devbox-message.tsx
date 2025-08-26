@@ -3,8 +3,8 @@ import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-
 import { useQuery } from "@tanstack/react-query";
 import { devboxClient } from "@/components/provider/trpc-provider";
 import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
-import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/message-actions";
-import { GitBranch, BarChart3, Pencil } from "lucide-react";
+import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
+import { GitBranch, BarChart3, Pencil, ArrowBigUpDash } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { DevboxInfoDetails } from "./components/devbox-message-details";
 import DevboxMessageMenu from "./components/devbox-message-menu";
@@ -40,16 +40,16 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
         },
         {
           icon: GitBranch,
-          label: "Releases",
+          label: "View Releases",
           onClick: () => {
             appendSystemMessage("devbox.release", target);
           },
         },
         {
-          icon: BarChart3,
-          label: "View Metrics",
+          icon: ArrowBigUpDash,
+          label: "Create Release",
           onClick: () => {
-            appendSystemMessage("universal.monitor", target);
+            appendSystemMessage("devbox.createRelease", target);
           },
         },
       ]
@@ -82,8 +82,9 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
   }
 
   return (
-    <BaseSystemMessage 
-      target={target} 
+    <BaseSystemMessage
+      target={target}
+      prompt="You could update the devbox, view releases, and create a new release."
       actions={actions}
       headerSlot={
         <div className="flex items-center gap-2">

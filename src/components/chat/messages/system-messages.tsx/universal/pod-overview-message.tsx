@@ -9,7 +9,7 @@ import {
 import { Pod } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
-import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/message-actions";
+import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 
 interface PodOverviewProps {
   target: CustomResourceTarget | BuiltinResourceTarget;

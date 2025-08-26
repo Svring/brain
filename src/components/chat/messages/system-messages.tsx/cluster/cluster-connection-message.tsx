@@ -2,7 +2,7 @@ import React from "react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
-import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/message-actions";
+import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import { Copy, ExternalLink, Database, Check } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useCopy } from "@/hooks/use-copy";

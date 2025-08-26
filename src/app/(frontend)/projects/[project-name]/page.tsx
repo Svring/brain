@@ -73,10 +73,6 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
   // Manage status dialog hook
   const { openDialog: openManageStatusDialog, ManageStatusDialogComponent } = useManageStatusDialog();
 
-  const { contextWindowUsage } = useLanggraphState();
-
-  console.log("contextWindowUsage", contextWindowUsage);
-
   const handleAddNew = () => {
     appendMessages([
       {

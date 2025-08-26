@@ -12,7 +12,7 @@ import { Bot, Loader2 } from "lucide-react";
 import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useResourceLogs } from "@/hooks/sealos/resource/use-resource-logs";
 import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
-import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/message-actions";
+import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 
 interface ResourceLogProps {
   target: CustomResourceTarget | BuiltinResourceTarget;

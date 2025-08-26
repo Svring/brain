@@ -8,7 +8,7 @@ import {
 import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { ArrowBigUpDash } from "lucide-react";
-import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/message-actions";
+import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 
 interface MonitorMessageProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -30,7 +30,11 @@ export const MonitorMessage: React.FC<MonitorMessageProps> = ({ target }) => {
   ];
 
   return (
-    <BaseSystemMessage target={target} actions={actions}>
+    <BaseSystemMessage
+      target={target}
+      // prompt="You could update the resource quota."
+      actions={actions}
+    >
       <div className="border rounded-lg p-4">
         <CombinedMetricsChart data={monitorData || []} isLoading={isLoading} />
       </div>

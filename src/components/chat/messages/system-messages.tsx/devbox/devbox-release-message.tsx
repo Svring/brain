@@ -3,8 +3,15 @@ import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-
 import { useQuery } from "@tanstack/react-query";
 import { devboxClient } from "@/components/provider/trpc-provider";
 import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
-import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/message-actions";
-import { Play, Trash2, Calendar, Tag, ArrowBigUpDash } from "lucide-react";
+import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
+import {
+  Play,
+  Trash2,
+  Calendar,
+  Tag,
+  ArrowBigUpDash,
+  Plus,
+} from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { DevboxReleaseItem } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas/devbox-release-schema";
 import { Button } from "@/components/ui/button";
@@ -15,29 +22,18 @@ interface DevboxReleaseMessageProps {
   target: CustomResourceTarget;
 }
 
-const ReleaseItem: React.FC<{ release: DevboxReleaseItem }> = ({ release }) => {
+const ReleaseItem: React.FC<{
+  release: DevboxReleaseItem;
+  target: CustomResourceTarget;
+}> = ({ release, target }) => {
   const { appendSystemMessage } = useAppendSystemMessageMutation();
 
   const handleDeploy = () => {
-    appendSystemMessage("devbox.deploy", {
-      type: "custom" as const,
-      resourceType: "devbox",
-      group: "devbox.sealos.io",
-      version: "v1",
-      plural: "devboxes",
-      name: release.devboxName,
-    });
+    appendSystemMessage("devbox.deployment", target);
   };
 
   const handleDelete = () => {
-    appendSystemMessage("devbox.deleteRelease", {
-      type: "custom" as const,
-      resourceType: "devbox",
-      group: "devbox.sealos.io",
-      version: "v1",
-      plural: "devboxes",
-      name: release.devboxName,
-    });
+    console.log("delete", release);
   };
 
   const formatDate = (dateString: string) => {
@@ -54,7 +50,7 @@ const ReleaseItem: React.FC<{ release: DevboxReleaseItem }> = ({ release }) => {
   };
 
   return (
-    <div className="border rounded-lg p-2 hover:bg-muted/50 transition-colors">
+    <div className="border rounded-lg p-2 hover:brightness-150 transition-colors">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Tag className="h-3 w-3 text-muted-foreground" />
@@ -78,17 +74,18 @@ const ReleaseItem: React.FC<{ release: DevboxReleaseItem }> = ({ release }) => {
           <Button
             size="sm"
             variant="ghost"
-            className="h-6 w-6 p-0"
+            className="p-0 border border-border-primary"
             onClick={handleDeploy}
             disabled={release.status.value !== "ready"}
             title="Deploy"
           >
-            <ArrowBigUpDash className="h-3 w-3" />
+            <ArrowBigUpDash className="h-4 w-4" />
+            Deploy
           </Button>
           <Button
             size="sm"
             variant="ghost"
-            className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+            className="p-0 text-destructive hover:text-destructive"
             onClick={handleDelete}
             title="Delete"
           >
@@ -143,10 +140,16 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
     <BaseSystemMessage target={target}>
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium">Devbox Releases</h3>
-          <Badge variant="outline" className="text-xs">
-            {releases.length} release{releases.length !== 1 ? "s" : ""}
-          </Badge>
+          <h3 className="text-sm font-medium">Releases: {releases.length}</h3>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-6 w-6 p-0"
+            onClick={() => console.log("Create new release")}
+            title="Create new release"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
         </div>
 
         {releases.length === 0 ? (
@@ -158,7 +161,11 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
           <ScrollArea className="max-h-60">
             <div className="space-y-2">
               {releases.map((release) => (
-                <ReleaseItem key={release.id} release={release} />
+                <ReleaseItem
+                  key={release.id}
+                  release={release}
+                  target={target}
+                />
               ))}
             </div>
           </ScrollArea>
