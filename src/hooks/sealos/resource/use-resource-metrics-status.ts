@@ -22,6 +22,11 @@ interface MetricsDataPoint {
   storage?: number;
 }
 
+interface PodMetricsData {
+  podName: string;
+  data: MetricsDataPoint[];
+}
+
 interface MetricsStatusResult {
   status: MetricsStatus;
   color: string;
@@ -31,6 +36,7 @@ interface MetricsStatusResult {
   latestData?: MetricsDataPoint;
   monitorData?: MetricsDataPoint[];
   isLoading: boolean;
+  podMetricsList: PodMetricsData[];
 }
 
 interface UseResourceMetricsStatusProps {
@@ -61,6 +67,15 @@ const getOverallStatus = (statuses: MetricsStatus[]): MetricsStatus => {
   return "low";
 };
 
+// Helper function to extract pod names from different resource types
+const extractPodNames = (resource: any, resourceType: string): string[] => {
+  if (!resource?.pods || !Array.isArray(resource.pods)) {
+    return [];
+  }
+
+  return resource.pods.map((pod: any) => pod.name).filter(Boolean);
+};
+
 export const useResourceMetricsStatus = ({
   target,
 }: UseResourceMetricsStatusProps): MetricsStatusResult => {
@@ -70,86 +85,120 @@ export const useResourceMetricsStatus = ({
   // Get the resource using useResourceStatus
   const { resource, isLoading: isResourceLoading } = useResourceStatus(target);
 
-  // console.log("resource", resource);
-  // console.log("isResourceLoading", isResourceLoading);
+  // Extract all pod names from the resource
+  const podNames = useMemo(() => {
+    if (!resource) return [];
+    return extractPodNames(resource, target.resourceType.toLowerCase());
+  }, [resource, target.resourceType]);
 
-  // Fetch monitor data based on resource kind
-  const { data: devboxMonitorData } = useQuery({
-    ...devbox.getDevboxCombinedMonitorData.queryOptions({
-      devboxName: (resource as DevboxObject)?.pods?.[0]?.name || "",
-    }),
-    enabled:
-      !isResourceLoading &&
-      target.resourceType.toLowerCase() === "devbox" &&
-      !!(resource as DevboxObject)?.pods?.[0]?.name,
-  });
+  // Fetch monitor data for all devbox pods
+  const devboxMonitorQueries = podNames.map((podName) =>
+    useQuery({
+      ...devbox.getDevboxCombinedMonitorData.queryOptions({
+        devboxName: podName,
+      }),
+      enabled:
+        !isResourceLoading &&
+        target.resourceType.toLowerCase() === "devbox" &&
+        !!podName,
+    })
+  );
 
-  // console.log("devboxMonitorData", devboxMonitorData);
-
+  // Fetch monitor data for cluster
   const { data: clusterMonitorData } = useQuery({
     ...cluster.getClusterCombinedMonitorData.queryOptions({
       dbName: target.name || "",
-      dbType: (resource as ClusterObject).type,
+      dbType: (resource as ClusterObject)?.type,
     }),
     enabled:
       !isResourceLoading && target.resourceType.toLowerCase() === "cluster",
   });
 
-  // console.log("clusterMonitorData", clusterMonitorData);
+  // Fetch monitor data for all launchpad pods
+  const launchpadMonitorQueries = podNames.map((podName) =>
+    useQuery({
+      ...launchpad.getLaunchpadCombinedMonitorData.queryOptions({
+        queryName: podName,
+      }),
+      enabled:
+        !isResourceLoading &&
+        (target.resourceType.toLowerCase() === "deployment" ||
+          target.resourceType.toLowerCase() === "statefulset") &&
+        !!podName,
+    })
+  );
 
-  const { data: launchpadMonitorData } = useQuery({
-    ...launchpad.getLaunchpadCombinedMonitorData.queryOptions({
-      queryName: (resource as LaunchpadObject)?.pods?.[0]?.name || "",
-    }),
-    enabled:
-      !isResourceLoading &&
-      (target.resourceType.toLowerCase() === "deployment" ||
-        target.resourceType.toLowerCase() === "statefulset"),
-  });
-
-  // console.log("launchpadMonitorData", launchpadMonitorData);
-
-  // Get the appropriate monitor data based on resource type
-  const getMonitorData = (): MetricsDataPoint[] | undefined => {
+  // Combine all monitor data into a list
+  const podMetricsList = useMemo((): PodMetricsData[] => {
     const resourceType = target.resourceType.toLowerCase();
 
     if (resourceType === "devbox") {
-      return devboxMonitorData as MetricsDataPoint[] | undefined;
+      return devboxMonitorQueries
+        .map((query, index) => ({
+          podName: podNames[index],
+          data: query.data as MetricsDataPoint[] | undefined,
+        }))
+        .filter(
+          (item): item is PodMetricsData =>
+            item.data !== undefined && Array.isArray(item.data)
+        );
     } else if (resourceType === "cluster" && _.isObject(clusterMonitorData)) {
-      // Extract the first key's value from cluster monitor data
+      // For cluster, extract data from the first key
       const firstKey = _.first(_.keys(clusterMonitorData));
-      return firstKey
+      const clusterData = firstKey
         ? (_.get(clusterMonitorData, firstKey) as
             | MetricsDataPoint[]
             | undefined)
         : undefined;
+
+      return clusterData && Array.isArray(clusterData)
+        ? [{ podName: target.name || "cluster", data: clusterData }]
+        : [];
     } else if (_.includes(["deployment", "statefulset"], resourceType)) {
-      return launchpadMonitorData as MetricsDataPoint[] | undefined;
+      return launchpadMonitorQueries
+        .map((query, index) => ({
+          podName: podNames[index],
+          data: query.data as MetricsDataPoint[] | undefined,
+        }))
+        .filter(
+          (item): item is PodMetricsData =>
+            item.data !== undefined && Array.isArray(item.data)
+        );
     }
 
-    return undefined;
-  };
-
-  const monitorData = getMonitorData();
+    return [];
+  }, [
+    target.resourceType,
+    target.name,
+    podNames,
+    devboxMonitorQueries,
+    clusterMonitorData,
+    launchpadMonitorQueries,
+  ]);
 
   // Determine loading state
-  const isLoading =
-    (target.resourceType.toLowerCase() === "devbox" && !devboxMonitorData) ||
-    (target.resourceType.toLowerCase() === "cluster" && !clusterMonitorData) ||
-    (_.includes(
-      ["deployment", "statefulset"],
-      target.resourceType.toLowerCase()
-    ) &&
-      !launchpadMonitorData);
+  const isLoading = useMemo(() => {
+    const resourceType = target.resourceType.toLowerCase();
 
-  // console.log("monitorData", monitorData);
+    if (resourceType === "devbox") {
+      return devboxMonitorQueries.some((query) => query.isLoading);
+    } else if (resourceType === "cluster") {
+      return !clusterMonitorData;
+    } else if (_.includes(["deployment", "statefulset"], resourceType)) {
+      return launchpadMonitorQueries.some((query) => query.isLoading);
+    }
 
+    return false;
+  }, [
+    target.resourceType,
+    devboxMonitorQueries,
+    clusterMonitorData,
+    launchpadMonitorQueries,
+  ]);
+
+  // Calculate overall metrics status from all pods
   return useMemo(() => {
-    if (
-      !monitorData ||
-      !Array.isArray(monitorData) ||
-      monitorData.length === 0
-    ) {
+    if (podMetricsList.length === 0) {
       return {
         status: "low",
         color: STATUS_COLORS.low,
@@ -157,15 +206,38 @@ export const useResourceMetricsStatus = ({
         memoryStatus: "low",
         storageStatus: undefined,
         latestData: undefined,
-        monitorData,
+        monitorData: undefined,
         isLoading,
+        podMetricsList: [],
       };
     }
 
-    // Get the latest data point (using the same logic as in node-monitor.tsx)
+    // Aggregate data from all pods
+    const allDataPoints: MetricsDataPoint[] = [];
+    podMetricsList.forEach((podMetrics) => {
+      if (podMetrics.data && Array.isArray(podMetrics.data)) {
+        allDataPoints.push(...podMetrics.data);
+      }
+    });
+
+    if (allDataPoints.length === 0) {
+      return {
+        status: "low",
+        color: STATUS_COLORS.low,
+        cpuStatus: "low",
+        memoryStatus: "low",
+        storageStatus: undefined,
+        latestData: undefined,
+        monitorData: allDataPoints,
+        isLoading,
+        podMetricsList,
+      };
+    }
+
+    // Get the latest data point from all pods combined
     const latestData =
-      monitorData[monitorData.length - 3] ||
-      monitorData[monitorData.length - 1];
+      allDataPoints[allDataPoints.length - 3] ||
+      allDataPoints[allDataPoints.length - 1];
 
     if (!latestData) {
       return {
@@ -175,8 +247,9 @@ export const useResourceMetricsStatus = ({
         memoryStatus: "low",
         storageStatus: undefined,
         latestData: undefined,
-        monitorData,
+        monitorData: allDataPoints,
         isLoading,
+        podMetricsList,
       };
     }
 
@@ -194,7 +267,8 @@ export const useResourceMetricsStatus = ({
 
     const overallStatus = getOverallStatus(statuses);
 
-    // console.log("latestData", latestData);
+    // console.log("allDataPoints", allDataPoints);
+    // console.log("podMetricsList", podMetricsList);
 
     return {
       status: overallStatus,
@@ -203,8 +277,9 @@ export const useResourceMetricsStatus = ({
       memoryStatus,
       storageStatus,
       latestData,
-      monitorData,
+      monitorData: allDataPoints,
       isLoading,
+      podMetricsList,
     };
-  }, [monitorData, isLoading]);
+  }, [podMetricsList, isLoading]);
 };

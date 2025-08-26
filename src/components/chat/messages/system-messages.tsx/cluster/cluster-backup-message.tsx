@@ -6,7 +6,14 @@ import { useQuery } from "@tanstack/react-query";
 import { clusterClient } from "@/components/provider/trpc-provider";
 import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
-import { DatabaseBackup, RefreshCw, Trash2 } from "lucide-react";
+import {
+  DatabaseBackup,
+  Plus,
+  Trash2,
+  Database,
+  Clock,
+  History,
+} from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -15,16 +22,10 @@ import { useDeleteBackupMutation } from "@/lib/sealos/resources/cluster/cluster-
 import { createSealosContext } from "@/lib/auth/auth-utils";
 import { useState } from "react";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface ClusterBackupMessageProps {
   target: CustomResourceTarget;
@@ -43,6 +44,9 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
   const sealosContext = createSealosContext();
   const deleteBackupMutation = useDeleteBackupMutation(sealosContext);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null);
+  const [openDeletePopovers, setOpenDeletePopovers] = useState<
+    Record<string, boolean>
+  >({});
 
   // Fetch the backup list using the cluster router
   const {
@@ -60,6 +64,7 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
     try {
       await deleteBackupMutation.mutateAsync({ backupName });
       setDeleteDialogOpen(null);
+      setDeletePopoverOpen(backupName, false);
       // Refetch the backup list after deletion
       refetch();
     } catch (error) {
@@ -67,16 +72,17 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
     }
   };
 
-  const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) {
-        return "Invalid date";
-      }
-      return formatDistanceToNow(date, { addSuffix: true });
-    } catch {
-      return "Invalid date";
-    }
+  const setDeletePopoverOpen = (backupName: string, open: boolean) => {
+    setOpenDeletePopovers((prev) => ({ ...prev, [backupName]: open }));
+  };
+
+  const formatShortDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   // Show loading state
@@ -110,15 +116,28 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
   return (
     <BaseSystemMessage target={target}>
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <DatabaseBackup className="h-5 w-5 text-theme-green" />
-          <h3 className="font-semibold">Cluster Backups</h3>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">
+              Backups: {backupList?.length || 0}
+            </span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => refetch()}
+            className="h-7 w-7 p-0"
+          >
+            <Plus className="h-3 w-3" />
+          </Button>
         </div>
 
         {!backupList || backupList.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <DatabaseBackup className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p>No backups found for this cluster</p>
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <Database className="h-8 w-8 text-muted-foreground mb-2 opacity-50" />
+            <div className="text-sm text-muted-foreground">
+              No backups found for this cluster
+            </div>
           </div>
         ) : (
           <ScrollArea className="h-64">
@@ -136,54 +155,92 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
                     className="border rounded-lg p-3 hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <DatabaseBackup className="h-4 w-4 text-theme-green flex-shrink-0" />
-                          <span className="font-medium truncate">
+                      <div className="flex items-center gap-2">
+                        <Database className="h-3 w-3 text-muted-foreground" />
+                        <div className="flex flex-col max-w-[200px]">
+                          <span className="text-sm font-medium truncate">
                             {backup.name}
                           </span>
+                          {isValidTime && (
+                            <div className="flex items-center gap-1 text-muted-foreground">
+                              <Clock className="h-3 w-3" />
+                              <span className="text-xs">
+                                {formatShortDate(backup.time as string)}
+                              </span>
+                            </div>
+                          )}
                         </div>
-                        {isValidTime && (
-                          <div className="text-sm text-muted-foreground mt-1">
-                            Created {formatDate(backup.time as string)}
-                          </div>
-                        )}
                       </div>
 
-                      <AlertDialog
-                        open={deleteDialogOpen === backup.name}
-                        onOpenChange={(open) =>
-                          setDeleteDialogOpen(open ? backup.name : null)
-                        }
-                      >
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Backup</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete the backup "
-                              {backup.name}"? This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDeleteBackup(backup.name)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      <div className="flex items-center gap-1">
+                        <button
+                          className="p-1 hover:bg-muted rounded transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Handle restore action
+                          }}
+                          title="Restore backup"
+                        >
+                          <History className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                        </button>
+                        <Popover
+                          open={openDeletePopovers[backup.name] || false}
+                          onOpenChange={(open) =>
+                            setDeletePopoverOpen(backup.name, open)
+                          }
+                        >
+                          <PopoverTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                              disabled={deleteBackupMutation.isPending}
+                              title="Delete backup"
                             >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            className="w-80 z-[9999] bg-background-secondary"
+                            side="top"
+                          >
+                            <div className="space-y-4">
+                              <div className="space-y-2">
+                                <h4 className="font-medium text-sm text-destructive">
+                                  Delete Backup
+                                </h4>
+                                <p className="text-xs text-muted-foreground">
+                                  Are you sure you want to delete backup{" "}
+                                  {backup.name}? This action cannot be undone.
+                                </p>
+                              </div>
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  onClick={() =>
+                                    setDeletePopoverOpen(backup.name, false)
+                                  }
+                                  variant="outline"
+                                  size="sm"
+                                >
+                                  Cancel
+                                </Button>
+                                <Button
+                                  onClick={() =>
+                                    handleDeleteBackup(backup.name)
+                                  }
+                                  variant="destructive"
+                                  size="sm"
+                                  disabled={deleteBackupMutation.isPending}
+                                >
+                                  {deleteBackupMutation.isPending
+                                    ? "Deleting..."
+                                    : "Delete"}
+                                </Button>
+                              </div>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
                     </div>
                   </div>
                 );

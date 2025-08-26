@@ -23,7 +23,6 @@ import DisplayEnvPanel from "@/components/project/display-env/display-env-panel"
 import FloatingConnectionLine from "@/components/flowgraph/edge/floating-connection-line";
 import { FlowgraphHeader } from "@/components/flowgraph/flowgraph-menu-header";
 import { FlowgraphMenuActions } from "@/components/flowgraph/flowgraph-menu-actions";
-import { TextShimmer } from "@/components/ui/text-shimmer";
 
 // Custom hooks
 import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
@@ -45,8 +44,6 @@ import {
 } from "@/contexts/project/project-context";
 import { useDisclosure } from "@reactuses/core";
 import { createSealosContext } from "@/lib/auth/auth-utils";
-import { transformProjectResourcesToItems } from "@/lib/brain/resources/project/project-method/project-utils";
-import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 // Types and constants
 import { REACT_FLOW_CONFIG } from "@/lib/flowgraph/flowgraph-constant/flowgraph-constant-config";
