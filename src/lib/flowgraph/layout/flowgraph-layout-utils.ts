@@ -278,7 +278,7 @@ export const applySplitLayout = (
       direction: "TB",
       nodeWidth: childNodeWidth,
       nodeHeight: childNodeHeight,
-      rankSep: 40,
+      rankSep: 30,
       nodeSep: 20,
     },
     outsideLayoutOptions = {},
