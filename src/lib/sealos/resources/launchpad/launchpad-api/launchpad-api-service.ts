@@ -22,7 +22,9 @@ import type {
   LaunchpadCreateRequest,
   LaunchpadPatchRequest,
   LaunchpadConfigMapUpdateRequest,
+  LaunchpadPortsCreateRequest,
   LaunchpadPortsUpdateRequest,
+  LaunchpadPortsDeleteRequest,
   LaunchpadStorageUpdateRequest,
   LaunchpadPodsMetricsRequest,
 } from "./launchpad-open-api-schemas/launchpad-create-schema";
@@ -111,7 +113,7 @@ export async function updateLaunchpadConfigMap(
 export async function createLaunchpadPorts(
   context: SealosApiContext,
   name: string,
-  request: LaunchpadPortsUpdateRequest
+  request: LaunchpadPortsCreateRequest
 ): Promise<any> {
   return await runParallelAction(
     createApplicationPorts(context, name, request)
@@ -131,10 +133,10 @@ export async function updateLaunchpadPorts(
 export async function deleteLaunchpadPorts(
   context: SealosApiContext,
   name: string,
-  ports: number[]
+  request: LaunchpadPortsDeleteRequest
 ): Promise<any> {
   return await runParallelAction(
-    deleteApplicationPorts(context, name, { ports })
+    deleteApplicationPorts(context, name, request)
   );
 }
 

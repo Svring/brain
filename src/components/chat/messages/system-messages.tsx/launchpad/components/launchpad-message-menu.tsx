@@ -19,6 +19,8 @@ import {
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useResourceStart } from "@/hooks/sealos/resource/use-resource-start";
+import { useResourcePause } from "@/hooks/sealos/resource/use-resource-pause";
 import { Badge } from "@/components/ui/badge";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 
@@ -42,17 +44,13 @@ export default function LaunchpadMessageMenu({
     projectTrpcClient.removeFromProject.mutationOptions()
   );
 
+  // Use the new resource hooks
+  const startHook = useResourceStart(target);
+  const pauseHook = useResourcePause(target);
+
   // Mutations using launchpad router
   const deleteLaunchpad = useMutation(
     launchpadTrpcClient.deleteLaunchpad.mutationOptions()
-  );
-
-  const startLaunchpad = useMutation(
-    launchpadTrpcClient.startLaunchpad.mutationOptions()
-  );
-
-  const pauseLaunchpad = useMutation(
-    launchpadTrpcClient.pauseLaunchpad.mutationOptions()
   );
 
   const handleDelete = () => {
@@ -72,32 +70,12 @@ export default function LaunchpadMessageMenu({
 
   const handleStart = () => {
     if (!launchpadName) return;
-    startLaunchpad.mutate(
-      { request: { name: launchpadName } },
-      {
-        onSuccess: () => {
-          // Invalidate relevant queries
-          queryClient.invalidateQueries({
-            queryKey: launchpadTrpcClient.getLaunchpad.queryKey(target),
-          });
-        },
-      }
-    );
+    startHook.start({ name: launchpadName });
   };
 
   const handlePause = () => {
     if (!launchpadName) return;
-    pauseLaunchpad.mutate(
-      { request: { name: launchpadName } },
-      {
-        onSuccess: () => {
-          // Invalidate relevant queries
-          queryClient.invalidateQueries({
-            queryKey: launchpadTrpcClient.getLaunchpad.queryKey(target),
-          });
-        },
-      }
-    );
+    pauseHook.pause({ name: launchpadName });
   };
 
   // Don't render if we don't have a valid launchpad name
@@ -151,7 +129,7 @@ export default function LaunchpadMessageMenu({
                 e.stopPropagation();
                 handleStart();
               }}
-              disabled={startLaunchpad.isPending}
+              disabled={startHook.isPending}
             >
               <Power className="mr-2 h-4 w-4" />
               Start
@@ -163,7 +141,7 @@ export default function LaunchpadMessageMenu({
                 e.stopPropagation();
                 handlePause();
               }}
-              disabled={pauseLaunchpad.isPending}
+              disabled={pauseHook.isPending}
             >
               <Pause className="mr-2 h-4 w-4" />
               Pause

@@ -101,7 +101,7 @@ async function generateDeployJson(params: InputParameters) {
               env: envEntries.length > 0 ? envEntries : undefined,
               resources: {
                 requests: { cpu: "20m", memory: "25Mi" },
-                limits: { cpu: "200m", memory: "256Mi" },
+                limits: { cpu: "200m", memory: "512Mi" },
               },
               ports: containerPorts.length > 0 ? containerPorts : undefined,
               imagePullPolicy: "Always",

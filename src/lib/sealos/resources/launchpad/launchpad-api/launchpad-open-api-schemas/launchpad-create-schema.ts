@@ -7,11 +7,11 @@ const GpuResourceSchema = z.object({
   amount: z.number().default(1),
 });
 
-// Resource configuration schema
+// Resource configuration schema - updated to match OpenAPI spec
 const ResourceSchema = z.object({
-  replicas: z.number().min(0).max(10).default(1),
-  cpu: z.number().default(200),
-  memory: z.number().default(256),
+  replicas: z.number().min(1).max(20).default(1),
+  cpu: z.number().min(0.1).max(8).default(0.2),
+  memory: z.number().min(0.1).max(16).default(0.5),
   gpu: GpuResourceSchema.optional(),
 });
 
@@ -186,13 +186,13 @@ export const LaunchpadGetResponseSchema = z.object({
 
 // ============= PATCH /api/v1/app/{name} SCHEMAS =============
 
-// PATCH request schema (partial update)
+// PATCH request schema (partial update) - updated to match OpenAPI spec
 export const LaunchpadPatchRequestSchema = z.object({
   resource: z
     .object({
-      cpu: z.number().optional(),
-      memory: z.number().optional(),
-      replicas: z.number().min(0).optional(),
+      cpu: z.number().min(0.1).max(8).optional(),
+      memory: z.number().min(0.1).max(16).optional(),
+      replicas: z.number().min(1).max(20).optional(),
     })
     .optional(),
   command: z.string().optional(),
@@ -289,14 +289,31 @@ export const LaunchpadConfigMapUpdateRequestSchema = z.object({
 export const LaunchpadConfigMapUpdateResponseSchema =
   LaunchpadGetResponseSchema;
 
-// ============= PATCH /api/v1/app/{name}/ports SCHEMAS =============
+// ============= POST /api/v1/app/{name}/ports SCHEMAS =============
 
-// Port update request schema
-export const LaunchpadPortsUpdateRequestSchema = z.object({
+// Port create request schema (for new ports only)
+export const LaunchpadPortsCreateRequestSchema = z.object({
   ports: z
     .array(
       z.object({
         port: z.number().default(80),
+        protocol: z.enum(["TCP", "UDP", "SCTP"]),
+        appProtocol: z.enum(["HTTP", "GRPC", "WS"]).optional(),
+        exposesPublicDomain: z.boolean(),
+      })
+    )
+    .min(1)
+    .describe("Port configurations to create (new ports only)"),
+});
+
+// ============= PATCH /api/v1/app/{name}/ports SCHEMAS =============
+
+// Port update request schema (for existing ports)
+export const LaunchpadPortsUpdateRequestSchema = z.object({
+  ports: z
+    .array(
+      z.object({
+        port: z.number(),
         protocol: z.enum(["TCP", "UDP", "SCTP"]),
         appProtocol: z.enum(["HTTP", "GRPC", "WS"]).optional(),
         exposesPublicDomain: z.boolean(),
@@ -307,16 +324,23 @@ export const LaunchpadPortsUpdateRequestSchema = z.object({
     )
     .min(1)
     .describe(
-      "Port/Network configurations to update. Include networkName/portName/serviceName for updates, omit for new ports"
+      "Port configurations to update. Must include at least one identifier (networkName/portName/serviceName) to locate existing port"
     ),
 });
 
 // Port update response schema (same as GET response)
 export const LaunchpadPortsUpdateResponseSchema = LaunchpadGetResponseSchema;
 
+// ============= DELETE /api/v1/app/{name}/ports SCHEMAS =============
+
+// Port delete request schema
+export const LaunchpadPortsDeleteRequestSchema = z.object({
+  ports: z.array(z.number()).min(1).describe("Array of port numbers to delete"),
+});
+
 // ============= PATCH /api/v1/app/{name}/storage SCHEMAS =============
 
-// Storage update request schema
+// Storage update request schema (simplified - name auto-generated from path)
 export const LaunchpadStorageUpdateRequestSchema = z.object({
   storage: z
     .array(
@@ -370,11 +394,17 @@ export type LaunchpadConfigMapUpdateRequest = z.infer<
 export type LaunchpadConfigMapUpdateResponse = z.infer<
   typeof LaunchpadConfigMapUpdateResponseSchema
 >;
+export type LaunchpadPortsCreateRequest = z.infer<
+  typeof LaunchpadPortsCreateRequestSchema
+>;
 export type LaunchpadPortsUpdateRequest = z.infer<
   typeof LaunchpadPortsUpdateRequestSchema
 >;
 export type LaunchpadPortsUpdateResponse = z.infer<
   typeof LaunchpadPortsUpdateResponseSchema
+>;
+export type LaunchpadPortsDeleteRequest = z.infer<
+  typeof LaunchpadPortsDeleteRequestSchema
 >;
 export type LaunchpadStorageUpdateRequest = z.infer<
   typeof LaunchpadStorageUpdateRequestSchema

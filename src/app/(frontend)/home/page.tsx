@@ -53,11 +53,11 @@ export default function HomePage() {
                   onClick: openDialog,
                   variant: "outline",
                 },
-                {
-                  label: "From Docker Image",
-                  onClick: () => {},
-                  variant: "outline",
-                },
+                // {
+                //   label: "From Docker Image",
+                //   onClick: () => {},
+                //   variant: "outline",
+                // },
               ]}
             />
           </motion.div>

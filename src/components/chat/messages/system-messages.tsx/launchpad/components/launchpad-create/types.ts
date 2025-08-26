@@ -1,13 +1,15 @@
 import { z } from "zod";
 
-// CPU options for launchpad
-export const cpuOptions = [500, 1000, 2000, 4000, 6000, 8000] as const;
+// CPU options for launchpad - updated to match OpenAPI spec (0.1-8 cores)
+export const cpuOptions = [0.1, 0.2, 0.5, 1, 2, 3, 4, 8] as const;
 
-// Memory options for launchpad
-export const memoryOptions = [512, 1024, 2048, 4096, 8192, 16000] as const;
+// Memory options for launchpad - updated to match OpenAPI spec (0.1-16 GB)
+export const memoryOptions = [0.1, 0.5, 1, 2, 4, 8, 16] as const;
 
-// Replicas options for launchpad
-export const replicasOptions = [1, 2, 3, 5, 7, 10] as const;
+// Replicas options for launchpad - updated to match OpenAPI spec (1-20)
+export const replicasOptions = [
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+] as const;
 
 // Port protocol options for launchpad
 export const portProtocolOptions = ["TCP", "UDP", "SCTP"] as const;

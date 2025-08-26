@@ -49,10 +49,6 @@ export default function NetworkNode({
   const { readyStatus, getBackgroundColor } = useNetworkStatus({ target });
   const { appendSystemMessage } = useAppendSystemMessageMutation();
 
-  const handleNodeClick = () => {
-    appendSystemMessage("universal.network", target);
-  };
-
   const handleIconClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     // Execute only the specific icon action
@@ -70,12 +66,11 @@ export default function NetworkNode({
     address: string,
     hasPublicAddress: boolean
   ) => {
-    // e.stopPropagation();
+    e.stopPropagation();
     // Execute only the address click action
-    // if (hasPublicAddress && address) {
-    //   window.open(address, "_blank");
-    // }
-    appendSystemMessage("universal.network", target);
+    if (hasPublicAddress && address) {
+      window.open(address, "_blank");
+    }
   };
 
   // Show loading state if resource is still loading
@@ -111,10 +106,7 @@ export default function NetworkNode({
       nodeData={data}
       className={cn("h-14 p-2", getBackgroundColor())}
     >
-      <div
-        className="flex h-full flex-col justify-between cursor-pointer"
-        onClick={handleNodeClick}
-      >
+      <div className="flex h-full flex-col justify-between cursor-pointer">
         {/* Single Port Display */}
         <div className="flex items-center justify-center h-full">
           {ports.length > 0 ? (
@@ -184,6 +176,9 @@ export default function NetworkNode({
       data={ports.length > 1 ? ports.slice(1) : []}
       height="14"
       backgroundColor={getBackgroundColor()}
+      onBackgroundCardClick={() => {
+        appendSystemMessage("universal.network", target);
+      }}
     />
   );
 }

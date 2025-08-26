@@ -32,8 +32,8 @@ export default function useFlowgraphNodes(
       convertedNodes = convertResourceToNodes(data as K8sResource[]);
 
       // In basic mode, only group devbox nodes without network processing
-      // const groupedNodes = addDevboxToDevGroup(convertedNodes);
-      return { nodes: convertedNodes, edges: [] };
+      const groupedNodes = addDevboxToDevGroup(convertedNodes);
+      return { nodes: groupedNodes, edges: [] };
     } else {
       // Phase 2: Convert complete resource objects to nodes with network nodes (slower)
       convertedNodes = convertResourceObjectsToNodes(data);
@@ -59,9 +59,9 @@ export default function useFlowgraphNodes(
       }
 
       // Finally, group devbox nodes (including their affiliated network nodes)
-      // const groupedNodes = addDevboxToDevGroup(allNodes);
+      const groupedNodes = addDevboxToDevGroup(allNodes);
 
-      return { nodes: allNodes, edges: allEdges };
+      return { nodes: groupedNodes, edges: allEdges };
     }
   }, [data, basicMode]);
 

@@ -17,8 +17,10 @@ import {
   LaunchpadPodsMetricsResponse,
   LaunchpadConfigMapUpdateRequest,
   LaunchpadConfigMapUpdateResponse,
+  LaunchpadPortsCreateRequest,
   LaunchpadPortsUpdateRequest,
   LaunchpadPortsUpdateResponse,
+  LaunchpadPortsDeleteRequest,
   LaunchpadStorageUpdateRequest,
   LaunchpadStorageUpdateResponse,
 } from "./launchpad-open-api-schemas/launchpad-create-schema";
@@ -138,7 +140,7 @@ export const createApplicationPorts = createParallelAction(
   async (
     context: SealosApiContext,
     name: string,
-    data: LaunchpadPortsUpdateRequest
+    data: LaunchpadPortsCreateRequest
   ) => {
     const api = createLaunchpadApi(context);
     const response = await api.post<LaunchpadPortsUpdateResponse>(
@@ -170,7 +172,7 @@ export const deleteApplicationPorts = createParallelAction(
   async (
     context: SealosApiContext,
     name: string,
-    data: { ports: number[] }
+    data: LaunchpadPortsDeleteRequest
   ) => {
     const api = createLaunchpadApi(context);
     const response = await api.delete<LaunchpadPortsUpdateResponse>(

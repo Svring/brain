@@ -31,10 +31,8 @@ import useFlowgraphEdges from "@/hooks/flowgraph/use-flowgraph-edges";
 import useFlowgraphNodes from "@/hooks/flowgraph/use-flowgraph-nodes";
 import useProjectResources from "@/hooks/brain/use-project-resources";
 import useResourceReliances from "@/hooks/sealos/resource/use-resource-reliances";
-import {
-  useStartProjectResourcesMutation,
-  usePauseProjectResourcesMutation,
-} from "@/lib/brain/resources/project/project-method/project-mutation";
+import { useResourceStart } from "@/hooks/sealos/resource/use-resource-start";
+import { useResourcePause } from "@/hooks/sealos/resource/use-resource-pause";
 
 // Context and utilities
 import {
@@ -49,6 +47,7 @@ import {
 import { useDisclosure } from "@reactuses/core";
 import { createSealosContext } from "@/lib/auth/auth-utils";
 import { transformProjectResourcesToItems } from "@/lib/brain/resources/project/project-method/project-utils";
+import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 // Types and constants
 import { REACT_FLOW_CONFIG } from "@/lib/flowgraph/flowgraph-constant/flowgraph-constant-config";
@@ -72,10 +71,7 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
   // Get project resources from context
   const { selectedProjectResources } = useProjectState();
 
-  // Initialize mutations
-  const startProjectResources = useStartProjectResourcesMutation(sealosContext);
 
-  const pauseProjectResources = usePauseProjectResourcesMutation(sealosContext);
 
   const handleAddNew = () => {
     appendMessages([
@@ -102,12 +98,30 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
       return;
     }
 
-    // Transform resources to ProjectResourceItem format
-    const resources = transformProjectResourcesToItems(
-      selectedProjectResources
-    );
-
-    startProjectResources.mutate({ resources });
+    // Convert resources to targets and start them individually
+    selectedProjectResources.forEach((resource) => {
+      try {
+        const target = convertResourceObjectToTarget({
+          kind: resource.kind,
+          name: resource.metadata.name,
+        });
+        
+        const startHook = useResourceStart(target);
+        
+        // Determine the appropriate start parameters based on resource type
+        if (startHook.resourceType === "devbox") {
+          startHook.start({ action: "start", devboxName: resource.metadata.name });
+        } else if (startHook.resourceType === "launchpad") {
+          startHook.start({ name: resource.metadata.name });
+        } else if (startHook.resourceType === "cluster") {
+          startHook.start(resource.metadata.name);
+        }
+        // For unsupported types, do nothing (no error thrown)
+      } catch (error) {
+        // Silently ignore unsupported resource types
+        console.warn(`Skipping unsupported resource type: ${resource.kind}`);
+      }
+    });
   };
 
   const handlePauseAll = () => {
@@ -119,17 +133,35 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
       return;
     }
 
-    // Transform resources to ProjectResourceItem format
-    const resources = transformProjectResourcesToItems(
-      selectedProjectResources
-    );
-
-    pauseProjectResources.mutate({ resources });
+    // Convert resources to targets and pause them individually
+    selectedProjectResources.forEach((resource) => {
+      try {
+        const target = convertResourceObjectToTarget({
+          kind: resource.kind,
+          name: resource.metadata.name,
+        });
+        
+        const pauseHook = useResourcePause(target);
+        
+        // Determine the appropriate pause parameters based on resource type
+        if (pauseHook.resourceType === "devbox") {
+          pauseHook.pause({ action: "stop", devboxName: resource.metadata.name });
+        } else if (pauseHook.resourceType === "launchpad") {
+          pauseHook.pause({ name: resource.metadata.name });
+        } else if (pauseHook.resourceType === "cluster") {
+          pauseHook.pause(resource.metadata.name);
+        }
+        // For unsupported types, do nothing (no error thrown)
+      } catch (error) {
+        // Silently ignore unsupported resource types
+        console.warn(`Skipping unsupported resource type: ${resource.kind}`);
+      }
+    });
   };
 
-  // Check if mutations are in progress
-  const isStarting = startProjectResources.isPending;
-  const isPausing = pauseProjectResources.isPending;
+  // Check if mutations are in progress (using individual hooks)
+  const isStarting = false; // TODO: Track individual resource start states
+  const isPausing = false; // TODO: Track individual resource pause states
 
   // Check if resources are available
   const hasResources =

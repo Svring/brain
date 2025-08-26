@@ -20,6 +20,8 @@ import { useRemoveFromProjectMutation } from "@/lib/brain/resources/project/proj
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useResourceStart } from "@/hooks/sealos/resource/use-resource-start";
+import { useResourcePause } from "@/hooks/sealos/resource/use-resource-pause";
 import { Badge } from "@/components/ui/badge";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 
@@ -39,17 +41,13 @@ export default function ClusterMessageMenu({ target }: ClusterMessageMenuProps) 
 
   const removeFromProject = useRemoveFromProjectMutation(k8sContext);
 
+  // Use the new resource hooks
+  const startHook = useResourceStart(target);
+  const pauseHook = useResourcePause(target);
+
   // Use tRPC mutations from cluster router
   const deleteCluster = useMutation(
     clusterTrpcClient.deleteCluster.mutationOptions()
-  );
-
-  const startCluster = useMutation(
-    clusterTrpcClient.startCluster.mutationOptions()
-  );
-
-  const pauseCluster = useMutation(
-    clusterTrpcClient.pauseCluster.mutationOptions()
   );
 
   const handleDelete = () => {
@@ -66,26 +64,12 @@ export default function ClusterMessageMenu({ target }: ClusterMessageMenuProps) 
 
   const handleStart = () => {
     if (!clusterName) return;
-    startCluster.mutate(clusterName, {
-      onSuccess: () => {
-        // Invalidate relevant queries
-        queryClient.invalidateQueries({
-          queryKey: clusterTrpcClient.getCluster.queryKey({ target }),
-        });
-      },
-    });
+    startHook.start(clusterName);
   };
 
   const handlePause = () => {
     if (!clusterName) return;
-    pauseCluster.mutate(clusterName, {
-      onSuccess: () => {
-        // Invalidate relevant queries
-        queryClient.invalidateQueries({
-          queryKey: clusterTrpcClient.getCluster.queryKey({ target }),
-        });
-      },
-    });
+    pauseHook.pause(clusterName);
   };
 
   // Don't render if we don't have a valid cluster name
@@ -136,7 +120,7 @@ export default function ClusterMessageMenu({ target }: ClusterMessageMenuProps) 
                 e.stopPropagation();
                 handleStart();
               }}
-              disabled={currentStatus === "Creating" || currentStatus === "Updating"}
+              disabled={currentStatus === "Creating" || currentStatus === "Updating" || startHook.isPending}
               className={
                 currentStatus === "Creating" || currentStatus === "Updating" ? "opacity-50" : ""
               }
@@ -151,7 +135,7 @@ export default function ClusterMessageMenu({ target }: ClusterMessageMenuProps) 
                 e.stopPropagation();
                 handlePause();
               }}
-              disabled={currentStatus === "Creating" || currentStatus === "Updating"}
+              disabled={currentStatus === "Creating" || currentStatus === "Updating" || pauseHook.isPending}
               className={
                 currentStatus === "Creating" || currentStatus === "Updating" ? "opacity-50" : ""
               }

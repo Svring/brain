@@ -11,7 +11,7 @@
  * <LaunchpadUpdateMessage
  *   payload={{
  *     target: { type: "builtin", resourceType: "deployment", name: "my-app", namespace: "default" },
- *     resource: { cpu: 2000, memory: 4096, replicas: 3 },
+ *     resource: { cpu: 0.2, memory: 0.5, replicas: 3 },
  *     image: "nginx:latest",
  *     ports: [{ port: 8080, protocol: "TCP", exposesPublicDomain: true }],
  *     env: [{ name: "NODE_ENV", value: "production" }],
@@ -100,8 +100,8 @@
  *           payload={{
  *             target,
  *             resource: {
- *               cpu: cpu || 2000,
- *               memory: memory || 4096,
+ *               cpu: cpu || 0.2,
+ *               memory: memory || 0.5,
  *               replicas: replicas || 1
  *             },
  *             image: image || "nginx:latest",
@@ -156,14 +156,7 @@ export default function LaunchpadUpdateMessage({
 
   // Fetch current resource status if target is provided
   const { resource: currentResource, isLoading: isResourceLoading } =
-    useResourceStatus(
-      target || {
-        type: "builtin",
-        resourceType: "deployment",
-        name: "",
-        namespace: "default",
-      }
-    );
+    useResourceStatus(target!);
 
   const updateMutation = useMutation(
     launchpad.updateLaunchpad.mutationOptions()
@@ -180,7 +173,7 @@ export default function LaunchpadUpdateMessage({
     [currentResource]
   );
 
-     console.log("currentResource", currentResource);
+  // console.log("currentResource", currentResource);
 
   // Memoize default values; changes when payload or resource content changes
   const defaultValues: LaunchpadUpdateFormValues = useMemo(() => {
@@ -198,86 +191,91 @@ export default function LaunchpadUpdateMessage({
     let currentPorts: any[] | undefined;
     let currentEnv: any[] | undefined;
 
-         if (isLaunchpadResource) {
-       const launchpadResource = currentResource as any;
-       currentImage = launchpadResource.image;
-       currentReplicas = launchpadResource.resource?.replicas;
-       
-       // Convert CPU and memory from Kubernetes format to numbers
-       const cpuValue = launchpadResource.resource?.cpu;
-       const memoryValue = launchpadResource.resource?.memory;
-       
-       // Convert CPU (e.g., "500m" -> 500, "1" -> 1000)
-       if (cpuValue) {
-         if (typeof cpuValue === 'string') {
-           if (cpuValue.endsWith('m')) {
-             currentCpu = parseInt(cpuValue.slice(0, -1)).toString();
-           } else {
-             currentCpu = (parseInt(cpuValue) * 1000).toString(); // Convert cores to millicores
-           }
-         } else {
-           currentCpu = cpuValue.toString();
-         }
-       }
-       
-       // Convert Memory (e.g., "8Gi" -> 8192, "1Gi" -> 1024)
-       if (memoryValue) {
-         if (typeof memoryValue === 'string') {
-           const match = memoryValue.match(/^(\d+)([KMG]i?|m?)$/);
-           if (match) {
-             const value = parseInt(match[1]);
-             const unit = match[2];
-             if (unit === 'Ki' || unit === 'K') {
-               currentMemory = Math.ceil(value / 1024).toString(); // Convert to MB
-             } else if (unit === 'Mi' || unit === 'M') {
-               currentMemory = value.toString();
-             } else if (unit === 'Gi' || unit === 'G') {
-               currentMemory = (value * 1024).toString(); // Convert to MB
-             } else if (unit === 'm') {
-               currentMemory = Math.ceil(value / (1024 * 1024)).toString(); // Convert to MB
-             }
-           }
-         } else {
-           currentMemory = memoryValue.toString();
-         }
-       }
-       
-       currentPorts = launchpadResource.ports;
-       currentEnv = launchpadResource.env;
-       
-       // Debug extracted values
-       console.log("Extracted values:", {
-         currentImage,
-         currentReplicas,
-         currentCpu,
-         currentMemory,
-         currentPorts,
-         currentEnv,
-       });
-     }
+    if (isLaunchpadResource) {
+      const launchpadResource = currentResource as any;
+      currentImage = launchpadResource.image;
+      currentReplicas = launchpadResource.resource?.replicas;
 
-         // Convert ports from the resource format to our form format
-     const formattedPorts =
-       currentPorts?.map((port: any) => ({
-         port: port.number,
-         protocol: (port.protocol || "TCP") as "TCP" | "UDP" | "SCTP",
-         appProtocol: port.protocol === "HTTP" ? ("HTTP" as const) : 
-                     port.protocol === "GRPC" ? ("GRPC" as const) :
-                     port.protocol === "WS" ? ("WS" as const) : undefined,
-         exposesPublicDomain: true, // Default assumption based on the resource structure
-       })) || [];
+      // Convert CPU and memory from Kubernetes format to numbers
+      const cpuValue = launchpadResource.resource?.cpu;
+      const memoryValue = launchpadResource.resource?.memory;
 
-         // Convert env from the resource format to our form format
-     const formattedEnv =
-       currentEnv?.map((env: any) => ({
-         name: env.key || env.name, // Use 'key' field from the resource, fallback to 'name'
-         value: env.value || "",
-       })) || [];
+      // Convert CPU (e.g., "500m" -> 500, "1" -> 1000)
+      if (cpuValue) {
+        if (typeof cpuValue === "string") {
+          if (cpuValue.endsWith("m")) {
+            currentCpu = parseInt(cpuValue.slice(0, -1)).toString();
+          } else {
+            currentCpu = (parseInt(cpuValue) * 1000).toString(); // Convert cores to millicores
+          }
+        } else {
+          currentCpu = cpuValue.toString();
+        }
+      }
+
+      // Convert Memory (e.g., "8Gi" -> 8192, "1Gi" -> 1024)
+      if (memoryValue) {
+        if (typeof memoryValue === "string") {
+          const match = memoryValue.match(/^(\d+)([KMG]i?|m?)$/);
+          if (match) {
+            const value = parseInt(match[1]);
+            const unit = match[2];
+            if (unit === "Ki" || unit === "K") {
+              currentMemory = Math.ceil(value / 1024).toString(); // Convert to MB
+            } else if (unit === "Mi" || unit === "M") {
+              currentMemory = value.toString();
+            } else if (unit === "Gi" || unit === "G") {
+              currentMemory = (value * 1024).toString(); // Convert to MB
+            } else if (unit === "m") {
+              currentMemory = Math.ceil(value / (1024 * 1024)).toString(); // Convert to MB
+            }
+          }
+        } else {
+          currentMemory = memoryValue.toString();
+        }
+      }
+
+      currentPorts = launchpadResource.ports;
+      currentEnv = launchpadResource.env;
+
+      // Debug extracted values
+      console.log("Extracted values:", {
+        currentImage,
+        currentReplicas,
+        currentCpu,
+        currentMemory,
+        currentPorts,
+        currentEnv,
+      });
+    }
+
+    // Convert ports from the resource format to our form format
+    const formattedPorts =
+      currentPorts?.map((port: any) => ({
+        port: port.number,
+        protocol: (port.protocol || "TCP") as "TCP" | "UDP" | "SCTP",
+        appProtocol:
+          port.protocol === "HTTP"
+            ? ("HTTP" as const)
+            : port.protocol === "GRPC"
+            ? ("GRPC" as const)
+            : port.protocol === "WS"
+            ? ("WS" as const)
+            : undefined,
+        exposesPublicDomain: true, // Default assumption based on the resource structure
+      })) || [];
+
+    // Convert env from the resource format to our form format
+    const formattedEnv =
+      currentEnv?.map((env: any) => ({
+        name: env.key || env.name, // Use 'key' field from the resource, fallback to 'name'
+        value: env.value || "",
+      })) || [];
 
     return {
       image: payload?.image || currentImage || "nginx:latest",
-      cpu: (payload?.resource?.cpu || currentCpu || 2000).toString(),
-      memory: (payload?.resource?.memory || currentMemory || 4096).toString(),
+      cpu: (payload?.resource?.cpu || currentCpu || 0.2).toString(),
+      memory: (payload?.resource?.memory || currentMemory || 0.5).toString(),
       replicas: (
         payload?.resource?.replicas ||
         currentReplicas ||
@@ -406,30 +404,32 @@ export default function LaunchpadUpdateMessage({
         const currentPorts = isLaunchpadResource
           ? (currentResource as any).ports || []
           : [];
-                 const updatedPorts = values.ports.map((formPort, index) => {
-           // Find corresponding current port to preserve existing metadata
-           const currentPort = currentPorts[index];
- 
-           // For existing ports, include metadata; for new ports, omit metadata
-           const portUpdate = {
-             port: formPort.port,
-             protocol: formPort.protocol,
-             appProtocol: formPort.appProtocol,
-             exposesPublicDomain: formPort.exposesPublicDomain,
-           };
+        const updatedPorts = values.ports.map(
+          (formPort: any, index: number) => {
+            // Find corresponding current port to preserve existing metadata
+            const currentPort = currentPorts[index];
 
-           // Only include metadata if this is an existing port (has currentPort data)
-           if (currentPort) {
-             return {
-               ...portUpdate,
-               networkName: currentPort.networkName,
-               portName: currentPort.name, // Use 'name' field from resource
-               serviceName: currentPort.serviceName,
-             };
-           }
+            // For existing ports, include metadata; for new ports, omit metadata
+            const portUpdate = {
+              port: formPort.port,
+              protocol: formPort.protocol,
+              appProtocol: formPort.appProtocol,
+              exposesPublicDomain: formPort.exposesPublicDomain,
+            };
 
-           return portUpdate;
-         });
+            // Only include metadata if this is an existing port (has currentPort data)
+            if (currentPort) {
+              return {
+                ...portUpdate,
+                networkName: currentPort.networkName,
+                portName: currentPort.name, // Use 'name' field from resource
+                serviceName: currentPort.serviceName,
+              };
+            }
+
+            return portUpdate;
+          }
+        );
 
         const portsRequest: LaunchpadPortsUpdateRequest = {
           ports: updatedPorts,
@@ -467,7 +467,7 @@ export default function LaunchpadUpdateMessage({
   if (isCompleted) {
     return (
       <SuccessMessage
-        target={target}
+        target={target!}
         launchpadName={launchpadName}
         cpu={form.getValues("cpu")}
         memory={form.getValues("memory")}

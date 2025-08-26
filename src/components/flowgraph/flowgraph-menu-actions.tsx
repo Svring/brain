@@ -39,18 +39,18 @@ export function FlowgraphMenuActions({
       onClick: onDisplayEnv,
       isToggle: false,
     },
-    // {
-    //   icon: Play,
-    //   label: isStarting ? "Starting..." : "Start All",
-    //   onClick: onStartAll,
-    //   isToggle: false,
-    // },
-    // {
-    //   icon: Pause,
-    //   label: isPausing ? "Pausing..." : "Pause All",
-    //   onClick: onPauseAll,
-    //   isToggle: false,
-    // },
+    {
+      icon: Play,
+      label: isStarting ? "Starting..." : "Start All",
+      onClick: onStartAll,
+      isToggle: false,
+    },
+    {
+      icon: Pause,
+      label: isPausing ? "Pausing..." : "Pause All",
+      onClick: onPauseAll,
+      isToggle: false,
+    },
     {
       icon: Plus,
       label: "Add New",

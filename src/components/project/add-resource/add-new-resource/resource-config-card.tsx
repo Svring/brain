@@ -124,8 +124,8 @@ export default function ResourceConfigCard({
             image: configData.image,
             storage: configData.storageVolumes || [],
             resource: {
-              cpu: parseInt(configData.cpu) || 200,
-              memory: parseInt(configData.memory) || 256,
+              cpu: parseFloat(configData.cpu) || 0.2,
+              memory: parseFloat(configData.memory) || 0.5,
               replicas: parseInt(configData.replicas) || 1,
             },
             env: configData.env || [],

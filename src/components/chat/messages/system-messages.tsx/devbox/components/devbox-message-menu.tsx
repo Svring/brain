@@ -19,8 +19,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRemoveFromProjectMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import { DevboxLifecycleAction } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas/devbox-lifecycle-schema";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useResourceStart } from "@/hooks/sealos/resource/use-resource-start";
+import { useResourcePause } from "@/hooks/sealos/resource/use-resource-pause";
 import { Badge } from "@/components/ui/badge";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 
@@ -40,13 +41,13 @@ export default function DevboxMessageMenu({ target }: DevboxMessageMenuProps) {
 
   const removeFromProject = useRemoveFromProjectMutation(k8sContext);
 
+  // Use the new resource hooks
+  const startHook = useResourceStart(target);
+  const pauseHook = useResourcePause(target);
+
   // Mutations using devbox router
   const deleteDevbox = useMutation(
     devboxTrpcClient.deleteDevbox.mutationOptions()
-  );
-
-  const manageDevboxLifecycle = useMutation(
-    devboxTrpcClient.manageDevboxLifecycle.mutationOptions()
   );
 
   const handleDelete = () => {
@@ -64,19 +65,14 @@ export default function DevboxMessageMenu({ target }: DevboxMessageMenuProps) {
     });
   };
 
-  const handleLifecycleAction = (action: DevboxLifecycleAction) => {
+  const handleStart = () => {
     if (!devboxName) return;
-    manageDevboxLifecycle.mutate({ devboxName, action }, {
-      onSuccess: () => {
-        // Invalidate relevant queries
-        queryClient.invalidateQueries({
-          queryKey: devboxTrpcClient.getDevbox.queryKey({ target }),
-        });
-        queryClient.invalidateQueries({
-          queryKey: devboxTrpcClient.listDevboxes.queryKey(),
-        });
-      },
-    });
+    startHook.start({ action: "start", devboxName });
+  };
+
+  const handlePause = () => {
+    if (!devboxName) return;
+    pauseHook.pause({ action: "stop", devboxName });
   };
 
   // Don't render if we don't have a valid devbox name
@@ -123,9 +119,9 @@ export default function DevboxMessageMenu({ target }: DevboxMessageMenuProps) {
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation();
-                handleLifecycleAction("start");
+                handleStart();
               }}
-              disabled={currentStatus === "Pending"}
+              disabled={currentStatus === "Pending" || startHook.isPending}
               className={currentStatus === "Pending" ? "opacity-50" : ""}
             >
               <PencilLine className="mr-2 h-4 w-4" />
@@ -136,9 +132,9 @@ export default function DevboxMessageMenu({ target }: DevboxMessageMenuProps) {
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation();
-                handleLifecycleAction("stop");
+                handlePause();
               }}
-              disabled={currentStatus === "Pending"}
+              disabled={currentStatus === "Pending" || pauseHook.isPending}
               className={currentStatus === "Pending" ? "opacity-50" : ""}
             >
               <Pause className="mr-2 h-4 w-4" />
@@ -148,9 +144,9 @@ export default function DevboxMessageMenu({ target }: DevboxMessageMenuProps) {
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
-              handleLifecycleAction("restart");
+              startHook.start({ action: "restart", devboxName });
             }}
-            disabled={currentStatus === "Pending"}
+            disabled={currentStatus === "Pending" || startHook.isPending}
             className={currentStatus === "Pending" ? "opacity-50" : ""}
           >
             <RotateCcw className="mr-2 h-4 w-4" />
