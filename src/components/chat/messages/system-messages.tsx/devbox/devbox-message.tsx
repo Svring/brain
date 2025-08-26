@@ -8,6 +8,7 @@ import { GitBranch, BarChart3, Pencil } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { DevboxInfoDetails } from "./components/devbox-message-details";
 import DevboxMessageMenu from "./components/devbox-message-menu";
+import DevboxNodeIde from "@/components/flowgraph/node/sealos/devbox/devbox-node-ide";
 
 interface DevboxMessageProps {
   target: CustomResourceTarget;
@@ -84,7 +85,12 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
     <BaseSystemMessage 
       target={target} 
       actions={actions}
-      headerSlot={<DevboxMessageMenu target={target} />}
+      headerSlot={
+        <div className="flex items-center gap-2">
+          <DevboxNodeIde object={devboxObject} />
+          <DevboxMessageMenu target={target} />
+        </div>
+      }
     >
       <DevboxInfoDetails devboxObject={devboxObject} />
     </BaseSystemMessage>

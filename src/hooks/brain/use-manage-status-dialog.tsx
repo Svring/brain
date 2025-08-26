@@ -1,22 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import { useDisclosure } from "@reactuses/core";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import CreateProject from "@/components/project/create-project/create-project";
+import ManageStatusDialog from "@/components/project/manage-status/manage-status-dialog";
 
-export function useProjectCreateDialog() {
+export function useManageStatusDialog() {
   const { isOpen, onClose, onOpen, onOpenChange } = useDisclosure();
 
-  const CreateProjectDialog = () => (
+  const ManageStatusDialogComponent = () => (
     <Dialog onOpenChange={onOpenChange} open={isOpen}>
       <VisuallyHidden>
-        <DialogTitle>Create Project</DialogTitle>
+        <DialogTitle>Manage Resources Status</DialogTitle>
       </VisuallyHidden>
-      <DialogContent className="h-[90vh] max-h-none w-[90vw] max-w-none">
-        <CreateProject closeDialog={onClose} />
+      <DialogContent className="h-[70vh] max-h-none w-[70vw] max-w-none">
+        <ManageStatusDialog closeDialog={onClose} />
       </DialogContent>
     </Dialog>
   );
@@ -25,6 +24,6 @@ export function useProjectCreateDialog() {
     isOpen,
     openDialog: onOpen,
     closeDialog: onClose,
-    CreateProjectDialog,
+    ManageStatusDialogComponent,
   };
 }

@@ -80,6 +80,7 @@ export type BrainState = {
   base_url: string;
   api_key: string;
   model: string;
+  context_window_usage: number;
   stage: "propose_project" | "manage_project";
   project_context: ProjectContextState;
 };
@@ -98,4 +99,8 @@ export type LanggraphEvent =
   | {
       type: "SET_PROJECT_CONTEXT";
       project_context: ProjectContextState;
+    }
+  | {
+      type: "SET_CONTEXT_WINDOW_USAGE";
+      context_window_usage: number;
     };

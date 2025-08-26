@@ -8,20 +8,14 @@ import { useChatState } from "@/contexts/chat/chat-context";
 interface FlowgraphMenuActionsProps {
   onAddNew: () => void;
   onDisplayEnv: () => void;
-  onStartAll: () => void;
-  onPauseAll: () => void;
-  isStarting?: boolean;
-  isPausing?: boolean;
+  onManageStatus: () => void;
   disabled?: boolean;
 }
 
 export function FlowgraphMenuActions({
   onAddNew,
   onDisplayEnv,
-  onStartAll,
-  onPauseAll,
-  isStarting = false,
-  isPausing = false,
+  onManageStatus,
   disabled = false,
 }: FlowgraphMenuActionsProps) {
   const { sidebarChatOpen } = useChatState();
@@ -41,14 +35,8 @@ export function FlowgraphMenuActions({
     },
     {
       icon: Play,
-      label: isStarting ? "Starting..." : "Start All",
-      onClick: onStartAll,
-      isToggle: false,
-    },
-    {
-      icon: Pause,
-      label: isPausing ? "Pausing..." : "Pause All",
-      onClick: onPauseAll,
+      label: "Manage Status",
+      onClick: onManageStatus,
       isToggle: false,
     },
     {

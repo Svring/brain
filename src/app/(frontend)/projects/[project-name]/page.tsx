@@ -31,8 +31,7 @@ import useFlowgraphEdges from "@/hooks/flowgraph/use-flowgraph-edges";
 import useFlowgraphNodes from "@/hooks/flowgraph/use-flowgraph-nodes";
 import useProjectResources from "@/hooks/brain/use-project-resources";
 import useResourceReliances from "@/hooks/sealos/resource/use-resource-reliances";
-import { useResourceStart } from "@/hooks/sealos/resource/use-resource-start";
-import { useResourcePause } from "@/hooks/sealos/resource/use-resource-pause";
+import { useManageStatusDialog } from "@/hooks/brain/use-manage-status-dialog";
 
 // Context and utilities
 import {
@@ -55,7 +54,7 @@ import edgeTypes from "@/components/flowgraph/edge/edge-types";
 import nodeTypes from "@/components/flowgraph/node/node-types";
 import { Spinner } from "@/components/ui/spinner";
 
-import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
+import { useLanggraphActions, useLanggraphState } from "@/contexts/langgraph/langgraph-context";
 import { useAppendMessagesMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
 // Floating UI Component
@@ -71,7 +70,12 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
   // Get project resources from context
   const { selectedProjectResources } = useProjectState();
 
+  // Manage status dialog hook
+  const { openDialog: openManageStatusDialog, ManageStatusDialogComponent } = useManageStatusDialog();
 
+  const { contextWindowUsage } = useLanggraphState();
+
+  console.log("contextWindowUsage", contextWindowUsage);
 
   const handleAddNew = () => {
     appendMessages([
@@ -89,79 +93,9 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
     onOpen();
   };
 
-  const handleStartAll = () => {
-    if (
-      !selectedProjectResources ||
-      !Array.isArray(selectedProjectResources) ||
-      selectedProjectResources.length === 0
-    ) {
-      return;
-    }
-
-    // Convert resources to targets and start them individually
-    selectedProjectResources.forEach((resource) => {
-      try {
-        const target = convertResourceObjectToTarget({
-          kind: resource.kind,
-          name: resource.metadata.name,
-        });
-        
-        const startHook = useResourceStart(target);
-        
-        // Determine the appropriate start parameters based on resource type
-        if (startHook.resourceType === "devbox") {
-          startHook.start({ action: "start", devboxName: resource.metadata.name });
-        } else if (startHook.resourceType === "launchpad") {
-          startHook.start({ name: resource.metadata.name });
-        } else if (startHook.resourceType === "cluster") {
-          startHook.start(resource.metadata.name);
-        }
-        // For unsupported types, do nothing (no error thrown)
-      } catch (error) {
-        // Silently ignore unsupported resource types
-        console.warn(`Skipping unsupported resource type: ${resource.kind}`);
-      }
-    });
+  const handleManageStatus = () => {
+    openManageStatusDialog();
   };
-
-  const handlePauseAll = () => {
-    if (
-      !selectedProjectResources ||
-      !Array.isArray(selectedProjectResources) ||
-      selectedProjectResources.length === 0
-    ) {
-      return;
-    }
-
-    // Convert resources to targets and pause them individually
-    selectedProjectResources.forEach((resource) => {
-      try {
-        const target = convertResourceObjectToTarget({
-          kind: resource.kind,
-          name: resource.metadata.name,
-        });
-        
-        const pauseHook = useResourcePause(target);
-        
-        // Determine the appropriate pause parameters based on resource type
-        if (pauseHook.resourceType === "devbox") {
-          pauseHook.pause({ action: "stop", devboxName: resource.metadata.name });
-        } else if (pauseHook.resourceType === "launchpad") {
-          pauseHook.pause({ name: resource.metadata.name });
-        } else if (pauseHook.resourceType === "cluster") {
-          pauseHook.pause(resource.metadata.name);
-        }
-        // For unsupported types, do nothing (no error thrown)
-      } catch (error) {
-        // Silently ignore unsupported resource types
-        console.warn(`Skipping unsupported resource type: ${resource.kind}`);
-      }
-    });
-  };
-
-  // Check if mutations are in progress (using individual hooks)
-  const isStarting = false; // TODO: Track individual resource start states
-  const isPausing = false; // TODO: Track individual resource pause states
 
   // Check if resources are available
   const hasResources =
@@ -175,10 +109,7 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
       <FlowgraphMenuActions
         onAddNew={handleAddNew}
         onDisplayEnv={handleDisplayEnv}
-        onStartAll={handleStartAll}
-        onPauseAll={handlePauseAll}
-        isStarting={isStarting}
-        isPausing={isPausing}
+        onManageStatus={handleManageStatus}
         disabled={!hasResources}
       />
       <Sheet onOpenChange={onOpenChange} open={isOpen}>
@@ -194,6 +125,7 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
           </div>
         </SheetContent>
       </Sheet>
+      <ManageStatusDialogComponent />
       <AiCoin />
       <AiChatbox />
     </>

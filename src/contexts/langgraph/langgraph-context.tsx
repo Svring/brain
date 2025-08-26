@@ -47,6 +47,7 @@ export function useLanggraphState() {
     baseUrl: state.context.base_url,
     apiKey: state.context.api_key,
     model: state.context.model,
+    contextWindowUsage: state.context.context_window_usage,
     stage: state.context.stage,
     isIdle: state.matches("idle"),
     isActive: state.matches("active"),
@@ -74,6 +75,12 @@ export function useLanggraphActions() {
     setProjectContext: (projectContext: ProjectContextState) => {
       send({ type: "SET_PROJECT_CONTEXT", project_context: projectContext });
       setLanggraphState({ ...state.context, project_context: projectContext });
+    },
+    setContextWindowUsage: (contextWindowUsage: number) => {
+      send({
+        type: "SET_CONTEXT_WINDOW_USAGE",
+        context_window_usage: contextWindowUsage,
+      });
     },
   };
 }

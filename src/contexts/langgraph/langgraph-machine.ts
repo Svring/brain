@@ -10,6 +10,7 @@ export const langgraphMachine = createMachine({
     base_url: "",
     api_key: "",
     model: "",
+    context_window_usage: 0,
     stage: "propose_project",
     project_context: {
       allProjects: [],
@@ -38,6 +39,11 @@ export const langgraphMachine = createMachine({
     SET_PROJECT_CONTEXT: {
       actions: assign({
         project_context: ({ event }) => event.project_context,
+      }),
+    },
+    SET_CONTEXT_WINDOW_USAGE: {
+      actions: assign({
+        context_window_usage: ({ event }) => event.context_window_usage,
       }),
     },
   },
