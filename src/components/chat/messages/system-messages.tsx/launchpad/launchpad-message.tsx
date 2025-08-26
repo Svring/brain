@@ -35,27 +35,6 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
             appendSystemMessage("launchpad.update", target);
           },
         },
-        {
-          icon: FileText,
-          label: "Logs",
-          onClick: () => {
-            appendSystemMessage("resourceLog", target);
-          },
-        },
-        {
-          icon: Container,
-          label: "Pods",
-          onClick: () => {
-            appendSystemMessage("podOverview", target);
-          },
-        },
-        {
-          icon: BarChart3,
-          label: "Metrics",
-          onClick: () => {
-            appendSystemMessage("monitor", target);
-          },
-        },
       ]
     : [];
 

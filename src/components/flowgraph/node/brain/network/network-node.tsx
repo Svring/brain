@@ -3,12 +3,13 @@
 import BaseNode from "../../base-node-wrapper";
 import NodeStack from "../../components/node-stack";
 import { cn } from "@/lib/utils";
-import { Network, Globe, HelpCircle } from "lucide-react";
+import { Network, Globe, HelpCircle, Copy, Check } from "lucide-react";
 import type { DevboxPort } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import { useNetworkStatus } from "@/hooks/sealos/network/use-network-status";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useCopy } from "@/hooks/use-copy";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
@@ -48,8 +49,9 @@ export default function NetworkNode({
 
   const { readyStatus, getBackgroundColor } = useNetworkStatus({ target });
   const { appendSystemMessage } = useAppendSystemMessageMutation();
+  const { copyToClipboard, isCopied } = useCopy();
 
-  console.log("readyStatus", readyStatus);
+  // console.log("readyStatus", readyStatus);
 
   // Extract network status data and prepare for NodeStack
   const networkData = (() => {
@@ -122,6 +124,11 @@ export default function NetworkNode({
     }
   };
 
+  const handleCopyClick = (e: React.MouseEvent, url: string) => {
+    e.stopPropagation();
+    copyToClipboard(url, `network-${target.name || target.resourceType}`);
+  };
+
   // Show loading state if resource is still loading
   if (isLoading) {
     return (
@@ -185,7 +192,7 @@ export default function NetworkNode({
                   )}
                   <span
                     className={cn(
-                      "truncate min-w-0",
+                      "truncate min-w-0 flex-1",
                       hasPublicAddress
                         ? "text-foreground cursor-pointer hover:text-foreground/80"
                         : "text-foreground"
@@ -196,6 +203,21 @@ export default function NetworkNode({
                   >
                     {frontCardUrl}
                   </span>
+                  <button
+                    className={cn(
+                      "h-4 w-4 flex-shrink-0 p-0.5 rounded hover:bg-muted/50 transition-colors",
+                      isCopied(`network-${target.name || target.resourceType}`)
+                        ? "text-green-500"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                    onClick={(e) => handleCopyClick(e, frontCardUrl)}
+                  >
+                    {isCopied(`network-${target.name || target.resourceType}`) ? (
+                      <Check className="h-3 w-3" />
+                    ) : (
+                      <Copy className="h-3 w-3" />
+                    )}
+                  </button>
                 </div>
               );
             })()

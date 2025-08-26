@@ -20,10 +20,12 @@ export const ClusterConnectionSchema = z.object({
     port: z.string(),
     username: z.string(),
     password: z.string(),
+    connectionString: z.string(),
   }),
   publicConnection: z
     .object({
       port: z.number(),
+      connectionString: z.string(),
     })
     .nullable()
     .optional(),

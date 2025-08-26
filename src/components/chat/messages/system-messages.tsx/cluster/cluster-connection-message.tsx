@@ -2,9 +2,7 @@ import React from "react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
-import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import { Copy, ExternalLink, Database, Check } from "lucide-react";
-import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useCopy } from "@/hooks/use-copy";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { Button } from "@/components/ui/button";
@@ -17,23 +15,9 @@ export const ClusterConnectionMessage: React.FC<
   ClusterConnectionMessageProps
 > = ({ target }) => {
   const { copyToClipboard, isCopied } = useCopy();
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
 
   const { resource, isLoading, error } = useResourceStatus(target);
   const clusterObject = resource as ClusterObject;
-
-  const actions: MessageAction[] =
-    clusterObject && clusterObject.connection
-      ? [
-          {
-            icon: Database,
-            label: "View Details",
-            onClick: () => {
-              appendSystemMessage("cluster.detail", target);
-            },
-          },
-        ]
-      : [];
 
   // Show loading state
   if (isLoading) {
@@ -61,10 +45,23 @@ export const ClusterConnectionMessage: React.FC<
     );
   }
 
-  const { privateConnection, publicConnection } = clusterObject.connection;
+  const {
+    privateConnection: {
+      connectionString: privateConnectionString,
+      host,
+      port,
+      username,
+      password,
+      endpoint,
+    },
+  } = clusterObject.connection;
+
+  const publicConnectionString = clusterObject.connection.publicConnection
+    ? clusterObject.connection.publicConnection.connectionString
+    : null;
 
   return (
-    <BaseSystemMessage target={target} actions={actions}>
+    <BaseSystemMessage target={target}>
       <div className="space-y-6">
         {/* Private Connection Section */}
         <div className="space-y-4">
@@ -75,81 +72,100 @@ export const ClusterConnectionMessage: React.FC<
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">
               <span className="text-sm text-muted-foreground">Host</span>
-              <span className="text-sm font-medium">
-                {privateConnection.host}
-              </span>
+              <span className="text-sm font-medium">{host}</span>
             </div>
             <div className="flex flex-col">
               <span className="text-sm text-muted-foreground">Port</span>
-              <span className="text-sm font-medium">
-                {privateConnection.port}
-              </span>
+              <span className="text-sm font-medium">{port}</span>
             </div>
             <div className="flex flex-col">
               <span className="text-sm text-muted-foreground">Username</span>
-              <span className="text-sm font-medium">
-                {privateConnection.username}
-              </span>
+              <span className="text-sm font-medium">{username}</span>
             </div>
             <div className="flex flex-col">
               <span className="text-sm text-muted-foreground">Password</span>
               <span className="text-sm font-medium">
-                {privateConnection.password ? "••••••••" : "N/A"}
+                {password ? "••••••••" : "N/A"}
               </span>
             </div>
           </div>
           <div className="flex flex-col">
             <span className="text-sm text-muted-foreground">Endpoint</span>
-            <span className="text-sm font-medium break-all">
-              {privateConnection.endpoint}
-            </span>
+            <span className="text-sm font-medium break-all">{endpoint}</span>
           </div>
         </div>
 
+        {/* Private Connection String */}
+        {privateConnectionString && (
+          <div className="space-y-2">
+            <span className="text-sm text-muted-foreground font-medium">
+              Private Connection String
+            </span>
+            <div className="bg-muted p-3 rounded-md flex items-center justify-between">
+              <code className="text-sm break-all flex-1">
+                {privateConnectionString}
+              </code>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-6 w-6 p-0 ml-2 flex-shrink-0"
+                onClick={() =>
+                  copyToClipboard(
+                    privateConnectionString,
+                    "private-connection-string"
+                  )
+                }
+              >
+                {isCopied("private-connection-string") ? (
+                  <Check className="w-3 h-3" />
+                ) : (
+                  <Copy className="w-3 h-3" />
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Public Connection Section (if available) */}
-        {publicConnection && (
+        {publicConnectionString && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold flex items-center gap-2">
               <ExternalLink className="h-5 w-5" />
               Public Connection
             </h3>
-            <div className="flex flex-col">
-              <span className="text-sm text-muted-foreground">Port</span>
-              <span className="text-sm font-medium">
-                {publicConnection.port}
-              </span>
-            </div>
           </div>
         )}
 
-        {/* Connection String */}
-        <div className="space-y-2">
-          <span className="text-sm text-muted-foreground">
-            Connection String
-          </span>
-          <div className="bg-muted p-3 rounded-md flex items-center justify-between">
-            <code className="text-sm break-all flex-1">
-              {`${privateConnection.host}:${privateConnection.port}`}
-            </code>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-6 w-6 p-0 ml-2 flex-shrink-0"
-              onClick={() =>
-                copyToClipboard(
-                  `${privateConnection.host}:${privateConnection.port}`,
-                  "connection-string"
-                )
-              }
-            >
-              {isCopied("connection-string") ? (
-                <Check className="w-3 h-3" />
-              ) : (
-                <Copy className="w-3 h-3" />
-              )}
-            </Button>
+        {/* Public Connection String (if available) */}
+        {publicConnectionString && (
+          <div className="space-y-2">
+            <span className="text-sm text-muted-foreground font-medium">
+              Public Connection String
+            </span>
+            <div className="bg-muted p-3 rounded-md flex items-center justify-between">
+              <code className="text-sm break-all flex-1">
+                {publicConnectionString}
+              </code>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-6 w-6 p-0 ml-2 flex-shrink-0"
+                onClick={() =>
+                  copyToClipboard(
+                    publicConnectionString,
+                    "public-connection-string"
+                  )
+                }
+              >
+                {isCopied("public-connection-string") ? (
+                  <Check className="w-3 h-3" />
+                ) : (
+                  <Copy className="w-3 h-3" />
+                )}
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </BaseSystemMessage>
   );

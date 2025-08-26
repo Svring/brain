@@ -25,6 +25,62 @@ export const generateClusterName = (prefix: string = "cluster"): string => {
 };
 
 /**
+ * Composes a private connection string for a cluster resource
+ * @param clusterData - The cluster object containing connection information
+ * @param namespace - The namespace where the cluster is deployed
+ * @returns A private connection string or null if the required data is not available
+ */
+export const composeClusterPrivateConnectionString = (
+  clusterData: any,
+  namespace: string
+): string | null => {
+  try {
+    const { connection, type: clusterType } = clusterData;
+    const privateConnection = connection?.privateConnection;
+
+    if (!privateConnection || !namespace) {
+      return null;
+    }
+
+    const { host, port, username, password } = privateConnection;
+
+    // Construct the internal service URL: {host}.{namespace}.svc
+    const internalUrl = `${host}.${namespace}.svc`;
+
+    // Construct the connection string based on cluster type
+    let connectionString: string;
+
+    switch (clusterType.toLowerCase()) {
+      case "postgresql":
+        connectionString = `postgresql://${username}:${password}@${internalUrl}:${port}`;
+        break;
+      case "mongodb":
+        connectionString = `mongodb://${username}:${password}@${internalUrl}:${port}`;
+        break;
+      case "redis":
+        connectionString = `redis://${username}:${password}@${internalUrl}:${port}`;
+        break;
+      case "apecloud-mysql":
+        connectionString = `mysql://${username}:${password}@${internalUrl}:${port}`;
+        break;
+      case "kafka":
+        connectionString = `${internalUrl}-kafka-broker:${port}`;
+        break;
+      case "milvus":
+        connectionString = `${internalUrl}-milvus:${port}`;
+        break;
+      default:
+        connectionString = `${clusterType}://${username}:${password}@${internalUrl}:${port}`;
+    }
+
+    return connectionString;
+  } catch (error) {
+    console.error("Error constructing private connection string:", error);
+    return null;
+  }
+};
+
+/**
  * Composes a connection string for a cluster resource
  * @param clusterData - The cluster object containing connection information
  * @param regionUrl - The region URL for the cluster

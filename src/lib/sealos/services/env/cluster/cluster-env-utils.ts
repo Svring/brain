@@ -12,48 +12,25 @@ export const deriveEnvVariable = (
   clusterObject: ClusterObject
 ) => {
   try {
-    const { connection, type: clusterType, name: clusterName } = clusterObject;
-    const privateConnection = connection.privateConnection;
-    const namespace = k8sContext.namespace;
+    const { connection, name: clusterName } = clusterObject;
+    const { privateConnection, publicConnection } = connection;
 
-    if (!privateConnection || !namespace) {
+    if (!privateConnection) {
       return null;
     }
 
-    const { host, port, username, password } = privateConnection;
+    const envVars: Record<string, string> = {
+      [`${clusterName.toUpperCase()}_CONNECTION_STRING`]:
+        privateConnection.connectionString,
+    };
 
-    // Construct the internal service URL: {host}.{namespace}.svc
-    const internalUrl = `${host}.${namespace}.svc`;
-
-    // Construct the connection string based on cluster type
-    let connectionString: string;
-
-    switch (clusterType.toLowerCase()) {
-      case "postgresql":
-        connectionString = `postgresql://${username}:${password}@${internalUrl}:${port}`;
-        break;
-      case "mongodb":
-        connectionString = `mongodb://${username}:${password}@${internalUrl}:${port}`;
-        break;
-      case "redis":
-        connectionString = `redis://${username}:${password}@${internalUrl}:${port}`;
-        break;
-      case "apecloud-mysql":
-        connectionString = `mysql://${username}:${password}@${internalUrl}:${port}`;
-        break;
-      case "kafka":
-        connectionString = `${internalUrl}-kafka-broker:${port}`;
-        break;
-      case "milvus":
-        connectionString = `${internalUrl}-milvus:${port}`;
-        break;
-      default:
-        connectionString = `${clusterType}://${username}:${password}@${internalUrl}:${port}`;
+    // Add public connection string if it exists
+    if (publicConnection) {
+      envVars[`${clusterName.toUpperCase()}_PUBLIC_CONNECTION_STRING`] =
+        publicConnection.connectionString;
     }
 
-    return {
-      [`${clusterName.toUpperCase()}_CONNECTION_STRING`]: connectionString,
-    };
+    return envVars;
   } catch (error) {
     console.error("Error deriving environment variables from cluster:", error);
     return null;

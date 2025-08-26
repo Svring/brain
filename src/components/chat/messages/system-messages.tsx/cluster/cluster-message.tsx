@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { clusterClient } from "@/components/provider/trpc-provider";
 import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
-import { Save, BarChart3, EthernetPort, Pencil } from "lucide-react";
+import { EthernetPort, Pencil } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import ClusterMessageDetails from "./components/cluster-message-details";
 import ClusterMessageMenu from "./components/cluster-message-menu";
@@ -35,20 +35,6 @@ export const ClusterMessage: React.FC<ClusterMessageProps> = ({ target }) => {
           label: "Update",
           onClick: () => {
             appendSystemMessage("cluster.update", target);
-          },
-        },
-        {
-          icon: Save,
-          label: "Backup",
-          onClick: () => {
-            appendSystemMessage("cluster.backup", target);
-          },
-        },
-        {
-          icon: BarChart3,
-          label: "View Metrics",
-          onClick: () => {
-            appendSystemMessage("universal.monitor", target);
           },
         },
         {
@@ -88,8 +74,8 @@ export const ClusterMessage: React.FC<ClusterMessageProps> = ({ target }) => {
   }
 
   return (
-    <BaseSystemMessage 
-      target={target} 
+    <BaseSystemMessage
+      target={target}
       actions={actions}
       headerSlot={<ClusterMessageMenu target={target} />}
     >
