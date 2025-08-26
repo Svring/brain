@@ -5,13 +5,20 @@ import { CommandGroup, CommandItem, CommandShortcut } from "@/components/ui/comm
 
 interface CommandPanelMainProps {
   onSelect: (value: string) => void;
+  onHover?: (value: string | null) => void;
+  onKeyboardSelect?: (value: string | null) => void;
 }
 
-export function CommandPanelMain({ onSelect }: CommandPanelMainProps) {
+export function CommandPanelMain({ onSelect, onHover, onKeyboardSelect }: CommandPanelMainProps) {
   return (
     <>
       <CommandGroup heading="Project">
-        <CommandItem value="add-resource" onSelect={onSelect}>
+        <CommandItem 
+          value="add-resource" 
+          onSelect={onSelect}
+          onFocus={() => onKeyboardSelect?.("add-resource")}
+          onBlur={() => onKeyboardSelect?.(null)}
+        >
           <Plus className="mr-2 h-4 w-4" />
           <span>Add Resource</span>
           <ChevronRight className="ml-auto h-4 w-4" />

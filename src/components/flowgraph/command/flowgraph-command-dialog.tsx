@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -8,94 +8,123 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { CommandPanelMain } from "./command-panel-main";
-import { CommandPanelAddResource } from "./command-panel-add-resource";
-import { CommandPanelRemoveResource } from "./command-panel-remove-resource";
-import { CommandPanelManageResource } from "./command-panel-manage-resource";
-import { CommandPanelConnectResource } from "./command-panel-connect-resource";
-import { CommandPanelSearchNode } from "./command-panel-search-node";
-import { CommandPanelCreateProject } from "./command-panel-create-project";
-import { CommandPanelGoToProject } from "./command-panel-go-to-project";
-import { CommandNavigation } from "./command-navigation";
+import { AddResourcePreview } from "./command-panel-add-resource";
+import { CommandDetails } from "./command-details";
 import { useCommandActions } from "./command-actions";
+import { useCommandState } from "cmdk";
 
 interface FlowgraphCommandDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-type CommandPanel =
-  | "main"
-  | "add-resource"
-  | "remove-resource"
-  | "manage-resource"
-  | "connect-resource"
-  | "search-node"
-  | "create-project"
-  | "go-to-project";
+function SelectedValueSync({
+  onChange,
+}: {
+  onChange: (value: string | null) => void;
+}) {
+  const value = useCommandState((state: any) => state.value);
+  useEffect(() => {
+    onChange(value || null);
+  }, [value, onChange]);
+  return null;
+}
 
 export function FlowgraphCommandDialog({
   isOpen,
   onOpenChange,
 }: FlowgraphCommandDialogProps) {
   const [search, setSearch] = useState("");
-  const [currentPanel, setCurrentPanel] = useState<CommandPanel>("main");
+  const [selectedCommand, setSelectedCommand] = useState<string | null>(null);
+  const [isDetailMode, setIsDetailMode] = useState(false);
+  const [hoveredCommand, setHoveredCommand] = useState<string | null>(null);
+  const [keyboardSelectedCommand, setKeyboardSelectedCommand] = useState<
+    string | null
+  >(null);
 
-  // Reset panel when dialog is closed
+  // Reset state when dialog is closed
   const handleOpenChange = (open: boolean) => {
     if (!open) {
-      setCurrentPanel("main");
       setSearch("");
+      setSelectedCommand(null);
+      setIsDetailMode(false);
+      setHoveredCommand(null);
+      setKeyboardSelectedCommand(null);
     }
     onOpenChange(open);
   };
 
   const { handleSelect } = useCommandActions({
     onOpenChange: handleOpenChange,
-    setCurrentPanel,
     setSearch,
+    setSelectedCommand,
+    setIsDetailMode,
   });
 
-  const renderCurrentPanel = () => {
-    switch (currentPanel) {
-      case "add-resource":
-        return <CommandPanelAddResource onSelect={handleSelect} />;
-      case "remove-resource":
-        return <CommandPanelRemoveResource onSelect={handleSelect} />;
-      case "manage-resource":
-        return <CommandPanelManageResource onSelect={handleSelect} />;
-      case "connect-resource":
-        return <CommandPanelConnectResource onSelect={handleSelect} />;
-      case "search-node":
-        return <CommandPanelSearchNode onSelect={handleSelect} />;
-      case "create-project":
-        return <CommandPanelCreateProject onSelect={handleSelect} />;
-      case "go-to-project":
-        return <CommandPanelGoToProject onSelect={handleSelect} />;
-      default:
-        return <CommandPanelMain onSelect={handleSelect} />;
-    }
+  const handleCommandSelect = (value: string) => {
+    setSelectedCommand(value);
+    setIsDetailMode(true);
+  };
+
+  const handleBackToCommands = () => {
+    setIsDetailMode(false);
+    setSelectedCommand(null);
   };
 
   return (
     <CommandDialog open={isOpen} onOpenChange={handleOpenChange}>
-      <CommandInput
-        placeholder={
-          currentPanel === "main"
-            ? "Search commands..."
-            : `Search ${currentPanel.replace("-", " ")}...`
-        }
-        value={search}
-        onValueChange={setSearch}
-      />
-      <CommandList>
-        <CommandEmpty>No commands found.</CommandEmpty>
+      <div className="flex flex-col h-full">
+        <SelectedValueSync onChange={setKeyboardSelectedCommand} />
+        {/* Top Input - Full Width */}
+        <div className="border-b border-border flex-shrink-0">
+          <CommandInput
+            placeholder="Search commands..."
+            value={search}
+            onValueChange={setSearch}
+          />
+        </div>
 
-        {currentPanel !== "main" && (
-          <CommandNavigation onSelect={handleSelect} />
-        )}
+        {/* Bottom Content - Sidebar and Details */}
+        <div className="flex flex-1 min-h-0">
+          {/* Left Sidebar - Commands */}
+          <div className="w-[30%] border-r border-border flex flex-col min-h-0">
+            <CommandList className="flex-1 overflow-auto max-h-none h-full">
+              <CommandEmpty>No commands found.</CommandEmpty>
 
-        {renderCurrentPanel()}
-      </CommandList>
+              <CommandPanelMain
+                onSelect={handleSelect}
+                onHover={setHoveredCommand}
+                onKeyboardSelect={setKeyboardSelectedCommand}
+              />
+            </CommandList>
+          </div>
+
+          {/* Right Side - Details */}
+          <div className="w-[70%] flex flex-col min-h-0">
+            {isDetailMode && selectedCommand ? (
+              selectedCommand === "add-resource" ? (
+                <AddResourcePreview
+                  onSelect={handleCommandSelect}
+                  autoFocus={true}
+                />
+              ) : (
+                <CommandDetails
+                  command={selectedCommand}
+                  onExecute={handleSelect}
+                  onBack={handleBackToCommands}
+                />
+              )
+            ) : hoveredCommand === "add-resource" ||
+              keyboardSelectedCommand === "add-resource" ? (
+              <AddResourcePreview onSelect={handleCommandSelect} />
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-muted-foreground">
+                <p>Select a command to see details</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </CommandDialog>
   );
 }

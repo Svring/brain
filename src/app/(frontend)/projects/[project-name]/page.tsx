@@ -233,11 +233,11 @@ function ProjectFlow({ projectName }: { projectName: string }) {
       snapGrid={REACT_FLOW_CONFIG.snapGrid}
       connectionLineComponent={FloatingConnectionLine}
     >
-      <Background
+      {/* <Background
         gap={REACT_FLOW_CONFIG.background.gap}
         size={REACT_FLOW_CONFIG.background.size}
         variant={REACT_FLOW_CONFIG.background.variant}
-      />
+      /> */}
     </ReactFlow>
   );
 }

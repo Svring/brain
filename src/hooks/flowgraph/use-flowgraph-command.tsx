@@ -10,7 +10,7 @@ export function useFlowgraphCommand() {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // Check for Cmd+M (Mac) or Ctrl+M (Windows/Linux)
-      if ((event.metaKey || event.ctrlKey) && event.key === "m") {
+      if ((event.metaKey || event.ctrlKey) && event.key === "k") {
         event.preventDefault();
         onOpen();
       }

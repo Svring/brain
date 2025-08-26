@@ -1,6 +1,6 @@
 import { StarBorder } from "@/components/ui/star-border";
 import { cn } from "@/lib/utils";
-import { Bird } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { useChatActions } from "@/contexts/chat/chat-context";
 
 export default function AiCoin() {
@@ -18,7 +18,7 @@ export default function AiCoin() {
       )}
       onClick={handleClick}
     >
-      <Bird className="w-full h-full p-2" />
+      <MessageCircle className="w-full h-full p-3" />
     </StarBorder>
   );
 }
