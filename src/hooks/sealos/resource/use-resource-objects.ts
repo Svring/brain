@@ -113,6 +113,8 @@ export default function useResourceObjects(
     resources.length,
   ]);
 
+  console.log("fetchedObjects", fetchedObjects);
+
   return {
     resourceObjects: fetchedObjects,
     isLoading,

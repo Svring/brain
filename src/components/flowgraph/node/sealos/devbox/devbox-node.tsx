@@ -97,10 +97,7 @@ function DevboxNode({
   const context = createK8sContext();
 
   // Use the delete hook
-  const { isDeleting: isDeletingDevbox } = useResourceDelete({
-    status,
-    target,
-  });
+  const { isPending: isDeletingDevbox } = useResourceDelete(target);
 
   const { releases } = useDevboxRelease(name);
 

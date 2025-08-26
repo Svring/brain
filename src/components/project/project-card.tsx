@@ -32,7 +32,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
     onOpen: openDropdown,
   } = useDisclosure();
 
-  // const { resources } = useProjectResources(project.name);
+  const { resources } = useProjectResources(project.name);
 
   // console.log("resources", resources);
 
@@ -109,6 +109,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
         </div>
 
         <h3 className="mb-2 text-foreground">{project.displayName}</h3>
+
+        {/* Resource count in bottom right */}
+        <div className="absolute bottom-4 left-4">
+          <span className="text-muted-foreground">
+            {resources?.length || 0} resources
+          </span>
+        </div>
 
         {/* Compatibility badge at bottom left */}
         {/* <div className="absolute bottom-4 left-4">

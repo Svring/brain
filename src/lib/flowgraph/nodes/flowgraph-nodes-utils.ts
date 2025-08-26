@@ -269,21 +269,9 @@ export const addDevboxToDevGroup = (nodes: Node<any>[]): Node<any>[] => {
   // Create parent group node with calculated dimensions
   const groupNode: Node<any> = {
     id: "devbox-group",
-    type: "group",
+    type: "devgroup",
     data: { label: "Devbox Group" },
     position: { x: 0, y: 0 },
-    style: {
-      backgroundColor: "rgba(21, 21, 21, 0.4)",
-      borderColor: "var(--color-border-primary)",
-      borderWidth: 1,
-      borderRadius: 10,
-      padding: 10,
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 10,
-    },
   };
 
   // Update devbox nodes to be children of the group

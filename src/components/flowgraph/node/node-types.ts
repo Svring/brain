@@ -3,6 +3,7 @@ import ConfigmapNode from "./sealos/configmap/configmap-node";
 import CronjobNode from "./sealos/cronjob/cronjob-node";
 import DeploymentNode from "./sealos/deployment/deployment-node";
 import DevboxNode from "./sealos/devbox/devbox-node";
+import DevGroupNode from "./brain/group/dev-group";
 import IngressNode from "./sealos/ingress/ingress-node";
 import JobNode from "./sealos/job/job-node";
 import ObjectStorageNode from "./sealos/objectstorage/objectstorage-node";
@@ -18,6 +19,7 @@ const nodeTypes: NodeTypes = {
   configmap: ConfigmapNode,
   cronjob: CronjobNode,
   deployment: DeploymentNode,
+  devgroup: DevGroupNode,
   ingress: IngressNode,
   job: JobNode,
   objectstoragebucket: ObjectStorageNode,

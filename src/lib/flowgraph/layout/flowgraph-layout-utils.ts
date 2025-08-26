@@ -344,9 +344,9 @@ export const applySplitLayout = (
     },
   } as Node;
 
-  // 3) Translate children inside the group with padding
-  const childOffsetX = groupLeft + groupPadding - childBBox.minX;
-  const childOffsetY = groupTop + groupPadding - childBBox.minY;
+  // 3) Center children inside the group (positions are relative to group, not absolute)
+  const childOffsetX = (groupWidth - childBBox.width) / 2 - childBBox.minX;
+  const childOffsetY = (groupHeight - childBBox.height) / 2 - childBBox.minY;
 
   const positionedChildren = laidOutChildren.map((n) => ({
     ...n,
