@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Settings, Trash2, Eye, ArrowLeft, ChevronRight } from "lucide-react";
+import { Plus, Trash2, Settings, Link, Search, FolderPlus, FolderOpen, ChevronRight } from "lucide-react";
 import { CommandGroup, CommandItem, CommandShortcut } from "@/components/ui/command";
 
 interface CommandPanelMainProps {
@@ -10,43 +10,50 @@ interface CommandPanelMainProps {
 export function CommandPanelMain({ onSelect }: CommandPanelMainProps) {
   return (
     <>
-      <CommandGroup heading="Flow Actions">
-        <CommandItem value="add-node" onSelect={onSelect}>
-          <Plus className="mr-2 h-4 w-4" />
-          <span>Add Node</span>
-          <ChevronRight className="ml-auto h-4 w-4" />
-        </CommandItem>
-
-        <CommandItem value="clear-canvas" onSelect={onSelect}>
-          <Trash2 className="mr-2 h-4 w-4" />
-          <span>Clear Canvas</span>
-          <CommandShortcut>⌘K</CommandShortcut>
-        </CommandItem>
-
-        <CommandItem value="fit-view" onSelect={onSelect}>
-          <Eye className="mr-2 h-4 w-4" />
-          <span>Fit View</span>
-          <CommandShortcut>⌘F</CommandShortcut>
-        </CommandItem>
-      </CommandGroup>
-
       <CommandGroup heading="Project">
-        <CommandItem value="back-to-projects" onSelect={onSelect}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          <span>Back to Projects</span>
-          <CommandShortcut>⌘B</CommandShortcut>
+        <CommandItem value="add-resource" onSelect={onSelect}>
+          <Plus className="mr-2 h-4 w-4" />
+          <span>Add Resource</span>
+          <ChevronRight className="ml-auto h-4 w-4" />
         </CommandItem>
 
-        <CommandItem value="project-settings" onSelect={onSelect}>
+        <CommandItem value="remove-resource" onSelect={onSelect}>
+          <Trash2 className="mr-2 h-4 w-4" />
+          <span>Remove Resource</span>
+          <ChevronRight className="ml-auto h-4 w-4" />
+        </CommandItem>
+
+        <CommandItem value="manage-resource" onSelect={onSelect}>
           <Settings className="mr-2 h-4 w-4" />
-          <span>Project Settings</span>
+          <span>Manage Resource</span>
+          <ChevronRight className="ml-auto h-4 w-4" />
+        </CommandItem>
+
+        <CommandItem value="connect-resource" onSelect={onSelect}>
+          <Link className="mr-2 h-4 w-4" />
+          <span>Connect Resource</span>
           <ChevronRight className="ml-auto h-4 w-4" />
         </CommandItem>
       </CommandGroup>
 
-      <CommandGroup heading="Import/Export">
-        <CommandItem value="import-export" onSelect={onSelect}>
-          <span>Import/Export</span>
+      <CommandGroup heading="Flowgraph">
+        <CommandItem value="search-node" onSelect={onSelect}>
+          <Search className="mr-2 h-4 w-4" />
+          <span>Search Node</span>
+          <ChevronRight className="ml-auto h-4 w-4" />
+        </CommandItem>
+      </CommandGroup>
+
+      <CommandGroup heading="General">
+        <CommandItem value="create-project" onSelect={onSelect}>
+          <FolderPlus className="mr-2 h-4 w-4" />
+          <span>Create New Project</span>
+          <ChevronRight className="ml-auto h-4 w-4" />
+        </CommandItem>
+
+        <CommandItem value="go-to-project" onSelect={onSelect}>
+          <FolderOpen className="mr-2 h-4 w-4" />
+          <span>Go to Project</span>
           <ChevronRight className="ml-auto h-4 w-4" />
         </CommandItem>
       </CommandGroup>

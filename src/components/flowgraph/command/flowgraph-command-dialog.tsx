@@ -8,9 +8,13 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { CommandPanelMain } from "./command-panel-main";
-import { CommandPanelAddNode } from "./command-panel-add-node";
-import { CommandPanelProjectSettings } from "./command-panel-project-settings";
-import { CommandPanelImportExport } from "./command-panel-import-export";
+import { CommandPanelAddResource } from "./command-panel-add-resource";
+import { CommandPanelRemoveResource } from "./command-panel-remove-resource";
+import { CommandPanelManageResource } from "./command-panel-manage-resource";
+import { CommandPanelConnectResource } from "./command-panel-connect-resource";
+import { CommandPanelSearchNode } from "./command-panel-search-node";
+import { CommandPanelCreateProject } from "./command-panel-create-project";
+import { CommandPanelGoToProject } from "./command-panel-go-to-project";
 import { CommandNavigation } from "./command-navigation";
 import { useCommandActions } from "./command-actions";
 
@@ -19,7 +23,15 @@ interface FlowgraphCommandDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-type CommandPanel = "main" | "add-node" | "project-settings" | "import-export";
+type CommandPanel =
+  | "main"
+  | "add-resource"
+  | "remove-resource"
+  | "manage-resource"
+  | "connect-resource"
+  | "search-node"
+  | "create-project"
+  | "go-to-project";
 
 export function FlowgraphCommandDialog({
   isOpen,
@@ -45,12 +57,20 @@ export function FlowgraphCommandDialog({
 
   const renderCurrentPanel = () => {
     switch (currentPanel) {
-      case "add-node":
-        return <CommandPanelAddNode onSelect={handleSelect} />;
-      case "project-settings":
-        return <CommandPanelProjectSettings onSelect={handleSelect} />;
-      case "import-export":
-        return <CommandPanelImportExport onSelect={handleSelect} />;
+      case "add-resource":
+        return <CommandPanelAddResource onSelect={handleSelect} />;
+      case "remove-resource":
+        return <CommandPanelRemoveResource onSelect={handleSelect} />;
+      case "manage-resource":
+        return <CommandPanelManageResource onSelect={handleSelect} />;
+      case "connect-resource":
+        return <CommandPanelConnectResource onSelect={handleSelect} />;
+      case "search-node":
+        return <CommandPanelSearchNode onSelect={handleSelect} />;
+      case "create-project":
+        return <CommandPanelCreateProject onSelect={handleSelect} />;
+      case "go-to-project":
+        return <CommandPanelGoToProject onSelect={handleSelect} />;
       default:
         return <CommandPanelMain onSelect={handleSelect} />;
     }
