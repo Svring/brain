@@ -98,23 +98,22 @@ function DeploymentNode({
     kind: deploymentData.kind,
     name: deploymentData.name,
   });
-  const { monitorData, isLoading: isMetricsLoading } = useResourceMetricsStatus(
-    {
-      target,
-    }
-  );
-
-  // Use the delete hook
-  const { isDeleting: isDeletingDeployment } = useResourceDelete({
-    status,
+  const { status: metricsStatus } = useResourceMetricsStatus({
     target,
   });
+
+  // Use the delete hook
+  const { isPending: isDeletingDeployment } = useResourceDelete(target);
 
   const mainCard = (
     <BaseNode
       target={target}
       nodeData={resource}
-      className={isDeletingDeployment ? "border-theme-red" : ""}
+      className={
+        isDeletingDeployment || metricsStatus === "high"
+          ? "bg-theme-red/50"
+          : ""
+      }
     >
       <div
         className="flex h-full flex-col gap-2 justify-between"

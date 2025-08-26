@@ -107,6 +107,7 @@
   --color-theme-darkblue: #3c5f89;
 
   --color-status-error: #660B05;
+  --color-status-warning: #221D10;
 
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));

@@ -7,15 +7,14 @@ import { BaseSystemMessage } from "@/components/chat/messages/system-messages.ts
 import {
   Play,
   Trash2,
-  Calendar,
-  Tag,
-  ArrowBigUpDash,
   Plus,
   Server,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Spinner } from "@/components/ui/spinner";
 
 interface DevboxDeployedMessageProps {
   target: CustomResourceTarget;
@@ -73,6 +72,12 @@ const DeploymentItem: React.FC<{ deployment: any }> = ({
               {formatDate(deployment.metadata?.creationTimestamp)}
             </span>
           </div>
+          {/* Status indicator next to server icon */}
+          {deployment.status?.phase === "Running" ? (
+            <Check className="h-3 w-3 text-green-500" />
+          ) : (
+            <Spinner className="h-3 w-3 text-amber-500" />
+          )}
         </div>
         <div className="flex items-center gap-1">
           {/* Status indicator */}
@@ -170,25 +175,37 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
           </Button>
         </div>
 
-        {deployments.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-20 text-center">
-            <Server className="h-6 w-6 text-muted-foreground mb-2" />
-            <div className="text-xs text-muted-foreground">
-              No deployments yet
-            </div>
-          </div>
-        ) : (
-          <ScrollArea className="max-h-60">
-            <div className="space-y-2">
-              {deployments.map((deployment) => (
+        <ScrollArea className="max-h-60">
+          <div className="space-y-2">
+            {deployments.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-20 text-center">
+                <Server className="h-6 w-6 text-muted-foreground mb-2" />
+                <div className="text-xs text-muted-foreground">
+                  No deployments yet
+                </div>
+              </div>
+            ) : (
+              deployments.map((deployment) => (
                 <DeploymentItem
                   key={deployment.metadata?.uid || deployment.metadata?.name}
                   deployment={deployment}
                 />
-              ))}
+              ))
+            )}
+            {/* Add new deployment placeholder */}
+            <div
+              className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-3 hover:border-muted-foreground/50 hover:bg-muted/20 transition-colors cursor-pointer"
+              onClick={() => console.log("Create new deployment")}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Plus className="h-4 w-4 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">
+                  Add new deployment
+                </span>
+              </div>
             </div>
-          </ScrollArea>
-        )}
+          </div>
+        </ScrollArea>
       </div>
     </BaseSystemMessage>
   );

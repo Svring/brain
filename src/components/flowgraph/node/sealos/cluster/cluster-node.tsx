@@ -143,8 +143,9 @@ function ClusterNode({
     k8sContext.regionUrl
   );
 
-  const { isDeleting: isDeletingCluster } = useResourceDelete({
-    status,
+  const { isPending: isDeletingCluster } = useResourceDelete(target);
+
+  const { status: metricsStatus } = useResourceMetricsStatus({
     target,
   });
 
@@ -152,7 +153,9 @@ function ClusterNode({
     <BaseNode
       target={target}
       nodeData={clusterData}
-      className={isDeletingCluster ? "border-theme-red" : ""}
+      className={
+        isDeletingCluster || metricsStatus === "high" ? "bg-theme-red/50" : ""
+      }
     >
       <div
         className="flex h-full flex-col gap-4 justify-between"

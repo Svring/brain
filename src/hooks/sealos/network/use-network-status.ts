@@ -65,8 +65,8 @@ export const useNetworkStatus = ({ target }: UseNetworkStatusProps) => {
 
   // Determine background color based on status key
   const getBackgroundColor = () => {
-    if (statusKey === "allNotReady") return "bg-status-error/20";
-    if (statusKey === "partial") return "bg-theme-yellow/20";
+    if (statusKey === "allNotReady") return "bg-status-warning";
+    if (statusKey === "partial") return "bg-status-warning";
     return "";
   };
 
@@ -78,7 +78,7 @@ export const useNetworkStatus = ({ target }: UseNetworkStatusProps) => {
 
     // Only change color to red if status is not ready
     // Otherwise, keep the original stroke color
-    const shouldChangeToRed = statusKey === "allNotReady";
+    const shouldChangeToYellow = statusKey === "allNotReady";
     const desiredType = "floating" as const;
 
     connectedEdges.forEach((edge) => {
@@ -89,8 +89,8 @@ export const useNetworkStatus = ({ target }: UseNetworkStatusProps) => {
         | undefined;
 
       // Only update if we need to change to red (error state)
-      if (shouldChangeToRed) {
-        const desiredStroke = "#ef4444"; // Red for error state
+      if (shouldChangeToYellow) {
+        const desiredStroke = "#9F833B"; // Yellow for error state
         const desiredMarker = {
           type: MarkerType.Arrow as const,
           width: 30,

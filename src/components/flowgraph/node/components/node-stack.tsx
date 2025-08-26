@@ -9,6 +9,7 @@ interface NodeStackProps {
   height?: string;
   maxBackgroundCards?: number; // Maximum number of background cards (default: 5)
   backgroundColor?: string; // Background color class for the main card
+  notReadyCount?: number; // Number of cards that are not ready (for yellow coloring)
   onBackgroundCardClick?: (index: number, data: any) => void; // Optional click handler for background cards
 }
 
@@ -18,6 +19,7 @@ export default function NodeStack({
   height,
   maxBackgroundCards = 2,
   backgroundColor,
+  notReadyCount = 0,
   onBackgroundCardClick,
 }: NodeStackProps) {
   // Calculate how many background cards to show (limited by maxBackgroundCards)
@@ -27,7 +29,12 @@ export default function NodeStack({
   const backgroundCards = Array.from(
     { length: backgroundCardCount },
     (_, index) => {
-      const offset = (index + 1) * 8; // Incremental offset: 8px, 16px, 24px, etc.
+      const offset = (index + 1) * 6; // Incremental offset: 8px, 16px, 24px, etc.
+      
+      // Determine background color for this card
+      // Apply yellow background to the first 'notReadyCount' cards
+      const cardBackgroundColor = index < notReadyCount ? "bg-status-warning" : backgroundColor;
+      
       return (
         <div
           key={index}
@@ -47,7 +54,7 @@ export default function NodeStack({
           <BaseNode
             nodeData={{}}
             className={`${height ? `h-${height}` : ""} ${
-              backgroundColor || ""
+              cardBackgroundColor || ""
             }`}
           >
             {/* Empty content for background cards */}

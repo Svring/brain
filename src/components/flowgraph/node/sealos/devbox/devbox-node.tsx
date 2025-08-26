@@ -15,6 +15,7 @@ import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 import { useResourceMetrics } from "@/hooks/sealos/resource/use-resource-metrics";
+import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import { useDevboxRelease } from "@/hooks/sealos/devbox/use-devbox-release";
 import { useMutation } from "@tanstack/react-query";
 import { useResourceDelete } from "@/hooks/sealos/resource/use-resource-delete";
@@ -89,6 +90,10 @@ function DevboxNode({
     name: resource.name,
   });
 
+  const { status: metricsStatus } = useResourceMetricsStatus({
+    target,
+  });
+
   const { name, image } = resource;
 
   // console.log("resource", resource);
@@ -108,7 +113,9 @@ function DevboxNode({
     <BaseNode
       target={target}
       nodeData={resource}
-      className={isDeletingDevbox ? "border-theme-red" : ""}
+      className={
+        isDeletingDevbox || metricsStatus === "high" ? "bg-theme-red/50" : ""
+      }
     >
       <div
         className="flex h-full flex-col gap-2 justify-between"

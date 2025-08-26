@@ -3,30 +3,27 @@
 import BaseNode from "../../base-node-wrapper";
 import { Package, HardDrive } from "lucide-react";
 import NodeStatusLight from "../../components/node-status-light";
-import NodeInternalUrl from "../../components/node-internal-url";
 import NodePods from "../../components/node-pods";
 import NodeMonitor from "../../components/node-monitor";
 import StatefulsetNodeTitle from "./statefulset-node-title";
-import StatefulsetNodeMenu from "./statefulset-node-menu";
-import { StatefulsetObjectQuery } from "@/lib/sealos/resources/statefulset/statefulset-object-query-schema";
+import { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulset-object-schema";
 import { truncateImage } from "@/lib/sealos/sealos-utils";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import NodeLog from "../../components/node-log";
-import { useResourceMetrics } from "@/hooks/sealos/resource/use-resource-metrics";
-import { useLaunchpadObject } from "@/hooks/sealos/launchpad/use-launchpad-object";
 import { useResourceDelete } from "@/hooks/sealos/resource/use-resource-delete";
 import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import NodeLoading from "../../components/node-loading";
+import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 
-// Enhanced wrapper that can handle both K8sResource and StatefulsetObjectQuery
+// Enhanced wrapper that can handle both K8sResource and StatefulsetObject
 function StatefulsetNodeWrapper({
   data,
 }: {
-  data: StatefulsetObjectQuery | K8sResource;
+  data: StatefulsetObject | K8sResource;
 }) {
-  // Check if we have a complete StatefulsetObjectQuery or just a basic K8sResource
+  // Check if we have a complete StatefulsetObject or just a basic K8sResource
   const isCompleteObject =
     "image" in data && "resource" in data && "ports" in data;
 
@@ -34,19 +31,18 @@ function StatefulsetNodeWrapper({
   const resourceData = {
     kind: data.kind,
     name: isCompleteObject
-      ? (data as StatefulsetObjectQuery).name
+      ? (data as StatefulsetObject).name
       : (data as K8sResource).metadata?.name || "",
   };
 
   // Always call hooks in the same order
   const { completeResource, status } = useResourceNodeEnhancer(resourceData);
-  const target = convertResourceObjectToTarget(resourceData);
 
   // If we have complete object data, render the full node
   if (isCompleteObject) {
     return (
       <StatefulsetNode
-        resource={data as StatefulsetObjectQuery}
+        resource={data as StatefulsetObject}
         status={status || "Pending"}
       />
     );
@@ -60,7 +56,7 @@ function StatefulsetNodeWrapper({
   ) {
     return (
       <StatefulsetNode
-        resource={completeResource as StatefulsetObjectQuery}
+        resource={completeResource as StatefulsetObject}
         status={status || "Pending"}
       />
     );
@@ -81,44 +77,30 @@ function StatefulsetNode({
   resource,
   status,
 }: {
-  resource: StatefulsetObjectQuery;
+  resource: StatefulsetObject;
   status?: string;
 }) {
   const { appendSystemMessage } = useAppendSystemMessageMutation();
 
-  // console.log("resource", resource);
-
-  // Use the new hook to get statefulset data
-  const { data: statefulsetData = resource } = useLaunchpadObject(
-    resource.name,
-    resource.kind
-  );
-
   // Get resource metrics data using the hook data
-  const target = convertResourceObjectToTarget({
-    kind: statefulsetData.kind,
-    name: statefulsetData.name,
-  });
-  const { monitorData, isLoading: isMetricsLoading } =
-    useResourceMetrics(target);
+  const target = convertResourceObjectToTarget(resource);
 
-  // Use the delete hook
-  const { isDeleting: isDeletingStatefulset } = useResourceDelete({
-    status,
+  const { status: metricsStatus } = useResourceMetricsStatus({
     target,
   });
 
-  // Create target for the NodeLog component
-  const logTarget = convertResourceObjectToTarget({
-    kind: statefulsetData.kind,
-    name: statefulsetData.name,
-  });
+  // Use the delete hook
+  const { isPending: isDeletingStatefulset } = useResourceDelete(target);
 
   const mainCard = (
     <BaseNode
       target={target}
       nodeData={resource}
-      className={isDeletingStatefulset ? "border-theme-red" : ""}
+      className={
+        isDeletingStatefulset || metricsStatus === "high"
+          ? "bg-theme-red/50"
+          : ""
+      }
     >
       <div
         className="flex h-full flex-col gap-2 justify-between"
@@ -128,7 +110,7 @@ function StatefulsetNode({
       >
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
-          <StatefulsetNodeTitle name={statefulsetData.name} />
+          <StatefulsetNodeTitle name={resource.name} />
           {/* <StatefulsetNodeMenu object={resource} /> */}
         </div>
 
@@ -136,10 +118,7 @@ function StatefulsetNode({
         <div className="flex items-center gap-2 mt-2">
           <Package className="h-4 w-4 text-muted-foreground" />
           <div className="text-sm text-muted-foreground truncate flex-1">
-            Image:{" "}
-            {statefulsetData.image
-              ? truncateImage(statefulsetData.image)
-              : "N/A"}
+            Image: {resource.image ? truncateImage(resource.image) : "N/A"}
           </div>
         </div>
 
@@ -151,7 +130,7 @@ function StatefulsetNode({
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
             <NodePods target={target} />
-            <NodeLog target={logTarget} />
+            <NodeLog target={target} />
             <NodeMonitor target={target} />
           </div>
         </div>
@@ -171,9 +150,7 @@ function StatefulsetNode({
         </div>
 
         {/* Right side: Storage capacity */}
-        <div className="text-xs">
-          {statefulsetData.resource?.storage || "N/A"}
-        </div>
+        <div className="text-xs">{resource.resource?.storage || "N/A"}</div>
       </div>
     </div>
   );

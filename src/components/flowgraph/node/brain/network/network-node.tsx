@@ -49,6 +49,55 @@ export default function NetworkNode({
   const { readyStatus, getBackgroundColor } = useNetworkStatus({ target });
   const { appendSystemMessage } = useAppendSystemMessageMutation();
 
+  console.log("readyStatus", readyStatus);
+
+  // Extract network status data and prepare for NodeStack
+  const networkData = (() => {
+    const statusData = readyStatus as any;
+
+    // Handle error case (code: 500) - ignore and return empty array
+    if (statusData?.code === 500) {
+      return [];
+    }
+
+    // Handle success case (code: 200) with data array
+    if (statusData?.code === 200 && Array.isArray(statusData?.data)) {
+      return statusData.data.map((item: any) => ({
+        url: item.url,
+        ready: item.ready,
+        error: item.error,
+      }));
+    }
+
+    return [];
+  })();
+
+  // Determine the front card URL and background card data
+  const frontCardUrl = (() => {
+    if (networkData.length === 0) {
+      // Fallback to ports if no network data
+      return ports.length > 0
+        ? ports[0].publicAddress || ports[0].privateAddress
+        : null;
+    }
+
+    // If all cards are ready, use the first item's URL
+    const allReady = networkData.every((item: any) => item.ready);
+    if (allReady) {
+      return networkData[0]?.url;
+    }
+
+    // If some cards are not ready, use the first error card's URL
+    const firstErrorCard = networkData.find((item: any) => !item.ready);
+    return firstErrorCard?.url || networkData[0]?.url;
+  })();
+
+  // Prepare background card data (length - 1 as requested)
+  const backgroundCardData = networkData.length > 1 ? networkData.slice(1) : [];
+
+  // Count not ready items for color configuration
+  const notReadyCount = networkData.filter((item: any) => !item.ready).length;
+
   const handleIconClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     // Execute only the specific icon action
@@ -92,7 +141,7 @@ export default function NetworkNode({
         className={cn("h-14 p-2", "bg-status-error/20")}
       >
         <div className="flex items-center justify-center h-full">
-          <div className="text-sm text-red-500">Error loading resource</div>
+          <div className="text-sm text-theme-red">Error loading resource</div>
         </div>
       </BaseNode>
     );
@@ -109,17 +158,10 @@ export default function NetworkNode({
       <div className="flex h-full flex-col justify-between cursor-pointer">
         {/* Single Port Display */}
         <div className="flex items-center justify-center h-full">
-          {ports.length > 0 ? (
+          {frontCardUrl ? (
             (() => {
-              const port = ports[0];
-              const hasPublicAddress = !!port.publicAddress;
-              const address = port.publicAddress || port.privateAddress;
-
-              // Check if network is not ready
-              const statusData = readyStatus as any;
-              const isNetworkNotReady = statusData?.data?.some(
-                (item: any) => !item.ready
-              );
+              const hasPublicAddress = frontCardUrl.startsWith("http");
+              const isNetworkNotReady = notReadyCount > 0;
 
               return (
                 <div className="flex items-center justify-center gap-2 text-sm w-full">
@@ -127,9 +169,7 @@ export default function NetworkNode({
                     <HelpCircle
                       className={cn(
                         "h-4 w-4 flex-shrink-0 cursor-help",
-                        getBackgroundColor() === "bg-status-error/20"
-                          ? "text-red-500"
-                          : "text-yellow-500"
+                        "text-yellow-500"
                       )}
                       onClick={handleIconClick}
                     />
@@ -151,10 +191,10 @@ export default function NetworkNode({
                         : "text-foreground"
                     )}
                     onClick={(e) =>
-                      handleAddressClick(e, address, hasPublicAddress)
+                      handleAddressClick(e, frontCardUrl, hasPublicAddress)
                     }
                   >
-                    {address}
+                    {frontCardUrl}
                   </span>
                 </div>
               );
@@ -173,9 +213,10 @@ export default function NetworkNode({
   return (
     <NodeStack
       mainCard={mainCard}
-      data={ports.length > 1 ? ports.slice(1) : []}
+      data={backgroundCardData}
       height="14"
-      backgroundColor={getBackgroundColor()}
+      // backgroundColor={getBackgroundColor()}
+      notReadyCount={notReadyCount}
       onBackgroundCardClick={() => {
         appendSystemMessage("universal.network", target);
       }}

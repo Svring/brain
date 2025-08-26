@@ -11,12 +11,14 @@ import {
   Tag,
   ArrowBigUpDash,
   Plus,
+  Check,
 } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { DevboxReleaseItem } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas/devbox-release-schema";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Spinner } from "@/components/ui/spinner";
 
 interface DevboxReleaseMessageProps {
   target: CustomResourceTarget;
@@ -27,6 +29,8 @@ const ReleaseItem: React.FC<{
   target: CustomResourceTarget;
 }> = ({ release, target }) => {
   const { appendSystemMessage } = useAppendSystemMessageMutation();
+
+  console.log("release", release);
 
   const handleDeploy = () => {
     appendSystemMessage("devbox.deployment", target);
@@ -60,23 +64,20 @@ const ReleaseItem: React.FC<{
               {formatDate(release.createTime)}
             </span>
           </div>
+          {/* Status indicator next to tag */}
+          {release.status?.value === "Success" ? (
+            <Check className="h-3 w-3 text-theme-green" />
+          ) : (
+            <Spinner className="h-3 w-3 text-theme-yellow" />
+          )}
         </div>
         <div className="flex items-center gap-1">
-          {/* Status indicator */}
-          {release.status?.value === "ready" && (
-            <Badge variant="default" className="text-xs px-1.5 py-0.5">
-              Ready
-            </Badge>
-          )}
-          {release.status?.value === "pending" && (
-            <span className="text-xs text-amber-500 font-medium">Pending</span>
-          )}
           <Button
             size="sm"
             variant="ghost"
             className="p-0 border border-border-primary"
             onClick={handleDeploy}
-            disabled={release.status.value !== "ready"}
+            disabled={release.status?.value !== "Success"}
             title="Deploy"
           >
             <ArrowBigUpDash className="h-4 w-4" />
@@ -152,24 +153,38 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
           </Button>
         </div>
 
-        {releases.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-20 text-center">
-            <ArrowBigUpDash className="h-6 w-6 text-muted-foreground mb-2" />
-            <div className="text-xs text-muted-foreground">No releases yet</div>
-          </div>
-        ) : (
-          <ScrollArea className="max-h-60">
-            <div className="space-y-2">
-              {releases.map((release) => (
+        <ScrollArea className="max-h-60">
+          <div className="space-y-2">
+            {releases.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-20 text-center">
+                <ArrowBigUpDash className="h-6 w-6 text-muted-foreground mb-2" />
+                <div className="text-xs text-muted-foreground">
+                  No releases yet
+                </div>
+              </div>
+            ) : (
+              releases.map((release) => (
                 <ReleaseItem
                   key={release.id}
                   release={release}
                   target={target}
                 />
-              ))}
+              ))
+            )}
+            {/* Add new release placeholder */}
+            <div
+              className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-3 hover:border-muted-foreground/50 hover:bg-muted/20 transition-colors cursor-pointer"
+              onClick={() => console.log("Create new release")}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Plus className="h-4 w-4 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">
+                  Add new release
+                </span>
+              </div>
             </div>
-          </ScrollArea>
-        )}
+          </div>
+        </ScrollArea>
       </div>
     </BaseSystemMessage>
   );
