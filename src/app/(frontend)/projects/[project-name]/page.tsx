@@ -23,6 +23,7 @@ import DisplayEnvPanel from "@/components/project/display-env/display-env-panel"
 import FloatingConnectionLine from "@/components/flowgraph/edge/floating-connection-line";
 import { FlowgraphHeader } from "@/components/flowgraph/flowgraph-menu-header";
 import { FlowgraphMenuActions } from "@/components/flowgraph/flowgraph-menu-actions";
+import { FlowgraphCommandDialog } from "@/components/flowgraph/command/flowgraph-command-dialog";
 
 // Custom hooks
 import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
@@ -31,6 +32,7 @@ import useFlowgraphNodes from "@/hooks/flowgraph/use-flowgraph-nodes";
 import useProjectResources from "@/hooks/brain/use-project-resources";
 import useResourceReliances from "@/hooks/sealos/resource/use-resource-reliances";
 import { useManageStatusDialog } from "@/hooks/brain/use-manage-status-dialog";
+import { useFlowgraphCommand } from "@/hooks/flowgraph/use-flowgraph-command";
 
 // Context and utilities
 import {
@@ -69,6 +71,9 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
 
   // Manage status dialog hook
   const { openDialog: openManageStatusDialog, ManageStatusDialogComponent } = useManageStatusDialog();
+
+  // Command dialog hook
+  const { isOpen: isCommandOpen, onOpenChange: onCommandOpenChange } = useFlowgraphCommand();
 
   const handleAddNew = () => {
     appendMessages([
@@ -119,6 +124,10 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
         </SheetContent>
       </Sheet>
       <ManageStatusDialogComponent />
+      <FlowgraphCommandDialog 
+        isOpen={isCommandOpen} 
+        onOpenChange={onCommandOpenChange} 
+      />
       <AiCoin />
       <AiChatbox />
     </>
