@@ -24,7 +24,7 @@ export default async function ChatLayout({
   params: Promise<{ "project-name": string }>;
 }) {
   const queryClient = new QueryClient();
-  const { "project-name": projectName } = await params;
+  // const { "project-name": projectName } = await params;
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, use } from "react";
+import { useEffect, use } from "react";
 
 // React Flow imports
 import { Background, ReactFlow, ReactFlowProvider } from "@xyflow/react";
@@ -27,10 +27,7 @@ import { FlowgraphCommandDialog } from "@/components/flowgraph/command/flowgraph
 
 // Custom hooks
 import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
-import useFlowgraphEdges from "@/hooks/flowgraph/use-flowgraph-edges";
-import useFlowgraphNodes from "@/hooks/flowgraph/use-flowgraph-nodes";
-import useProjectResources from "@/hooks/brain/use-project-resources";
-import useResourceReliances from "@/hooks/sealos/resource/use-resource-reliances";
+import useFlowgraph from "@/hooks/flowgraph/use-flowgraph";
 import { useManageStatusDialog } from "@/hooks/brain/use-manage-status-dialog";
 import { useFlowgraphCommand } from "@/hooks/flowgraph/use-flowgraph-command";
 
@@ -45,7 +42,6 @@ import {
   useProjectState,
 } from "@/contexts/project/project-context";
 import { useDisclosure } from "@reactuses/core";
-import { createSealosContext } from "@/lib/auth/auth-utils";
 
 // Types and constants
 import { REACT_FLOW_CONFIG } from "@/lib/flowgraph/flowgraph-constant/flowgraph-constant-config";
@@ -62,9 +58,6 @@ import { useAppendMessagesMutation } from "@/lib/langgraph/langgraph-method/lang
 // Floating UI Component
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
   const { isOpen, onOpenChange } = useDisclosure();
-
-  // Get project resources from context
-  const { selectedProjectResources } = useProjectState();
 
   // Command dialog hook
   const {
@@ -102,79 +95,10 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
 
 // Flow Component
 function ProjectFlow({ projectName }: { projectName: string }) {
-  const { resources, k8sResources, isLoading } =
-    useProjectResources(projectName);
+  // Use the flowgraph hook to handle all node and edge computation
+  const { isLoading } = useFlowgraph(projectName);
 
-  // Get project resources from project state
-  const { selectedProjectResources } = useProjectState();
-  const { clearSelectedProjectResources } = useProjectActions();
-
-  console.log("selectedProjectResources", selectedProjectResources);
-
-  // Clear resource data when project changes
-  useEffect(() => {
-    clearSelectedProjectResources();
-  }, [projectName]);
-
-  // Phase 1: Generate basic nodes from K8sResource objects immediately
-  const { nodes: basicNodes } = useFlowgraphNodes(k8sResources ?? [], true);
-
-  // Phase 2: Generate enhanced nodes with network nodes from complete objects
-  const { nodes: enhancedNodes, edges: networkEdges } = useFlowgraphNodes(
-    selectedProjectResources ?? []
-  );
-
-  const { reliances } = useResourceReliances(selectedProjectResources ?? []);
-  const { edges: computedEdges } = useFlowgraphEdges(reliances);
-
-  // console.log("resources", resources);
-  // console.log("selectedProjectResources", selectedProjectResources);
-  // console.log("basicNodes", basicNodes);
-  // console.log("enhancedNodes", enhancedNodes);
-  // console.log("reliances", reliances);
-  // console.log("computedEdges", computedEdges);
-
-  const { setNodes, setEdges } = useFlowgraphActions();
   const { nodes, edges } = useFlowgraphState();
-
-  // Merge basic nodes with enhanced nodes (enhanced nodes replace basic nodes when available)
-  const currentNodes = useMemo(() => {
-    if (selectedProjectResources?.length === 0) {
-      return basicNodes;
-    }
-
-    // Create a map of enhanced nodes by their IDs
-    const enhancedNodeMap = new Map(
-      enhancedNodes.map((node) => [node.id, node])
-    );
-
-    // Start with basic nodes and replace with enhanced versions when available
-    const mergedNodes = basicNodes.map((basicNode) => {
-      const enhancedNode = enhancedNodeMap.get(basicNode.id);
-      return enhancedNode || basicNode;
-    });
-
-    // Add any enhanced nodes that don't have basic counterparts (e.g., network nodes)
-    const basicNodeIds = new Set(basicNodes.map((node) => node.id));
-    const additionalEnhancedNodes = enhancedNodes.filter(
-      (node) => !basicNodeIds.has(node.id)
-    );
-
-    const result = [...mergedNodes, ...additionalEnhancedNodes];
-    // console.log("currentNodes result:", result);
-    return result;
-  }, [basicNodes, enhancedNodes, selectedProjectResources?.length]);
-
-  // Combine network edges (from ports) with computed edges (from reliances)
-  const finalEdges = useMemo(() => {
-    return [...networkEdges, ...computedEdges];
-  }, [networkEdges, computedEdges]);
-
-  useEffect(() => {
-    // Set nodes and edges (network nodes are now included when objects are ready)
-    setNodes(currentNodes);
-    setEdges(finalEdges);
-  }, [currentNodes, finalEdges]);
 
   // Show loading state only when initially loading resources
   if (isLoading) {
@@ -217,13 +141,17 @@ export default function ProjectPage({
   params: Promise<{ "project-name": string }>;
 }) {
   const { "project-name": projectName } = use(params);
-  const { selectProject, clearSelectedProject } = useProjectActions();
+  const { selectProject, clearSelectedProject, clearSelectedProjectResources } =
+    useProjectActions();
   const { setStage } = useLanggraphActions();
 
   useEffect(() => {
     // Set the selected project when the component mounts
     selectProject(projectName);
     setStage("manage_project");
+
+    // Clear resource data when project changes
+    clearSelectedProjectResources();
 
     // Cleanup: clear the selected project when the component unmounts
     return () => {
