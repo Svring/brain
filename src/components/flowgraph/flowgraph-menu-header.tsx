@@ -7,7 +7,7 @@ import { MenuBar, MenuBarItem } from "../project/menu-bar";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { RenameProjectDialog } from "@/components/project/rename-project-dialog";
 
 interface FlowgraphHeaderProps {
   projectName: string;
@@ -20,12 +20,8 @@ export function FlowgraphHeader({ projectName }: FlowgraphHeaderProps) {
   const { data: projectData } = useQuery(
     project.getProject.queryOptions(projectName)
   );
-  const renameMutation = useMutation(
-    project.updateProjectName.mutationOptions()
-  );
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState("");
+  const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
 
   if (!projectData) {
     return null;
@@ -33,36 +29,10 @@ export function FlowgraphHeader({ projectName }: FlowgraphHeaderProps) {
 
   const projectDisplayName = projectData.displayName;
 
-  const handleEditClick = () => {
-    setEditValue(projectDisplayName);
-    setIsEditing(true);
-  };
-
-  const handleSave = async () => {
-    if (editValue.trim() && editValue !== projectDisplayName) {
-      try {
-        await renameMutation.mutateAsync({
-          name: projectName,
-          newDisplayName: editValue.trim(),
-        });
-      } catch (error) {
-        console.error("Failed to rename project:", error);
-      }
-    }
-    setIsEditing(false);
-  };
-
-  const handleCancel = () => {
-    setEditValue("");
-    setIsEditing(false);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleSave();
-    } else if (e.key === "Escape") {
-      handleCancel();
-    }
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsRenameDialogOpen(true);
   };
 
   const menuItemsLeft: MenuBarItem[] = [
@@ -78,33 +48,29 @@ export function FlowgraphHeader({ projectName }: FlowgraphHeaderProps) {
     <div className="absolute top-2 left-2 z-20">
       <MenuBar activeIndex={null} items={menuItemsLeft}>
         <div className="flex items-center mx-2">
-          {isEditing ? (
-            <Input
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="h-6 px-2 text-sm min-w-[120px]"
-              autoFocus
-            />
-          ) : (
-            <div className="flex items-center gap-1">
-              <span>
-                {projectDisplayName.length > 14
-                  ? projectDisplayName.slice(0, 14) + "..."
-                  : projectDisplayName}
-              </span>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-6 w-6 p-0 opacity-60 hover:opacity-100"
-                onClick={handleEditClick}
-              >
-                <Edit2 className="h-3 w-3" />
-              </Button>
-            </div>
-          )}
+          <div className="flex items-center gap-1">
+            <span>
+              {projectDisplayName.length > 14
+                ? projectDisplayName.slice(0, 14) + "..."
+                : projectDisplayName}
+            </span>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0 opacity-60 hover:opacity-100"
+              onClick={handleEditClick}
+            >
+              <Edit2 className="h-3 w-3" />
+            </Button>
+          </div>
         </div>
       </MenuBar>
+      <RenameProjectDialog
+        isOpen={isRenameDialogOpen}
+        onClose={() => setIsRenameDialogOpen(false)}
+        projectName={projectName}
+        currentDisplayName={projectDisplayName}
+      />
     </div>
   );
 }
