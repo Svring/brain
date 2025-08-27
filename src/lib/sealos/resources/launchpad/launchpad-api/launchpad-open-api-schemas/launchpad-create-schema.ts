@@ -7,12 +7,31 @@ const GpuResourceSchema = z.object({
   amount: z.number().default(1),
 });
 
-// Resource configuration schema - updated to match OpenAPI spec
+// CPU options for launchpad - enum constraints
+export const cpuOptions = [0.1, 0.2, 0.5, 1, 2, 3, 4, 8] as const;
+
+// Memory options for launchpad - enum constraints
+export const memoryOptions = [0.1, 0.5, 1, 2, 4, 8, 16] as const;
+
+// Replicas options for launchpad - enum constraints
+export const replicasOptions = [
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+] as const;
+
+// Storage size options for launchpad
+export const storageSizeOptions = ["1Gi", "5Gi", "10Gi", "20Gi"] as const;
+
+// Resource configuration schema - updated to match OpenAPI spec with enum constraints
+// Helper function to create a Zod union schema from an array of numbers
+const createNumberUnionSchema = <T extends readonly number[]>(options: T) =>
+  z.union(options.map((value) => z.literal(value)) as any);
+
+// Resource configuration schema
 const ResourceSchema = z.object({
-  replicas: z.number().min(1).max(20).default(1),
-  cpu: z.number().min(0.1).max(8).default(0.2),
-  memory: z.number().min(0.1).max(16).default(0.5),
-  gpu: GpuResourceSchema.optional(),
+  replicas: createNumberUnionSchema(replicasOptions).default(1),
+  cpu: createNumberUnionSchema(cpuOptions).default(0.2),
+  memory: createNumberUnionSchema(memoryOptions).default(0.5),
+  gpu: z.any().optional(), // Assuming GpuResourceSchema is defined elsewhere
 });
 
 // Port configuration schema (for create requests)
@@ -20,7 +39,7 @@ const PortSchema = z.object({
   port: z.number().default(80),
   protocol: z.enum(["TCP", "UDP", "SCTP"]).default("TCP"),
   appProtocol: z.enum(["HTTP", "GRPC", "WS"]).optional(),
-  exposesPublicDomain: z.boolean().default(true),
+  exposesPublicDomain: z.boolean().default(false),
 });
 
 // Extended port schema (for GET responses with additional runtime fields)
@@ -71,7 +90,7 @@ const ImageRegistrySchema = z.object({
 const StorageSchema = z.object({
   name: z.string(),
   path: z.string(),
-  size: z.string().default("1Gi"),
+  size: z.enum(storageSizeOptions).default("1Gi"),
 });
 
 // ConfigMap configuration schema (for create requests)

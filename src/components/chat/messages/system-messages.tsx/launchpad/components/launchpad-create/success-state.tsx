@@ -2,11 +2,11 @@ import React from "react";
 import { UseFormReturn } from "react-hook-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Rocket } from "lucide-react";
-import { LaunchpadFormValues } from "./types";
+import { LaunchpadCreateRequest } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
 
 interface SuccessStateProps {
   createdDeploymentName: string;
-  form: UseFormReturn<LaunchpadFormValues>;
+  form: UseFormReturn<LaunchpadCreateRequest>;
 }
 
 export function SuccessState({ createdDeploymentName, form }: SuccessStateProps) {
@@ -26,9 +26,9 @@ export function SuccessState({ createdDeploymentName, form }: SuccessStateProps)
               {createdDeploymentName}
             </div>
             <div className="text-sm text-green-700 dark:text-green-300">
-              Image: {form.getValues("image")} • CPU: {form.getValues("cpu")}m
-              • Memory: {form.getValues("memory")}Mi • Replicas:{" "}
-              {form.getValues("replicas")}
+              Image: {form.getValues("image")} • CPU: {form.getValues("resource.cpu")}C
+              • Memory: {form.getValues("resource.memory")}G • Replicas:{" "}
+              {form.getValues("resource.replicas")}
             </div>
           </div>
         </div>

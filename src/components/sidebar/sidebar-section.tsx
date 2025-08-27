@@ -44,6 +44,12 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
     group: "overview",
     path: "/projects",
   },
+  {
+    title: "Test",
+    icon: LayoutGrid,
+    group: "overview",
+    path: "/test",
+  },
 ];
 
 export const MainSection: React.FC<MainSectionProps> = () => {

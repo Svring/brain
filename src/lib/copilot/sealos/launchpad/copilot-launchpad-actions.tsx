@@ -29,7 +29,7 @@ import { AIResponse } from "@/components/shadcn-io/ai/response";
 import { jsonSchemaToActionParameters } from "@copilotkit/shared";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import LaunchpadCreateMessage from "@/components/chat/messages/system-messages.tsx/launchpad/components/launchpad-create";
-import { launchpadFormSchema } from "@/components/chat/messages/system-messages.tsx/launchpad/components/launchpad-create/types";
+import { LaunchpadCreateRequestSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
 
 export function activateLaunchpadActions(
   sealosContext: SealosApiContext,
@@ -51,75 +51,14 @@ function createLaunchpadAction(context: SealosApiContext) {
     description: "Create a new launchpad with specified configuration",
     followUp: false,
     parameters: jsonSchemaToActionParameters(
-      zodToJsonSchema(launchpadFormSchema) as any
+      zodToJsonSchema(LaunchpadCreateRequestSchema) as any
     ),
-    handler: ({ name, image, cpu, memory, replicas }) => {
+    handler: ({ name, image }) => {
       // This will be handled by the UI component
       return `Creating launchpad "${name}" with image ${image}`;
     },
-    render: ({ status, args }) => {
-      // Always render the component, but pass undefined for incomplete parameters
-      return (
-        <LaunchpadCreateMessage
-          payload={{
-            name: typeof args.name === "string" ? args.name : undefined,
-            image: typeof args.image === "string" ? args.image : undefined,
-            command:
-              typeof args.command === "string" ? args.command : undefined,
-            args: typeof args.args === "string" ? args.args : undefined,
-            cpu: typeof args.cpu === "string" ? parseInt(args.cpu) : undefined,
-            memory:
-              typeof args.memory === "string"
-                ? parseInt(args.memory)
-                : undefined,
-            replicas:
-              typeof args.replicas === "string"
-                ? parseInt(args.replicas)
-                : undefined,
-            ports: typeof args.ports === "string" ? args.ports : undefined,
-            portProtocol:
-              typeof args.portProtocol === "string"
-                ? (args.portProtocol as "TCP" | "UDP" | "SCTP")
-                : undefined,
-            appProtocol:
-              typeof args.appProtocol === "string"
-                ? (args.appProtocol as "HTTP" | "GRPC" | "WS")
-                : undefined,
-            exposesPublicDomain:
-              typeof args.exposesPublicDomain === "boolean"
-                ? args.exposesPublicDomain
-                : undefined,
-            envVars:
-              typeof args.envVars === "string" ? args.envVars : undefined,
-            storageName:
-              typeof args.storageName === "string"
-                ? args.storageName
-                : undefined,
-            storagePath:
-              typeof args.storagePath === "string"
-                ? args.storagePath
-                : undefined,
-            storageSize:
-              typeof args.storageSize === "string"
-                ? (args.storageSize as
-                    | "1Gi"
-                    | "5Gi"
-                    | "10Gi"
-                    | "20Gi"
-                    | "50Gi"
-                    | "100Gi")
-                : undefined,
-            configMapPath:
-              typeof args.configMapPath === "string"
-                ? args.configMapPath
-                : undefined,
-            configMapValue:
-              typeof args.configMapValue === "string"
-                ? args.configMapValue
-                : undefined,
-          }}
-        />
-      );
+    render: ({ args }) => {
+      return <LaunchpadCreateMessage payload={args as any} />;
     },
   });
 }

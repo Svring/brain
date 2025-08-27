@@ -1,6 +1,7 @@
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   FormControl,
   FormField,
@@ -14,10 +15,10 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { ChevronDown } from "lucide-react";
-import { LaunchpadFormValues } from "./types";
+import { LaunchpadCreateRequest } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
 
 interface EnvironmentVariablesProps {
-  form: UseFormReturn<LaunchpadFormValues>;
+  form: UseFormReturn<LaunchpadCreateRequest>;
 }
 
 export function EnvironmentVariables({ form }: EnvironmentVariablesProps) {
@@ -33,25 +34,57 @@ export function EnvironmentVariables({ form }: EnvironmentVariablesProps) {
         </div>
       </AccordionTrigger>
       <AccordionContent className="px-4 pb-4 space-y-4">
-        <FormField
-          control={form.control}
-          name="envVars"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                Environment Variables (one per line, KEY=VALUE)
-              </FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="NODE_ENV=production&#10;DATABASE_URL=postgresql://..."
-                  rows={3}
-                  {...field}
+        <div className="space-y-2">
+          <FormLabel>Environment Variables</FormLabel>
+          <div className="space-y-2">
+            {form.watch("env")?.map((env, index) => (
+              <div key={index} className="flex gap-2">
+                <Input
+                  placeholder="Variable name"
+                  value={env.name || ""}
+                  onChange={(e) => {
+                    const newEnv = [...(form.getValues("env") || [])];
+                    newEnv[index] = { ...newEnv[index], name: e.target.value };
+                    form.setValue("env", newEnv);
+                  }}
+                  className="flex-1"
                 />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <Input
+                  placeholder="Value"
+                  value={env.value || ""}
+                  onChange={(e) => {
+                    const newEnv = [...(form.getValues("env") || [])];
+                    newEnv[index] = { ...newEnv[index], value: e.target.value };
+                    form.setValue("env", newEnv);
+                  }}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const newEnv = form.getValues("env")?.filter((_, i) => i !== index) || [];
+                    form.setValue("env", newEnv);
+                  }}
+                >
+                  Remove
+                </Button>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const currentEnv = form.getValues("env") || [];
+                form.setValue("env", [...currentEnv, { name: "", value: "" }]);
+              }}
+            >
+              Add Environment Variable
+            </Button>
+          </div>
+        </div>
       </AccordionContent>
     </AccordionItem>
   );

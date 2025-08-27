@@ -15,10 +15,14 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { ChevronDown, Plus, Trash2 } from "lucide-react";
-import { LaunchpadFormValues, Port } from "./types";
+import { LaunchpadCreateRequest, PortSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
+import { z } from "zod";
+
+// Port type from the schema
+type Port = z.infer<typeof PortSchema>;
 
 interface PortsProtocolProps {
-  form: UseFormReturn<LaunchpadFormValues>;
+  form: UseFormReturn<LaunchpadCreateRequest>;
 }
 
 export function PortsProtocol({ form }: PortsProtocolProps) {

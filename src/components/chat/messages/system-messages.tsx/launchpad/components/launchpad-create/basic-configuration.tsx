@@ -15,10 +15,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cpuOptions, memoryOptions, replicasOptions, LaunchpadFormValues } from "./types";
+import { LaunchpadCreateRequest } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
+import { cpuOptions, memoryOptions, replicasOptions } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
 
 interface BasicConfigurationProps {
-  form: UseFormReturn<LaunchpadFormValues>;
+  form: UseFormReturn<LaunchpadCreateRequest>;
 }
 
 export function BasicConfiguration({ form }: BasicConfigurationProps) {
@@ -58,13 +59,13 @@ export function BasicConfiguration({ form }: BasicConfigurationProps) {
       <div className="grid grid-cols-3 gap-4">
         <FormField
           control={form.control}
-          name="cpu"
+          name="resource.cpu"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>CPU (m)</FormLabel>
+              <FormLabel>CPU (C)</FormLabel>
               <Select
-                onValueChange={(value) => field.onChange(Number(value))}
-                value={field.value.toString()}
+                onValueChange={(value) => field.onChange(parseFloat(value))}
+                value={field.value?.toString()}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -77,7 +78,7 @@ export function BasicConfiguration({ form }: BasicConfigurationProps) {
                       key={cpuValue}
                       value={cpuValue.toString()}
                     >
-                      {cpuValue}m ({cpuValue / 1000} cores)
+                      {cpuValue}C
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -89,13 +90,13 @@ export function BasicConfiguration({ form }: BasicConfigurationProps) {
 
         <FormField
           control={form.control}
-          name="memory"
+          name="resource.memory"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Memory (Mi)</FormLabel>
+              <FormLabel>Memory (G)</FormLabel>
               <Select
-                onValueChange={(value) => field.onChange(Number(value))}
-                value={field.value.toString()}
+                onValueChange={(value) => field.onChange(parseFloat(value))}
+                value={field.value?.toString()}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -108,7 +109,7 @@ export function BasicConfiguration({ form }: BasicConfigurationProps) {
                       key={memoryValue}
                       value={memoryValue.toString()}
                     >
-                      {memoryValue}Mi ({memoryValue / 1024}GB)
+                      {memoryValue}G
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -120,13 +121,13 @@ export function BasicConfiguration({ form }: BasicConfigurationProps) {
 
         <FormField
           control={form.control}
-          name="replicas"
+          name="resource.replicas"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Replicas</FormLabel>
               <Select
-                onValueChange={field.onChange}
-                value={field.value}
+                onValueChange={(value) => field.onChange(parseInt(value))}
+                value={field.value?.toString()}
               >
                 <FormControl>
                   <SelectTrigger>

@@ -1,6 +1,7 @@
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   FormControl,
   FormField,
@@ -21,10 +22,11 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { ChevronDown } from "lucide-react";
-import { LaunchpadFormValues, storageSizeOptions } from "./types";
+import { LaunchpadCreateRequest } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
+import { storageSizeOptions } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
 
 interface StorageProps {
-  form: UseFormReturn<LaunchpadFormValues>;
+  form: UseFormReturn<LaunchpadCreateRequest>;
 }
 
 export function Storage({ form }: StorageProps) {
@@ -40,43 +42,49 @@ export function Storage({ form }: StorageProps) {
         </div>
       </AccordionTrigger>
       <AccordionContent className="px-4 pb-4 space-y-4">
-        <div className="grid grid-cols-3 gap-2">
-          <FormField
-            control={form.control}
-            name="storageName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Storage Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Storage name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="storagePath"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Mount Path</FormLabel>
-                <FormControl>
-                  <Input placeholder="Mount path" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="storageSize"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Size</FormLabel>
-                <FormControl>
+        <div className="space-y-2">
+          <FormLabel>Storage Configuration</FormLabel>
+          <div className="space-y-2">
+            {form.watch("storage")?.map((storage, index) => (
+              <div
+                key={index}
+                className="grid grid-cols-3 gap-2 p-3 border rounded-lg"
+              >
+                <Input
+                  placeholder="Storage name"
+                  value={storage.name || ""}
+                  onChange={(e) => {
+                    const newStorage = [...(form.getValues("storage") || [])];
+                    newStorage[index] = {
+                      ...newStorage[index],
+                      name: e.target.value,
+                    };
+                    form.setValue("storage", newStorage);
+                  }}
+                />
+                <Input
+                  placeholder="Mount path"
+                  value={storage.path || ""}
+                  onChange={(e) => {
+                    const newStorage = [...(form.getValues("storage") || [])];
+                    newStorage[index] = {
+                      ...newStorage[index],
+                      path: e.target.value,
+                    };
+                    form.setValue("storage", newStorage);
+                  }}
+                />
+                <div className="flex gap-2">
                   <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
+                    value={storage.size || "1Gi"}
+                    onValueChange={(value) => {
+                      const newStorage = [...(form.getValues("storage") || [])];
+                      newStorage[index] = {
+                        ...newStorage[index],
+                        size: value as (typeof storageSizeOptions)[number],
+                      };
+                      form.setValue("storage", newStorage);
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Size" />
@@ -89,11 +97,38 @@ export function Storage({ form }: StorageProps) {
                       ))}
                     </SelectContent>
                   </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const newStorage =
+                        form
+                          .getValues("storage")
+                          ?.filter((_, i) => i !== index) || [];
+                      form.setValue("storage", newStorage);
+                    }}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const currentStorage = form.getValues("storage") || [];
+                form.setValue("storage", [
+                  ...currentStorage,
+                  { name: "", path: "", size: "1Gi" },
+                ]);
+              }}
+            >
+              Add Storage
+            </Button>
+          </div>
         </div>
       </AccordionContent>
     </AccordionItem>

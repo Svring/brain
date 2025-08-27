@@ -23,13 +23,18 @@ import { ConfigMap } from "./config-map";
 import { Storage } from "./storage";
 import { SuccessState } from "./success-state";
 import {
-  launchpadFormSchema,
-  LaunchpadFormValues,
-  DeploymentCreateMessageProps,
-} from "./types";
+  LaunchpadCreateRequestSchema,
+  LaunchpadCreateRequest,
+} from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
+
+interface DeploymentCreateMessageProps {
+  payload?: LaunchpadCreateRequest;
+  testMode?: boolean;
+}
 
 export default function LaunchpadCreateMessage({
   payload,
+  testMode = false,
 }: DeploymentCreateMessageProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -53,36 +58,19 @@ export default function LaunchpadCreateMessage({
   const payloadKey = useMemo(() => JSON.stringify(payload ?? {}), [payload]);
 
   // Memoize default values; changes only when payload content changes
-  const defaultValues: LaunchpadFormValues = useMemo(
-    () => ({
+  const defaultValues: LaunchpadCreateRequest = useMemo(() => {
+    // Use schema defaults and merge with payload
+    const schemaDefaults = LaunchpadCreateRequestSchema.parse({});
+    return {
+      ...schemaDefaults,
+      ...payload,
       name: payload?.name || generateDeployName(),
-      image: payload?.image || "nginx",
-      command: payload?.command || "",
-      args: payload?.args || "",
-      cpu: (payload?.cpu || 500).toString(),
-      memory: (payload?.memory || 512).toString(),
-      replicas: (payload?.replicas || 1).toString(),
-      ports: [
-        {
-          port: 80,
-          protocol: "TCP",
-          appProtocol: undefined,
-          exposesPublicDomain: true,
-        },
-      ],
-      envVars: payload?.envVars || "",
-      storageName: payload?.storageName || "",
-      storagePath: payload?.storagePath || "",
-      storageSize: (payload?.storageSize as any) || "1Gi",
-      configMapPath: payload?.configMapPath || "",
-      configMapValue: payload?.configMapValue || "",
-    }),
-    [payloadKey]
-  );
+    };
+  }, [payloadKey]);
 
   // Initialize form
-  const form = useForm<LaunchpadFormValues>({
-    resolver: zodResolver(launchpadFormSchema),
+  const form = useForm<LaunchpadCreateRequest>({
+    resolver: zodResolver(LaunchpadCreateRequestSchema),
     defaultValues,
   });
 
@@ -91,7 +79,7 @@ export default function LaunchpadCreateMessage({
     form.reset(defaultValues);
   }, [payloadKey, form, defaultValues]);
 
-  const onSubmit = async (values: LaunchpadFormValues) => {
+  const onSubmit = async (values: LaunchpadCreateRequest) => {
     const deploymentName = values.name.trim() || generateDeployName();
 
     if (!values.image.trim()) {
@@ -99,69 +87,18 @@ export default function LaunchpadCreateMessage({
       return;
     }
 
-    if (!selectedProject) {
-      toast.error("No project selected. Please select a project first.");
-      return;
-    }
+    // if (!selectedProject) {
+    //   toast.error("No project selected. Please select a project first.");
+    //   return;
+    // }
 
     setIsCreating(true);
     try {
-      // Parse environment variables
-      const envArray = (values.envVars || "")
-        .split("\n")
-        .filter((line: string) => line.trim())
-        .map((line: string) => {
-          const [key, ...valueParts] = line.split("=");
-          return {
-            name: key.trim(),
-            value: valueParts.join("=").trim(),
-          };
-        });
-
-      // Build storage array
-      const storageArray =
-        values.storageName && values.storagePath
-          ? [
-              {
-                name: values.storageName,
-                path: values.storagePath,
-                size: values.storageSize,
-              },
-            ]
-          : [];
-
-      // Build configMap array
-      const configMapArray = values.configMapPath
-        ? [
-            {
-              path: values.configMapPath,
-              value: values.configMapValue,
-            },
-          ]
-        : [];
-
       // Create the launchpad application using the new standardized API
+      // The form values already match the API request structure, just update the name
       const createRequest = {
+        ...values,
         name: deploymentName,
-        image: values.image.trim(),
-        command: (values.command || "").trim(),
-        args: (values.args || "").trim(),
-        resource: {
-          replicas: parseInt(values.replicas),
-          cpu: parseInt(values.cpu),
-          memory: parseInt(values.memory),
-        },
-        ports: values.ports.map((port) => ({
-          port: port.port,
-          protocol: port.appProtocol ? "TCP" : port.protocol,
-          appProtocol: port.appProtocol,
-          exposesPublicDomain: port.exposesPublicDomain,
-        })),
-        env: envArray,
-        hpa: null,
-        imageRegistry: null,
-        storage: storageArray,
-        configMap: configMapArray,
       };
 
       // Log the request instead of sending it (for debugging/testing)
@@ -170,27 +107,34 @@ export default function LaunchpadCreateMessage({
         JSON.stringify(createRequest, null, 2)
       );
 
-      // Comment out the actual API call for now
-      // await createLaunchpadMutation.mutateAsync({
-      //   request: createRequest,
-      // });
+      if (!testMode) {
+        // Comment out the actual API call for now
+        // await createLaunchpadMutation.mutateAsync({
+        //   request: createRequest,
+        // });
 
-      // Add the created deployment to the project (commented out for debugging)
-      // const resourceTarget = convertResourceTypeToTarget(
-      //   "deployment",
-      //   deploymentName
-      // );
-      // await addToProjectMutation.mutateAsync({
-      //   resources: [resourceTarget],
-      //   name: selectedProject,
-      // });
+        // Add the created deployment to the project (commented out for debugging)
+        // const resourceTarget = convertResourceTypeToTarget(
+        //   "deployment",
+        //   deploymentName
+        // );
+        // await addToProjectMutation.mutateAsync({
+        //   resources: [resourceTarget],
+        //   name: selectedProject,
+        // });
 
-      // Set completion state
-      setCreatedDeploymentName(deploymentName);
-      setIsCompleted(true);
-      toast.success(
-        "Launchpad application created and added to project successfully!"
-      );
+        // Set completion state
+        setCreatedDeploymentName(deploymentName);
+        setIsCompleted(true);
+        toast.success(
+          "Launchpad application created and added to project successfully!"
+        );
+      } else {
+        // In test mode, just show success toast without completing
+        toast.success(
+          `Test Mode: Would create launchpad application "${deploymentName}"`
+        );
+      }
     } catch (error) {
       console.error("Failed to create launchpad application:", error);
     } finally {
@@ -207,7 +151,14 @@ export default function LaunchpadCreateMessage({
   return (
     <Card className="w-full bg-background-secondary border border-border-primary">
       <CardHeader>
-        <CardTitle className="text-lg">Create Launchpad Application</CardTitle>
+        <CardTitle className="text-lg flex items-center justify-between">
+          Create Launchpad Application
+          {testMode && (
+            <span className="text-xs bg-orange-500 text-white px-2 py-1 rounded-md font-medium">
+              TEST MODE
+            </span>
+          )}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>

@@ -33,43 +33,43 @@ export function MenuBar({
 }: MenuBarProps) {
   const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
   const menuRef = React.useRef<HTMLDivElement>(null);
-  const [tooltipPosition, setTooltipPosition] = React.useState({
-    left: 0,
-    width: 0,
-  });
-  const tooltipRef = React.useRef<HTMLDivElement>(null);
+  // const [tooltipPosition, setTooltipPosition] = React.useState({
+  //   left: 0,
+  //   width: 0,
+  // });
+  // const tooltipRef = React.useRef<HTMLDivElement>(null);
 
   const effectiveActiveIndex =
     controlledActiveIndex !== undefined ? controlledActiveIndex : activeIndex;
 
-  React.useEffect(() => {
-    if (
-      effectiveActiveIndex !== null &&
-      menuRef.current &&
-      tooltipRef.current
-    ) {
-      const menuItem = menuRef.current.children[
-        effectiveActiveIndex
-      ] as HTMLElement;
-      const menuRect = menuRef.current.getBoundingClientRect();
-      const itemRect = menuItem.getBoundingClientRect();
-      const tooltipRect = tooltipRef.current.getBoundingClientRect();
+  // React.useEffect(() => {
+  //   if (
+  //     effectiveActiveIndex !== null &&
+  //     menuRef.current &&
+  //     tooltipRef.current
+  //   ) {
+  //     const menuItem = menuRef.current.children[
+  //       effectiveActiveIndex
+  //     ] as HTMLElement;
+  //     const menuRect = menuRef.current.getBoundingClientRect();
+  //     const itemRect = menuItem.getBoundingClientRect();
+  //     const tooltipRect = tooltipRef.current.getBoundingClientRect();
 
-      const left =
-        itemRect.left -
-        menuRect.left +
-        (itemRect.width - tooltipRect.width) / 2;
+  //     const left =
+  //       itemRect.left -
+  //       menuRect.left +
+  //       (itemRect.width - tooltipRect.width) / 2;
 
-      setTooltipPosition({
-        left: Math.max(0, Math.min(left, menuRect.width - tooltipRect.width)),
-        width: tooltipRect.width,
-      });
-    }
-  }, [effectiveActiveIndex]);
+  //     setTooltipPosition({
+  //       left: Math.max(0, Math.min(left, menuRect.width - tooltipRect.width)),
+  //       width: tooltipRect.width,
+  //     });
+  //   }
+  // }, [effectiveActiveIndex]);
 
   return (
     <div className={cn("relative", className)} {...props}>
-      <AnimatePresence>
+      {/* <AnimatePresence>
         {effectiveActiveIndex !== null && (
           <motion.div
             animate={{ opacity: 1, y: 0 }}
@@ -98,7 +98,7 @@ export function MenuBar({
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence> */}
 
       <div
         className={cn(
