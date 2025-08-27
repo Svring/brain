@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Settings } from "lucide-react";
@@ -27,31 +27,40 @@ export function ProjectProposalCard({
   className = "",
   onSave,
 }: ProjectProposalCardProps) {
+  // Internal state management
+  const [internalProposal, setInternalProposal] = useState<ProjectProposal>(proposal);
+
+  // Sync internal state with prop changes
+  useEffect(() => {
+    setInternalProposal(proposal);
+  }, [proposal]);
   const updateDevBox = (index: number, updatedResource: DevBox) => {
-    const newDevBoxes = [...(proposal.resources.devbox || [])];
+    const newDevBoxes = [...(internalProposal.resources.devbox || [])];
     newDevBoxes[index] = updatedResource;
     const updatedProposal = {
-      ...proposal,
+      ...internalProposal,
       resources: {
-        ...proposal.resources,
+        ...internalProposal.resources,
         devbox: newDevBoxes,
       },
     };
+    setInternalProposal(updatedProposal);
     if (onSave) {
       onSave(updatedProposal);
     }
   };
 
   const updateDatabase = (index: number, updatedResource: Database) => {
-    const newDatabases = [...(proposal.resources.database || [])];
+    const newDatabases = [...(internalProposal.resources.database || [])];
     newDatabases[index] = updatedResource;
     const updatedProposal = {
-      ...proposal,
+      ...internalProposal,
       resources: {
-        ...proposal.resources,
+        ...internalProposal.resources,
         database: newDatabases,
       },
     };
+    setInternalProposal(updatedProposal);
     if (onSave) {
       onSave(updatedProposal);
     }
@@ -61,36 +70,38 @@ export function ProjectProposalCard({
     index: number,
     updatedResource: ObjectStorageBucket
   ) => {
-    const newBuckets = [...(proposal.resources.bucket || [])];
+    const newBuckets = [...(internalProposal.resources.bucket || [])];
     newBuckets[index] = updatedResource;
     const updatedProposal = {
-      ...proposal,
+      ...internalProposal,
       resources: {
-        ...proposal.resources,
+        ...internalProposal.resources,
         bucket: newBuckets,
       },
     };
+    setInternalProposal(updatedProposal);
     if (onSave) {
       onSave(updatedProposal);
     }
   };
 
   const updateApp = (index: number, updatedResource: App) => {
-    const newApps = [...(proposal.resources.app || [])];
+    const newApps = [...(internalProposal.resources.app || [])];
     newApps[index] = updatedResource;
     const updatedProposal = {
-      ...proposal,
+      ...internalProposal,
       resources: {
-        ...proposal.resources,
+        ...internalProposal.resources,
         app: newApps,
       },
     };
+    setInternalProposal(updatedProposal);
     if (onSave) {
       onSave(updatedProposal);
     }
   };
 
-  const { name, resources } = proposal;
+  const { name, resources } = internalProposal;
 
   // Group resources by type for display
   const devboxResources = resources.devbox || [];
@@ -100,7 +111,7 @@ export function ProjectProposalCard({
 
   return (
     <Card
-      className={`w-full max-w-3xl mx-auto ${className} bg-background-primary`}
+      className={`w-full max-w-3xl mx-auto ${className} bg-background-primary rounded-xl`}
     >
       <CardContent className="space-y-6">
         {/* Resources Preview */}
@@ -117,6 +128,7 @@ export function ProjectProposalCard({
               <div className="space-y-2">
                 {devboxResources.map((resource, index) => (
                   <ProjectDevBoxCard
+                    key={`${resource.name}-${index}`}
                     resource={resource}
                     onSave={(updatedResource) =>
                       updateDevBox(index, updatedResource)

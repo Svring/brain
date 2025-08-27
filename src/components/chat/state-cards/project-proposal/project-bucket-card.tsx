@@ -41,51 +41,54 @@ export function ProjectBucketCard({ resource, onSave }: ProjectBucketCardProps) 
 
   if (isEditing) {
     return (
-      <div className="space-y-4 p-4 border rounded-lg bg-background">
-        <div className="flex items-center justify-between">
-          <h5 className="font-medium">Edit Object Storage</h5>
-          <div className="flex gap-2">
-            <Button size="sm" onClick={handleSave}>
-              <Save className="h-3 w-3 mr-1" />
-              Save
-            </Button>
-            <Button size="sm" variant="outline" onClick={handleCancel}>
-              <X className="h-3 w-3 mr-1" />
-              Cancel
-            </Button>
+      <div className="space-y-3 flex-col bg-background-secondary p-3 rounded-xl">
+        <div className="flex items-center gap-4">
+          <div className="flex-shrink-0">
+            <Image
+              src="https://objectstorageapi.hzh.sealos.run/cyhipdvv-logos/objectstorage.svg"
+              alt="Object Storage Icon"
+              width={36}
+              height={36}
+              className="rounded-lg border border-muted h-9 w-9 flex-shrink-0"
+              priority
+            />
           </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm font-medium">Name</label>
+          <div className="flex items-center min-w-0 flex-1">
             <Input
               value={editData.name}
               onChange={(e) =>
                 setEditData({ ...editData, name: e.target.value })
               }
-              className="mt-1"
+              className="text-lg leading-tight bg-transparent h-9 border border-border"
             />
           </div>
-          <div>
-            <label className="text-sm font-medium">Policy</label>
-            <Select
-              value={editData.policy}
-              onValueChange={(value) =>
-                setEditData({ ...editData, policy: value as any })
-              }
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {bucketPolicyOptions.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex items-center gap-2">
+            <Button size="sm" onClick={handleSave}>
+              <Save className="h-4 w-4" />
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleCancel}>
+              <X className="h-4 w-4" />
+            </Button>
           </div>
+        </div>
+        <div className="pl-1">
+          <Select
+            value={editData.policy}
+            onValueChange={(value) =>
+              setEditData({ ...editData, policy: value as any })
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select policy" />
+            </SelectTrigger>
+            <SelectContent>
+              {bucketPolicyOptions.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
     );
