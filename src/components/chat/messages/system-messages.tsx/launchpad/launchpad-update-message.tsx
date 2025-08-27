@@ -7,9 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Accordion } from "@/components/ui/accordion";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { BasicConfiguration } from "./components/universal/basic-configuration";
+import { NameConfiguration } from "./components/universal/name-configuration";
+import { ImageConfiguration } from "./components/universal/image-configuration";
+import { ResourceConfiguration } from "./components/universal/resource-configuration";
 import { CommandArgs } from "./components/universal/command-args";
 import { EnvironmentVariables } from "./components/universal/environment-variables";
 import { SuccessState } from "./components/launchpad-create/success-state";
@@ -19,6 +22,7 @@ import {
   LaunchpadUpdateRequest,
 } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-update-schema";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { LaunchpadObject } from "@/lib/sealos/resources/launchpad/launchpad-object-schema";
 
 interface LaunchpadUpdateMessageProps {
   target?: BuiltinResourceTarget;
@@ -33,12 +37,68 @@ export default function LaunchpadUpdateMessage({
 }: LaunchpadUpdateMessageProps) {
   const { launchpad } = useTRPCClients();
 
-  // Use update request schema directly
+  // Get current resource data
+  const { resource: currentResource, isLoading: isLoadingResource } =
+    useResourceStatus(target!);
+
+  console.log("currentResource", currentResource);
+
+  // Merge update request with current resource data
   const formValues = useMemo(() => {
-    return payload
-      ? LaunchpadUpdateRequestSchema.parse(payload)
-      : LaunchpadUpdateRequestSchema.parse({});
-  }, [payload]);
+    if (!currentResource) {
+      return payload
+        ? LaunchpadUpdateRequestSchema.parse(payload)
+        : LaunchpadUpdateRequestSchema.parse({});
+    }
+
+    const currentLaunchpad = currentResource as LaunchpadObject;
+    const updateRequest = payload || {};
+
+    // Merge resource data
+    const mergedResource = {
+      ...currentLaunchpad.resource,
+      ...updateRequest.resource,
+    };
+
+    // Merge environment variables
+    const mergedEnv =
+      updateRequest.env !== undefined
+        ? updateRequest.env
+        : currentLaunchpad.env || [];
+
+    // Merge command and args
+    const mergedCommand =
+      updateRequest.command !== undefined
+        ? updateRequest.command
+        : currentLaunchpad.command;
+
+    const mergedArgs =
+      updateRequest.args !== undefined
+        ? updateRequest.args
+        : currentLaunchpad.args;
+
+    // Merge image
+    const mergedImage =
+      updateRequest.image !== undefined
+        ? updateRequest.image
+        : currentLaunchpad.image;
+
+    console.log("mergedResource", {
+      resource: mergedResource,
+      env: mergedEnv,
+      command: mergedCommand,
+      args: mergedArgs,
+      image: mergedImage,
+    });
+
+    return LaunchpadUpdateRequestSchema.parse({
+      resource: mergedResource,
+      env: mergedEnv,
+      command: mergedCommand,
+      args: mergedArgs,
+      image: mergedImage,
+    });
+  }, [currentResource, payload]);
 
   const form = useForm<LaunchpadUpdateRequest>({
     resolver: zodResolver(LaunchpadUpdateRequestSchema),
@@ -46,8 +106,10 @@ export default function LaunchpadUpdateMessage({
   });
 
   useEffect(() => {
-    form.reset(formValues);
-  }, [formValues, form]);
+    if (!isLoadingResource) {
+      form.reset(formValues);
+    }
+  }, [formValues, form, isLoadingResource]);
 
   const updateLaunchpadMutation = useMutation({
     ...launchpad.updateLaunchpad.mutationOptions(),
@@ -86,6 +148,17 @@ export default function LaunchpadUpdateMessage({
     );
   }
 
+  // Show loading state while fetching current resource
+  if (isLoadingResource) {
+    return (
+      <BaseSystemMessage target={target}>
+        <div className="text-center py-4 text-muted-foreground">
+          Loading current resource data...
+        </div>
+      </BaseSystemMessage>
+    );
+  }
+
   // Determine which sections to show based on formValues
   const hasResource = !!formValues.resource;
   const hasImage = !!formValues.image;
@@ -96,21 +169,28 @@ export default function LaunchpadUpdateMessage({
     <BaseSystemMessage target={target}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          {/* Only show BasicConfiguration if we have resource or image */}
-          {(hasResource || hasImage) && (
-            <BasicConfiguration form={form as any} />
-          )}
+          {/* Show individual configuration components based on available fields */}
+          {hasImage && <ImageConfiguration form={form as any} />}
+          {hasResource && <ResourceConfiguration form={form as any} />}
 
           {/* Only show CommandArgs if we have command or args */}
           {hasCommand && (
-            <Accordion type="multiple" className="w-full space-y-1">
+            <Accordion
+              type="multiple"
+              className="w-full space-y-1"
+              defaultValue={["command-args"]}
+            >
               <CommandArgs form={form as any} />
             </Accordion>
           )}
 
           {/* Only show EnvironmentVariables if we have env */}
           {hasEnv && (
-            <Accordion type="multiple" className="w-full space-y-1">
+            <Accordion
+              type="multiple"
+              className="w-full space-y-1"
+              defaultValue={["env-vars"]}
+            >
               <EnvironmentVariables form={form as any} />
             </Accordion>
           )}

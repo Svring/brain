@@ -109,6 +109,8 @@ function ProjectFlow({ projectName }: { projectName: string }) {
   const { selectedProjectResources } = useProjectState();
   const { clearSelectedProjectResources } = useProjectActions();
 
+  console.log("selectedProjectResources", selectedProjectResources);
+
   // Clear resource data when project changes
   useEffect(() => {
     clearSelectedProjectResources();

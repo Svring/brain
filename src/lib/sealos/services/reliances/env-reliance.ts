@@ -52,7 +52,7 @@ export function inferRelianceFromEnv(
     if (ownerResource.env) {
       for (const envVar of ownerResource.env) {
         // Add the key to check
-        envKeys.push(envVar.key);
+        envKeys.push(envVar.name);
 
         if (envVar.type === "value") {
           // Direct value environment variable

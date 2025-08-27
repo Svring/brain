@@ -15,8 +15,8 @@ const PortSchema = z.object({
 
 const ResourceSchema = z.object({
   replicas: z.number(),
-  cpu: z.string(),
-  memory: z.string(),
+  cpu: z.number(),
+  memory: z.number(),
 });
 
 const PodSchema = z.object({
@@ -31,6 +31,8 @@ export const DeploymentObjectSchema = z.object({
   image: z.string(),
   resource: ResourceSchema,
   status: z.string(),
+  command: z.string().optional(),
+  args: z.string().optional(),
   env: z.any().optional(),
   ports: z.array(PortSchema).optional(),
   pods: z.array(PodSchema).optional(),

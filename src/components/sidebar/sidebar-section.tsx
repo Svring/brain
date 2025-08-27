@@ -1,6 +1,13 @@
 import { useRouter, usePathname } from "next/navigation";
 import type React from "react";
-import { MessageCirclePlus, LayoutGrid, TestTube } from "lucide-react";
+import {
+  MessageCirclePlus,
+  LayoutGrid,
+  TestTube,
+  Plus,
+  RefreshCw,
+  FileText,
+} from "lucide-react";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -26,6 +33,13 @@ export interface NavigationItem {
   icon: React.ComponentType<{ className?: string }>;
   group: "overview" | "application";
   path: string;
+  subItems?: SubNavigationItem[];
+}
+
+export interface SubNavigationItem {
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  path: string;
 }
 
 export interface MainSectionProps {}
@@ -49,6 +63,23 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
     icon: TestTube,
     group: "overview",
     path: "/test",
+    subItems: [
+      {
+        title: "Launchpad Create",
+        icon: Plus,
+        path: "/test/launchpad-create",
+      },
+      {
+        title: "Launchpad Update",
+        icon: RefreshCw,
+        path: "/test/launchpad-update",
+      },
+      {
+        title: "Project Proposal",
+        icon: FileText,
+        path: "/test/project-proposal",
+      },
+    ],
   },
 ];
 
@@ -85,7 +116,7 @@ export const MainSection: React.FC<MainSectionProps> = () => {
                     </SidebarMenuButton>
                   </TooltipTrigger>
                   <TooltipContent side="right" align="start">
-                    {item.title === "projects" && projects ? (
+                    {item.title === "Projects" && projects ? (
                       <div className="space-y-1">
                         <p className="font-medium">Projects</p>
                         <div className="max-h-48 overflow-y-auto">
@@ -98,6 +129,26 @@ export const MainSection: React.FC<MainSectionProps> = () => {
                               }
                             >
                               {project.displayName}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : item.title === "Test" && item.subItems ? (
+                      <div className="space-y-1">
+                        <p className="font-medium">Test Pages</p>
+                        <div className="max-h-48 overflow-y-auto">
+                          {item.subItems.map((subItem) => (
+                            <div
+                              key={subItem.path}
+                              className="text-sm text-muted-foreground hover:text-foreground cursor-pointer px-2 py-1 rounded hover:bg-accent flex items-center gap-2"
+                              onClick={() => router.push(subItem.path)}
+                            >
+                              <subItem.icon className="w-3 h-3" />
+                              <div>
+                                <div className="font-medium">
+                                  {subItem.title}
+                                </div>
+                              </div>
                             </div>
                           ))}
                         </div>

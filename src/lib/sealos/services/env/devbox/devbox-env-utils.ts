@@ -5,7 +5,7 @@ import { SSHConfig } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-o
 
 export interface EnvVarValue {
   type: "value";
-  key: string;
+  name: string;
   value: string;
 }
 
@@ -104,7 +104,7 @@ export async function getOrCreateEnvFile(
 
         envVars.push({
           type: "value",
-          key,
+          name: key,
           value: cleanValue,
         });
       }
@@ -118,7 +118,7 @@ export async function getOrCreateEnvFile(
 
 export async function upsertEnvVar(
   sshConfig: SSHConfig,
-  key: string,
+  name: string,
   value: string
 ): Promise<void> {
   if (
@@ -176,9 +176,9 @@ export async function upsertEnvVar(
       if (equalIndex > 0) {
         const currentKey = trimmedLine.substring(0, equalIndex).trim();
 
-        if (currentKey === key) {
+        if (currentKey === name) {
           // Update the existing key
-          updatedLines.push(`${key}=${value}`);
+          updatedLines.push(`${name}=${value}`);
           keyFound = true;
         } else {
           // Keep other keys unchanged
@@ -192,7 +192,7 @@ export async function upsertEnvVar(
 
     // Add the key if it wasn't found
     if (!keyFound) {
-      updatedLines.push(`${key}=${value}`);
+      updatedLines.push(`${name}=${value}`);
     }
 
     // Write the updated content back to .env file
@@ -214,7 +214,7 @@ export async function upsertEnvVar(
 
 export async function deleteEnvVar(
   sshConfig: SSHConfig,
-  key: string
+  name: string
 ): Promise<void> {
   if (
     !sshConfig.host ||
@@ -271,7 +271,7 @@ export async function deleteEnvVar(
       if (equalIndex > 0) {
         const currentKey = trimmedLine.substring(0, equalIndex).trim();
 
-        if (currentKey !== key) {
+        if (currentKey !== name) {
           // Keep lines that don't match the key to delete
           updatedLines.push(line);
         }

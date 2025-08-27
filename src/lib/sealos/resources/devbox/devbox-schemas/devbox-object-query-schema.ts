@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { convertK8sResourceToNumeric } from "@/lib/k8s/k8s-method/k8s-utils";
 import {
   formatIsoDateToReadable,
   formatDurationToReadable,
@@ -102,20 +103,26 @@ export const DevboxObjectQuerySchema = z.object({
       path: ["status.phase"],
     })
   ),
-  resources: z.object({
-    cpu: z.any().describe(
+  resources: z
+    .any()
+    .describe(
       JSON.stringify({
         resourceType: "devbox",
-        path: ["spec.resource.cpu"],
+        path: ["spec.resource"],
       })
-    ),
-    memory: z.any().describe(
-      JSON.stringify({
-        resourceType: "devbox",
-        path: ["spec.resource.memory"],
-      })
-    ),
-  }),
+    )
+    .transform((resources) => {
+      // Convert Kubernetes resource strings to numeric values
+      const convertedResource = convertK8sResourceToNumeric({
+        cpu: resources.cpu,
+        memory: resources.memory,
+      });
+
+      return {
+        cpu: convertedResource.cpu.nearest,
+        memory: convertedResource.memory.nearest,
+      };
+    }),
   ssh: SSHConfigSchema,
   ports: z
     .any()

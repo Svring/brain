@@ -15,8 +15,8 @@ const PortSchema = z.object({
 
 const ResourceSchema = z.object({
   replicas: z.number(),
-  cpu: z.string(),
-  memory: z.string(),
+  cpu: z.number(),
+  memory: z.number(),
   storage: z.string(),
 });
 
@@ -46,6 +46,8 @@ export const StatefulsetObjectSchema = z.object({
   image: z.string(),
   resource: ResourceSchema,
   status: z.string(),
+  command: z.string().optional(),
+  args: z.string().optional(),
   env: z.array(z.any()).optional(),
   ports: z.array(PortSchema).optional(),
   configMap: z.array(ConfigMapSchema).optional(),

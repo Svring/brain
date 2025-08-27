@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const DevboxResourceSchema = z.object({
-  cpu: z.string(),
-  memory: z.string(),
+  cpu: z.number(),
+  memory: z.number(),
 });
 
 export const DevboxSshSchema = z.object({

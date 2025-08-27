@@ -13,7 +13,9 @@ import { generateDeployName } from "@/lib/sealos/resources/deployment/deploy-uti
 import { toast } from "sonner";
 import { useProjectState } from "@/contexts/project/project-context";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import { BasicConfiguration } from "./components/universal/basic-configuration";
+import { NameConfiguration } from "./components/universal/name-configuration";
+import { ImageConfiguration } from "./components/universal/image-configuration";
+import { ResourceConfiguration } from "./components/universal/resource-configuration";
 import { CommandArgs } from "./components/universal/command-args";
 import { PortsProtocol } from "./components/universal/ports-protocol";
 import { EnvironmentVariables } from "./components/universal/environment-variables";
@@ -28,11 +30,19 @@ import {
 interface DeploymentCreateMessageProps {
   payload?: LaunchpadCreateRequest;
   testMode?: boolean;
+  defaultOpenSections?: {
+    commandArgs?: boolean;
+    portsProtocol?: boolean;
+    environmentVariables?: boolean;
+    configMap?: boolean;
+    storage?: boolean;
+  };
 }
 
 export default function LaunchpadCreateMessage({
   payload,
   testMode = false,
+  defaultOpenSections = {},
 }: DeploymentCreateMessageProps) {
   const { launchpad, project } = useTRPCClients();
   const { selectedProject } = useProjectState();
@@ -135,8 +145,20 @@ export default function LaunchpadCreateMessage({
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <BasicConfiguration form={form} />
-            <Accordion type="multiple" className="w-full space-y-1">
+            <NameConfiguration form={form} />
+            <ImageConfiguration form={form} />
+            <ResourceConfiguration form={form} />
+            <Accordion 
+              type="multiple" 
+              className="w-full space-y-1"
+              defaultValue={[
+                ...(defaultOpenSections.commandArgs ? ['command-args'] : []),
+                ...(defaultOpenSections.portsProtocol ? ['ports-protocol'] : []),
+                ...(defaultOpenSections.environmentVariables ? ['env-vars'] : []),
+                ...(defaultOpenSections.configMap ? ['configmap'] : []),
+                ...(defaultOpenSections.storage ? ['storage'] : []),
+              ]}
+            >
               <CommandArgs form={form} />
               <PortsProtocol form={form} />
               <EnvironmentVariables form={form} />

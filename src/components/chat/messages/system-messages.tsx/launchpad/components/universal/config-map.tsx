@@ -19,9 +19,10 @@ import { LaunchpadCreateRequest } from "@/lib/sealos/resources/launchpad/launchp
 
 interface ConfigMapProps {
   form: UseFormReturn<LaunchpadCreateRequest>;
+  defaultOpen?: boolean;
 }
 
-export function ConfigMap({ form }: ConfigMapProps) {
+export function ConfigMap({ form, defaultOpen = false }: ConfigMapProps) {
   return (
     <AccordionItem
       value="configmap"

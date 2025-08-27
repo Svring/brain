@@ -1,4 +1,9 @@
 import { z } from "zod";
+import {
+  CPU_OPTIONS,
+  MEMORY_OPTIONS,
+  REPLICAS_OPTIONS,
+} from "@/lib/k8s/k8s-constant/k8s-constant-resource";
 
 // GPU resource configuration schema
 const GpuResourceSchema = z.object({
@@ -6,17 +11,6 @@ const GpuResourceSchema = z.object({
   type: z.string(),
   amount: z.number().default(1),
 });
-
-// CPU options for launchpad - enum constraints
-export const cpuOptions = [0.1, 0.2, 0.5, 1, 2, 3, 4, 8] as const;
-
-// Memory options for launchpad - enum constraints
-export const memoryOptions = [0.1, 0.5, 1, 2, 4, 8, 16] as const;
-
-// Replicas options for launchpad - enum constraints
-export const replicasOptions = [
-  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-] as const;
 
 // Storage size options for launchpad
 export const storageSizeOptions = ["1Gi", "5Gi", "10Gi", "20Gi"] as const;
@@ -28,9 +22,9 @@ const createNumberUnionSchema = <T extends readonly number[]>(options: T) =>
 
 // Resource configuration schema
 const ResourceSchema = z.object({
-  replicas: createNumberUnionSchema(replicasOptions).default(1),
-  cpu: createNumberUnionSchema(cpuOptions).default(0.2),
-  memory: createNumberUnionSchema(memoryOptions).default(0.5),
+  replicas: createNumberUnionSchema(REPLICAS_OPTIONS).default(1),
+  cpu: createNumberUnionSchema(CPU_OPTIONS).default(0.2),
+  memory: createNumberUnionSchema(MEMORY_OPTIONS).default(0.5),
   gpu: z.any().optional(), // Assuming GpuResourceSchema is defined elsewhere
 });
 

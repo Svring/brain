@@ -27,9 +27,10 @@ import { storageSizeOptions } from "@/lib/sealos/resources/launchpad/launchpad-a
 
 interface StorageProps {
   form: UseFormReturn<LaunchpadCreateRequest>;
+  defaultOpen?: boolean;
 }
 
-export function Storage({ form }: StorageProps) {
+export function Storage({ form, defaultOpen = false }: StorageProps) {
   return (
     <AccordionItem
       value="storage"

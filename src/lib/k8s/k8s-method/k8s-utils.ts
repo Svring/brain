@@ -15,6 +15,10 @@ import {
 } from "@/lib/k8s/k8s-constant/k8s-constant-custom-resource";
 import { INSTANCE_RELATE_RESOURCE_LABELS } from "../k8s-constant/k8s-constant-label";
 import { buildQueryKey } from "../k8s-constant/k8s-constant-query-key";
+import {
+  CPU_OPTIONS,
+  MEMORY_OPTIONS,
+} from "../k8s-constant/k8s-constant-resource";
 
 import _ from "lodash";
 import { Buffer } from "buffer";
@@ -381,13 +385,13 @@ export function convertAndFilterResourceToTarget(
  */
 export interface EnvVarValue {
   type: "value";
-  key: string;
+  name: string;
   value: string;
 }
 
 export interface EnvVarSecretRef {
   type: "secretKeyRef";
-  key: string;
+  name: string;
   secretName: string;
   secretKey: string;
 }
@@ -427,7 +431,7 @@ export function getContainersFromResource(resource: any): any[] {
  */
 export function createEnvVarSpec(envVar: EnvVar): any {
   return {
-    name: envVar.key,
+    name: envVar.name,
     ...(envVar.type === "value"
       ? { value: envVar.value }
       : {
@@ -467,7 +471,7 @@ export function buildEnvVarPatchOps(
     envVars.forEach((envVar) => {
       // Check if env var already exists
       const existingIndex = currentEnv.findIndex(
-        (e: any) => e.name === envVar.key
+        (e: any) => e.name === envVar.name
       );
 
       const envVarSpec = createEnvVarSpec(envVar);
@@ -557,7 +561,7 @@ export async function resolveEnvVars(
           // Convert to EnvVarValue
           resolvedEnvVars.push({
             type: "value",
-            key: envVar.key,
+            name: envVar.name,
             value: decodedValue,
           });
         } else {
@@ -567,7 +571,7 @@ export async function resolveEnvVars(
           // Keep original secret ref if resolution fails
           resolvedEnvVars.push({
             type: "value",
-            key: envVar.key,
+            name: envVar.name,
             value: `[SECRET_REF_ERROR: ${envVar.secretName}.${envVar.secretKey}]`,
           });
         }
@@ -578,7 +582,7 @@ export async function resolveEnvVars(
         // Keep original secret ref if resolution fails
         resolvedEnvVars.push({
           type: "value",
-          key: envVar.key,
+          name: envVar.name,
           value: `[SECRET_REF_ERROR: ${envVar.secretName}.${envVar.secretKey}]`,
         });
       }
@@ -628,4 +632,115 @@ export function flattenResourceList<T extends K8sResource>(
   }
 
   return resourceList.items;
+}
+
+/**
+ * Convert Kubernetes resource strings to numeric values and find nearest available options
+ * @param resource - Object containing cpu and memory as strings (e.g., "500m", "8Gi")
+ * @returns Object with converted numeric values and nearest available options
+ */
+export function convertK8sResourceToNumeric(resource: {
+  cpu?: string;
+  memory?: string;
+}): {
+  cpu: { original: number; nearest: number };
+  memory: { original: number; nearest: number };
+} {
+  const result = {
+    cpu: { original: 0, nearest: CPU_OPTIONS[0] as number },
+    memory: { original: 0, nearest: MEMORY_OPTIONS[0] as number },
+  };
+
+  // Convert CPU from Kubernetes format to numeric cores
+  if (resource.cpu) {
+    let cpuValue: number;
+    if (typeof resource.cpu === "string") {
+      if (resource.cpu.endsWith("m")) {
+        // Convert millicores to cores (e.g., "500m" -> 0.5)
+        cpuValue = parseFloat(resource.cpu.slice(0, -1)) / 1000;
+      } else {
+        // Direct cores (e.g., "1" -> 1)
+        cpuValue = parseFloat(resource.cpu);
+      }
+    } else {
+      cpuValue = Number(resource.cpu);
+    }
+
+    result.cpu.original = cpuValue;
+    result.cpu.nearest = findNearestValue(cpuValue, CPU_OPTIONS);
+  }
+
+  // Convert Memory from Kubernetes format to numeric GB
+  if (resource.memory) {
+    let memoryValue: number;
+    if (typeof resource.memory === "string") {
+      if (resource.memory.endsWith("Gi")) {
+        // Convert GiB to GB (e.g., "8Gi" -> 8)
+        memoryValue = parseFloat(resource.memory.slice(0, -2));
+      } else if (resource.memory.endsWith("Mi")) {
+        // Convert MiB to GB (e.g., "1024Mi" -> 1)
+        memoryValue = parseFloat(resource.memory.slice(0, -2)) / 1024;
+      } else if (resource.memory.endsWith("Ki")) {
+        // Convert KiB to GB (e.g., "1048576Ki" -> 1)
+        memoryValue = parseFloat(resource.memory.slice(0, -2)) / (1024 * 1024);
+      } else {
+        // Assume bytes and convert to GB
+        memoryValue = parseFloat(resource.memory) / (1024 * 1024 * 1024);
+      }
+    } else {
+      memoryValue = Number(resource.memory);
+    }
+
+    result.memory.original = memoryValue;
+    result.memory.nearest = findNearestValue(memoryValue, MEMORY_OPTIONS);
+  }
+
+  return result;
+}
+
+/**
+ * Find the nearest value in an array of available options
+ * @param target - The target value to find nearest match for
+ * @param options - Array of available options
+ * @returns The nearest available option
+ */
+function findNearestValue(target: number, options: readonly number[]): number {
+  if (options.length === 0) return target;
+
+  let nearest = options[0];
+  let minDifference = Math.abs(target - nearest);
+
+  for (const option of options) {
+    const difference = Math.abs(target - option);
+    if (difference < minDifference) {
+      minDifference = difference;
+      nearest = option;
+    }
+  }
+
+  return nearest;
+}
+
+/**
+ * Convert numeric resource values back to Kubernetes format
+ * @param resource - Object containing cpu and memory as numbers
+ * @returns Object with Kubernetes-formatted strings
+ */
+export function convertNumericToK8sResource(resource: {
+  cpu?: number;
+  memory?: number;
+}): { cpu?: string; memory?: string } {
+  const result: { cpu?: string; memory?: string } = {};
+
+  if (resource.cpu !== undefined) {
+    // Convert cores to millicores for CPU
+    result.cpu = `${Math.round(resource.cpu * 1000)}m`;
+  }
+
+  if (resource.memory !== undefined) {
+    // Convert GB to GiB for memory
+    result.memory = `${resource.memory}Gi`;
+  }
+
+  return result;
 }

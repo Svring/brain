@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { transformComponentSpecsToResources } from "../cluster-utils";
+import { convertK8sResourceToNumeric } from "@/lib/k8s/k8s-method/k8s-utils";
 import {
   formatIsoDateToReadable,
   formatDurationToReadable,
@@ -44,7 +45,22 @@ export const ClusterObjectQuerySchema = z.object({
         path: ["spec.componentSpecs"],
       })
     )
-    .transform((data) => transformComponentSpecsToResources(data)),
+    .transform((data) => {
+      const k8sResource = transformComponentSpecsToResources(data);
+
+      // Convert Kubernetes resource strings to numeric values
+      const convertedResource = convertK8sResourceToNumeric({
+        cpu: k8sResource.cpu,
+        memory: k8sResource.memory,
+      });
+
+      return {
+        cpu: convertedResource.cpu.nearest,
+        memory: convertedResource.memory.nearest,
+        storage: k8sResource.storage,
+        replicas: k8sResource.replicas,
+      };
+    }),
   operationalStatus: z
     .any()
     .describe(
@@ -77,22 +93,32 @@ export const ClusterObjectQuerySchema = z.object({
       const statusComponents = resourece.status?.components;
       if (!Array.isArray(componentSpecs)) return [];
 
-      return componentSpecs.map((spec) => ({
-        name: spec.name,
-        status: statusComponents?.[spec.name]?.phase || "unknown",
-        resource: {
+      return componentSpecs.map((spec) => {
+        const k8sResource = {
           cpu:
             spec.resources?.limits?.cpu || spec.resources?.requests?.cpu || "0",
           memory:
             spec.resources?.limits?.memory ||
             spec.resources?.requests?.memory ||
             "0",
-          storage:
-            spec.volumeClaimTemplates?.[0]?.spec?.resources?.requests
-              ?.storage || "0",
-          replicas: spec.replicas || 0,
-        },
-      }));
+        };
+
+        // Convert Kubernetes resource strings to numeric values
+        const convertedResource = convertK8sResourceToNumeric(k8sResource);
+
+        return {
+          name: spec.name,
+          status: statusComponents?.[spec.name]?.phase || "unknown",
+          resource: {
+            cpu: convertedResource.cpu.nearest,
+            memory: convertedResource.memory.nearest,
+            storage:
+              spec.volumeClaimTemplates?.[0]?.spec?.resources?.requests
+                ?.storage || "0",
+            replicas: spec.replicas || 0,
+          },
+        };
+      });
     }),
   connection: z.object({
     privateConnection: z.object({

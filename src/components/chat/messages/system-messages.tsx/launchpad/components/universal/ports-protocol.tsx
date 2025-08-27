@@ -23,9 +23,10 @@ type Port = z.infer<typeof PortSchema>;
 
 interface PortsProtocolProps {
   form: UseFormReturn<LaunchpadCreateRequest>;
+  defaultOpen?: boolean;
 }
 
-export function PortsProtocol({ form }: PortsProtocolProps) {
+export function PortsProtocol({ form, defaultOpen = false }: PortsProtocolProps) {
   // Port management functions
   const addPort = () => {
     const currentPorts = form.getValues("ports");

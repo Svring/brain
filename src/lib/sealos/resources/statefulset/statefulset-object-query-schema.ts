@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { EnvVar } from "@/lib/k8s/k8s-method/k8s-utils";
+import { convertK8sResourceToNumeric } from "@/lib/k8s/k8s-method/k8s-utils";
 import { formatIsoDateToReadable } from "@/lib/date/date-utils";
 import { determineLaunchpadStatus } from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-utils";
 
@@ -50,9 +51,22 @@ export const StatefulsetObjectQuerySchema = z.object({
           : "";
 
       if (Array.isArray(containers) && containers.length > 0) {
-        return {
+        const k8sResource = {
           replicas,
           ...containers[0].resources.limits,
+          storage,
+        };
+
+        // Convert Kubernetes resource strings to numeric values
+        const convertedResource = convertK8sResourceToNumeric({
+          cpu: k8sResource.cpu,
+          memory: k8sResource.memory,
+        });
+
+        return {
+          replicas,
+          cpu: convertedResource.cpu.nearest,
+          memory: convertedResource.memory.nearest,
           storage,
         };
       }
@@ -149,14 +163,14 @@ export const StatefulsetObjectQuerySchema = z.object({
             // Direct value environment variable
             return {
               type: "value" as const,
-              key: envVar.name,
+              name: envVar.name,
               value: envVar.value,
             };
           } else if (envVar.valueFrom?.secretKeyRef) {
             // Secret reference environment variable
             return {
               type: "secretKeyRef" as const,
-              key: envVar.name,
+              name: envVar.name,
               secretName: envVar.valueFrom.secretKeyRef.name,
               secretKey: envVar.valueFrom.secretKeyRef.key,
             };
@@ -164,7 +178,7 @@ export const StatefulsetObjectQuerySchema = z.object({
             // Unknown type, return as value with placeholder
             return {
               type: "value" as const,
-              key: envVar.name,
+              name: envVar.name,
               value: `[UNKNOWN_ENV_TYPE: ${JSON.stringify(envVar)}]`,
             };
           }

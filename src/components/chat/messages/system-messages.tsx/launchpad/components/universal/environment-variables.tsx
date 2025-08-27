@@ -19,9 +19,10 @@ import { LaunchpadCreateRequest } from "@/lib/sealos/resources/launchpad/launchp
 
 interface EnvironmentVariablesProps {
   form: UseFormReturn<LaunchpadCreateRequest>;
+  defaultOpen?: boolean;
 }
 
-export function EnvironmentVariables({ form }: EnvironmentVariablesProps) {
+export function EnvironmentVariables({ form, defaultOpen = false }: EnvironmentVariablesProps) {
   return (
     <AccordionItem
       value="env-vars"
