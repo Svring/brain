@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import ProjectCard from "@/components/project/project-card";
 import { motion } from "framer-motion";
+import { ChevronRight } from "lucide-react";
 
 interface RecentProjectsProps {
   projects: any[] | undefined;
@@ -31,16 +32,6 @@ export default function RecentProjects({
       className="w-full bg-background"
     >
       <div className="max-w-3xl mx-auto py-8">
-        {/* Projects Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold">Recent Projects</h2>
-          {!isError && projects && (
-            <Button variant="ghost" size="sm" asChild>
-              <a href="/projects">View All Projects ({projects.length})</a>
-            </Button>
-          )}
-        </div>
-
         {/* Projects Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {isLoading && (
@@ -66,9 +57,29 @@ export default function RecentProjects({
           )}
 
           {!isError &&
-            displayProjects.map((project: any) => (
-              <ProjectCard key={project.name} project={project} />
-            ))}
+            displayProjects
+              .slice(0, 2)
+              .map((project: any) => (
+                <ProjectCard
+                  key={project.name}
+                  project={project}
+                  variant="lite"
+                />
+              ))}
+
+          {/* All Projects button in the third slot */}
+          {!isError && !isLoading && displayProjects.length > 0 && (
+            <Button
+              variant="outline"
+              className="h-10 flex items-center justify-between px-4"
+              asChild
+            >
+              <a href="/projects">
+                <span>All Projects</span>
+                <ChevronRight className="h-4 w-4" />
+              </a>
+            </Button>
+          )}
         </div>
       </div>
     </motion.div>

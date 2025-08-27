@@ -22,14 +22,13 @@ export function AiChatInput({ className }: AiChatInputProps) {
   };
 
   return (
-    <div className={className}>
-      <PromptInputBox
-        isLoading={isLoading}
-        onSend={handleSendMessage}
-        placeholder="Type your message..."
-        disableInput={false}
-        disableSend={isLoading}
-      />
-    </div>
+    <PromptInputBox
+      className={className}
+      isLoading={isLoading}
+      onSend={handleSendMessage}
+      placeholder="Type your message..."
+      disableInput={false}
+      disableSend={isLoading}
+    />
   );
 }

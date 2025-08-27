@@ -16,6 +16,7 @@ import { Edit2, Save, X } from "lucide-react";
 import Image from "next/image";
 import type { DevBox } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 import { ProjectPortTable } from "./components/project-port-table";
+import { DEVBOX_RUNTIME_ICONS } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-icons";
 
 // Import runtime options from devbox create message
 import { runtimeOptions } from "@/components/chat/messages/system-messages.tsx/devbox/devbox-create-message";
@@ -55,8 +56,11 @@ export function ProjectDevBoxCard({
         <div className="flex items-center gap-4">
           <div className="flex-shrink-0">
             <Image
-              src="https://devbox.bja.sealos.run/logo.svg"
-              alt="DevBox Icon"
+              src={
+                DEVBOX_RUNTIME_ICONS[editData.runtime] ||
+                "https://devbox.bja.sealos.run/logo.svg"
+              }
+              alt={`${editData.runtime} Icon`}
               width={36}
               height={36}
               className="rounded-lg h-9 w-9 flex-shrink-0"
@@ -86,15 +90,13 @@ export function ProjectDevBoxCard({
         </div>
 
         {/* Ports Section */}
-        {editData.ports && editData.ports.length > 0 && (
-          <div className="mt-3">
-            <ProjectPortTable
-              ports={editData.ports}
-              allowEditing={true}
-              onPortsChange={(ports) => setEditData({ ...editData, ports })}
-            />
-          </div>
-        )}
+        <div className="mt-3">
+          <ProjectPortTable
+            ports={editData.ports || []}
+            allowEditing={true}
+            onPortsChange={(ports) => setEditData({ ...editData, ports })}
+          />
+        </div>
       </div>
     );
   }
@@ -104,11 +106,14 @@ export function ProjectDevBoxCard({
       <div className="flex items-center gap-4">
         <div className="flex-shrink-0">
           <Image
-            src="https://devbox.bja.sealos.run/logo.svg"
-            alt="DevBox Icon"
+            src={
+              DEVBOX_RUNTIME_ICONS[resource.runtime] ||
+              "https://devbox.bja.sealos.run/logo.svg"
+            }
+            alt={`${resource.runtime} Icon`}
             width={36}
             height={36}
-            className="rounded-lg h-9 w-9 flex-shrink-0"
+            className="rounded-lg h-9 w-9 flex-shrink-0 p-1 bg-muted"
             priority
           />
         </div>
@@ -140,6 +145,7 @@ export function ProjectDevBoxCard({
       {/* Ports Display */}
       {resource.ports && resource.ports.length > 0 && (
         <div className="mt-3">
+          <div className="text-sm pl-1 text-muted-foreground mb-2">Ports:</div>
           <ProjectPortTable ports={resource.ports} allowEditing={false} />
         </div>
       )}

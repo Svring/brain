@@ -13,6 +13,7 @@ import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
 import { useMount } from "@reactuses/core";
 import CreateProject from "@/components/project/create-project/create-project";
 import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
+import { Button } from "@/components/ui/button";
 
 export default function HomePage() {
   const { messages } = useCopilotChatHeadless_c();
@@ -43,22 +44,10 @@ export default function HomePage() {
           >
             <Hero
               heroTitle="Sealos Brain"
-              subtitle="We have lingered in the chambers of the sea. By sea-girls wreathed with seaweed red and brown"
+              subtitle="The old oak tree whispered to the breeze, 'I've seen centuries pass, but your fleeting touch feels like a secret only we share.'"
               titleClassName="text-5xl md:text-6xl font-extrabold"
               subtitleClassName="text-lg md:text-xl max-w-[600px]"
               actionsClassName="mt-2"
-              actions={[
-                {
-                  label: "From Template",
-                  onClick: openDialog,
-                  variant: "outline",
-                },
-                // {
-                //   label: "From Docker Image",
-                //   onClick: () => {},
-                //   variant: "outline",
-                // },
-              ]}
             />
           </motion.div>
         )}
@@ -91,8 +80,19 @@ export default function HomePage() {
           }}
           className={`flex-shrink-0 ${hasMessages ? "pb-8" : "py-0"}`}
         >
-          <div className="container mx-auto px-4">
-            <AiChatInput className="max-w-3xl mx-auto" />
+          <div className="container mx-auto relative max-w-3xl">
+            <AiChatInput
+              className={`max-w-3xl${!hasMessages ? " min-h-[140px]" : ""}`}
+            />
+            {!hasMessages && (
+              <Button
+                onClick={openDialog}
+                variant="outline"
+                className="absolute bottom-2 left-2"
+              >
+                From template
+              </Button>
+            )}
           </div>
         </motion.div>
 

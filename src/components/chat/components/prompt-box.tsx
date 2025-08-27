@@ -2,7 +2,7 @@
 
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUp, Square } from "lucide-react";
+import { ArrowUp, SendHorizonal, Square } from "lucide-react";
 import React from "react";
 import { useDebounce } from "@reactuses/core";
 // import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
@@ -152,7 +152,7 @@ const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(
         >
           <div
             className={cn(
-              "rounded-xl border border-[#444444] bg-background-secondary p-2 shadow-[0_8px_30px_rgba(0,0,0,0.24)] transition-all duration-300 focus-within:border-gray-400",
+              "rounded-xl border border-[#444444] bg-background-secondary p-2 shadow-[0_8px_30px_rgba(0,0,0,0.24)] transition-all duration-300 focus-within:border-gray-400 flex flex-col",
               isLoading && "border border-gray-400 animate-shimmer-border",
               className
             )}
@@ -412,6 +412,7 @@ export const PromptInputBox = React.forwardRef(
         >
           <PromptInputTextarea
             placeholder={placeholder}
+            className="flex-1"
             ref={(node) => {
               internalTextareaRef.current = node;
               if (typeof textareaRef === "function") textareaRef(node);
@@ -422,7 +423,7 @@ export const PromptInputBox = React.forwardRef(
             }}
           />
 
-          <PromptInputActions className="flex items-center justify-end gap-2 p-0 pt-2">
+          <PromptInputActions className="flex items-end justify-end gap-2 p-0 mt-auto">
             {/* <PromptInputAction tooltip="Create project from template">
               <Button
                 className="h-8 px-3 text-sm bg-background-secondary text-foreground border border-border-primary transition-all duration-200 rounded-lg"
@@ -446,15 +447,15 @@ export const PromptInputBox = React.forwardRef(
             >
               <Button
                 className={cn(
-                  "h-8 w-8 rounded-full transition-all duration-200",
+                  "h-9 w-9 rounded-lg transition-all duration-200",
                   hasContent
-                    ? "bg-white text-[#1F2023] hover:bg-white/80"
-                    : "bg-transparent text-gray-500 cursor-not-allowed"
+                    ? ""
+                    : "bg-transparent cursor-not-allowed text-foreground"
                 )}
                 disabled={disableSend || !hasContent}
                 onClick={handleSubmit}
                 size="icon"
-                variant="default"
+                variant="outline"
               >
                 <AnimatePresence mode="wait">
                   {isLoading ? (
@@ -475,7 +476,7 @@ export const PromptInputBox = React.forwardRef(
                       exit={{ scale: 0.8, opacity: 0 }}
                       transition={{ duration: 0.15 }}
                     >
-                      <ArrowUp className="h-4 w-4 text-[#1F2023]" />
+                      <SendHorizonal className="h-4 w-4" />
                     </motion.div>
                   )}
                 </AnimatePresence>

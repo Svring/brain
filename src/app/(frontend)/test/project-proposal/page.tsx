@@ -42,11 +42,7 @@ export default function TestProjectProposalPage() {
         },
         {
           name: "product-db",
-          type: "postgresql",
-        },
-        {
-          name: "order-db",
-          type: "postgresql",
+          type: "mongodb",
         },
       ],
       bucket: [
@@ -80,11 +76,6 @@ export default function TestProjectProposalPage() {
           name: "notification-service",
           image: "sendgrid/email-service:v2.1",
           ports: [{ number: 3000, publicAccess: true }],
-          env: [
-            { name: "SENDGRID_API_KEY", value: "SG...." },
-            { name: "FROM_EMAIL", value: "noreply@example.com" },
-            { name: "DATABASE_URL", value: "postgresql://..." },
-          ],
           reliances: {
             database: ["user-db", "order-db"],
           },

@@ -15,8 +15,8 @@ import { Edit2, Save, X } from "lucide-react";
 import Image from "next/image";
 import type { ObjectStorageBucket } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 
-// Import policy options from object storage create message
-import { bucketPolicyOptions } from "@/components/chat/messages/system-messages.tsx/objectstorage/objectstorage-create-message";
+// Policy options matching the ObjectStorageBucket schema
+const bucketPolicyOptions = ["Private", "PublicRead", "PublicReadwrite"] as const;
 
 interface ProjectBucketCardProps {
   resource: ObjectStorageBucket;

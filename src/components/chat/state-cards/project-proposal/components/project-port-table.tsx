@@ -88,84 +88,102 @@ export function ProjectPortTable({
   };
 
   // Render Functions
-  const renderPortRow = (port: Port, index: number) => (
-    <div
-      key={`${port.number}-${index}`}
-      className="flex items-center bg-transparent justify-between py-2 px-3 border-b border-border/50 last:border-b-0"
-    >
-      <div className="flex items-center gap-4 flex-1">
-        {editingIndex === index ? (
-          <>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Port:</span>
-              <Input
-                type="number"
-                value={newPort.number}
-                onChange={(e) =>
-                  setNewPort({
-                    ...newPort,
-                    number: parseInt(e.target.value) || 0,
-                  })
-                }
-                placeholder="Port number"
-                min="1"
-                max="65535"
-                className="w-20 h-8"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                Public Access:
-              </span>
-              <Switch
-                checked={newPort.publicAccess}
-                onCheckedChange={(checked) =>
-                  setNewPort({ ...newPort, publicAccess: checked })
-                }
-              />
-              <span className="text-sm text-muted-foreground">
-                {newPort.publicAccess ? "True" : "False"}
-              </span>
-            </div>
-          </>
-        ) : (
-          <div className="flex items-center gap-2">
-            <span className="text-sm">
-              <span className="text-muted-foreground">Port:</span> {port.number}
-            </span>
-            <span className="text-sm">
-              <span className="text-muted-foreground">Public Access:</span>{" "}
-              {port.publicAccess ? "True" : "False"}
-            </span>
-          </div>
-        )}
-      </div>
+  const renderPortRow = (port: Port, index: number) => {
+    // When allowEditing is true, all rows are automatically editable
+    const isEditing = allowEditing && editingIndex === index;
+    const currentPort = isEditing ? newPort : port;
 
-      {allowEditing && (
-        <div className="flex gap-1">
-          {editingIndex === index ? (
+    return (
+      <div
+        key={`${port.number}-${index}`}
+        className="flex items-center bg-transparent justify-between py-2 px-3 border-b border-border/50 last:border-b-0"
+      >
+        <div className="flex items-center gap-4 flex-1">
+          {allowEditing ? (
             <>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleSave(index)}
-                disabled={!newPort.number}
-              >
-                <Check className="w-4 h-4" />
-              </Button>
-              <Button variant="ghost" size="sm" onClick={handleCancel}>
-                <X className="w-3 h-3" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Port:</span>
+                <Input
+                  type="number"
+                  value={currentPort.number}
+                  onChange={(e) => {
+                    if (isEditing) {
+                      setNewPort({
+                        ...newPort,
+                        number: parseInt(e.target.value) || 0,
+                      });
+                    } else {
+                      // Direct update for inline editing
+                      const updatedPorts = [...ports];
+                      updatedPorts[index] = {
+                        ...updatedPorts[index],
+                        number: parseInt(e.target.value) || 0,
+                      };
+                      onPortsChange?.(updatedPorts);
+                    }
+                  }}
+                  placeholder="Port number"
+                  min="1"
+                  max="65535"
+                  className="w-20 h-8"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  Public Access:
+                </span>
+                <Switch
+                  checked={currentPort.publicAccess}
+                  onCheckedChange={(checked) => {
+                    if (isEditing) {
+                      setNewPort({ ...newPort, publicAccess: checked });
+                    } else {
+                      // Direct update for inline editing
+                      const updatedPorts = [...ports];
+                      updatedPorts[index] = {
+                        ...updatedPorts[index],
+                        publicAccess: checked,
+                      };
+                      onPortsChange?.(updatedPorts);
+                    }
+                  }}
+                />
+                <span className="text-sm text-muted-foreground">
+                  {currentPort.publicAccess ? "True" : "False"}
+                </span>
+              </div>
             </>
           ) : (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleEdit(index, port)}
-              >
-                <Edit2 className="w-3 h-3" />
-              </Button>
+            <div className="flex items-center gap-2">
+              <span className="text-sm">
+                <span className="text-muted-foreground">Port:</span>{" "}
+                {port.number}
+              </span>
+              <span className="text-sm">
+                <span className="text-muted-foreground">Public Access:</span>{" "}
+                {port.publicAccess ? "True" : "False"}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {allowEditing && (
+          <div className="flex gap-1">
+            {isEditing ? (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleSave(index)}
+                  disabled={!newPort.number}
+                >
+                  <Check className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={handleCancel}>
+                  <X className="w-3 h-3" />
+                </Button>
+              </>
+            ) : (
               <Button
                 variant="ghost"
                 size="sm"
@@ -173,12 +191,12 @@ export function ProjectPortTable({
               >
                 <Trash2 className="w-3 h-3" />
               </Button>
-            </>
-          )}
-        </div>
-      )}
-    </div>
-  );
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderNewPortRow = () => (
     <div className="flex items-center justify-between py-2 px-3 border-b border-border/50">

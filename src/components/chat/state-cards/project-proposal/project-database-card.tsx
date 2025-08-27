@@ -24,7 +24,10 @@ interface ProjectDatabaseCardProps {
   onSave?: (updatedResource: DatabaseType) => void;
 }
 
-export function ProjectDatabaseCard({ resource, onSave }: ProjectDatabaseCardProps) {
+export function ProjectDatabaseCard({
+  resource,
+  onSave,
+}: ProjectDatabaseCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(resource);
 
@@ -49,8 +52,7 @@ export function ProjectDatabaseCard({ resource, onSave }: ProjectDatabaseCardPro
               src={
                 CLUSTER_TYPE_ICON_MAP[
                   editData.type as keyof typeof CLUSTER_TYPE_ICON_MAP
-                ] ||
-                "https://dbprovider.bja.sealos.run/logo.svg"
+                ] || "https://dbprovider.bja.sealos.run/logo.svg"
               }
               alt={`${editData.type} Icon`}
               width={36}
@@ -108,13 +110,12 @@ export function ProjectDatabaseCard({ resource, onSave }: ProjectDatabaseCardPro
             src={
               CLUSTER_TYPE_ICON_MAP[
                 resource.type as keyof typeof CLUSTER_TYPE_ICON_MAP
-              ] ||
-              "https://dbprovider.bja.sealos.run/logo.svg"
+              ] || "https://dbprovider.bja.sealos.run/logo.svg"
             }
             alt={`${resource.type} Icon`}
             width={36}
             height={36}
-            className="rounded-lg h-9 w-9 flex-shrink-0"
+            className="rounded-lg h-9 w-9 flex-shrink-0 p-1 bg-muted"
             priority
           />
         </div>

@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Settings, Sparkles } from "lucide-react";
 import { ProjectDevBoxCard } from "./project-devbox-card";
 import { ProjectDatabaseCard } from "./project-database-card";
 import { ProjectBucketCard } from "./project-bucket-card";
@@ -27,206 +28,145 @@ export function ProjectProposalCard({
   className = "",
   onSave,
 }: ProjectProposalCardProps) {
-  // Internal state management
-  const [internalProposal, setInternalProposal] = useState<ProjectProposal>(proposal);
+  const [internalProposal, setInternalProposal] =
+    useState<ProjectProposal>(proposal);
 
-  // Sync internal state with prop changes
-  useEffect(() => {
-    setInternalProposal(proposal);
-  }, [proposal]);
-  const updateDevBox = (index: number, updatedResource: DevBox) => {
-    const newDevBoxes = [...(internalProposal.resources.devbox || [])];
-    newDevBoxes[index] = updatedResource;
-    const updatedProposal = {
-      ...internalProposal,
-      resources: {
-        ...internalProposal.resources,
-        devbox: newDevBoxes,
-      },
-    };
-    setInternalProposal(updatedProposal);
-    if (onSave) {
-      onSave(updatedProposal);
-    }
-  };
-
-  const updateDatabase = (index: number, updatedResource: Database) => {
-    const newDatabases = [...(internalProposal.resources.database || [])];
-    newDatabases[index] = updatedResource;
-    const updatedProposal = {
-      ...internalProposal,
-      resources: {
-        ...internalProposal.resources,
-        database: newDatabases,
-      },
-    };
-    setInternalProposal(updatedProposal);
-    if (onSave) {
-      onSave(updatedProposal);
-    }
-  };
-
-  const updateBucket = (
+  // Generic update function for all resource types
+  const updateResource = <
+    T extends DevBox | Database | ObjectStorageBucket | App
+  >(
+    resourceType: keyof ProjectProposal["resources"],
     index: number,
-    updatedResource: ObjectStorageBucket
+    updatedResource: T
   ) => {
-    const newBuckets = [...(internalProposal.resources.bucket || [])];
-    newBuckets[index] = updatedResource;
+    const newResources = [
+      ...(internalProposal.resources[resourceType] || []),
+    ] as T[];
+    newResources[index] = updatedResource;
     const updatedProposal = {
       ...internalProposal,
       resources: {
         ...internalProposal.resources,
-        bucket: newBuckets,
+        [resourceType]: newResources,
       },
     };
     setInternalProposal(updatedProposal);
-    if (onSave) {
-      onSave(updatedProposal);
-    }
+    onSave?.(updatedProposal);
   };
 
-  const updateApp = (index: number, updatedResource: App) => {
-    const newApps = [...(internalProposal.resources.app || [])];
-    newApps[index] = updatedResource;
-    const updatedProposal = {
-      ...internalProposal,
-      resources: {
-        ...internalProposal.resources,
-        app: newApps,
-      },
-    };
-    setInternalProposal(updatedProposal);
-    if (onSave) {
-      onSave(updatedProposal);
-    }
+  // Handle project creation
+  const handleCreate = () => {
+    console.log("Creating project with proposal:", internalProposal);
+    // Here you would typically:
+    // 1. Validate the proposal
+    // 2. Call your project creation API
+    // 3. Handle success/error states
+    // 4. Navigate to the created project or show success message
+
+    // For now, we'll just log the proposal data
+    // In a real implementation, you might want to:
+    // - Show a loading state
+    // - Call an API endpoint
+    // - Handle errors
+    // - Show success feedback
   };
 
-  const { name, resources } = internalProposal;
+  const { resources } = internalProposal;
 
-  // Group resources by type for display
-  const devboxResources = resources.devbox || [];
-  const databaseResources = resources.database || [];
-  const bucketResources = resources.bucket || [];
-  const appResources = resources.app || [];
+  // Define resource sections with their metadata
+  const resourceSections: {
+    title: string;
+    key: keyof ProjectProposal["resources"];
+    resources: any[];
+    Component: React.ComponentType<{
+      resource: any;
+      onSave: (resource: any) => void;
+    }>;
+  }[] = [
+    {
+      title: "Development Environment",
+      key: "devbox",
+      resources: resources.devbox || [],
+      Component: ProjectDevBoxCard,
+    },
+    {
+      title: "Database",
+      key: "database",
+      resources: resources.database || [],
+      Component: ProjectDatabaseCard,
+    },
+    {
+      title: "Object Storage",
+      key: "bucket",
+      resources: resources.bucket || [],
+      Component: ProjectBucketCard,
+    },
+    {
+      title: "App Launchpad",
+      key: "app",
+      resources: resources.app || [],
+      Component: ProjectAppCard,
+    },
+  ];
+
+  // Check if there are no resources
+  const hasResources = resourceSections.some(
+    (section) => section.resources.length > 0
+  );
 
   return (
     <Card
-      className={`w-full max-w-3xl mx-auto ${className} bg-background-primary rounded-xl`}
+      className={`w-full max-w-3xl mx-auto bg-background-primary rounded-xl ${className}`}
     >
       <CardContent className="space-y-6">
-        {/* Resources Preview */}
-        <div className="space-y-4">
-          {/* DevBox Resources Section */}
-          {devboxResources.length > 0 && (
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <h4 className="text-md font-medium flex items-center gap-2">
-                  Development Environment
-                  <Badge variant="secondary">{devboxResources.length}</Badge>
-                </h4>
-              </div>
-              <div className="space-y-2">
-                {devboxResources.map((resource, index) => (
-                  <ProjectDevBoxCard
-                    key={`${resource.name}-${index}`}
-                    resource={resource}
-                    onSave={(updatedResource) =>
-                      updateDevBox(index, updatedResource)
-                    }
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Database Resources Section */}
-          {databaseResources.length > 0 && (
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <h4 className="text-md font-medium flex items-center gap-2">
-                  Database Resources
-                  <Badge variant="secondary">{databaseResources.length}</Badge>
-                </h4>
-              </div>
-              <div className="space-y-2">
-                {databaseResources.map((resource, index) => (
-                  <ProjectDatabaseCard
-                    key={index}
-                    resource={resource}
-                    onSave={(updatedResource) =>
-                      updateDatabase(index, updatedResource)
-                    }
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Object Storage Resources Section */}
-          {bucketResources.length > 0 && (
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <h4 className="text-md font-medium flex items-center gap-2">
-                  Object Storage Resources
-                  <Badge variant="secondary">{bucketResources.length}</Badge>
-                </h4>
-              </div>
-              <div className="space-y-2">
-                {bucketResources.map((resource, index) => (
-                  <ProjectBucketCard
-                    key={index}
-                    resource={resource}
-                    onSave={(updatedResource) =>
-                      updateBucket(index, updatedResource)
-                    }
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* App Resources Section */}
-          {appResources.length > 0 && (
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <h4 className="text-md font-medium flex items-center gap-2">
-                  Application Resources
-                  <Badge variant="secondary">{appResources.length}</Badge>
-                </h4>
-              </div>
-              <div className="space-y-2">
-                {appResources.map((resource, index) => (
-                  <ProjectAppCard
-                    key={index}
-                    resource={resource}
-                    onSave={(updatedResource) =>
-                      updateApp(index, updatedResource)
-                    }
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Empty State */}
-          {devboxResources.length === 0 &&
-            databaseResources.length === 0 &&
-            bucketResources.length === 0 &&
-            appResources.length === 0 && (
-              <div className="flex items-center justify-center py-12 text-muted-foreground">
-                <div className="text-center">
-                  <Settings className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No resources configured for this project</p>
+        {hasResources ? (
+          resourceSections.map(
+            ({ title, key, resources, Component }) =>
+              resources.length > 0 && (
+                <div key={key} className="space-y-3">
+                  <h4 className="text-md font-medium flex items-center gap-2">
+                    {title}
+                    <Badge variant="secondary">{resources.length}</Badge>
+                  </h4>
+                  <div className="space-y-2">
+                    {resources.map((resource, index) => (
+                      <Component
+                        key={`${key}-${index}`}
+                        resource={resource}
+                        onSave={(updatedResource: any) =>
+                          updateResource(key, index, updatedResource)
+                        }
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )
+          )
+        ) : (
+          <div className="flex items-center justify-center py-12 text-muted-foreground">
+            <div className="text-center">
+              <Settings className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No resources configured for this project</p>
+            </div>
+          </div>
+        )}
+
+        {/* Create Button */}
+        <div className="flex justify-end">
+          <Button
+            variant="outline"
+            onClick={handleCreate}
+            className="flex items-center"
+          >
+            <Sparkles className="h-4 w-4 text-theme-blue" />
+            Create
+          </Button>
         </div>
       </CardContent>
     </Card>
   );
 }
 
-// Export types for use in other components
 export type {
   ProjectProposal,
   DevBox,

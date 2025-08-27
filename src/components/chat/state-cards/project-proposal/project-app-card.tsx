@@ -75,34 +75,30 @@ export function ProjectAppCard({ resource, onSave }: ProjectAppCardProps) {
         </div>
         
         {/* Ports Section */}
-        {editData.ports && editData.ports.length > 0 && (
-          <div className="mt-3">
-            <ProjectPortTable
-              ports={editData.ports}
-              allowEditing={true}
-              onPortsChange={(ports) => setEditData({ ...editData, ports })}
-            />
-          </div>
-        )}
+        <div className="mt-3">
+          <ProjectPortTable
+            ports={editData.ports || []}
+            allowEditing={true}
+            onPortsChange={(ports) => setEditData({ ...editData, ports })}
+          />
+        </div>
         
         {/* Environment Variables Section */}
-        {editData.env && editData.env.length > 0 && (
-          <div className="mt-3">
-            <EnvTable
-              envVars={editData.env.map(env => ({ type: "value" as const, name: env.name, value: env.value }))}
-              allowEditing={true}
-              onEnvVarsChange={(envVars) => 
-                setEditData({ 
-                  ...editData, 
-                  env: envVars.map(env => ({ 
-                    name: env.name, 
-                    value: env.type === "value" ? env.value : "" 
-                  }))
-                })
-              }
-            />
-          </div>
-        )}
+        <div className="mt-3">
+          <EnvTable
+            envVars={(editData.env || []).map(env => ({ type: "value" as const, name: env.name, value: env.value }))}
+            allowEditing={true}
+            onEnvVarsChange={(envVars) => 
+              setEditData({ 
+                ...editData, 
+                env: envVars.map(env => ({ 
+                  name: env.name, 
+                  value: env.type === "value" ? env.value : "" 
+                }))
+              })
+            }
+          />
+        </div>
       </div>
     );
   }
@@ -149,7 +145,7 @@ export function ProjectAppCard({ resource, onSave }: ProjectAppCardProps) {
       {/* Ports Display */}
       {resource.ports && resource.ports.length > 0 && (
         <div className="mt-3">
-          <div className="text-xs text-muted-foreground mb-2">Ports:</div>
+          <div className="text-sm pl-1 text-muted-foreground mb-2">Ports:</div>
           <ProjectPortTable
             ports={resource.ports}
             allowEditing={false}
@@ -160,7 +156,7 @@ export function ProjectAppCard({ resource, onSave }: ProjectAppCardProps) {
       {/* Environment Variables Display */}
       {resource.env && resource.env.length > 0 && (
         <div className="mt-3">
-          <div className="text-xs text-muted-foreground mb-2">Environment Variables:</div>
+          <div className="text-sm pl-1 text-muted-foreground mb-2">Environment Variables:</div>
           <EnvTable
             envVars={resource.env.map(env => ({ type: "value" as const, name: env.name, value: env.value }))}
             allowEditing={false}
