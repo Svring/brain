@@ -28,7 +28,7 @@ import {
 import { AIResponse } from "@/components/shadcn-io/ai/response";
 import { jsonSchemaToActionParameters } from "@copilotkit/shared";
 import { zodToJsonSchema } from "zod-to-json-schema";
-import LaunchpadCreateMessage from "@/components/chat/messages/system-messages.tsx/launchpad/components/launchpad-create";
+import LaunchpadCreateMessage from "@/components/chat/messages/system-messages.tsx/launchpad/launchpad-create-message";
 import { LaunchpadCreateRequestSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
 
 export function activateLaunchpadActions(
