@@ -119,8 +119,8 @@ export const DevboxObjectQuerySchema = z.object({
       });
 
       return {
-        cpu: convertedResource.cpu.nearest,
-        memory: convertedResource.memory.nearest,
+        cpu: convertedResource.cpu.original,
+        memory: convertedResource.memory.original,
       };
     }),
   ssh: SSHConfigSchema,

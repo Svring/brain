@@ -3,7 +3,7 @@ import { z } from "zod";
 export const ClusterResourceSchema = z.object({
   cpu: z.number(),
   memory: z.number(),
-  storage: z.string(),
+  storage: z.number(),
   replicas: z.number(),
 });
 

@@ -52,12 +52,13 @@ export const ClusterObjectQuerySchema = z.object({
       const convertedResource = convertK8sResourceToNumeric({
         cpu: k8sResource.cpu,
         memory: k8sResource.memory,
+        storage: k8sResource.storage,
       });
 
       return {
         cpu: convertedResource.cpu.nearest,
         memory: convertedResource.memory.nearest,
-        storage: k8sResource.storage,
+        storage: convertedResource.storage.nearest,
         replicas: k8sResource.replicas,
       };
     }),
@@ -101,6 +102,9 @@ export const ClusterObjectQuerySchema = z.object({
             spec.resources?.limits?.memory ||
             spec.resources?.requests?.memory ||
             "0",
+          storage:
+            spec.volumeClaimTemplates?.[0]?.spec?.resources?.requests
+              ?.storage || "0",
         };
 
         // Convert Kubernetes resource strings to numeric values
@@ -112,9 +116,7 @@ export const ClusterObjectQuerySchema = z.object({
           resource: {
             cpu: convertedResource.cpu.nearest,
             memory: convertedResource.memory.nearest,
-            storage:
-              spec.volumeClaimTemplates?.[0]?.spec?.resources?.requests
-                ?.storage || "0",
+            storage: convertedResource.storage.original,
             replicas: spec.replicas || 0,
           },
         };

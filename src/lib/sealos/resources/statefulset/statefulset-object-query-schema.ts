@@ -61,18 +61,24 @@ export const StatefulsetObjectQuerySchema = z.object({
         const convertedResource = convertK8sResourceToNumeric({
           cpu: k8sResource.cpu,
           memory: k8sResource.memory,
+          storage: k8sResource.storage,
         });
 
         return {
           replicas,
-          cpu: convertedResource.cpu.nearest,
-          memory: convertedResource.memory.nearest,
-          storage,
+          cpu: convertedResource.cpu.original,
+          memory: convertedResource.memory.original,
+          storage: convertedResource.storage.original,
         };
       }
+      // Convert storage even when no containers are found
+      const convertedStorage = convertK8sResourceToNumeric({
+        storage: storage,
+      });
+
       return {
         replicas,
-        storage,
+        storage: convertedStorage.storage.original,
       };
     }),
   status: z

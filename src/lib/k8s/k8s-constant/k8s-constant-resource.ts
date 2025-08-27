@@ -13,7 +13,7 @@ export const MEMORY_OPTIONS = [0.5, 1, 2, 4, 8, 16] as const;
 export const REPLICAS_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
 // Storage options for resources that support it (in GB)
-export const STORAGE_OPTIONS = [10, 20, 50, 100, 200, 300] as const;
+export const STORAGE_OPTIONS = [1, 3, 5, 10, 20, 50, 100, 200, 300] as const;
 
 // Type exports for TypeScript
 export type CpuOption = (typeof CPU_OPTIONS)[number];

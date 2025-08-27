@@ -18,6 +18,7 @@ import { buildQueryKey } from "../k8s-constant/k8s-constant-query-key";
 import {
   CPU_OPTIONS,
   MEMORY_OPTIONS,
+  STORAGE_OPTIONS,
 } from "../k8s-constant/k8s-constant-resource";
 
 import _ from "lodash";
@@ -636,19 +637,22 @@ export function flattenResourceList<T extends K8sResource>(
 
 /**
  * Convert Kubernetes resource strings to numeric values and find nearest available options
- * @param resource - Object containing cpu and memory as strings (e.g., "500m", "8Gi")
+ * @param resource - Object containing cpu, memory, and storage as strings (e.g., "500m", "8Gi", "3Gi")
  * @returns Object with converted numeric values and nearest available options
  */
 export function convertK8sResourceToNumeric(resource: {
   cpu?: string;
   memory?: string;
+  storage?: string;
 }): {
   cpu: { original: number; nearest: number };
   memory: { original: number; nearest: number };
+  storage: { original: number; nearest: number };
 } {
   const result = {
     cpu: { original: 0, nearest: CPU_OPTIONS[0] as number },
     memory: { original: 0, nearest: MEMORY_OPTIONS[0] as number },
+    storage: { original: 0, nearest: STORAGE_OPTIONS[0] as number },
   };
 
   // Convert CPU from Kubernetes format to numeric cores
@@ -695,6 +699,32 @@ export function convertK8sResourceToNumeric(resource: {
     result.memory.nearest = findNearestValue(memoryValue, MEMORY_OPTIONS);
   }
 
+  // Convert Storage from Kubernetes format to numeric GB
+  if (resource.storage) {
+    let storageValue: number;
+    if (typeof resource.storage === "string") {
+      if (resource.storage.endsWith("Gi")) {
+        // Convert GiB to GB (e.g., "3Gi" -> 3)
+        storageValue = parseFloat(resource.storage.slice(0, -2));
+      } else if (resource.storage.endsWith("Mi")) {
+        // Convert MiB to GB (e.g., "3072Mi" -> 3)
+        storageValue = parseFloat(resource.storage.slice(0, -2)) / 1024;
+      } else if (resource.storage.endsWith("Ki")) {
+        // Convert KiB to GB (e.g., "3145728Ki" -> 3)
+        storageValue =
+          parseFloat(resource.storage.slice(0, -2)) / (1024 * 1024);
+      } else {
+        // Assume bytes and convert to GB
+        storageValue = parseFloat(resource.storage) / (1024 * 1024 * 1024);
+      }
+    } else {
+      storageValue = Number(resource.storage);
+    }
+
+    result.storage.original = storageValue;
+    result.storage.nearest = findNearestValue(storageValue, STORAGE_OPTIONS);
+  }
+
   return result;
 }
 
@@ -723,14 +753,15 @@ function findNearestValue(target: number, options: readonly number[]): number {
 
 /**
  * Convert numeric resource values back to Kubernetes format
- * @param resource - Object containing cpu and memory as numbers
+ * @param resource - Object containing cpu, memory, and storage as numbers
  * @returns Object with Kubernetes-formatted strings
  */
 export function convertNumericToK8sResource(resource: {
   cpu?: number;
   memory?: number;
-}): { cpu?: string; memory?: string } {
-  const result: { cpu?: string; memory?: string } = {};
+  storage?: number;
+}): { cpu?: string; memory?: string; storage?: string } {
+  const result: { cpu?: string; memory?: string; storage?: string } = {};
 
   if (resource.cpu !== undefined) {
     // Convert cores to millicores for CPU
@@ -740,6 +771,11 @@ export function convertNumericToK8sResource(resource: {
   if (resource.memory !== undefined) {
     // Convert GB to GiB for memory
     result.memory = `${resource.memory}Gi`;
+  }
+
+  if (resource.storage !== undefined) {
+    // Convert GB to GiB for storage
+    result.storage = `${resource.storage}Gi`;
   }
 
   return result;

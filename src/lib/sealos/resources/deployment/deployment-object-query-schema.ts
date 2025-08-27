@@ -56,8 +56,8 @@ export const DeploymentObjectQuerySchema = z.object({
 
         return {
           replicas,
-          cpu: convertedResource.cpu.nearest,
-          memory: convertedResource.memory.nearest,
+          cpu: convertedResource.cpu.original,
+          memory: convertedResource.memory.original,
         };
       }
       return {};
