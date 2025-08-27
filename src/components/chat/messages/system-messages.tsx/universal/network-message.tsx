@@ -1,15 +1,5 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { Copy, Check, Globe } from "lucide-react";
-import { useCopy } from "@/hooks/use-copy";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Globe } from "lucide-react";
 import type {
   DevboxObject,
   DevboxPort,
@@ -22,13 +12,13 @@ import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import BaseSystemMessage from "../components/base-system-message";
+import { PortDisplayTable } from "../components/port-display-table";
 
 interface NetworkMessageProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
 }
 
 export default function NetworkMessage({ target }: NetworkMessageProps) {
-  const { copyToClipboard, isCopied } = useCopy();
   const { appendSystemMessage } = useAppendSystemMessageMutation();
 
   const { resource } = useResourceStatus(target);
@@ -52,82 +42,7 @@ export default function NetworkMessage({ target }: NetworkMessageProps) {
   return (
     <BaseSystemMessage target={target} actions={actions}>
       <div className="space-y-3">
-        <div className="w-full overflow-hidden">
-          <Table className="border border-dashed rounded-lg">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-20">Number</TableHead>
-                <TableHead className="w-1/2">Private Address</TableHead>
-                <TableHead className="w-1/2">Public Address</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {ports.map((port: any, index: number) => (
-                <TableRow key={index}>
-                  <TableCell className="font-mono">{port.number}</TableCell>
-                  <TableCell className="max-w-0">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="truncate"
-                        title={port.privateAddress || "-"}
-                      >
-                        {port.privateAddress || "-"}
-                      </span>
-                      {port.privateAddress && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 w-6 p-0 flex-shrink-0"
-                          onClick={() =>
-                            copyToClipboard(
-                              port.privateAddress!,
-                              `private-${port.number}`
-                            )
-                          }
-                        >
-                          {isCopied(`private-${port.number}`) ? (
-                            <Check className="w-3 h-3" />
-                          ) : (
-                            <Copy className="w-3 h-3" />
-                          )}
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="max-w-0">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="truncate"
-                        title={port.publicAddress || "-"}
-                      >
-                        {port.publicAddress || "-"}
-                      </span>
-                      {port.publicAddress && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 w-6 p-0 flex-shrink-0"
-                          onClick={() =>
-                            copyToClipboard(
-                              port.publicAddress!,
-                              `public-${port.number}`
-                            )
-                          }
-                        >
-                          {isCopied(`public-${port.number}`) ? (
-                            <Check className="w-3 h-3" />
-                          ) : (
-                            <Copy className="w-3 h-3" />
-                          )}
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <PortDisplayTable ports={ports} />
       </div>
     </BaseSystemMessage>
   );

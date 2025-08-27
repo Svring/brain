@@ -7,13 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  MoreHorizontal,
-  Pause,
-  Trash2,
-  PencilLine,
-  Power,
-} from "lucide-react";
+import { MoreHorizontal, Pause, Trash2, PencilLine, Power } from "lucide-react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRemoveFromProjectMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
@@ -29,7 +23,9 @@ interface ClusterMessageMenuProps {
   target: CustomResourceTarget;
 }
 
-export default function ClusterMessageMenu({ target }: ClusterMessageMenuProps) {
+export default function ClusterMessageMenu({
+  target,
+}: ClusterMessageMenuProps) {
   const { cluster: clusterTrpcClient } = useTRPCClients();
   const queryClient = useQueryClient();
   const k8sContext = createK8sContext();
@@ -52,24 +48,27 @@ export default function ClusterMessageMenu({ target }: ClusterMessageMenuProps) 
 
   const handleDelete = () => {
     if (!clusterName) return;
-    deleteCluster.mutate({ name: clusterName }, {
-      onSuccess: () => {
-        // Invalidate relevant queries
-        queryClient.invalidateQueries({
-          queryKey: clusterTrpcClient.getCluster.queryKey({ target }),
-        });
-      },
-    });
+    deleteCluster.mutate(
+      { name: clusterName },
+      {
+        onSuccess: () => {
+          // Invalidate relevant queries
+          queryClient.invalidateQueries({
+            queryKey: clusterTrpcClient.getCluster.queryKey({ target }),
+          });
+        },
+      }
+    );
   };
 
   const handleStart = () => {
     if (!clusterName) return;
-    startHook.start(clusterName);
+    // startHook.start(clusterName);
   };
 
   const handlePause = () => {
     if (!clusterName) return;
-    pauseHook.pause(clusterName);
+    // pauseHook.pause(clusterName);
   };
 
   // Don't render if we don't have a valid cluster name
@@ -77,28 +76,8 @@ export default function ClusterMessageMenu({ target }: ClusterMessageMenuProps) 
     return null;
   }
 
-  // Get badge variant based on status
-  const getBadgeVariant = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "running":
-        return "default";
-      case "stopped":
-      case "shutdown":
-        return "secondary";
-      case "creating":
-      case "updating":
-      case "pending":
-        return "outline";
-      default:
-        return "outline";
-    }
-  };
-
   return (
     <div className="flex items-center gap-2">
-      <Badge variant={getBadgeVariant(currentStatus)} className="text-xs">
-        {currentStatus}
-      </Badge>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
@@ -120,9 +99,15 @@ export default function ClusterMessageMenu({ target }: ClusterMessageMenuProps) 
                 e.stopPropagation();
                 handleStart();
               }}
-              disabled={currentStatus === "Creating" || currentStatus === "Updating" || startHook.isPending}
+              disabled={
+                currentStatus === "Creating" ||
+                currentStatus === "Updating" ||
+                startHook.isPending
+              }
               className={
-                currentStatus === "Creating" || currentStatus === "Updating" ? "opacity-50" : ""
+                currentStatus === "Creating" || currentStatus === "Updating"
+                  ? "opacity-50"
+                  : ""
               }
             >
               <Power className="mr-2 h-4 w-4" />
@@ -135,9 +120,15 @@ export default function ClusterMessageMenu({ target }: ClusterMessageMenuProps) 
                 e.stopPropagation();
                 handlePause();
               }}
-              disabled={currentStatus === "Creating" || currentStatus === "Updating" || pauseHook.isPending}
+              disabled={
+                currentStatus === "Creating" ||
+                currentStatus === "Updating" ||
+                pauseHook.isPending
+              }
               className={
-                currentStatus === "Creating" || currentStatus === "Updating" ? "opacity-50" : ""
+                currentStatus === "Creating" || currentStatus === "Updating"
+                  ? "opacity-50"
+                  : ""
               }
             >
               <Pause className="mr-2 h-4 w-4" />
@@ -145,9 +136,13 @@ export default function ClusterMessageMenu({ target }: ClusterMessageMenuProps) 
             </DropdownMenuItem>
           )}
           <DropdownMenuItem
-            disabled={currentStatus === "Creating" || currentStatus === "Updating"}
+            disabled={
+              currentStatus === "Creating" || currentStatus === "Updating"
+            }
             className={
-              currentStatus === "Creating" || currentStatus === "Updating" ? "opacity-50" : ""
+              currentStatus === "Creating" || currentStatus === "Updating"
+                ? "opacity-50"
+                : ""
             }
           >
             <PencilLine className="mr-2 h-4 w-4" />
@@ -156,30 +151,16 @@ export default function ClusterMessageMenu({ target }: ClusterMessageMenuProps) 
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
-              const clusterTarget = convertResourceTypeToTarget("cluster", clusterName);
-              removeFromProject.mutate({
-                resources: [clusterTarget],
-              });
-            }}
-            disabled={
-              currentStatus === "Creating" || currentStatus === "Updating" || !clusterName
-            }
-            className={
-              currentStatus === "Creating" || currentStatus === "Updating" ? "opacity-50" : ""
-            }
-          >
-            <PencilLine className="mr-2 h-4 w-4" />
-            Remove from Project
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation();
               handleDelete();
             }}
             className={`text-destructive ${
-              currentStatus === "Creating" || currentStatus === "Updating" ? "opacity-50" : ""
+              currentStatus === "Creating" || currentStatus === "Updating"
+                ? "opacity-50"
+                : ""
             }`}
-            disabled={currentStatus === "Creating" || currentStatus === "Updating"}
+            disabled={
+              currentStatus === "Creating" || currentStatus === "Updating"
+            }
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Delete

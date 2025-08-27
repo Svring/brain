@@ -67,12 +67,12 @@ export default function DevboxMessageMenu({ target }: DevboxMessageMenuProps) {
 
   const handleStart = () => {
     if (!devboxName) return;
-    startHook.start({ action: "start", devboxName });
+    // startHook.start({ action: "start", devboxName });
   };
 
   const handlePause = () => {
     if (!devboxName) return;
-    pauseHook.pause({ action: "stop", devboxName });
+    // pauseHook.pause({ action: "stop", devboxName });
   };
 
   // Don't render if we don't have a valid devbox name
@@ -80,26 +80,8 @@ export default function DevboxMessageMenu({ target }: DevboxMessageMenuProps) {
     return null;
   }
 
-  // Get badge variant based on status
-  const getBadgeVariant = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "running":
-        return "default";
-      case "stopped":
-      case "shutdown":
-        return "secondary";
-      case "pending":
-        return "outline";
-      default:
-        return "outline";
-    }
-  };
-
   return (
     <div className="flex items-center gap-2">
-      <Badge variant={getBadgeVariant(currentStatus)} className="text-xs">
-        {currentStatus}
-      </Badge>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
@@ -144,28 +126,13 @@ export default function DevboxMessageMenu({ target }: DevboxMessageMenuProps) {
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
-              startHook.start({ action: "restart", devboxName });
+              // startHook.start({ action: "restart", devboxName });
             }}
             disabled={currentStatus === "Pending" || startHook.isPending}
             className={currentStatus === "Pending" ? "opacity-50" : ""}
           >
             <RotateCcw className="mr-2 h-4 w-4" />
             Restart
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation();
-              // Convert devbox to resource target format for the mutation
-              const devboxTarget = convertResourceTypeToTarget("devbox", devboxName);
-              removeFromProject.mutate({
-                resources: [devboxTarget],
-              });
-            }}
-            disabled={currentStatus === "Pending"}
-            className={currentStatus === "Pending" ? "opacity-50" : ""}
-          >
-            <PencilLine className="mr-2 h-4 w-4" />
-            Remove from Project
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={(e) => {

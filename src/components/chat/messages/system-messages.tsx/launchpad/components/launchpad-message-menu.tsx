@@ -21,7 +21,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useResourceStart } from "@/hooks/sealos/resource/use-resource-start";
 import { useResourcePause } from "@/hooks/sealos/resource/use-resource-pause";
-import { Badge } from "@/components/ui/badge";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 
 interface LaunchpadMessageMenuProps {
@@ -31,18 +30,13 @@ interface LaunchpadMessageMenuProps {
 export default function LaunchpadMessageMenu({
   target,
 }: LaunchpadMessageMenuProps) {
-  const { launchpad: launchpadTrpcClient, project: projectTrpcClient } =
-    useTRPCClients();
+  const { launchpad: launchpadTrpcClient } = useTRPCClients();
   const queryClient = useQueryClient();
 
   // Extract name and status from the target using the hook
   const { resource, status } = useResourceStatus(target);
   const launchpadName = resource?.name || target.name || "";
   const currentStatus = status || "Pending";
-
-  const removeFromProject = useMutation(
-    projectTrpcClient.removeFromProject.mutationOptions()
-  );
 
   // Use the new resource hooks
   const startHook = useResourceStart(target);
@@ -70,12 +64,12 @@ export default function LaunchpadMessageMenu({
 
   const handleStart = () => {
     if (!launchpadName) return;
-    startHook.start({ name: launchpadName });
+    // startHook.start({ name: launchpadName });
   };
 
   const handlePause = () => {
     if (!launchpadName) return;
-    pauseHook.pause({ name: launchpadName });
+    // pauseHook.pause({ name: launchpadName });
   };
 
   // Don't render if we don't have a valid launchpad name
@@ -83,31 +77,11 @@ export default function LaunchpadMessageMenu({
     return null;
   }
 
-  // Get badge variant based on status
-  const getBadgeVariant = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "running":
-        return "default";
-      case "stopped":
-      case "shutdown":
-        return "secondary";
-      case "creating":
-      case "updating":
-      case "pending":
-        return "outline";
-      default:
-        return "outline";
-    }
-  };
-
   // Determine if the launchpad is running based on status
   const isRunning = currentStatus === "Running";
 
   return (
     <div className="flex items-center gap-2">
-      <Badge variant={getBadgeVariant(currentStatus)} className="text-xs">
-        {currentStatus}
-      </Badge>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
@@ -154,31 +128,6 @@ export default function LaunchpadMessageMenu({
           <DropdownMenuItem disabled>
             <RotateCcw className="mr-2 h-4 w-4" />
             Restart
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation();
-              removeFromProject.mutate(
-                {
-                  resources: [target],
-                },
-                {
-                  onSuccess: () => {
-                    queryClient.invalidateQueries({
-                      queryKey: projectTrpcClient.getProject.queryKey(),
-                    });
-                    queryClient.invalidateQueries({
-                      queryKey:
-                        projectTrpcClient.getProjectResources.queryKey(),
-                    });
-                  },
-                }
-              );
-            }}
-            disabled={!launchpadName}
-          >
-            <PencilLine className="mr-2 h-4 w-4" />
-            Remove from Project
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem

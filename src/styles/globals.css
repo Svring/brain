@@ -93,6 +93,7 @@
 @theme {
   --color-background-primary: #090909;
   --color-background-secondary: #101011;
+  --color-background-tertiary: #2B2B2F;
 
   /* --color-node-background: #18181b; */
   --color-node-background: #101011;

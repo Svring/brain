@@ -37,23 +37,18 @@ export function BaseSystemMessage({
 }: BaseSystemMessageProps) {
   return (
     <div className="flex justify-start w-full">
-      <Card className="w-full bg-background-secondary border border-border-primary">
+      <Card className="w-full bg-background-secondary border border-border-primary pt-0">
         {/* Header Section */}
         {showHeader && target && (
-          <div className="px-6 bg-message-header">
-            <div className="flex items-center justify-between">
-              <MessageHeader target={target} />
-              {headerSlot && <div className="flex-shrink-0">{headerSlot}</div>}
-            </div>
-          </div>
+          <MessageHeader target={target} headerSlot={headerSlot} />
         )}
 
         {/* Content Section */}
-        <CardContent className="px-6 space-y-4">{children}</CardContent>
+        <CardContent className="px-4 space-y-4">{children}</CardContent>
 
         {/* Actions Section */}
         {actions.length > 0 && (
-          <div className="px-6 space-y-3">
+          <div className="px-4 space-y-3">
             {/* Actions Title */}
             <div className="relative flex items-center">
               <Separator className="flex-1" />

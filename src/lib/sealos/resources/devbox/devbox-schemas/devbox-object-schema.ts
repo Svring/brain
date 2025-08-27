@@ -32,6 +32,7 @@ const PodSchema = z.object({
 export const DevboxObjectSchema = z.object({
   name: z.string(),
   kind: z.string(),
+  runtime: z.string(),
   image: z.string(),
   status: z.string(),
   resources: DevboxResourceSchema,

@@ -60,6 +60,21 @@ export const DevboxObjectQuerySchema = z.object({
       path: ["kind"],
     })
   ),
+  runtime: z
+    .any()
+    .describe(
+      JSON.stringify({
+        resourceType: "devbox",
+        path: ["spec.image"],
+      })
+    )
+    .transform((image) => {
+      // Transform the image similar to how devbox node title processes it
+      // First extract the image name (remove registry and tag)
+      const imageName = image.split(":")[0].split("/").pop() || "";
+      // Then apply the same processing as devbox node title: split by "-", remove last part, join back
+      return imageName.split("-").slice(0, -1).join("-");
+    }),
   image: z.any().describe(
     JSON.stringify({
       resourceType: "devbox",

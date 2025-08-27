@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Copy, Download } from "lucide-react";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import { useAuthState } from "@/contexts/auth/auth-context";
+import { Separator } from "@/components/ui/separator";
 
 interface DevboxInfoDetailsProps {
   devboxObject: DevboxObject;
@@ -49,7 +50,7 @@ export const DevboxInfoDetails: React.FC<DevboxInfoDetailsProps> = ({
           <span className="text-sm text-muted-foreground">CPU</span>
           <span className="text-sm font-medium">
             {devboxObject.resources?.cpu
-              ? `${devboxObject.resources.cpu}m`
+              ? `${devboxObject.resources.cpu}Core`
               : "N/A"}
           </span>
         </div>
@@ -57,11 +58,13 @@ export const DevboxInfoDetails: React.FC<DevboxInfoDetailsProps> = ({
           <span className="text-sm text-muted-foreground">Memory</span>
           <span className="text-sm font-medium">
             {devboxObject.resources?.memory
-              ? `${devboxObject.resources.memory}MB`
+              ? `${devboxObject.resources.memory}GB`
               : "N/A"}
           </span>
         </div>
       </div>
+
+      <Separator />
 
       {/* SSH Connection Info */}
       {devboxObject.ssh && (

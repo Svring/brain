@@ -20,7 +20,7 @@ interface AiChatHeaderProps {
 export function AiChatHeader({
   title = "Chat",
   description = "Chat with Sealos Brain AI to help with your projects",
-  className = "p-6 pb-0 shrink-0",
+  className = "p-4 py-2 shrink-0",
 }: AiChatHeaderProps) {
   const { auth } = useAuthState();
   const { selectedProject, selectedResource } = useProjectState();
@@ -34,7 +34,7 @@ export function AiChatHeader({
   }
 
   return (
-    <SheetHeader className={className}>
+    <SheetHeader className={`${className}`}>
       <div className="flex items-center gap-2">
         <div>
           <SheetTitle>{title}</SheetTitle>

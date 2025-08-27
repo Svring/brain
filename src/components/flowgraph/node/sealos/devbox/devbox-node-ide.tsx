@@ -21,9 +21,7 @@ interface DevboxNodeIdeProps {
   object: DevboxObject;
 }
 
-export default function DevboxNodeIde({
-  object,
-}: DevboxNodeIdeProps) {
+export default function DevboxNodeIde({ object }: DevboxNodeIdeProps) {
   const [selectedIde, setSelectedIde] = useState<string>("vscode");
   const context = createK8sContext();
   const devboxContext = createDevboxContext();
@@ -34,9 +32,9 @@ export default function DevboxNodeIde({
 
   return (
     <div
-      className={`flex items-center border border-border rounded-lg overflow-hidden`}
+      className={`flex items-center border border-border-primary rounded-lg overflow-hidden bg-background-tertiary`}
     >
-      {/* IDE Icon - Click to open IDE */}
+      {/* IDE Icon and Name - Click to open IDE */}
       <button
         onClick={async (e) => {
           e.stopPropagation();
@@ -58,7 +56,7 @@ export default function DevboxNodeIde({
             console.error("Failed to get SSH info:", error);
           }
         }}
-        className="p-1.5 hover:bg-muted transition-colors flex items-center"
+        className="p-1.5 hover:bg-muted transition-colors flex items-center gap-2"
       >
         <Image
           src={`https://devbox.${context.regionUrl}/images/ide/${selectedIde}.svg`}
@@ -67,6 +65,7 @@ export default function DevboxNodeIde({
           height={16}
           className="h-5 w-5"
         />
+        <span className="text-sm font-medium capitalize">{selectedIde}</span>
       </button>
 
       {/* Separator */}

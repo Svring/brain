@@ -5,7 +5,7 @@ import { BaseSystemMessage } from "@/components/chat/messages/system-messages.ts
 import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import { FileText, Container, BarChart3, Pencil } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import LaunchpadMessageDetails from "./components/launchpad-info-details";
+import LaunchpadMessageDetails from "./components/launchpad-message-details";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import LaunchpadMessageMenu from "./components/launchpad-message-menu";
 
