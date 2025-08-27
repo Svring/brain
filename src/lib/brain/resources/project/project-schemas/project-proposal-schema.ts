@@ -1,96 +1,21 @@
 import { z } from "zod";
+import { DEVBOX_RUNTIMES } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-runtimes";
+import { CLUSTER_TYPES } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-types";
 
 // TypeScript interfaces matching the Python model structure
-export interface Reliances {
-  database?: string[];
-  bucket?: string[];
-}
-
-export interface DevBox {
-  name: string;
-  runtime:
-    | "C++"
-    | "Nuxt3"
-    | "Hugo"
-    | "Java"
-    | "Chi"
-    | "PHP"
-    | "Rocket"
-    | "Quarkus"
-    | "Debian"
-    | "Ubuntu"
-    | "Spring Boot"
-    | "Flask"
-    | "Nginx"
-    | "Vue.js"
-    | "Python"
-    | "VitePress"
-    | "Node.js"
-    | "Echo"
-    | "Next.js"
-    | "Angular"
-    | "React"
-    | "Svelte"
-    | "Gin"
-    | "Rust"
-    | "UmiJS"
-    | "Docusaurus"
-    | "Hexo"
-    | "Vert.x"
-    | "Go"
-    | "C"
-    | "Iris"
-    | "Astro"
-    | "MCP"
-    | "Django"
-    | "Express.js"
-    | ".Net";
-  reliances?: Reliances;
-}
-
-export interface Database {
-  name: string;
-  type:
-    | "postgresql"
-    | "mongodb"
-    | "apecloud-mysql"
-    | "redis"
-    | "kafka"
-    | "weaviate"
-    | "milvus"
-    | "pulsar";
-}
-
-export interface ObjectStorageBucket {
-  name: string;
-  policy: "Private" | "PublicRead" | "PublicReadwrite";
-}
-
-export interface App {
-  name: string;
-  image: string;
-  reliances?: Reliances;
-}
-
-export interface ProjectResources {
-  devbox?: DevBox[];
-  database?: Database[];
-  bucket?: ObjectStorageBucket[];
-  app?: App[];
-}
-
-export interface ProjectProposal {
-  name: string;
-  resources: ProjectResources;
-}
+// Shared port schema
+export const PortSchema = z.object({
+  number: z.number().int().min(1).max(65535),
+  publicAccess: z.boolean(),
+});
 
 // Zod schemas matching the Python model structure
-export const reliancesSchema = z.object({
+export const ReliancesSchema = z.object({
   database: z.array(z.string()).optional(),
   bucket: z.array(z.string()).optional(),
 });
 
-export const devBoxSchema = z.object({
+export const DevBoxSchema = z.object({
   name: z
     .string()
     .min(1, "Name is required")
@@ -99,48 +24,12 @@ export const devBoxSchema = z.object({
       /^[a-z0-9_-]+$/,
       "Name must contain only lowercase letters, numbers, underscores, and hyphens"
     ),
-  runtime: z.enum([
-    "C++",
-    "Nuxt3",
-    "Hugo",
-    "Java",
-    "Chi",
-    "PHP",
-    "Rocket",
-    "Quarkus",
-    "Debian",
-    "Ubuntu",
-    "Spring Boot",
-    "Flask",
-    "Nginx",
-    "Vue.js",
-    "Python",
-    "VitePress",
-    "Node.js",
-    "Echo",
-    "Next.js",
-    "Angular",
-    "React",
-    "Svelte",
-    "Gin",
-    "Rust",
-    "UmiJS",
-    "Docusaurus",
-    "Hexo",
-    "Vert.x",
-    "Go",
-    "C",
-    "Iris",
-    "Astro",
-    "MCP",
-    "Django",
-    "Express.js",
-    ".Net",
-  ]),
-  reliances: reliancesSchema.optional(),
+  runtime: z.enum(DEVBOX_RUNTIMES as [string, ...string[]]),
+  ports: z.array(PortSchema).optional(),
+  reliances: ReliancesSchema.optional(),
 });
 
-export const databaseSchema = z.object({
+export const DatabaseSchema = z.object({
   name: z
     .string()
     .min(1, "Name is required")
@@ -149,20 +38,10 @@ export const databaseSchema = z.object({
       /^[a-z0-9_-]+$/,
       "Name must contain only lowercase letters, numbers, underscores, and hyphens"
     ),
-  type: z.enum([
-    "postgresql",
-    "mongodb",
-    "apecloud-mysql",
-    "redis",
-    "kafka",
-    "weaviate",
-    "milvus",
-    "pulsar",
-  ]),
-  description: z.string().min(1, "Description is required"),
+  type: z.enum([...CLUSTER_TYPES] as [string, ...string[]]),
 });
 
-export const objectStorageBucketSchema = z.object({
+export const ObjectStorageBucketSchema = z.object({
   name: z
     .string()
     .min(1, "Name is required")
@@ -174,7 +53,12 @@ export const objectStorageBucketSchema = z.object({
   policy: z.enum(["Private", "PublicRead", "PublicReadwrite"]),
 });
 
-export const appSchema = z.object({
+export const AppEnvSchema = z.object({
+  name: z.string().min(1, "Environment variable name is required"),
+  value: z.string().min(1, "Environment variable value is required"),
+});
+
+export const AppSchema = z.object({
   name: z
     .string()
     .min(1, "Name is required")
@@ -187,20 +71,22 @@ export const appSchema = z.object({
     .string()
     .min(1, "Image is required")
     .regex(
-      /^[a-zA-Z0-9._-]+(\/[a-zA-Z0-9._-]+)*(:[a-zA-Z0-9._-]+)?(@sha256:[a-fA-F0-9]{64})?$/,
+      /^[a-zA-Z0-9._-]+(\/[a-zA-Z0-9._-]+)*(:[a-zA-Z0-9._-]+)?(@sha256:[a-fA-Z0-9]{64})?$/,
       "Image must be a valid Docker image format (e.g., nginx, nginx:latest, docker.io/nginx:1.21)"
     ),
-  reliances: reliancesSchema.optional(),
+  ports: z.array(PortSchema).optional(),
+  env: z.array(AppEnvSchema).optional(),
+  reliances: ReliancesSchema.optional(),
 });
 
-export const projectResourcesSchema = z.object({
-  devbox: z.array(devBoxSchema).optional(),
-  database: z.array(databaseSchema).optional(),
-  bucket: z.array(objectStorageBucketSchema).optional(),
-  app: z.array(appSchema).optional(),
+export const ProjectResourcesSchema = z.object({
+  devbox: z.array(DevBoxSchema).optional(),
+  database: z.array(DatabaseSchema).optional(),
+  bucket: z.array(ObjectStorageBucketSchema).optional(),
+  app: z.array(AppSchema).optional(),
 });
 
-export const projectProposalSchema = z.object({
+export const ProjectProposalSchema = z.object({
   name: z
     .string()
     .min(1, "Project name is required")
@@ -209,11 +95,11 @@ export const projectProposalSchema = z.object({
       /^[a-z0-9_-]+$/,
       "Project name must contain only lowercase letters, numbers, underscores, and hyphens"
     ),
-  resources: projectResourcesSchema,
+  resources: ProjectResourcesSchema,
 });
 
 // Form schema with Zod validation
-export const projectProposalFormSchema = z.object({
+export const ProjectProposalFormSchema = z.object({
   projectName: z
     .string()
     .min(1, "Project name is required")
@@ -222,11 +108,22 @@ export const projectProposalFormSchema = z.object({
       /^[a-z0-9_-]+$/,
       "Project name must contain only lowercase letters, numbers, underscores, and hyphens"
     ),
-  resources: projectResourcesSchema,
+  resources: ProjectResourcesSchema,
 });
 
-// Type exports
+// Inferred types from schemas
+export type Reliances = z.infer<typeof ReliancesSchema>;
+export type Port = z.infer<typeof PortSchema>;
+export type DevBox = z.infer<typeof DevBoxSchema>;
+export type Database = z.infer<typeof DatabaseSchema>;
+export type ObjectStorageBucket = z.infer<typeof ObjectStorageBucketSchema>;
+export type App = z.infer<typeof AppSchema>;
+export type AppEnv = z.infer<typeof AppEnvSchema>;
+export type ProjectResources = z.infer<typeof ProjectResourcesSchema>;
+export type ProjectProposal = z.infer<typeof ProjectProposalSchema>;
+export type DatabaseType = Database["type"];
+
 export type ProjectProposalFormValues = z.infer<
-  typeof projectProposalFormSchema
+  typeof ProjectProposalFormSchema
 >;
-export type ProjectProposalType = z.infer<typeof projectProposalSchema>;
+export type ProjectProposalType = z.infer<typeof ProjectProposalSchema>;

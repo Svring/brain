@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -94,7 +93,7 @@ export function ProjectDatabaseCard({ resource, onSave }: ProjectDatabaseCardPro
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 flex-col bg-background-secondary p-3 rounded-xl">
       <div className="flex items-center gap-4">
         <div className="flex-shrink-0">
           <Image
@@ -120,18 +119,20 @@ export function ProjectDatabaseCard({ resource, onSave }: ProjectDatabaseCardPro
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="secondary">{resource.type}</Badge>
           {onSave && (
             <Button
               size="sm"
-              variant="ghost"
+              variant="outline"
               onClick={() => setIsEditing(true)}
-              className="h-8 w-8 p-0"
             >
               <Edit2 className="h-4 w-4" />
+              Edit
             </Button>
           )}
         </div>
+      </div>
+      <div className="text-sm pl-1 text-muted-foreground">
+        Type: <span className="text-foreground">{resource.type}</span>
       </div>
     </div>
   );

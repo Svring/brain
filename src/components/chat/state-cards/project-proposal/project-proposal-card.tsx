@@ -8,12 +8,12 @@ import { ProjectDevBoxCard } from "./project-devbox-card";
 import { ProjectDatabaseCard } from "./project-database-card";
 import { ProjectBucketCard } from "./project-bucket-card";
 import { ProjectAppCard } from "./project-app-card";
-import type { 
-  ProjectProposal, 
-  DevBox, 
-  Database, 
-  ObjectStorageBucket, 
-  App 
+import type {
+  ProjectProposal,
+  DevBox,
+  Database,
+  ObjectStorageBucket,
+  App,
 } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 
 interface ProjectProposalCardProps {
@@ -27,9 +27,6 @@ export function ProjectProposalCard({
   className = "",
   onSave,
 }: ProjectProposalCardProps) {
-
-
-
   const updateDevBox = (index: number, updatedResource: DevBox) => {
     const newDevBoxes = [...(proposal.resources.devbox || [])];
     newDevBoxes[index] = updatedResource;
@@ -60,7 +57,10 @@ export function ProjectProposalCard({
     }
   };
 
-  const updateBucket = (index: number, updatedResource: ObjectStorageBucket) => {
+  const updateBucket = (
+    index: number,
+    updatedResource: ObjectStorageBucket
+  ) => {
     const newBuckets = [...(proposal.resources.bucket || [])];
     newBuckets[index] = updatedResource;
     const updatedProposal = {
@@ -99,15 +99,10 @@ export function ProjectProposalCard({
   const appResources = resources.app || [];
 
   return (
-    <Card className={`w-full max-w-3xl mx-auto ${className} bg-background-primary`}>
+    <Card
+      className={`w-full max-w-3xl mx-auto ${className} bg-background-primary`}
+    >
       <CardContent className="space-y-6">
-        {/* Project Header */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">{name}</h2>
-          </div>
-        </div>
-
         {/* Resources Preview */}
         <div className="space-y-4">
           {/* DevBox Resources Section */}
@@ -121,12 +116,12 @@ export function ProjectProposalCard({
               </div>
               <div className="space-y-2">
                 {devboxResources.map((resource, index) => (
-                  <Card key={index} className="p-3">
-                    <ProjectDevBoxCard
-                      resource={resource}
-                      onSave={(updatedResource) => updateDevBox(index, updatedResource)}
-                    />
-                  </Card>
+                  <ProjectDevBoxCard
+                    resource={resource}
+                    onSave={(updatedResource) =>
+                      updateDevBox(index, updatedResource)
+                    }
+                  />
                 ))}
               </div>
             </div>
@@ -143,12 +138,13 @@ export function ProjectProposalCard({
               </div>
               <div className="space-y-2">
                 {databaseResources.map((resource, index) => (
-                  <Card key={index} className="p-3">
-                    <ProjectDatabaseCard
-                      resource={resource}
-                      onSave={(updatedResource) => updateDatabase(index, updatedResource)}
-                    />
-                  </Card>
+                  <ProjectDatabaseCard
+                    key={index}
+                    resource={resource}
+                    onSave={(updatedResource) =>
+                      updateDatabase(index, updatedResource)
+                    }
+                  />
                 ))}
               </div>
             </div>
@@ -165,12 +161,13 @@ export function ProjectProposalCard({
               </div>
               <div className="space-y-2">
                 {bucketResources.map((resource, index) => (
-                  <Card key={index} className="p-3">
-                    <ProjectBucketCard
-                      resource={resource}
-                      onSave={(updatedResource) => updateBucket(index, updatedResource)}
-                    />
-                  </Card>
+                  <ProjectBucketCard
+                    key={index}
+                    resource={resource}
+                    onSave={(updatedResource) =>
+                      updateBucket(index, updatedResource)
+                    }
+                  />
                 ))}
               </div>
             </div>
@@ -187,12 +184,13 @@ export function ProjectProposalCard({
               </div>
               <div className="space-y-2">
                 {appResources.map((resource, index) => (
-                  <Card key={index} className="p-3">
-                    <ProjectAppCard
-                      resource={resource}
-                      onSave={(updatedResource) => updateApp(index, updatedResource)}
-                    />
-                  </Card>
+                  <ProjectAppCard
+                    key={index}
+                    resource={resource}
+                    onSave={(updatedResource) =>
+                      updateApp(index, updatedResource)
+                    }
+                  />
                 ))}
               </div>
             </div>

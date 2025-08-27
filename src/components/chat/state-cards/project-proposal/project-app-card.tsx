@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Edit2, Save, X } from "lucide-react";
 import Image from "next/image";
-import type { App } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
+import type { App, AppEnv } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
+import { EnvTable } from "@/components/chat/messages/system-messages.tsx/components/env-table";
+import { ProjectPortTable } from "./components/project-port-table";
 
 interface ProjectAppCardProps {
   resource: App;
@@ -68,12 +69,48 @@ export function ProjectAppCard({ resource, onSave }: ProjectAppCardProps) {
             />
           </div>
         </div>
+        
+        {/* Ports Section */}
+        {editData.ports && editData.ports.length > 0 && (
+          <div>
+            <label className="text-sm font-medium">Ports</label>
+            <div className="mt-2">
+              <ProjectPortTable
+                ports={editData.ports}
+                allowEditing={true}
+                onPortsChange={(ports) => setEditData({ ...editData, ports })}
+              />
+            </div>
+          </div>
+        )}
+        
+        {/* Environment Variables Section */}
+        {editData.env && editData.env.length > 0 && (
+          <div>
+            <label className="text-sm font-medium">Environment Variables</label>
+            <div className="mt-2">
+              <EnvTable
+                envVars={editData.env.map(env => ({ type: "value" as const, name: env.name, value: env.value }))}
+                allowEditing={true}
+                onEnvVarsChange={(envVars) => 
+                  setEditData({ 
+                    ...editData, 
+                    env: envVars.map(env => ({ 
+                      name: env.name, 
+                      value: env.type === "value" ? env.value : "" 
+                    }))
+                  })
+                }
+              />
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 flex-col bg-background-secondary p-3 rounded-xl">
       <div className="flex items-center gap-4">
         <div className="flex-shrink-0">
           <Image
@@ -94,23 +131,44 @@ export function ProjectAppCard({ resource, onSave }: ProjectAppCardProps) {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="secondary">App</Badge>
           {onSave && (
             <Button
               size="sm"
-              variant="ghost"
+              variant="outline"
               onClick={() => setIsEditing(true)}
-              className="h-8 w-8 p-0"
             >
               <Edit2 className="h-4 w-4" />
+              Edit
             </Button>
           )}
         </div>
       </div>
 
-      <p className="text-xs text-muted-foreground pl-1">
-        Image: {resource.image}
-      </p>
+      <div className="text-sm pl-1 text-muted-foreground">
+        Image: <span className="text-foreground">{resource.image}</span>
+      </div>
+      
+      {/* Ports Display */}
+      {resource.ports && resource.ports.length > 0 && (
+        <div className="mt-3">
+          <div className="text-xs text-muted-foreground mb-2">Ports:</div>
+          <ProjectPortTable
+            ports={resource.ports}
+            allowEditing={false}
+          />
+        </div>
+      )}
+      
+      {/* Environment Variables Display */}
+      {resource.env && resource.env.length > 0 && (
+        <div className="mt-3">
+          <div className="text-xs text-muted-foreground mb-2">Environment Variables:</div>
+          <EnvTable
+            envVars={resource.env.map(env => ({ type: "value" as const, name: env.name, value: env.value }))}
+            allowEditing={false}
+          />
+        </div>
+      )}
     </div>
   );
 }

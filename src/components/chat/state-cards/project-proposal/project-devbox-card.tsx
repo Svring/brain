@@ -15,6 +15,7 @@ import {
 import { Edit2, Save, X } from "lucide-react";
 import Image from "next/image";
 import type { DevBox } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
+import { ProjectPortTable } from "./components/project-port-table";
 
 // Import runtime options from devbox create message
 import { runtimeOptions } from "@/components/chat/messages/system-messages.tsx/devbox/devbox-create-message";
@@ -24,7 +25,10 @@ interface ProjectDevBoxCardProps {
   onSave?: (updatedResource: DevBox) => void;
 }
 
-export function ProjectDevBoxCard({ resource, onSave }: ProjectDevBoxCardProps) {
+export function ProjectDevBoxCard({
+  resource,
+  onSave,
+}: ProjectDevBoxCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(resource);
 
@@ -88,12 +92,26 @@ export function ProjectDevBoxCard({ resource, onSave }: ProjectDevBoxCardProps) 
             </Select>
           </div>
         </div>
+        
+        {/* Ports Section */}
+        {editData.ports && editData.ports.length > 0 && (
+          <div>
+            <label className="text-sm font-medium">Ports</label>
+            <div className="mt-2">
+              <ProjectPortTable
+                ports={editData.ports}
+                allowEditing={true}
+                onPortsChange={(ports) => setEditData({ ...editData, ports })}
+              />
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 flex-col bg-background-secondary p-3 rounded-xl">
       <div className="flex items-center gap-4">
         <div className="flex-shrink-0">
           <Image
@@ -114,19 +132,32 @@ export function ProjectDevBoxCard({ resource, onSave }: ProjectDevBoxCardProps) 
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="secondary">{resource.runtime}</Badge>
           {onSave && (
             <Button
               size="sm"
-              variant="ghost"
+              variant="outline"
               onClick={() => setIsEditing(true)}
-              className="h-8 w-8 p-0"
             >
               <Edit2 className="h-4 w-4" />
+              Edit
             </Button>
           )}
         </div>
       </div>
+      <div className="text-sm pl-1 text-muted-foreground">
+        Runtime: <span className="text-foreground">{resource.runtime}</span>
+      </div>
+      
+      {/* Ports Display */}
+      {resource.ports && resource.ports.length > 0 && (
+        <div className="mt-3">
+          <div className="text-xs text-muted-foreground mb-2">Ports:</div>
+          <ProjectPortTable
+            ports={resource.ports}
+            allowEditing={false}
+          />
+        </div>
+      )}
     </div>
   );
 }
