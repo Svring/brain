@@ -44,7 +44,8 @@ export type FlowgraphEvent =
   | { type: "SELECT_NODE"; node: any }
   | { type: "SELECT_EDGE"; edge: any }
   | { type: "CLEAR_SELECTED_NODE" }
-  | { type: "CLEAR_SELECTED_EDGE" };
+  | { type: "CLEAR_SELECTED_EDGE" }
+  | { type: "CLEAR_ALL_STATE" };
 
 export const flowgraphMachine = createMachine({
   /** XState v5 generics */
@@ -171,6 +172,14 @@ export const flowgraphMachine = createMachine({
         selectedEdge: () => null,
         nodes: ({ context }) =>
           applySplitLayout(context.nodes, context.edges, SPLIT_OPTIONS),
+      }),
+    },
+    CLEAR_ALL_STATE: {
+      actions: assign({
+        nodes: () => [],
+        edges: () => [],
+        selectedNode: () => null,
+        selectedEdge: () => null,
       }),
     },
   },

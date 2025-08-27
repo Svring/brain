@@ -66,6 +66,7 @@ export function useFlowgraphActions() {
     selectEdge: (edge: unknown) => send({ type: "SELECT_EDGE", edge }),
     clearSelectedNode: () => send({ type: "CLEAR_SELECTED_NODE" }),
     clearSelectedEdge: () => send({ type: "CLEAR_SELECTED_EDGE" }),
+    clearAllState: () => send({ type: "CLEAR_ALL_STATE" }),
     onNodesChange: (changes: NodeChange[]) =>
       send({ type: "SET_NODES", nodes: applyNodeChanges(changes, state.context.nodes) }),
     onEdgesChange: (changes: EdgeChange[]) =>

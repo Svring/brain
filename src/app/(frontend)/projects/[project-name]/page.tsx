@@ -59,6 +59,12 @@ import { useAppendMessagesMutation } from "@/lib/langgraph/langgraph-method/lang
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
   const { isOpen, onOpenChange } = useDisclosure();
 
+  const { clearAllState } = useFlowgraphActions();
+
+  useEffect(() => {
+    clearAllState();
+  }, [projectName]);
+
   // Command dialog hook
   const {
     isOpen: isCommandOpen,
