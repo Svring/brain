@@ -122,7 +122,11 @@ export const LaunchpadCreateRequestSchema = z.object({
   image: z.string().default("nginx"),
   command: z.string().default(""),
   args: z.string().default(""),
-  resource: ResourceSchema,
+  resource: ResourceSchema.default({
+    replicas: 1,
+    cpu: 0.2,
+    memory: 0.5,
+  }),
   ports: z.array(PortSchema).default([
     {
       port: 80,

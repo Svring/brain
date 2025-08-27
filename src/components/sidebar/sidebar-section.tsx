@@ -1,6 +1,6 @@
 import { useRouter, usePathname } from "next/navigation";
 import type React from "react";
-import { MessageCirclePlus, LayoutGrid } from "lucide-react";
+import { MessageCirclePlus, LayoutGrid, TestTube } from "lucide-react";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -46,7 +46,7 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
   },
   {
     title: "Test",
-    icon: LayoutGrid,
+    icon: TestTube,
     group: "overview",
     path: "/test",
   },
