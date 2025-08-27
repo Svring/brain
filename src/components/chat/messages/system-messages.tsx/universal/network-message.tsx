@@ -20,7 +20,7 @@ import {
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { MessageAction } from "../components/message-actions";
+import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import BaseSystemMessage from "../components/base-system-message";
 
 interface NetworkMessageProps {

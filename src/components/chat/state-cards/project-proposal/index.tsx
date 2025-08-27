@@ -1,67 +1,11 @@
-"use client";
+// Main project proposal component
+export { ProjectProposalCard } from "./project-proposal-card";
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { ProjectProposalDisplay } from "./display";
-import { ProjectProposalEdit } from "./edit";
-import type { ProjectProposal } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
-
-interface ProjectProposalCardProps {
-  proposal: ProjectProposal;
-  className?: string;
-  initialMode?: "display" | "edit";
-}
-
-export function ProjectProposalCard({
-  proposal,
-  className = "",
-  initialMode = "display",
-}: ProjectProposalCardProps) {
-  const [mode, setMode] = useState<"display" | "edit">(initialMode);
-
-  const handleEdit = () => {
-    setMode("edit");
-  };
-
-  const handleSave = (updatedProposal: ProjectProposal) => {
-    // Here you could handle saving the updated proposal
-    console.log("Saving updated proposal:", updatedProposal);
-    setMode("display");
-  };
-
-  const handleCancel = () => {
-    setMode("display");
-  };
-
-  if (mode === "edit") {
-    return (
-      <ProjectProposalEdit
-        proposal={proposal}
-        onSave={handleSave}
-        onCancel={handleCancel}
-        className={className}
-      />
-    );
-  }
-
-  return (
-    <div className={className}>
-      <ProjectProposalDisplay
-        proposal={proposal}
-        className={className}
-      />
-      <div className="flex justify-center mt-6">
-        <Button onClick={handleEdit} size="lg">
-          Edit Proposal
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-// Re-export individual components for direct use
-export { ProjectProposalDisplay } from "./display";
-export { ProjectProposalEdit } from "./edit";
+// Individual resource card components
+export { ProjectDevBoxCard } from "./project-devbox-card";
+export { ProjectDatabaseCard } from "./project-database-card";
+export { ProjectBucketCard } from "./project-bucket-card";
+export { ProjectAppCard } from "./project-app-card";
 
 // Export types for use in other components
 export type {

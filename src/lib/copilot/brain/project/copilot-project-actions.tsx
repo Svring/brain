@@ -40,7 +40,13 @@ export const proposeProjectAction = (context: K8sApiContext) => {
 
       // Only render when we have a valid project proposal
       if (projectProposal) {
-        return <ProjectProposalCard proposal={projectProposal} />;
+        // return <ProjectProposalCard proposal={projectProposal} />;
+        return (
+          <div>
+            <h1>Project Proposal</h1>
+            <p>{projectProposal.name}</p>
+          </div>
+        );
       }
 
       // Return empty div if no valid proposal data

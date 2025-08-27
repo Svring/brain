@@ -40,14 +40,10 @@ export function BaseSystemMessage({
       <Card className="w-full bg-background-secondary border border-border-primary">
         {/* Header Section */}
         {showHeader && target && (
-          <div className="px-6">
+          <div className="px-6 bg-message-header">
             <div className="flex items-center justify-between">
               <MessageHeader target={target} />
-              {headerSlot && (
-                <div className="flex-shrink-0">
-                  {headerSlot}
-                </div>
-              )}
+              {headerSlot && <div className="flex-shrink-0">{headerSlot}</div>}
             </div>
           </div>
         )}
@@ -61,16 +57,14 @@ export function BaseSystemMessage({
             {/* Actions Title */}
             <div className="relative flex items-center">
               <Separator className="flex-1" />
-              <h3 className="text-sm font-medium text-foreground px-4">Actions</h3>
+              <h3 className="text-sm font-medium text-foreground px-4">
+                Actions
+              </h3>
               <Separator className="flex-1" />
             </div>
 
             {/* Prompt */}
-            {prompt && (
-              <div className="font-medium">
-                {prompt}
-              </div>
-            )}
+            {prompt && <div className="font-medium">{prompt}</div>}
 
             {/* Action Buttons */}
             <div className="space-y-2">

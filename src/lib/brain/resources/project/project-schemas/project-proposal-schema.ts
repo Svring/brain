@@ -46,7 +46,6 @@ export interface DevBox {
     | "Express.js"
     | ".Net";
   reliances?: Reliances;
-  description: string;
 }
 
 export interface Database {
@@ -60,18 +59,15 @@ export interface Database {
     | "weaviate"
     | "milvus"
     | "pulsar";
-  description: string;
 }
 
 export interface ObjectStorageBucket {
   name: string;
   policy: "Private" | "PublicRead" | "PublicReadwrite";
-  description: string;
 }
 
 export interface App {
   name: string;
-  description: string;
   image: string;
   reliances?: Reliances;
 }
@@ -85,7 +81,6 @@ export interface ProjectResources {
 
 export interface ProjectProposal {
   name: string;
-  description: string;
   resources: ProjectResources;
 }
 
@@ -143,7 +138,6 @@ export const devBoxSchema = z.object({
     ".Net",
   ]),
   reliances: reliancesSchema.optional(),
-  description: z.string().min(1, "Description is required"),
 });
 
 export const databaseSchema = z.object({
@@ -178,7 +172,6 @@ export const objectStorageBucketSchema = z.object({
       "Name must contain only lowercase letters, numbers, underscores, and hyphens"
     ),
   policy: z.enum(["Private", "PublicRead", "PublicReadwrite"]),
-  description: z.string().min(1, "Description is required"),
 });
 
 export const appSchema = z.object({
@@ -190,7 +183,6 @@ export const appSchema = z.object({
       /^[a-z0-9_-]+$/,
       "Name must contain only lowercase letters, numbers, underscores, and hyphens"
     ),
-  description: z.string().min(1, "Description is required"),
   image: z
     .string()
     .min(1, "Image is required")
@@ -217,10 +209,6 @@ export const projectProposalSchema = z.object({
       /^[a-z0-9_-]+$/,
       "Project name must contain only lowercase letters, numbers, underscores, and hyphens"
     ),
-  description: z
-    .string()
-    .min(1, "Description is required")
-    .max(30, "Description must be 30 characters or less"),
   resources: projectResourcesSchema,
 });
 
@@ -234,10 +222,6 @@ export const projectProposalFormSchema = z.object({
       /^[a-z0-9_-]+$/,
       "Project name must contain only lowercase letters, numbers, underscores, and hyphens"
     ),
-  description: z
-    .string()
-    .min(1, "Description is required")
-    .max(30, "Description must be 30 characters or less"),
   resources: projectResourcesSchema,
 });
 
