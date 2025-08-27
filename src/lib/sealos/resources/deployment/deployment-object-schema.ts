@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { EnvVar } from "@/lib/k8s/k8s-method/k8s-utils";
 
-const PortSchema = z.object({
+export const PortSchema = z.object({
   number: z.number(),
   name: z.string().optional(),
   nodePort: z.number().optional(),
@@ -12,6 +12,8 @@ const PortSchema = z.object({
   networkName: z.string().optional(),
   host: z.string().optional(),
 });
+
+export type Port = z.infer<typeof PortSchema>;
 
 const ResourceSchema = z.object({
   replicas: z.number(),

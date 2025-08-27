@@ -7,6 +7,7 @@ import {
   Plus,
   RefreshCw,
   FileText,
+  Table,
 } from "lucide-react";
 import {
   SidebarGroup,
@@ -78,6 +79,16 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
         title: "Project Proposal",
         icon: FileText,
         path: "/test/project-proposal",
+      },
+      {
+        title: "Env Table",
+        icon: Table,
+        path: "/test/env-table",
+      },
+      {
+        title: "Ports Table",
+        icon: Table,
+        path: "/test/ports-table",
       },
     ],
   },
