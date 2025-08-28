@@ -56,7 +56,8 @@ export function activateLaunchpadActions(
 function updateLaunchpadResourceAction(context: SealosApiContext) {
   useCopilotAction({
     name: "updateLaunchpadResource",
-    description: "Update the resource quota of a launchpad app",
+    description:
+      "Update the resource quota of a launchpad app, only pass parameters that need to be updated.",
     parameters: [
       {
         name: "name",
@@ -67,18 +68,21 @@ function updateLaunchpadResourceAction(context: SealosApiContext) {
       {
         name: "cpu",
         type: "string",
+        required: false,
         enum: CPU_OPTIONS.map(String),
         description: "desired CPU quota of the launchpad app",
       },
       {
         name: "memory",
         type: "string",
+        required: false,
         enum: MEMORY_OPTIONS.map(String),
         description: "desired memory quota of the launchpad app",
       },
       {
         name: "replicas",
         type: "string",
+        required: false,
         enum: REPLICAS_OPTIONS.map(String),
         description: "desired replicas of the launchpad app",
       },

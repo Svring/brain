@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, ReactNode, useState } from "react";
+import { ReactNode, useState } from "react";
 import BaseNode from "../base-node-wrapper";
 
 interface NodeStackProps {
@@ -22,6 +22,8 @@ export default function NodeStack({
   notReadyCount = 0,
   onBackgroundCardClick,
 }: NodeStackProps) {
+  const [isHovered, setIsHovered] = useState(false);
+
   // Calculate how many background cards to show (limited by maxBackgroundCards)
   const backgroundCardCount = Math.min(data.length, maxBackgroundCards);
 
@@ -30,17 +32,22 @@ export default function NodeStack({
     { length: backgroundCardCount },
     (_, index) => {
       const offset = (index + 1) * 6; // Incremental offset: 8px, 16px, 24px, etc.
-      
+      const rotationAngle = (index + 1) * -3; // Incremental rotation: -5°, -10°, -15°, etc.
+
       // Determine background color for this card
       // Apply yellow background to the first 'notReadyCount' cards
-      const cardBackgroundColor = index < notReadyCount ? "bg-status-warning" : backgroundColor;
-      
+      const cardBackgroundColor =
+        index < notReadyCount ? "bg-status-warning" : backgroundColor;
+
       return (
         <div
           key={index}
-          className="absolute inset-0 cursor-pointer"
+          className="absolute inset-0 cursor-pointer transition-transform duration-300 ease-out"
           style={{
-            transform: `translate(${offset}px, -${offset}px)`,
+            transform: `translate(${offset}px, -${offset}px) rotate(${
+              isHovered ? rotationAngle : 0
+            }deg)`,
+            transformOrigin: "top left",
             zIndex: backgroundCardCount - index, // Inverted z-index: higher index = lower z-index
           }}
           onClick={(e) => {
@@ -66,7 +73,11 @@ export default function NodeStack({
   );
 
   return (
-    <div className={`relative`}>
+    <div
+      className={`relative`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       {/* Background cards with incremental offsets */}
       {backgroundCards}
 
