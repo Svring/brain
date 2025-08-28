@@ -7,8 +7,7 @@ import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-metho
 import { Spinner } from "@/components/ui/spinner";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useProjectState } from "@/contexts/project/project-context";
-import { useFlowgraphState } from "@/contexts/flowgraph/flowgraph-context";
-import { useEffect } from "react";
+import Image from "next/image";
 
 interface AiChatHeaderProps {
   title?: string;
@@ -19,12 +18,34 @@ interface AiChatHeaderProps {
 export function AiChatHeader({
   title = "Chat",
   description = "Chat with Sealos Brain AI to help with your projects",
-  className = "p-4 pt-2 shrink-0",
+  className = "px-4 pt-2 shrink-0",
 }: AiChatHeaderProps) {
   const { auth } = useAuthState();
   const { selectedProject, selectedResource } = useProjectState();
   const { mutate: createNewChatSession, isPending } =
     useCreateNewChatSessionMutation();
+
+  const getIconUrl = () => {
+    if (!selectedResource) return "https://sealos.run/logo.svg";
+
+    switch (selectedResource.resourceType) {
+      case "devbox":
+        return "https://devbox.bja.sealos.run/logo.svg";
+
+      case "cluster":
+        return "https://dbprovider.bja.sealos.run/logo.svg";
+
+      case "deployment":
+      case "statefulset":
+        return "https://applaunchpad.bja.sealos.run/logo.svg";
+
+      case "objectstoragebucket":
+        return "https://objectstorage.bja.sealos.run/logo.svg";
+
+      default:
+        return "https://sealos.run/logo.svg";
+    }
+  };
 
   return (
     <SheetHeader className={`${className}`}>
@@ -50,16 +71,20 @@ export function AiChatHeader({
               <Eraser className="h-4 w-4" />
             )}
           </Button>
+          {selectedResource && (
+            <div className="flex items-center gap-2 text text-muted-foreground">
+              <Image
+                src={getIconUrl()}
+                alt={`${selectedResource.resourceType} Icon`}
+                width={16}
+                height={16}
+                className="rounded-sm h-4 w-4 flex-shrink-0"
+                priority
+              />
+              <span>{selectedResource.name}</span>
+            </div>
+          )}
         </div>
-        {/* {selectedResource ? (
-          <p className="text-sm text-muted-foreground mt-1">
-            Resource: {selectedResource.name || selectedResource.resourceType}
-          </p>
-        ) : (
-          <p className="text-sm text-muted-foreground mt-1">
-            Project: {selectedProject}
-          </p>
-        )} */}
       </div>
     </SheetHeader>
   );

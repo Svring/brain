@@ -14,6 +14,7 @@ import ClusterMessage from "./cluster/cluster-message";
 import ClusterBackupMessage from "./cluster/cluster-backup-message";
 import ClusterCreateMessage from "./cluster/cluster-create-message";
 import ClusterUpdateMessage from "./cluster/cluster-update-message";
+import ClusterUpdateResource from "./cluster/components/cluster-update/cluster-update-resource";
 import ClusterConnectionMessage from "./cluster/cluster-connection-message";
 
 import LaunchpadMessage from "./launchpad/launchpad-message";
@@ -63,6 +64,9 @@ export const SystemMessageType = {
     create: (payload?: any) => <ClusterCreateMessage payload={payload} />,
     update: (target: CustomResourceTarget, payload: any) => (
       <ClusterUpdateMessage target={target} payload={payload} />
+    ),
+    updateResource: (target: CustomResourceTarget) => (
+      <ClusterUpdateResource target={target} />
     ),
   },
   launchpad: {

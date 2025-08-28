@@ -95,6 +95,7 @@ export const useAppendSystemMessageMutation = () => {
   const appendSystemMessage = (
     type: string,
     target: CustomResourceTarget | BuiltinResourceTarget,
+    isNewSession?: boolean,
     assistantContent?: string
   ) => {
     // Create system message data
@@ -104,14 +105,22 @@ export const useAppendSystemMessageMutation = () => {
     };
 
     // Send a message about the resource
-    const newMessages = [
-      ...messages,
-      {
-        id: randomId(),
-        role: "system" as const,
-        content: JSON.stringify(systemMessageData),
-      },
-    ];
+    const newMessages = isNewSession
+      ? [
+          {
+            id: randomId(),
+            role: "system" as const,
+            content: JSON.stringify(systemMessageData),
+          },
+        ]
+      : [
+          ...messages,
+          {
+            id: randomId(),
+            role: "system" as const,
+            content: JSON.stringify(systemMessageData),
+          },
+        ];
 
     // Only add assistant message if content is provided
     if (assistantContent) {

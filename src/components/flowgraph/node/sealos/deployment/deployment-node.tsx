@@ -113,6 +113,7 @@ function DeploymentNode({
       target={target}
       nodeId={nodeId}
       messageType="launchpad.detail"
+      shouldCreateChatSession={true}
       className={
         isDeletingDeployment || metricsStatus === "high"
           ? "bg-theme-red/50"

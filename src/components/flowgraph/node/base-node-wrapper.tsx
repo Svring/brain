@@ -58,7 +58,7 @@ export default function BaseNodeWrapper({
             },
             {
               onSuccess: () => {
-                appendSystemMessage(messageType, target);
+                appendSystemMessage(messageType, target, true);
               },
             }
           );

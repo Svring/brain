@@ -32,9 +32,9 @@ export const ClusterMessage: React.FC<ClusterMessageProps> = ({ target }) => {
     ? [
         {
           icon: Pencil,
-          label: "Update",
+          label: "Update Resources",
           onClick: () => {
-            appendSystemMessage("cluster.update", target);
+            appendSystemMessage("cluster.updateResource", target);
           },
         },
         {

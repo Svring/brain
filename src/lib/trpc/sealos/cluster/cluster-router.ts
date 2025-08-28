@@ -13,11 +13,14 @@ import {
   startCluster,
   pauseCluster,
   createCluster,
+  updateCluster,
   getClusterVersions,
 } from "@/lib/sealos/resources/cluster/cluster-api/cluster-open-api";
 import {
   CreateClusterRequestSchema,
   CreateClusterResponseSchema,
+  UpdateClusterRequestSchema,
+  UpdateClusterResponseSchema,
 } from "@/lib/sealos/resources/cluster/cluster-api/cluster-open-api-schemas";
 import { runParallelAction } from "next-server-actions-parallel";
 import { deleteCluster as deleteClusterOld } from "@/lib/sealos/resources/cluster/cluster-api/cluster-old-api";
@@ -133,6 +136,20 @@ export const clusterRouter = t.router({
     .input(z.string())
     .mutation(async ({ input, ctx }) => {
       return await pauseCluster(input, ctx);
+    }),
+
+  updateCluster: t.procedure
+    .input(
+      z.object({
+        clusterName: z.string(),
+        request: UpdateClusterRequestSchema,
+      })
+    )
+    .output(UpdateClusterResponseSchema)
+    .mutation(async ({ input, ctx }) => {
+      return await runParallelAction(
+        updateCluster(input.clusterName, input.request, ctx)
+      );
     }),
 
   deleteCluster: t.procedure

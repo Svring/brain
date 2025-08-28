@@ -154,23 +154,21 @@ export default function LaunchpadUpdateImage({
         </Button>
       }
     >
-      <div className="p-4 space-y-6">
-        <div className="space-y-4">
-          {/* Image Input */}
-          <div className="space-y-2">
-            <Label className="font-medium">Image:</Label>
-            <Input
-              value={image}
-              onChange={(e) => setImage(e.target.value)}
-              placeholder="Enter image URL (e.g., nginx:latest)"
-              className="w-full"
-            />
-            {currentImage && (
-              <div className="text-sm text-muted-foreground">
-                Current: {currentImage}
-              </div>
-            )}
-          </div>
+      <div className="b">
+        {/* Image Input */}
+        <div className="space-y-3">
+          <Label className="font-medium">New Image:</Label>
+          <Input
+            value={image}
+            onChange={(e) => setImage(e.target.value)}
+            placeholder="Enter image URL (e.g., nginx:latest)"
+            className="w-full"
+          />
+          {currentImage && (
+            <div className="text-sm text-muted-foreground">
+              Current: {currentImage}
+            </div>
+          )}
         </div>
       </div>
     </BaseActionMessage>

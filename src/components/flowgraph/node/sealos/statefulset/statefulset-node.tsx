@@ -100,6 +100,7 @@ function StatefulsetNode({
       target={target}
       nodeId={nodeId}
       messageType="launchpad.detail"
+      shouldCreateChatSession={true}
       className={
         isDeletingStatefulset || metricsStatus === "high"
           ? "bg-theme-red/50"

@@ -163,6 +163,7 @@ function ClusterNode({
       target={target}
       nodeId={nodeId}
       messageType="cluster.detail"
+      shouldCreateChatSession={true}
       className={
         isDeletingCluster || metricsStatus === "high" ? "bg-theme-red/50" : ""
       }

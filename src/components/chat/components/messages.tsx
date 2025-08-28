@@ -51,6 +51,8 @@ export function AiMessages() {
     id: "chat",
   });
 
+  console.log("messages", messages);
+
   // const totalTokens = messages.reduce(
   //   (sum, message) => sum + enc.encode(message.content ?? "").length + 4,
   //   0
@@ -92,7 +94,7 @@ export function AiMessages() {
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [messages.length, scrollToBottom]);
+  }, [messages.length]); // Remove scrollToBottom from dependencies
 
   // console.log("messages", messages);
 

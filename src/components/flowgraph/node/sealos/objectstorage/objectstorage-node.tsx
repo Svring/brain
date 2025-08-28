@@ -177,6 +177,7 @@ function ObjectStorageNode({
       target={target}
       nodeId={nodeId}
       messageType="objectstorage.detail"
+      shouldCreateChatSession={true}
       className={isDeletingObjectStorage ? "border-theme-red" : ""}
     >
       <div className="flex h-full flex-col justify-between">
