@@ -14,6 +14,7 @@ import { useMount } from "@reactuses/core";
 import CreateProject from "@/components/project/create-project/create-project";
 import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
 import { Button } from "@/components/ui/button";
+import { useRef } from "react";
 
 export default function HomePage() {
   const { messages } = useCopilotChatHeadless_c();
@@ -21,6 +22,7 @@ export default function HomePage() {
   const { filteredProjects, projects, isLoading, isError } = useProjectSearch();
   const { setStage } = useLanggraphActions();
   const { CreateProjectDialog, openDialog } = useProjectCreateDialog();
+  const messagesScrollRef = useRef<HTMLDivElement>(null);
 
   useCopilotActions();
   useLanggraphAgent("propose_project");
@@ -60,9 +62,9 @@ export default function HomePage() {
             transition={{ duration: 0.5 }}
             className="flex-1 flex flex-col min-h-0"
           >
-            <div className="flex-1 overflow-y-auto py-8">
+            <div ref={messagesScrollRef} className="flex-1 overflow-y-auto py-8">
               <div className="max-w-3xl mx-auto w-full">
-                <AiMessages />
+                <AiMessages scrollRef={messagesScrollRef} />
               </div>
             </div>
           </motion.div>

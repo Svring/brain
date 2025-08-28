@@ -9,11 +9,13 @@ interface UseAutoScrollOptions {
   offset?: number;
   smooth?: boolean;
   content?: React.ReactNode;
+  scrollRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export function useAutoScroll(options: UseAutoScrollOptions = {}) {
-  const { offset = 20, smooth = false, content } = options;
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const { offset = 20, smooth = false, content, scrollRef: externalScrollRef } = options;
+  const internalScrollRef = useRef<HTMLDivElement>(null);
+  const scrollRef = externalScrollRef || internalScrollRef;
   const lastContentHeight = useRef(0);
   const userHasScrolled = useRef(false);
 
@@ -147,7 +149,7 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}) {
   }, [checkIsAtBottom]);
 
   return {
-    scrollRef,
+    scrollRef: internalScrollRef, // Always return internal ref for backward compatibility
     isAtBottom: scrollState.isAtBottom,
     autoScrollEnabled: scrollState.autoScrollEnabled,
     scrollToBottom: () => scrollToBottom(false),

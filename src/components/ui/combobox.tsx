@@ -61,14 +61,20 @@ export function Combobox({
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
-          className={cn("w-fit min-w-[200px] justify-between", triggerClassName, className)}
+          className={cn(
+            "w-fit min-w-[200px] justify-between",
+            triggerClassName,
+            className
+          )}
         >
           {selectedOption ? selectedOption.label : placeholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className={cn("w-fit min-w-[200px] p-0", contentClassName)}>
-        <Command>
+      <PopoverContent
+        className={cn("w-fit min-w-[200px] p-0", contentClassName)}
+      >
+        <Command className="bg-background-secondary">
           <CommandInput placeholder={searchPlaceholder} className="h-9" />
           <CommandList>
             <CommandEmpty>{emptyMessage}</CommandEmpty>

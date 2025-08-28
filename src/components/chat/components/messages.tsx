@@ -11,6 +11,7 @@ import { useAutoScroll } from "@/hooks/use-auto-scroll";
 import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
 import React, { useMemo, memo, useEffect } from "react";
+import { createHash } from "crypto";
 
 // import { Tiktoken } from "js-tiktoken/lite";
 // import o200k_base from "js-tiktoken/ranks/o200k_base";
@@ -46,12 +47,20 @@ const SystemMessageRenderer = memo(function SystemMessageRenderer({
   return null;
 });
 
-export function AiMessages() {
+interface AiMessagesProps {
+  scrollRef?: React.RefObject<HTMLDivElement | null>;
+  className?: string;
+}
+
+export function AiMessages({
+  scrollRef: externalScrollRef,
+  className,
+}: AiMessagesProps = {}) {
   const { messages, isLoading, interrupt, reset } = useCopilotChatHeadless_c({
     id: "chat",
   });
 
-  console.log("messages", messages);
+  // console.log("messages", messages);
 
   // const totalTokens = messages.reduce(
   //   (sum, message) => sum + enc.encode(message.content ?? "").length + 4,
@@ -79,13 +88,33 @@ export function AiMessages() {
     });
   }, [messages, isLoading]);
 
-  const { scrollRef, isAtBottom, scrollToBottom } = useAutoScroll({
+  // Create a SHA-256 hash of all message content for reliable change detection
+  const contentHash = useMemo(() => {
+    const contentString = messages
+      .map((msg) => `${msg.id}-${msg.role}-${msg.content || ""}`)
+      .join("|");
+    return createHash("sha256").update(contentString).digest("hex");
+  }, [messages]);
+
+  // console.log("contentHash", contentHash);
+
+  const {
+    scrollRef: internalScrollRef,
+    isAtBottom,
+    scrollToBottom,
+  } = useAutoScroll({
     offset: 20,
     smooth: true,
-    content: messages.length, // Use messages.length as a simpler approach
+    content: contentHash, // Use content hash to detect both length and content changes
+    scrollRef: externalScrollRef, // Pass external scroll ref to the hook
   });
 
-  // Force scroll to bottom when new messages are added
+  // Use external scroll ref if provided, otherwise use internal one
+  const scrollRef = externalScrollRef || internalScrollRef;
+
+  // console.log("isAtBottom", isAtBottom);
+
+  // Force scroll to bottom when new messages are added or content changes
   React.useEffect(() => {
     if (messages.length > 0) {
       // Small delay to ensure content is rendered
@@ -94,20 +123,26 @@ export function AiMessages() {
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [messages.length]); // Remove scrollToBottom from dependencies
+  }, [contentHash]); // Use contentHash to detect both new messages and content updates
 
   // console.log("messages", messages);
 
   return (
     <>
       {messages.length !== 0 && (
-        <div className="w-full px-4 h-full relative">
-          <div
-            ref={scrollRef}
-            className="h-full overflow-y-auto scrollbar-hide"
-          >
-            {memoizedMessages}
-          </div>
+        <div className={`w-full px-4 h-full relative ${className || ""}`}>
+          {externalScrollRef ? (
+            // If external scroll ref is provided, don't create internal scroll container
+            <div className="h-full">{memoizedMessages}</div>
+          ) : (
+            // Otherwise, use internal scroll container
+            <div
+              ref={scrollRef}
+              className="h-full overflow-y-auto scrollbar-hide"
+            >
+              {memoizedMessages}
+            </div>
+          )}
 
           {!isAtBottom && (
             <Button
