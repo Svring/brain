@@ -28,9 +28,12 @@ function ServiceNodeTitle({ name }: { name: string }) {
 export default function ServiceNode({ data }: { data: BuiltinResourceTarget }) {
   const { resourceType, name } = data;
 
+  // Construct node ID following the same pattern as other nodes
+  const nodeId = `${resourceType.toLowerCase()}-${name || ""}`;
+
   return (
     <BaseNode
-      nodeData={{ kind: resourceType, name: name || "" }}
+      nodeId={nodeId}
       className=""
     >
       <div className="flex h-full flex-col gap-2 justify-between">

@@ -11,28 +11,62 @@ import {
   useProjectState,
 } from "@/contexts/project/project-context";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useAuthState } from "@/contexts/auth/auth-context";
 
 interface BaseNodeProps {
   children: React.ReactNode;
-  nodeData: any;
+  nodeId: any;
   target?: ResourceTarget;
   className?: string;
+  messageType?: string;
+  shouldCreateChatSession?: boolean;
 }
 
 import _ from "lodash";
 
 export default function BaseNodeWrapper({
   children,
-  nodeData,
+  nodeId,
   target,
   className,
+  messageType,
+  shouldCreateChatSession = false,
 }: BaseNodeProps) {
   const { selectResource } = useProjectActions();
   const { selectedResource } = useProjectState();
+  const { selectNode, focusNode } = useFlowgraphActions();
+  const { appendSystemMessage } = useAppendSystemMessageMutation();
+  const { mutate: createNewChatSession } = useCreateNewChatSessionMutation();
+  const { auth } = useAuthState();
+  const { selectedProject } = useProjectState();
 
   const handleNodeClick = () => {
     if (target) {
       selectResource(target);
+      selectNode(nodeId);
+      focusNode(nodeId);
+
+      // Handle message appending if messageType is provided
+      if (messageType) {
+        if (shouldCreateChatSession && auth && selectedProject) {
+          createNewChatSession(
+            {
+              kubeconfig: auth.kubeconfig,
+              projectName: selectedProject,
+            },
+            {
+              onSuccess: () => {
+                appendSystemMessage(messageType, target);
+              },
+            }
+          );
+        } else {
+          console.log("Appending system message");
+          appendSystemMessage(messageType, target);
+        }
+      }
     }
   };
 

@@ -198,7 +198,7 @@ export const launchpadRouter = t.router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      return await deleteLaunchpadPorts(ctx, input.name, input.ports);
+      return await deleteLaunchpadPorts(ctx, input.name, input);
     }),
 
   updateLaunchpadStorage: t.procedure

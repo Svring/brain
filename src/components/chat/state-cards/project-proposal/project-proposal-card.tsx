@@ -19,15 +19,9 @@ import type {
 
 interface ProjectProposalCardProps {
   proposal: ProjectProposal;
-  className?: string;
-  onSave?: (updatedProposal: ProjectProposal) => void;
 }
 
-export function ProjectProposalCard({
-  proposal,
-  className = "",
-  onSave,
-}: ProjectProposalCardProps) {
+export function ProjectProposalCard({ proposal }: ProjectProposalCardProps) {
   const [internalProposal, setInternalProposal] =
     useState<ProjectProposal>(proposal);
 
@@ -51,7 +45,6 @@ export function ProjectProposalCard({
       },
     };
     setInternalProposal(updatedProposal);
-    onSave?.(updatedProposal);
   };
 
   // Handle project creation
@@ -116,7 +109,7 @@ export function ProjectProposalCard({
 
   return (
     <Card
-      className={`w-full max-w-3xl mx-auto bg-background-primary rounded-xl ${className}`}
+      className={`w-full max-w-3xl mx-auto bg-background-primary rounded-xl`}
     >
       <CardContent className="space-y-6">
         {hasResources ? (

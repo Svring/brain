@@ -10,7 +10,6 @@ import DeploymentNodeTitle from "./deployment-node-title";
 import DeploymentNodeMenu from "./deployment-node-menu";
 import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-object-schema";
 import { truncateImage } from "@/lib/sealos/sealos-utils";
-import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useLaunchpadObject } from "@/hooks/sealos/launchpad/use-launchpad-object";
 import { useResourceDelete } from "@/hooks/sealos/resource/use-resource-delete";
@@ -37,6 +36,9 @@ function DeploymentNodeWrapper({
     name: data.name!,
   };
 
+  // Construct node ID following the same pattern as other nodes
+  const nodeId = `${resourceData.kind.toLowerCase()}-${resourceData.name}`;
+
   // Always call hooks in the same order
   const { completeResource, status } = useResourceNodeEnhancer(resourceData);
 
@@ -48,6 +50,7 @@ function DeploymentNodeWrapper({
       <DeploymentNode
         resource={data as DeploymentObject}
         status={status || "Pending"}
+        nodeId={nodeId}
       />
     );
   }
@@ -62,6 +65,7 @@ function DeploymentNodeWrapper({
       <DeploymentNode
         resource={completeResource as DeploymentObject}
         status={status || "Pending"}
+        nodeId={nodeId}
       />
     );
   }
@@ -80,12 +84,12 @@ function DeploymentNodeWrapper({
 function DeploymentNode({
   resource,
   status,
+  nodeId,
 }: {
   resource: DeploymentObject;
   status?: string;
+  nodeId: string;
 }) {
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
-
   // Use the new hook to get deployment data
   const { data: deploymentData = resource } = useLaunchpadObject(
     resource.name,
@@ -107,19 +111,15 @@ function DeploymentNode({
   const mainCard = (
     <BaseNode
       target={target}
-      nodeData={resource}
+      nodeId={nodeId}
+      messageType="launchpad.detail"
       className={
         isDeletingDeployment || metricsStatus === "high"
           ? "bg-theme-red/50"
           : ""
       }
     >
-      <div
-        className="flex h-full flex-col gap-2 justify-between"
-        onClick={() => {
-          appendSystemMessage("launchpad.detail", target);
-        }}
-      >
+      <div className="flex h-full flex-col gap-2 justify-between">
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
           <DeploymentNodeTitle name={deploymentData.name} />

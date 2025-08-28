@@ -2,6 +2,7 @@
 
 import { ReactNode, useState } from "react";
 import BaseNode from "../base-node-wrapper";
+import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface NodeStackProps {
   mainCard: ReactNode;
@@ -11,6 +12,10 @@ interface NodeStackProps {
   backgroundColor?: string; // Background color class for the main card
   notReadyCount?: number; // Number of cards that are not ready (for yellow coloring)
   onBackgroundCardClick?: (index: number, data: any) => void; // Optional click handler for background cards
+  // BaseNode parameters for background cards
+  target?: ResourceTarget;
+  messageType?: string;
+  shouldCreateChatSession?: boolean;
 }
 
 export default function NodeStack({
@@ -21,6 +26,9 @@ export default function NodeStack({
   backgroundColor,
   notReadyCount = 0,
   onBackgroundCardClick,
+  target,
+  messageType,
+  shouldCreateChatSession = false,
 }: NodeStackProps) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -59,7 +67,10 @@ export default function NodeStack({
           }}
         >
           <BaseNode
-            nodeData={{}}
+            nodeId={{}}
+            target={target}
+            messageType={messageType}
+            shouldCreateChatSession={shouldCreateChatSession}
             className={`${height ? `h-${height}` : ""} ${
               cardBackgroundColor || ""
             }`}

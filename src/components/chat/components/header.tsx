@@ -7,6 +7,8 @@ import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-metho
 import { Spinner } from "@/components/ui/spinner";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useProjectState } from "@/contexts/project/project-context";
+import { useFlowgraphState } from "@/contexts/flowgraph/flowgraph-context";
+import { useEffect } from "react";
 
 interface AiChatHeaderProps {
   title?: string;
@@ -17,7 +19,7 @@ interface AiChatHeaderProps {
 export function AiChatHeader({
   title = "Chat",
   description = "Chat with Sealos Brain AI to help with your projects",
-  className = "p-4 py-2 shrink-0",
+  className = "p-4 pt-2 shrink-0",
 }: AiChatHeaderProps) {
   const { auth } = useAuthState();
   const { selectedProject, selectedResource } = useProjectState();

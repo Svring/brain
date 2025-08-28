@@ -108,9 +108,10 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}) {
       // If auto-scroll is enabled OR the user is currently at (or near) the bottom,
       // scroll to bottom on new content
       if (scrollState.autoScrollEnabled || checkIsAtBottom(scrollElement)) {
-        requestAnimationFrame(() => {
+        // Use a small delay to ensure content is fully rendered
+        setTimeout(() => {
           scrollToBottom(lastContentHeight.current === 0);
-        });
+        }, 50);
       }
       lastContentHeight.current = currentHeight;
     }

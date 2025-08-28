@@ -25,6 +25,7 @@ import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/
 import NodeLoading from "../../components/node-loading";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
+
 // Enhanced wrapper that can handle both K8sResource and DevboxObject
 function DevboxNodeWrapper({
   data,
@@ -42,6 +43,9 @@ function DevboxNodeWrapper({
     name: data.name!,
   };
 
+  // Construct node ID following the same pattern as other nodes
+  const nodeId = `${resourceData.kind.toLowerCase()}-${resourceData.name}`;
+
   // console.log("resourceData", resourceData);
 
   // Always call hooks in the same order
@@ -53,6 +57,7 @@ function DevboxNodeWrapper({
       <DevboxNode
         resource={data as DevboxObject}
         status={status || "Pending"}
+        nodeId={nodeId}
       />
     );
   }
@@ -67,6 +72,7 @@ function DevboxNodeWrapper({
       <DevboxNode
         resource={completeResource as DevboxObject}
         status={status || "Pending"}
+        nodeId={nodeId}
       />
     );
   }
@@ -85,13 +91,13 @@ function DevboxNodeWrapper({
 function DevboxNode({
   resource,
   status,
+  nodeId,
 }: {
   resource: DevboxObject;
   status?: string;
+  nodeId: string;
 }) {
   // const { name, image, ports, pods } = data;
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
-
   const target = convertResourceObjectToTarget({
     kind: resource.kind,
     name: resource.name,
@@ -103,7 +109,7 @@ function DevboxNode({
 
   const { name, image } = resource;
 
-  console.log("resource", resource);
+  // console.log("resource", resource);
   // console.log("status", status);
 
   const context = createK8sContext();
@@ -119,17 +125,14 @@ function DevboxNode({
   const mainCard = (
     <BaseNode
       target={target}
-      nodeData={resource}
+      nodeId={nodeId}
+      messageType="devbox.detail"
+      shouldCreateChatSession={true}
       className={
         isDeletingDevbox || metricsStatus === "high" ? "bg-theme-red/50" : ""
       }
     >
-      <div
-        className="flex h-full flex-col gap-2 justify-between"
-        onClick={() => {
-          appendSystemMessage("devbox.detail", target);
-        }}
-      >
+      <div className="flex h-full flex-col gap-2 justify-between">
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
           <DevboxNodeTitle
@@ -171,9 +174,9 @@ function DevboxNode({
     <NodeStack
       mainCard={mainCard}
       data={releasesData}
-      onBackgroundCardClick={() => {
-        appendSystemMessage("devbox.release", target);
-      }}
+      target={target}
+      messageType="devbox.release"
+      shouldCreateChatSession={true}
     />
   );
 }

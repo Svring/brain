@@ -1,13 +1,16 @@
 "use client";
 
 import { RenderTextMessage } from "../messages/text-message";
-import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
+import {
+  useCopilotChatHeadless_c,
+  useCopilotContext,
+} from "@copilotkit/react-core";
 import { SystemMessageType } from "../messages/system-messages.tsx/systemp-message-types";
 import { get } from "lodash";
 import { useAutoScroll } from "@/hooks/use-auto-scroll";
 import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
-import React, { useMemo, memo } from "react";
+import React, { useMemo, memo, useEffect } from "react";
 
 // import { Tiktoken } from "js-tiktoken/lite";
 // import o200k_base from "js-tiktoken/ranks/o200k_base";
@@ -44,7 +47,7 @@ const SystemMessageRenderer = memo(function SystemMessageRenderer({
 });
 
 export function AiMessages() {
-  const { messages, isLoading, interrupt } = useCopilotChatHeadless_c({
+  const { messages, isLoading, interrupt, reset } = useCopilotChatHeadless_c({
     id: "chat",
   });
 
@@ -53,12 +56,6 @@ export function AiMessages() {
   //   0
   // );
   // console.log("Total tokens:", totalTokens);
-
-  const { scrollRef, isAtBottom, scrollToBottom } = useAutoScroll({
-    offset: 20,
-    smooth: true,
-    content: messages.length,
-  });
 
   // Memoize message list so scroll re-renders don't recreate elements
   const memoizedMessages = useMemo(() => {
@@ -79,6 +76,23 @@ export function AiMessages() {
       );
     });
   }, [messages, isLoading]);
+
+  const { scrollRef, isAtBottom, scrollToBottom } = useAutoScroll({
+    offset: 20,
+    smooth: true,
+    content: messages.length, // Use messages.length as a simpler approach
+  });
+
+  // Force scroll to bottom when new messages are added
+  React.useEffect(() => {
+    if (messages.length > 0) {
+      // Small delay to ensure content is rendered
+      const timer = setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [messages.length, scrollToBottom]);
 
   // console.log("messages", messages);
 

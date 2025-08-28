@@ -30,7 +30,7 @@ export default function ConfigmapNode({ data }: { data: BuiltinResourceTarget })
 
   return (
     <BaseNode
-      nodeData={{ kind: resourceType, name: name || "" }}
+      nodeId={{ kind: resourceType, name: name || "" }}
       className=""
     >
       <div className="flex h-full flex-col gap-2 justify-between">

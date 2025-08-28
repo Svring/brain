@@ -31,6 +31,9 @@ export default function DevboxNodeRelease({ object }: DevboxNodeReleaseProps) {
   const devboxName = object.name || "";
   const [isExpanded, setIsExpanded] = useState(false);
 
+  // Construct node ID for the release node
+  const nodeId = `devbox-release-${devboxName}`;
+
   const { data: releases, isLoading } = useQuery(
     getDevboxReleasesOptions(devboxContext, devboxName)
   );
@@ -87,7 +90,7 @@ export default function DevboxNodeRelease({ object }: DevboxNodeReleaseProps) {
   };
 
   return (
-    <BaseNode nodeData={{}}>
+    <BaseNode nodeId={nodeId}>
       <div className="flex h-full flex-col gap-3 p-1">
         <DevboxNodeReleaseTitle
           releasesCount={releases?.data?.length || 0}

@@ -105,6 +105,7 @@ function ProjectFlow({ projectName }: { projectName: string }) {
   const { isLoading } = useFlowgraph(projectName);
 
   const { nodes, edges } = useFlowgraphState();
+  const { onNodesChange, onEdgesChange } = useFlowgraphActions();
 
   // Show loading state only when initially loading resources
   if (isLoading) {
@@ -124,8 +125,8 @@ function ProjectFlow({ projectName }: { projectName: string }) {
       fitViewOptions={REACT_FLOW_CONFIG.fitViewOptions}
       nodes={nodes}
       nodeTypes={nodeTypes}
-      // onEdgesChange={onEdgesChange}
-      // onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      onNodesChange={onNodesChange}
       panOnScroll
       snapToGrid
       snapGrid={REACT_FLOW_CONFIG.snapGrid}
@@ -168,13 +169,14 @@ export default function ProjectPage({
   }, [projectName]);
 
   return (
-    <FlowgraphProvider>
-      <div className="relative h-screen w-full">
-        <ReactFlowProvider>
+    <ReactFlowProvider>
+      <FlowgraphProvider>
+        <div className="relative h-screen w-full">
           <ProjectFlow projectName={projectName} />
-        </ReactFlowProvider>
-        <ProjectFloatingUI projectName={projectName} />
-      </div>
-    </FlowgraphProvider>
+
+          <ProjectFloatingUI projectName={projectName} />
+        </div>
+      </FlowgraphProvider>
+    </ReactFlowProvider>
   );
 }

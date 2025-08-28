@@ -3,11 +3,9 @@
 import BaseNode from "../../base-node-wrapper";
 import NodeStack from "../../components/node-stack";
 import { cn } from "@/lib/utils";
-import { Network, Globe, HelpCircle, Copy, Check } from "lucide-react";
-import type { DevboxPort } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
+import { Globe, HelpCircle, Copy, Check } from "lucide-react";
 import { useNetworkStatus } from "@/hooks/sealos/network/use-network-status";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useCopy } from "@/hooks/use-copy";
 import {
@@ -23,6 +21,9 @@ export default function NetworkNode({
   };
 }) {
   const { target } = data;
+
+  // Construct node ID following the same pattern as other nodes
+  const nodeId = `network-${target.name || target.resourceType}`;
 
   // Use the resource status hook to get the resource data
   const { resource, isLoading, error } = useResourceStatus(target);
@@ -132,7 +133,7 @@ export default function NetworkNode({
   // Show loading state if resource is still loading
   if (isLoading) {
     return (
-      <BaseNode nodeData={data} className={cn("h-14 p-2", "bg-muted")}>
+      <BaseNode nodeId={nodeId} className={cn("h-14 p-2", "bg-muted")}>
         <div className="flex items-center justify-center h-full">
           <div className="text-sm text-muted-foreground">Loading...</div>
         </div>
@@ -144,7 +145,7 @@ export default function NetworkNode({
   if (error || !resource) {
     return (
       <BaseNode
-        nodeData={data}
+        nodeId={nodeId}
         className={cn("h-14 p-2", "bg-status-error/20")}
       >
         <div className="flex items-center justify-center h-full">
@@ -159,7 +160,8 @@ export default function NetworkNode({
   const mainCard = (
     <BaseNode
       target={target}
-      nodeData={data}
+      nodeId={nodeId}
+      messageType="universal.network"
       className={cn("h-14 p-2", getBackgroundColor())}
     >
       <div className="flex h-full flex-col justify-between cursor-pointer">
@@ -212,7 +214,9 @@ export default function NetworkNode({
                     )}
                     onClick={(e) => handleCopyClick(e, frontCardUrl)}
                   >
-                    {isCopied(`network-${target.name || target.resourceType}`) ? (
+                    {isCopied(
+                      `network-${target.name || target.resourceType}`
+                    ) ? (
                       <Check className="h-3 w-3" />
                     ) : (
                       <Copy className="h-3 w-3" />
@@ -239,9 +243,8 @@ export default function NetworkNode({
       height="14"
       // backgroundColor={getBackgroundColor()}
       notReadyCount={notReadyCount}
-      onBackgroundCardClick={() => {
-        appendSystemMessage("universal.network", target);
-      }}
+      target={target}
+      messageType="universal.network"
     />
   );
 }

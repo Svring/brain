@@ -2,11 +2,15 @@
 
 import { createBrowserInspector } from "@statelyai/inspect";
 import { useMachine } from "@xstate/react";
-import { createContext, type ReactNode, useContext } from "react";
+import { createContext, type ReactNode, useContext, useEffect } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import { flowgraphMachine } from "@/contexts/flowgraph/flowgraph-machine";
 import type { Edge, Node, EdgeChange, NodeChange } from "@xyflow/react";
-import { applyEdgeChanges, applyNodeChanges } from "@xyflow/react";
+import {
+  applyEdgeChanges,
+  applyNodeChanges,
+  useReactFlow,
+} from "@xyflow/react";
 
 // const inspector = createBrowserInspector();
 
@@ -16,8 +20,9 @@ interface FlowgraphContextValue {
   actorRef: ActorRefFrom<typeof flowgraphMachine>;
 }
 
-export const FlowgraphContext =
-  createContext<FlowgraphContextValue | undefined>(undefined);
+export const FlowgraphContext = createContext<
+  FlowgraphContextValue | undefined
+>(undefined);
 
 export const FlowgraphProvider = ({ children }: { children: ReactNode }) => {
   const [state, send, actorRef] = useMachine(flowgraphMachine, {
@@ -26,10 +31,30 @@ export const FlowgraphProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <FlowgraphContext.Provider value={{ state, send, actorRef }}>
+      <FlowgraphFocusHandler />
       {children}
     </FlowgraphContext.Provider>
   );
 };
+
+// Component to handle node focusing
+function FlowgraphFocusHandler() {
+  const { state } = useFlowgraphContext();
+  const { fitView } = useReactFlow();
+
+  // useEffect(() => {
+  //   if (state.context.selectedNode) {
+  //     fitView({
+  //       nodes: [state.context.selectedNode],
+  //       padding: 0.2,
+  //       duration: 300,
+  //       maxZoom: 1,
+  //     });
+  //   }
+  // }, [state.context.selectedNode, fitView]);
+
+  return null;
+}
 
 export function useFlowgraphContext() {
   const ctx = useContext(FlowgraphContext);
@@ -67,11 +92,21 @@ export function useFlowgraphActions() {
     clearSelectedNode: () => send({ type: "CLEAR_SELECTED_NODE" }),
     clearSelectedEdge: () => send({ type: "CLEAR_SELECTED_EDGE" }),
     clearAllState: () => send({ type: "CLEAR_ALL_STATE" }),
+    focusNode: (nodeId: string) => {
+      const node = state.context.nodes.find((n) => n.id === nodeId);
+      if (node) {
+        send({ type: "SELECT_NODE", node });
+      }
+    },
     onNodesChange: (changes: NodeChange[]) =>
-      send({ type: "SET_NODES", nodes: applyNodeChanges(changes, state.context.nodes) }),
+      send({
+        type: "SET_NODES",
+        nodes: applyNodeChanges(changes, state.context.nodes),
+      }),
     onEdgesChange: (changes: EdgeChange[]) =>
-      send({ type: "SET_EDGES", edges: applyEdgeChanges(changes, state.context.edges) }),
+      send({
+        type: "SET_EDGES",
+        edges: applyEdgeChanges(changes, state.context.edges),
+      }),
   };
 }
-
-

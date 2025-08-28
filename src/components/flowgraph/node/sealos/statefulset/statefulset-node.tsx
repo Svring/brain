@@ -8,7 +8,6 @@ import NodeMonitor from "../../components/node-monitor";
 import StatefulsetNodeTitle from "./statefulset-node-title";
 import { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulset-object-schema";
 import { truncateImage } from "@/lib/sealos/sealos-utils";
-import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import NodeLog from "../../components/node-log";
 import { useResourceDelete } from "@/hooks/sealos/resource/use-resource-delete";
@@ -34,6 +33,9 @@ function StatefulsetNodeWrapper({
     name: data.name!,
   };
 
+  // Construct node ID following the same pattern as other nodes
+  const nodeId = `${resourceData.kind.toLowerCase()}-${resourceData.name}`;
+
   // Always call hooks in the same order
   const { completeResource, status } = useResourceNodeEnhancer(resourceData);
 
@@ -43,6 +45,7 @@ function StatefulsetNodeWrapper({
       <StatefulsetNode
         resource={data as StatefulsetObject}
         status={status || "Pending"}
+        nodeId={nodeId}
       />
     );
   }
@@ -57,6 +60,7 @@ function StatefulsetNodeWrapper({
       <StatefulsetNode
         resource={completeResource as StatefulsetObject}
         status={status || "Pending"}
+        nodeId={nodeId}
       />
     );
   }
@@ -75,12 +79,12 @@ function StatefulsetNodeWrapper({
 function StatefulsetNode({
   resource,
   status,
+  nodeId,
 }: {
   resource: StatefulsetObject;
   status?: string;
+  nodeId: string;
 }) {
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
-
   // Get resource metrics data using the hook data
   const target = convertResourceObjectToTarget(resource);
 
@@ -94,19 +98,15 @@ function StatefulsetNode({
   const mainCard = (
     <BaseNode
       target={target}
-      nodeData={resource}
+      nodeId={nodeId}
+      messageType="launchpad.detail"
       className={
         isDeletingStatefulset || metricsStatus === "high"
           ? "bg-theme-red/50"
           : ""
       }
     >
-      <div
-        className="flex h-full flex-col gap-2 justify-between"
-        onClick={() => {
-          appendSystemMessage("launchpad.detail", target);
-        }}
-      >
+      <div className="flex h-full flex-col gap-2 justify-between">
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
           <StatefulsetNodeTitle name={resource.name} />

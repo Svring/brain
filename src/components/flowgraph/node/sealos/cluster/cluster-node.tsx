@@ -20,7 +20,6 @@ import {
   CustomResourceTarget,
   CustomResourceTargetSchema,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertToDbconnUrl } from "@/lib/sealos/sealos-utils";
 import { composeClusterPublicConnectionString } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
 import { Globe, HardDrive } from "lucide-react";
@@ -55,6 +54,9 @@ function ClusterNodeWrapper({
     name: data.name!,
   };
 
+  // Construct node ID following the same pattern as other nodes
+  const nodeId = `${resourceData.kind.toLowerCase()}-${resourceData.name}`;
+
   // Always call hooks in the same order
   const { completeResource, isLoadingComplete } =
     useResourceNodeEnhancer(resourceData);
@@ -69,6 +71,7 @@ function ClusterNodeWrapper({
       <ClusterNode
         resource={data as ClusterObject}
         status={status || "Pending"}
+        nodeId={nodeId}
       />
     );
   }
@@ -83,6 +86,7 @@ function ClusterNodeWrapper({
       <ClusterNode
         resource={completeResource as ClusterObject}
         status={status || "Pending"}
+        nodeId={nodeId}
       />
     );
   }
@@ -101,12 +105,12 @@ function ClusterNodeWrapper({
 function ClusterNode({
   resource,
   status,
+  nodeId,
 }: {
   resource: ClusterObject;
   status?: string;
+  nodeId: string;
 }) {
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
-
   // Create contexts for API calls
   const k8sContext = createK8sContext();
 
@@ -157,17 +161,13 @@ function ClusterNode({
   const mainCard = (
     <BaseNode
       target={target}
-      nodeData={clusterData}
+      nodeId={nodeId}
+      messageType="cluster.detail"
       className={
         isDeletingCluster || metricsStatus === "high" ? "bg-theme-red/50" : ""
       }
     >
-      <div
-        className="flex h-full flex-col gap-4 justify-between"
-        onClick={() => {
-          appendSystemMessage("cluster.detail", target);
-        }}
-      >
+      <div className="flex h-full flex-col gap-4 justify-between">
         {/* Header with Name and Menu */}
         <div className="flex items-center justify-between">
           <ClusterNodeTitle name={name} type={type} />

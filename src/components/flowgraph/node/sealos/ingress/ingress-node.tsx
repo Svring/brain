@@ -78,7 +78,7 @@ export default function IngressNode({
 
   return (
     <BaseNode
-      nodeData={data}
+      nodeId={data}
       className={cn(
         "p-4 h-27",
         shouldCheckUrl && !urlAvailable && "bg-theme-yellow/10"

@@ -35,7 +35,7 @@ export default function NodeLoading({ kind, name, status = "Pending" }: NodeLoad
 
   return (
     <BaseNode
-      nodeData={{ kind, name }}
+      nodeId={{ kind, name }}
       className="opacity-75"
     >
       <div className="flex h-full flex-col gap-2 justify-between">

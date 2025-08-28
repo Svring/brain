@@ -31,8 +31,6 @@ import {
   CustomResourceTarget,
   CustomResourceTargetSchema,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-
 // Enhanced wrapper that can handle both K8sResource and ObjectStorageObject
 function ObjectStorageNodeWrapper({
   data,
@@ -50,6 +48,9 @@ function ObjectStorageNodeWrapper({
     name: data.name!,
   };
 
+  // Construct node ID following the same pattern as other nodes
+  const nodeId = `${resourceData.kind.toLowerCase()}-${resourceData.name}`;
+
   // Always call hooks in the same order
   const { completeResource, isLoadingComplete } =
     useResourceNodeEnhancer(resourceData);
@@ -64,6 +65,7 @@ function ObjectStorageNodeWrapper({
       <ObjectStorageNode
         resource={data as ObjectStorageObject}
         status={status || "Pending"}
+        nodeId={nodeId}
       />
     );
   }
@@ -78,6 +80,7 @@ function ObjectStorageNodeWrapper({
       <ObjectStorageNode
         resource={completeResource as unknown as ObjectStorageObject}
         status={status || "Pending"}
+        nodeId={nodeId}
       />
     );
   }
@@ -96,12 +99,13 @@ function ObjectStorageNodeWrapper({
 function ObjectStorageNode({
   resource,
   status,
+  nodeId,
 }: {
   resource: ObjectStorageObject;
   status?: string;
+  nodeId: string;
 }) {
   const [staticHosting, setStaticHosting] = useState(false);
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
 
   const { name, policy, access } = resource;
 
@@ -171,15 +175,11 @@ function ObjectStorageNode({
   const mainCard = (
     <BaseNode
       target={target}
-      nodeData={resource}
+      nodeId={nodeId}
+      messageType="objectstorage.detail"
       className={isDeletingObjectStorage ? "border-theme-red" : ""}
     >
-      <div
-        className="flex h-full flex-col justify-between"
-        onClick={() => {
-          appendSystemMessage("objectstorage.detail", target);
-        }}
-      >
+      <div className="flex h-full flex-col justify-between">
         <div className="flex flex-col gap-4">
           {/* Header with Name and Menu */}
           <div className="flex items-center justify-between">
