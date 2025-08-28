@@ -32,7 +32,7 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
           icon: Pencil,
           label: "Update",
           onClick: () => {
-            appendSystemMessage("launchpad.update", target);
+            appendSystemMessage("launchpad.updateResource", target);
           },
         },
       ]

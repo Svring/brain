@@ -19,6 +19,7 @@ import ClusterConnectionMessage from "./cluster/cluster-connection-message";
 import LaunchpadMessage from "./launchpad/launchpad-message";
 import LaunchpadUpdateMessage from "./launchpad/launchpad-update-message";
 import LaunchpadCreateMessage from "./launchpad/launchpad-create-message";
+import LaunchpadUpdateResource from "./launchpad/components/launchpad-update/launchpad-update-resource";
 
 import ObjectStorageMessage from "./objectstorage/objectstorage-message";
 import ObjectStorageCreateMessage from "./objectstorage/objectstorage-create-message";
@@ -69,6 +70,9 @@ export const SystemMessageType = {
     create: (payload?: any) => <LaunchpadCreateMessage payload={payload} />,
     update: (target: BuiltinResourceTarget, payload: any) => (
       <LaunchpadUpdateMessage target={target} payload={payload} />
+    ),
+    updateResource: (target: BuiltinResourceTarget) => (
+      <LaunchpadUpdateResource target={target} />
     ),
   },
   objectstorage: {

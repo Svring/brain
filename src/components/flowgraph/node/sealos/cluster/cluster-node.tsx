@@ -233,7 +233,7 @@ function ClusterNode({
 
               {/* Right side: Resource storage label (capacity) */}
               <div className="text-xs">
-                {clusterData.resource?.storage || "N/A"}
+                {clusterData.resource?.storage || "N/A"}GB
               </div>
             </div>
           </div>

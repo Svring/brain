@@ -149,7 +149,7 @@ function StatefulsetNode({
         </div>
 
         {/* Right side: Storage capacity */}
-        <div className="text-xs">{resource.resource?.storage || "N/A"}</div>
+        <div className="text-xs">{resource.resource?.storage || "N/A"}GB</div>
       </div>
     </div>
   );

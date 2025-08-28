@@ -6,13 +6,11 @@ import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bot, Loader2 } from "lucide-react";
+import { Bot, Loader2, FileText, Sparkles } from "lucide-react";
 import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useResourceLogs } from "@/hooks/sealos/resource/use-resource-logs";
-import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
-import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
+import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
 
 interface ResourceLogProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -42,17 +40,25 @@ const ResourceLog: React.FC<ResourceLogProps> = ({ target: payload }) => {
   const truncatedLogs = lines.slice(0, 3).join("\n");
   const hasMoreLines = lines.length > 3;
 
-  const actions: MessageAction[] = [
-    {
-      icon: Bot,
-      label: "Analyze",
-      onClick: handleAnalyze,
-      disabled: isLoading || !logsData,
-    },
-  ];
-
   return (
-    <BaseSystemMessage target={payload} actions={actions}>
+    <BaseActionMessage
+      headerTitle={{
+        icon: FileText,
+        name: "Resource Logs",
+      }}
+      headerSlot={
+        <Button
+          onClick={handleAnalyze}
+          size="sm"
+          variant='outline'
+          disabled={isLoading || !logsData}
+          className="flex items-center gap-2 border border-border-primary brightness-150"
+        >
+          <Sparkles className="w-3 h-3 text-theme-blue" />
+          Analyze
+        </Button>
+      }
+    >
       <div className="relative bg-muted/50 rounded-md p-2 max-h-24 overflow-hidden">
         {isLoading ? (
           <div className="flex items-center justify-center py-4">
@@ -70,7 +76,7 @@ const ResourceLog: React.FC<ResourceLogProps> = ({ target: payload }) => {
           </pre>
         )}
       </div>
-    </BaseSystemMessage>
+    </BaseActionMessage>
   );
 };
 
