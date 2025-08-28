@@ -151,6 +151,8 @@ export default function ProjectPage({
     useProjectActions();
   const { setStage } = useLanggraphActions();
 
+  useCopilotActions();
+
   useEffect(() => {
     // Set the selected project when the component mounts
     selectProject(projectName);

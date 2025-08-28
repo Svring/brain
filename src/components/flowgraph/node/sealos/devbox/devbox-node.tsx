@@ -29,6 +29,8 @@ function DevboxNodeWrapper({ data }: { data: DevboxObject | K8sResource }) {
   // Check if we have a complete DevboxObject or just a basic K8sResource
   const isCompleteObject = "ports" in data && "ssh" in data && "image" in data;
 
+  console.log("data", data);
+
   // Always extract resource data to ensure consistent hook calls
   const resourceData = {
     kind: data.kind,
@@ -36,6 +38,8 @@ function DevboxNodeWrapper({ data }: { data: DevboxObject | K8sResource }) {
       ? (data as DevboxObject).name
       : (data as K8sResource).metadata?.name || "",
   };
+
+  console.log("resourceData", resourceData);
 
   // Always call hooks in the same order
   const { completeResource, status } = useResourceNodeEnhancer(resourceData);

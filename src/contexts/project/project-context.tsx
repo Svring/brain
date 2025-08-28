@@ -11,6 +11,7 @@ import {
 import _ from "lodash";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
+import { useLanggraphAgent } from "@/hooks/langgraph/use-langgraph-agent";
 
 // const inspector = createBrowserInspector();
 
@@ -56,26 +57,56 @@ export function useProjectState() {
 export function useProjectActions() {
   const { send, state } = useProjectContext();
   const { setProjectContext } = useLanggraphActions();
+  const { state: agentState, setState: setAgentState } =
+    useLanggraphAgent("manage_project");
 
   return {
     setAllProjects: (projects: unknown[]) => {
       send({ type: "SET_ALL_PROJECTS", projects });
     },
-    selectProject: (project: unknown) => {
+    selectProject: (project: string) => {
       send({ type: "SELECT_PROJECT", project });
+      setAgentState({
+        ...agentState,
+        project_context: {
+          ...agentState.project_context,
+          selectedProject: project,
+        },
+      });
     },
     clearSelectedProject: () => {
       send({ type: "CLEAR_SELECTED_PROJECT" });
+      setAgentState({
+        ...agentState,
+        project_context: {
+          ...agentState.project_context,
+          selectedProject: null,
+        },
+      });
     },
-    setSelectedProjectResources: (resources: ResourceObject[]) => {
+    setSelectedProjectResources: (resources: any[]) => {
       send({ type: "SET_SELECTED_PROJECT_RESOURCES", resources });
       setProjectContext({
         ...state.context,
         selectedProjectResources: resources,
       });
+      setAgentState({
+        ...agentState,
+        project_context: {
+          ...agentState.project_context,
+          selectedProjectResources: resources,
+        },
+      });
     },
     clearSelectedProjectResources: () => {
       send({ type: "CLEAR_SELECTED_PROJECT_RESOURCES" });
+      setAgentState({
+        ...agentState,
+        project_context: {
+          ...agentState.project_context,
+          selectedProjectResources: null,
+        },
+      });
     },
     updateResource: (resource: ResourceObject) => {
       send({ type: "UPDATE_RESOURCE", resource });
@@ -89,12 +120,26 @@ export function useProjectActions() {
         ...state.context,
         selectedResource: target,
       });
+      setAgentState({
+        ...agentState,
+        project_context: {
+          ...agentState.project_context,
+          selectedResource: target,
+        },
+      });
     },
     clearSelectedResource: () => {
       send({ type: "CLEAR_SELECTED_RESOURCE" });
       setProjectContext({
         ...state.context,
         selectedResource: null,
+      });
+      setAgentState({
+        ...agentState,
+        project_context: {
+          ...agentState.project_context,
+          selectedResource: null,
+        },
       });
     },
   };

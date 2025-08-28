@@ -10,35 +10,19 @@ import {
   createSealosContext,
 } from "@/lib/auth/auth-utils";
 
-export type ActionType =
-  | "devbox"
-  | "cluster"
-  | "launchpad"
-  | "objectstoragebucket"
-  | "project";
-
-export default function useCopilotActions(actionTypes?: ActionType[]) {
+export default function useCopilotActions() {
   const k8sContext = createK8sContext();
   const devboxContext = createDevboxContext();
   const sealosContext = createSealosContext();
-
-  // If no action types specified, activate all actions (default behavior)
-  const actionsToActivate = actionTypes || [
-    "devbox",
-    "cluster",
-    "launchpad",
-    "objectstoragebucket",
-    "project",
-  ];
 
   // Activate actions based on the provided types
   // activateDevboxActions(k8sContext, devboxContext);
 
   // activateClusterActions(k8sContext, sealosContext);
 
-  // activateLaunchpadActions(sealosContext, k8sContext);
+  activateLaunchpadActions(sealosContext, k8sContext);
 
   // activateObjectStorageBucketActions(k8sContext, sealosContext);
 
-  activateProjectActions(k8sContext);
+  // activateProjectActions(k8sContext);
 }

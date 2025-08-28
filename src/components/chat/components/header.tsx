@@ -7,9 +7,6 @@ import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-metho
 import { Spinner } from "@/components/ui/spinner";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useProjectState } from "@/contexts/project/project-context";
-import useCopilotActions, {
-  ActionType,
-} from "@/hooks/copilot/use-copilot-actions";
 
 interface AiChatHeaderProps {
   title?: string;
@@ -26,12 +23,6 @@ export function AiChatHeader({
   const { selectedProject, selectedResource } = useProjectState();
   const { mutate: createNewChatSession, isPending } =
     useCreateNewChatSessionMutation();
-
-  if (selectedResource) {
-    useCopilotActions([selectedResource.resourceType as ActionType]);
-  } else {
-    useCopilotActions(["project"]);
-  }
 
   return (
     <SheetHeader className={`${className}`}>
@@ -58,7 +49,7 @@ export function AiChatHeader({
             )}
           </Button>
         </div>
-        {selectedResource ? (
+        {/* {selectedResource ? (
           <p className="text-sm text-muted-foreground mt-1">
             Resource: {selectedResource.name || selectedResource.resourceType}
           </p>
@@ -66,7 +57,7 @@ export function AiChatHeader({
           <p className="text-sm text-muted-foreground mt-1">
             Project: {selectedProject}
           </p>
-        )}
+        )} */}
       </div>
     </SheetHeader>
   );

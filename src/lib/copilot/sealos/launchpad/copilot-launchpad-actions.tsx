@@ -7,6 +7,7 @@ import {
   usePauseLaunchpadMutation,
   useStartLaunchpadMutation,
   useCheckReadyLaunchpadMutation,
+  useUpdateLaunchpadMutation,
 } from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-mutation";
 import {
   listLaunchpadOptions,
@@ -30,359 +31,427 @@ import { jsonSchemaToActionParameters } from "@copilotkit/shared";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import LaunchpadCreateMessage from "@/components/chat/messages/system-messages.tsx/launchpad/launchpad-create-message";
 import { LaunchpadCreateRequestSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
+import { UpdateResourceForm } from "@/components/copilot/sealos/launchpad/copilot-launchpad-update";
+import {
+  CPU_OPTIONS,
+  MEMORY_OPTIONS,
+  REPLICAS_OPTIONS,
+} from "@/lib/k8s/k8s-constant/k8s-constant-resource";
 
 export function activateLaunchpadActions(
   sealosContext: SealosApiContext,
   k8sContext: K8sApiContext
 ) {
-  createLaunchpadAction(sealosContext);
-  deleteLaunchpadAction(sealosContext);
-  startLaunchpadAction(sealosContext);
-  pauseLaunchpadAction(sealosContext);
-  checkReadyLaunchpadAction(sealosContext);
-  listLaunchpadAction(k8sContext);
-  getLaunchpadAction(k8sContext);
-  getLaunchpadLogsAction(k8sContext, sealosContext);
+  updateLaunchpadResourceAction(sealosContext);
+  // createLaunchpadAction(sealosContext);
+  // deleteLaunchpadAction(sealosContext);
+  // startLaunchpadAction(sealosContext);
+  // pauseLaunchpadAction(sealosContext);
+  // checkReadyLaunchpadAction(sealosContext);
+  // listLaunchpadAction(k8sContext);
+  // getLaunchpadAction(k8sContext);
+  // getLaunchpadLogsAction(k8sContext, sealosContext);
 }
 
-function createLaunchpadAction(context: SealosApiContext) {
+function updateLaunchpadResourceAction(context: SealosApiContext) {
   useCopilotAction({
-    name: "createLaunchpad",
-    description: "Create a new launchpad with specified configuration",
-    followUp: false,
-    parameters: jsonSchemaToActionParameters(
-      zodToJsonSchema(LaunchpadCreateRequestSchema) as any
-    ),
-    handler: ({ name, image }) => {
-      // This will be handled by the UI component
-      return `Creating launchpad "${name}" with image ${image}`;
-    },
-    render: ({ args }) => {
-      return <LaunchpadCreateMessage payload={args as any} />;
-    },
-  });
-}
-
-function deleteLaunchpadAction(context: SealosApiContext) {
-  const deleteLaunchpad = useDeleteLaunchpadMutation(context);
-
-  useCopilotAction({
-    name: "deleteLaunchpad",
-    description: "Delete a launchpad",
+    name: "updateLaunchpadResource",
+    description: "Update the resource quota of a launchpad app",
     parameters: [
       {
         name: "name",
         type: "string",
-        description: "Name of the launchpad to delete",
+        description: "Name of the launchpad app to update",
         required: true,
       },
+      {
+        name: "cpu",
+        type: "string",
+        enum: CPU_OPTIONS.map(String),
+        description: "desired CPU quota of the launchpad app",
+      },
+      {
+        name: "memory",
+        type: "string",
+        enum: MEMORY_OPTIONS.map(String),
+        description: "desired memory quota of the launchpad app",
+      },
+      {
+        name: "replicas",
+        type: "string",
+        enum: REPLICAS_OPTIONS.map(String),
+        description: "desired replicas of the launchpad app",
+      },
     ],
-    handler: async ({ name }) => {
-      const deleteRequest = {
-        name,
+    renderAndWaitForResponse(props) {
+      const { args, respond } = props;
+      const { name, cpu, memory, replicas } = args;
+
+      const handleSubmit = (values: {
+        name: string;
+        cpu: number;
+        memory: number;
+        replicas: number;
+      }) => {
+        if (respond) {
+          respond("updated successfully.");
+        }
       };
 
-      await deleteLaunchpad.mutateAsync(deleteRequest);
-      return `Launchpad '${name}' deleted successfully.`;
-    },
-    render: ({ args, result, status }) => {
       return (
-        <AITool key={"deleteLaunchpad"}>
-          <AIToolHeader
-            description={"Delete a launchpad"}
-            name={"deleteLaunchpad"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
+        <UpdateResourceForm
+          initialValues={{
+            name: name || "",
+            cpu: cpu !== undefined ? Number(cpu) : undefined,
+            memory: memory !== undefined ? Number(memory) : undefined,
+            replicas: replicas !== undefined ? Number(replicas) : undefined,
+          }}
+          onSubmit={handleSubmit}
+          context={context}
+        />
       );
     },
   });
 }
 
-function startLaunchpadAction(context: SealosApiContext) {
-  const startLaunchpad = useStartLaunchpadMutation(context);
+// function createLaunchpadAction(context: SealosApiContext) {
+//   useCopilotAction({
+//     name: "createLaunchpad",
+//     description: "Create a new launchpad with specified configuration",
+//     followUp: false,
+//     parameters: jsonSchemaToActionParameters(
+//       zodToJsonSchema(LaunchpadCreateRequestSchema) as any
+//     ),
+//     handler: ({ name, image }) => {
+//       // This will be handled by the UI component
+//       return `Creating launchpad "${name}" with image ${image}`;
+//     },
+//     render: ({ args }) => {
+//       return <LaunchpadCreateMessage payload={args as any} />;
+//     },
+//   });
+// }
 
-  useCopilotAction({
-    name: "startLaunchpad",
-    description: "Start a launchpad",
-    parameters: [
-      {
-        name: "name",
-        type: "string",
-        description: "Name of the launchpad to start",
-        required: true,
-      },
-    ],
-    handler: async ({ name }) => {
-      const startRequest = {
-        name,
-      };
+// function deleteLaunchpadAction(context: SealosApiContext) {
+//   const deleteLaunchpad = useDeleteLaunchpadMutation(context);
 
-      await startLaunchpad.mutateAsync(startRequest);
-      return `Launchpad '${name}' started successfully.`;
-    },
-    render: ({ args, result, status }) => {
-      return (
-        <AITool key={"startLaunchpad"}>
-          <AIToolHeader
-            description={"Start a launchpad"}
-            name={"startLaunchpad"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
-      );
-    },
-  });
-}
+//   useCopilotAction({
+//     name: "deleteLaunchpad",
+//     description: "Delete a launchpad",
+//     parameters: [
+//       {
+//         name: "name",
+//         type: "string",
+//         description: "Name of the launchpad to delete",
+//         required: true,
+//       },
+//     ],
+//     handler: async ({ name }) => {
+//       const deleteRequest = {
+//         name,
+//       };
 
-function pauseLaunchpadAction(context: SealosApiContext) {
-  const pauseLaunchpad = usePauseLaunchpadMutation(context);
+//       await deleteLaunchpad.mutateAsync(deleteRequest);
+//       return `Launchpad '${name}' deleted successfully.`;
+//     },
+//     render: ({ args, result, status }) => {
+//       return (
+//         <AITool key={"deleteLaunchpad"}>
+//           <AIToolHeader
+//             description={"Delete a launchpad"}
+//             name={"deleteLaunchpad"}
+//             status={status}
+//           />
+//           <AIToolContent>
+//             <AIToolParameters parameters={args} />
+//             {result && (
+//               <AIToolResult result={<AIResponse>{result}</AIResponse>} />
+//             )}
+//           </AIToolContent>
+//         </AITool>
+//       );
+//     },
+//   });
+// }
 
-  useCopilotAction({
-    name: "pauseLaunchpad",
-    description: "Pause a launchpad",
-    parameters: [
-      {
-        name: "name",
-        type: "string",
-        description: "Name of the launchpad to pause",
-        required: true,
-      },
-    ],
-    handler: async ({ name }) => {
-      const pauseRequest = {
-        name,
-      };
+// function startLaunchpadAction(context: SealosApiContext) {
+//   const startLaunchpad = useStartLaunchpadMutation(context);
 
-      await pauseLaunchpad.mutateAsync(pauseRequest);
-      return `Launchpad '${name}' paused successfully.`;
-    },
-    render: ({ args, result, status }) => {
-      return (
-        <AITool key={"pauseLaunchpad"}>
-          <AIToolHeader
-            description={"Pause a launchpad"}
-            name={"pauseLaunchpad"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
-      );
-    },
-  });
-}
+//   useCopilotAction({
+//     name: "startLaunchpad",
+//     description: "Start a launchpad",
+//     parameters: [
+//       {
+//         name: "name",
+//         type: "string",
+//         description: "Name of the launchpad to start",
+//         required: true,
+//       },
+//     ],
+//     handler: async ({ name }) => {
+//       const startRequest = {
+//         name,
+//       };
 
-function checkReadyLaunchpadAction(context: SealosApiContext) {
-  const checkReadyLaunchpad = useCheckReadyLaunchpadMutation(context);
+//       await startLaunchpad.mutateAsync(startRequest);
+//       return `Launchpad '${name}' started successfully.`;
+//     },
+//     render: ({ args, result, status }) => {
+//       return (
+//         <AITool key={"startLaunchpad"}>
+//           <AIToolHeader
+//             description={"Start a launchpad"}
+//             name={"startLaunchpad"}
+//             status={status}
+//           />
+//           <AIToolContent>
+//             <AIToolParameters parameters={args} />
+//             {result && (
+//               <AIToolResult result={<AIResponse>{result}</AIResponse>} />
+//             )}
+//           </AIToolContent>
+//         </AITool>
+//       );
+//     },
+//   });
+// }
 
-  useCopilotAction({
-    name: "checkLaunchpadReady",
-    description: "Check if a launchpad is ready",
-    parameters: [
-      {
-        name: "name",
-        type: "string",
-        description: "Name of the launchpad to check readiness for",
-        required: true,
-      },
-    ],
-    handler: async ({ name }) => {
-      const checkRequest = {
-        name,
-      };
+// function pauseLaunchpadAction(context: SealosApiContext) {
+//   const pauseLaunchpad = usePauseLaunchpadMutation(context);
 
-      const result = await checkReadyLaunchpad.mutateAsync(checkRequest);
-      const readyCount = result.data.filter((item: any) => item.ready).length;
+//   useCopilotAction({
+//     name: "pauseLaunchpad",
+//     description: "Pause a launchpad",
+//     parameters: [
+//       {
+//         name: "name",
+//         type: "string",
+//         description: "Name of the launchpad to pause",
+//         required: true,
+//       },
+//     ],
+//     handler: async ({ name }) => {
+//       const pauseRequest = {
+//         name,
+//       };
 
-      return `Launchpad '${name}' readiness check: ${readyCount}/${result.data.length} endpoints ready.`;
-    },
-    render: ({ args, result, status }) => {
-      return (
-        <AITool key={"checkLaunchpadReady"}>
-          <AIToolHeader
-            description={"Check if a launchpad is ready"}
-            name={"checkLaunchpadReady"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
-      );
-    },
-  });
-}
+//       await pauseLaunchpad.mutateAsync(pauseRequest);
+//       return `Launchpad '${name}' paused successfully.`;
+//     },
+//     render: ({ args, result, status }) => {
+//       return (
+//         <AITool key={"pauseLaunchpad"}>
+//           <AIToolHeader
+//             description={"Pause a launchpad"}
+//             name={"pauseLaunchpad"}
+//             status={status}
+//           />
+//           <AIToolContent>
+//             <AIToolParameters parameters={args} />
+//             {result && (
+//               <AIToolResult result={<AIResponse>{result}</AIResponse>} />
+//             )}
+//           </AIToolContent>
+//         </AITool>
+//       );
+//     },
+//   });
+// }
 
-function listLaunchpadAction(context: K8sApiContext) {
-  const queryClient = useQueryClient();
+// function checkReadyLaunchpadAction(context: SealosApiContext) {
+//   const checkReadyLaunchpad = useCheckReadyLaunchpadMutation(context);
 
-  useCopilotAction({
-    name: "listLaunchpads",
-    description: "List all launchpads (deployments and statefulsets)",
-    parameters: [],
-    handler: async () => {
-      const launchpads = await queryClient.fetchQuery(
-        listLaunchpadOptions(context)
-      );
+//   useCopilotAction({
+//     name: "checkLaunchpadReady",
+//     description: "Check if a launchpad is ready",
+//     parameters: [
+//       {
+//         name: "name",
+//         type: "string",
+//         description: "Name of the launchpad to check readiness for",
+//         required: true,
+//       },
+//     ],
+//     handler: async ({ name }) => {
+//       const checkRequest = {
+//         name,
+//       };
 
-      if (!launchpads || launchpads.length === 0) {
-        return "No launchpads found.";
-      }
+//       const result = await checkReadyLaunchpad.mutateAsync(checkRequest);
+//       const readyCount = result.data.filter((item: any) => item.ready).length;
 
-      const launchpadNames = launchpads
-        .map((launchpad: any) => launchpad.metadata?.name)
-        .filter(Boolean);
+//       return `Launchpad '${name}' readiness check: ${readyCount}/${result.data.length} endpoints ready.`;
+//     },
+//     render: ({ args, result, status }) => {
+//       return (
+//         <AITool key={"checkLaunchpadReady"}>
+//           <AIToolHeader
+//             description={"Check if a launchpad is ready"}
+//             name={"checkLaunchpadReady"}
+//             status={status}
+//           />
+//           <AIToolContent>
+//             <AIToolParameters parameters={args} />
+//             {result && (
+//               <AIToolResult result={<AIResponse>{result}</AIResponse>} />
+//             )}
+//           </AIToolContent>
+//         </AITool>
+//       );
+//     },
+//   });
+// }
 
-      return `Found ${launchpadNames.length} launchpads: ${launchpadNames.join(
-        ", "
-      )}`;
-    },
-    render: ({ args, result, status }) => {
-      return (
-        <AITool key={"listLaunchpads"}>
-          <AIToolHeader
-            description={"List all launchpads (deployments and statefulsets)"}
-            name={"listLaunchpads"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
-      );
-    },
-  });
-}
+// function listLaunchpadAction(context: K8sApiContext) {
+//   const queryClient = useQueryClient();
 
-function getLaunchpadAction(context: K8sApiContext) {
-  const queryClient = useQueryClient();
+//   useCopilotAction({
+//     name: "listLaunchpads",
+//     description: "List all launchpads (deployments and statefulsets)",
+//     parameters: [],
+//     handler: async () => {
+//       const launchpads = await queryClient.fetchQuery(
+//         listLaunchpadOptions(context)
+//       );
 
-  useCopilotAction({
-    name: "getLaunchpad",
-    description: "Get details of a specific launchpad",
-    parameters: [
-      {
-        name: "name",
-        type: "string",
-        description: "Name of the launchpad to get details for",
-        required: true,
-      },
-      {
-        name: "resourceType",
-        type: "string",
-        description: "Type of resource (deployment or statefulset)",
-        required: false,
-      },
-    ],
-    handler: async ({ name, resourceType }) => {
-      const type = resourceType || "deployment";
-      const target = BuiltinResourceTargetSchema.parse({
-        ...convertResourceTypeToTarget(type),
-        name,
-      });
+//       if (!launchpads || launchpads.length === 0) {
+//         return "No launchpads found.";
+//       }
 
-      const launchpad = await queryClient.fetchQuery(
-        getLaunchpadOptions(context, target)
-      );
+//       const launchpadNames = launchpads
+//         .map((launchpad: any) => launchpad.metadata?.name)
+//         .filter(Boolean);
 
-      return `Launchpad '${name}' details: Status: ${
-        (launchpad as any).status?.readyReplicas || 0
-      }/${(launchpad as any).spec?.replicas || 0} replicas ready, Image: ${
-        (launchpad as any).spec?.template?.spec?.containers?.[0]?.image ||
-        "Unknown"
-      }`;
-    },
-    render: ({ args, result, status }) => {
-      return (
-        <AITool key={"getLaunchpad"}>
-          <AIToolHeader
-            description={"Get details of a specific launchpad"}
-            name={"getLaunchpad"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
-      );
-    },
-  });
-}
+//       return `Found ${launchpadNames.length} launchpads: ${launchpadNames.join(
+//         ", "
+//       )}`;
+//     },
+//     render: ({ args, result, status }) => {
+//       return (
+//         <AITool key={"listLaunchpads"}>
+//           <AIToolHeader
+//             description={"List all launchpads (deployments and statefulsets)"}
+//             name={"listLaunchpads"}
+//             status={status}
+//           />
+//           <AIToolContent>
+//             <AIToolParameters parameters={args} />
+//             {result && (
+//               <AIToolResult result={<AIResponse>{result}</AIResponse>} />
+//             )}
+//           </AIToolContent>
+//         </AITool>
+//       );
+//     },
+//   });
+// }
 
-function getLaunchpadLogsAction(
-  context: K8sApiContext,
-  sealosContext: SealosApiContext
-) {
-  const queryClient = useQueryClient();
+// function getLaunchpadAction(context: K8sApiContext) {
+//   const queryClient = useQueryClient();
 
-  useCopilotAction({
-    name: "getLaunchpadLogs",
-    description: "Get logs of a specific launchpad",
-    parameters: [
-      {
-        name: "name",
-        type: "string",
-        description: "Name of the launchpad to get logs for",
-        required: true,
-      },
-    ],
-    handler: async ({ name }) => {
-      const target = BuiltinResourceTargetSchema.parse({
-        ...convertResourceTypeToTarget("deployment"),
-        name,
-      });
+//   useCopilotAction({
+//     name: "getLaunchpad",
+//     description: "Get details of a specific launchpad",
+//     parameters: [
+//       {
+//         name: "name",
+//         type: "string",
+//         description: "Name of the launchpad to get details for",
+//         required: true,
+//       },
+//       {
+//         name: "resourceType",
+//         type: "string",
+//         description: "Type of resource (deployment or statefulset)",
+//         required: false,
+//       },
+//     ],
+//     handler: async ({ name, resourceType }) => {
+//       const type = resourceType || "deployment";
+//       const target = BuiltinResourceTargetSchema.parse({
+//         ...convertResourceTypeToTarget(type),
+//         name,
+//       });
 
-      const logs = await queryClient.fetchQuery(
-        getLaunchpadLogsOptions(context, sealosContext, target)
-      );
-      console.log("logs in ai-launchpad-actions", JSON.stringify(logs));
-      return `Launchpad '${name}' logs: ${JSON.stringify(logs)}`;
-    },
-    render: ({ args, result, status }) => {
-      return (
-        <AITool key={"getLaunchpadLogs"}>
-          <AIToolHeader
-            description={"Get logs of a specific launchpad"}
-            name={"getLaunchpadLogs"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
-      );
-    },
-  });
-}
+//       const launchpad = await queryClient.fetchQuery(
+//         getLaunchpadOptions(context, target)
+//       );
+
+//       return `Launchpad '${name}' details: Status: ${
+//         (launchpad as any).status?.readyReplicas || 0
+//       }/${(launchpad as any).spec?.replicas || 0} replicas ready, Image: ${
+//         (launchpad as any).spec?.template?.spec?.containers?.[0]?.image ||
+//         "Unknown"
+//       }`;
+//     },
+//     render: ({ args, result, status }) => {
+//       return (
+//         <AITool key={"getLaunchpad"}>
+//           <AIToolHeader
+//             description={"Get details of a specific launchpad"}
+//             name={"getLaunchpad"}
+//             status={status}
+//           />
+//           <AIToolContent>
+//             <AIToolParameters parameters={args} />
+//             {result && (
+//               <AIToolResult result={<AIResponse>{result}</AIResponse>} />
+//             )}
+//           </AIToolContent>
+//         </AITool>
+//       );
+//     },
+//   });
+// }
+
+// function getLaunchpadLogsAction(
+//   context: K8sApiContext,
+//   sealosContext: SealosApiContext
+// ) {
+//   const queryClient = useQueryClient();
+
+//   useCopilotAction({
+//     name: "getLaunchpadLogs",
+//     description: "Get logs of a specific launchpad",
+//     parameters: [
+//       {
+//         name: "name",
+//         type: "string",
+//         description: "Name of the launchpad to get logs for",
+//         required: true,
+//       },
+//     ],
+//     handler: async ({ name }) => {
+//       const target = BuiltinResourceTargetSchema.parse({
+//         ...convertResourceTypeToTarget("deployment"),
+//         name,
+//       });
+
+//       const logs = await queryClient.fetchQuery(
+//         getLaunchpadLogsOptions(context, sealosContext, target)
+//       );
+//       console.log("logs in ai-launchpad-actions", JSON.stringify(logs));
+//       return `Launchpad '${name}' logs: ${JSON.stringify(logs)}`;
+//     },
+//     render: ({ args, result, status }) => {
+//       return (
+//         <AITool key={"getLaunchpadLogs"}>
+//           <AIToolHeader
+//             description={"Get logs of a specific launchpad"}
+//             name={"getLaunchpadLogs"}
+//             status={status}
+//           />
+//           <AIToolContent>
+//             <AIToolParameters parameters={args} />
+//             {result && (
+//               <AIToolResult result={<AIResponse>{result}</AIResponse>} />
+//             )}
+//           </AIToolContent>
+//         </AITool>
+//       );
+//     },
+//   });
+// }
 // TODO: Implement additional app actions if needed
 // export const setAppCommandAction = async () => {};
 // export const setAppEnvAction = async () => {};

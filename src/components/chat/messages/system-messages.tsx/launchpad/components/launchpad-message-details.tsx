@@ -19,14 +19,6 @@ export const LaunchpadMessageDetails: React.FC<
   const { resource, image, operationalStatus, env, command, args } =
     launchpadObject;
 
-  const formatValue = (value: any, type: "cpu" | "memory" | "storage") => {
-    if (!value) return "N/A";
-    if (type === "cpu") return `${value}m`;
-    if (type === "memory") return `${value}MB`;
-    if (type === "storage") return `${value}GB`;
-    return value;
-  };
-
   const formatEnvVars = (envVars: any) => {
     if (!envVars || !Array.isArray(envVars)) return [];
     return envVars.map((envVar: any) => ({
@@ -66,13 +58,13 @@ export const LaunchpadMessageDetails: React.FC<
           <div className="flex flex-col">
             <span className="text-sm text-muted-foreground">CPU</span>
             <span className="text-sm font-medium">
-              {formatValue(resource?.cpu, "cpu")}
+              {resource?.cpu}Core
             </span>
           </div>
           <div className="flex flex-col">
             <span className="text-sm text-muted-foreground">Memory</span>
             <span className="text-sm font-medium">
-              {formatValue(resource?.memory, "memory")}
+              {resource?.memory}GB
             </span>
           </div>
         </div>

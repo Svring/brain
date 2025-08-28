@@ -26,7 +26,7 @@ export interface ResourceObject {
 export interface ProjectContextState {
   allProjects: unknown[];
   selectedProject: string | null;
-  selectedProjectResources: ResourceObject[] | null;
+  selectedProjectResources: any[] | null;
   selectedResource: ResourceTarget | null;
 }
 
