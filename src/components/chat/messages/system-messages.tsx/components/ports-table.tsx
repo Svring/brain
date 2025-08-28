@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2, Plus, Edit2, Check, X, Copy, CheckCircle } from "lucide-react";
+import { Trash2, Plus, Check, X } from "lucide-react";
 
 // UI Components
 import {
@@ -14,24 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 
 // Custom Hooks and Types
 import { useCopy } from "@/hooks/use-copy";
@@ -47,9 +30,7 @@ interface PortsTableProps {
 // New Port State
 interface NewPort {
   number: number;
-  protocol: string;
   publicAccess: boolean;
-  customDomain: string;
 }
 
 export function PortsTable({
@@ -59,12 +40,9 @@ export function PortsTable({
 }: PortsTableProps) {
   // State
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [newPort, setNewPort] = useState<NewPort>({
     number: 80,
-    protocol: "TCP",
     publicAccess: false,
-    customDomain: "",
   });
   const { copyToClipboard, isCopied } = useCopy();
 
@@ -74,33 +52,26 @@ export function PortsTable({
 
     const port: Port = {
       number: newPort.number,
-      protocol: newPort.protocol,
+      protocol: "TCP",
       ...(newPort.publicAccess && {
         publicAddress: `port-${newPort.number}.example.com`,
       }),
-      ...(newPort.customDomain && { host: newPort.customDomain }),
     };
 
     onPortsChange([...ports, port]);
     setNewPort({
       number: 80,
-      protocol: "TCP",
       publicAccess: false,
-      customDomain: "",
     });
     setEditingIndex(null);
-    setDialogOpen(false);
   };
 
   const handleEdit = (index: number, port: Port) => {
     setNewPort({
       number: port.number,
-      protocol: port.protocol || "TCP",
       publicAccess: !!port.publicAddress,
-      customDomain: port.host || "",
     });
     setEditingIndex(index);
-    setDialogOpen(true);
   };
 
   const handleSave = (index: number) => {
@@ -108,18 +79,16 @@ export function PortsTable({
 
     const updatedPort: Port = {
       number: newPort.number,
-      protocol: newPort.protocol,
+      protocol: "TCP",
       ...(newPort.publicAccess && {
         publicAddress: `port-${newPort.number}.example.com`,
       }),
-      ...(newPort.customDomain && { host: newPort.customDomain }),
     };
 
     const newPorts = [...ports];
     newPorts[index] = updatedPort;
     onPortsChange(newPorts);
     setEditingIndex(null);
-    setDialogOpen(false);
   };
 
   const handleDelete = (index: number) => {
@@ -129,12 +98,9 @@ export function PortsTable({
 
   const handleCancel = () => {
     setEditingIndex(null);
-    setDialogOpen(false);
     setNewPort({
       number: 80,
-      protocol: "TCP",
       publicAccess: false,
-      customDomain: "",
     });
   };
 
@@ -142,171 +108,117 @@ export function PortsTable({
     if (allowEditing) {
       setNewPort({
         number: 80,
-        protocol: "TCP",
         publicAccess: false,
-        customDomain: "",
       });
       setEditingIndex(ports.length);
-      setDialogOpen(true);
     }
   };
 
   // Render Functions
-  const renderPortRow = (port: Port, index: number) => (
-    <TableRow key={`${port.number}-${index}`}>
-      <TableCell className="font-medium">
-        <div className="flex items-center gap-2">
-          <span>{port.number}</span>
-        </div>
-      </TableCell>
-      <TableCell>
-        <div className="flex items-center gap-2">
-          <span className={port.publicAddress ? "text-green-600" : "text-muted-foreground"}>
-            {port.publicAddress ? "Yes" : "No"}
-          </span>
-        </div>
-      </TableCell>
-      {allowEditing && (
+  const renderPortRow = (port: Port, index: number) => {
+    const isEditing = allowEditing && editingIndex === index;
+
+    return (
+      <TableRow key={`${port.number}-${index}`}>
+        <TableCell className="font-medium">
+          <div className="flex items-center gap-2">
+            {allowEditing ? (
+              <Input
+                type="number"
+                value={isEditing ? newPort.number : port.number}
+                onChange={(e) => {
+                  if (isEditing) {
+                    setNewPort({
+                      ...newPort,
+                      number: parseInt(e.target.value) || 0,
+                    });
+                  } else {
+                    // Direct update for inline editing
+                    const updatedPorts = [...ports];
+                    updatedPorts[index] = {
+                      ...updatedPorts[index],
+                      number: parseInt(e.target.value) || 0,
+                    };
+                    onPortsChange?.(updatedPorts);
+                  }
+                }}
+                placeholder="Port number"
+                min="1"
+                max="65535"
+                className="w-20 h-8"
+              />
+            ) : (
+              <span>{port.number}</span>
+            )}
+          </div>
+        </TableCell>
         <TableCell>
-          <div className="flex gap-1">
-            <Dialog
-              open={dialogOpen && editingIndex === index}
-              onOpenChange={(open) => {
-                if (!open) {
-                  handleCancel();
-                } else {
-                  setDialogOpen(open);
+          <div className="flex items-center gap-2">
+            {allowEditing ? (
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={isEditing ? newPort.publicAccess : !!port.publicAddress}
+                  onCheckedChange={(checked) => {
+                    if (isEditing) {
+                      setNewPort({ ...newPort, publicAccess: checked });
+                    } else {
+                      // Direct update for inline editing
+                      const updatedPorts = [...ports];
+                      updatedPorts[index] = {
+                        ...updatedPorts[index],
+                        publicAddress: checked ? `port-${port.number}.example.com` : undefined,
+                      };
+                      onPortsChange?.(updatedPorts);
+                    }
+                  }}
+                />
+                <span className="text-sm text-muted-foreground">
+                  {(isEditing ? newPort.publicAccess : !!port.publicAddress) ? "Yes" : "No"}
+                </span>
+              </div>
+            ) : (
+              <span
+                className={
+                  port.publicAddress ? "text-green-600" : "text-muted-foreground"
                 }
-              }}
-            >
-              <DialogTrigger asChild>
+              >
+                {port.publicAddress ? "Yes" : "No"}
+              </span>
+            )}
+          </div>
+        </TableCell>
+        {allowEditing && (
+          <TableCell>
+            <div className="flex gap-1">
+              {isEditing ? (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleSave(index)}
+                    disabled={!newPort.number}
+                  >
+                    <Check className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={handleCancel}>
+                    <X className="w-3 h-3" />
+                  </Button>
+                </>
+              ) : (
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleEdit(index, port)}
+                  onClick={() => handleDelete(index)}
                 >
-                  <Edit2 className="w-4 h-4" />
+                  <Trash2 className="w-4 h-4" />
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>
-                    {editingIndex === ports.length
-                      ? "Add New Port"
-                      : "Edit Port"}
-                  </DialogTitle>
-                  <DialogDescription>
-                    {editingIndex === ports.length
-                      ? "Configure settings for the new port."
-                      : "Configure port settings and access options."}
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="number" className="text-right">
-                      Port Number
-                    </Label>
-                    <Input
-                      id="number"
-                      type="number"
-                      value={newPort.number}
-                      onChange={(e) =>
-                        setNewPort({
-                          ...newPort,
-                          number: parseInt(e.target.value) || 0,
-                        })
-                      }
-                      className="col-span-3"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="public-access" className="text-right">
-                      Public Access
-                    </Label>
-                    <div className="col-span-3 flex items-center space-x-2">
-                      <Switch
-                        id="public-access"
-                        checked={newPort.publicAccess}
-                        onCheckedChange={(checked) =>
-                          setNewPort({ ...newPort, publicAccess: checked })
-                        }
-                      />
-                      <span className="text-sm">Enable public access</span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="protocol" className="text-right">
-                      Protocol
-                    </Label>
-                    <Select
-                      value={newPort.protocol}
-                      onValueChange={(value) =>
-                        setNewPort({ ...newPort, protocol: value })
-                      }
-                    >
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="TCP">TCP</SelectItem>
-                        <SelectItem value="UDP">UDP</SelectItem>
-                        <SelectItem value="SCTP">SCTP</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="custom-domain" className="text-right">
-                      Custom Domain
-                    </Label>
-                    <Input
-                      id="custom-domain"
-                      value={newPort.customDomain}
-                      onChange={(e) =>
-                        setNewPort({ ...newPort, customDomain: e.target.value })
-                      }
-                      placeholder="Optional custom domain"
-                      className="col-span-3"
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleCancel}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      if (editingIndex === ports.length) {
-                        handleAdd();
-                      } else {
-                        handleSave(index);
-                      }
-                    }}
-                    disabled={!newPort.number}
-                  >
-                    {editingIndex === ports.length
-                      ? "Add Port"
-                      : "Save changes"}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleDelete(index)}
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          </div>
-        </TableCell>
-      )}
-    </TableRow>
-  );
+              )}
+            </div>
+          </TableCell>
+        )}
+      </TableRow>
+    );
+  };
 
   const renderEmptyRow = () => (
     <TableRow
@@ -327,7 +239,7 @@ export function PortsTable({
 
   // Main Render
   return (
-    <div className="w-full space-y-2 border rounded-lg">
+    <div className="w-full space-y-2">
       <Table className="w-full">
         <TableHeader>
           <TableRow>
@@ -341,107 +253,6 @@ export function PortsTable({
           {allowEditing && renderEmptyRow()}
         </TableBody>
       </Table>
-
-      {/* Dialog for adding new ports */}
-      <Dialog
-        open={dialogOpen && editingIndex === ports.length}
-        onOpenChange={(open) => {
-          if (!open) {
-            handleCancel();
-          } else {
-            setDialogOpen(open);
-          }
-        }}
-      >
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Add New Port</DialogTitle>
-            <DialogDescription>
-              Configure settings for the new port.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="number" className="text-right">
-                Port Number
-              </Label>
-              <Input
-                id="number"
-                type="number"
-                value={newPort.number}
-                onChange={(e) =>
-                  setNewPort({
-                    ...newPort,
-                    number: parseInt(e.target.value) || 0,
-                  })
-                }
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="public-access" className="text-right">
-                Public Access
-              </Label>
-              <div className="col-span-3 flex items-center space-x-2">
-                <Switch
-                  id="public-access"
-                  checked={newPort.publicAccess}
-                  onCheckedChange={(checked) =>
-                    setNewPort({ ...newPort, publicAccess: checked })
-                  }
-                />
-                <span className="text-sm">Enable public access</span>
-              </div>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="protocol" className="text-right">
-                Protocol
-              </Label>
-              <Select
-                value={newPort.protocol}
-                onValueChange={(value) =>
-                  setNewPort({ ...newPort, protocol: value })
-                }
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="TCP">TCP</SelectItem>
-                  <SelectItem value="UDP">UDP</SelectItem>
-                  <SelectItem value="SCTP">SCTP</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="custom-domain" className="text-right">
-                Custom Domain
-              </Label>
-              <Input
-                id="custom-domain"
-                value={newPort.customDomain}
-                onChange={(e) =>
-                  setNewPort({ ...newPort, customDomain: e.target.value })
-                }
-                placeholder="Optional custom domain"
-                className="col-span-3"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleCancel}>
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              onClick={handleAdd}
-              disabled={!newPort.number}
-            >
-              Add Port
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

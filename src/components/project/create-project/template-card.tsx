@@ -1,58 +1,32 @@
-import { Loader2, MessageCircle } from "lucide-react";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import type { TemplateResource } from "@/lib/sealos/resources/template/schemas/template-api-context-schemas";
-import { TemplateInputDialog } from "./template-input-dialog";
-import { useTemplateCard } from "@/hooks/template/use-template-card";
-// import { useTemplatePopover } from "@/hooks/template/use-template-popover";
 import React, { memo, useCallback } from "react";
 
 export type TemplateCardProps = {
   template: TemplateResource;
   onViewDetails: (template: TemplateResource) => void;
-  closeDialog?: () => void;
 };
 
 export const TemplateCard = memo(function TemplateCard({
   template,
   onViewDetails,
-  closeDialog,
 }: TemplateCardProps) {
-  const {
-    showInputDialog,
-    setShowInputDialog,
-    hasInputs,
-    isDeploying,
-    handleDeploy,
-    deployTemplate,
-  } = useTemplateCard(template, closeDialog);
-
-  const handleClickCard = useCallback(() => onViewDetails(template), [onViewDetails, template]);
-  const handleCloseDialog = useCallback(() => setShowInputDialog(false), [setShowInputDialog]);
+  const handleClickCard = useCallback(
+    () => onViewDetails(template),
+    [onViewDetails, template]
+  );
 
   return (
     <>
       <div
-        className="group relative cursor-pointer rounded-lg border p-4 text-left transition-all hover:bg-background-secondary hover:shadow-md"
+        className="group relative cursor-pointer rounded-xl border border-border/50 p-4 text-left transition-all bg-background-secondary hover:shadow-md min-h-[200px] flex flex-col hover:brightness-135"
         onClick={handleClickCard}
         role="button"
         tabIndex={0}
       >
-        {/* Ask AI button in upper right */}
-        {/* <Button
-          className="absolute top-2 right-2 z-10"
-          onClick={(e) => {
-            e.stopPropagation();
-            // stream("你好");
-            // openFloatingChat();
-          }}
-          size="sm"
-          variant="ghost"
-        >
-          <MessageCircle className="size-4" />
-        </Button> */}
         {/* Header with icon and title */}
-        <div className="mb-3 flex items-center gap-3">
+        <div className="mb-3 flex items-center gap-4">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted p-2">
             {template.spec.icon ? (
               <Image
@@ -78,53 +52,17 @@ export const TemplateCard = memo(function TemplateCard({
           </p>
         </div>
 
-        {/* Categories */}
+        {/* Categories at bottom left */}
         {template.spec.categories && template.spec.categories.length > 0 && (
-          <div className="mb-4 flex flex-wrap gap-1">
+          <div className="mt-auto pt-4 flex flex-wrap gap-1">
             {template.spec.categories.slice(0, 3).map((category: string) => (
-              <div
-                className="rounded-full border-none bg-secondary px-2 py-1 text-secondary-foreground text-xs"
-                key={category}
-              >
+              <Badge key={category} variant="secondary" className="text-xs">
                 {category}
-              </div>
+              </Badge>
             ))}
           </div>
         )}
-
-        {/* Deploy button */}
-        <div className="flex justify-end">
-          <Button
-            className="opacity-0 transition-opacity group-hover:opacity-100"
-            disabled={isDeploying}
-            onClick={handleDeploy}
-            size="sm"
-            variant="outline"
-          >
-            {isDeploying ? (
-              <>
-                <Loader2 className="mr-2 size-4 animate-spin" />
-                Deploying...
-              </>
-            ) : hasInputs ? (
-              "Configure & Deploy"
-            ) : (
-              "Deploy"
-            )}
-          </Button>
-        </div>
       </div>
-
-      {/* Template Input Dialog */}
-      {hasInputs && (
-        <TemplateInputDialog
-          template={template}
-          isOpen={showInputDialog}
-          onClose={handleCloseDialog}
-          onSubmit={deployTemplate}
-          isLoading={isDeploying}
-        />
-      )}
     </>
   );
 });

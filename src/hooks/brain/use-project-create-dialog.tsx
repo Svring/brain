@@ -13,9 +13,9 @@ export function useProjectCreateDialog() {
   const CreateProjectDialog = () => (
     <Dialog onOpenChange={onOpenChange} open={isOpen}>
       <VisuallyHidden>
-        <DialogTitle>Create Project</DialogTitle>
+        <DialogTitle></DialogTitle>
       </VisuallyHidden>
-      <DialogContent className="h-[90vh] max-h-none w-[90vw] max-w-none">
+      <DialogContent className="h-[90vh] max-h-none w-[90vw] max-w-none p-4 pt-0 rounded-xl!">
         <CreateProject closeDialog={onClose} />
       </DialogContent>
     </Dialog>

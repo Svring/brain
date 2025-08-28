@@ -34,7 +34,7 @@ export function PortDisplayTable({ ports }: PortDisplayTableProps) {
   }
 
   return (
-    <div className="w-full overflow-hidden border rounded-lg">
+    <div className="w-full overflow-hidden">
       <Table>
         <TableHeader >
           <TableRow>

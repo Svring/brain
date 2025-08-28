@@ -2,14 +2,9 @@
 
 import { Main } from "@/components/ui/main";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { SearchIcon } from "lucide-react";
 import { useTemplates } from "@/hooks/template/use-templates";
 import { useTemplateSearch } from "@/hooks/template/use-template-search";
 import type { TemplateResource } from "@/lib/sealos/resources/template/schemas/template-api-context-schemas";
@@ -17,8 +12,6 @@ import { TemplateCard } from "./template-card";
 import { TemplateDetails } from "./template-details";
 import { createSealosContext, createK8sContext } from "@/lib/auth/auth-utils";
 import { useCreateProjectMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 
 interface CreateProjectProps {
   closeDialog?: () => void;
@@ -95,58 +88,58 @@ export default function CreateProject({ closeDialog }: CreateProjectProps) {
   return (
     <>
       {/* ===== Content ===== */}
-      <Main className="h-full w-full" fixed>
+      <Main className="h-full w-full gap-2" fixed>
         <div className="flex items-start justify-between">
           <div className="gap-2">
             <h1 className="font-bold text-2xl tracking-tight">Deploy an app</h1>
-            <p className="text-muted-foreground">
-              Select from available app templates.
-            </p>
           </div>
-          {/* <Button
-            onClick={handleCreateProject}
-            size="lg"
-            disabled={createProjectMutation.isPending}
-          >
-            {createProjectMutation.isPending
-              ? "Creating Project..."
-              : "Create Project"}
-          </Button> */}
         </div>
         <div className="my-4 flex items-end justify-between sm:my-0 sm:items-center">
-          <div className="flex flex-col gap-4 sm:my-4 sm:flex-row">
+          <div className="relative">
+            <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              className="h-9 w-40 lg:w-[250px]"
+              className="h-9 w-40 pl-9 lg:w-[300px]"
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Filter templates..."
               value={searchTerm}
             />
-            <Select
-              onValueChange={setSelectedCategory}
-              value={selectedCategory}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedCategory("all")}
+              className={`h-9 transition-all duration-200 ${
+                selectedCategory === "all"
+                  ? "border border-theme-blue/30 shadow-[0_0_4px_rgba(59,130,246,0.3)]"
+                  : "border border-transparent"
+              }`}
             >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category.charAt(0).toUpperCase() + category.slice(1)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              All Categories
+            </Button>
+            {categories.map((category) => (
+              <Button
+                key={category}
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedCategory(category)}
+                className={`h-9 transition-all duration-200 ${
+                  selectedCategory === category
+                    ? "border border-theme-blue/30 shadow-[0_0_4px_rgba(59,130,246,0.3)]"
+                    : "border border-transparent"
+                }`}
+              >
+                {category.charAt(0).toUpperCase() + category.slice(1)}
+              </Button>
+            ))}
           </div>
         </div>
-        <Separator className="shadow-sm" />
         <div className="faded-bottom no-scrollbar grid gap-4 overflow-auto pt-4 pb-16 md:grid-cols-2 lg:grid-cols-3">
           {filteredTemplates.map((template: TemplateResource) => (
             <TemplateCard
               key={template.metadata.name}
               onViewDetails={handleViewDetails}
               template={template}
-              closeDialog={closeDialog}
             />
           ))}
         </div>
