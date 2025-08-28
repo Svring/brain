@@ -108,33 +108,24 @@ export function EnvTable({
   // Render Functions
   const renderNameCell = (envVar: EnvVar, index: number) => {
     const isEditing = allowEditing && editingIndex === index;
-    const currentEnvVar = isEditing
-      ? newEnvVar
-      : {
-          name: envVar.name,
-          value: envVar.type === "value" ? envVar.value : "",
-        };
 
     return (
       <TableCell className="font-medium">
-        {allowEditing ? (
+        {isEditing ? (
           <Input
-            value={currentEnvVar.name}
-            onChange={(e) => {
-              if (isEditing) {
-                setNewEnvVar({ ...newEnvVar, name: e.target.value });
-              } else {
-                // Direct update for inline editing
-                const updatedEnvVars = [...envVars];
-                updatedEnvVars[index] = {
-                  ...updatedEnvVars[index],
-                  name: e.target.value,
-                };
-                onEnvVarsChange?.(updatedEnvVars);
-              }
-            }}
+            value={newEnvVar.name}
+            onChange={(e) => setNewEnvVar({ ...newEnvVar, name: e.target.value })}
             placeholder="Environment variable name"
           />
+        ) : allowEditing ? (
+          <div
+            className="cursor-pointer hover:bg-muted/50 px-2 py-1 rounded flex items-center gap-2 group"
+            onClick={() => handleEdit(index, envVar)}
+            title="Click to edit"
+          >
+            <span>{envVar.name}</span>
+            <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
         ) : (
           <div
             className="cursor-pointer hover:underline flex items-center gap-2 group"
@@ -155,34 +146,28 @@ export function EnvTable({
 
   const renderValueCell = (envVar: EnvVar, index: number) => {
     const isEditing = allowEditing && editingIndex === index;
-    const currentEnvVar = isEditing
-      ? newEnvVar
-      : {
-          name: envVar.name,
-          value: envVar.type === "value" ? envVar.value : "",
-        };
 
     return (
       <TableCell>
-        {allowEditing ? (
+        {isEditing ? (
           <Input
-            value={currentEnvVar.value}
-            onChange={(e) => {
-              if (isEditing) {
-                setNewEnvVar({ ...newEnvVar, value: e.target.value });
-              } else {
-                // Direct update for inline editing
-                const updatedEnvVars = [...envVars];
-                updatedEnvVars[index] = {
-                  type: "value",
-                  name: updatedEnvVars[index].name,
-                  value: e.target.value,
-                };
-                onEnvVarsChange?.(updatedEnvVars);
-              }
-            }}
+            value={newEnvVar.value}
+            onChange={(e) => setNewEnvVar({ ...newEnvVar, value: e.target.value })}
             placeholder="Environment variable value"
           />
+        ) : allowEditing ? (
+          envVar.type === "value" ? (
+            <div
+              className="cursor-pointer hover:bg-muted/50 px-2 py-1 rounded flex items-center gap-2 group"
+              onClick={() => handleEdit(index, envVar)}
+              title="Click to edit"
+            >
+              <span>{envVar.value}</span>
+              <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+          ) : (
+            <span className="text-muted-foreground italic">from secret</span>
+          )
         ) : envVar.type === "value" ? (
           <div
             className="cursor-pointer hover:underline flex items-center gap-2 group"

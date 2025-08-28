@@ -8,9 +8,11 @@ import {
 import { ChevronDown, Terminal, Database, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { EnvTable } from "../../components/env-table";
+import { LaunchpadObject } from "@/lib/sealos/resources/launchpad/launchpad-object-schema";
+import { Separator } from "@/components/ui/separator";
 
 interface LaunchpadMessageDetailsProps {
-  launchpadObject: any;
+  launchpadObject: LaunchpadObject;
 }
 
 export const LaunchpadMessageDetails: React.FC<
@@ -31,18 +33,19 @@ export const LaunchpadMessageDetails: React.FC<
 
   return (
     <div className="space-y-4">
-      {/* Basic Information - Always Visible */}
-      <div className="space-y-4">
-        {/* Replicas and Created At Info */}
-        <div className="grid grid-cols-2 gap-6">
-          {resource && (
+      {/* Basic Information */}
+      <div className="space-y-2">
+        <h3 className="text-lg font-semibold text-foreground">Basic</h3>
+        <div className="space-y-4">
+          {/* Image Info */}
+          {image && (
             <div className="flex flex-col">
-              <span className="text-sm text-muted-foreground">Replicas</span>
-              <span className="text-sm font-medium">
-                {resource.replicas || "N/A"}
-              </span>
+              <span className="text-sm text-muted-foreground">Image</span>
+              <span className="text-sm font-medium truncate">{image}</span>
             </div>
           )}
+
+          {/* Created At Info */}
           {operationalStatus && (
             <div className="flex flex-col">
               <span className="text-sm text-muted-foreground">Created At</span>
@@ -51,32 +54,40 @@ export const LaunchpadMessageDetails: React.FC<
               </span>
             </div>
           )}
-        </div>
 
-        {/* CPU and Memory Info */}
-        <div className="grid grid-cols-2 gap-6">
-          <div className="flex flex-col">
-            <span className="text-sm text-muted-foreground">CPU</span>
-            <span className="text-sm font-medium">
-              {resource?.cpu}Core
-            </span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm text-muted-foreground">Memory</span>
-            <span className="text-sm font-medium">
-              {resource?.memory}GB
-            </span>
+          {/* CPU and Memory Info */}
+          <div className="grid grid-cols-2 gap-6">
+            <div className="flex flex-col">
+              <span className="text-sm text-muted-foreground">CPU</span>
+              <span className="text-sm font-medium">{resource?.cpu}Core</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm text-muted-foreground">Memory</span>
+              <span className="text-sm font-medium">{resource?.memory}GB</span>
+            </div>
           </div>
         </div>
-
-        {/* Image Info */}
-        {image && (
-          <div className="flex flex-col">
-            <span className="text-sm text-muted-foreground">Image</span>
-            <span className="text-sm font-medium truncate">{image}</span>
-          </div>
-        )}
       </div>
+
+      <Separator />
+
+      {/* Deployment Information */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-foreground">Deployment</h3>
+        <div className="space-y-4">
+          {/* Replicas Info */}
+          {resource && (
+            <div className="flex flex-col">
+              <span className="text-sm text-muted-foreground">Replicas</span>
+              <span className="text-sm font-medium">
+                {resource.replicas || "N/A"}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <Separator />
 
       {/* Advanced Information - Collapsible Sections */}
       <Accordion type="multiple" className="w-full space-y-1">
@@ -116,39 +127,24 @@ export const LaunchpadMessageDetails: React.FC<
           </AccordionItem>
         )}
 
-        {/* Environment Variables */}
-        {envVars.length > 0 && (
-          <AccordionItem
-            value="env-vars"
-            className="inset-ring inset-ring-border rounded-lg"
-          >
-            <AccordionTrigger className="px-4 py-3 hover:no-underline">
-              <div className="flex items-center gap-2">
-                <ChevronDown className="h-4 w-4" />
-                <Settings className="h-4 w-4" />
-                <span className="font-medium">Environment Variables</span>
-                <Badge variant="secondary" className="ml-auto">
-                  {envVars.length}
-                </Badge>
+        {/* Advanced Information */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-foreground">Advanced</h3>
+          <div className="space-y-4">
+            {/* Environment Variables */}
+            {envVars.length > 0 && (
+              <div className="flex flex-col">
+                <span className="text-sm text-muted-foreground">
+                  Environment Variables
+                </span>
+                <span className="text-sm font-medium">{envVars.length}</span>
               </div>
-            </AccordionTrigger>
-            <AccordionContent className="px-4 pb-4">
-              <EnvTable
-                envVars={envVars.map((envVar: any) => ({
-                  type: "value" as const,
-                  name: envVar.key,
-                  value: envVar.value,
-                }))}
-                allowEditing={false}
-              />
-            </AccordionContent>
-          </AccordionItem>
-        )}
-
-
+            )}
+          </div>
+        </div>
 
         {/* Storage Information */}
-        {launchpadObject.storage && launchpadObject.storage.length > 0 && (
+        {/* {launchpadObject.storage && launchpadObject.storage.length > 0 && (
           <AccordionItem
             value="storage"
             className="inset-ring inset-ring-border rounded-lg"
@@ -180,7 +176,7 @@ export const LaunchpadMessageDetails: React.FC<
         )}
 
         {/* ConfigMap Information */}
-        {launchpadObject.configMap && launchpadObject.configMap.length > 0 && (
+        {/* {launchpadObject.configMap && launchpadObject.configMap.length > 0 && (
           <AccordionItem
             value="configmap"
             className="inset-ring inset-ring-border rounded-lg"
@@ -210,7 +206,7 @@ export const LaunchpadMessageDetails: React.FC<
               ))}
             </AccordionContent>
           </AccordionItem>
-        )}
+        )} */}
       </Accordion>
     </div>
   );
