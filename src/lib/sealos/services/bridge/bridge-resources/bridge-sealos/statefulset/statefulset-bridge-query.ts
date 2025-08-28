@@ -45,5 +45,5 @@ export const getStatefulSetObject = async (
     .value();
 
   // console.log("getStatefulSetObject", statefulSetObject);
-  return statefulSetObject;
+  return StatefulsetObjectQuerySchema.parse(statefulSetObject);
 };

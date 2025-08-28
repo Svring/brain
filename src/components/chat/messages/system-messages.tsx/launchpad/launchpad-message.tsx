@@ -8,6 +8,7 @@ import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method
 import LaunchpadMessageDetails from "./components/launchpad-message-details";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import LaunchpadMessageMenu from "./components/launchpad-message-menu";
+import { LaunchpadObjectSchema } from "@/lib/sealos/resources/launchpad/launchpad-object-schema";
 
 interface LaunchpadInfoMessageProps {
   target: BuiltinResourceTarget;
@@ -21,18 +22,20 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
 
   // Fetch launchpad data using the target
   const {
-    data: launchpadObject,
+    data: launchpadObjectData,
     isLoading,
     error,
   } = useQuery(launchpad.getLaunchpad.queryOptions(target));
+
+  const launchpadObject = LaunchpadObjectSchema.parse(launchpadObjectData);
 
   const actions: MessageAction[] = launchpadObject
     ? [
         {
           icon: Pencil,
-          label: "Update",
+          label: "Update Image",
           onClick: () => {
-            appendSystemMessage("launchpad.updateResource", target);
+            appendSystemMessage("launchpad.updateImage", target);
           },
         },
       ]

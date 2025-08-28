@@ -91,19 +91,6 @@ export const useResourceMetricsStatus = ({
     return extractPodNames(resource, target.resourceType.toLowerCase());
   }, [resource, target.resourceType]);
 
-  // Fetch monitor data for all devbox pods
-  const devboxMonitorQueries = podNames.map((podName) =>
-    useQuery({
-      ...devbox.getDevboxCombinedMonitorData.queryOptions({
-        devboxName: podName,
-      }),
-      enabled:
-        !isResourceLoading &&
-        target.resourceType.toLowerCase() === "devbox" &&
-        !!podName,
-    })
-  );
-
   // Fetch monitor data for cluster
   const { data: clusterMonitorData } = useQuery({
     ...cluster.getClusterCombinedMonitorData.queryOptions({
@@ -114,34 +101,44 @@ export const useResourceMetricsStatus = ({
       !isResourceLoading && target.resourceType.toLowerCase() === "cluster",
   });
 
-  // Fetch monitor data for all launchpad pods
-  const launchpadMonitorQueries = podNames.map((podName) =>
+  // For devbox and launchpad, we'll use a single query approach to avoid hooks violations
+  // We'll fetch data for the first pod only and handle multiple pods differently
+  const firstPodName = podNames[0];
+
+  // Fetch monitor data for first devbox pod
+  const { data: devboxMonitorData, isLoading: isDevboxLoading } = useQuery({
+    ...devbox.getDevboxCombinedMonitorData.queryOptions({
+      devboxName: firstPodName || "",
+    }),
+    enabled:
+      !isResourceLoading &&
+      target.resourceType.toLowerCase() === "devbox" &&
+      !!firstPodName,
+  });
+
+  // Fetch monitor data for first launchpad pod
+  const { data: launchpadMonitorData, isLoading: isLaunchpadLoading } =
     useQuery({
       ...launchpad.getLaunchpadCombinedMonitorData.queryOptions({
-        queryName: podName,
+        queryName: firstPodName || "",
       }),
       enabled:
         !isResourceLoading &&
         (target.resourceType.toLowerCase() === "deployment" ||
           target.resourceType.toLowerCase() === "statefulset") &&
-        !!podName,
-    })
-  );
+        !!firstPodName,
+    });
 
   // Combine all monitor data into a list
   const podMetricsList = useMemo((): PodMetricsData[] => {
     const resourceType = target.resourceType.toLowerCase();
 
-    if (resourceType === "devbox") {
-      return devboxMonitorQueries
-        .map((query, index) => ({
-          podName: podNames[index],
-          data: query.data as MetricsDataPoint[] | undefined,
-        }))
-        .filter(
-          (item): item is PodMetricsData =>
-            item.data !== undefined && Array.isArray(item.data)
-        );
+    if (
+      resourceType === "devbox" &&
+      devboxMonitorData &&
+      Array.isArray(devboxMonitorData)
+    ) {
+      return [{ podName: firstPodName || "devbox", data: devboxMonitorData }];
     } else if (resourceType === "cluster" && _.isObject(clusterMonitorData)) {
       // For cluster, extract data from the first key
       const firstKey = _.first(_.keys(clusterMonitorData));
@@ -154,26 +151,24 @@ export const useResourceMetricsStatus = ({
       return clusterData && Array.isArray(clusterData)
         ? [{ podName: target.name || "cluster", data: clusterData }]
         : [];
-    } else if (_.includes(["deployment", "statefulset"], resourceType)) {
-      return launchpadMonitorQueries
-        .map((query, index) => ({
-          podName: podNames[index],
-          data: query.data as MetricsDataPoint[] | undefined,
-        }))
-        .filter(
-          (item): item is PodMetricsData =>
-            item.data !== undefined && Array.isArray(item.data)
-        );
+    } else if (
+      _.includes(["deployment", "statefulset"], resourceType) &&
+      launchpadMonitorData &&
+      Array.isArray(launchpadMonitorData)
+    ) {
+      return [
+        { podName: firstPodName || "launchpad", data: launchpadMonitorData },
+      ];
     }
 
     return [];
   }, [
     target.resourceType,
     target.name,
-    podNames,
-    devboxMonitorQueries,
+    firstPodName,
+    devboxMonitorData,
     clusterMonitorData,
-    launchpadMonitorQueries,
+    launchpadMonitorData,
   ]);
 
   // Determine loading state
@@ -181,19 +176,19 @@ export const useResourceMetricsStatus = ({
     const resourceType = target.resourceType.toLowerCase();
 
     if (resourceType === "devbox") {
-      return devboxMonitorQueries.some((query) => query.isLoading);
+      return isDevboxLoading;
     } else if (resourceType === "cluster") {
       return !clusterMonitorData;
     } else if (_.includes(["deployment", "statefulset"], resourceType)) {
-      return launchpadMonitorQueries.some((query) => query.isLoading);
+      return isLaunchpadLoading;
     }
 
     return false;
   }, [
     target.resourceType,
-    devboxMonitorQueries,
+    isDevboxLoading,
     clusterMonitorData,
-    launchpadMonitorQueries,
+    isLaunchpadLoading,
   ]);
 
   // Calculate overall metrics status from all pods

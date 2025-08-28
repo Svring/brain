@@ -20,6 +20,7 @@ import LaunchpadMessage from "./launchpad/launchpad-message";
 import LaunchpadUpdateMessage from "./launchpad/launchpad-update-message";
 import LaunchpadCreateMessage from "./launchpad/launchpad-create-message";
 import LaunchpadUpdateResource from "./launchpad/components/launchpad-update/launchpad-update-resource";
+import LaunchpadUpdateImage from "./launchpad/components/launchpad-update/launchpad-update-image";
 
 import ObjectStorageMessage from "./objectstorage/objectstorage-message";
 import ObjectStorageCreateMessage from "./objectstorage/objectstorage-create-message";
@@ -73,6 +74,9 @@ export const SystemMessageType = {
     ),
     updateResource: (target: BuiltinResourceTarget) => (
       <LaunchpadUpdateResource target={target} />
+    ),
+    updateImage: (target: BuiltinResourceTarget) => (
+      <LaunchpadUpdateImage target={target} />
     ),
   },
   objectstorage: {
