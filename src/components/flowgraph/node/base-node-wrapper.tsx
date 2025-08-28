@@ -5,11 +5,11 @@ import { BaseNode } from "@/components/flowgraph/components/base-node";
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { useRef } from "react";
 import { useChatActions } from "@/contexts/chat/chat-context";
+import { useFlowgraphActions } from "@/contexts/flowgraph/flowgraph-context";
 import {
-  useFlowgraphState,
-  useFlowgraphActions,
-} from "@/contexts/flowgraph/flowgraph-context";
-import { useProjectActions } from "@/contexts/project/project-context";
+  useProjectActions,
+  useProjectState,
+} from "@/contexts/project/project-context";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface BaseNodeProps {
@@ -19,36 +19,33 @@ interface BaseNodeProps {
   className?: string;
 }
 
+import _ from "lodash";
+
 export default function BaseNodeWrapper({
   children,
   nodeData,
   target,
   className,
 }: BaseNodeProps) {
-  const nodeRef = useRef(null);
-
-  const { selectedNode } = useFlowgraphState();
-  const { selectNode } = useFlowgraphActions();
-
   const { selectResource } = useProjectActions();
-
-  const alreadySelected = selectedNode === nodeData;
+  const { selectedResource } = useProjectState();
 
   const handleNodeClick = () => {
-    selectNode(nodeData);
     if (target) {
       selectResource(target);
     }
-    // openSidebarChat();
   };
+
+  const isSelected =
+    selectedResource && target && _.isEqual(selectedResource, target);
 
   return (
     <ContextMenu>
       <ContextMenuTrigger>
         <BaseNode
-          selected={alreadySelected}
-          className={className}
-          ref={nodeRef}
+          className={`${className ?? ""} ${
+            isSelected ? "border-theme-blue/50 border" : ""
+          }`}
           onClick={handleNodeClick}
         >
           <Handle position={Position.Top} type="source" />

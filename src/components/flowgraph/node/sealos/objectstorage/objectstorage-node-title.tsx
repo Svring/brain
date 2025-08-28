@@ -18,7 +18,7 @@ export default function ObjectStorageNodeTitle({
             alt="Object Storage Icon"
             width={24}
             height={24}
-            className="rounded-lg border border-muted h-9 w-9 flex-shrink-0"
+            className="rounded-lg h-9 w-9 flex-shrink-0 p-1 bg-muted"
             priority
           />
           <span className="flex flex-col min-w-0">
