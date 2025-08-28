@@ -10,8 +10,8 @@ import {
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
-import BaseSystemMessage from "../components/base-system-message";
+import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import BaseActionMessage from "../components/base-action-message";
 import { PortDisplayTable } from "../components/port-display-table";
 
 interface NetworkMessageProps {
@@ -28,9 +28,17 @@ export default function NetworkMessage({ target }: NetworkMessageProps) {
   const actions: MessageAction[] = [
     {
       icon: Globe,
-      label: "Custom Domain",
+      label: "Update Ports",
       onClick: () => {
-        appendSystemMessage("universal.customDomain", target);
+        // Only support launchpad resources (deployment/statefulset) for now
+        if (
+          target.type === "builtin" &&
+          ["deployment", "statefulset"].includes(
+            target.resourceType.toLowerCase()
+          )
+        ) {
+          appendSystemMessage("launchpad.updatePort", target);
+        }
       },
     },
   ];
@@ -40,10 +48,16 @@ export default function NetworkMessage({ target }: NetworkMessageProps) {
   }
 
   return (
-    <BaseSystemMessage target={target} actions={actions}>
+    <BaseActionMessage
+      headerTitle={{
+        icon: Globe,
+        name: "Network Ports",
+      }}
+      actions={actions}
+    >
       <div className="space-y-3">
         <PortDisplayTable ports={ports} />
       </div>
-    </BaseSystemMessage>
+    </BaseActionMessage>
   );
 }

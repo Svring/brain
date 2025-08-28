@@ -103,7 +103,7 @@ function DevboxNode({
 
   const { name, image } = resource;
 
-  // console.log("resource", resource);
+  console.log("resource", resource);
   // console.log("status", status);
 
   const context = createK8sContext();

@@ -21,6 +21,7 @@ import LaunchpadUpdateMessage from "./launchpad/launchpad-update-message";
 import LaunchpadCreateMessage from "./launchpad/launchpad-create-message";
 import LaunchpadUpdateResource from "./launchpad/components/launchpad-update/launchpad-update-resource";
 import LaunchpadUpdateImage from "./launchpad/components/launchpad-update/launchpad-update-image";
+import LaunchpadUpdatePort from "./launchpad/components/launchpad-update/launchpad-update-port";
 
 import ObjectStorageMessage from "./objectstorage/objectstorage-message";
 import ObjectStorageCreateMessage from "./objectstorage/objectstorage-create-message";
@@ -77,6 +78,9 @@ export const SystemMessageType = {
     ),
     updateImage: (target: BuiltinResourceTarget) => (
       <LaunchpadUpdateImage target={target} />
+    ),
+    updatePort: (target: BuiltinResourceTarget) => (
+      <LaunchpadUpdatePort target={target} />
     ),
   },
   objectstorage: {

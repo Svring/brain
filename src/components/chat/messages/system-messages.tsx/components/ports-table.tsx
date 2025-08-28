@@ -155,55 +155,15 @@ export function PortsTable({
   const renderPortRow = (port: Port, index: number) => (
     <TableRow key={`${port.number}-${index}`}>
       <TableCell className="font-medium">
-        <div
-          className="cursor-pointer hover:underline flex items-center gap-2 group"
-          onClick={() =>
-            copyToClipboard(port.number.toString(), `number-${index}`)
-          }
-          title="Click to copy"
-        >
+        <div className="flex items-center gap-2">
           <span>{port.number}</span>
-          {isCopied(`number-${index}`) ? (
-            <CheckCircle className="w-3 h-3 text-green-500" />
-          ) : (
-            <Copy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-          )}
         </div>
       </TableCell>
       <TableCell>
-        <div
-          className="cursor-pointer hover:underline flex items-center gap-2 group"
-          onClick={() =>
-            port.privateAddress &&
-            copyToClipboard(port.privateAddress, `private-${index}`)
-          }
-          title="Click to copy"
-        >
-          <span>{port.privateAddress || "N/A"}</span>
-          {port.privateAddress &&
-            (isCopied(`private-${index}`) ? (
-              <CheckCircle className="w-3 h-3 text-green-500" />
-            ) : (
-              <Copy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-            ))}
-        </div>
-      </TableCell>
-      <TableCell>
-        <div
-          className="cursor-pointer hover:underline flex items-center gap-2 group"
-          onClick={() =>
-            port.publicAddress &&
-            copyToClipboard(port.publicAddress, `public-${index}`)
-          }
-          title="Click to copy"
-        >
-          <span>{port.publicAddress || "N/A"}</span>
-          {port.publicAddress &&
-            (isCopied(`public-${index}`) ? (
-              <CheckCircle className="w-3 h-3 text-green-500" />
-            ) : (
-              <Copy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-            ))}
+        <div className="flex items-center gap-2">
+          <span className={port.publicAddress ? "text-green-600" : "text-muted-foreground"}>
+            {port.publicAddress ? "Yes" : "No"}
+          </span>
         </div>
       </TableCell>
       {allowEditing && (
@@ -354,7 +314,7 @@ export function PortsTable({
       onClick={handleEmptyRowClick}
     >
       <TableCell
-        colSpan={allowEditing ? 4 : 3}
+        colSpan={allowEditing ? 3 : 2}
         className="text-center text-muted-foreground py-4 px-6"
       >
         <div className="flex items-center justify-center gap-2">
@@ -367,14 +327,13 @@ export function PortsTable({
 
   // Main Render
   return (
-    <div className="space-y-4 border rounded-xl">
-      <Table>
+    <div className="w-full space-y-2 border rounded-lg">
+      <Table className="w-full">
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[25%]">Port Number</TableHead>
-            <TableHead className="w-[37%]">Private Address</TableHead>
-            <TableHead className="w-[38%]">Public Address</TableHead>
-            {allowEditing && <TableHead className="w-24">Actions</TableHead>}
+            <TableHead className="w-[30%]">Port Number</TableHead>
+            <TableHead className="w-[40%]">Public Access</TableHead>
+            {allowEditing && <TableHead className="w-[30%]">Actions</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>

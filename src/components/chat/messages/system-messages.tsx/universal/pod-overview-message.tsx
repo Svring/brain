@@ -8,8 +8,8 @@ import {
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { Pod } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
-import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
+import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
 
 interface PodOverviewProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -54,27 +54,43 @@ export const PodOverview: React.FC<PodOverviewProps> = ({ target }) => {
   // Handle loading state
   if (isLoading) {
     return (
-      <BaseSystemMessage target={target}>
+      <BaseActionMessage
+        headerTitle={{
+          icon: Container,
+          name: "Pod Overview",
+        }}
+      >
         <div className="text-center py-4">
           <p className="text-sm text-muted-foreground">Loading pods...</p>
         </div>
-      </BaseSystemMessage>
+      </BaseActionMessage>
     );
   }
 
   // Handle error state
   if (error) {
     return (
-      <BaseSystemMessage target={target}>
+      <BaseActionMessage
+        headerTitle={{
+          icon: Container,
+          name: "Pod Overview",
+        }}
+      >
         <div className="text-center py-4">
           <p className="text-sm text-theme-red">Failed to load pods</p>
         </div>
-      </BaseSystemMessage>
+      </BaseActionMessage>
     );
   }
 
   return (
-    <BaseSystemMessage target={target} actions={actions}>
+    <BaseActionMessage
+      headerTitle={{
+        icon: Container,
+        name: "Pod Overview",
+      }}
+      actions={actions}
+    >
       {podList && podList.length > 0 ? (
         <>
           {/* Progress Bar */}
@@ -97,7 +113,7 @@ export const PodOverview: React.FC<PodOverviewProps> = ({ target }) => {
           <p className="text-sm text-muted-foreground">No pods available</p>
         </div>
       )}
-    </BaseSystemMessage>
+    </BaseActionMessage>
   );
 };
 
