@@ -13,8 +13,16 @@ import {
   Box,
   Rocket,
   HardDrive,
+  ArrowRight,
+  ArrowLeft,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import DevboxCreateMessage from "@/components/chat/messages/system-messages.tsx/devbox/devbox-create-message";
+import LaunchpadCreateMessage from "@/components/chat/messages/system-messages.tsx/launchpad/launchpad-create-message";
+import ClusterCreateMessage from "@/components/chat/messages/system-messages.tsx/cluster/cluster-create-message";
+import ObjectStorageCreateMessage from "@/components/chat/messages/system-messages.tsx/objectstorage/objectstorage-create-message";
 
 interface CommandPanelAddResourceProps {
   onSelect: (value: string) => void;
@@ -31,6 +39,7 @@ export function AddResourcePreview({
 }) {
   const itemsRef = useRef<Array<HTMLButtonElement | null>>([]);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [selectedResource, setSelectedResource] = useState<string | null>(null);
 
   useEffect(() => {
     if (autoFocus && itemsRef.current[0]) {
@@ -44,29 +53,29 @@ export function AddResourcePreview({
         id: "add-devbox",
         title: "Devbox",
         description: "Development environment container",
-        icon: <Box className="h-8 w-8" />,
-        color: "bg-blue-500",
+        iconUrl: "https://devbox.bja.sealos.run/logo.svg",
+        resourceType: "devbox",
       },
       {
         id: "add-database",
         title: "Database",
         description: "Managed database service",
-        icon: <Database className="h-8 w-8" />,
-        color: "bg-green-500",
+        iconUrl: "https://dbprovider.bja.sealos.run/logo.svg",
+        resourceType: "cluster",
       },
       {
         id: "add-app-launchpad",
         title: "App Launchpad",
         description: "Application deployment platform",
-        icon: <Rocket className="h-8 w-8" />,
-        color: "bg-purple-500",
+        iconUrl: "https://applaunchpad.bja.sealos.run/logo.svg",
+        resourceType: "deployment",
       },
       {
         id: "add-object-storage",
         title: "Object Storage",
         description: "Cloud object storage service",
-        icon: <HardDrive className="h-8 w-8" />,
-        color: "bg-orange-500",
+        iconUrl: "https://objectstorage.bja.sealos.run/logo.svg",
+        resourceType: "objectstoragebucket",
       },
     ],
     []
@@ -83,8 +92,65 @@ export function AddResourcePreview({
     }
   };
 
+  const handleResourceSelect = (resourceId: string) => {
+    setSelectedResource(resourceId);
+  };
+
+  const handleBack = () => {
+    setSelectedResource(null);
+  };
+
+  // If a resource is selected, show the create message
+  if (selectedResource) {
+    return (
+      <div className="flex flex-col h-full">
+        {/* Header */}
+        <div className="border-b border-border p-2">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBack}
+              className="p-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div className="flex items-center gap-3">
+              {(() => {
+                const resource = resourceTypes.find(
+                  (r) => r.id === selectedResource
+                );
+                return (
+                  <>
+                    <div>
+                      <h2 className="font-semibold">
+                        Create {resource?.title}
+                      </h2>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-4">
+          {selectedResource === "add-devbox" && <DevboxCreateMessage />}
+          {selectedResource === "add-database" && <ClusterCreateMessage />}
+          {selectedResource === "add-app-launchpad" && (
+            <LaunchpadCreateMessage />
+          )}
+          {selectedResource === "add-object-storage" && (
+            <ObjectStorageCreateMessage payload={{}} />
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 h-full">
+    <div className="p-6 h-full bg-background">
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-2">Add Resource</h2>
         <p className="text-sm text-muted-foreground">
@@ -92,32 +158,45 @@ export function AddResourcePreview({
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4" onKeyDown={handleKeyDown}>
+      <div className="space-y-3" onKeyDown={handleKeyDown}>
         {resourceTypes.map((resource, index) => (
           <button
             key={resource.id}
             ref={(el) => {
               itemsRef.current[index] = el;
             }}
-            onClick={() => onSelect(resource.id)}
+            onClick={() => handleResourceSelect(resource.id)}
             tabIndex={index === 0 ? 0 : -1}
-            className="text-left p-4 border rounded-lg cursor-pointer hover:bg-accent focus:bg-accent focus:outline-none transition-colors group"
+            className="w-full text-left flex items-center justify-between p-4 border rounded-lg hover:brightness-150 cursor-pointer group transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                onSelect(resource.id);
+                handleResourceSelect(resource.id);
               }
             }}
           >
-            <div
-              className={`${resource.color} text-white p-3 rounded-lg mb-3 w-fit group-hover:scale-105 transition-transform`}
-            >
-              {resource.icon}
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <Image
+                src={resource.iconUrl}
+                alt={`${resource.resourceType} Icon`}
+                width={32}
+                height={32}
+                className="rounded-lg h-8 w-8 flex-shrink-0 p-1 bg-background-tertiary"
+                priority
+              />
+              <div className="flex flex-col min-w-0 flex-1">
+                <h3 className="font-medium text-sm leading-tight">
+                  {resource.title}
+                </h3>
+                <p className="text-xs text-muted-foreground leading-tight">
+                  {resource.description}
+                </p>
+              </div>
             </div>
-            <h3 className="font-medium mb-1">{resource.title}</h3>
-            <p className="text-xs text-muted-foreground">
-              {resource.description}
-            </p>
+            <div className="flex items-center gap-2 px-3 py-2 text-sm font-medium ">
+              <span>Add</span>
+              <ArrowRight className="h-4 w-4" />
+            </div>
           </button>
         ))}
       </div>

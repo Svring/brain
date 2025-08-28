@@ -17,9 +17,6 @@ export const DevboxCreateSchema = z.object({
       public: z.boolean(),
     })
   ),
-  context: z.object({
-    host: z.string(),
-  }),
 });
 
 export const DevboxUpdateSchema = z.object({

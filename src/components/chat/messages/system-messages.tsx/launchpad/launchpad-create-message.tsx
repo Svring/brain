@@ -5,8 +5,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Accordion } from "@/components/ui/accordion";
+import { Input } from "@/components/ui/input";
+import { Sparkles } from "lucide-react";
+import Image from "next/image";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation } from "@tanstack/react-query";
 import { generateDeployName } from "@/lib/sealos/resources/deployment/deploy-utils";
@@ -22,6 +23,7 @@ import { EnvironmentVariables } from "./components/universal/environment-variabl
 import { ConfigMap } from "./components/universal/config-map";
 import { Storage } from "./components/universal/storage";
 import { SuccessState } from "./components/launchpad-create/success-state";
+import { EnvTable } from "@/components/chat/messages/system-messages.tsx/components/env-table";
 import {
   LaunchpadCreateRequestSchema,
   LaunchpadCreateRequest,
@@ -131,55 +133,81 @@ export default function LaunchpadCreateMessage({
   }
 
   return (
-    <Card className="w-full bg-background-secondary border border-border-primary">
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center justify-between">
-          Create Launchpad Application
+    <div className="space-y-3 flex-col bg-background-secondary p-3 rounded-xl">
+      <div className="flex items-center gap-4">
+        <div className="flex-shrink-0">
+          <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
+            <Image
+              src="https://applaunchpad.bja.sealos.run/logo.svg"
+              alt="App Launchpad Icon"
+              width={36}
+              height={36}
+              className="w-full h-full object-cover p-1"
+            />
+          </div>
+        </div>
+        <div className="flex items-center min-w-0 flex-1">
+          <Input
+            placeholder="Enter application name"
+            value={form.watch("name")}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              form.setValue("name", e.target.value)
+            }
+            className="text-lg leading-tight bg-transparent h-9 border border-border"
+          />
+        </div>
+        <div className="flex items-center gap-2">
           {testMode && (
             <span className="text-xs bg-orange-500 text-white px-2 py-1 rounded-md font-medium">
               TEST MODE
             </span>
           )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <NameConfiguration form={form} />
-            <ImageConfiguration form={form} />
-            <ResourceConfiguration form={form} />
-            <Accordion 
-              type="multiple" 
-              className="w-full space-y-1"
-              defaultValue={[
-                ...(defaultOpenSections.commandArgs ? ['command-args'] : []),
-                ...(defaultOpenSections.portsProtocol ? ['ports-protocol'] : []),
-                ...(defaultOpenSections.environmentVariables ? ['env-vars'] : []),
-                ...(defaultOpenSections.configMap ? ['configmap'] : []),
-                ...(defaultOpenSections.storage ? ['storage'] : []),
-              ]}
-            >
-              <CommandArgs form={form} />
-              <PortsProtocol form={form} />
-              <EnvironmentVariables form={form} />
-              <ConfigMap form={form} />
-              <Storage form={form} />
-            </Accordion>
+        </div>
+      </div>
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <ImageConfiguration form={form} />
+          <ResourceConfiguration form={form} />
+          <PortsProtocol form={form} />
+          
+          {/* Environment Variables Section */}
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-foreground">
+              Environment Variables
+            </div>
+            <EnvTable
+              envVars={(form.watch("env") || []).map(env => ({ 
+                type: "value" as const, 
+                name: env.name, 
+                value: env.value || "" 
+              }))}
+              allowEditing={true}
+              onEnvVarsChange={(envVars) => 
+                form.setValue("env", envVars.map(env => ({ 
+                  name: env.name, 
+                  value: env.type === "value" ? env.value : "" 
+                })))
+              }
+            />
+          </div>
+
+          <div className="flex justify-end">
             <Button
               type="submit"
+              variant="outline"
               disabled={
                 createLaunchpadMutation.isPending ||
                 !form.watch("image")?.trim()
               }
-              className="w-full"
+              className="flex items-center"
             >
-              {createLaunchpadMutation.isPending
-                ? "Creating..."
-                : "Create Launchpad Application"}
+              <Sparkles className="h-4 w-4 text-theme-blue" />
+              {createLaunchpadMutation.isPending ? "Creating..." : "Create"}
             </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+          </div>
+        </form>
+      </Form>
+    </div>
   );
 }

@@ -1,16 +1,6 @@
 "use client";
 
-import {
-  Plus,
-  Trash2,
-  Settings,
-  Link,
-  Search,
-  FolderPlus,
-  FolderOpen,
-  ChevronRight,
-  Eye,
-} from "lucide-react";
+import { Plus, ChevronRight } from "lucide-react";
 import {
   CommandGroup,
   CommandItem,
@@ -37,39 +27,10 @@ export function CommandPanelMain({
           onFocus={() => onKeyboardSelect?.("add-resource")}
           onBlur={() => onKeyboardSelect?.(null)}
         >
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="h-4 w-4" />
           <span>Add Resource</span>
-          <ChevronRight className="ml-auto h-4 w-4" />
-        </CommandItem>
-
-        <CommandItem value="display-env" onSelect={onSelect}>
-          <Eye className="mr-2 h-4 w-4" />
-          <span>Manage Environment</span>
-          <ChevronRight className="ml-auto h-4 w-4" />
         </CommandItem>
       </CommandGroup>
-
-      {/* <CommandGroup heading="Flowgraph">
-        <CommandItem value="search-node" onSelect={onSelect}>
-          <Search className="mr-2 h-4 w-4" />
-          <span>Search Node</span>
-          <ChevronRight className="ml-auto h-4 w-4" />
-        </CommandItem>
-      </CommandGroup> */}
-
-      {/* <CommandGroup heading="General">
-        <CommandItem value="create-project" onSelect={onSelect}>
-          <FolderPlus className="mr-2 h-4 w-4" />
-          <span>Create New Project</span>
-          <ChevronRight className="ml-auto h-4 w-4" />
-        </CommandItem>
-
-        <CommandItem value="go-to-project" onSelect={onSelect}>
-          <FolderOpen className="mr-2 h-4 w-4" />
-          <span>Go to Project</span>
-          <ChevronRight className="ml-auto h-4 w-4" />
-        </CommandItem>
-      </CommandGroup> */}
     </>
   );
 }

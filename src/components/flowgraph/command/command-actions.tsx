@@ -1,13 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import {
-  useProjectActions,
-  useProjectState,
-} from "@/contexts/project/project-context";
-import { useFlowgraphActions } from "@/contexts/flowgraph/flowgraph-context";
-import type { Node } from "@xyflow/react";
-
 interface CommandActionsProps {
   onOpenChange: (open: boolean) => void;
   setSearch: (search: string) => void;
@@ -21,11 +13,6 @@ export function useCommandActions({
   setSelectedCommand,
   setIsDetailMode,
 }: CommandActionsProps) {
-  const router = useRouter();
-  const { selectedProject } = useProjectState();
-  const { clearSelectedProject } = useProjectActions();
-  const { addNode, setNodes, setEdges } = useFlowgraphActions();
-
   const resetAndClose = () => {
     onOpenChange(false);
     setSearch("");
@@ -35,25 +22,8 @@ export function useCommandActions({
 
   const handleSelect = (value: string) => {
     switch (value) {
-      // Main commands
       case "add-resource":
-        // Enter detail view without altering the sidebar
         setSelectedCommand("add-resource");
-        setIsDetailMode(true);
-        break;
-
-      case "display-env":
-        setSelectedCommand("display-env");
-        setIsDetailMode(true);
-        break;
-
-      case "manage-status":
-        setSelectedCommand("manage-status");
-        setIsDetailMode(true);
-        break;
-
-      case "add-new":
-        setSelectedCommand("add-new");
         setIsDetailMode(true);
         break;
     }

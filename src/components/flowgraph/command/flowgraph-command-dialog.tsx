@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/command";
 import { CommandPanelMain } from "./command-panel-main";
 import { AddResourcePreview } from "./command-panel-add-resource";
-import { CommandDetails } from "./command-details";
 import { useCommandActions } from "./command-actions";
 import { useCommandState } from "cmdk";
 
@@ -66,11 +65,6 @@ export function FlowgraphCommandDialog({
     setIsDetailMode(true);
   };
 
-  const handleBackToCommands = () => {
-    setIsDetailMode(false);
-    setSelectedCommand(null);
-  };
-
   return (
     <CommandDialog open={isOpen} onOpenChange={handleOpenChange}>
       <div className="flex flex-col h-full">
@@ -87,7 +81,7 @@ export function FlowgraphCommandDialog({
         {/* Bottom Content - Sidebar and Details */}
         <div className="flex flex-1 min-h-0">
           {/* Left Sidebar - Commands */}
-          <div className="w-[30%] border-r border-border flex flex-col min-h-0">
+          <div className="w-[20%] border-r border-border flex flex-col min-h-0">
             <CommandList className="flex-1 overflow-auto max-h-none h-full">
               <CommandEmpty>No commands found.</CommandEmpty>
 
@@ -100,20 +94,12 @@ export function FlowgraphCommandDialog({
           </div>
 
           {/* Right Side - Details */}
-          <div className="w-[70%] flex flex-col min-h-0">
-            {isDetailMode && selectedCommand ? (
-              selectedCommand === "add-resource" ? (
-                <AddResourcePreview
-                  onSelect={handleCommandSelect}
-                  autoFocus={true}
-                />
-              ) : (
-                <CommandDetails
-                  command={selectedCommand}
-                  onExecute={handleSelect}
-                  onBack={handleBackToCommands}
-                />
-              )
+          <div className="w-[80%] flex flex-col min-h-0 bg-background">
+            {isDetailMode && selectedCommand === "add-resource" ? (
+              <AddResourcePreview
+                onSelect={handleCommandSelect}
+                autoFocus={true}
+              />
             ) : hoveredCommand === "add-resource" ||
               keyboardSelectedCommand === "add-resource" ? (
               <AddResourcePreview onSelect={handleCommandSelect} />

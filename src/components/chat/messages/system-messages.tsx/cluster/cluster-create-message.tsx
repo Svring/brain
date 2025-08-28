@@ -14,21 +14,19 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { generateClusterName } from "@/lib/sealos/resources/cluster/cluster-utils";
 import { toast } from "sonner";
-import { CheckCircle, Database } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { useProjectState } from "@/contexts/project/project-context";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import Image from "next/image";
+import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
+import { ClusterResourceConfiguration } from "./components/cluster-resource-configuration";
+import { ClusterSuccessState } from "./components/cluster-success-state";
+import { Combobox } from "@/components/ui/combobox";
 
 // Database type options for cluster
 export const clusterTypeOptions = [
@@ -40,19 +38,7 @@ export const clusterTypeOptions = [
   { value: "weaviate", label: "Weaviate" },
   { value: "milvus", label: "Milvus" },
   { value: "pulsar", label: "Pulsar" },
-] as const;
-
-// CPU options for cluster
-const cpuOptions = [500, 1000, 2000, 4000, 6000, 8000] as const;
-
-// Memory options for cluster
-const memoryOptions = [512, 1024, 2048, 4096, 8192, 16000] as const;
-
-// Storage options for cluster
-const storageOptions = [10, 20, 50, 100, 200, 500, 1000] as const;
-
-// Replicas options for cluster
-const replicasOptions = [1, 2, 3, 5, 7, 10] as const;
+];
 
 // Termination policy options for cluster
 const terminationPolicyOptions = ["Delete", "WipeOut"] as const;
@@ -63,13 +49,15 @@ export const clusterFormSchema = z.object({
     .string()
     .min(1, "Name is required")
     .max(50, "Name must be less than 50 characters"),
-  type: z.enum(clusterTypeOptions.map(opt => opt.value) as [string, ...string[]]),
-  version: z.string().min(1, "Version is required"),
-  cpu: z.enum(cpuOptions.map(val => val.toString()) as [string, ...string[]]),
-  memory: z.enum(memoryOptions.map(val => val.toString()) as [string, ...string[]]),
-  storage: z.enum(storageOptions.map(val => val.toString()) as [string, ...string[]]),
-  replicas: z.enum(replicasOptions.map(val => val.toString()) as [string, ...string[]]),
-  terminationPolicy: z.enum(terminationPolicyOptions),
+  type: z.enum(
+    clusterTypeOptions.map((opt) => opt.value) as [string, ...string[]]
+  ),
+  version: z.string().optional(), // Version is auto-selected, so optional
+  cpu: z.string().min(1, "CPU is required"),
+  memory: z.string().min(1, "Memory is required"),
+  storage: z.string().min(1, "Storage is required"),
+  replicas: z.string().min(1, "Replicas is required"),
+  terminationPolicy: z.enum(terminationPolicyOptions).default("Delete"),
 });
 
 type ClusterFormValues = z.infer<typeof clusterFormSchema>;
@@ -121,11 +109,11 @@ export default function ClusterCreateMessage({
       name: payload?.name || generateClusterName(),
       type: payload?.type || "postgresql",
       version: payload?.version || "",
-      cpu: (payload?.cpu || 500).toString(),
-      memory: (payload?.memory || 512).toString(),
-      storage: (payload?.storage || 10).toString(),
+      cpu: (payload?.cpu || 0.5).toString(), // Default to 0.5 cores
+      memory: (payload?.memory || 0.5).toString(), // Default to 0.5 GB
+      storage: (payload?.storage || 1).toString(), // Use 1GB as default from STORAGE_OPTIONS
       replicas: (payload?.replicas || 1).toString(),
-      terminationPolicy: payload?.terminationPolicy || "Delete",
+      terminationPolicy: "Delete", // Always default to Delete
     }),
     [payloadKey]
   );
@@ -148,7 +136,24 @@ export default function ClusterCreateMessage({
     });
   }, [payloadKey, form, defaultValues]);
 
+  // Auto-select latest version when type changes and versions are loaded
+  useEffect(() => {
+    const currentType = form.watch("type");
 
+    if (
+      currentType &&
+      clusterVersions?.data?.[currentType] &&
+      Array.isArray(clusterVersions.data[currentType]) &&
+      clusterVersions.data[currentType].length > 0
+    ) {
+      const firstVersion = clusterVersions.data[currentType][0];
+      const versionValue =
+        typeof firstVersion === "string"
+          ? firstVersion
+          : (firstVersion as any)?.id || firstVersion;
+      form.setValue("version", versionValue);
+    }
+  }, [form.watch("type"), clusterVersions?.data, form]);
 
   // Remove the hardcoded getVersionOptions function since we're now fetching dynamically
 
@@ -167,17 +172,20 @@ export default function ClusterCreateMessage({
         terminationPolicy: values.terminationPolicy,
         name: clusterName,
         type: values.type as any,
-        version: values.version,
+        version: values.version || "", // Handle optional version
         resource: {
-          cpu: `${parseInt(values.cpu)}m`,
-          memory: `${parseInt(values.memory)}Mi`,
-          storage: `${parseInt(values.storage)}Gi`,
+          cpu: `${parseFloat(values.cpu) * 1000}m`, // Convert cores to millicores
+          memory: `${parseFloat(values.memory) * 1024}Mi`, // Convert GB to MB
+          storage: `${parseFloat(values.storage)}Gi`,
           replicas: parseInt(values.replicas),
         },
       });
 
       // Add the created cluster to the project
-      const resourceTarget = convertResourceTypeToTarget("cluster", clusterName);
+      const resourceTarget = convertResourceTypeToTarget(
+        "cluster",
+        clusterName
+      );
       await addToProjectMutation.mutateAsync({
         resources: [resourceTarget],
         name: selectedProject,
@@ -197,340 +205,87 @@ export default function ClusterCreateMessage({
 
   if (isCompleted) {
     return (
-      <Card className="w-full bg-background-secondary border border-border-primary">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-500" />
-            Database Cluster Created Successfully
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
-            <Database className="h-8 w-8 text-green-600 dark:text-green-400" />
-            <div>
-              <div className="font-medium text-green-900 dark:text-green-100">
-                {createdClusterName}
-              </div>
-              <div className="text-sm text-green-700 dark:text-green-300">
-                Type: {form.getValues("type")} • Version:{" "}
-                {form.getValues("version")} • CPU: {form.getValues("cpu")}m •
-                Memory: {form.getValues("memory")}Mi • Storage:{" "}
-                {form.getValues("storage")}Gi
-              </div>
-            </div>
-          </div>
-
-          <div className="text-sm text-muted-foreground">
-            <p>
-              Your database cluster is now ready to use. You can access it from
-              the project dashboard.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <ClusterSuccessState
+        createdClusterName={createdClusterName}
+        form={form}
+      />
     );
   }
 
   return (
-    <Card className="w-full bg-background-secondary border border-border-primary">
-      <CardHeader>
-        <CardTitle className="text-lg">Create Database Cluster</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter cluster name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+    <div className="space-y-3 flex-col bg-background-secondary p-3 rounded-xl">
+      <div className="flex items-center gap-4">
+        <div className="flex-shrink-0">
+          <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
+            <Image
+              src={
+                CLUSTER_TYPE_ICON_MAP[
+                  form.watch("type") as keyof typeof CLUSTER_TYPE_ICON_MAP
+                ] || "https://dbprovider.bja.sealos.run/logo.svg"
+              }
+              alt={`${form.watch("type")} Icon`}
+              width={36}
+              height={36}
+              className="w-full h-full object-cover p-1"
             />
+          </div>
+        </div>
+        <div className="flex items-center min-w-0 flex-1">
+          <Input
+            placeholder="Enter cluster name"
+            value={form.watch("name")}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              form.setValue("name", e.target.value)
+            }
+            className="text-lg leading-tight bg-transparent h-9 border border-border"
+          />
+        </div>
+      </div>
 
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-4 rounded-lg">
             <FormField
               control={form.control}
               name="type"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Database Type</FormLabel>
-                  <Select
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      form.setValue("version", ""); // Reset version when type changes
-                    }}
-                    value={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select database type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {clusterTypeOptions.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="version"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Version</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    disabled={!form.watch("type")}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder={
-                            !form.watch("type")
-                              ? "Select database type first"
-                              : "Select version"
-                          }
-                        />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {clusterVersionsLoading ? (
-                        <SelectItem value="loading" disabled>
-                          Loading versions...
-                        </SelectItem>
-                      ) : form.watch("type") &&
-                        clusterVersions?.data?.[form.watch("type")] ? (
-                        // Deduplicate versions by ID to prevent duplicates
-                        Array.from(
-                          new Map(
-                            clusterVersions.data[form.watch("type")].map(
-                              (version: any) => [version.id || version, version]
-                            )
-                          ).values()
-                        )
-                          .map((version: any, index: number) => {
-                            const versionValue = version.id || version;
-                            const versionLabel =
-                              version.label || version.id || version;
-
-                            // Ensure we have a valid non-empty value
-                            if (!versionValue || versionValue === "") {
-                              return null;
-                            }
-
-                            return (
-                              <SelectItem
-                                key={`${form.watch(
-                                  "type"
-                                )}-${versionValue}-${index}`}
-                                value={versionValue}
-                              >
-                                {versionLabel}
-                              </SelectItem>
-                            );
-                          })
-                          .filter(Boolean)
-                      ) : (
-                        <SelectItem value="no-versions" disabled>
-                          {!form.watch("type")
-                            ? "Select database type first"
-                            : "No versions available"}
-                        </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="terminationPolicy"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Termination Policy</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select termination policy" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Delete">Delete</SelectItem>
-                      <SelectItem value="WipeOut">WipeOut</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="cpu"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>CPU (m)</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
+                  <FormControl>
+                    <Combobox
+                      options={clusterTypeOptions}
                       value={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select CPU" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {cpuOptions.map((cpuValue) => (
-                          <SelectItem
-                            key={cpuValue}
-                            value={cpuValue.toString()}
-                          >
-                            {cpuValue}m ({cpuValue / 1000} cores)
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        // Clear version when type changes - useEffect will handle auto-selection
+                        form.setValue("version", "");
+                      }}
+                      placeholder="Select database type"
+                      searchPlaceholder="Search database type..."
+                      emptyMessage="No database type found."
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="memory"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Memory (Mi)</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select Memory" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {memoryOptions.map((memoryValue) => (
-                          <SelectItem
-                            key={memoryValue}
-                            value={memoryValue.toString()}
-                          >
-                            {memoryValue}Mi ({memoryValue / 1024}GB)
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <ClusterResourceConfiguration form={form} />
+          </div>
 
-            <div className="grid grid-cols-2 gap-4">
-                              <FormField
-                  control={form.control}
-                  name="storage"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Storage (Gi)</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select Storage" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {storageOptions.map((storageValue) => (
-                            <SelectItem
-                              key={storageValue}
-                              value={storageValue.toString()}
-                            >
-                              {storageValue}Gi
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                              <FormField
-                  control={form.control}
-                  name="replicas"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Replicas</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select Replicas" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {replicasOptions.map((replicaValue) => (
-                            <SelectItem
-                              key={replicaValue}
-                              value={replicaValue.toString()}
-                            >
-                              {replicaValue}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-            </div>
-
-            <div className="text-sm text-muted-foreground">
-              <p>Resource configuration:</p>
-              <p>
-                • CPU: {form.watch("cpu")}m ({parseInt(form.watch("cpu")) / 1000} cores)
-              </p>
-              <p>
-                • Memory: {form.watch("memory")}Mi (
-                {parseInt(form.watch("memory")) / 1024}GB)
-              </p>
-              <p>• Storage: {form.watch("storage")}Gi</p>
-              <p>• Replicas: {form.watch("replicas")}</p>
-              <p>• Termination Policy: {form.watch("terminationPolicy")}</p>
-            </div>
-
+          <div className="flex justify-end">
             <Button
               type="submit"
-              disabled={isCreating || !form.watch("version")}
-              className="w-full"
+              variant="outline"
+              disabled={isCreating}
+              className="flex items-center"
             >
-              {isCreating ? "Creating..." : "Create Cluster"}
+              <Sparkles className="h-4 w-4 text-theme-blue" />
+              {isCreating ? "Creating..." : "Create"}
             </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+          </div>
+        </form>
+      </Form>
+    </div>
   );
 }

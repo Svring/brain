@@ -21,13 +21,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useProjectState } from "@/contexts/project/project-context";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import Image from "next/image";
 
 // Policy options for object storage
 export const bucketPolicyOptions = ["private", "publicRead", "publicReadWrite"] as const;
@@ -117,31 +117,32 @@ export const ObjectStorageCreateMessage: React.FC<
   };
 
   return (
-    <Card className="w-full bg-background-secondary">
-      <CardHeader>
-        <CardTitle>Create Object Storage Bucket</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bucket Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter bucket name"
-                      disabled={isCreating}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+    <div className="space-y-3 flex-col bg-background-secondary p-3 rounded-xl">
+      <div className="flex items-center gap-4">
+        <div className="flex-shrink-0">
+          <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
+            <Image
+              src="https://objectstorage.bja.sealos.run/logo.svg"
+              alt="Object Storage Icon"
+              width={36}
+              height={36}
+              className="w-full h-full object-cover p-1"
             />
+          </div>
+        </div>
+        <div className="flex items-center min-w-0 flex-1">
+          <Input
+            placeholder="Enter bucket name"
+            value={form.watch("name")}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => form.setValue("name", e.target.value)}
+            className="text-lg leading-tight bg-transparent h-9 border border-border"
+          />
+        </div>
+      </div>
 
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-4 border border-border rounded-lg p-4">
             <FormField
               control={form.control}
               name="policy"
@@ -170,23 +171,22 @@ export const ObjectStorageCreateMessage: React.FC<
                 </FormItem>
               )}
             />
+          </div>
 
-            <div className="flex gap-3 pt-4">
-              <Button type="submit" className="flex-1" disabled={isCreating}>
-                {isCreating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  "Create Bucket"
-                )}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+          <div className="flex justify-end">
+            <Button
+              type="submit"
+              variant="outline"
+              disabled={isCreating}
+              className="flex items-center"
+            >
+              <Sparkles className="h-4 w-4 text-theme-blue" />
+              {isCreating ? "Creating..." : "Create"}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
   );
 };
 

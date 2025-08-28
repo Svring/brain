@@ -5,16 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2 } from "lucide-react";
 import {
-  LaunchpadCreateRequest,
-  PortSchema,
-} from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
-import { z } from "zod";
-
-// Port type from the schema
-type Port = z.infer<typeof PortSchema>;
+  DevboxCreate,
+  DevboxPort,
+} from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-mutation-schema";
 
 interface PortsProtocolProps {
-  form: UseFormReturn<LaunchpadCreateRequest>;
+  form: UseFormReturn<DevboxCreate>;
 }
 
 export function PortsProtocol({ form }: PortsProtocolProps) {
@@ -24,10 +20,9 @@ export function PortsProtocol({ form }: PortsProtocolProps) {
     form.setValue("ports", [
       ...currentPorts,
       {
-        port: 8080,
-        protocol: "TCP",
-        appProtocol: undefined,
-        exposesPublicDomain: false,
+        number: 8080,
+        protocol: "HTTPS",
+        public: false,
       },
     ]);
   };
@@ -42,7 +37,7 @@ export function PortsProtocol({ form }: PortsProtocolProps) {
     }
   };
 
-  const updatePort = (index: number, field: keyof Port, value: any) => {
+  const updatePort = (index: number, field: keyof DevboxPort, value: any) => {
     const currentPorts = form.getValues("ports");
     const newPorts = [...currentPorts];
     newPorts[index] = { ...newPorts[index], [field]: value };
@@ -59,17 +54,17 @@ export function PortsProtocol({ form }: PortsProtocolProps) {
                 <Input
                   type="number"
                   placeholder="Port number"
-                  value={port.port}
+                  value={port.number}
                   onChange={(e) =>
-                    updatePort(index, "port", parseInt(e.target.value) || 0)
+                    updatePort(index, "number", parseInt(e.target.value) || 0)
                   }
                 />
               </div>
               <div className="flex items-center gap-2">
                 <Switch
-                  checked={port.exposesPublicDomain}
+                  checked={port.public}
                   onCheckedChange={(checked) =>
-                    updatePort(index, "exposesPublicDomain", checked)
+                    updatePort(index, "public", checked)
                   }
                 />
                 <span className="text-sm text-muted-foreground">

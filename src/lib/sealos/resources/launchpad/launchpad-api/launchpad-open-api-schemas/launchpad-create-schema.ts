@@ -23,7 +23,7 @@ const createNumberUnionSchema = <T extends readonly number[]>(options: T) =>
 // Resource configuration schema
 const ResourceSchema = z.object({
   replicas: createNumberUnionSchema(REPLICAS_OPTIONS).default(1),
-  cpu: createNumberUnionSchema(CPU_OPTIONS).default(0.2),
+  cpu: createNumberUnionSchema(CPU_OPTIONS).default(0.1),
   memory: createNumberUnionSchema(MEMORY_OPTIONS).default(0.5),
   gpu: z.any().optional(), // Assuming GpuResourceSchema is defined elsewhere
 });
@@ -118,7 +118,7 @@ export const LaunchpadCreateRequestSchema = z.object({
   args: z.string().default(""),
   resource: ResourceSchema.default({
     replicas: 1,
-    cpu: 0.2,
+    cpu: 0.1,
     memory: 0.5,
   }),
   ports: z.array(PortSchema).default([
