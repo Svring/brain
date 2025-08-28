@@ -83,11 +83,15 @@ export const DiagnoseNetworkMessageCard: React.FC<
         console.log("Analyzing launchpad logs:", resourceLogs);
         // TODO: Add log analysis logic here
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        setCompletionMessage("Diagnosis completed successfully! All systems operational.");
+        setCompletionMessage(
+          "Diagnosis completed successfully! All systems operational."
+        );
       } else {
         // Simulate diagnosis process for other resources
         await new Promise((resolve) => setTimeout(resolve, 2000));
-        setCompletionMessage("Resource diagnosis completed. No issues detected.");
+        setCompletionMessage(
+          "Resource diagnosis completed. No issues detected."
+        );
       }
       console.log("runDiagnosis completed");
       setShowCompletionAnimation(true);
@@ -128,7 +132,9 @@ export const DiagnoseNetworkMessageCard: React.FC<
     onError: (error) => {
       toast.error("Failed to start resource");
       console.error("Error starting resource:", error);
-      setCompletionMessage("Failed to start resource. Please check configuration.");
+      setCompletionMessage(
+        "Failed to start resource. Please check configuration."
+      );
       setShowCompletionAnimation(true);
     },
   });

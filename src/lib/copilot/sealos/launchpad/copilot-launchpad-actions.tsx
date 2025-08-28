@@ -31,7 +31,7 @@ import { jsonSchemaToActionParameters } from "@copilotkit/shared";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import LaunchpadCreateMessage from "@/components/chat/messages/system-messages.tsx/launchpad/launchpad-create-message";
 import { LaunchpadCreateRequestSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
-import { UpdateResourceForm } from "@/components/copilot/sealos/launchpad/copilot-launchpad-update";
+import { UpdateResourceForm, UpdateImageForm } from "@/components/copilot/sealos/launchpad/copilot-launchpad-update";
 import {
   CPU_OPTIONS,
   MEMORY_OPTIONS,
@@ -43,6 +43,7 @@ export function activateLaunchpadActions(
   k8sContext: K8sApiContext
 ) {
   updateLaunchpadResourceAction(sealosContext);
+  updateLaunchpadImageAction(sealosContext);
   // createLaunchpadAction(sealosContext);
   // deleteLaunchpadAction(sealosContext);
   // startLaunchpadAction(sealosContext);
@@ -109,6 +110,52 @@ function updateLaunchpadResourceAction(context: SealosApiContext) {
             cpu: cpu !== undefined ? Number(cpu) : undefined,
             memory: memory !== undefined ? Number(memory) : undefined,
             replicas: replicas !== undefined ? Number(replicas) : undefined,
+          }}
+          onSubmit={handleSubmit}
+          context={context}
+        />
+      );
+    },
+  });
+}
+
+function updateLaunchpadImageAction(context: SealosApiContext) {
+  useCopilotAction({
+    name: "updateLaunchpadImage",
+    description:
+      "Update the image of a launchpad app.",
+    parameters: [
+      {
+        name: "name",
+        type: "string",
+        description: "Name of the launchpad app to update",
+        required: true,
+      },
+      {
+        name: "image",
+        type: "string",
+        required: false,
+        description: "desired image URL for the launchpad app (e.g., nginx:latest)",
+      },
+    ],
+    renderAndWaitForResponse(props) {
+      const { args, respond } = props;
+      const { name, image } = args;
+
+      const handleSubmit = (values: {
+        name: string;
+        image: string;
+      }) => {
+        if (respond) {
+          respond("updated successfully.");
+        }
+      };
+
+      return (
+        <UpdateImageForm
+          initialValues={{
+            name: name || "",
+            image: image || "",
           }}
           onSubmit={handleSubmit}
           context={context}
