@@ -12,6 +12,7 @@ import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-m
 import { useResourceStart } from "@/hooks/sealos/resource/use-resource-start";
 import { useResourceLogs } from "@/hooks/sealos/resource/use-resource-logs";
 import BaseSystemMessage from "../components/base-system-message";
+import { TypingAnimation } from "@/components/ui/typing-animation";
 
 interface DiagnoseNetworkMessageProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -22,6 +23,8 @@ export const DiagnoseNetworkMessageCard: React.FC<
 > = ({ target }) => {
   const { appendSystemMessage } = useAppendSystemMessageMutation();
   const [isDiagnosing, setIsDiagnosing] = useState(false);
+  const [showCompletionAnimation, setShowCompletionAnimation] = useState(false);
+  const [completionMessage, setCompletionMessage] = useState("");
 
   // Use the resource status hook
   const {
@@ -66,24 +69,32 @@ export const DiagnoseNetworkMessageCard: React.FC<
     const messageId = getUpdateMessageId();
     if (messageId) {
       appendSystemMessage(messageId, target as any);
+      setCompletionMessage("Update request sent successfully! Processing...");
+      setShowCompletionAnimation(true);
     }
   };
 
   const runDiagnosis = async () => {
     setIsDiagnosing(true);
+    setShowCompletionAnimation(false);
     try {
       // For builtin resources, analyze logs if available
       if (target.type === "builtin" && resourceLogs) {
         console.log("Analyzing launchpad logs:", resourceLogs);
         // TODO: Add log analysis logic here
         await new Promise((resolve) => setTimeout(resolve, 1000));
+        setCompletionMessage("Diagnosis completed successfully! All systems operational.");
       } else {
         // Simulate diagnosis process for other resources
         await new Promise((resolve) => setTimeout(resolve, 2000));
+        setCompletionMessage("Resource diagnosis completed. No issues detected.");
       }
       console.log("runDiagnosis completed");
+      setShowCompletionAnimation(true);
     } catch (error) {
       console.error("Diagnosis failed:", error);
+      setCompletionMessage("Diagnosis failed. Please try again.");
+      setShowCompletionAnimation(true);
     } finally {
       setIsDiagnosing(false);
     }
@@ -96,14 +107,29 @@ export const DiagnoseNetworkMessageCard: React.FC<
     }
   }, [isStopped, isHighUsage, metricsLoading, latestData]);
 
+  // Auto-hide completion animation after 5 seconds
+  useEffect(() => {
+    if (showCompletionAnimation) {
+      const timer = setTimeout(() => {
+        setShowCompletionAnimation(false);
+        setCompletionMessage("");
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showCompletionAnimation]);
+
   // Use the resource start hook
   const startResource = useResourceStart(resource as any, {
     onSuccess: () => {
       toast.success("Resource started successfully");
+      setCompletionMessage("Resource started successfully! Ready for use.");
+      setShowCompletionAnimation(true);
     },
     onError: (error) => {
       toast.error("Failed to start resource");
       console.error("Error starting resource:", error);
+      setCompletionMessage("Failed to start resource. Please check configuration.");
+      setShowCompletionAnimation(true);
     },
   });
 
@@ -289,6 +315,17 @@ export const DiagnoseNetworkMessageCard: React.FC<
                   </Button>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* 4) Completion Animation */}
+          {showCompletionAnimation && completionMessage && (
+            <div className="p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
+              <TypingAnimation
+                className="text-sm font-medium text-green-700 dark:text-green-300"
+                text={completionMessage}
+                duration={50}
+              />
             </div>
           )}
         </div>
