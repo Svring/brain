@@ -144,12 +144,12 @@ export function UpdateResourceForm({
       }
     >
       <div className="space-y-4">
-        <div>
+        {/* <div>
           <Label className="font-medium">Launchpad Name:</Label>
           <div className="text-sm text-muted-foreground mt-1">
             {initialValues.name}
           </div>
-        </div>
+        </div> */}
 
         {/* CPU Options - only show if cpu is provided */}
         {cpu !== undefined && (

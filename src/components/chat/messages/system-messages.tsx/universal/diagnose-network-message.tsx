@@ -11,7 +11,7 @@ import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import { useResourceStart } from "@/hooks/sealos/resource/use-resource-start";
 import { useResourceLogs } from "@/hooks/sealos/resource/use-resource-logs";
-import BaseSystemMessage from "../components/base-system-message";
+import BaseActionMessage from "../components/base-action-message";
 import { TypingAnimation } from "@/components/ui/typing-animation";
 
 interface DiagnoseNetworkMessageProps {
@@ -23,8 +23,8 @@ export const DiagnoseNetworkMessageCard: React.FC<
 > = ({ target }) => {
   const { appendSystemMessage } = useAppendSystemMessageMutation();
   const [isDiagnosing, setIsDiagnosing] = useState(false);
-  const [showCompletionAnimation, setShowCompletionAnimation] = useState(false);
-  const [completionMessage, setCompletionMessage] = useState("");
+  const [hasDiagnosed, setHasDiagnosed] = useState(false);
+  const [diagnosisConclusion, setDiagnosisConclusion] = useState("");
 
   // Use the resource status hook
   const {
@@ -49,8 +49,10 @@ export const DiagnoseNetworkMessageCard: React.FC<
   const isHighUsage = Boolean(!metricsLoading && metricsStatus === "high");
 
   // Use the resource logs hook for builtin resources
-  const { data: resourceLogs, isLoading: logsLoading } =
-    useResourceLogs(target);
+  const logsQuery = useResourceLogs(target);
+  const resourceLogs = logsQuery?.data;
+  const logsLoading = logsQuery?.isLoading ?? false;
+  const logsSupported = logsQuery !== null;
 
   const getUpdateMessageId = (): string | undefined => {
     // devbox (custom) and launchpad (builtin: deployment/statefulset)
@@ -69,36 +71,35 @@ export const DiagnoseNetworkMessageCard: React.FC<
     const messageId = getUpdateMessageId();
     if (messageId) {
       appendSystemMessage(messageId, target as any);
-      setCompletionMessage("Update request sent successfully! Processing...");
-      setShowCompletionAnimation(true);
     }
   };
 
   const runDiagnosis = async () => {
+    if (hasDiagnosed) return; // Only run once
+
     setIsDiagnosing(true);
-    setShowCompletionAnimation(false);
     try {
-      // For builtin resources, analyze logs if available
-      if (target.type === "builtin" && resourceLogs) {
+      // For builtin resources, analyze logs if available and supported
+      if (target.type === "builtin" && logsSupported && resourceLogs) {
         console.log("Analyzing launchpad logs:", resourceLogs);
         // TODO: Add log analysis logic here
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        setCompletionMessage(
+        setDiagnosisConclusion(
           "Diagnosis completed successfully! All systems operational."
         );
       } else {
         // Simulate diagnosis process for other resources
         await new Promise((resolve) => setTimeout(resolve, 2000));
-        setCompletionMessage(
+        setDiagnosisConclusion(
           "Resource diagnosis completed. No issues detected."
         );
       }
       console.log("runDiagnosis completed");
-      setShowCompletionAnimation(true);
+      setHasDiagnosed(true);
     } catch (error) {
       console.error("Diagnosis failed:", error);
-      setCompletionMessage("Diagnosis failed. Please try again.");
-      setShowCompletionAnimation(true);
+      setDiagnosisConclusion("Diagnosis failed. Please try again.");
+      setHasDiagnosed(true);
     } finally {
       setIsDiagnosing(false);
     }
@@ -106,51 +107,42 @@ export const DiagnoseNetworkMessageCard: React.FC<
 
   // Auto-run diagnosis when component mounts and conditions are met
   useEffect(() => {
-    if (!isStopped && !isHighUsage && !metricsLoading && latestData) {
+    if (
+      !hasDiagnosed &&
+      !isStopped &&
+      !isHighUsage &&
+      !metricsLoading &&
+      latestData
+    ) {
       runDiagnosis();
     }
-  }, [isStopped, isHighUsage, metricsLoading, latestData]);
-
-  // Auto-hide completion animation after 5 seconds
-  useEffect(() => {
-    if (showCompletionAnimation) {
-      const timer = setTimeout(() => {
-        setShowCompletionAnimation(false);
-        setCompletionMessage("");
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [showCompletionAnimation]);
+  }, [hasDiagnosed, isStopped, isHighUsage, metricsLoading, latestData]);
 
   // Use the resource start hook
   const startResource = useResourceStart(resource as any, {
     onSuccess: () => {
       toast.success("Resource started successfully");
-      setCompletionMessage("Resource started successfully! Ready for use.");
-      setShowCompletionAnimation(true);
     },
     onError: (error) => {
       toast.error("Failed to start resource");
       console.error("Error starting resource:", error);
-      setCompletionMessage(
-        "Failed to start resource. Please check configuration."
-      );
-      setShowCompletionAnimation(true);
     },
   });
 
   return (
-    <BaseSystemMessage target={target}>
+    <BaseActionMessage
+      headerTitle={{
+        icon: Stethoscope,
+        name: "Network Diagnosis",
+      }}
+    >
       <div className="space-y-3">
         <div className="space-y-3">
           {/* 1) Resource Status */}
-          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-dashed">
+          <div className="flex items-center justify-between border-l border-l-theme-green px-2">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-theme-green"></div>
-              <span className="text-sm font-medium">Resource Status</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
+              <span className="font-medium">Container Status:</span>
+              <span className="text-muted-foreground">
                 {statusLoading ? "Loading..." : status || "Unknown"}
               </span>
               {isStopped && (
@@ -181,23 +173,10 @@ export const DiagnoseNetworkMessageCard: React.FC<
 
           {/* 2) Resource Usage Check with optional Update action */}
           {!isStopped && (
-            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-dashed">
+            <div className="flex items-center justify-between border-l border-l-theme-green px-2">
               <div className="flex items-center gap-2">
-                <div
-                  className={`w-2 h-2 rounded-full ${
-                    metricsLoading
-                      ? "bg-theme-yellow"
-                      : metricsStatus === "high"
-                      ? "bg-theme-red"
-                      : metricsStatus === "medium"
-                      ? "bg-theme-yellow"
-                      : "bg-theme-green"
-                  }`}
-                ></div>
-                <span className="text-sm font-medium">Resource Usage</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
+                <span className="font-medium">Resource Usage: </span>
+                <span className="text-muted-foreground">
                   {metricsLoading
                     ? "Checking resource usage..."
                     : latestData
@@ -221,79 +200,12 @@ export const DiagnoseNetworkMessageCard: React.FC<
             </div>
           )}
 
-          {/* Stop further procedure if we already showed Update button */}
-          {!isStopped && !isHighUsage && latestData && (
-            <div className="space-y-2 border border-dashed rounded-lg p-3">
-              {/* CPU Status */}
-              <div className="flex items-center justify-between p-2 bg-muted/30 rounded">
-                <span className="text-xs text-muted-foreground">CPU</span>
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`w-2 h-2 rounded-full ${
-                      metricsStatus === "high"
-                        ? "bg-theme-red"
-                        : metricsStatus === "medium"
-                        ? "bg-theme-yellow"
-                        : "bg-theme-green"
-                    }`}
-                  ></div>
-                  <span className="text-xs">{latestData.cpu.toFixed(1)}%</span>
-                </div>
-              </div>
-
-              {/* Memory Status */}
-              <div className="flex items-center justify-between p-2 bg-muted/30 rounded">
-                <span className="text-xs text-muted-foreground">Memory</span>
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`w-2 h-2 rounded-full ${
-                      metricsStatus === "high"
-                        ? "bg-theme-red"
-                        : metricsStatus === "medium"
-                        ? "bg-theme-yellow"
-                        : "bg-theme-green"
-                    }`}
-                  ></div>
-                  <span className="text-xs">
-                    {latestData.memory.toFixed(1)}%
-                  </span>
-                </div>
-              </div>
-
-              {/* Storage Status (if available) */}
-              {metricsStatus && latestData.storage !== undefined && (
-                <div className="flex items-center justify-between p-2 bg-muted/30 rounded">
-                  <span className="text-xs text-muted-foreground">Storage</span>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`w-2 h-2 rounded-full ${
-                        metricsStatus === "high"
-                          ? "bg-theme-red"
-                          : metricsStatus === "medium"
-                          ? "bg-theme-yellow"
-                          : "bg-theme-green"
-                      }`}
-                    ></div>
-                    <span className="text-xs">
-                      {latestData.storage.toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
           {/* 3) Diagnosis row (only if not stopped and not high usage) */}
           {!isStopped && !isHighUsage && (
-            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-dashed">
+            <div className="flex items-center justify-between border-l border-l-theme-green px-2">
               <div className="flex items-center gap-2">
-                <div
-                  className={`w-2 h-2 rounded-full ${
-                    isDiagnosing ? "bg-theme-yellow" : "bg-theme-green"
-                  }`}
-                ></div>
-                <span className="text-sm font-medium">Diagnosis</span>
-                {target.type === "builtin" && (
+                <span className="font-medium">Diagnosis</span>
+                {target.type === "builtin" && logsSupported && (
                   <span className="text-xs text-muted-foreground">
                     {logsLoading
                       ? "Loading logs..."
@@ -302,41 +214,27 @@ export const DiagnoseNetworkMessageCard: React.FC<
                       : "No logs"}
                   </span>
                 )}
-              </div>
-              <div className="flex items-center gap-2">
-                {isDiagnosing ? (
+                {isDiagnosing && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Loader2 className="h-3 w-3 animate-spin" />
                     <span>Running diagnosis...</span>
                   </div>
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-6 text-xs"
-                    onClick={runDiagnosis}
-                    disabled={target.type === "builtin" && logsLoading}
-                  >
-                    Re-run Diagnosis
-                  </Button>
                 )}
               </div>
             </div>
           )}
 
-          {/* 4) Completion Animation */}
-          {showCompletionAnimation && completionMessage && (
+          {/* 4) Diagnosis Conclusion */}
+          {hasDiagnosed && diagnosisConclusion && (
             <div className="p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
-              <TypingAnimation
-                className="text-sm font-medium text-green-700 dark:text-green-300"
-                text={completionMessage}
-                duration={50}
-              />
+              <div className="text-sm font-medium text-green-700 dark:text-green-300">
+                {diagnosisConclusion}
+              </div>
             </div>
           )}
         </div>
       </div>
-    </BaseSystemMessage>
+    </BaseActionMessage>
   );
 };
 

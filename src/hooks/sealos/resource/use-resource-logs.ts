@@ -24,5 +24,6 @@ export const useResourceLogs = (
     );
   }
 
-  throw new Error(`Unsupported resource type for logs: ${target.type}`);
+  // Return null for unsupported resource types
+  return null;
 };
