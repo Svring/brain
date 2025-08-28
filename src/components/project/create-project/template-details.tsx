@@ -2,7 +2,7 @@
 
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,18 +18,21 @@ import type { TemplateResource } from "@/lib/sealos/resources/template/schemas/t
 import { useCreateInstanceMutation } from "@/lib/sealos/resources/template/template-method/template-mutation";
 import { TemplateInputDialog } from "./template-input-dialog";
 import { createSealosContext } from "@/lib/auth/auth-utils";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+
+import "@/styles/github-markdown-dark.css";
 
 export type TemplateDetailsProps = {
   template: TemplateResource;
   onBack: () => void;
 };
 
-export function TemplateDetails({
-  template,
-  onBack,
-}: TemplateDetailsProps) {
-  const { auth } = useAuthState();
+export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
   const [showInputDialog, setShowInputDialog] = useState(false);
+  const [readmeContent, setReadmeContent] = useState<string>("");
+  const [isLoadingReadme, setIsLoadingReadme] = useState(false);
 
   const apiContext = useMemo(() => createSealosContext(), []);
   const createInstanceMutation = useCreateInstanceMutation(apiContext);
@@ -37,6 +40,30 @@ export function TemplateDetails({
   // Check if template has inputs
   const hasInputs =
     template.spec.inputs && Object.keys(template.spec.inputs).length > 0;
+
+  // Fetch README content
+  useEffect(() => {
+    if (template.spec.readme && template.spec.readme.startsWith("http")) {
+      setIsLoadingReadme(true);
+      fetch(template.spec.readme)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Failed to fetch README: ${response.status}`);
+          }
+          return response.text();
+        })
+        .then((content) => {
+          setReadmeContent(content);
+        })
+        .catch((error) => {
+          console.error("Error fetching README:", error);
+          toast.error("Failed to load documentation");
+        })
+        .finally(() => {
+          setIsLoadingReadme(false);
+        });
+    }
+  }, [template.spec.readme]);
 
   const deployTemplate = (templateForm?: Record<string, string>) => {
     createInstanceMutation.mutate(
@@ -46,7 +73,9 @@ export function TemplateDetails({
       },
       {
         onSuccess: () => {
-          toast.success(`${template.spec.title} has been deployed to your project.`);
+          toast.success(
+            `${template.spec.title} has been deployed to your project.`
+          );
           setShowInputDialog(false);
         },
         onError: (error: Error) => {
@@ -85,47 +114,26 @@ export function TemplateDetails({
       <div className="flex-1 overflow-y-auto px-6 pb-6">
         <div className="mx-auto max-w-4xl space-y-6">
           {/* Template Header */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-start gap-4">
-                <div className="flex size-16 items-center justify-center rounded-lg bg-muted p-3">
-                  {template.spec.icon ? (
-                    <Image
-                      alt={`${template.spec.title} icon`}
-                      className="size-10"
-                      height={40}
-                      src={template.spec.icon}
-                      width={40}
-                    />
-                  ) : (
-                    <div className="size-10 rounded bg-gray-300" />
-                  )}
-                </div>
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-2xl">
-                        {template.spec.title}
-                      </CardTitle>
-                      {template.spec.author && (
-                        <CardDescription className="mt-1">
-                          by {template.spec.author}
-                        </CardDescription>
-                      )}
-                    </div>
-                    <Button 
-                      onClick={handleDeploy} 
-                      size="lg"
-                      disabled={createInstanceMutation.isPending}
-                    >
-                      {createInstanceMutation.isPending
-                        ? "Deploying..."
-                        : hasInputs
-                        ? "Configure & Deploy"
-                        : "Deploy Template"}
-                    </Button>
-                  </div>
-
+          <div className="flex items-start gap-4">
+            <div className="flex size-16 items-center justify-center rounded-lg bg-muted p-3">
+              {template.spec.icon ? (
+                <Image
+                  alt={`${template.spec.title} icon`}
+                  className="size-10"
+                  height={40}
+                  src={template.spec.icon}
+                  width={40}
+                />
+              ) : (
+                <div className="size-10 rounded bg-gray-300" />
+              )}
+            </div>
+            <div className="flex-1 space-y-2">
+              <div className="flex items-start justify-between">
+                <div className="space-y-2">
+                  <h1 className="text-2xl font-semibold">
+                    {template.spec.title}
+                  </h1>
                   {/* Categories */}
                   {template.spec.categories &&
                     template.spec.categories.length > 0 && (
@@ -138,30 +146,38 @@ export function TemplateDetails({
                       </div>
                     )}
                 </div>
+                <Button
+                  onClick={handleDeploy}
+                  variant="outline"
+                  disabled={createInstanceMutation.isPending}
+                >
+                  {createInstanceMutation.isPending
+                    ? "Deploying..."
+                    : hasInputs
+                    ? "Configure & Deploy"
+                    : "Deploy"}
+                </Button>
               </div>
-            </CardHeader>
-          </Card>
+            </div>
+          </div>
 
-          {/* Description */}
-          {template.spec.description && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Description</CardTitle>
-              </CardHeader>
-              <CardContent>
+          {/* Template Details */}
+          <div className="space-y-6">
+            {/* Description Section */}
+            {template.spec.description && (
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Description</h3>
                 <p className="text-muted-foreground leading-relaxed">
                   {template.spec.description}
                 </p>
-              </CardContent>
-            </Card>
-          )}
+              </div>
+            )}
 
-          {/* Template Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Template Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+            {/* Template Information Section */}
+            <div>
+              <h3 className="font-semibold text-lg mb-3">
+                Template Information
+              </h3>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {template.spec.templateType && (
                   <div>
@@ -209,20 +225,18 @@ export function TemplateDetails({
                   </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Template Inputs */}
-          {template.spec.inputs &&
-            Object.keys(template.spec.inputs).length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Configuration Parameters</CardTitle>
-                  <CardDescription>
+            {/* Configuration Parameters Section */}
+            {template.spec.inputs &&
+              Object.keys(template.spec.inputs).length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-lg mb-3">
+                    Configuration Parameters
+                  </h3>
+                  <p className="text-muted-foreground text-sm mb-4">
                     This template accepts the following configuration parameters
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
+                  </p>
                   <div className="space-y-4">
                     {Object.entries(template.spec.inputs).map(
                       ([key, input]) => (
@@ -251,25 +265,40 @@ export function TemplateDetails({
                       )
                     )}
                   </div>
-                </CardContent>
-              </Card>
-            )}
-
-          {/* README */}
-          {template.spec.readme && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Documentation</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="prose prose-sm max-w-none">
-                  <pre className="whitespace-pre-wrap text-sm">
-                    {template.spec.readme}
-                  </pre>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              )}
+
+            {/* Documentation Section */}
+            {template.spec.readme && (
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Documentation</h3>
+                <div className="markdown-body">
+                  {isLoadingReadme ? (
+                    <p>Loading documentation...</p>
+                  ) : (
+                    <Markdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeRaw]}
+                      components={{
+                        ol: ({ children, ...props }) => (
+                          <ol className="list-decimal" {...props}>
+                            {children}
+                          </ol>
+                        ),
+                        ul: ({ children, ...props }) => (
+                          <ul className="list-disc" {...props}>
+                            {children}
+                          </ul>
+                        ),
+                      }}
+                    >
+                      {readmeContent}
+                    </Markdown>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

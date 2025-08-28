@@ -113,6 +113,7 @@
     "react-scan": "^0.4.3",
     "react-speech-recognition": "^4.0.1",
     "recharts": "2.15.0",
+    "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1",
     "server-only": "^0.0.1",
     "sonner": "^1.7.1",

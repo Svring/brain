@@ -9,10 +9,10 @@ import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
 import React, { useMemo, memo } from "react";
 
-import { Tiktoken } from "js-tiktoken/lite";
-import o200k_base from "js-tiktoken/ranks/o200k_base";
+// import { Tiktoken } from "js-tiktoken/lite";
+// import o200k_base from "js-tiktoken/ranks/o200k_base";
 
-const enc = new Tiktoken(o200k_base);
+// const enc = new Tiktoken(o200k_base);
 
 // Renders a system message component from serialized content. Memoized so it
 // doesn't re-mount on scroll re-renders when props are unchanged.
