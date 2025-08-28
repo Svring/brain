@@ -60,7 +60,7 @@ export default function HomePage() {
             transition={{ duration: 0.5 }}
             className="flex-1 flex flex-col min-h-0"
           >
-            <div className="flex-1 overflow-y-auto pt-8">
+            <div className="flex-1 overflow-y-auto py-8">
               <div className="max-w-3xl mx-auto w-full">
                 <AiMessages />
               </div>

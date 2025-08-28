@@ -11,8 +11,8 @@ export const PortSchema = z.object({
 
 // Zod schemas matching the Python model structure
 export const ReliancesSchema = z.object({
-  database: z.array(z.string()).optional(),
-  bucket: z.array(z.string()).optional(),
+  database: z.array(z.string()).optional().nullable(),
+  bucket: z.array(z.string()).optional().nullable(),
 });
 
 export const DevBoxSchema = z.object({
@@ -25,8 +25,8 @@ export const DevBoxSchema = z.object({
       "Name must contain only lowercase letters, numbers, underscores, and hyphens"
     ),
   runtime: z.enum(DEVBOX_RUNTIMES as [string, ...string[]]),
-  ports: z.array(PortSchema).optional(),
-  reliances: ReliancesSchema.optional(),
+  ports: z.array(PortSchema).optional().nullable(),
+  reliances: ReliancesSchema.optional().nullable(),
 });
 
 export const DatabaseSchema = z.object({
@@ -74,16 +74,16 @@ export const AppSchema = z.object({
       /^[a-zA-Z0-9._-]+(\/[a-zA-Z0-9._-]+)*(:[a-zA-Z0-9._-]+)?(@sha256:[a-fA-Z0-9]{64})?$/,
       "Image must be a valid Docker image format (e.g., nginx, nginx:latest, docker.io/nginx:1.21)"
     ),
-  ports: z.array(PortSchema).optional(),
-  env: z.array(AppEnvSchema).optional(),
-  reliances: ReliancesSchema.optional(),
+  ports: z.array(PortSchema).optional().nullable(),
+  env: z.array(AppEnvSchema).optional().nullable(),
+  reliances: ReliancesSchema.optional().nullable(),
 });
 
 export const ProjectResourcesSchema = z.object({
-  devbox: z.array(DevBoxSchema).optional(),
-  database: z.array(DatabaseSchema).optional(),
-  bucket: z.array(ObjectStorageBucketSchema).optional(),
-  app: z.array(AppSchema).optional(),
+  devbox: z.array(DevBoxSchema).optional().nullable(),
+  database: z.array(DatabaseSchema).optional().nullable(),
+  bucket: z.array(ObjectStorageBucketSchema).optional().nullable(),
+  app: z.array(AppSchema).optional().nullable(),
 });
 
 export const ProjectProposalSchema = z.object({

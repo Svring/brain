@@ -15,9 +15,16 @@ import {
 } from "@/lib/k8s/k8s-constant/k8s-constant-resource";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { CircleCheckBig, Settings, Settings2, Check, Sparkles } from "lucide-react";
+import {
+  CircleCheckBig,
+  Settings,
+  Settings2,
+  Check,
+  Sparkles,
+} from "lucide-react";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import BaseActionMessage from "../../../components/base-action-message";
+import { Spinner } from "@/components/ui/spinner";
 
 interface LaunchpadUpdateResourceProps {
   target: BuiltinResourceTarget;
@@ -158,92 +165,107 @@ export default function LaunchpadUpdateResource({
         <Button
           onClick={handleSubmit}
           size="sm"
-          variant='outline'
+          variant="outline"
           disabled={isSubmitting}
           className="flex items-center gap-2 border border-border-primary brightness-150"
         >
-          <Sparkles className="w-3 h-3 text-theme-blue" />
-          Apply
+          {isSubmitting ? (
+            <Spinner className="w-3 h-3" />
+          ) : (
+            <Sparkles className="w-3 h-3 text-theme-blue" />
+          )}
+          {isSubmitting ? "Updating..." : "Apply"}
         </Button>
       }
     >
       <div className="p-4 space-y-6">
-        <div className="space-y-4">
-          {/* CPU Options - only show if cpu is available */}
-          {cpu !== undefined && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Label className="font-medium">CPU:</Label>
-                <span className="text-sm">{cpu}C</span>
-              </div>
-              <Slider
-                value={[CPU_OPTIONS.indexOf(cpu)]}
-                onValueChange={(value) =>
-                  setCpu(CPU_OPTIONS[value[0]] as CpuOption)
-                }
-                min={0}
-                max={CPU_OPTIONS.length - 1}
-                step={1}
-                className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
-                aria-label="CPU slider"
-              />
-              <div className="flex justify-between text-sm text-muted-foreground">
-                <span>{CPU_OPTIONS[0]}C</span>
-                <span>{CPU_OPTIONS[CPU_OPTIONS.length - 1]}C</span>
-              </div>
+        {isSubmitting ? (
+          <div className="text-center space-y-4">
+            <div className="flex justify-center">
+              <Spinner className="w-8 h-8" />
             </div>
-          )}
+            <div className="text-sm text-muted-foreground">
+              Updating launchpad resources...
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* CPU Options - only show if cpu is available */}
+            {cpu !== undefined && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Label className="font-medium">CPU:</Label>
+                  <span className="text-sm">{cpu}C</span>
+                </div>
+                <Slider
+                  value={[CPU_OPTIONS.indexOf(cpu)]}
+                  onValueChange={(value) =>
+                    setCpu(CPU_OPTIONS[value[0]] as CpuOption)
+                  }
+                  min={0}
+                  max={CPU_OPTIONS.length - 1}
+                  step={1}
+                  className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
+                  aria-label="CPU slider"
+                />
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>{CPU_OPTIONS[0]}C</span>
+                  <span>{CPU_OPTIONS[CPU_OPTIONS.length - 1]}C</span>
+                </div>
+              </div>
+            )}
 
-          {/* Memory Options - only show if memory is available */}
-          {memory !== undefined && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Label className="font-medium">Memory:</Label>
-                <span className="text-sm">{memory}G</span>
+            {/* Memory Options - only show if memory is available */}
+            {memory !== undefined && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Label className="font-medium">Memory:</Label>
+                  <span className="text-sm">{memory}G</span>
+                </div>
+                <Slider
+                  value={[MEMORY_OPTIONS.indexOf(memory)]}
+                  onValueChange={(value) =>
+                    setMemory(MEMORY_OPTIONS[value[0]] as MemoryOption)
+                  }
+                  min={0}
+                  max={MEMORY_OPTIONS.length - 1}
+                  step={1}
+                  className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
+                  aria-label="Memory slider"
+                />
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>{MEMORY_OPTIONS[0]}G</span>
+                  <span>{MEMORY_OPTIONS[MEMORY_OPTIONS.length - 1]}G</span>
+                </div>
               </div>
-              <Slider
-                value={[MEMORY_OPTIONS.indexOf(memory)]}
-                onValueChange={(value) =>
-                  setMemory(MEMORY_OPTIONS[value[0]] as MemoryOption)
-                }
-                min={0}
-                max={MEMORY_OPTIONS.length - 1}
-                step={1}
-                className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
-                aria-label="Memory slider"
-              />
-              <div className="flex justify-between text-sm text-muted-foreground">
-                <span>{MEMORY_OPTIONS[0]}G</span>
-                <span>{MEMORY_OPTIONS[MEMORY_OPTIONS.length - 1]}G</span>
-              </div>
-            </div>
-          )}
+            )}
 
-          {/* Replicas - only show if replicas is available */}
-          {replicas !== undefined && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Label className="font-medium">Replicas:</Label>
-                <span className="text-sm">{replicas}</span>
+            {/* Replicas - only show if replicas is available */}
+            {replicas !== undefined && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Label className="font-medium">Replicas:</Label>
+                  <span className="text-sm">{replicas}</span>
+                </div>
+                <Slider
+                  value={[REPLICAS_OPTIONS.indexOf(replicas)]}
+                  onValueChange={(value) =>
+                    setReplicas(REPLICAS_OPTIONS[value[0]] as ReplicasOption)
+                  }
+                  min={0}
+                  max={REPLICAS_OPTIONS.length - 1}
+                  step={1}
+                  className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
+                  aria-label="Replicas slider"
+                />
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>{REPLICAS_OPTIONS[0]}</span>
+                  <span>{REPLICAS_OPTIONS[REPLICAS_OPTIONS.length - 1]}</span>
+                </div>
               </div>
-              <Slider
-                value={[REPLICAS_OPTIONS.indexOf(replicas)]}
-                onValueChange={(value) =>
-                  setReplicas(REPLICAS_OPTIONS[value[0]] as ReplicasOption)
-                }
-                min={0}
-                max={REPLICAS_OPTIONS.length - 1}
-                step={1}
-                className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
-                aria-label="Replicas slider"
-              />
-              <div className="flex justify-between text-sm text-muted-foreground">
-                <span>{REPLICAS_OPTIONS[0]}</span>
-                <span>{REPLICAS_OPTIONS[REPLICAS_OPTIONS.length - 1]}</span>
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </BaseActionMessage>
   );
