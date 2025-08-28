@@ -23,23 +23,26 @@ import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enh
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import NodeLoading from "../../components/node-loading";
+import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 // Enhanced wrapper that can handle both K8sResource and DevboxObject
-function DevboxNodeWrapper({ data }: { data: DevboxObject | K8sResource }) {
+function DevboxNodeWrapper({
+  data,
+}: {
+  data: DevboxObject | CustomResourceTarget;
+}) {
   // Check if we have a complete DevboxObject or just a basic K8sResource
   const isCompleteObject = "ports" in data && "ssh" in data && "image" in data;
 
-  console.log("data", data);
+  // console.log("data", data);
 
   // Always extract resource data to ensure consistent hook calls
   const resourceData = {
-    kind: data.kind,
-    name: isCompleteObject
-      ? (data as DevboxObject).name
-      : (data as K8sResource).metadata?.name || "",
+    kind: "devbox", // Hardcoded kind
+    name: data.name!,
   };
 
-  console.log("resourceData", resourceData);
+  // console.log("resourceData", resourceData);
 
   // Always call hooks in the same order
   const { completeResource, status } = useResourceNodeEnhancer(resourceData);

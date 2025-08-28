@@ -19,12 +19,13 @@ import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enh
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import NodeLoading from "../../components/node-loading";
 import NodePods from "../../components/node-pods";
+import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 // Enhanced wrapper that can handle both K8sResource and DeploymentObject
 function DeploymentNodeWrapper({
   data,
 }: {
-  data: DeploymentObject | K8sResource;
+  data: DeploymentObject | BuiltinResourceTarget;
 }) {
   // Check if we have a complete DeploymentObject or just a basic K8sResource
   const isCompleteObject =
@@ -32,10 +33,8 @@ function DeploymentNodeWrapper({
 
   // Always extract resource data to ensure consistent hook calls
   const resourceData = {
-    kind: data.kind,
-    name: isCompleteObject
-      ? (data as DeploymentObject).name
-      : (data as K8sResource).metadata?.name || "",
+    kind: "deployment", // Hardcoded kind
+    name: data.name!,
   };
 
   // Always call hooks in the same order

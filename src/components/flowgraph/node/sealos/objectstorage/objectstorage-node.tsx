@@ -27,14 +27,17 @@ import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enh
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import NodeLoading from "../../components/node-loading";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import {
+  CustomResourceTarget,
+  CustomResourceTargetSchema,
+} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
 // Enhanced wrapper that can handle both K8sResource and ObjectStorageObject
 function ObjectStorageNodeWrapper({
   data,
 }: {
-  data: ObjectStorageObject | K8sResource;
+  data: ObjectStorageObject | CustomResourceTarget;
 }) {
   // Check if we have a complete ObjectStorageObject or just a basic K8sResource
   const isCompleteObject = "policy" in data && "access" in data;
@@ -43,10 +46,8 @@ function ObjectStorageNodeWrapper({
 
   // Always extract resource data to ensure consistent hook calls
   const resourceData = {
-    kind: data.kind,
-    name: isCompleteObject
-      ? (data as ObjectStorageObject).name
-      : (data as K8sResource).metadata?.name || "",
+    kind: "objectstoragebucket", // Hardcoded kind
+    name: data.name!,
   };
 
   // Always call hooks in the same order
@@ -173,7 +174,7 @@ function ObjectStorageNode({
       nodeData={resource}
       className={isDeletingObjectStorage ? "border-theme-red" : ""}
     >
-      <div 
+      <div
         className="flex h-full flex-col justify-between"
         onClick={() => {
           appendSystemMessage("objectstorage.detail", target);

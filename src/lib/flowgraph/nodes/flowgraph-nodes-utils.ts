@@ -73,11 +73,17 @@ export const convertResourceToNodes = (
     const id = `${kind.toLowerCase()}-${name}`;
     const type = kind.toLowerCase();
 
+    // Convert resource to target and use it as data
+    const target = convertResourceObjectToTarget({
+      kind,
+      name,
+    });
+
     nodes.push({
       id,
       type,
       position: { x: 0, y: 0 },
-      data: k8sResource,
+      data: target,
     });
   }
 

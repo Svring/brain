@@ -16,7 +16,10 @@ import ClusterNodeBackup from "./cluster-node-backup";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import {
+  CustomResourceTarget,
+  CustomResourceTargetSchema,
+} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertToDbconnUrl } from "@/lib/sealos/sealos-utils";
 import { composeClusterPublicConnectionString } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
@@ -37,17 +40,19 @@ import {
 } from "@/components/ui/tooltip";
 
 // Enhanced wrapper that can handle both K8sResource and ClusterObject
-function ClusterNodeWrapper({ data }: { data: ClusterObject | K8sResource }) {
+function ClusterNodeWrapper({
+  data,
+}: {
+  data: ClusterObject | CustomResourceTarget;
+}) {
   // Check if we have a complete ClusterObject or just a basic K8sResource
   const isCompleteObject =
     "type" in data && "resource" in data && "connection" in data;
 
   // Always extract resource data to ensure consistent hook calls
   const resourceData = {
-    kind: data.kind,
-    name: isCompleteObject
-      ? (data as ClusterObject).name
-      : (data as K8sResource).metadata?.name || "",
+    kind: "cluster", // Hardcoded kind
+    name: data.name!,
   };
 
   // Always call hooks in the same order

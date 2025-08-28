@@ -16,12 +16,13 @@ import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enh
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import NodeLoading from "../../components/node-loading";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
+import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 // Enhanced wrapper that can handle both K8sResource and StatefulsetObject
 function StatefulsetNodeWrapper({
   data,
 }: {
-  data: StatefulsetObject | K8sResource;
+  data: StatefulsetObject | BuiltinResourceTarget;
 }) {
   // Check if we have a complete StatefulsetObject or just a basic K8sResource
   const isCompleteObject =
@@ -29,10 +30,8 @@ function StatefulsetNodeWrapper({
 
   // Always extract resource data to ensure consistent hook calls
   const resourceData = {
-    kind: data.kind,
-    name: isCompleteObject
-      ? (data as StatefulsetObject).name
-      : (data as K8sResource).metadata?.name || "",
+    kind: "statefulset", // Hardcoded kind
+    name: data.name!,
   };
 
   // Always call hooks in the same order

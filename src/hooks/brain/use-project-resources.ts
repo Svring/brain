@@ -1,16 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useEffect } from "react";
+import { useMemo } from "react";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import {
   flattenListAllResourcesResponse,
   convertResourceToTarget,
 } from "@/lib/k8s/k8s-method/k8s-utils";
 import { INSTANCE_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-constant-label";
-import { useProjectActions } from "@/contexts/project/project-context";
 
 export default function useProjectResources(projectName: string) {
   const { k8s } = useTRPCClients();
-  const { setSelectedProjectResources } = useProjectActions();
 
   const labelSelector = useMemo(
     () => `${INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS}=${projectName}`,
@@ -49,19 +47,6 @@ export default function useProjectResources(projectName: string) {
       k8sResources: flattened,
     };
   }, [allResourcesResponse, projectName]);
-
-  // Set selected project resources in useEffect to avoid setState during render
-  // useEffect(() => {
-  //   if (allResourcesResponse) {
-  //     const flattened = flattenListAllResourcesResponse(allResourcesResponse);
-  //     setSelectedProjectResources(
-  //       flattened.map((resource) => ({
-  //         name: resource.metadata.name,
-  //         kind: resource.kind,
-  //       }))
-  //     );
-  //   }
-  // }, [allResourcesResponse]);
 
   return {
     resources,
