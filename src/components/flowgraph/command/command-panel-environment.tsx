@@ -35,6 +35,30 @@ export function EnvironmentPreview({
   const { nodes } = useFlowgraphState();
   const selectedProjectResources = nodes.map((node) => node.data);
 
+  // Dummy linked environment data for demonstration
+  const dummyLinkedEnvData = {
+    "Production Config": [
+      { type: "value" as const, name: "NODE_ENV", value: "production" },
+      { type: "value" as const, name: "DEBUG", value: "false" },
+      { type: "value" as const, name: "LOG_LEVEL", value: "error" },
+    ],
+    "Development Config": [
+      { type: "value" as const, name: "NODE_ENV", value: "development" },
+      { type: "value" as const, name: "DEBUG", value: "true" },
+      { type: "value" as const, name: "LOG_LEVEL", value: "debug" },
+    ],
+    "Database Config": [
+      { type: "value" as const, name: "DB_HOST", value: "localhost" },
+      { type: "value" as const, name: "DB_PORT", value: "5432" },
+      { type: "value" as const, name: "DB_NAME", value: "myapp" },
+    ],
+    "API Config": [
+      { type: "value" as const, name: "API_URL", value: "https://api.example.com" },
+      { type: "value" as const, name: "API_KEY", value: "your-api-key" },
+      { type: "value" as const, name: "API_VERSION", value: "v1" },
+    ],
+  };
+
   // Filter resources that have environment variables
   const resourcesWithEnv = selectedProjectResources.filter((resource) => {
     const typedResource = resource as ResourceData;
@@ -120,6 +144,7 @@ export function EnvironmentPreview({
                     envVars={envVars}
                     allowEditing={true}
                     compact={true}
+                    linkedEnvData={dummyLinkedEnvData}
                     onEnvVarsChange={(updatedEnvVars) => {
                       // Placeholder for future implementation
                       console.log(

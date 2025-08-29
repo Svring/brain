@@ -137,6 +137,7 @@ export default function LaunchpadUpdateImage({
 
   return (
     <BaseActionMessage
+      className="py-0"
       headerTitle={{
         icon: ImageIcon,
         name: "Update Image",
@@ -154,7 +155,7 @@ export default function LaunchpadUpdateImage({
         </Button>
       }
     >
-      <div className="b">
+      <div className="">
         {/* Image Input */}
         <div className="space-y-3">
           <Label className="font-medium">New Image:</Label>

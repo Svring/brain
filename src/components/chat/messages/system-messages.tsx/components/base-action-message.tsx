@@ -38,7 +38,7 @@ export default function BaseActionMessage({
     <div className="flex justify-start w-full">
       <Card
         className={cn(
-          "w-full bg-background-secondary border border-border-primary py-0 gap-0",
+          "w-full bg-background-secondary border border-border-primary pt-0 gap-0",
           className
         )}
       >

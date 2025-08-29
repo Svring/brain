@@ -47,30 +47,22 @@ export default function Page() {
       {/* Content */}
       <div className="w-4xl">
         <div className="grid grid-cols-3 gap-6">
-          {isLoading && (
+          {isLoading ? (
             <div className="col-span-full flex h-32 items-center justify-center">
               <Spinner variant="bars" size={24} />
             </div>
-          )}
-
-          {isError && (
+          ) : isError ? (
             <div className="col-span-full flex h-32 items-center justify-center">
               <div className="text-destructive">Error loading projects</div>
             </div>
-          )}
-
-          {!isError && (
-            <>
-              {filteredProjects.length !== 0 ? (
-                filteredProjects.map((project: any) => (
-                  <ProjectCard key={project.name} project={project} />
-                ))
-              ) : (
-                <div className="col-span-full">
-                  <EmptyState />
-                </div>
-              )}
-            </>
+          ) : filteredProjects.length === 0 ? (
+            <div className="col-span-full">
+              <EmptyState />
+            </div>
+          ) : (
+            filteredProjects.map((project: any) => (
+              <ProjectCard key={project.name} project={project} />
+            ))
           )}
         </div>
       </div>

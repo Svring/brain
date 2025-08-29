@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Stethoscope, Play, Pencil, Loader2 } from "lucide-react";
+import { ScanSearch, Play, Pencil, Loader2 } from "lucide-react";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
@@ -132,8 +132,8 @@ export const DiagnoseNetworkMessageCard: React.FC<
   return (
     <BaseActionMessage
       headerTitle={{
-        icon: Stethoscope,
-        name: "Network Diagnosis",
+        icon: ScanSearch,
+        name: "Diagnosis",
       }}
     >
       <div className="space-y-3">

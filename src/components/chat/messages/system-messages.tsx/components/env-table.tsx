@@ -1,9 +1,25 @@
 import { useState } from "react";
-import { Trash2, Plus, Edit2, Check, X, Copy, CheckCircle } from "lucide-react";
+import {
+  Trash2,
+  Plus,
+  Edit2,
+  Check,
+  X,
+  Copy,
+  CheckCircle,
+  Link,
+} from "lucide-react";
 
 // UI Components
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Custom Hooks and Types
 import { useCopy } from "@/hooks/use-copy";
@@ -15,6 +31,7 @@ interface EnvTableProps {
   allowEditing?: boolean;
   onEnvVarsChange?: (envVars: EnvVar[]) => void;
   compact?: boolean;
+  linkedEnvData?: Record<string, EnvVar[]>;
 }
 
 // New Environment Variable State
@@ -28,6 +45,7 @@ export function EnvTable({
   allowEditing = false,
   onEnvVarsChange,
   compact = false,
+  linkedEnvData,
 }: EnvTableProps) {
   // State
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -91,18 +109,34 @@ export function EnvTable({
     }
   };
 
+  const handleLinkEnvData = (itemName: string) => {
+    if (!linkedEnvData || !onEnvVarsChange) return;
+
+    const envVarsToAdd = linkedEnvData[itemName];
+    if (envVarsToAdd && Array.isArray(envVarsToAdd)) {
+      // Add all environment variables from the selected item
+      const updatedEnvVars = [...envVars, ...envVarsToAdd];
+      onEnvVarsChange(updatedEnvVars);
+    }
+  };
+
   // Render Functions
   const renderEnvVarItem = (envVar: EnvVar, index: number) => {
     const isEditing = allowEditing && editingIndex === index;
 
     return (
-      <div key={`${envVar.name}-${index}`} className="flex items-center gap-3 rounded-lg">
+      <div
+        key={`${envVar.name}-${index}`}
+        className="flex items-center gap-3 rounded-lg"
+      >
         <div className="flex-1 flex items-center gap-3">
           <div className="w-[30%]">
             {isEditing ? (
               <Input
                 value={newEnvVar.name}
-                onChange={(e) => setNewEnvVar({ ...newEnvVar, name: e.target.value })}
+                onChange={(e) =>
+                  setNewEnvVar({ ...newEnvVar, name: e.target.value })
+                }
                 placeholder="Environment variable name"
               />
             ) : allowEditing ? (
@@ -133,7 +167,9 @@ export function EnvTable({
             {isEditing ? (
               <Input
                 value={newEnvVar.value}
-                onChange={(e) => setNewEnvVar({ ...newEnvVar, value: e.target.value })}
+                onChange={(e) =>
+                  setNewEnvVar({ ...newEnvVar, value: e.target.value })
+                }
                 placeholder="Environment variable value"
               />
             ) : allowEditing ? (
@@ -147,7 +183,9 @@ export function EnvTable({
                   <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               ) : (
-                <span className="text-muted-foreground italic">from secret</span>
+                <span className="text-muted-foreground italic">
+                  from secret
+                </span>
               )
             ) : envVar.type === "value" ? (
               <div
@@ -201,11 +239,29 @@ export function EnvTable({
 
   const renderNewEnvVarItem = () => (
     <div className="flex items-center gap-3 rounded-lg">
+      <div className="flex items-center gap-2">
+        {linkedEnvData && Object.keys(linkedEnvData).length > 0 && (
+          <Select onValueChange={handleLinkEnvData}>
+            <SelectTrigger className="p-2">
+              <Link className="h-4 w-4" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.keys(linkedEnvData).map((itemName) => (
+                <SelectItem key={itemName} value={itemName}>
+                  {itemName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+      </div>
       <div className="flex-1 flex items-center gap-3">
         <div className="w-[30%]">
           <Input
             value={newEnvVar.name}
-            onChange={(e) => setNewEnvVar({ ...newEnvVar, name: e.target.value })}
+            onChange={(e) =>
+              setNewEnvVar({ ...newEnvVar, name: e.target.value })
+            }
             placeholder="Environment variable name"
           />
         </div>
@@ -236,7 +292,11 @@ export function EnvTable({
 
   // Main Render
   return (
-    <div className={`space-y-4 ${compact ? '' : 'border border-border rounded-lg p-4'}`}>
+    <div
+      className={`space-y-4 ${
+        compact ? "" : "border border-border rounded-lg p-4"
+      }`}
+    >
       <div className="space-y-3">
         {envVars.map((envVar, index) => renderEnvVarItem(envVar, index))}
         {allowEditing && editingIndex !== envVars.length && (
@@ -250,7 +310,9 @@ export function EnvTable({
             Add Environment Variable
           </Button>
         )}
-        {allowEditing && editingIndex === envVars.length && renderNewEnvVarItem()}
+        {allowEditing &&
+          editingIndex === envVars.length &&
+          renderNewEnvVarItem()}
       </div>
     </div>
   );

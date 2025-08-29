@@ -26,14 +26,15 @@ export function inferRelianceFromEnv(
 ): ResourceReliances {
   const result: ResourceReliances = {};
 
-  // Filter owner resources (deployment and statefulset only)
+  // Filter owner resources (deployment, statefulset, and devbox)
   const ownerResources = resourceObjects.filter(
     (resource) =>
       resource.kind.toLowerCase() === "deployment" ||
-      resource.kind.toLowerCase() === "statefulset"
+      resource.kind.toLowerCase() === "statefulset" ||
+      resource.kind.toLowerCase() === "devbox"
   );
 
-  // All resources can be dependencies (including other deployments/statefulsets)
+  // All resources can be dependencies (including other deployments/statefulsets/devboxes)
   const dependencyResources = resourceObjects;
 
   for (const ownerResource of ownerResources) {
