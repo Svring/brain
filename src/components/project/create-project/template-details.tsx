@@ -22,6 +22,8 @@ import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { useRouter } from "next/navigation";
+import { useChatActions } from "@/contexts/chat/chat-context";
+import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
 import "@/styles/github-markdown-dark.css";
 
@@ -36,6 +38,8 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
   const [readmeContent, setReadmeContent] = useState<string>("");
   const [isLoadingReadme, setIsLoadingReadme] = useState(false);
 
+  const { openSidebarChat } = useChatActions();
+  const { mutate: sendMessage } = useSendMessageMutation();
   const apiContext = useMemo(() => createSealosContext(), []);
   const createInstanceMutation = useCreateInstanceMutation(apiContext);
 
@@ -79,7 +83,13 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
             `${template.spec.title} has been deployed to your project.`
           );
           setShowInputDialog(false);
-
+          openSidebarChat();
+          sendMessage([
+            {
+              role: "system",
+              content: `The user has created a new instance of ${template.spec.title} and entered the detail view of the project, send your greeting and gently hint the user what they could do next.`,
+            },
+          ]);
           const instanceResource = data.data?.find(
             (resource: any) => resource.kind === "Instance"
           );

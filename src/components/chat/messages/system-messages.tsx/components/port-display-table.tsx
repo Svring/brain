@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, Check, Globe, HelpCircle, Settings } from "lucide-react";
 import { useCopy } from "@/hooks/use-copy";
@@ -17,12 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { UpdatePortDialog, CustomPortDialog } from "./index";
 
 interface Port {
   number: number;
@@ -40,6 +35,9 @@ interface PortDisplayTableProps {
 
 export function PortDisplayTable({ ports }: PortDisplayTableProps) {
   const { copyToClipboard, isCopied } = useCopy();
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [customDialogOpen, setCustomDialogOpen] = useState(false);
+  const [selectedPort, setSelectedPort] = useState<Port | null>(null);
 
   if (!ports || ports.length === 0) {
     return null;
@@ -48,7 +46,7 @@ export function PortDisplayTable({ ports }: PortDisplayTableProps) {
   return (
     <div className="w-full overflow-hidden">
       <Table>
-        <TableHeader >
+        <TableHeader>
           <TableRow>
             <TableHead className="w-[10%]">Port</TableHead>
             <TableHead className="w-[30%]">Private Address</TableHead>
@@ -64,20 +62,26 @@ export function PortDisplayTable({ ports }: PortDisplayTableProps) {
                   <span
                     className={cn(
                       "truncate cursor-pointer hover:text-foreground/80 hover:underline",
-                      port.privateAddress ? "text-foreground" : "text-muted-foreground"
+                      port.privateAddress
+                        ? "text-foreground"
+                        : "text-muted-foreground"
                     )}
                     title={port.privateAddress || "-"}
                     onClick={() => {
                       if (port.privateAddress) {
-                        copyToClipboard(port.privateAddress, `private-${port.number}`);
+                        copyToClipboard(
+                          port.privateAddress,
+                          `private-${port.number}`
+                        );
                       }
                     }}
                   >
                     {port.privateAddress || "-"}
                   </span>
-                  {port.privateAddress && isCopied(`private-${port.number}`) && (
-                    <Check className="w-3 h-3 text-theme-green flex-shrink-0" />
-                  )}
+                  {port.privateAddress &&
+                    isCopied(`private-${port.number}`) && (
+                      <Check className="w-3 h-3 text-theme-green flex-shrink-0" />
+                    )}
                 </div>
               </TableCell>
               <TableCell className="max-w-0">
@@ -138,14 +142,16 @@ export function PortDisplayTable({ ports }: PortDisplayTableProps) {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
                             onClick={() => {
-                              console.log(`Update port ${port.number}`);
+                              setSelectedPort(port);
+                              setUpdateDialogOpen(true);
                             }}
                           >
                             Update
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => {
-                              console.log(`Custom settings for port ${port.number}`);
+                              setSelectedPort(port);
+                              setCustomDialogOpen(true);
                             }}
                           >
                             Custom
@@ -156,7 +162,9 @@ export function PortDisplayTable({ ports }: PortDisplayTableProps) {
                   ) : (
                     <>
                       <HelpCircle className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                      <span className="text-muted-foreground">No public access</span>
+                      <span className="text-muted-foreground">
+                        No public access
+                      </span>
                     </>
                   )}
                 </div>
@@ -165,6 +173,20 @@ export function PortDisplayTable({ ports }: PortDisplayTableProps) {
           ))}
         </TableBody>
       </Table>
+
+      {/* Update Dialog */}
+      <UpdatePortDialog
+        open={updateDialogOpen}
+        onOpenChange={setUpdateDialogOpen}
+        selectedPort={selectedPort}
+      />
+
+      {/* Custom Dialog */}
+      <CustomPortDialog
+        open={customDialogOpen}
+        onOpenChange={setCustomDialogOpen}
+        selectedPort={selectedPort}
+      />
     </div>
   );
 }

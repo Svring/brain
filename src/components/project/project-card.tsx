@@ -89,14 +89,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   }, [resources]);
 
   const deleteProjectMutation = useMutation(
-    projectClient.deleteProject.mutationOptions({
-      onSuccess: (_, name) => {
-        queryClient.invalidateQueries({
-          queryKey: projectClient.listProjects.queryKey(),
-        });
-        toast.success(`Project ${name} deleted successfully`);
-      },
-    })
+    projectClient.deleteProject.mutationOptions()
   );
 
   const handleDelete = (e: React.MouseEvent) => {
@@ -106,7 +99,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     // Close the dropdown menu immediately
     closeDropdown();
 
-    deleteProjectMutation.mutate(project.name);
+    deleteProjectMutation.mutate(project.name, {
+      onSuccess: (_, name) => {
+        queryClient.invalidateQueries({
+          queryKey: projectClient.listProjects.queryKey(),
+        });
+        toast.success(`Project ${name} deleted successfully`);
+      },
+    });
   };
 
   const handleRename = (e: React.MouseEvent) => {
@@ -125,11 +125,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           href={`/projects/${encodeURIComponent(project.name)}`}
         >
           <motion.div
-            className={`relative flex h-10 w-full cursor-pointer items-center rounded-lg border bg-background-secondary px-4 text-left shadow-sm ${
-              deleteProjectMutation.isPending
-                ? "bg-theme-red"
-                : "hover:brightness-135"
-            }`}
+            className={`relative flex h-10 w-full cursor-pointer items-center rounded-lg border bg-background-secondary px-4 text-left shadow-sm hover:brightness-135`}
             transition={{ duration: 0.15, ease: "easeInOut" }}
           >
             <h3 className="text-foreground truncate flex-1">
@@ -167,7 +163,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         <motion.div
           className={`relative flex min-h-[160px] w-full cursor-pointer flex-col rounded-lg border bg-background-secondary p-4 text-left shadow-sm ${
             deleteProjectMutation.isPending
-              ? "bg-theme-red"
+              ? "bg-status-deleting/50 border-theme-red"
               : "hover:brightness-135"
           }`}
           transition={{ duration: 0.15, ease: "easeInOut" }}

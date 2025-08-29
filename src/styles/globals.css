@@ -99,6 +99,7 @@
   --color-node-background: #101011;
 
   --color-border-primary: #393939;
+  --color-border-deleting: #882B2A;
 
   --color-sidebar-selection: #1E1F22;
 
@@ -114,6 +115,7 @@
 
   --color-status-error: #660B05;
   --color-status-warning: #221D10;
+  --color-status-deleting: #22120F;
 
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
