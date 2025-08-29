@@ -5,9 +5,17 @@ import {
   ProjectProposalSchema,
 } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 import { ProjectProposalCard } from "@/components/chat/state-cards/project-proposal/project-proposal-card";
+import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
+import { getAllProjectLogs } from "@/lib/brain/resources/project/project-api/project-api-service";
+import { ProjectLogRender } from "@/components/copilot/brain/project/copilot-project-log";
+import { useFlowgraphResources } from "@/hooks/flowgraph/use-flowgraph-resources";
 
-export const activateProjectActions = (context: K8sApiContext) => {
+export const activateProjectActions = (
+  context: K8sApiContext,
+  sealosContext: SealosApiContext
+) => {
   proposeProjectAction(context);
+  checkAllLogsAction(context, sealosContext);
 };
 
 export const proposeProjectAction = (context: K8sApiContext) => {
@@ -27,6 +35,30 @@ export const proposeProjectAction = (context: K8sApiContext) => {
         console.error("Failed to parse project proposal:", error);
         return <div />;
       }
+    },
+  });
+};
+
+export const checkAllLogsAction = (
+  k8sContext: K8sApiContext,
+  sealosContext: SealosApiContext
+) => {
+  const { clusterResources, launchpadResources } = useFlowgraphResources();
+
+  useCopilotAction({
+    name: "check_all_logs",
+    description:
+      "Check all recent logs for the project to see if there are any errors or warnings.",
+    available: "enabled",
+    handler: async () => {
+      const response = await getAllProjectLogs(k8sContext, sealosContext, {
+        clusterResources,
+        launchpadResources,
+      });
+      return response.logs;
+    },
+    render: ({ result }) => {
+      return <ProjectLogRender result={result} />;
     },
   });
 };

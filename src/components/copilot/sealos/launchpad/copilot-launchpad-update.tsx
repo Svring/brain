@@ -53,14 +53,28 @@ export function UpdateResourceForm({
   onSubmit,
   context,
 }: UpdateResourceFormProps) {
-  const [cpu, setCpu] = useState<CpuOption | undefined>(
-    initialValues.cpu as CpuOption
+  console.log("initialValues", initialValues);
+  
+  // Helper function to find the closest valid option or default to first option
+  const findClosestOption = <T extends number>(value: T | undefined, options: readonly T[]): T => {
+    if (value === undefined) return options[0];
+    const index = options.indexOf(value);
+    if (index !== -1) return value;
+    // Find the closest option
+    const closest = options.reduce((prev, curr) => 
+      Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev
+    );
+    return closest;
+  };
+
+  const [cpu, setCpu] = useState<CpuOption>(
+    findClosestOption(initialValues.cpu, CPU_OPTIONS) as CpuOption
   );
-  const [memory, setMemory] = useState<MemoryOption | undefined>(
-    initialValues.memory as MemoryOption
+  const [memory, setMemory] = useState<MemoryOption>(
+    findClosestOption(initialValues.memory, MEMORY_OPTIONS) as MemoryOption
   );
-  const [replicas, setReplicas] = useState<ReplicasOption | undefined>(
-    initialValues.replicas as ReplicasOption
+  const [replicas, setReplicas] = useState<ReplicasOption>(
+    findClosestOption(initialValues.replicas, REPLICAS_OPTIONS) as ReplicasOption
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUpdateCompleted, setIsUpdateCompleted] = useState(false);
@@ -75,9 +89,9 @@ export function UpdateResourceForm({
     try {
       // Build resource object only with provided values
       const resourceData: any = {};
-      if (cpu !== undefined) resourceData.cpu = cpu;
-      if (memory !== undefined) resourceData.memory = memory;
-      if (replicas !== undefined) resourceData.replicas = replicas;
+      if (initialValues.cpu !== undefined) resourceData.cpu = cpu;
+      if (initialValues.memory !== undefined) resourceData.memory = memory;
+      if (initialValues.replicas !== undefined) resourceData.replicas = replicas;
 
       const updateRequest = {
         name: initialValues.name,
@@ -91,9 +105,9 @@ export function UpdateResourceForm({
       // Call the onSubmit callback with the updated values
       onSubmit({
         name: initialValues.name,
-        cpu: cpu || 0,
-        memory: memory || 0,
-        replicas: replicas || 0,
+        cpu: cpu,
+        memory: memory,
+        replicas: replicas,
       });
 
       // Mark update as completed
@@ -144,15 +158,8 @@ export function UpdateResourceForm({
       }
     >
       <div className="space-y-4">
-        {/* <div>
-          <Label className="font-medium">Launchpad Name:</Label>
-          <div className="text-sm text-muted-foreground mt-1">
-            {initialValues.name}
-          </div>
-        </div> */}
-
         {/* CPU Options - only show if cpu is provided */}
-        {cpu !== undefined && (
+        {initialValues.cpu !== undefined && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Label className="font-medium">CPU:</Label>
@@ -177,7 +184,7 @@ export function UpdateResourceForm({
         )}
 
         {/* Memory Options - only show if memory is provided */}
-        {memory !== undefined && (
+        {initialValues.memory !== undefined && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Label className="font-medium">Memory:</Label>
@@ -202,7 +209,7 @@ export function UpdateResourceForm({
         )}
 
         {/* Replicas - only show if replicas is provided */}
-        {replicas !== undefined && (
+        {initialValues.replicas !== undefined && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Label className="font-medium">Replicas:</Label>

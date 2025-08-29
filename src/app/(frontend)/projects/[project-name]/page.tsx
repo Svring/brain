@@ -95,6 +95,8 @@ function ProjectFlow({ projectName }: { projectName: string }) {
   const { nodes, edges } = useFlowgraphState();
   const { onNodesChange, onEdgesChange } = useFlowgraphActions();
 
+  useCopilotActions();
+
   // Show loading state only when initially loading resources
   if (isLoading) {
     return (
@@ -139,8 +141,6 @@ export default function ProjectPage({
   const { selectProject, clearSelectedProject, clearSelectedProjectResources } =
     useProjectActions();
   const { setStage } = useLanggraphActions();
-
-  useCopilotActions();
 
   useEffect(() => {
     // Set the selected project when the component mounts

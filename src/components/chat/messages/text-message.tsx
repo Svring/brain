@@ -54,10 +54,17 @@ export function RenderTextMessage({
           {message.content ?? ""}
         </Markdown>
 
-        {isLoading && (
+        {isLoading && !message.content && !message.toolCalls && (
           <div className="flex items-center gap-2 text-xs opacity-70">
             <Loader2 className="w-3 h-3 animate-spin" />
             <span>Thinking...</span>
+          </div>
+        )}
+
+        {message.toolCalls && (
+          <div className="flex items-center gap-2 text-xs opacity-70">
+            <Loader2 className="w-3 h-3 animate-spin" />
+            <span>Executing...</span>
           </div>
         )}
       </div>

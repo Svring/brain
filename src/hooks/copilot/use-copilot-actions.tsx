@@ -24,5 +24,5 @@ export default function useCopilotActions() {
 
   // activateObjectStorageBucketActions(k8sContext, sealosContext);
 
-  activateProjectActions(k8sContext);
+  activateProjectActions(k8sContext, sealosContext);
 }
