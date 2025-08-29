@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, ChevronRight } from "lucide-react";
+import { Plus, ChevronRight, Variable } from "lucide-react";
 import {
   CommandGroup,
   CommandItem,
@@ -29,6 +29,15 @@ export function CommandPanelMain({
         >
           <Plus className="h-4 w-4" />
           <span>Add Resource</span>
+        </CommandItem>
+        <CommandItem
+          value="environment"
+          onSelect={onSelect}
+          onFocus={() => onKeyboardSelect?.("environment")}
+          onBlur={() => onKeyboardSelect?.(null)}
+        >
+          <Variable className="h-4 w-4" />
+          <span>Environment</span>
         </CommandItem>
       </CommandGroup>
     </>

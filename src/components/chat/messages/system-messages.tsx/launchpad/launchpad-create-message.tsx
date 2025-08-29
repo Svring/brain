@@ -142,7 +142,7 @@ export default function LaunchpadCreateMessage({
               alt="App Launchpad Icon"
               width={36}
               height={36}
-              className="w-full h-full object-cover p-1"
+              className="w-full h-full object-cover p-1 rounded-lg"
             />
           </div>
         </div>
@@ -169,25 +169,32 @@ export default function LaunchpadCreateMessage({
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <ImageConfiguration form={form} />
           <ResourceConfiguration form={form} />
-          <PortsProtocol form={form} />
-          
+
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-foreground">Ports</div>
+            <PortsProtocol form={form} />
+          </div>
+
           {/* Environment Variables Section */}
           <div className="space-y-2">
             <div className="text-sm font-medium text-foreground">
               Environment Variables
             </div>
             <EnvTable
-              envVars={(form.watch("env") || []).map(env => ({ 
-                type: "value" as const, 
-                name: env.name, 
-                value: env.value || "" 
+              envVars={(form.watch("env") || []).map((env) => ({
+                type: "value" as const,
+                name: env.name,
+                value: env.value || "",
               }))}
               allowEditing={true}
-              onEnvVarsChange={(envVars) => 
-                form.setValue("env", envVars.map(env => ({ 
-                  name: env.name, 
-                  value: env.type === "value" ? env.value : "" 
-                })))
+              onEnvVarsChange={(envVars) =>
+                form.setValue(
+                  "env",
+                  envVars.map((env) => ({
+                    name: env.name,
+                    value: env.type === "value" ? env.value : "",
+                  }))
+                )
               }
             />
           </div>

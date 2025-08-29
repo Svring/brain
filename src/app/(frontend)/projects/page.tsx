@@ -6,6 +6,7 @@ import SearchBar from "@/components/ui/search-bar";
 import useProjectSearch from "@/hooks/brain/use-projects-search";
 import { useProjectActions } from "@/contexts/project/project-context";
 import { Spinner } from "@/components/ui/spinner";
+import EmptyState from "@/components/project/empty-state";
 
 export default function Page() {
   const { setAllProjects } = useProjectActions();
@@ -60,10 +61,15 @@ export default function Page() {
 
           {!isError && (
             <>
-              {filteredProjects.length !== 0 &&
+              {filteredProjects.length !== 0 ? (
                 filteredProjects.map((project: any) => (
                   <ProjectCard key={project.name} project={project} />
-                ))}
+                ))
+              ) : (
+                <div className="col-span-full">
+                  <EmptyState />
+                </div>
+              )}
             </>
           )}
         </div>

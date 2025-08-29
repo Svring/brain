@@ -8,6 +8,40 @@ export type TemplateCardProps = {
   onViewDetails: (template: TemplateResource) => void;
 };
 
+// Function to get different colorful badge classes for categories
+const getBadgeColorClass = (index: number): string => {
+  const colorClasses = [
+    "bg-theme-blue text-white border-theme-blue",
+    "bg-theme-green text-white border-theme-green",
+    "bg-theme-purple text-white border-theme-purple",
+    "bg-theme-yellow text-black border-theme-yellow",
+    "bg-theme-red text-white border-theme-red",
+    "bg-theme-darkblue text-white border-theme-darkblue",
+  ];
+  return colorClasses[index % colorClasses.length];
+};
+
+// Function to get dot color for categories
+const getDotColor = (category: string): string => {
+  const lowerCategory = category.toLowerCase();
+  if (lowerCategory.includes('ai') || lowerCategory.includes('artificial intelligence')) {
+    return 'bg-theme-blue';
+  }
+  if (lowerCategory.includes('ml') || lowerCategory.includes('machine learning')) {
+    return 'bg-theme-green';
+  }
+  if (lowerCategory.includes('data') || lowerCategory.includes('analytics')) {
+    return 'bg-theme-purple';
+  }
+  if (lowerCategory.includes('web') || lowerCategory.includes('frontend')) {
+    return 'bg-theme-yellow';
+  }
+  if (lowerCategory.includes('api') || lowerCategory.includes('backend')) {
+    return 'bg-theme-red';
+  }
+  return 'bg-theme-darkblue';
+};
+
 export const TemplateCard = memo(function TemplateCard({
   template,
   onViewDetails,
@@ -55,11 +89,19 @@ export const TemplateCard = memo(function TemplateCard({
         {/* Categories at bottom left */}
         {template.spec.categories && template.spec.categories.length > 0 && (
           <div className="mt-auto pt-4 flex flex-wrap gap-1">
-            {template.spec.categories.slice(0, 3).map((category: string) => (
-              <Badge key={category} variant="secondary" className="text-xs">
-                {category}
-              </Badge>
-            ))}
+            {template.spec.categories
+              .slice(0, 3)
+              .map((category: string, index: number) => (
+                <Badge
+                  dot
+                  key={category}
+                  variant="outline"
+                  dotColor={getDotColor(category)}
+                  className={`bg-background-tertiary`}
+                >
+                  {category}
+                </Badge>
+              ))}
           </div>
         )}
       </div>

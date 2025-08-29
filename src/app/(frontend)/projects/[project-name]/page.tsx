@@ -6,16 +6,6 @@ import { useEffect, use } from "react";
 import { Background, ReactFlow, ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
-// Shadcn UI imports
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-
 // Custom component imports
 import AiChatbox from "@/components/chat/components/chatbox";
 import AiCoin from "@/components/chat/components/coin";
@@ -57,8 +47,6 @@ import { useAppendMessagesMutation } from "@/lib/langgraph/langgraph-method/lang
 
 // Floating UI Component
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
-  const { isOpen, onOpenChange } = useDisclosure();
-
   const { clearAllState } = useFlowgraphActions();
 
   useEffect(() => {
@@ -76,7 +64,7 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
     <>
       <FlowgraphHeader projectName={projectName} />
       <FlowgraphMenuActions onOpen={onCommandOpen} />
-      <Sheet onOpenChange={onOpenChange} open={isOpen}>
+      {/* <Sheet onOpenChange={onOpenChange} open={isOpen}>
         <SheetContent className="w-[40vw]! max-w-none! fade-in-0 animate-in flex flex-col">
           <SheetHeader className="shrink-0">
             <SheetTitle>Display Environment</SheetTitle>
@@ -88,7 +76,7 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
             <DisplayEnvPanel />
           </div>
         </SheetContent>
-      </Sheet>
+      </Sheet> */}
       <FlowgraphCommandDialog
         isOpen={isCommandOpen}
         onOpenChange={onCommandOpenChange}

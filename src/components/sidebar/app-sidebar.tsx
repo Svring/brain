@@ -8,8 +8,12 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { BookOpen } from "lucide-react";
 
 export default function AppSidebar() {
   return (
@@ -31,6 +35,14 @@ export default function AppSidebar() {
         </SidebarContent>
         <SidebarFooter className={cn("rounded-b-lg bg-background-primary")}>
           {/* <AIAccess /> */}
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton>
+                <BookOpen />
+                <span>Documentation</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
           <UserCard
             user={{
               name: "Brain",

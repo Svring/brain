@@ -11,7 +11,6 @@ import { useProjectActions } from "@/contexts/project/project-context";
 export default function AiChatbox() {
   const { sidebarChatOpen } = useChatState();
   const { closeSidebarChat } = useChatActions();
-
   const { clearSelectedResource } = useProjectActions();
 
   useUnmount(() => {

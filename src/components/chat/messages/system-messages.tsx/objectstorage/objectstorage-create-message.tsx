@@ -117,7 +117,7 @@ export const ObjectStorageCreateMessage: React.FC<
   };
 
   return (
-    <div className="space-y-3 flex-col bg-background-secondary p-3 rounded-xl">
+    <div className="space-y-4 flex-col bg-background-secondary p-3 rounded-xl">
       <div className="flex items-center gap-4">
         <div className="flex-shrink-0">
           <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
@@ -126,7 +126,7 @@ export const ObjectStorageCreateMessage: React.FC<
               alt="Object Storage Icon"
               width={36}
               height={36}
-              className="w-full h-full object-cover p-1"
+              className="w-full h-full object-cover p-1 rounded-lg"
             />
           </div>
         </div>
@@ -142,7 +142,7 @@ export const ObjectStorageCreateMessage: React.FC<
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-4 border border-border rounded-lg p-4">
+          <div className="space-y-4">
             <FormField
               control={form.control}
               name="policy"

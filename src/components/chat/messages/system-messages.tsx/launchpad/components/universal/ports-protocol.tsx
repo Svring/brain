@@ -3,6 +3,13 @@ import { UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
 import {
   LaunchpadCreateRequest,
@@ -49,6 +56,68 @@ export function PortsProtocol({ form }: PortsProtocolProps) {
     form.setValue("ports", newPorts);
   };
 
+  // Handle unified protocol selection
+  const handleProtocolSelection = (index: number, value: string) => {
+    const currentPorts = form.getValues("ports");
+    const newPorts = [...currentPorts];
+    const currentPort = newPorts[index];
+    
+    switch (value) {
+      case "TCP":
+        newPorts[index] = { 
+          ...currentPort, 
+          protocol: "TCP",
+          appProtocol: undefined 
+        };
+        break;
+      case "UDP":
+        newPorts[index] = { 
+          ...currentPort, 
+          protocol: "UDP",
+          appProtocol: undefined 
+        };
+        break;
+      case "SCTP":
+        newPorts[index] = { 
+          ...currentPort, 
+          protocol: "SCTP",
+          appProtocol: undefined 
+        };
+        break;
+      case "HTTP":
+        newPorts[index] = { 
+          ...currentPort, 
+          protocol: "TCP",
+          appProtocol: "HTTP" 
+        };
+        break;
+      case "GRPC":
+        newPorts[index] = { 
+          ...currentPort, 
+          protocol: "TCP",
+          appProtocol: "GRPC" 
+        };
+        break;
+      case "WS":
+        newPorts[index] = { 
+          ...currentPort, 
+          protocol: "TCP",
+          appProtocol: "WS" 
+        };
+        break;
+    }
+    
+    form.setValue("ports", newPorts);
+  };
+
+  // Get display value for the unified select
+  const getProtocolDisplayValue = (port: Port) => {
+    if (port.appProtocol) {
+      return port.appProtocol;
+    }
+    return port.protocol;
+  };
+
   return (
     <div className="space-y-4 border border-border rounded-lg p-4">
       <div className="space-y-3">
@@ -76,6 +145,26 @@ export function PortsProtocol({ form }: PortsProtocolProps) {
                   Public access
                 </span>
               </div>
+              {port.exposesPublicDomain && (
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={getProtocolDisplayValue(port)}
+                    onValueChange={(value) => handleProtocolSelection(index, value)}
+                  >
+                    <SelectTrigger className="w-28">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="TCP">TCP</SelectItem>
+                      <SelectItem value="UDP">UDP</SelectItem>
+                      <SelectItem value="SCTP">SCTP</SelectItem>
+                      <SelectItem value="HTTP">HTTP</SelectItem>
+                      <SelectItem value="GRPC">GRPC</SelectItem>
+                      <SelectItem value="WS">WS</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
             {form.watch("ports").length > 1 && (
               <Button
