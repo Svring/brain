@@ -27,13 +27,6 @@ export const ClusterMessage: React.FC<ClusterMessageProps> = ({ target }) => {
   const actions: MessageAction[] = clusterObject
     ? [
         {
-          icon: Pencil,
-          label: "Update Resources",
-          onClick: () => {
-            appendSystemMessage("cluster.updateResource", target);
-          },
-        },
-        {
           icon: EthernetPort,
           label: "View Connection",
           onClick: () => {
@@ -75,7 +68,7 @@ export const ClusterMessage: React.FC<ClusterMessageProps> = ({ target }) => {
       actions={actions}
       headerSlot={<ClusterMessageMenu target={target} />}
     >
-      <ClusterMessageDetails clusterObject={clusterObject} />
+      <ClusterMessageDetails target={target} />
     </BaseSystemMessage>
   );
 };

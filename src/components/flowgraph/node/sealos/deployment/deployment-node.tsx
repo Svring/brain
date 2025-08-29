@@ -116,7 +116,7 @@ function DeploymentNode({
       shouldCreateChatSession={true}
       className={
         isDeletingDeployment || metricsStatus === "high"
-          ? "bg-theme-red/50"
+          ? "bg-status-deleting/50 border-border-deleting"
           : ""
       }
     >

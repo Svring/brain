@@ -29,17 +29,8 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
 
   const launchpadObject = LaunchpadObjectSchema.parse(launchpadObjectData);
 
-  const actions: MessageAction[] = launchpadObject
-    ? [
-        {
-          icon: Pencil,
-          label: "Update Image",
-          onClick: () => {
-            appendSystemMessage("launchpad.updateImage", target);
-          },
-        },
-      ]
-    : [];
+  // Remove the update image action since it's now handled inline
+  const actions: MessageAction[] = [];
 
   // Show loading state
   if (isLoading) {
@@ -73,7 +64,7 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
       actions={actions}
       headerSlot={<LaunchpadMessageMenu target={target} />}
     >
-      <LaunchpadMessageDetails launchpadObject={launchpadObject} />
+      <LaunchpadMessageDetails target={target} />
     </BaseSystemMessage>
   );
 };

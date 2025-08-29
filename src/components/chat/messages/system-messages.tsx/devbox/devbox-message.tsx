@@ -32,13 +32,6 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
   const actions: MessageAction[] = devboxObject
     ? [
         {
-          icon: Pencil,
-          label: "Update",
-          onClick: () => {
-            appendSystemMessage("devbox.update", target);
-          },
-        },
-        {
           icon: GitBranch,
           label: "View Releases",
           onClick: () => {
@@ -93,7 +86,7 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
         </div>
       }
     >
-      <DevboxInfoDetails devboxObject={devboxObject} />
+      <DevboxInfoDetails target={target} />
     </BaseSystemMessage>
   );
 };

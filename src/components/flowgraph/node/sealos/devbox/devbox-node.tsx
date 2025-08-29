@@ -25,7 +25,6 @@ import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/
 import NodeLoading from "../../components/node-loading";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
-
 // Enhanced wrapper that can handle both K8sResource and DevboxObject
 function DevboxNodeWrapper({
   data,
@@ -129,7 +128,9 @@ function DevboxNode({
       messageType="devbox.detail"
       shouldCreateChatSession={true}
       className={
-        isDeletingDevbox || metricsStatus === "high" ? "bg-theme-red/50" : ""
+        isDeletingDevbox || metricsStatus === "high"
+          ? "bg-status-deleting/50 border-border-deleting"
+          : ""
       }
     >
       <div className="flex h-full flex-col gap-2 justify-between">

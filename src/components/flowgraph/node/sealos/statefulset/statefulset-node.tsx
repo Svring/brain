@@ -103,7 +103,7 @@ function StatefulsetNode({
       shouldCreateChatSession={true}
       className={
         isDeletingStatefulset || metricsStatus === "high"
-          ? "bg-theme-red/50"
+          ? "bg-status-deleting/50 border-border-deleting"
           : ""
       }
     >

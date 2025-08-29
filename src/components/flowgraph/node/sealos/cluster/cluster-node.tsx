@@ -165,7 +165,9 @@ function ClusterNode({
       messageType="cluster.detail"
       shouldCreateChatSession={true}
       className={
-        isDeletingCluster || metricsStatus === "high" ? "bg-theme-red/50" : ""
+        isDeletingCluster || metricsStatus === "high"
+          ? "bg-status-deleting/50 border-border-deleting"
+          : ""
       }
     >
       <div className="flex h-full flex-col gap-4 justify-between">
