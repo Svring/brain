@@ -12,8 +12,7 @@ import {
 } from "@/contexts/project/project-context";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { useAuthState } from "@/contexts/auth/auth-context";
+import { useSelectedResource } from "@/hooks/brain/use-selected-resource";
 
 interface BaseNodeProps {
   children: React.ReactNode;
@@ -38,9 +37,9 @@ export default function BaseNodeWrapper({
   const { selectedResource } = useProjectState();
   const { selectNode, focusNode } = useFlowgraphActions();
   const { appendSystemMessage } = useAppendSystemMessageMutation();
-  const { mutate: createNewChatSession } = useCreateNewChatSessionMutation();
-  const { auth } = useAuthState();
-  const { selectedProject } = useProjectState();
+  const { shouldCreateChatSession: shouldCreate } = target
+    ? useSelectedResource(target)
+    : { shouldCreateChatSession: false };
 
   const handleNodeClick = () => {
     if (target) {
@@ -50,22 +49,12 @@ export default function BaseNodeWrapper({
 
       // Handle message appending if messageType is provided
       if (messageType) {
-        if (shouldCreateChatSession && auth && selectedProject) {
-          createNewChatSession(
-            {
-              kubeconfig: auth.kubeconfig,
-              projectName: selectedProject,
-            },
-            {
-              onSuccess: () => {
-                appendSystemMessage(messageType, target, true);
-              },
-            }
-          );
-        } else {
-          console.log("Appending system message");
-          appendSystemMessage(messageType, target);
-        }
+        console.log("Appending system message");
+        appendSystemMessage(
+          messageType,
+          target,
+          shouldCreateChatSession || shouldCreate
+        );
       }
     }
   };

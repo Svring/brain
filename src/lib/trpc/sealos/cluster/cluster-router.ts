@@ -33,13 +33,9 @@ const t = initTRPC.context<ClusterContext>().create();
 
 export const clusterRouter = t.router({
   getCluster: t.procedure
-    .input(
-      z.object({
-        target: CustomResourceTargetSchema,
-      })
-    )
+    .input(CustomResourceTargetSchema)
     .query(async ({ input, ctx }) => {
-      return await getCluster(ctx, input.target);
+      return await getCluster(ctx, input);
     }),
 
   getClusterBackupList: t.procedure

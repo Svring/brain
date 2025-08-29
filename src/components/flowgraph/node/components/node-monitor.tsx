@@ -12,21 +12,25 @@ import {
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useSelectedResource } from "@/hooks/brain/use-selected-resource";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { useProjectActions } from "@/contexts/project/project-context";
 
 interface NodeMonitorProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
 }
 
 export default function NodeMonitor({ target }: NodeMonitorProps) {
+  const { selectResource } = useProjectActions();
   const { appendSystemMessage } = useAppendSystemMessageMutation();
   const { color, latestData, monitorData } = useResourceMetricsStatus({
     target,
   });
   const { resource } = useResourceStatus(target);
+  const { shouldCreateChatSession } = useSelectedResource(target);
 
   // console.log("resource", resource);
   // console.log("monitorData", monitorData);
@@ -41,7 +45,8 @@ export default function NodeMonitor({ target }: NodeMonitorProps) {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              appendSystemMessage("universal.monitor", target);
+              selectResource(target);
+              appendSystemMessage("universal.monitor", target, shouldCreateChatSession);
             }}
           >
             <Activity

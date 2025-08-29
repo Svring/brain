@@ -12,6 +12,7 @@ import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { useProjectActions } from "@/contexts/project/project-context";
 
 export default function NetworkNode({
   data,
@@ -21,7 +22,7 @@ export default function NetworkNode({
   };
 }) {
   const { target } = data;
-
+  const { selectResource } = useProjectActions();
   // Construct node ID following the same pattern as other nodes
   const nodeId = `network-${target.name || target.resourceType}`;
 
@@ -109,6 +110,7 @@ export default function NetworkNode({
       (item: any) => !item.ready
     );
     if (isNetworkNotReady) {
+      selectResource(target);
       appendSystemMessage("universal.diagnoseNetwork", target);
     }
   };

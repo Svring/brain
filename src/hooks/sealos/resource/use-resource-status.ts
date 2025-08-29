@@ -24,7 +24,7 @@ export const useResourceStatus = (
     }
     if (target.resourceType === "cluster") {
       const { data: resource, ...rest } = useQuery(
-        cluster.getCluster.queryOptions({ target })
+        cluster.getCluster.queryOptions(target)
       );
       // console.log("resource cluster", resource);
       return {

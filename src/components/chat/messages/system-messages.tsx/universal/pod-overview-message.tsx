@@ -90,6 +90,7 @@ export const PodOverview: React.FC<PodOverviewProps> = ({ target }) => {
         name: "Pod Overview",
       }}
       actions={actions}
+      className="pb-4"
     >
       {podList && podList.length > 0 ? (
         <>

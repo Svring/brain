@@ -8,7 +8,7 @@ import {
 import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { ArrowBigUpDash, BarChart3 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
 
 interface MonitorMessageProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -28,24 +28,25 @@ export const MonitorMessage: React.FC<MonitorMessageProps> = ({ target }) => {
     }
   };
 
+  const actions: MessageAction[] = [
+    {
+      icon: ArrowBigUpDash,
+      label: "Update Resource Quota",
+      onClick: handleUpdateResource,
+      disabled: !["deployment", "statefulset"].includes(
+        target.resourceType.toLowerCase()
+      ),
+    },
+  ];
+
   return (
     <BaseActionMessage
+      className="pb-4"
       headerTitle={{
         icon: BarChart3,
         name: "Resource Metrics",
       }}
-      headerSlot={
-        <Button
-          onClick={handleUpdateResource}
-          size="sm"
-          variant="outline"
-          disabled={!["deployment", "statefulset"].includes(target.resourceType.toLowerCase())}
-          className="flex items-center gap-2 border border-border-primary brightness-150"
-        >
-          <ArrowBigUpDash className="w-3 h-3 text-theme-blue" />
-          Update Resource Quota
-        </Button>
-      }
+      actions={actions}
     >
       <div className="border rounded-lg p-4">
         <CombinedMetricsChart data={monitorData || []} isLoading={isLoading} />

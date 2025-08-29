@@ -25,6 +25,7 @@ import {
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import BaseActionMessage from "../../../components/base-action-message";
 import { Spinner } from "@/components/ui/spinner";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface LaunchpadUpdateResourceProps {
   target: BuiltinResourceTarget;
@@ -39,9 +40,21 @@ export default function LaunchpadUpdateResource({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUpdateCompleted, setIsUpdateCompleted] = useState(false);
 
+  const queryClient = useQueryClient();
+
   const { launchpad } = useTRPCClients();
   const updateLaunchpad = useMutation(
-    launchpad.updateLaunchpad.mutationOptions()
+    launchpad.updateLaunchpad.mutationOptions({
+      onSuccess: () => {
+        setIsUpdateCompleted(true);
+        queryClient.invalidateQueries({
+          queryKey: launchpad.getLaunchpad.queryKey(target),
+        });
+      },
+      onError: (error) => {
+        console.error("Failed to update launchpad resources:", error);
+      },
+    })
   );
 
   // Get current resource status using the hook

@@ -22,11 +22,7 @@ export const ClusterMessage: React.FC<ClusterMessageProps> = ({ target }) => {
     data: clusterObject,
     isLoading,
     error,
-  } = useQuery(
-    clusterTrpcClient.getCluster.queryOptions({
-      target: target,
-    })
-  );
+  } = useQuery(clusterTrpcClient.getCluster.queryOptions(target));
 
   const actions: MessageAction[] = clusterObject
     ? [

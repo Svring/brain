@@ -54,7 +54,7 @@ export default function ClusterMessageMenu({
         onSuccess: () => {
           // Invalidate relevant queries
           queryClient.invalidateQueries({
-            queryKey: clusterTrpcClient.getCluster.queryKey({ target }),
+            queryKey: clusterTrpcClient.getCluster.queryKey(target),
           });
         },
       }

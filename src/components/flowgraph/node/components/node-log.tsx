@@ -9,17 +9,21 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useSelectedResource } from "@/hooks/brain/use-selected-resource";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { useProjectActions } from "@/contexts/project/project-context";
 
 interface NodeLogProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
 }
 
 export default function NodeLog({ target }: NodeLogProps) {
+  const { selectResource } = useProjectActions();
   const { appendSystemMessage } = useAppendSystemMessageMutation();
+  const { shouldCreateChatSession } = useSelectedResource(target);
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -30,7 +34,8 @@ export default function NodeLog({ target }: NodeLogProps) {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              appendSystemMessage("universal.log", target);
+              selectResource(target);
+              appendSystemMessage("universal.log", target, shouldCreateChatSession);
             }}
             type="button"
           >

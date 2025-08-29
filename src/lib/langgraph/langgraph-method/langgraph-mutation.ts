@@ -5,6 +5,8 @@ import { createThread } from "../langgraph-api/langgraph-api";
 import { useCopilotContext } from "@copilotkit/react-core";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { useChatActions } from "@/contexts/chat/chat-context";
+import { useAuthState } from "@/contexts/auth/auth-context";
+import { useProjectState } from "@/contexts/project/project-context";
 import { randomId } from "@copilotkit/shared";
 import { SystemMessage } from "@/lib/copilot/message/message-utils";
 import {
@@ -91,12 +93,14 @@ export const useSendMessageMutation = () => {
 export const useAppendSystemMessageMutation = () => {
   const { setMessages, messages } = useCopilotChatHeadless_c();
   const { openSidebarChat } = useChatActions();
+  const { mutate: createNewChatSession } = useCreateNewChatSessionMutation();
+  const { auth } = useAuthState();
+  const { selectedProject } = useProjectState();
 
   const appendSystemMessage = (
     type: string,
     target: CustomResourceTarget | BuiltinResourceTarget,
-    isNewSession?: boolean,
-    assistantContent?: string
+    shouldCreateChatSession?: boolean
   ) => {
     // Create system message data
     const systemMessageData: SystemMessage = {
@@ -104,37 +108,43 @@ export const useAppendSystemMessageMutation = () => {
       payload: target,
     };
 
-    // Send a message about the resource
-    const newMessages = isNewSession
-      ? [
-          {
-            id: randomId(),
-            role: "system" as const,
-            content: JSON.stringify(systemMessageData),
-          },
-        ]
-      : [
-          ...messages,
-          {
-            id: randomId(),
-            role: "system" as const,
-            content: JSON.stringify(systemMessageData),
-          },
-        ];
+    // Handle chat session creation if needed
+    if (shouldCreateChatSession && auth && selectedProject) {
+      createNewChatSession(
+        {
+          kubeconfig: auth.kubeconfig,
+          projectName: selectedProject,
+        },
+        {
+          onSuccess: () => {
+            // Send a message about the resource in new session
+            const newMessages = [
+              {
+                id: randomId(),
+                role: "system" as const,
+                content: JSON.stringify(systemMessageData),
+              },
+            ];
 
-    // Only add assistant message if content is provided
-    if (assistantContent) {
-      newMessages.splice(-1, 0, {
-        id: randomId(),
-        role: "assistant" as const,
-        content: assistantContent,
-      });
+            setMessages(newMessages);
+            openSidebarChat();
+          },
+        }
+      );
+    } else {
+      // Send a message about the resource in current session
+      const newMessages = [
+        ...messages,
+        {
+          id: randomId(),
+          role: "system" as const,
+          content: JSON.stringify(systemMessageData),
+        },
+      ];
+
+      setMessages(newMessages);
+      openSidebarChat();
     }
-
-    setMessages(newMessages);
-
-    // Open the sidebar chat
-    openSidebarChat();
   };
 
   return { appendSystemMessage };

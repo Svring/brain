@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, Globe, HelpCircle } from "lucide-react";
+import { Copy, Check, Globe, HelpCircle, Settings } from "lucide-react";
 import { useCopy } from "@/hooks/use-copy";
 import { cn } from "@/lib/utils";
 import {
@@ -11,6 +11,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Port {
   number: number;
@@ -38,9 +50,9 @@ export function PortDisplayTable({ ports }: PortDisplayTableProps) {
       <Table>
         <TableHeader >
           <TableRow>
-            <TableHead className="w-20">Number</TableHead>
-            <TableHead className="w-1/2">Private Address</TableHead>
-            <TableHead className="w-1/2">Public Address</TableHead>
+            <TableHead className="w-[10%]">Port</TableHead>
+            <TableHead className="w-[30%]">Private Address</TableHead>
+            <TableHead className="w-[60%]">Public Address</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -50,29 +62,21 @@ export function PortDisplayTable({ ports }: PortDisplayTableProps) {
               <TableCell className="max-w-0">
                 <div className="flex items-center gap-2">
                   <span
-                    className="truncate"
+                    className={cn(
+                      "truncate cursor-pointer hover:text-foreground/80 hover:underline",
+                      port.privateAddress ? "text-foreground" : "text-muted-foreground"
+                    )}
                     title={port.privateAddress || "-"}
+                    onClick={() => {
+                      if (port.privateAddress) {
+                        copyToClipboard(port.privateAddress, `private-${port.number}`);
+                      }
+                    }}
                   >
                     {port.privateAddress || "-"}
                   </span>
-                  {port.privateAddress && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-6 w-6 p-0 flex-shrink-0"
-                      onClick={() =>
-                        copyToClipboard(
-                          port.privateAddress!,
-                          `private-${port.number}`
-                        )
-                      }
-                    >
-                      {isCopied(`private-${port.number}`) ? (
-                        <Check className="w-3 h-3" />
-                      ) : (
-                        <Copy className="w-3 h-3" />
-                      )}
-                    </Button>
+                  {port.privateAddress && isCopied(`private-${port.number}`) && (
+                    <Check className="w-3 h-3 text-theme-green flex-shrink-0" />
                   )}
                 </div>
               </TableCell>
@@ -116,11 +120,38 @@ export function PortDisplayTable({ ports }: PortDisplayTableProps) {
                         }
                       >
                         {isCopied(`public-${port.number}`) ? (
-                          <Check className="w-3 h-3" />
+                          <Check className="w-3 h-3 text-theme-green" />
                         ) : (
                           <Copy className="w-3 h-3" />
                         )}
                       </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 w-6 p-0 flex-shrink-0"
+                          >
+                            <Settings className="w-3 h-3" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => {
+                              console.log(`Update port ${port.number}`);
+                            }}
+                          >
+                            Update
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              console.log(`Custom settings for port ${port.number}`);
+                            }}
+                          >
+                            Custom
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </>
                   ) : (
                     <>

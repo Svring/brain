@@ -11,19 +11,23 @@ import {
 } from "@/components/ui/tooltip";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useSelectedResource } from "@/hooks/brain/use-selected-resource";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { Pod } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
+import { useProjectActions } from "@/contexts/project/project-context";
 
 interface NodePodsProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
 }
 
 export default function NodePods({ target }: NodePodsProps) {
+  const { selectResource } = useProjectActions();
   const { appendSystemMessage } = useAppendSystemMessageMutation();
   const { resource } = useResourceStatus(target);
+  const { shouldCreateChatSession } = useSelectedResource(target);
 
   // Extract pods from resource based on resource type
   const getPodList = (): Pod[] => {
@@ -73,7 +77,12 @@ export default function NodePods({ target }: NodePodsProps) {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              appendSystemMessage("universal.podOverview", target);
+              selectResource(target);
+              appendSystemMessage(
+                "universal.podOverview",
+                target,
+                shouldCreateChatSession
+              );
             }}
           >
             <Box className={`h-4 w-4 ${getStatusColor()}`} />
