@@ -32,7 +32,7 @@ export const DeploymentObjectSchema = z.object({
   kind: z.string(),
   image: z.string(),
   resource: ResourceSchema,
-  status: z.string(),
+  status: z.string().optional().nullable(),
   command: z.string().optional(),
   args: z.string().optional(),
   env: z.any().optional(),

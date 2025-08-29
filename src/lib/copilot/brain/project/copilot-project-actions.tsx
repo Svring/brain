@@ -14,11 +14,11 @@ export const activateProjectActions = (
   context: K8sApiContext,
   sealosContext: SealosApiContext
 ) => {
-  proposeProjectAction(context);
+  proposeProjectAction();
   checkAllLogsAction(context, sealosContext);
 };
 
-export const proposeProjectAction = (context: K8sApiContext) => {
+export const proposeProjectAction = () => {
   useCopilotAction({
     name: "propose_project",
     available: "disabled",

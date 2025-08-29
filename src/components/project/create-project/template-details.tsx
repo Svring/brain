@@ -21,6 +21,7 @@ import { createSealosContext } from "@/lib/auth/auth-utils";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
+import { useRouter } from "next/navigation";
 
 import "@/styles/github-markdown-dark.css";
 
@@ -30,6 +31,7 @@ export type TemplateDetailsProps = {
 };
 
 export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
+  const router = useRouter();
   const [showInputDialog, setShowInputDialog] = useState(false);
   const [readmeContent, setReadmeContent] = useState<string>("");
   const [isLoadingReadme, setIsLoadingReadme] = useState(false);
@@ -72,11 +74,20 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
         templateForm,
       },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
           toast.success(
             `${template.spec.title} has been deployed to your project.`
           );
           setShowInputDialog(false);
+
+          const instanceResource = data.data?.find(
+            (resource: any) => resource.kind === "Instance"
+          );
+          if (instanceResource?.metadata?.name) {
+            const instanceName = instanceResource.metadata.name;
+            // Navigate to the instance details page
+            router.push(`/projects/${instanceName}`);
+          }
         },
         onError: (error: Error) => {
           toast.error(

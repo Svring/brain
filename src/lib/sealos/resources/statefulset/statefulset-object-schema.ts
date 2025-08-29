@@ -17,7 +17,7 @@ const ResourceSchema = z.object({
   replicas: z.number(),
   cpu: z.number(),
   memory: z.number(),
-  storage: z.string(),
+  storage: z.number(),
 });
 
 const PodSchema = z.object({
