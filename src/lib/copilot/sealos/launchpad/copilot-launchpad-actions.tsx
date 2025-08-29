@@ -14,7 +14,7 @@ import {
   getLaunchpadOptions,
   getLaunchpadLogsOptions,
 } from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-query";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import { BuiltinResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
@@ -31,12 +31,17 @@ import { jsonSchemaToActionParameters } from "@copilotkit/shared";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import LaunchpadCreateMessage from "@/components/chat/messages/system-messages.tsx/launchpad/launchpad-create-message";
 import { LaunchpadCreateRequestSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
-import { UpdateResourceForm, UpdateImageForm } from "@/components/copilot/sealos/launchpad/copilot-launchpad-update";
+import { UpdateResourceForm } from "@/components/copilot/sealos/launchpad/update-resource-form";
+import { UpdateImageForm } from "@/components/copilot/sealos/launchpad/update-image-form";
+import { AddPortsForm } from "@/components/copilot/sealos/launchpad/add-ports-form";
+import { DeletePortsForm } from "@/components/copilot/sealos/launchpad/delete-ports-form";
 import {
   CPU_OPTIONS,
   MEMORY_OPTIONS,
   REPLICAS_OPTIONS,
 } from "@/lib/k8s/k8s-constant/k8s-constant-resource";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { LaunchpadPortsCreateRequestSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
 
 export function activateLaunchpadActions(
   sealosContext: SealosApiContext,
@@ -44,6 +49,7 @@ export function activateLaunchpadActions(
 ) {
   updateLaunchpadResourceAction(sealosContext);
   updateLaunchpadImageAction(sealosContext);
+  addLaunchpadPortsAction(sealosContext);
   // createLaunchpadAction(sealosContext);
   // deleteLaunchpadAction(sealosContext);
   // startLaunchpadAction(sealosContext);
@@ -122,8 +128,7 @@ function updateLaunchpadResourceAction(context: SealosApiContext) {
 function updateLaunchpadImageAction(context: SealosApiContext) {
   useCopilotAction({
     name: "updateLaunchpadImage",
-    description:
-      "Update the image of a launchpad app.",
+    description: "Update the image of a launchpad app.",
     parameters: [
       {
         name: "name",
@@ -135,17 +140,15 @@ function updateLaunchpadImageAction(context: SealosApiContext) {
         name: "image",
         type: "string",
         required: false,
-        description: "desired image URL for the launchpad app (e.g., nginx:latest)",
+        description:
+          "desired image URL for the launchpad app (e.g., nginx:latest)",
       },
     ],
     renderAndWaitForResponse(props) {
       const { args, respond } = props;
       const { name, image } = args;
 
-      const handleSubmit = (values: {
-        name: string;
-        image: string;
-      }) => {
+      const handleSubmit = (values: { name: string; image: string }) => {
         if (respond) {
           respond("updated successfully.");
         }
@@ -156,6 +159,65 @@ function updateLaunchpadImageAction(context: SealosApiContext) {
           initialValues={{
             name: name || "",
             image: image || "",
+          }}
+          onSubmit={handleSubmit}
+          context={context}
+        />
+      );
+    },
+  });
+}
+
+function addLaunchpadPortsAction(context: SealosApiContext) {
+  useCopilotAction({
+    name: "addLaunchpadPorts",
+    description: "Add ports to a launchpad app",
+    parameters: [
+      {
+        name: "name",
+        type: "string",
+        description: "Name of the launchpad app to add ports to",
+        required: true,
+      },
+      {
+        name: "ports",
+        type: "object[]",
+        description: "Array of port configurations to add",
+        required: true,
+        attributes: [
+          {
+            name: "port",
+            type: "number",
+            description: "The port number to add",
+          },
+          {
+            name: "exposesPublicDomain",
+            type: "boolean",
+            description: "Whether the port exposes a public domain",
+          },
+        ],
+      },
+    ],
+    renderAndWaitForResponse(props: any) {
+      const { args, respond } = props;
+      const { name, ports } = args;
+
+      // Parse args with schema to get default values
+      const parsedPorts = ports
+        ? LaunchpadPortsCreateRequestSchema.parse({ ports })
+        : { ports: [] };
+
+      const handleSubmit = (values: { name: string; ports: any[] }) => {
+        if (respond) {
+          respond("Ports added successfully.");
+        }
+      };
+
+      return (
+        <AddPortsForm
+          initialValues={{
+            name: name || "",
+            ports: parsedPorts.ports,
           }}
           onSubmit={handleSubmit}
           context={context}

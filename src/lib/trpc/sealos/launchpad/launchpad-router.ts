@@ -40,6 +40,7 @@ import {
   LaunchpadConfigMapUpdateRequestSchema,
   LaunchpadPortsUpdateRequestSchema,
   LaunchpadStorageUpdateRequestSchema,
+  LaunchpadPortsCreateRequestSchema,
 } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
 import { LaunchpadDeleteRequestSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-old-api-schemas/req-res-delete-schemas";
 import { LaunchpadPauseRequestSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-old-api-schemas/req-res-pause-schemas";
@@ -183,7 +184,7 @@ export const launchpadRouter = t.router({
     .input(
       z.object({
         name: z.string(),
-        request: LaunchpadPortsUpdateRequestSchema,
+        request: LaunchpadPortsCreateRequestSchema,
       })
     )
     .mutation(async ({ input, ctx }) => {

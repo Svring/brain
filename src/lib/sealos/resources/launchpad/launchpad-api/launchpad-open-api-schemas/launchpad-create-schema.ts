@@ -314,9 +314,9 @@ export const LaunchpadPortsCreateRequestSchema = z.object({
     .array(
       z.object({
         port: z.number().default(80),
-        protocol: z.enum(["TCP", "UDP", "SCTP"]),
-        appProtocol: z.enum(["HTTP", "GRPC", "WS"]).optional(),
-        exposesPublicDomain: z.boolean(),
+        protocol: z.enum(["TCP", "UDP", "SCTP"]).default("TCP"),
+        appProtocol: z.enum(["HTTP", "GRPC", "WS"]).default("HTTP"),
+        exposesPublicDomain: z.boolean().default(false),
       })
     )
     .min(1)

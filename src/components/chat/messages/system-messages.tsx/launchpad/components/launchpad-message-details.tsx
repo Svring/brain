@@ -29,6 +29,7 @@ import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { Spinner } from "@/components/ui/spinner";
 
 interface LaunchpadMessageDetailsProps {
   target: BuiltinResourceTarget;
@@ -58,7 +59,8 @@ export const LaunchpadMessageDetails: React.FC<
   const formatEnvVars = (envVars: any) => {
     if (!envVars || !Array.isArray(envVars)) return [];
     return envVars.map((envVar: any) => ({
-      key: envVar.name || envVar.key,
+      type: "value" as const,
+      name: envVar.name || envVar.key,
       value: envVar.value || envVar.val,
     }));
   };
@@ -150,32 +152,41 @@ export const LaunchpadMessageDetails: React.FC<
           <span className="text-sm text-muted-foreground">Image</span>
           {isEditingImage ? (
             <div className="flex items-center gap-2 flex-1">
-              <Input
-                value={imageValue}
-                onChange={(e) => setImageValue(e.target.value)}
-                onKeyDown={handleImageKeyDown}
-                placeholder="Enter image URL (e.g., nginx:latest)"
-                className="flex-1"
-                autoFocus
-              />
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleImageSave}
-                disabled={isSubmitting || !imageValue.trim()}
-                className="h-8 w-8 p-0"
-              >
-                <Check className="h-3 w-3" />
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleImageCancel}
-                disabled={isSubmitting}
-                className="h-8 w-8 p-0"
-              >
-                <X className="h-3 w-3" />
-              </Button>
+              {isSubmitting ? (
+                <div className="flex items-center gap-2 flex-1">
+                  <Spinner variant="bars" className="h-4 w-4" />
+                  <span className="text-sm text-muted-foreground">Updating image...</span>
+                </div>
+              ) : (
+                <>
+                  <Input
+                    value={imageValue}
+                    onChange={(e) => setImageValue(e.target.value)}
+                    onKeyDown={handleImageKeyDown}
+                    placeholder="Enter image URL (e.g., nginx:latest)"
+                    className="flex-1"
+                    autoFocus
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleImageSave}
+                    disabled={isSubmitting || !imageValue.trim()}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Check className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleImageCancel}
+                    disabled={isSubmitting}
+                    className="h-8 w-8 p-0"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </>
+              )}
             </div>
           ) : (
             <div
@@ -242,19 +253,7 @@ export const LaunchpadMessageDetails: React.FC<
           </AccordionTrigger>
           <AccordionContent className="px-4 pb-4 space-y-3">
             {envVars.length > 0 ? (
-              <div className="space-y-2">
-                {envVars.map((envVar, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between items-center p-2 bg-muted rounded"
-                  >
-                    <span className="text-sm font-medium">{envVar.key}</span>
-                    <span className="text-sm text-muted-foreground">
-                      {envVar.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <EnvTable envVars={envVars} compact={true} />
             ) : (
               <div className="text-sm text-muted-foreground">
                 No environment variables configured
