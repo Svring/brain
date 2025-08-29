@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/command";
 import { CommandPanelMain } from "./command-panel-main";
 import { AddResourcePreview } from "./command-panel-add-resource";
+import { EnvironmentPreview } from "./command-panel-environment";
 import { useCommandActions } from "./command-actions";
 import { useCommandState } from "cmdk";
 
@@ -100,9 +101,17 @@ export function FlowgraphCommandDialog({
                 onSelect={handleCommandSelect}
                 autoFocus={true}
               />
+            ) : isDetailMode && selectedCommand === "environment" ? (
+              <EnvironmentPreview
+                onSelect={handleCommandSelect}
+                autoFocus={true}
+              />
             ) : hoveredCommand === "add-resource" ||
               keyboardSelectedCommand === "add-resource" ? (
               <AddResourcePreview onSelect={handleCommandSelect} />
+            ) : hoveredCommand === "environment" ||
+              keyboardSelectedCommand === "environment" ? (
+              <EnvironmentPreview onSelect={handleCommandSelect} />
             ) : (
               <div className="flex-1 flex items-center justify-center text-muted-foreground">
                 <p>Select a command to see details</p>

@@ -1,25 +1,28 @@
 "use client";
 
 import { Command } from "lucide-react";
-import { MenuBar, MenuBarItem } from "../project/menu-bar";
-import { useFlowgraphCommand } from "@/hooks/flowgraph/use-flowgraph-command";
 
 interface FlowgraphMenuActionsProps {
   onOpen: () => void;
 }
 
 export function FlowgraphMenuActions({ onOpen }: FlowgraphMenuActionsProps) {
-  const menuItems: MenuBarItem[] = [
-    {
-      icon: Command,
-      label: "Command",
-      onClick: () => onOpen(),
-    },
-  ];
-
   return (
-    <div className="absolute top-2 right-2 z-20">
-      <MenuBar items={menuItems} />
+    <div className="absolute top-4 right-4 z-20 flex items-center gap-3">
+      <p className="text-muted-foreground">
+        Press{" "}
+        <kbd className="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono font-medium opacity-100 select-none">
+          <span className="text-lg">⌘</span>K
+        </kbd>
+      </p>
+      <button
+        className="flex h-8 w-8 items-center justify-center rounded-lg bg-background-secondary border"
+        onClick={onOpen}
+        type="button"
+      >
+        <Command className="h-4 w-4" />
+        <span className="sr-only">Command</span>
+      </button>
     </div>
   );
 }

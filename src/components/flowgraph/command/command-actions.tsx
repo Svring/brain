@@ -26,6 +26,10 @@ export function useCommandActions({
         setSelectedCommand("add-resource");
         setIsDetailMode(true);
         break;
+      case "environment":
+        setSelectedCommand("environment");
+        setIsDetailMode(true);
+        break;
     }
   };
 

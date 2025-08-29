@@ -14,6 +14,7 @@ interface EnvTableProps {
   envVars: EnvVar[];
   allowEditing?: boolean;
   onEnvVarsChange?: (envVars: EnvVar[]) => void;
+  compact?: boolean;
 }
 
 // New Environment Variable State
@@ -26,6 +27,7 @@ export function EnvTable({
   envVars,
   allowEditing = false,
   onEnvVarsChange,
+  compact = false,
 }: EnvTableProps) {
   // State
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -234,7 +236,7 @@ export function EnvTable({
 
   // Main Render
   return (
-    <div className="space-y-4 border border-border rounded-lg p-4">
+    <div className={`space-y-4 ${compact ? '' : 'border border-border rounded-lg p-4'}`}>
       <div className="space-y-3">
         {envVars.map((envVar, index) => renderEnvVarItem(envVar, index))}
         {allowEditing && editingIndex !== envVars.length && (
