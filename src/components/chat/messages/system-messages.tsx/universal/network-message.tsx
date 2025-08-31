@@ -23,6 +23,7 @@ import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import BaseActionMessage from "../components/base-action-message";
 import { PortDisplayTable } from "../components/port-display-table";
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface NetworkMessageProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -151,18 +152,19 @@ export default function NetworkMessage({ target }: NetworkMessageProps) {
                 />
               </div>
               <div className="flex items-center gap-2">
-                <Switch
-                  checked={newPort.public}
-                  onCheckedChange={(checked) =>
-                    setNewPort({ ...newPort, public: checked })
-                  }
-                />
                 <span className="text-sm text-muted-foreground">
                   Public access
                 </span>
+                <Checkbox
+                  checked={newPort.public}
+                  onCheckedChange={(checked) =>
+                    setNewPort({ ...newPort, public: checked as boolean })
+                  }
+                />
               </div>
               {newPort.public && (
                 <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Protocol</span>
                   <Select
                     value={getProtocolDisplayValue()}
                     onValueChange={handleProtocolSelection}
@@ -187,6 +189,7 @@ export default function NetworkMessage({ target }: NetworkMessageProps) {
               variant="outline"
               size="sm"
               onClick={handleSavePort}
+              className="h-8 w-8 p-0"
             >
               <Check className="h-4 w-4" />
             </Button>
@@ -195,6 +198,7 @@ export default function NetworkMessage({ target }: NetworkMessageProps) {
               variant="outline"
               size="sm"
               onClick={handleCancelPort}
+              className="h-8 w-8 p-0"
             >
               <X className="h-4 w-4" />
             </Button>

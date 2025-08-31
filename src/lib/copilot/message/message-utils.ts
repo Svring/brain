@@ -5,5 +5,6 @@ import {
 
 export interface SystemMessage {
   type: string;
-  payload: CustomResourceTarget | BuiltinResourceTarget;
+  target: CustomResourceTarget | BuiltinResourceTarget;
+  payload?: any;
 }

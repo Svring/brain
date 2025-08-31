@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Copy,
@@ -9,6 +9,7 @@ import {
   Check,
   Cpu,
   MemoryStick,
+  X,
 } from "lucide-react";
 import {
   DevboxObject,
@@ -26,6 +27,9 @@ import {
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 import { Separator } from "@/components/ui/separator";
 import { useCopy } from "@/hooks/use-copy";
+import { ResourceConfiguration } from "./universal/resource-configuration";
+import { useForm, FormProvider } from "react-hook-form";
+import { DevboxCreate } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-mutation-schema";
 
 interface DevboxInfoDetailsProps {
   target: CustomResourceTarget;
@@ -41,10 +45,23 @@ export const DevboxInfoDetails: React.FC<DevboxInfoDetailsProps> = ({
   const { resource, isLoading, error } = useResourceStatus(target);
   const { copyToClipboard, isCopied } = useCopy();
 
+  // State for resource edit mode
+  const [isResourceEditing, setIsResourceEditing] = useState(false);
+
   // Parse the resource data
   const devboxObject = resource ? DevboxObjectSchema.parse(resource) : null;
 
-  console.log("devboxObject", devboxObject);
+  // Form for resource editing
+  const form = useForm<DevboxCreate>({
+    defaultValues: {
+      resource: {
+        cpu: devboxObject?.resources?.cpu?.toString() || "2",
+        memory: devboxObject?.resources?.memory?.toString() || "4",
+      },
+    },
+  });
+
+  // console.log("devboxObject", devboxObject);
 
   // Show loading state
   if (isLoading) {
@@ -71,6 +88,23 @@ export const DevboxInfoDetails: React.FC<DevboxInfoDetailsProps> = ({
       </div>
     );
   }
+
+  const handleResourceSave = () => {
+    // TODO: Implement save functionality
+    console.log("Saving resource configuration:", form.getValues());
+    setIsResourceEditing(false);
+  };
+
+  const handleResourceCancel = () => {
+    // Reset form to original values
+    form.reset({
+      resource: {
+        cpu: devboxObject?.resources?.cpu?.toString() || "2",
+        memory: devboxObject?.resources?.memory?.toString() || "4",
+      },
+    });
+    setIsResourceEditing(false);
+  };
 
   return (
     <div className="space-y-4">
@@ -106,31 +140,62 @@ export const DevboxInfoDetails: React.FC<DevboxInfoDetailsProps> = ({
       <div className="border border-dashed rounded-lg">
         <div className="flex items-center justify-between p-2 border-b border-dashed">
           <h3 className="font-medium">Quota</h3>
-          <Button variant="ghost" className="h-6 w-6 p-1">
-            <PenLine className="h-4 w-4" />
-          </Button>
+          {isResourceEditing ? (
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-1"
+                onClick={handleResourceSave}
+              >
+                <Check className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-1"
+                onClick={handleResourceCancel}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <Button
+              variant="ghost"
+              className="h-6 w-6 p-1"
+              onClick={() => setIsResourceEditing(true)}
+            >
+              <PenLine className="h-4 w-4" />
+            </Button>
+          )}
         </div>
         <div className="p-2">
-          <div className="flex items-center justify-around">
-            <div className="flex flex-col items-center gap-1">
-              <div className="text-sm text-muted-foreground">CPU</div>
-              <Cpu className="h-4 w-4 text-muted-foreground" />
-              <div className="text-sm font-medium">
-                {devboxObject.resources?.cpu
-                  ? `${devboxObject.resources.cpu}Core`
-                  : "N/A"}
+          {isResourceEditing ? (
+            <FormProvider {...form}>
+              <ResourceConfiguration form={form} />
+            </FormProvider>
+          ) : (
+            <div className="flex items-center justify-around">
+              <div className="flex flex-col items-center gap-1">
+                <div className="text-sm text-muted-foreground">CPU</div>
+                <Cpu className="h-4 w-4 text-muted-foreground" />
+                <div className="text-sm font-medium">
+                  {devboxObject.resources?.cpu
+                    ? `${devboxObject.resources.cpu}Core`
+                    : "N/A"}
+                </div>
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <div className="text-sm text-muted-foreground">Memory</div>
+                <MemoryStick className="h-4 w-4 text-muted-foreground" />
+                <div className="text-sm font-medium">
+                  {devboxObject.resources?.memory
+                    ? `${devboxObject.resources.memory}GB`
+                    : "N/A"}
+                </div>
               </div>
             </div>
-            <div className="flex flex-col items-center gap-1">
-              <div className="text-sm text-muted-foreground">Memory</div>
-              <MemoryStick className="h-4 w-4 text-muted-foreground" />
-              <div className="text-sm font-medium">
-                {devboxObject.resources?.memory
-                  ? `${devboxObject.resources.memory}GB`
-                  : "N/A"}
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
 

@@ -16,10 +16,9 @@ interface ResourceConfigurationProps {
 }
 
 export function ResourceConfiguration({ form }: ResourceConfigurationProps) {
-  // Convert CPU options to millicores for devbox
-  const cpuOptions = CPU_OPTIONS.map(cpu => cpu * 1000);
-  // Convert memory options to MB for devbox
-  const memoryOptions = MEMORY_OPTIONS.map(memory => memory * 1024);
+  // Use CPU and Memory options directly (they are already in Core and GB units)
+  const cpuOptions = CPU_OPTIONS;
+  const memoryOptions = MEMORY_OPTIONS;
 
   return (
     <div className="space-y-6">
@@ -28,14 +27,14 @@ export function ResourceConfiguration({ form }: ResourceConfigurationProps) {
         control={form.control}
         name="resource.cpu"
         render={({ field }) => {
-          const currentValue = parseInt(field.value) || cpuOptions[0];
+          const currentValue = parseFloat(field.value) || cpuOptions[0];
           const currentIndex = cpuOptions.findIndex((option) => option === currentValue) || 0;
 
           return (
             <FormItem>
               <div className="flex items-center gap-2">
                 <FormLabel className="font-medium">CPU:</FormLabel>
-                <span className="">{currentValue / 1000}C</span>
+                <span className="">{currentValue}C</span>
               </div>
               <div className="space-y-2">
                 <Slider
@@ -65,14 +64,14 @@ export function ResourceConfiguration({ form }: ResourceConfigurationProps) {
         control={form.control}
         name="resource.memory"
         render={({ field }) => {
-          const currentValue = parseInt(field.value) || memoryOptions[0];
+          const currentValue = parseFloat(field.value) || memoryOptions[0];
           const currentIndex = memoryOptions.findIndex((option) => option === currentValue) || 0;
 
           return (
             <FormItem>
               <div className="flex items-center gap-2">
                 <FormLabel className="font-medium">Memory:</FormLabel>
-                <span className="">{currentValue / 1024}G</span>
+                <span className="">{currentValue}G</span>
               </div>
               <div className="space-y-2">
                 <Slider

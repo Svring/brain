@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { useCopy } from "@/hooks/use-copy";
 import {
   Table,
   TableBody,
@@ -33,6 +34,8 @@ import {
   RefreshCw,
   Edit,
   ExternalLink,
+  Copy,
+  Check,
 } from "lucide-react";
 
 interface Port {
@@ -62,83 +65,50 @@ export function CustomPortDialog({
   onOpenChange,
   selectedPort,
 }: CustomPortDialogProps) {
+  const { copyToClipboard, isCopied } = useCopy();
   const [customDomain, setCustomDomain] = useState("");
   const [dnsRecords, setDnsRecords] = useState<DnsRecord[]>([
-    { type: "CNAME", ttl: "Auto", value: "XXX" },
+    { type: "CNAME", ttl: "Auto", value: selectedPort?.publicAddress || "XXX" },
   ]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            Custom Settings - Port {selectedPort?.number}
-          </DialogTitle>
-          <DialogDescription>
-            Configure custom domain and DNS settings for port{" "}
-            {selectedPort?.number}.
-          </DialogDescription>
+          <DialogTitle>Custom Domain - Port {selectedPort?.number}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Domain binding info */}
           <div className="text-sm text-muted-foreground">
             Domain binding for this availability zone requires Alibaba Cloud
             registration.
           </div>
 
-          {/* Filing buttons */}
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="flex-1">
-              <FileText className="h-4 w-4 mr-2" />
-              Filing Entry
-            </Button>
-            <Button variant="outline" size="sm" className="flex-1">
-              <Search className="h-4 w-4 mr-2" />
-              Filing Query
-            </Button>
-          </div>
-
           {/* Input with refresh and edit buttons */}
-          <div className="space-y-3">
+          <div className="flex gap-2">
             <Input
               placeholder="Enter your custom domain..."
-              className="w-full"
+              className="flex-1"
               value={customDomain}
               onChange={(e) => setCustomDomain(e.target.value)}
             />
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="flex-1">
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
-              </Button>
-              <Button variant="outline" size="sm" className="flex-1">
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
-            </div>
+            <Button variant="outline">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh
+            </Button>
+            <Button variant="outline">
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
           </div>
 
           {/* DNS Records section */}
           <Card className="border border-border-primary">
-            <CardContent className="p-4 space-y-3">
-              <div className="flex items-center justify-between">
+            <CardContent className="space-y-3">
+              <div className="flex items-center">
                 <h4 className="text-sm font-medium text-foreground">
                   DNS Records
                 </h4>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setDnsRecords([
-                      ...dnsRecords,
-                      { type: "CNAME", ttl: "Auto", value: "" },
-                    ]);
-                  }}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Record
-                </Button>
               </div>
               <p className="text-sm text-muted-foreground">
                 The DNS records at your provider must match the following
@@ -151,56 +121,35 @@ export function CustomPortDialog({
                     <TableHead className="w-1/4">Type</TableHead>
                     <TableHead className="w-1/4">TTL</TableHead>
                     <TableHead className="w-1/2">Value</TableHead>
-                    <TableHead className="w-16">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {dnsRecords.map((record, index) => (
                     <TableRow key={index}>
                       <TableCell>
-                        <Select
-                          value={record.type}
-                          onValueChange={(value) => {
-                            const newRecords = [...dnsRecords];
-                            newRecords[index].type = value;
-                            setDnsRecords(newRecords);
-                          }}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="A">A</SelectItem>
-                            <SelectItem value="AAAA">AAAA</SelectItem>
-                            <SelectItem value="CNAME">CNAME</SelectItem>
-                            <SelectItem value="MX">MX</SelectItem>
-                            <SelectItem value="TXT">TXT</SelectItem>
-                            <SelectItem value="SRV">SRV</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <p className="text-sm">{record.type}</p>
                       </TableCell>
                       <TableCell>
-                        <Input
-                          value={record.ttl}
-                          onChange={(e) => {
-                            const newRecords = [...dnsRecords];
-                            newRecords[index].ttl = e.target.value;
-                            setDnsRecords(newRecords);
-                          }}
-                          placeholder="TTL"
-                        />
+                        <p className="text-sm">{record.ttl}</p>
                       </TableCell>
                       <TableCell>
-                        <Input
-                          value={record.value}
-                          onChange={(e) => {
-                            const newRecords = [...dnsRecords];
-                            newRecords[index].value = e.target.value;
-                            setDnsRecords(newRecords);
-                          }}
-                          placeholder="Value"
-                          className="font-mono text-xs"
-                        />
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-mono">{record.value}</p>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 w-6 p-0 flex-shrink-0"
+                            onClick={() =>
+                              copyToClipboard(record.value, `dns-${index}`)
+                            }
+                          >
+                            {isCopied(`dns-${index}`) ? (
+                              <Check className="w-3 h-3 text-theme-green" />
+                            ) : (
+                              <Copy className="w-3 h-3" />
+                            )}
+                          </Button>
+                        </div>
                       </TableCell>
                       <TableCell>
                         {dnsRecords.length > 1 && (
@@ -223,36 +172,17 @@ export function CustomPortDialog({
                   ))}
                 </TableBody>
               </Table>
+
+              {/* Documentation link */}
+              {/* <div className="flex justify-start pt-3">
+                <Button variant="outline" size="sm">
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Refer to the documentation
+                </Button>
+              </div> */}
             </CardContent>
           </Card>
-
-          {/* Documentation link */}
-          <div className="flex justify-end">
-            <Button variant="outline" size="sm">
-              <ExternalLink className="h-4 w-4 mr-2" />
-              Refer to the documentation
-            </Button>
-          </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button
-            onClick={() => {
-              console.log(
-                `Applying custom settings for port ${selectedPort?.number}`,
-                {
-                  customDomain,
-                  dnsRecords,
-                }
-              );
-              onOpenChange(false);
-            }}
-          >
-            Apply Settings
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

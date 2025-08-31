@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useQuery } from "@tanstack/react-query";
 import { devboxClient } from "@/components/provider/trpc-provider";
-import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
-import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
+import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
 import {
   Play,
   Trash2,
@@ -12,6 +12,7 @@ import {
   ArrowBigUpDash,
   Plus,
   Check,
+  X,
 } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { DevboxReleaseItem } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas/devbox-release-schema";
@@ -19,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
+import { Input } from "@/components/ui/input";
 
 interface DevboxReleaseMessageProps {
   target: CustomResourceTarget;
@@ -30,10 +32,10 @@ const ReleaseItem: React.FC<{
 }> = ({ release, target }) => {
   const { appendSystemMessage } = useAppendSystemMessageMutation();
 
-  console.log("release", release);
+  // console.log("release", release);
 
   const handleDeploy = () => {
-    appendSystemMessage("devbox.deployment", target);
+    appendSystemMessage("devbox.deployment", target, { tag: release.tag });
   };
 
   const handleDelete = () => {
@@ -54,8 +56,8 @@ const ReleaseItem: React.FC<{
   };
 
   return (
-    <div className="border rounded-lg p-2 hover:brightness-150 transition-colors">
-      <div className="flex items-center justify-between gap-2">
+    <div className="border rounded-lg p-2 transition-colors">
+      <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-2">
           <Tag className="h-3 w-3 text-muted-foreground" />
           <div className="flex flex-col">
@@ -75,7 +77,7 @@ const ReleaseItem: React.FC<{
           <Button
             size="sm"
             variant="ghost"
-            className="p-0 border border-border-primary"
+            className="p-0 border border-border-primary bg-background-tertiary hover:brightness-150"
             onClick={handleDeploy}
             disabled={release.status?.value !== "Success"}
             title="Deploy"
@@ -85,13 +87,23 @@ const ReleaseItem: React.FC<{
           </Button>
           <Button
             size="sm"
-            variant="ghost"
-            className="p-0 text-destructive hover:text-destructive"
+            variant="destructive"
+            className="p-0 hover:text-destructive"
             onClick={handleDelete}
             title="Delete"
           >
             <Trash2 className="h-3 w-3" />
           </Button>
+        </div>
+      </div>
+
+      {/* Release note section with border */}
+      <div className="border-t border-dashed pt-2">
+        <div className="text-xs text-muted-foreground">
+          <span className="font-medium">Release Notes:</span>{" "}
+          <span className="rounded px-2">
+            {release.description || "No release notes available"}
+          </span>
         </div>
       </div>
     </div>
@@ -102,6 +114,9 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
   target,
 }) => {
   const devboxTrpcClient = devboxClient.useTRPC();
+  const [isCreatingRelease, setIsCreatingRelease] = useState(false);
+  const [newReleaseTag, setNewReleaseTag] = useState("");
+  const [newReleaseDescription, setNewReleaseDescription] = useState("");
 
   const {
     data: releasesData,
@@ -114,43 +129,40 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
   // Show loading state
   if (isLoading) {
     return (
-      <BaseSystemMessage target={target}>
+      <BaseActionMessage
+        headerTitle={{ icon: Tag, name: "Devbox Releases" }}
+      >
         <div className="flex items-center justify-center h-20">
           <div className="text-xs text-muted-foreground">Loading...</div>
         </div>
-      </BaseSystemMessage>
+      </BaseActionMessage>
     );
   }
 
   // Show error state
   if (error || !releasesData) {
     return (
-      <BaseSystemMessage target={target}>
+      <BaseActionMessage
+        headerTitle={{ icon: Tag, name: "Devbox Releases" }}
+      >
         <div className="flex items-center justify-center h-20">
           <span className="text-destructive text-xs">
             Failed to load devbox releases
           </span>
         </div>
-      </BaseSystemMessage>
+      </BaseActionMessage>
     );
   }
 
   const releases = releasesData.data || [];
 
   return (
-    <BaseSystemMessage target={target}>
+    <BaseActionMessage
+      headerTitle={{ icon: Tag, name: "Devbox Releases" }}
+    >
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium">Releases: {releases.length}</h3>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-6 w-6 p-0"
-            onClick={() => console.log("Create new release")}
-            title="Create new release"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
         </div>
 
         <ScrollArea className="max-h-60">
@@ -171,22 +183,67 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
                 />
               ))
             )}
-            {/* Add new release placeholder */}
-            <div
-              className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-3 hover:border-muted-foreground/50 hover:bg-muted/20 transition-colors cursor-pointer"
-              onClick={() => console.log("Create new release")}
-            >
-              <div className="flex items-center justify-center gap-2">
-                <Plus className="h-4 w-4 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">
-                  Add new release
-                </span>
+            {/* Add new release placeholder or create form */}
+            {!isCreatingRelease ? (
+              <div
+                className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-3 hover:border-muted-foreground/50 hover:bg-muted/20 transition-colors cursor-pointer"
+                onClick={() => setIsCreatingRelease(true)}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Plus className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">
+                    Add new release
+                  </span>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-3">
+                <div className="flex items-center gap-2">
+                  <Input
+                    placeholder="Release tag"
+                    value={newReleaseTag}
+                    onChange={(e) => setNewReleaseTag(e.target.value)}
+                    className="h-8 text-xs flex-1"
+                  />
+                  <Input
+                    placeholder="Description"
+                    value={newReleaseDescription}
+                    onChange={(e) => setNewReleaseDescription(e.target.value)}
+                    className="h-8 text-xs flex-1"
+                  />
+                  <Button
+                    size="sm"
+                    variant="default"
+                    className="h-8 w-8 p-0"
+                    onClick={() => {
+                      console.log("Create release:", { tag: newReleaseTag, description: newReleaseDescription });
+                      setIsCreatingRelease(false);
+                      setNewReleaseTag("");
+                      setNewReleaseDescription("");
+                    }}
+                    title="Create release"
+                  >
+                    <Check className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 w-8 p-0"
+                    onClick={() => {
+                      setIsCreatingRelease(false);
+                      setNewReleaseTag("");
+                      setNewReleaseDescription("");
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </ScrollArea>
       </div>
-    </BaseSystemMessage>
+    </BaseActionMessage>
   );
 };
 

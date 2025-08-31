@@ -3,21 +3,26 @@ import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-
 import { useQuery } from "@tanstack/react-query";
 import { k8sClient } from "@/components/provider/trpc-provider";
 import { APP_DEVBOX_ID } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-label";
-import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
+import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
 import {
   Play,
   Trash2,
   Plus,
   Server,
   Check,
+  ArrowBigUpDash,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { DevboxObjectSchema } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
+import { flattenListAllResourcesResponse } from "@/lib/k8s/k8s-method/k8s-utils";
 
 interface DevboxDeployedMessageProps {
   target: CustomResourceTarget;
+  payload: { tag: string };
 }
 
 const DeploymentItem: React.FC<{ deployment: any }> = ({
@@ -25,12 +30,8 @@ const DeploymentItem: React.FC<{ deployment: any }> = ({
 }: {
   deployment: any;
 }) => {
-  const handleRestart = () => {
-    console.log("restart", deployment);
-  };
-
-  const handleDelete = () => {
-    console.log("delete", deployment);
+  const handleUpdate = () => {
+    console.log("update", deployment);
   };
 
   const formatDate = (dateString: string) => {
@@ -72,39 +73,19 @@ const DeploymentItem: React.FC<{ deployment: any }> = ({
               {formatDate(deployment.metadata?.creationTimestamp)}
             </span>
           </div>
-          {/* Status indicator next to server icon */}
-          {deployment.status?.phase === "Running" ? (
-            <Check className="h-3 w-3 text-green-500" />
-          ) : (
-            <Spinner className="h-3 w-3 text-amber-500" />
-          )}
         </div>
         <div className="flex items-center gap-1">
           {/* Status indicator */}
-          <Badge
-            variant={getStatusColor(deployment.status?.phase)}
-            className="text-xs px-1.5 py-0.5"
-          >
-            {deployment.status?.phase || "Unknown"}
-          </Badge>
           <Button
             size="sm"
             variant="ghost"
-            className="p-0 border border-border-primary"
-            onClick={handleRestart}
-            title="Restart"
+            className="p-0 border border-border-primary bg-background-tertiary hover:brightness-150"
+            onClick={handleUpdate}
+            disabled={deployment.status?.phase !== "Running"}
+            title="Update"
           >
-            <Play className="h-4 w-4" />
-            Restart
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="p-0 text-destructive hover:text-destructive"
-            onClick={handleDelete}
-            title="Delete"
-          >
-            <Trash2 className="h-3 w-3" />
+            <ArrowBigUpDash className="h-4 w-4" />
+            Update
           </Button>
         </div>
       </div>
@@ -114,65 +95,73 @@ const DeploymentItem: React.FC<{ deployment: any }> = ({
 
 export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
   target,
+  payload,
 }) => {
   const k8sTrpcClient = k8sClient.useTRPC();
+  const { resource } = useResourceStatus(target);
+  const devboxObject = DevboxObjectSchema.parse(resource);
 
   const {
     data: allResources,
     isLoading,
     error,
-  } = useQuery(
-    k8sTrpcClient.listAllResources.queryOptions({
-      labelSelector: `${APP_DEVBOX_ID}=${target.name}`,
+  } = useQuery({
+    ...k8sTrpcClient.listAllResources.queryOptions({
+      labelSelector: `${APP_DEVBOX_ID}=${devboxObject.id || ""}`,
       builtinResourceTypes: ["deployment"],
       customResourceTypes: [],
-    })
-  );
+    }),
+    enabled: !!devboxObject,
+  });
+
+  console.log("allResources", allResources);
 
   // Show loading state
   if (isLoading) {
     return (
-      <BaseSystemMessage target={target}>
+      <BaseActionMessage
+        headerTitle={{ icon: Server, name: "Devbox Deployments" }}
+      >
         <div className="flex items-center justify-center h-20">
           <div className="text-xs text-muted-foreground">
             Loading deployments...
           </div>
         </div>
-      </BaseSystemMessage>
+      </BaseActionMessage>
     );
   }
 
   // Show error state
   if (error || !allResources) {
     return (
-      <BaseSystemMessage target={target}>
+      <BaseActionMessage
+        headerTitle={{ icon: Server, name: "Devbox Deployments" }}
+      >
         <div className="flex items-center justify-center h-20">
           <span className="text-destructive text-xs">
             Failed to load devbox deployments
           </span>
         </div>
-      </BaseSystemMessage>
+      </BaseActionMessage>
     );
   }
 
-  const deployments = allResources.builtin?.deployment?.items || [];
+  const flattenedResources = flattenListAllResourcesResponse(allResources);
+  const deployments = flattenedResources.filter(
+    (resource) => resource.kind === "Deployment"
+  );
 
   return (
-    <BaseSystemMessage target={target}>
+    <BaseActionMessage
+      headerTitle={{ icon: Server, name: "Devbox Deployments" }}
+    >
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium">
-            Deployments: {deployments.length}
+            {payload?.tag
+              ? `Deploy ${payload.tag} to...`
+              : `Deployments: ${deployments.length}`}
           </h3>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-6 w-6 p-0"
-            onClick={() => console.log("Create new deployment")}
-            title="Create new deployment"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
         </div>
 
         <ScrollArea className="max-h-60">
@@ -207,7 +196,7 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
           </div>
         </ScrollArea>
       </div>
-    </BaseSystemMessage>
+    </BaseActionMessage>
   );
 };
 

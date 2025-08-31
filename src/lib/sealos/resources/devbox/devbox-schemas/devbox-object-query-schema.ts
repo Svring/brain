@@ -54,6 +54,12 @@ export const DevboxObjectQuerySchema = z.object({
       path: ["metadata.name"],
     })
   ),
+  id: z.any().describe(
+    JSON.stringify({
+      resourceType: "devbox",
+      path: ["metadata.uid"],
+    })
+  ),
   kind: z.string().describe(
     JSON.stringify({
       resourceType: "devbox",

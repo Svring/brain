@@ -40,8 +40,8 @@ import CustomDomainMessage from "./universal/custom-domain-message";
 export const SystemMessageType = {
   devbox: {
     detail: (target: CustomResourceTarget) => <DevboxMessage target={target} />,
-    deployment: (target: CustomResourceTarget) => (
-      <DevboxDeployedMessage target={target} />
+    deployment: (target: CustomResourceTarget, payload: { tag: string }) => (
+      <DevboxDeployedMessage target={target} payload={payload} />
     ),
     release: (target: CustomResourceTarget) => (
       <DevboxReleaseMessage target={target} />

@@ -25,15 +25,20 @@ const SystemMessageRenderer = memo(function SystemMessageRenderer({
 }: {
   content: string;
 }) {
-  const { type, payload } = useMemo(() => {
+  const { type, target, payload } = useMemo(() => {
     try {
       const parsed = JSON.parse(content);
-      return { type: parsed.type, payload: parsed.payload } as {
+      return { 
+        type: parsed.type, 
+        target: parsed.target, 
+        payload: parsed.payload 
+      } as {
         type?: string;
+        target?: unknown;
         payload?: unknown;
       };
     } catch {
-      return { type: undefined, payload: undefined };
+      return { type: undefined, target: undefined, payload: undefined };
     }
   }, [content]);
 
@@ -42,7 +47,7 @@ const SystemMessageRenderer = memo(function SystemMessageRenderer({
   }, [type]);
 
   if (typeof componentFunction === "function") {
-    return componentFunction(payload);
+    return componentFunction(target, payload);
   }
   return null;
 });
