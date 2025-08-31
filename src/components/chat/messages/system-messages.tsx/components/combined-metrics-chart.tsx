@@ -60,9 +60,11 @@ const IndividualChart: React.FC<IndividualChartProps> = ({
   hasStorage,
 }) => {
   // Calculate Y-axis domain for this metric
-  const values = data.map((point) => point[metricKey]).filter((v) => v !== undefined);
+  const values = data
+    .map((point) => point[metricKey])
+    .filter((v) => v !== undefined);
   const maxValue = Math.max(...values, 0);
-  
+
   let yAxisDomain: [number, number] = [0, 100];
   if (maxValue > 0) {
     const ceiling =
@@ -78,13 +80,19 @@ const IndividualChart: React.FC<IndividualChartProps> = ({
     yAxisDomain = [0, ceiling];
   }
 
+  // Get the latest value for this metric
+  const latestValue = data.length > 0 ? data[data.length - 1][metricKey] : 0;
+
   return (
-    <div className={`flex-1 ${hasStorage ? 'w-1/3' : 'w-1/2'}`}>
+    <div className={`flex-1 ${hasStorage ? "w-1/3" : "w-1/2"}`}>
       <div className="text-xs font-medium text-center mb-1 flex items-center justify-center gap-1">
         {metricName === "CPU" && <Cpu className="h-3 w-3" />}
         {metricName === "Memory" && <MemoryStick className="h-3 w-3" />}
         {metricName === "Storage" && <HardDrive className="h-3 w-3" />}
         {metricName}
+        <span className="font-mono font-semibold ml-1" style={{ color: color }}>
+          {latestValue}%
+        </span>
       </div>
       <ChartContainer config={chartConfig} className={`${height} w-full`}>
         <AreaChart
@@ -94,16 +102,8 @@ const IndividualChart: React.FC<IndividualChartProps> = ({
         >
           <defs>
             <linearGradient id={`fill${metricKey}`} x1="0" y1="0" x2="0" y2="1">
-              <stop
-                offset="5%"
-                stopColor={color}
-                stopOpacity={0.8}
-              />
-              <stop
-                offset="95%"
-                stopColor={color}
-                stopOpacity={0.1}
-              />
+              <stop offset="5%" stopColor={color} stopOpacity={0.8} />
+              <stop offset="95%" stopColor={color} stopOpacity={0.1} />
             </linearGradient>
           </defs>
           <CartesianGrid vertical={false} strokeDasharray="2 2" />
@@ -211,7 +211,7 @@ export const CombinedMetricsChart: React.FC<CombinedMetricsChartProps> = ({
           data={chartData}
           metricKey="cpu"
           metricName="CPU"
-          color="var(--color-cpu)"
+          color={chartConfig.cpu.color}
           height={height}
           hasStorage={hasStorage}
         />
@@ -219,7 +219,7 @@ export const CombinedMetricsChart: React.FC<CombinedMetricsChartProps> = ({
           data={chartData}
           metricKey="memory"
           metricName="Memory"
-          color="var(--color-memory)"
+          color={chartConfig.memory.color}
           height={height}
           hasStorage={hasStorage}
         />
@@ -228,7 +228,7 @@ export const CombinedMetricsChart: React.FC<CombinedMetricsChartProps> = ({
             data={chartData}
             metricKey="storage"
             metricName="Storage"
-            color="var(--color-storage)"
+            color={chartConfig.storage.color}
             height={height}
             hasStorage={hasStorage}
           />
@@ -238,4 +238,3 @@ export const CombinedMetricsChart: React.FC<CombinedMetricsChartProps> = ({
   );
 };
 export default CombinedMetricsChart;
-

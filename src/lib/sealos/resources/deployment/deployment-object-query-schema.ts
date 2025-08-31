@@ -125,8 +125,6 @@ export const DeploymentObjectQuerySchema = z.object({
     .transform((resource) => {
       const metadata = resource.metadata;
 
-      // console.log("resource", resource);
-
       // Get createdAt from metadata and format it
       const createdAt = formatIsoDateToReadable(metadata.creationTimestamp);
 

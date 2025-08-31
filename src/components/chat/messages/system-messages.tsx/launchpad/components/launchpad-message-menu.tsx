@@ -5,7 +5,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -22,6 +21,16 @@ import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useResourceStart } from "@/hooks/sealos/resource/use-resource-start";
 import { useResourcePause } from "@/hooks/sealos/resource/use-resource-pause";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface LaunchpadMessageMenuProps {
   target: BuiltinResourceTarget;
@@ -30,6 +39,8 @@ interface LaunchpadMessageMenuProps {
 export default function LaunchpadMessageMenu({
   target,
 }: LaunchpadMessageMenuProps) {
+  const [open, setOpen] = React.useState(false);
+  const [alertOpen, setAlertOpen] = React.useState(false);
   const { launchpad: launchpadTrpcClient } = useTRPCClients();
   const queryClient = useQueryClient();
 
@@ -82,7 +93,7 @@ export default function LaunchpadMessageMenu({
 
   return (
     <div className="flex items-center gap-2">
-      <DropdownMenu>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
           <button
             onClick={(e) => {
@@ -103,7 +114,9 @@ export default function LaunchpadMessageMenu({
                 e.stopPropagation();
                 handleStart();
               }}
-              disabled={startHook.isPending}
+              onSelect={(e) => e.preventDefault()}
+              disabled={currentStatus === "Pending" || startHook.isPending}
+              className={currentStatus === "Pending" ? "opacity-50" : ""}
             >
               <Power className="mr-2 h-4 w-4" />
               Start
@@ -115,34 +128,82 @@ export default function LaunchpadMessageMenu({
                 e.stopPropagation();
                 handlePause();
               }}
-              disabled={pauseHook.isPending}
+              onSelect={(e) => e.preventDefault()}
+              disabled={currentStatus === "Pending" || pauseHook.isPending}
+              className={currentStatus === "Pending" ? "opacity-50" : ""}
             >
               <Pause className="mr-2 h-4 w-4" />
               Pause
             </DropdownMenuItem>
           )}
-          <DropdownMenuItem disabled>
-            <PencilLine className="mr-2 h-4 w-4" />
-            Update
-          </DropdownMenuItem>
-          <DropdownMenuItem disabled>
-            <RotateCcw className="mr-2 h-4 w-4" />
-            Restart
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
-              handleDelete();
+              // Update functionality
             }}
+            onSelect={(e) => e.preventDefault()}
+            disabled={currentStatus === "Pending"}
+            className={currentStatus === "Pending" ? "opacity-50" : ""}
+          >
+            <PencilLine className="mr-2 h-4 w-4" />
+            Update
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation();
+              // Restart functionality
+            }}
+            onSelect={(e) => e.preventDefault()}
+            disabled={currentStatus === "Pending"}
+            className={currentStatus === "Pending" ? "opacity-50" : ""}
+          >
+            <RotateCcw className="mr-2 h-4 w-4" />
+            Restart
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpen(false);
+              setAlertOpen(true);
+            }}
+            onSelect={(e) => e.preventDefault()}
             className="text-destructive"
-            disabled={deleteLaunchpad.isPending}
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      
+      <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Launchpad</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{launchpadName}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete();
+                setAlertOpen(false);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

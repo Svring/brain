@@ -1,12 +1,10 @@
 "use client";
 
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -17,6 +15,16 @@ import {
   PencilLine,
   Power,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { createSealosContext } from "@/lib/auth/auth-utils";
 import {
   useDeleteLaunchpadMutation,
@@ -24,133 +32,189 @@ import {
   usePauseLaunchpadMutation,
 } from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-mutation";
 import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-object-schema";
-import { useRemoveFromProjectMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
-import { createK8sContext } from "@/lib/auth/auth-utils";
-import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 export default function DeploymentNodeMenu({
   object,
 }: {
   object: DeploymentObject;
 }) {
+  const [open, setOpen] = React.useState(false);
+  const [alertOpen, setAlertOpen] = React.useState(false);
   const sealosContext = createSealosContext();
-  const k8sContext = createK8sContext();
 
   const deleteLaunchpad = useDeleteLaunchpadMutation(sealosContext);
   const startLaunchpad = useStartLaunchpadMutation(sealosContext);
   const pauseLaunchpad = usePauseLaunchpadMutation(sealosContext);
-  const removeFromProject = useRemoveFromProjectMutation(k8sContext);
 
-  const {
-    name,
-    status: { replicas, unavailableReplicas, readyReplicas, paused },
-  } = object;
+  console.log("object", object);
 
-  const isRunning = replicas === readyReplicas;
+  const { name, resource, status } = object;
+  const replicas = resource?.replicas || 0;
+  const isRunning = status === "Running";
+  const isPending = status === "Pending";
+
+  const handleDelete = () => {
+    if (!name) return;
+    deleteLaunchpad.mutate({ name });
+  };
+
+  const handleStart = () => {
+    if (!name) return;
+    startLaunchpad.mutate({ name });
+  };
+
+  const handlePause = () => {
+    if (!name) return;
+    pauseLaunchpad.mutate({ name });
+  };
+
+  // Don't render if we don't have a valid name
+  if (!name) {
+    return null;
+  }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-          className="p-1 hover:bg-muted rounded transition-colors"
+    <>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
+        <DropdownMenuTrigger asChild>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+            className="p-1 hover:bg-muted rounded transition-colors"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          className="rounded-xl bg-background-secondary"
+          align="start"
         >
-          <MoreHorizontal className="h-4 w-4" />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        className="rounded-xl bg-background-secondary"
-        align="start"
-      >
-        {paused && name && (
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation();
-              startLaunchpad.mutate({ name });
-            }}
-            disabled={startLaunchpad.isPending}
-          >
-            <Power className="mr-2 h-4 w-4" />
-            Start
-          </DropdownMenuItem>
-        )}
-        {!paused && isRunning && name && (
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation();
-              pauseLaunchpad.mutate({ name });
-            }}
-            disabled={pauseLaunchpad.isPending}
-          >
-            <Pause className="mr-2 h-4 w-4" />
-            Pause
-          </DropdownMenuItem>
-        )}
-        {unavailableReplicas && unavailableReplicas > 0 && name && (
-          <>
+          {!isRunning && !isPending && (
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation();
-                startLaunchpad.mutate({ name });
+                handleStart();
               }}
-              disabled={true}
+              onSelect={(e) => e.preventDefault()}
+              disabled={isPending || startLaunchpad.isPending}
+              className={isPending ? "opacity-50" : ""}
             >
               <Power className="mr-2 h-4 w-4" />
               Start
             </DropdownMenuItem>
+          )}
+          {isRunning && (
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation();
-                pauseLaunchpad.mutate({ name });
+                handlePause();
               }}
-              disabled={true}
+              onSelect={(e) => e.preventDefault()}
+              disabled={isPending || pauseLaunchpad.isPending}
+              className={isPending ? "opacity-50" : ""}
             >
               <Pause className="mr-2 h-4 w-4" />
               Pause
             </DropdownMenuItem>
-          </>
-        )}
-        <DropdownMenuItem disabled>
-          <PencilLine className="mr-2 h-4 w-4" />
-          Update
-        </DropdownMenuItem>
-        <DropdownMenuItem disabled>
-          <RotateCcw className="mr-2 h-4 w-4" />
-          Restart
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={(e) => {
-            e.stopPropagation();
-            const deploymentTarget = convertResourceTypeToTarget(
-              "deployment",
-              name
-            );
-            removeFromProject.mutate({
-              resources: [deploymentTarget],
-            });
-          }}
-          disabled={!name}
-        >
-          <PencilLine className="mr-2 h-4 w-4" />
-          Remove from Project
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        {name && (
+          )}
+          {isPending && (
+            <>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleStart();
+                }}
+                onSelect={(e) => e.preventDefault()}
+                disabled={true}
+                className="opacity-50"
+              >
+                <Power className="mr-2 h-4 w-4" />
+                Start
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePause();
+                }}
+                onSelect={(e) => e.preventDefault()}
+                disabled={true}
+                className="opacity-50"
+              >
+                <Pause className="mr-2 h-4 w-4" />
+                Pause
+              </DropdownMenuItem>
+            </>
+          )}
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
-              deleteLaunchpad.mutate({ name });
+              // Update functionality
             }}
+            onSelect={(e) => e.preventDefault()}
+            disabled={isPending}
+            className={isPending ? "opacity-50" : ""}
+          >
+            <PencilLine className="mr-2 h-4 w-4" />
+            Update
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation();
+              // Restart functionality
+            }}
+            onSelect={(e) => e.preventDefault()}
+            disabled={isPending}
+            className={isPending ? "opacity-50" : ""}
+          >
+            <RotateCcw className="mr-2 h-4 w-4" />
+            Restart
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpen(false);
+              setAlertOpen(true);
+            }}
+            onSelect={(e) => e.preventDefault()}
             className="text-destructive"
-            disabled={deleteLaunchpad.isPending}
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Delete
           </DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      
+      <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Deployment</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete();
+                setAlertOpen(false);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

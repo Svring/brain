@@ -37,9 +37,6 @@ export default function BaseNodeWrapper({
   const { selectedResource } = useProjectState();
   const { selectNode, focusNode } = useFlowgraphActions();
   const { appendSystemMessage } = useAppendSystemMessageMutation();
-  const { shouldCreateChatSession: shouldCreate } = target
-    ? useSelectedResource(target)
-    : { shouldCreateChatSession: false };
 
   const handleNodeClick = () => {
     if (target) {
@@ -49,12 +46,7 @@ export default function BaseNodeWrapper({
 
       // Handle message appending if messageType is provided
       if (messageType) {
-        console.log("Appending system message");
-        appendSystemMessage(
-          messageType,
-          target,
-          shouldCreateChatSession || shouldCreate
-        );
+        appendSystemMessage(messageType, target, shouldCreateChatSession);
       }
     }
   };

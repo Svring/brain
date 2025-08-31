@@ -16,6 +16,7 @@ import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/
 import NodeLoading from "../../components/node-loading";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import StatefulsetNodeMenu from "./statefulset-node-menu";
 
 // Enhanced wrapper that can handle both K8sResource and StatefulsetObject
 function StatefulsetNodeWrapper({
@@ -111,7 +112,7 @@ function StatefulsetNode({
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
           <StatefulsetNodeTitle name={resource.name} />
-          {/* <StatefulsetNodeMenu object={resource} /> */}
+          <StatefulsetNodeMenu object={resource} />
         </div>
 
         {/* Image with Package Icon */}

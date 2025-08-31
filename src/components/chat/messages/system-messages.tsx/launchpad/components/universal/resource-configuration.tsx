@@ -20,9 +20,10 @@ import { Slider } from "@/components/ui/slider";
 
 interface ResourceConfigurationProps {
   form: UseFormReturn<LaunchpadCreateRequest>;
+  showReplicas?: boolean;
 }
 
-export function ResourceConfiguration({ form }: ResourceConfigurationProps) {
+export function ResourceConfiguration({ form, showReplicas = true }: ResourceConfigurationProps) {
   return (
     <div className="space-y-6">
       {/* CPU Options */}
@@ -99,42 +100,44 @@ export function ResourceConfiguration({ form }: ResourceConfigurationProps) {
         }}
       />
 
-      {/* Replicas - Now using slider */}
-      <FormField
-        control={form.control}
-        name="resource.replicas"
-        render={({ field }) => {
-          const currentIndex =
-            REPLICAS_OPTIONS.findIndex((option) => option === field.value) || 0;
+      {/* Replicas - Only show if showReplicas is true */}
+      {showReplicas && (
+        <FormField
+          control={form.control}
+          name="resource.replicas"
+          render={({ field }) => {
+            const currentIndex =
+              REPLICAS_OPTIONS.findIndex((option) => option === field.value) || 0;
 
-          return (
-            <FormItem>
-              <div className="flex items-center gap-2">
-                <FormLabel className="font-medium">Replicas:</FormLabel>
-                <span className="">{field.value || REPLICAS_OPTIONS[0]}</span>
-              </div>
-              <div className="space-y-2">
-                <Slider
-                  value={[currentIndex]}
-                  onValueChange={(value) =>
-                    field.onChange(REPLICAS_OPTIONS[value[0]])
-                  }
-                  min={0}
-                  max={REPLICAS_OPTIONS.length - 1}
-                  step={1}
-                  className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
-                  aria-label="Replicas slider"
-                />
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{REPLICAS_OPTIONS[0]}</span>
-                  <span>{REPLICAS_OPTIONS[REPLICAS_OPTIONS.length - 1]}</span>
+            return (
+              <FormItem>
+                <div className="flex items-center gap-2">
+                  <FormLabel className="font-medium">Replicas:</FormLabel>
+                  <span className="">{field.value || REPLICAS_OPTIONS[0]}</span>
                 </div>
-              </div>
-              <FormMessage />
-            </FormItem>
-          );
-        }}
-      />
+                <div className="space-y-2">
+                  <Slider
+                    value={[currentIndex]}
+                    onValueChange={(value) =>
+                      field.onChange(REPLICAS_OPTIONS[value[0]])
+                    }
+                    min={0}
+                    max={REPLICAS_OPTIONS.length - 1}
+                    step={1}
+                    className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
+                    aria-label="Replicas slider"
+                  />
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>{REPLICAS_OPTIONS[0]}</span>
+                    <span>{REPLICAS_OPTIONS[REPLICAS_OPTIONS.length - 1]}</span>
+                  </div>
+                </div>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
+        />
+      )}
     </div>
   );
 }

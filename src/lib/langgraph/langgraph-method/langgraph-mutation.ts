@@ -100,8 +100,8 @@ export const useAppendSystemMessageMutation = () => {
   const appendSystemMessage = (
     type: string,
     target: CustomResourceTarget | BuiltinResourceTarget,
-    payload?: any,
-    shouldCreateChatSession?: boolean
+    shouldCreateChatSession?: boolean,
+    payload?: any
   ) => {
     // Create system message data
     const systemMessageData: SystemMessage = {

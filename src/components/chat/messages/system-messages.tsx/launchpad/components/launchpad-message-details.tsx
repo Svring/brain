@@ -13,6 +13,9 @@ import {
   Check,
   X,
   Edit3,
+  Cpu,
+  MemoryStick,
+  PenLine,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { EnvTable } from "../../components/env-table";
@@ -30,6 +33,11 @@ import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { Spinner } from "@/components/ui/spinner";
+import { useForm, FormProvider } from "react-hook-form";
+import { LaunchpadCreateRequest } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
+import { ResourceConfiguration } from "./universal/resource-configuration";
+import { REPLICAS_OPTIONS } from "@/lib/k8s/k8s-constant/k8s-constant-resource";
+import { Slider } from "@/components/ui/slider";
 
 interface LaunchpadMessageDetailsProps {
   target: BuiltinResourceTarget;
@@ -43,6 +51,8 @@ export const LaunchpadMessageDetails: React.FC<
   const [isEditingImage, setIsEditingImage] = useState(false);
   const [imageValue, setImageValue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResourceEditing, setIsResourceEditing] = useState(false);
+  const [isReplicasEditing, setIsReplicasEditing] = useState(false);
 
   const { launchpad } = useTRPCClients();
   const updateLaunchpad = useMutation(
@@ -55,6 +65,25 @@ export const LaunchpadMessageDetails: React.FC<
     : null;
   const { image, operationalStatus, env, command, args } =
     launchpadObject || {};
+
+  // Form for resource editing
+  const form = useForm<LaunchpadCreateRequest>({
+    defaultValues: {
+      resource: {
+        cpu: launchpadObject?.resource?.cpu?.toString() || "2",
+        memory: launchpadObject?.resource?.memory?.toString() || "4",
+      },
+    },
+  });
+
+  // Form for replicas editing
+  const replicasForm = useForm<LaunchpadCreateRequest>({
+    defaultValues: {
+      resource: {
+        replicas: launchpadObject?.resource?.replicas?.toString() || "1",
+      },
+    },
+  });
 
   const formatEnvVars = (envVars: any) => {
     if (!envVars || !Array.isArray(envVars)) return [];
@@ -118,6 +147,107 @@ export const LaunchpadMessageDetails: React.FC<
     }
   };
 
+  const handleResourceSave = async () => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+
+    try {
+      const formValues = form.getValues();
+      const resourceData: any = {};
+
+      if (formValues.resource?.cpu !== undefined)
+        resourceData.cpu = parseInt(formValues.resource.cpu);
+      if (formValues.resource?.memory !== undefined)
+        resourceData.memory = parseInt(formValues.resource.memory);
+
+      const updateRequest = {
+        name: target.name!,
+        request: {
+          resource: resourceData,
+        },
+      };
+
+      await updateLaunchpad.mutateAsync(updateRequest, {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: launchpad.getLaunchpad.queryKey(target),
+          });
+          toast.success("Resource configuration updated successfully!");
+          setIsResourceEditing(false);
+        },
+        onError: () => {
+          toast.error("Failed to update resource configuration");
+        },
+      });
+    } catch (error) {
+      console.error("Failed to update launchpad resources:", error);
+      toast.error("Failed to update resource configuration");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResourceCancel = () => {
+    // Reset form to original values
+    form.reset({
+      resource: {
+        cpu: launchpadObject?.resource?.cpu?.toString() || "2",
+        memory: launchpadObject?.resource?.memory?.toString() || "4",
+      },
+    });
+    setIsResourceEditing(false);
+  };
+
+  const handleReplicasSave = async () => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+
+    try {
+      const formValues = replicasForm.getValues();
+      const resourceData: any = {};
+
+      if (formValues.resource?.replicas !== undefined)
+        resourceData.replicas = parseInt(formValues.resource.replicas);
+
+      const updateRequest = {
+        name: target.name!,
+        request: {
+          resource: resourceData,
+        },
+      };
+
+      await updateLaunchpad.mutateAsync(updateRequest, {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: launchpad.getLaunchpad.queryKey(target),
+          });
+          toast.success("Replicas updated successfully!");
+          setIsReplicasEditing(false);
+        },
+        onError: () => {
+          toast.error("Failed to update replicas");
+        },
+      });
+    } catch (error) {
+      console.error("Failed to update launchpad replicas:", error);
+      toast.error("Failed to update replicas");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleReplicasCancel = () => {
+    // Reset form to original values
+    replicasForm.reset({
+      resource: {
+        replicas: launchpadObject?.resource?.replicas?.toString() || "1",
+      },
+    });
+    setIsReplicasEditing(false);
+  };
+
   // Show loading state
   if (isLoading) {
     return (
@@ -155,7 +285,9 @@ export const LaunchpadMessageDetails: React.FC<
               {isSubmitting ? (
                 <div className="flex items-center gap-2 flex-1">
                   <Spinner variant="bars" className="h-4 w-4" />
-                  <span className="text-sm text-muted-foreground">Updating image...</span>
+                  <span className="text-sm text-muted-foreground">
+                    Updating image...
+                  </span>
                 </div>
               ) : (
                 <>
@@ -211,172 +343,194 @@ export const LaunchpadMessageDetails: React.FC<
         </div>
       )}
 
-      {/* CPU, Memory, and Replicas in a single row with borders */}
-      <div className="flex items-center border rounded-lg p-3">
-        <div className="flex-1 text-center border-r last:border-r-0">
-          <div className="text-sm text-muted-foreground">CPU</div>
-          <div className="text-sm font-medium">
-            {launchpadObject.resource?.cpu}Core
-          </div>
+      {/* Resource Quota Section */}
+      <div className="border border-dashed rounded-lg">
+        <div className="flex items-center justify-between p-2 border-b border-dashed">
+          <h3 className="font-medium">Quota</h3>
+          {isResourceEditing ? (
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-1"
+                onClick={handleResourceSave}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <Spinner variant="bars" className="h-4 w-4" />
+                ) : (
+                  <Check className="h-4 w-4" />
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-1"
+                onClick={handleResourceCancel}
+                disabled={isSubmitting}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <Button
+              variant="ghost"
+              className="h-6 w-6 p-1"
+              onClick={() => setIsResourceEditing(true)}
+            >
+              <PenLine className="h-4 w-4" />
+            </Button>
+          )}
         </div>
-        <div className="flex-1 text-center border-r last:border-r-0">
-          <div className="text-sm text-muted-foreground">Memory</div>
-          <div className="text-sm font-medium">
-            {launchpadObject.resource?.memory}GB
-          </div>
+        <div className="p-2">
+          {isResourceEditing ? (
+            <FormProvider {...form}>
+              <ResourceConfiguration form={form} showReplicas={false} />
+            </FormProvider>
+          ) : (
+            <div className="flex items-center justify-around">
+              <div className="flex flex-col items-center gap-1">
+                <div className="text-sm text-muted-foreground">CPU</div>
+                <Cpu className="h-4 w-4 text-muted-foreground" />
+                <div className="text-sm font-medium">
+                  {launchpadObject.resource?.cpu
+                    ? `${launchpadObject.resource.cpu}Core`
+                    : "N/A"}
+                </div>
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <div className="text-sm text-muted-foreground">Memory</div>
+                <MemoryStick className="h-4 w-4 text-muted-foreground" />
+                <div className="text-sm font-medium">
+                  {launchpadObject.resource?.memory
+                    ? `${launchpadObject.resource.memory}GB`
+                    : "N/A"}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-        <div className="flex-1 text-center">
-          <div className="text-sm text-muted-foreground">Replicas</div>
-          <div className="text-sm font-medium">
-            {launchpadObject.resource?.replicas || "N/A"}
+      </div>
+
+      {/* Deployment Section */}
+      <div className="border border-dashed rounded-lg">
+        <div className="flex items-center justify-between p-2 border-b border-dashed">
+          <h3 className="font-medium">Deployment</h3>
+          {isReplicasEditing ? (
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-1"
+                onClick={handleReplicasSave}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <Spinner variant="bars" className="h-4 w-4" />
+                ) : (
+                  <Check className="h-4 w-4" />
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-1"
+                onClick={handleReplicasCancel}
+                disabled={isSubmitting}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <Button
+              variant="ghost"
+              className="h-6 w-6 p-1"
+              onClick={() => setIsReplicasEditing(true)}
+            >
+              <PenLine className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+        <div className="p-2">
+          {isReplicasEditing ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Replicas:</span>
+                <span className="text-sm">{replicasForm.watch("resource.replicas") || REPLICAS_OPTIONS[0]}</span>
+              </div>
+              <div className="space-y-2">
+                <Slider
+                  value={[REPLICAS_OPTIONS.findIndex((option) => option === parseInt(replicasForm.watch("resource.replicas") || REPLICAS_OPTIONS[0].toString())) || 0]}
+                  onValueChange={(value) =>
+                    replicasForm.setValue("resource.replicas", REPLICAS_OPTIONS[value[0]].toString())
+                  }
+                  min={0}
+                  max={REPLICAS_OPTIONS.length - 1}
+                  step={1}
+                  className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
+                  aria-label="Replicas slider"
+                />
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>{REPLICAS_OPTIONS[0]}</span>
+                  <span>{REPLICAS_OPTIONS[REPLICAS_OPTIONS.length - 1]}</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-around">
+              <div className="flex flex-col items-center gap-1">
+                <div className="text-sm text-muted-foreground">Mode</div>
+                <div className="text-sm font-medium">Fixed</div>
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <div className="text-sm text-muted-foreground">Replicas</div>
+                <div className="text-sm font-medium">
+                  {launchpadObject.resource?.replicas || "N/A"}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Configuration Summary Section */}
+      <div className="border border-dashed rounded-lg">
+        <div className="flex items-center justify-between p-2 border-b border-dashed">
+          <h3 className="font-medium">Configuration</h3>
+        </div>
+        <div className="p-2 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Command</span>
+            <span className="text-sm font-medium truncate max-w-[200px]">
+              {command || "N/A"}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Env Variables</span>
+            <span className="text-sm font-medium">
+              {envVars.length > 0 ? `${envVars.length} variables` : "N/A"}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Config Map</span>
+            <span className="text-sm font-medium">
+              {(launchpadObject as any).configMap && (launchpadObject as any).configMap.length > 0
+                ? `${(launchpadObject as any).configMap.length} items`
+                : "N/A"}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Volumes</span>
+            <span className="text-sm font-medium">
+              {(launchpadObject as any).storage && (launchpadObject as any).storage.length > 0
+                ? `${(launchpadObject as any).storage.length} volumes`
+                : "N/A"}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Environment Variables and Related Items */}
-      <Accordion type="multiple" className="w-full space-y-1">
-        <AccordionItem
-          value="environment"
-          className="inset-ring inset-ring-border rounded-lg"
-        >
-          <AccordionTrigger className="px-4 py-3 hover:no-underline">
-            <div className="flex items-center gap-2">
-              <ChevronDown className="h-4 w-4" />
-              <Database className="h-4 w-4" />
-              <span className="font-medium">Environment Variables</span>
-              {envVars.length > 0 && (
-                <Badge variant="secondary" className="ml-auto">
-                  {envVars.length}
-                </Badge>
-              )}
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="px-4 pb-4 space-y-3">
-            {envVars.length > 0 ? (
-              <EnvTable envVars={envVars} compact={true} />
-            ) : (
-              <div className="text-sm text-muted-foreground">
-                No environment variables configured
-              </div>
-            )}
-          </AccordionContent>
-        </AccordionItem>
 
-        {/* Launch Command */}
-        {(command || args) && (
-          <AccordionItem
-            value="launch-command"
-            className="inset-ring inset-ring-border rounded-lg"
-          >
-            <AccordionTrigger className="px-4 py-3 hover:no-underline">
-              <div className="flex items-center gap-2">
-                <ChevronDown className="h-4 w-4" />
-                <Terminal className="h-4 w-4" />
-                <span className="font-medium">Launch Command</span>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="px-4 pb-4 space-y-3">
-              {command && (
-                <div className="flex flex-col">
-                  <span className="text-sm text-muted-foreground">Command</span>
-                  <code className="text-sm bg-muted px-2 py-1 rounded">
-                    {command}
-                  </code>
-                </div>
-              )}
-              {args && (
-                <div className="flex flex-col">
-                  <span className="text-sm text-muted-foreground">
-                    Arguments
-                  </span>
-                  <code className="text-sm bg-muted px-2 py-1 rounded">
-                    {args}
-                  </code>
-                </div>
-              )}
-            </AccordionContent>
-          </AccordionItem>
-        )}
-
-        {/* Config Map - Only show if configMap exists in the schema */}
-        {(launchpadObject as any).configMap &&
-          (launchpadObject as any).configMap.length > 0 && (
-            <AccordionItem
-              value="config-map"
-              className="inset-ring inset-ring-border rounded-lg"
-            >
-              <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                <div className="flex items-center gap-2">
-                  <ChevronDown className="h-4 w-4" />
-                  <Settings className="h-4 w-4" />
-                  <span className="font-medium">Config Map</span>
-                  <Badge variant="secondary" className="ml-auto">
-                    {(launchpadObject as any).configMap.length}
-                  </Badge>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4 space-y-3">
-                {(launchpadObject as any).configMap.map(
-                  (config: any, index: number) => (
-                    <div
-                      key={index}
-                      className="p-3 border rounded-lg space-y-2"
-                    >
-                      <div className="flex flex-col space-y-1">
-                        <span className="text-sm font-medium text-muted-foreground">
-                          Path: {config.path}
-                        </span>
-                        <code className="text-sm bg-muted px-2 py-1 rounded break-all">
-                          {config.value}
-                        </code>
-                      </div>
-                    </div>
-                  )
-                )}
-              </AccordionContent>
-            </AccordionItem>
-          )}
-
-        {/* Storage - Only show if storage exists in the schema */}
-        {(launchpadObject as any).storage &&
-          (launchpadObject as any).storage.length > 0 && (
-            <AccordionItem
-              value="storage"
-              className="inset-ring inset-ring-border rounded-lg"
-            >
-              <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                <div className="flex items-center gap-2">
-                  <ChevronDown className="h-4 w-4" />
-                  <Database className="h-4 w-4" />
-                  <span className="font-medium">Storage</span>
-                  <Badge variant="secondary" className="ml-auto">
-                    {(launchpadObject as any).storage.length}
-                  </Badge>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4 space-y-3">
-                {(launchpadObject as any).storage.map(
-                  (storage: any, index: number) => (
-                    <div
-                      key={index}
-                      className="p-3 border rounded-lg space-y-2"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">
-                          {storage.name}
-                        </span>
-                        <Badge variant="outline">{storage.size}</Badge>
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        Mount Path: {storage.path}
-                      </div>
-                    </div>
-                  )
-                )}
-              </AccordionContent>
-            </AccordionItem>
-          )}
-      </Accordion>
     </div>
   );
 };
