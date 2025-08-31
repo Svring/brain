@@ -203,7 +203,7 @@ function ClusterNode({
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={[]} /> */}
-            <NodePods target={target} />
+            {/* <NodePods target={target} /> */}
             <NodeLog target={target} />
             <ClusterNodeBackup target={target} />
             {/* <NodeBackup /> */}

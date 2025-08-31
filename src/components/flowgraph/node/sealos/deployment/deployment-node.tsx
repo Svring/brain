@@ -144,7 +144,7 @@ function DeploymentNode({
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
             {/* <NodeInternalUrl ports={deploymentData.ports || []} /> */}
-            <NodePods target={target} />
+            {/* <NodePods target={target} /> */}
             <NodeLog target={target} />
             <NodeMonitor target={target} />
           </div>

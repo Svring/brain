@@ -128,9 +128,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             className={`relative flex h-10 w-full cursor-pointer items-center rounded-lg border bg-background-secondary px-4 text-left shadow-sm hover:brightness-135`}
             transition={{ duration: 0.15, ease: "easeInOut" }}
           >
-            <h3 className="text-foreground truncate flex-1">
-              {project.displayName}
-            </h3>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-foreground truncate">
+                {project.displayName}
+              </h3>
+            </div>
             {avatarUrls.length > 0 && (
               <div className="ml-2 flex-shrink-0">
                 <div className="scale-75 origin-right">
@@ -210,7 +212,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             </DropdownMenu>
           </div>
 
-          <h3 className="mb-2 text-foreground">{project.displayName}</h3>
+          <h3 className="text-foreground">{project.displayName}</h3>
+          {project.displayName && project.displayName !== project.name && (
+            <p className="text-xs text-muted-foreground mb-2">{project.name}</p>
+          )}
 
           {/* Avatar circles in bottom right */}
           <div className="absolute bottom-4 right-4">

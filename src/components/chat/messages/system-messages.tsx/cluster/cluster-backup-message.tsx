@@ -4,8 +4,7 @@ import React from "react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useQuery } from "@tanstack/react-query";
 import { clusterClient } from "@/components/provider/trpc-provider";
-import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
-import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
+import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
 import {
   DatabaseBackup,
   Plus,
@@ -13,6 +12,8 @@ import {
   Database,
   Clock,
   History,
+  Check,
+  X,
 } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Spinner } from "@/components/ui/spinner";
+import { Input } from "@/components/ui/input";
 
 interface ClusterBackupMessageProps {
   target: CustomResourceTarget;
@@ -47,6 +50,9 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
   const [openDeletePopovers, setOpenDeletePopovers] = useState<
     Record<string, boolean>
   >({});
+  const [isCreatingBackup, setIsCreatingBackup] = useState(false);
+  const [newBackupName, setNewBackupName] = useState("");
+  const [newBackupNotes, setNewBackupNotes] = useState("");
 
   // Fetch the backup list using the cluster router
   const {
@@ -88,49 +94,49 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
   // Show loading state
   if (isLoading) {
     return (
-      <BaseSystemMessage target={target}>
+      <BaseActionMessage
+        headerTitle={{
+          icon: DatabaseBackup,
+          name: "Cluster Backup",
+        }}
+      >
         <div className="flex items-center justify-center py-8">
           <div className="flex items-center gap-2 text-muted-foreground">
-            <DatabaseBackup className="h-4 w-4 animate-spin" />
+            <Spinner variant="bars" className="h-4 w-4" />
             <span>Loading backup information...</span>
           </div>
         </div>
-      </BaseSystemMessage>
+      </BaseActionMessage>
     );
   }
 
   // Show error state
   if (error) {
     return (
-      <BaseSystemMessage target={target}>
+      <BaseActionMessage
+        headerTitle={{
+          icon: DatabaseBackup,
+          name: "Cluster Backup",
+        }}
+      >
         <div className="flex items-center justify-center py-8">
           <div className="flex items-center gap-2 text-destructive">
             <DatabaseBackup className="h-4 w-4" />
             <span>Failed to load backup information</span>
           </div>
         </div>
-      </BaseSystemMessage>
+      </BaseActionMessage>
     );
   }
 
   return (
-    <BaseSystemMessage target={target}>
+    <BaseActionMessage
+      headerTitle={{
+        icon: DatabaseBackup,
+        name: `Cluster Backup: ${backupList?.length}`,
+      }}
+    >
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">
-              Backups: {backupList?.length || 0}
-            </span>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => refetch()}
-            className="h-7 w-7 p-0"
-          >
-            <Plus className="h-3 w-3" />
-          </Button>
-        </div>
 
         {!backupList || backupList.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -152,7 +158,7 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
                 return (
                   <div
                     key={backup.name || index}
-                    className="border rounded-lg p-3 hover:bg-muted/50 transition-colors"
+                    className="border rounded-lg p-2 hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
@@ -248,8 +254,69 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
             </div>
           </ScrollArea>
         )}
+
+        {/* Add new backup section */}
+        {!isCreatingBackup ? (
+          <div
+            className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-3 hover:border-muted-foreground/50 hover:bg-muted/20 transition-colors cursor-pointer"
+            onClick={() => setIsCreatingBackup(true)}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <Plus className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">
+                Add new backup
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-3">
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder="Backup name"
+                value={newBackupName}
+                onChange={(e) => setNewBackupName(e.target.value)}
+                className="h-8 text-xs flex-1"
+              />
+              <Input
+                placeholder="Notes"
+                value={newBackupNotes}
+                onChange={(e) => setNewBackupNotes(e.target.value)}
+                className="h-8 text-xs flex-1"
+              />
+              <Button
+                size="sm"
+                variant="default"
+                className="h-8 w-8 p-0"
+                onClick={() => {
+                  console.log("Create backup:", {
+                    name: newBackupName,
+                    notes: newBackupNotes,
+                  });
+                  setIsCreatingBackup(false);
+                  setNewBackupName("");
+                  setNewBackupNotes("");
+                }}
+                title="Create backup"
+              >
+                <Check className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 w-8 p-0"
+                onClick={() => {
+                  setIsCreatingBackup(false);
+                  setNewBackupName("");
+                  setNewBackupNotes("");
+                }}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
-    </BaseSystemMessage>
+    </BaseActionMessage>
   );
 };
 

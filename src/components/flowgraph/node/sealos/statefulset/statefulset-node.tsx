@@ -130,7 +130,7 @@ function StatefulsetNode({
 
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
-            <NodePods target={target} />
+            {/* <NodePods target={target} /> */}
             <NodeLog target={target} />
             <NodeMonitor target={target} />
           </div>
