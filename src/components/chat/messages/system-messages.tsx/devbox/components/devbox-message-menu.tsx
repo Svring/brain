@@ -24,12 +24,25 @@ import { useResourceStart } from "@/hooks/sealos/resource/use-resource-start";
 import { useResourcePause } from "@/hooks/sealos/resource/use-resource-pause";
 import { Badge } from "@/components/ui/badge";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface DevboxMessageMenuProps {
   target: CustomResourceTarget;
 }
 
 export default function DevboxMessageMenu({ target }: DevboxMessageMenuProps) {
+  const [open, setOpen] = React.useState(false);
+  const [alertOpen, setAlertOpen] = React.useState(false);
   const { devbox: devboxTrpcClient } = useTRPCClients();
   const queryClient = useQueryClient();
   const k8sContext = createK8sContext();
@@ -82,7 +95,7 @@ export default function DevboxMessageMenu({ target }: DevboxMessageMenuProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <DropdownMenu>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
           <button
             onClick={(e) => {
@@ -103,6 +116,7 @@ export default function DevboxMessageMenu({ target }: DevboxMessageMenuProps) {
                 e.stopPropagation();
                 handleStart();
               }}
+              onSelect={(e) => e.preventDefault()}
               disabled={currentStatus === "Pending" || startHook.isPending}
               className={currentStatus === "Pending" ? "opacity-50" : ""}
             >
@@ -116,6 +130,7 @@ export default function DevboxMessageMenu({ target }: DevboxMessageMenuProps) {
                 e.stopPropagation();
                 handlePause();
               }}
+              onSelect={(e) => e.preventDefault()}
               disabled={currentStatus === "Pending" || pauseHook.isPending}
               className={currentStatus === "Pending" ? "opacity-50" : ""}
             >
@@ -128,17 +143,20 @@ export default function DevboxMessageMenu({ target }: DevboxMessageMenuProps) {
               e.stopPropagation();
               // startHook.start({ action: "restart", devboxName });
             }}
+            onSelect={(e) => e.preventDefault()}
             disabled={currentStatus === "Pending" || startHook.isPending}
             className={currentStatus === "Pending" ? "opacity-50" : ""}
           >
             <RotateCcw className="mr-2 h-4 w-4" />
             Restart
           </DropdownMenuItem>
-          <DropdownMenuItem
+                    <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
-              handleDelete();
+              setOpen(false);
+              setAlertOpen(true);
             }}
+            onSelect={(e) => e.preventDefault()}
             className={`text-destructive ${
               currentStatus === "Pending" ? "opacity-50" : ""
             }`}
@@ -149,6 +167,36 @@ export default function DevboxMessageMenu({ target }: DevboxMessageMenuProps) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      
+      <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Devbox</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{devboxName}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete();
+                setAlertOpen(false);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

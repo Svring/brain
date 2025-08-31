@@ -4,7 +4,13 @@ import { useQuery } from "@tanstack/react-query";
 import { devboxClient } from "@/components/provider/trpc-provider";
 import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
-import { GitBranch, BarChart3, Pencil, ArrowBigUpDash } from "lucide-react";
+import {
+  GitBranch,
+  BarChart3,
+  Pencil,
+  ArrowBigUpDash,
+  History,
+} from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { DevboxInfoDetails } from "./components/devbox-message-details";
 import DevboxMessageMenu from "./components/devbox-message-menu";
@@ -32,17 +38,17 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
   const actions: MessageAction[] = devboxObject
     ? [
         {
-          icon: GitBranch,
-          label: "View Releases",
+          icon: ArrowBigUpDash,
+          label: "Release and Deploy",
           onClick: () => {
-            appendSystemMessage("devbox.release", target);
+            appendSystemMessage("devbox.createRelease", target);
           },
         },
         {
-          icon: ArrowBigUpDash,
-          label: "Create Release",
+          icon: History,
+          label: "Release History",
           onClick: () => {
-            appendSystemMessage("devbox.createRelease", target);
+            appendSystemMessage("devbox.release", target);
           },
         },
       ]

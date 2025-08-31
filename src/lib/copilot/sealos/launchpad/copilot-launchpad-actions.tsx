@@ -50,6 +50,7 @@ export function activateLaunchpadActions(
   updateLaunchpadResourceAction(sealosContext);
   updateLaunchpadImageAction(sealosContext);
   addLaunchpadPortsAction(sealosContext);
+  // deleteLaunchpadPortsAction(sealosContext);
   // createLaunchpadAction(sealosContext);
   // deleteLaunchpadAction(sealosContext);
   // startLaunchpadAction(sealosContext);
@@ -226,6 +227,48 @@ function addLaunchpadPortsAction(context: SealosApiContext) {
     },
   });
 }
+
+// function deleteLaunchpadPortsAction(context: SealosApiContext) {
+//   useCopilotAction({
+//     name: "deleteLaunchpadPorts",
+//     description: "Delete ports from a launchpad app",
+//     parameters: [
+//       {
+//         name: "name",
+//         type: "string",
+//         description: "Name of the launchpad app to delete ports from",
+//         required: true,
+//       },
+//       {
+//         name: "ports",
+//         type: "number[]",
+//         description: "Array of port numbers to delete",
+//         required: true,
+//       },
+//     ],
+//     renderAndWaitForResponse(props: any) {
+//       const { args, respond } = props;
+//       const { name, ports } = args;
+
+//       const handleSubmit = (values: { name: string; ports: number[] }) => {
+//         if (respond) {
+//           respond("Ports deleted successfully.");
+//         }
+//       };
+
+//       return (
+//         <DeletePortsForm
+//           initialValues={{
+//             name: name || "",
+//             ports: ports || [],
+//           }}
+//           onSubmit={handleSubmit}
+//           context={context}
+//         />
+//       );
+//     },
+//   });
+// }
 
 // function createLaunchpadAction(context: SealosApiContext) {
 //   useCopilotAction({

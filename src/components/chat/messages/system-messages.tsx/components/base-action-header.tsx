@@ -15,7 +15,7 @@ export default function BaseActionHeader({
   headerSlot,
 }: BaseActionHeaderProps) {
   return (
-    <div className="p-4 py-2 bg-message-header rounded-t-xl">
+    <div className="p-4 py-2 bg-message-header rounded-t-xl border-b-border-primary border-b">
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-2">
           <div className="p-2 bg-muted rounded-lg">

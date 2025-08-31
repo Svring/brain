@@ -264,7 +264,6 @@ function ClusterNode({
         <NodeStack
           mainCard={null}
           data={Array.from({ length: clusterData.resource?.replicas - 1 || 0 })}
-          maxBackgroundCards={2}
           height="60"
           backgroundColor="bg-node-background"
         />

@@ -34,7 +34,7 @@ export function FlowgraphHeader({ projectName }: FlowgraphHeaderProps) {
 
   return (
     <div className="absolute top-2 left-2 z-20">
-      <div className="flex items-center gap-2 bg-background/80 backdrop-blur-sm rounded-lg p-2">
+      <div className="flex items-center gap-2 bg-background/30 backdrop-blur-lg rounded-lg p-2">
         <Button
           variant="ghost"
           className="h-8 w-8 p-0"

@@ -16,6 +16,7 @@ export const listProjects = async (context: K8sApiContext) => {
   const target = CustomResourceTargetSchema.parse(
     convertResourceTypeToTarget("instance")
   );
+  // console.log("context", context);
   const instanceResourceList = await runParallelAction(
     listCustomResources(context, target)
   );

@@ -92,7 +92,7 @@ export default function BaseMessageHeader({
   };
 
   return (
-    <div className="px-4 py-2 bg-message-header rounded-t-xl">
+    <div className="px-4 py-2 bg-message-header rounded-t-xl border-b-border-primary border-b">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 truncate font-medium flex-1 min-w-0">
           <div className="flex flex-col items-start">

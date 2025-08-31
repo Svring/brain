@@ -22,6 +22,8 @@ export const getDeploymentObject = async (
     []
   );
 
+  // console.log("relatedResources", relatedResources);
+
   deploymentObject.ports = _.chain(deploymentObject.ports)
     .thru((ports) =>
       enrichPortsWithService(

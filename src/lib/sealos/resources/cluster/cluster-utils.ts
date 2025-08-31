@@ -112,7 +112,7 @@ export function transformComponentSpecsToResources(componentSpecs: any[]): {
   let maxCpu = 0;
   let maxMemory = 0;
   let maxStorage = 0;
-  let totalReplicas = 0;
+  let maxReplicas = 0;
 
   // Helper function to parse CPU values (handles 'm' suffix)
   const parseCpu = (cpu: string): number => {
@@ -163,8 +163,8 @@ export function transformComponentSpecsToResources(componentSpecs: any[]): {
   };
 
   componentSpecs.forEach((component: any) => {
-    // Sum replicas
-    totalReplicas += component.replicas || 0;
+    // Find max replicas
+    maxReplicas = Math.max(maxReplicas, component.replicas || 0);
 
     // Find max CPU from limits
     if (component.resources?.limits?.cpu) {
@@ -198,7 +198,7 @@ export function transformComponentSpecsToResources(componentSpecs: any[]): {
     cpu: formatCpu(maxCpu),
     memory: formatMemory(maxMemory),
     storage: formatStorage(maxStorage),
-    replicas: totalReplicas,
+    replicas: maxReplicas,
   };
 }
 

@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Check } from "lucide-react";
 import { DEVBOX_IDE } from "@/lib/sealos/resources/devbox/devbox-constant-a";
 import { composeSshConnectionUri } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 import { getDevboxSshInfo } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
@@ -22,7 +22,7 @@ interface DevboxNodeIdeProps {
 }
 
 export default function DevboxNodeIde({ object }: DevboxNodeIdeProps) {
-  const [selectedIde, setSelectedIde] = useState<string>("vscode");
+  const [selectedIde, setSelectedIde] = useState<string>("cursor");
   const context = createK8sContext();
   const devboxContext = createDevboxContext();
 
@@ -84,8 +84,8 @@ export default function DevboxNodeIde({ object }: DevboxNodeIdeProps) {
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
-          className="rounded-xl bg-background-secondary"
-          align="start"
+          className="rounded-xl bg-background-tertiary border border-border-primary"
+          align="end"
         >
           {DEVBOX_IDE.map((ide) => (
             <DropdownMenuItem
@@ -103,7 +103,10 @@ export default function DevboxNodeIde({ object }: DevboxNodeIdeProps) {
                 height={16}
                 className="mr-2 h-4 w-4"
               />
-              <span className="capitalize">{ide}</span>
+              <span className="capitalize flex-1">{ide}</span>
+              {selectedIde === ide && (
+                <Check className="h-4 w-4 ml-2 text-theme-blue" />
+              )}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>

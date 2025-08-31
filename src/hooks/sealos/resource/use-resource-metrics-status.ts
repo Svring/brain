@@ -45,7 +45,7 @@ interface UseResourceMetricsStatusProps {
 
 const THRESHOLDS = {
   low: 30,
-  medium: 50,
+  medium: 75,
   high: 90,
 };
 
