@@ -20,9 +20,14 @@ interface ResourceLogProps {
 }
 
 const ResourceLog: React.FC<ResourceLogProps> = ({ target: payload }) => {
-  const { data: logsData, isLoading } = useResourceLogs(payload);
+  const logsQuery = useResourceLogs(payload);
   const sendMessageMutation = useSendMessageMutation();
   const appendMessagesMutation = useAppendMessagesMutation();
+
+  const isLoading = logsQuery?.isLoading || false;
+  const logsData = logsQuery?.data;
+
+  console.log("logsData", logsData);
 
   const handleAnalyze = useCallback(() => {
     if (logsData) {
@@ -54,6 +59,19 @@ const ResourceLog: React.FC<ResourceLogProps> = ({ target: payload }) => {
 
   const hasLogs = logsData && Object.keys(logsData).length > 0;
 
+  const formatLogsData = (data: any) => {
+    if (!data) return "";
+
+    const stringified = JSON.stringify(data, null, 2);
+    const lines = stringified.split("\n");
+
+    if (lines.length <= 10) {
+      return stringified;
+    }
+
+    return lines.slice(0, 10).join("\n") + "\n... (truncated)";
+  };
+
   return (
     <BaseActionMessage
       headerTitle={{
@@ -81,10 +99,16 @@ const ResourceLog: React.FC<ResourceLogProps> = ({ target: payload }) => {
               Loading logs...
             </span>
           </div>
+        ) : hasLogs ? (
+          <div className="max-h-60 overflow-y-auto">
+            <pre className="text-xs text-muted-foreground whitespace-pre-wrap break-words">
+              {formatLogsData(logsData)}
+            </pre>
+          </div>
         ) : (
           <div className="flex items-center justify-center py-4">
             <span className="text-sm text-muted-foreground">
-              {hasLogs ? "Logs available" : "No logs available"}
+              No logs available
             </span>
           </div>
         )}

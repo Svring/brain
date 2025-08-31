@@ -4,34 +4,39 @@ interface CommandActionsProps {
   onOpenChange: (open: boolean) => void;
   setSearch: (search: string) => void;
   setSelectedCommand: (command: string | null) => void;
-  setIsDetailMode: (isDetail: boolean) => void;
+  setShowResourceList: (show: boolean) => void;
 }
 
 export function useCommandActions({
   onOpenChange,
   setSearch,
   setSelectedCommand,
-  setIsDetailMode,
+  setShowResourceList,
 }: CommandActionsProps) {
   const resetAndClose = () => {
     onOpenChange(false);
     setSearch("");
     setSelectedCommand(null);
-    setIsDetailMode(false);
+    setShowResourceList(false);
   };
 
   const handleSelect = (value: string) => {
-    switch (value) {
-      case "add-resource":
-        setSelectedCommand("add-resource");
-        setIsDetailMode(true);
-        break;
-      case "environment":
-        setSelectedCommand("environment");
-        setIsDetailMode(true);
-        break;
+    if (value === "add-resource") {
+      setShowResourceList(true);
     }
   };
 
-  return { handleSelect };
+  const handleResourceSelect = (resourceId: string) => {
+    setSelectedCommand(resourceId);
+  };
+
+  const handleBack = () => {
+    if (setSelectedCommand) {
+      setSelectedCommand(null);
+    } else {
+      setShowResourceList(false);
+    }
+  };
+
+  return { handleSelect, handleResourceSelect, handleBack, resetAndClose };
 }
