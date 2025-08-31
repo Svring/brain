@@ -11,9 +11,11 @@ const createClient = () => {
 export const createThread = async ({
   kubeconfig,
   projectName,
+  resourceName,
 }: {
   kubeconfig: string;
   projectName?: string;
+  resourceName?: string;
 }) => {
   const client = createClient();
 
@@ -24,6 +26,9 @@ export const createThread = async ({
   const metadata: Record<string, any> = { kubeconfigHash };
   if (projectName) {
     metadata.projectName = projectName;
+  }
+  if (resourceName) {
+    metadata.resourceName = resourceName;
   }
 
   return await client.threads.create({
@@ -54,5 +59,14 @@ export const searchThreads = async (metadata: Record<string, any>) => {
     delete searchMetadata.kubeconfig;
   }
 
-  return await client.threads.search({ metadata: searchMetadata });
+  return await client.threads
+    .search({
+      metadata: searchMetadata,
+      sortBy: "created_at",
+      sortOrder: "desc",
+      limit: 5,
+    })
+    .then((res) => {
+      return res.filter((obj) => obj.values !== null);
+    });
 };

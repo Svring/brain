@@ -65,7 +65,7 @@ export default function NodeMonitor({ target }: NodeMonitorProps) {
           className="bg-background-secondary rounded-lg p-2"
         >
           <p className="font-medium">View metrics</p>
-          {latestData && (
+          {/* {latestData && (
             <div className="mt-1 text-xs">
               <p>CPU: {latestData.cpu.toFixed(2)}%</p>
               <p>Memory: {latestData.memory.toFixed(2)}%</p>
@@ -73,7 +73,7 @@ export default function NodeMonitor({ target }: NodeMonitorProps) {
                 <p>Storage: {latestData.storage.toFixed(2)}%</p>
               )}
             </div>
-          )}
+          )} */}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

@@ -30,11 +30,13 @@ export const useCreateNewChatSessionMutation = () => {
     mutationFn: async ({
       kubeconfig,
       projectName,
+      resourceName,
     }: {
       kubeconfig: string;
       projectName?: string;
+      resourceName?: string;
     }) => {
-      return await createThread({ kubeconfig, projectName });
+      return await createThread({ kubeconfig, projectName, resourceName });
     },
     onSuccess: (thread) => {
       // Set the new thread ID in copilot context
@@ -116,6 +118,7 @@ export const useAppendSystemMessageMutation = () => {
         {
           kubeconfig: auth.kubeconfig,
           projectName: selectedProject,
+          resourceName: target.name,
         },
         {
           onSuccess: () => {

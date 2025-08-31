@@ -3,8 +3,6 @@
 import { Handle, Position } from "@xyflow/react";
 import { BaseNode } from "@/components/flowgraph/components/base-node";
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
-import { useRef } from "react";
-import { useChatActions } from "@/contexts/chat/chat-context";
 import { useFlowgraphActions } from "@/contexts/flowgraph/flowgraph-context";
 import {
   useProjectActions,
@@ -12,7 +10,7 @@ import {
 } from "@/contexts/project/project-context";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { useSelectedResource } from "@/hooks/brain/use-selected-resource";
+import _ from "lodash";
 
 interface BaseNodeProps {
   children: React.ReactNode;
@@ -22,8 +20,6 @@ interface BaseNodeProps {
   messageType?: string;
   shouldCreateChatSession?: boolean;
 }
-
-import _ from "lodash";
 
 export default function BaseNodeWrapper({
   children,

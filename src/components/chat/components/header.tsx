@@ -8,6 +8,9 @@ import { Spinner } from "@/components/ui/spinner";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useProjectState } from "@/contexts/project/project-context";
 import Image from "next/image";
+import { useQuery } from "@tanstack/react-query";
+import { searchThreadsOptions } from "@/lib/langgraph/langgraph-method/langgraph-query";
+import { useCopilotContext } from "@copilotkit/react-core";
 
 interface AiChatHeaderProps {
   title?: string;
@@ -24,6 +27,17 @@ export function AiChatHeader({
   const { selectedProject, selectedResource } = useProjectState();
   const { mutate: createNewChatSession, isPending } =
     useCreateNewChatSessionMutation();
+  const { setThreadId } = useCopilotContext();
+
+  const { data: threads } = useQuery(
+    searchThreadsOptions({
+      resourceName: selectedResource?.name,
+      projectName: selectedProject,
+      kubeconfig: auth?.kubeconfig,
+    })
+  );
+
+  console.log("threads of", selectedResource?.name, threads);
 
   const getIconUrl = () => {
     if (!selectedResource) return "https://sealos.run/logo.svg";
@@ -59,6 +73,7 @@ export function AiChatHeader({
               createNewChatSession({
                 kubeconfig: auth!.kubeconfig,
                 projectName: selectedProject!,
+                resourceName: selectedResource!.name,
               })
             }
             disabled={isPending}

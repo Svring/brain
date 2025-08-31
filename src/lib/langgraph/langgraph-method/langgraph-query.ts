@@ -33,8 +33,8 @@ export const getThreadOptions = (threadId: string) =>
 /**
  * Query options for searching threads
  */
-export const searchThreadsByKubeconfigOptions = (kubeconfig: string) =>
+export const searchThreadsOptions = (metadata: Record<string, any>) =>
   queryOptions({
-    queryKey: ["langgraph", "threads", "search", "kubeconfig", kubeconfig],
-    queryFn: async () => await searchThreads({ kubeconfig: kubeconfig }),
+    queryKey: ["langgraph", "threads", "search", metadata],
+    queryFn: async () => await searchThreads(metadata),
   });
