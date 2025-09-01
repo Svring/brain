@@ -9,13 +9,13 @@ import { ImageSchema } from "@/schemas/forms/universal/image-schema";
 import { ResourceSchema } from "@/schemas/forms/universal/resource-schema";
 import { EnvSchema } from "@/schemas/forms/universal/env-schema";
 
-// Update form schema (no defaults applied)
+// Update form schema (all fields optional for partial updates)
 export const launchpadUpdateFormSchema = z.object({
-  image: ImageSchema,
-  command: CommandSchema,
-  args: ArgsSchema,
-  resource: ResourceSchema,
-  env: z.array(EnvSchema),
+  image: ImageSchema.optional(),
+  command: CommandSchema.optional(),
+  args: ArgsSchema.optional(),
+  resource: ResourceSchema.optional(),
+  env: z.array(EnvSchema).optional(),
 });
 
 export type LaunchpadUpdateFormData = z.infer<typeof launchpadUpdateFormSchema>;

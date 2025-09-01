@@ -117,6 +117,7 @@
     "remark-gfm": "^4.0.1",
     "server-only": "^0.0.1",
     "sonner": "^1.7.1",
+    "streamdown": "^1.1.6",
     "superjson": "^2.2.2",
     "tailwind-animate": "^0.2.10",
     "tailwind-merge": "^2.5.5",

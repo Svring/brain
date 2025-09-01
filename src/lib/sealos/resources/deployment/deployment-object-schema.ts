@@ -27,6 +27,22 @@ const PodSchema = z.object({
   containers: z.any(),
 });
 
+const ThresholdSchema = z.object({
+  resource: z.string(),
+  usage: z.number(),
+});
+
+const StrategySchema = z.object({
+  type: z.enum(["fixed", "flexible"]),
+  minReplicas: z.number().optional(),
+  maxReplicas: z.number().optional(),
+  threshold: ThresholdSchema.optional(),
+});
+
+const OperationalStatusSchema = z.object({
+  createdAt: z.string(),
+});
+
 export const DeploymentObjectSchema = z.object({
   name: z.string(),
   kind: z.string(),
@@ -38,8 +54,8 @@ export const DeploymentObjectSchema = z.object({
   env: z.any().optional(),
   ports: z.array(PortSchema).optional(),
   pods: z.array(PodSchema).optional(),
-  operationalStatus: z.any().optional(),
-  strategy: z.any().optional(),
+  operationalStatus: OperationalStatusSchema.optional(),
+  strategy: StrategySchema.optional(),
 });
 
 export type DeploymentObject = z.infer<typeof DeploymentObjectSchema>;

@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import Markdown from "react-markdown";
+import { Streamdown } from "streamdown";
 
 import "@/styles/github-markdown-dark.css";
 
@@ -53,6 +54,7 @@ export function RenderTextMessage({
         >
           {message.content ?? ""}
         </Markdown>
+        {/* <Streamdown>{message.content ?? ""}</Streamdown> */}
 
         {isLoading && !message.content && !message.toolCalls && (
           <div className="flex items-center gap-2 text-xs opacity-70">

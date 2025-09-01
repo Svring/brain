@@ -2,6 +2,8 @@
 @import 'tailwind-animate';
 @import 'tw-animate-css';
 
+@source "../node_modules/streamdown/dist/index.js";
+
 /* Hide scrollbar while maintaining scroll functionality */
 .scrollbar-hide {
   -ms-overflow-style: none;  /* Internet Explorer 10+ */

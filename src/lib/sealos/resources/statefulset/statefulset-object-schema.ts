@@ -36,6 +36,18 @@ const LocalStorageSchema = z.object({
   path: z.string(),
 });
 
+const ThresholdSchema = z.object({
+  resource: z.string(),
+  usage: z.number(),
+});
+
+const StrategySchema = z.object({
+  type: z.enum(["fixed", "flexible"]),
+  minReplicas: z.number().optional(),
+  maxReplicas: z.number().optional(),
+  threshold: ThresholdSchema.optional(),
+});
+
 const OperationalStatusSchema = z.object({
   createdAt: z.string(),
 });
@@ -54,7 +66,7 @@ export const StatefulsetObjectSchema = z.object({
   localStorage: z.array(LocalStorageSchema).optional(),
   pods: z.array(PodSchema).optional(),
   operationalStatus: OperationalStatusSchema.optional(),
-  strategy: z.any().optional(),
+  strategy: StrategySchema.optional(),
 });
 
 export type StatefulsetObject = z.infer<typeof StatefulsetObjectSchema>;
