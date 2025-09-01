@@ -68,7 +68,7 @@ export default function NodeStack({
         >
           <BaseNode
             nodeId={{}}
-            // target={target}
+            target={target}
             messageType={messageType}
             shouldCreateChatSession={shouldCreateChatSession}
             className={`${height ? `h-${height}` : ""} ${

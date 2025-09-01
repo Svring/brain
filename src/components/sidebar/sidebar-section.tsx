@@ -59,39 +59,39 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
     group: "overview",
     path: "/projects",
   },
-  {
-    title: "Test",
-    icon: TestTube,
-    group: "overview",
-    path: "/test",
-    subItems: [
-      {
-        title: "Launchpad Create",
-        icon: Plus,
-        path: "/test/launchpad-create",
-      },
-      {
-        title: "Launchpad Update",
-        icon: RefreshCw,
-        path: "/test/launchpad-update",
-      },
-      {
-        title: "Project Proposal",
-        icon: FileText,
-        path: "/test/project-proposal",
-      },
-      {
-        title: "Env Table",
-        icon: Table,
-        path: "/test/env-table",
-      },
-      {
-        title: "Ports Table",
-        icon: Table,
-        path: "/test/ports-table",
-      },
-    ],
-  },
+  // {
+  //   title: "Test",
+  //   icon: TestTube,
+  //   group: "overview",
+  //   path: "/test",
+  //   subItems: [
+  //     {
+  //       title: "Launchpad Create",
+  //       icon: Plus,
+  //       path: "/test/launchpad-create",
+  //     },
+  //     {
+  //       title: "Launchpad Update",
+  //       icon: RefreshCw,
+  //       path: "/test/launchpad-update",
+  //     },
+  //     {
+  //       title: "Project Proposal",
+  //       icon: FileText,
+  //       path: "/test/project-proposal",
+  //     },
+  //     {
+  //       title: "Env Table",
+  //       icon: Table,
+  //       path: "/test/env-table",
+  //     },
+  //     {
+  //       title: "Ports Table",
+  //       icon: Table,
+  //       path: "/test/ports-table",
+  //     },
+  //   ],
+  // },
 ];
 
 export const MainSection: React.FC<MainSectionProps> = () => {
@@ -130,19 +130,6 @@ export const MainSection: React.FC<MainSectionProps> = () => {
                     {item.title === "Projects" && projects ? (
                       <div className="space-y-1">
                         <p className="font-medium">Projects</p>
-                        <div className="max-h-48 overflow-y-auto">
-                          {projects.map((project) => (
-                            <div
-                              key={project.name}
-                              className="text-sm text-muted-foreground hover:text-foreground cursor-pointer px-2 py-1 rounded hover:bg-accent"
-                              onClick={() =>
-                                router.push(`/projects/${project.name}`)
-                              }
-                            >
-                              {project.displayName}
-                            </div>
-                          ))}
-                        </div>
                       </div>
                     ) : item.title === "Test" && item.subItems ? (
                       <div className="space-y-1">

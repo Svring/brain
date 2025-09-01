@@ -19,7 +19,7 @@ import ClusterConnectionMessage from "./cluster/cluster-connection-message";
 
 import LaunchpadMessage from "./launchpad/launchpad-message";
 import LaunchpadUpdateMessage from "./launchpad/launchpad-update-message";
-import LaunchpadCreateMessage from "./launchpad/launchpad-create-message";
+import LaunchpadCreateMessage from "./launchpad/launchpad-create-message-legacy";
 import LaunchpadUpdateResource from "./launchpad/components/launchpad-update/launchpad-update-resource";
 import LaunchpadUpdateImage from "./launchpad/components/launchpad-update/launchpad-update-image";
 import LaunchpadUpdatePort from "./launchpad/components/launchpad-update/launchpad-update-port";

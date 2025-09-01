@@ -19,7 +19,6 @@ import {
   getPodsMetrics,
 } from "./launchpad-open-api";
 import type {
-  LaunchpadCreateRequest,
   LaunchpadPatchRequest,
   LaunchpadConfigMapUpdateRequest,
   LaunchpadPortsCreateRequest,
@@ -28,6 +27,7 @@ import type {
   LaunchpadStorageUpdateRequest,
   LaunchpadPodsMetricsRequest,
 } from "./launchpad-open-api-schemas/launchpad-create-schema";
+import type { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create/launchpad-create-form-schema";
 
 // ============= LEGACY API OPERATIONS =============
 
@@ -56,7 +56,7 @@ export async function checkLaunchpadReady(
 // Application Lifecycle Management
 export async function createLaunchpadApplication(
   context: SealosApiContext,
-  request: LaunchpadCreateRequest
+  request: LaunchpadCreateFormData
 ): Promise<any> {
   return await runParallelAction(createApplication(context, request));
 }

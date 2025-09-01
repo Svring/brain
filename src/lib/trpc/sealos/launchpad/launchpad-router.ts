@@ -35,13 +35,13 @@ import {
 } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-old-api";
 
 import {
-  LaunchpadCreateRequestSchema,
   LaunchpadPatchRequestSchema,
   LaunchpadConfigMapUpdateRequestSchema,
   LaunchpadPortsUpdateRequestSchema,
   LaunchpadStorageUpdateRequestSchema,
   LaunchpadPortsCreateRequestSchema,
 } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
+import { launchpadCreateFormSchema } from "@/schemas/forms/launchpad/launchpad-create/launchpad-create-form-schema";
 import { LaunchpadDeleteRequestSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-old-api-schemas/req-res-delete-schemas";
 import { LaunchpadPauseRequestSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-old-api-schemas/req-res-pause-schemas";
 import { LaunchpadStartRequestSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-old-api-schemas/req-res-start-schemas";
@@ -112,13 +112,9 @@ export const launchpadRouter = t.router({
 
   // Mutation Operations
   createLaunchpad: t.procedure
-    .input(
-      z.object({
-        request: LaunchpadCreateRequestSchema,
-      })
-    )
+    .input(launchpadCreateFormSchema)
     .mutation(async ({ input, ctx }) => {
-      return await createLaunchpadApplication(ctx, input.request);
+      return await createLaunchpadApplication(ctx, input);
     }),
 
   updateLaunchpad: t.procedure

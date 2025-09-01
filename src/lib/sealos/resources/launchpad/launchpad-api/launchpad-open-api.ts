@@ -6,7 +6,6 @@ import https from "https";
 import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
 import { AppControlSuccessResponse } from "./launchpad-open-api-schemas/launchpad-control-schema";
 import {
-  LaunchpadCreateRequest,
   LaunchpadCreateSuccessResponse,
   LaunchpadGetResponse,
   LaunchpadPatchRequest,
@@ -24,6 +23,7 @@ import {
   LaunchpadStorageUpdateRequest,
   LaunchpadStorageUpdateResponse,
 } from "./launchpad-open-api-schemas/launchpad-create-schema";
+import type { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create/launchpad-create-form-schema";
 
 function createLaunchpadApi(context: SealosApiContext) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
@@ -47,7 +47,7 @@ function createLaunchpadApi(context: SealosApiContext) {
 
 // POST /api/v1/app - Create a new application
 export const createApplication = createParallelAction(
-  async (context: SealosApiContext, data: LaunchpadCreateRequest) => {
+  async (context: SealosApiContext, data: LaunchpadCreateFormData) => {
     const api = createLaunchpadApi(context);
     const response = await api.post<LaunchpadCreateSuccessResponse>(
       "/app",

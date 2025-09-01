@@ -3,7 +3,6 @@
 import { Main } from "@/components/ui/main";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { SearchIcon } from "lucide-react";
 import { useTemplates } from "@/hooks/template/use-templates";
 import { useTemplateSearch } from "@/hooks/template/use-template-search";
@@ -11,7 +10,6 @@ import type { TemplateResource } from "@/lib/sealos/resources/template/schemas/t
 import { TemplateCard } from "./template-card";
 import { TemplateDetails } from "./template-details";
 import { createSealosContext, createK8sContext } from "@/lib/auth/auth-utils";
-import { useCreateProjectMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
 import { Component as ImageSlider } from "@/components/ui/image-auto-slider";
 
 interface CreateProjectProps {
@@ -40,29 +38,6 @@ export default function CreateProject({ closeDialog }: CreateProjectProps) {
     filteredTemplates,
   } = useTemplateSearch(templates);
 
-  const createProjectMutation = useCreateProjectMutation(k8sContext);
-
-  const generateProjectName = () => {
-    const timestamp = Date.now().toString(36);
-    const randomSuffix = Math.random().toString(36).substring(2, 6);
-    return `project-${timestamp}-${randomSuffix}`;
-  };
-
-  const handleCreateProject = () => {
-    const projectName = generateProjectName();
-    createProjectMutation.mutate(
-      { name: projectName },
-      {
-        onSuccess: () => {
-          // Close the dialog after successful project creation
-          if (closeDialog) {
-            closeDialog();
-          }
-        },
-      }
-    );
-  };
-
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -89,7 +64,7 @@ export default function CreateProject({ closeDialog }: CreateProjectProps) {
   return (
     <>
       {/* ===== Content ===== */}
-      <Main className="h-full w-full gap-4" fixed>
+      <Main className="h-full w-full gap-2" fixed>
         <div className="flex items-start justify-between">
           <div className="gap-2">
             <h1 className="font-bold text-2xl tracking-tight">Deploy an app</h1>
@@ -99,9 +74,9 @@ export default function CreateProject({ closeDialog }: CreateProjectProps) {
         {/* Scrollable content area */}
         <div className="flex-1 overflow-y-auto gap-4 scrollbar-hide scroll-smooth">
           {/* Image slider at the top */}
-          <div className="w-full h-[256px] rounded-xl mb-4">
+          {/* <div className="w-full h-[256px] rounded-xl mb-4">
             <ImageSlider />
-          </div>
+          </div> */}
 
           {/* Fixed search and categories bar */}
           <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 gap-4 py-2">
