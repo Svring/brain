@@ -8,7 +8,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useFormContext } from "react-hook-form";
-import { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create/launchpad-create-form-schema";
+import { Resource } from "@/schemas/forms/launchpad/launchpad-create/launchpad-create-form-schema";
 import {
   CPU_OPTIONS,
   MEMORY_OPTIONS,
@@ -17,7 +17,7 @@ import {
 import { Slider } from "@/components/ui/slider";
 
 export const ResourceFields = () => {
-  const form = useFormContext<LaunchpadCreateFormData>();
+  const form = useFormContext<{ resource: Resource }>();
 
   return (
     <div className="space-y-6">

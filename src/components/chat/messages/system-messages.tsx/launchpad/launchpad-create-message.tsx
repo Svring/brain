@@ -2,7 +2,7 @@
 
 import React from "react";
 import { LaunchpadCreateForm } from "@/components/forms/launchpad/launchpad-create-form";
-import { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create/launchpad-create-form-schema";
+import { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -57,7 +57,7 @@ export const LaunchpadCreateMessage: React.FC<LaunchpadCreateMessageProps> = ({
   };
 
   return (
-    <div className="space-y-3 flex-col bg-background-secondary p-3 rounded-xl">
+    <div className="space-y-3 flex-col p-3 rounded-xl">
       <LaunchpadCreateForm
         defaultValues={payload}
         onSubmit={handleSubmit}

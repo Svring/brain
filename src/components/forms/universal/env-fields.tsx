@@ -6,14 +6,14 @@ import { FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useFormContext } from "react-hook-form";
-import { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create/launchpad-create-form-schema";
+import { Env } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
 
 interface EnvFieldsProps {
   fieldArray: any; // useFieldArray return type
 }
 
 export const EnvFields = ({ fieldArray }: EnvFieldsProps) => {
-  const form = useFormContext<LaunchpadCreateFormData>();
+  const form = useFormContext<{ env: Env[] }>();
 
   const addEnv = () => {
     fieldArray.append({
@@ -30,10 +30,7 @@ export const EnvFields = ({ fieldArray }: EnvFieldsProps) => {
     <div className="space-y-4 border border-border rounded-lg p-4">
       <div className="space-y-3">
         {fieldArray.fields.map((field: any, index: number) => (
-          <div
-            key={field.id}
-            className="flex items-center gap-3 rounded-lg"
-          >
+          <div key={field.id} className="flex items-center gap-3 rounded-lg">
             <div className="flex-1 flex items-center gap-3">
               <div className="w-[30%]">
                 <Input

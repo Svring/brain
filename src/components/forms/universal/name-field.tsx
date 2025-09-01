@@ -9,10 +9,10 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useFormContext } from "react-hook-form";
-import { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create/launchpad-create-form-schema";
+import { Name } from "@/schemas/forms/universal/name-schema";
 
 export const NameField = () => {
-  const form = useFormContext<LaunchpadCreateFormData>();
+  const form = useFormContext<{ name: Name }>();
 
   return (
     <FormField
@@ -34,3 +34,5 @@ export const NameField = () => {
     />
   );
 };
+
+

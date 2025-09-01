@@ -10,12 +10,9 @@ export const storageSizeOptions = STORAGE_OPTIONS.map(
 export const StorageSchema = z.object({
   name: z.string(),
   path: z.string(),
-  size: z
-    .string()
-    .refine((val) => storageSizeOptions.includes(val), {
-      message: `Size must be one of: ${storageSizeOptions.join(", ")}`,
-    })
-    .default("1Gi"),
+  size: z.string().refine((val) => storageSizeOptions.includes(val), {
+    message: `Size must be one of: ${storageSizeOptions.join(", ")}`,
+  }),
 });
 
 export type Storage = z.infer<typeof StorageSchema>;

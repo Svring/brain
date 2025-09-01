@@ -23,7 +23,7 @@ import {
   LaunchpadStorageUpdateRequest,
   LaunchpadStorageUpdateResponse,
 } from "./launchpad-open-api-schemas/launchpad-create-schema";
-import type { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create/launchpad-create-form-schema";
+import type { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
 
 function createLaunchpadApi(context: SealosApiContext) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";

@@ -1,12 +1,19 @@
 "use client";
 
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useFormContext } from "react-hook-form";
-import { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create/launchpad-create-form-schema";
+import { Command } from "@/schemas/forms/universal/command-schema";
+import { Args } from "@/schemas/forms/universal/args-schema";
 
 export const CommandField = () => {
-  const form = useFormContext<LaunchpadCreateFormData>();
+  const form = useFormContext<{ command: Command }>();
 
   return (
     <FormField
@@ -16,10 +23,7 @@ export const CommandField = () => {
         <FormItem>
           <FormLabel>Command</FormLabel>
           <FormControl>
-            <Input 
-              placeholder="nginx -g 'daemon off;'" 
-              {...field} 
-            />
+            <Input placeholder="nginx -g 'daemon off;'" {...field} />
           </FormControl>
           <FormMessage />
         </FormItem>
@@ -29,7 +33,7 @@ export const CommandField = () => {
 };
 
 export const ArgsField = () => {
-  const form = useFormContext<LaunchpadCreateFormData>();
+  const form = useFormContext<{ args: Args }>();
 
   return (
     <FormField
@@ -39,10 +43,7 @@ export const ArgsField = () => {
         <FormItem>
           <FormLabel>Arguments</FormLabel>
           <FormControl>
-            <Input 
-              placeholder="-c /etc/nginx/nginx.conf" 
-              {...field} 
-            />
+            <Input placeholder="-c /etc/nginx/nginx.conf" {...field} />
           </FormControl>
           <FormMessage />
         </FormItem>

@@ -27,7 +27,7 @@ import type {
   LaunchpadStorageUpdateRequest,
   LaunchpadPodsMetricsRequest,
 } from "./launchpad-open-api-schemas/launchpad-create-schema";
-import type { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create/launchpad-create-form-schema";
+import type { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
 
 // ============= LEGACY API OPERATIONS =============
 

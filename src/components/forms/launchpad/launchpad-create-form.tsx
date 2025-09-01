@@ -3,13 +3,16 @@
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { useLaunchpadCreateForm } from "@/hooks/forms/launchpad/use-launchpad-create-form";
-import { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create/launchpad-create-form-schema";
-import { NameField } from "./components/name-field";
-import { ImageField } from "./components/image-field";
-import { ResourceFields } from "./components/resource-fields";
-import { PortsFields } from "./components/ports-fields";
-import { EnvFields } from "./components/env-fields";
-import { CommandField, ArgsField } from "./components/command-args-fields";
+import { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
+import { NameField } from "@/components/forms/universal/name-field";
+import { ImageField } from "@/components/forms/universal/image-field";
+import { ResourceFields } from "../universal/resource-fields";
+import { PortsFields } from "../universal/ports-fields";
+import { EnvFields } from "../universal/env-fields";
+import {
+  CommandField,
+  ArgsField,
+} from "@/components/forms/universal/command-args-fields";
 
 interface LaunchpadCreateFormProps {
   defaultValues?: Partial<LaunchpadCreateFormData>;
@@ -45,7 +48,9 @@ export const LaunchpadCreateForm = ({
         </div>
 
         <div className="space-y-2">
-          <div className="text-sm font-medium text-foreground">Environment Variables</div>
+          <div className="text-sm font-medium text-foreground">
+            Environment Variables
+          </div>
           <EnvFields fieldArray={envFieldArray} />
         </div>
 
@@ -64,7 +69,7 @@ export const LaunchpadCreateForm = ({
             Reset
           </Button>
           <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Creating..." : "Create Application"}
+            {isLoading ? "Creating..." : "Create"}
           </Button>
         </div>
       </form>

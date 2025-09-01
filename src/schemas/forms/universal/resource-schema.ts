@@ -12,9 +12,9 @@ const createNumberUnionSchema = <T extends readonly number[]>(options: T) =>
 
 // Resource configuration schema
 export const ResourceSchema = z.object({
-  replicas: createNumberUnionSchema(REPLICAS_OPTIONS).default(1),
-  cpu: createNumberUnionSchema(CPU_OPTIONS).default(0.1),
-  memory: createNumberUnionSchema(MEMORY_OPTIONS).default(0.5),
+  replicas: createNumberUnionSchema(REPLICAS_OPTIONS),
+  cpu: createNumberUnionSchema(CPU_OPTIONS),
+  memory: createNumberUnionSchema(MEMORY_OPTIONS),
   gpu: GpuResourceSchema.optional(),
 });
 

@@ -13,14 +13,14 @@ import {
 } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
 import { useFormContext } from "react-hook-form";
-import { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create/launchpad-create-form-schema";
+import { Port } from "@/schemas/forms/launchpad/launchpad-create/launchpad-create-form-schema";
 
 interface PortsFieldsProps {
   fieldArray: any; // useFieldArray return type
 }
 
 export const PortsFields = ({ fieldArray }: PortsFieldsProps) => {
-  const form = useFormContext<LaunchpadCreateFormData>();
+  const form = useFormContext<{ ports: Port[] }>();
 
   // Watch the entire ports array to force re-renders when any port changes
   const ports = form.watch("ports");

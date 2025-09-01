@@ -3,10 +3,10 @@
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useFormContext } from "react-hook-form";
-import { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create/launchpad-create-form-schema";
+import { Image } from "@/schemas/forms/universal/image-schema";
 
 export const ImageField = () => {
-  const form = useFormContext<LaunchpadCreateFormData>();
+  const form = useFormContext<{ image: Image }>();
 
   return (
     <FormField
@@ -27,3 +27,5 @@ export const ImageField = () => {
     />
   );
 };
+
+
