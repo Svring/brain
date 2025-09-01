@@ -43,7 +43,7 @@ export function FlowgraphCommandDialog({
 
   return (
     <CommandDialog open={isOpen} onOpenChange={handleOpenChange}>
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col">
         {/* Top Input - Full Width */}
         <div className="border-b border-border flex-shrink-0">
           <CommandInput
@@ -54,7 +54,7 @@ export function FlowgraphCommandDialog({
         </div>
 
         {/* Content */}
-        <div className="flex-1 min-h-0">
+        <div className="min-h-0 transition-all duration-300 ease-out">
           {selectedCommand ? (
             // Show create form for selected resource
             <ResourceCreate
@@ -63,7 +63,7 @@ export function FlowgraphCommandDialog({
             />
           ) : showResourceList ? (
             // Show resource list when "Add Resource" is selected
-            <CommandList className="flex-1 overflow-auto max-h-none h-full">
+            <CommandList>
               <CommandEmpty>No resources found.</CommandEmpty>
               <ResourceList
                 onSelect={handleResourceSelect}
@@ -72,7 +72,7 @@ export function FlowgraphCommandDialog({
             </CommandList>
           ) : (
             // Show main command list
-            <CommandList className="flex-1 overflow-auto max-h-none h-full">
+            <CommandList>
               <CommandEmpty>No commands found.</CommandEmpty>
               <CommandPanelMain onSelect={handleSelect} />
             </CommandList>

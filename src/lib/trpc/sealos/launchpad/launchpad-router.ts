@@ -226,33 +226,21 @@ export const launchpadRouter = t.router({
     }),
 
   deleteLaunchpad: t.procedure
-    .input(
-      z.object({
-        request: LaunchpadDeleteRequestSchema,
-      })
-    )
+    .input(LaunchpadDeleteRequestSchema)
     .mutation(async ({ input, ctx }) => {
-      return await runParallelAction(deleteLaunchpad(input.request, ctx));
+      return await runParallelAction(deleteLaunchpad(input, ctx));
     }),
 
   pauseLaunchpad: t.procedure
-    .input(
-      z.object({
-        request: LaunchpadPauseRequestSchema,
-      })
-    )
+    .input(LaunchpadPauseRequestSchema)
     .mutation(async ({ input, ctx }) => {
-      return await runParallelAction(pauseLaunchpad(input.request, ctx));
+      return await runParallelAction(pauseLaunchpad(input, ctx));
     }),
 
   startLaunchpad: t.procedure
-    .input(
-      z.object({
-        request: LaunchpadStartRequestSchema,
-      })
-    )
+    .input(LaunchpadStartRequestSchema)
     .mutation(async ({ input, ctx }) => {
-      return await runParallelAction(startLaunchpad(input.request, ctx));
+      return await runParallelAction(startLaunchpad(input, ctx));
     }),
 
   checkReadyLaunchpad: t.procedure

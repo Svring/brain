@@ -22,7 +22,11 @@ export const NameField = () => {
         <FormItem>
           <FormLabel>Application Name</FormLabel>
           <FormControl>
-            <Input placeholder="Enter application name" {...field} />
+            <Input
+              placeholder="Enter application name"
+              maxLength={60}
+              {...field}
+            />
           </FormControl>
           <FormMessage />
         </FormItem>

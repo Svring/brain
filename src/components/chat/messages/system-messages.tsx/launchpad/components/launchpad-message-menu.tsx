@@ -18,8 +18,6 @@ import {
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
-import { useResourceStart } from "@/hooks/sealos/resource/use-resource-start";
-import { useResourcePause } from "@/hooks/sealos/resource/use-resource-pause";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import {
   AlertDialog,
@@ -41,7 +39,7 @@ export default function LaunchpadMessageMenu({
 }: LaunchpadMessageMenuProps) {
   const [open, setOpen] = React.useState(false);
   const [alertOpen, setAlertOpen] = React.useState(false);
-  const { launchpad: launchpadTrpcClient } = useTRPCClients();
+  const { launchpad, k8s } = useTRPCClients();
   const queryClient = useQueryClient();
 
   // Extract name and status from the target using the hook
@@ -49,24 +47,23 @@ export default function LaunchpadMessageMenu({
   const launchpadName = resource?.name || target.name || "";
   const currentStatus = status || "Pending";
 
-  // Use the new resource hooks
-  const startHook = useResourceStart(target);
-  const pauseHook = useResourcePause(target);
-
-  // Mutations using launchpad router
   const deleteLaunchpad = useMutation(
-    launchpadTrpcClient.deleteLaunchpad.mutationOptions()
+    launchpad.deleteLaunchpad.mutationOptions()
+  );
+  const startLaunchpad = useMutation(
+    launchpad.startLaunchpad.mutationOptions()
+  );
+  const pauseLaunchpad = useMutation(
+    launchpad.pauseLaunchpad.mutationOptions()
   );
 
   const handleDelete = () => {
-    if (!launchpadName) return;
     deleteLaunchpad.mutate(
-      { request: { name: launchpadName } },
+      { name: launchpadName },
       {
         onSuccess: () => {
-          // Invalidate relevant queries
           queryClient.invalidateQueries({
-            queryKey: launchpadTrpcClient.getLaunchpad.queryKey(target),
+            queryKey: k8s.listAllResources.queryKey(),
           });
         },
       }
@@ -74,13 +71,29 @@ export default function LaunchpadMessageMenu({
   };
 
   const handleStart = () => {
-    if (!launchpadName) return;
-    // startHook.start({ name: launchpadName });
+    startLaunchpad.mutate(
+      { name: launchpadName },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: launchpad.getLaunchpad.queryKey({ name: launchpadName }),
+          });
+        },
+      }
+    );
   };
 
   const handlePause = () => {
-    if (!launchpadName) return;
-    // pauseHook.pause({ name: launchpadName });
+    pauseLaunchpad.mutate(
+      { name: launchpadName },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: launchpad.getLaunchpad.queryKey({ name: launchpadName }),
+          });
+        },
+      }
+    );
   };
 
   // Don't render if we don't have a valid launchpad name
@@ -115,7 +128,7 @@ export default function LaunchpadMessageMenu({
                 handleStart();
               }}
               onSelect={(e) => e.preventDefault()}
-              disabled={currentStatus === "Pending" || startHook.isPending}
+              disabled={currentStatus === "Pending" || startLaunchpad.isPending}
               className={currentStatus === "Pending" ? "opacity-50" : ""}
             >
               <Power className="mr-2 h-4 w-4" />
@@ -129,7 +142,7 @@ export default function LaunchpadMessageMenu({
                 handlePause();
               }}
               onSelect={(e) => e.preventDefault()}
-              disabled={currentStatus === "Pending" || pauseHook.isPending}
+              disabled={currentStatus === "Pending" || pauseLaunchpad.isPending}
               className={currentStatus === "Pending" ? "opacity-50" : ""}
             >
               <Pause className="mr-2 h-4 w-4" />

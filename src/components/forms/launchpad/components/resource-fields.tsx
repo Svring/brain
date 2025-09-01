@@ -54,7 +54,7 @@ export const ResourceFields = () => {
                       return (
                         <span
                           key={cpu}
-                          className="absolute text-center transform -translate-x-1/2"
+                          className="absolute text-center transform -translate-x-1/4"
                           style={{ left: `${position}%` }}
                         >
                           {cpu}C
@@ -105,7 +105,7 @@ export const ResourceFields = () => {
                       return (
                         <span
                           key={memory}
-                          className="absolute text-center transform -translate-x-1/2"
+                          className="absolute text-center transform -translate-x-1/4"
                           style={{ left: `${position}%` }}
                         >
                           {memory}G
@@ -156,7 +156,7 @@ export const ResourceFields = () => {
                       return (
                         <span
                           key={replica}
-                          className="absolute text-center transform -translate-x-1/2"
+                          className="absolute text-center transform -translate-x-1/4"
                           style={{ left: `${position}%` }}
                         >
                           {replica}

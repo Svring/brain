@@ -25,13 +25,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { createSealosContext } from "@/lib/auth/auth-utils";
-import {
-  useDeleteLaunchpadMutation,
-  useStartLaunchpadMutation,
-  usePauseLaunchpadMutation,
-} from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-mutation";
 import { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulset-object-schema";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function StatefulsetNodeMenu({
   object,
@@ -40,11 +36,19 @@ export default function StatefulsetNodeMenu({
 }) {
   const [open, setOpen] = React.useState(false);
   const [alertOpen, setAlertOpen] = React.useState(false);
-  const sealosContext = createSealosContext();
 
-  const deleteLaunchpad = useDeleteLaunchpadMutation(sealosContext);
-  const startLaunchpad = useStartLaunchpadMutation(sealosContext);
-  const pauseLaunchpad = usePauseLaunchpadMutation(sealosContext);
+  const { launchpad, k8s } = useTRPCClients();
+  const queryClient = useQueryClient();
+
+  const deleteLaunchpad = useMutation(
+    launchpad.deleteLaunchpad.mutationOptions()
+  );
+  const startLaunchpad = useMutation(
+    launchpad.startLaunchpad.mutationOptions()
+  );
+  const pauseLaunchpad = useMutation(
+    launchpad.pauseLaunchpad.mutationOptions()
+  );
 
   const { name, resource, status } = object;
   const replicas = resource?.replicas || 0;
@@ -52,18 +56,42 @@ export default function StatefulsetNodeMenu({
   const isPending = status === "Pending";
 
   const handleDelete = () => {
-    if (!name) return;
-    deleteLaunchpad.mutate({ name });
+    deleteLaunchpad.mutate(
+      { name },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: k8s.listAllResources.queryKey(),
+          });
+        },
+      }
+    );
   };
 
   const handleStart = () => {
-    if (!name) return;
-    startLaunchpad.mutate({ name });
+    startLaunchpad.mutate(
+      { name },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: launchpad.getLaunchpad.queryKey({ name }),
+          });
+        },
+      }
+    );
   };
 
   const handlePause = () => {
-    if (!name) return;
-    pauseLaunchpad.mutate({ name });
+    pauseLaunchpad.mutate(
+      { name },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: launchpad.getLaunchpad.queryKey({ name }),
+          });
+        },
+      }
+    );
   };
 
   // Don't render if we don't have a valid name

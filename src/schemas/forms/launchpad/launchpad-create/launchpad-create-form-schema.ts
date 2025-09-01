@@ -10,7 +10,15 @@ import { ConfigMapSchema } from "./components/config-map-schema";
 
 // Main launchpad create form schema
 export const launchpadCreateFormSchema = z.object({
-  name: z.string().min(1, "Name is required").default("hello-world"),
+  name: z
+    .string()
+    .min(1, "Name is required")
+    .max(60, "Name must be 60 characters or less")
+    .regex(
+      /^[a-z][a-z0-9-]*$/,
+      "Name must start with a letter, followed by lowercase letters, digits, or hyphens (-)"
+    )
+    .default("hello-world"),
   image: z.string().min(1, "Image is required").default("nginx"),
   command: z.string().default(""),
   args: z.string().default(""),

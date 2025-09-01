@@ -8,16 +8,13 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useProjectState } from "@/contexts/project/project-context";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import Image from "next/image";
 
 interface LaunchpadCreateMessageProps {
   payload?: Partial<LaunchpadCreateFormData>;
-  testMode?: boolean;
 }
 
 export const LaunchpadCreateMessage: React.FC<LaunchpadCreateMessageProps> = ({
   payload,
-  testMode = false,
 }) => {
   const { launchpad, project } = useTRPCClients();
   const { selectedProject } = useProjectState();
@@ -29,28 +26,21 @@ export const LaunchpadCreateMessage: React.FC<LaunchpadCreateMessageProps> = ({
   const createLaunchpadMutation = useMutation({
     ...launchpad.createLaunchpad.mutationOptions(),
     onSuccess: async (_, variables) => {
-      if (!testMode) {
-        if (!selectedProject) {
-          toast.error("No project selected. Please select a project first.");
-          return;
-        }
-        const resourceTarget = convertResourceTypeToTarget(
-          "deployment",
-          variables.name
-        );
-        await addToProjectMutation.mutateAsync({
-          resources: [resourceTarget],
-          name: selectedProject,
-        });
-        toast.success(
-          "Launchpad application created and added to project successfully!"
-        );
-      } else {
-        toast.success(
-          `Test Mode: Would create launchpad application "${variables.name}"`
-        );
-        console.log("values", variables);
+      if (!selectedProject) {
+        toast.error("No project selected. Please select a project first.");
+        return;
       }
+      const resourceTarget = convertResourceTypeToTarget(
+        "deployment",
+        variables.name
+      );
+      await addToProjectMutation.mutateAsync({
+        resources: [resourceTarget],
+        name: selectedProject,
+      });
+      toast.success(
+        "Launchpad application created and added to project successfully!"
+      );
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to create launchpad application");
@@ -60,14 +50,7 @@ export const LaunchpadCreateMessage: React.FC<LaunchpadCreateMessageProps> = ({
   const handleSubmit = async (data: LaunchpadCreateFormData) => {
     try {
       console.log("data", data);
-      if (!testMode) {
-        await createLaunchpadMutation.mutateAsync(data);
-      } else {
-        toast.success(
-          `Test Mode: Would create launchpad application "${data.name}"`
-        );
-        console.log("values", data);
-      }
+      // await createLaunchpadMutation.mutateAsync(data);
     } catch (error) {
       console.error("Error creating launchpad:", error);
     }

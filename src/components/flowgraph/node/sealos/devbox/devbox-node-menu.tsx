@@ -24,26 +24,29 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 import { createDevboxContext } from "@/lib/auth/auth-utils";
 import {
   useDeleteDevboxMutation,
   useManageDevboxLifecycleMutation,
 } from "@/lib/sealos/resources/devbox/devbox-method/devbox-mutation";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
-import { useRemoveFromProjectMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
-import { createK8sContext } from "@/lib/auth/auth-utils";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function DevboxNodeMenu({ object }: { object: DevboxObject }) {
   const [open, setOpen] = React.useState(false);
   const [alertOpen, setAlertOpen] = React.useState(false);
   const devboxContext = createDevboxContext();
-  const k8sContext = createK8sContext();
+  const { project } = useTRPCClients();
+  const queryClient = useQueryClient();
 
   const deleteDevbox = useDeleteDevboxMutation(devboxContext);
   const manageDevboxLifecycle = useManageDevboxLifecycleMutation(devboxContext);
-  const removeFromProject = useRemoveFromProjectMutation(k8sContext);
+  const removeFromProjectMutation = useMutation(
+    project.removeFromProject.mutationOptions()
+  );
 
   const { name: devboxName, status } = object;
 
@@ -119,7 +122,7 @@ export default function DevboxNodeMenu({ object }: { object: DevboxObject }) {
               e.stopPropagation();
               // Convert devbox to resource target format for the mutation
               const devboxTarget = convertResourceTypeToTarget("devbox", devboxName);
-              removeFromProject.mutate({
+              removeFromProjectMutation.mutate({
                 resources: [devboxTarget],
               });
             }}
@@ -149,14 +152,14 @@ export default function DevboxNodeMenu({ object }: { object: DevboxObject }) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      
+
       <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Devbox</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{devboxName}"? This action
-              cannot be undone.
+              Are you sure you want to delete "{devboxName}"? This action cannot
+              be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

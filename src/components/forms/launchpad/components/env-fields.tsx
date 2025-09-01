@@ -1,5 +1,7 @@
 "use client";
 
+import React from "react";
+import { Plus, Trash2 } from "lucide-react";
 import { FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -24,46 +26,48 @@ export const EnvFields = ({ fieldArray }: EnvFieldsProps) => {
     fieldArray.remove(index);
   };
 
-  const updateEnv = (index: number, field: string, value: string) => {
-    const newEnv = [...(form.getValues("env") || [])];
-    newEnv[index] = { ...newEnv[index], [field]: value };
-    form.setValue("env", newEnv);
-  };
-
   return (
-    <div className="space-y-2">
-      <FormLabel>Environment Variables</FormLabel>
-      <div className="space-y-2">
+    <div className="space-y-4 border border-border rounded-lg p-4">
+      <div className="space-y-3">
         {fieldArray.fields.map((field: any, index: number) => (
-          <div key={field.id} className="flex gap-2">
-            <Input
-              placeholder="Variable name"
-              value={form.watch(`env.${index}.name`) || ""}
-              onChange={(e) => updateEnv(index, "name", e.target.value)}
-              className="flex-1"
-            />
-            <Input
-              placeholder="Value"
-              value={form.watch(`env.${index}.value`) || ""}
-              onChange={(e) => updateEnv(index, "value", e.target.value)}
-              className="flex-1"
-            />
+          <div
+            key={field.id}
+            className="flex items-center gap-3 rounded-lg"
+          >
+            <div className="flex-1 flex items-center gap-3">
+              <div className="w-[30%]">
+                <Input
+                  {...form.register(`env.${index}.name` as const)}
+                  placeholder="Variable name"
+                  className="w-full"
+                />
+              </div>
+              <div className="flex-1">
+                <Input
+                  {...form.register(`env.${index}.value` as const)}
+                  placeholder="Value"
+                  className="w-full"
+                />
+              </div>
+            </div>
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => removeEnv(index)}
+              className="text-destructive hover:text-destructive"
             >
-              Remove
+              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         ))}
         <Button
           type="button"
           variant="outline"
-          size="sm"
           onClick={addEnv}
+          className="w-full"
         >
+          <Plus className="h-4 w-4 mr-2" />
           Add Environment Variable
         </Button>
       </div>

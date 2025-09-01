@@ -35,10 +35,6 @@ export const LaunchpadCreateForm = ({
         <div className="space-y-4">
           <NameField />
           <ImageField />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <CommandField />
-            <ArgsField />
-          </div>
         </div>
 
         <ResourceFields />
@@ -48,7 +44,15 @@ export const LaunchpadCreateForm = ({
           <PortsFields fieldArray={portsFieldArray} />
         </div>
 
-        <EnvFields fieldArray={envFieldArray} />
+        <div className="space-y-2">
+          <div className="text-sm font-medium text-foreground">Environment Variables</div>
+          <EnvFields fieldArray={envFieldArray} />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CommandField />
+          <ArgsField />
+        </div>
 
         <div className="flex justify-end space-x-4">
           <Button
