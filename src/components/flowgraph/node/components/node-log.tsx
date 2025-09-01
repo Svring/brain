@@ -46,7 +46,7 @@ export default function NodeLog({ target }: NodeLogProps) {
           side="bottom"
           className="bg-background-secondary rounded-lg p-2"
         >
-          <p className="font-medium">View logs</p>
+          <p className="font-medium">Analyze Logs</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

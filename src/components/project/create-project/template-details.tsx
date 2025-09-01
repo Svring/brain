@@ -24,6 +24,7 @@ import rehypeRaw from "rehype-raw";
 import { useRouter } from "next/navigation";
 import { useChatActions } from "@/contexts/chat/chat-context";
 import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { Spinner } from "@/components/ui/spinner";
 
 import "@/styles/github-markdown-dark.css";
 
@@ -117,12 +118,20 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
     }
   };
 
-  const handleDeployWithForm = (templateForm: Record<string, string>) => {
-    deployTemplate(templateForm);
-  };
-
   return (
-    <div className="flex h-full max-h-full flex-col overflow-hidden">
+    <div className="flex h-full max-h-full flex-col overflow-hidden relative">
+      {/* Deployment Overlay */}
+      {createInstanceMutation.isPending && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4">
+            <Spinner variant="bars" className="size-8" />
+            <p className="text-sm text-muted-foreground">
+              Deploying template...
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex shrink-0 items-center gap-4 p-6 pb-4">
         <Button onClick={onBack} size="sm" variant="ghost">
@@ -329,7 +338,7 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
           template={template}
           isOpen={showInputDialog}
           onClose={() => setShowInputDialog(false)}
-          onSubmit={handleDeployWithForm}
+          onSubmit={deployTemplate}
           isLoading={createInstanceMutation.isPending}
         />
       )}

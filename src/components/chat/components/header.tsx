@@ -37,7 +37,7 @@ export function AiChatHeader({
     })
   );
 
-  console.log("threads of", selectedResource?.name, threads);
+  // console.log("threads of", selectedResource?.name, threads);
 
   const getIconUrl = () => {
     if (!selectedResource) return "https://sealos.run/logo.svg";

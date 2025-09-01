@@ -8,19 +8,6 @@ export type TemplateCardProps = {
   onViewDetails: (template: TemplateResource) => void;
 };
 
-// Function to get different colorful badge classes for categories
-const getBadgeColorClass = (index: number): string => {
-  const colorClasses = [
-    "bg-theme-blue text-white border-theme-blue",
-    "bg-theme-green text-white border-theme-green",
-    "bg-theme-purple text-white border-theme-purple",
-    "bg-theme-yellow text-black border-theme-yellow",
-    "bg-theme-red text-white border-theme-red",
-    "bg-theme-darkblue text-white border-theme-darkblue",
-  ];
-  return colorClasses[index % colorClasses.length];
-};
-
 // Function to get dot color for categories
 const getDotColor = (category: string): string => {
   const lowerCategory = category.toLowerCase();

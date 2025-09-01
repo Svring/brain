@@ -316,7 +316,7 @@ export const TemplateInputDialog = memo(function TemplateInputDialog({
                     Deploying...
                   </>
                 ) : (
-                  "Deploy Template"
+                  "Deploy"
                 )}
               </Button>
             </DialogFooter>

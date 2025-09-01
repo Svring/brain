@@ -23,7 +23,7 @@ export const determineLaunchpadStatus = (
     status.unavailableReplicas !== undefined &&
     status.unavailableReplicas > 0
   ) {
-    return "Error";
+    return "Pending";
   }
 
   if (status.readyReplicas === status.replicas) {

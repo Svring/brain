@@ -246,11 +246,11 @@ function ClusterNode({
           className="bg-background-secondary rounded-lg p-2"
         >
           <div className="text-xs">
-            <div className="">Storage Usage</div>
-            {/* <div>{storagePercent.toFixed(1)}% used</div> */}
-            <div className="text-muted-foreground">
+            {/* <div className="">Storage Usage</div> */}
+            <div>{storagePercent.toFixed(1)}% used</div>
+            {/* <div className="text-muted-foreground">
               Capacity: {clusterData.resource?.storage || "N/A"}
-            </div>
+            </div> */}
           </div>
         </TooltipContent>
       </Tooltip>

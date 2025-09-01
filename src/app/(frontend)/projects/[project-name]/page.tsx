@@ -9,7 +9,6 @@ import "@xyflow/react/dist/style.css";
 // Custom component imports
 import AiChatbox from "@/components/chat/components/chatbox";
 import AiCoin from "@/components/chat/components/coin";
-import DisplayEnvPanel from "@/components/project/display-env/display-env-panel";
 import FloatingConnectionLine from "@/components/flowgraph/edge/floating-connection-line";
 import { FlowgraphHeader } from "@/components/flowgraph/flowgraph-menu-header";
 import { FlowgraphMenuActions } from "@/components/flowgraph/flowgraph-menu-actions";
@@ -20,6 +19,7 @@ import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
 import useFlowgraph from "@/hooks/flowgraph/use-flowgraph";
 import { useManageStatusDialog } from "@/hooks/brain/use-manage-status-dialog";
 import { useFlowgraphCommand } from "@/hooks/flowgraph/use-flowgraph-command";
+import { useChatActions } from "@/contexts/chat/chat-context";
 
 // Context and utilities
 import {
@@ -43,7 +43,6 @@ import {
   useLanggraphActions,
   useLanggraphState,
 } from "@/contexts/langgraph/langgraph-context";
-import { useAppendMessagesMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
 // Floating UI Component
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
@@ -64,19 +63,6 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
     <>
       <FlowgraphHeader projectName={projectName} />
       <FlowgraphMenuActions onOpen={onCommandOpen} />
-      {/* <Sheet onOpenChange={onOpenChange} open={isOpen}>
-        <SheetContent className="w-[40vw]! max-w-none! fade-in-0 animate-in flex flex-col">
-          <SheetHeader className="shrink-0">
-            <SheetTitle>Display Environment</SheetTitle>
-            <VisuallyHidden>
-              <SheetDescription />
-            </VisuallyHidden>
-          </SheetHeader>
-          <div className="flex-1 overflow-y-auto">
-            <DisplayEnvPanel />
-          </div>
-        </SheetContent>
-      </Sheet> */}
       <FlowgraphCommandDialog
         isOpen={isCommandOpen}
         onOpenChange={onCommandOpenChange}
@@ -141,6 +127,7 @@ export default function ProjectPage({
   const { selectProject, clearSelectedProject, clearSelectedProjectResources } =
     useProjectActions();
   const { setStage } = useLanggraphActions();
+  const { closeSidebarChat } = useChatActions();
 
   useEffect(() => {
     // Set the selected project when the component mounts
@@ -153,6 +140,7 @@ export default function ProjectPage({
     // Cleanup: clear the selected project when the component unmounts
     return () => {
       clearSelectedProject();
+      // closeSidebarChat();
     };
   }, [projectName]);
 

@@ -64,7 +64,7 @@ export default function NodeMonitor({ target }: NodeMonitorProps) {
           side="bottom"
           className="bg-background-secondary rounded-lg p-2"
         >
-          <p className="font-medium">View metrics</p>
+          <p className="font-medium">Check Usage</p>
           {/* {latestData && (
             <div className="mt-1 text-xs">
               <p>CPU: {latestData.cpu.toFixed(2)}%</p>

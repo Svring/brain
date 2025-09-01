@@ -46,7 +46,7 @@ export default function DeploymentNodeMenu({
   const startLaunchpad = useStartLaunchpadMutation(sealosContext);
   const pauseLaunchpad = usePauseLaunchpadMutation(sealosContext);
 
-  console.log("object", object);
+  // console.log("object", object);
 
   const { name, resource, status } = object;
   const replicas = resource?.replicas || 0;
