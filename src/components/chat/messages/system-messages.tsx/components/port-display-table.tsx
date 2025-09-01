@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, Globe, HelpCircle, Settings } from "lucide-react";
+import { Copy, Check, Globe, HelpCircle, Settings, Trash2 } from "lucide-react";
 import { useCopy } from "@/hooks/use-copy";
 import { cn } from "@/lib/utils";
 import {
@@ -17,6 +17,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { UpdatePortDialog, CustomPortDialog } from "./index";
 
 interface Port {
@@ -37,7 +48,14 @@ export function PortDisplayTable({ ports }: PortDisplayTableProps) {
   const { copyToClipboard, isCopied } = useCopy();
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [customDialogOpen, setCustomDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedPort, setSelectedPort] = useState<Port | null>(null);
+
+  const handleDeletePort = (port: Port) => {
+    // TODO: Implement actual port deletion logic
+    console.log("Deleting port:", port);
+    setDeleteDialogOpen(false);
+  };
 
   if (!ports || ports.length === 0) {
     return null;
@@ -156,6 +174,16 @@ export function PortDisplayTable({ ports }: PortDisplayTableProps) {
                           >
                             Custom
                           </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedPort(port);
+                              setDeleteDialogOpen(true);
+                            }}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="w-3 h-3 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </>
@@ -187,6 +215,28 @@ export function PortDisplayTable({ ports }: PortDisplayTableProps) {
         onOpenChange={setCustomDialogOpen}
         selectedPort={selectedPort}
       />
+
+      {/* Delete Port Alert Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Port</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete port {selectedPort?.number}? This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => selectedPort && handleDeletePort(selectedPort)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

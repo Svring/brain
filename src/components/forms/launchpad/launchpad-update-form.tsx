@@ -27,7 +27,7 @@ export const LaunchpadUpdateForm = ({
 
   const handleSubmit = (data: LaunchpadUpdateFormData) => {
     // onSubmit(data);
-    console.log(data)
+    console.log(data);
   };
 
   // Only show fields that have values in defaultValues
