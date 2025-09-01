@@ -43,7 +43,10 @@ export const LaunchpadCreateForm = ({
 
         <ResourceFields />
 
-        <PortsFields fieldArray={portsFieldArray} />
+        <div className="space-y-2">
+          <div className="text-sm font-medium text-foreground">Ports</div>
+          <PortsFields fieldArray={portsFieldArray} />
+        </div>
 
         <EnvFields fieldArray={envFieldArray} />
 

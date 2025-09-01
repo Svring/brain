@@ -12,7 +12,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import DevboxCreateMessage from "@/components/chat/messages/system-messages.tsx/devbox/devbox-create-message";
-import LaunchpadCreateMessage from "@/components/chat/messages/system-messages.tsx/launchpad/launchpad-create-message-legacy";
+import LaunchpadCreateMessage from "@/components/chat/messages/system-messages.tsx/launchpad/launchpad-create-message";
 import ClusterCreateMessage from "@/components/chat/messages/system-messages.tsx/cluster/cluster-create-message";
 import ObjectStorageCreateMessage from "@/components/chat/messages/system-messages.tsx/objectstorage/objectstorage-create-message";
 
