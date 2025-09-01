@@ -258,30 +258,27 @@ function ClusterNode({
   );
 
   return (
-    <div className="relative">
-      {/* NodeStack with replicas-based background cards - positioned at the bottom */}
-      <div className="relative z-0">
-        <NodeStack
-          mainCard={null}
-          data={Array.from({ length: clusterData.resource?.replicas - 1 || 0 })}
-          height="60"
-          backgroundColor="bg-node-background"
-        />
-      </div>
+    <NodeStack
+      mainCard={
+        <div className="relative">
+          {/* Hem component - positioned above background cards */}
+          {hemComponent && (
+            <div className="absolute inset-x-0 top-0 z-10">
+              <div className="bg-muted border border-border-primary rounded-xl pt-8 text-xs flex flex-col h-60">
+                <div className="flex-1"></div>
+                <div className="h-10">{hemComponent}</div>
+              </div>
+            </div>
+          )}
 
-      {/* Hem component - positioned above background cards */}
-      {hemComponent && (
-        <div className="absolute inset-x-0 top-0 z-10">
-          <div className="bg-muted border border-border-primary rounded-xl pt-8 text-xs flex flex-col h-60">
-            <div className="flex-1"></div>
-            <div className="h-10">{hemComponent}</div>
-          </div>
+          {/* Main card - positioned at the top */}
+          <div className="relative z-20">{mainCard}</div>
         </div>
-      )}
-
-      {/* Main card - positioned at the top */}
-      <div className="relative z-20">{mainCard}</div>
-    </div>
+      }
+      data={Array.from({ length: clusterData.resource?.replicas - 1 || 0 })}
+      height="60"
+      backgroundColor="bg-node-background"
+    />
   );
 }
 
