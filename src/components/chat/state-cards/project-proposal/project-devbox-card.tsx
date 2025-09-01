@@ -18,8 +18,8 @@ import type { DevBox } from "@/lib/brain/resources/project/project-schemas/proje
 import { ProjectPortTable } from "./components/project-port-table";
 import { DEVBOX_RUNTIME_ICONS } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-icons";
 
-// Import runtime options from devbox create message
-import { runtimeOptions } from "@/components/chat/messages/system-messages.tsx/devbox/devbox-create-message";
+// Import devbox runtimes from sealos resources
+import { DEVBOX_RUNTIMES } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-runtimes";
 
 interface ProjectDevBoxCardProps {
   resource: DevBox;
@@ -85,8 +85,24 @@ export function ProjectDevBoxCard({
             </Button>
           </div>
         </div>
-        <div className="text-sm pl-1 text-muted-foreground">
-          Runtime: <span className="text-foreground">{editData.runtime}</span>
+        <div className="pl-1">
+          <Select
+            value={editData.runtime}
+            onValueChange={(value) =>
+              setEditData({ ...editData, runtime: value as any })
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select runtime" />
+            </SelectTrigger>
+            <SelectContent>
+              {DEVBOX_RUNTIMES.map((runtime) => (
+                <SelectItem key={runtime} value={runtime}>
+                  {runtime}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Ports Section */}

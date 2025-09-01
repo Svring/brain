@@ -16,8 +16,8 @@ import Image from "next/image";
 import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
 import type { Database as DatabaseType } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 
-// Import database type options from cluster create message
-import { clusterTypeOptions } from "@/components/chat/messages/system-messages.tsx/cluster/cluster-create-message";
+// Import cluster types from sealos resources
+import { CLUSTER_TYPES } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-types";
 
 interface ProjectDatabaseCardProps {
   resource: DatabaseType;
@@ -90,9 +90,9 @@ export function ProjectDatabaseCard({
               <SelectValue placeholder="Select database type" />
             </SelectTrigger>
             <SelectContent>
-              {clusterTypeOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
+              {CLUSTER_TYPES.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {type}
                 </SelectItem>
               ))}
             </SelectContent>
