@@ -47,7 +47,7 @@ export const transformServiceResources = (
 ): TransformedService[] => {
   return resources.map((resource) => ({
     serviceName: resource.metadata.name,
-    ports: resource.spec.ports || [],
+    ports: resource.spec?.ports || [],
   }));
 };
 
@@ -85,13 +85,14 @@ export const composeAddressFromService = (
 };
 
 /**
- * Complete ports information by matching port numbers with service ports
- * and adding additional properties like name, nodePort, protocol, etc.
+ * Complete ports information by scanning service ports directly
+ * and returning a list of CompletedPort objects with all available information.
+ * If ports are provided, merges service data with existing port information.
  */
 export function enrichPortsWithService(
-  ports: PortInput[],
   servicesOrResources: TransformedService[] | ServiceResource[],
-  context?: K8sApiContext
+  context?: K8sApiContext,
+  existingPorts?: PortInput[]
 ): CompletedPort[] {
   // Check if we received raw resources or transformed services
   const transformedServices =
@@ -101,29 +102,50 @@ export function enrichPortsWithService(
       ? transformServiceResources(servicesOrResources as ServiceResource[])
       : (servicesOrResources as TransformedService[]);
 
-  const completedPorts = ports.map((portInput) => {
-    // Find matching service port by port number
-    for (const service of transformedServices) {
-      const matchingPort = service.ports.find(
-        (servicePort) => servicePort.port === portInput.number
-      );
+  let completedPorts: CompletedPort[] = [];
 
-      if (matchingPort) {
-        return {
-          number: portInput.number,
-          name: matchingPort.name,
-          ...(matchingPort.nodePort && { nodePort: matchingPort.nodePort }),
-          protocol: matchingPort.protocol,
-          serviceName: service.serviceName,
-        };
+  if (existingPorts && existingPorts.length > 0) {
+    // Map existing ports with service data
+    completedPorts = existingPorts.map((portInput) => {
+      // Find matching service port by port number
+      for (const service of transformedServices) {
+        const matchingPort = service.ports?.find(
+          (servicePort) => servicePort.port === portInput.number
+        );
+
+        if (matchingPort) {
+          return {
+            number: portInput.number,
+            name: matchingPort.name,
+            ...(matchingPort.nodePort && { nodePort: matchingPort.nodePort }),
+            protocol: matchingPort.protocol,
+            serviceName: service.serviceName,
+          };
+        }
       }
-    }
 
-    // If no matching service port found, return original port with just the number
-    return {
-      number: portInput.number,
-    };
-  });
+      // If no matching service port found, return original port with just the number
+      return {
+        number: portInput.number,
+      };
+    });
+  } else {
+    // Scan all service ports and create CompletedPort objects
+    transformedServices.forEach((service) => {
+      if (service.ports && Array.isArray(service.ports)) {
+        service.ports.forEach((servicePort) => {
+          const completedPort: CompletedPort = {
+            number: servicePort.port,
+            name: servicePort.name,
+            ...(servicePort.nodePort && { nodePort: servicePort.nodePort }),
+            protocol: servicePort.protocol,
+            serviceName: service.serviceName,
+          };
+          completedPorts.push(completedPort);
+        });
+      }
+    });
+  }
 
   // If context and regionUrl are provided, compose addresses
   return context

@@ -8,7 +8,6 @@ import {
   StatefulsetObject,
   StatefulsetObjectSchema,
 } from "@/lib/sealos/resources/statefulset/statefulset-object-schema";
-import _ from "lodash";
 
 export const getStatefulSetObject = async (
   context: K8sApiContext,
@@ -23,26 +22,26 @@ export const getStatefulSetObject = async (
     []
   );
 
-  statefulSetObject.ports = _.chain(statefulSetObject.ports)
-    .thru((ports) =>
-      enrichPortsWithService(
-        ports,
-        relatedResources.filter(
-          (resource) => resource.kind === "Service"
-        ) as any[],
-        context
-      )
-    )
-    .thru((ports) =>
-      enrichPortsWithIngress(
-        ports,
-        relatedResources.filter(
-          (resource) => resource.kind === "Ingress"
-        ) as any[],
-        context
-      )
-    )
-    .value();
+  // Ensure ports array exists
+  if (!statefulSetObject.ports) {
+    statefulSetObject.ports = [];
+  }
+
+  // Enrich ports with service information first
+  statefulSetObject.ports = enrichPortsWithService(
+    relatedResources.filter((resource) => resource.kind === "Service") as any[],
+    context,
+    statefulSetObject.ports
+  );
+
+  // Then enrich with ingress information
+  statefulSetObject.ports = enrichPortsWithIngress(
+    relatedResources.filter((resource) => resource.kind === "Ingress") as any[],
+    context,
+    statefulSetObject.ports
+  );
+
+  // console.log("statefulSetObject.ports", statefulSetObject.ports);
 
   // console.log("getStatefulSetObject", statefulSetObject);
   return StatefulsetObjectSchema.parse(statefulSetObject);

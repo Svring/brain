@@ -93,20 +93,27 @@ export const transformIngressResources = (
         "nginx.ingress.kubernetes.io/backend-protocol"
       ];
 
-    resource.spec.rules.forEach((rule) => {
-      const host = rule.host;
+    // Add null checks for spec.rules and nested properties
+    if (resource.spec?.rules && Array.isArray(resource.spec.rules)) {
+      resource.spec.rules.forEach((rule) => {
+        const host = rule.host;
 
-      rule.http.paths.forEach((path) => {
-        const port = path.backend.service.port.number;
+        if (rule.http?.paths && Array.isArray(rule.http.paths)) {
+          rule.http.paths.forEach((path) => {
+            if (path.backend?.service?.port?.number) {
+              const port = path.backend.service.port.number;
 
-        result.push({
-          networkName,
-          port,
-          protocol,
-          host,
-        });
+              result.push({
+                networkName,
+                port,
+                protocol,
+                host,
+              });
+            }
+          });
+        }
       });
-    });
+    }
   });
 
   return result;
@@ -146,13 +153,14 @@ export const composeAddressFromIngress = (
 };
 
 /**
- * Enrich port objects with ingress information by matching port numbers.
- * Overwrites existing properties if they conflict.
+ * Enrich port objects by scanning ingress information directly
+ * and returning a list of EnrichedPort objects with all available information.
+ * If ports are provided, merges ingress data with existing port information.
  */
 export function enrichPortsWithIngress(
-  ports: PortWithNumber[],
   ingressesOrResources: TransformedIngress[] | IngressResource[],
-  context?: K8sApiContext
+  context?: K8sApiContext,
+  existingPorts?: PortWithNumber[]
 ): EnrichedPort[] {
   // Check if we received raw resources or transformed ingresses
   const transformedIngresses =
@@ -162,25 +170,43 @@ export function enrichPortsWithIngress(
       ? transformIngressResources(ingressesOrResources as IngressResource[])
       : (ingressesOrResources as TransformedIngress[]);
 
-  const enrichedPorts = ports.map((port) => {
-    // Find matching ingress by port number
-    const matchingIngress = transformedIngresses.find(
-      (ingress) => ingress.port === port.number
-    );
+  let enrichedPorts: EnrichedPort[] = [];
 
-    if (matchingIngress) {
-      // Merge ingress data into port object, overwriting existing properties
-      return {
-        ...port,
-        networkName: matchingIngress.networkName,
-        protocol: matchingIngress.protocol,
-        host: matchingIngress.host,
-      };
-    }
+  if (existingPorts && existingPorts.length > 0) {
+    // Map existing ports with ingress data
+    enrichedPorts = existingPorts.map((port) => {
+      // Find matching ingress by port number
+      const matchingIngress = transformedIngresses.find(
+        (ingress) => ingress.port === port.number
+      );
 
-    // Return original port if no matching ingress found
-    return port;
-  });
+      if (matchingIngress) {
+        // Merge ingress data into port object, overwriting existing properties
+        return {
+          ...port,
+          networkName: matchingIngress.networkName,
+          protocol: matchingIngress.protocol,
+          host: matchingIngress.host,
+        };
+      }
+
+      // Return original port if no matching ingress found
+      return port;
+    });
+  } else {
+    // Scan all ingress ports and create EnrichedPort objects
+    transformedIngresses.forEach((ingress) => {
+      if (ingress && typeof ingress.port === "number") {
+        const enrichedPort: EnrichedPort = {
+          number: ingress.port,
+          networkName: ingress.networkName,
+          protocol: ingress.protocol,
+          host: ingress.host,
+        };
+        enrichedPorts.push(enrichedPort);
+      }
+    });
+  }
 
   // If context is provided, compose addresses
   return context

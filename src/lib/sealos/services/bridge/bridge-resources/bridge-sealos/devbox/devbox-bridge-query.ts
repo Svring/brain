@@ -9,7 +9,6 @@ import {
   transformDevboxImage,
 } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 import { DevboxObjectSchema } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
-import _ from "lodash";
 
 export const getDevboxObject = async (
   context: K8sApiContext,
@@ -26,26 +25,26 @@ export const getDevboxObject = async (
 
   devboxObject.image = transformDevboxImage(devboxObject.image);
 
-  devboxObject.ports = _.chain(devboxObject.ports)
-    .thru((ports) =>
-      enrichPortsWithService(
-        ports,
-        relatedResources.filter(
-          (resource) => resource.kind === "Service"
-        ) as any[],
-        context
-      )
-    )
-    .thru((ports) =>
-      enrichPortsWithIngress(
-        ports,
-        relatedResources.filter(
-          (resource) => resource.kind === "Ingress"
-        ) as any[],
-        context
-      )
-    )
-    .value();
+  // Ensure ports array exists
+  if (!devboxObject.ports) {
+    devboxObject.ports = [];
+  }
+
+  // Enrich ports with service information first
+  devboxObject.ports = enrichPortsWithService(
+    relatedResources.filter((resource) => resource.kind === "Service") as any[],
+    context,
+    devboxObject.ports
+  );
+
+  // Then enrich with ingress information
+  devboxObject.ports = enrichPortsWithIngress(
+    relatedResources.filter((resource) => resource.kind === "Ingress") as any[],
+    context,
+    devboxObject.ports
+  );
+
+  console.log("devboxObject.ports", devboxObject.ports);
 
   devboxObject.ssh = enrichSshWithRegionUrl(devboxObject.ssh, context);
 

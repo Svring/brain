@@ -24,26 +24,26 @@ export const getDeploymentObject = async (
 
   // console.log("relatedResources", relatedResources);
 
-  deploymentObject.ports = _.chain(deploymentObject.ports)
-    .thru((ports) =>
-      enrichPortsWithService(
-        ports,
-        relatedResources.filter(
-          (resource) => resource.kind === "Service"
-        ) as any[],
-        context
-      )
-    )
-    .thru((ports) =>
-      enrichPortsWithIngress(
-        ports,
-        relatedResources.filter(
-          (resource) => resource.kind === "Ingress"
-        ) as any[],
-        context
-      )
-    )
-    .value();
+  // Ensure ports array exists
+  if (!deploymentObject.ports) {
+    deploymentObject.ports = [];
+  }
+
+  // Enrich ports with service information first
+  deploymentObject.ports = enrichPortsWithService(
+    relatedResources.filter((resource) => resource.kind === "Service") as any[],
+    context,
+    deploymentObject.ports
+  );
+
+  // Then enrich with ingress information
+  deploymentObject.ports = enrichPortsWithIngress(
+    relatedResources.filter((resource) => resource.kind === "Ingress") as any[],
+    context,
+    deploymentObject.ports
+  );
+
+  console.log("deploymentObject.ports", deploymentObject.ports);
 
   // console.log("getDeploymentObject", deploymentObject);
   return DeploymentObjectSchema.parse(deploymentObject);
