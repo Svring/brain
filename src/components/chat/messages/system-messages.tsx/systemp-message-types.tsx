@@ -18,12 +18,11 @@ import ClusterUpdateResource from "./cluster/components/cluster-update/cluster-u
 import ClusterConnectionMessage from "./cluster/cluster-connection-message";
 
 import LaunchpadMessage from "./launchpad/launchpad-message";
-import LaunchpadUpdateMessage from "./launchpad/launchpad-update-message";
-import LaunchpadCreateMessage from "./launchpad/launchpad-create-message-legacy";
-import LaunchpadUpdateResource from "./launchpad/components/launchpad-update/launchpad-update-resource";
-import LaunchpadUpdateImage from "./launchpad/components/launchpad-update/launchpad-update-image";
-import LaunchpadUpdatePort from "./launchpad/components/launchpad-update/launchpad-update-port";
-
+// import LaunchpadUpdateMessage from "./launchpad/launchpad-update-message";
+import LaunchpadCreateMessage from "./launchpad/launchpad-create-message";
+// import LaunchpadUpdateResource from "./launchpad/components/launchpad-update/launchpad-update-resource";
+// import LaunchpadUpdateImage from "./launchpad/components/launchpad-update/launchpad-update-image";
+// import LaunchpadUpdatePort from "./launchpad/components/launchpad-update/launchpad-update-port";
 import ObjectStorageMessage from "./objectstorage/objectstorage-message";
 import ObjectStorageCreateMessage from "./objectstorage/objectstorage-create-message";
 import ObjectStorageUpdateMessage from "./objectstorage/objectstorage-update-message";
@@ -74,18 +73,18 @@ export const SystemMessageType = {
       <LaunchpadMessage target={target} />
     ),
     create: (payload?: any) => <LaunchpadCreateMessage payload={payload} />,
-    update: (target: BuiltinResourceTarget, payload: any) => (
-      <LaunchpadUpdateMessage target={target} payload={payload} />
-    ),
-    updateResource: (target: BuiltinResourceTarget) => (
-      <LaunchpadUpdateResource target={target} />
-    ),
-    updateImage: (target: BuiltinResourceTarget) => (
-      <LaunchpadUpdateImage target={target} />
-    ),
-    updatePort: (target: BuiltinResourceTarget) => (
-      <LaunchpadUpdatePort target={target} />
-    ),
+    // update: (target: BuiltinResourceTarget, payload: any) => (
+    //   <LaunchpadUpdateMessage target={target} payload={payload} />
+    // ),
+    // updateResource: (target: BuiltinResourceTarget) => (
+    //   <LaunchpadUpdateResource target={target} />
+    // ),
+    // updateImage: (target: BuiltinResourceTarget) => (
+    //   <LaunchpadUpdateImage target={target} />
+    // ),
+    // updatePort: (target: BuiltinResourceTarget) => (
+    //   <LaunchpadUpdatePort target={target} />
+    // ),
   },
   objectstorage: {
     detail: (target: CustomResourceTarget) => (

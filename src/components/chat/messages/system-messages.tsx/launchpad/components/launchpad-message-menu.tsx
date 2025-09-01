@@ -142,8 +142,8 @@ export default function LaunchpadMessageMenu({
                 handlePause();
               }}
               onSelect={(e) => e.preventDefault()}
-              disabled={currentStatus === "Pending" || pauseLaunchpad.isPending}
-              className={currentStatus === "Pending" ? "opacity-50" : ""}
+              disabled={pauseLaunchpad.isPending}
+              className=""
             >
               <Pause className="mr-2 h-4 w-4" />
               Pause

@@ -29,7 +29,7 @@ import {
 import { AIResponse } from "@/components/shadcn-io/ai/response";
 import { jsonSchemaToActionParameters } from "@copilotkit/shared";
 import { zodToJsonSchema } from "zod-to-json-schema";
-import LaunchpadCreateMessage from "@/components/chat/messages/system-messages.tsx/launchpad/launchpad-create-message-legacy";
+import LaunchpadCreateMessage from "@/components/chat/messages/system-messages.tsx/launchpad/launchpad-create-message";
 import { LaunchpadCreateRequestSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
 import { UpdateResourceForm } from "@/components/copilot/sealos/launchpad/update-resource-form";
 import { UpdateImageForm } from "@/components/copilot/sealos/launchpad/update-image-form";
