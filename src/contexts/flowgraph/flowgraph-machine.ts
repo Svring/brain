@@ -162,29 +162,30 @@ export const flowgraphMachine = createMachine({
     SELECT_NODE: {
       actions: assign({
         selectedNode: ({ event }) => event.node,
-        nodes: ({ context }) =>
-          applySplitLayout(context.nodes, context.edges, SPLIT_OPTIONS),
+        // nodes: ({ context }) =>
+        //   // applySplitLayout(context.nodes, context.edges, SPLIT_OPTIONS),
+        //   context.nodes,
       }),
     },
     SELECT_EDGE: {
       actions: assign({
         selectedEdge: ({ event }) => event.edge,
-        nodes: ({ context }) =>
-          applySplitLayout(context.nodes, context.edges, SPLIT_OPTIONS),
+        // nodes: ({ context }) =>
+        //   applySplitLayout(context.nodes, context.edges, SPLIT_OPTIONS),
       }),
     },
     CLEAR_SELECTED_NODE: {
       actions: assign({
         selectedNode: () => null,
-        nodes: ({ context }) =>
-          applySplitLayout(context.nodes, context.edges, SPLIT_OPTIONS),
+        // nodes: ({ context }) =>
+        //   applySplitLayout(context.nodes, context.edges, SPLIT_OPTIONS),
       }),
     },
     CLEAR_SELECTED_EDGE: {
       actions: assign({
         selectedEdge: () => null,
-        nodes: ({ context }) =>
-          applySplitLayout(context.nodes, context.edges, SPLIT_OPTIONS),
+        // nodes: ({ context }) =>
+        //   applySplitLayout(context.nodes, context.edges, SPLIT_OPTIONS),
       }),
     },
     CLEAR_ALL_STATE: {

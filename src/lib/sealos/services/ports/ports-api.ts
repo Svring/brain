@@ -27,7 +27,7 @@ export async function checkPortReachability(
  * @param timeout - Timeout in milliseconds (default: 1000)
  * @returns Promise<Array<{port: number, reachable: boolean}>> - Results for each port
  */
-export async function checkMultiplePortsReachability(
+export async function checkPortsReachability(
   ports: number[],
   host: string,
   timeout: number = 1000

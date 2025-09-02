@@ -51,7 +51,7 @@ function FlowgraphFocusHandler() {
         maxZoom: 1,
       });
     }
-  }, [state.context.selectedNode, fitView]);
+  }, [state.context.selectedNode]);
 
   return null;
 }

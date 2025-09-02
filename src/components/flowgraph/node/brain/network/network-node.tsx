@@ -39,9 +39,6 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
       }))
     : [];
 
-  console.log("readyStatus", readyStatus);
-  console.log("networkData", networkData);
-
   // Determine front card URL
   const frontCardUrl =
     networkData.length > 0
@@ -53,6 +50,7 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
 
   const handleIconClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     if (notReadyCount > 0) {
       selectResource(target);
       appendSystemMessage("universal.diagnoseNetwork", target);
@@ -61,6 +59,7 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
 
   const handleAddressClick = (e: React.MouseEvent, address: string) => {
     e.stopPropagation();
+    e.preventDefault();
     if (address.startsWith("http")) {
       window.open(address, "_blank");
     }
@@ -68,6 +67,7 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
 
   const handleCopyClick = (e: React.MouseEvent, url: string) => {
     e.stopPropagation();
+    e.preventDefault();
     copyToClipboard(url, nodeId);
   };
 
