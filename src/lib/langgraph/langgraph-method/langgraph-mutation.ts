@@ -23,7 +23,7 @@ import {
  */
 export const useCreateNewChatSessionMutation = () => {
   const queryClient = useQueryClient();
-  const { setThreadId } = useCopilotContext();
+  const { selectThread } = useChatActions();
   const { reset } = useCopilotChatHeadless_c();
 
   return useMutation({
@@ -39,8 +39,8 @@ export const useCreateNewChatSessionMutation = () => {
       return await createThread({ kubeconfig, projectName, resourceName });
     },
     onSuccess: (thread) => {
-      // Set the new thread ID in copilot context
-      setThreadId(thread.thread_id);
+      // Set the new thread ID in chat context
+      selectThread(thread.thread_id);
       // Reset the chat headless state
       reset();
       // Invalidate and refetch threads list after creating a new thread

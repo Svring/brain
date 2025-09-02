@@ -1,6 +1,7 @@
 "use client";
 
 import { assign, createMachine } from "xstate";
+import { Thread } from "@langchain/langgraph-sdk";
 
 export interface ChatSectionState {
   open: boolean;
@@ -9,11 +10,15 @@ export interface ChatSectionState {
 export interface ChatContextState {
   sidebarChat: ChatSectionState;
   floatingChat: ChatSectionState;
+  selectedThreadId: string;
+  threads: Thread[];
 }
 
 export type ChatEvent =
   | { type: "SET_SIDEBAR_CHAT_OPEN"; open: boolean }
-  | { type: "SET_FLOATING_CHAT_OPEN"; open: boolean };
+  | { type: "SET_FLOATING_CHAT_OPEN"; open: boolean }
+  | { type: "SELECT_THREAD"; threadId: string }
+  | { type: "SET_THREADS"; threads: Thread[] };
 
 export const chatMachine = createMachine({
   /** XState v5 generics */
@@ -23,6 +28,8 @@ export const chatMachine = createMachine({
   context: {
     sidebarChat: { open: false },
     floatingChat: { open: false },
+    selectedThreadId: "",
+    threads: [],
   },
   states: {
     idle: {},
@@ -42,6 +49,16 @@ export const chatMachine = createMachine({
           ...context.floatingChat,
           open: event.open,
         }),
+      }),
+    },
+    SELECT_THREAD: {
+      actions: assign({
+        selectedThreadId: ({ event }) => event.threadId,
+      }),
+    },
+    SET_THREADS: {
+      actions: assign({
+        threads: ({ event }) => event.threads,
       }),
     },
   },

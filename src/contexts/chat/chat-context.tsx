@@ -4,6 +4,7 @@ import { createBrowserInspector } from "@statelyai/inspect";
 import { useMachine } from "@xstate/react";
 import { createContext, type ReactNode, useContext } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
+import type { Thread } from "@langchain/langgraph-sdk";
 import { chatMachine } from "@/contexts/chat/chat-machine";
 import { useProjectActions } from "../project/project-context";
 
@@ -42,23 +43,30 @@ export function useChatState() {
   return {
     sidebarChatOpen: state.context.sidebarChat.open,
     floatingChatOpen: state.context.floatingChat.open,
+    selectedThreadId: state.context.selectedThreadId,
+    threads: state.context.threads,
   };
 }
 
 export function useChatActions() {
   const { send } = useChatContext();
-  const { clearSelectedResource } = useProjectActions();
+  // const { clearSelectedResource } = useProjectActions();
 
   return {
     openSidebarChat: () => send({ type: "SET_SIDEBAR_CHAT_OPEN", open: true }),
     closeSidebarChat: () => {
       send({ type: "SET_SIDEBAR_CHAT_OPEN", open: false });
-      clearSelectedResource();
+      // clearSelectedResource();
     },
 
     openFloatingChat: () =>
       send({ type: "SET_FLOATING_CHAT_OPEN", open: true }),
     closeFloatingChat: () =>
       send({ type: "SET_FLOATING_CHAT_OPEN", open: false }),
+
+    selectThread: (threadId: string) =>
+      send({ type: "SELECT_THREAD", threadId }),
+    setThreads: (threads: Thread[]) =>
+      send({ type: "SET_THREADS", threads }),
   };
 }

@@ -27,15 +27,14 @@ export function AiChatHeader({
   const { selectedProject, selectedResource } = useProjectState();
   const { mutate: createNewChatSession, isPending } =
     useCreateNewChatSessionMutation();
-  const { setThreadId } = useCopilotContext();
 
-  const { data: threads } = useQuery(
-    searchThreadsOptions({
-      resourceName: selectedResource?.name,
-      projectName: selectedProject,
-      kubeconfig: auth?.kubeconfig,
-    })
-  );
+  // const { data: threads } = useQuery(
+  //   searchThreadsOptions({
+  //     resourceName: selectedResource?.name,
+  //     projectName: selectedProject,
+  //     kubeconfig: auth?.kubeconfig,
+  //   })
+  // );
 
   // console.log("threads of", selectedResource?.name, threads);
 
@@ -72,8 +71,8 @@ export function AiChatHeader({
             onClick={() =>
               createNewChatSession({
                 kubeconfig: auth!.kubeconfig,
-                projectName: selectedProject!,
-                resourceName: selectedResource!.name,
+                projectName: selectedProject ?? undefined,
+                resourceName: selectedResource?.name ?? undefined,
               })
             }
             disabled={isPending}

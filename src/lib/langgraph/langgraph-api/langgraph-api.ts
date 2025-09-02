@@ -19,8 +19,11 @@ export const createThread = async ({
 }) => {
   const client = createClient();
 
-  // Hash the kubeconfig using SHA-256
-  const kubeconfigHash = createHash("sha256").update(kubeconfig).digest("hex");
+  // URL decode the kubeconfig before hashing
+  const decodedKubeconfig = decodeURIComponent(kubeconfig);
+  const kubeconfigHash = createHash("sha256")
+    .update(decodedKubeconfig)
+    .digest("hex");
 
   // Store the hash in metadata instead of the plain kubeconfig
   const metadata: Record<string, any> = { kubeconfigHash };
@@ -49,11 +52,12 @@ export const getThread = async (threadId: string) => {
 export const searchThreads = async (metadata: Record<string, any>) => {
   const client = createClient();
 
-  // Convert kubeconfig to kubeconfigHash if present
+  // Convert kubeconfig to kubeconfigHash if present, after URL decoding
   const searchMetadata = { ...metadata };
   if (searchMetadata.kubeconfig) {
+    const decodedKubeconfig = decodeURIComponent(searchMetadata.kubeconfig);
     const kubeconfigHash = createHash("sha256")
-      .update(searchMetadata.kubeconfig)
+      .update(decodedKubeconfig)
       .digest("hex");
     searchMetadata.kubeconfigHash = kubeconfigHash;
     delete searchMetadata.kubeconfig;
@@ -64,9 +68,9 @@ export const searchThreads = async (metadata: Record<string, any>) => {
       metadata: searchMetadata,
       sortBy: "created_at",
       sortOrder: "desc",
-      limit: 5,
     })
     .then((res) => {
-      return res.filter((obj) => obj.values !== null);
+      console.log("res", res);
+      return res.filter((obj) => obj.values);
     });
 };

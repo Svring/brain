@@ -37,7 +37,9 @@ export const langgraphRouter = t.router({
   searchThreads: t.procedure
     .input(z.record(z.any()))
     .query(async ({ input }) => {
-      return await searchThreads(input);
+      const response = await searchThreads(input);
+      console.log("response", response);
+      return response;
     }),
 });
 
