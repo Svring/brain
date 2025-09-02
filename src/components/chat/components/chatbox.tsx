@@ -5,17 +5,10 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { AiMessages } from "./messages";
 import { AiChatInput } from "./input";
 import { AiChatHeader } from "./header";
-import { useUnmount } from "@reactuses/core";
-import { useProjectActions } from "@/contexts/project/project-context";
 
 export default function AiChatbox() {
   const { sidebarChatOpen } = useChatState();
   const { closeSidebarChat } = useChatActions();
-  const { clearSelectedResource } = useProjectActions();
-
-  useUnmount(() => {
-    clearSelectedResource();
-  });
 
   return (
     <Sheet

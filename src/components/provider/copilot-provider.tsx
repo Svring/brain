@@ -2,10 +2,10 @@
 
 import { CopilotKit } from "@copilotkit/react-core";
 import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
-import { useEffect } from "react";
+import { useMount } from "@reactuses/core";
 
 // Component for creating threads
 function ThreadCreator({ children }: { children: React.ReactNode }) {
@@ -24,15 +24,11 @@ function ThreadCreator({ children }: { children: React.ReactNode }) {
   );
 
   // Create thread on mount if none exists and auth is available
-  useEffect(() => {
-    if (
-      !selectedThreadId &&
-      auth?.kubeconfig &&
-      !createThreadMutation.isPending
-    ) {
+  useMount(() => {
+    if (!selectedThreadId && auth?.kubeconfig) {
       createThreadMutation.mutate({ kubeconfig: auth.kubeconfig });
     }
-  }, [selectedThreadId, auth?.kubeconfig, createThreadMutation]);
+  });
 
   // Loading state
   if (createThreadMutation.isPending) {

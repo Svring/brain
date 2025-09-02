@@ -50,13 +50,11 @@ export function useChatState() {
 
 export function useChatActions() {
   const { send } = useChatContext();
-  // const { clearSelectedResource } = useProjectActions();
 
   return {
     openSidebarChat: () => send({ type: "SET_SIDEBAR_CHAT_OPEN", open: true }),
     closeSidebarChat: () => {
       send({ type: "SET_SIDEBAR_CHAT_OPEN", open: false });
-      // clearSelectedResource();
     },
 
     openFloatingChat: () =>
@@ -66,7 +64,6 @@ export function useChatActions() {
 
     selectThread: (threadId: string) =>
       send({ type: "SELECT_THREAD", threadId }),
-    setThreads: (threads: Thread[]) =>
-      send({ type: "SET_THREADS", threads }),
+    setThreads: (threads: Thread[]) => send({ type: "SET_THREADS", threads }),
   };
 }

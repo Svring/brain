@@ -2,11 +2,11 @@
 
 import { createBrowserInspector } from "@statelyai/inspect";
 import { useMachine } from "@xstate/react";
-import { useEffect, createContext, type ReactNode, useContext } from "react";
+import { createContext, type ReactNode, useContext, useEffect } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import { orchestratorMachine } from "@/contexts/orchestrator/orchestrator-machine";
-import { useProjectContext } from "@/contexts/project/project-context";
-import { useFlowgraphContext } from "@/contexts/flowgraph/flowgraph-context";
+import { useProjectActions } from "../project/project-context";
+import { useChatState } from "../chat/chat-context";
 
 // const inspector = createBrowserInspector();
 
@@ -16,47 +16,32 @@ interface OrchestratorContextValue {
   actorRef: ActorRefFrom<typeof orchestratorMachine>;
 }
 
-export const OrchestratorContext =
-  createContext<OrchestratorContextValue | undefined>(undefined);
+export const OrchestratorContext = createContext<
+  OrchestratorContextValue | undefined
+>(undefined);
 
-export const OrchestratorProvider = ({
-  children,
-}: {
-  children: ReactNode;
-}) => {
+export const OrchestratorProvider = ({ children }: { children: ReactNode }) => {
   const [state, send, actorRef] = useMachine(orchestratorMachine, {
     // inspect: inspector.inspect,
   });
 
-  const {
-    state: projectState,
-  } = useProjectContext();
-  const {
-    state: flowState,
-  } = useFlowgraphContext();
+  const { sidebarChatOpen } = useChatState();
+  const { clearSelectedResource } = useProjectActions();
 
+  // Monitor sidebar chat state changes and perform side effects
   useEffect(() => {
-    send({
-      type: "PROJECT_UPDATED",
-      project: {
-        totalProjects: projectState.context.allProjects.length,
-        selectedProject: projectState.context.selectedProject,
-        selectedProjectResources: projectState.context.selectedProjectResources,
-      },
-    });
-  }, [projectState.context.allProjects, projectState.context.selectedProject, projectState.context.selectedProjectResources, send]);
+    const previousState = state.context.monitoredStates.sidebarChatOpen;
 
-  useEffect(() => {
-    send({
-      type: "FLOWGRAPH_UPDATED",
-      flowgraph: {
-        nodeCount: flowState.context.nodes.length,
-        edgeCount: flowState.context.edges.length,
-        selectedNode: flowState.context.selectedNode,
-        selectedEdge: flowState.context.selectedEdge,
-      },
-    });
-  }, [flowState.context.nodes, flowState.context.edges, flowState.context.selectedNode, flowState.context.selectedEdge, send]);
+    // Only update if the state actually changed
+    if (previousState !== sidebarChatOpen) {
+      send({ type: "UPDATE_SIDEBAR_CHAT_STATE", open: sidebarChatOpen });
+
+      // Perform side effect: clear selected resource when sidebar chat closes
+      if (previousState === true && sidebarChatOpen === false) {
+        clearSelectedResource();
+      }
+    }
+  }, [sidebarChatOpen, state.context.monitoredStates.sidebarChatOpen]);
 
   return (
     <OrchestratorContext.Provider value={{ state, send, actorRef }}>
@@ -77,10 +62,15 @@ export function useOrchestratorContext() {
 export function useOrchestratorState() {
   const { state } = useOrchestratorContext();
   return {
-    project: state.context.project,
-    flowgraph: state.context.flowgraph,
+    monitoredStates: state.context.monitoredStates,
   };
 }
 
+export function useOrchestratorActions() {
+  const { send } = useOrchestratorContext();
 
-
+  return {
+    updateSidebarChatState: (open: boolean) =>
+      send({ type: "UPDATE_SIDEBAR_CHAT_STATE", open }),
+  };
+}

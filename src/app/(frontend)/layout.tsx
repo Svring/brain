@@ -10,6 +10,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { ChatProvider } from "@/contexts/chat/chat-context";
 import { ProjectProvider } from "@/contexts/project/project-context";
 import { LanggraphProvider } from "@/contexts/langgraph/langgraph-context";
+import { OrchestratorProvider } from "@/contexts/orchestrator/orchestrator-context";
 import { ReactScan } from "@/components/provider/react-scan-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/auth/auth-context";
@@ -71,10 +72,12 @@ export default async function RootLayout({
                 <CopilotProvider>
                   <LanggraphProvider>
                     <ProjectProvider>
-                      <SidebarProvider defaultOpen={false}>
-                        <AppSidebar />
-                        {children}
-                      </SidebarProvider>
+                      <OrchestratorProvider>
+                        <SidebarProvider defaultOpen={false}>
+                          <AppSidebar />
+                          {children}
+                        </SidebarProvider>
+                      </OrchestratorProvider>
                     </ProjectProvider>
                   </LanggraphProvider>
                 </CopilotProvider>

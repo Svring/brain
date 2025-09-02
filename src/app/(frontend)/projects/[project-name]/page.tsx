@@ -140,7 +140,6 @@ export default function ProjectPage({
     // Cleanup: clear the selected project when the component unmounts
     return () => {
       clearSelectedProject();
-      // closeSidebarChat();
     };
   }, [projectName]);
 
@@ -149,7 +148,6 @@ export default function ProjectPage({
       <FlowgraphProvider>
         <div className="relative h-screen w-full">
           <ProjectFlow projectName={projectName} />
-
           <ProjectFloatingUI projectName={projectName} />
         </div>
       </FlowgraphProvider>
