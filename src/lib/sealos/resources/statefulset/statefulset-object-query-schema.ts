@@ -212,6 +212,27 @@ export const StatefulsetObjectQuerySchema = z.object({
       return [];
     })
     .optional(),
+  launchCommand: z
+    .any()
+    .describe(
+      JSON.stringify({
+        resourceType: "statefulset",
+        path: ["spec.template.spec.containers"],
+      })
+    )
+    .transform((containers) => {
+      if (Array.isArray(containers) && containers.length > 0) {
+        const container = containers[0];
+        return {
+          command: container.command || [],
+          args: container.args || [],
+        };
+      }
+      return {
+        command: [],
+        args: [],
+      };
+    }),
   configMap: z
     .array(
       z.object({
@@ -220,13 +241,25 @@ export const StatefulsetObjectQuerySchema = z.object({
       })
     )
     .optional(),
-  localStorage: z
-    .array(
-      z.object({
-        name: z.string(),
-        path: z.string(),
+  volume: z
+    .any()
+    .describe(
+      JSON.stringify({
+        resourceType: "pvc",
+        label: "app",
       })
     )
+    .transform((pvcs) => {
+      if (!Array.isArray(pvcs)) return [];
+
+      return pvcs.map((pvc: any) => {
+        const annotations = pvc.metadata?.annotations || {};
+        return {
+          path: annotations.path || "",
+          value: annotations.value || "",
+        };
+      });
+    })
     .optional(),
   pods: z
     .any()

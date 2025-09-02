@@ -1,18 +1,10 @@
-import React, { useState } from "react";
-import { ChevronDown, Terminal, Database, Settings } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { EnvTable } from "../../components/env-table";
-import {
-  LaunchpadObject,
-  LaunchpadObjectSchema,
-} from "@/lib/sealos/resources/launchpad/launchpad-object-schema";
-import { Separator } from "@/components/ui/separator";
+import React from "react";
+import { LaunchpadObjectSchema } from "@/lib/sealos/resources/launchpad/launchpad-object-schema";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { toast } from "sonner";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
-import type { EnvVar, EnvVarValue } from "@/lib/k8s/k8s-method/k8s-utils";
 import { ImageCreatedAt } from "./launchpad-message-detail/image-created-at";
 import { ResourceQuota } from "./launchpad-message-detail/resource-quota";
 import { Deployment } from "./launchpad-message-detail/deployment";
@@ -27,8 +19,10 @@ export const LaunchpadMessageDetails: React.FC<
 > = ({ target }) => {
   const { resource, isLoading, error } = useResourceStatus(target);
   const queryClient = useQueryClient();
-
   const { launchpad } = useTRPCClients();
+
+  console.log("resource", resource);
+
   const updateLaunchpad = useMutation(
     launchpad.updateLaunchpad.mutationOptions()
   );
@@ -37,24 +31,10 @@ export const LaunchpadMessageDetails: React.FC<
   const launchpadObject = resource
     ? LaunchpadObjectSchema.parse(resource)
     : null;
-  const { image, operationalStatus, env, command, args } =
+  const { image, operationalStatus, env, launchCommand } =
     launchpadObject || {};
 
-  const formatEnvVars = (envVars: EnvVar) => {
-    if (!envVars || !Array.isArray(envVars)) return [];
-    return envVars
-      .filter((envVar: any) => envVar.type !== "secretKeyRef")
-      .map((envVar: EnvVarValue) => ({
-        type: "value" as const,
-        name: envVar.name,
-        value: envVar.value,
-      }));
-  };
-
   // Keep the original env for display, format only when editing
-  const originalEnv = env;
-  const envVars = formatEnvVars(env);
-
   const handleSubmit = async (type: string, data?: any) => {
     try {
       let requestData: any = {};
@@ -167,9 +147,9 @@ export const LaunchpadMessageDetails: React.FC<
       />
 
       <Configuration
-        command={command}
-        args={args}
-        envVars={originalEnv}
+        command={launchCommand?.command}
+        args={launchCommand?.args}
+        envVars={env}
         configMap={(launchpadObject as any)?.configMap}
         storage={(launchpadObject as any)?.storage}
         onConfigUpdate={handleSubmit}

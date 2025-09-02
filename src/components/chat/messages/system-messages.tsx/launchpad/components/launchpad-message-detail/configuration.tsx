@@ -5,8 +5,8 @@ import { LaunchpadUpdateForm } from "@/components/forms/launchpad/launchpad-upda
 import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
 
 interface ConfigurationProps {
-  command?: string;
-  args?: string;
+  command?: string[];
+  args?: string[];
   envVars: any[];
   configMap?: any[];
   storage?: any[];
@@ -81,8 +81,8 @@ export const Configuration: React.FC<ConfigurationProps> = ({
         {isConfigEditing ? (
           <LaunchpadUpdateForm
             defaultValues={{
-              command: command || "",
-              args: args || "",
+              command: command || [],
+              args: args || [],
               env: getFilteredEnvVars(),
             }}
             onSubmit={handleConfigSubmit}
@@ -94,7 +94,7 @@ export const Configuration: React.FC<ConfigurationProps> = ({
             <div className="flex flex-col items-center gap-1">
               <div className="text-sm text-muted-foreground">Command</div>
               <div className="text-sm font-medium text-center">
-                {command || "N/A"}
+                {command?.join(" ") || "N/A"}
               </div>
             </div>
             <div className="flex flex-col items-center gap-1">

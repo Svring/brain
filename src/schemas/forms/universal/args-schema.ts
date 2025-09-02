@@ -1,6 +1,6 @@
 import { z } from "zod";
 
 // Arguments schema (no defaults here; defaults are applied in composed schemas)
-export const ArgsSchema = z.string();
+export const ArgsSchema = z.string().array();
 
 export type Args = z.infer<typeof ArgsSchema>;

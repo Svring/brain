@@ -48,11 +48,13 @@ export const getStatefulsetRelatedResources = async (
 
   // Check if pod is in the builtin resources
   const hasPod = finalBuiltinResources.includes("pod");
+  // Check if pvc is in the builtin resources
+  const hasPvc = finalBuiltinResources.includes("pvc");
 
-  if (hasPod) {
-    // Remove pod from the main query
-    const resourcesWithoutPod = finalBuiltinResources.filter(
-      (resource) => resource !== "pod"
+  if (hasPod || hasPvc) {
+    // Remove pod and pvc from the main query
+    const resourcesWithoutPodAndPvc = finalBuiltinResources.filter(
+      (resource) => resource !== "pod" && resource !== "pvc"
     );
 
     // Get resources with APP_DEPLOY_MANAGER label
@@ -62,25 +64,44 @@ export const getStatefulsetRelatedResources = async (
     const mainResources = await getRelatedResources(
       context,
       labelSelectors,
-      resourcesWithoutPod,
+      resourcesWithoutPodAndPvc,
       finalCustomResources
     );
 
+    const resourcesWithAppLabel: K8sResource[] = [];
+
     // Get pods with APP label
-    const podLabelSelectors = [
-      `${STATEFULSET_RELATE_RESOURCE_LABELS.APP}=${statefulsetName}`,
-    ];
-    const podResources = await getRelatedResources(
-      context,
-      podLabelSelectors,
-      ["pod"],
-      []
-    );
+    if (hasPod) {
+      const podLabelSelectors = [
+        `${STATEFULSET_RELATE_RESOURCE_LABELS.APP}=${statefulsetName}`,
+      ];
+      const podResources = await getRelatedResources(
+        context,
+        podLabelSelectors,
+        ["pod"],
+        []
+      );
+      resourcesWithAppLabel.push(...podResources);
+    }
+
+    // Get PVCs with APP label
+    if (hasPvc) {
+      const pvcLabelSelectors = [
+        `${STATEFULSET_RELATE_RESOURCE_LABELS.APP}=${statefulsetName}`,
+      ];
+      const pvcResources = await getRelatedResources(
+        context,
+        pvcLabelSelectors,
+        ["pvc"],
+        []
+      );
+      resourcesWithAppLabel.push(...pvcResources);
+    }
 
     // Merge and return both results
-    return [...mainResources, ...podResources];
+    return [...mainResources, ...resourcesWithAppLabel];
   } else {
-    // Original behavior when pod is not included
+    // Original behavior when pod and pvc are not included
     const labelSelectors = [
       `${STATEFULSET_RELATE_RESOURCE_LABELS.APP_DEPLOY_MANAGER}=${statefulsetName}`,
     ];

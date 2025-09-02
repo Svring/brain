@@ -192,6 +192,27 @@ export const DeploymentObjectQuerySchema = z.object({
       return [];
     })
     .optional(),
+  launchCommand: z
+    .any()
+    .describe(
+      JSON.stringify({
+        resourceType: "deployment",
+        path: ["spec.template.spec.containers"],
+      })
+    )
+    .transform((containers) => {
+      if (Array.isArray(containers) && containers.length > 0) {
+        const container = containers[0];
+        return {
+          command: container.command || [],
+          args: container.args || [],
+        };
+      }
+      return {
+        command: [],
+        args: [],
+      };
+    }),
   configMap: z
     .array(
       z.object({

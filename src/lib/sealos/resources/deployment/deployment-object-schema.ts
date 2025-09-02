@@ -49,8 +49,12 @@ export const DeploymentObjectSchema = z.object({
   image: z.string(),
   resource: ResourceSchema,
   status: z.string().optional().nullable(),
-  command: z.string().optional(),
-  args: z.string().optional(),
+  launchCommand: z
+    .object({
+      command: z.array(z.string()),
+      args: z.array(z.string()),
+    })
+    .optional(),
   env: z.any().optional(),
   ports: z.array(PortSchema).optional(),
   pods: z.array(PodSchema).optional(),

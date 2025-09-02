@@ -18,9 +18,11 @@ export const getStatefulSetObject = async (
   const relatedResources = await getStatefulsetRelatedResources(
     context,
     statefulSetObject.name,
-    ["service", "ingress"],
+    ["service", "ingress", "pvc"],
     []
   );
+
+  // console.log("relatedResources", relatedResources);
 
   // Ensure ports array exists
   if (!statefulSetObject.ports) {

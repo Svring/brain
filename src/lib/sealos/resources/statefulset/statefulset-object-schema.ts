@@ -36,6 +36,11 @@ const LocalStorageSchema = z.object({
   path: z.string(),
 });
 
+const VolumeSchema = z.object({
+  path: z.string(),
+  value: z.string(),
+});
+
 const ThresholdSchema = z.object({
   resource: z.string(),
   usage: z.number(),
@@ -58,12 +63,17 @@ export const StatefulsetObjectSchema = z.object({
   image: z.string(),
   resource: ResourceSchema,
   status: z.string(),
-  command: z.string().optional(),
-  args: z.string().optional(),
+  launchCommand: z
+    .object({
+      command: z.array(z.string()),
+      args: z.array(z.string()),
+    })
+    .optional(),
   env: z.array(z.any()).optional(),
   ports: z.array(PortSchema).optional(),
   configMap: z.array(ConfigMapSchema).optional(),
   localStorage: z.array(LocalStorageSchema).optional(),
+  volume: z.array(VolumeSchema).optional(),
   pods: z.array(PodSchema).optional(),
   operationalStatus: OperationalStatusSchema.optional(),
   strategy: StrategySchema.optional(),
