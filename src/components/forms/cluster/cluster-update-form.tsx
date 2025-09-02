@@ -10,18 +10,19 @@ interface ClusterUpdateFormProps {
   defaultValues?: Partial<ClusterUpdateFormData>;
   onSubmit: (data: ClusterUpdateFormData) => void;
   isLoading?: boolean;
+  hideDefaultButton?: boolean;
 }
 
 export const ClusterUpdateForm = ({
   defaultValues,
   onSubmit,
   isLoading = false,
+  hideDefaultButton = false,
 }: ClusterUpdateFormProps) => {
   const { form } = useClusterUpdateForm(defaultValues);
 
   const handleSubmit = (data: ClusterUpdateFormData) => {
-    // onSubmit(data);
-    console.log(data);
+    onSubmit(data);
   };
 
   // Only show fields that have values in defaultValues
@@ -29,14 +30,16 @@ export const ClusterUpdateForm = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form id="cluster-update-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         {hasResource && <ResourceFields />}
 
-        <div className="flex justify-end">
-          <Button type="submit" variant="outline" disabled={isLoading}>
-            {isLoading ? "Updating..." : "Update"}
-          </Button>
-        </div>
+        {!hideDefaultButton && (
+          <div className="flex justify-end">
+            <Button type="submit" variant="outline" disabled={isLoading}>
+              {isLoading ? "Updating..." : "Update"}
+            </Button>
+          </div>
+        )}
       </form>
     </Form>
   );

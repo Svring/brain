@@ -15,18 +15,14 @@ import {
   usePauseClusterMutation,
 } from "@/lib/sealos/resources/cluster/cluster-method/cluster-mutation";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
-import { useRemoveFromProjectMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
-import { createK8sContext } from "@/lib/auth/auth-utils";
-import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+
 
 export default function ClusterNodeMenu({ object }: { object: ClusterObject }) {
   const clusterContext = createClusterContext();
-  const k8sContext = createK8sContext();
 
   const deleteCluster = useDeleteClusterMutation(clusterContext);
   const startCluster = useStartClusterMutation(clusterContext);
   const pauseCluster = usePauseClusterMutation(clusterContext);
-  const removeFromProject = useRemoveFromProjectMutation(k8sContext);
 
   const { name: clusterName, status } = object;
 
@@ -87,27 +83,7 @@ export default function ClusterNodeMenu({ object }: { object: ClusterObject }) {
           <PencilLine className="mr-2 h-4 w-4" />
           Update
         </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={(e) => {
-            e.stopPropagation();
-            const clusterTarget = convertResourceTypeToTarget(
-              "cluster",
-              clusterName
-            );
-            removeFromProject.mutate({
-              resources: [clusterTarget],
-            });
-          }}
-          disabled={
-            status === "Creating" || status === "Updating" || !clusterName
-          }
-          className={
-            status === "Creating" || status === "Updating" ? "opacity-50" : ""
-          }
-        >
-          <PencilLine className="mr-2 h-4 w-4" />
-          Remove from Project
-        </DropdownMenuItem>
+
         <DropdownMenuItem
           onClick={(e) => {
             e.stopPropagation();

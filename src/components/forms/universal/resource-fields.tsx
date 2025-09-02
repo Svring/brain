@@ -13,11 +13,12 @@ import {
   CPU_OPTIONS,
   MEMORY_OPTIONS,
   REPLICAS_OPTIONS,
+  STORAGE_OPTIONS,
 } from "@/lib/k8s/k8s-constant/k8s-constant-resource";
 import { Slider } from "@/components/ui/slider";
 
 export const ResourceFields = () => {
-  const form = useFormContext<{ resource: Resource }>();
+  const form = useFormContext<{ resource: Resource & { storage?: number } }>();
   const resourceValues = form.watch("resource");
 
   return (
@@ -114,6 +115,59 @@ export const ResourceFields = () => {
                             style={{ left: `${position}%` }}
                           >
                             {memory}G
+                          </span>
+                        );
+                      })}
+                    </div>
+                    <div className="h-4"></div> {/* Spacer for labels */}
+                  </div>
+                </div>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
+        />
+      )}
+
+      {/* Storage Options - only show if storage value is defined */}
+      {resourceValues?.storage !== undefined && (
+        <FormField
+          control={form.control}
+          name="resource.storage"
+          render={({ field }) => {
+            const currentIndex =
+              STORAGE_OPTIONS.findIndex((option) => option === field.value) || 0;
+
+            return (
+              <FormItem>
+                <div className="flex items-center gap-2">
+                  <FormLabel className="font-medium">Storage:</FormLabel>
+                  <span className="">{field.value || STORAGE_OPTIONS[0]}G</span>
+                </div>
+                <div className="space-y-2">
+                  <Slider
+                    value={[currentIndex]}
+                    onValueChange={(value) =>
+                      field.onChange(STORAGE_OPTIONS[value[0]])
+                    }
+                    min={0}
+                    max={STORAGE_OPTIONS.length - 1}
+                    step={1}
+                    className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
+                    aria-label="Storage slider"
+                  />
+                  <div className="relative">
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      {STORAGE_OPTIONS.map((storage, index) => {
+                        const position =
+                          (index / (STORAGE_OPTIONS.length - 1)) * 100;
+                        return (
+                          <span
+                            key={storage}
+                            className="absolute text-center transform -translate-x-1/4"
+                            style={{ left: `${position}%` }}
+                          >
+                            {storage}G
                           </span>
                         );
                       })}

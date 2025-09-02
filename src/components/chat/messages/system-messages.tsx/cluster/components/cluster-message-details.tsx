@@ -12,8 +12,18 @@ import {
   composeClusterPrivateConnectionString,
 } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
 import { Button } from "@/components/ui/button";
-import { Cpu, MemoryStick, HardDrive, PenLine, Check, X } from "lucide-react";
+import {
+  Cpu,
+  MemoryStick,
+  HardDrive,
+  PenLine,
+  Check,
+  X,
+  Apple,
+} from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { ClusterUpdateForm } from "@/components/forms/cluster/cluster-update-form";
+import { ClusterUpdateFormData } from "@/schemas/forms/cluster/cluster-update-form-schema";
 
 interface ClusterMessageDetailsProps {
   target: CustomResourceTarget;
@@ -44,13 +54,13 @@ const ClusterMessageDetails: React.FC<ClusterMessageDetailsProps> = ({
     return type.charAt(0).toUpperCase() + type.slice(1).replace(/-/g, " ");
   };
 
-  const handleResourceSave = () => {
-    // TODO: Implement save functionality
-    console.log("Saving cluster resource configuration");
-    setIsResourceEditing(false);
-  };
-
-  const handleResourceCancel = () => {
+  const handleResourceSubmit = async (data: ClusterUpdateFormData) => {
+    // Only extract the resource field from the form data
+    const resourceData = data.resource;
+    if (resourceData) {
+      // TODO: Implement save functionality
+      console.log("Saving cluster resource configuration:", resourceData);
+    }
     setIsResourceEditing(false);
   };
 
@@ -103,41 +113,53 @@ const ClusterMessageDetails: React.FC<ClusterMessageDetailsProps> = ({
       {/* Resource Quota Section */}
       <div className="border border-dashed rounded-lg">
         <div className="flex items-center justify-between p-2 border-b border-dashed">
-          <h3 className="font-medium">Quota</h3>
+          <h3 className="font-medium">Resource Quota</h3>
           {isResourceEditing ? (
             <div className="flex items-center gap-1">
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="h-6 w-6 p-1"
-                onClick={handleResourceSave}
+                className="h-8 w-8"
+                onClick={() => setIsResourceEditing(false)}
               >
-                <Check className="h-4 w-4" />
+                <X />
               </Button>
               <Button
-                variant="ghost"
+                type="submit"
+                form="cluster-update-form"
+                variant="outline"
                 size="sm"
-                className="h-6 w-6 p-1"
-                onClick={handleResourceCancel}
+                className="h-8 w-8"
               >
-                <X className="h-4 w-4" />
+                <Check />
               </Button>
             </div>
           ) : (
             <Button
-              variant="ghost"
-              className="h-6 w-6 p-1"
+              variant="outline"
+              size="sm"
+              className="h-8 w-8"
               onClick={() => setIsResourceEditing(true)}
             >
-              <PenLine className="h-4 w-4" />
+              <PenLine />
             </Button>
           )}
         </div>
-        <div className="p-2">
+        <div className={`${isResourceEditing ? "p-4" : "p-2"}`}>
           {isResourceEditing ? (
-            <div className="text-sm text-muted-foreground">
-              Resource editing functionality coming soon...
-            </div>
+            <ClusterUpdateForm
+              defaultValues={{
+                resource: {
+                  cpu: clusterObject.resource?.cpu || 2,
+                  memory: clusterObject.resource?.memory || 4,
+                  storage: clusterObject.resource?.storage || 10,
+                  replicas: clusterObject.resource?.replicas || 1,
+                },
+              }}
+              onSubmit={handleResourceSubmit}
+              isLoading={false}
+              hideDefaultButton={true}
+            />
           ) : (
             <div className="flex items-center justify-around">
               <div className="flex flex-col items-center gap-1">
@@ -163,9 +185,8 @@ const ClusterMessageDetails: React.FC<ClusterMessageDetailsProps> = ({
               </div>
               <div className="flex flex-col items-center gap-1">
                 <div className="text-sm text-muted-foreground">Replicas</div>
-                <div className="h-4 w-4 flex items-center justify-center text-muted-foreground">
-                  <span className="text-xs">#</span>
-                </div>
+                <Apple className="h-4 w-4 text-muted-foreground" />
+
                 <div className="text-sm font-medium">
                   {clusterObject.resource?.replicas || "N/A"}
                 </div>

@@ -10,18 +10,19 @@ interface DevboxUpdateFormProps {
   defaultValues?: Partial<DevboxUpdateFormData>;
   onSubmit: (data: DevboxUpdateFormData) => void;
   isLoading?: boolean;
+  hideDefaultButton?: boolean;
 }
 
 export const DevboxUpdateForm = ({
   defaultValues,
   onSubmit,
   isLoading = false,
+  hideDefaultButton = false,
 }: DevboxUpdateFormProps) => {
   const { form } = useDevboxUpdateForm(defaultValues);
 
   const handleSubmit = (data: DevboxUpdateFormData) => {
-    // onSubmit(data);
-    console.log(data);
+    onSubmit(data);
   };
 
   // Only show fields that have values in defaultValues
@@ -29,14 +30,16 @@ export const DevboxUpdateForm = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form id="devbox-update-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         {hasResource && <ResourceFields />}
 
-        <div className="flex justify-end">
-          <Button type="submit" variant="outline" disabled={isLoading}>
-            {isLoading ? "Updating..." : "Update"}
-          </Button>
-        </div>
+        {!hideDefaultButton && (
+          <div className="flex justify-end">
+            <Button type="submit" variant="outline" disabled={isLoading}>
+              {isLoading ? "Updating..." : "Update"}
+            </Button>
+          </div>
+        )}
       </form>
     </Form>
   );

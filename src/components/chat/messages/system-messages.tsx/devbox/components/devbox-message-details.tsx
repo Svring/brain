@@ -27,9 +27,8 @@ import {
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 import { Separator } from "@/components/ui/separator";
 import { useCopy } from "@/hooks/use-copy";
-import { ResourceConfiguration } from "./universal/resource-configuration";
-import { useForm, FormProvider } from "react-hook-form";
-import { DevboxCreate } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-mutation-schema";
+import { DevboxUpdateForm } from "@/components/forms/devbox/devbox-update-form";
+import { DevboxUpdateFormData } from "@/schemas/forms/devbox/devbox-update-form-schema";
 
 interface DevboxInfoDetailsProps {
   target: CustomResourceTarget;
@@ -50,16 +49,6 @@ export const DevboxInfoDetails: React.FC<DevboxInfoDetailsProps> = ({
 
   // Parse the resource data
   const devboxObject = resource ? DevboxObjectSchema.parse(resource) : null;
-
-  // Form for resource editing
-  const form = useForm<DevboxCreate>({
-    defaultValues: {
-      resource: {
-        cpu: devboxObject?.resources?.cpu?.toString() || "2",
-        memory: devboxObject?.resources?.memory?.toString() || "4",
-      },
-    },
-  });
 
   // console.log("devboxObject", devboxObject);
 
@@ -89,20 +78,13 @@ export const DevboxInfoDetails: React.FC<DevboxInfoDetailsProps> = ({
     );
   }
 
-  const handleResourceSave = () => {
-    // TODO: Implement save functionality
-    console.log("Saving resource configuration:", form.getValues());
-    setIsResourceEditing(false);
-  };
-
-  const handleResourceCancel = () => {
-    // Reset form to original values
-    form.reset({
-      resource: {
-        cpu: devboxObject?.resources?.cpu?.toString() || "2",
-        memory: devboxObject?.resources?.memory?.toString() || "4",
-      },
-    });
+  const handleResourceSubmit = async (data: DevboxUpdateFormData) => {
+    // Only extract the resource field from the form data
+    const resourceData = data.resource;
+    if (resourceData) {
+      // TODO: Implement save functionality
+      console.log("Saving resource configuration:", resourceData);
+    }
     setIsResourceEditing(false);
   };
 
@@ -139,41 +121,51 @@ export const DevboxInfoDetails: React.FC<DevboxInfoDetailsProps> = ({
       {/* Resource Quota Section */}
       <div className="border border-dashed rounded-lg">
         <div className="flex items-center justify-between p-2 border-b border-dashed">
-          <h3 className="font-medium">Quota</h3>
+          <h3 className="font-medium">Resource Quota</h3>
           {isResourceEditing ? (
             <div className="flex items-center gap-1">
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="h-6 w-6 p-1"
-                onClick={handleResourceSave}
+                className="h-8 w-8"
+                onClick={() => setIsResourceEditing(false)}
               >
-                <Check className="h-4 w-4" />
+                <X />
               </Button>
               <Button
-                variant="ghost"
+                type="submit"
+                form="devbox-update-form"
+                variant="outline"
                 size="sm"
-                className="h-6 w-6 p-1"
-                onClick={handleResourceCancel}
+                className="h-8 w-8"
               >
-                <X className="h-4 w-4" />
+                <Check />
               </Button>
             </div>
           ) : (
             <Button
-              variant="ghost"
-              className="h-6 w-6 p-1"
+              variant="outline"
+              size="sm"
+              className="h-8 w-8"
               onClick={() => setIsResourceEditing(true)}
             >
-              <PenLine className="h-4 w-4" />
+              <PenLine />
             </Button>
           )}
         </div>
-        <div className="p-2">
+        <div className={`${isResourceEditing ? "p-4" : "p-2"}`}>
           {isResourceEditing ? (
-            <FormProvider {...form}>
-              <ResourceConfiguration form={form} />
-            </FormProvider>
+            <DevboxUpdateForm
+              defaultValues={{
+                resource: {
+                  cpu: devboxObject.resources?.cpu?.toString() || "2",
+                  memory: devboxObject.resources?.memory?.toString() || "4",
+                },
+              }}
+              onSubmit={handleResourceSubmit}
+              isLoading={false}
+              hideDefaultButton={true}
+            />
           ) : (
             <div className="flex items-center justify-around">
               <div className="flex flex-col items-center gap-1">

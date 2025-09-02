@@ -148,8 +148,8 @@ export const LaunchpadMessageDetails: React.FC<
       />
 
       <Configuration
-        command={launchCommand?.command}
-        args={launchCommand?.args}
+        command={launchCommand?.command.join(" ")}
+        args={launchCommand?.args.join(" ")}
         envVars={env}
         configMap={(launchpadObject as any)?.configMap}
         storage={(launchpadObject as any)?.storage}
