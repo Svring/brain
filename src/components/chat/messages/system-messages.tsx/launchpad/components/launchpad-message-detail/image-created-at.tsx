@@ -35,7 +35,7 @@ export const ImageCreatedAt: React.FC<ImageCreatedAtProps> = ({
 
   const handleImageSubmit = async () => {
     if (!imageValue.trim()) return;
-    await onImageUpdate("image");
+    await onImageUpdate("image", imageValue);
     setIsEditingImage(false);
     setImageValue("");
   };

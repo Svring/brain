@@ -58,7 +58,7 @@ export const Deployment: React.FC<DeploymentProps> = ({
               <Check />
             </Button>
           </div>
-        ) : (
+        ) : strategy?.type !== "flexible" ? (
           <Button
             variant="outline"
             size="sm"
@@ -67,7 +67,7 @@ export const Deployment: React.FC<DeploymentProps> = ({
           >
             <PenLine />
           </Button>
-        )}
+        ) : null}
       </div>
       <div className={`p-2 ${isReplicasEditing ? "p-4" : "p-2"}`}>
         {isReplicasEditing ? (

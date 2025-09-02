@@ -36,67 +36,67 @@ export const LaunchpadMessageDetails: React.FC<
 
   // Keep the original env for display, format only when editing
   const handleSubmit = async (type: string, data?: any) => {
-    console.log("data", data);
-    // try {
-    //   let requestData: any = {};
+    try {
+      let requestData: any = {};
+      console.log("data", data);
 
-    //   switch (type) {
-    //     case "image":
-    //       requestData = { image: data };
-    //       break;
-    //     case "resource":
-    //       if (data?.resource) {
-    //         requestData = {
-    //           resource: {
-    //             cpu: data.resource.cpu,
-    //             memory: data.resource.memory,
-    //           },
-    //         };
-    //       }
-    //       break;
-    //     case "replicas":
-    //       if (data?.resource?.replicas) {
-    //         requestData = { resource: { replicas: data.resource.replicas } };
-    //       }
-    //       break;
-    //     case "config":
-    //       if (data?.command !== undefined) requestData.command = data.command;
-    //       if (data?.args !== undefined) requestData.args = data.args;
-    //       if (data?.env !== undefined) requestData.env = data.env;
-    //       break;
-    //   }
+      switch (type) {
+        case "image":
+          requestData = { image: data };
+          break;
+        case "resource":
+          if (data?.cpu && data?.memory) {
+            requestData = {
+              resource: {
+                cpu: data.cpu,
+                memory: data.memory,
+              },
+            };
+          }
+          break;
+        case "replicas":
+          if (data?.resource?.replicas) {
+            requestData = { resource: { replicas: data.resource.replicas } };
+          }
+          break;
+        case "config":
+          if (data?.command !== undefined) requestData.command = data.command;
+          if (data?.args !== undefined) requestData.args = data.args;
+          if (data?.env !== undefined) requestData.env = data.env;
+          break;
+      }
 
-    //   const updateRequest = { name: target.name!, request: requestData };
+      const updateRequest = { name: target.name!, request: requestData };
 
-    //   await updateLaunchpad.mutateAsync(updateRequest, {
-    //     onSuccess: () => {
-    //       queryClient.invalidateQueries({
-    //         queryKey: launchpad.getLaunchpad.queryKey(target),
-    //       });
+      await updateLaunchpad.mutateAsync(updateRequest, {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: launchpad.getLaunchpad.queryKey(target),
+          });
 
-    //       const messages = {
-    //         image: "Image updated successfully!",
-    //         resource: "Resource configuration updated successfully!",
-    //         replicas: "Replicas updated successfully!",
-    //         config: "Configuration updated successfully!",
-    //       };
+          const messages = {
+            image: "Image updated successfully!",
+            resource: "Resource configuration updated successfully!",
+            replicas: "Replicas updated successfully!",
+            config: "Configuration updated successfully!",
+          };
 
-    //       toast.success(messages[type as keyof typeof messages]);
-    //     },
-    //     onError: () => {
-    //       const messages = {
-    //         image: "Failed to update image",
-    //         resource: "Failed to update resource configuration",
-    //         replicas: "Failed to update replicas",
-    //         config: "Failed to update configuration",
-    //       };
-    //       toast.error(messages[type as keyof typeof messages]);
-    //     },
-    //   });
-    // } catch (error) {
-    //   console.error(`Failed to update launchpad ${type}:`, error);
-    //   toast.error(`Failed to update ${type}`);
-    // }
+          toast.success(messages[type as keyof typeof messages]);
+        },
+        onError: () => {
+          const messages = {
+            image: "Failed to update image",
+            resource: "Failed to update resource configuration",
+            replicas: "Failed to update replicas",
+            config: "Failed to update configuration",
+          };
+          toast.error(messages[type as keyof typeof messages]);
+        },
+      });
+    } catch (error) {
+      console.error(`Failed to update launchpad ${type}:`, error);
+      toast.error(`Failed to update ${type}`);
+    }
   };
 
   // Show loading state
