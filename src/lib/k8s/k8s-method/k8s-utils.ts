@@ -25,6 +25,7 @@ import _ from "lodash";
 import { Buffer } from "buffer";
 import { ListAllResourcesResponse } from "../k8s-api/k8s-api-schemas/req-res-schemas/res-list-schemas";
 import { getResource } from "./k8s-query";
+import type { Env } from "@/schemas/forms/universal/env-schema";
 
 /**
  * Simplified resource annotation interface
@@ -525,35 +526,43 @@ export function invalidateQueriesAfterMutation(
  */
 export async function resolveEnvVars(
   context: K8sApiContext,
-  envVars: EnvVar[]
+  envVars: Env[]
 ): Promise<EnvVarValue[]> {
   const resolvedEnvVars: EnvVarValue[] = [];
   const secretCache = new Map<string, any>();
 
   for (const envVar of envVars) {
-    if (envVar.type === "value") {
+    if (envVar.value) {
       // Direct value, no resolution needed
-      resolvedEnvVars.push(envVar);
-    } else if (envVar.type === "secretKeyRef") {
+      resolvedEnvVars.push({
+        type: "value",
+        name: envVar.name,
+        value: envVar.value,
+      });
+    } else if (envVar.valueFrom?.secretKeyRef) {
       // Check if secret is already cached
-      if (!secretCache.has(envVar.secretName)) {
+      if (!secretCache.has(envVar.valueFrom.secretKeyRef.name)) {
         // Create a target for the secret resource
         const secretTarget = {
           type: "builtin" as const,
           resourceType: "secret",
-          name: envVar.secretName,
+          name: envVar.valueFrom.secretKeyRef.name,
         };
 
         // Fetch the secret and cache it
         const secret = await getResource(context, secretTarget);
-        secretCache.set(envVar.secretName, secret);
+        secretCache.set(envVar.valueFrom.secretKeyRef.name, secret);
       }
 
-      const secret = secretCache.get(envVar.secretName);
+      const secret = secretCache.get(envVar.valueFrom.secretKeyRef.name);
 
-      if (secret && secret.data && secret.data[envVar.secretKey]) {
+      if (
+        secret &&
+        secret.data &&
+        secret.data[envVar.valueFrom.secretKeyRef.key]
+      ) {
         // Decode base64 secret value
-        const secretValue = secret.data[envVar.secretKey];
+        const secretValue = secret.data[envVar.valueFrom.secretKeyRef.key];
         if (typeof secretValue === "string") {
           const decodedValue = Buffer.from(secretValue, "base64").toString(
             "utf-8"
@@ -567,24 +576,24 @@ export async function resolveEnvVars(
           });
         } else {
           console.warn(
-            `Secret key '${envVar.secretKey}' has invalid type in secret '${envVar.secretName}'`
+            `Secret key '${envVar.valueFrom.secretKeyRef.key}' has invalid type in secret '${envVar.valueFrom.secretKeyRef.name}'`
           );
           // Keep original secret ref if resolution fails
           resolvedEnvVars.push({
             type: "value",
             name: envVar.name,
-            value: `[SECRET_REF_ERROR: ${envVar.secretName}.${envVar.secretKey}]`,
+            value: `[SECRET_REF_ERROR: ${envVar.valueFrom.secretKeyRef.name}.${envVar.valueFrom.secretKeyRef.key}]`,
           });
         }
       } else {
         console.warn(
-          `Secret key '${envVar.secretKey}' not found in secret '${envVar.secretName}'`
+          `Secret key '${envVar.valueFrom.secretKeyRef.key}' not found in secret '${envVar.valueFrom.secretKeyRef.name}'`
         );
         // Keep original secret ref if resolution fails
         resolvedEnvVars.push({
           type: "value",
           name: envVar.name,
-          value: `[SECRET_REF_ERROR: ${envVar.secretName}.${envVar.secretKey}]`,
+          value: `[SECRET_REF_ERROR: ${envVar.valueFrom.secretKeyRef.name}.${envVar.valueFrom.secretKeyRef.key}]`,
         });
       }
     }

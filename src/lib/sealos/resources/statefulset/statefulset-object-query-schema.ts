@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { EnvVar } from "@/lib/k8s/k8s-method/k8s-utils";
+import type { Env } from "@/schemas/forms/universal/env-schema";
 import { convertK8sResourceToNumeric } from "@/lib/k8s/k8s-method/k8s-utils";
 import { formatIsoDateToReadable } from "@/lib/date/date-utils";
 import { determineLaunchpadStatus } from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-utils";
@@ -159,31 +159,32 @@ export const StatefulsetObjectQuerySchema = z.object({
         path: ["spec.template.spec.containers"],
       })
     )
-    .transform((containers): EnvVar[] => {
+    .transform((containers) => {
       if (Array.isArray(containers) && containers.length > 0) {
         const env = containers[0].env;
         if (!Array.isArray(env)) return [];
 
-        return env.map((envVar: any): EnvVar => {
+        return env.map((envVar: any) => {
           if (envVar.value) {
             // Direct value environment variable
             return {
-              type: "value" as const,
               name: envVar.name,
               value: envVar.value,
             };
           } else if (envVar.valueFrom?.secretKeyRef) {
             // Secret reference environment variable
             return {
-              type: "secretKeyRef" as const,
               name: envVar.name,
-              secretName: envVar.valueFrom.secretKeyRef.name,
-              secretKey: envVar.valueFrom.secretKeyRef.key,
+              valueFrom: {
+                secretKeyRef: {
+                  name: envVar.valueFrom.secretKeyRef.name,
+                  key: envVar.valueFrom.secretKeyRef.key,
+                },
+              },
             };
           } else {
             // Unknown type, return as value with placeholder
             return {
-              type: "value" as const,
               name: envVar.name,
               value: `[UNKNOWN_ENV_TYPE: ${JSON.stringify(envVar)}]`,
             };

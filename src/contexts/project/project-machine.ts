@@ -1,14 +1,14 @@
 "use client";
 
 import { assign, createMachine } from "xstate";
-import type { EnvVar } from "@/lib/k8s/k8s-method/k8s-utils";
+import type { Env } from "@/schemas/forms/universal/env-schema";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 export interface ResourceObject {
   name: string;
   kind: string;
   image?: string;
-  env?: EnvVar[];
+  env?: Env[];
   ports?: Array<{
     number: number;
     name?: string;

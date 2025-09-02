@@ -1,5 +1,4 @@
 import { z } from "zod";
-import type { EnvVar } from "@/lib/k8s/k8s-method/k8s-utils";
 
 const PortSchema = z.object({
   number: z.number(),

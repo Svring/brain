@@ -35,18 +35,6 @@ export const Configuration: React.FC<ConfigurationProps> = ({
   const [editingField, setEditingField] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Filter env vars only when entering edit mode
-  const getFilteredEnvVars = () => {
-    if (!envVars || !Array.isArray(envVars)) return [];
-    return envVars
-      .filter((envVar: any) => envVar.type !== "secretKeyRef")
-      .map((envVar: any) => ({
-        type: "value" as const,
-        name: envVar.name,
-        value: envVar.value,
-      }));
-  };
-
   const handleFieldSubmit = async (fieldType: string, data: any) => {
     let updateData: any = {};
 
@@ -239,7 +227,7 @@ export const Configuration: React.FC<ConfigurationProps> = ({
             >
               {editingField === "env" ? (
                 <LaunchpadUpdateForm
-                  defaultValues={{ env: getFilteredEnvVars() }}
+                  defaultValues={{ env: envVars }}
                   onSubmit={(data) => handleFieldSubmit("env", data)}
                   isLoading={isLoading}
                   hideDefaultButton={true}
@@ -255,7 +243,20 @@ export const Configuration: React.FC<ConfigurationProps> = ({
                         >
                           <div className="font-medium">{envVar.name}</div>
                           <div className="text-muted-foreground text-xs">
-                            {envVar.value || "N/A"}
+                            {envVar.valueFrom ? (
+                              <span className="flex items-center gap-1">
+                                <span>From Secret:</span>
+                                <span className="font-mono bg-background px-1 rounded">
+                                  {envVar.valueFrom.secretKeyRef?.name || "N/A"}
+                                </span>
+                                <span>→</span>
+                                <span className="font-mono bg-background px-1 rounded">
+                                  {envVar.valueFrom.secretKeyRef?.key || "N/A"}
+                                </span>
+                              </span>
+                            ) : (
+                              envVar.value || "N/A"
+                            )}
                           </div>
                         </div>
                       ))}

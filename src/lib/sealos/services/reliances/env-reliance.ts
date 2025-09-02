@@ -1,9 +1,9 @@
-import type { EnvVar } from "@/lib/k8s/k8s-method/k8s-utils";
+import type { Env } from "@/schemas/forms/universal/env-schema";
 
 interface ResourceObject {
   name: string;
   kind: string;
-  env?: EnvVar[];
+  env?: Env[];
   [key: string]: any;
 }
 
@@ -55,12 +55,12 @@ export function inferRelianceFromEnv(
         // Add the key to check
         envKeys.push(envVar.name);
 
-        if (envVar.type === "value") {
+        if (envVar.value) {
           // Direct value environment variable
           envValues.push(envVar.value);
-        } else if (envVar.type === "secretKeyRef") {
+        } else if (envVar.valueFrom?.secretKeyRef) {
           // Secret reference environment variable
-          envValues.push(envVar.secretName);
+          envValues.push(envVar.valueFrom.secretKeyRef.name);
         }
       }
     }

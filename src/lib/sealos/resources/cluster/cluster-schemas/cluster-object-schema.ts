@@ -1,32 +1,38 @@
 import { z } from "zod";
 
 export const ClusterResourceSchema = z.object({
-  cpu: z.number(),
-  memory: z.number(),
-  storage: z.number(),
-  replicas: z.number(),
+  cpu: z.number().nullable().optional(),
+  memory: z.number().nullable().optional(),
+  storage: z.number().nullable().optional(),
+  replicas: z.number().nullable().optional(),
 });
 
 export const ClusterComponentSchema = z.object({
-  name: z.string(),
-  status: z.string().nullable(),
-  resource: ClusterResourceSchema,
+  name: z.string().nullable().optional(),
+  status: z.string().nullable().optional(),
+  resource: ClusterResourceSchema.nullable().optional(),
 });
 
 export const ClusterConnectionSchema = z.object({
-  privateConnection: z.object({
-    endpoint: z.string(),
-    host: z.string(),
-    port: z.string(),
-    username: z.string(),
-    password: z.string(),
-    connectionString: z.string(),
-  }),
-  publicConnection: z
+  privateConnection: z
     .object({
-      port: z.number(),
-      connectionString: z.string(),
+      endpoint: z.string().nullable().optional(),
+      host: z.string().nullable().optional(),
+      port: z.string().nullable().optional(),
+      username: z.string().nullable().optional(),
+      password: z.string().nullable().optional(),
+      connectionString: z.string().nullable().optional(),
     })
+    .nullable()
+    .optional(),
+  publicConnection: z
+    .union([
+      z.object({
+        port: z.number().nullable().optional(),
+        connectionString: z.string().nullable().optional(),
+      }),
+      z.array(z.any()),
+    ])
     .nullable()
     .optional(),
 });
@@ -43,29 +49,38 @@ export const ClusterBackupSchema = z
   .optional();
 
 export const PodSchema = z.object({
-  name: z.string(),
-  status: z.string(),
-  upTime: z.string().optional(),
-  containers: z.any(),
+  name: z.string().nullable().optional(),
+  status: z.string().nullable().optional(),
+  upTime: z.string().optional().nullable(),
+  containers: z.any().nullable().optional(),
 });
 
 export const ClusterObjectSchema = z.object({
-  name: z.string(),
-  kind: z.string(),
-  type: z.enum([
-    "postgresql",
-    "mongodb",
-    "redis",
-    "apecloud-mysql",
-    "kafka",
-    "milvus",
-  ]),
-  version: z.string(),
-  operationalStatus: z.any().optional(),
-  status: z.string().nullable(),
-  resource: ClusterResourceSchema,
-  components: z.array(ClusterComponentSchema).optional().nullable(),
-  connection: ClusterConnectionSchema,
+  name: z.string().nullable().optional(),
+  kind: z.string().nullable().optional(),
+  type: z
+    .enum([
+      "postgresql",
+      "mongodb",
+      "redis",
+      "apecloud-mysql",
+      "kafka",
+      "milvus",
+    ])
+    .nullable()
+    .optional(),
+  version: z.string().nullable().optional(),
+  operationalStatus: z.any().optional().nullable(),
+  status: z.string().nullable().optional(),
+  resource: z
+    .union([ClusterResourceSchema, z.array(z.any())])
+    .nullable()
+    .optional(),
+  components: z
+    .union([z.array(ClusterComponentSchema), z.object({}).passthrough()])
+    .optional()
+    .nullable(),
+  connection: ClusterConnectionSchema.nullable().optional(),
   backup: ClusterBackupSchema.optional().nullable(),
   pods: z.array(PodSchema).optional().nullable(),
 });
