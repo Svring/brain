@@ -275,7 +275,7 @@ export const StatefulsetObjectQuerySchema = z.object({
       return result;
     })
     .optional(),
-  volume: z
+  localStorage: z
     .any()
     .describe(
       JSON.stringify({

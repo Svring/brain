@@ -1,5 +1,4 @@
 import React from "react";
-import { LaunchpadObjectSchema } from "@/lib/sealos/resources/launchpad/launchpad-object-schema";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
@@ -9,6 +8,10 @@ import { ImageCreatedAt } from "./launchpad-message-detail/image-created-at";
 import { ResourceQuota } from "./launchpad-message-detail/resource-quota";
 import { Deployment } from "./launchpad-message-detail/deployment";
 import { Configuration } from "./launchpad-message-detail/configuration";
+import {
+  LaunchpadObjectSchema,
+  LaunchpadObject,
+} from "@/lib/sealos/resources/launchpad/launchpad-object-schema";
 
 interface LaunchpadMessageDetailsProps {
   target: BuiltinResourceTarget;
@@ -21,82 +24,35 @@ export const LaunchpadMessageDetails: React.FC<
   const queryClient = useQueryClient();
   const { launchpad } = useTRPCClients();
 
-  console.log("resource", resource);
-
   const updateLaunchpad = useMutation(
     launchpad.updateLaunchpad.mutationOptions()
   );
 
-  // Parse the resource data
-  const launchpadObject = resource
+  // Parse the resource data as LaunchpadObject
+  const launchpadObject: LaunchpadObject | null = resource
     ? LaunchpadObjectSchema.parse(resource)
     : null;
-  const { image, operationalStatus, env, launchCommand } =
-    launchpadObject || {};
+
+  console.log("launchpadObject", launchpadObject);
 
   // Keep the original env for display, format only when editing
   const handleSubmit = async (type: string, data?: any) => {
-    try {
-      let requestData: any = {};
-      console.log("data", data);
+    console.log("requestData", data);
 
-      switch (type) {
-        case "image":
-          requestData = { image: data };
-          break;
-        case "resource":
-          if (data?.cpu && data?.memory) {
-            requestData = {
-              resource: {
-                cpu: data.cpu,
-                memory: data.memory,
-              },
-            };
-          }
-          break;
-        case "replicas":
-          if (data?.resource?.replicas) {
-            requestData = { resource: { replicas: data.resource.replicas } };
-          }
-          break;
-        case "config":
-          if (data?.command !== undefined) requestData.command = data.command;
-          if (data?.args !== undefined) requestData.args = data.args;
-          if (data?.env !== undefined) requestData.env = data.env;
-          break;
-      }
+    const updateRequest = { name: target.name!, request: data };
 
-      const updateRequest = { name: target.name!, request: requestData };
+    await updateLaunchpad.mutateAsync(updateRequest, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: launchpad.getLaunchpad.queryKey(target),
+        });
 
-      await updateLaunchpad.mutateAsync(updateRequest, {
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: launchpad.getLaunchpad.queryKey(target),
-          });
-
-          const messages = {
-            image: "Image updated successfully!",
-            resource: "Resource configuration updated successfully!",
-            replicas: "Replicas updated successfully!",
-            config: "Configuration updated successfully!",
-          };
-
-          toast.success(messages[type as keyof typeof messages]);
-        },
-        onError: () => {
-          const messages = {
-            image: "Failed to update image",
-            resource: "Failed to update resource configuration",
-            replicas: "Failed to update replicas",
-            config: "Failed to update configuration",
-          };
-          toast.error(messages[type as keyof typeof messages]);
-        },
-      });
-    } catch (error) {
-      console.error(`Failed to update launchpad ${type}:`, error);
-      toast.error(`Failed to update ${type}`);
-    }
+        toast.success("Launchpad updated successfully!");
+      },
+      onError: () => {
+        toast.error("Failed to update launchpad");
+      },
+    });
   };
 
   // Show loading state
@@ -129,32 +85,37 @@ export const LaunchpadMessageDetails: React.FC<
     <div className="space-y-4">
       <ImageCreatedAt
         target={target}
-        image={image}
-        createdAt={operationalStatus?.createdAt}
+        image={launchpadObject?.image}
+        createdAt={launchpadObject?.operationalStatus?.createdAt}
         onImageUpdate={handleSubmit}
+        isLoading={updateLaunchpad.isPending}
       />
 
       <ResourceQuota
         resource={launchpadObject?.resource}
         onResourceUpdate={handleSubmit}
-        isLoading={false}
+        isLoading={updateLaunchpad.isPending}
       />
 
       <Deployment
         resource={launchpadObject?.resource}
         strategy={launchpadObject?.strategy}
         onDeploymentUpdate={handleSubmit}
-        isLoading={false}
+        isLoading={updateLaunchpad.isPending}
       />
 
       <Configuration
-        command={launchCommand?.command.join(" ")}
-        args={launchCommand?.args.join(" ")}
-        envVars={env}
-        configMap={(launchpadObject as any)?.configMap}
-        storage={(launchpadObject as any)?.storage}
+        command={launchpadObject?.launchCommand?.command?.join(" ")}
+        args={launchpadObject?.launchCommand?.args?.join(" ")}
+        envVars={launchpadObject?.env || []}
+        configMap={launchpadObject?.configMap}
+        storage={
+          launchpadObject?.kind === "StatefulSet"
+            ? launchpadObject.localStorage
+            : undefined
+        }
         onConfigUpdate={handleSubmit}
-        isLoading={false}
+        isLoading={updateLaunchpad.isPending}
       />
     </div>
   );

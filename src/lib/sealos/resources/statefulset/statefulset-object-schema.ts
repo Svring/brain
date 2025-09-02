@@ -32,8 +32,8 @@ const ConfigMapSchema = z.object({
 });
 
 const LocalStorageSchema = z.object({
-  name: z.string(),
   path: z.string(),
+  value: z.string(),
 });
 
 const VolumeSchema = z.object({
@@ -73,7 +73,6 @@ export const StatefulsetObjectSchema = z.object({
   ports: z.array(PortSchema).optional(),
   configMap: z.array(ConfigMapSchema).optional(),
   localStorage: z.array(LocalStorageSchema).optional(),
-  volume: z.array(VolumeSchema).optional(),
   pods: z.array(PodSchema).optional(),
   operationalStatus: OperationalStatusSchema.optional(),
   strategy: StrategySchema.optional(),

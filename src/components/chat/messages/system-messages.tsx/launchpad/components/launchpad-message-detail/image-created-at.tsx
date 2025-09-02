@@ -6,12 +6,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
 
 interface ImageCreatedAtProps {
   target: BuiltinResourceTarget;
   image?: string;
   createdAt?: string;
   onImageUpdate: (type: string, data?: any) => Promise<void>;
+  isLoading?: boolean;
 }
 
 export const ImageCreatedAt: React.FC<ImageCreatedAtProps> = ({
@@ -19,6 +21,7 @@ export const ImageCreatedAt: React.FC<ImageCreatedAtProps> = ({
   image,
   createdAt,
   onImageUpdate,
+  isLoading = false,
 }) => {
   const [isEditingImage, setIsEditingImage] = useState(false);
   const [imageValue, setImageValue] = useState("");
@@ -35,17 +38,26 @@ export const ImageCreatedAt: React.FC<ImageCreatedAtProps> = ({
 
   const handleImageSubmit = async () => {
     if (!imageValue.trim()) return;
-    await onImageUpdate("image", imageValue);
+    await onImageUpdate("image", { image: imageValue });
     setIsEditingImage(false);
     setImageValue("");
   };
 
   return (
-    <>
+    <div className="flex flex-row gap-8 items-center">
       {/* Image Info */}
       {image && (
-        <div className="flex flex-col space-y-1">
-          <span className="text-sm text-muted-foreground">Image</span>
+        <div className="flex flex-col space-y-1 flex-1">
+          <div className="flex items-center gap-1">
+            <span className="text-sm text-muted-foreground">Image</span>
+            <button
+              onClick={handleImageEdit}
+              className="h-5 w-5 p-0 bg-transparent border-none cursor-pointer flex items-center justify-center hover:bg-muted rounded-sm transition-colors"
+              title="Edit image"
+            >
+              <Edit3 className="h-3 w-3 text-muted-foreground/60 hover:text-muted-foreground" />
+            </button>
+          </div>
           {isEditingImage ? (
             <div className="flex items-center gap-2">
               <Input
@@ -67,8 +79,13 @@ export const ImageCreatedAt: React.FC<ImageCreatedAtProps> = ({
                 variant="outline"
                 onClick={handleImageSubmit}
                 className="h-8 w-8 p-0"
+                disabled={isLoading}
               >
-                <Check className="h-3 w-3" />
+                {isLoading ? (
+                  <Spinner variant="bars" className="h-3 w-3" />
+                ) : (
+                  <Check className="h-3 w-3" />
+                )}
               </Button>
               <Button
                 size="sm"
@@ -81,12 +98,11 @@ export const ImageCreatedAt: React.FC<ImageCreatedAtProps> = ({
             </div>
           ) : (
             <div
-              className="group flex items-center gap-2 cursor-pointer hover:underline transition-colors"
+              className="cursor-pointer hover:underline transition-colors"
               onClick={handleImageEdit}
               title="Click to edit image"
             >
               <span className="font-medium truncate">{image}</span>
-              <Edit3 className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           )}
         </div>
@@ -94,11 +110,11 @@ export const ImageCreatedAt: React.FC<ImageCreatedAtProps> = ({
 
       {/* Created At Info */}
       {createdAt && (
-        <div className="flex flex-col space-y-1">
+        <div className="flex flex-col space-y-1 flex-1">
           <span className="text-sm text-muted-foreground">Created At</span>
           <span className="text-sm font-medium truncate">{createdAt}</span>
         </div>
       )}
-    </>
+    </div>
   );
 };

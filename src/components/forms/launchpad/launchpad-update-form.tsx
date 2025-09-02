@@ -11,6 +11,8 @@ import {
   CommandField,
   ArgsField,
 } from "@/components/forms/universal/command-args-fields";
+import { StorageFields } from "../universal/storage-fields";
+import { ConfigMapFields } from "../universal/config-map-fields";
 
 interface LaunchpadUpdateFormProps {
   defaultValues?: Partial<LaunchpadUpdateFormData>;
@@ -25,7 +27,7 @@ export const LaunchpadUpdateForm = ({
   isLoading = false,
   hideDefaultButton = false,
 }: LaunchpadUpdateFormProps) => {
-  const { form, envFieldArray } = useLaunchpadUpdateForm(defaultValues);
+  const { form, envFieldArray, storageFieldArray, configMapFieldArray } = useLaunchpadUpdateForm(defaultValues);
 
   const handleSubmit = (data: LaunchpadUpdateFormData) => {
     onSubmit(data);
@@ -41,6 +43,8 @@ export const LaunchpadUpdateForm = ({
   const hasEnv = defaultValues?.env !== undefined;
   const hasCommand = defaultValues?.command !== undefined;
   const hasArgs = defaultValues?.args !== undefined;
+  const hasStorage = defaultValues?.storage !== undefined;
+  const hasConfigMap = defaultValues?.configMap !== undefined;
 
   return (
     <Form {...form}>
@@ -70,6 +74,24 @@ export const LaunchpadUpdateForm = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {hasCommand && <CommandField />}
             {hasArgs && <ArgsField />}
+          </div>
+        )}
+
+        {hasStorage && (
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-foreground">
+              Storage Volumes
+            </div>
+            <StorageFields fieldArray={storageFieldArray} />
+          </div>
+        )}
+
+        {hasConfigMap && (
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-foreground">
+              Config Map Entries
+            </div>
+            <ConfigMapFields fieldArray={configMapFieldArray} />
           </div>
         )}
 

@@ -23,8 +23,20 @@ export const useLaunchpadUpdateForm = (
     name: "env",
   });
 
+  const storageFieldArray = useFieldArray({
+    control: form.control,
+    name: "storage",
+  });
+
+  const configMapFieldArray = useFieldArray({
+    control: form.control,
+    name: "configMap",
+  });
+
   return {
     form,
     envFieldArray,
+    storageFieldArray,
+    configMapFieldArray,
   };
 };

@@ -3,6 +3,7 @@ import { Check, PenLine, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LaunchpadUpdateForm } from "@/components/forms/launchpad/launchpad-update-form";
 import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
+import { Spinner } from "@/components/ui/spinner";
 
 interface DeploymentProps {
   resource?: {
@@ -30,7 +31,11 @@ export const Deployment: React.FC<DeploymentProps> = ({
   const [isReplicasEditing, setIsReplicasEditing] = useState(false);
 
   const handleReplicasSubmit = async (data: LaunchpadUpdateFormData) => {
-    await onDeploymentUpdate("replicas", data);
+    await onDeploymentUpdate("replicas", {
+      resource: {
+        replicas: data.resource?.replicas,
+      },
+    });
     setIsReplicasEditing(false);
   };
 
@@ -45,6 +50,7 @@ export const Deployment: React.FC<DeploymentProps> = ({
               size="sm"
               className="h-8 w-8"
               onClick={() => setIsReplicasEditing(false)}
+              disabled={isLoading}
             >
               <X />
             </Button>
@@ -54,8 +60,13 @@ export const Deployment: React.FC<DeploymentProps> = ({
               variant="outline"
               size="sm"
               className="h-8 w-8"
+              disabled={isLoading}
             >
-              <Check />
+              {isLoading ? (
+                <Spinner variant="bars" className="h-4 w-4" />
+              ) : (
+                <Check />
+              )}
             </Button>
           </div>
         ) : strategy?.type !== "flexible" ? (
@@ -64,8 +75,13 @@ export const Deployment: React.FC<DeploymentProps> = ({
             size="sm"
             className="h-8 w-8"
             onClick={() => setIsReplicasEditing(true)}
+            disabled={isLoading}
           >
-            <PenLine />
+            {isLoading ? (
+              <Spinner variant="bars" className="h-4 w-4" />
+            ) : (
+              <PenLine />
+            )}
           </Button>
         ) : null}
       </div>

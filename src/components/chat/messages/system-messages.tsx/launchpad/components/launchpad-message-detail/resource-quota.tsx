@@ -3,6 +3,7 @@ import { Check, Cpu, MemoryStick, PenLine, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LaunchpadUpdateForm } from "@/components/forms/launchpad/launchpad-update-form";
 import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
+import { Spinner } from "@/components/ui/spinner";
 
 interface ResourceQuotaProps {
   resource?: {
@@ -21,11 +22,13 @@ export const ResourceQuota: React.FC<ResourceQuotaProps> = ({
   const [isResourceEditing, setIsResourceEditing] = useState(false);
 
   const handleResourceSubmit = async (data: LaunchpadUpdateFormData) => {
-    // Only extract the resource field from the form data
-    const resourceData = data.resource;
-    if (resourceData) {
-      await onResourceUpdate("resource", resourceData);
-    }
+    // Pass the complete resource data structure
+    await onResourceUpdate("resource", {
+      resource: {
+        cpu: data.resource?.cpu,
+        memory: data.resource?.memory,
+      },
+    });
     setIsResourceEditing(false);
   };
 
@@ -40,6 +43,7 @@ export const ResourceQuota: React.FC<ResourceQuotaProps> = ({
               size="sm"
               className="h-8 w-8"
               onClick={() => setIsResourceEditing(false)}
+              disabled={isLoading}
             >
               <X />
             </Button>
@@ -50,8 +54,13 @@ export const ResourceQuota: React.FC<ResourceQuotaProps> = ({
               size="sm"
               className="h-8 w-8"
               onClick={() => console.log("Check button clicked")}
+              disabled={isLoading}
             >
-              <Check />
+              {isLoading ? (
+                <Spinner variant="bars" className="h-4 w-4" />
+              ) : (
+                <Check />
+              )}
             </Button>
           </div>
         ) : (
@@ -60,8 +69,13 @@ export const ResourceQuota: React.FC<ResourceQuotaProps> = ({
             size="sm"
             className="h-8 w-8"
             onClick={() => setIsResourceEditing(true)}
+            disabled={isLoading}
           >
-            <PenLine />
+            {isLoading ? (
+              <Spinner variant="bars" className="h-4 w-4" />
+            ) : (
+              <PenLine />
+            )}
           </Button>
         )}
       </div>
