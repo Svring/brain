@@ -43,6 +43,7 @@ export interface FlowgraphContext {
   edges: Edge[];
   selectedNode: any;
   selectedEdge: any;
+  fitViewTrigger: number;
 }
 
 export type FlowgraphEvent =
@@ -58,7 +59,8 @@ export type FlowgraphEvent =
   | { type: "SELECT_EDGE"; edge: any }
   | { type: "CLEAR_SELECTED_NODE" }
   | { type: "CLEAR_SELECTED_EDGE" }
-  | { type: "CLEAR_ALL_STATE" };
+  | { type: "CLEAR_ALL_STATE" }
+  | { type: "FIT_VIEW" };
 
 export const flowgraphMachine = createMachine({
   /** XState v5 generics */
@@ -70,6 +72,7 @@ export const flowgraphMachine = createMachine({
     edges: [],
     selectedNode: null,
     selectedEdge: null,
+    fitViewTrigger: 0,
   },
   states: {
     idle: {},
@@ -194,6 +197,12 @@ export const flowgraphMachine = createMachine({
         edges: () => [],
         selectedNode: () => null,
         selectedEdge: () => null,
+        fitViewTrigger: () => 0,
+      }),
+    },
+    FIT_VIEW: {
+      actions: assign({
+        fitViewTrigger: ({ context }) => context.fitViewTrigger + 1,
       }),
     },
   },

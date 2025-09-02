@@ -59,10 +59,17 @@ export default function useFlowgraph(projectName: string) {
     return [...networkEdges, ...computedEdges];
   }, [networkEdges, computedEdges]);
 
+  const { fitView } = useFlowgraphActions();
+
   useEffect(() => {
     // Set nodes and edges (network nodes are now included when objects are ready)
     setNodes(currentNodes);
     setEdges(finalEdges);
+
+    // Trigger fitView when nodes change (only if there are nodes)
+    if (currentNodes.length > 0) {
+      fitView();
+    }
   }, [currentNodes, finalEdges]);
 
   return {

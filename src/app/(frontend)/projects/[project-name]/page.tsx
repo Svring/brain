@@ -21,6 +21,8 @@ import { useManageStatusDialog } from "@/hooks/brain/use-manage-status-dialog";
 import { useFlowgraphCommand } from "@/hooks/flowgraph/use-flowgraph-command";
 import { useChatActions } from "@/contexts/chat/chat-context";
 
+import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
+
 // Context and utilities
 import {
   FlowgraphProvider,
@@ -131,6 +133,8 @@ export default function ProjectPage({
     useProjectActions();
   const { setStage } = useLanggraphActions();
   const { sidebarChatOpen } = useChatState();
+  const { closeSidebarChat } = useChatActions();
+  const { reset } = useCopilotChatHeadless_c();
 
   useEffect(() => {
     // Set the selected project when the component mounts
@@ -143,6 +147,8 @@ export default function ProjectPage({
     // Cleanup: clear the selected project when the component unmounts
     return () => {
       clearSelectedProject();
+      reset();
+      closeSidebarChat();
     };
   }, [projectName]);
 

@@ -44,7 +44,7 @@ export const ImageCreatedAt: React.FC<ImageCreatedAtProps> = ({
   };
 
   return (
-    <div className="flex flex-row gap-8 items-center">
+    <div className="flex flex-col gap-4">
       {/* Image Info */}
       {image && (
         <div className="flex flex-col space-y-1 flex-1">

@@ -37,7 +37,7 @@ export const FlowgraphProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Component to handle node focusing
+// Component to handle node focusing and fit view triggers
 function FlowgraphFocusHandler() {
   const { state } = useFlowgraphContext();
   const { fitView } = useReactFlow();
@@ -52,6 +52,17 @@ function FlowgraphFocusHandler() {
       });
     }
   }, [state.context.selectedNode]);
+
+  // Handle programmatic fitView calls
+  useEffect(() => {
+    if (state.context.fitViewTrigger > 0) {
+      fitView({
+        padding: 0.2,
+        duration: 0,
+        maxZoom: 1,
+      });
+    }
+  }, [state.context.fitViewTrigger]);
 
   return null;
 }
@@ -72,6 +83,7 @@ export function useFlowgraphState() {
     edges: state.context.edges,
     selectedNode: state.context.selectedNode,
     selectedEdge: state.context.selectedEdge,
+    fitViewTrigger: state.context.fitViewTrigger,
   };
 }
 
@@ -108,5 +120,6 @@ export function useFlowgraphActions() {
         type: "SET_EDGES",
         edges: applyEdgeChanges(changes, state.context.edges),
       }),
+    fitView: () => send({ type: "FIT_VIEW" }),
   };
 }
