@@ -7,7 +7,7 @@ import {
   applySplitLayout,
 } from "@/lib/flowgraph/layout/flowgraph-layout-utils";
 
-const LAYOUT_OPTIONS = { direction: "BT" } as const;
+const LAYOUT_OPTIONS = { direction: "BT", rankSep: 150, nodeSep: 150 } as const;
 const SPLIT_OPTIONS = {
   groupId: "devbox-group",
   groupPadding: 20,
@@ -15,13 +15,21 @@ const SPLIT_OPTIONS = {
   groupPosition: { x: -700, y: 0 },
   childNodeWidth: 280,
   childNodeHeight: 200,
-  groupLayoutOptions: {
-    direction: "BT",
-    nodeWidth: 280,
-    nodeHeight: 200,
-    rankSep: 40,
-    nodeSep: 20,
+  // Account for smaller network nodes inside the group
+  getChildNodeSize: (node: Node) => {
+    if (node.type === "network") {
+      return { width: 280, height: 56 };
+    }
+    return { width: 280, height: 200 };
   },
+  // Treat network nodes as shorter than default nodes during outside layout
+  getOutsideNodeSize: (node: Node) => {
+    if (node.type === "network") {
+      return { width: 280, height: 56 }; // h-14 in Tailwind = 56px
+    }
+    return { width: 280, height: 200 };
+  },
+  groupLayoutOptions: LAYOUT_OPTIONS,
   outsideLayoutOptions: LAYOUT_OPTIONS,
 } as const;
 

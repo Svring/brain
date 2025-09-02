@@ -49,7 +49,7 @@ export default function NetworkNode({
     return [];
   })();
 
-  const { readyStatus, getBackgroundColor } = useNetworkStatus({ target });
+  const { readyStatus, getBackgroundColor } = useNetworkStatus(target);
   const { appendSystemMessage } = useAppendSystemMessageMutation();
   const { copyToClipboard, isCopied } = useCopy();
 

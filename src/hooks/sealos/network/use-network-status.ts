@@ -10,13 +10,10 @@ import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
+  ResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
-interface UseNetworkStatusProps {
-  target: CustomResourceTarget | BuiltinResourceTarget;
-}
-
-export const useNetworkStatus = ({ target }: UseNetworkStatusProps) => {
+export const useNetworkStatus = (target: ResourceTarget) => {
   const { devbox, launchpad } = useTRPCClients();
   const { edges } = useFlowgraphState();
   const { updateEdge } = useFlowgraphActions();

@@ -80,6 +80,7 @@ function ProjectFlow({ projectName }: { projectName: string }) {
   const { isLoading } = useFlowgraph(projectName);
 
   const { nodes, edges } = useFlowgraphState();
+  // console.log("nodes", nodes);
   const { onNodesChange, onEdgesChange } = useFlowgraphActions();
 
   useCopilotActions();

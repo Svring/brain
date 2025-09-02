@@ -7,9 +7,13 @@ export interface LayoutOptions {
   nodeHeight?: number;
   rankSep?: number; // Separation between ranks/levels
   nodeSep?: number; // Separation between nodes in same rank
+  // Optional per-node size resolver. Falls back to nodeWidth/nodeHeight
+  getNodeSize?: (node: Node) => { width: number; height: number };
 }
 
-const DEFAULT_OPTIONS: Required<LayoutOptions> = {
+type DefaultLayoutOptions = Required<Omit<LayoutOptions, "getNodeSize">>;
+
+const DEFAULT_OPTIONS: DefaultLayoutOptions = {
   direction: "TB",
   nodeWidth: 250,
   nodeHeight: 200,
@@ -26,6 +30,9 @@ export const applyLayout = (
   options: LayoutOptions = {}
 ): Node[] => {
   const opts = { ...DEFAULT_OPTIONS, ...options };
+  const resolveSize =
+    options.getNodeSize ??
+    (() => ({ width: opts.nodeWidth, height: opts.nodeHeight }));
 
   if (nodes.length === 0) {
     return nodes;
@@ -46,35 +53,116 @@ export const applyLayout = (
   // Calculate ranks using simple topological approach
   const ranks = calculateNodeRanks(nodes, incomingEdges);
 
-  // Group by rank and assign positions
-  const rankedNodes = _.groupBy(
-    nodes.map((node) => ({ node, rank: ranks.get(node.id) || 0 })),
+  // Group by rank
+  const ranked = _.groupBy(
+    nodes.map((n) => ({ node: n, rank: ranks.get(n.id) || 0 })),
     "rank"
   );
 
-  const maxRank = Math.max(...Object.keys(rankedNodes).map(Number));
+  const rankKeys = Object.keys(ranked)
+    .map((k) => Number(k))
+    .sort((a, b) => a - b);
 
-  return nodes.map((node) => {
-    const rank = ranks.get(node.id) || 0;
-    const sameRankNodes = rankedNodes[rank] || [];
-    const indexInRank = sameRankNodes.findIndex(
-      ({ node: n }) => n.id === node.id
-    );
-    const totalInRank = sameRankNodes.length;
+  // Precompute per-rank max sizes
+  const rankMaxHeights = new Map<number, number>();
+  const rankMaxWidths = new Map<number, number>();
+  for (const r of rankKeys) {
+    const items = ranked[r];
+    let maxH = 0;
+    let maxW = 0;
+    for (const { node } of items) {
+      const { width, height } = resolveSize(node);
+      if (height > maxH) maxH = height;
+      if (width > maxW) maxW = width;
+    }
+    rankMaxHeights.set(r, maxH || opts.nodeHeight);
+    rankMaxWidths.set(r, maxW || opts.nodeWidth);
+  }
 
-    const position = getNodePosition(
-      rank,
-      indexInRank,
-      totalInRank,
-      maxRank,
-      opts
-    );
+  // Compute rank offsets based on direction
+  const rankOffsetY = new Map<number, number>();
+  const rankOffsetX = new Map<number, number>();
 
-    return {
-      ...node,
-      position,
-    };
-  });
+  if (opts.direction === "TB" || opts.direction === "BT") {
+    let accY = 0;
+    for (const r of rankKeys) {
+      rankOffsetY.set(r, accY);
+      accY += (rankMaxHeights.get(r) || opts.nodeHeight) + opts.rankSep;
+    }
+    // Remove last added rankSep
+    const totalHeight = accY - opts.rankSep;
+    if (opts.direction === "BT") {
+      // Mirror from bottom
+      for (const r of rankKeys) {
+        const h = rankMaxHeights.get(r) || opts.nodeHeight;
+        const topFromTopFlow = rankOffsetY.get(r) || 0;
+        const mirroredTop = totalHeight - topFromTopFlow - h;
+        rankOffsetY.set(r, mirroredTop);
+      }
+    }
+    // Horizontal ranks centered around 0; rankOffsetX unused here
+  } else if (opts.direction === "LR" || opts.direction === "RL") {
+    let accX = 0;
+    for (const r of rankKeys) {
+      rankOffsetX.set(r, accX);
+      accX += (rankMaxWidths.get(r) || opts.nodeWidth) + opts.rankSep;
+    }
+    const totalWidth = accX - opts.rankSep;
+    if (opts.direction === "RL") {
+      for (const r of rankKeys) {
+        const w = rankMaxWidths.get(r) || opts.nodeWidth;
+        const leftFromLeftFlow = rankOffsetX.get(r) || 0;
+        const mirroredLeft = totalWidth - leftFromLeftFlow - w;
+        rankOffsetX.set(r, mirroredLeft);
+      }
+    }
+  }
+
+  // Compute node positions within each rank using variable sizes
+  const positionedById = new Map<string, { x: number; y: number }>();
+
+  for (const r of rankKeys) {
+    const items = ranked[r];
+    const nodesInRank = items.map((it) => it.node);
+
+    if (opts.direction === "TB" || opts.direction === "BT") {
+      // Horizontal arrangement, center around x=0
+      const widths = nodesInRank.map((n) => resolveSize(n).width);
+      const totalWidthInRank =
+        widths.reduce((s, w) => s + w, 0) + opts.nodeSep * (widths.length - 1);
+      let cursorX = -totalWidthInRank / 2;
+      const baseY = rankOffsetY.get(r) || 0;
+      for (let i = 0; i < nodesInRank.length; i++) {
+        const node = nodesInRank[i];
+        const size = resolveSize(node);
+        const x = cursorX;
+        const y = baseY;
+        positionedById.set(node.id, { x, y });
+        cursorX += size.width + opts.nodeSep;
+      }
+    } else {
+      // LR or RL: Vertical arrangement, center around y=0
+      const heights = nodesInRank.map((n) => resolveSize(n).height);
+      const totalHeightInRank =
+        heights.reduce((s, h) => s + h, 0) +
+        opts.nodeSep * (heights.length - 1);
+      let cursorY = -totalHeightInRank / 2;
+      const baseX = rankOffsetX.get(r) || 0;
+      for (let i = 0; i < nodesInRank.length; i++) {
+        const node = nodesInRank[i];
+        const size = resolveSize(node);
+        const x = baseX;
+        const y = cursorY;
+        positionedById.set(node.id, { x, y });
+        cursorY += size.height + opts.nodeSep;
+      }
+    }
+  }
+
+  return nodes.map((node) => ({
+    ...node,
+    position: positionedById.get(node.id) || node.position || { x: 0, y: 0 },
+  }));
 };
 
 function calculateNodeRanks(
@@ -311,6 +399,7 @@ export const applySplitLayout = (
       ...groupLayoutOptions,
       nodeWidth: childNodeWidth,
       nodeHeight: childNodeHeight,
+      getNodeSize: getChildNodeSize,
     }
   );
 
@@ -360,7 +449,7 @@ export const applySplitLayout = (
   const laidOutOutside = applyLayout(
     outsideNodes.map((n) => ({ ...n, position: { x: 0, y: 0 } })),
     outsideEdges,
-    outsideLayoutOptions
+    { ...outsideLayoutOptions, getNodeSize: getOutsideNodeSize }
   );
 
   const outsideBBox = computeBoundingBox(
