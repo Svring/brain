@@ -1,12 +1,12 @@
 "use client";
 
-import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Plus, Eraser } from "lucide-react";
+import { Plus, Eraser, X } from "lucide-react";
 import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { Spinner } from "@/components/ui/spinner";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useProjectState } from "@/contexts/project/project-context";
+import { useChatActions } from "@/contexts/chat/chat-context";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { searchThreadsOptions } from "@/lib/langgraph/langgraph-method/langgraph-query";
@@ -25,6 +25,7 @@ export function AiChatHeader({
 }: AiChatHeaderProps) {
   const { auth } = useAuthState();
   const { selectedProject, selectedResource } = useProjectState();
+  const { closeSidebarChat } = useChatActions();
   const { mutate: createNewChatSession, isPending } =
     useCreateNewChatSessionMutation();
 
@@ -61,45 +62,55 @@ export function AiChatHeader({
   };
 
   return (
-    <SheetHeader className={`${className}`}>
-      <div className="flex items-center gap-2">
-        <div>
-          <SheetTitle>{title}</SheetTitle>
-        </div>
+    <div className={`${className}`}>
+      <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Button
-            onClick={() =>
-              createNewChatSession({
-                kubeconfig: auth!.kubeconfig,
-                projectName: selectedProject ?? undefined,
-                resourceName: selectedResource?.name ?? undefined,
-              })
-            }
-            disabled={isPending}
-            size="icon"
-            variant="ghost"
-          >
-            {isPending ? (
-              <Spinner className="h-4 w-4" />
-            ) : (
-              <Eraser className="h-4 w-4" />
+          <div>
+            <h2 className="font-semibold text-foreground text-lg">{title}</h2>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() =>
+                createNewChatSession({
+                  kubeconfig: auth!.kubeconfig,
+                  projectName: selectedProject ?? undefined,
+                  resourceName: selectedResource?.name ?? undefined,
+                })
+              }
+              disabled={isPending}
+              size="icon"
+              variant="ghost"
+            >
+              {isPending ? (
+                <Spinner className="h-4 w-4" />
+              ) : (
+                <Eraser className="h-4 w-4" />
+              )}
+            </Button>
+            {selectedResource && (
+              <div className="flex items-center gap-2 text text-muted-foreground">
+                <Image
+                  src={getIconUrl()}
+                  alt={`${selectedResource.resourceType} Icon`}
+                  width={16}
+                  height={16}
+                  className="rounded-sm h-4 w-4 flex-shrink-0"
+                  priority
+                />
+                <span>{selectedResource.name}</span>
+              </div>
             )}
-          </Button>
-          {selectedResource && (
-            <div className="flex items-center gap-2 text text-muted-foreground">
-              <Image
-                src={getIconUrl()}
-                alt={`${selectedResource.resourceType} Icon`}
-                width={16}
-                height={16}
-                className="rounded-sm h-4 w-4 flex-shrink-0"
-                priority
-              />
-              <span>{selectedResource.name}</span>
-            </div>
-          )}
+          </div>
         </div>
+        <Button
+          onClick={closeSidebarChat}
+          size="icon"
+          variant="ghost"
+          className="h-8 w-8"
+        >
+          <X className="h-4 w-4" />
+        </Button>
       </div>
-    </SheetHeader>
+    </div>
   );
 }

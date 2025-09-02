@@ -1,10 +1,14 @@
 import { StarBorder } from "@/components/ui/star-border";
 import { cn } from "@/lib/utils";
 import { MessageCircle } from "lucide-react";
-import { useChatActions } from "@/contexts/chat/chat-context";
+import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
 
 export default function AiCoin() {
   const { openSidebarChat } = useChatActions();
+  const { sidebarChatOpen } = useChatState();
+
+  // Hide the coin when the sidebar chat is open
+  if (sidebarChatOpen) return null;
 
   const handleClick = () => {
     openSidebarChat();

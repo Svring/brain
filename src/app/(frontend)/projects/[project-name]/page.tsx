@@ -32,6 +32,7 @@ import {
   useProjectState,
 } from "@/contexts/project/project-context";
 import { useDisclosure } from "@reactuses/core";
+import { cn } from "@/lib/utils";
 
 // Types and constants
 import { REACT_FLOW_CONFIG } from "@/lib/flowgraph/flowgraph-constant/flowgraph-constant-config";
@@ -43,6 +44,7 @@ import {
   useLanggraphActions,
   useLanggraphState,
 } from "@/contexts/langgraph/langgraph-context";
+import { useChatState } from "@/contexts/chat/chat-context";
 
 // Floating UI Component
 function ProjectFloatingUI({ projectName }: { projectName: string }) {
@@ -68,7 +70,6 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
         onOpenChange={onCommandOpenChange}
       />
       <AiCoin />
-      <AiChatbox />
     </>
   );
 }
@@ -127,7 +128,7 @@ export default function ProjectPage({
   const { selectProject, clearSelectedProject, clearSelectedProjectResources } =
     useProjectActions();
   const { setStage } = useLanggraphActions();
-  const { closeSidebarChat } = useChatActions();
+  const { sidebarChatOpen } = useChatState();
 
   useEffect(() => {
     // Set the selected project when the component mounts
@@ -146,9 +147,20 @@ export default function ProjectPage({
   return (
     <ReactFlowProvider>
       <FlowgraphProvider>
-        <div className="relative h-screen w-full">
-          <ProjectFlow projectName={projectName} />
-          <ProjectFloatingUI projectName={projectName} />
+        <div className="relative h-screen w-full flex overflow-hidden">
+          <div className={cn(
+            "relative h-full transition-all duration-300 ease-in-out",
+            sidebarChatOpen ? "w-[70%]" : "w-full"
+          )}>
+            <ProjectFlow projectName={projectName} />
+            <ProjectFloatingUI projectName={projectName} />
+          </div>
+          <div className={cn(
+            "h-full shrink-0 transition-all duration-200 ease-in-out",
+            sidebarChatOpen ? "w-[35%] p-2 pl-0" : "w-0"
+          )}>
+            <AiChatbox />
+          </div>
         </div>
       </FlowgraphProvider>
     </ReactFlowProvider>
