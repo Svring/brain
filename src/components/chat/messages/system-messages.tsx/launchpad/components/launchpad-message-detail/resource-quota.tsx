@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Cpu, MemoryStick, PenLine, X } from "lucide-react";
+import { Check, Cpu, MemoryStick, PenLine, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LaunchpadUpdateForm } from "@/components/forms/launchpad/launchpad-update-form";
 import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
@@ -28,25 +28,35 @@ export const ResourceQuota: React.FC<ResourceQuotaProps> = ({
   return (
     <div className="border border-dashed rounded-lg">
       <div className="flex items-center justify-between p-2 border-b border-dashed">
-        <h3 className="font-medium">Quota</h3>
+        <h3 className="font-medium">Resource Quota</h3>
         {isResourceEditing ? (
           <div className="flex items-center gap-1">
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
-              className="h-6 w-6 p-1"
+              className="h-8 w-8"
               onClick={() => setIsResourceEditing(false)}
             >
-              <X className="h-4 w-4" />
+              <X />
+            </Button>
+            <Button
+              type="submit"
+              form="launchpad-update-form"
+              variant="outline"
+              size="sm"
+              className="h-8 w-8"
+            >
+              <Check />
             </Button>
           </div>
         ) : (
           <Button
-            variant="ghost"
-            className="h-6 w-6 p-1"
+            variant="outline"
+            size="sm"
+            className="h-8 w-8"
             onClick={() => setIsResourceEditing(true)}
           >
-            <PenLine className="h-4 w-4" />
+            <PenLine />
           </Button>
         )}
       </div>
@@ -61,6 +71,7 @@ export const ResourceQuota: React.FC<ResourceQuotaProps> = ({
             }}
             onSubmit={handleResourceSubmit}
             isLoading={isLoading}
+            hideDefaultButton={true}
           />
         ) : (
           <div className="flex items-center justify-around">

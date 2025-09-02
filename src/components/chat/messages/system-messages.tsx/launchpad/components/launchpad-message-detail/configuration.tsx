@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { PenLine, X } from "lucide-react";
+import { PenLine, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LaunchpadUpdateForm } from "@/components/forms/launchpad/launchpad-update-form";
 import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
@@ -25,6 +25,18 @@ export const Configuration: React.FC<ConfigurationProps> = ({
 }) => {
   const [isConfigEditing, setIsConfigEditing] = useState(false);
 
+  // Filter env vars only when entering edit mode
+  const getFilteredEnvVars = () => {
+    if (!envVars || !Array.isArray(envVars)) return [];
+    return envVars
+      .filter((envVar: any) => envVar.type !== "secretKeyRef")
+      .map((envVar: any) => ({
+        type: "value" as const,
+        name: envVar.name,
+        value: envVar.value,
+      }));
+  };
+
   const handleConfigSubmit = async (data: LaunchpadUpdateFormData) => {
     await onConfigUpdate("config", data);
     setIsConfigEditing(false);
@@ -33,25 +45,35 @@ export const Configuration: React.FC<ConfigurationProps> = ({
   return (
     <div className="border border-dashed rounded-lg">
       <div className="flex items-center justify-between p-2 border-b border-dashed">
-        <h3 className="font-medium">Configuration</h3>
+        <h3 className="font-medium">Advanced Configuration</h3>
         {isConfigEditing ? (
           <div className="flex items-center gap-1">
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
-              className="h-6 w-6 p-1"
+              className="h-8 w-8"
               onClick={() => setIsConfigEditing(false)}
             >
-              <X className="h-4 w-4" />
+              <X />
+            </Button>
+            <Button
+              type="submit"
+              form="launchpad-update-form"
+              variant="outline"
+              size="sm"
+              className="h-8 w-8"
+            >
+              <Check />
             </Button>
           </div>
         ) : (
           <Button
-            variant="ghost"
-            className="h-6 w-6 p-1"
+            variant="outline"
+            size="sm"
+            className="h-8 w-8"
             onClick={() => setIsConfigEditing(true)}
           >
-            <PenLine className="h-4 w-4" />
+            <PenLine />
           </Button>
         )}
       </div>
@@ -61,10 +83,11 @@ export const Configuration: React.FC<ConfigurationProps> = ({
             defaultValues={{
               command: command || "",
               args: args || "",
-              env: envVars || [],
+              env: getFilteredEnvVars(),
             }}
             onSubmit={handleConfigSubmit}
             isLoading={isLoading}
+            hideDefaultButton={true}
           />
         ) : (
           <div className="grid grid-cols-2 gap-4">
@@ -75,11 +98,11 @@ export const Configuration: React.FC<ConfigurationProps> = ({
               </div>
             </div>
             <div className="flex flex-col items-center gap-1">
-              <div className="text-sm text-muted-foreground">
-                Env Variables
-              </div>
+              <div className="text-sm text-muted-foreground">Env Variables</div>
               <div className="text-sm font-medium text-center">
-                {envVars.length > 0 ? `${envVars.length} variables` : "N/A"}
+                {envVars && Array.isArray(envVars) && envVars.length > 0
+                  ? `${envVars.length} variables`
+                  : "N/A"}
               </div>
             </div>
             <div className="flex flex-col items-center gap-1">

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { PenLine, X } from "lucide-react";
+import { Check, PenLine, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LaunchpadUpdateForm } from "@/components/forms/launchpad/launchpad-update-form";
 import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
@@ -37,25 +37,35 @@ export const Deployment: React.FC<DeploymentProps> = ({
   return (
     <div className="border border-dashed rounded-lg">
       <div className="flex items-center justify-between p-2 border-b border-dashed">
-        <h3 className="font-medium">Deployment</h3>
+        <h3 className="font-medium">Deployment Strategy</h3>
         {isReplicasEditing ? (
           <div className="flex items-center gap-1">
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
-              className="h-6 w-6 p-1"
+              className="h-8 w-8"
               onClick={() => setIsReplicasEditing(false)}
             >
-              <X className="h-4 w-4" />
+              <X />
+            </Button>
+            <Button
+              type="submit"
+              form="launchpad-update-form"
+              variant="outline"
+              size="sm"
+              className="h-8 w-8"
+            >
+              <Check />
             </Button>
           </div>
         ) : (
           <Button
-            variant="ghost"
-            className="h-6 w-6 p-1"
+            variant="outline"
+            size="sm"
+            className="h-8 w-8"
             onClick={() => setIsReplicasEditing(true)}
           >
-            <PenLine className="h-4 w-4" />
+            <PenLine />
           </Button>
         )}
       </div>
@@ -69,6 +79,7 @@ export const Deployment: React.FC<DeploymentProps> = ({
             }}
             onSubmit={handleReplicasSubmit}
             isLoading={isLoading}
+            hideDefaultButton={true}
           />
         ) : (
           <div className="flex items-center justify-around">

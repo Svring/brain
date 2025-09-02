@@ -44,10 +44,10 @@ export const ImageCreatedAt: React.FC<ImageCreatedAtProps> = ({
     <>
       {/* Image Info */}
       {image && (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col space-y-1">
           <span className="text-sm text-muted-foreground">Image</span>
           {isEditingImage ? (
-            <div className="flex items-center gap-2 flex-1">
+            <div className="flex items-center gap-2">
               <Input
                 value={imageValue}
                 onChange={(e) => setImageValue(e.target.value)}
@@ -81,11 +81,11 @@ export const ImageCreatedAt: React.FC<ImageCreatedAtProps> = ({
             </div>
           ) : (
             <div
-              className="group flex items-center gap-2 cursor-pointer hover:bg-muted/50 rounded px-2 py-1 transition-colors flex-1"
+              className="group flex items-center gap-2 cursor-pointer hover:underline transition-colors"
               onClick={handleImageEdit}
               title="Click to edit image"
             >
-              <span className="font-medium truncate flex-1">{image}</span>
+              <span className="font-medium truncate">{image}</span>
               <Edit3 className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           )}
@@ -94,7 +94,7 @@ export const ImageCreatedAt: React.FC<ImageCreatedAtProps> = ({
 
       {/* Created At Info */}
       {createdAt && (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col space-y-1">
           <span className="text-sm text-muted-foreground">Created At</span>
           <span className="text-sm font-medium truncate">{createdAt}</span>
         </div>

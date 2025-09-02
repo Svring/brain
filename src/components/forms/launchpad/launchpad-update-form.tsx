@@ -16,12 +16,14 @@ interface LaunchpadUpdateFormProps {
   defaultValues?: Partial<LaunchpadUpdateFormData>;
   onSubmit: (data: LaunchpadUpdateFormData) => void;
   isLoading?: boolean;
+  hideDefaultButton?: boolean;
 }
 
 export const LaunchpadUpdateForm = ({
   defaultValues,
   onSubmit,
   isLoading = false,
+  hideDefaultButton = false,
 }: LaunchpadUpdateFormProps) => {
   const { form, envFieldArray } = useLaunchpadUpdateForm(defaultValues);
 
@@ -39,7 +41,11 @@ export const LaunchpadUpdateForm = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form
+        id="launchpad-update-form"
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="space-y-6"
+      >
         {hasImage && (
           <div className="space-y-4">
             <ImageField />
@@ -64,11 +70,13 @@ export const LaunchpadUpdateForm = ({
           </div>
         )}
 
-        <div className="flex justify-end">
-          <Button type="submit" variant="outline" disabled={isLoading}>
-            {isLoading ? "Updating..." : "Update"}
-          </Button>
-        </div>
+        {!hideDefaultButton && (
+          <div className="flex justify-end">
+            <Button type="submit" variant="outline" disabled={isLoading}>
+              {isLoading ? "Updating..." : "Update"}
+            </Button>
+          </div>
+        )}
       </form>
     </Form>
   );

@@ -51,6 +51,8 @@ export const LaunchpadMessageDetails: React.FC<
       }));
   };
 
+  // Keep the original env for display, format only when editing
+  const originalEnv = env;
   const envVars = formatEnvVars(env);
 
   const handleSubmit = async (type: string, data?: any) => {
@@ -167,7 +169,7 @@ export const LaunchpadMessageDetails: React.FC<
       <Configuration
         command={command}
         args={args}
-        envVars={envVars}
+        envVars={originalEnv}
         configMap={(launchpadObject as any)?.configMap}
         storage={(launchpadObject as any)?.storage}
         onConfigUpdate={handleSubmit}
