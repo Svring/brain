@@ -108,6 +108,7 @@ function ProjectFlow({ projectName }: { projectName: string }) {
       snapToGrid
       snapGrid={REACT_FLOW_CONFIG.snapGrid}
       connectionLineComponent={FloatingConnectionLine}
+      proOptions={REACT_FLOW_CONFIG.proOptions}
     >
       {/* <Background
         gap={REACT_FLOW_CONFIG.background.gap}
@@ -148,17 +149,21 @@ export default function ProjectPage({
     <ReactFlowProvider>
       <FlowgraphProvider>
         <div className="relative h-screen w-full flex overflow-hidden">
-          <div className={cn(
-            "relative h-full transition-all duration-300 ease-in-out",
-            sidebarChatOpen ? "w-[70%]" : "w-full"
-          )}>
+          <div
+            className={cn(
+              "relative h-full transition-all duration-300 ease-in-out",
+              sidebarChatOpen ? "w-[65%]" : "w-full"
+            )}
+          >
             <ProjectFlow projectName={projectName} />
             <ProjectFloatingUI projectName={projectName} />
           </div>
-          <div className={cn(
-            "h-full shrink-0 transition-all duration-200 ease-in-out",
-            sidebarChatOpen ? "w-[35%] p-2 pl-0" : "w-0"
-          )}>
+          <div
+            className={cn(
+              "h-full shrink-0 transition-all duration-200 ease-in-out",
+              sidebarChatOpen ? "w-[35%] p-2 pl-0" : "w-0"
+            )}
+          >
             <AiChatbox />
           </div>
         </div>

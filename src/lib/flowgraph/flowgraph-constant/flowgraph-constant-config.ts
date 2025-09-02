@@ -14,4 +14,5 @@ export const REACT_FLOW_CONFIG = {
     size: 1,
     variant: BackgroundVariant.Dots,
   },
+  proOptions: { hideAttribution: true },
 };

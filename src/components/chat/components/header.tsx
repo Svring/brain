@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Plus, Eraser, X } from "lucide-react";
+import { Plus, Eraser, ChevronRight } from "lucide-react";
 import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { Spinner } from "@/components/ui/spinner";
 import { useAuthState } from "@/contexts/auth/auth-context";
@@ -108,7 +108,7 @@ export function AiChatHeader({
           variant="ghost"
           className="h-8 w-8"
         >
-          <X className="h-4 w-4" />
+          <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
     </div>
