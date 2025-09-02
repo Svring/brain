@@ -123,6 +123,6 @@ export const checkReady = createParallelAction(
         devboxName,
       },
     });
-    return response.data;
+    return response.data.data;
   }
 );

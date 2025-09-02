@@ -9,6 +9,10 @@ export interface LayoutOptions {
   nodeSep?: number; // Separation between nodes in same rank
   // Optional per-node size resolver. Falls back to nodeWidth/nodeHeight
   getNodeSize?: (node: Node) => { width: number; height: number };
+  // If true, order nodes within ranks using barycentric heuristic to cluster connected nodes
+  edgeAware?: boolean;
+  // Number of downward/upward sweeps for barycentric ordering
+  barycentricIterations?: number;
 }
 
 type DefaultLayoutOptions = Required<Omit<LayoutOptions, "getNodeSize">>;
@@ -19,6 +23,8 @@ const DEFAULT_OPTIONS: DefaultLayoutOptions = {
   nodeHeight: 200,
   rankSep: 150,
   nodeSep: 150,
+  edgeAware: false,
+  barycentricIterations: 2,
 };
 
 /**
@@ -63,11 +69,79 @@ export const applyLayout = (
     .map((k) => Number(k))
     .sort((a, b) => a - b);
 
+  // Edge-aware ordering: initialize orders and optionally run barycentric sweeps
+  const rankOrders = new Map<number, string[]>();
+  for (const r of rankKeys) {
+    const ids = (ranked[r] || []).map((it) => it.node.id);
+    rankOrders.set(r, ids);
+  }
+
+  if (opts.edgeAware) {
+    // Build incoming/outgoing index maps once
+    const incomingMap = new Map<string, string[]>();
+    for (const n of nodes) incomingMap.set(n.id, []);
+    for (const e of edges) {
+      const arr = incomingMap.get(e.target) || [];
+      incomingMap.set(e.target, [...arr, e.source]);
+    }
+    const outgoingMap = new Map<string, string[]>();
+    for (const n of nodes) outgoingMap.set(n.id, []);
+    for (const e of edges) {
+      const arr = outgoingMap.get(e.source) || [];
+      outgoingMap.set(e.source, [...arr, e.target]);
+    }
+
+    const iters = Math.max(1, options.barycentricIterations ?? 2);
+    for (let k = 0; k < iters; k++) {
+      // Downward pass
+      for (let i = 1; i < rankKeys.length; i++) {
+        const prev = rankKeys[i - 1];
+        const curr = rankKeys[i];
+        const prevOrder = rankOrders.get(prev) || [];
+        const idxPrev = new Map<string, number>();
+        prevOrder.forEach((id, idx) => idxPrev.set(id, idx));
+        const ids = [...(rankOrders.get(curr) || [])];
+        ids.sort((a, b) => {
+          const aParents = incomingMap.get(a) || [];
+          const bParents = incomingMap.get(b) || [];
+          const aAvg = averageIndex(aParents, idxPrev);
+          const bAvg = averageIndex(bParents, idxPrev);
+          if (aAvg === bAvg) return ids.indexOf(a) - ids.indexOf(b);
+          return aAvg - bAvg;
+        });
+        rankOrders.set(curr, ids);
+      }
+      // Upward pass
+      for (let i = rankKeys.length - 2; i >= 0; i--) {
+        const curr = rankKeys[i];
+        const next = rankKeys[i + 1];
+        const nextOrder = rankOrders.get(next) || [];
+        const idxNext = new Map<string, number>();
+        nextOrder.forEach((id, idx) => idxNext.set(id, idx));
+        const ids = [...(rankOrders.get(curr) || [])];
+        ids.sort((a, b) => {
+          const aChildren = outgoingMap.get(a) || [];
+          const bChildren = outgoingMap.get(b) || [];
+          const aAvg = averageIndex(aChildren, idxNext);
+          const bAvg = averageIndex(bChildren, idxNext);
+          if (aAvg === bAvg) return ids.indexOf(a) - ids.indexOf(b);
+          return aAvg - bAvg;
+        });
+        rankOrders.set(curr, ids);
+      }
+    }
+  }
+
   // Precompute per-rank max sizes
   const rankMaxHeights = new Map<number, number>();
   const rankMaxWidths = new Map<number, number>();
   for (const r of rankKeys) {
-    const items = ranked[r];
+    const items = (
+      rankOrders.get(r) || (ranked[r] || []).map((it) => it.node.id)
+    )
+      .map((id) => nodes.find((n) => n.id === id)!)
+      .filter(Boolean)
+      .map((n) => ({ node: n }));
     let maxH = 0;
     let maxW = 0;
     for (const { node } of items) {
@@ -122,8 +196,11 @@ export const applyLayout = (
   const positionedById = new Map<string, { x: number; y: number }>();
 
   for (const r of rankKeys) {
-    const items = ranked[r];
-    const nodesInRank = items.map((it) => it.node);
+    const orderedIds =
+      rankOrders.get(r) || (ranked[r] || []).map((it) => it.node.id);
+    const nodesInRank = orderedIds
+      .map((id) => nodes.find((n) => n.id === id)!)
+      .filter(Boolean);
 
     if (opts.direction === "TB" || opts.direction === "BT") {
       // Horizontal arrangement, center around x=0
@@ -164,6 +241,21 @@ export const applyLayout = (
     position: positionedById.get(node.id) || node.position || { x: 0, y: 0 },
   }));
 };
+
+function averageIndex(ids: string[], indexMap: Map<string, number>): number {
+  if (!ids.length) return Number.POSITIVE_INFINITY;
+  let sum = 0;
+  let count = 0;
+  for (const id of ids) {
+    const idx = indexMap.get(id);
+    if (idx !== undefined) {
+      sum += idx;
+      count++;
+    }
+  }
+  if (count === 0) return Number.POSITIVE_INFINITY;
+  return sum / count;
+}
 
 function calculateNodeRanks(
   nodes: Node[],

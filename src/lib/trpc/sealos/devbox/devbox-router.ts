@@ -276,16 +276,16 @@ export const devboxRouter = t.router({
     }),
 
   // Environment Variable Operations
-  getDevboxEnvVars: t.procedure
-    .input(
-      z.object({
-        sshConfig: SSHConfigSchema,
-      })
-    )
-    .output(EnvVarListResponseSchema)
-    .query(async ({ input }) => {
-      return await getOrCreateEnvFile(input.sshConfig);
-    }),
+  // getDevboxEnvVars: t.procedure
+  //   .input(
+  //     z.object({
+  //       sshConfig: SSHConfigSchema,
+  //     })
+  //   )
+  //   .output(EnvVarListResponseSchema)
+  //   .query(async ({ input }) => {
+  //     return await getOrCreateEnvFile(input.sshConfig);
+  //   }),
 
   upsertDevboxEnvVar: t.procedure
     .input(UpsertEnvVarRequestSchema)

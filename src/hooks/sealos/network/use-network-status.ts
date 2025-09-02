@@ -7,11 +7,7 @@ import {
 } from "@/contexts/flowgraph/flowgraph-context";
 import { MarkerType } from "@xyflow/react";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
-import {
-  CustomResourceTarget,
-  BuiltinResourceTarget,
-  ResourceTarget,
-} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 export const useNetworkStatus = (target: ResourceTarget) => {
   const { devbox, launchpad } = useTRPCClients();

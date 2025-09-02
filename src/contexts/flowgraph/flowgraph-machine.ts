@@ -29,8 +29,16 @@ const SPLIT_OPTIONS = {
     }
     return { width: 280, height: 200 };
   },
-  groupLayoutOptions: LAYOUT_OPTIONS,
-  outsideLayoutOptions: LAYOUT_OPTIONS,
+  groupLayoutOptions: {
+    ...LAYOUT_OPTIONS,
+    edgeAware: true,
+    barycentricIterations: 3,
+  },
+  outsideLayoutOptions: {
+    ...LAYOUT_OPTIONS,
+    edgeAware: true,
+    barycentricIterations: 3,
+  },
 } as const;
 
 export interface FlowgraphContext {

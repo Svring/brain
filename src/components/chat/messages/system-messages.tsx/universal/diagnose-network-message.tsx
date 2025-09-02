@@ -1,15 +1,22 @@
 import React from "react";
 import { ScanSearch } from "lucide-react";
-import {
-  CustomResourceTarget,
-  BuiltinResourceTarget,
-} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import BaseActionMessage from "../components/base-action-message";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useNetworkStatus } from "@/hooks/sealos/network/use-network-status";
 
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
 interface DiagnoseNetworkMessageProps {
-  target: CustomResourceTarget | BuiltinResourceTarget;
+  target: ResourceTarget;
 }
 
 export const DiagnoseNetworkMessage: React.FC<DiagnoseNetworkMessageProps> = ({
@@ -20,6 +27,9 @@ export const DiagnoseNetworkMessage: React.FC<DiagnoseNetworkMessageProps> = ({
 
   console.log("readyStatus", readyStatus);
 
+  // Treat readyStatus as any to avoid type errors
+  const networkStatus = readyStatus as any;
+
   return (
     <BaseActionMessage
       headerTitle={{
@@ -28,7 +38,45 @@ export const DiagnoseNetworkMessage: React.FC<DiagnoseNetworkMessageProps> = ({
       }}
     >
       <div className="space-y-3">
-        {/* Component content will be added here */}
+        {networkStatus &&
+        Array.isArray(networkStatus) &&
+        networkStatus.length > 0 ? (
+          <Table>
+            <TableCaption>Network Status Diagnosis</TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Ready</TableHead>
+                <TableHead>URL</TableHead>
+                <TableHead>Error</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {networkStatus.map((status: any, index: number) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        status.ready ? "bg-theme-green" : "bg-theme-red"
+                      }`}
+                    >
+                      {status.ready ? "Ready" : "Not Ready"}
+                    </span>
+                  </TableCell>
+                  <TableCell className="font-mono text-sm">
+                    {status.url}
+                  </TableCell>
+                  <TableCell className="text-theme-red">
+                    {status.error || "None"}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <div className="text-center py-4">
+            No network status data available
+          </div>
+        )}
       </div>
     </BaseActionMessage>
   );
