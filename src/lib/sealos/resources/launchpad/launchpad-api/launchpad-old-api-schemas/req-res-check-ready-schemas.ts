@@ -13,11 +13,9 @@ export const CheckReadyDataItemSchema = z.object({
 });
 
 // Response schema for checkReady API
-export const LaunchpadCheckReadyResponseSchema = z.object({
-  code: z.literal(200),
-  message: z.string(),
-  data: z.array(CheckReadyDataItemSchema),
-});
+export const LaunchpadCheckReadyResponseSchema = z.array(
+  CheckReadyDataItemSchema
+);
 
 export type LaunchpadCheckReadyRequest = z.infer<
   typeof LaunchpadCheckReadyRequestSchema

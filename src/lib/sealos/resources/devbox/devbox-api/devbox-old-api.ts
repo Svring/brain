@@ -64,7 +64,7 @@ export const deleteDevboxRelease = createParallelAction(
         versionName,
       },
     });
-    return response.data;
+    return response.data.data;
   }
 );
 

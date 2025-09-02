@@ -10,52 +10,38 @@ export const useResourceStatus = (
 ) => {
   const { devbox, cluster, launchpad, objectstorage } = useTRPCClients();
 
-  // Handle custom resources (devbox, cluster, objectstorage)
+  // Helper function to create consistent return object
+  const createReturn = (resource: any, rest: any) => ({
+    ...rest,
+    resource,
+    status: resource?.status,
+  });
+
+  // Handle custom resources
   if (target.type === "custom") {
     if (target.resourceType === "devbox") {
-      const { data: resource, ...rest } = useQuery(
-        devbox.getDevbox.queryOptions({ target })
-      );
-      return {
-        ...rest,
-        resource,
-        status: resource?.status,
-      };
+      const query = useQuery(devbox.getDevbox.queryOptions(target));
+      return createReturn(query.data, query);
     }
+
     if (target.resourceType === "cluster") {
-      const { data: resource, ...rest } = useQuery(
-        cluster.getCluster.queryOptions(target)
-      );
-      // console.log("resource cluster", resource);
-      return {
-        ...rest,
-        resource,
-        status: resource?.status,
-      };
+      const query = useQuery(cluster.getCluster.queryOptions(target));
+      return createReturn(query.data, query);
     }
+
     if (target.resourceType === "objectstoragebucket") {
-      const { data: resource, ...rest } = useQuery(
-        objectstorage.getObjectStorage.queryOptions({ target })
+      const query = useQuery(
+        objectstorage.getObjectStorage.queryOptions(target)
       );
-      return {
-        ...rest,
-        resource,
-      };
+      return createReturn(query.data, query);
     }
+
+    throw new Error(`Unsupported custom resource type: ${target.resourceType}`);
   }
 
-  // Handle builtin resources (deployment, statefulset)
+  // Handle builtin resources
   if (target.type === "builtin") {
-    const { data: resource, ...rest } = useQuery(
-      launchpad.getLaunchpad.queryOptions(target)
-    );
-
-    return {
-      ...rest,
-      resource,
-      status: resource?.status,
-    };
+    const query = useQuery(launchpad.getLaunchpad.queryOptions(target));
+    return createReturn(query.data, query);
   }
-
-  throw new Error(`Unsupported resource type: ${target.resourceType}`);
 };

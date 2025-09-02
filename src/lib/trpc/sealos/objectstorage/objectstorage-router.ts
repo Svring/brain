@@ -88,18 +88,14 @@ export const objectStorageRouter = t.router({
 
   // K8s Operations
   getObjectStorage: t.procedure
-    .input(
-      z.object({
-        target: CustomResourceTargetSchema,
-      })
-    )
+    .input(CustomResourceTargetSchema)
     .query(async ({ input, ctx }) => {
       const k8sContext = K8sApiContextSchema.parse({
         kubeconfig: ctx.kubeconfig,
         namespace: ctx.namespace,
         regionUrl: ctx.regionUrl,
       });
-      return await getObjectStorage(k8sContext, input.target);
+      return await getObjectStorage(k8sContext, input);
     }),
 
   listObjectStorages: t.procedure

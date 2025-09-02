@@ -13,27 +13,18 @@ export const useNetworkStatus = (target: ResourceTarget) => {
   const { devbox, launchpad } = useTRPCClients();
   const { edges } = useFlowgraphState();
   const { updateEdge } = useFlowgraphActions();
-
-  // Use resource status hook to get the resource data
   const { resource } = useResourceStatus(target);
 
-  // Memoize the network node ID to prevent unnecessary recalculations
-  const networkNodeId = useMemo(
-    () => `network-${resource?.name || target.name}`,
-    [resource?.name, target.name]
+  const networkNodeId = `network-${resource?.name || target.name}`;
+  const connectedEdges = useMemo(
+    () =>
+      edges.filter(
+        (edge) => edge.target === networkNodeId || edge.source === networkNodeId
+      ),
+    [edges, networkNodeId]
   );
 
-  // Memoize connected edges to prevent infinite re-renders when edges array identity changes
-  const connectedEdges = useMemo(() => {
-    return edges.filter(
-      (edge) => edge.target === networkNodeId || edge.source === networkNodeId
-    );
-  }, [edges, networkNodeId]);
-
-  // Determine which ready check to call based on target type and resource kind
   const isDevbox = target.type === "custom" && target.resourceType === "devbox";
-
-  // Call the appropriate ready check
   const { data: readyStatus } = useQuery({
     ...(isDevbox
       ? devbox.checkDevboxReady.queryOptions({
@@ -45,75 +36,49 @@ export const useNetworkStatus = (target: ResourceTarget) => {
     enabled: !!(resource?.name || target.name),
   });
 
-  // Derive a stable status key from response for effect dependency
   const statusKey = useMemo(() => {
-    const statusData = readyStatus as any;
-    if (!statusData?.data || !Array.isArray(statusData.data)) return "unknown";
-    const total = statusData.data.length;
-    const readyCount = statusData.data.filter((item: any) => item.ready).length;
+    if (!Array.isArray(readyStatus) || !readyStatus.length) return "unknown";
+    const readyCount = readyStatus.filter((item: any) => item.ready).length;
     if (readyCount === 0) return "allNotReady";
-    if (readyCount === total) return "allReady";
+    if (readyCount === readyStatus.length) return "allReady";
     return "partial";
   }, [readyStatus]);
 
-  // Determine background color based on status key
-  const getBackgroundColor = () => {
-    if (statusKey === "allNotReady") return "bg-status-warning";
-    if (statusKey === "partial") return "bg-status-warning";
-    return "";
-  };
+  const getBackgroundColor = () =>
+    statusKey === "allNotReady" || statusKey === "partial"
+      ? "bg-status-warning"
+      : "";
 
-  // Update edge color based on network status.
-  // - Only runs when statusKey or node id changes
-  // - Only updates edges when their props actually differ
   useEffect(() => {
-    if (statusKey === "unknown") return;
+    if (statusKey !== "allNotReady") return;
 
-    // Only change color to red if status is not ready
-    // Otherwise, keep the original stroke color
-    const shouldChangeToYellow = statusKey === "allNotReady";
-    const desiredType = "floating" as const;
+    const desiredStroke = "#9F833B";
+    const desiredMarker = {
+      type: MarkerType.Arrow,
+      width: 30,
+      height: 30,
+      color: desiredStroke,
+    };
 
     connectedEdges.forEach((edge) => {
-      const currentStroke = edge.style?.stroke as string | undefined;
+      const currentStroke = edge.style?.stroke;
       const currentType = edge.type;
-      const currentMarkerColor = (edge.markerEnd as any)?.color as
-        | string
-        | undefined;
+      const currentMarkerColor = (edge.markerEnd as any)?.color;
 
-      // Only update if we need to change to red (error state)
-      if (shouldChangeToYellow) {
-        const desiredStroke = "#9F833B"; // Yellow for error state
-        const desiredMarker = {
-          type: MarkerType.Arrow as const,
-          width: 30,
-          height: 30,
-          color: desiredStroke,
-        };
-
-        const needsUpdate =
-          currentStroke !== desiredStroke ||
-          currentType !== desiredType ||
-          currentMarkerColor !== desiredStroke;
-
-        if (needsUpdate) {
-          updateEdge({
-            ...edge,
-            style: {
-              ...edge.style,
-              stroke: desiredStroke,
-            },
-            markerEnd: desiredMarker,
-            type: desiredType,
-          });
-        }
+      if (
+        currentStroke !== desiredStroke ||
+        currentType !== "floating" ||
+        currentMarkerColor !== desiredStroke
+      ) {
+        updateEdge({
+          ...edge,
+          style: { ...edge.style, stroke: desiredStroke },
+          markerEnd: desiredMarker,
+          type: "floating",
+        });
       }
-      // If status is normal, don't update the edge at all - keep original colors
     });
-  }, [statusKey, networkNodeId, connectedEdges]);
+  }, [statusKey, connectedEdges]);
 
-  return {
-    readyStatus,
-    getBackgroundColor,
-  };
+  return { readyStatus, getBackgroundColor };
 };

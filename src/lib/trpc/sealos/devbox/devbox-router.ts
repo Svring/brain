@@ -188,13 +188,9 @@ export const devboxRouter = t.router({
 
   // K8s Operations
   getDevbox: t.procedure
-    .input(
-      z.object({
-        target: CustomResourceTargetSchema,
-      })
-    )
+    .input(CustomResourceTargetSchema)
     .query(async ({ input, ctx }) => {
-      return await getDevbox(ctx, input.target);
+      return await getDevbox(ctx, input);
     }),
 
   listDevboxK8s: t.procedure.query(async ({ ctx }) => {

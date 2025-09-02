@@ -47,9 +47,7 @@ export default function ObjectStorageMessageMenu({
         onSuccess: () => {
           // Invalidate relevant queries
           queryClient.invalidateQueries({
-            queryKey: objectstorageTrpcClient.getObjectStorage.queryKey({
-              target,
-            }),
+            queryKey: objectstorageTrpcClient.getObjectStorage.queryKey(target),
           });
         },
       }

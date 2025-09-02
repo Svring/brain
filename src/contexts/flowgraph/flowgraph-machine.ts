@@ -2,10 +2,7 @@
 
 import { assign, createMachine } from "xstate";
 import type { Edge, Node } from "@xyflow/react";
-import {
-  applyLayout,
-  applySplitLayout,
-} from "@/lib/flowgraph/layout/flowgraph-layout-utils";
+import { applySplitLayout } from "@/lib/flowgraph/layout";
 
 const LAYOUT_OPTIONS = { direction: "BT", rankSep: 150, nodeSep: 150 } as const;
 const SPLIT_OPTIONS = {

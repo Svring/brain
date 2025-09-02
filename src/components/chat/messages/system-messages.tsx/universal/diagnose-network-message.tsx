@@ -41,37 +41,39 @@ export const DiagnoseNetworkMessage: React.FC<DiagnoseNetworkMessageProps> = ({
         {networkStatus &&
         Array.isArray(networkStatus) &&
         networkStatus.length > 0 ? (
-          <Table>
-            <TableCaption>Network Status Diagnosis</TableCaption>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Ready</TableHead>
-                <TableHead>URL</TableHead>
-                <TableHead>Error</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {networkStatus.map((status: any, index: number) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    <span
-                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        status.ready ? "bg-theme-green" : "bg-theme-red"
-                      }`}
-                    >
-                      {status.ready ? "Ready" : "Not Ready"}
-                    </span>
-                  </TableCell>
-                  <TableCell className="font-mono text-sm">
-                    {status.url}
-                  </TableCell>
-                  <TableCell className="text-theme-red">
-                    {status.error || "None"}
-                  </TableCell>
+          <div className="overflow-hidden">
+            <Table className="table-fixed w-full">
+              <TableCaption>Network Status Diagnosis</TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-20">Ready</TableHead>
+                  <TableHead className="w-1/2">URL</TableHead>
+                  <TableHead className="w-1/3">Error</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {networkStatus.map((status: any, index: number) => (
+                  <TableRow key={index}>
+                    <TableCell className="w-20">
+                      <span
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          status.ready ? "bg-theme-green" : "bg-theme-red"
+                        }`}
+                      >
+                        {status.ready ? "Ready" : "Not Ready"}
+                      </span>
+                    </TableCell>
+                    <TableCell className="w-1/2 font-mono text-sm truncate" title={status.url}>
+                      {status.url}
+                    </TableCell>
+                    <TableCell className="w-1/3 text-theme-red truncate" title={status.error || "None"}>
+                      {status.error || "None"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         ) : (
           <div className="text-center py-4">
             No network status data available

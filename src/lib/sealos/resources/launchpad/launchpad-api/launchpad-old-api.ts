@@ -123,7 +123,7 @@ export const checkReadyLaunchpad = createParallelAction(
     const response = await api.get("/checkReady", {
       params: { appName: validatedRequest.name },
     });
-    return LaunchpadCheckReadyResponseSchema.parse(response.data);
+    return LaunchpadCheckReadyResponseSchema.parse(response.data.data);
   }
 );
 

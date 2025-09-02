@@ -69,7 +69,7 @@ export default function DevboxMessageMenu({ target }: DevboxMessageMenuProps) {
       onSuccess: () => {
         // Invalidate relevant queries
         queryClient.invalidateQueries({
-          queryKey: devboxTrpcClient.getDevbox.queryKey({ target }),
+          queryKey: devboxTrpcClient.getDevbox.queryKey(target),
         });
         queryClient.invalidateQueries({
           queryKey: devboxTrpcClient.listDevboxes.queryKey(),
