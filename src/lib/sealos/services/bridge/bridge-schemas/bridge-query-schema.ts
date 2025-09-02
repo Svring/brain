@@ -12,3 +12,13 @@ export const ObjectQuerySchema = z.object({
 });
 
 export type ObjectQuery = z.infer<typeof ObjectQuerySchema>;
+
+/**
+ * Schema that supports both single ObjectQuery and arrays of ObjectQuery
+ */
+export const ObjectQueryOrArraySchema = z.union([
+  ObjectQuerySchema,
+  z.array(ObjectQuerySchema),
+]);
+
+export type ObjectQueryOrArray = z.infer<typeof ObjectQueryOrArraySchema>;

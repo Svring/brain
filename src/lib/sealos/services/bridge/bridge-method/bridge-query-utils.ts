@@ -5,6 +5,8 @@ import { getResource, listAllResources } from "@/lib/k8s/k8s-method/k8s-query";
 import {
   ObjectQuery,
   ObjectQuerySchema,
+  ObjectQueryOrArray,
+  ObjectQueryOrArraySchema,
 } from "../bridge-schemas/bridge-query-schema";
 import { getSchemaForResourceType } from "../bridge-constant";
 import {
@@ -23,10 +25,10 @@ import { z } from "zod";
 /**
  * Parses a JSON string description from a schema field
  * @param description - The JSON string description
- * @returns Parsed FieldDescription object
+ * @returns Parsed FieldDescription object (single or array)
  */
-export function parseFieldDescription(description: string): ObjectQuery {
-  return ObjectQuerySchema.parse(JSON.parse(description));
+export function parseFieldDescription(description: string): ObjectQueryOrArray {
+  return ObjectQueryOrArraySchema.parse(JSON.parse(description));
 }
 
 /**
@@ -130,6 +132,20 @@ export function parseFieldDescriptions(schema: z.ZodObject<any>): any {
               ...parseFieldDescriptions(zodValue._def.type),
             }
           : {};
+
+      // Handle array descriptions - expand them with indexed keys
+      if (!_.isError(description) && Array.isArray(description)) {
+        const expandedDescription: any = {};
+        description.forEach((desc, index) => {
+          expandedDescription[`${key}_${index}`] = desc;
+        });
+
+        return {
+          ...result,
+          ...expandedDescription,
+          ...(_.isEmpty(nestedResult) ? {} : { [key]: nestedResult }),
+        };
+      }
 
       return {
         ...result,
@@ -723,6 +739,49 @@ export function extractDataFromResources(
   return results;
 }
 
+/**
+ * Reconstructs array results from indexed field results
+ * @param results - Results object with potentially indexed fields
+ * @returns Results object with arrays reconstructed
+ */
+function reconstructArrayResults(
+  results: Record<string, any>
+): Record<string, any> {
+  const reconstructed = { ...results };
+  const arrayGroups: Record<string, any[]> = {};
+  const fieldsToRemove: string[] = [];
+
+  // Find indexed fields and group them
+  _.forEach(results, (value, key) => {
+    const match = key.match(/^(.+)_(\d+)$/);
+    if (match) {
+      const [, baseKey, indexStr] = match;
+      const index = parseInt(indexStr, 10);
+
+      if (!arrayGroups[baseKey]) {
+        arrayGroups[baseKey] = [];
+      }
+
+      arrayGroups[baseKey][index] = value;
+      fieldsToRemove.push(key);
+    }
+  });
+
+  // Remove indexed fields
+  fieldsToRemove.forEach((key) => {
+    delete reconstructed[key];
+  });
+
+  // Add reconstructed arrays
+  _.forEach(arrayGroups, (array, baseKey) => {
+    // Filter out undefined elements and ensure proper order
+    const cleanArray = array.filter((item) => item !== undefined);
+    reconstructed[baseKey] = cleanArray;
+  });
+
+  return reconstructed;
+}
+
 // ============================================================================
 // MAIN COMPOSITION FUNCTION
 // ============================================================================
@@ -770,12 +829,15 @@ export async function composeObjectFromTarget(
     schemaDescriptions
   );
 
+  // Reconstruct array results from indexed fields
+  const reconstructedData = reconstructArrayResults(extractedData);
+
   // Apply Zod schema parsing to handle transforms and validation
   try {
-    const parsedData = schema.parse(extractedData);
+    const parsedData = schema.parse(reconstructedData);
     return parsedData;
   } catch (error) {
     console.warn("Schema parsing failed, returning raw extracted data:", error);
-    return extractedData;
+    return reconstructedData;
   }
 }

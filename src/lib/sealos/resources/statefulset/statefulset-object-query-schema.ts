@@ -234,12 +234,46 @@ export const StatefulsetObjectQuerySchema = z.object({
       };
     }),
   configMap: z
-    .array(
-      z.object({
-        name: z.string(),
-        path: z.string(),
-      })
+    .any()
+    .describe(
+      JSON.stringify([
+        {
+          resourceType: "statefulset",
+          path: ["spec.template.spec.containers"],
+        },
+        {
+          resourceType: "configmap",
+        },
+      ])
     )
+    .transform((resources) => {
+      if (!Array.isArray(resources) || resources.length < 2) {
+        return [];
+      }
+
+      const [containers, configmap] = resources;
+
+      if (!Array.isArray(containers) || containers.length === 0) {
+        return [];
+      }
+      const container = containers[0];
+      if (!container?.volumeMounts) {
+        return [];
+      }
+
+      if (!configmap?.data) {
+        return [];
+      }
+
+      const result = container.volumeMounts
+        .filter((mount: any) => mount.subPath) // Only include mounts with subPath
+        .map((mount: any) => ({
+          path: mount.mountPath,
+          content: configmap.data[mount.subPath] || "",
+        }));
+
+      return result;
+    })
     .optional(),
   volume: z
     .any()

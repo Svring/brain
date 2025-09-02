@@ -57,6 +57,14 @@ export const DeploymentObjectSchema = z.object({
     .optional(),
   env: z.any().optional(),
   ports: z.array(PortSchema).optional(),
+  configMap: z
+    .array(
+      z.object({
+        path: z.string(),
+        content: z.string(),
+      })
+    )
+    .optional(),
   pods: z.array(PodSchema).optional(),
   operationalStatus: OperationalStatusSchema.optional(),
   strategy: StrategySchema.optional(),

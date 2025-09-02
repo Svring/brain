@@ -43,8 +43,6 @@ export const getStatefulSetObject = async (
     statefulSetObject.ports
   );
 
-  // console.log("statefulSetObject.ports", statefulSetObject.ports);
-
   // console.log("getStatefulSetObject", statefulSetObject);
   return StatefulsetObjectSchema.parse(statefulSetObject);
 };

@@ -27,8 +27,8 @@ const PodSchema = z.object({
 });
 
 const ConfigMapSchema = z.object({
-  name: z.string(),
   path: z.string(),
+  content: z.string(),
 });
 
 const LocalStorageSchema = z.object({
