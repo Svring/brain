@@ -18,4 +18,13 @@ export const ResourceSchema = z.object({
   gpu: GpuResourceSchema.optional(),
 });
 
+// Resource update schema (all fields optional for partial updates)
+export const ResourceUpdateSchema = z.object({
+  replicas: createNumberUnionSchema(REPLICAS_OPTIONS).optional(),
+  cpu: createNumberUnionSchema(CPU_OPTIONS).optional(),
+  memory: createNumberUnionSchema(MEMORY_OPTIONS).optional(),
+  gpu: GpuResourceSchema.optional(),
+});
+
 export type Resource = z.infer<typeof ResourceSchema>;
+export type ResourceUpdate = z.infer<typeof ResourceUpdateSchema>;

@@ -1,14 +1,13 @@
 import { z } from "zod";
 import { STORAGE_OPTIONS } from "@/lib/k8s/k8s-constant/k8s-constant-resource";
 
-// Storage size options for launchpad (convert GB to GiB format)
-export const storageSizeOptions = STORAGE_OPTIONS.map(
-  (size) => `${size}Gi`
-) as readonly string[];
+// Storage size options for launchpad (convert GB to GiB format, limited to 20Gi)
+export const storageSizeOptions = STORAGE_OPTIONS.filter(
+  (size) => size <= 20
+).map((size) => `${size}Gi`) as readonly string[];
 
 // Storage configuration schema
 export const StorageSchema = z.object({
-  name: z.string(),
   path: z.string(),
   size: z.string().refine((val) => storageSizeOptions.includes(val), {
     message: `Size must be one of: ${storageSizeOptions.join(", ")}`,

@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
 import { useFormContext } from "react-hook-form";
-import { Port } from "@/schemas/forms/launchpad/launchpad-create/launchpad-create-form-schema";
+import { Port } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
 
 interface PortsFieldsProps {
   fieldArray: any; // useFieldArray return type

@@ -13,6 +13,8 @@ import {
   CommandField,
   ArgsField,
 } from "@/components/forms/universal/command-args-fields";
+import { ConfigMapFields } from "../universal/config-map-fields";
+import { StorageFields } from "../universal/storage-fields";
 
 interface LaunchpadCreateFormProps {
   defaultValues?: Partial<LaunchpadCreateFormData>;
@@ -25,11 +27,11 @@ export const LaunchpadCreateForm = ({
   onSubmit,
   isLoading = false,
 }: LaunchpadCreateFormProps) => {
-  const { form, portsFieldArray, envFieldArray } =
+  const { form, portsFieldArray, envFieldArray, storageFieldArray, configMapFieldArray } =
     useLaunchpadCreateForm(defaultValues);
 
-  const handleSubmit = (data: LaunchpadCreateFormData) => {
-    onSubmit(data);
+  const handleSubmit = (data: any) => {
+    onSubmit(data as LaunchpadCreateFormData);
   };
 
   return (
@@ -57,6 +59,20 @@ export const LaunchpadCreateForm = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <CommandField />
           <ArgsField />
+        </div>
+
+        <div className="space-y-2">
+          <div className="text-sm font-medium text-foreground">
+            Config Map
+          </div>
+          <ConfigMapFields fieldArray={configMapFieldArray} />
+        </div>
+
+        <div className="space-y-2">
+          <div className="text-sm font-medium text-foreground">
+            Storage Volumes
+          </div>
+          <StorageFields fieldArray={storageFieldArray} />
         </div>
 
         <div className="flex justify-end space-x-4">

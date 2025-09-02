@@ -28,8 +28,11 @@ export const LaunchpadUpdateForm = ({
   const { form, envFieldArray } = useLaunchpadUpdateForm(defaultValues);
 
   const handleSubmit = (data: LaunchpadUpdateFormData) => {
-    // onSubmit(data);
-    console.log(data);
+    onSubmit(data);
+  };
+
+  const handleError = (errors: any) => {
+    console.log("Form validation errors:", errors);
   };
 
   // Only show fields that have values in defaultValues
@@ -43,7 +46,7 @@ export const LaunchpadUpdateForm = ({
     <Form {...form}>
       <form
         id="launchpad-update-form"
-        onSubmit={form.handleSubmit(handleSubmit)}
+        onSubmit={form.handleSubmit(handleSubmit, handleError)}
         className="space-y-6"
       >
         {hasImage && (

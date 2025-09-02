@@ -21,7 +21,11 @@ export const ResourceQuota: React.FC<ResourceQuotaProps> = ({
   const [isResourceEditing, setIsResourceEditing] = useState(false);
 
   const handleResourceSubmit = async (data: LaunchpadUpdateFormData) => {
-    await onResourceUpdate("resource", data);
+    // Only extract the resource field from the form data
+    const resourceData = data.resource;
+    if (resourceData) {
+      await onResourceUpdate("resource", resourceData);
+    }
     setIsResourceEditing(false);
   };
 
@@ -45,6 +49,7 @@ export const ResourceQuota: React.FC<ResourceQuotaProps> = ({
               variant="outline"
               size="sm"
               className="h-8 w-8"
+              onClick={() => console.log("Check button clicked")}
             >
               <Check />
             </Button>
