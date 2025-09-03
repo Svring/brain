@@ -7,6 +7,7 @@ import { ImageSchema } from "@/schemas/forms/universal/image-schema";
 
 // Reuse launchpad field schemas
 import { ResourceUpdateSchema } from "@/schemas/forms/universal/resource-schema";
+import { PortSchema } from "@/schemas/forms/universal/port-schema";
 import { EnvSchema } from "@/schemas/forms/universal/env-schema";
 import { ConfigMapSchema } from "@/schemas/forms/universal/configmap-schema";
 import { StorageSchema } from "@/schemas/forms/universal/storage-schema";
@@ -17,6 +18,7 @@ export const launchpadUpdateFormSchema = z.object({
   command: CommandSchema.optional(),
   args: ArgsSchema.optional(),
   resource: ResourceUpdateSchema.optional(),
+  ports: z.array(PortSchema).optional(),
   env: z.array(EnvSchema).optional(),
   configMap: z.array(ConfigMapSchema).optional(),
   storage: z.array(StorageSchema).optional(),

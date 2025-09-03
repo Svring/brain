@@ -58,19 +58,22 @@ export const ClusterConnectionMessage: React.FC<
     );
   }
 
+  const privateConnection = clusterObject.connection?.privateConnection;
   const {
-    privateConnection: {
-      connectionString: privateConnectionString,
-      host,
-      port,
-      username,
-      password,
-    },
-  } = clusterObject.connection;
+    connectionString: privateConnectionString,
+    host,
+    port,
+    username,
+    password,
+  } = privateConnection || {};
 
-  const publicConnectionString = clusterObject.connection.publicConnection
-    ? clusterObject.connection.publicConnection.connectionString
-    : null;
+  const publicConnection = clusterObject.connection?.publicConnection;
+  const publicConnectionString =
+    publicConnection &&
+    typeof publicConnection === "object" &&
+    !Array.isArray(publicConnection)
+      ? publicConnection.connectionString
+      : null;
 
   return (
     <BaseActionMessage

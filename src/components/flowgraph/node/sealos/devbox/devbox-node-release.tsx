@@ -10,7 +10,7 @@ import {
 } from "@/lib/sealos/resources/devbox/devbox-method/devbox-mutation";
 import { useAddToProjectMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
 import { createK8sContext } from "@/lib/auth/auth-utils";
-import { createDevboxContext } from "@/lib/auth/auth-utils";
+import { useDevboxContext } from "@/lib/auth/auth-utils";
 import DevboxNodeReleaseTitle from "./devbox-node-release-title";
 import DevboxNodeReleaseList from "./devbox-node-release-list";
 import { useState } from "react";
@@ -24,7 +24,7 @@ interface DevboxNodeReleaseProps {
 }
 
 export default function DevboxNodeRelease({ object }: DevboxNodeReleaseProps) {
-  const devboxContext = createDevboxContext();
+  const devboxContext = useDevboxContext();
   const k8sContext = createK8sContext();
   const { selectedProject } = useProjectState();
 

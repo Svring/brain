@@ -8,7 +8,7 @@ import { useCreateClusterMutation } from "@/lib/sealos/resources/cluster/cluster
 import { useCreateLaunchpadMutation } from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-mutation";
 import { useCreateObjectStorageMutation } from "@/lib/sealos/resources/objectstorage/objectstorage-method/objectstorage-mutation";
 import { useAddToProjectMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
-import { createDevboxContext, createSealosContext, createK8sContext } from "@/lib/auth/auth-utils";
+import { useDevboxContext, useSealosContext, createK8sContext } from "@/lib/auth/auth-utils";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useProjectState } from "@/contexts/project/project-context";
 import { toast } from "sonner";
@@ -36,8 +36,8 @@ export default function ResourceConfigCard({
   const { selectedProject } = useProjectState();
 
   // Create contexts for mutations
-  const devboxContext = createDevboxContext();
-  const sealosContext = createSealosContext();
+  const devboxContext = useDevboxContext();
+  const sealosContext = useSealosContext();
   const k8sContext = createK8sContext();
 
   // Initialize mutations

@@ -2,6 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useFieldArray } from "react-hook-form";
 import {
   devboxUpdateFormSchema,
   DevboxUpdateFormData,
@@ -16,7 +17,14 @@ export const useDevboxUpdateForm = (
     mode: "onChange",
   });
 
+  // Field arrays for dynamic fields
+  const portsFieldArray = useFieldArray({
+    control: form.control,
+    name: "ports",
+  });
+
   return {
     form,
+    portsFieldArray,
   };
 };

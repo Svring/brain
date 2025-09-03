@@ -10,20 +10,25 @@ export const useResourceLogs = (
 ) => {
   const { cluster, launchpad } = useTRPCClients();
 
-  // Handle cluster resources
+  // Determine query options based on target type
+  let queryOptions:
+    | ReturnType<typeof cluster.getClusterLog.queryOptions>
+    | ReturnType<typeof launchpad.getLaunchpadLogs.queryOptions>
+    | null = null;
+
   if (target.type === "custom" && target.resourceType === "cluster") {
-    return useQuery(cluster.getClusterLog.queryOptions({ target }));
+    queryOptions = cluster.getClusterLog.queryOptions({ target });
+  } else if (target.type === "builtin") {
+    queryOptions = launchpad.getLaunchpadLogs.queryOptions({ target });
   }
 
-  // Handle launchpad resources (deployment, statefulset)
-  if (target.type === "builtin") {
-    return useQuery(
-      launchpad.getLaunchpadLogs.queryOptions({
-        target,
-      })
-    );
-  }
+  // Always call useQuery, but with null options for unsupported types
+  const result = useQuery(queryOptions);
 
   // Return null for unsupported resource types
-  return null;
+  if (!queryOptions) {
+    return { data: null, isLoading: false, error: null, ...result };
+  }
+
+  return result;
 };

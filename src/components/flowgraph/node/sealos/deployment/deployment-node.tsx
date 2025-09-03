@@ -159,7 +159,7 @@ function DeploymentNode({
     (_, i) => i
   );
 
-  return <NodeStack mainCard={mainCard} data={replicasArray} />;
+  return <NodeStack target={target} mainCard={mainCard} data={replicasArray} nodeId={nodeId} />;
 }
 
 // Export the wrapper as the default component

@@ -16,6 +16,7 @@ interface NodeStackProps {
   target?: ResourceTarget;
   messageType?: string;
   shouldCreateChatSession?: boolean;
+  nodeId: any; // Added nodeId to the interface
 }
 
 export default function NodeStack({
@@ -29,6 +30,7 @@ export default function NodeStack({
   target,
   messageType,
   shouldCreateChatSession = false,
+  nodeId,
 }: NodeStackProps) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -67,7 +69,7 @@ export default function NodeStack({
           }}
         >
           <BaseNode
-            nodeId={{}}
+            nodeId={nodeId}
             target={target}
             messageType={messageType}
             shouldCreateChatSession={shouldCreateChatSession}

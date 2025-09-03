@@ -1,13 +1,8 @@
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import type React from "react";
 import {
   MessageCirclePlus,
   LayoutGrid,
-  TestTube,
-  Plus,
-  RefreshCw,
-  FileText,
-  Table,
 } from "lucide-react";
 import {
   SidebarGroup,
@@ -43,7 +38,9 @@ export interface SubNavigationItem {
   path: string;
 }
 
-export interface MainSectionProps {}
+export interface MainSectionProps {
+  // Props for the main section component
+}
 
 // Constants
 const NAVIGATION_ITEMS: NavigationItem[] = [
@@ -96,7 +93,6 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
 
 export const MainSection: React.FC<MainSectionProps> = () => {
   const router = useRouter();
-  const pathname = usePathname();
   const { data: projects } = useQuery(listProjectsOptions(createK8sContext()));
   const { auth } = useAuthState();
   const { mutate: createNewChatSession } = useCreateNewChatSessionMutation();

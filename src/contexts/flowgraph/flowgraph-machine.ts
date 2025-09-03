@@ -41,8 +41,8 @@ const SPLIT_OPTIONS = {
 export interface FlowgraphContext {
   nodes: Node[];
   edges: Edge[];
-  selectedNode: any;
-  selectedEdge: any;
+  selectedNode: Node | null;
+  selectedEdge: Edge | null;
   fitViewTrigger: number;
 }
 
@@ -55,8 +55,8 @@ export type FlowgraphEvent =
   | { type: "UPDATE_EDGE"; edge: Edge }
   | { type: "REMOVE_NODE"; id: string }
   | { type: "REMOVE_EDGE"; id: string }
-  | { type: "SELECT_NODE"; node: any }
-  | { type: "SELECT_EDGE"; edge: any }
+  | { type: "SELECT_NODE"; node: Node | null }
+  | { type: "SELECT_EDGE"; edge: Edge | null }
   | { type: "CLEAR_SELECTED_NODE" }
   | { type: "CLEAR_SELECTED_EDGE" }
   | { type: "CLEAR_ALL_STATE" }

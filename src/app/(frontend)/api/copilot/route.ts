@@ -11,7 +11,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 // Cache singletons across HMR in development to avoid re-instantiation costs
-const g = globalThis as any;
+const g = globalThis as {
+  __copilot_serviceAdapter?: typeof EmptyAdapter;
+};
 
 if (!g.__copilot_serviceAdapter) {
   g.__copilot_serviceAdapter = new EmptyAdapter();

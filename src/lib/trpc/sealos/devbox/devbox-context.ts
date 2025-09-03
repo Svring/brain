@@ -1,5 +1,5 @@
 // trpc/contexts/devboxContext.ts
-export async function createDevboxContext(opts: { req: Request }) {
+export async function useDevboxContext(opts: { req: Request }) {
   const regionUrl = opts.req.headers.get("regionUrl");
   const namespace = opts.req.headers.get("namespace");
   const kubeconfig = opts.req.headers.get("kubeconfig");
@@ -13,4 +13,4 @@ export async function createDevboxContext(opts: { req: Request }) {
   };
 }
 
-export type DevboxContext = Awaited<ReturnType<typeof createDevboxContext>>;
+export type DevboxContext = Awaited<ReturnType<typeof useDevboxContext>>;

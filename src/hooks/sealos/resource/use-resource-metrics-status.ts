@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
-import { createSealosContext } from "@/lib/auth/auth-utils";
+import { useSealosContext } from "@/lib/auth/auth-utils";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
@@ -79,7 +79,7 @@ const extractPodNames = (resource: any, resourceType: string): string[] => {
 export const useResourceMetricsStatus = ({
   target,
 }: UseResourceMetricsStatusProps): MetricsStatusResult => {
-  const sealosContext = createSealosContext();
+  const sealosContext = useSealosContext();
   const { devbox, cluster, launchpad } = useTRPCClients();
 
   // Get the resource using useResourceStatus

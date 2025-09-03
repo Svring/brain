@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/popover";
 import { formatDistanceToNow } from "date-fns";
 import { useDeleteBackupMutation } from "@/lib/sealos/resources/cluster/cluster-method/cluster-mutation";
-import { createSealosContext } from "@/lib/auth/auth-utils";
+import { useSealosContext } from "@/lib/auth/auth-utils";
 import { useState } from "react";
 
 interface Backup {
@@ -29,7 +29,7 @@ export default function ClusterNodeBackupList({
   isLoading,
   isExpanded = false,
 }: ClusterNodeBackupListProps) {
-  const sealosContext = createSealosContext();
+  const sealosContext = useSealosContext();
   const deleteBackupMutation = useDeleteBackupMutation(sealosContext);
   
   const [openDeletePopovers, setOpenDeletePopovers] = useState<

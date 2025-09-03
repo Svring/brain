@@ -278,6 +278,7 @@ function ClusterNode({
       data={Array.from({ length: clusterData.resource?.replicas - 1 || 0 })}
       height="60"
       backgroundColor="bg-node-background"
+      nodeId={nodeId}
     />
   );
 }

@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDistanceToNow } from "date-fns";
 import { useDeleteBackupMutation } from "@/lib/sealos/resources/cluster/cluster-method/cluster-mutation";
-import { createSealosContext } from "@/lib/auth/auth-utils";
+import { useSealosContext } from "@/lib/auth/auth-utils";
 import { useState } from "react";
 import {
   Popover,
@@ -44,7 +44,7 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
 }) => {
   const clusterTrpcClient = clusterClient.useTRPC();
   const { appendSystemMessage } = useAppendSystemMessageMutation();
-  const sealosContext = createSealosContext();
+  const sealosContext = useSealosContext();
   const deleteBackupMutation = useDeleteBackupMutation(sealosContext);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null);
   const [openDeletePopovers, setOpenDeletePopovers] = useState<
@@ -137,7 +137,6 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
       }}
     >
       <div className="space-y-4">
-
         {!backupList || backupList.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Database className="h-8 w-8 text-muted-foreground mb-2 opacity-50" />

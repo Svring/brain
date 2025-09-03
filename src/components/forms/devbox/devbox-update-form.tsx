@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useDevboxUpdateForm } from "@/hooks/forms/devbox/use-devbox-update-form";
 import { DevboxUpdateFormData } from "@/schemas/forms/devbox/devbox-update-form-schema";
 import { ResourceFields } from "../universal/resource-fields";
+import { PortsFields } from "../universal/ports-fields";
 
 interface DevboxUpdateFormProps {
   defaultValues?: Partial<DevboxUpdateFormData>;
@@ -19,7 +20,7 @@ export const DevboxUpdateForm = ({
   isLoading = false,
   hideDefaultButton = false,
 }: DevboxUpdateFormProps) => {
-  const { form } = useDevboxUpdateForm(defaultValues);
+  const { form, portsFieldArray } = useDevboxUpdateForm(defaultValues);
 
   const handleSubmit = (data: DevboxUpdateFormData) => {
     onSubmit(data);
@@ -27,11 +28,23 @@ export const DevboxUpdateForm = ({
 
   // Only show fields that have values in defaultValues
   const hasResource = defaultValues?.resource !== undefined;
+  const hasPorts = defaultValues?.ports !== undefined;
 
   return (
     <Form {...form}>
-      <form id="devbox-update-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form
+        id="devbox-update-form"
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="space-y-6"
+      >
         {hasResource && <ResourceFields />}
+
+        {hasPorts && (
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-foreground">Ports</div>
+            <PortsFields fieldArray={portsFieldArray} />
+          </div>
+        )}
 
         {!hideDefaultButton && (
           <div className="flex justify-end">

@@ -62,20 +62,30 @@ export function parseSchemaDescriptions(
  * @returns Array of mutation operations with substituted values
  */
 export function substituteMutationTemplates(
-  descriptions: Record<string, any>,
-  data: Record<string, any>
-): any[] {
-  const mutations: any[] = [];
+  descriptions: Record<string, unknown>,
+  data: Record<string, unknown>
+): Array<{
+  patch?: { op: string; path: string; value?: unknown };
+  target?: ResourceTarget;
+  upsert?: { resource?: string[] };
+  delete?: { target: ResourceTarget };
+}> {
+  const mutations: Array<{
+    patch?: { op: string; path: string; value?: unknown };
+    target?: ResourceTarget;
+    upsert?: { resource?: string[] };
+    delete?: { target: ResourceTarget };
+  }> = [];
 
   // Helper function to get nested value from object using dot notation
-  function getNestedValue(obj: any, path: string): any {
+  function getNestedValue(obj: unknown, path: string): unknown {
     return path.split(".").reduce((current, key) => {
       return current && current[key] !== undefined ? current[key] : undefined;
     }, obj);
   }
 
   // Helper function to check if substitution was successful
-  function hasFailedSubstitution(value: any): boolean {
+  function hasFailedSubstitution(value: unknown): boolean {
     if (typeof value === "string") {
       return /\{\{[^}]+\}\}/.test(value);
     } else if (Array.isArray(value)) {
@@ -87,7 +97,7 @@ export function substituteMutationTemplates(
   }
 
   // Helper function to substitute {{}} templates in any value
-  function substituteTemplates(value: any): any {
+  function substituteTemplates(value: unknown): unknown {
     if (typeof value === "string") {
       // Check if the entire string is a template (e.g., "{{path}}")
       const fullTemplateMatch = value.match(/^\{\{([^}]+)\}\}$/);
@@ -139,8 +149,18 @@ export function substituteMutationTemplates(
  */
 export function convertMutationsToTargets(
   target: ResourceTarget,
-  mutations: any[]
-): any[] {
+  mutations: Array<{
+    patch?: { op: string; path: string; value?: unknown };
+    target?: ResourceTarget;
+    upsert?: { resource?: string[] };
+    delete?: { target: ResourceTarget };
+  }>
+): Array<{
+  patch?: { op: string; path: string; value?: unknown };
+  target?: ResourceTarget;
+  upsert?: { resource?: string[] };
+  delete?: { target: ResourceTarget };
+}> {
   return mutations.map((mutation) => {
     // Skip if mutation doesn't have resourceKind
     if (!mutation.resourceKind) {
@@ -179,13 +199,17 @@ export function convertMutationsToTargets(
  * @param operations - Array of mutation operations
  * @returns Promise that resolves when all operations are completed
  */
-export async function executeMutationOperations(
-  context: K8sApiContext,
-  operations: any[]
-): Promise<void> {
+export function useMutationOperations(context: K8sApiContext) {
   const patchMutation = usePatchResourceMutation(context);
   const applyMutation = useApplyResourceMutation(context);
   const deleteMutation = useDeleteResourceMutation(context);
+
+  const executeOperations = async (operations: Array<{
+    patch?: { op: string; path: string; value?: unknown };
+    target?: ResourceTarget;
+    upsert?: { resource?: string[] };
+    delete?: { target: ResourceTarget };
+  }>): Promise<void> => {
 
   for (const operation of operations) {
     try {
@@ -217,5 +241,7 @@ export async function executeMutationOperations(
       console.error(`Failed to execute mutation operation:`, error);
       throw error;
     }
-  }
+  };
+
+  return executeOperations;
 }

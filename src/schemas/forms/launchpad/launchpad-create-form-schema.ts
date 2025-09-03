@@ -3,13 +3,12 @@ import { NameSchema } from "@/schemas/forms/universal/name-schema";
 import { ImageSchema } from "@/schemas/forms/universal/image-schema";
 import { CommandSchema } from "@/schemas/forms/universal/command-schema";
 import { ArgsSchema } from "@/schemas/forms/universal/args-schema";
-import { GpuResourceSchema } from "../universal/gpu-resource-schema";
 import { ResourceSchema } from "../universal/resource-schema";
 import { PortSchema } from "../universal/port-schema";
 import { EnvSchema } from "../universal/env-schema";
 import { HpaSchema } from "../universal/hpa-schema";
 import { ImageRegistrySchema } from "../universal/image-registry-schema";
-import { StorageSchema, storageSizeOptions } from "../universal/storage-schema";
+import { StorageSchema } from "../universal/storage-schema";
 import { ConfigMapSchema } from "../universal/config-map-schema";
 
 // Main launchpad create form schema

@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import type { TemplateResource } from "@/lib/sealos/resources/template/schemas/template-api-context-schemas";
 import { useCreateInstanceMutation } from "@/lib/sealos/resources/template/template-method/template-mutation";
-import { createTemplateApiContext } from "@/lib/auth/auth-utils";
+import { useTemplateApiContext } from "@/lib/auth/auth-utils";
 import { useRouter } from "next/navigation";
 
 export function useTemplateCard(
@@ -11,7 +11,7 @@ export function useTemplateCard(
 ) {
   const [showInputDialog, setShowInputDialog] = useState(false);
   const router = useRouter();
-  const apiContext = createTemplateApiContext();
+  const apiContext = useTemplateApiContext();
 
   const createInstanceMutation = useCreateInstanceMutation(apiContext);
 

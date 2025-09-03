@@ -14,7 +14,7 @@ export interface ServicePort {
 export interface ServiceResource extends K8sResource {
   spec: {
     ports: ServicePort[];
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -37,7 +37,7 @@ export interface UnifiedPort {
 }
 
 // Keep CompletedPort for backward compatibility
-export interface CompletedPort extends UnifiedPort {}
+export type CompletedPort = UnifiedPort;
 
 /**
  * Transform a list of Kubernetes Service resources into a simplified format

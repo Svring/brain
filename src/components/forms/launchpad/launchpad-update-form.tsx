@@ -6,6 +6,7 @@ import { useLaunchpadUpdateForm } from "@/hooks/forms/launchpad/use-launchpad-up
 import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
 import { ImageField } from "@/components/forms/universal/image-field";
 import { ResourceFields } from "../universal/resource-fields";
+import { PortsFields } from "../universal/ports-fields";
 import { EnvFields } from "../universal/env-fields";
 import {
   CommandField,
@@ -27,7 +28,7 @@ export const LaunchpadUpdateForm = ({
   isLoading = false,
   hideDefaultButton = false,
 }: LaunchpadUpdateFormProps) => {
-  const { form, envFieldArray, storageFieldArray, configMapFieldArray } = useLaunchpadUpdateForm(defaultValues);
+  const { form, portsFieldArray, envFieldArray, storageFieldArray, configMapFieldArray } = useLaunchpadUpdateForm(defaultValues);
 
   const handleSubmit = (data: LaunchpadUpdateFormData) => {
     onSubmit(data);
@@ -40,6 +41,7 @@ export const LaunchpadUpdateForm = ({
   // Only show fields that have values in defaultValues
   const hasImage = defaultValues?.image !== undefined;
   const hasResource = defaultValues?.resource !== undefined;
+  const hasPorts = defaultValues?.ports !== undefined;
   const hasEnv = defaultValues?.env !== undefined;
   const hasCommand = defaultValues?.command !== undefined;
   const hasArgs = defaultValues?.args !== undefined;
@@ -60,6 +62,13 @@ export const LaunchpadUpdateForm = ({
         )}
 
         {hasResource && <ResourceFields />}
+
+        {hasPorts && (
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-foreground">Ports</div>
+            <PortsFields fieldArray={portsFieldArray} />
+          </div>
+        )}
 
         {hasEnv && (
           <div className="space-y-2">

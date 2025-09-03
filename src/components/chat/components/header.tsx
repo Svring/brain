@@ -1,16 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Plus, Eraser, ChevronRight } from "lucide-react";
+import { Eraser, ChevronRight } from "lucide-react";
 import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { Spinner } from "@/components/ui/spinner";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useChatActions } from "@/contexts/chat/chat-context";
 import Image from "next/image";
-import { useQuery } from "@tanstack/react-query";
-import { searchThreadsOptions } from "@/lib/langgraph/langgraph-method/langgraph-query";
-import { useCopilotContext } from "@copilotkit/react-core";
 
 interface AiChatHeaderProps {
   title?: string;

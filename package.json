@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
+    "dev": "next dev --turbopack",
     "million-dev": "next dev",
-    "build": "next build",
+    "build": "next build --turbopack",
     "start": "next start",
     "lint": "next lint"
   },
@@ -96,7 +96,7 @@
     "lucide-react": "^0.539.0",
     "motion": "^12.23.12",
     "nanoid": "^5.1.5",
-    "next": "15.2.4",
+    "next": "15.4.0",
     "next-server-actions-parallel": "^1.2.2",
     "next-themes": "latest",
     "node-ssh": "^13.2.1",
@@ -137,6 +137,8 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "eslint": "^9.34.0",
+    "eslint-config-next": "15.5.2",
     "postcss": "^8.5",
     "tailwindcss": "^4.1.11",
     "typescript": "^5"

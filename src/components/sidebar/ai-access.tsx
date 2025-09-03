@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useEffect, useState } from "react";
 import { listAiProxyTokensOptions } from "@/lib/sealos/ai-proxy/ai-proxy-method/ai-proxy-query";
-import { createAiProxyContext } from "@/lib/auth/auth-utils";
+import { useAiProxyContext } from "@/lib/auth/auth-utils";
 import { useQuery } from "@tanstack/react-query";
 
 interface AuthMethod {
@@ -52,7 +52,7 @@ export default function AIAccess() {
   const isCollapsed = sidebarState === "collapsed";
 
   // Get brain token
-  const aiProxyContext = auth ? createAiProxyContext() : null;
+  const aiProxyContext = auth ? useAiProxyContext() : null;
   const { data: tokens } = useQuery({
     ...listAiProxyTokensOptions(aiProxyContext!),
     enabled: !!aiProxyContext,

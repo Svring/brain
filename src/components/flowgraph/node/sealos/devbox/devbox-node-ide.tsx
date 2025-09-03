@@ -15,7 +15,7 @@ import { getDevboxSshInfo } from "@/lib/sealos/resources/devbox/devbox-method/de
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { createK8sContext, createDevboxContext } from "@/lib/auth/auth-utils";
+import { createK8sContext, useDevboxContext } from "@/lib/auth/auth-utils";
 
 interface DevboxNodeIdeProps {
   object: DevboxObject;
@@ -24,7 +24,7 @@ interface DevboxNodeIdeProps {
 export default function DevboxNodeIde({ object }: DevboxNodeIdeProps) {
   const [selectedIde, setSelectedIde] = useState<string>("cursor");
   const context = createK8sContext();
-  const devboxContext = createDevboxContext();
+  const devboxContext = useDevboxContext();
 
   const target = CustomResourceTargetSchema.parse(
     convertResourceTypeToTarget("devbox", object.name)

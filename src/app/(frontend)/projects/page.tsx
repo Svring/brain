@@ -7,6 +7,8 @@ import useProjectSearch from "@/hooks/brain/use-projects-search";
 import { useProjectActions } from "@/contexts/project/project-context";
 import { Spinner } from "@/components/ui/spinner";
 import EmptyState from "@/components/project/empty-state";
+import { ProjectObjectSchema } from "@/lib/brain/resources/project/project-schemas/project-object-schema";
+import { z } from "zod";
 
 export default function Page() {
   const { setAllProjects } = useProjectActions();
@@ -60,7 +62,7 @@ export default function Page() {
               <EmptyState />
             </div>
           ) : (
-            filteredProjects.map((project: any) => (
+            filteredProjects.map((project: z.infer<typeof ProjectObjectSchema>) => (
               <ProjectCard key={project.name} project={project} />
             ))
           )}

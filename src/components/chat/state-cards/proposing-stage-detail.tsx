@@ -10,8 +10,8 @@ import { generateDevboxName } from "@/lib/sealos/resources/devbox/devbox-method/
 import { generateClusterName } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
 import { generateBucketName } from "@/lib/sealos/resources/objectstorage/objectstorage-method/objectstorage-utils";
 import {
-  createSealosContext,
-  createObjectStorageContext,
+  useSealosContext,
+  useObjectStorageContext,
   createK8sContext,
 } from "@/lib/auth/auth-utils";
 import { useState } from "react";
@@ -40,8 +40,8 @@ export function ProposingStageDetail({
   >([]);
   const router = useRouter();
 
-  const sealosContext = createSealosContext();
-  const objectStorageContext = createObjectStorageContext();
+  const sealosContext = useSealosContext();
+  const objectStorageContext = useObjectStorageContext();
   const k8sContext = createK8sContext();
 
   const createDevbox = useCreateDevboxAction(sealosContext);

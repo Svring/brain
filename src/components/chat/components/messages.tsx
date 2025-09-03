@@ -43,7 +43,7 @@ const SystemMessageRenderer = memo(function SystemMessageRenderer({
   }, [content]);
 
   const componentFunction = useMemo(() => {
-    return type ? (get(SystemMessageType, type) as any) : undefined;
+    return type ? (get(SystemMessageType, type) as React.ComponentType | undefined) : undefined;
   }, [type]);
 
   if (typeof componentFunction === "function") {

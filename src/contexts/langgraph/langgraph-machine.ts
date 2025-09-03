@@ -9,7 +9,7 @@ export const langgraphMachine = createMachine({
   context: {
     base_url: "",
     api_key: "",
-    model: "",
+    model_name: "",
     context_window_usage: 0,
     stage: "propose_project",
     project_context: {
@@ -28,7 +28,8 @@ export const langgraphMachine = createMachine({
       actions: assign({
         base_url: ({ context, event }) => event.base_url ?? context.base_url,
         api_key: ({ context, event }) => event.api_key ?? context.api_key,
-        model: ({ context, event }) => event.model ?? context.model,
+        model_name: ({ context, event }) =>
+          event.model_name ?? context.model_name,
       }),
     },
     SET_STAGE: {

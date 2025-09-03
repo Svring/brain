@@ -14,31 +14,11 @@ export const useResourceQuotaUpdate = (
 ) => {
   const { launchpad } = useTRPCClients();
 
-  // Get the appropriate mutation based on resource type
-  const getUpdateMutation = () => {
-    if (target.type === "builtin") {
-      // Handle builtin resources
-      switch (target.resourceType) {
-        case "deployment":
-          return useMutation(launchpad.updateLaunchpad.mutationOptions());
-        case "statefulset":
-          return useMutation(launchpad.updateLaunchpad.mutationOptions());
-        default:
-          throw new Error(
-            `Unsupported builtin resource type: ${target.resourceType}`
-          );
-      }
-    } else if (target.type === "custom") {
-      return useMutation(launchpad.updateLaunchpad.mutationOptions());
-    } else {
-      throw new Error(`Unsupported target type: ${(target as any).type}`);
-    }
-  };
-
-  const mutation = getUpdateMutation();
+  // Always call useMutation at the top level
+  const mutation = useMutation(launchpad.updateLaunchpad.mutationOptions());
 
   // Enhanced mutation with target context
-  const updateResourceQuota = async (quotaData: any) => {
+  const updateResourceQuota = async (quotaData: Record<string, unknown>) => {
     if (!target.name) {
       throw new Error("Resource name is required for quota update");
     }

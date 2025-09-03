@@ -1,21 +1,11 @@
 "use client";
 
-import React, { useMemo, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
-import { Accordion } from "@/components/ui/accordion";
+import React, { useMemo } from "react";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { NameConfiguration } from "./components/universal/name-configuration";
-import { ImageConfiguration } from "./components/universal/image-configuration";
-import { ResourceConfiguration } from "./components/universal/resource-configuration";
-import { CommandArgs } from "./components/universal/command-args";
-import { EnvironmentVariables } from "./components/universal/environment-variables";
-import { SuccessState } from "./components/launchpad-create/success-state";
+import { LaunchpadUpdateForm } from "@/components/forms/launchpad/launchpad-update-form";
 import BaseSystemMessage from "../components/base-system-message";
 import {
   LaunchpadUpdateRequestSchema,
@@ -66,17 +56,6 @@ export default function LaunchpadUpdateMessage({
         ? updateRequest.env
         : currentLaunchpad.env || [];
 
-    // Merge command and args
-    const mergedCommand =
-      updateRequest.command !== undefined
-        ? updateRequest.command
-        : currentLaunchpad.command;
-
-    const mergedArgs =
-      updateRequest.args !== undefined
-        ? updateRequest.args
-        : currentLaunchpad.args;
-
     // Merge image
     const mergedImage =
       updateRequest.image !== undefined
@@ -86,30 +65,15 @@ export default function LaunchpadUpdateMessage({
     console.log("mergedResource", {
       resource: mergedResource,
       env: mergedEnv,
-      command: mergedCommand,
-      args: mergedArgs,
       image: mergedImage,
     });
 
     return LaunchpadUpdateRequestSchema.parse({
       resource: mergedResource,
       env: mergedEnv,
-      command: mergedCommand,
-      args: mergedArgs,
       image: mergedImage,
     });
   }, [currentResource, payload]);
-
-  const form = useForm<LaunchpadUpdateRequest>({
-    resolver: zodResolver(LaunchpadUpdateRequestSchema),
-    defaultValues: formValues,
-  });
-
-  useEffect(() => {
-    if (!isLoadingResource) {
-      form.reset(formValues);
-    }
-  }, [formValues, form, isLoadingResource]);
 
   const updateLaunchpadMutation = useMutation({
     ...launchpad.updateLaunchpad.mutationOptions(),
@@ -122,7 +86,6 @@ export default function LaunchpadUpdateMessage({
         toast.success(
           `Test Mode: Would update launchpad application "${target?.name}"`
         );
-        console.log("values", form.getValues());
       }
     },
     onError: (error: any) => {
@@ -130,7 +93,7 @@ export default function LaunchpadUpdateMessage({
     },
   });
 
-  const onSubmit = async (values: LaunchpadUpdateRequest) => {
+  const handleSubmit = async (values: LaunchpadUpdateRequest) => {
     if (!target?.name) {
       toast.error("No target specified for update");
       return;
@@ -141,12 +104,6 @@ export default function LaunchpadUpdateMessage({
       request: values,
     });
   };
-
-  if (updateLaunchpadMutation.isSuccess && target?.name && !testMode) {
-    return (
-      <SuccessState createdDeploymentName={target.name} form={form as any} />
-    );
-  }
 
   // Show loading state while fetching current resource
   if (isLoadingResource) {
@@ -162,61 +119,29 @@ export default function LaunchpadUpdateMessage({
   // Determine which sections to show based on formValues
   const hasResource = !!formValues.resource;
   const hasImage = !!formValues.image;
-  const hasCommand = !!formValues.command || !!formValues.args;
   const hasEnv = !!formValues.env && formValues.env.length > 0;
+
+  // Show message if no fields provided
+  if (!hasResource && !hasImage && !hasEnv) {
+    return (
+      <BaseSystemMessage target={target}>
+        <div className="text-center py-4 text-muted-foreground">
+          No update fields provided. Please specify resource, image, or
+          environment variables to update.
+        </div>
+      </BaseSystemMessage>
+    );
+  }
 
   return (
     <BaseSystemMessage target={target}>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          {/* Show individual configuration components based on available fields */}
-          {hasImage && <ImageConfiguration form={form as any} />}
-          {hasResource && <ResourceConfiguration form={form as any} />}
-
-          {/* Only show CommandArgs if we have command or args */}
-          {hasCommand && (
-            <Accordion
-              type="multiple"
-              className="w-full space-y-1"
-              defaultValue={["command-args"]}
-            >
-              <CommandArgs form={form as any} />
-            </Accordion>
-          )}
-
-          {/* Only show EnvironmentVariables if we have env */}
-          {hasEnv && (
-            <Accordion
-              type="multiple"
-              className="w-full space-y-1"
-              defaultValue={["env-vars"]}
-            >
-              <EnvironmentVariables form={form as any} />
-            </Accordion>
-          )}
-
-          {/* Show button if we have any fields to update */}
-          {(hasResource || hasImage || hasCommand || hasEnv) && (
-            <Button
-              type="submit"
-              disabled={updateLaunchpadMutation.isPending || !target?.name}
-              className="w-full"
-            >
-              {updateLaunchpadMutation.isPending
-                ? "Updating..."
-                : "Update Launchpad Application"}
-            </Button>
-          )}
-
-          {/* Show message if no fields provided */}
-          {!hasResource && !hasImage && !hasCommand && !hasEnv && (
-            <div className="text-center py-4 text-muted-foreground">
-              No update fields provided. Please specify resource, image,
-              command, or environment variables to update.
-            </div>
-          )}
-        </form>
-      </Form>
+      <div className="space-y-3 flex-col p-3 rounded-xl">
+        <LaunchpadUpdateForm
+          defaultValues={formValues}
+          onSubmit={handleSubmit}
+          isLoading={updateLaunchpadMutation.isPending}
+        />
+      </div>
     </BaseSystemMessage>
   );
 }

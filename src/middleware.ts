@@ -11,12 +11,11 @@ async function createRequestHash(request: NextRequest): Promise<string> {
   const method = request.method;
 
   // For POST requests, try to get the body content
-  let bodyContent = "";
+  // Note: In middleware, we can't easily read the body synchronously
+  // So we'll use a combination of URL, method, and headers for now
   if (method === "POST" && request.body) {
     // Clone the request to read the body without consuming it
-    const clonedRequest = request.clone();
-    // Note: In middleware, we can't easily read the body synchronously
-    // So we'll use a combination of URL, method, and headers for now
+    request.clone();
   }
 
   const headers = JSON.stringify(Object.fromEntries(request.headers.entries()));

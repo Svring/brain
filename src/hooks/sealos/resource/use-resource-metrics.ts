@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
-import { createSealosContext } from "@/lib/auth/auth-utils";
+import { useSealosContext } from "@/lib/auth/auth-utils";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
@@ -19,7 +19,7 @@ interface MetricsDataPoint {
 export const useResourceMetrics = (
   target: CustomResourceTarget | BuiltinResourceTarget
 ) => {
-  const sealosContext = createSealosContext();
+  const sealosContext = useSealosContext();
   const { devbox, cluster, launchpad } = useTRPCClients();
 
   // Get the resource using useResourceStatus

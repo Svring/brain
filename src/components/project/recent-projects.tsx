@@ -5,12 +5,15 @@ import { Spinner } from "@/components/ui/spinner";
 import ProjectCard from "@/components/project/project-card";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { ProjectObjectSchema } from "@/lib/brain/resources/project/project-schemas/project-object-schema";
+import { z } from "zod";
 
 interface RecentProjectsProps {
-  projects: any[] | undefined;
+  projects: z.infer<typeof ProjectObjectSchema>[] | undefined;
   isLoading: boolean;
   isError: boolean;
-  displayProjects: any[];
+  displayProjects: z.infer<typeof ProjectObjectSchema>[];
 }
 
 export default function RecentProjects({
@@ -59,7 +62,7 @@ export default function RecentProjects({
           {!isError &&
             displayProjects
               .slice(0, 2)
-              .map((project: any) => (
+              .map((project) => (
                 <ProjectCard
                   key={project.name}
                   project={project}
@@ -74,10 +77,10 @@ export default function RecentProjects({
               className="h-10 flex items-center justify-between px-4"
               asChild
             >
-              <a href="/projects">
+              <Link href="/projects">
                 <span>All Projects</span>
                 <ChevronRight className="h-4 w-4" />
-              </a>
+              </Link>
             </Button>
           )}
         </div>

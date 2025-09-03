@@ -18,6 +18,11 @@ export const useLaunchpadUpdateForm = (
   });
 
   // Field arrays for dynamic fields
+  const portsFieldArray = useFieldArray({
+    control: form.control,
+    name: "ports",
+  });
+
   const envFieldArray = useFieldArray({
     control: form.control,
     name: "env",
@@ -35,6 +40,7 @@ export const useLaunchpadUpdateForm = (
 
   return {
     form,
+    portsFieldArray,
     envFieldArray,
     storageFieldArray,
     configMapFieldArray,

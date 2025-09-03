@@ -79,7 +79,7 @@ export type ProjectProposal = {
 export type BrainState = {
   base_url: string;
   api_key: string;
-  model: string;
+  model_name: string;
   context_window_usage: number;
   stage: "propose_project" | "manage_project";
   project_context: ProjectContextState;
@@ -90,7 +90,7 @@ export type LanggraphEvent =
       type: "SET_CONFIG";
       base_url?: string;
       api_key?: string;
-      model?: string;
+      model_name?: string;
     }
   | {
       type: "SET_STAGE";

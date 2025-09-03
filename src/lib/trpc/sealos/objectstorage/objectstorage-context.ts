@@ -1,5 +1,5 @@
 // trpc/contexts/objectstorageContext.ts
-export async function createObjectStorageContext(opts: { req: Request }) {
+export async function useObjectStorageContext(opts: { req: Request }) {
   const regionUrl = opts.req.headers.get("regionUrl");
   const namespace = opts.req.headers.get("namespace");
   const kubeconfig = opts.req.headers.get("kubeconfig");
@@ -14,5 +14,5 @@ export async function createObjectStorageContext(opts: { req: Request }) {
 }
 
 export type ObjectStorageContext = Awaited<
-  ReturnType<typeof createObjectStorageContext>
+  ReturnType<typeof useObjectStorageContext>
 >;

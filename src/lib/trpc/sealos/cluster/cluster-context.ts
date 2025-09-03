@@ -1,5 +1,5 @@
 // trpc/contexts/clusterContext.ts
-export async function createClusterContext(opts: { req: Request }) {
+export async function useClusterContext(opts: { req: Request }) {
   const regionUrl = opts.req.headers.get("regionUrl");
   const namespace = opts.req.headers.get("namespace");
   const kubeconfig = opts.req.headers.get("kubeconfig");
@@ -13,4 +13,4 @@ export async function createClusterContext(opts: { req: Request }) {
   };
 }
 
-export type ClusterContext = Awaited<ReturnType<typeof createClusterContext>>;
+export type ClusterContext = Awaited<ReturnType<typeof useClusterContext>>;

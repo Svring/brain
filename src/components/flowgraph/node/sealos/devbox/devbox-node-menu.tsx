@@ -25,7 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { createDevboxContext } from "@/lib/auth/auth-utils";
+import { useDevboxContext } from "@/lib/auth/auth-utils";
 import {
   useDeleteDevboxMutation,
   useManageDevboxLifecycleMutation,
@@ -38,7 +38,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 export default function DevboxNodeMenu({ object }: { object: DevboxObject }) {
   const [open, setOpen] = React.useState(false);
   const [alertOpen, setAlertOpen] = React.useState(false);
-  const devboxContext = createDevboxContext();
+  const devboxContext = useDevboxContext();
   const { project } = useTRPCClients();
   const queryClient = useQueryClient();
 

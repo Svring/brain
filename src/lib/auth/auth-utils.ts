@@ -6,7 +6,10 @@ import {
   sealosApp,
 } from "@zjy365/sealos-desktop-sdk/app";
 import { setCookie } from "nookies";
-import { getRegionUrlFromKubeconfig } from "@/lib/k8s/k8s-api/k8s-api-utils";
+import {
+  getRegionUrlFromKubeconfig,
+  getCurrentNamespace,
+} from "@/lib/k8s/k8s-api/k8s-api-utils";
 import type { Auth } from "@/contexts/auth/auth-machine";
 import type { User } from "@/payload-types";
 import {
@@ -43,7 +46,7 @@ export async function extractAuthFromSession(
   }
   // Fetch namespace and regionUrl concurrently
   const [namespace, regionUrl] = await Promise.all([
-    getCurrentNamespace(),
+    getCurrentNamespace(session.kubeconfig),
     getRegionUrlFromKubeconfig(session.kubeconfig),
   ]);
 
@@ -93,37 +96,41 @@ export async function authenticateProd(send: (event: any) => void) {
 }
 
 export function createK8sContext(): K8sApiContext {
+  const auth = useAuthState();
+  const kubeconfig = auth.auth?.kubeconfig;
+  const namespace = auth.auth?.namespace;
+  const regionUrl = auth.auth?.regionUrl;
+
   const k8sContext = K8sApiContextSchema.parse({
-    namespace: getCurrentNamespace(),
-    kubeconfig: getDecodedKubeconfig(),
-    regionUrl: getCurrentRegionUrl(),
+    namespace,
+    kubeconfig: kubeconfig ? getDecodedKubeconfig(kubeconfig) : undefined,
+    regionUrl,
   });
   setCookie(null, "kubeconfig", k8sContext.kubeconfig);
   setCookie(null, "namespace", k8sContext.namespace);
   setCookie(null, "regionUrl", k8sContext.regionUrl);
   return k8sContext;
 }
-export function getUserKubeconfig(): string | undefined {
+export function useUserKubeconfig(): string | undefined {
   const { auth } = useAuthState();
   return auth?.kubeconfig;
 }
-export function getDecodedKubeconfig(): string | undefined {
-  const kc = getUserKubeconfig();
-  if (!kc) {
+export function getDecodedKubeconfig(kubeconfig?: string): string | undefined {
+  if (!kubeconfig) {
     throw new Error("Kubeconfig not available");
   }
-  return decodeURIComponent(kc);
+  return decodeURIComponent(kubeconfig);
 }
-export function getCurrentNamespace(): string | undefined {
+export function useCurrentNamespace(): string | undefined {
   const { auth } = useAuthState();
   return auth?.namespace;
 }
-export function getCurrentRegionUrl(): string | undefined {
+export function useCurrentRegionUrl(): string | undefined {
   const { auth } = useAuthState();
   return auth?.regionUrl;
 }
 
-export function createClusterContext() {
+export function useClusterContext() {
   const { auth } = useAuthState();
   if (!auth) {
     throw new Error("User not found");
@@ -135,7 +142,7 @@ export function createClusterContext() {
   return clusterContext;
 }
 
-export function createSealosContext() {
+export function useSealosContext() {
   const { auth } = useAuthState();
   if (!auth) {
     throw new Error("User not found");
@@ -147,7 +154,7 @@ export function createSealosContext() {
   return sealosContext;
 }
 
-export function createObjectStorageContext() {
+export function useObjectStorageContext() {
   const { auth } = useAuthState();
   if (!auth) {
     throw new Error("User not found");
@@ -161,7 +168,7 @@ export function createObjectStorageContext() {
   return objectStorageContext;
 }
 
-export function createDevboxContext() {
+export function useDevboxContext() {
   const { auth } = useAuthState();
   if (!auth) {
     throw new Error("User not found");
@@ -175,32 +182,32 @@ export function createDevboxContext() {
   return devboxContext;
 }
 
-export function createDeployContext() {
+export function useDeployContext() {
   const { auth } = useAuthState();
   if (!auth) {
     throw new Error("User not found");
   }
   const deployContext = DeployApiContextSchema.parse({
-    baseURL: auth.regionUrl,
+    baseUrl: auth.regionUrl,
     authorization: auth.kubeconfig,
   });
   return deployContext;
 }
 
-export function createAiProxyContext() {
+export function useAiProxyContext() {
   const { auth } = useAuthState();
   if (!auth) {
     throw new Error("User not found");
   }
   const aiProxyContext = AiProxyApiContextSchema.parse({
-    baseURL: auth.regionUrl,
+    baseUrl: auth.regionUrl,
     authorization: auth.appToken,
   });
   setCookie(null, "appToken", auth.appToken);
   return aiProxyContext;
 }
 
-export function createTemplateApiContext() {
+export function useTemplateApiContext() {
   const { auth } = useAuthState();
   if (!auth) {
     throw new Error("User not found");
@@ -211,7 +218,7 @@ export function createTemplateApiContext() {
   });
 }
 
-export function createTrafficApiContext() {
+export function useTrafficApiContext() {
   const { auth } = useAuthState();
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
 
@@ -225,7 +232,7 @@ export function createTrafficApiContext() {
   });
 }
 
-export function createMetricsContext(
+export function useMetricsContext(
   metricsType: "launchpad" | "cluster" = "launchpad"
 ) {
   const { auth } = useAuthState();
@@ -253,6 +260,7 @@ export function createMetricsContext(
 
 export function activateContextCookies() {
   createK8sContext();
-  createAiProxyContext();
-  createMetricsContext("launchpad");
+  useAiProxyContext();
+  useMetricsContext("launchpad");
+  useMetricsContext("cluster");
 }

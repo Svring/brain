@@ -5,6 +5,12 @@ import NodeStack from "../../components/node-stack";
 import { cn } from "@/lib/utils";
 import { Globe, HelpCircle, Copy, Check } from "lucide-react";
 import { useNetworkStatus } from "@/hooks/sealos/network/use-network-status";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useCopy } from "@/hooks/use-copy";
@@ -39,11 +45,31 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
       }))
     : [];
 
-  // Determine front card URL
-  const frontCardUrl =
-    networkData.length > 0
-      ? networkData.find((item: any) => !item.ready)?.url || networkData[0]?.url
-      : ports[0]?.publicAddress || ports[0]?.privateAddress || null;
+  // Determine front card URL and type
+  let frontCardUrl: string | null = null;
+  let frontCardType: "public" | "private" | null = null;
+
+  if (networkData.length > 0) {
+    // Use network status data if available
+    const notReadyItem = networkData.find((item: any) => !item.ready);
+    if (notReadyItem) {
+      frontCardUrl = notReadyItem.url;
+      frontCardType = "public"; // Network status URLs are typically public
+    } else {
+      frontCardUrl = networkData[0]?.url;
+      frontCardType = "public";
+    }
+  } else if (ports && ports.length > 0) {
+    // Check ports for public address first, then private address
+    const port = ports[0];
+    if (port.publicAddress) {
+      frontCardUrl = port.publicAddress;
+      frontCardType = "public";
+    } else if (port.privateAddress) {
+      frontCardUrl = port.privateAddress;
+      frontCardType = "private";
+    }
+  }
 
   const notReadyCount = networkData.filter((item: any) => !item.ready).length;
   const backgroundCardData = networkData.slice(1);
@@ -102,24 +128,54 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
         {frontCardUrl ? (
           <div className="flex items-center justify-center gap-2 text-sm w-full">
             {notReadyCount > 0 ? (
-              <HelpCircle
-                className="h-4 w-4 flex-shrink-0 cursor-help text-yellow-500"
-                onClick={handleIconClick}
-              />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle
+                      className="h-4 w-4 flex-shrink-0 cursor-help text-yellow-500"
+                      onClick={handleIconClick}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent
+                    className="bg-background-tertiary border border-border-primary"
+                    side="bottom"
+                    align="start"
+                  >
+                    <p>Click to diagnose network issues with AI</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             ) : (
-              <Globe
-                className={cn(
-                  "h-4 w-4 flex-shrink-0",
-                  frontCardUrl.startsWith("http")
-                    ? "text-theme-green"
-                    : "text-theme-blue"
-                )}
-              />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Globe
+                      className={cn(
+                        "h-4 w-4 flex-shrink-0",
+                        frontCardType === "public"
+                          ? "text-theme-green"
+                          : "text-theme-blue"
+                      )}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent
+                    className="bg-background-tertiary border border-border-primary"
+                    side="bottom"
+                    align="start"
+                  >
+                    <p>
+                      {frontCardType === "public"
+                        ? "Accessible on public network"
+                        : "Cluster-range access only"}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
             <span
               className={cn(
                 "truncate min-w-0 flex-1",
-                frontCardUrl.startsWith("http") &&
+                frontCardType === "public" &&
                   "cursor-pointer hover:text-foreground/80"
               )}
               onClick={(e) => handleAddressClick(e, frontCardUrl)}
@@ -158,6 +214,7 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
       notReadyCount={notReadyCount}
       target={target}
       messageType="universal.network"
+      nodeId={nodeId}
     />
   );
 }

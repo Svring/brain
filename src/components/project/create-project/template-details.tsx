@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import type { TemplateResource } from "@/lib/sealos/resources/template/schemas/template-api-context-schemas";
 import { useCreateInstanceMutation } from "@/lib/sealos/resources/template/template-method/template-mutation";
 import { TemplateInputDialog } from "./template-input-dialog";
-import { createSealosContext } from "@/lib/auth/auth-utils";
+import { useSealosContext } from "@/lib/auth/auth-utils";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
@@ -41,7 +41,7 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
 
   const { openSidebarChat } = useChatActions();
   const { mutate: sendMessage } = useSendMessageMutation();
-  const apiContext = useMemo(() => createSealosContext(), []);
+  const apiContext = useMemo(() => useSealosContext(), []);
   const createInstanceMutation = useCreateInstanceMutation(apiContext);
 
   // Check if template has inputs

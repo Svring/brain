@@ -19,10 +19,10 @@ import { getUser } from "@/payload/operations/users-operation";
 import "@/styles/globals.css";
 import "@copilotkit/react-ui/styles.css";
 
-const lora = Lora({
-  subsets: ["latin"],
-  variable: "--font-lora",
-});
+// const lora = Lora({
+//   subsets: ["latin"],
+//   variable: "--font-lora",
+// });
 
 export const metadata: Metadata = {
   title: "Sealos Brain",
@@ -39,7 +39,7 @@ export default async function RootLayout({
   if (isDevelopment && !payloadUser) {
     return (
       <html lang="en" suppressHydrationWarning>
-        <body className={`${lora.className} font-lora antialiased`}>
+        <body className={`antialiased`}>
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"

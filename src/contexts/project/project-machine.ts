@@ -20,19 +20,19 @@ export interface ResourceObject {
     ingressName?: string;
     host?: string;
   }>;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface ProjectContextState {
   allProjects: unknown[];
   selectedProject: string | null;
-  selectedProjectResources: any[] | null;
+  selectedProjectResources: ResourceObject[] | null;
   selectedResource: ResourceTarget | null;
 }
 
 export type ProjectEvent =
   | { type: "SET_ALL_PROJECTS"; projects: unknown[] }
-  | { type: "SELECT_PROJECT"; project: unknown }
+  | { type: "SELECT_PROJECT"; project: string }
   | { type: "CLEAR_SELECTED_PROJECT" }
   | { type: "SET_SELECTED_PROJECT_RESOURCES"; resources: ResourceObject[] }
   | { type: "CLEAR_SELECTED_PROJECT_RESOURCES" }

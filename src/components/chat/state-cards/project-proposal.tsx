@@ -40,8 +40,8 @@ import {
   mapBucketPolicyToEnum,
 } from "@/lib/sealos/resources/objectstorage/objectstorage-method/objectstorage-utils";
 import {
-  createSealosContext,
-  createObjectStorageContext,
+  useSealosContext,
+  useObjectStorageContext,
   createK8sContext,
 } from "@/lib/auth/auth-utils";
 import { toast } from "sonner";
@@ -121,8 +121,8 @@ export function ProjectProposalCard({
   const [editMode, setEditMode] = useState<EditModeState>({});
   const router = useRouter();
 
-  const sealosContext = createSealosContext();
-  const objectStorageContext = createObjectStorageContext();
+  const sealosContext = useSealosContext();
+  const objectStorageContext = useObjectStorageContext();
   const k8sContext = createK8sContext();
 
   const createDevbox = useCreateDevboxAction(sealosContext);

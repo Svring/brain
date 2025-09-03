@@ -10,7 +10,7 @@ import DevboxNodeMenu from "./devbox-node-menu";
 import NodeMonitor from "../../components/node-monitor";
 import NodeStack from "../../components/node-stack";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
-import { createDevboxContext } from "@/lib/auth/auth-utils";
+import { useDevboxContext } from "@/lib/auth/auth-utils";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
@@ -178,6 +178,7 @@ function DevboxNode({
       target={target}
       messageType="devbox.release"
       shouldCreateChatSession={true}
+      nodeId={nodeId}
     />
   );
 }

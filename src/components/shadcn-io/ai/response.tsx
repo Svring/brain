@@ -198,3 +198,5 @@ export const AIResponse = memo(
   ),
   (prevProps, nextProps) => prevProps.children === nextProps.children
 );
+
+AIResponse.displayName = "AIResponse";

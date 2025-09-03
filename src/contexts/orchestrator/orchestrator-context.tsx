@@ -1,14 +1,13 @@
 "use client";
 
-import { createBrowserInspector } from "@statelyai/inspect";
 import { useMachine } from "@xstate/react";
 import { createContext, type ReactNode, useContext, useEffect } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import { orchestratorMachine } from "@/contexts/orchestrator/orchestrator-machine";
 import { useProjectActions } from "../project/project-context";
 import { useChatState } from "../chat/chat-context";
-
-// const inspector = createBrowserInspector();
+import { useLanggraphAgent } from "@/hooks/langgraph/use-langgraph-agent";
+import { useLanggraphContext } from "../langgraph/langgraph-context";
 
 interface OrchestratorContextValue {
   state: StateFrom<typeof orchestratorMachine>;
@@ -21,27 +20,35 @@ export const OrchestratorContext = createContext<
 >(undefined);
 
 export const OrchestratorProvider = ({ children }: { children: ReactNode }) => {
-  const [state, send, actorRef] = useMachine(orchestratorMachine, {
-    // inspect: inspector.inspect,
-  });
-
+  const [state, send, actorRef] = useMachine(orchestratorMachine);
   const { sidebarChatOpen } = useChatState();
   const { clearSelectedResource } = useProjectActions();
+  const { setState: setLanggraphState } = useLanggraphAgent("propose_project");
+  const { state: langgraphState } = useLanggraphContext();
 
-  // Monitor sidebar chat state changes and perform side effects
   useEffect(() => {
-    const previousState = state.context.monitoredStates.sidebarChatOpen;
-
-    // Only update if the state actually changed
-    if (previousState !== sidebarChatOpen) {
+    const prev = state.context.monitoredStates.sidebarChatOpen;
+    if (prev !== sidebarChatOpen) {
       send({ type: "UPDATE_SIDEBAR_CHAT_STATE", open: sidebarChatOpen });
-
-      // Perform side effect: clear selected resource when sidebar chat closes
-      if (previousState === true && sidebarChatOpen === false) {
-        clearSelectedResource();
-      }
+      if (prev && !sidebarChatOpen) clearSelectedResource();
     }
-  }, [sidebarChatOpen, state.context.monitoredStates.sidebarChatOpen]);
+  }, [
+    sidebarChatOpen,
+    state.context.monitoredStates.sidebarChatOpen,
+    send,
+    clearSelectedResource,
+  ]);
+
+  useEffect(() => {
+    const { base_url, api_key, model_name } = langgraphState.context;
+    if (base_url || api_key || model_name) {
+      setLanggraphState(langgraphState.context);
+    }
+  }, [
+    langgraphState.context.base_url,
+    langgraphState.context.api_key,
+    langgraphState.context.model_name,
+  ]);
 
   return (
     <OrchestratorContext.Provider value={{ state, send, actorRef }}>
@@ -61,14 +68,11 @@ export function useOrchestratorContext() {
 
 export function useOrchestratorState() {
   const { state } = useOrchestratorContext();
-  return {
-    monitoredStates: state.context.monitoredStates,
-  };
+  return { monitoredStates: state.context.monitoredStates };
 }
 
 export function useOrchestratorActions() {
   const { send } = useOrchestratorContext();
-
   return {
     updateSidebarChatState: (open: boolean) =>
       send({ type: "UPDATE_SIDEBAR_CHAT_STATE", open }),

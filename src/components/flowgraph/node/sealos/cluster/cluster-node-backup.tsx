@@ -1,7 +1,7 @@
 "use client";
 
 import { getClusterBackupListOptions } from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
-import { createSealosContext } from "@/lib/auth/auth-utils";
+import { useSealosContext } from "@/lib/auth/auth-utils";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { DatabaseBackup } from "lucide-react";
@@ -23,7 +23,7 @@ export default function ClusterNodeBackup({
 }: {
   target: CustomResourceTarget;
 }) {
-  const sealosContext = createSealosContext();
+  const sealosContext = useSealosContext();
   const [isExpanded, setIsExpanded] = useState(false);
   const { appendSystemMessage } = useAppendSystemMessageMutation();
 

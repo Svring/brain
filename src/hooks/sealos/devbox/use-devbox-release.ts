@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { getDevboxReleasesOptions } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
 import { useQuery } from "@tanstack/react-query";
 import { useDevboxDeploy } from "@/hooks/sealos/devbox/use-devbox-deploy";
-import { createDevboxContext } from "@/lib/auth/auth-utils";
+import { useDevboxContext } from "@/lib/auth/auth-utils";
 
 interface ReleaseConfig {
   tag: string;
@@ -13,7 +13,7 @@ interface ReleaseConfig {
 
 export const useDevboxRelease = (devboxName: string) => {
   const { devbox } = useTRPCClients();
-  const devboxContext = createDevboxContext();
+  const devboxContext = useDevboxContext();
 
   const [releaseConfig, setReleaseConfig] = useState<ReleaseConfig>({
     tag: "",

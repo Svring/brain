@@ -45,12 +45,25 @@ export const getDevboxObject = async (
 
   // Add all service ports to the map
   servicePorts.forEach((servicePort) => {
+    // Use http protocol for TCP ports when constructing private address
+    const protocolForAddress =
+      servicePort.protocol?.toLowerCase() === "tcp"
+        ? "http"
+        : servicePort.protocol;
+    const privateAddress =
+      servicePort.serviceName && servicePort.privateAddress
+        ? servicePort.privateAddress.replace(
+            /^[^:]+:\/\//,
+            `${protocolForAddress}://`
+          )
+        : servicePort.privateAddress;
+
     portMap.set(servicePort.number, {
       number: servicePort.number,
       name: servicePort.name,
       protocol: servicePort.protocol,
       serviceName: servicePort.serviceName,
-      privateAddress: servicePort.privateAddress,
+      privateAddress: privateAddress,
       nodePort: servicePort.nodePort,
     } as DevboxPort);
   });
@@ -85,7 +98,7 @@ export const getDevboxObject = async (
   // Ensure ports array exists and assign merged ports
   devboxObject.ports = mergedPorts;
 
-  console.log("devboxObject.ports", devboxObject.ports);
+  // console.log("devboxObject.ports", devboxObject.ports);
 
   devboxObject.ssh = enrichSshWithRegionUrl(devboxObject.ssh, context);
 

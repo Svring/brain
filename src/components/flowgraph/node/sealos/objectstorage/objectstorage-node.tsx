@@ -14,8 +14,8 @@ import { ObjectStorageObject } from "@/lib/sealos/resources/objectstorage/object
 import { useIsMutating } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import {
-  createSealosContext,
-  createObjectStorageContext,
+  useSealosContext,
+  useObjectStorageContext,
 } from "@/lib/auth/auth-utils";
 import { initObjectStorageUserOptions } from "@/lib/sealos/resources/objectstorage/objectstorage-method/objectstorage-query";
 import {
@@ -117,7 +117,7 @@ function ObjectStorageNode({
   // console.log("access", access);
 
   // Get Sealos context for API calls
-  const objectStorageContext = createObjectStorageContext();
+  const objectStorageContext = useObjectStorageContext();
 
   // Call the user init query and log the result
   const {

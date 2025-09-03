@@ -9,7 +9,7 @@ import { useTemplateSearch } from "@/hooks/template/use-template-search";
 import type { TemplateResource } from "@/lib/sealos/resources/template/schemas/template-api-context-schemas";
 import { TemplateCard } from "./template-card";
 import { TemplateDetails } from "./template-details";
-import { createSealosContext, createK8sContext } from "@/lib/auth/auth-utils";
+import { useSealosContext, createK8sContext } from "@/lib/auth/auth-utils";
 import { Component as ImageSlider } from "@/components/ui/image-auto-slider";
 
 interface CreateProjectProps {
@@ -17,7 +17,7 @@ interface CreateProjectProps {
 }
 
 export default function CreateProject({ closeDialog }: CreateProjectProps) {
-  const templateApiContext = createSealosContext();
+  const templateApiContext = useSealosContext();
   const k8sContext = createK8sContext();
 
   const {

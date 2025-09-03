@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Trash2, PencilLine } from "lucide-react";
-import { createSealosContext } from "@/lib/auth/auth-utils";
+import { useSealosContext } from "@/lib/auth/auth-utils";
 import { useDeleteObjectStorageMutation } from "@/lib/sealos/resources/objectstorage/objectstorage-method/objectstorage-mutation";
 import { ObjectStorageObject } from "@/lib/sealos/resources/objectstorage/objectstorage-schemas/objectstorage-object-schema";
 
@@ -17,7 +17,7 @@ export default function ObjectStorageNodeMenu({
 }: {
   object: ObjectStorageObject;
 }) {
-  const sealosContext = createSealosContext();
+  const sealosContext = useSealosContext();
 
   const deleteObjectStorage = useDeleteObjectStorageMutation(sealosContext);
 

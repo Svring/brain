@@ -6,14 +6,14 @@ import { activateProjectActions } from "@/lib/copilot/brain/project/copilot-proj
 
 import {
   createK8sContext,
-  createDevboxContext,
-  createSealosContext,
+  useDevboxContext,
+  useSealosContext,
 } from "@/lib/auth/auth-utils";
 
 export default function useCopilotActions() {
   const k8sContext = createK8sContext();
-  const devboxContext = createDevboxContext();
-  const sealosContext = createSealosContext();
+  const devboxContext = useDevboxContext();
+  const sealosContext = useSealosContext();
 
   // Activate actions based on the provided types
   // activateDevboxActions(k8sContext, devboxContext);

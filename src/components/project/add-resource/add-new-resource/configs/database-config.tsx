@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
-import { createSealosContext } from "@/lib/auth/auth-utils";
+import { useSealosContext } from "@/lib/auth/auth-utils";
 import { getClusterVersionsOptions } from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
 import {
   generateClusterCpuOptions,
@@ -18,7 +18,7 @@ interface DatabaseConfigProps {
 }
 
 export default function DatabaseConfig({ configData, onConfigChange }: DatabaseConfigProps) {
-  const sealosContext = createSealosContext();
+  const sealosContext = useSealosContext();
   
   // Fetch cluster versions when a type is selected
   const { data: clusterVersions, isLoading: clusterVersionsLoading } = useQuery(

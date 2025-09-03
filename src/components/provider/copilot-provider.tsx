@@ -76,7 +76,7 @@ function CopilotKitRenderer({ children }: { children: React.ReactNode }) {
 
   return (
     <CopilotKit
-      showDevConsole={false}
+      // showDevConsole={false}
       agent="orca"
       runtimeUrl="/api/copilot"
       publicApiKey={process.env.NEXT_PUBLIC_COPILOT_API_KEY}

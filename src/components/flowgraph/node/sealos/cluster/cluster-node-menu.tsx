@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Pause, Trash2, PencilLine, Power } from "lucide-react";
-import { createClusterContext } from "@/lib/auth/auth-utils";
+import { useClusterContext } from "@/lib/auth/auth-utils";
 import {
   useDeleteClusterMutation,
   useStartClusterMutation,
@@ -18,7 +18,7 @@ import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cl
 
 
 export default function ClusterNodeMenu({ object }: { object: ClusterObject }) {
-  const clusterContext = createClusterContext();
+  const clusterContext = useClusterContext();
 
   const deleteCluster = useDeleteClusterMutation(clusterContext);
   const startCluster = useStartClusterMutation(clusterContext);
