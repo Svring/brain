@@ -4,6 +4,7 @@ import React from "react";
 import BaseNode from "../base-node-wrapper";
 import NodeStatusLight from "./node-status-light";
 import { Package, Database, Server, HardDrive } from "lucide-react";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 interface NodeLoadingProps {
   kind: string;
@@ -14,7 +15,7 @@ interface NodeLoadingProps {
 // Icon mapping for different resource kinds
 const getIconForKind = (kind: string) => {
   const lowerKind = kind.toLowerCase();
-  
+
   switch (lowerKind) {
     case "devbox":
       return <Package className="h-4 w-4 text-muted-foreground" />;
@@ -30,22 +31,22 @@ const getIconForKind = (kind: string) => {
   }
 };
 
-export default function NodeLoading({ kind, name, status = "Pending" }: NodeLoadingProps) {
+export default function NodeLoading({
+  kind,
+  name,
+  status = "Pending",
+}: NodeLoadingProps) {
   const IconComponent = getIconForKind(kind);
+  const target = convertResourceTypeToTarget(kind, name);
 
   return (
-    <BaseNode
-      nodeId={{ kind, name }}
-      className="opacity-75"
-    >
+    <BaseNode className="opacity-75" nodeId={target.name} target={target}>
       <div className="flex h-full flex-col gap-2 justify-between">
         {/* Header with Kind Icon and Name */}
         <div className="flex items-center gap-2">
           {IconComponent}
           <div className="flex flex-col">
-            <div className="text-sm font-medium text-foreground">
-              {name}
-            </div>
+            <div className="text-sm font-medium text-foreground">{name}</div>
             <div className="text-xs text-muted-foreground capitalize">
               {kind.toLowerCase()}
             </div>

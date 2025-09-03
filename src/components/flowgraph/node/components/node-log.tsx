@@ -8,17 +8,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  useAppendSystemMessageMutation,
-  useSendMessageMutation,
-} from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { useSelectedResource } from "@/hooks/brain/use-selected-resource";
+import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useResourceLogs } from "@/hooks/sealos/resource/use-resource-logs";
+import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { useProjectActions } from "@/contexts/project/project-context";
 
 interface NodeLogProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -62,12 +58,23 @@ Do not restate the raw log data back to the user, only summarize your findings.
 `;
 
 export default function NodeLog({ target }: NodeLogProps) {
-  const { selectResource } = useProjectActions();
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
   const { mutate: sendMessage } = useSendMessageMutation();
-  const { shouldCreateChatSession } = useSelectedResource(target);
   const logsQuery = useResourceLogs(target);
   const { data: logsData, isLoading } = logsQuery;
+  const { handleNodeSelect } = useNodeSelect({
+    target,
+    messageType: "universal.log",
+    onSuccess: () => {
+      // Send logs data for analysis after system message is appended
+      sendMessage([
+        {
+          role: "system",
+          content:
+            analyzeLogsPrompt + "\n\n" + JSON.stringify(logsData),
+        },
+      ]);
+    },
+  });
 
   // Check if logs are ready (not loading and has data)
   const isLogsReady =
@@ -82,23 +89,7 @@ export default function NodeLog({ target }: NodeLogProps) {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              selectResource(target);
-              appendSystemMessage(
-                "universal.log",
-                target,
-                shouldCreateChatSession,
-                undefined,
-                () => {
-                  // Send logs data for analysis after system message is appended
-                  sendMessage([
-                    {
-                      role: "system",
-                      content:
-                        analyzeLogsPrompt + "\n\n" + JSON.stringify(logsData),
-                    },
-                  ]);
-                }
-              );
+              handleNodeSelect();
             }}
             type="button"
           >

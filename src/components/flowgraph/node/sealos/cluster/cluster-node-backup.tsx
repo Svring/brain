@@ -56,7 +56,7 @@ export default function ClusterNodeBackup({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              appendSystemMessage("cluster.backup", target);
+              appendSystemMessage({ type: "cluster.backup", target });
             }}
           >
             <DatabaseBackup className="h-4 w-4 text-theme-green" />

@@ -39,14 +39,14 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
           icon: ArrowBigUpDash,
           label: "Release and Deploy",
           onClick: () => {
-            appendSystemMessage("devbox.createRelease", target);
+            appendSystemMessage({ type: "devbox.createRelease", target });
           },
         },
         {
           icon: History,
           label: "Release History",
           onClick: () => {
-            appendSystemMessage("devbox.release", target);
+            appendSystemMessage({ type: "devbox.release", target });
           },
         },
       ]

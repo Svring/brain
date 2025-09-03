@@ -35,8 +35,6 @@ export const OrchestratorProvider = ({ children }: { children: ReactNode }) => {
   }, [
     sidebarChatOpen,
     state.context.monitoredStates.sidebarChatOpen,
-    send,
-    clearSelectedResource,
   ]);
 
   useEffect(() => {

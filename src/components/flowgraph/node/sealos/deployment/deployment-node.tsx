@@ -12,8 +12,6 @@ import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-o
 import { truncateImage } from "@/lib/sealos/sealos-utils";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useLaunchpadObject } from "@/hooks/sealos/launchpad/use-launchpad-object";
-import { useResourceDelete } from "@/hooks/sealos/resource/use-resource-delete";
-import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import NodeLoading from "../../components/node-loading";
@@ -101,24 +99,12 @@ function DeploymentNode({
     kind: deploymentData.kind,
     name: deploymentData.name,
   });
-  const { status: metricsStatus } = useResourceMetricsStatus({
-    target,
-  });
-
-  // Use the delete hook
-  const { isPending: isDeletingDeployment } = useResourceDelete(target);
 
   const mainCard = (
     <BaseNode
       target={target}
       nodeId={nodeId}
       messageType="launchpad.detail"
-      shouldCreateChatSession={true}
-      className={
-        isDeletingDeployment || metricsStatus === "high"
-          ? "bg-status-deleting/50 border-border-deleting"
-          : ""
-      }
     >
       <div className="flex h-full flex-col gap-2 justify-between">
         {/* Header with Name and Dropdown */}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { Package } from "lucide-react";
 import BaseNode from "../../base-node-wrapper";
 import { createK8sContext } from "@/lib/auth/auth-utils";
@@ -10,18 +10,11 @@ import DevboxNodeMenu from "./devbox-node-menu";
 import NodeMonitor from "../../components/node-monitor";
 import NodeStack from "../../components/node-stack";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
-import { useDevboxContext } from "@/lib/auth/auth-utils";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
-import { useResourceMetrics } from "@/hooks/sealos/resource/use-resource-metrics";
-import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import { useDevboxRelease } from "@/hooks/sealos/devbox/use-devbox-release";
-import { useMutation } from "@tanstack/react-query";
-import { useResourceDelete } from "@/hooks/sealos/resource/use-resource-delete";
 import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
-import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
-import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import NodeLoading from "../../components/node-loading";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
@@ -104,19 +97,12 @@ function DevboxNode({
     name: resource.name,
   });
 
-  const { status: metricsStatus } = useResourceMetricsStatus({
-    target,
-  });
-
   const { name, image } = resource;
 
   // console.log("resource", resource);
   // console.log("status", status);
 
   const context = createK8sContext();
-
-  // Use the delete hook
-  const { isPending: isDeletingDevbox } = useResourceDelete(target);
 
   const { releases } = useDevboxRelease(name);
 
@@ -128,12 +114,6 @@ function DevboxNode({
       target={target}
       nodeId={nodeId}
       messageType="devbox.detail"
-      shouldCreateChatSession={true}
-      className={
-        isDeletingDevbox || metricsStatus === "high"
-          ? "bg-status-deleting/50 border-border-deleting"
-          : ""
-      }
     >
       <div className="flex h-full flex-col gap-2 justify-between">
         {/* Header with Name and Dropdown */}
@@ -179,7 +159,6 @@ function DevboxNode({
       data={releasesData}
       target={target}
       messageType="devbox.release"
-      shouldCreateChatSession={true}
       nodeId={nodeId}
     />
   );

@@ -30,7 +30,7 @@ export const ClusterMessage: React.FC<ClusterMessageProps> = ({ target }) => {
           icon: EthernetPort,
           label: "View Connection",
           onClick: () => {
-            appendSystemMessage("cluster.connection", target);
+            appendSystemMessage({ type: "cluster.connection", target });
           },
         },
       ]

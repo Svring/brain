@@ -177,7 +177,6 @@ function ObjectStorageNode({
       target={target}
       nodeId={nodeId}
       messageType="objectstorage.detail"
-      shouldCreateChatSession={true}
       className={
         isDeletingObjectStorage
           ? "bg-status-deleting/50 border-border-deleting"

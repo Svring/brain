@@ -9,17 +9,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import {
-  useAppendSystemMessageMutation,
-  useSendMessageMutation,
-} from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
-import { useSelectedResource } from "@/hooks/brain/use-selected-resource";
+import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
+
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { useProjectActions } from "@/contexts/project/project-context";
 
 interface NodeMonitorProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -71,13 +68,27 @@ Do not restate the raw monitor data back to the user, only summarize your interp
 `;
 
 export default function NodeMonitor({ target }: NodeMonitorProps) {
-  const { selectResource } = useProjectActions();
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
   const { mutate: sendMessage } = useSendMessageMutation();
   const { color, monitorData, isLoading } = useResourceMetricsStatus({
     target,
   });
-  const { shouldCreateChatSession } = useSelectedResource(target);
+  const { handleNodeSelect } = useNodeSelect({
+    target,
+    messageType: "universal.monitor",
+    onSuccess: () => {
+      // Send monitor data for analysis after system message is appended
+      sendMessage([
+        {
+          role: "system",
+          content:
+            analyzeMonitorPrompt +
+            "\n\n" +
+            JSON.stringify(monitorData),
+        },
+      ]);
+    },
+  });
+
 
   // Check if monitor data is ready (not loading and has data)
   const isMonitorReady = !isLoading && monitorData && Array.isArray(monitorData) && monitorData.length > 0;
@@ -91,25 +102,7 @@ export default function NodeMonitor({ target }: NodeMonitorProps) {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              selectResource(target);
-              appendSystemMessage(
-                "universal.monitor",
-                target,
-                shouldCreateChatSession,
-                undefined,
-                () => {
-                  // Send monitor data for analysis after system message is appended
-                  sendMessage([
-                    {
-                      role: "system",
-                      content:
-                        analyzeMonitorPrompt +
-                        "\n\n" +
-                        JSON.stringify(monitorData),
-                    },
-                  ]);
-                }
-              );
+              handleNodeSelect();
             }}
           >
             <Activity

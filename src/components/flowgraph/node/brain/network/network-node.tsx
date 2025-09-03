@@ -79,7 +79,7 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
     e.preventDefault();
     if (notReadyCount > 0) {
       selectResource(target);
-      appendSystemMessage("universal.diagnoseNetwork", target);
+      appendSystemMessage({ type: "universal.diagnoseNetwork", target });
     }
   };
 
@@ -99,7 +99,7 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
 
   if (isLoading) {
     return (
-      <BaseNode nodeId={nodeId} className="h-14 p-2 bg-muted">
+      <BaseNode target={target} nodeId={nodeId} className="h-14 p-2 bg-muted">
         <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
           Loading...
         </div>
@@ -109,7 +109,11 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
 
   if (error || !resource) {
     return (
-      <BaseNode nodeId={nodeId} className="h-14 p-2 bg-status-error/20">
+      <BaseNode
+        target={target}
+        nodeId={nodeId}
+        className="h-14 p-2 bg-status-error/20"
+      >
         <div className="flex items-center justify-center h-full text-sm text-theme-red">
           Error loading resource
         </div>

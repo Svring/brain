@@ -9,25 +9,27 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
-import { useSelectedResource } from "@/hooks/brain/use-selected-resource";
+
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { Pod } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
-import { useProjectActions } from "@/contexts/project/project-context";
+
 
 interface NodePodsProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
 }
 
 export default function NodePods({ target }: NodePodsProps) {
-  const { selectResource } = useProjectActions();
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
   const { resource } = useResourceStatus(target);
-  const { shouldCreateChatSession } = useSelectedResource(target);
+  const { handleNodeSelect } = useNodeSelect({
+    target,
+    messageType: "universal.podOverview",
+  });
+
 
   // Extract pods from resource based on resource type
   const getPodList = (): Pod[] => {
@@ -50,14 +52,14 @@ export default function NodePods({ target }: NodePodsProps) {
     }
 
     const hasError = podList.some(
-      (pod: Pod) => pod.status.toLowerCase() === "error"
+      (pod: Pod) => pod.status?.toLowerCase() === "error"
     );
     if (hasError) {
       return "text-theme-red";
     }
 
     const allRunning = podList.every(
-      (pod: Pod) => pod.status.toLowerCase() === "running"
+      (pod: Pod) => pod.status?.toLowerCase() === "running"
     );
     if (allRunning) {
       return "text-theme-green";
@@ -77,12 +79,7 @@ export default function NodePods({ target }: NodePodsProps) {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              selectResource(target);
-              appendSystemMessage(
-                "universal.podOverview",
-                target,
-                shouldCreateChatSession
-              );
+              handleNodeSelect();
             }}
           >
             <Box className={`h-4 w-4 ${getStatusColor()}`} />

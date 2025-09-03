@@ -26,7 +26,7 @@ export const MonitorMessage: React.FC<MonitorMessageProps> = ({ target }) => {
   const handleUpdateResource = () => {
     const resourceType = target.resourceType.toLowerCase();
     if (resourceType === "deployment" || resourceType === "statefulset") {
-      appendSystemMessage("launchpad.updateResource", target);
+              appendSystemMessage({ type: "launchpad.updateResource", target });
     }
   };
 

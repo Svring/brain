@@ -13,9 +13,8 @@ interface NodeStackProps {
   notReadyCount?: number; // Number of cards that are not ready (for yellow coloring)
   onBackgroundCardClick?: (index: number, data: any) => void; // Optional click handler for background cards
   // BaseNode parameters for background cards
-  target?: ResourceTarget;
+  target: ResourceTarget;
   messageType?: string;
-  shouldCreateChatSession?: boolean;
   nodeId: any; // Added nodeId to the interface
 }
 
@@ -29,7 +28,6 @@ export default function NodeStack({
   onBackgroundCardClick,
   target,
   messageType,
-  shouldCreateChatSession = false,
   nodeId,
 }: NodeStackProps) {
   const [isHovered, setIsHovered] = useState(false);
@@ -72,7 +70,6 @@ export default function NodeStack({
             nodeId={nodeId}
             target={target}
             messageType={messageType}
-            shouldCreateChatSession={shouldCreateChatSession}
             className={`${height ? `h-${height}` : ""} ${
               cardBackgroundColor || ""
             }`}

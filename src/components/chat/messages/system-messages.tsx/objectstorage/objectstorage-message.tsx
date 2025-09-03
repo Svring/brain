@@ -33,7 +33,7 @@ export const ObjectStorageMessage: React.FC<ObjectStorageMessageProps> = ({
           icon: Pencil,
           label: "Update",
           onClick: () => {
-            appendSystemMessage("objectstorage.update", target);
+            appendSystemMessage({ type: "objectstorage.update", target });
           },
         },
       ]

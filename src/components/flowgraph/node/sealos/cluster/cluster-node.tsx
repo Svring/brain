@@ -23,12 +23,10 @@ import {
 import { convertToDbconnUrl } from "@/lib/sealos/sealos-utils";
 import { composeClusterPublicConnectionString } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
 import { Globe, HardDrive } from "lucide-react";
-import { useResourceMetrics } from "@/hooks/sealos/resource/use-resource-metrics";
 import { useClusterObject } from "@/hooks/sealos/cluster/use-cluster-object";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
-import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
-import { useResourceDelete } from "@/hooks/sealos/resource/use-resource-delete";
 import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
+import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import NodeLoading from "../../components/node-loading";
 import {
@@ -116,11 +114,13 @@ function ClusterNode({
 
   // Create target for the cluster
   const target = CustomResourceTargetSchema.parse(
-    convertResourceTypeToTarget("cluster", resource.name)
+    convertResourceTypeToTarget("cluster", resource.name || "")
   );
 
   // Use the new hook to get cluster data
-  const { data: clusterData = resource } = useClusterObject(resource.name);
+  const { data: clusterData = resource } = useClusterObject(
+    resource.name || ""
+  );
 
   // console.log("resource cluster", resource);
   // console.log("status", status);
@@ -145,6 +145,8 @@ function ClusterNode({
   })();
 
   const { name, type } = clusterData;
+  const safeName = name || "";
+  const safeType = type || "";
 
   // Construct connection string
   const connectionString = composeClusterPublicConnectionString(
@@ -152,28 +154,12 @@ function ClusterNode({
     k8sContext.regionUrl
   );
 
-  const { isPending: isDeletingCluster } = useResourceDelete(target);
-
-  const { status: metricsStatus } = useResourceMetricsStatus({
-    target,
-  });
-
   const mainCard = (
-    <BaseNode
-      target={target}
-      nodeId={nodeId}
-      messageType="cluster.detail"
-      shouldCreateChatSession={true}
-      className={
-        isDeletingCluster || metricsStatus === "high"
-          ? "bg-status-deleting/50 border-border-deleting"
-          : ""
-      }
-    >
+    <BaseNode target={target} nodeId={nodeId} messageType="cluster.detail">
       <div className="flex h-full flex-col gap-4 justify-between">
         {/* Header with Name and Menu */}
         <div className="flex items-center justify-between">
-          <ClusterNodeTitle name={name} type={type} />
+          <ClusterNodeTitle name={safeName} type={safeType} />
           <div className="flex-shrink-0">
             <ClusterNodeMenu object={clusterData} />
           </div>
@@ -236,7 +222,10 @@ function ClusterNode({
 
               {/* Right side: Resource storage label (capacity) */}
               <div className="text-xs">
-                {clusterData.resource?.storage || "N/A"}GB
+                {Array.isArray(clusterData.resource)
+                  ? "N/A"
+                  : clusterData.resource?.storage || "N/A"}
+                GB
               </div>
             </div>
           </div>
@@ -259,6 +248,7 @@ function ClusterNode({
 
   return (
     <NodeStack
+      target={target}
       mainCard={
         <div className="relative">
           {/* Hem component - positioned above background cards */}
@@ -275,7 +265,12 @@ function ClusterNode({
           <div className="relative z-20">{mainCard}</div>
         </div>
       }
-      data={Array.from({ length: clusterData.resource?.replicas - 1 || 0 })}
+      data={Array.from({
+        length:
+          (Array.isArray(clusterData.resource)
+            ? 0
+            : clusterData.resource?.replicas || 0) - 1 || 0,
+      })}
       height="60"
       backgroundColor="bg-node-background"
       nodeId={nodeId}

@@ -3,22 +3,19 @@
 import { Handle, Position } from "@xyflow/react";
 import { BaseNode } from "@/components/flowgraph/components/base-node";
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
-import { useFlowgraphActions } from "@/contexts/flowgraph/flowgraph-context";
-import {
-  useProjectActions,
-  useProjectState,
-} from "@/contexts/project/project-context";
+import { useProjectState } from "@/contexts/project/project-context";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
+import { useResourceDelete } from "@/hooks/sealos/resource/use-resource-delete";
+import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 import _ from "lodash";
 
 interface BaseNodeProps {
   children: React.ReactNode;
   nodeId: any;
-  target?: ResourceTarget;
+  target: ResourceTarget;
   className?: string;
   messageType?: string;
-  shouldCreateChatSession?: boolean;
 }
 
 export default function BaseNodeWrapper({
@@ -27,37 +24,50 @@ export default function BaseNodeWrapper({
   target,
   className,
   messageType,
-  shouldCreateChatSession = false,
 }: BaseNodeProps) {
-  const { selectResource } = useProjectActions();
   const { selectedResource } = useProjectState();
-  const { selectNode, focusNode } = useFlowgraphActions();
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
 
-  const handleNodeClick = () => {
-    if (target) {
-      selectResource(target);
-      selectNode(nodeId);
-      focusNode(nodeId);
+  // Use the new hook for node selection
+  const { handleNodeSelect } = useNodeSelect({
+    target: target,
+    messageType,
+  });
 
-      // Handle message appending if messageType is provided
-      if (messageType) {
-        appendSystemMessage(messageType, target, shouldCreateChatSession);
-      }
-    }
-  };
+  // Get resource metrics status and delete status (only when target exists)
+  const { status: metricsStatus } = target
+    ? useResourceMetricsStatus({
+        target,
+      })
+    : { status: undefined };
+  const { isPending: isDeleting } = target
+    ? useResourceDelete(target)
+    : { isPending: false };
 
   const isSelected =
     selectedResource && target && _.isEqual(selectedResource, target);
+
+  // Determine the appropriate styling based on status
+  const getNodeStyling = () => {
+    // If resource is being deleted or has high metrics status, show deleting styles
+    if (target && (isDeleting || metricsStatus === "high")) {
+      return "bg-status-deleting/50 border-border-deleting";
+    }
+
+    // If resource is selected, show blue border
+    if (isSelected) {
+      return "border-theme-blue/50 border";
+    }
+
+    // Default styling
+    return "";
+  };
 
   return (
     <ContextMenu>
       <ContextMenuTrigger>
         <BaseNode
-          className={`${className ?? ""} ${
-            isSelected ? "border-theme-blue/50 border" : ""
-          }`}
-          onClick={handleNodeClick}
+          className={`${className ?? ""} ${getNodeStyling()}`}
+          onClick={handleNodeSelect}
         >
           <Handle position={Position.Top} type="source" />
           {children}

@@ -8,22 +8,22 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { useSelectedResource } from "@/hooks/brain/use-selected-resource";
+import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { useProjectActions } from "@/contexts/project/project-context";
 
 interface NodeBackupProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
 }
 
 export default function NodeBackup({ target }: NodeBackupProps) {
-  const { selectResource } = useProjectActions();
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
-  const { shouldCreateChatSession } = useSelectedResource(target);
+  const { handleNodeSelect } = useNodeSelect({
+    target,
+    messageType: "info.clusterBackup",
+  });
+
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -34,12 +34,7 @@ export default function NodeBackup({ target }: NodeBackupProps) {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              selectResource(target);
-              appendSystemMessage(
-                "info.clusterBackup",
-                target,
-                shouldCreateChatSession
-              );
+              handleNodeSelect();
             }}
           >
             <DatabaseBackup className="h-4 w-4 text-theme-green" />

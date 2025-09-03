@@ -10,11 +10,9 @@ import { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulse
 import { truncateImage } from "@/lib/sealos/sealos-utils";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import NodeLog from "../../components/node-log";
-import { useResourceDelete } from "@/hooks/sealos/resource/use-resource-delete";
 import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import NodeLoading from "../../components/node-loading";
-import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import StatefulsetNodeMenu from "./statefulset-node-menu";
 
@@ -89,24 +87,11 @@ function StatefulsetNode({
   // Get resource metrics data using the hook data
   const target = convertResourceObjectToTarget(resource);
 
-  const { status: metricsStatus } = useResourceMetricsStatus({
-    target,
-  });
-
-  // Use the delete hook
-  const { isPending: isDeletingStatefulset } = useResourceDelete(target);
-
   const mainCard = (
     <BaseNode
       target={target}
       nodeId={nodeId}
       messageType="launchpad.detail"
-      shouldCreateChatSession={true}
-      className={
-        isDeletingStatefulset || metricsStatus === "high"
-          ? "bg-status-deleting/50 border-border-deleting"
-          : ""
-      }
     >
       <div className="flex h-full flex-col gap-2 justify-between">
         {/* Header with Name and Dropdown */}

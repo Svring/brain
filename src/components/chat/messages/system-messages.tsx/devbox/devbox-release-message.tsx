@@ -35,7 +35,7 @@ const ReleaseItem: React.FC<{
   // console.log("release", release);
 
   const handleDeploy = () => {
-    appendSystemMessage("devbox.deployment", target, { tag: release.tag });
+            appendSystemMessage({ type: "devbox.deployment", target, payload: { tag: release.tag } });
   };
 
   const handleDelete = () => {

@@ -53,7 +53,7 @@ export default function NetworkMessage({ target }: NetworkMessageProps) {
       target.type === "builtin" &&
       ["deployment", "statefulset"].includes(target.resourceType.toLowerCase())
     ) {
-      appendSystemMessage("launchpad.updatePort", target);
+              appendSystemMessage({ type: "launchpad.updatePort", target });
     }
     setShowPortForm(false);
     setNewPort({
