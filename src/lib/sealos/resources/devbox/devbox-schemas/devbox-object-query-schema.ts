@@ -145,22 +145,7 @@ export const DevboxObjectQuerySchema = z.object({
       };
     }),
   ssh: SSHConfigSchema,
-  ports: z
-    .any()
-    .describe(
-      JSON.stringify({
-        resourceType: "devbox",
-        path: ["spec.network.extraPorts"],
-      })
-    )
-    .transform((extraPorts) => {
-      if (Array.isArray(extraPorts) && extraPorts.length > 0) {
-        return extraPorts.map((port: { containerPort: number }) => ({
-          number: port.containerPort,
-        }));
-      }
-      return [];
-    }),
+  ports: z.any().optional(),
   pods: z
     .any()
     .optional()

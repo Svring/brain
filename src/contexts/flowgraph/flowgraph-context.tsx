@@ -47,7 +47,7 @@ function FlowgraphFocusHandler() {
       fitView({
         nodes: [state.context.selectedNode],
         padding: 0.2,
-        duration: 200,
+        duration: 0,
         maxZoom: 1,
       });
     }

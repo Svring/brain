@@ -8,7 +8,10 @@ import {
   enrichSshWithRegionUrl,
   transformDevboxImage,
 } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
-import { DevboxObjectSchema } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
+import {
+  DevboxObjectSchema,
+  DevboxPort,
+} from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 
 export const getDevboxObject = async (
   context: K8sApiContext,
@@ -25,24 +28,62 @@ export const getDevboxObject = async (
 
   devboxObject.image = transformDevboxImage(devboxObject.image);
 
-  // Ensure ports array exists
-  if (!devboxObject.ports) {
-    devboxObject.ports = [];
-  }
-
-  // Enrich ports with service information first
-  devboxObject.ports = enrichPortsWithService(
+  // Get service ports
+  const servicePorts = enrichPortsWithService(
     relatedResources.filter((resource) => resource.kind === "Service") as any[],
-    context,
-    devboxObject.ports
+    context
   );
 
-  // Then enrich with ingress information
-  devboxObject.ports = enrichPortsWithIngress(
+  // Get ingress ports
+  const ingressPorts = enrichPortsWithIngress(
     relatedResources.filter((resource) => resource.kind === "Ingress") as any[],
-    context,
-    devboxObject.ports
+    context
   );
+
+  // Create a map of all unique ports from services and ingresses
+  const portMap = new Map<number, DevboxPort>();
+
+  // Add all service ports to the map
+  servicePorts.forEach((servicePort) => {
+    portMap.set(servicePort.number, {
+      number: servicePort.number,
+      name: servicePort.name,
+      protocol: servicePort.protocol,
+      serviceName: servicePort.serviceName,
+      privateAddress: servicePort.privateAddress,
+      nodePort: servicePort.nodePort,
+    } as DevboxPort);
+  });
+
+  // Merge ingress information into existing ports or create new entries
+  ingressPorts.forEach((ingressPort) => {
+    const existingPort = portMap.get(ingressPort.number);
+    if (existingPort) {
+      // Update existing port with ingress information
+      portMap.set(ingressPort.number, {
+        ...existingPort,
+        networkName: ingressPort.networkName,
+        protocol: ingressPort.protocol || existingPort.protocol,
+        host: ingressPort.host,
+        publicAddress: ingressPort.publicAddress,
+      });
+    } else {
+      // Create new port entry for ingress-only ports
+      portMap.set(ingressPort.number, {
+        number: ingressPort.number,
+        networkName: ingressPort.networkName,
+        protocol: ingressPort.protocol,
+        host: ingressPort.host,
+        publicAddress: ingressPort.publicAddress,
+      } as DevboxPort);
+    }
+  });
+
+  // Convert map to array
+  const mergedPorts = Array.from(portMap.values());
+
+  // Ensure ports array exists and assign merged ports
+  devboxObject.ports = mergedPorts;
 
   console.log("devboxObject.ports", devboxObject.ports);
 

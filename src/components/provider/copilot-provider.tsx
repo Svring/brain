@@ -72,10 +72,11 @@ function ThreadCreator({ children }: { children: React.ReactNode }) {
 // Component for rendering CopilotKit with thread
 function CopilotKitRenderer({ children }: { children: React.ReactNode }) {
   const { selectedThreadId } = useChatState();
-  console.log("selectedThreadId in CopilotKitRenderer", selectedThreadId);
+  // console.log("selectedThreadId in CopilotKitRenderer", selectedThreadId);
 
   return (
     <CopilotKit
+      showDevConsole={false}
       agent="orca"
       runtimeUrl="/api/copilot"
       publicApiKey={process.env.NEXT_PUBLIC_COPILOT_API_KEY}

@@ -45,18 +45,11 @@ export interface TransformedIngress {
   host: string;
 }
 
-export interface PortWithNumber {
-  number: number;
-  [key: string]: any;
-}
+// Import the unified interface from service utils
+import { UnifiedPort } from "@/lib/sealos/resources/service/service-method/service-utils";
 
-export interface EnrichedPort extends PortWithNumber {
-  networkName?: string;
-  protocol?: string;
-  host?: string;
-  privateAddress?: string;
-  publicAddress?: string;
-}
+// Keep EnrichedPort for backward compatibility
+export interface EnrichedPort extends UnifiedPort {}
 
 /**
  * Check protocol availability by detecting the protocol from the URL.
@@ -123,9 +116,9 @@ export const transformIngressResources = (
  * Compose addresses for enriched ports based on context and port information
  */
 export const composeAddressFromIngress = (
-  ports: EnrichedPort[],
+  ports: UnifiedPort[],
   context: K8sApiContext
-): EnrichedPort[] => {
+): UnifiedPort[] => {
   return ports.map((port) => {
     const protocol = port.protocol?.toLocaleLowerCase() || "http";
     const serviceName = (port as any).serviceName;
@@ -155,13 +148,11 @@ export const composeAddressFromIngress = (
 /**
  * Enrich port objects by scanning ingress information directly
  * and returning a list of EnrichedPort objects with all available information.
- * If ports are provided, merges ingress data with existing port information.
  */
 export function enrichPortsWithIngress(
   ingressesOrResources: TransformedIngress[] | IngressResource[],
-  context?: K8sApiContext,
-  existingPorts?: PortWithNumber[]
-): EnrichedPort[] {
+  context?: K8sApiContext
+): UnifiedPort[] {
   // Check if we received raw resources or transformed ingresses
   const transformedIngresses =
     Array.isArray(ingressesOrResources) &&
@@ -170,43 +161,20 @@ export function enrichPortsWithIngress(
       ? transformIngressResources(ingressesOrResources as IngressResource[])
       : (ingressesOrResources as TransformedIngress[]);
 
-  let enrichedPorts: EnrichedPort[] = [];
+  const enrichedPorts: UnifiedPort[] = [];
 
-  if (existingPorts && existingPorts.length > 0) {
-    // Map existing ports with ingress data
-    enrichedPorts = existingPorts.map((port) => {
-      // Find matching ingress by port number
-      const matchingIngress = transformedIngresses.find(
-        (ingress) => ingress.port === port.number
-      );
-
-      if (matchingIngress) {
-        // Merge ingress data into port object, overwriting existing properties
-        return {
-          ...port,
-          networkName: matchingIngress.networkName,
-          protocol: matchingIngress.protocol,
-          host: matchingIngress.host,
-        };
-      }
-
-      // Return original port if no matching ingress found
-      return port;
-    });
-  } else {
-    // Scan all ingress ports and create EnrichedPort objects
-    transformedIngresses.forEach((ingress) => {
-      if (ingress && typeof ingress.port === "number") {
-        const enrichedPort: EnrichedPort = {
-          number: ingress.port,
-          networkName: ingress.networkName,
-          protocol: ingress.protocol,
-          host: ingress.host,
-        };
-        enrichedPorts.push(enrichedPort);
-      }
-    });
-  }
+  // Scan all ingress ports and create EnrichedPort objects
+  transformedIngresses.forEach((ingress) => {
+    if (ingress && typeof ingress.port === "number") {
+      const enrichedPort: UnifiedPort = {
+        number: ingress.port,
+        networkName: ingress.networkName,
+        protocol: ingress.protocol,
+        host: ingress.host,
+      };
+      enrichedPorts.push(enrichedPort);
+    }
+  });
 
   // If context is provided, compose addresses
   return context

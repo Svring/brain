@@ -7,6 +7,7 @@ import { enrichPortsWithIngress } from "@/lib/sealos/resources/ingress/ingress-m
 import {
   StatefulsetObject,
   StatefulsetObjectSchema,
+  Port,
 } from "@/lib/sealos/resources/statefulset/statefulset-object-schema";
 
 export const getStatefulSetObject = async (
@@ -24,24 +25,62 @@ export const getStatefulSetObject = async (
 
   // console.log("relatedResources", relatedResources);
 
-  // Ensure ports array exists
-  if (!statefulSetObject.ports) {
-    statefulSetObject.ports = [];
-  }
-
-  // Enrich ports with service information first
-  statefulSetObject.ports = enrichPortsWithService(
+  // Get service ports
+  const servicePorts = enrichPortsWithService(
     relatedResources.filter((resource) => resource.kind === "Service") as any[],
-    context,
-    statefulSetObject.ports
+    context
   );
 
-  // Then enrich with ingress information
-  statefulSetObject.ports = enrichPortsWithIngress(
+  // Get ingress ports
+  const ingressPorts = enrichPortsWithIngress(
     relatedResources.filter((resource) => resource.kind === "Ingress") as any[],
-    context,
-    statefulSetObject.ports
+    context
   );
+
+  // Create a map of all unique ports from services and ingresses
+  const portMap = new Map<number, any>();
+
+  // Add all service ports to the map
+  servicePorts.forEach((servicePort) => {
+    portMap.set(servicePort.number, {
+      number: servicePort.number,
+      name: servicePort.name,
+      protocol: servicePort.protocol || "TCP",
+      serviceName: servicePort.serviceName,
+      privateAddress: servicePort.privateAddress,
+      nodePort: servicePort.nodePort,
+    });
+  });
+
+  // Merge ingress information into existing ports or create new entries
+  ingressPorts.forEach((ingressPort) => {
+    const existingPort = portMap.get(ingressPort.number);
+    if (existingPort) {
+      // Update existing port with ingress information
+      portMap.set(ingressPort.number, {
+        ...existingPort,
+        networkName: ingressPort.networkName,
+        protocol: ingressPort.protocol || existingPort.protocol || "HTTP",
+        host: ingressPort.host,
+        publicAddress: ingressPort.publicAddress,
+      });
+    } else {
+      // Create new port entry for ingress-only ports
+      portMap.set(ingressPort.number, {
+        number: ingressPort.number,
+        networkName: ingressPort.networkName,
+        protocol: ingressPort.protocol || "HTTP",
+        host: ingressPort.host,
+        publicAddress: ingressPort.publicAddress,
+      });
+    }
+  });
+
+  // Convert map to array
+  const mergedPorts = Array.from(portMap.values());
+
+  // Ensure ports array exists and assign merged ports
+  statefulSetObject.ports = mergedPorts;
 
   // console.log("getStatefulSetObject", statefulSetObject);
   return StatefulsetObjectSchema.parse(statefulSetObject);

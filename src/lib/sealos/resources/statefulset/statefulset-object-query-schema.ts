@@ -194,25 +194,7 @@ export const StatefulsetObjectQuerySchema = z.object({
       return [];
     })
     .optional(),
-  ports: z
-    .any()
-    .describe(
-      JSON.stringify({
-        resourceType: "statefulset",
-        path: ["spec.template.spec.containers"],
-      })
-    )
-    .transform((containers) => {
-      if (Array.isArray(containers) && containers.length > 0) {
-        return (
-          containers[0].ports?.map((port: { containerPort: number }) => ({
-            number: port.containerPort,
-          })) || []
-        );
-      }
-      return [];
-    })
-    .optional(),
+  ports: z.any().optional(),
   launchCommand: z
     .any()
     .describe(

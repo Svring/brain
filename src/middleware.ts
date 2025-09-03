@@ -79,9 +79,9 @@ export async function middleware(request: NextRequest) {
 
   // Check if this is a duplicate request
   if (isDuplicateRequest(requestHash)) {
-    console.log(
-      `Duplicate request detected for /api/copilot, hash: ${requestHash}`
-    );
+    // console.log(
+    //   `Duplicate request detected for /api/copilot, hash: ${requestHash}`
+    // );
 
     // Return a response indicating duplicate request
     return new NextResponse(

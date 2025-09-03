@@ -23,11 +23,7 @@ export interface TransformedService {
   ports: ServicePort[];
 }
 
-export interface PortInput {
-  number: number;
-}
-
-export interface CompletedPort {
+export interface UnifiedPort {
   number: number;
   name?: string;
   nodePort?: number;
@@ -36,7 +32,12 @@ export interface CompletedPort {
   serviceName?: string;
   privateAddress?: string;
   publicAddress?: string;
+  networkName?: string;
+  host?: string;
 }
+
+// Keep CompletedPort for backward compatibility
+export interface CompletedPort extends UnifiedPort {}
 
 /**
  * Transform a list of Kubernetes Service resources into a simplified format
@@ -55,9 +56,9 @@ export const transformServiceResources = (
  * Compose addresses for completed ports based on context and port information
  */
 export const composeAddressFromService = (
-  ports: CompletedPort[],
+  ports: UnifiedPort[],
   context: K8sApiContext
-): CompletedPort[] => {
+): UnifiedPort[] => {
   return ports.map((port) => {
     const protocol = port.protocol?.toLowerCase() || "http";
     const serviceName = port.serviceName;
@@ -87,13 +88,11 @@ export const composeAddressFromService = (
 /**
  * Complete ports information by scanning service ports directly
  * and returning a list of CompletedPort objects with all available information.
- * If ports are provided, merges service data with existing port information.
  */
 export function enrichPortsWithService(
   servicesOrResources: TransformedService[] | ServiceResource[],
-  context?: K8sApiContext,
-  existingPorts?: PortInput[]
-): CompletedPort[] {
+  context?: K8sApiContext
+): UnifiedPort[] {
   // Check if we received raw resources or transformed services
   const transformedServices =
     Array.isArray(servicesOrResources) &&
@@ -102,50 +101,23 @@ export function enrichPortsWithService(
       ? transformServiceResources(servicesOrResources as ServiceResource[])
       : (servicesOrResources as TransformedService[]);
 
-  let completedPorts: CompletedPort[] = [];
+  const completedPorts: UnifiedPort[] = [];
 
-  if (existingPorts && existingPorts.length > 0) {
-    // Map existing ports with service data
-    completedPorts = existingPorts.map((portInput) => {
-      // Find matching service port by port number
-      for (const service of transformedServices) {
-        const matchingPort = service.ports?.find(
-          (servicePort) => servicePort.port === portInput.number
-        );
-
-        if (matchingPort) {
-          return {
-            number: portInput.number,
-            name: matchingPort.name,
-            ...(matchingPort.nodePort && { nodePort: matchingPort.nodePort }),
-            protocol: matchingPort.protocol,
-            serviceName: service.serviceName,
-          };
-        }
-      }
-
-      // If no matching service port found, return original port with just the number
-      return {
-        number: portInput.number,
-      };
-    });
-  } else {
-    // Scan all service ports and create CompletedPort objects
-    transformedServices.forEach((service) => {
-      if (service.ports && Array.isArray(service.ports)) {
-        service.ports.forEach((servicePort) => {
-          const completedPort: CompletedPort = {
-            number: servicePort.port,
-            name: servicePort.name,
-            ...(servicePort.nodePort && { nodePort: servicePort.nodePort }),
-            protocol: servicePort.protocol,
-            serviceName: service.serviceName,
-          };
-          completedPorts.push(completedPort);
-        });
-      }
-    });
-  }
+  // Scan all service ports and create CompletedPort objects
+  transformedServices.forEach((service) => {
+    if (service.ports && Array.isArray(service.ports)) {
+      service.ports.forEach((servicePort) => {
+        const completedPort: UnifiedPort = {
+          number: servicePort.port,
+          name: servicePort.name,
+          ...(servicePort.nodePort && { nodePort: servicePort.nodePort }),
+          protocol: servicePort.protocol,
+          serviceName: service.serviceName,
+        };
+        completedPorts.push(completedPort);
+      });
+    }
+  });
 
   // If context and regionUrl are provided, compose addresses
   return context
