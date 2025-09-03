@@ -50,6 +50,14 @@ export const OrchestratorProvider = ({ children }: { children: ReactNode }) => {
     langgraphState.context.model_name,
   ]);
 
+  // Sync stage changes with setLanggraphState
+  useEffect(() => {
+    const { stage } = langgraphState.context;
+    if (stage) {
+      setLanggraphState({ ...langgraphState.context, stage });
+    }
+  }, [langgraphState.context.stage, langgraphState.context]);
+
   return (
     <OrchestratorContext.Provider value={{ state, send, actorRef }}>
       {children}

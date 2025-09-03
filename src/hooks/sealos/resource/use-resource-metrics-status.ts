@@ -84,7 +84,7 @@ export const useResourceMetricsStatus = ({
   // Get the resource using useResourceStatus
   const { resource, isLoading: isResourceLoading } = useResourceStatus(target);
 
-  console.log("resource", resource);
+  // console.log("resource", resource);
 
   // Extract all pod names from the resource
   const podNames = useMemo(() => {
