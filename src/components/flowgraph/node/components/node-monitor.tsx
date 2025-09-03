@@ -14,7 +14,6 @@ import {
   useSendMessageMutation,
 } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
-import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useSelectedResource } from "@/hooks/brain/use-selected-resource";
 import {
   CustomResourceTarget,
@@ -75,15 +74,13 @@ export default function NodeMonitor({ target }: NodeMonitorProps) {
   const { selectResource } = useProjectActions();
   const { appendSystemMessage } = useAppendSystemMessageMutation();
   const { mutate: sendMessage } = useSendMessageMutation();
-  const { color, latestData, monitorData } = useResourceMetricsStatus({
+  const { color, monitorData, isLoading } = useResourceMetricsStatus({
     target,
   });
-  // const { resource } = useResourceStatus(target);
   const { shouldCreateChatSession } = useSelectedResource(target);
 
-  // console.log("resource", resource);
-  // console.log("monitorData", monitorData);
-  // console.log("latestData", latestData);
+  // Check if monitor data is ready (not loading and has data)
+  const isMonitorReady = !isLoading && monitorData && Array.isArray(monitorData) && monitorData.length > 0;
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -98,24 +95,26 @@ export default function NodeMonitor({ target }: NodeMonitorProps) {
               appendSystemMessage(
                 "universal.monitor",
                 target,
-                shouldCreateChatSession
+                shouldCreateChatSession,
+                undefined,
+                () => {
+                  // Send monitor data for analysis after system message is appended
+                  sendMessage([
+                    {
+                      role: "system",
+                      content:
+                        analyzeMonitorPrompt +
+                        "\n\n" +
+                        JSON.stringify(monitorData),
+                    },
+                  ]);
+                }
               );
-              sendMessage([
-                {
-                  role: "system",
-                  content:
-                    analyzeMonitorPrompt + "\n\n" + JSON.stringify(monitorData),
-                },
-              ]);
             }}
           >
             <Activity
               className={`h-4 w-4 ${
-                monitorData &&
-                Array.isArray(monitorData) &&
-                monitorData.length > 0
-                  ? color
-                  : "text-theme-gray"
+                isMonitorReady ? color : "text-theme-gray"
               }`}
             />
           </div>
@@ -125,15 +124,6 @@ export default function NodeMonitor({ target }: NodeMonitorProps) {
           className="bg-background-secondary rounded-lg p-2"
         >
           <p className="font-medium">Check Usage</p>
-          {/* {latestData && (
-            <div className="mt-1 text-xs">
-              <p>CPU: {latestData.cpu.toFixed(2)}%</p>
-              <p>Memory: {latestData.memory.toFixed(2)}%</p>
-              {latestData.storage !== undefined && (
-                <p>Storage: {latestData.storage.toFixed(2)}%</p>
-              )}
-            </div>
-          )} */}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

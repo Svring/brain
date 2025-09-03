@@ -103,7 +103,8 @@ export const useAppendSystemMessageMutation = () => {
     type: string,
     target: CustomResourceTarget | BuiltinResourceTarget,
     shouldCreateChatSession?: boolean,
-    payload?: any
+    payload?: any,
+    onSuccess?: () => void
   ) => {
     // Create system message data
     const systemMessageData: SystemMessage = {
@@ -133,6 +134,9 @@ export const useAppendSystemMessageMutation = () => {
 
             setMessages(newMessages);
             openSidebarChat();
+
+            // Execute the onSuccess callback if provided
+            onSuccess?.();
           },
         }
       );
@@ -149,6 +153,9 @@ export const useAppendSystemMessageMutation = () => {
 
       setMessages(newMessages);
       openSidebarChat();
+
+      // Execute the onSuccess callback if provided
+      onSuccess?.();
     }
   };
 

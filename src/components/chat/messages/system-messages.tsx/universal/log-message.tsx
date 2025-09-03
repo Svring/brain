@@ -1,17 +1,12 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React from "react";
 import { v4 as uuidv4 } from "uuid";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { Button } from "@/components/ui/button";
-import { Bot, Loader2, FileText, Sparkles } from "lucide-react";
-import {
-  useSendMessageMutation,
-  useAppendMessagesMutation,
-} from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { Loader2, FileText } from "lucide-react";
 import { useResourceLogs } from "@/hooks/sealos/resource/use-resource-logs";
 import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
 
@@ -21,41 +16,9 @@ interface ResourceLogProps {
 
 const ResourceLog: React.FC<ResourceLogProps> = ({ target: payload }) => {
   const logsQuery = useResourceLogs(payload);
-  const sendMessageMutation = useSendMessageMutation();
-  const appendMessagesMutation = useAppendMessagesMutation();
 
   const isLoading = logsQuery?.isLoading || false;
   const logsData = logsQuery?.data;
-
-  console.log("logsData", logsData);
-
-  const handleAnalyze = useCallback(() => {
-    if (logsData) {
-      appendMessagesMutation.mutate(
-        [
-          {
-            role: "system",
-            content: `Here are the logs from ${JSON.stringify(
-              payload,
-              null,
-              2
-            )}:
-            ${JSON.stringify(logsData, null, 2)}`,
-          },
-        ],
-        {
-          onSuccess: () => {
-            sendMessageMutation.mutate([
-              {
-                role: "user",
-                content: `Analyze the logs and tell me what you found.`,
-              },
-            ]);
-          },
-        }
-      );
-    }
-  }, [logsData, appendMessagesMutation, sendMessageMutation, payload]);
 
   const hasLogs = logsData && Object.keys(logsData).length > 0;
 
@@ -78,18 +41,6 @@ const ResourceLog: React.FC<ResourceLogProps> = ({ target: payload }) => {
         icon: FileText,
         name: "Resource Logs",
       }}
-      headerSlot={
-        <Button
-          onClick={handleAnalyze}
-          size="sm"
-          variant="outline"
-          disabled={isLoading || !hasLogs}
-          className="flex items-center gap-2 border border-border-primary brightness-150"
-        >
-          <Sparkles className="w-3 h-3 text-theme-blue" />
-          Analyze
-        </Button>
-      }
     >
       <div className="relative bg-background-secondary rounded-xl p-2">
         {isLoading ? (
