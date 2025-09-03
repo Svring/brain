@@ -7,10 +7,10 @@ export function useLanggraphAgent(stage: "propose_project" | "manage_project") {
   const agent = useCoAgent<BrainState>({
     name: "orca",
     initialState: {
-      base_url: auth?.regionUrl ?? "http://localhost:8000",
-      api_key: auth?.appToken ?? "orca",
-      model_name: "orca-3-70b-instruct",
-      project_context: {},
+      // base_url: auth?.regionUrl ?? "http://localhost:8000",
+      // api_key: auth?.appToken ?? "orca",
+      // model_name: "orca-3-70b-instruct",
+      // project_context: {},
       stage: stage,
     },
   });

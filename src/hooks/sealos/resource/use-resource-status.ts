@@ -44,4 +44,12 @@ export const useResourceStatus = (
     const query = useQuery(launchpad.getLaunchpad.queryOptions(target));
     return createReturn(query.data, query);
   }
+
+  // Fallback case - return a default object to prevent undefined destructuring
+  return {
+    resource: undefined,
+    status: undefined,
+    isLoading: false,
+    error: new Error(`Unsupported target type: ${(target as any).type}`),
+  };
 };

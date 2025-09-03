@@ -1,8 +1,11 @@
+"use server";
+
 import { Client, ThreadState } from "@langchain/langgraph-sdk";
 import { createHash } from "crypto"; // Import the crypto module
 
 const createClient = () => {
   const apiUrl = process.env["LANGGRAPH_DEPLOYMENT_URL"];
+  console.log("apiUrl", apiUrl);
   return new Client({
     apiUrl,
   });

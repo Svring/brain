@@ -29,7 +29,7 @@ export default function NodeMonitor({ target }: NodeMonitorProps) {
   const { color, latestData, monitorData } = useResourceMetricsStatus({
     target,
   });
-  const { resource } = useResourceStatus(target);
+  // const { resource } = useResourceStatus(target);
   const { shouldCreateChatSession } = useSelectedResource(target);
 
   // console.log("resource", resource);

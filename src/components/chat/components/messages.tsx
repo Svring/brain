@@ -44,12 +44,13 @@ const SystemMessageRenderer = memo(function SystemMessageRenderer({
 
   const componentFunction = useMemo(() => {
     return type
-      ? (get(SystemMessageType, type) as React.ComponentType | undefined)
+      ? (get(SystemMessageType, type) as Function | undefined)
       : undefined;
   }, [type]);
 
   if (componentFunction) {
-    return React.createElement(componentFunction, { target, payload } as any);
+    // Call the function with target and payload as separate arguments
+    return componentFunction(target, payload);
   }
   return null;
 });

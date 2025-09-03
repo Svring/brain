@@ -79,11 +79,12 @@ const extractPodNames = (resource: any, resourceType: string): string[] => {
 export const useResourceMetricsStatus = ({
   target,
 }: UseResourceMetricsStatusProps): MetricsStatusResult => {
-  const sealosContext = useSealosContext();
   const { devbox, cluster, launchpad } = useTRPCClients();
 
   // Get the resource using useResourceStatus
   const { resource, isLoading: isResourceLoading } = useResourceStatus(target);
+
+  console.log("resource", resource);
 
   // Extract all pod names from the resource
   const podNames = useMemo(() => {
@@ -95,10 +96,12 @@ export const useResourceMetricsStatus = ({
   const { data: clusterMonitorData } = useQuery({
     ...cluster.getClusterCombinedMonitorData.queryOptions({
       dbName: target.name || "",
-      dbType: (resource as ClusterObject)?.type,
+      dbType: (resource as ClusterObject)?.type || "",
     }),
     enabled:
-      !isResourceLoading && target.resourceType.toLowerCase() === "cluster",
+      !isResourceLoading &&
+      target.resourceType.toLowerCase() === "cluster" &&
+      !!(resource as ClusterObject)?.type,
   });
 
   // For devbox and launchpad, we'll use a single query approach to avoid hooks violations

@@ -19,6 +19,8 @@ export const MonitorMessage: React.FC<MonitorMessageProps> = ({ target }) => {
     target,
   });
 
+  console.log("monitorData", monitorData);
+
   const { appendSystemMessage } = useAppendSystemMessageMutation();
 
   const handleUpdateResource = () => {
