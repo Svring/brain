@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Lora } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import type React from "react";
 import Login from "@/components/auth/login";
@@ -9,7 +8,7 @@ import AppSidebar from "@/components/sidebar/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ChatProvider } from "@/contexts/chat/chat-context";
 import { ProjectProvider } from "@/contexts/project/project-context";
-import { LanggraphProvider } from "@/contexts/langgraph/langgraph-context";
+import { LanggraphConfigWrapper } from "@/contexts/langgraph/langgraph-context";
 import { OrchestratorProvider } from "@/contexts/orchestrator/orchestrator-context";
 import { ReactScan } from "@/components/provider/react-scan-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -70,7 +69,7 @@ export default async function RootLayout({
             <QueryProvider>
               <ChatProvider>
                 <CopilotProvider>
-                  <LanggraphProvider>
+                  <LanggraphConfigWrapper>
                     <ProjectProvider>
                       <OrchestratorProvider>
                         <SidebarProvider defaultOpen={false}>
@@ -79,7 +78,7 @@ export default async function RootLayout({
                         </SidebarProvider>
                       </OrchestratorProvider>
                     </ProjectProvider>
-                  </LanggraphProvider>
+                  </LanggraphConfigWrapper>
                 </CopilotProvider>
               </ChatProvider>
             </QueryProvider>

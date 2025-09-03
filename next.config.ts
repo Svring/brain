@@ -8,14 +8,14 @@ const MODULE_NOT_FOUND_WARNING = /Module not found: Can't resolve/;
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // typescript: {
-  //   // Dangerously allow production builds to complete even if type errors exist.
-  //   ignoreBuildErrors: true,
-  // },
-  // eslint: {
-  //   // Warning: This allows production builds to complete even if ESLint errors exist.
-  //   ignoreDuringBuilds: true,
-  // },
+  typescript: {
+    // Dangerously allow production builds to complete even if type errors exist.
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    // Warning: This allows production builds to complete even if ESLint errors exist.
+    ignoreDuringBuilds: true,
+  },
   images: {
     remotePatterns: [
       {

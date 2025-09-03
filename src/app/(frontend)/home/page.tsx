@@ -30,6 +30,8 @@ export default function HomePage() {
     setStage("propose_project");
   });
 
+  // console.log("projects", projects);
+
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden">
       <CreateProjectDialog />
@@ -101,7 +103,7 @@ export default function HomePage() {
         </motion.div>
 
         {/* Projects section - hidden when messages appear */}
-        {!hasMessages && (
+        {!hasMessages && projects && projects.length > 0 && (
           <div className="flex-shrink-0">
             <RecentProjects
               projects={projects}

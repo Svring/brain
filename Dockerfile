@@ -1,3 +1,15 @@
+# Build for cloud: docker build --platform linux/amd64 -t orca-app .
+# Build for AMD64
+# docker build --platform linux/amd64 -t orca-app .
+
+# # Tag for your repository
+# docker tag orca-app puddlecat/orca-app:latest
+
+# # Login to Docker Hub
+# docker login
+
+# # Push to Docker Hub
+# docker push puddlecat/orca-app:latest
 # Stage 1: Build the Next.js app
 FROM node:22-alpine AS builder
 WORKDIR /app
@@ -10,7 +22,7 @@ RUN pnpm install --frozen-lockfile
 # Copy the rest of the project files
 COPY . .
 # Build the Next.js app
-RUN pnpm run build
+RUN pnpm build
 
 # Stage 2: Run the Next.js app
 FROM node:22-alpine

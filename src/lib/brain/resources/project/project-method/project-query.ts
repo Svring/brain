@@ -10,7 +10,10 @@ import { getProjectObject } from "./project-bridge";
 import { runParallelAction } from "next-server-actions-parallel";
 import { getProjectRelatedResources } from "./project-relevance";
 import { flattenListAllResourcesResponse } from "@/lib/k8s/k8s-method/k8s-utils";
-import { convertInstanceListToProjectList } from "./project-utils";
+import {
+  convertInstanceListToProjectList,
+  filterUnwantedInstances,
+} from "./project-utils";
 
 export const listProjects = async (context: K8sApiContext) => {
   const target = CustomResourceTargetSchema.parse(
@@ -20,7 +23,12 @@ export const listProjects = async (context: K8sApiContext) => {
   const instanceResourceList = await runParallelAction(
     listCustomResources(context, target)
   );
-  return convertInstanceListToProjectList(instanceResourceList);
+
+  // Filter out unwanted instances before converting to project list
+  const filteredInstanceResourceList =
+    filterUnwantedInstances(instanceResourceList);
+
+  return convertInstanceListToProjectList(filteredInstanceResourceList);
 };
 
 export const getProject = async (context: K8sApiContext, name: string) => {

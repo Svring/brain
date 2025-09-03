@@ -76,6 +76,38 @@ export function transformProjectResourcesToItems(
 }
 
 /**
+ * Filter out instance resources that have a specific URL trait
+ * @param instanceResourceList - The resource list containing Instance resources
+ * @returns Filtered resource list with unwanted instances removed
+ */
+export function filterUnwantedInstances(instanceResourceList: {
+  items?: K8sResource[];
+}): { items?: K8sResource[] } {
+  if (!instanceResourceList.items || instanceResourceList.items.length === 0) {
+    return instanceResourceList;
+  }
+
+  const filteredItems = instanceResourceList.items.filter((instance) => {
+    try {
+      // Check if the instance has the unwanted URL trait
+      const spec = instance.spec as any;
+      if (spec?.url === "https://github.com/nightwhite/own-sealos-templates") {
+        return false; // Filter out this instance
+      }
+      return true; // Keep other instances
+    } catch (error) {
+      console.warn("Failed to filter instance:", error);
+      return true; // Keep instance if filtering fails
+    }
+  });
+
+  return {
+    ...instanceResourceList,
+    items: filteredItems,
+  };
+}
+
+/**
  * Convert instanceResourceList to simplified project list
  * @param instanceResourceList - The resource list containing Instance resources
  * @returns Array of simplified project objects
