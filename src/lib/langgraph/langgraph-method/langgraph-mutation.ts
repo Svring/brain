@@ -10,6 +10,7 @@ import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 // ============================================================================
 // MUTATION HOOKS
@@ -18,32 +19,26 @@ import {
 /**
  * Hook for creating a new chat session with copilot context management
  */
-export const useCreateNewChatSessionMutation = () => {
-  const queryClient = useQueryClient();
-  const { selectThread } = useChatActions();
+export const useCreateNewChatSessionMutation = ({
+  kubeconfig,
+  projectName,
+  resourceTarget,
+}: {
+  kubeconfig: string;
+  projectName?: string;
+  resourceTarget?: ResourceTarget;
+}) => {
   const { reset } = useCopilotChatHeadless_c();
-
   return useMutation({
-    mutationFn: async ({
-      kubeconfig,
-      projectName,
-      resourceName,
-    }: {
-      kubeconfig: string;
-      projectName?: string;
-      resourceName?: string;
-    }) => {
-      return await createThread({ kubeconfig, projectName, resourceName });
-    },
-    onSuccess: (thread) => {
-      // Set the new thread ID in chat context
-      selectThread(thread.thread_id);
-      // Reset the chat headless state
-      reset();
-      // Invalidate and refetch threads list after creating a new thread
-      queryClient.invalidateQueries({
-        queryKey: ["langgraph", "threads", "list"],
+    mutationFn: async () => {
+      return await createThread({
+        kubeconfig,
+        projectName,
+        resourceTarget,
       });
+    },
+    onSuccess: (_) => {
+      reset();
     },
     onError: (error) => {
       console.error("Failed to create chat session:", error);

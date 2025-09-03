@@ -8,6 +8,7 @@ import { useAuthState } from "@/contexts/auth/auth-context";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useChatActions } from "@/contexts/chat/chat-context";
 import Image from "next/image";
+import { useChatState } from "@/contexts/chat/chat-context";
 
 interface AiChatHeaderProps {
   title?: string;
@@ -22,19 +23,14 @@ export function AiChatHeader({
 }: AiChatHeaderProps) {
   const { auth } = useAuthState();
   const { selectedProject, selectedResource } = useProjectState();
+  const { selectedThreadId } = useChatState();
   const { closeSidebarChat } = useChatActions();
   const { mutate: createNewChatSession, isPending } =
-    useCreateNewChatSessionMutation();
-
-  // const { data: threads } = useQuery(
-  //   searchThreadsOptions({
-  //     resourceName: selectedResource?.name,
-  //     projectName: selectedProject,
-  //     kubeconfig: auth?.kubeconfig,
-  //   })
-  // );
-
-  // console.log("threads of", selectedResource?.name, threads);
+    useCreateNewChatSessionMutation({
+      kubeconfig: auth!.kubeconfig,
+      projectName: selectedProject ?? undefined,
+      resourceTarget: selectedResource ?? undefined,
+    });
 
   const getIconUrl = () => {
     if (!selectedResource) return "https://sealos.run/logo.svg";
@@ -67,13 +63,7 @@ export function AiChatHeader({
           </div>
           <div className="flex items-center gap-2">
             <Button
-              onClick={() =>
-                createNewChatSession({
-                  kubeconfig: auth!.kubeconfig,
-                  projectName: selectedProject ?? undefined,
-                  resourceName: selectedResource?.name ?? undefined,
-                })
-              }
+              onClick={() => createNewChatSession()}
               disabled={isPending}
               size="icon"
               variant="ghost"
@@ -95,6 +85,11 @@ export function AiChatHeader({
                   priority
                 />
                 <span>{selectedResource.name}</span>
+              </div>
+            )}
+            {selectedThreadId && (
+              <div className="flex items-center gap-2 text text-muted-foreground">
+                <span>{selectedThreadId.slice(0, 8)}</span>
               </div>
             )}
           </div>

@@ -2,10 +2,15 @@
 
 import { Client, ThreadState } from "@langchain/langgraph-sdk";
 import { createHash } from "crypto"; // Import the crypto module
+import {
+  CustomResourceTarget,
+  BuiltinResourceTarget,
+  ResourceTarget,
+} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 const createClient = () => {
   const apiUrl = process.env["LANGGRAPH_DEPLOYMENT_URL"];
-  console.log("apiUrl", apiUrl);
+  // console.log("apiUrl", apiUrl);
   return new Client({
     apiUrl,
   });
@@ -14,11 +19,11 @@ const createClient = () => {
 export const createThread = async ({
   kubeconfig,
   projectName,
-  resourceName,
+  resourceTarget,
 }: {
   kubeconfig: string;
   projectName?: string;
-  resourceName?: string;
+  resourceTarget?: ResourceTarget;
 }) => {
   const client = createClient();
 
@@ -33,8 +38,8 @@ export const createThread = async ({
   if (projectName) {
     metadata.projectName = projectName;
   }
-  if (resourceName) {
-    metadata.resourceName = resourceName;
+  if (resourceTarget) {
+    metadata.resourceTarget = JSON.stringify(resourceTarget);
   }
 
   return await client.threads.create({
@@ -66,6 +71,16 @@ export const searchThreads = async (metadata: Record<string, any>) => {
     delete searchMetadata.kubeconfig;
   }
 
+  // Handle resourceTarget if present - stringify it for search
+  if (
+    searchMetadata.resourceTarget &&
+    typeof searchMetadata.resourceTarget === "object"
+  ) {
+    searchMetadata.resourceTarget = JSON.stringify(
+      searchMetadata.resourceTarget
+    );
+  }
+
   return await client.threads
     .search({
       metadata: searchMetadata,
@@ -73,7 +88,7 @@ export const searchThreads = async (metadata: Record<string, any>) => {
       sortOrder: "desc",
     })
     .then((res) => {
-      console.log("res", res);
+      // console.log("res", res);
       return res.filter((obj) => obj.values);
     });
 };

@@ -33,7 +33,7 @@ export const LaunchpadMessageDetails: React.FC<
     ? LaunchpadObjectSchema.parse(resource)
     : null;
 
-  console.log("launchpadObject", launchpadObject);
+  // console.log("launchpadObject", launchpadObject);
 
   // Keep the original env for display, format only when editing
   const handleSubmit = async (type: string, data?: any) => {

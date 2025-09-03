@@ -1,9 +1,6 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
-import {
-  MessageCirclePlus,
-  LayoutGrid,
-} from "lucide-react";
+import { MessageCirclePlus, LayoutGrid } from "lucide-react";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -95,13 +92,13 @@ export const MainSection: React.FC<MainSectionProps> = () => {
   const router = useRouter();
   const { data: projects } = useQuery(listProjectsOptions(createK8sContext()));
   const { auth } = useAuthState();
-  const { mutate: createNewChatSession } = useCreateNewChatSessionMutation();
+  const { mutate: createNewChatSession } = useCreateNewChatSessionMutation({
+    kubeconfig: auth!.kubeconfig,
+  });
 
   const handleNavigation = async (path: string) => {
     if (path === "/home") {
-      createNewChatSession({
-        kubeconfig: auth!.kubeconfig,
-      });
+      createNewChatSession();
     }
     router.push(path);
   };
