@@ -2,7 +2,7 @@ import { Client, ThreadState } from "@langchain/langgraph-sdk";
 import { createHash } from "crypto"; // Import the crypto module
 
 const createClient = () => {
-  const apiUrl = process.env["NEXT_PUBLIC_LANGGRAPH_DEPLOYMENT_URL"];
+  const apiUrl = process.env["LANGGRAPH_DEPLOYMENT_URL"];
   return new Client({
     apiUrl,
   });

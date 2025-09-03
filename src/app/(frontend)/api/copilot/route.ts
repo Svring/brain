@@ -24,7 +24,7 @@ if (!g.__copilot_runtime) {
   g.__copilot_runtime = new CopilotRuntime({
     agents: {
       orca: new LangGraphAgent({
-        deploymentUrl: process.env.NEXT_PUBLIC_LANGGRAPH_DEPLOYMENT_URL || "",
+        deploymentUrl: process.env.LANGGRAPH_DEPLOYMENT_URL || "",
         graphId: "orca",
         langsmithApiKey: process.env.LANGSMITH_API_KEY || "",
       }),

@@ -29,8 +29,14 @@ export const LanggraphConfigWrapper = ({
 }: {
   children: ReactNode;
 }) => {
-  const aiProxyContext = useAiProxyContext();
   const isProduction = process.env.NEXT_PUBLIC_MODE === "production";
+
+  // In development mode, skip configuration and directly render children
+  if (!isProduction) {
+    return <LanggraphProvider config={{}}>{children}</LanggraphProvider>;
+  }
+
+  const aiProxyContext = useAiProxyContext();
   const { data: aiProxyTokens, isLoading } = useQuery(
     listAiProxyTokensOptions(aiProxyContext)
   );

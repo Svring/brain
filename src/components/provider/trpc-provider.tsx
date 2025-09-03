@@ -137,9 +137,6 @@ export default function TRPCProvider({
         httpBatchLink({
           url: "/api/trpc/langgraph",
           maxURLLength: 6000,
-          headers: () => ({
-            apiUrl: process.env.NEXT_PUBLIC_LANGGRAPH_DEPLOYMENT_URL,
-          }),
         }),
       ],
     })
