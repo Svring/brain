@@ -27,6 +27,8 @@ export function RenderTextMessage({
     return null;
   }
 
+  // console.log("message.content", message.content);
+
   return (
     <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
       <div

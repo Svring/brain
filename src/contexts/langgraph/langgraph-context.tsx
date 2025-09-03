@@ -47,7 +47,7 @@ export const LanggraphProvider = ({ children }: { children: ReactNode }) => {
       const baseUrl = `https://aiproxy.${aiProxyContext.baseUrl}/v1`;
       const modelName = aiProxyContext.baseUrl.endsWith("io")
         ? "gpt-4.1"
-        : "glm-4.5";
+        : "qwen3-235b-a22b";
       send({
         type: "SET_CONFIG",
         api_key: apiKey,

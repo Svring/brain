@@ -28,10 +28,10 @@ const SystemMessageRenderer = memo(function SystemMessageRenderer({
   const { type, target, payload } = useMemo(() => {
     try {
       const parsed = JSON.parse(content);
-      return { 
-        type: parsed.type, 
-        target: parsed.target, 
-        payload: parsed.payload 
+      return {
+        type: parsed.type,
+        target: parsed.target,
+        payload: parsed.payload,
       } as {
         type?: string;
         target?: unknown;
@@ -43,11 +43,13 @@ const SystemMessageRenderer = memo(function SystemMessageRenderer({
   }, [content]);
 
   const componentFunction = useMemo(() => {
-    return type ? (get(SystemMessageType, type) as React.ComponentType | undefined) : undefined;
+    return type
+      ? (get(SystemMessageType, type) as React.ComponentType | undefined)
+      : undefined;
   }, [type]);
 
-  if (typeof componentFunction === "function") {
-    return componentFunction(target, payload);
+  if (componentFunction) {
+    return React.createElement(componentFunction, { target, payload } as any);
   }
   return null;
 });
