@@ -23,8 +23,8 @@ export const DevboxCreateForm = ({
 }: DevboxCreateFormProps) => {
   const { form, portsFieldArray } = useDevboxCreateForm(defaultValues);
 
-  const handleSubmit = (data: DevboxCreateFormData) => {
-    onSubmit(data);
+  const handleSubmit = (data: any) => {
+    onSubmit(data as DevboxCreateFormData);
   };
 
   return (
@@ -37,7 +37,7 @@ export const DevboxCreateForm = ({
             <Label htmlFor="runtime">Runtime</Label>
             <Input
               id="runtime"
-              {...form.register("runtime.runtime")}
+              {...form.register("runtime")}
               placeholder="e.g., ubuntu-22.04"
             />
           </div>

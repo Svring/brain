@@ -7,9 +7,7 @@ import { DevboxPortSchema } from "./components/devbox-port-schema";
 // Main devbox create form schema
 export const devboxCreateFormSchema = z.object({
   name: NameSchema.default("my-devbox"),
-  runtime: DevboxRuntimeSchema.default({
-    runtime: "ubuntu-22.04",
-  }),
+  runtime: DevboxRuntimeSchema.default("Python"),
   resource: DevboxResourceSchema.default({
     cpu: 2,
     memory: 2,

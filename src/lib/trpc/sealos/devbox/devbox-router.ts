@@ -6,6 +6,8 @@ import {
   DevboxListResponseSchema,
   DevboxCreateRequestSchema,
   DevboxCreateResponseSchema,
+  DevboxUpdateRequestSchema,
+  DevboxUpdateResponseSchema,
   DevboxDeleteResponseSchema,
   DevboxLifecycleRequestSchema,
   DevboxLifecycleResponseSchema,
@@ -28,6 +30,7 @@ import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/re
 import {
   getDevboxList,
   createDevbox,
+  updateDevbox,
   manageDevboxLifecycle,
   deleteDevbox,
   releaseDevbox,
@@ -93,6 +96,13 @@ export const devboxRouter = t.router({
     .output(DevboxCreateResponseSchema)
     .mutation(async ({ ctx, input }) => {
       return await createDevbox(input, ctx);
+    }),
+
+  updateDevbox: t.procedure
+    .input(DevboxUpdateRequestSchema)
+    .output(DevboxUpdateResponseSchema)
+    .mutation(async ({ ctx, input }) => {
+      return await updateDevbox(input, ctx);
     }),
 
   manageDevboxLifecycle: t.procedure

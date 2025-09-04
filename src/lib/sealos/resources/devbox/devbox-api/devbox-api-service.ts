@@ -5,6 +5,8 @@ import type {
   DevboxListResponse,
   DevboxCreateRequest,
   DevboxCreateResponse,
+  DevboxUpdateRequest,
+  DevboxUpdateResponse,
   DevboxDeleteResponse,
   DevboxLifecycleRequest,
   DevboxLifecycleResponse,
@@ -26,6 +28,7 @@ import type {
 import {
   DevboxListResponseSchema,
   DevboxCreateResponseSchema,
+  DevboxUpdateResponseSchema,
   DevboxDeleteResponseSchema,
   DevboxLifecycleResponseSchema,
   DevboxReleaseResponseSchema,
@@ -101,8 +104,17 @@ export async function createDevbox(
   context: DevboxApiContext
 ): Promise<DevboxCreateResponse> {
   const api = createDevboxAxios(context);
-  const response = await api.post("/create", request);
+  const response = await api.post("/", request);
   return DevboxCreateResponseSchema.parse(response.data);
+}
+
+export async function updateDevbox(
+  request: DevboxUpdateRequest,
+  context: DevboxApiContext
+): Promise<DevboxUpdateResponse> {
+  const api = createDevboxAxios(context);
+  const response = await api.put("/", request);
+  return DevboxUpdateResponseSchema.parse(response.data);
 }
 
 export async function manageDevboxLifecycle(

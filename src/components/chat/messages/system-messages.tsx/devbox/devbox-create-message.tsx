@@ -48,7 +48,6 @@ export const DevboxCreateMessage: React.FC<DevboxCreateMessageProps> = ({
   const handleSubmit = async (data: DevboxCreateFormData) => {
     try {
       console.log("data", data);
-      // TODO: Implement devbox creation logic
       // await createDevboxMutation.mutateAsync(data);
     } catch (error) {
       console.error("Error creating devbox:", error);

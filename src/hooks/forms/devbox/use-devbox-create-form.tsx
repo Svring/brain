@@ -15,12 +15,10 @@ export const useDevboxCreateForm = (
     resolver: zodResolver(devboxCreateFormSchema),
     defaultValues: {
       name: "my-devbox",
-      runtime: {
-        runtime: "ubuntu-22.04",
-      },
+      runtime: "Python",
       resource: {
         cpu: 2,
-        memory: 4,
+        memory: 2,
       },
       ports: [
         {

@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { devboxCreateFormSchema } from "@/schemas/forms/devbox/devbox-create-form-schema";
+import { devboxUpdateFormSchema } from "@/schemas/forms/devbox/devbox-update-form-schema";
 
 // Runtime options schema
 export const RuntimeNameSchema = z.enum([
@@ -14,13 +16,11 @@ export const RuntimeNameSchema = z.enum([
   "PHP",
 ]);
 
-// Create DevBox schemas
-export const DevboxCreateRequestSchema = z.object({
-  name: z.string().min(1, "DevBox name is required"),
-  runtimeName: RuntimeNameSchema,
-  cpu: z.number().min(0).optional().default(2000),
-  memory: z.number().min(0).optional().default(4096),
-});
+// Create DevBox schemas - using the new form schema
+export const DevboxCreateRequestSchema = devboxCreateFormSchema;
+
+// Update DevBox schemas - using the new update form schema
+export const DevboxUpdateRequestSchema = devboxUpdateFormSchema;
 
 export const DevboxCreateResponseSchema = z.object({
   data: z.object({
@@ -31,6 +31,10 @@ export const DevboxCreateResponseSchema = z.object({
     workingDir: z.string(),
     domain: z.string(),
   }),
+});
+
+export const DevboxUpdateResponseSchema = z.object({
+  data: z.string().default("success update devbox"),
 });
 
 // Lifecycle management schemas
@@ -69,6 +73,8 @@ export const DevboxErrorResponseSchema = z.object({
 // Type exports
 export type DevboxCreateRequest = z.infer<typeof DevboxCreateRequestSchema>;
 export type DevboxCreateResponse = z.infer<typeof DevboxCreateResponseSchema>;
+export type DevboxUpdateRequest = z.infer<typeof DevboxUpdateRequestSchema>;
+export type DevboxUpdateResponse = z.infer<typeof DevboxUpdateResponseSchema>;
 export type DevboxLifecycleRequest = z.infer<
   typeof DevboxLifecycleRequestSchema
 >;

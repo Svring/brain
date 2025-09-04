@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const DevboxPortSchema = z.object({
   port: z.number().min(1).max(65535),
-  protocol: z.enum(["HTTP", "GRPC", "WS"]),
+  protocol: z.enum(["HTTP", "GRPC", "WS"]).optional(),
   openPublicDomain: z.boolean(),
   customDomain: z.string().optional(),
 });

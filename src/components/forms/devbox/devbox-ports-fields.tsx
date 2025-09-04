@@ -46,12 +46,11 @@ export const DevboxPortsFields = ({ fieldArray }: DevboxPortsFieldsProps) => {
           const portValue = portData?.port;
           const openPublicDomain = portData?.openPublicDomain;
           const protocol = portData?.protocol;
-          const customDomain = portData?.customDomain;
 
           return (
             <div key={field.id} className="flex items-center gap-3 rounded-lg">
               <div className="flex-1 flex items-center gap-3">
-                <div className="w-[15%]">
+                <div className="w-[20%]">
                   <Input
                     {...form.register(`ports.${index}.port` as const, {
                       valueAsNumber: true,
@@ -62,27 +61,7 @@ export const DevboxPortsFields = ({ fieldArray }: DevboxPortsFieldsProps) => {
                     defaultValue={portValue || 8080}
                   />
                 </div>
-                <div className="w-[20%]">
-                  <Select
-                    value={protocol || "HTTP"}
-                    onValueChange={(value) => {
-                      form.setValue(
-                        `ports.${index}.protocol` as const,
-                        value as "HTTP" | "GRPC" | "WS"
-                      );
-                    }}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="HTTP">HTTP</SelectItem>
-                      <SelectItem value="GRPC">GRPC</SelectItem>
-                      <SelectItem value="WS">WS</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="w-[20%] flex items-center gap-2">
+                <div className="flex items-center gap-2">
                   <Checkbox
                     checked={openPublicDomain || false}
                     onCheckedChange={(checked) => {
@@ -90,20 +69,45 @@ export const DevboxPortsFields = ({ fieldArray }: DevboxPortsFieldsProps) => {
                         `ports.${index}.openPublicDomain` as const,
                         checked === true
                       );
+                      if (checked) {
+                        // Auto-select HTTP when public access is enabled
+                        form.setValue(
+                          `ports.${index}.protocol` as const,
+                          "HTTP"
+                        );
+                      } else {
+                        // Clear protocol when public access is disabled
+                        form.setValue(
+                          `ports.${index}.protocol` as const,
+                          undefined
+                        );
+                      }
                     }}
                   />
-                  <span className="text-sm text-muted-foreground">
-                    Public access
-                  </span>
+                  <span className="text-sm text-muted-foreground">Public</span>
                 </div>
-                <div className="flex-1">
-                  <Input
-                    {...form.register(`ports.${index}.customDomain` as const)}
-                    placeholder="Custom domain (optional)"
-                    className="w-full"
-                    defaultValue={customDomain || ""}
-                  />
-                </div>
+                {openPublicDomain && (
+                  <div className="w-[25%]">
+                    <Select
+                      value={protocol || "HTTP"}
+                      onValueChange={(value) => {
+                        form.setValue(
+                          `ports.${index}.protocol` as const,
+                          value as "HTTP" | "GRPC" | "WS"
+                        );
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="HTTP">HTTP</SelectItem>
+                        <SelectItem value="GRPC">GRPC</SelectItem>
+                        <SelectItem value="WS">WS</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <div className="flex items-center">
                   <Button
                     type="button"
