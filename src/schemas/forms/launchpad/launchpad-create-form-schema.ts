@@ -19,7 +19,7 @@ export const launchpadCreateFormSchema = z.object({
   args: ArgsSchema.default(""),
   resource: ResourceSchema.default({
     replicas: 1,
-    cpu: 0.1,
+    cpu: 0.5,
     memory: 0.5,
   }),
   ports: z.array(PortSchema).default([

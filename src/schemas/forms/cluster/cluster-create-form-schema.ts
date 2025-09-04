@@ -16,7 +16,7 @@ export const clusterCreateFormSchema = z.object({
   resource: ClusterResourceSchema.default({
     replicas: 1,
     cpu: 2,
-    memory: 4,
+    memory: 2,
     storage: 20,
   }),
 });

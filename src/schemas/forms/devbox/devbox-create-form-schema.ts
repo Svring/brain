@@ -12,7 +12,7 @@ export const devboxCreateFormSchema = z.object({
   }),
   resource: DevboxResourceSchema.default({
     cpu: 2,
-    memory: 4,
+    memory: 2,
   }),
   ports: z.array(PortSchema).default([
     {
