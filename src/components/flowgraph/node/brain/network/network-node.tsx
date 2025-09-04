@@ -11,10 +11,18 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import {
+  useAppendSystemMessageMutation,
+  useSendMessageMutation,
+} from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useCopy } from "@/hooks/use-copy";
 import { useProjectActions } from "@/contexts/project/project-context";
+import { useContainerStatus } from "@/hooks/sealos/network/use-container-status";
+import {
+  extractContainerPorts,
+  ContainerPortsResult,
+} from "@/lib/sealos/services/ports/ports-utils";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
@@ -24,14 +32,92 @@ type NetworkNodeProps = {
   data: { target: CustomResourceTarget | BuiltinResourceTarget };
 };
 
+const analyzeNetworkPrompt = `
+<Identity>  
+
+You are Sealos Brain, an agent on the Sealos platform, assisting users in managing cloud computing resources within the Sealos ecosystem. One of your responsibilities is analyzing **network connectivity reports** to help users understand the accessibility of their resources and identify any connectivity issues.
+
+Network Connectivity Report
+Each report contains:
+
+* **Container Status**: Whether the container’s internal ports are reachable within the cluster.
+* **Network Status**: Whether the public address (via ingress/service) is available from outside the cluster.
+* **Original Resource Metadata**: Information about the resource (name, image, runtime, exposed ports, etc.).
+
+Every resource has two layers of network access:
+
+1. **Container Port (private access)** – Determined by the container image. Only when the image listens on a port can the container port be accessed.
+2. **Public Ingress Service (public access)** – Configured by the user to expose one of the container ports. Most issues occur when the wrong port is selected.
+
+</Identity>  
+
+<Instruction>  
+
+You are in **NetworkAnalysisMode**. Respond only to requests relevant to this mode, using the given report. <NetworkAnalysisModeInstruction>
+
+# Network Analysis Mode
+
+Your role is to analyze the given network status data and provide a clear assessment of connectivity issues.
+
+Rules for Analysis
+
+1. **Normal Condition**
+
+   * Both container and public access are reachable/ready.
+   * Action: Report that network connectivity is normal with a concise statement.
+
+2. **Case 1 – Container port unreachable, public access unavailable**
+
+   * Meaning: No working service is listening on the exposed port.
+   * Action: Advise the user to check what port their service is actually listening on and adjust the public service configuration accordingly.
+
+3. **Case 2 – Container port reachable, but public access unavailable**
+
+   * Meaning: The service is running internally, but public ingress is misconfigured.
+   * Action: Suggest checking ingress configuration, firewall rules, or load balancer settings.
+
+4. **Error Condition**
+
+   * If container access is failing, highlight internal connectivity issues that need immediate attention.
+
+Guidelines
+
+* Provide concise responses when network connectivity is normal.
+* Explicitly mention which layer(s) failed if there is an issue.
+* Identify patterns or recurring network problems if present.
+* Always explain how you interpreted the report (e.g., “container port 8080 not reachable, public URL returns 503”).
+* Do not restate the raw JSON report back to the user, only summarize findings and recommendations.
+* If multiple problems exist, report them all.
+
+</Instruction>  
+`;
+
 export default function NetworkNode({ data }: NetworkNodeProps) {
   const { target } = data;
   const nodeId = `network-${target.name || target.resourceType}`;
   const { resource, isLoading, error } = useResourceStatus(target);
   const { readyStatus, getBackgroundColor } = useNetworkStatus(target);
   const { appendSystemMessage } = useAppendSystemMessageMutation();
+  const { mutate: sendMessage } = useSendMessageMutation();
   const { selectResource } = useProjectActions();
   const { copyToClipboard, isCopied } = useCopy();
+
+  // Get container ports data for network diagnosis
+  const { resource: containerPortsData, originalResource: originalResource } =
+    useResourceStatus<ContainerPortsResult>(target, (resource) =>
+      extractContainerPorts(resource?.ports)
+    );
+
+  // Use container status hook for network diagnosis
+  const {
+    data: containerStatus,
+    isLoading: isContainerLoading,
+    error: containerError,
+  } = useContainerStatus(
+    containerPortsData?.ports || [],
+    containerPortsData?.host || "",
+    2000 // 2 second timeout
+  );
 
   // Extract ports from resource
   const ports = (resource as any)?.ports;
@@ -80,6 +166,24 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
     if (notReadyCount > 0) {
       selectResource(target);
       appendSystemMessage({ type: "universal.diagnoseNetwork", target });
+
+      // Prepare network status data for analysis
+      const networkStatusData = {
+        containerStatus,
+        networkStatus: readyStatus,
+        containerPortsData,
+        originalResource,
+        isContainerLoading,
+        containerError,
+        ports: originalResource?.ports,
+      };
+
+      // Send network status data for analysis after system message is appended
+      sendMessage({
+        role: "system",
+        content:
+          analyzeNetworkPrompt + "\n\n" + JSON.stringify(networkStatusData),
+      });
     }
   };
 

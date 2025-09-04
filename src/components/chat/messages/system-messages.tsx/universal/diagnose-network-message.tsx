@@ -23,6 +23,13 @@ interface DiagnoseNetworkMessageProps {
   target: ResourceTarget;
 }
 
+interface CombinedStatusItem {
+  number: number;
+  containerAccess: boolean;
+  publicAccessStatus: boolean;
+  publicAddress: string;
+}
+
 export const DiagnoseNetworkMessage: React.FC<DiagnoseNetworkMessageProps> = ({
   target,
 }) => {
@@ -30,7 +37,7 @@ export const DiagnoseNetworkMessage: React.FC<DiagnoseNetworkMessageProps> = ({
     useResourceStatus<ContainerPortsResult>(target, (resource) =>
       extractContainerPorts(resource?.ports)
     );
-  const { readyStatus } = useNetworkStatus(target);
+  const { readyStatus: publicAddressStatus } = useNetworkStatus(target);
 
   // Use container status hook
   const {
@@ -44,10 +51,41 @@ export const DiagnoseNetworkMessage: React.FC<DiagnoseNetworkMessageProps> = ({
   );
 
   // Treat readyStatus as any to avoid type errors
-  const networkStatus = readyStatus as any;
+  const networkStatus = publicAddressStatus as any;
+
+  // Combine container status and public address status into a single array
+  const combinedStatusData = React.useMemo((): CombinedStatusItem[] => {
+    if (!resource?.ports || !Array.isArray(resource.ports)) {
+      return [];
+    }
+
+    return resource.ports.map((port: any): CombinedStatusItem => {
+      // Get container status for this port
+      const containerPortStatus = containerStatus?.find(
+        (status: any) => status.port === port.number
+      );
+      const containerAccess = containerPortStatus?.reachable ?? false;
+
+      // Get network status for this port
+      const networkPortStatus = networkStatus?.find(
+        (status: any) =>
+          status.url === port.publicAddress ||
+          status.url === port.privateAddress
+      );
+      const publicAccessStatus = networkPortStatus?.ready ?? false;
+
+      return {
+        number: port.number,
+        containerAccess,
+        publicAccessStatus,
+        publicAddress: port.publicAddress || "N/A",
+      };
+    });
+  }, [resource?.ports, containerStatus, networkStatus]);
 
   // console.log("containerPortsData", containerPortsData);
   // console.log("containerStatus", containerStatus);
+  // console.log("combinedStatusData", combinedStatusData);
 
   return (
     <BaseActionMessage
@@ -67,7 +105,7 @@ export const DiagnoseNetworkMessage: React.FC<DiagnoseNetworkMessageProps> = ({
             <div className="text-center py-4 text-theme-red">
               Error checking container status: {containerError.message}
             </div>
-          ) : resource?.ports && resource.ports.length > 0 ? (
+          ) : combinedStatusData.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -77,54 +115,41 @@ export const DiagnoseNetworkMessage: React.FC<DiagnoseNetworkMessageProps> = ({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {resource.ports.map((port: any, index: number) => {
-                  // Get container status for this port
-                  const containerPortStatus = containerStatus?.find(
-                    (status: any) => status.port === port.number
-                  );
-                  const isContainerReachable =
-                    containerPortStatus?.reachable ?? false;
-
-                  // Get network status for this port
-                  const networkPortStatus = networkStatus?.find(
-                    (status: any) =>
-                      status.url === port.publicAddress ||
-                      status.url === port.privateAddress
-                  );
-                  const isNetworkReachable = networkPortStatus?.ready ?? false;
-
-                  return (
+                {combinedStatusData.map(
+                  (statusItem: CombinedStatusItem, index: number) => (
                     <TableRow key={index}>
                       <TableCell className="font-medium">
-                        {port.number}
+                        {statusItem.number}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">
-                          {isContainerReachable ? (
+                          {statusItem.containerAccess ? (
                             <CheckCircle className="h-4 w-4 text-theme-green" />
                           ) : (
                             <HelpCircle className="h-4 w-4 text-theme-yellow" />
                           )}
                           <span className="text-sm">
-                            {isContainerReachable ? "Reachable" : "Unknown"}
+                            {statusItem.containerAccess
+                              ? "Available"
+                              : "Unavailable"}
                           </span>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">
-                          {isNetworkReachable ? (
+                          {statusItem.publicAccessStatus ? (
                             <CheckCircle className="h-4 w-4 text-theme-green" />
                           ) : (
                             <HelpCircle className="h-4 w-4 text-theme-yellow" />
                           )}
                           <span className="text-sm">
-                            {port.publicAddress || "N/A"}
+                            {statusItem.publicAddress}
                           </span>
                         </div>
                       </TableCell>
                     </TableRow>
-                  );
-                })}
+                  )
+                )}
               </TableBody>
             </Table>
           ) : (
