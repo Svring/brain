@@ -17,21 +17,11 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
-import { BuiltinResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import {
-  AITool,
-  AIToolContent,
-  AIToolHeader,
-  AIToolParameters,
-  AIToolResult,
-} from "@/components/shadcn-io/ai/tool";
-import { AIResponse } from "@/components/shadcn-io/ai/response";
 import { jsonSchemaToActionParameters } from "@copilotkit/shared";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import LaunchpadCreateMessage from "@/components/chat/messages/system-messages.tsx/launchpad/launchpad-create-message";
 import { LaunchpadCreateRequestSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
-import { UpdateResourceForm } from "@/components/copilot/sealos/launchpad/update-resource-form";
+import { LaunchpadUpdateForm } from "@/components/forms/launchpad/launchpad-update-form";
 import { UpdateImageForm } from "@/components/copilot/sealos/launchpad/update-image-form";
 import { AddPortsForm } from "@/components/copilot/sealos/launchpad/add-ports-form";
 import { DeletePortsForm } from "@/components/copilot/sealos/launchpad/delete-ports-form";
@@ -42,6 +32,7 @@ import {
 } from "@/lib/k8s/k8s-constant/k8s-constant-resource";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { LaunchpadPortsCreateRequestSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
+import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
 
 export function activateLaunchpadActions(
   sealosContext: SealosApiContext,
@@ -62,6 +53,8 @@ export function activateLaunchpadActions(
 }
 
 function updateLaunchpadResourceAction(context: SealosApiContext) {
+  const updateLaunchpad = useUpdateLaunchpadMutation(context);
+
   useCopilotAction({
     name: "updateLaunchpadResource",
     description:
@@ -96,31 +89,74 @@ function updateLaunchpadResourceAction(context: SealosApiContext) {
       },
     ],
     renderAndWaitForResponse(props) {
-      const { args, respond } = props;
+      const { args, respond, status } = props;
       const { name, cpu, memory, replicas } = args;
 
-      const handleSubmit = (values: {
-        name: string;
-        cpu: number;
-        memory: number;
-        replicas: number;
-      }) => {
-        if (respond) {
-          respond("updated successfully.");
+      const handleSubmit = async (data: LaunchpadUpdateFormData) => {
+        try {
+          // Build the update request with only the provided resource fields
+          const updateRequest = {
+            name: name || "",
+            data: {
+              resource: {
+                ...(cpu !== undefined && { cpu: Number(cpu) }),
+                ...(memory !== undefined && { memory: Number(memory) }),
+                ...(replicas !== undefined && { replicas: Number(replicas) }),
+              },
+            },
+          };
+
+          await updateLaunchpad.mutateAsync(updateRequest);
+
+          if (respond) {
+            respond("Launchpad resources updated successfully.");
+          }
+        } catch (error) {
+          console.error("Failed to update launchpad resources:", error);
+          if (respond) {
+            respond("Failed to update launchpad resources.");
+          }
         }
       };
 
+      // Build default values for the form - only include fields that were provided
+      const defaultValues: Partial<LaunchpadUpdateFormData> = {};
+
+      if (cpu !== undefined || memory !== undefined || replicas !== undefined) {
+        defaultValues.resource = {
+          ...(cpu !== undefined && { cpu: Number(cpu) }),
+          ...(memory !== undefined && { memory: Number(memory) }),
+          ...(replicas !== undefined && { replicas: Number(replicas) }),
+        };
+      }
+
+      // Determine loading state based on status
+      const isLoading = status === "inProgress";
+
+      // Show completion message when status is complete
+      if (status === "complete") {
+        return (
+          <div className="w-full p-4">
+            <div className="flex items-center justify-center p-8">
+              <div className="flex flex-col items-center gap-4">
+                <p className="text-sm text-muted-foreground text-center">
+                  The resource quota has been updated for the launchpad app.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
       return (
-        <UpdateResourceForm
-          initialValues={{
-            name: name || "",
-            cpu: cpu !== undefined ? Number(cpu) : undefined,
-            memory: memory !== undefined ? Number(memory) : undefined,
-            replicas: replicas !== undefined ? Number(replicas) : undefined,
-          }}
-          onSubmit={handleSubmit}
-          context={context}
-        />
+        <div className="w-full p-4">
+          <LaunchpadUpdateForm
+            defaultValues={defaultValues}
+            onSubmit={handleSubmit}
+            isLoading={isLoading}
+            hideDefaultButton={false}
+          />
+        </div>
       );
     },
   });

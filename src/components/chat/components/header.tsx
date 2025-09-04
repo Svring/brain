@@ -24,7 +24,7 @@ export function AiChatHeader({
   const { auth } = useAuthState();
   const { selectedProject, selectedResource } = useProjectState();
   const { selectedThreadId } = useChatState();
-  const { closeSidebarChat } = useChatActions();
+  const { closeSidebarChat, selectThread } = useChatActions();
   const { mutate: createNewChatSession, isPending } =
     useCreateNewChatSessionMutation({
       kubeconfig: auth!.kubeconfig,
@@ -63,7 +63,13 @@ export function AiChatHeader({
           </div>
           <div className="flex items-center gap-2">
             <Button
-              onClick={() => createNewChatSession()}
+              onClick={() =>
+                createNewChatSession(undefined, {
+                  onSuccess: (thread) => {
+                    selectThread(thread.thread_id);
+                  },
+                })
+              }
               disabled={isPending}
               size="icon"
               variant="ghost"

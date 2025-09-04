@@ -14,6 +14,7 @@ import {
 } from "@/components/forms/universal/command-args-fields";
 import { StorageFields } from "../universal/storage-fields";
 import { ConfigMapFields } from "../universal/config-map-fields";
+import { Spinner } from "@/components/ui/spinner";
 
 interface LaunchpadUpdateFormProps {
   defaultValues?: Partial<LaunchpadUpdateFormData>;
@@ -28,7 +29,13 @@ export const LaunchpadUpdateForm = ({
   isLoading = false,
   hideDefaultButton = false,
 }: LaunchpadUpdateFormProps) => {
-  const { form, portsFieldArray, envFieldArray, storageFieldArray, configMapFieldArray } = useLaunchpadUpdateForm(defaultValues);
+  const {
+    form,
+    portsFieldArray,
+    envFieldArray,
+    storageFieldArray,
+    configMapFieldArray,
+  } = useLaunchpadUpdateForm(defaultValues);
 
   const handleSubmit = (data: LaunchpadUpdateFormData) => {
     onSubmit(data);
@@ -47,6 +54,18 @@ export const LaunchpadUpdateForm = ({
   const hasArgs = defaultValues?.args !== undefined;
   const hasStorage = defaultValues?.storage !== undefined;
   const hasConfigMap = defaultValues?.configMap !== undefined;
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="flex flex-col items-center gap-4">
+          <Spinner variant="bars" size={32} className="text-primary" />
+          <p className="text-sm text-muted-foreground">Updating launchpad...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Form {...form}>

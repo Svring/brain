@@ -75,39 +75,50 @@ export const useNodeSelect = ({
     selectNode(nodeId);
     focusNode(nodeId);
 
-    // Check if threads exist and select the latest one, or create a new one
-    if (hasThreads && latestThreadId) {
-      // Select the latest existing thread
-      selectThread(latestThreadId);
-
-      // Handle message appending if messageType is provided
-      if (messageType) {
-        appendSystemMessage({
-          type: messageType,
-          target,
-          payload,
-          onSuccess,
-        });
-      }
-    } else {
-      // Create a new chat session
-      createChatMutation.mutate(undefined, {
-        onSuccess: (thread) => {
-          // Select the newly created thread
-          selectThread(thread.thread_id);
-
-          // Handle message appending if messageType is provided
-          if (messageType) {
-            appendSystemMessage({
-              type: messageType,
-              target,
-              payload,
-              onSuccess,
-            });
-          }
-        },
+    // Simply append the message if messageType is provided
+    if (messageType) {
+      appendSystemMessage({
+        type: messageType,
+        target,
+        payload,
+        onSuccess,
       });
     }
+
+    // Commented out thread-related logic
+    // // Check if threads exist and select the latest one, or create a new one
+    // if (hasThreads && latestThreadId && false) {
+    //   // Select the latest existing thread
+    //   selectThread(latestThreadId);
+
+    //   // Handle message appending if messageType is provided
+    //   if (messageType) {
+    //     appendSystemMessage({
+    //       type: messageType,
+    //       target,
+    //       payload,
+    //       onSuccess,
+    //     });
+    //   }
+    // } else {
+    //   // Create a new chat session
+    //   createChatMutation.mutate(undefined, {
+    //     onSuccess: (thread) => {
+    //       // Select the newly created thread
+    //       selectThread(thread.thread_id);
+
+    //       // Handle message appending if messageType is provided
+    //       if (messageType) {
+    //         appendSystemMessage({
+    //           type: messageType,
+    //           target,
+    //           payload,
+    //           onSuccess,
+    //         });
+    //       }
+    //     },
+    //   });
+    // }
   };
 
   return {

@@ -23,8 +23,10 @@ export const OrchestratorProvider = ({ children }: { children: ReactNode }) => {
   const [state, send, actorRef] = useMachine(orchestratorMachine);
   const { sidebarChatOpen } = useChatState();
   const { clearSelectedResource } = useProjectActions();
-  const { setState: setLanggraphState } = useLanggraphAgent("propose_project");
   const { state: langgraphState } = useLanggraphContext();
+  const { setState: setLanggraphState } = useLanggraphAgent(
+    langgraphState.context.stage
+  );
 
   useEffect(() => {
     const prev = state.context.monitoredStates.sidebarChatOpen;
@@ -32,10 +34,7 @@ export const OrchestratorProvider = ({ children }: { children: ReactNode }) => {
       send({ type: "UPDATE_SIDEBAR_CHAT_STATE", open: sidebarChatOpen });
       if (prev && !sidebarChatOpen) clearSelectedResource();
     }
-  }, [
-    sidebarChatOpen,
-    state.context.monitoredStates.sidebarChatOpen,
-  ]);
+  }, [sidebarChatOpen, state.context.monitoredStates.sidebarChatOpen]);
 
   useEffect(() => {
     const { base_url, api_key, model_name } = langgraphState.context;

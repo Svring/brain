@@ -10,7 +10,10 @@ import {
 } from "@/contexts/project/project-machine";
 import _ from "lodash";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
+import {
+  useLanggraphActions,
+  useLanggraphState,
+} from "@/contexts/langgraph/langgraph-context";
 import { useLanggraphAgent } from "@/hooks/langgraph/use-langgraph-agent";
 
 // const inspector = createBrowserInspector();
@@ -57,8 +60,9 @@ export function useProjectState() {
 export function useProjectActions() {
   const { send, state } = useProjectContext();
   const { setProjectContext } = useLanggraphActions();
+  const { stage } = useLanggraphState();
   const { state: agentState, setState: setAgentState } =
-    useLanggraphAgent("manage_project");
+    useLanggraphAgent(stage);
 
   return {
     setAllProjects: (projects: unknown[]) => {
