@@ -77,12 +77,28 @@ export const useNodeSelect = ({
 
     // Simply append the message if messageType is provided
     if (messageType) {
-      appendSystemMessage({
-        type: messageType,
-        target,
-        payload,
-        onSuccess,
+      createChatMutation.mutate(undefined, {
+        onSuccess: (thread) => {
+          // Select the newly created thread
+          selectThread(thread.thread_id);
+
+          // Handle message appending if messageType is provided
+          if (messageType) {
+            appendSystemMessage({
+              type: messageType,
+              target,
+              payload,
+              onSuccess,
+            });
+          }
+        },
       });
+      // appendSystemMessage({
+      //   type: messageType,
+      //   target,
+      //   payload,
+      //   onSuccess,
+      // });
     }
 
     // Commented out thread-related logic
@@ -102,22 +118,22 @@ export const useNodeSelect = ({
     //   }
     // } else {
     //   // Create a new chat session
-    //   createChatMutation.mutate(undefined, {
-    //     onSuccess: (thread) => {
-    //       // Select the newly created thread
-    //       selectThread(thread.thread_id);
+    // createChatMutation.mutate(undefined, {
+    //   onSuccess: (thread) => {
+    //     // Select the newly created thread
+    //     selectThread(thread.thread_id);
 
-    //       // Handle message appending if messageType is provided
-    //       if (messageType) {
-    //         appendSystemMessage({
-    //           type: messageType,
-    //           target,
-    //           payload,
-    //           onSuccess,
-    //         });
-    //       }
-    //     },
-    //   });
+    //     // Handle message appending if messageType is provided
+    //     if (messageType) {
+    //       appendSystemMessage({
+    //         type: messageType,
+    //         target,
+    //         payload,
+    //         onSuccess,
+    //       });
+    //     }
+    //   },
+    // });
     // }
   };
 

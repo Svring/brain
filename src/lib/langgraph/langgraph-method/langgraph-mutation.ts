@@ -38,7 +38,7 @@ export const useCreateNewChatSessionMutation = ({
       });
     },
     onSuccess: (_) => {
-      reset();
+      // reset();
     },
     onError: (error) => {
       console.error("Failed to create chat session:", error);
@@ -47,35 +47,31 @@ export const useCreateNewChatSessionMutation = ({
 };
 
 /**
- * Hook for sending messages to the chat and opening the sidebar
+ * Hook for sending a single message to the chat and opening the sidebar
  */
 export const useSendMessageMutation = () => {
   const { sendMessage } = useCopilotChatHeadless_c();
   const { openSidebarChat } = useChatActions();
 
   return useMutation({
-    mutationFn: async (
-      newMessages: Array<{
-        role: "user" | "assistant" | "system";
-        content: string;
-      }>
-    ) => {
-      // Send each message individually using sendMessage
-      for (const message of newMessages) {
-        sendMessage({
-          id: randomId(),
-          role: message.role,
-          content: message.content,
-        });
-      }
+    mutationFn: async (message: {
+      role: "user" | "assistant" | "system";
+      content: string;
+    }) => {
+      // Send the message using sendMessage
+      sendMessage({
+        id: randomId(),
+        role: message.role,
+        content: message.content,
+      });
 
       // Open the sidebar chat
       openSidebarChat();
 
-      return newMessages;
+      return message;
     },
     onError: (error) => {
-      console.error("Failed to send messages:", error);
+      console.error("Failed to send message:", error);
     },
   });
 };

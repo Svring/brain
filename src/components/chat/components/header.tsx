@@ -9,6 +9,7 @@ import { useProjectState } from "@/contexts/project/project-context";
 import { useChatActions } from "@/contexts/chat/chat-context";
 import Image from "next/image";
 import { useChatState } from "@/contexts/chat/chat-context";
+import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 
 interface AiChatHeaderProps {
   title?: string;
@@ -25,6 +26,7 @@ export function AiChatHeader({
   const { selectedProject, selectedResource } = useProjectState();
   const { selectedThreadId } = useChatState();
   const { closeSidebarChat, selectThread } = useChatActions();
+  const { reset } = useCopilotChatHeadless_c();
   const { mutate: createNewChatSession, isPending } =
     useCreateNewChatSessionMutation({
       kubeconfig: auth!.kubeconfig,
@@ -63,13 +65,7 @@ export function AiChatHeader({
           </div>
           <div className="flex items-center gap-2">
             <Button
-              onClick={() =>
-                createNewChatSession(undefined, {
-                  onSuccess: (thread) => {
-                    selectThread(thread.thread_id);
-                  },
-                })
-              }
+              onClick={() => reset()}
               disabled={isPending}
               size="icon"
               variant="ghost"

@@ -66,12 +66,10 @@ export default function NodeLog({ target }: NodeLogProps) {
     messageType: "universal.log",
     onSuccess: () => {
       // Send logs data for analysis after system message is appended
-      sendMessage([
-        {
-          role: "system",
-          content: analyzeLogsPrompt + "\n\n" + JSON.stringify(logsData),
-        },
-      ]);
+      sendMessage({
+        role: "system",
+        content: analyzeLogsPrompt + "\n\n" + JSON.stringify(logsData),
+      });
     },
   });
 

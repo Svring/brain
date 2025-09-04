@@ -77,21 +77,19 @@ export default function NodeMonitor({ target }: NodeMonitorProps) {
     messageType: "universal.monitor",
     onSuccess: () => {
       // Send monitor data for analysis after system message is appended
-      sendMessage([
-        {
-          role: "system",
-          content:
-            analyzeMonitorPrompt +
-            "\n\n" +
-            JSON.stringify(monitorData),
-        },
-      ]);
+      sendMessage({
+        role: "system",
+        content: analyzeMonitorPrompt + "\n\n" + JSON.stringify(monitorData),
+      });
     },
   });
 
-
   // Check if monitor data is ready (not loading and has data)
-  const isMonitorReady = !isLoading && monitorData && Array.isArray(monitorData) && monitorData.length > 0;
+  const isMonitorReady =
+    !isLoading &&
+    monitorData &&
+    Array.isArray(monitorData) &&
+    monitorData.length > 0;
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -99,8 +97,8 @@ export default function NodeMonitor({ target }: NodeMonitorProps) {
         <TooltipTrigger asChild>
           <div
             className={`p-1 border-2 border-muted-foreground/20 rounded-full transition-colors ${
-              isMonitorReady 
-                ? "cursor-pointer hover:border-muted-foreground/40" 
+              isMonitorReady
+                ? "cursor-pointer hover:border-muted-foreground/40"
                 : "cursor-not-allowed opacity-50"
             }`}
             onClick={(e) => {
