@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { EnvSchema } from "@/schemas/forms/universal/env-schema";
 
 export const PortSchema = z.object({
   number: z.number(),
@@ -70,7 +71,7 @@ export const StatefulsetObjectSchema = z.object({
       args: z.array(z.string()),
     })
     .optional(),
-  env: z.array(z.any()).optional(),
+  env: z.array(EnvSchema).optional(),
   ports: z.array(PortSchema).optional(),
   configMap: z.array(ConfigMapSchema).optional(),
   localStorage: z.array(LocalStorageSchema).optional(),

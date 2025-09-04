@@ -16,6 +16,7 @@ import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enh
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import NodeLoading from "../../components/node-loading";
 import NodePods from "../../components/node-pods";
+import NodeConnect from "../../components/node-connect";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 // Enhanced wrapper that can handle both K8sResource and DeploymentObject
@@ -100,43 +101,50 @@ function DeploymentNode({
     name: deploymentData.name,
   });
 
+  const handleConnect = () => {
+    console.log("Connect clicked");
+    // TODO: Implement connection logic
+  };
+
   const mainCard = (
-    <BaseNode
-      target={target}
-      nodeId={nodeId}
-      messageType="launchpad.detail"
-    >
-      <div className="flex h-full flex-col gap-2 justify-between">
-        {/* Header with Name and Dropdown */}
-        <div className="flex items-center justify-between">
-          <DeploymentNodeTitle name={deploymentData.name} />
-          <DeploymentNodeMenu object={resource} />
-        </div>
+    <NodeConnect onConnect={handleConnect} target={target}>
+      <BaseNode
+        target={target}
+        nodeId={nodeId}
+        messageType="launchpad.detail"
+      >
+        <div className="flex h-full flex-col gap-2 justify-between">
+          {/* Header with Name and Dropdown */}
+          <div className="flex items-center justify-between">
+            <DeploymentNodeTitle name={deploymentData.name} />
+            <DeploymentNodeMenu object={resource} />
+          </div>
 
-        {/* Image with Package Icon */}
-        <div className="flex items-center gap-2 mt-2">
-          <Package className="h-4 w-4 text-muted-foreground" />
-          <div className="text-md text-muted-foreground truncate flex-1">
-            Image:{" "}
-            {deploymentData.image ? truncateImage(deploymentData.image) : "N/A"}
+          {/* Image with Package Icon */}
+          <div className="flex items-center gap-2 mt-2">
+            <Package className="h-4 w-4 text-muted-foreground" />
+            <div className="text-md text-muted-foreground truncate flex-1">
+              Image:{" "}
+              {deploymentData.image ? truncateImage(deploymentData.image) : "N/A"}
+            </div>
+          </div>
+
+          {/* Bottom section with status and icons */}
+          <div className="mt-auto flex justify-between items-center">
+            {/* Left: Status light */}
+            <NodeStatusLight status={status || "Pending"} />
+
+            {/* Right: Icon components */}
+            <div className="flex items-center gap-2">
+              {/* <NodeInternalUrl ports={deploymentData.ports || []} /> */}
+              {/* <NodePods target={target} /> */}
+              <NodeLog target={target} />
+              <NodeMonitor target={target} />
+            </div>
           </div>
         </div>
-
-        {/* Bottom section with status and icons */}
-        <div className="mt-auto flex justify-between items-center">
-          {/* Left: Status light */}
-          <NodeStatusLight status={status || "Pending"} />
-
-          {/* Right: Icon components */}
-          <div className="flex items-center gap-2">
-            {/* <NodeInternalUrl ports={deploymentData.ports || []} /> */}
-            {/* <NodePods target={target} /> */}
-            <NodeLog target={target} />
-            <NodeMonitor target={target} />
-          </div>
-        </div>
-      </div>
-    </BaseNode>
+      </BaseNode>
+    </NodeConnect>
   );
 
   // Create an array with length equal to resource.replicas for the stack

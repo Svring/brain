@@ -13,6 +13,7 @@ import NodeLog from "../../components/node-log";
 import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import NodeLoading from "../../components/node-loading";
+import NodeConnect from "../../components/node-connect";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import StatefulsetNodeMenu from "./statefulset-node-menu";
 
@@ -37,6 +38,8 @@ function StatefulsetNodeWrapper({
 
   // Always call hooks in the same order
   const { completeResource, status } = useResourceNodeEnhancer(resourceData);
+
+  // console.log("completeResource", completeResource);
 
   // If we have complete object data, render the full node
   if (isCompleteObject) {
@@ -87,41 +90,48 @@ function StatefulsetNode({
   // Get resource metrics data using the hook data
   const target = convertResourceObjectToTarget(resource);
 
+  const handleConnect = () => {
+    console.log("Connect clicked");
+    // TODO: Implement connection logic
+  };
+
   const mainCard = (
-    <BaseNode
-      target={target}
-      nodeId={nodeId}
-      messageType="launchpad.detail"
-    >
-      <div className="flex h-full flex-col gap-2 justify-between">
-        {/* Header with Name and Dropdown */}
-        <div className="flex items-center justify-between">
-          <StatefulsetNodeTitle name={resource.name} />
-          <StatefulsetNodeMenu object={resource} />
-        </div>
+    <NodeConnect onConnect={handleConnect} target={target}>
+      <BaseNode
+        target={target}
+        nodeId={nodeId}
+        messageType="launchpad.detail"
+      >
+        <div className="flex h-full flex-col gap-2 justify-between">
+          {/* Header with Name and Dropdown */}
+          <div className="flex items-center justify-between">
+            <StatefulsetNodeTitle name={resource.name} />
+            <StatefulsetNodeMenu object={resource} />
+          </div>
 
-        {/* Image with Package Icon */}
-        <div className="flex items-center gap-2 mt-2">
-          <Package className="h-4 w-4 text-muted-foreground" />
-          <div className="text-sm text-muted-foreground truncate flex-1">
-            Image: {resource.image ? truncateImage(resource.image) : "N/A"}
+          {/* Image with Package Icon */}
+          <div className="flex items-center gap-2 mt-2">
+            <Package className="h-4 w-4 text-muted-foreground" />
+            <div className="text-sm text-muted-foreground truncate flex-1">
+              Image: {resource.image ? truncateImage(resource.image) : "N/A"}
+            </div>
+          </div>
+
+          {/* Bottom section with status and icons */}
+          <div className="mt-auto flex justify-between items-center">
+            {/* Left: Status light */}
+            <NodeStatusLight status={status || "Pending"} />
+
+            {/* Right: Icon components */}
+            <div className="flex items-center gap-2">
+              {/* <NodePods target={target} /> */}
+              <NodeLog target={target} />
+              <NodeMonitor target={target} />
+            </div>
           </div>
         </div>
-
-        {/* Bottom section with status and icons */}
-        <div className="mt-auto flex justify-between items-center">
-          {/* Left: Status light */}
-          <NodeStatusLight status={status || "Pending"} />
-
-          {/* Right: Icon components */}
-          <div className="flex items-center gap-2">
-            {/* <NodePods target={target} /> */}
-            <NodeLog target={target} />
-            <NodeMonitor target={target} />
-          </div>
-        </div>
-      </div>
-    </BaseNode>
+      </BaseNode>
+    </NodeConnect>
   );
 
   // Hem component displaying storage information

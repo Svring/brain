@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { EnvVar } from "@/lib/k8s/k8s-method/k8s-utils";
+import { EnvSchema } from "@/schemas/forms/universal/env-schema";
 
 export const PortSchema = z.object({
   number: z.number(),
@@ -55,7 +55,7 @@ export const DeploymentObjectSchema = z.object({
       args: z.array(z.string()),
     })
     .optional(),
-  env: z.any().optional(),
+  env: z.array(EnvSchema).optional(),
   ports: z.array(PortSchema).optional(),
   configMap: z
     .array(

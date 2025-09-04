@@ -46,7 +46,33 @@ export const Configuration: React.FC<ConfigurationProps> = ({
         };
         break;
       case "env":
-        updateData = { env: data.env };
+        // Preserve existing env vars and merge with new ones
+        const currentEnvObj = (envVars || []).reduce((acc: Record<string, any>, envVar: any) => {
+          if (envVar.name) {
+            acc[envVar.name] = {
+              name: envVar.name,
+              value: envVar.value,
+              valueFrom: envVar.valueFrom,
+            };
+          }
+          return acc;
+        }, {});
+        
+        const newEnvObj = (data.env || []).reduce((acc: Record<string, any>, envVar: any) => {
+          if (envVar.name) {
+            acc[envVar.name] = {
+              name: envVar.name,
+              value: envVar.value,
+              valueFrom: envVar.valueFrom,
+            };
+          }
+          return acc;
+        }, {});
+        
+        const mergedEnv = { ...currentEnvObj, ...newEnvObj };
+        updateData = { 
+          env: Object.values(mergedEnv)
+        };
         break;
       case "storage":
         // Transform back to the expected format
