@@ -92,3 +92,8 @@ export const searchThreads = async (metadata: Record<string, any>) => {
       return res.filter((obj) => obj.values);
     });
 };
+
+export const getThreadState = async (threadId: string) => {
+  const client = createClient();
+  return await client.threads.getState(threadId);
+};

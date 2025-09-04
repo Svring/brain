@@ -5,6 +5,7 @@ import {
   listThreads,
   getThread,
   searchThreads,
+  getThreadState,
 } from "../langgraph-api/langgraph-api";
 
 // ============================================================================
@@ -37,4 +38,14 @@ export const searchThreadsOptions = (metadata: Record<string, any>) =>
   queryOptions({
     queryKey: ["langgraph", "threads", "search", metadata],
     queryFn: async () => await searchThreads(metadata),
+  });
+
+/**
+ * Query options for getting thread state
+ */
+export const getThreadStateOptions = (threadId: string) =>
+  queryOptions({
+    queryKey: ["langgraph", "thread", threadId, "state"],
+    queryFn: async () => await getThreadState(threadId),
+    enabled: !!threadId,
   });

@@ -98,8 +98,17 @@ export default function NodeMonitor({ target }: NodeMonitorProps) {
       <Tooltip>
         <TooltipTrigger asChild>
           <div
-            className="p-1 border-2 border-muted-foreground/20 rounded-full cursor-pointer hover:border-muted-foreground/40 transition-colors"
+            className={`p-1 border-2 border-muted-foreground/20 rounded-full transition-colors ${
+              isMonitorReady 
+                ? "cursor-pointer hover:border-muted-foreground/40" 
+                : "cursor-not-allowed opacity-50"
+            }`}
             onClick={(e) => {
+              if (!isMonitorReady) {
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+              }
               e.preventDefault();
               e.stopPropagation();
               handleNodeSelect();
@@ -116,7 +125,9 @@ export default function NodeMonitor({ target }: NodeMonitorProps) {
           side="bottom"
           className="bg-background-secondary rounded-lg p-2"
         >
-          <p className="font-medium">Check Usage</p>
+          <p className="font-medium">
+            {isMonitorReady ? "Check Usage" : "No monitor data available"}
+          </p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

@@ -8,9 +8,8 @@ import {
 import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useAuthState } from "@/contexts/auth/auth-context";
-import { useQuery } from "@tanstack/react-query";
-import { searchThreadsOptions } from "@/lib/langgraph/langgraph-method/langgraph-query";
 import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useLatestThread } from "@/hooks/langgraph/use-latest-thread";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 
 // const queryClient = useQueryClient();
@@ -58,14 +57,15 @@ export const useNodeSelect = ({
   // Construct node ID based on target
   const nodeId = `${target.resourceType.toLowerCase()}-${target.name}`;
 
-  // Query threads with metadata for the current target
-  const { data: threads, isLoading: threadsLoading } = useQuery(
-    searchThreadsOptions({
-      kubeconfig: auth?.kubeconfig,
-      projectName: selectedProject,
-      resourceTarget: target,
-    })
-  );
+  // Get latest thread and its state
+  const {
+    threads,
+    threadsLoading,
+    latestThreadId,
+    latestThreadState,
+    threadStateLoading,
+    hasThreads,
+  } = useLatestThread({ target });
 
   const handleNodeSelect = () => {
     // Select the resource in project context
@@ -75,10 +75,10 @@ export const useNodeSelect = ({
     selectNode(nodeId);
     focusNode(nodeId);
 
-    // Check if threads exist and select the first one, or create a new one
-    if (threads && threads.length > 0) {
-      // Select the first existing thread
-      selectThread(threads[0].thread_id);
+    // Check if threads exist and select the latest one, or create a new one
+    if (hasThreads && latestThreadId) {
+      // Select the latest existing thread
+      selectThread(latestThreadId);
 
       // Handle message appending if messageType is provided
       if (messageType) {
@@ -115,6 +115,10 @@ export const useNodeSelect = ({
     handleNodeSelect,
     threads,
     threadsLoading,
+    latestThreadId,
+    latestThreadState,
+    threadStateLoading,
+    hasThreads,
     createChatMutation,
   };
 };

@@ -69,8 +69,7 @@ export default function NodeLog({ target }: NodeLogProps) {
       sendMessage([
         {
           role: "system",
-          content:
-            analyzeLogsPrompt + "\n\n" + JSON.stringify(logsData),
+          content: analyzeLogsPrompt + "\n\n" + JSON.stringify(logsData),
         },
       ]);
     },
@@ -85,13 +84,21 @@ export default function NodeLog({ target }: NodeLogProps) {
       <Tooltip>
         <TooltipTrigger asChild>
           <button
-            className="p-1 border-2 border-muted-foreground/20 rounded-full hover:border-muted-foreground/40 transition-colors"
+            className={`p-1 border-2 border-muted-foreground/20 rounded-full transition-colors ${
+              isLogsReady
+                ? "hover:border-muted-foreground/40 cursor-pointer"
+                : "cursor-not-allowed opacity-50"
+            }`}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              if (!isLogsReady) {
+                return;
+              }
               handleNodeSelect();
             }}
             type="button"
+            disabled={!isLogsReady}
           >
             <NotebookText
               className={`h-4 w-4 ${
@@ -104,7 +111,9 @@ export default function NodeLog({ target }: NodeLogProps) {
           side="bottom"
           className="bg-background-secondary rounded-lg p-2"
         >
-          <p className="font-medium">Analyze Logs</p>
+          <p className="font-medium">
+            {isLogsReady ? "Analyze Logs" : "No logs available"}
+          </p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
