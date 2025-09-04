@@ -6,6 +6,7 @@ import {
   useCreateNewChatSessionMutation,
 } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useChatActions } from "@/contexts/chat/chat-context";
+import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 
 interface AiChatInputProps {
   className?: string;
@@ -15,11 +16,9 @@ export function AiChatInput({ className }: AiChatInputProps) {
   const { mutate: sendMessage, isPending: isSendingMessage } =
     useSendMessageMutation();
   const { selectThread } = useChatActions();
-
+  const { stopGeneration, isLoading } = useCopilotChatHeadless_c();
   // Create new chat session mutation
   const createChatMutation = useCreateNewChatSessionMutation();
-
-  const isLoading = isSendingMessage || createChatMutation.isPending;
 
   // NOTE: There are three bugs in copilotkit: messages aren't reset when a new chat session is created, loading existing thread could not restore its state, and sending follow-up messages in a thread has a certain probability to fail(no message sent to the server, reason unkown)
   // To Tackle the third bug, there would be a new thread created for each message sent or appended, so that there is no follow-up messages anymore, every thread is a one-shot conversation.
@@ -51,6 +50,7 @@ export function AiChatInput({ className }: AiChatInputProps) {
       placeholder="Type your message..."
       disableInput={false}
       disableSend={isLoading}
+      onStop={stopGeneration}
     />
   );
 }

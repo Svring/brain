@@ -80,8 +80,8 @@ export default function HomePage() {
           initial={!hasMessages ? { y: 0, opacity: 0 } : false}
           animate={{ y: 0, opacity: 1 }}
           transition={{
-            delay: hasMessages ? 0 : 0.3,
-            duration: hasMessages ? 0.4 : 0.8,
+            delay: hasMessages ? 0 : 0.2,
+            duration: hasMessages ? 0.4 : 0.6,
             ease: "easeOut",
           }}
           className={`flex-shrink-0 ${hasMessages ? "pb-8" : "py-0"}`}
@@ -104,14 +104,24 @@ export default function HomePage() {
 
         {/* Projects section - hidden when messages appear */}
         {!hasMessages && projects && projects.length > 0 && (
-          <div className="flex-shrink-0">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{
+              delay: 0.8, // Wait for input box to slide into place (0.2s delay + 0.6s duration)
+              duration: 0.7,
+              ease: "easeOut",
+            }}
+            className="flex-shrink-0"
+          >
             <RecentProjects
               projects={projects}
               isLoading={isLoading}
               isError={isError}
               displayProjects={filteredProjects.slice(0, 3)}
             />
-          </div>
+          </motion.div>
         )}
       </div>
     </div>

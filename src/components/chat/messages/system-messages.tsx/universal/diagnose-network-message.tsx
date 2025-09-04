@@ -9,6 +9,12 @@ import {
   extractContainerPorts,
   ContainerPortsResult,
 } from "@/lib/sealos/services/ports/ports-utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import {
   Table,
@@ -28,6 +34,7 @@ interface CombinedStatusItem {
   containerAccess: boolean;
   publicAccessStatus: boolean;
   publicAddress: string;
+  privateAddress: string;
 }
 
 export const DiagnoseNetworkMessage: React.FC<DiagnoseNetworkMessageProps> = ({
@@ -79,6 +86,7 @@ export const DiagnoseNetworkMessage: React.FC<DiagnoseNetworkMessageProps> = ({
         containerAccess,
         publicAccessStatus,
         publicAddress: port.publicAddress || "N/A",
+        privateAddress: port.privateAddress || "N/A",
       };
     });
   }, [resource?.ports, containerStatus, networkStatus]);
@@ -95,8 +103,8 @@ export const DiagnoseNetworkMessage: React.FC<DiagnoseNetworkMessageProps> = ({
       }}
     >
       {/* Port Status Table */}
-      <div className="border rounded-lg">
-        <div className="p-2">
+      <div className="rounded-lg">
+        <div className="">
           {isContainerLoading ? (
             <div className="text-center py-4 text-gray-500">
               Checking container port status...
@@ -106,52 +114,106 @@ export const DiagnoseNetworkMessage: React.FC<DiagnoseNetworkMessageProps> = ({
               Error checking container status: {containerError.message}
             </div>
           ) : combinedStatusData.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Port</TableHead>
-                  <TableHead>Container</TableHead>
-                  <TableHead>Public Address</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {combinedStatusData.map(
-                  (statusItem: CombinedStatusItem, index: number) => (
-                    <TableRow key={index}>
-                      <TableCell className="font-medium">
-                        {statusItem.number}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          {statusItem.containerAccess ? (
-                            <CheckCircle className="h-4 w-4 text-theme-green" />
-                          ) : (
-                            <HelpCircle className="h-4 w-4 text-theme-yellow" />
-                          )}
-                          <span className="text-sm">
-                            {statusItem.containerAccess
-                              ? "Available"
-                              : "Unavailable"}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          {statusItem.publicAccessStatus ? (
-                            <CheckCircle className="h-4 w-4 text-theme-green" />
-                          ) : (
-                            <HelpCircle className="h-4 w-4 text-theme-yellow" />
-                          )}
-                          <span className="text-sm">
-                            {statusItem.publicAddress}
-                          </span>
-                        </div>
-                      </TableCell>
+            <TooltipProvider>
+              <div className="overflow-hidden">
+                <Table className="table-fixed w-full">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[10%]">Port</TableHead>
+                      <TableHead className="w-[45%]">
+                        Private Address Status
+                      </TableHead>
+                      <TableHead className="w-[45%]">
+                        Public Address Status
+                      </TableHead>
                     </TableRow>
-                  )
-                )}
-              </TableBody>
-            </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {combinedStatusData.map(
+                      (statusItem: CombinedStatusItem, index: number) => (
+                        <TableRow key={index}>
+                          <TableCell className="font-medium">
+                            {statusItem.number}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  {statusItem.containerAccess ? (
+                                    <CheckCircle className="h-4 w-4 text-theme-green" />
+                                  ) : (
+                                    <HelpCircle className="h-4 w-4 text-theme-yellow" />
+                                  )}
+                                </TooltipTrigger>
+                                <TooltipContent
+                                  side="bottom"
+                                  align="start"
+                                  className="bg-background-tertiary border border-border-primary"
+                                >
+                                  <p>
+                                    {statusItem.containerAccess
+                                      ? "Available"
+                                      : "Unavailable"}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                              <span className="text-sm truncate">
+                                {statusItem.privateAddress}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  {statusItem.publicAccessStatus ? (
+                                    <CheckCircle className="h-4 w-4 text-theme-green" />
+                                  ) : (
+                                    <HelpCircle className="h-4 w-4 text-theme-yellow" />
+                                  )}
+                                </TooltipTrigger>
+                                <TooltipContent
+                                  side="bottom"
+                                  align="start"
+                                  className="bg-background-tertiary border border-border-primary"
+                                >
+                                  <p>
+                                    {statusItem.publicAccessStatus
+                                      ? "Available"
+                                      : "Unavailable"}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                              <span
+                                className={`text-sm truncate ${
+                                  statusItem.publicAccessStatus &&
+                                  statusItem.publicAddress !== "N/A"
+                                    ? "cursor-pointer hover:underline"
+                                    : ""
+                                }`}
+                                onClick={() => {
+                                  if (
+                                    statusItem.publicAccessStatus &&
+                                    statusItem.publicAddress !== "N/A"
+                                  ) {
+                                    window.open(
+                                      statusItem.publicAddress,
+                                      "_blank"
+                                    );
+                                  }
+                                }}
+                              >
+                                {statusItem.publicAddress}
+                              </span>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </TooltipProvider>
           ) : (
             <div className="text-center py-4 text-gray-500">
               No port information available

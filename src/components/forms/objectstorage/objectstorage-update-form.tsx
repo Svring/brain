@@ -3,7 +3,7 @@
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { useObjectStorageUpdateForm } from "@/hooks/forms/objectstorage/use-objectstorage-update-form";
-import { ObjectStorageUpdateFormData } from "@/schemas/forms/objectstorage/objectstorage-update-schema";
+import { ObjectStorageUpdateFormData } from "@/schemas/forms/objectstorage/objectstorage-update-form-schema";
 import {
   Select,
   SelectContent,

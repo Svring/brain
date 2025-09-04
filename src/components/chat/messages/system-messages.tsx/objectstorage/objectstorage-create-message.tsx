@@ -2,7 +2,7 @@
 
 import React from "react";
 import { ObjectStorageCreateForm } from "@/components/forms/objectstorage/objectstorage-create-form";
-import { ObjectStorageCreateFormData } from "@/schemas/forms/objectstorage/objectstorage-create-schema";
+import { ObjectStorageCreateFormData } from "@/schemas/forms/objectstorage/objectstorage-create-form-schema";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";

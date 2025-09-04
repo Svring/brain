@@ -3,7 +3,7 @@
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { useObjectStorageCreateForm } from "@/hooks/forms/objectstorage/use-objectstorage-create-form";
-import { ObjectStorageCreateFormData } from "@/schemas/forms/objectstorage/objectstorage-create-schema";
+import { ObjectStorageCreateFormData } from "@/schemas/forms/objectstorage/objectstorage-create-form-schema";
 import { NameField } from "@/components/forms/universal/name-field";
 import {
   Select,

@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   objectStorageCreateSchema,
   ObjectStorageCreateFormData,
-} from "@/schemas/forms/objectstorage/objectstorage-create-schema";
+} from "@/schemas/forms/objectstorage/objectstorage-create-form-schema";
 
 export const useObjectStorageCreateForm = (
   defaultValues?: Partial<ObjectStorageCreateFormData>

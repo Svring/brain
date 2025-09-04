@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   objectStorageUpdateSchema,
   ObjectStorageUpdateFormData,
-} from "@/schemas/forms/objectstorage/objectstorage-update-schema";
+} from "@/schemas/forms/objectstorage/objectstorage-update-form-schema";
 
 export const useObjectStorageUpdateForm = (
   defaultValues?: Partial<ObjectStorageUpdateFormData>

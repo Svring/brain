@@ -306,6 +306,7 @@ const PromptInputAction: React.FC<PromptInputActionProps> = ({
 // Main PromptInputBox Component
 interface PromptInputBoxProps {
   onSend?: (message: string) => void;
+  onStop?: () => void;
   isLoading?: boolean;
   placeholder?: string;
   className?: string;
@@ -318,6 +319,7 @@ export const PromptInputBox = React.forwardRef(
   (props: PromptInputBoxProps, ref: React.Ref<HTMLDivElement>) => {
     const {
       onSend = () => {},
+      onStop = () => {},
       isLoading = false,
       placeholder = "Type your message here...",
       className,
@@ -447,12 +449,14 @@ export const PromptInputBox = React.forwardRef(
               <Button
                 className={cn(
                   "h-9 w-9 rounded-lg transition-all duration-200",
-                  hasContent
+                  isLoading
+                    ? ""
+                    : hasContent
                     ? ""
                     : "bg-transparent cursor-not-allowed text-foreground"
                 )}
-                disabled={disableSend || !hasContent}
-                onClick={handleSubmit}
+                disabled={isLoading ? false : (disableSend || !hasContent)}
+                onClick={isLoading ? onStop : handleSubmit}
                 size="icon"
                 variant="outline"
               >

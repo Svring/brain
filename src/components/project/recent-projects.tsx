@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import ProjectCard from "@/components/project/project-card";
-import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { ProjectObjectSchema } from "@/lib/brain/resources/project/project-schemas/project-object-schema";
@@ -23,17 +22,7 @@ export default function RecentProjects({
   displayProjects,
 }: RecentProjectsProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{
-        delay: 0.3,
-        duration: 0.8,
-        ease: "easeOut",
-      }}
-      className="w-full bg-background"
-    >
+    <div className="w-full bg-background">
       <div className="max-w-3xl mx-auto py-8">
         {/* Projects Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -85,6 +74,6 @@ export default function RecentProjects({
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
