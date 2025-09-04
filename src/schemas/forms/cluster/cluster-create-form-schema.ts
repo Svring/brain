@@ -3,22 +3,20 @@ import { NameSchema } from "@/schemas/forms/universal/name-schema";
 import { ClusterTypeSchema } from "./components/cluster-type-schema";
 import { ClusterVersionSchema } from "./components/cluster-version-schema";
 import { ClusterResourceSchema } from "./components/cluster-resource-schema";
+import { ClusterTerminationPolicySchema } from "./components/cluster-termination-policy-schema";
 
 // Main cluster create form schema
 export const clusterCreateFormSchema = z.object({
   name: NameSchema.default("my-cluster"),
-  type: ClusterTypeSchema.default({
-    type: "kubernetes",
-  }),
-  version: ClusterVersionSchema.default({
-    version: "1.28",
-  }),
+  type: ClusterTypeSchema.default("kubernetes"),
+  version: ClusterVersionSchema.default("1.28"),
   resource: ClusterResourceSchema.default({
     replicas: 1,
     cpu: 2,
     memory: 2,
     storage: 20,
   }),
+  terminationPolicy: ClusterTerminationPolicySchema.default("Delete"),
 });
 
 // Export types
@@ -38,3 +36,7 @@ export {
   ClusterResourceSchema,
   type ClusterResource,
 } from "./components/cluster-resource-schema";
+export {
+  ClusterTerminationPolicySchema,
+  type ClusterTerminationPolicy,
+} from "./components/cluster-termination-policy-schema";

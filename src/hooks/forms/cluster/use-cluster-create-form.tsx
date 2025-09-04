@@ -14,18 +14,15 @@ export const useClusterCreateForm = (
     resolver: zodResolver(clusterCreateFormSchema),
     defaultValues: {
       name: "my-cluster",
-      type: {
-        type: "kubernetes",
-      },
-      version: {
-        version: "1.28",
-      },
+      type: "kubernetes",
+      version: "1.28",
       resource: {
         replicas: 1,
         cpu: 2,
         memory: 4,
         storage: 20,
       },
+      terminationPolicy: "Delete",
       ...defaultValues,
     },
     mode: "onChange",

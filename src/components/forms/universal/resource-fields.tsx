@@ -17,7 +17,19 @@ import {
 } from "@/lib/k8s/k8s-constant/k8s-constant-resource";
 import { Slider } from "@/components/ui/slider";
 
-export const ResourceFields = () => {
+interface ResourceFieldsProps {
+  cpuOptions?: readonly number[];
+  memoryOptions?: readonly number[];
+  replicasOptions?: readonly number[];
+  storageOptions?: readonly number[];
+}
+
+export const ResourceFields = ({
+  cpuOptions = CPU_OPTIONS,
+  memoryOptions = MEMORY_OPTIONS,
+  replicasOptions = REPLICAS_OPTIONS,
+  storageOptions = STORAGE_OPTIONS,
+}: ResourceFieldsProps = {}) => {
   const form = useFormContext<{ resource: Resource & { storage?: number } }>();
   const resourceValues = form.watch("resource");
 
@@ -30,31 +42,31 @@ export const ResourceFields = () => {
           name="resource.cpu"
           render={({ field }) => {
             const currentIndex =
-              CPU_OPTIONS.findIndex((option) => option === field.value) || 0;
+              cpuOptions.findIndex((option) => option === field.value) || 0;
 
             return (
               <FormItem>
                 <div className="flex items-center gap-2">
                   <FormLabel className="font-medium">CPU:</FormLabel>
-                  <span className="">{field.value || CPU_OPTIONS[0]}C</span>
+                  <span className="">{field.value || cpuOptions[0]}C</span>
                 </div>
                 <div className="space-y-2">
                   <Slider
                     value={[currentIndex]}
                     onValueChange={(value) =>
-                      field.onChange(CPU_OPTIONS[value[0]])
+                      field.onChange(cpuOptions[value[0]])
                     }
                     min={0}
-                    max={CPU_OPTIONS.length - 1}
+                    max={cpuOptions.length - 1}
                     step={1}
                     className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
                     aria-label="CPU slider"
                   />
                   <div className="relative">
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      {CPU_OPTIONS.map((cpu, index) => {
+                      {cpuOptions.map((cpu, index) => {
                         const position =
-                          (index / (CPU_OPTIONS.length - 1)) * 100;
+                          (index / (cpuOptions.length - 1)) * 100;
                         return (
                           <span
                             key={cpu}
@@ -83,31 +95,31 @@ export const ResourceFields = () => {
           name="resource.memory"
           render={({ field }) => {
             const currentIndex =
-              MEMORY_OPTIONS.findIndex((option) => option === field.value) || 0;
+              memoryOptions.findIndex((option) => option === field.value) || 0;
 
             return (
               <FormItem>
                 <div className="flex items-center gap-2">
                   <FormLabel className="font-medium">Memory:</FormLabel>
-                  <span className="">{field.value || MEMORY_OPTIONS[0]}G</span>
+                  <span className="">{field.value || memoryOptions[0]}G</span>
                 </div>
                 <div className="space-y-2">
                   <Slider
                     value={[currentIndex]}
                     onValueChange={(value) =>
-                      field.onChange(MEMORY_OPTIONS[value[0]])
+                      field.onChange(memoryOptions[value[0]])
                     }
                     min={0}
-                    max={MEMORY_OPTIONS.length - 1}
+                    max={memoryOptions.length - 1}
                     step={1}
                     className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
                     aria-label="Memory slider"
                   />
                   <div className="relative">
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      {MEMORY_OPTIONS.map((memory, index) => {
+                      {memoryOptions.map((memory, index) => {
                         const position =
-                          (index / (MEMORY_OPTIONS.length - 1)) * 100;
+                          (index / (memoryOptions.length - 1)) * 100;
                         return (
                           <span
                             key={memory}
@@ -136,31 +148,31 @@ export const ResourceFields = () => {
           name="resource.storage"
           render={({ field }) => {
             const currentIndex =
-              STORAGE_OPTIONS.findIndex((option) => option === field.value) || 0;
+              storageOptions.findIndex((option) => option === field.value) || 0;
 
             return (
               <FormItem>
                 <div className="flex items-center gap-2">
                   <FormLabel className="font-medium">Storage:</FormLabel>
-                  <span className="">{field.value || STORAGE_OPTIONS[0]}G</span>
+                  <span className="">{field.value || storageOptions[0]}G</span>
                 </div>
                 <div className="space-y-2">
                   <Slider
                     value={[currentIndex]}
                     onValueChange={(value) =>
-                      field.onChange(STORAGE_OPTIONS[value[0]])
+                      field.onChange(storageOptions[value[0]])
                     }
                     min={0}
-                    max={STORAGE_OPTIONS.length - 1}
+                    max={storageOptions.length - 1}
                     step={1}
                     className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
                     aria-label="Storage slider"
                   />
                   <div className="relative">
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      {STORAGE_OPTIONS.map((storage, index) => {
+                      {storageOptions.map((storage, index) => {
                         const position =
-                          (index / (STORAGE_OPTIONS.length - 1)) * 100;
+                          (index / (storageOptions.length - 1)) * 100;
                         return (
                           <span
                             key={storage}
@@ -189,32 +201,32 @@ export const ResourceFields = () => {
           name="resource.replicas"
           render={({ field }) => {
             const currentIndex =
-              REPLICAS_OPTIONS.findIndex((option) => option === field.value) ||
+              replicasOptions.findIndex((option) => option === field.value) ||
               0;
 
             return (
               <FormItem>
                 <div className="flex items-center gap-2">
                   <FormLabel className="font-medium">Replicas:</FormLabel>
-                  <span className="">{field.value || REPLICAS_OPTIONS[0]}</span>
+                  <span className="">{field.value || replicasOptions[0]}</span>
                 </div>
                 <div className="space-y-2">
                   <Slider
                     value={[currentIndex]}
                     onValueChange={(value) =>
-                      field.onChange(REPLICAS_OPTIONS[value[0]])
+                      field.onChange(replicasOptions[value[0]])
                     }
                     min={0}
-                    max={REPLICAS_OPTIONS.length - 1}
+                    max={replicasOptions.length - 1}
                     step={1}
                     className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
                     aria-label="Replicas slider"
                   />
                   <div className="relative">
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      {REPLICAS_OPTIONS.map((replica, index) => {
+                      {replicasOptions.map((replica, index) => {
                         const position =
-                          (index / (REPLICAS_OPTIONS.length - 1)) * 100;
+                          (index / (replicasOptions.length - 1)) * 100;
                         return (
                           <span
                             key={replica}
