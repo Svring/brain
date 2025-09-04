@@ -48,11 +48,7 @@ export const useNodeSelect = ({
   const { reset } = useCopilotChatHeadless_c();
 
   // Create new chat session mutation
-  const createChatMutation = useCreateNewChatSessionMutation({
-    kubeconfig: auth?.kubeconfig || "",
-    projectName: selectedProject || undefined,
-    resourceTarget: target,
-  });
+  const createChatMutation = useCreateNewChatSessionMutation(target);
 
   // Construct node ID based on target
   const nodeId = `${target.resourceType.toLowerCase()}-${target.name}`;

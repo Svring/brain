@@ -4,6 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createThread } from "../langgraph-api/langgraph-api";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { useChatActions } from "@/contexts/chat/chat-context";
+import { useAuthState } from "@/contexts/auth/auth-context";
+import { useProjectState } from "@/contexts/project/project-context";
 import { randomId } from "@copilotkit/shared";
 import { SystemMessage } from "@/lib/copilot/message/message-utils";
 import {
@@ -19,22 +21,19 @@ import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schema
 /**
  * Hook for creating a new chat session with copilot context management
  */
-export const useCreateNewChatSessionMutation = ({
-  kubeconfig,
-  projectName,
-  resourceTarget,
-}: {
-  kubeconfig: string;
-  projectName?: string;
-  resourceTarget?: ResourceTarget;
-}) => {
+export const useCreateNewChatSessionMutation = (
+  resourceTarget?: ResourceTarget
+) => {
   const { reset } = useCopilotChatHeadless_c();
+  const { auth } = useAuthState();
+  const { selectedProject, selectedResource } = useProjectState();
+
   return useMutation({
     mutationFn: async () => {
       return await createThread({
-        kubeconfig,
-        projectName,
-        resourceTarget,
+        kubeconfig: auth?.kubeconfig || "",
+        projectName: selectedProject || undefined,
+        resourceTarget: resourceTarget || selectedResource || undefined,
       });
     },
     onSuccess: (_) => {

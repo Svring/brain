@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Eraser, ChevronRight } from "lucide-react";
 import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { Spinner } from "@/components/ui/spinner";
-import { useAuthState } from "@/contexts/auth/auth-context";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useChatActions } from "@/contexts/chat/chat-context";
 import Image from "next/image";
@@ -22,17 +21,11 @@ export function AiChatHeader({
   description = "Chat with Sealos Brain AI to help with your projects",
   className = "px-4 pt-2 shrink-0",
 }: AiChatHeaderProps) {
-  const { auth } = useAuthState();
-  const { selectedProject, selectedResource } = useProjectState();
+  const { selectedResource } = useProjectState();
   const { selectedThreadId } = useChatState();
-  const { closeSidebarChat, selectThread } = useChatActions();
+  const { closeSidebarChat } = useChatActions();
   const { reset } = useCopilotChatHeadless_c();
-  const { mutate: createNewChatSession, isPending } =
-    useCreateNewChatSessionMutation({
-      kubeconfig: auth!.kubeconfig,
-      projectName: selectedProject ?? undefined,
-      resourceTarget: selectedResource ?? undefined,
-    });
+  const { isPending } = useCreateNewChatSessionMutation();
 
   const getIconUrl = () => {
     if (!selectedResource) return "https://sealos.run/logo.svg";
@@ -89,11 +82,11 @@ export function AiChatHeader({
                 <span>{selectedResource.name}</span>
               </div>
             )}
-            {selectedThreadId && (
+            {/* {selectedThreadId && (
               <div className="flex items-center gap-2 text text-muted-foreground">
                 <span>{selectedThreadId.slice(0, 8)}</span>
               </div>
-            )}
+            )} */}
           </div>
         </div>
         <Button
