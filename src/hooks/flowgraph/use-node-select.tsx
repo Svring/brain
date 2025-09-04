@@ -45,9 +45,6 @@ export const useNodeSelect = ({
   const { appendSystemMessage } = useAppendSystemMessageMutation();
   const { selectThread } = useChatActions();
   const { sidebarChatResponding } = useChatState();
-  const { auth } = useAuthState();
-  const { selectedProject } = useProjectState();
-  const { reset } = useCopilotChatHeadless_c();
 
   // Create new chat session mutation
   const createChatMutation = useCreateNewChatSessionMutation(target);

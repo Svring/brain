@@ -48,11 +48,12 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
 
 export const MainSection: React.FC = () => {
   const router = useRouter();
-  const { reset } = useCopilotChatHeadless_c();
+  const { setMessages } = useCopilotChatHeadless_c();
 
   const handleNavigation = (path: string) => {
     if (path === "/home") {
-      reset();
+      // reset();
+      setMessages([]);
     }
     router.push(path);
   };

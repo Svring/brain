@@ -133,7 +133,7 @@ export default function ProjectPage({
   const { setStage } = useLanggraphActions();
   const { sidebarChatOpen } = useChatState();
   const { closeSidebarChat } = useChatActions();
-  const { reset } = useCopilotChatHeadless_c();
+  const { setMessages } = useCopilotChatHeadless_c();
 
   useEffect(() => {
     // Set the selected project when the component mounts
@@ -146,7 +146,7 @@ export default function ProjectPage({
     // Cleanup: clear the selected project when the component unmounts
     return () => {
       clearSelectedProject();
-      reset();
+      setMessages([]);
       closeSidebarChat();
     };
   }, [projectName]);

@@ -50,17 +50,13 @@ export const useCreateNewChatSessionMutation = (
  */
 export const useSendMessageMutation = () => {
   const { sendMessage } = useCopilotChatHeadless_c();
-  const { openSidebarChat, enableSidebarResponding, disableSidebarResponding } =
-    useChatActions();
+  const { openSidebarChat } = useChatActions();
 
   return useMutation({
     mutationFn: async (message: {
       role: "user" | "assistant" | "system";
       content: string;
     }) => {
-      // Enable responding state
-      enableSidebarResponding();
-
       // Send the message using sendMessage
       sendMessage({
         id: randomId(),
@@ -73,14 +69,8 @@ export const useSendMessageMutation = () => {
 
       return message;
     },
-    onSuccess: () => {
-      // Disable responding state when message is sent successfully
-      disableSidebarResponding();
-    },
     onError: (error) => {
       console.error("Failed to send message:", error);
-      // Disable responding state on error
-      disableSidebarResponding();
     },
   });
 };
@@ -91,8 +81,7 @@ export const useSendMessageMutation = () => {
 
 export const useAppendSystemMessageMutation = () => {
   const { setMessages, messages } = useCopilotChatHeadless_c();
-  const { openSidebarChat, enableSidebarResponding, disableSidebarResponding } =
-    useChatActions();
+  const { openSidebarChat } = useChatActions();
 
   const appendSystemMessage = ({
     type,
@@ -106,9 +95,6 @@ export const useAppendSystemMessageMutation = () => {
     onSuccess?: () => void;
   }) => {
     try {
-      // Enable responding state
-      enableSidebarResponding();
-
       // Create system message data
       const systemMessageData: SystemMessage = {
         type,
@@ -129,15 +115,10 @@ export const useAppendSystemMessageMutation = () => {
       setMessages(newMessages);
       openSidebarChat();
 
-      // Disable responding state when message is sent successfully
-      disableSidebarResponding();
-
       // Execute the onSuccess callback if provided
       onSuccess?.();
     } catch (error) {
       console.error("Failed to append system message:", error);
-      // Disable responding state on error
-      disableSidebarResponding();
     }
   };
 

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
 import React, { useMemo, memo, useEffect } from "react";
 import { createHash } from "crypto";
+import { useChatActions } from "@/contexts/chat/chat-context";
 
 // import { Tiktoken } from "js-tiktoken/lite";
 // import o200k_base from "js-tiktoken/ranks/o200k_base";
@@ -67,8 +68,14 @@ export function AiMessages({
   const { messages, isLoading, interrupt, reset } = useCopilotChatHeadless_c({
     id: "chat",
   });
+  const { setSidebarResponding } = useChatActions();
 
-  // console.log("loading", loaisLoadingding);
+  // console.log("loading", isLoading);
+
+  // Manage responding state based on isLoading
+  useEffect(() => {
+    setSidebarResponding(isLoading);
+  }, [isLoading]);
 
   // console.log("messages", messages);
 
