@@ -41,8 +41,8 @@ const SPLIT_OPTIONS = {
 export interface FlowgraphContext {
   nodes: Node[];
   edges: Edge[];
-  selectedNode: Node | null;
-  selectedEdge: Edge | null;
+  selectedNode: string | null;
+  selectedEdge: string | null;
   fitViewTrigger: number;
 }
 
@@ -55,8 +55,8 @@ export type FlowgraphEvent =
   | { type: "UPDATE_EDGE"; edge: Edge }
   | { type: "REMOVE_NODE"; id: string }
   | { type: "REMOVE_EDGE"; id: string }
-  | { type: "SELECT_NODE"; node: Node | null }
-  | { type: "SELECT_EDGE"; edge: Edge | null }
+  | { type: "SELECT_NODE"; id: string }
+  | { type: "SELECT_EDGE"; id: string }
   | { type: "CLEAR_SELECTED_NODE" }
   | { type: "CLEAR_SELECTED_EDGE" }
   | { type: "CLEAR_ALL_STATE" }
@@ -70,8 +70,8 @@ export const flowgraphMachine = createMachine({
   context: {
     nodes: [],
     edges: [],
-    selectedNode: null,
-    selectedEdge: null,
+    selectedNode: "",
+    selectedEdge: "",
     fitViewTrigger: 0,
   },
   states: {
@@ -164,7 +164,7 @@ export const flowgraphMachine = createMachine({
     },
     SELECT_NODE: {
       actions: assign({
-        selectedNode: ({ event }) => event.node,
+        selectedNode: ({ event }) => event.id,
         // nodes: ({ context }) =>
         //   // applySplitLayout(context.nodes, context.edges, SPLIT_OPTIONS),
         //   context.nodes,
@@ -172,7 +172,7 @@ export const flowgraphMachine = createMachine({
     },
     SELECT_EDGE: {
       actions: assign({
-        selectedEdge: ({ event }) => event.edge,
+        selectedEdge: ({ event }) => event.id,
         // nodes: ({ context }) =>
         //   applySplitLayout(context.nodes, context.edges, SPLIT_OPTIONS),
       }),

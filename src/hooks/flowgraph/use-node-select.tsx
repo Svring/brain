@@ -41,7 +41,7 @@ export const useNodeSelect = ({
   onSuccess,
 }: UseNodeSelectParams) => {
   const { selectResource } = useProjectActions();
-  const { selectNode, focusNode } = useFlowgraphActions();
+  const { selectNode } = useFlowgraphActions();
   const { appendSystemMessage } = useAppendSystemMessageMutation();
   const { selectThread } = useChatActions();
   const { sidebarChatResponding } = useChatState();
@@ -69,8 +69,8 @@ export const useNodeSelect = ({
     selectResource(target);
 
     // Select and focus the node in flowgraph context
-    selectNode(nodeId);
-    focusNode(nodeId);
+    // selectNode(nodeId);
+    // focusNode(nodeId);
 
     // Simply append the message if messageType is provided
     if (messageType) {

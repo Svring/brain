@@ -42,16 +42,16 @@ function FlowgraphFocusHandler() {
   const { state } = useFlowgraphContext();
   const { fitView } = useReactFlow();
 
-  useEffect(() => {
-    if (state.context.selectedNode) {
-      fitView({
-        nodes: [state.context.selectedNode],
-        padding: 0.2,
-        duration: 0,
-        maxZoom: 1,
-      });
-    }
-  }, [state.context.selectedNode]);
+  // useEffect(() => {
+  //   if (state.context.selectedNode) {
+  //     fitView({
+  //       nodes: [{ id: state.context.selectedNode }],
+  //       padding: 0.2,
+  //       duration: 0,
+  //       maxZoom: 1,
+  //     });
+  //   }
+  // }, [state.context.selectedNode]);
 
   // Handle programmatic fitView calls
   useEffect(() => {
@@ -99,15 +99,15 @@ export function useFlowgraphActions() {
     updateEdge: (edge: Edge) => send({ type: "UPDATE_EDGE", edge }),
     removeNode: (id: string) => send({ type: "REMOVE_NODE", id }),
     removeEdge: (id: string) => send({ type: "REMOVE_EDGE", id }),
-    selectNode: (node: unknown) => send({ type: "SELECT_NODE", node }),
-    selectEdge: (edge: unknown) => send({ type: "SELECT_EDGE", edge }),
+    selectNode: (id: string) => send({ type: "SELECT_NODE", id }),
+    selectEdge: (id: string) => send({ type: "SELECT_EDGE", id }),
     clearSelectedNode: () => send({ type: "CLEAR_SELECTED_NODE" }),
     clearSelectedEdge: () => send({ type: "CLEAR_SELECTED_EDGE" }),
     clearAllState: () => send({ type: "CLEAR_ALL_STATE" }),
     focusNode: (nodeId: string) => {
       const node = state.context.nodes.find((n) => n.id === nodeId);
       if (node) {
-        send({ type: "SELECT_NODE", node });
+        send({ type: "SELECT_NODE", id: nodeId });
       }
     },
     onNodesChange: (changes: NodeChange[]) =>

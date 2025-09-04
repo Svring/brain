@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Plus } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
+import { Plus, Spline } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -198,8 +198,11 @@ export default function NodeConnect({
   target,
 }: NodeConnectProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const plusRef = useRef<HTMLDivElement>(null);
   const isHovering = useHover(ref);
+  const isPlusHovering = useHover(plusRef);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showIcon, setShowIcon] = useState(false);
   const { clusterResources, objectStorageBucketResources } =
     useFlowgraphResources();
 
@@ -208,18 +211,35 @@ export default function NodeConnect({
     setIsDialogOpen(true);
   };
 
+  // Show plus icon when hovering over the container OR the plus icon itself
+  const shouldShowPlus = isHovering || isPlusHovering || isDialogOpen;
+
+  // Add delay when hiding the icon
+  useEffect(() => {
+    if (shouldShowPlus) {
+      setShowIcon(true);
+    } else {
+      const timer = setTimeout(() => {
+        setShowIcon(false);
+      }, 500); // 300ms delay before hiding
+      
+      return () => clearTimeout(timer);
+    }
+  }, [shouldShowPlus]);
+
   return (
     <div ref={ref} className={cn("relative", className)}>
       {children}
-      {isHovering && (
+      {showIcon && (
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <div
-              className="absolute -top-4 -left-6 z-50 pointer-events-auto"
+              ref={plusRef}
+              className="absolute -top-5 -left-5 z-50 pointer-events-auto"
               onClick={handlePlusClick}
             >
-              <div className="flex items-center justify-center rounded-full shadow-lg transition-all duration-150 cursor-pointer">
-                <Plus className="w-8 h-8" />
+              <div className="flex items-center justify-center rounded-full shadow-lg transition-all duration-200 cursor-pointer hover:scale-115 text-theme-blue">
+                <Spline className="w-8 h-8" />
               </div>
             </div>
           </DialogTrigger>
