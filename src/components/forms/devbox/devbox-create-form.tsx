@@ -6,7 +6,7 @@ import { useDevboxCreateForm } from "@/hooks/forms/devbox/use-devbox-create-form
 import { DevboxCreateFormData } from "@/schemas/forms/devbox/devbox-create-form-schema";
 import { NameField } from "@/components/forms/universal/name-field";
 import { ResourceFields } from "../universal/resource-fields";
-import { PortsFields } from "../universal/ports-fields";
+import { DevboxPortsFields } from "./devbox-ports-fields";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -32,7 +32,7 @@ export const DevboxCreateForm = ({
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <div className="space-y-4">
           <NameField />
-          
+
           <div className="space-y-2">
             <Label htmlFor="runtime">Runtime</Label>
             <Input
@@ -47,7 +47,7 @@ export const DevboxCreateForm = ({
 
         <div className="space-y-2">
           <div className="text-sm font-medium text-foreground">Ports</div>
-          <PortsFields fieldArray={portsFieldArray} />
+          <DevboxPortsFields fieldArray={portsFieldArray} />
         </div>
 
         <div className="flex justify-end space-x-4">

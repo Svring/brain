@@ -24,10 +24,9 @@ export const useDevboxCreateForm = (
       },
       ports: [
         {
-          port: 22,
-          protocol: "TCP",
-          appProtocol: "HTTP",
-          exposesPublicDomain: true,
+          port: 80,
+          protocol: "HTTP",
+          openPublicDomain: true,
         },
       ],
       ...defaultValues,

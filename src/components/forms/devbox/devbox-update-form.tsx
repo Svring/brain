@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useDevboxUpdateForm } from "@/hooks/forms/devbox/use-devbox-update-form";
 import { DevboxUpdateFormData } from "@/schemas/forms/devbox/devbox-update-form-schema";
 import { ResourceFields } from "../universal/resource-fields";
-import { PortsFields } from "../universal/ports-fields";
+import { DevboxPortsFields } from "./devbox-ports-fields";
 
 interface DevboxUpdateFormProps {
   defaultValues?: Partial<DevboxUpdateFormData>;
@@ -42,7 +42,7 @@ export const DevboxUpdateForm = ({
         {hasPorts && (
           <div className="space-y-2">
             <div className="text-sm font-medium text-foreground">Ports</div>
-            <PortsFields fieldArray={portsFieldArray} />
+            <DevboxPortsFields fieldArray={portsFieldArray} />
           </div>
         )}
 
