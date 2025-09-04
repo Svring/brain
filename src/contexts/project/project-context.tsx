@@ -60,9 +60,7 @@ export function useProjectState() {
 export function useProjectActions() {
   const { send, state } = useProjectContext();
   const { setProjectContext } = useLanggraphActions();
-  const { stage } = useLanggraphState();
-  const { state: agentState, setState: setAgentState } =
-    useLanggraphAgent(stage);
+  const { state: agentState, setState: setAgentState } = useLanggraphAgent();
 
   return {
     setAllProjects: (projects: unknown[]) => {

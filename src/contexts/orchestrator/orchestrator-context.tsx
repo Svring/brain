@@ -24,9 +24,7 @@ export const OrchestratorProvider = ({ children }: { children: ReactNode }) => {
   const { sidebarChatOpen } = useChatState();
   const { clearSelectedResource } = useProjectActions();
   const { state: langgraphState } = useLanggraphContext();
-  const { setState: setLanggraphState } = useLanggraphAgent(
-    langgraphState.context.stage
-  );
+  const { setState: setLanggraphState } = useLanggraphAgent();
 
   useEffect(() => {
     const prev = state.context.monitoredStates.sidebarChatOpen;

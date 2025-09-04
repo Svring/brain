@@ -24,11 +24,11 @@ export default function HomePage() {
   const messagesScrollRef = useRef<HTMLDivElement>(null);
 
   proposeProjectAction();
-  useLanggraphAgent("propose_project");
+  useLanggraphAgent();
 
-  useEffect(() => {
+  useMount(() => {
     setStage("propose_project");
-  }, []);
+  });
 
   // console.log("projects", projects);
 

@@ -74,9 +74,7 @@ export function useLanggraphState() {
 
 export function useLanggraphActions() {
   const { send, state } = useLanggraphContext();
-  const { setState: setLanggraphState } = useLanggraphAgent(
-    state.context.stage
-  );
+  const { setState: setLanggraphState } = useLanggraphAgent();
 
   return {
     setConfig: (config: {
@@ -103,4 +101,3 @@ export function useLanggraphActions() {
     },
   };
 }
-
