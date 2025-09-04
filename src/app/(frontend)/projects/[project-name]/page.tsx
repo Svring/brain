@@ -17,7 +17,6 @@ import { FlowgraphCommandDialog } from "@/components/flowgraph/command/flowgraph
 // Custom hooks
 import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
 import useFlowgraph from "@/hooks/flowgraph/use-flowgraph";
-import { useManageStatusDialog } from "@/hooks/brain/use-manage-status-dialog";
 import { useFlowgraphCommand } from "@/hooks/flowgraph/use-flowgraph-command";
 import { useChatActions } from "@/contexts/chat/chat-context";
 

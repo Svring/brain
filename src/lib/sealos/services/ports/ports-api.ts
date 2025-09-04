@@ -40,6 +40,7 @@ export async function checkPortsReachability(
       reachable: await checkPortReachability(port, host, timeout),
     }))
   );
+  console.log("results", results);
 
   return results;
 }

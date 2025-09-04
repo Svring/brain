@@ -4,7 +4,7 @@ import {
   CustomResourceTarget,
   CustomResourceTargetSchema,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { getDevboxObject } from "@/lib/sealos/resources/devbox/devbox-method/devbox-bridge";
+import { getDevboxObject } from "@/lib/sealos/services/bridge/bridge-resources/bridge-sealos/devbox/devbox-bridge-query";
 import { listCustomResources } from "@/lib/k8s/k8s-api/k8s-api-query";
 import { runParallelAction } from "next-server-actions-parallel";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";

@@ -8,6 +8,7 @@
 interface PortObject {
   number: number;
   privateAddress?: string;
+  privateHost?: string;
   [key: string]: any;
 }
 
@@ -21,7 +22,7 @@ export interface ContainerPortsResult {
 
 /**
  * Extract host and port numbers from a ports array for container status checking
- * @param ports - Array of port objects with number and privateAddress properties
+ * @param ports - Array of port objects with number and privateHost properties
  * @returns Object containing the extracted host and port numbers
  */
 export function extractContainerPorts(
@@ -31,15 +32,8 @@ export function extractContainerPorts(
     return { host: null, ports: [] };
   }
 
-  // Extract host from the first port's privateAddress
-  const firstPort = ports[0];
-  let host: string | null = null;
-
-  if (firstPort.privateAddress) {
-    // Extract host from privateAddress (e.g., "tcp://affine-wljjwbhe.ns-gapyo0ig:3010" -> "affine-wljjwbhe.ns-gapyo0ig")
-    const match = firstPort.privateAddress.match(/tcp:\/\/([^:]+):/);
-    host = match ? match[1] : null;
-  }
+  // Get host from the first port's privateHost field
+  const host = ports[0]?.privateHost || null;
 
   // Extract port numbers from all ports
   const portNumbers = ports

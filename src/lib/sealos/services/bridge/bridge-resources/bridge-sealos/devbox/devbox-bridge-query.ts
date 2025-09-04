@@ -64,6 +64,7 @@ export const getDevboxObject = async (
       protocol: servicePort.protocol,
       serviceName: servicePort.serviceName,
       privateAddress: privateAddress,
+      privateHost: servicePort.privateHost,
       nodePort: servicePort.nodePort,
     } as DevboxPort);
   });
