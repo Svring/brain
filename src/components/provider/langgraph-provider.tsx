@@ -8,6 +8,7 @@ import { useCreateAiProxyTokenMutation } from "@/lib/sealos/resources/ai-proxy/a
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { LanggraphProvider } from "@/contexts/langgraph/langgraph-context";
+import { useAuthState } from "@/contexts/auth/auth-context";
 
 // Wrapper component that handles configuration extraction and management
 export const LanggraphConfigWrapper = ({
@@ -16,10 +17,16 @@ export const LanggraphConfigWrapper = ({
   children: ReactNode;
 }) => {
   const isProduction = process.env.NEXT_PUBLIC_MODE === "production";
+  const { auth } = useAuthState();
 
-  // In development mode, skip configuration and directly render children
+  // In development mode, use auth state directly
   if (!isProduction) {
-    return <LanggraphProvider config={{}}>{children}</LanggraphProvider>;
+    const config = {
+      apiKey: auth?.apiKey,
+      baseUrl: auth?.baseUrl,
+      modelName: "gpt-4.1",
+    };
+    return <LanggraphProvider config={config}>{children}</LanggraphProvider>;
   }
 
   const aiProxyContext = useAiProxyContext();
@@ -104,5 +111,3 @@ export const LanggraphConfigWrapper = ({
 
   return <LanggraphProvider config={config}>{children}</LanggraphProvider>;
 };
-
-

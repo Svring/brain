@@ -33,7 +33,7 @@ export const LanggraphProvider = ({
   const isProduction = process.env.NEXT_PUBLIC_MODE === "production";
 
   useEffect(() => {
-    if (isProduction && config.apiKey && config.baseUrl && config.modelName) {
+    if (config.apiKey && config.baseUrl && config.modelName) {
       send({
         type: "SET_CONFIG",
         api_key: config.apiKey,
@@ -41,7 +41,7 @@ export const LanggraphProvider = ({
         model_name: config.modelName,
       });
     }
-  }, [isProduction, config.apiKey, config.baseUrl, config.modelName]);
+  }, [config.apiKey, config.baseUrl, config.modelName]);
 
   return (
     <LanggraphContext.Provider value={{ state, send, actorRef }}>
