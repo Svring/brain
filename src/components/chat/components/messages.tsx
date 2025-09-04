@@ -68,6 +68,8 @@ export function AiMessages({
     id: "chat",
   });
 
+  // console.log("loading", loaisLoadingding);
+
   // console.log("messages", messages);
 
   // const totalTokens = messages.reduce(

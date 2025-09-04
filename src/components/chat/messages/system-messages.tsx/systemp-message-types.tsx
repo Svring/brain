@@ -33,7 +33,6 @@ import NetworkMessage from "./universal/network-message";
 import PodOverviewMessage from "./universal/pod-overview-message";
 import PodDetailMessage from "./universal/pod-detail-message";
 import DiagnoseNetworkMessage from "./universal/diagnose-network-message";
-import AddResourceMessage from "./universal/add-resource-message";
 import CustomDomainMessage from "./universal/custom-domain-message";
 
 export const SystemMessageType = {
@@ -106,7 +105,6 @@ export const SystemMessageType = {
     diagnoseNetwork: (target: ResourceTarget) => (
       <DiagnoseNetworkMessage target={target} />
     ),
-    addResource: () => <AddResourceMessage />,
     customDomain: (target: ResourceTarget) => (
       <CustomDomainMessage target={target} />
     ),

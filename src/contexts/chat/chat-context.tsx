@@ -43,6 +43,8 @@ export function useChatState() {
   return {
     sidebarChatOpen: state.context.sidebarChat.open,
     floatingChatOpen: state.context.floatingChat.open,
+    sidebarChatResponding: state.context.sidebarChat.responding,
+    floatingChatResponding: state.context.floatingChat.responding,
     selectedThreadId: state.context.selectedThreadId,
     threads: state.context.threads,
   };
@@ -61,6 +63,20 @@ export function useChatActions() {
       send({ type: "SET_FLOATING_CHAT_OPEN", open: true }),
     closeFloatingChat: () =>
       send({ type: "SET_FLOATING_CHAT_OPEN", open: false }),
+
+    setSidebarResponding: (responding: boolean) =>
+      send({ type: "SET_SIDEBAR_RESPONDING", responding }),
+    setFloatingResponding: (responding: boolean) =>
+      send({ type: "SET_FLOATING_RESPONDING", responding }),
+    
+    enableSidebarResponding: () =>
+      send({ type: "SET_SIDEBAR_RESPONDING", responding: true }),
+    disableSidebarResponding: () =>
+      send({ type: "SET_SIDEBAR_RESPONDING", responding: false }),
+    enableFloatingResponding: () =>
+      send({ type: "SET_FLOATING_RESPONDING", responding: true }),
+    disableFloatingResponding: () =>
+      send({ type: "SET_FLOATING_RESPONDING", responding: false }),
 
     selectThread: (threadId: string) =>
       send({ type: "SELECT_THREAD", threadId }),

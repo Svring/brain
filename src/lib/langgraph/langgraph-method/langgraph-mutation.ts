@@ -50,13 +50,17 @@ export const useCreateNewChatSessionMutation = (
  */
 export const useSendMessageMutation = () => {
   const { sendMessage } = useCopilotChatHeadless_c();
-  const { openSidebarChat } = useChatActions();
+  const { openSidebarChat, enableSidebarResponding, disableSidebarResponding } =
+    useChatActions();
 
   return useMutation({
     mutationFn: async (message: {
       role: "user" | "assistant" | "system";
       content: string;
     }) => {
+      // Enable responding state
+      enableSidebarResponding();
+
       // Send the message using sendMessage
       sendMessage({
         id: randomId(),
@@ -69,8 +73,14 @@ export const useSendMessageMutation = () => {
 
       return message;
     },
+    onSuccess: () => {
+      // Disable responding state when message is sent successfully
+      disableSidebarResponding();
+    },
     onError: (error) => {
       console.error("Failed to send message:", error);
+      // Disable responding state on error
+      disableSidebarResponding();
     },
   });
 };
@@ -81,7 +91,8 @@ export const useSendMessageMutation = () => {
 
 export const useAppendSystemMessageMutation = () => {
   const { setMessages, messages } = useCopilotChatHeadless_c();
-  const { openSidebarChat } = useChatActions();
+  const { openSidebarChat, enableSidebarResponding, disableSidebarResponding } =
+    useChatActions();
 
   const appendSystemMessage = ({
     type,
@@ -94,68 +105,80 @@ export const useAppendSystemMessageMutation = () => {
     payload?: any;
     onSuccess?: () => void;
   }) => {
-    // Create system message data
-    const systemMessageData: SystemMessage = {
-      type,
-      target,
-      payload,
-    };
+    try {
+      // Enable responding state
+      enableSidebarResponding();
 
-    // Send a message about the resource in current session
-    const newMessages = [
-      ...messages,
-      {
-        id: randomId(),
-        role: "system" as const,
-        content: JSON.stringify(systemMessageData),
-      },
-    ];
+      // Create system message data
+      const systemMessageData: SystemMessage = {
+        type,
+        target,
+        payload,
+      };
 
-    setMessages(newMessages);
-    openSidebarChat();
+      // Send a message about the resource in current session
+      const newMessages = [
+        ...messages,
+        {
+          id: randomId(),
+          role: "system" as const,
+          content: JSON.stringify(systemMessageData),
+        },
+      ];
 
-    // Execute the onSuccess callback if provided
-    onSuccess?.();
+      setMessages(newMessages);
+      openSidebarChat();
+
+      // Disable responding state when message is sent successfully
+      disableSidebarResponding();
+
+      // Execute the onSuccess callback if provided
+      onSuccess?.();
+    } catch (error) {
+      console.error("Failed to append system message:", error);
+      // Disable responding state on error
+      disableSidebarResponding();
+    }
   };
 
   return { appendSystemMessage };
 };
 
-/**
- * Hook for appending new messages of any role to the chat
- */
-export const useAppendMessagesMutation = () => {
-  const { setMessages, messages } = useCopilotChatHeadless_c();
-  const { openSidebarChat } = useChatActions();
+// /**
+//  * Hook for appending new messages of any role to the chat
+//  */
+// export const useAppendMessagesMutation = () => {
+//   const { setMessages, messages } = useCopilotChatHeadless_c();
+//   const { openSidebarChat } = useChatActions();
 
-  return useMutation({
-    mutationFn: async (
-      newMessages: Array<{
-        role: "user" | "assistant" | "system";
-        content: string | object;
-      }>
-    ) => {
-      // Create message objects with random IDs
-      const messageObjects = newMessages.map((message) => ({
-        id: randomId(),
-        role: message.role,
-        content:
-          message.role === "system"
-            ? JSON.stringify(message.content)
-            : String(message.content),
-      }));
+//   return useMutation({
+//     mutationFn: async (
+//       newMessages: Array<{
+//         role: "user" | "assistant" | "system";
+//         content: string | object;
+//       }>
+//     ) => {
+//       // Create message objects with random IDs
+//       const messageObjects = newMessages.map((message) => ({
+//         id: randomId(),
+//         role: message.role,
+//         content:
+//           message.role === "system"
+//             ? JSON.stringify(message.content)
+//             : String(message.content),
+//       }));
 
-      // Append new messages to existing messages
-      const updatedMessages = [...messages, ...messageObjects];
-      setMessages(updatedMessages);
+//       // Append new messages to existing messages
+//       const updatedMessages = [...messages, ...messageObjects];
+//       setMessages(updatedMessages);
 
-      // Open the sidebar chat
-      openSidebarChat();
+//       // Open the sidebar chat
+//       openSidebarChat();
 
-      return messageObjects;
-    },
-    onError: (error) => {
-      console.error("Failed to append messages:", error);
-    },
-  });
-};
+//       return messageObjects;
+//     },
+//     onError: (error) => {
+//       console.error("Failed to append messages:", error);
+//     },
+//   });
+// };

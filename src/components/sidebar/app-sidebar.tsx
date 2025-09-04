@@ -2,6 +2,7 @@
 
 import { MainSection } from "./sidebar-section";
 import { UserCard } from "./user-card";
+import { BrainTokenStats } from "./brain-token-stats";
 import {
   Sidebar,
   SidebarContent,
@@ -14,8 +15,10 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { BookOpen } from "lucide-react";
+import { useAuthState } from "@/contexts/auth/auth-context";
 
 export default function AppSidebar() {
+  const { mode } = useAuthState();
   return (
     <>
       <Sidebar className="" collapsible="icon">
@@ -35,21 +38,25 @@ export default function AppSidebar() {
         </SidebarContent>
         <SidebarFooter className={cn("rounded-b-lg bg-background-primary")}>
           {/* <AIAccess /> */}
-          <SidebarMenu>
+          {mode === "production" ? (
+            <BrainTokenStats />
+          ) : (
+            <UserCard
+              user={{
+                name: "Brain",
+                email: "brain@sealos.io",
+                avatar: "https://github.com/vercel.png",
+              }}
+            />
+          )}
+          {/* <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton>
                 <BookOpen />
                 <span>Documentation</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
-          </SidebarMenu>
-          <UserCard
-            user={{
-              name: "Brain",
-              email: "brain@sealos.io",
-              avatar: "https://github.com/vercel.png",
-            }}
-          />
+          </SidebarMenu> */}
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>

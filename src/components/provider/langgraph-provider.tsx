@@ -19,16 +19,6 @@ export const LanggraphConfigWrapper = ({
   const isProduction = process.env.NEXT_PUBLIC_MODE === "production";
   const { auth } = useAuthState();
 
-  // In development mode, use auth state directly
-  if (!isProduction) {
-    const config = {
-      apiKey: auth?.apiKey,
-      baseUrl: auth?.baseUrl,
-      modelName: "gpt-4.1",
-    };
-    return <LanggraphProvider config={config}>{children}</LanggraphProvider>;
-  }
-
   const aiProxyContext = useAiProxyContext();
   const { data: aiProxyTokens, isLoading } = useQuery(
     listAiProxyTokensOptions(aiProxyContext)
@@ -39,6 +29,16 @@ export const LanggraphConfigWrapper = ({
   );
 
   const createTokenMutation = useCreateAiProxyTokenMutation(aiProxyContext);
+
+  // In development mode, use auth state directly
+  if (!isProduction) {
+    const config = {
+      apiKey: auth?.apiKey,
+      baseUrl: auth?.baseUrl,
+      modelName: "gpt-4.1",
+    };
+    return <LanggraphProvider config={config}>{children}</LanggraphProvider>;
+  }
 
   // Extract configuration values
   const config = {

@@ -47,7 +47,7 @@ export const DiagnoseNetworkMessage: React.FC<DiagnoseNetworkMessageProps> = ({
   const networkStatus = readyStatus as any;
 
   // console.log("containerPortsData", containerPortsData);
-  console.log("containerStatus", containerStatus);
+  // console.log("containerStatus", containerStatus);
 
   return (
     <BaseActionMessage

@@ -5,6 +5,7 @@ import { Thread } from "@langchain/langgraph-sdk";
 
 export interface ChatSectionState {
   open: boolean;
+  responding: boolean;
 }
 
 export interface ChatContextState {
@@ -17,6 +18,8 @@ export interface ChatContextState {
 export type ChatEvent =
   | { type: "SET_SIDEBAR_CHAT_OPEN"; open: boolean }
   | { type: "SET_FLOATING_CHAT_OPEN"; open: boolean }
+  | { type: "SET_SIDEBAR_RESPONDING"; responding: boolean }
+  | { type: "SET_FLOATING_RESPONDING"; responding: boolean }
   | { type: "SELECT_THREAD"; threadId: string }
   | { type: "SET_THREADS"; threads: Thread[] };
 
@@ -26,8 +29,8 @@ export const chatMachine = createMachine({
   id: "chat",
   initial: "idle",
   context: {
-    sidebarChat: { open: false },
-    floatingChat: { open: false },
+    sidebarChat: { open: false, responding: false },
+    floatingChat: { open: false, responding: false },
     selectedThreadId: "",
     threads: [],
   },
@@ -48,6 +51,22 @@ export const chatMachine = createMachine({
         floatingChat: ({ context, event }) => ({
           ...context.floatingChat,
           open: event.open,
+        }),
+      }),
+    },
+    SET_SIDEBAR_RESPONDING: {
+      actions: assign({
+        sidebarChat: ({ context, event }) => ({
+          ...context.sidebarChat,
+          responding: event.responding,
+        }),
+      }),
+    },
+    SET_FLOATING_RESPONDING: {
+      actions: assign({
+        floatingChat: ({ context, event }) => ({
+          ...context.floatingChat,
+          responding: event.responding,
         }),
       }),
     },

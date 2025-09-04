@@ -11,6 +11,7 @@ import { useAuthState } from "@/contexts/auth/auth-context";
 import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useLatestThread } from "@/hooks/langgraph/use-latest-thread";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
+import { toast } from "sonner";
 
 // const queryClient = useQueryClient();
 //   const { selectThread } = useChatActions();
@@ -43,6 +44,7 @@ export const useNodeSelect = ({
   const { selectNode, focusNode } = useFlowgraphActions();
   const { appendSystemMessage } = useAppendSystemMessageMutation();
   const { selectThread } = useChatActions();
+  const { sidebarChatResponding } = useChatState();
   const { auth } = useAuthState();
   const { selectedProject } = useProjectState();
   const { reset } = useCopilotChatHeadless_c();
@@ -63,6 +65,8 @@ export const useNodeSelect = ({
     hasThreads,
   } = useLatestThread({ target });
 
+  console.log("sidebarChatResponding", sidebarChatResponding);
+
   const handleNodeSelect = () => {
     // Select the resource in project context
     selectResource(target);
@@ -73,6 +77,12 @@ export const useNodeSelect = ({
 
     // Simply append the message if messageType is provided
     if (messageType) {
+      // Don't trigger createChatMutation if chat is already responding
+      if (sidebarChatResponding) {
+        toast("Agent is responding, new messages would be blocked for now.");
+        return;
+      }
+
       createChatMutation.mutate(undefined, {
         onSuccess: (thread) => {
           // Select the newly created thread

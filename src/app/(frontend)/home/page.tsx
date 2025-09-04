@@ -12,7 +12,7 @@ import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
 import { useMount } from "@reactuses/core";
 import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
 import { Button } from "@/components/ui/button";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { proposeProjectAction } from "@/lib/copilot/brain/project/copilot-project-actions";
 
 export default function HomePage() {
@@ -26,9 +26,9 @@ export default function HomePage() {
   proposeProjectAction();
   useLanggraphAgent("propose_project");
 
-  useMount(() => {
+  useEffect(() => {
     setStage("propose_project");
-  });
+  }, []);
 
   // console.log("projects", projects);
 
