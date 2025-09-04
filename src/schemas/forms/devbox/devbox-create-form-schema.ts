@@ -2,7 +2,7 @@ import { z } from "zod";
 import { NameSchema } from "@/schemas/forms/universal/name-schema";
 import { DevboxRuntimeSchema } from "./components/devbox-runtime-schema";
 import { DevboxResourceSchema } from "./components/devbox-resource-schema";
-import { PortSchema } from "../universal/port-schema";
+import { DevboxPortSchema } from "./components/devbox-port-schema";
 
 // Main devbox create form schema
 export const devboxCreateFormSchema = z.object({
@@ -14,12 +14,11 @@ export const devboxCreateFormSchema = z.object({
     cpu: 2,
     memory: 2,
   }),
-  ports: z.array(PortSchema).default([
+  ports: z.array(DevboxPortSchema).default([
     {
-      port: 22,
-      protocol: "TCP",
-      appProtocol: "HTTP",
-      exposesPublicDomain: true,
+      port: 80,
+      protocol: "HTTP",
+      openPublicDomain: true,
     },
   ]),
 });
@@ -37,4 +36,7 @@ export {
   DevboxResourceSchema,
   type DevboxResource,
 } from "./components/devbox-resource-schema";
-export { PortSchema, type Port } from "../universal/port-schema";
+export {
+  DevboxPortSchema,
+  type DevboxPort,
+} from "./components/devbox-port-schema";
