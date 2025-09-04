@@ -8,7 +8,7 @@ import AppSidebar from "@/components/sidebar/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ChatProvider } from "@/contexts/chat/chat-context";
 import { ProjectProvider } from "@/contexts/project/project-context";
-import { LanggraphConfigWrapper } from "@/contexts/langgraph/langgraph-context";
+import { LanggraphConfigWrapper } from "@/components/provider/langgraph-provider";
 import { OrchestratorProvider } from "@/contexts/orchestrator/orchestrator-context";
 import { ReactScan } from "@/components/provider/react-scan-provider";
 import { Toaster } from "@/components/ui/sonner";
