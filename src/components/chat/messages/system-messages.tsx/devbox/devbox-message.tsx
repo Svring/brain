@@ -12,7 +12,7 @@ import {
   History,
 } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { DevboxInfoDetails } from "./components/devbox-message-details";
+import { DevboxMessageDetail } from "./components/devbox-message-details";
 import DevboxMessageMenu from "./components/devbox-message-menu";
 import DevboxNodeIde from "@/components/flowgraph/node/sealos/devbox/devbox-node-ide";
 
@@ -90,7 +90,7 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
         </div>
       }
     >
-      <DevboxInfoDetails target={target} />
+      <DevboxMessageDetail target={target} />
     </BaseSystemMessage>
   );
 };

@@ -5,11 +5,7 @@ import {
   Download,
   ChevronDown,
   Terminal,
-  PenLine,
   Check,
-  Cpu,
-  MemoryStick,
-  X,
 } from "lucide-react";
 import {
   DevboxObject,
@@ -27,14 +23,13 @@ import {
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 import { Separator } from "@/components/ui/separator";
 import { useCopy } from "@/hooks/use-copy";
-import { DevboxUpdateForm } from "@/components/forms/devbox/devbox-update-form";
-import { DevboxUpdateFormData } from "@/schemas/forms/devbox/devbox-update-form-schema";
+import { ResourceQuota } from "./devbox-message-detail/resource-quota";
 
 interface DevboxInfoDetailsProps {
   target: CustomResourceTarget;
 }
 
-export const DevboxInfoDetails: React.FC<DevboxInfoDetailsProps> = ({
+export const DevboxMessageDetail: React.FC<DevboxInfoDetailsProps> = ({
   target,
 }) => {
   const { auth } = useAuthState();
@@ -43,9 +38,6 @@ export const DevboxInfoDetails: React.FC<DevboxInfoDetailsProps> = ({
 
   const { resource, isLoading, error } = useResourceStatus(target);
   const { copyToClipboard, isCopied } = useCopy();
-
-  // State for resource edit mode
-  const [isResourceEditing, setIsResourceEditing] = useState(false);
 
   // Parse the resource data
   const devboxObject = resource ? DevboxObjectSchema.parse(resource) : null;
@@ -78,14 +70,9 @@ export const DevboxInfoDetails: React.FC<DevboxInfoDetailsProps> = ({
     );
   }
 
-  const handleResourceSubmit = async (data: DevboxUpdateFormData) => {
-    // Only extract the resource field from the form data
-    const resourceData = data.resource;
-    if (resourceData) {
-      // TODO: Implement save functionality
-      console.log("Saving resource configuration:", resourceData);
-    }
-    setIsResourceEditing(false);
+  const handleResourceSubmit = async (type: string, data?: any) => {
+    // TODO: Implement save functionality
+    console.log("Saving resource configuration:", data);
   };
 
   return (
@@ -119,77 +106,11 @@ export const DevboxInfoDetails: React.FC<DevboxInfoDetailsProps> = ({
       )}
 
       {/* Resource Quota Section */}
-      <div className="border border-dashed rounded-lg">
-        <div className="flex items-center justify-between p-2 border-b border-dashed">
-          <h3 className="font-medium">Resource Quota</h3>
-          {isResourceEditing ? (
-            <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 w-8"
-                onClick={() => setIsResourceEditing(false)}
-              >
-                <X />
-              </Button>
-              <Button
-                type="submit"
-                form="devbox-update-form"
-                variant="outline"
-                size="sm"
-                className="h-8 w-8"
-              >
-                <Check />
-              </Button>
-            </div>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 w-8"
-              onClick={() => setIsResourceEditing(true)}
-            >
-              <PenLine />
-            </Button>
-          )}
-        </div>
-        <div className={`${isResourceEditing ? "p-4" : "p-2"}`}>
-          {isResourceEditing ? (
-            <DevboxUpdateForm
-              defaultValues={{
-                resource: {
-                  cpu: devboxObject.resources?.cpu?.toString() || "2",
-                  memory: devboxObject.resources?.memory?.toString() || "4",
-                },
-              }}
-              onSubmit={handleResourceSubmit}
-              isLoading={false}
-              hideDefaultButton={true}
-            />
-          ) : (
-            <div className="flex items-center justify-around">
-              <div className="flex flex-col items-center gap-1">
-                <div className="text-sm text-muted-foreground">CPU</div>
-                <Cpu className="h-4 w-4 text-muted-foreground" />
-                <div className="text-sm font-medium">
-                  {devboxObject.resources?.cpu
-                    ? `${devboxObject.resources.cpu}Core`
-                    : "N/A"}
-                </div>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <div className="text-sm text-muted-foreground">Memory</div>
-                <MemoryStick className="h-4 w-4 text-muted-foreground" />
-                <div className="text-sm font-medium">
-                  {devboxObject.resources?.memory
-                    ? `${devboxObject.resources.memory}GB`
-                    : "N/A"}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+      <ResourceQuota
+        resource={devboxObject.resources}
+        onResourceUpdate={handleResourceSubmit}
+        isLoading={false}
+      />
 
       <Separator />
 

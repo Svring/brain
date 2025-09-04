@@ -12,6 +12,11 @@ import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schema
 import BaseActionMessage from "../components/base-action-message";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useNetworkStatus } from "@/hooks/sealos/network/use-network-status";
+import { useContainerStatus } from "@/hooks/sealos/network/use-container-status";
+import {
+  extractContainerPorts,
+  ContainerPortsResult,
+} from "@/lib/sealos/services/ports/ports-utils";
 
 import {
   Collapsible,
@@ -26,10 +31,25 @@ interface DiagnoseNetworkMessageProps {
 export const DiagnoseNetworkMessage: React.FC<DiagnoseNetworkMessageProps> = ({
   target,
 }) => {
-  const { resource } = useResourceStatus(target);
+  const { resource: containerPortsData, originalResource: resource } =
+    useResourceStatus<ContainerPortsResult>(target, (resource) =>
+      extractContainerPorts(resource?.ports)
+    );
   const { readyStatus } = useNetworkStatus(target);
   const [isOpen, setIsOpen] = React.useState(true);
 
+  // Use container status hook
+  const {
+    data: containerStatus,
+    isLoading: isContainerLoading,
+    error: containerError,
+  } = useContainerStatus(
+    containerPortsData?.ports || [],
+    containerPortsData?.host || "",
+    2000 // 2 second timeout
+  );
+
+  console.log("containerPortsData", containerPortsData);
   console.log("resource", resource);
   console.log("readyStatus", readyStatus);
 
@@ -172,8 +192,40 @@ export const DiagnoseNetworkMessage: React.FC<DiagnoseNetworkMessageProps> = ({
             <ChevronDown className="h-4 w-4 transition-transform duration-200" />
           </CollapsibleTrigger>
           <CollapsibleContent className="p-2">
-            <div className="text-center py-4 text-gray-500">
-              Container status information will be displayed here
+            <div className="space-y-2">
+              {isContainerLoading ? (
+                <div className="text-center py-4 text-gray-500">
+                  Checking container port status...
+                </div>
+              ) : containerError ? (
+                <div className="text-center py-4 text-theme-red">
+                  Error checking container status: {containerError.message}
+                </div>
+              ) : containerStatus && containerStatus.length > 0 ? (
+                <div className="space-y-2">
+                  {containerStatus.map((status: any, index: number) => (
+                    <div key={index} className="flex items-center space-x-3">
+                      <div className="flex-shrink-0">
+                        {status.reachable ? (
+                          <Wifi className="h-4 w-4 text-theme-green" />
+                        ) : (
+                          <WifiOff className="h-4 w-4 text-theme-yellow" />
+                        )}
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-medium">Port {status.port}</span>
+                        <span className="ml-2 text-gray-500">
+                          ({status.reachable ? "reachable" : "unreachable"})
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  No container port information available
+                </div>
+              )}
             </div>
           </CollapsibleContent>
         </div>

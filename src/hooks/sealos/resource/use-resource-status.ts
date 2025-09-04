@@ -5,17 +5,33 @@ import {
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
-export const useResourceStatus = (
-  target: CustomResourceTarget | BuiltinResourceTarget
+// ============================================================================
+// TYPES
+// ============================================================================
+
+/**
+ * Select function type for transforming resource data
+ */
+export type ResourceSelectFunction<TResource = any, TSelected = any> = (
+  resource: TResource
+) => TSelected;
+
+export const useResourceStatus = <TSelected = any>(
+  target: CustomResourceTarget | BuiltinResourceTarget,
+  select?: ResourceSelectFunction<any, TSelected>
 ) => {
   const { devbox, cluster, launchpad, objectstorage } = useTRPCClients();
 
   // Helper function to create consistent return object
-  const createReturn = (resource: any, rest: any) => ({
-    ...rest,
-    resource,
-    status: resource?.status,
-  });
+  const createReturn = (resource: any, rest: any) => {
+    const processedResource = select ? select(resource) : resource;
+    return {
+      ...rest,
+      resource: processedResource,
+      originalResource: resource,
+      status: resource?.status,
+    };
+  };
 
   // Handle custom resources
   if (target.type === "custom") {

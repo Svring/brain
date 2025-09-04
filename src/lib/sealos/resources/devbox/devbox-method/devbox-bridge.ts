@@ -64,6 +64,7 @@ export const getDevboxObject = async (
       protocol: servicePort.protocol,
       serviceName: servicePort.serviceName,
       privateAddress: privateAddress,
+      privateHost: servicePort.privateHost,
       nodePort: servicePort.nodePort,
     } as DevboxPort);
   });
@@ -98,7 +99,7 @@ export const getDevboxObject = async (
   // Ensure ports array exists and assign merged ports
   devboxObject.ports = mergedPorts;
 
-  // console.log("devboxObject.ports", devboxObject.ports);
+  console.log("devboxObject.ports", devboxObject.ports);
 
   devboxObject.ssh = enrichSshWithRegionUrl(devboxObject.ssh, context);
 

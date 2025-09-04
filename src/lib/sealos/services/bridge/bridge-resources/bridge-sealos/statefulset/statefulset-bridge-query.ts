@@ -48,6 +48,7 @@ export const getStatefulSetObject = async (
       protocol: servicePort.protocol || "TCP",
       serviceName: servicePort.serviceName,
       privateAddress: servicePort.privateAddress,
+      privateHost: servicePort.privateHost,
       nodePort: servicePort.nodePort,
     });
   });

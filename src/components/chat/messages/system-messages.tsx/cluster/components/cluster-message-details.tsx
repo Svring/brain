@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   ClusterObject,
   ClusterObjectSchema,
@@ -11,19 +11,8 @@ import {
   composeClusterPublicConnectionString,
   composeClusterPrivateConnectionString,
 } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
-import { Button } from "@/components/ui/button";
-import {
-  Cpu,
-  MemoryStick,
-  HardDrive,
-  PenLine,
-  Check,
-  X,
-  Apple,
-} from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { ClusterUpdateForm } from "@/components/forms/cluster/cluster-update-form";
-import { ClusterUpdateFormData } from "@/schemas/forms/cluster/cluster-update-form-schema";
+import { ResourceQuota } from "./cluster-message-detail/resource-quota";
 
 interface ClusterMessageDetailsProps {
   target: CustomResourceTarget;
@@ -36,32 +25,16 @@ const ClusterMessageDetails: React.FC<ClusterMessageDetailsProps> = ({
 
   const { resource, isLoading, error } = useResourceStatus(target);
 
-  // State for resource edit mode
-  const [isResourceEditing, setIsResourceEditing] = useState(false);
-
   // Parse the resource data
   const clusterObject = resource ? ClusterObjectSchema.parse(resource) : null;
-
-  const formatValue = (value: any, type: "cpu" | "memory" | "storage") => {
-    if (!value) return "N/A";
-    if (type === "cpu") return `${value}Core`;
-    if (type === "memory") return `${value}GB`;
-    if (type === "storage") return `${value}GB`;
-    return value;
-  };
 
   const formatType = (type: string) => {
     return type.charAt(0).toUpperCase() + type.slice(1).replace(/-/g, " ");
   };
 
-  const handleResourceSubmit = async (data: ClusterUpdateFormData) => {
-    // Only extract the resource field from the form data
-    const resourceData = data.resource;
-    if (resourceData) {
-      // TODO: Implement save functionality
-      console.log("Saving cluster resource configuration:", resourceData);
-    }
-    setIsResourceEditing(false);
+  const handleResourceSubmit = async (type: string, data?: any) => {
+    // TODO: Implement save functionality
+    console.log("Saving cluster resource configuration:", data);
   };
 
   // Show loading state
@@ -111,90 +84,20 @@ const ClusterMessageDetails: React.FC<ClusterMessageDetailsProps> = ({
       )}
 
       {/* Resource Quota Section */}
-      <div className="border border-dashed rounded-lg">
-        <div className="flex items-center justify-between p-2 border-b border-dashed">
-          <h3 className="font-medium">Resource Quota</h3>
-          {isResourceEditing ? (
-            <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 w-8"
-                onClick={() => setIsResourceEditing(false)}
-              >
-                <X />
-              </Button>
-              <Button
-                type="submit"
-                form="cluster-update-form"
-                variant="outline"
-                size="sm"
-                className="h-8 w-8"
-              >
-                <Check />
-              </Button>
-            </div>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 w-8"
-              onClick={() => setIsResourceEditing(true)}
-            >
-              <PenLine />
-            </Button>
-          )}
-        </div>
-        <div className={`${isResourceEditing ? "p-4" : "p-2"}`}>
-          {isResourceEditing ? (
-            <ClusterUpdateForm
-              defaultValues={{
-                resource: {
-                  cpu: clusterObject.resource?.cpu || 2,
-                  memory: clusterObject.resource?.memory || 4,
-                  storage: clusterObject.resource?.storage || 10,
-                  replicas: clusterObject.resource?.replicas || 1,
-                },
-              }}
-              onSubmit={handleResourceSubmit}
-              isLoading={false}
-              hideDefaultButton={true}
-            />
-          ) : (
-            <div className="flex items-center justify-around">
-              <div className="flex flex-col items-center gap-1">
-                <div className="text-sm text-muted-foreground">CPU</div>
-                <Cpu className="h-4 w-4 text-muted-foreground" />
-                <div className="text-sm font-medium">
-                  {formatValue(clusterObject.resource?.cpu, "cpu")}
-                </div>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <div className="text-sm text-muted-foreground">Memory</div>
-                <MemoryStick className="h-4 w-4 text-muted-foreground" />
-                <div className="text-sm font-medium">
-                  {formatValue(clusterObject.resource?.memory, "memory")}
-                </div>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <div className="text-sm text-muted-foreground">Storage</div>
-                <HardDrive className="h-4 w-4 text-muted-foreground" />
-                <div className="text-sm font-medium">
-                  {formatValue(clusterObject.resource?.storage, "storage")}
-                </div>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <div className="text-sm text-muted-foreground">Replicas</div>
-                <Apple className="h-4 w-4 text-muted-foreground" />
-
-                <div className="text-sm font-medium">
-                  {clusterObject.resource?.replicas || "N/A"}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+      <ResourceQuota
+        resource={
+          Array.isArray(clusterObject.resource) || !clusterObject.resource
+            ? undefined
+            : {
+                cpu: clusterObject.resource.cpu ?? undefined,
+                memory: clusterObject.resource.memory ?? undefined,
+                storage: clusterObject.resource.storage ?? undefined,
+                replicas: clusterObject.resource.replicas ?? undefined,
+              }
+        }
+        onResourceUpdate={handleResourceSubmit}
+        isLoading={false}
+      />
     </div>
   );
 };

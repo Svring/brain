@@ -8,6 +8,7 @@ export const PortSchema = z.object({
   protocol: z.string(),
   serviceName: z.string().optional(),
   privateAddress: z.string().optional(),
+  privateHost: z.string().optional(),
   publicAddress: z.string().optional(),
   networkName: z.string().optional(),
   host: z.string().optional(),

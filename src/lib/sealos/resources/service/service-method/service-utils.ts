@@ -34,6 +34,7 @@ export interface UnifiedPort {
   publicAddress?: string;
   networkName?: string;
   host?: string;
+  privateHost?: string;
 }
 
 // Keep CompletedPort for backward compatibility
@@ -63,10 +64,17 @@ export const composeAddressFromService = (
     const protocol = port.protocol?.toLowerCase() || "http";
     const serviceName = port.serviceName;
 
-    // Compose private address: protocol://serviceName.namespace:port
-    const privateAddress = serviceName
-      ? `${protocol}://${serviceName}.${context.namespace}:${port.number}`
+    // Compose private host: serviceName.namespace
+    const privateHost = serviceName
+      ? `${serviceName}.${context.namespace}`
       : undefined;
+
+    // Compose private address: protocol://serviceName.namespace:port
+    const privateAddress = privateHost
+      ? `${protocol}://${privateHost}:${port.number}`
+      : undefined;
+
+    // console.log("privateHost", privateHost);
 
     // Compose public address: protocol://protocol.transformedRegionUrl:nodePort
     const publicAddress = port.nodePort
@@ -77,6 +85,7 @@ export const composeAddressFromService = (
 
     const result = {
       ...port,
+      ...(privateHost && { privateHost }),
       ...(privateAddress && { privateAddress }),
       ...(publicAddress && { publicAddress }),
     };
