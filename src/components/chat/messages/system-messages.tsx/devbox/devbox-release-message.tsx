@@ -32,7 +32,9 @@ interface DevboxReleaseMessageProps {
 const ReleaseItem: React.FC<{
   release: DevboxReleaseItem;
   target: CustomResourceTarget;
-}> = ({ release, target }) => {
+  onDelete: (versionName: string) => void;
+  isDeleting?: boolean;
+}> = ({ release, target, onDelete, isDeleting = false }) => {
   const { appendSystemMessage } = useAppendSystemMessageMutation();
 
   // console.log("release", release);
@@ -46,7 +48,7 @@ const ReleaseItem: React.FC<{
   };
 
   const handleDelete = () => {
-    console.log("delete", release);
+    onDelete(release.name);
   };
 
   const formatDate = (dateString: string) => {
@@ -93,13 +95,17 @@ const ReleaseItem: React.FC<{
             Deploy
           </Button>
           <Button
-            size="sm"
             variant="destructive"
-            className="p-0 hover:text-destructive"
+            className="p-0 h-8 w-8 hover:text-destructive"
             onClick={handleDelete}
+            disabled={isDeleting}
             title="Delete"
           >
-            <Trash2 className="h-3 w-3" />
+            {isDeleting ? (
+              <Spinner className="h-3 w-3" />
+            ) : (
+              <Trash2 className="h-3 w-3" />
+            )}
           </Button>
         </div>
       </div>
@@ -125,6 +131,7 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
   const [isCreatingRelease, setIsCreatingRelease] = useState(false);
   const [newReleaseTag, setNewReleaseTag] = useState("");
   const [newReleaseDescription, setNewReleaseDescription] = useState("");
+  const [deletingReleaseId, setDeletingReleaseId] = useState<string | null>(null);
 
   const {
     data: releasesData,
@@ -167,6 +174,23 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
     },
     onError: (error) => {
       console.error("Failed to create release:", error);
+    },
+  });
+
+  const deleteReleaseMutation = useMutation({
+    ...devboxTrpcClient.deleteDevboxRelease.mutationOptions(),
+    onSuccess: () => {
+      // Invalidate and refetch releases
+      queryClient.invalidateQueries({
+        queryKey: devboxTrpcClient.getDevboxReleases.queryKey(
+          target.name || ""
+        ),
+      });
+      setDeletingReleaseId(null);
+    },
+    onError: (error) => {
+      console.error("Failed to delete release:", error);
+      setDeletingReleaseId(null);
     },
   });
 
@@ -218,6 +242,11 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
                   key={release.id}
                   release={release}
                   target={target}
+                  onDelete={(versionName) => {
+                    setDeletingReleaseId(release.id);
+                    deleteReleaseMutation.mutate(versionName);
+                  }}
+                  isDeleting={deletingReleaseId === release.id}
                 />
               ))
             )}

@@ -10,25 +10,44 @@ export const useResourceLogs = (
 ) => {
   const { cluster, launchpad } = useTRPCClients();
 
-  // Determine query options based on target type
-  let queryOptions:
-    | ReturnType<typeof cluster.getClusterLog.queryOptions>
-    | ReturnType<typeof launchpad.getLaunchpadLogs.queryOptions>
-    | null = null;
+  // Handle cluster logs
+  const clusterLogsQuery = useQuery({
+    ...cluster.getClusterLog.queryOptions({
+      target: target as CustomResourceTarget,
+    }),
+    enabled: target.type === "custom" && target.resourceType === "cluster",
+  });
 
+  // Handle launchpad logs
+  const launchpadLogsQuery = useQuery({
+    ...launchpad.getLaunchpadLogs.queryOptions({
+      target: target as BuiltinResourceTarget,
+    }),
+    enabled: target.type === "builtin",
+  });
+
+  // Return the appropriate query result based on target type
   if (target.type === "custom" && target.resourceType === "cluster") {
-    queryOptions = cluster.getClusterLog.queryOptions({ target });
+    return clusterLogsQuery;
   } else if (target.type === "builtin") {
-    queryOptions = launchpad.getLaunchpadLogs.queryOptions({ target });
+    return launchpadLogsQuery;
   }
-
-  // Always call useQuery, but with null options for unsupported types
-  const result = useQuery(queryOptions);
 
   // Return null for unsupported resource types
-  if (!queryOptions) {
-    return { data: null, isLoading: false, error: null, ...result };
-  }
-
-  return result;
+  return {
+    data: null,
+    isLoading: false,
+    error: null,
+    isError: false,
+    isSuccess: false,
+    isPending: false,
+    isFetching: false,
+    isRefetching: false,
+    isStale: false,
+    isPlaceholderData: false,
+    isInitialLoading: false,
+    refetch: () => Promise.resolve({} as any),
+    fetchStatus: "idle" as const,
+    status: "success" as const,
+  };
 };

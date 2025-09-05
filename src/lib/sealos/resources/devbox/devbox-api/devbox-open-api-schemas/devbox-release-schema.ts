@@ -56,6 +56,15 @@ export const DevboxDeployResponseSchema = z.object({
   }),
 });
 
+// Delete DevBox release schemas
+export const DevboxDeleteReleaseRequestSchema = z.object({
+  versionName: z.string().min(1, "Version name is required"),
+});
+
+export const DevboxDeleteReleaseResponseSchema = z.object({
+  data: z.any().optional(),
+});
+
 // Type exports
 export type DevboxReleaseRequest = z.infer<typeof DevboxReleaseRequestSchema>;
 export type DevboxReleaseResponse = z.infer<typeof DevboxReleaseResponseSchema>;
@@ -68,3 +77,5 @@ export type DevboxReleaseStatus = z.infer<typeof DevboxReleaseStatusSchema>;
 export type DevboxDeployRequest = z.infer<typeof DevboxDeployRequestSchema>;
 export type DevboxDeployResponse = z.infer<typeof DevboxDeployResponseSchema>;
 export type DevboxPublicDomain = z.infer<typeof DevboxPublicDomainSchema>;
+export type DevboxDeleteReleaseRequest = z.infer<typeof DevboxDeleteReleaseRequestSchema>;
+export type DevboxDeleteReleaseResponse = z.infer<typeof DevboxDeleteReleaseResponseSchema>;

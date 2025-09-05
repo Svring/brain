@@ -19,6 +19,7 @@ import type {
   DevboxReleasesResponse,
   DevboxDeployRequest,
   DevboxDeployResponse,
+  DevboxDeleteReleaseResponse,
   DevboxPortCreateRequest,
   DevboxPortCreateResponse,
   DevboxPortRemoveResponse,
@@ -34,6 +35,7 @@ import {
   DevboxReleaseResponseSchema,
   DevboxReleasesResponseSchema,
   DevboxDeployResponseSchema,
+  DevboxDeleteReleaseResponseSchema,
   DevboxPortCreateResponseSchema,
   DevboxPortRemoveResponseSchema,
 } from "./devbox-open-api-schemas";
@@ -357,6 +359,9 @@ export async function checkDevboxReady(
 export async function deleteDevboxRelease(
   versionName: string,
   context: DevboxApiContext
-): Promise<any> {
-  return await runParallelAction(deleteDevboxReleaseOld(context, versionName));
+): Promise<DevboxDeleteReleaseResponse> {
+  const result = await runParallelAction(
+    deleteDevboxReleaseOld(context, versionName)
+  );
+  return DevboxDeleteReleaseResponseSchema.parse({ data: result });
 }

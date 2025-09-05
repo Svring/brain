@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { k8sClient, devboxClient } from "@/components/provider/trpc-provider";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { APP_DEVBOX_ID } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-label";
@@ -21,6 +21,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { DevboxObjectSchema } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import { flattenListAllResourcesResponse } from "@/lib/k8s/k8s-method/k8s-utils";
+import { useProjectState } from "@/contexts/project/project-context";
 
 interface DevboxDeployedMessageProps {
   target: CustomResourceTarget;
@@ -29,9 +30,24 @@ interface DevboxDeployedMessageProps {
 
 const DeploymentItem: React.FC<{
   deployment: any;
-}> = ({ deployment }) => {
-  const handleUpdate = () => {
+  onDelete: (deploymentName: string) => void;
+  isDeleting?: boolean;
+  onClick?: (deploymentName: string) => void;
+}> = ({ deployment, onDelete, isDeleting = false, onClick }) => {
+  const handleUpdate = (e: React.MouseEvent) => {
+    e.stopPropagation();
     console.log("update", deployment);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete(deployment.metadata?.name);
+  };
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick(deployment.metadata?.name);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -61,7 +77,10 @@ const DeploymentItem: React.FC<{
   };
 
   return (
-    <div className="border rounded-lg p-2 hover:brightness-150 transition-colors">
+    <div
+      className="border rounded-lg p-2 hover:brightness-150 transition-colors cursor-pointer"
+      onClick={handleClick}
+    >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Server className="h-3 w-3 text-muted-foreground" />
@@ -75,7 +94,7 @@ const DeploymentItem: React.FC<{
           </div>
         </div>
         <div className="flex items-center gap-1">
-          {/* Status indicator */}
+          {/* Update button */}
           <Button
             size="sm"
             variant="ghost"
@@ -87,6 +106,20 @@ const DeploymentItem: React.FC<{
             <ArrowBigUpDash className="h-4 w-4" />
             Update
           </Button>
+          {/* Delete button */}
+          <Button
+            variant="destructive"
+            className="p-0 h-8 w-8 hover:text-destructive"
+            onClick={handleDelete}
+            disabled={isDeleting}
+            title="Delete"
+          >
+            {isDeleting ? (
+              <Spinner className="h-3 w-3" />
+            ) : (
+              <Trash2 className="h-3 w-3" />
+            )}
+          </Button>
         </div>
       </div>
     </div>
@@ -97,19 +130,22 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
   target,
   payload,
 }) => {
-  const k8sTrpcClient = k8sClient.useTRPC();
-  const devboxTrpcClient = devboxClient.useTRPC();
+  const { k8s, devbox, launchpad, project } = useTRPCClients();
   const queryClient = useQueryClient();
   const { appendSystemMessage } = useAppendSystemMessageMutation();
+  const { selectedProject } = useProjectState();
   const { resource } = useResourceStatus(target);
   const devboxObject = DevboxObjectSchema.parse(resource);
+  const [deletingDeploymentId, setDeletingDeploymentId] = useState<
+    string | null
+  >(null);
 
   const {
     data: allResources,
     isLoading,
     error,
   } = useQuery({
-    ...k8sTrpcClient.listAllResources.queryOptions({
+    ...k8s.listAllResources.queryOptions({
       labelSelector: `${APP_DEVBOX_ID}=${devboxObject.name || ""}`,
       builtinResourceTypes: ["deployment", "statefulset"],
       customResourceTypes: [],
@@ -117,25 +153,49 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
     enabled: !!devboxObject,
   });
 
+  const addToProjectMutation = useMutation({
+    ...project.addToProject.mutationOptions(),
+  });
+
   const deployMutation = useMutation({
-    ...devboxTrpcClient.deployDevbox.mutationOptions(),
+    ...devbox.deployDevbox.mutationOptions(),
     onSuccess: (response) => {
+      console.log("[DevboxDeployedMessage] deployDevbox onSuccess", response);
+
       // Invalidate and refetch deployments
       queryClient.invalidateQueries({
-        queryKey: k8sTrpcClient.listAllResources.queryKey({
-          labelSelector: `${APP_DEVBOX_ID}=${devboxObject.name || ""}`,
-          builtinResourceTypes: ["deployment", "statefulset"],
-          customResourceTypes: [],
-        }),
+        queryKey: k8s.listAllResources.pathKey(),
       });
 
       // Extract appName from response and append launchpad.detail system message
       if (response?.data?.appName) {
-        const deploymentTarget = convertResourceTypeToTarget("deployment", response.data.appName);
+        const deploymentTarget = convertResourceTypeToTarget(
+          "deployment",
+          response.data.appName
+        );
+        console.log(
+          "[DevboxDeployedMessage] Appending system message for deploymentTarget:",
+          deploymentTarget
+        );
         appendSystemMessage({
           type: "launchpad.detail",
           target: deploymentTarget,
         });
+
+        // Add the deployment to the project
+        console.log("[DevboxDeployedMessage] Adding deployment to project:", {
+          resources: [deploymentTarget],
+          name: target.name || "",
+        });
+        addToProjectMutation.mutate({
+          resources: [deploymentTarget],
+          name: selectedProject || "",
+        });
+      } else {
+        console.warn(
+          "[DevboxDeployedMessage] No appName found in deployDevbox response",
+          response
+        );
       }
     },
     onError: (error) => {
@@ -143,15 +203,30 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
     },
   });
 
+  const deleteDeploymentMutation = useMutation({
+    ...launchpad.deleteLaunchpad.mutationOptions(),
+    onSuccess: () => {
+      // Invalidate and refetch deployments
+      queryClient.invalidateQueries({
+        queryKey: k8s.listAllResources.pathKey(),
+      });
+      setDeletingDeploymentId(null);
+    },
+    onError: (error) => {
+      console.error("Failed to delete deployment:", error);
+      setDeletingDeploymentId(null);
+    },
+  });
+
   // Show loading state
   if (isLoading) {
     return (
       <BaseActionMessage
-        headerTitle={{ icon: Server, name: "Devbox Deployments" }}
+        headerTitle={{ icon: Server, name: "Devbox Resources" }}
       >
         <div className="flex items-center justify-center h-20">
           <div className="text-xs text-muted-foreground">
-            Loading deployments...
+            Loading resources...
           </div>
         </div>
       </BaseActionMessage>
@@ -162,11 +237,11 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
   if (error || !allResources) {
     return (
       <BaseActionMessage
-        headerTitle={{ icon: Server, name: "Devbox Deployments" }}
+        headerTitle={{ icon: Server, name: "Devbox Resources" }}
       >
         <div className="flex items-center justify-center h-20">
           <span className="text-destructive text-xs">
-            Failed to load devbox deployments
+            Failed to load devbox resources
           </span>
         </div>
       </BaseActionMessage>
@@ -175,19 +250,18 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
 
   const flattenedResources = flattenListAllResourcesResponse(allResources);
   const deployments = flattenedResources.filter(
-    (resource) => resource.kind === "Deployment"
+    (resource) =>
+      resource.kind === "Deployment" || resource.kind === "StatefulSet"
   );
 
   return (
-    <BaseActionMessage
-      headerTitle={{ icon: Server, name: "Devbox Deployments" }}
-    >
+    <BaseActionMessage headerTitle={{ icon: Server, name: "Devbox Resources" }}>
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium">
             {payload?.tag
               ? `Deploy ${payload.tag} to...`
-              : `Deployments: ${deployments.length}`}
+              : `Resources: ${deployments.length}`}
           </h3>
         </div>
 
@@ -197,7 +271,7 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
               <div className="flex flex-col items-center justify-center h-20 text-center">
                 <Server className="h-6 w-6 text-muted-foreground mb-2" />
                 <div className="text-xs text-muted-foreground">
-                  No deployments yet
+                  No resources yet
                 </div>
               </div>
             ) : (
@@ -205,6 +279,34 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
                 <DeploymentItem
                   key={deployment.metadata?.uid || deployment.metadata?.name}
                   deployment={deployment}
+                  onDelete={(deploymentName) => {
+                    setDeletingDeploymentId(
+                      deployment.metadata?.uid || deployment.metadata?.name
+                    );
+                    deleteDeploymentMutation.mutate({
+                      name: deploymentName,
+                    });
+                  }}
+                  isDeleting={
+                    deletingDeploymentId ===
+                    (deployment.metadata?.uid || deployment.metadata?.name)
+                  }
+                  onClick={(deploymentName) => {
+                    // Find the deployment object to get its kind
+                    const deploymentObj = deployments.find(
+                      (d) => d.metadata?.name === deploymentName
+                    );
+                    const resourceKind =
+                      deploymentObj?.kind?.toLowerCase() || "deployment";
+                    const deploymentTarget = convertResourceTypeToTarget(
+                      resourceKind,
+                      deploymentName
+                    );
+                    appendSystemMessage({
+                      type: "launchpad.detail",
+                      target: deploymentTarget,
+                    });
+                  }}
                 />
               ))
             )}
@@ -230,9 +332,7 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
               <Plus className="h-4 w-4 text-muted-foreground" />
             )}
             <span className="text-xs text-muted-foreground">
-              {deployMutation.isPending
-                ? "Deploying..."
-                : "Add new deployment"}
+              {deployMutation.isPending ? "Deploying..." : "Add new deployment"}
             </span>
           </div>
         </div>

@@ -20,6 +20,7 @@ import {
   DevboxReleasesResponseSchema,
   DevboxDeployRequestSchema,
   DevboxDeployResponseSchema,
+  DevboxDeleteReleaseResponseSchema,
 } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import {
@@ -152,7 +153,7 @@ export const devboxRouter = t.router({
 
   deleteDevboxRelease: t.procedure
     .input(z.string())
-    .output(DevboxReleaseResponseSchema)
+    .output(DevboxDeleteReleaseResponseSchema)
     .mutation(async ({ ctx, input }) => {
       return await deleteDevboxRelease(input, ctx);
     }),
