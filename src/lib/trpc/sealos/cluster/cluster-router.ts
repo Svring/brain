@@ -17,11 +17,11 @@ import {
   getClusterVersions,
 } from "@/lib/sealos/resources/cluster/cluster-api/cluster-open-api";
 import {
-  CreateClusterRequestSchema,
   CreateClusterResponseSchema,
   UpdateClusterRequestSchema,
   UpdateClusterResponseSchema,
 } from "@/lib/sealos/resources/cluster/cluster-api/cluster-open-api-schemas";
+import { clusterCreateFormSchema } from "@/schemas/forms/cluster/cluster-create-form-schema";
 import { runParallelAction } from "next-server-actions-parallel";
 import { deleteCluster as deleteClusterOld } from "@/lib/sealos/resources/cluster/cluster-api/cluster-old-api";
 import {
@@ -116,8 +116,8 @@ export const clusterRouter = t.router({
     }),
 
   createCluster: t.procedure
-    .input(CreateClusterRequestSchema)
-    .output(CreateClusterResponseSchema)
+    .input(clusterCreateFormSchema)
+    // .output(CreateClusterResponseSchema)
     .mutation(async ({ input, ctx }) => {
       return await runParallelAction(createCluster(input, ctx));
     }),

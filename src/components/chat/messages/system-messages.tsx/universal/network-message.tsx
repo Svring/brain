@@ -120,7 +120,7 @@ export default function NetworkMessage({ target }: NetworkMessageProps) {
       <div className="space-y-3">
         <PortDisplayTable ports={ports} />
 
-        {!showPortForm ? (
+        {/* {!showPortForm ? (
           <Button
             type="button"
             variant="outline"
@@ -205,7 +205,7 @@ export default function NetworkMessage({ target }: NetworkMessageProps) {
               <X className="h-4 w-4" />
             </Button>
           </div>
-        )}
+        )} */}
       </div>
     </BaseActionMessage>
   );

@@ -19,7 +19,7 @@ export const DevBoxSchema = z.object({
   name: z
     .string()
     .min(1, "Name is required")
-    .max(12, "Name must be 12 characters or less")
+    .max(24, "Name must be 24 characters or less")
     .regex(
       /^[a-z0-9_-]+$/,
       "Name must contain only lowercase letters, numbers, underscores, and hyphens"
@@ -33,7 +33,7 @@ export const DatabaseSchema = z.object({
   name: z
     .string()
     .min(1, "Name is required")
-    .max(12, "Name must be 12 characters or less")
+    .max(24, "Name must be 24 characters or less")
     .regex(
       /^[a-z0-9_-]+$/,
       "Name must contain only lowercase letters, numbers, underscores, and hyphens"
@@ -45,12 +45,12 @@ export const ObjectStorageBucketSchema = z.object({
   name: z
     .string()
     .min(1, "Name is required")
-    .max(12, "Name must be 12 characters or less")
+    .max(24, "Name must be 24 characters or less")
     .regex(
       /^[a-z0-9_-]+$/,
       "Name must contain only lowercase letters, numbers, underscores, and hyphens"
     ),
-  policy: z.enum(["Private", "PublicRead", "PublicReadwrite"]),
+  policy: z.enum(["private", "publicRead", "publicReadWrite"]),
 });
 
 export const AppEnvSchema = z.object({
@@ -62,7 +62,7 @@ export const AppSchema = z.object({
   name: z
     .string()
     .min(1, "Name is required")
-    .max(12, "Name must be 12 characters or less")
+    .max(24, "Name must be 24 characters or less")
     .regex(
       /^[a-z0-9_-]+$/,
       "Name must contain only lowercase letters, numbers, underscores, and hyphens"
@@ -90,7 +90,7 @@ export const ProjectProposalSchema = z.object({
   name: z
     .string()
     .min(1, "Project name is required")
-    .max(12, "Project name must be 12 characters or less")
+    .max(24, "Project name must be 24 characters or less")
     .regex(
       /^[a-z0-9_-]+$/,
       "Project name must contain only lowercase letters, numbers, underscores, and hyphens"
@@ -103,7 +103,7 @@ export const ProjectProposalFormSchema = z.object({
   projectName: z
     .string()
     .min(1, "Project name is required")
-    .max(12, "Project name must be 12 characters or less")
+    .max(24, "Project name must be 24 characters or less")
     .regex(
       /^[a-z0-9_-]+$/,
       "Project name must contain only lowercase letters, numbers, underscores, and hyphens"

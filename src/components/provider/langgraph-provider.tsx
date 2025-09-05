@@ -47,7 +47,7 @@ export const LanggraphConfigWrapper = ({
       ? `https://aiproxy.${aiProxyContext.baseUrl}/v1`
       : undefined,
     modelName: aiProxyContext.baseUrl?.endsWith("io")
-      ? "gpt-4.1"
+      ? "gpt-5-mini"
       : "qwen3-235b-a22b",
   };
 
@@ -69,9 +69,16 @@ export const LanggraphConfigWrapper = ({
 
   // Handle token creation if brain token is missing
   const handleCreateToken = () => {
-    createTokenMutation.mutate({
-      name: "brain",
-    });
+    createTokenMutation.mutate(
+      {
+        name: "brain",
+      },
+      {
+        onSuccess: () => {
+          window.location.reload();
+        },
+      }
+    );
   };
 
   // Only render LanggraphProvider when config is ready

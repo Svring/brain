@@ -24,6 +24,10 @@ import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation } from "@tanstack/react-query";
 import { useHover } from "@reactuses/core";
 import { Env } from "@/schemas/forms/universal/env-schema";
+import { deriveClusterEnvVariable } from "@/lib/sealos/services/env/cluster/cluster-env-utils";
+import { deriveObjectStorageEnvVariable } from "@/lib/sealos/services/env/objectstorage/objectstorage-env-utils";
+import { Spinner } from "@/components/ui/spinner";
+import { useFlowgraphState } from "@/contexts/flowgraph/flowgraph-context";
 
 interface NodeConnectProps {
   children: React.ReactNode;
@@ -40,6 +44,8 @@ function ResourceItem({
   resource: any;
   launchpadTarget?: any;
 }) {
+  const [isLoading, setIsLoading] = useState(false);
+  const { edges } = useFlowgraphState();
   const target = convertResourceObjectToTarget({
     kind: resource.kind,
     name: resource.name,
@@ -53,28 +59,36 @@ function ResourceItem({
     launchpad.updateLaunchpad.mutationOptions()
   );
 
+  // Check if the resource is already connected to the launchpad target
+  const isConnected = () => {
+    if (!launchpadTarget) return false;
+    
+    // Generate node IDs using the same pattern as flowgraph-nodes-utils
+    const resourceNodeId = `${resource.kind.toLowerCase()}-${resource.name}`;
+    const launchpadNodeId = `${launchpadTarget.resourceType.toLowerCase()}-${launchpadTarget.name}`;
+    
+    // Check if there's an edge connecting the resource to the launchpad target
+    return edges.some(edge => 
+      (edge.source === resourceNodeId && edge.target === launchpadNodeId) ||
+      (edge.source === launchpadNodeId && edge.target === resourceNodeId)
+    );
+  };
+
   const getEnvVarsToAdd = () => {
     if (!fullResource) return {};
     const envVars: Record<string, any> = {};
-    const name = resource.name.toUpperCase();
 
     if (resource.kind.toLowerCase() === "cluster" && fullResource.connection) {
-      const { privateConnection, publicConnection } = fullResource.connection;
-      if (privateConnection) {
-        const privateVars = {
-          [`${name}_HOST`]: privateConnection.host,
-          [`${name}_PORT`]: privateConnection.port,
-          [`${name}_USERNAME`]: privateConnection.username,
-          [`${name}_PASSWORD`]: privateConnection.password,
-          [`${name}_CONNECTION_STRING`]: privateConnection.connectionString,
-        };
-        Object.entries(privateVars).forEach(([key, value]) => {
-          if (value) {
-            envVars[key] = { name: key, value: value as string };
-          }
-        });
-      }
+      // Use cluster name to derive environment variables
+      const clusterEnvVars = deriveClusterEnvVariable(resource.name);
+      clusterEnvVars.forEach((envVar) => {
+        envVars[envVar.name] = envVar;
+      });
+
+      // Add public connection variables if available
+      const { publicConnection } = fullResource.connection;
       if (publicConnection) {
+        const name = resource.name.toUpperCase();
         const publicVars = {
           [`${name}_PUBLIC_PORT`]: publicConnection.port?.toString(),
           [`${name}_PUBLIC_CONNECTION_STRING`]:
@@ -92,18 +106,13 @@ function ResourceItem({
       resource.kind.toLowerCase() === "objectstoragebucket" &&
       fullResource.access
     ) {
-      const { access } = fullResource;
-      const accessVars = {
-        [`${name}_BUCKET`]: access.bucket,
-        [`${name}_EXTERNAL`]: access.external,
-        [`${name}_INTERNAL`]: access.internal,
-        [`${name}_ACCESS_KEY`]: access.accessKey,
-        [`${name}_SECRET_KEY`]: access.secretKey,
-      };
-      Object.entries(accessVars).forEach(([key, value]) => {
-        if (value) {
-          envVars[key] = { name: key, value: value as string };
-        }
+      // Use object storage displayName to derive environment variables
+      const objectStorageEnvVars = deriveObjectStorageEnvVariable(
+        fullResource.displayName
+      );
+      console.log("objectStorageEnvVars", objectStorageEnvVars);
+      objectStorageEnvVars.forEach((envVar) => {
+        envVars[envVar.name] = envVar;
       });
     }
 
@@ -125,45 +134,74 @@ function ResourceItem({
 
     return (
       <div className="space-y-1 text-xs">
-        {keys.map((key) => (
-          <div key={key} className="break-words">
-            <strong>{key}:</strong>{" "}
-            {key.includes("PASSWORD") || key.includes("SECRET_KEY")
+        {keys.map((key) => {
+          const envVar = envVars[key];
+          const isSecret =
+            key.includes("PASSWORD") || key.includes("SECRET_KEY");
+
+          // Handle both value and valueFrom cases
+          let displayValue: string;
+          if (envVar.value) {
+            // Direct value (for public connection variables)
+            displayValue = isSecret ? "***" : envVar.value;
+          } else if (envVar.valueFrom?.secretKeyRef) {
+            // Secret reference (for utility function generated variables)
+            displayValue = isSecret
               ? "***"
-              : envVars[key].value}
-          </div>
-        ))}
+              : `from secret: ${envVar.valueFrom.secretKeyRef.name}`;
+          } else {
+            displayValue = "N/A";
+          }
+
+          return (
+            <div key={key} className="break-words">
+              <strong>{key}:</strong> {displayValue}
+            </div>
+          );
+        })}
       </div>
     );
   };
 
   const handleResourceClick = async () => {
-    if (!launchpadTarget || !fullResource || !launchpadResource) return;
+    if (!launchpadTarget || !fullResource || !launchpadResource || isLoading || isConnected())
+      return;
 
     const envVarsToAdd = getEnvVarsToAdd();
     if (Object.keys(envVarsToAdd).length === 0) return;
 
-    const currentEnv = (launchpadResource.env || []).reduce(
-      (acc: Record<string, any>, envVar: any) => {
-        if (envVar.name) {
-          acc[envVar.name] = {
-            name: envVar.name,
-            value: envVar.value,
-            valueFrom: envVar.valueFrom,
-          };
-        }
-        return acc;
-      },
-      {}
-    );
+    setIsLoading(true);
 
-    const mergedEnv = { ...currentEnv, ...envVarsToAdd };
-    const updatedEnv = Object.values(mergedEnv) as Env[];
+    try {
+      const currentEnv = (launchpadResource.env || []).reduce(
+        (acc: Record<string, any>, envVar: any) => {
+          if (envVar.name) {
+            acc[envVar.name] = {
+              name: envVar.name,
+              value: envVar.value,
+              valueFrom: envVar.valueFrom,
+            };
+          }
+          return acc;
+        },
+        {}
+      );
 
-    await updateLaunchpadMutation.mutateAsync({
-      name: launchpadTarget.name,
-      request: { env: updatedEnv },
-    });
+      const mergedEnv = { ...currentEnv, ...envVarsToAdd };
+      const updatedEnv = Object.values(mergedEnv) as Env[];
+
+      await updateLaunchpadMutation.mutateAsync({
+        name: launchpadTarget.name,
+        request: { env: updatedEnv },
+      });
+
+      // Reload the page after successful update
+      window.location.reload();
+    } catch (error) {
+      console.error("Failed to update launchpad:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -171,7 +209,14 @@ function ResourceItem({
       <Tooltip>
         <TooltipTrigger asChild>
           <div
-            className="flex items-center justify-between p-2 border rounded-md hover:bg-muted/50 cursor-pointer"
+            className={cn(
+              "flex items-center justify-between p-2 border rounded-md",
+              isConnected() 
+                ? "opacity-50 cursor-not-allowed bg-muted/30" 
+                : isLoading 
+                  ? "opacity-50 cursor-not-allowed" 
+                  : "cursor-pointer hover:bg-muted/50"
+            )}
             onClick={handleResourceClick}
           >
             <div>
@@ -180,7 +225,17 @@ function ResourceItem({
                 ({resource.kind})
               </span>
             </div>
-            <Plus className="w-4 h-4 text-muted-foreground" />
+            {isConnected() ? (
+              <span className="text-xs text-green-600 font-medium">Connected</span>
+            ) : isLoading ? (
+              <Spinner
+                variant="bars"
+                size={16}
+                className="text-muted-foreground"
+              />
+            ) : (
+              <Plus className="w-4 h-4 text-muted-foreground" />
+            )}
           </div>
         </TooltipTrigger>
         <TooltipContent side="right" className="max-w-xs">
@@ -222,7 +277,7 @@ export default function NodeConnect({
       const timer = setTimeout(() => {
         setShowIcon(false);
       }, 300); // 300ms delay before hiding
-      
+
       return () => clearTimeout(timer);
     }
   }, [shouldShowPlus]);

@@ -31,6 +31,8 @@ import {
   GetLogsDataResponseSchema,
   GetLogsFilesResponseSchema,
 } from "./cluster-open-api-schemas";
+import { clusterCreateFormSchema } from "@/schemas/forms/cluster/cluster-create-form-schema";
+import type { ClusterCreateFormData } from "@/schemas/forms/cluster/cluster-create-form-schema";
 import https from "https";
 
 // Helper to create axios instance per request
@@ -82,13 +84,14 @@ function createClusterApi(context: ClusterApiContext) {
  */
 export const createCluster = createParallelAction(
   async (
-    request: CreateClusterRequest,
+    request: ClusterCreateFormData,
     context: ClusterApiContext
   ): Promise<CreateClusterResponse> => {
-    const validatedRequest = CreateClusterRequestSchema.parse(request);
+    // Parse with form schema to get defaults
+    const formData = clusterCreateFormSchema.parse(request);
     const api = createClusterApi(context);
-    const response = await api.post("/database", validatedRequest);
-    return CreateClusterResponseSchema.parse(response.data);
+    const response = await api.post("/database", formData);
+    return response.data;
   }
 );
 
