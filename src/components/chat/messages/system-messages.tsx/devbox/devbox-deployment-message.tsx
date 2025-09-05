@@ -191,8 +191,8 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
           </h3>
         </div>
 
-        <ScrollArea className="max-h-60">
-          <div className="space-y-2">
+        <ScrollArea className="h-60">
+          <div className="space-y-2 pr-4">
             {deployments.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-20 text-center">
                 <Server className="h-6 w-6 text-muted-foreground mb-2" />
@@ -208,33 +208,34 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
                 />
               ))
             )}
-            {/* Add new deployment placeholder */}
-            <div
-              className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-3 hover:border-muted-foreground/50 hover:bg-muted/20 transition-colors cursor-pointer"
-              onClick={() => {
-                if (payload?.tag) {
-                  deployMutation.mutate({
-                    devboxName: target.name || "",
-                    tag: payload.tag,
-                  });
-                }
-              }}
-            >
-              <div className="flex items-center justify-center gap-2">
-                {deployMutation.isPending ? (
-                  <Spinner className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <Plus className="h-4 w-4 text-muted-foreground" />
-                )}
-                <span className="text-xs text-muted-foreground">
-                  {deployMutation.isPending
-                    ? "Deploying..."
-                    : "Add new deployment"}
-                </span>
-              </div>
-            </div>
           </div>
         </ScrollArea>
+
+        {/* Add new deployment section - fixed at bottom */}
+        <div
+          className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-3 hover:border-muted-foreground/50 hover:bg-muted/20 transition-colors cursor-pointer"
+          onClick={() => {
+            if (payload?.tag) {
+              deployMutation.mutate({
+                devboxName: target.name || "",
+                tag: payload.tag,
+              });
+            }
+          }}
+        >
+          <div className="flex items-center justify-center gap-2">
+            {deployMutation.isPending ? (
+              <Spinner className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <Plus className="h-4 w-4 text-muted-foreground" />
+            )}
+            <span className="text-xs text-muted-foreground">
+              {deployMutation.isPending
+                ? "Deploying..."
+                : "Add new deployment"}
+            </span>
+          </div>
+        </div>
       </div>
     </BaseActionMessage>
   );

@@ -86,16 +86,18 @@ export async function createDevbox(
   context: DevboxApiContext
 ): Promise<DevboxCreateResponse> {
   const api = createDevboxAxios(context);
-  const response = await api.post("/create", request);
+  const response = await api.post("/", request);
+  // console.log("response", response);
   return DevboxCreateResponseSchema.parse(response.data);
 }
 
 export async function updateDevbox(
+  devboxName: string,
   request: DevboxUpdateRequest,
   context: DevboxApiContext
 ): Promise<DevboxUpdateResponse> {
   const api = createDevboxAxios(context);
-  const response = await api.put("/", request);
+  const response = await api.patch(`/${devboxName}`, request);
   return DevboxUpdateResponseSchema.parse(response.data);
 }
 
@@ -146,7 +148,7 @@ export async function releaseDevbox(
   context: DevboxApiContext
 ): Promise<DevboxReleaseResponse> {
   const api = createDevboxAxios(context);
-  const response = await api.post(`/devbox/${devboxName}/release`, request);
+  const response = await api.post(`/${devboxName}/release`, request);
   return DevboxReleaseResponseSchema.parse(response.data);
 }
 

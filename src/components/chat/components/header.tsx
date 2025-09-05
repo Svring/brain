@@ -9,6 +9,7 @@ import { useChatActions } from "@/contexts/chat/chat-context";
 import Image from "next/image";
 import { useChatState } from "@/contexts/chat/chat-context";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
+import { Separator } from "@/components/ui/separator";
 
 interface AiChatHeaderProps {
   title?: string;
@@ -56,11 +57,12 @@ export function AiChatHeader({
           <div>
             <h2 className="font-semibold text-foreground text-lg">{title}</h2>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <Button
               onClick={() => reset()}
               disabled={isPending}
               size="icon"
+              className="h-8 w-8"
               variant="ghost"
             >
               {isPending ? (
@@ -69,8 +71,10 @@ export function AiChatHeader({
                 <Eraser className="h-4 w-4" />
               )}
             </Button>
+            <Separator orientation="vertical" className="h-4!" />
             {selectedResource && (
               <div className="flex items-center gap-2 text text-muted-foreground">
+                <span>Selected: </span>
                 <Image
                   src={getIconUrl()}
                   alt={`${selectedResource.resourceType} Icon`}

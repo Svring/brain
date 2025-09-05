@@ -1,12 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Copy,
-  Download,
-  ChevronDown,
-  Terminal,
-  Check,
-} from "lucide-react";
+import { Copy, Download, ChevronDown, Terminal, Check } from "lucide-react";
 import {
   DevboxObject,
   DevboxObjectSchema,
@@ -18,6 +12,10 @@ import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-metho
 import { Separator } from "@/components/ui/separator";
 import { useCopy } from "@/hooks/use-copy";
 import { ResourceQuota } from "./devbox-message-detail/resource-quota";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { DevboxUpdateFormData } from "@/schemas/forms/devbox/devbox-update-form-schema";
 
 interface DevboxInfoDetailsProps {
   target: CustomResourceTarget;
@@ -27,6 +25,8 @@ export const DevboxMessageDetail: React.FC<DevboxInfoDetailsProps> = ({
   target,
 }) => {
   const { auth } = useAuthState();
+  const { devbox } = useTRPCClients();
+  const queryClient = useQueryClient();
   const namespace = auth?.namespace;
   const regionUrl = auth?.regionUrl;
 
@@ -35,6 +35,21 @@ export const DevboxMessageDetail: React.FC<DevboxInfoDetailsProps> = ({
 
   // Parse the resource data
   const devboxObject = resource ? DevboxObjectSchema.parse(resource) : null;
+
+  // Update devbox mutation
+  const updateDevboxMutation = useMutation({
+    ...devbox.updateDevbox.mutationOptions(),
+    onSuccess: () => {
+      // Invalidate and refetch devbox data
+      queryClient.invalidateQueries({
+        queryKey: devbox.getDevbox.queryKey(target),
+      });
+      toast.success("Devbox updated successfully!");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to update devbox");
+    },
+  });
 
   // console.log("devboxObject", devboxObject);
 
@@ -64,9 +79,20 @@ export const DevboxMessageDetail: React.FC<DevboxInfoDetailsProps> = ({
     );
   }
 
-  const handleResourceSubmit = async (type: string, data?: any) => {
-    // TODO: Implement save functionality
-    console.log("Saving resource configuration:", data);
+  const handleResourceSubmit = async (
+    type: string,
+    data: DevboxUpdateFormData
+  ) => {
+    try {
+      console.log("Saving resource configuration:", data);
+
+      await updateDevboxMutation.mutateAsync({
+        devboxName: devboxObject.name,
+        request: data,
+      });
+    } catch (error) {
+      console.error("Error updating devbox:", error);
+    }
   };
 
   return (
@@ -143,7 +169,7 @@ export const DevboxMessageDetail: React.FC<DevboxInfoDetailsProps> = ({
               <Button
                 variant="outline"
                 size="sm"
-                className="flex-1 h-8 text-xs"
+                className="flex-1 h-8 text-xs min-w-0"
                 onClick={() => {
                   if (devboxObject.ssh.privateKey) {
                     const fileName = `${regionUrl}_${namespace}_${devboxObject.name}`;
@@ -161,16 +187,16 @@ export const DevboxMessageDetail: React.FC<DevboxInfoDetailsProps> = ({
                   }
                 }}
               >
-                <Download className="h-3 w-3 mr-1" />
-                Private Key
+                <Download className="h-3 w-3 mr-1 flex-shrink-0" />
+                <span className="truncate">Private Key</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="flex-1 h-8 text-xs"
+                className="flex-1 h-8 text-xs min-w-0"
               >
-                <Terminal className="h-3 w-3 mr-1" />
-                SSH Connection Setup
+                <Terminal className="h-3 w-3 mr-1 flex-shrink-0" />
+                <span className="truncate">SSH Connection Setup</span>
               </Button>
             </div>
           </div>

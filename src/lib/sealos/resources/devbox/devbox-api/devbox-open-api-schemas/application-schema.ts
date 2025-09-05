@@ -110,7 +110,7 @@ export const CreateAppRequestSchema = z.object({
 });
 
 export const CreateAppResponseSchema = z.object({
-  data: z.string().default("success"),
+  data: z.any().optional(),
 });
 
 // App status schema

@@ -13,18 +13,11 @@ export const DevboxCreateRequestSchema = devboxCreateFormSchema;
 export const DevboxUpdateRequestSchema = devboxUpdateFormSchema;
 
 export const DevboxCreateResponseSchema = z.object({
-  data: z.object({
-    name: z.string(),
-    sshPort: z.number(),
-    base64PrivateKey: z.string(),
-    userName: z.string(),
-    workingDir: z.string(),
-    domain: z.string(),
-  }),
+  data: z.any().optional(),
 });
 
 export const DevboxUpdateResponseSchema = z.object({
-  data: z.string().default("success update devbox"),
+  data: z.any().optional(),
 });
 
 // Lifecycle management schemas
@@ -41,21 +34,21 @@ export const DevboxLifecycleRequestSchema = z.object({
 });
 
 export const DevboxLifecycleResponseSchema = z.object({
-  data: z.string().default("success modify devbox status"),
+  data: z.any().optional(),
 });
 
 // Shutdown devbox schemas
 export const DevboxShutdownRequestSchema = z.object({});
 
 export const DevboxShutdownResponseSchema = z.object({
-  data: z.string().default("success shutdown devbox"),
+  data: z.any().optional(),
 });
 
 // Restart devbox schemas
 export const DevboxRestartRequestSchema = z.object({});
 
 export const DevboxRestartResponseSchema = z.object({
-  data: z.string().default("success restart devbox"),
+  data: z.any().optional(),
 });
 
 // Delete DevBox schemas
@@ -64,7 +57,7 @@ export const DevboxDeleteRequestSchema = z.object({
 });
 
 export const DevboxDeleteResponseSchema = z.object({
-  data: z.string().default("success delete devbox"),
+  data: z.any().optional(),
 });
 
 // Error response schema

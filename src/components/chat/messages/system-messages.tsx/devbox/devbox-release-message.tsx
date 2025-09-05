@@ -108,7 +108,7 @@ const ReleaseItem: React.FC<{
       <div className="border-t border-dashed pt-2">
         <div className="text-xs text-muted-foreground">
           <span className="font-medium">Release Notes:</span>{" "}
-          <span className="rounded px-2">
+          <span className="rounded">
             {release.description || "No release notes available"}
           </span>
         </div>
@@ -203,8 +203,8 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
           <h3 className="text-sm font-medium">Releases: {releases.length}</h3>
         </div>
 
-        <ScrollArea className="max-h-60">
-          <div className="space-y-2">
+        <ScrollArea className="h-60">
+          <div className="space-y-2 pr-4">
             {releases.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-20 text-center">
                 <ArrowBigUpDash className="h-6 w-6 text-muted-foreground mb-2" />
@@ -221,91 +221,92 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
                 />
               ))
             )}
-            {/* Add new release placeholder or create form */}
-            {!isCreatingRelease ? (
-              <div
-                className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-3 hover:border-muted-foreground/50 hover:bg-muted/20 transition-colors cursor-pointer"
-                onClick={() => setIsCreatingRelease(true)}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <Plus className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">
-                    Add new release
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <div className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-3">
-                <div className="flex items-center gap-2">
-                  <Input
-                    placeholder="Release tag"
-                    value={newReleaseTag}
-                    onChange={(e) => setNewReleaseTag(e.target.value)}
-                    className="h-8 text-xs flex-1"
-                  />
-                  <Input
-                    placeholder="Description"
-                    value={newReleaseDescription}
-                    onChange={(e) => setNewReleaseDescription(e.target.value)}
-                    className="h-8 text-xs flex-1"
-                  />
-                  <Button
-                    size="sm"
-                    variant="default"
-                    className="h-8 w-8 p-0"
-                    onClick={() => {
-                      if (newReleaseTag.trim()) {
-                        // First pause the devbox, then release it
-                        pauseMutation.mutate(
-                          {
-                            devboxName: target.name || "",
-                            action: "stop",
-                          },
-                          {
-                            onSuccess: () => {
-                              releaseMutation.mutate({
-                                devboxName: target.name || "",
-                                tag: newReleaseTag.trim(),
-                                releaseDes: newReleaseDescription.trim(),
-                              });
-                            },
-                          }
-                        );
-                      }
-                    }}
-                    disabled={
-                      !newReleaseTag.trim() ||
-                      pauseMutation.isPending ||
-                      releaseMutation.isPending ||
-                      startMutation.isPending
-                    }
-                    title="Create release"
-                  >
-                    {pauseMutation.isPending ||
-                    releaseMutation.isPending ||
-                    startMutation.isPending ? (
-                      <Spinner className="h-4 w-4" />
-                    ) : (
-                      <Check className="h-4 w-4" />
-                    )}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-8 w-8 p-0"
-                    onClick={() => {
-                      setIsCreatingRelease(false);
-                      setNewReleaseTag("");
-                      setNewReleaseDescription("");
-                    }}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
           </div>
         </ScrollArea>
+
+        {/* Add new release section - fixed at bottom */}
+        {!isCreatingRelease ? (
+          <div
+            className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-3 hover:border-muted-foreground/50 hover:bg-muted/20 transition-colors cursor-pointer"
+            onClick={() => setIsCreatingRelease(true)}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <Plus className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">
+                Add new release
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-3">
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder="Release tag"
+                value={newReleaseTag}
+                onChange={(e) => setNewReleaseTag(e.target.value)}
+                className="h-8 text-xs flex-1"
+              />
+              <Input
+                placeholder="Description"
+                value={newReleaseDescription}
+                onChange={(e) => setNewReleaseDescription(e.target.value)}
+                className="h-8 text-xs flex-1"
+              />
+              <Button
+                size="sm"
+                variant="default"
+                className="h-8 w-8 p-0"
+                onClick={() => {
+                  if (newReleaseTag.trim()) {
+                    // First pause the devbox, then release it
+                    pauseMutation.mutate(
+                      {
+                        devboxName: target.name || "",
+                        action: "stop",
+                      },
+                      {
+                        onSuccess: () => {
+                          releaseMutation.mutate({
+                            devboxName: target.name || "",
+                            tag: newReleaseTag.trim(),
+                            releaseDes: newReleaseDescription.trim(),
+                          });
+                        },
+                      }
+                    );
+                  }
+                }}
+                disabled={
+                  !newReleaseTag.trim() ||
+                  pauseMutation.isPending ||
+                  releaseMutation.isPending ||
+                  startMutation.isPending
+                }
+                title="Create release"
+              >
+                {pauseMutation.isPending ||
+                releaseMutation.isPending ||
+                startMutation.isPending ? (
+                  <Spinner className="h-4 w-4" />
+                ) : (
+                  <Check className="h-4 w-4" />
+                )}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 w-8 p-0"
+                onClick={() => {
+                  setIsCreatingRelease(false);
+                  setNewReleaseTag("");
+                  setNewReleaseDescription("");
+                }}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </BaseActionMessage>
   );

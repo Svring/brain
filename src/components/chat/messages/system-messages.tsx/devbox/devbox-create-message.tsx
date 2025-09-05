@@ -25,21 +25,21 @@ export const DevboxCreateMessage: React.FC<DevboxCreateMessageProps> = ({
 
   const createDevboxMutation = useMutation({
     ...devbox.createDevbox.mutationOptions(),
-    onSuccess: async (_, variables) => {
-      if (!selectedProject) {
-        toast.error("No project selected. Please select a project first.");
-        return;
-      }
-      const resourceTarget = convertResourceTypeToTarget(
-        "devbox",
-        variables.name
-      );
-      await addToProjectMutation.mutateAsync({
-        resources: [resourceTarget],
-        name: selectedProject,
-      });
-      toast.success("Devbox created and added to project successfully!");
-    },
+    // onSuccess: async (_, variables) => {
+    //   if (!selectedProject) {
+    //     toast.error("No project selected. Please select a project first.");
+    //     return;
+    //   }
+    //   const resourceTarget = convertResourceTypeToTarget(
+    //     "devbox",
+    //     variables.name
+    //   );
+    //   await addToProjectMutation.mutateAsync({
+    //     resources: [resourceTarget],
+    //     name: selectedProject,
+    //   });
+    //   toast.success("Devbox created and added to project successfully!");
+    // },
     onError: (error: any) => {
       toast.error(error.message || "Failed to create devbox");
     },
@@ -48,7 +48,7 @@ export const DevboxCreateMessage: React.FC<DevboxCreateMessageProps> = ({
   const handleSubmit = async (data: DevboxCreateFormData) => {
     try {
       console.log("data", data);
-      // await createDevboxMutation.mutateAsync(data);
+      await createDevboxMutation.mutateAsync(data);
     } catch (error) {
       console.error("Error creating devbox:", error);
     }

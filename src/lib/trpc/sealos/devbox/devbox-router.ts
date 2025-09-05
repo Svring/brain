@@ -89,10 +89,15 @@ export const devboxRouter = t.router({
     }),
 
   updateDevbox: t.procedure
-    .input(DevboxUpdateRequestSchema)
+    .input(
+      z.object({
+        devboxName: z.string(),
+        request: DevboxUpdateRequestSchema,
+      })
+    )
     .output(DevboxUpdateResponseSchema)
     .mutation(async ({ ctx, input }) => {
-      return await updateDevbox(input, ctx);
+      return await updateDevbox(input.devboxName, input.request, ctx);
     }),
 
   manageDevboxLifecycle: t.procedure
