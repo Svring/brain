@@ -9,10 +9,6 @@ import { ResourceFields } from "../universal/resource-fields";
 import { DevboxPortsFields } from "./devbox-ports-fields";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  CPU_OPTIONS,
-  MEMORY_OPTIONS,
-} from "@/lib/k8s/k8s-constant/k8s-constant-resource";
 
 interface DevboxCreateFormProps {
   defaultValues?: Partial<DevboxCreateFormData>;
@@ -48,8 +44,8 @@ export const DevboxCreateForm = ({
         </div>
 
         <ResourceFields
-          cpuOptions={[...CPU_OPTIONS, 16]}
-          memoryOptions={[...MEMORY_OPTIONS, 32]}
+          cpuOptions={[0.1, 0.2, 0.5, 1, 2, 4, 8, 16]}
+          memoryOptions={[0.1, 0.5, 1, 2, 4, 8, 16, 32]}
         />
 
         <div className="space-y-2">

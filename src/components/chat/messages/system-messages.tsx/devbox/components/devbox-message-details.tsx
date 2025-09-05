@@ -14,12 +14,6 @@ import {
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 import { Separator } from "@/components/ui/separator";
 import { useCopy } from "@/hooks/use-copy";

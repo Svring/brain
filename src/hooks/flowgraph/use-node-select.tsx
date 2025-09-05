@@ -62,7 +62,7 @@ export const useNodeSelect = ({
     hasThreads,
   } = useLatestThread({ target });
 
-  console.log("sidebarChatResponding", sidebarChatResponding);
+  // console.log("sidebarChatResponding", sidebarChatResponding);
 
   const handleNodeSelect = () => {
     // Select the resource in project context

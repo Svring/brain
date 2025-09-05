@@ -28,9 +28,9 @@ export const DevboxPortsFields = ({ fieldArray }: DevboxPortsFieldsProps) => {
   // Port management functions
   const addPort = () => {
     fieldArray.append({
-      port: 8080,
+      number: 8080,
       protocol: "HTTP",
-      openPublicDomain: true,
+      exposesPublicDomain: true,
     });
   };
 
@@ -43,8 +43,8 @@ export const DevboxPortsFields = ({ fieldArray }: DevboxPortsFieldsProps) => {
       <div className="space-y-3">
         {fieldArray.fields.map((field: any, index: number) => {
           const portData = ports?.[index];
-          const portValue = portData?.port;
-          const openPublicDomain = portData?.openPublicDomain;
+          const portValue = portData?.number;
+          const exposesPublicDomain = portData?.exposesPublicDomain;
           const protocol = portData?.protocol;
 
           return (
@@ -52,7 +52,7 @@ export const DevboxPortsFields = ({ fieldArray }: DevboxPortsFieldsProps) => {
               <div className="flex-1 flex items-center gap-3">
                 <div className="w-[20%]">
                   <Input
-                    {...form.register(`ports.${index}.port` as const, {
+                    {...form.register(`ports.${index}.number` as const, {
                       valueAsNumber: true,
                     })}
                     type="number"
@@ -63,10 +63,10 @@ export const DevboxPortsFields = ({ fieldArray }: DevboxPortsFieldsProps) => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Checkbox
-                    checked={openPublicDomain || false}
+                    checked={exposesPublicDomain || false}
                     onCheckedChange={(checked) => {
                       form.setValue(
-                        `ports.${index}.openPublicDomain` as const,
+                        `ports.${index}.exposesPublicDomain` as const,
                         checked === true
                       );
                       if (checked) {
@@ -86,7 +86,7 @@ export const DevboxPortsFields = ({ fieldArray }: DevboxPortsFieldsProps) => {
                   />
                   <span className="text-sm text-muted-foreground">Public</span>
                 </div>
-                {openPublicDomain && (
+                {exposesPublicDomain && (
                   <div className="w-[25%]">
                     <Select
                       value={protocol || "HTTP"}

@@ -17,8 +17,8 @@ export const useDevboxCreateForm = (
       name: "my-devbox",
       runtime: "python",
       resource: {
-        cpu: "2",
-        memory: "2",
+        cpu: 2,
+        memory: 2,
       },
       ports: [
         {

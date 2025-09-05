@@ -16,8 +16,8 @@ export const devboxCreateFormSchema = z.object({
     .default("my-devbox"),
   runtime: DevboxRuntimeSchema.default("python"),
   resource: DevboxResourceSchema.default({
-    cpu: "2",
-    memory: "2",
+    cpu: 2,
+    memory: 2,
   }),
   ports: z.array(DevboxPortSchema).default([
     {
