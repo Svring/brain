@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { devboxClient } from "@/components/provider/trpc-provider";
 import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
 import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
@@ -15,7 +15,10 @@ import {
   X,
 } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { DevboxReleaseItem } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas/devbox-release-schema";
+import {
+  DevboxReleaseItem,
+  DevboxReleaseRequestSchema,
+} from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas/devbox-release-schema";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -35,7 +38,11 @@ const ReleaseItem: React.FC<{
   // console.log("release", release);
 
   const handleDeploy = () => {
-            appendSystemMessage({ type: "devbox.deployment", target, payload: { tag: release.tag } });
+    appendSystemMessage({
+      type: "devbox.deployment",
+      target,
+      payload: { tag: release.tag },
+    });
   };
 
   const handleDelete = () => {
@@ -114,6 +121,7 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
   target,
 }) => {
   const devboxTrpcClient = devboxClient.useTRPC();
+  const queryClient = useQueryClient();
   const [isCreatingRelease, setIsCreatingRelease] = useState(false);
   const [newReleaseTag, setNewReleaseTag] = useState("");
   const [newReleaseDescription, setNewReleaseDescription] = useState("");
@@ -126,12 +134,46 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
     devboxTrpcClient.getDevboxReleases.queryOptions(target.name || "")
   );
 
+  const pauseMutation = useMutation({
+    ...devboxTrpcClient.manageDevboxLifecycle.mutationOptions(),
+  });
+
+  const startMutation = useMutation({
+    ...devboxTrpcClient.manageDevboxLifecycle.mutationOptions(),
+    onSuccess: () => {
+      // Invalidate and refetch releases
+      queryClient.invalidateQueries({
+        queryKey: devboxTrpcClient.getDevboxReleases.queryKey(
+          target.name || ""
+        ),
+      });
+      setIsCreatingRelease(false);
+      setNewReleaseTag("");
+      setNewReleaseDescription("");
+    },
+    onError: (error) => {
+      console.error("Failed to start devbox after release:", error);
+    },
+  });
+
+  const releaseMutation = useMutation({
+    ...devboxTrpcClient.releaseDevbox.mutationOptions(),
+    onSuccess: () => {
+      // Start the devbox after successful release
+      startMutation.mutate({
+        devboxName: target.name || "",
+        action: "start",
+      });
+    },
+    onError: (error) => {
+      console.error("Failed to create release:", error);
+    },
+  });
+
   // Show loading state
   if (isLoading) {
     return (
-      <BaseActionMessage
-        headerTitle={{ icon: Tag, name: "Devbox Releases" }}
-      >
+      <BaseActionMessage headerTitle={{ icon: Tag, name: "Devbox Releases" }}>
         <div className="flex items-center justify-center h-20">
           <div className="text-xs text-muted-foreground">Loading...</div>
         </div>
@@ -142,9 +184,7 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
   // Show error state
   if (error || !releasesData) {
     return (
-      <BaseActionMessage
-        headerTitle={{ icon: Tag, name: "Devbox Releases" }}
-      >
+      <BaseActionMessage headerTitle={{ icon: Tag, name: "Devbox Releases" }}>
         <div className="flex items-center justify-center h-20">
           <span className="text-destructive text-xs">
             Failed to load devbox releases
@@ -157,9 +197,7 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
   const releases = releasesData.data || [];
 
   return (
-    <BaseActionMessage
-      headerTitle={{ icon: Tag, name: "Devbox Releases" }}
-    >
+    <BaseActionMessage headerTitle={{ icon: Tag, name: "Devbox Releases" }}>
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium">Releases: {releases.length}</h3>
@@ -216,14 +254,40 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
                     variant="default"
                     className="h-8 w-8 p-0"
                     onClick={() => {
-                      console.log("Create release:", { tag: newReleaseTag, description: newReleaseDescription });
-                      setIsCreatingRelease(false);
-                      setNewReleaseTag("");
-                      setNewReleaseDescription("");
+                      if (newReleaseTag.trim()) {
+                        // First pause the devbox, then release it
+                        pauseMutation.mutate(
+                          {
+                            devboxName: target.name || "",
+                            action: "stop",
+                          },
+                          {
+                            onSuccess: () => {
+                              releaseMutation.mutate({
+                                devboxName: target.name || "",
+                                tag: newReleaseTag.trim(),
+                                releaseDes: newReleaseDescription.trim(),
+                              });
+                            },
+                          }
+                        );
+                      }
                     }}
+                    disabled={
+                      !newReleaseTag.trim() ||
+                      pauseMutation.isPending ||
+                      releaseMutation.isPending ||
+                      startMutation.isPending
+                    }
                     title="Create release"
                   >
-                    <Check className="h-4 w-4" />
+                    {pauseMutation.isPending ||
+                    releaseMutation.isPending ||
+                    startMutation.isPending ? (
+                      <Spinner className="h-4 w-4" />
+                    ) : (
+                      <Check className="h-4 w-4" />
+                    )}
                   </Button>
                   <Button
                     size="sm"

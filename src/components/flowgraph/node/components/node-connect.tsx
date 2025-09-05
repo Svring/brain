@@ -238,7 +238,7 @@ export default function NodeConnect({
               className="absolute -top-5 -left-5 z-50 pointer-events-auto"
               onClick={handlePlusClick}
             >
-              <div className="flex items-center justify-center rounded-full shadow-lg transition-all duration-200 cursor-pointer hover:scale-115 text-theme-blue">
+              <div className="flex items-center justify-center rounded-full shadow-lg transition-all duration-200 cursor-pointer hover:scale-115">
                 <Spline className="w-8 h-8" />
               </div>
             </div>

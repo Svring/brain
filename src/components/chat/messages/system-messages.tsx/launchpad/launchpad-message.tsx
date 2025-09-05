@@ -27,8 +27,6 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
     error,
   } = useQuery(launchpad.getLaunchpad.queryOptions(target));
 
-  const launchpadObject = LaunchpadObjectSchema.parse(launchpadObjectData);
-
   // Remove the update image action since it's now handled inline
   const actions: MessageAction[] = [];
 
@@ -44,6 +42,8 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
       </BaseSystemMessage>
     );
   }
+
+  const launchpadObject = LaunchpadObjectSchema.parse(launchpadObjectData);
 
   // Show error state
   if (error || !launchpadObject) {

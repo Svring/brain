@@ -69,7 +69,7 @@ function createHttpsAgent() {
 
 function createDevboxAxios(context: DevboxApiContext) {
   return axios.create({
-    baseURL: `https://devbox.${context.baseUrl}/api/v1/DevBox`,
+    baseURL: `https://devbox.${context.baseUrl}/api/v1/devbox`,
     headers: {
       "Content-Type": "application/json",
       ...(context.authorization
@@ -169,7 +169,7 @@ export async function deployDevbox(
 ): Promise<DevboxDeployResponse> {
   const api = createDevboxAxios(context);
   const response = await api.post(
-    `/devbox/${devboxName}/release/${tag}/deploy`,
+    `/${devboxName}/release/${tag}/deploy`,
     request
   );
   return DevboxDeployResponseSchema.parse(response.data);

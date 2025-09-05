@@ -60,7 +60,7 @@ export const createDevboxApi = async (context: DevboxApiContext) => {
   const protocol = isDevelopment ? "http" : "https";
 
   return axios.create({
-    baseURL: `${protocol}://devbox.${context.baseUrl}/api/v1/DevBox`,
+    baseURL: `${protocol}://devbox.${context.baseUrl}/api/v1/devbox`,
     headers: {
       "Content-Type": "application/json",
       ...(context.authorization

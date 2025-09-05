@@ -1,7 +1,9 @@
 import React from "react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { useQuery } from "@tanstack/react-query";
-import { k8sClient } from "@/components/provider/trpc-provider";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { k8sClient, devboxClient } from "@/components/provider/trpc-provider";
+import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { APP_DEVBOX_ID } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-label";
 import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
 import {
@@ -25,11 +27,9 @@ interface DevboxDeployedMessageProps {
   payload: { tag: string };
 }
 
-const DeploymentItem: React.FC<{ deployment: any }> = ({
-  deployment,
-}: {
+const DeploymentItem: React.FC<{
   deployment: any;
-}) => {
+}> = ({ deployment }) => {
   const handleUpdate = () => {
     console.log("update", deployment);
   };
@@ -98,6 +98,9 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
   payload,
 }) => {
   const k8sTrpcClient = k8sClient.useTRPC();
+  const devboxTrpcClient = devboxClient.useTRPC();
+  const queryClient = useQueryClient();
+  const { appendSystemMessage } = useAppendSystemMessageMutation();
   const { resource } = useResourceStatus(target);
   const devboxObject = DevboxObjectSchema.parse(resource);
 
@@ -107,14 +110,38 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
     error,
   } = useQuery({
     ...k8sTrpcClient.listAllResources.queryOptions({
-      labelSelector: `${APP_DEVBOX_ID}=${devboxObject.id || ""}`,
-      builtinResourceTypes: ["deployment"],
+      labelSelector: `${APP_DEVBOX_ID}=${devboxObject.name || ""}`,
+      builtinResourceTypes: ["deployment", "statefulset"],
       customResourceTypes: [],
     }),
     enabled: !!devboxObject,
   });
 
-  console.log("allResources", allResources);
+  const deployMutation = useMutation({
+    ...devboxTrpcClient.deployDevbox.mutationOptions(),
+    onSuccess: (response) => {
+      // Invalidate and refetch deployments
+      queryClient.invalidateQueries({
+        queryKey: k8sTrpcClient.listAllResources.queryKey({
+          labelSelector: `${APP_DEVBOX_ID}=${devboxObject.name || ""}`,
+          builtinResourceTypes: ["deployment", "statefulset"],
+          customResourceTypes: [],
+        }),
+      });
+
+      // Extract appName from response and append launchpad.detail system message
+      if (response?.data?.appName) {
+        const deploymentTarget = convertResourceTypeToTarget("deployment", response.data.appName);
+        appendSystemMessage({
+          type: "launchpad.detail",
+          target: deploymentTarget,
+        });
+      }
+    },
+    onError: (error) => {
+      console.error("Failed to deploy devbox:", error);
+    },
+  });
 
   // Show loading state
   if (isLoading) {
@@ -184,12 +211,25 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
             {/* Add new deployment placeholder */}
             <div
               className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-3 hover:border-muted-foreground/50 hover:bg-muted/20 transition-colors cursor-pointer"
-              onClick={() => console.log("Create new deployment")}
+              onClick={() => {
+                if (payload?.tag) {
+                  deployMutation.mutate({
+                    devboxName: target.name || "",
+                    tag: payload.tag,
+                  });
+                }
+              }}
             >
               <div className="flex items-center justify-center gap-2">
-                <Plus className="h-4 w-4 text-muted-foreground" />
+                {deployMutation.isPending ? (
+                  <Spinner className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <Plus className="h-4 w-4 text-muted-foreground" />
+                )}
                 <span className="text-xs text-muted-foreground">
-                  Add new deployment
+                  {deployMutation.isPending
+                    ? "Deploying..."
+                    : "Add new deployment"}
                 </span>
               </div>
             </div>

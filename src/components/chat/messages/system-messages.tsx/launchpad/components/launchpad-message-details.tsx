@@ -37,7 +37,7 @@ export const LaunchpadMessageDetails: React.FC<
 
   // Keep the original env for display, format only when editing
   const handleSubmit = async (type: string, data?: any) => {
-    console.log("requestData", data);
+    // console.log("requestData", data);
 
     const updateRequest = { name: target.name!, request: data };
 
