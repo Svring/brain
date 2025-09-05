@@ -30,10 +30,7 @@ interface Release {
 interface DevboxNodeReleaseListProps {
   releases: Release[] | undefined;
   isLoading: boolean;
-  onDeploy: (
-    releaseTag: string,
-    config: { cpu: number; memory: number }
-  ) => Promise<void>;
+  onDeploy: (releaseTag: string) => Promise<void>;
   isDeploying: boolean;
   onDelete?: (releaseTag: string) => Promise<void>;
   isDeleting?: boolean;
@@ -60,7 +57,7 @@ export default function DevboxNodeReleaseList({
 
   const handleDeploy = async (releaseTag: string) => {
     try {
-      await onDeploy(releaseTag, deployConfig);
+      await onDeploy(releaseTag);
       setOpenPopovers((prev) => ({ ...prev, [releaseTag]: false }));
     } catch (error) {
       console.error("Deploy failed:", error);
@@ -170,9 +167,7 @@ export default function DevboxNodeReleaseList({
                         </div>
                         <div className="grid gap-3">
                           <div className="grid gap-2">
-                            <Label className="text-xs">
-                              CPU (millicores)
-                            </Label>
+                            <Label className="text-xs">CPU (millicores)</Label>
                             <div className="grid grid-cols-3 gap-1">
                               {[1000, 2000, 4000, 8000, 16000].map((cpu) => (
                                 <Button
@@ -184,7 +179,11 @@ export default function DevboxNodeReleaseList({
                                       cpu,
                                     }));
                                   }}
-                                  variant={deployConfig.cpu === cpu ? "default" : "outline"}
+                                  variant={
+                                    deployConfig.cpu === cpu
+                                      ? "default"
+                                      : "outline"
+                                  }
                                   size="sm"
                                   className="h-7 text-xs"
                                 >
@@ -194,9 +193,7 @@ export default function DevboxNodeReleaseList({
                             </div>
                           </div>
                           <div className="grid gap-2">
-                            <Label className="text-xs">
-                              Memory (MB)
-                            </Label>
+                            <Label className="text-xs">Memory (MB)</Label>
                             <div className="grid grid-cols-3 gap-1">
                               {[1024, 2048, 4096, 8192, 16384].map((memory) => (
                                 <Button
@@ -208,7 +205,11 @@ export default function DevboxNodeReleaseList({
                                       memory,
                                     }));
                                   }}
-                                  variant={deployConfig.memory === memory ? "default" : "outline"}
+                                  variant={
+                                    deployConfig.memory === memory
+                                      ? "default"
+                                      : "outline"
+                                  }
                                   size="sm"
                                   className="h-7 text-xs"
                                 >
@@ -242,7 +243,9 @@ export default function DevboxNodeReleaseList({
                             }}
                             size="sm"
                             className="flex-1 h-8 text-xs"
-                            disabled={isDeploying || release.status?.value === "Pending"}
+                            disabled={
+                              isDeploying || release.status?.value === "Pending"
+                            }
                           >
                             {isDeploying ? "Deploying..." : "Deploy"}
                           </Button>
@@ -256,7 +259,7 @@ export default function DevboxNodeReleaseList({
                       console.log("Delete popover state change", {
                         releaseTag: release.tag,
                         open,
-                        previousState: openDeletePopovers[release.tag]
+                        previousState: openDeletePopovers[release.tag],
                       });
                       setDeletePopoverOpen(release.tag, open);
                     }}
@@ -269,13 +272,16 @@ export default function DevboxNodeReleaseList({
                             releaseTag: release.tag,
                             onDeleteExists: !!onDelete,
                             isPending: release.status?.value === "Pending",
-                            disabled: !onDelete || release.status?.value === "Pending"
+                            disabled:
+                              !onDelete || release.status?.value === "Pending",
                           });
                         }}
                         size="sm"
                         variant="ghost"
                         className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                        disabled={!onDelete || release.status?.value === "Pending"}
+                        disabled={
+                          !onDelete || release.status?.value === "Pending"
+                        }
                         title="Delete"
                       >
                         <Trash2 className="h-3 w-3" />
@@ -294,7 +300,8 @@ export default function DevboxNodeReleaseList({
                             Delete Release
                           </h4>
                           <p className="text-xs text-muted-foreground">
-                            Are you sure you want to delete release {release.tag}? This action cannot be undone.
+                            Are you sure you want to delete release{" "}
+                            {release.tag}? This action cannot be undone.
                           </p>
                         </div>
                         <div className="flex justify-end gap-2">
@@ -322,7 +329,9 @@ export default function DevboxNodeReleaseList({
                             }}
                             variant="destructive"
                             size="sm"
-                            disabled={isDeleting || release.status?.value === "Pending"}
+                            disabled={
+                              isDeleting || release.status?.value === "Pending"
+                            }
                           >
                             {isDeleting ? "Deleting..." : "Delete"}
                           </Button>

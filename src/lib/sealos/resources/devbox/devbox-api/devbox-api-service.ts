@@ -10,6 +10,10 @@ import type {
   DevboxDeleteResponse,
   DevboxLifecycleRequest,
   DevboxLifecycleResponse,
+  DevboxShutdownRequest,
+  DevboxShutdownResponse,
+  DevboxRestartRequest,
+  DevboxRestartResponse,
   DevboxReleaseRequest,
   DevboxReleaseResponse,
   DevboxReleasesResponse,
@@ -18,12 +22,6 @@ import type {
   DevboxPortCreateRequest,
   DevboxPortCreateResponse,
   DevboxPortRemoveResponse,
-  AppFormConfig,
-  CreateAppResponse,
-  DeleteAppResponse,
-  GetAppsResponse,
-  GetAppByNameResponse,
-  GetAppPodsResponse,
 } from "./devbox-open-api-schemas";
 import {
   DevboxListResponseSchema,
@@ -31,16 +29,13 @@ import {
   DevboxUpdateResponseSchema,
   DevboxDeleteResponseSchema,
   DevboxLifecycleResponseSchema,
+  DevboxShutdownResponseSchema,
+  DevboxRestartResponseSchema,
   DevboxReleaseResponseSchema,
   DevboxReleasesResponseSchema,
   DevboxDeployResponseSchema,
   DevboxPortCreateResponseSchema,
   DevboxPortRemoveResponseSchema,
-  CreateAppResponseSchema,
-  DeleteAppResponseSchema,
-  GetAppsResponseSchema,
-  GetAppByNameResponseSchema,
-  GetAppPodsResponseSchema,
 } from "./devbox-open-api-schemas";
 import type { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import type { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
@@ -85,26 +80,13 @@ function createDevboxAxios(context: DevboxApiContext) {
   });
 }
 
-function createAppAxios(context: DevboxApiContext) {
-  return axios.create({
-    baseURL: `https://devbox.${context.baseUrl}/api/`,
-    headers: {
-      "Content-Type": "application/json",
-      ...(context.authorization
-        ? { Authorization: context.authorization }
-        : {}),
-    },
-    httpsAgent: createHttpsAgent(),
-  });
-}
-
 // DevBox Lifecycle Management
 export async function createDevbox(
   request: DevboxCreateRequest,
   context: DevboxApiContext
 ): Promise<DevboxCreateResponse> {
   const api = createDevboxAxios(context);
-  const response = await api.post("/", request);
+  const response = await api.post("/create", request);
   return DevboxCreateResponseSchema.parse(response.data);
 }
 
@@ -126,6 +108,26 @@ export async function manageDevboxLifecycle(
   return DevboxLifecycleResponseSchema.parse(response.data);
 }
 
+export async function shutdownDevbox(
+  devboxName: string,
+  request: DevboxShutdownRequest,
+  context: DevboxApiContext
+): Promise<DevboxShutdownResponse> {
+  const api = createDevboxAxios(context);
+  const response = await api.post(`/devbox/${devboxName}/shutdown`, request);
+  return DevboxShutdownResponseSchema.parse(response.data);
+}
+
+export async function restartDevbox(
+  devboxName: string,
+  request: DevboxRestartRequest,
+  context: DevboxApiContext
+): Promise<DevboxRestartResponse> {
+  const api = createDevboxAxios(context);
+  const response = await api.post(`/devbox/${devboxName}/restart`, request);
+  return DevboxRestartResponseSchema.parse(response.data);
+}
+
 export async function deleteDevbox(
   devboxName: string,
   context: DevboxApiContext
@@ -139,11 +141,12 @@ export async function deleteDevbox(
 
 // DevBox Release Management
 export async function releaseDevbox(
+  devboxName: string,
   request: DevboxReleaseRequest,
   context: DevboxApiContext
 ): Promise<DevboxReleaseResponse> {
   const api = createDevboxAxios(context);
-  const response = await api.post("/release", request);
+  const response = await api.post(`/devbox/${devboxName}/release`, request);
   return DevboxReleaseResponseSchema.parse(response.data);
 }
 
@@ -159,11 +162,16 @@ export async function getDevboxReleases(
 }
 
 export async function deployDevbox(
+  devboxName: string,
+  tag: string,
   request: DevboxDeployRequest,
   context: DevboxApiContext
 ): Promise<DevboxDeployResponse> {
-  const api = createAppAxios(context);
-  const response = await api.post("/deployDevbox", request);
+  const api = createDevboxAxios(context);
+  const response = await api.post(
+    `/devbox/${devboxName}/release/${tag}/deploy`,
+    request
+  );
   return DevboxDeployResponseSchema.parse(response.data);
 }
 
@@ -185,80 +193,6 @@ export async function getDevboxByName(
     params: { devboxName },
   });
   return response.data;
-}
-
-// Port Management
-export async function createDevboxPort(
-  request: DevboxPortCreateRequest,
-  context: DevboxApiContext
-): Promise<DevboxPortCreateResponse> {
-  const api = createDevboxAxios(context);
-  const response = await api.post("/ports/create", request);
-  return DevboxPortCreateResponseSchema.parse(response.data);
-}
-
-export async function removeDevboxPort(
-  devboxName: string,
-  port: number,
-  context: DevboxApiContext
-): Promise<DevboxPortRemoveResponse> {
-  const api = createDevboxAxios(context);
-  const response = await api.post("/ports/remove", {
-    devboxName,
-    port,
-  });
-  return DevboxPortRemoveResponseSchema.parse(response.data);
-}
-
-// Application Management
-export async function createApp(
-  appForm: AppFormConfig,
-  context: DevboxApiContext
-): Promise<CreateAppResponse> {
-  const api = createAppAxios(context);
-  const response = await api.post("/v1/createApp", { appForm });
-  return CreateAppResponseSchema.parse(response.data);
-}
-
-export async function getApps(
-  context: DevboxApiContext
-): Promise<GetAppsResponse> {
-  const api = createAppAxios(context);
-  const response = await api.get("/v1/getApps");
-  return GetAppsResponseSchema.parse(response.data);
-}
-
-export async function getAppByName(
-  appName: string,
-  context: DevboxApiContext
-): Promise<GetAppByNameResponse> {
-  const api = createAppAxios(context);
-  const response = await api.get("/v1/getAppByAppName", {
-    params: { appName },
-  });
-  return GetAppByNameResponseSchema.parse(response.data);
-}
-
-export async function deleteApp(
-  name: string,
-  context: DevboxApiContext
-): Promise<DeleteAppResponse> {
-  const api = createAppAxios(context);
-  const response = await api.delete("/v1/delAppByName", {
-    params: { name },
-  });
-  return DeleteAppResponseSchema.parse(response.data);
-}
-
-export async function getAppPods(
-  name: string,
-  context: DevboxApiContext
-): Promise<GetAppPodsResponse> {
-  const api = createAppAxios(context);
-  const response = await api.get("/v1/getAppPodsByAppName", {
-    params: { name },
-  });
-  return GetAppPodsResponseSchema.parse(response.data);
 }
 
 // K8s Operations

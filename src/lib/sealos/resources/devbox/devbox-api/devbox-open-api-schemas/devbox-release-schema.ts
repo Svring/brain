@@ -1,10 +1,9 @@
 import { z } from "zod";
 
-// Release DevBox schemas
+// Release DevBox schemas - updated for new API structure
 export const DevboxReleaseRequestSchema = z.object({
-  devboxName: z.string().min(1, "DevBox name is required"),
   tag: z.string().min(1, "Release tag is required"),
-  releaseDes: z.string().optional().default(""),
+  releaseDes: z.string().default(""),
 });
 
 export const DevboxReleaseResponseSchema = z.object({
@@ -41,13 +40,8 @@ export const DevboxReleasesResponseSchema = z.object({
   data: z.array(DevboxReleaseItemSchema),
 });
 
-// Deploy DevBox schemas
-export const DevboxDeployRequestSchema = z.object({
-  devboxName: z.string().min(1, "DevBox name is required"),
-  tag: z.string().min(1, "Devbox release version tag is required"),
-  cpu: z.number().min(0).optional().default(2000),
-  memory: z.number().min(0).optional().default(4096),
-});
+// Deploy DevBox schemas - updated for new API structure (no request body needed)
+export const DevboxDeployRequestSchema = z.object({});
 
 export const DevboxPublicDomainSchema = z.object({
   host: z.string(),

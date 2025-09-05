@@ -15,16 +15,16 @@ export const useDevboxCreateForm = (
     resolver: zodResolver(devboxCreateFormSchema),
     defaultValues: {
       name: "my-devbox",
-      runtime: "Python",
+      runtime: "python",
       resource: {
-        cpu: 2,
-        memory: 2,
+        cpu: "2",
+        memory: "2",
       },
       ports: [
         {
-          port: 80,
+          number: 80,
           protocol: "HTTP",
-          openPublicDomain: true,
+          exposesPublicDomain: true,
         },
       ],
       ...defaultValues,

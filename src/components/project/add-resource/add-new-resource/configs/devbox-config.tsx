@@ -3,6 +3,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DEVBOX_RUNTIMES } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-runtimes";
 
 interface DevboxConfigProps {
   configData: any;
@@ -31,16 +32,11 @@ export default function DevboxConfig({ configData, onConfigChange }: DevboxConfi
             <SelectValue placeholder="Select runtime" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Debian">Debian</SelectItem>
-            <SelectItem value="C++">C++</SelectItem>
-            <SelectItem value="Rust">Rust</SelectItem>
-            <SelectItem value="Java">Java</SelectItem>
-            <SelectItem value="Go">Go</SelectItem>
-            <SelectItem value="Python">Python</SelectItem>
-            <SelectItem value="Node.js">Node.js</SelectItem>
-            <SelectItem value=".Net">.Net</SelectItem>
-            <SelectItem value="C">C</SelectItem>
-            <SelectItem value="PHP">PHP</SelectItem>
+            {DEVBOX_RUNTIMES.map((runtime) => (
+              <SelectItem key={runtime} value={runtime}>
+                {runtime}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>

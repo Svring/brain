@@ -11,20 +11,15 @@ import {
   DevboxDeleteResponseSchema,
   DevboxLifecycleRequestSchema,
   DevboxLifecycleResponseSchema,
+  DevboxShutdownRequestSchema,
+  DevboxShutdownResponseSchema,
+  DevboxRestartRequestSchema,
+  DevboxRestartResponseSchema,
   DevboxReleaseRequestSchema,
   DevboxReleaseResponseSchema,
   DevboxReleasesResponseSchema,
   DevboxDeployRequestSchema,
   DevboxDeployResponseSchema,
-  DevboxPortCreateRequestSchema,
-  DevboxPortCreateResponseSchema,
-  DevboxPortRemoveResponseSchema,
-  AppFormConfigSchema,
-  CreateAppResponseSchema,
-  DeleteAppResponseSchema,
-  GetAppsResponseSchema,
-  GetAppByNameResponseSchema,
-  GetAppPodsResponseSchema,
 } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import {
@@ -32,19 +27,14 @@ import {
   createDevbox,
   updateDevbox,
   manageDevboxLifecycle,
+  shutdownDevbox,
+  restartDevbox,
   deleteDevbox,
   releaseDevbox,
   getDevboxReleases,
   deleteDevboxRelease,
   deployDevbox,
   getDevboxByName,
-  createDevboxPort,
-  removeDevboxPort,
-  createApp,
-  getApps,
-  getAppByName,
-  deleteApp,
-  getAppPods,
   getDevbox,
   listDevbox,
   getDevboxSshInfo,
@@ -112,6 +102,20 @@ export const devboxRouter = t.router({
       return await manageDevboxLifecycle(input, ctx);
     }),
 
+  shutdownDevbox: t.procedure
+    .input(z.string())
+    .output(DevboxShutdownResponseSchema)
+    .mutation(async ({ ctx, input }) => {
+      return await shutdownDevbox(input, {}, ctx);
+    }),
+
+  restartDevbox: t.procedure
+    .input(z.string())
+    .output(DevboxRestartResponseSchema)
+    .mutation(async ({ ctx, input }) => {
+      return await restartDevbox(input, {}, ctx);
+    }),
+
   deleteDevbox: t.procedure
     .input(z.string())
     .output(DevboxDeleteResponseSchema)
@@ -121,10 +125,17 @@ export const devboxRouter = t.router({
 
   // DevBox Release Management
   releaseDevbox: t.procedure
-    .input(DevboxReleaseRequestSchema)
+    .input(
+      z.object({
+        devboxName: z.string().min(1, "DevBox name is required"),
+        tag: z.string().min(1, "Release tag is required"),
+        releaseDes: z.string().default(""),
+      })
+    )
     .output(DevboxReleaseResponseSchema)
     .mutation(async ({ ctx, input }) => {
-      return await releaseDevbox(input, ctx);
+      const { devboxName, ...request } = input;
+      return await releaseDevbox(devboxName, request, ctx);
     }),
 
   getDevboxReleases: t.procedure
@@ -142,58 +153,16 @@ export const devboxRouter = t.router({
     }),
 
   deployDevbox: t.procedure
-    .input(DevboxDeployRequestSchema)
+    .input(
+      z.object({
+        devboxName: z.string().min(1, "DevBox name is required"),
+        tag: z.string().min(1, "Devbox release version tag is required"),
+      })
+    )
     .output(DevboxDeployResponseSchema)
     .mutation(async ({ ctx, input }) => {
-      return await deployDevbox(input, ctx);
-    }),
-
-  // Port Management
-  createDevboxPort: t.procedure
-    .input(DevboxPortCreateRequestSchema)
-    .output(DevboxPortCreateResponseSchema)
-    .mutation(async ({ ctx, input }) => {
-      return await createDevboxPort(input, ctx);
-    }),
-
-  removeDevboxPort: t.procedure
-    .input(z.object({ devboxName: z.string(), port: z.number() }))
-    .output(DevboxPortRemoveResponseSchema)
-    .mutation(async ({ ctx, input }) => {
-      return await removeDevboxPort(input.devboxName, input.port, ctx);
-    }),
-
-  // Application Management
-  createApp: t.procedure
-    .input(AppFormConfigSchema)
-    .output(CreateAppResponseSchema)
-    .mutation(async ({ ctx, input }) => {
-      return await createApp(input, ctx);
-    }),
-
-  getApps: t.procedure.output(GetAppsResponseSchema).query(async ({ ctx }) => {
-    return await getApps(ctx);
-  }),
-
-  getAppByName: t.procedure
-    .input(z.string())
-    .output(GetAppByNameResponseSchema)
-    .query(async ({ ctx, input }) => {
-      return await getAppByName(input, ctx);
-    }),
-
-  deleteApp: t.procedure
-    .input(z.string())
-    .output(DeleteAppResponseSchema)
-    .mutation(async ({ ctx, input }) => {
-      return await deleteApp(input, ctx);
-    }),
-
-  getAppPods: t.procedure
-    .input(z.string())
-    .output(GetAppPodsResponseSchema)
-    .query(async ({ ctx, input }) => {
-      return await getAppPods(input, ctx);
+      const { devboxName, tag } = input;
+      return await deployDevbox(devboxName, tag, {}, ctx);
     }),
 
   // K8s Operations

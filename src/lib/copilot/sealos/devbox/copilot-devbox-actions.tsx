@@ -333,7 +333,7 @@ export const deployDevboxAction = (context: DevboxApiContext) => {
 
   useCopilotAction({
     name: "deployDevbox",
-    description: "Deploy a devbox release with specified configuration",
+    description: "Deploy a devbox release with fixed resource configuration (2 CPU cores, 2GB memory)",
     parameters: [
       {
         name: "devboxName",
@@ -347,25 +347,11 @@ export const deployDevboxAction = (context: DevboxApiContext) => {
         required: true,
         description: "Devbox release version tag to deploy",
       },
-      {
-        name: "cpu",
-        type: "number",
-        required: false,
-        description: "CPU allocation in millicores (default: 2000)",
-      },
-      {
-        name: "memory",
-        type: "number",
-        required: false,
-        description: "Memory allocation in MB (default: 4096)",
-      },
     ],
-    handler: ({ devboxName, tag, cpu, memory }) => {
+    handler: ({ devboxName, tag }) => {
       const deployRequest = {
         devboxName,
         tag,
-        cpu: cpu ?? 2000,
-        memory: memory ?? 4096,
       };
       deployDevbox.mutateAsync(deployRequest);
     },
@@ -373,7 +359,7 @@ export const deployDevboxAction = (context: DevboxApiContext) => {
       return (
         <AITool key={"deployDevbox"}>
           <AIToolHeader
-            description={"Deploy a devbox release with specified configuration"}
+            description={"Deploy a devbox release with fixed resource configuration (2 CPU cores, 2GB memory)"}
             name={"deployDevbox"}
             status={status}
           />

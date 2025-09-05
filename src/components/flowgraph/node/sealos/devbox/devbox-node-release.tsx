@@ -43,15 +43,10 @@ export default function DevboxNodeRelease({ object }: DevboxNodeReleaseProps) {
   const deleteReleaseMutation = useDeleteDevboxReleaseMutation(devboxContext);
   const addToProjectMutation = useAddToProjectMutation(k8sContext);
 
-  const handleDeploy = async (
-    releaseTag: string,
-    config: { cpu: number; memory: number }
-  ) => {
+  const handleDeploy = async (releaseTag: string) => {
     const deployResult = await deployMutation.mutateAsync({
       devboxName,
       tag: releaseTag,
-      cpu: config.cpu,
-      memory: config.memory,
     });
     console.log("deployResult", deployResult);
     const target = BuiltinResourceTargetSchema.parse(

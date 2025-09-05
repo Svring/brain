@@ -4,8 +4,8 @@ const ProjectCardSkeleton: React.FC = () => {
   return (
     <div className="relative flex min-h-[160px] w-full flex-col rounded-lg border bg-background-secondary p-4 shadow-sm">
       {/* Skeleton for dropdown menu button */}
-      <div className="absolute top-2 right-2">
-        <Skeleton className="h-8 w-8 rounded" />
+      <div className="absolute top-4 right-4">
+        <Skeleton className="h-6 w-6 rounded" />
       </div>
 
       {/* Skeleton for project title */}
@@ -16,7 +16,7 @@ const ProjectCardSkeleton: React.FC = () => {
         <div className="flex items-center space-x-1">
           <Skeleton className="h-8 w-8 rounded-full" />
           <Skeleton className="h-8 w-8 rounded-full" />
-          <Skeleton className="h-6 w-6 rounded-full" />
+          <Skeleton className="h-8 w-8 rounded-full" />
         </div>
       </div>
     </div>
@@ -25,7 +25,7 @@ const ProjectCardSkeleton: React.FC = () => {
 
 const EmptyState: React.FC = () => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] space-y-6">
+    <div className="flex flex-col items-center justify-center min-h-[400px] space-y-6 border border-dashed rounded-xl hover:bg-background-secondary transition-all duration-300 cursor-pointer">
       {/* Skeleton card in center */}
       <div className="w-full max-w-sm">
         <ProjectCardSkeleton />
@@ -33,11 +33,11 @@ const EmptyState: React.FC = () => {
 
       {/* Text content */}
       <div className="text-center space-y-2">
-        <h3 className="text-lg font-medium text-foreground">
-          No projects created yet
-        </h3>
+        {/* <h3 className="text-lg font-medium text-foreground">
+          No projects yet
+        </h3> */}
         <p className="text-sm text-muted-foreground">
-          Click here to create a project.
+          Click here to navigate to the chat and create new projects.
         </p>
       </div>
     </div>
