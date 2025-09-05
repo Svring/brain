@@ -1,34 +1,27 @@
-import type { ObjectStorageObject } from "@/lib/sealos/resources/objectstorage/objectstorage-schemas/objectstorage-object-schema";
+import type { Env } from "@/schemas/forms/universal/env-schema";
 
 /**
  * Derives environment variables from object storage access configuration
- * @param objectStorageObject - The complete object storage object containing access details
- * @returns An object containing environment variables for the object storage connection
+ * @param name - The object storage name used to generate environment variable names and secret references
+ * @returns An array of environment variables conforming to EnvSchema
  */
-export const deriveObjectStorageEnvVariable = (
-  objectStorageObject: ObjectStorageObject
-) => {
-  try {
-    const { name: bucketName, access } = objectStorageObject;
+export const deriveObjectStorageEnvVariable = (name: string): Env[] => {
+  const secretName = `object-storage-key-${name}`;
+  const secretKeys = [
+    "accessKey",
+    "bucket",
+    "external",
+    "internal",
+    "secretKey",
+  ];
 
-    if (!access) {
-      return null;
-    }
-
-    const { accessKey, secretKey, bucket, external, internal } = access;
-
-    return {
-      [`${bucketName.toUpperCase()}_ACCESS_KEY`]: accessKey,
-      [`${bucketName.toUpperCase()}_SECRET_KEY`]: secretKey,
-      [`${bucketName.toUpperCase()}_BUCKET`]: bucket,
-      [`${bucketName.toUpperCase()}_EXTERNAL_ENDPOINT`]: external,
-      [`${bucketName.toUpperCase()}_INTERNAL_ENDPOINT`]: internal,
-    };
-  } catch (error) {
-    console.error(
-      "Error deriving environment variables from object storage:",
-      error
-    );
-    return null;
-  }
+  return secretKeys.map((key) => ({
+    name: `${name.toUpperCase()}_${key.toUpperCase()}`,
+    valueFrom: {
+      secretKeyRef: {
+        name: secretName,
+        key: key,
+      },
+    },
+  }));
 };

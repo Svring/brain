@@ -24,7 +24,7 @@ export const DevBoxSchema = z.object({
       /^[a-z0-9_-]+$/,
       "Name must contain only lowercase letters, numbers, underscores, and hyphens"
     ),
-  runtime: z.enum(DEVBOX_RUNTIMES as [string, ...string[]]),
+  runtime: z.enum(DEVBOX_RUNTIMES),
   ports: z.array(PortSchema).optional().nullable(),
   reliances: ReliancesSchema.optional().nullable(),
 });

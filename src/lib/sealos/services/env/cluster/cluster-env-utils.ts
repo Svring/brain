@@ -1,38 +1,23 @@
 import type { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import type { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
+import type { Env } from "@/schemas/forms/universal/env-schema";
 
 /**
  * Derives environment variables from cluster private connection
- * @param k8sContext - The Kubernetes API context containing namespace information
- * @param clusterObject - The complete cluster object containing connection details
- * @returns An object containing environment variables for the cluster connection
+ * @param name - The cluster name used to generate environment variable names and secret references
+ * @returns An array of environment variables conforming to EnvSchema
  */
-export const deriveEnvVariable = (
-  k8sContext: K8sApiContext,
-  clusterObject: ClusterObject
-) => {
-  try {
-    const { connection, name: clusterName } = clusterObject;
-    const { privateConnection, publicConnection } = connection;
+export const deriveClusterEnvVariable = (name: string): Env[] => {
+  const secretName = `${name}-conn-credential`;
+  const secretKeys = ["port", "host", "password", "username"];
 
-    if (!privateConnection) {
-      return null;
-    }
-
-    const envVars: Record<string, string> = {
-      [`${clusterName.toUpperCase()}_CONNECTION_STRING`]:
-        privateConnection.connectionString,
-    };
-
-    // Add public connection string if it exists
-    if (publicConnection) {
-      envVars[`${clusterName.toUpperCase()}_PUBLIC_CONNECTION_STRING`] =
-        publicConnection.connectionString;
-    }
-
-    return envVars;
-  } catch (error) {
-    console.error("Error deriving environment variables from cluster:", error);
-    return null;
-  }
+  return secretKeys.map((key) => ({
+    name: `${name.toUpperCase()}_${key.toUpperCase()}`,
+    valueFrom: {
+      secretKeyRef: {
+        name: secretName,
+        key: key,
+      },
+    },
+  }));
 };

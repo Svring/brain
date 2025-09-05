@@ -23,7 +23,7 @@ import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import BaseActionMessage from "../components/base-action-message";
 import { PortDisplayTable } from "../components/port-display-table";
-import { Checkbox } from "@/components/ui/checkbox"
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface NetworkMessageProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -53,7 +53,7 @@ export default function NetworkMessage({ target }: NetworkMessageProps) {
       target.type === "builtin" &&
       ["deployment", "statefulset"].includes(target.resourceType.toLowerCase())
     ) {
-              appendSystemMessage({ type: "launchpad.updatePort", target });
+      appendSystemMessage({ type: "launchpad.updatePort", target });
     }
     setShowPortForm(false);
     setNewPort({
@@ -164,7 +164,9 @@ export default function NetworkMessage({ target }: NetworkMessageProps) {
               </div>
               {newPort.public && (
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Protocol</span>
+                  <span className="text-sm text-muted-foreground">
+                    Protocol
+                  </span>
                   <Select
                     value={getProtocolDisplayValue()}
                     onValueChange={handleProtocolSelection}

@@ -76,7 +76,7 @@ export const useNodeSelect = ({
     if (messageType) {
       // Don't trigger createChatMutation if chat is already responding
       if (sidebarChatResponding) {
-        toast("Agent is responding, new messages would be blocked for now.");
+        toast("Agent is responding, please wait...");
         return;
       }
 
