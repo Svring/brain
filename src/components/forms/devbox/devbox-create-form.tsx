@@ -7,8 +7,7 @@ import { DevboxCreateFormData } from "@/schemas/forms/devbox/devbox-create-form-
 import { NameField } from "@/components/forms/universal/name-field";
 import { ResourceFields } from "../universal/resource-fields";
 import { DevboxPortsFields } from "./devbox-ports-fields";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { DevboxRuntimeField } from "./components/devbox-runtime-field";
 
 interface DevboxCreateFormProps {
   defaultValues?: Partial<DevboxCreateFormData>;
@@ -32,15 +31,7 @@ export const DevboxCreateForm = ({
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <div className="space-y-4">
           <NameField />
-
-          <div className="space-y-2">
-            <Label htmlFor="runtime">Runtime</Label>
-            <Input
-              id="runtime"
-              {...form.register("runtime")}
-              placeholder="e.g., ubuntu-22.04"
-            />
-          </div>
+          <DevboxRuntimeField />
         </div>
 
         <ResourceFields

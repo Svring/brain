@@ -8,8 +8,8 @@ import { ClusterTerminationPolicySchema } from "./components/cluster-termination
 // Main cluster create form schema
 export const clusterCreateFormSchema = z.object({
   name: NameSchema.default("my-cluster"),
-  type: ClusterTypeSchema.default("kubernetes"),
-  version: ClusterVersionSchema.default("1.28"),
+  type: ClusterTypeSchema.default("postgresql"),
+  version: ClusterVersionSchema.default("postgresql-14.8.0"),
   resource: ClusterResourceSchema.default({
     replicas: 1,
     cpu: 2,

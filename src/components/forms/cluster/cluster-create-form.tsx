@@ -6,8 +6,8 @@ import { useClusterCreateForm } from "@/hooks/forms/cluster/use-cluster-create-f
 import { ClusterCreateFormData } from "@/schemas/forms/cluster/cluster-create-form-schema";
 import { NameField } from "@/components/forms/universal/name-field";
 import { ResourceFields } from "../universal/resource-fields";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { ClusterTypeField } from "./components/cluster-type-field";
+import { ClusterTerminationPolicyField } from "./components/cluster-termination-policy-field";
 import {
   CPU_OPTIONS,
   MEMORY_OPTIONS,
@@ -38,32 +38,9 @@ export const ClusterCreateForm = ({
         <div className="space-y-4">
           <NameField />
           
-          <div className="space-y-2">
-            <Label htmlFor="type">Cluster Type</Label>
-            <Input
-              id="type"
-              {...form.register("type")}
-              placeholder="e.g., kubernetes"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="version">Cluster Version</Label>
-            <Input
-              id="version"
-              {...form.register("version")}
-              placeholder="e.g., 1.28"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="terminationPolicy">Termination Policy</Label>
-            <Input
-              id="terminationPolicy"
-              {...form.register("terminationPolicy")}
-              placeholder="e.g., Delete"
-            />
-          </div>
+          <ClusterTypeField />
+          
+          <ClusterTerminationPolicyField />
         </div>
 
         <ResourceFields 

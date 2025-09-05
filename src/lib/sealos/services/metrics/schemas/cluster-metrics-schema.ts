@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { getCurrentUnixTime, getMonitorTimespan } from "@/lib/date/date-utils";
-import { CLUSTER_TYPE_VERSION_MAP } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-versions";
+import { CLUSTER_CONSTANT_TYPE_VERSION } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-versions";
 
 // Database types enum
 export const DatabaseTypeSchema = z.enum([
@@ -102,7 +102,7 @@ export const GetClusterMetricsRequestSchema = z
     namespace: z.string().min(1, "Namespace is required"),
     query: z.string().optional(), // Custom query expression
     type: z
-      .enum(Object.keys(CLUSTER_TYPE_VERSION_MAP) as [string, ...string[]])
+      .enum(Object.keys(CLUSTER_CONSTANT_TYPE_VERSION) as [string, ...string[]])
       .optional(), // Predefined query type
     app: z.string().min(1, "App name is required"),
     // For instant queries

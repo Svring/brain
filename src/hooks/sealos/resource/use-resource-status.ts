@@ -23,7 +23,15 @@ export const useResourceStatus = <TSelected = any>(
   const { devbox, cluster, launchpad, objectstorage } = useTRPCClients();
 
   // Helper function to create consistent return object
-  const createReturn = (resource: any, rest: any) => {
+  const createReturn = (
+    resource: any,
+    rest: any
+  ): {
+    resource: TSelected;
+    originalResource: any;
+    status: any;
+    [key: string]: any;
+  } => {
     const processedResource = select ? select(resource) : resource;
     return {
       ...rest,

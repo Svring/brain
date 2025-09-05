@@ -221,7 +221,7 @@ export default function NodeConnect({
     } else {
       const timer = setTimeout(() => {
         setShowIcon(false);
-      }, 500); // 300ms delay before hiding
+      }, 300); // 300ms delay before hiding
       
       return () => clearTimeout(timer);
     }
