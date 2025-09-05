@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 // Cache singletons across HMR in development to avoid re-instantiation costs
 const g = globalThis as {
-  __copilot_serviceAdapter?: typeof EmptyAdapter;
+  __copilot_serviceAdapter?: EmptyAdapter;
 };
 
 if (!g.__copilot_serviceAdapter) {

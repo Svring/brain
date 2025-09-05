@@ -42,12 +42,15 @@ export const ClusterCreateMessage: React.FC<ClusterCreateMessageProps> = ({
     },
     onError: async (error: any, variables) => {
       console.error("Cluster creation error:", error);
-      
+
       // Even if cluster creation failed or output validation failed,
       // we still want to try adding it to the project by name
       if (selectedProject && variables?.name) {
         try {
-          console.log("⚠️ Cluster creation failed, but still adding to project by name:", variables.name);
+          console.log(
+            "⚠️ Cluster creation failed, but still adding to project by name:",
+            variables.name
+          );
           const resourceTarget = convertResourceTypeToTarget(
             "cluster",
             variables.name
@@ -56,10 +59,14 @@ export const ClusterCreateMessage: React.FC<ClusterCreateMessageProps> = ({
             resources: [resourceTarget],
             name: selectedProject,
           });
-          toast.warning("Cluster creation had issues, but it was still added to the project");
+          toast.warning(
+            "Cluster creation had issues, but it was still added to the project"
+          );
         } catch (addError) {
           console.error("Failed to add cluster to project:", addError);
-          toast.error("Cluster creation failed and could not be added to project");
+          toast.error(
+            "Cluster creation failed and could not be added to project"
+          );
         }
       } else {
         toast.error(error.message || "Failed to create cluster");

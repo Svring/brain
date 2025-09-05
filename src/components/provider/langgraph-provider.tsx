@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { type ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { useAiProxyContext } from "@/lib/auth/auth-utils";
 import { listAiProxyTokensOptions } from "@/lib/sealos/resources/ai-proxy/ai-proxy-method/ai-proxy-query";
 import { useCreateAiProxyTokenMutation } from "@/lib/sealos/resources/ai-proxy/ai-proxy-method/ai-proxy-mutation";
@@ -18,6 +18,7 @@ export const LanggraphConfigWrapper = ({
 }) => {
   const isProduction = process.env.NEXT_PUBLIC_MODE === "production";
   const { auth } = useAuthState();
+  const [skipApiKey, setSkipApiKey] = useState(false);
 
   const aiProxyContext = useAiProxyContext();
   const { data: aiProxyTokens, isLoading } = useQuery(
@@ -53,6 +54,16 @@ export const LanggraphConfigWrapper = ({
 
   // Check if configuration is ready
   const isConfigReady = config.apiKey && config.baseUrl && config.modelName;
+  
+  // If user chose to skip API key, use minimal config
+  if (skipApiKey) {
+    const minimalConfig = {
+      apiKey: undefined,
+      baseUrl: undefined,
+      modelName: "gpt-4.1",
+    };
+    return <LanggraphProvider config={minimalConfig}>{children}</LanggraphProvider>;
+  }
 
   if (isProduction && isLoading) {
     return (
@@ -104,6 +115,13 @@ export const LanggraphConfigWrapper = ({
               ) : (
                 "Create Token"
               )}
+            </Button>
+            <Button
+              onClick={() => setSkipApiKey(true)}
+              variant="outline"
+              className="w-full max-w-xs"
+            >
+              Enter App Without API Key
             </Button>
             {createTokenMutation.isError && (
               <p className="text-sm text-destructive">

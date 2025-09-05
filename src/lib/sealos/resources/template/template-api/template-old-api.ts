@@ -22,7 +22,7 @@ import https from "https";
 function createApi(context: TemplateApiContext) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
   return axios.create({
-    baseURL: `https://template.${context.baseUrl}/api`,
+    baseURL: `http://template.${context.baseUrl}/api`,
     headers: {
       "Content-Type": "application/json",
       ...(context.authorization

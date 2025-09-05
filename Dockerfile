@@ -21,7 +21,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 # Copy the rest of the project files
 COPY . .
-# Build the Next.js app
+# Build the Next.js app (skip linting for Docker build)
 RUN pnpm build
 
 # Stage 2: Run the Next.js app
@@ -39,6 +39,6 @@ COPY --from=builder /app/public ./public
 EXPOSE 3000
 # Set environment variables
 ENV NODE_ENV=production
-ENV NEXT_PUBLIC_MODE=production
+ENV NEXT_PUBLIC_MODE=development
 # Run the Next.js app with pnpm
 CMD ["pnpm", "start"]
