@@ -1,17 +1,8 @@
 import React, { useState } from "react";
-import {
-  PenLine,
-  X,
-  Check,
-  ChevronDown,
-  ChevronRight,
-  File,
-  HardDrive,
-} from "lucide-react";
+import { ChevronDown, ChevronRight, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LaunchpadUpdateForm } from "@/components/forms/launchpad/launchpad-update-form";
 import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
-import { Spinner } from "@/components/ui/spinner";
+import { ConfigDialog } from "./config-dialog";
 
 interface ConfigurationProps {
   command?: string;
@@ -32,8 +23,8 @@ export const Configuration: React.FC<ConfigurationProps> = ({
   onConfigUpdate,
   isLoading = false,
 }) => {
-  const [editingField, setEditingField] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState<string | null>(null);
 
   const handleFieldSubmit = async (fieldType: string, data: any) => {
     let updateData: any = {};
@@ -47,59 +38,109 @@ export const Configuration: React.FC<ConfigurationProps> = ({
         break;
       case "env":
         // Preserve existing env vars and merge with new ones
-        const currentEnvObj = (envVars || []).reduce((acc: Record<string, any>, envVar: any) => {
-          if (envVar.name) {
-            acc[envVar.name] = {
-              name: envVar.name,
-              value: envVar.value,
-              valueFrom: envVar.valueFrom,
-            };
-          }
-          return acc;
-        }, {});
-        
-        const newEnvObj = (data.env || []).reduce((acc: Record<string, any>, envVar: any) => {
-          if (envVar.name) {
-            acc[envVar.name] = {
-              name: envVar.name,
-              value: envVar.value,
-              valueFrom: envVar.valueFrom,
-            };
-          }
-          return acc;
-        }, {});
-        
+        const currentEnvObj = (envVars || []).reduce(
+          (acc: Record<string, any>, envVar: any) => {
+            if (envVar.name) {
+              acc[envVar.name] = {
+                name: envVar.name,
+                value: envVar.value,
+                valueFrom: envVar.valueFrom,
+              };
+            }
+            return acc;
+          },
+          {}
+        );
+
+        const newEnvObj = (data.env || []).reduce(
+          (acc: Record<string, any>, envVar: any) => {
+            if (envVar.name) {
+              acc[envVar.name] = {
+                name: envVar.name,
+                value: envVar.value,
+                valueFrom: envVar.valueFrom,
+              };
+            }
+            return acc;
+          },
+          {}
+        );
+
         const mergedEnv = { ...currentEnvObj, ...newEnvObj };
-        updateData = { 
-          env: Object.values(mergedEnv)
+        updateData = {
+          env: Object.values(mergedEnv),
         };
         break;
       case "storage":
         // Transform back to the expected format
-        updateData = { 
+        updateData = {
           storage: (data.storage || []).map((item: any) => ({
             path: item.path || "",
-            value: item.size || "1Gi"
-          }))
+            value: item.size || "1Gi",
+          })),
         };
         break;
       case "configMap":
         // Transform back to the expected format
-        updateData = { 
+        updateData = {
           configMap: (data.configMap || []).map((item: any) => ({
             path: item.path || "",
-            content: item.value || ""
-          }))
+            content: item.value || "",
+          })),
         };
         break;
     }
 
     await onConfigUpdate("config", updateData);
-    setEditingField(null);
   };
 
-  const handleCancel = () => {
-    setEditingField(null);
+  const handleDialogClose = () => {
+    setDialogOpen(null);
+  };
+
+  const getFieldInfo = (fieldType: string) => {
+    switch (fieldType) {
+      case "commandArgs":
+        return {
+          title: "Command",
+          isEmpty: !command && !args,
+          summary:
+            command || args
+              ? `${command ? "Command set" : ""}${command && args ? ", " : ""}${
+                  args ? "Args set" : ""
+                }`
+              : "No command or arguments",
+        };
+      case "env":
+        return {
+          title: "Environment",
+          isEmpty: !envVars || envVars.length === 0,
+          summary:
+            envVars && envVars.length > 0
+              ? `${envVars.length} variable${envVars.length > 1 ? "s" : ""}`
+              : "No environment variables",
+        };
+      case "configMap":
+        return {
+          title: "Config Map",
+          isEmpty: !configMap || configMap.length === 0,
+          summary:
+            configMap && configMap.length > 0
+              ? `${configMap.length} entr${configMap.length > 1 ? "ies" : "y"}`
+              : "No config map entries",
+        };
+      case "storage":
+        return {
+          title: "Storage",
+          isEmpty: !storage || storage.length === 0,
+          summary:
+            storage && storage.length > 0
+              ? `${storage.length} volume${storage.length > 1 ? "s" : ""}`
+              : "No storage volumes",
+        };
+      default:
+        return { title: "", isEmpty: true, summary: "" };
+    }
   };
 
   return (
@@ -125,358 +166,159 @@ export const Configuration: React.FC<ConfigurationProps> = ({
 
       {/* Collapsible Content */}
       {isExpanded && (
-        <div className="p-4 space-y-6">
-          {/* Command & Arguments Section */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-medium">Command & Arguments</h4>
-              {editingField === "commandArgs" ? (
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 w-8"
-                    onClick={handleCancel}
-                    disabled={isLoading}
-                  >
-                    <X />
-                  </Button>
-                  <Button
-                    type="submit"
-                    form="launchpad-update-form"
-                    variant="outline"
-                    size="sm"
-                    className="h-8 w-8"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <Spinner variant="bars" className="h-4 w-4" />
-                    ) : (
-                      <Check />
-                    )}
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 w-8"
-                  onClick={() => setEditingField("commandArgs")}
-                  disabled={isLoading}
+        <div className="p-4">
+          <div className="grid grid-cols-2 gap-4">
+            {/* Command & Arguments */}
+            {(() => {
+              const fieldInfo = getFieldInfo("commandArgs");
+              return (
+                <div 
+                  className="flex flex-col space-y-1 flex-1 cursor-pointer transition-colors"
+                  onClick={() => setDialogOpen("commandArgs")}
+                  title="Click to edit command & arguments"
                 >
-                  <PenLine className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-            <div
-              className={`${
-                editingField === "commandArgs" ? "p-4" : "p-2"
-              } bg-muted/20 rounded-lg`}
-            >
-              {editingField === "commandArgs" ? (
-                <LaunchpadUpdateForm
-                  defaultValues={{
-                    command: command || "",
-                    args: args || "",
-                  }}
-                  onSubmit={(data) => handleFieldSubmit("commandArgs", data)}
-                  isLoading={isLoading}
-                  hideDefaultButton={true}
-                />
-              ) : (
-                <div className="space-y-3">
-                  <div className="text-start">
-                    <div className="text-sm text-muted-foreground">Command</div>
-                    <div className="text-sm font-medium break-words">
-                      {command || "N/A"}
-                    </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm text-muted-foreground">
+                      {fieldInfo.title}
+                    </span>
+                    <Edit3 className="h-3 w-3 text-muted-foreground/60" />
                   </div>
-                  <div className="text-start">
-                    <div className="text-sm text-muted-foreground">
-                      Arguments
-                    </div>
-                    <div className="text-sm font-medium break-words">
-                      {args || "N/A"}
-                    </div>
+                  <span className="text-sm font-medium truncate">
+                    {fieldInfo.summary}
+                  </span>
+                </div>
+              );
+            })()}
+
+            {/* Environment Variables */}
+            {(() => {
+              const fieldInfo = getFieldInfo("env");
+              return (
+                <div 
+                  className="flex flex-col space-y-1 flex-1 cursor-pointer transition-colors"
+                  onClick={() => setDialogOpen("env")}
+                  title="Click to edit environment variables"
+                >
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm text-muted-foreground">
+                      {fieldInfo.title}
+                    </span>
+                    <Edit3 className="h-3 w-3 text-muted-foreground/60" />
                   </div>
+                  <span className="text-sm font-medium truncate">
+                    {fieldInfo.summary}
+                  </span>
                 </div>
-              )}
-            </div>
-          </div>
+              );
+            })()}
 
-          {/* Environment Variables Section */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-medium">Environment Variables</h4>
-              {editingField === "env" ? (
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 w-8"
-                    onClick={handleCancel}
-                    disabled={isLoading}
-                  >
-                    <X />
-                  </Button>
-                  <Button
-                    type="submit"
-                    form="launchpad-update-form"
-                    variant="outline"
-                    size="sm"
-                    className="h-8 w-8"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <Spinner variant="bars" className="h-4 w-4" />
-                    ) : (
-                      <Check />
-                    )}
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 w-8"
-                  onClick={() => setEditingField("env")}
-                  disabled={isLoading}
+            {/* Config Map Entries */}
+            {(() => {
+              const fieldInfo = getFieldInfo("configMap");
+              return (
+                <div 
+                  className="flex flex-col space-y-1 flex-1 cursor-pointer transition-colors"
+                  onClick={() => setDialogOpen("configMap")}
+                  title="Click to edit config map entries"
                 >
-                  <PenLine className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-            <div
-              className={`${
-                editingField === "env" ? "p-4" : "p-2"
-              } bg-muted/20 rounded-lg`}
-            >
-              {editingField === "env" ? (
-                <LaunchpadUpdateForm
-                  defaultValues={{ env: envVars }}
-                  onSubmit={(data) => handleFieldSubmit("env", data)}
-                  isLoading={isLoading}
-                  hideDefaultButton={true}
-                />
-              ) : (
-                <div className="max-h-32 overflow-y-auto">
-                  {envVars && Array.isArray(envVars) && envVars.length > 0 ? (
-                    <div className="space-y-2">
-                      {envVars.map((envVar: any, index: number) => (
-                        <div
-                          key={index}
-                          className="text-sm p-2 bg-muted rounded"
-                        >
-                          <div className="font-medium">{envVar.name}</div>
-                          <div className="text-muted-foreground text-xs">
-                            {envVar.valueFrom ? (
-                              <span className="flex items-center gap-1">
-                                <span>From Secret:</span>
-                                <span className="font-mono bg-background px-1 rounded">
-                                  {envVar.valueFrom.secretKeyRef?.name || "N/A"}
-                                </span>
-                                <span>→</span>
-                                <span className="font-mono bg-background px-1 rounded">
-                                  {envVar.valueFrom.secretKeyRef?.key || "N/A"}
-                                </span>
-                              </span>
-                            ) : (
-                              envVar.value || "N/A"
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-sm text-muted-foreground text-center">
-                      N/A
-                    </div>
-                  )}
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm text-muted-foreground">
+                      {fieldInfo.title}
+                    </span>
+                    <Edit3 className="h-3 w-3 text-muted-foreground/60" />
+                  </div>
+                  <span className="text-sm font-medium truncate">
+                    {fieldInfo.summary}
+                  </span>
                 </div>
-              )}
-            </div>
-          </div>
+              );
+            })()}
 
-          {/* Config Map Section */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-medium">Config Map Entries</h4>
-              {editingField === "configMap" ? (
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 w-8"
-                    onClick={handleCancel}
-                    disabled={isLoading}
-                  >
-                    <X />
-                  </Button>
-                  <Button
-                    type="submit"
-                    form="launchpad-update-form"
-                    variant="outline"
-                    size="sm"
-                    className="h-8 w-8"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <Spinner variant="bars" className="h-4 w-4" />
-                    ) : (
-                      <Check />
-                    )}
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 w-8"
-                  onClick={() => setEditingField("configMap")}
-                  disabled={isLoading}
+            {/* Storage Volumes */}
+            {(() => {
+              const fieldInfo = getFieldInfo("storage");
+              return (
+                <div 
+                  className="flex flex-col space-y-1 flex-1 cursor-pointer transition-colors"
+                  onClick={() => setDialogOpen("storage")}
+                  title="Click to edit storage volumes"
                 >
-                  <PenLine className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-            <div
-              className={`${
-                editingField === "configMap" ? "p-4" : "p-2"
-              } bg-muted/20 rounded-lg`}
-            >
-              {editingField === "configMap" ? (
-                <LaunchpadUpdateForm
-                  defaultValues={{ 
-                    configMap: (configMap || []).map(item => ({
-                      path: item.path || "",
-                      value: item.content || item.value || ""
-                    }))
-                  }}
-                  onSubmit={(data) => handleFieldSubmit("configMap", data)}
-                  isLoading={isLoading}
-                  hideDefaultButton={true}
-                />
-              ) : (
-                <div className="max-h-32 overflow-y-auto">
-                  {configMap && configMap.length > 0 ? (
-                    <div className="space-y-2">
-                      {configMap.map((item: any, index: number) => (
-                        <div
-                          key={index}
-                          className="text-sm p-2 bg-muted rounded flex items-stretch gap-4"
-                        >
-                          <div className="flex items-center">
-                            <File />
-                          </div>
-                          <div className="flex flex-col justify-center">
-                            <div className="font-medium">{item.path}</div>
-                            <div className="text-muted-foreground text-xs">
-                              {item.content || item.value || "N/A"}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-sm text-muted-foreground text-center">
-                      N/A
-                    </div>
-                  )}
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm text-muted-foreground">
+                      {fieldInfo.title}
+                    </span>
+                    <Edit3 className="h-3 w-3 text-muted-foreground/60" />
+                  </div>
+                  <span className="text-sm font-medium truncate">
+                    {fieldInfo.summary}
+                  </span>
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Storage Section */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-medium">Storage Volumes</h4>
-              {editingField === "storage" ? (
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 w-8"
-                    onClick={handleCancel}
-                    disabled={isLoading}
-                  >
-                    <X />
-                  </Button>
-                  <Button
-                    type="submit"
-                    form="launchpad-update-form"
-                    variant="outline"
-                    size="sm"
-                    className="h-8 w-8"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <Spinner variant="bars" className="h-4 w-4" />
-                    ) : (
-                      <Check />
-                    )}
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 w-8"
-                  onClick={() => setEditingField("storage")}
-                  disabled={isLoading}
-                >
-                  <PenLine className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-            <div
-              className={`${
-                editingField === "storage" ? "p-4" : "p-2"
-              } bg-muted/20 rounded-lg`}
-            >
-              {editingField === "storage" ? (
-                <LaunchpadUpdateForm
-                  defaultValues={{ 
-                    storage: (storage || []).map(item => ({
-                      path: item.path || "",
-                      size: item.size || item.value || "1Gi"
-                    }))
-                  }}
-                  onSubmit={(data) => handleFieldSubmit("storage", data)}
-                  isLoading={isLoading}
-                  hideDefaultButton={true}
-                />
-              ) : (
-                <div className="max-h-32 overflow-y-auto">
-                  {storage && storage.length > 0 ? (
-                    <div className="space-y-2">
-                      {storage.map((item: any, index: number) => (
-                        <div
-                          key={index}
-                          className="text-sm p-2 bg-muted rounded flex items-stretch gap-4"
-                        >
-                          <div className="flex items-center">
-                            <HardDrive />
-                          </div>
-                          <div className="flex flex-col justify-center">
-                            <div className="font-medium">{item.path}</div>
-                            <div className="text-muted-foreground text-xs">
-                              {item.value ? `${item.value} Gi` : "N/A"}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-sm text-muted-foreground text-center">
-                      N/A
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+              );
+            })()}
           </div>
         </div>
+      )}
+
+      {/* Configuration Dialogs */}
+      {dialogOpen === "commandArgs" && (
+        <ConfigDialog
+          isOpen={dialogOpen === "commandArgs"}
+          onClose={handleDialogClose}
+          fieldType="commandArgs"
+          fieldTitle="Command & Arguments"
+          defaultValues={{
+            command: command || "",
+            args: args || "",
+          }}
+          onSubmit={(data) => handleFieldSubmit("commandArgs", data)}
+          isLoading={isLoading}
+        />
+      )}
+
+      {dialogOpen === "env" && (
+        <ConfigDialog
+          isOpen={dialogOpen === "env"}
+          onClose={handleDialogClose}
+          fieldType="env"
+          fieldTitle="Environment Variables"
+          defaultValues={{ env: envVars }}
+          onSubmit={(data) => handleFieldSubmit("env", data)}
+          isLoading={isLoading}
+        />
+      )}
+
+      {dialogOpen === "configMap" && (
+        <ConfigDialog
+          isOpen={dialogOpen === "configMap"}
+          onClose={handleDialogClose}
+          fieldType="configMap"
+          fieldTitle="Config Map Entries"
+          defaultValues={{
+            configMap: (configMap || []).map((item) => ({
+              path: item.path || "",
+              value: item.content || item.value || "",
+            })),
+          }}
+          onSubmit={(data) => handleFieldSubmit("configMap", data)}
+          isLoading={isLoading}
+        />
+      )}
+
+      {dialogOpen === "storage" && (
+        <ConfigDialog
+          isOpen={dialogOpen === "storage"}
+          onClose={handleDialogClose}
+          fieldType="storage"
+          fieldTitle="Storage Volumes"
+          defaultValues={{
+            storage: (storage || []).map((item) => ({
+              path: item.path || "",
+              size: item.size || item.value || "1Gi",
+            })),
+          }}
+          onSubmit={(data) => handleFieldSubmit("storage", data)}
+          isLoading={isLoading}
+        />
       )}
     </div>
   );

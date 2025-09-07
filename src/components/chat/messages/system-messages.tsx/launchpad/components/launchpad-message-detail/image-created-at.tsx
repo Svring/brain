@@ -98,7 +98,7 @@ export const ImageCreatedAt: React.FC<ImageCreatedAtProps> = ({
             </div>
           ) : (
             <div
-              className="cursor-pointer hover:underline transition-colors"
+              className="cursor-pointer transition-colors"
               onClick={handleImageEdit}
               title="Click to edit image"
             >
