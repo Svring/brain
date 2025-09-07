@@ -4,7 +4,7 @@ import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { useDevboxUpdateForm } from "@/hooks/forms/devbox/use-devbox-update-form";
 import { DevboxUpdateFormData } from "@/schemas/forms/devbox/devbox-update-form-schema";
-import { ResourceFields } from "../universal/resource-fields";
+import { DevboxResourceFields } from "./devbox-resource-fields";
 import { DevboxPortsFields } from "./devbox-ports-fields";
 
 interface DevboxUpdateFormProps {
@@ -37,7 +37,7 @@ export const DevboxUpdateForm = ({
         onSubmit={form.handleSubmit(handleSubmit)}
         className="space-y-6"
       >
-        {hasResource && <ResourceFields />}
+        {hasResource && <DevboxResourceFields />}
 
         {hasPorts && (
           <div className="space-y-2">

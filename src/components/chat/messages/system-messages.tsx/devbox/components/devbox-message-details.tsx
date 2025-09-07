@@ -11,7 +11,7 @@ import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 import { Separator } from "@/components/ui/separator";
 import { useCopy } from "@/hooks/use-copy";
-import { ResourceQuota } from "./devbox-message-detail/resource-quota";
+import { ResourceQuota } from "./devbox-message-detail/devbox-resource";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
