@@ -10,6 +10,12 @@ import Image from "next/image";
 import { useChatState } from "@/contexts/chat/chat-context";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface AiChatHeaderProps {
   title?: string;
@@ -83,7 +89,22 @@ export function AiChatHeader({
                   className="rounded-sm h-4 w-4 flex-shrink-0"
                   priority
                 />
-                <span>{selectedResource.name}</span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="truncate max-w-[120px] cursor-help">
+                        {selectedResource.name}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      className="bg-background-tertiary border border-border-primary"
+                      side="bottom"
+                      align="start"
+                    >
+                      <p>{selectedResource.name}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             )}
             {/* {selectedThreadId && (

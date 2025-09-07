@@ -146,20 +146,19 @@ export const Configuration: React.FC<ConfigurationProps> = ({
   return (
     <div className="border border-dashed rounded-lg">
       {/* Header with Collapse Toggle */}
-      <div className="flex items-center justify-between p-2 border-b border-dashed">
+      <div 
+        className="flex items-center justify-between p-2 border-b border-dashed cursor-pointer transition-colors"
+        onClick={() => setIsExpanded(!isExpanded)}
+        title="Click to toggle advanced configuration"
+      >
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
+          <div className="h-6 w-6 flex items-center justify-center">
             {isExpanded ? (
               <ChevronDown className="h-4 w-4" />
             ) : (
               <ChevronRight className="h-4 w-4" />
             )}
-          </Button>
+          </div>
           <h3 className="font-medium">Advanced Configuration</h3>
         </div>
       </div>

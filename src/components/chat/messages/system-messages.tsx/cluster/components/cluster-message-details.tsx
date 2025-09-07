@@ -65,23 +65,28 @@ const ClusterMessageDetails: React.FC<ClusterMessageDetailsProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Type and Version Info */}
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">Type & Version</span>
-        <span className="text-sm font-medium truncate flex-1">
-          {clusterObject.version}
-        </span>
-      </div>
+      {/* Version and Created At Info */}
+      <div className="flex flex-row gap-4">
+        {/* Version Info */}
+        {clusterObject.version && (
+          <div className="flex flex-col space-y-1 flex-1">
+            <span className="text-sm text-muted-foreground">Version</span>
+            <span className="text-sm font-medium truncate">
+              {clusterObject.version}
+            </span>
+          </div>
+        )}
 
-      {/* Created At */}
-      {clusterObject.operationalStatus && (
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Created At</span>
-          <span className="text-sm font-medium truncate flex-1">
-            {clusterObject.operationalStatus.createdAt}
-          </span>
-        </div>
-      )}
+        {/* Created At Info */}
+        {clusterObject.operationalStatus?.createdAt && (
+          <div className="flex flex-col space-y-1 flex-1">
+            <span className="text-sm text-muted-foreground">Created At</span>
+            <span className="text-sm font-medium truncate">
+              {clusterObject.operationalStatus.createdAt}
+            </span>
+          </div>
+        )}
+      </div>
 
       {/* Resource Quota Section */}
       <ResourceQuota

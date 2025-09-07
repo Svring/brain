@@ -47,11 +47,13 @@ export const EnvFields = ({ fieldArray }: EnvFieldsProps) => {
 
   return (
     <div className="space-y-2 border border-border rounded-lg p-4">
-      {/* Table Header */}
-      <div className="grid grid-cols-2 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
-        <div>Name</div>
-        <div>Value</div>
-      </div>
+      {/* Table Header - only show when there are items */}
+      {fieldArray.fields.length > 0 && (
+        <div className="grid grid-cols-2 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
+          <div>Name</div>
+          <div>Value</div>
+        </div>
+      )}
 
       {/* Table Rows */}
       <div className="space-y-0 py-0">

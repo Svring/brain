@@ -84,41 +84,36 @@ export const LaunchpadUpdateForm = ({
 
         {hasPorts && (
           <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">Ports</div>
             <LaunchpadPortsFields fieldArray={portsFieldArray} />
           </div>
         )}
 
         {hasEnv && (
           <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">
-              Environment Variables
-            </div>
             <EnvFields fieldArray={envFieldArray} />
           </div>
         )}
 
-        {(hasCommand || hasArgs) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {hasCommand && <CommandField />}
-            {hasArgs && <ArgsField />}
+        {hasCommand && (
+          <div className="space-y-2">
+            <CommandField />
+          </div>
+        )}
+
+        {hasArgs && (
+          <div className="space-y-2">
+            <ArgsField />
           </div>
         )}
 
         {hasStorage && (
           <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">
-              Storage Volumes
-            </div>
             <StorageFields fieldArray={storageFieldArray} />
           </div>
         )}
 
         {hasConfigMap && (
           <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">
-              Config Map Entries
-            </div>
             <ConfigMapFields fieldArray={configMapFieldArray} />
           </div>
         )}
