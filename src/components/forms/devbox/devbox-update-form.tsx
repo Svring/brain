@@ -41,7 +41,6 @@ export const DevboxUpdateForm = ({
 
         {hasPorts && (
           <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">Ports</div>
             <DevboxPortsFields fieldArray={portsFieldArray} />
           </div>
         )}

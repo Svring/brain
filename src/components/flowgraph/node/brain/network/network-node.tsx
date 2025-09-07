@@ -103,10 +103,11 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
   const { copyToClipboard, isCopied } = useCopy();
 
   // Get container ports data for network diagnosis
-  const { resource: containerPortsData, originalResource: originalResource } =
-    useResourceStatus<ContainerPortsResult>(target, (resource) =>
-      extractContainerPorts(resource?.ports)
-    );
+  const containerStatusResult = useResourceStatus<ContainerPortsResult>(target, (resource) =>
+    extractContainerPorts(resource?.ports)
+  );
+  const containerPortsData = containerStatusResult.resource;
+  const originalResource = (containerStatusResult as any).originalResource;
 
   // Use container status hook for network diagnosis
   const {
@@ -225,11 +226,16 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
     );
   }
 
+  // Determine message type based on target resource type
+  const messageType = target.resourceType === "devbox" 
+    ? "devbox.network" 
+    : "universal.network";
+
   const mainCard = (
     <BaseNode
       target={target}
       nodeId={nodeId}
-      messageType="universal.network"
+      messageType={messageType}
       className={cn("h-14 p-2", getBackgroundColor())}
     >
       <div className="flex items-center justify-center h-full">
@@ -321,7 +327,7 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
       height="14"
       notReadyCount={notReadyCount}
       target={target}
-      messageType="universal.network"
+      messageType={messageType}
       nodeId={nodeId}
     />
   );

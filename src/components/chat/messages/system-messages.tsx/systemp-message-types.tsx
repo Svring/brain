@@ -34,6 +34,7 @@ import PodOverviewMessage from "./universal/pod-overview-message";
 import PodDetailMessage from "./universal/pod-detail-message";
 import DiagnoseNetworkMessage from "./universal/diagnose-network-message";
 import CustomDomainMessage from "./universal/custom-domain-message";
+import DevboxNetworkMessage from "./devbox/devbox-network-message";
 
 export const SystemMessageType = {
   devbox: {
@@ -47,6 +48,9 @@ export const SystemMessageType = {
     create: (payload?: any) => <DevboxCreateMessage payload={payload} />,
     update: (target: CustomResourceTarget, payload: any) => (
       <DevboxUpdateMessage target={target} payload={payload} />
+    ),
+    network: (target: CustomResourceTarget) => (
+      <DevboxNetworkMessage target={target} />
     ),
   },
   cluster: {

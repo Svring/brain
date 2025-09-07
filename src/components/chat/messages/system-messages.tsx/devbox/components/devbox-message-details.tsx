@@ -84,8 +84,6 @@ export const DevboxMessageDetail: React.FC<DevboxInfoDetailsProps> = ({
     data: DevboxUpdateFormData
   ) => {
     try {
-      console.log("Saving resource configuration:", data);
-
       await updateDevboxMutation.mutateAsync({
         devboxName: devboxObject.name,
         request: data,
