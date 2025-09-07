@@ -27,18 +27,6 @@ export const ObjectStorageMessage: React.FC<ObjectStorageMessageProps> = ({
 
   // console.log("objectstorageObject", objectstorageObject);
 
-  const actions: MessageAction[] = objectstorageObject
-    ? [
-        {
-          icon: Pencil,
-          label: "Update",
-          onClick: () => {
-            appendSystemMessage({ type: "objectstorage.update", target });
-          },
-        },
-      ]
-    : [];
-
   // Handle loading state
   if (isLoading) {
     return (
@@ -68,7 +56,6 @@ export const ObjectStorageMessage: React.FC<ObjectStorageMessageProps> = ({
   return (
     <BaseSystemMessage
       target={target}
-      actions={actions}
       headerSlot={<ObjectStorageMessageMenu target={target} />}
     >
       <ObjectStorageMessageDetails
