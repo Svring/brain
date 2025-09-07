@@ -49,7 +49,7 @@ export const EnvFields = ({ fieldArray }: EnvFieldsProps) => {
     <div className="space-y-2 border border-border rounded-lg p-4">
       {/* Table Header - only show when there are items */}
       {fieldArray.fields.length > 0 && (
-        <div className="grid grid-cols-2 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
+        <div className="grid grid-cols-2 gap-4 text-sm font-medium text-muted-foreground">
           <div>Name</div>
           <div>Value</div>
         </div>
@@ -114,7 +114,7 @@ export const EnvFields = ({ fieldArray }: EnvFieldsProps) => {
       </div>
 
       {/* Add Environment Variable Button */}
-      <div className="flex items-center gap-3 pt-2 border-t">
+      <div className="flex items-center gap-3">
         <Button
           type="button"
           variant="outline"
@@ -122,7 +122,7 @@ export const EnvFields = ({ fieldArray }: EnvFieldsProps) => {
           className="w-full"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Add Environment Variable (Direct Value)
+          Add Variable
         </Button>
       </div>
     </div>

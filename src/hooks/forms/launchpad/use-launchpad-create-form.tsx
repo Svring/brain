@@ -25,9 +25,8 @@ export const useLaunchpadCreateForm = (
       },
       ports: [
         {
-          port: 80,
-          protocol: "TCP",
-          appProtocol: "HTTP",
+          number: 80,
+          protocol: "HTTP",
           exposesPublicDomain: true,
         },
       ],
