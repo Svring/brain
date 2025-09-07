@@ -11,15 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Plus, Trash2 } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { DevboxPort } from "@/schemas/forms/devbox/devbox-create-form-schema";
@@ -36,9 +27,18 @@ export const DevboxPortsFields = ({ fieldArray }: DevboxPortsFieldsProps) => {
 
   // Port management functions
   const addPort = () => {
+    // Find the next available port number starting from 8080
+    const existingNumbers = ports.map(port => port.number).filter(num => num !== undefined);
+    let nextPortNumber = 8080;
+    
+    // Find the first available port number
+    while (existingNumbers.includes(nextPortNumber)) {
+      nextPortNumber++;
+    }
+    
     // New ports should NOT have portName field (backend will know it's new)
     fieldArray.append({
-      number: 8080,
+      number: nextPortNumber,
       protocol: "HTTP",
       exposesPublicDomain: true,
       // No portName field for new ports
@@ -52,7 +52,7 @@ export const DevboxPortsFields = ({ fieldArray }: DevboxPortsFieldsProps) => {
   };
 
   return (
-    <div className="space-y-4 border border-border rounded-lg p-2">
+    <div className="space-y-2 border border-border rounded-lg p-4">
       {/* Table Header */}
       <div className="grid grid-cols-4 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
         <div>Number</div>
@@ -79,10 +79,26 @@ export const DevboxPortsFields = ({ fieldArray }: DevboxPortsFieldsProps) => {
                       const num = parseInt(value, 10);
                       return isNaN(num) ? 8080 : num;
                     },
+                    validate: (value) => {
+                      if (!value) return "Port number is required";
+                      
+                      const num = parseInt(value.toString(), 10);
+                      if (isNaN(num)) return "Invalid port number";
+                      
+                      // Check for duplicates (excluding current port)
+                      const otherPorts = ports.filter((_, i) => i !== index);
+                      const isDuplicate = otherPorts.some(port => port.number === num);
+                      
+                      if (isDuplicate) {
+                        return "Port number already exists";
+                      }
+                      
+                      return true;
+                    },
                   })}
                   type="text"
                   placeholder="8080"
-                  className="w-full border-none shadow-none focus-visible:ring-0 bg-transparent!"
+                  className="w-full border-none shadow-none focus-visible:ring-0 bg-transparent! pl-0"
                   defaultValue={portValue || 8080}
                 />
               </div>
@@ -123,10 +139,10 @@ export const DevboxPortsFields = ({ fieldArray }: DevboxPortsFieldsProps) => {
                       );
                     }}
                   >
-                    <SelectTrigger className="w-full border-none shadow-none focus:ring-0 bg-transparent!">
+                    <SelectTrigger className="w-full border-none shadow-none focus:ring-0 bg-transparent! pl-0">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-background-secondary">
                       <SelectItem value="HTTP">HTTP</SelectItem>
                       <SelectItem value="GRPC">GRPC</SelectItem>
                       <SelectItem value="WS">WS</SelectItem>

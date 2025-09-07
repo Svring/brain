@@ -6,6 +6,7 @@ import { useDevboxUpdateForm } from "@/hooks/forms/devbox/use-devbox-update-form
 import { DevboxUpdateFormData } from "@/schemas/forms/devbox/devbox-update-form-schema";
 import { DevboxResourceFields } from "./devbox-resource-fields";
 import { DevboxPortsFields } from "./devbox-ports-fields";
+import { toast } from "sonner";
 
 interface DevboxUpdateFormProps {
   defaultValues?: Partial<DevboxUpdateFormData>;
@@ -26,6 +27,15 @@ export const DevboxUpdateForm = ({
     onSubmit(data);
   };
 
+  const handleSubmitError = (errors: any) => {
+    // Handle form validation errors
+    if (errors.ports) {
+      toast.error("Port validation failed. Please check for duplicate port numbers.");
+    } else {
+      toast.error("Form validation failed. Please check your inputs.");
+    }
+  };
+
   // Only show fields that have values in defaultValues
   const hasResource = defaultValues?.resource !== undefined;
   const hasPorts = defaultValues?.ports !== undefined;
@@ -34,7 +44,7 @@ export const DevboxUpdateForm = ({
     <Form {...form}>
       <form
         id="devbox-update-form"
-        onSubmit={form.handleSubmit(handleSubmit)}
+        onSubmit={form.handleSubmit(handleSubmit, handleSubmitError)}
         className="space-y-6"
       >
         {hasResource && <DevboxResourceFields />}

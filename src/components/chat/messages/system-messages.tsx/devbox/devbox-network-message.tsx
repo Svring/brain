@@ -111,7 +111,7 @@ export const DevboxNetworkMessage: React.FC<DevboxNetworkMessageProps> = ({
           hideDefaultButton
         />
       ) : (
-        <div className="space-y-2">
+        <div className="max-h-80 overflow-y-auto space-y-2">
           {ports.map((port, index) => (
             <div key={`${port.number}-${index}`} className="border rounded-lg">
               <div className="flex items-center justify-between gap-2 px-3 py-2 border-b">
