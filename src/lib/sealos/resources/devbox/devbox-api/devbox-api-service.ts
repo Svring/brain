@@ -26,6 +26,19 @@ function createHttpsAgent() {
   });
 }
 
+function createOldDevboxAxios(context: SealosApiContext) {
+  return axios.create({
+    baseURL: `https://devbox.${context.baseUrl}/api/`,
+    headers: {
+      "Content-Type": "application/json",
+      ...(context.authorization
+        ? { Authorization: context.authorization }
+        : {}),
+    },
+    httpsAgent: createHttpsAgent(),
+  });
+}
+
 function createDevboxAxios(context: SealosApiContext) {
   return axios.create({
     baseURL: `https://devbox.${context.baseUrl}/api/v1/devbox`,
@@ -65,7 +78,7 @@ export async function getDevboxMonitor(
   queryName: string,
   step: string
 ): Promise<any> {
-  const api = createDevboxAxios(context);
+  const api = createOldDevboxAxios(context);
   const response = await api.get("/monitor/getMonitorData", {
     params: {
       queryKey,
@@ -80,7 +93,7 @@ export async function checkDevboxReady(
   context: SealosApiContext,
   devboxName: string
 ): Promise<any> {
-  const api = createDevboxAxios(context);
+  const api = createOldDevboxAxios(context);
   const response = await api.get("/checkReady", {
     params: {
       devboxName,
@@ -98,7 +111,7 @@ export async function getDevboxReleases(
   const response = await api.get("/releases", {
     params: { devboxName },
   });
-  return response.data;
+  return response.data.data;
 }
 
 // ===== MUTATION OPERATIONS =====

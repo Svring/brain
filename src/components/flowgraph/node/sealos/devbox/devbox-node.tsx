@@ -13,10 +13,11 @@ import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbo
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
-import { useDevboxRelease } from "@/hooks/sealos/devbox/use-devbox-release";
 import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
 import NodeLoading from "../../components/node-loading";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useQuery } from "@tanstack/react-query";
 
 // Enhanced wrapper that can handle both K8sResource and DevboxObject
 function DevboxNodeWrapper({
@@ -103,18 +104,15 @@ function DevboxNode({
   // console.log("status", status);
 
   const context = createK8sContext();
+  const { devbox } = useTRPCClients();
 
-  const { releases } = useDevboxRelease(name);
-
-  // Extract the releases array from the response
-  const releasesData = releases?.data || [];
+  // Fetch devbox releases directly using TRPC client
+  const { data: releasesData, isLoading: isReleasesLoading } = useQuery(
+    devbox.getDevboxReleases.queryOptions(name)
+  );
 
   const mainCard = (
-    <BaseNode
-      target={target}
-      nodeId={nodeId}
-      messageType="devbox.detail"
-    >
+    <BaseNode target={target} nodeId={nodeId} messageType="devbox.detail">
       <div className="flex h-full flex-col gap-2 justify-between">
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
@@ -156,7 +154,7 @@ function DevboxNode({
   return (
     <NodeStack
       mainCard={mainCard}
-      data={releasesData}
+      data={Array.isArray(releasesData) ? releasesData : []}
       target={target}
       messageType="devbox.release"
       nodeId={nodeId}

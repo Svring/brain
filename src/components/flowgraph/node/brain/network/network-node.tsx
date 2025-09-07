@@ -103,11 +103,14 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
   const { copyToClipboard, isCopied } = useCopy();
 
   // Get container ports data for network diagnosis
-  const containerStatusResult = useResourceStatus<ContainerPortsResult>(target, (resource) =>
-    extractContainerPorts(resource?.ports)
+  const containerStatusResult = useResourceStatus<ContainerPortsResult>(
+    target,
+    (resource) => extractContainerPorts(resource?.ports)
   );
   const containerPortsData = containerStatusResult.resource;
   const originalResource = (containerStatusResult as any).originalResource;
+
+  // console.log("containerPortsData", containerPortsData);
 
   // Use container status hook for network diagnosis
   const {
@@ -159,7 +162,24 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
   }
 
   const notReadyCount = networkData.filter((item: any) => !item.ready).length;
-  const backgroundCardData = networkData.slice(1);
+
+  // Create background card data from ports only
+  const backgroundCardData: any[] = [];
+
+  // Add additional ports (beyond the first one used for main card)
+  if (ports && ports.length > 1) {
+    const additionalPorts = ports.slice(1);
+    additionalPorts.forEach((port: any) => {
+      const portUrl = port.publicAddress || port.privateAddress;
+      if (portUrl) {
+        backgroundCardData.push({
+          url: portUrl,
+          ready: true, // Ports are considered ready by default
+          error: undefined,
+        });
+      }
+    });
+  }
 
   const handleIconClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -227,11 +247,13 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
   }
 
   // Determine message type based on target resource type
-  const messageType = target.resourceType === "devbox" 
-    ? "devbox.network" 
-    : target.resourceType === "deployment" || target.resourceType === "statefulset"
-    ? "launchpad.network"
-    : "universal.network";
+  const messageType =
+    target.resourceType === "devbox"
+      ? "devbox.network"
+      : target.resourceType === "deployment" ||
+        target.resourceType === "statefulset"
+      ? "launchpad.network"
+      : "universal.network";
 
   const mainCard = (
     <BaseNode
