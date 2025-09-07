@@ -6,7 +6,7 @@ import { useLaunchpadUpdateForm } from "@/hooks/forms/launchpad/use-launchpad-up
 import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
 import { ImageField } from "@/components/forms/universal/image-field";
 import { ResourceFields } from "../universal/resource-fields";
-import { PortsFields } from "../universal/ports-fields";
+import { LaunchpadPortsFields } from "./launchpad-ports-fields";
 import { EnvFields } from "../universal/env-fields";
 import {
   CommandField,
@@ -85,7 +85,7 @@ export const LaunchpadUpdateForm = ({
         {hasPorts && (
           <div className="space-y-2">
             <div className="text-sm font-medium text-foreground">Ports</div>
-            <PortsFields fieldArray={portsFieldArray} />
+            <LaunchpadPortsFields fieldArray={portsFieldArray} />
           </div>
         )}
 

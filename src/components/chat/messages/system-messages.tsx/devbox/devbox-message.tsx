@@ -81,7 +81,6 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
   return (
     <BaseSystemMessage
       target={target}
-      prompt="You could update the devbox, view releases, and create a new release."
       actions={actions}
       headerSlot={
         <div className="flex items-center gap-2">

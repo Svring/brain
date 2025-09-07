@@ -182,6 +182,7 @@ const PromptInputTextarea = React.forwardRef<
     const { value, setValue, maxHeight, onSubmit, disabled } = usePromptInput();
     const textareaRef = React.useRef<HTMLTextAreaElement>(null);
     const [localValue, setLocalValue] = React.useState(value);
+    const [isComposing, setIsComposing] = React.useState(false);
     const debouncedValue = useDebounce(localValue, 100);
 
     React.useEffect(() => {
@@ -229,7 +230,7 @@ const PromptInputTextarea = React.forwardRef<
     });
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === "Enter" && !e.shiftKey) {
+      if (e.key === "Enter" && !e.shiftKey && !isComposing) {
         e.preventDefault();
         // Immediately sync the current local value before submitting
         if (localValue !== value) {
@@ -243,12 +244,22 @@ const PromptInputTextarea = React.forwardRef<
       onKeyDown?.(e);
     };
 
+    const handleCompositionStart = () => {
+      setIsComposing(true);
+    };
+
+    const handleCompositionEnd = () => {
+      setIsComposing(false);
+    };
+
     return (
       <Textarea
         className={cn("", className)}
         disabled={disabled}
         onChange={(e) => setLocalValue(e.target.value)}
         onKeyDown={handleKeyDown}
+        onCompositionStart={handleCompositionStart}
+        onCompositionEnd={handleCompositionEnd}
         placeholder={placeholder}
         ref={(node) => {
           textareaRef.current = node;

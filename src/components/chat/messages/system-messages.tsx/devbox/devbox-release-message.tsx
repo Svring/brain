@@ -131,7 +131,9 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
   const [isCreatingRelease, setIsCreatingRelease] = useState(false);
   const [newReleaseTag, setNewReleaseTag] = useState("");
   const [newReleaseDescription, setNewReleaseDescription] = useState("");
-  const [deletingReleaseId, setDeletingReleaseId] = useState<string | null>(null);
+  const [deletingReleaseId, setDeletingReleaseId] = useState<string | null>(
+    null
+  );
 
   const {
     data: releasesData,
@@ -142,11 +144,11 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
   );
 
   const pauseMutation = useMutation({
-    ...devboxTrpcClient.manageDevboxLifecycle.mutationOptions(),
+    ...devboxTrpcClient.pauseDevbox.mutationOptions(),
   });
 
   const startMutation = useMutation({
-    ...devboxTrpcClient.manageDevboxLifecycle.mutationOptions(),
+    ...devboxTrpcClient.startDevbox.mutationOptions(),
     onSuccess: () => {
       // Invalidate and refetch releases
       queryClient.invalidateQueries({
@@ -167,10 +169,7 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
     ...devboxTrpcClient.releaseDevbox.mutationOptions(),
     onSuccess: () => {
       // Start the devbox after successful release
-      startMutation.mutate({
-        devboxName: target.name || "",
-        action: "start",
-      });
+      startMutation.mutate(target.name || "");
     },
     onError: (error) => {
       console.error("Failed to create release:", error);
@@ -218,26 +217,26 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
     );
   }
 
-  const releases = releasesData.data || [];
+  const releases = (releasesData as any)?.data || [];
 
   return (
     <BaseActionMessage headerTitle={{ icon: Tag, name: "Devbox Releases" }}>
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium">Releases: {releases.length}</h3>
-        </div>
+        {releases.length > 0 && (
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium">Releases: {releases.length}</h3>
+          </div>
+        )}
 
-        <ScrollArea className="h-60">
-          <div className="space-y-2 pr-4">
-            {releases.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-20 text-center">
-                <ArrowBigUpDash className="h-6 w-6 text-muted-foreground mb-2" />
-                <div className="text-xs text-muted-foreground">
-                  No releases yet
-                </div>
-              </div>
-            ) : (
-              releases.map((release) => (
+        {releases.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-20 text-center">
+            <ArrowBigUpDash className="h-6 w-6 text-muted-foreground mb-2" />
+            <div className="text-xs text-muted-foreground">No releases yet</div>
+          </div>
+        ) : (
+          <ScrollArea className="max-h-80">
+            <div className="space-y-2">
+              {releases.map((release: DevboxReleaseItem) => (
                 <ReleaseItem
                   key={release.id}
                   release={release}
@@ -248,10 +247,10 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
                   }}
                   isDeleting={deletingReleaseId === release.id}
                 />
-              ))
-            )}
-          </div>
-        </ScrollArea>
+              ))}
+            </div>
+          </ScrollArea>
+        )}
 
         {/* Add new release section - fixed at bottom */}
         {!isCreatingRelease ? (
@@ -288,21 +287,15 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
                 onClick={() => {
                   if (newReleaseTag.trim()) {
                     // First pause the devbox, then release it
-                    pauseMutation.mutate(
-                      {
-                        devboxName: target.name || "",
-                        action: "stop",
+                    pauseMutation.mutate(target.name || "", {
+                      onSuccess: () => {
+                        releaseMutation.mutate({
+                          devboxName: target.name || "",
+                          tag: newReleaseTag.trim(),
+                          releaseDes: newReleaseDescription.trim(),
+                        });
                       },
-                      {
-                        onSuccess: () => {
-                          releaseMutation.mutate({
-                            devboxName: target.name || "",
-                            tag: newReleaseTag.trim(),
-                            releaseDes: newReleaseDescription.trim(),
-                          });
-                        },
-                      }
-                    );
+                    });
                   }
                 }}
                 disabled={

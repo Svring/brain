@@ -20,6 +20,7 @@ import ClusterConnectionMessage from "./cluster/cluster-connection-message";
 import LaunchpadMessage from "./launchpad/launchpad-message";
 // import LaunchpadUpdateMessage from "./launchpad/launchpad-update-message";
 import LaunchpadCreateMessage from "./launchpad/launchpad-create-message";
+import LaunchpadNetworkMessage from "./launchpad/launchpad-network-message";
 // import LaunchpadUpdateResource from "./launchpad/components/launchpad-update/launchpad-update-resource";
 // import LaunchpadUpdateImage from "./launchpad/components/launchpad-update/launchpad-update-image";
 // import LaunchpadUpdatePort from "./launchpad/components/launchpad-update/launchpad-update-port";
@@ -76,6 +77,9 @@ export const SystemMessageType = {
       <LaunchpadMessage target={target} />
     ),
     create: (payload?: any) => <LaunchpadCreateMessage payload={payload} />,
+    network: (target: BuiltinResourceTarget) => (
+      <LaunchpadNetworkMessage target={target} />
+    ),
     // update: (target: BuiltinResourceTarget, payload: any) => (
     //   <LaunchpadUpdateMessage target={target} payload={payload} />
     // ),

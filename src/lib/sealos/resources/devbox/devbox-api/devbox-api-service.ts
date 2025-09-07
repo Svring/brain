@@ -129,7 +129,7 @@ export async function startDevbox(
   devboxName: string
 ): Promise<any> {
   const api = createDevboxAxios(context);
-  const response = await api.post(`/devbox/${devboxName}/start`, {});
+  const response = await api.post(`/${devboxName}/start`, {});
   return response.data;
 }
 
@@ -138,7 +138,7 @@ export async function pauseDevbox(
   devboxName: string
 ): Promise<any> {
   const api = createDevboxAxios(context);
-  const response = await api.post(`/devbox/${devboxName}/pause`, {});
+  const response = await api.post(`/${devboxName}/pause`, {});
   return response.data;
 }
 
@@ -147,7 +147,7 @@ export async function shutdownDevbox(
   devboxName: string
 ): Promise<any> {
   const api = createDevboxAxios(context);
-  const response = await api.post(`/devbox/${devboxName}/shutdown`, {});
+  const response = await api.post(`/${devboxName}/shutdown`, {});
   return response.data;
 }
 
@@ -156,7 +156,7 @@ export async function restartDevbox(
   devboxName: string
 ): Promise<any> {
   const api = createDevboxAxios(context);
-  const response = await api.post(`/devbox/${devboxName}/restart`, {});
+  const response = await api.post(`/${devboxName}/restart`, {});
   return response.data;
 }
 

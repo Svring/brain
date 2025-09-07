@@ -106,11 +106,12 @@ function ProjectFlow({ projectName }: { projectName: string }) {
       nodeTypes={nodeTypes}
       onEdgesChange={onEdgesChange}
       onNodesChange={onNodesChange}
-      panOnScroll
+      // panOnScroll
       snapToGrid
       snapGrid={REACT_FLOW_CONFIG.snapGrid}
       connectionLineComponent={FloatingConnectionLine}
       proOptions={REACT_FLOW_CONFIG.proOptions}
+      zoomOnScroll
     >
       {/* <Background
         gap={REACT_FLOW_CONFIG.background.gap}

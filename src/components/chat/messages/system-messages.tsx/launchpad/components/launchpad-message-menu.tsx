@@ -3,17 +3,10 @@
 import React from "react";
 import {
   DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
   MoreHorizontal,
-  Pause,
-  RotateCcw,
-  Trash2,
-  PencilLine,
-  Power,
 } from "lucide-react";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -29,6 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import LaunchpadDropdownMenu from "./universal/launchpad-dropdown-menu";
 
 interface LaunchpadMessageMenuProps {
   target: BuiltinResourceTarget;
@@ -50,12 +44,6 @@ export default function LaunchpadMessageMenu({
   const deleteLaunchpad = useMutation(
     launchpad.deleteLaunchpad.mutationOptions()
   );
-  const startLaunchpad = useMutation(
-    launchpad.startLaunchpad.mutationOptions()
-  );
-  const pauseLaunchpad = useMutation(
-    launchpad.pauseLaunchpad.mutationOptions()
-  );
 
   const handleDelete = () => {
     deleteLaunchpad.mutate(
@@ -70,30 +58,11 @@ export default function LaunchpadMessageMenu({
     );
   };
 
-  const handleStart = () => {
-    startLaunchpad.mutate(
-      { name: launchpadName },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: launchpad.getLaunchpad.queryKey({ name: launchpadName }),
-          });
-        },
-      }
-    );
-  };
-
-  const handlePause = () => {
-    pauseLaunchpad.mutate(
-      { name: launchpadName },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: launchpad.getLaunchpad.queryKey({ name: launchpadName }),
-          });
-        },
-      }
-    );
+  // Create a LaunchpadObject from the target
+  const launchpadObject = {
+    name: launchpadName,
+    status: currentStatus,
+    resource: resource,
   };
 
   // Don't render if we don't have a valid launchpad name
@@ -117,75 +86,14 @@ export default function LaunchpadMessageMenu({
             <MoreHorizontal className="h-4 w-4" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent
-          className="rounded-xl bg-background-secondary"
-          align="start"
-        >
-          {!isRunning && (
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation();
-                handleStart();
-              }}
-              onSelect={(e) => e.preventDefault()}
-              disabled={currentStatus === "Pending" || startLaunchpad.isPending}
-              className={currentStatus === "Pending" ? "opacity-50" : ""}
-            >
-              <Power className="mr-2 h-4 w-4" />
-              Start
-            </DropdownMenuItem>
-          )}
-          {isRunning && (
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation();
-                handlePause();
-              }}
-              onSelect={(e) => e.preventDefault()}
-              disabled={pauseLaunchpad.isPending}
-              className=""
-            >
-              <Pause className="mr-2 h-4 w-4" />
-              Pause
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation();
-              // Update functionality
-            }}
-            onSelect={(e) => e.preventDefault()}
-            disabled={currentStatus === "Pending"}
-            className={currentStatus === "Pending" ? "opacity-50" : ""}
-          >
-            <PencilLine className="mr-2 h-4 w-4" />
-            Update
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation();
-              // Restart functionality
-            }}
-            onSelect={(e) => e.preventDefault()}
-            disabled={currentStatus === "Pending"}
-            className={currentStatus === "Pending" ? "opacity-50" : ""}
-          >
-            <RotateCcw className="mr-2 h-4 w-4" />
-            Restart
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpen(false);
-              setAlertOpen(true);
-            }}
-            onSelect={(e) => e.preventDefault()}
-            className="text-destructive"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
+        <LaunchpadDropdownMenu
+          object={launchpadObject}
+          onDelete={(name) => {
+            setOpen(false);
+            setAlertOpen(true);
+          }}
+          showRestart={true}
+        />
       </DropdownMenu>
       
       <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>

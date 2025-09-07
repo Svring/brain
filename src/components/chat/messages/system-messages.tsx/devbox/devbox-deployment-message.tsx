@@ -257,25 +257,27 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
   return (
     <BaseActionMessage headerTitle={{ icon: Server, name: "Devbox Resources" }}>
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium">
-            {payload?.tag
-              ? `Deploy ${payload.tag} to...`
-              : `Resources: ${deployments.length}`}
-          </h3>
-        </div>
+        {(deployments.length > 0 || payload?.tag) && (
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium">
+              {payload?.tag
+                ? `Deploy ${payload.tag} to...`
+                : `Resources: ${deployments.length}`}
+            </h3>
+          </div>
+        )}
 
-        <ScrollArea className="h-60">
-          <div className="space-y-2 pr-4">
-            {deployments.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-20 text-center">
-                <Server className="h-6 w-6 text-muted-foreground mb-2" />
-                <div className="text-xs text-muted-foreground">
-                  No resources yet
-                </div>
-              </div>
-            ) : (
-              deployments.map((deployment) => (
+        {deployments.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-20 text-center">
+            <Server className="h-6 w-6 text-muted-foreground mb-2" />
+            <div className="text-xs text-muted-foreground">
+              No deployments yet
+            </div>
+          </div>
+        ) : (
+          <ScrollArea className="max-h-80">
+            <div className="space-y-2">
+              {deployments.map((deployment) => (
                 <DeploymentItem
                   key={deployment.metadata?.uid || deployment.metadata?.name}
                   deployment={deployment}
@@ -308,10 +310,10 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
                     });
                   }}
                 />
-              ))
-            )}
-          </div>
-        </ScrollArea>
+              ))}
+            </div>
+          </ScrollArea>
+        )}
 
         {/* Add new deployment section - fixed at bottom */}
         <div

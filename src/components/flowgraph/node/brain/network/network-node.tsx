@@ -229,6 +229,8 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
   // Determine message type based on target resource type
   const messageType = target.resourceType === "devbox" 
     ? "devbox.network" 
+    : target.resourceType === "deployment" || target.resourceType === "statefulset"
+    ? "launchpad.network"
     : "universal.network";
 
   const mainCard = (
