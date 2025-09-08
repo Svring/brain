@@ -26,20 +26,6 @@ export default function AppPreviewNode({ data }: AppPreviewNodeProps) {
             {image.split('/').pop()?.split(':')[0] || image}
           </span>
         </div>
-
-        {/* Ports */}
-        {ports && ports.length > 0 && (
-          <div className="text-sm text-muted-foreground">
-            {ports.map(port => `${port.number}${port.publicAccess ? '*' : ''}`).join(', ')}
-          </div>
-        )}
-
-        {/* Environment Variables */}
-        {env && env.length > 0 && (
-          <div className="text-sm text-muted-foreground">
-            {env.length} env vars
-          </div>
-        )}
       </div>
     </PreviewNodeWrapper>
   );

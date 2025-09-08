@@ -141,7 +141,7 @@ export const DevboxMessageDetail: React.FC<DevboxInfoDetailsProps> = ({
             </span>
           </div>
           <div className="space-y-2">
-            <div className="flex items-center justify-between min-w-0 w-full bg-muted border border-border-primary rounded-md p-2">
+            <div className="flex items-center justify-between min-w-0 w-full bg-background-tertiary border border-border-primary rounded-md p-2">
               <span className="text-xs font-mono rounded text-foreground flex-1 truncate mr-2 min-w-0 max-w-md">
                 ssh -i {regionUrl}_{namespace}_{devboxObject.name}{" "}
                 {devboxObject.ssh.user}@{devboxObject.ssh.host} -p{" "}

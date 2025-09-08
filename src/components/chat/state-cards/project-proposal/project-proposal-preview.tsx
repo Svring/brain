@@ -14,6 +14,7 @@ import { Sparkles, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import nodeTypes from "@/components/flowgraph/node/node-types";
+import edgeTypes from "@/components/flowgraph/edge/edge-types";
 import { convertProposalToPreviewNodes } from "@/lib/flowgraph/nodes/flowgraph-preview-utils";
 import type { ProjectProposal } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 import { REACT_FLOW_CONFIG } from "@/lib/flowgraph/flowgraph-constant/flowgraph-constant-config";
@@ -35,12 +36,11 @@ function ProjectProposalPreviewInner({
   proposal,
   className,
 }: ProjectProposalPreviewProps) {
-  // Convert proposal to preview nodes
-  const initialNodes = useMemo(
+  // Convert proposal to preview nodes and edges
+  const { nodes: initialNodes, edges: initialEdges } = useMemo(
     () => convertProposalToPreviewNodes(proposal),
     [proposal]
   );
-  const initialEdges: any[] = []; // No edges needed for preview
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -250,6 +250,8 @@ function ProjectProposalPreviewInner({
       }
 
       // 3. Add all resources to the project
+      // Network nodes will be automatically created by the flowgraph system
+      // when resources with ports (DevBox, Apps) are added to the project
       if (allFulfilledResources.length > 0) {
         const targets = allFulfilledResources.map(
           (resource) => resource.target
@@ -259,6 +261,7 @@ function ProjectProposalPreviewInner({
           name: projectName,
         });
         console.log("✅ Resources added to project successfully");
+        console.log("🌐 Network nodes will be automatically created for DevBox and App resources with ports");
       }
 
       console.log("🎉 Project creation completed successfully!");
@@ -297,36 +300,38 @@ function ProjectProposalPreviewInner({
 
   return (
     <div
-      className={`w-full relative ${className || ""}`}
+      className={`w-full relative rounded-lg ${className || ""}`}
       style={{ aspectRatio: "16/9" }}
     >
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        nodeTypes={nodeTypes}
-        fitView
-        fitViewOptions={REACT_FLOW_CONFIG.fitViewOptions}
-        panOnScroll={false}
-        zoomOnScroll={false}
-        zoomOnPinch={false}
-        panOnDrag={false}
-        nodesDraggable={false}
-        nodesConnectable={false}
-        elementsSelectable={false}
-        proOptions={REACT_FLOW_CONFIG.proOptions}
-        minZoom={0.5}
-        maxZoom={1.5}
-      />
+       <ReactFlow
+         nodes={nodes}
+         edges={edges}
+         onNodesChange={onNodesChange}
+         onEdgesChange={onEdgesChange}
+         nodeTypes={nodeTypes}
+         edgeTypes={edgeTypes}
+         fitView
+         fitViewOptions={REACT_FLOW_CONFIG.fitViewOptions}
+         panOnScroll={true}
+         zoomOnScroll={true}
+         zoomOnPinch={true}
+         panOnDrag={false}
+         nodesDraggable={false}
+         nodesConnectable={false}
+         elementsSelectable={false}
+         proOptions={REACT_FLOW_CONFIG.proOptions}
+         minZoom={0.1}
+         maxZoom={2}
+       />
 
       {/* Create Button - positioned at bottom right */}
-      <div className="absolute bottom-2 right-2">
+      <div className="absolute bottom-0 right-0">
         <Button
           onClick={handleCreate}
           disabled={isCreating}
-          className="bg-background-secondary border-0 shadow-none hover:bg-background-secondary/80 flex items-center gap-2"
+          className="bg-background-tertiary shadow-none flex items-center gap-2 rounded-tr-none rounded-bl-none text-foreground"
           size="sm"
+          variant="ghost"
         >
           {isCreating ? (
             <Loader2 className="h-4 w-4 animate-spin" />

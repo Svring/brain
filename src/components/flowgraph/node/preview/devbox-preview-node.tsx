@@ -26,15 +26,6 @@ export default function DevboxPreviewNode({ data }: DevboxPreviewNodeProps) {
           <span className="text-sm text-muted-foreground">runtime:</span>
           <span className="text-sm text-foreground">{runtime}</span>
         </div>
-
-        {/* Ports */}
-        {ports && ports.length > 0 && (
-          <div className="text-sm text-muted-foreground">
-            {ports
-              .map((port) => `${port.number}${port.publicAccess ? "*" : ""}`)
-              .join(", ")}
-          </div>
-        )}
       </div>
     </PreviewNodeWrapper>
   );

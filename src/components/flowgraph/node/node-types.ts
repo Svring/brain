@@ -15,6 +15,7 @@ import DevboxPreviewNode from "./preview/devbox-preview-node";
 import DatabasePreviewNode from "./preview/database-preview-node";
 import BucketPreviewNode from "./preview/bucket-preview-node";
 import AppPreviewNode from "./preview/app-preview-node";
+import NetworkPreviewNode from "./preview/network-preview-node";
 import { NodeTypes } from "@xyflow/react";
 
 const nodeTypes: NodeTypes = {
@@ -36,6 +37,7 @@ const nodeTypes: NodeTypes = {
   "database-preview": DatabasePreviewNode,
   "bucket-preview": BucketPreviewNode,
   "app-preview": AppPreviewNode,
+  "network-preview": NetworkPreviewNode,
 };
 
 export default nodeTypes;

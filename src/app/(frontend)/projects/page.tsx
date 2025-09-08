@@ -11,6 +11,8 @@ import { z } from "zod";
 import { SearchIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { ProjectProposalPreview } from "@/components/chat/state-cards/project-proposal/project-proposal-preview";
+import type { ProjectProposal } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 
 export default function Page() {
   const { setAllProjects } = useProjectActions();
@@ -23,6 +25,58 @@ export default function Page() {
     isError,
     searchTerm,
   } = useProjectSearch();
+
+  // Dummy project proposal data for preview demonstration
+  const dummyProposal: ProjectProposal = {
+    name: "Full-Stack Web Application",
+    resources: {
+      devbox: [
+        {
+          name: "frontend-dev",
+          runtime: "next.js",
+          ports: [
+            { number: 3000, publicAccess: true },
+            { number: 8080, publicAccess: false },
+          ],
+        },
+        {
+          name: "backend-dev",
+          runtime: "python",
+          ports: [{ number: 8000, publicAccess: true }],
+        },
+      ],
+      database: [
+        {
+          name: "postgres-db",
+          type: "postgresql",
+        },
+      ],
+      bucket: [
+        {
+          name: "user-uploads",
+          policy: "private",
+        },
+      ],
+      app: [
+        {
+          name: "api-server",
+          image: "nginx:latest",
+          ports: [
+            { number: 80, publicAccess: true },
+            { number: 443, publicAccess: true },
+          ],
+          env: [
+            { name: "NODE_ENV", value: "production" },
+            { name: "DATABASE_URL", value: "postgresql://..." },
+          ],
+          reliances: {
+            database: ["postgres-db"],
+            bucket: ["user-uploads"],
+          },
+        },
+      ],
+    },
+  };
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
@@ -39,32 +93,25 @@ export default function Page() {
     <div className="flex min-h-screen w-full flex-col items-center p-8">
       {/* Header */}
       <div className="mb-8 flex w-4xl">
-        <div className="flex w-full items-center justify-between gap-2">
-          <div className="flex items-center gap-1">
-            <h1 className="rounded-md px-3 py-1 font-semibold text-lg">
-              Projects
-            </h1>
-          </div>
-          {/* Search bar and plus button in the same row */}
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Input
-                className="h-8 w-36 pl-8"
-                placeholder="Search..."
-                onChange={(e) => handleSearchChange(e.target.value)}
-              />
-              <SearchIcon
-                aria-hidden="true"
-                className="absolute start-1.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-                size={16}
-              />
-              <kbd className="bg-muted pointer-events-none absolute end-[0.3rem] top-[0.3rem] hidden h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none">
-                <span className="text-xs">⌘</span>K
-              </kbd>
-            </div>
-            {/* <Button variant="ghost" onClick={openDialog}>
-              <Plus />
-            </Button> */}
+        <div className="flex w-full items-center gap-4">
+          <h1 className="rounded-md px-3 py-1 font-semibold text-lg">
+            Projects
+          </h1>
+          {/* Search bar */}
+          <div className="relative">
+            <Input
+              className="h-8 w-36 pl-8"
+              placeholder="Search..."
+              onChange={(e) => handleSearchChange(e.target.value)}
+            />
+            <SearchIcon
+              aria-hidden="true"
+              className="absolute start-1.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+              size={16}
+            />
+            <kbd className="bg-muted pointer-events-none absolute end-[0.3rem] top-[0.3rem] hidden h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none">
+              <span className="text-xs">⌘</span>K
+            </kbd>
           </div>
         </div>
       </div>
@@ -110,6 +157,22 @@ export default function Page() {
         </div>
       </div>
 
+      {/* Project Proposal Preview Demo */}
+      <div className="mb-8 w-4xl">
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold mb-2">
+            Project Architecture Preview
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Preview of a full-stack application project with DevBox, Database,
+            Storage, and App resources
+          </p>
+        </div>
+        <ProjectProposalPreview
+          proposal={dummyProposal}
+          className="border rounded-lg"
+        />
+      </div>
       {/* <ProjectProposalDemo /> */}
       {/* <CreateProjectDialog /> */}
     </div>
