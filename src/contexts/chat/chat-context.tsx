@@ -45,6 +45,8 @@ export function useChatState() {
     floatingChatOpen: state.context.floatingChat.open,
     sidebarChatResponding: state.context.sidebarChat.responding,
     floatingChatResponding: state.context.floatingChat.responding,
+    sidebarChatMaximized: state.context.sidebarChat.maximized,
+    floatingChatMaximized: state.context.floatingChat.maximized,
     selectedThreadId: state.context.selectedThreadId,
     threads: state.context.threads,
   };
@@ -77,6 +79,20 @@ export function useChatActions() {
       send({ type: "SET_FLOATING_RESPONDING", responding: true }),
     disableFloatingResponding: () =>
       send({ type: "SET_FLOATING_RESPONDING", responding: false }),
+
+    setSidebarMaximized: (maximized: boolean) =>
+      send({ type: "SET_SIDEBAR_MAXIMIZED", maximized }),
+    setFloatingMaximized: (maximized: boolean) =>
+      send({ type: "SET_FLOATING_MAXIMIZED", maximized }),
+    
+    maximizeSidebar: () =>
+      send({ type: "SET_SIDEBAR_MAXIMIZED", maximized: true }),
+    minimizeSidebar: () =>
+      send({ type: "SET_SIDEBAR_MAXIMIZED", maximized: false }),
+    maximizeFloating: () =>
+      send({ type: "SET_FLOATING_MAXIMIZED", maximized: true }),
+    minimizeFloating: () =>
+      send({ type: "SET_FLOATING_MAXIMIZED", maximized: false }),
 
     selectThread: (threadId: string) =>
       send({ type: "SELECT_THREAD", threadId }),

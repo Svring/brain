@@ -18,6 +18,7 @@ import FloatingConnectionLine from "@/components/flowgraph/edge/floating-connect
 import { FlowgraphBreadcrumb } from "@/components/flowgraph/flowgraph-breadcrumb";
 import { FlowgraphCommandHint } from "@/components/flowgraph/flowgraph-command-hint";
 import { FlowgraphCommandDialog } from "@/components/flowgraph/command/flowgraph-command-dialog";
+import { FlowgraphActions } from "@/components/flowgraph/flowgraph-actions";
 
 // Custom hooks
 import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
@@ -53,7 +54,13 @@ import {
 import { useChatState } from "@/contexts/chat/chat-context";
 
 // Floating UI Component
-function ProjectFloatingUI({ projectName }: { projectName: string }) {
+function ProjectFloatingUI({ 
+  projectName, 
+  sidebarChatMaximized 
+}: { 
+  projectName: string;
+  sidebarChatMaximized: boolean;
+}) {
   const { clearAllState } = useFlowgraphActions();
 
   useEffect(() => {
@@ -67,9 +74,32 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
     onOpen: onCommandOpen,
   } = useFlowgraphCommand();
 
+  // Hide floating UI when chat is maximized
+  if (sidebarChatMaximized) {
+    return null;
+  }
+
   return (
     <>
       <FlowgraphBreadcrumb projectName={projectName} />
+      <div className="absolute top-2 right-2 z-20">
+        <div className="bg-background/30 backdrop-blur-lg rounded-lg p-2">
+          <FlowgraphActions
+            onSearchChange={(searchTerm) => {
+              // TODO: Implement search functionality
+              console.log("Search:", searchTerm);
+            }}
+            onScan={() => {
+              // TODO: Implement scan functionality
+              console.log("Scan clicked");
+            }}
+            onRefresh={() => {
+              // TODO: Implement refresh functionality
+              console.log("Refresh clicked");
+            }}
+          />
+        </div>
+      </div>
       <FlowgraphCommandHint onOpen={onCommandOpen} />
       <FlowgraphCommandDialog
         isOpen={isCommandOpen}
@@ -138,7 +168,7 @@ export default function ProjectPage({
   const { selectProject, clearSelectedProject, clearSelectedProjectResources } =
     useProjectActions();
   const { setStage } = useLanggraphActions();
-  const { sidebarChatOpen } = useChatState();
+  const { sidebarChatOpen, sidebarChatMaximized } = useChatState();
   const { closeSidebarChat } = useChatActions();
   const { setMessages } = useCopilotChatHeadless_c();
 
@@ -165,16 +195,19 @@ export default function ProjectPage({
           <div
             className={cn(
               "relative h-full transition-all duration-300 ease-in-out",
-              sidebarChatOpen ? "w-[65%]" : "w-full"
+              sidebarChatOpen && !sidebarChatMaximized ? "w-[65%]" : sidebarChatMaximized ? "w-0" : "w-full"
             )}
           >
             <ProjectFlow projectName={projectName} />
-            <ProjectFloatingUI projectName={projectName} />
+            <ProjectFloatingUI 
+              projectName={projectName} 
+              sidebarChatMaximized={sidebarChatMaximized}
+            />
           </div>
           <div
             className={cn(
               "h-full shrink-0 transition-all duration-200 ease-in-out",
-              sidebarChatOpen ? "w-[35%] p-2 pl-0" : "w-0"
+              sidebarChatOpen ? (sidebarChatMaximized ? "w-full p-2" : "w-[35%] p-2 pl-0") : "w-0"
             )}
           >
             <AiChatbox />

@@ -6,6 +6,7 @@ import { Thread } from "@langchain/langgraph-sdk";
 export interface ChatSectionState {
   open: boolean;
   responding: boolean;
+  maximized: boolean;
 }
 
 export interface ChatContextState {
@@ -20,6 +21,8 @@ export type ChatEvent =
   | { type: "SET_FLOATING_CHAT_OPEN"; open: boolean }
   | { type: "SET_SIDEBAR_RESPONDING"; responding: boolean }
   | { type: "SET_FLOATING_RESPONDING"; responding: boolean }
+  | { type: "SET_SIDEBAR_MAXIMIZED"; maximized: boolean }
+  | { type: "SET_FLOATING_MAXIMIZED"; maximized: boolean }
   | { type: "SELECT_THREAD"; threadId: string }
   | { type: "SET_THREADS"; threads: Thread[] };
 
@@ -29,8 +32,8 @@ export const chatMachine = createMachine({
   id: "chat",
   initial: "idle",
   context: {
-    sidebarChat: { open: false, responding: false },
-    floatingChat: { open: false, responding: false },
+    sidebarChat: { open: false, responding: false, maximized: false },
+    floatingChat: { open: false, responding: false, maximized: false },
     selectedThreadId: "",
     threads: [],
   },
@@ -67,6 +70,22 @@ export const chatMachine = createMachine({
         floatingChat: ({ context, event }) => ({
           ...context.floatingChat,
           responding: event.responding,
+        }),
+      }),
+    },
+    SET_SIDEBAR_MAXIMIZED: {
+      actions: assign({
+        sidebarChat: ({ context, event }) => ({
+          ...context.sidebarChat,
+          maximized: event.maximized,
+        }),
+      }),
+    },
+    SET_FLOATING_MAXIMIZED: {
+      actions: assign({
+        floatingChat: ({ context, event }) => ({
+          ...context.floatingChat,
+          maximized: event.maximized,
         }),
       }),
     },

@@ -57,9 +57,9 @@ function FlowgraphFocusHandler() {
   useEffect(() => {
     if (state.context.fitViewTrigger > 0) {
       fitView({
-        padding: 0.2,
-        duration: 0,
-        maxZoom: 1,
+        padding: 0.1,
+        duration: 300,
+        maxZoom: 1.5,
       });
     }
   }, [state.context.fitViewTrigger]);

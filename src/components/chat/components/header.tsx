@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Eraser, ChevronRight } from "lucide-react";
+import { Eraser, ChevronRight, Maximize2 } from "lucide-react";
 import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { Spinner } from "@/components/ui/spinner";
 import { useProjectState } from "@/contexts/project/project-context";
@@ -29,8 +29,8 @@ export function AiChatHeader({
   className = "px-4 pt-2 shrink-0",
 }: AiChatHeaderProps) {
   const { selectedResource } = useProjectState();
-  const { selectedThreadId } = useChatState();
-  const { closeSidebarChat } = useChatActions();
+  const { selectedThreadId, sidebarChatMaximized } = useChatState();
+  const { closeSidebarChat, maximizeSidebar, minimizeSidebar } = useChatActions();
   const { reset } = useCopilotChatHeadless_c();
   const { isPending } = useCreateNewChatSessionMutation();
 
@@ -64,19 +64,6 @@ export function AiChatHeader({
             <h2 className="font-semibold text-foreground text-lg">{title}</h2>
           </div>
           <div className="flex items-center gap-4">
-            <Button
-              onClick={() => reset()}
-              disabled={isPending}
-              size="icon"
-              className="h-8 w-8"
-              variant="ghost"
-            >
-              {isPending ? (
-                <Spinner className="h-4 w-4" />
-              ) : (
-                <Eraser className="h-4 w-4" />
-              )}
-            </Button>
             <Separator orientation="vertical" className="h-4!" />
             {selectedResource && (
               <div className="flex items-center gap-2 text text-muted-foreground">
@@ -114,14 +101,37 @@ export function AiChatHeader({
             )} */}
           </div>
         </div>
-        <Button
-          onClick={closeSidebarChat}
-          size="icon"
-          variant="ghost"
-          className="h-8 w-8"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            onClick={() => reset()}
+            disabled={isPending}
+            size="icon"
+            className="h-8 w-8"
+            variant="ghost"
+          >
+            {isPending ? (
+              <Spinner className="h-4 w-4" />
+            ) : (
+              <Eraser className="h-4 w-4" />
+            )}
+          </Button>
+          <Button
+            onClick={() => sidebarChatMaximized ? minimizeSidebar() : maximizeSidebar()}
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8"
+          >
+            <Maximize2 className="h-4 w-4" />
+          </Button>
+          <Button
+            onClick={closeSidebarChat}
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );
