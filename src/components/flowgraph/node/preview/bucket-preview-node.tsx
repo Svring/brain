@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { FolderOpen } from "lucide-react";
-import { BaseNode, BaseNodeContent, BaseNodeHeader, BaseNodeHeaderTitle } from "@/components/base-node";
-import { Badge } from "@/components/ui/badge";
+import PreviewNodeWrapper from "./preview-node-wrapper";
+import PreviewNodeTitle from "./preview-node-title";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import type { ObjectStorageBucket } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 
 interface BucketPreviewNodeProps {
@@ -12,6 +12,7 @@ interface BucketPreviewNodeProps {
 
 export default function BucketPreviewNode({ data }: BucketPreviewNodeProps) {
   const { name, policy } = data;
+  const target = convertResourceTypeToTarget("objectstoragebucket", name);
 
   const getPolicyLabel = (policy: string) => {
     switch (policy) {
@@ -27,25 +28,16 @@ export default function BucketPreviewNode({ data }: BucketPreviewNodeProps) {
   };
 
   return (
-    <BaseNode className="w-64 min-h-[120px] bg-card border-border">
-      <BaseNodeHeader>
-        <BaseNodeHeaderTitle className="text-sm font-semibold">
-          {name}
-        </BaseNodeHeaderTitle>
-        <Badge variant="secondary" className="text-xs">
-          Storage
-        </Badge>
-      </BaseNodeHeader>
-      
-      <BaseNodeContent className="space-y-2">
+    <PreviewNodeWrapper nodeId={`bucket-preview-${name}`} target={target}>
+      <div className="flex flex-col gap-y-2">
+        <PreviewNodeTitle name={name} target={target} />
+
         {/* Bucket Policy */}
-        <div className="flex items-center gap-2">
-          <FolderOpen className="h-3 w-3 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground">
-            Policy: <span className="text-foreground">{getPolicyLabel(policy)}</span>
-          </span>
+        <div className="flex items-center gap-1">
+          <span className="text-sm text-muted-foreground">policy:</span>
+          <span className="text-sm text-foreground">{getPolicyLabel(policy)}</span>
         </div>
-      </BaseNodeContent>
-    </BaseNode>
+      </div>
+    </PreviewNodeWrapper>
   );
 }

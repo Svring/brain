@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { Database } from "lucide-react";
-import { BaseNode, BaseNodeContent, BaseNodeHeader, BaseNodeHeaderTitle } from "@/components/base-node";
-import { Badge } from "@/components/ui/badge";
+import PreviewNodeWrapper from "./preview-node-wrapper";
+import PreviewNodeTitle from "./preview-node-title";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import type { Database as DatabaseType } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 
 interface DatabasePreviewNodeProps {
@@ -12,27 +12,19 @@ interface DatabasePreviewNodeProps {
 
 export default function DatabasePreviewNode({ data }: DatabasePreviewNodeProps) {
   const { name, type } = data;
+  const target = convertResourceTypeToTarget("cluster", name);
 
   return (
-    <BaseNode className="w-64 min-h-[120px] bg-card border-border">
-      <BaseNodeHeader>
-        <BaseNodeHeaderTitle className="text-sm font-semibold">
-          {name}
-        </BaseNodeHeaderTitle>
-        <Badge variant="secondary" className="text-xs">
-          Database
-        </Badge>
-      </BaseNodeHeader>
-      
-      <BaseNodeContent className="space-y-2">
+    <PreviewNodeWrapper nodeId={`database-preview-${name}`} target={target}>
+      <div className="flex flex-col gap-y-2">
+        <PreviewNodeTitle name={name} target={target} />
+
         {/* Database Type */}
-        <div className="flex items-center gap-2">
-          <Database className="h-3 w-3 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground">
-            Type: <span className="text-foreground">{type}</span>
-          </span>
+        <div className="flex items-center gap-1">
+          <span className="text-sm text-muted-foreground">type:</span>
+          <span className="text-sm text-foreground">{type}</span>
         </div>
-      </BaseNodeContent>
-    </BaseNode>
+      </div>
+    </PreviewNodeWrapper>
   );
 }

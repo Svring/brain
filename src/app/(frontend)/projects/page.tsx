@@ -15,8 +15,14 @@ import { cn } from "@/lib/utils";
 export default function Page() {
   const { setAllProjects } = useProjectActions();
 
-  const { setSearchTerm, filteredProjects, projects, isLoading, isError } =
-    useProjectSearch();
+  const {
+    setSearchTerm,
+    filteredProjects,
+    projects,
+    isLoading,
+    isError,
+    searchTerm,
+  } = useProjectSearch();
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
@@ -43,8 +49,8 @@ export default function Page() {
           <div className="flex items-center gap-3">
             <div className="relative">
               <Input
-                className="h-8 w-48 pl-8 pr-8"
-                placeholder="Search projects..."
+                className="h-8 w-36 pl-8"
+                placeholder="Search..."
                 onChange={(e) => handleSearchChange(e.target.value)}
               />
               <SearchIcon
@@ -76,12 +82,30 @@ export default function Page() {
             </div>
           ) : filteredProjects.length === 0 ? (
             <div className="col-span-full">
-              <EmptyState />
+              {projects && projects.length > 0 && searchTerm ? (
+                // Show search empty state when there are projects but no matches
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="text-center">
+                    <h3 className="text-lg font-medium text-muted-foreground mb-2">
+                      No projects found
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      No projects match "{searchTerm}". Try a different search
+                      term.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                // Show general empty state when there are no projects at all
+                <EmptyState />
+              )}
             </div>
           ) : (
-            filteredProjects.map((project: z.infer<typeof ProjectObjectSchema>) => (
-              <ProjectCard key={project.name} project={project} />
-            ))
+            filteredProjects.map(
+              (project: z.infer<typeof ProjectObjectSchema>) => (
+                <ProjectCard key={project.name} project={project} />
+              )
+            )
           )}
         </div>
       </div>

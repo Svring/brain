@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { Rocket } from "lucide-react";
-import { BaseNode, BaseNodeContent, BaseNodeHeader, BaseNodeHeaderTitle } from "@/components/base-node";
-import { Badge } from "@/components/ui/badge";
+import PreviewNodeWrapper from "./preview-node-wrapper";
+import PreviewNodeTitle from "./preview-node-title";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import type { App } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 
 interface AppPreviewNodeProps {
@@ -12,41 +12,35 @@ interface AppPreviewNodeProps {
 
 export default function AppPreviewNode({ data }: AppPreviewNodeProps) {
   const { name, image, ports, env } = data;
+  const target = convertResourceTypeToTarget("deployment", name);
 
   return (
-    <BaseNode className="w-64 min-h-[120px] bg-card border-border">
-      <BaseNodeHeader>
-        <BaseNodeHeaderTitle className="text-sm font-semibold">
-          {name}
-        </BaseNodeHeaderTitle>
-        <Badge variant="secondary" className="text-xs">
-          App
-        </Badge>
-      </BaseNodeHeader>
-      
-      <BaseNodeContent className="space-y-2">
+    <PreviewNodeWrapper nodeId={`app-preview-${name}`} target={target}>
+      <div className="flex flex-col gap-y-2">
+        <PreviewNodeTitle name={name} target={target} />
+
         {/* Image */}
-        <div className="flex items-center gap-2">
-          <Rocket className="h-3 w-3 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground">
-            Image: <span className="text-foreground">{image}</span>
+        <div className="flex items-center gap-1">
+          <span className="text-sm text-muted-foreground">image:</span>
+          <span className="text-sm text-foreground truncate">
+            {image.split('/').pop()?.split(':')[0] || image}
           </span>
         </div>
 
         {/* Ports */}
         {ports && ports.length > 0 && (
-          <div className="text-xs text-muted-foreground">
-            Ports: {ports.map(port => `${port.number}${port.publicAccess ? ' (public)' : ''}`).join(', ')}
+          <div className="text-sm text-muted-foreground">
+            {ports.map(port => `${port.number}${port.publicAccess ? '*' : ''}`).join(', ')}
           </div>
         )}
 
         {/* Environment Variables */}
         {env && env.length > 0 && (
-          <div className="text-xs text-muted-foreground">
-            Env vars: {env.length} configured
+          <div className="text-sm text-muted-foreground">
+            {env.length} env vars
           </div>
         )}
-      </BaseNodeContent>
-    </BaseNode>
+      </div>
+    </PreviewNodeWrapper>
   );
 }
