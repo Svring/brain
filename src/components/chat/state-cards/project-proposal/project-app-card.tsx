@@ -6,8 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Edit2, Save, X } from "lucide-react";
 import Image from "next/image";
-import type { App, AppEnv } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
-import { EnvTable } from "@/components/chat/messages/system-messages.tsx/components/env-table";
+import type { App } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 import { ProjectPortTable } from "./components/project-port-table";
 
 interface ProjectAppCardProps {
@@ -83,22 +82,6 @@ export function ProjectAppCard({ resource, onSave }: ProjectAppCardProps) {
           />
         </div>
         
-        {/* Environment Variables Section */}
-        <div className="mt-3">
-          <EnvTable
-            envVars={(editData.env || []).map(env => ({ type: "value" as const, name: env.name, value: env.value }))}
-            allowEditing={true}
-            onEnvVarsChange={(envVars) => 
-              setEditData({ 
-                ...editData, 
-                env: envVars.map(env => ({ 
-                  name: env.name, 
-                  value: env.type === "value" ? env.value : "" 
-                }))
-              })
-            }
-          />
-        </div>
       </div>
     );
   }
@@ -153,16 +136,6 @@ export function ProjectAppCard({ resource, onSave }: ProjectAppCardProps) {
         </div>
       )}
       
-      {/* Environment Variables Display */}
-      {resource.env && resource.env.length > 0 && (
-        <div className="mt-3">
-          <div className="text-sm pl-1 text-muted-foreground mb-2">Environment Variables:</div>
-          <EnvTable
-            envVars={resource.env.map(env => ({ type: "value" as const, name: env.name, value: env.value }))}
-            allowEditing={false}
-          />
-        </div>
-      )}
     </div>
   );
 }

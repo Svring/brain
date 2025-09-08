@@ -4,8 +4,7 @@ import {
   ProjectProposal,
   ProjectProposalSchema,
 } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
-// import { ProjectProposalCard } from "@/components/chat/state-cards/project-proposal/project-proposal-card";
-import { ProjectProposalPreview } from "@/components/chat/state-cards/project-proposal/project-proposal-preview";
+import { ProjectProposalPresentation } from "@/components/chat/state-cards/project-proposal/project-proposal-presentation";
 import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
 import { getAllProjectLogs } from "@/lib/brain/resources/project/project-api/project-api-service";
 import { ProjectLogRender } from "@/components/copilot/brain/project/copilot-project-log";
@@ -31,7 +30,7 @@ export const proposeProjectAction = () => {
           typeof result === "object" && result !== null
             ? ProjectProposalSchema.parse(result)
             : ProjectProposalSchema.parse(JSON.parse(result as string));
-        return <ProjectProposalPreview proposal={proposal} />;
+        return <ProjectProposalPresentation proposal={proposal} />;
       } catch (error) {
         console.error("Failed to parse project proposal:", error);
         return <div />;

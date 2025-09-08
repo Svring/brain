@@ -162,7 +162,7 @@ export function AiMessages({
               </div>
             )}
 
-            {!isAtBottom && (
+            {/* {!isAtBottom && (
               <Button
                 size="icon"
                 variant="outline"
@@ -171,7 +171,7 @@ export function AiMessages({
               >
                 <ArrowDown className="h-4 w-4" />
               </Button>
-            )}
+            )} */}
           </div>
         </div>
       )}

@@ -11,7 +11,7 @@ import { z } from "zod";
 import { SearchIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { ProjectProposalPreview } from "@/components/chat/state-cards/project-proposal/project-proposal-preview";
+import { ProjectProposalPresentation } from "@/components/chat/state-cards/project-proposal/project-proposal-presentation";
 import type { ProjectProposal } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 
 export default function Page() {
@@ -157,21 +157,17 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Project Proposal Preview Demo */}
+      {/* Project Proposal Demo */}
       <div className="mb-8 w-4xl">
         <div className="mb-4">
           <h2 className="text-lg font-semibold mb-2">
-            Project Architecture Preview
+            Project Proposal Demo
           </h2>
           <p className="text-sm text-muted-foreground">
-            Preview of a full-stack application project with DevBox, Database,
-            Storage, and App resources
+            Interactive project proposal with list/graph view toggle and create functionality
           </p>
         </div>
-        <ProjectProposalPreview
-          proposal={dummyProposal}
-          className="border rounded-lg"
-        />
+        <ProjectProposalPresentation proposal={dummyProposal} />
       </div>
       {/* <ProjectProposalDemo /> */}
       {/* <CreateProjectDialog /> */}
