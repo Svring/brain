@@ -436,18 +436,6 @@ export const PromptInputBox = React.forwardRef(
           />
 
           <PromptInputActions className="flex items-end justify-end gap-2 p-0 mt-auto">
-            {/* <PromptInputAction tooltip="Create project from template">
-              <Button
-                className="h-8 px-3 text-sm bg-background-secondary text-foreground border border-border-primary transition-all duration-200 rounded-lg"
-                // onClick={() => openDialog()}
-                size="sm"
-                variant="outline"
-              >
-                <LayoutPanelTop className="h-3 w-3 mr-1" />
-                From Template
-              </Button>
-            </PromptInputAction> */}
-
             <PromptInputAction
               tooltip={
                 isLoading
@@ -459,14 +447,12 @@ export const PromptInputBox = React.forwardRef(
             >
               <Button
                 className={cn(
-                  "h-9 w-9 rounded-lg transition-all duration-200",
-                  isLoading
-                    ? ""
-                    : hasContent
-                    ? ""
+                  "h-9 w-9 rounded-lg transition-all duration-100",
+                  isLoading || hasContent
+                    ? "bg-foreground! text-background-secondary hover:bg-foreground/80"
                     : "bg-transparent cursor-not-allowed text-foreground"
                 )}
-                disabled={isLoading ? false : (disableSend || !hasContent)}
+                disabled={isLoading ? false : disableSend || !hasContent}
                 onClick={isLoading ? onStop : handleSubmit}
                 size="icon"
                 variant="outline"

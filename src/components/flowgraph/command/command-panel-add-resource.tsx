@@ -1,13 +1,7 @@
 "use client";
 
-import {
-  CommandGroup,
-  CommandItem,
-} from "@/components/ui/command";
-import {
-  ArrowRight,
-  ArrowLeft,
-} from "lucide-react";
+import { CommandGroup, CommandItem } from "@/components/ui/command";
+import { ArrowRight, ArrowLeft } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -71,17 +65,6 @@ export function ResourceList({ onSelect, onBack }: ResourceListProps) {
     }
   }, []);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === "Tab") {
-      e.preventDefault();
-      const dir = e.shiftKey ? -1 : 1;
-      const next =
-        (activeIndex + dir + resourceTypes.length) % resourceTypes.length;
-      setActiveIndex(next);
-      itemsRef.current[next]?.focus();
-    }
-  };
-
   return (
     <CommandGroup heading="Resource Types">
       {resourceTypes.map((resource, index) => (
@@ -93,11 +76,15 @@ export function ResourceList({ onSelect, onBack }: ResourceListProps) {
           <Image
             src={resource.iconUrl}
             alt={`${resource.resourceType} Icon`}
-            width={16}
-            height={16}
-            className="mr-2 h-4 w-4"
+            width={32}
+            height={32}
+            className="h-7 w-7 rounded-lg"
           />
           <span>{resource.title}</span>
+          <div className="ml-auto flex items-center gap-1 text-muted-foreground">
+            <span>Add</span>
+            <ArrowRight className="h-4 w-4" />
+          </div>
         </CommandItem>
       ))}
     </CommandGroup>
@@ -147,19 +134,12 @@ export function ResourceCreate({ resourceId, onBack }: ResourceCreateProps) {
       {/* Header */}
       <div className="border-b border-border p-2">
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onBack}
-            className="p-2"
-          >
+          <Button variant="ghost" size="sm" onClick={onBack} className="p-2">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex items-center gap-3">
             <div>
-              <h2 className="font-semibold">
-                Create {resource?.title}
-              </h2>
+              <h2 className="font-semibold">Create {resource?.title}</h2>
             </div>
           </div>
         </div>
@@ -169,9 +149,7 @@ export function ResourceCreate({ resourceId, onBack }: ResourceCreateProps) {
       <div className="flex-1 overflow-y-auto p-4">
         {resourceId === "add-devbox" && <DevboxCreateMessage />}
         {resourceId === "add-database" && <ClusterCreateMessage />}
-        {resourceId === "add-app-launchpad" && (
-          <LaunchpadCreateMessage />
-        )}
+        {resourceId === "add-app-launchpad" && <LaunchpadCreateMessage />}
         {resourceId === "add-object-storage" && (
           <ObjectStorageCreateMessage payload={{}} />
         )}

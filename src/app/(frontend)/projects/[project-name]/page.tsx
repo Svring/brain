@@ -3,15 +3,20 @@
 import { useEffect, use } from "react";
 
 // React Flow imports
-import { Background, ReactFlow, ReactFlowProvider } from "@xyflow/react";
+import {
+  Background,
+  ReactFlow,
+  ReactFlowProvider,
+  Controls,
+} from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
 // Custom component imports
 import AiChatbox from "@/components/chat/components/chatbox";
 import AiCoin from "@/components/chat/components/coin";
 import FloatingConnectionLine from "@/components/flowgraph/edge/floating-connection-line";
-import { FlowgraphHeader } from "@/components/flowgraph/flowgraph-menu-header";
-import { FlowgraphMenuActions } from "@/components/flowgraph/flowgraph-menu-actions";
+import { FlowgraphBreadcrumb } from "@/components/flowgraph/flowgraph-breadcrumb";
+import { FlowgraphCommandHint } from "@/components/flowgraph/flowgraph-command-hint";
 import { FlowgraphCommandDialog } from "@/components/flowgraph/command/flowgraph-command-dialog";
 
 // Custom hooks
@@ -64,8 +69,8 @@ function ProjectFloatingUI({ projectName }: { projectName: string }) {
 
   return (
     <>
-      <FlowgraphHeader projectName={projectName} />
-      <FlowgraphMenuActions onOpen={onCommandOpen} />
+      <FlowgraphBreadcrumb projectName={projectName} />
+      <FlowgraphCommandHint onOpen={onCommandOpen} />
       <FlowgraphCommandDialog
         isOpen={isCommandOpen}
         onOpenChange={onCommandOpenChange}
@@ -118,6 +123,7 @@ function ProjectFlow({ projectName }: { projectName: string }) {
         size={REACT_FLOW_CONFIG.background.size}
         variant={REACT_FLOW_CONFIG.background.variant}
       /> */}
+      {/* <Controls showFitView={false} showInteractive={true} showZoom={false} /> */}
     </ReactFlow>
   );
 }

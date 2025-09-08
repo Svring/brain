@@ -9,9 +9,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { X, Check } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
 
 interface RenameProjectDialogProps {
   isOpen: boolean;
@@ -83,15 +85,38 @@ export function RenameProjectDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px]" hideCloseButton>
         <DialogHeader>
-          <DialogTitle>Rename Project</DialogTitle>
+          <DialogTitle className="flex items-center justify-between">
+            <span>Rename Project</span>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8"
+                onClick={handleCancel}
+                disabled={renameProjectMutation.isPending}
+              >
+                <X />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8"
+                onClick={handleSave}
+                disabled={renameProjectMutation.isPending}
+              >
+                {renameProjectMutation.isPending ? (
+                  <Spinner variant="bars" className="h-4 w-4" />
+                ) : (
+                  <Check />
+                )}
+              </Button>
+            </div>
+          </DialogTitle>
         </DialogHeader>
         <div className="grid gap-2 py-2">
           <div className="flex items-center gap-4">
-            <label htmlFor="name" className="">
-              Name
-            </label>
             <Input
               id="name"
               value={editValue}
@@ -101,17 +126,6 @@ export function RenameProjectDialog({
               autoFocus
             />
           </div>
-        </div>
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={handleCancel}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={renameProjectMutation.isPending}
-          >
-            {renameProjectMutation.isPending ? "Saving..." : "Save"}
-          </Button>
         </div>
       </DialogContent>
     </Dialog>

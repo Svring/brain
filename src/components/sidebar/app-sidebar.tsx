@@ -12,7 +12,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { BookOpen } from "lucide-react";
@@ -25,7 +24,7 @@ export default function AppSidebar() {
     <>
       <Sidebar className="" collapsible="icon">
         <SidebarHeader
-          className={cn("bg-background-primary")}
+          className={cn("bg-background-primary pt-3")}
         >
           <SidebarMenu>
             <SidebarMenuItem>
@@ -55,7 +54,7 @@ export default function AppSidebar() {
         </SidebarContent>
         <SidebarFooter className={cn("bg-background-primary")}>
           {/* <AIAccess /> */}
-          {mode === "production" ? (
+          {/* {mode === "production" ? (
             <BrainTokenStats />
           ) : (
             <UserCard
@@ -65,7 +64,7 @@ export default function AppSidebar() {
                 avatar: "https://github.com/vercel.png",
               }}
             />
-          )}
+          )} */}
           {/* <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton>
