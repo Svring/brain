@@ -72,17 +72,16 @@ export const MainSection: React.FC = () => {
                   <SidebarMenuButton
                     onClick={() => handleNavigation(item.path)}
                     isActive={isActive}
-                    size="lg"
                     tooltip={{
                       children: item.title,
                     }}
                     className={
                       isActive
-                        ? "bg-background-secondary outline outline-border-primary transition-all duration-200"
+                        ? "outline outline-border-primary bg-foreground/90! text-background!"
                         : ""
                     }
                   >
-                    <item.icon className={isActive ? "fill-current" : ""} />
+                    <item.icon />
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               );

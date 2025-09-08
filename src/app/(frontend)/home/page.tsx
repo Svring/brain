@@ -94,7 +94,7 @@ export default function HomePage() {
               <Button
                 onClick={openDialog}
                 variant="outline"
-                className="absolute bottom-2 left-2"
+                className="absolute bottom-2 left-2 bg-background-tertiary border-border-primary"
               >
                 From template
               </Button>

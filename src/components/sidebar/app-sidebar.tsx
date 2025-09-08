@@ -30,15 +30,16 @@ export default function AppSidebar() {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton
-                className="group-data-[collapsible=icon]:justify-center p-0 border-border-primary"
+                className="group-data-[collapsible=icon]:justify-center p-0 border-border-primary hover:bg-transparent!"
                 size="lg"
                 tooltip={{
                   children: "Sealos Brain",
                 }}
               >
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg grayscale cursor-pointer">
                   <Image
-                    src="/sealos-brain-icon.svg"
+                    src="/sealos-brain-icon-grayscale.svg"
+                    className="grayscale"
                     alt="Sealos Brain"
                     width={32}
                     height={32}
@@ -74,7 +75,7 @@ export default function AppSidebar() {
             </SidebarMenuItem>
           </SidebarMenu> */}
         </SidebarFooter>
-        {/* <SidebarRail /> */}
+        <SidebarRail />
       </Sidebar>
     </>
   );
