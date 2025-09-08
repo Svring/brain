@@ -1,1 +1,2 @@
-export const LAUNCHPAD_ICON = "https://applaunchpad.bja.sealos.run/logo.svg";
+export const LAUNCHPAD_DEFAULT_ICON =
+  "https://applaunchpad.bja.sealos.run/logo.svg";

@@ -3,6 +3,8 @@ import {
   type DevboxRuntime,
 } from "./devbox-constant-runtimes";
 
+export const DEVBOX_DEFAULT_ICON = "https://devbox.bja.sealos.run/logo.svg";
+
 export const DEVBOX_RUNTIME_ICONS: Record<DevboxRuntime, string> = {
   nuxt3: "https://devbox.bja.sealos.run/images/runtime/nuxt3.svg",
   angular: "https://devbox.bja.sealos.run/images/runtime/angular.svg",

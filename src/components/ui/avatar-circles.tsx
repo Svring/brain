@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import React from "react"
+import React from "react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 interface AvatarCirclesProps {
-  className?: string
-  numPeople?: number
-  avatarUrls: string[]
-  disableLink?: boolean
+  className?: string;
+  numPeople?: number;
+  avatarUrls: string[];
+  disableLink?: boolean;
 }
 
 const AvatarCircles = ({
@@ -22,7 +22,7 @@ const AvatarCircles = ({
       {avatarUrls.map((url, index) => (
         <img
           key={index}
-          className="h-10 w-10 rounded-full border-2 border-white dark:border-gray-800"
+          className="h-10 w-10 rounded-lg border-2 border-white dark:border-gray-800"
           src={url}
           width={40}
           height={40}
@@ -30,19 +30,19 @@ const AvatarCircles = ({
         />
       ))}
       {disableLink ? (
-        <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-black text-center text-xs font-medium text-white hover:bg-gray-600 dark:border-gray-800 dark:bg-white dark:text-black">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-white bg-black text-center font-medium text-white hover:bg-gray-600 dark:border-gray-800 dark:bg-background-tertiary dark:text-foreground">
           +{numPeople}
         </div>
       ) : (
         <a
-          className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-black text-center text-xs font-medium text-white hover:bg-gray-600 dark:border-gray-800 dark:bg-white dark:text-black"
+          className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-white bg-black text-center text-xs font-medium text-white hover:bg-gray-600 dark:border-gray-800 dark:bg-background-tertiary dark:text-foreground"
           href=""
         >
           +{numPeople}
         </a>
       )}
     </div>
-  )
-}
+  );
+};
 
-export { AvatarCircles }
+export { AvatarCircles };

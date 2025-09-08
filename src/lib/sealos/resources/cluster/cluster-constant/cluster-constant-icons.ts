@@ -1,3 +1,6 @@
+export const CLUSTER_DEFAULT_ICON =
+  "https://dbprovider.bja.sealos.run/logo.svg";
+
 export const CLUSTER_TYPE_ICON_MAP: Record<string, string> = {
   postgresql:
     "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/postgresql/postgresql-original.svg",

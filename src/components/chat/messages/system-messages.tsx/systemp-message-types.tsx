@@ -31,8 +31,8 @@ import ObjectStorageUpdateMessage from "./objectstorage/objectstorage-update-mes
 import MonitorMessage from "./universal/monitor-message";
 import LogMessage from "./universal/log-message";
 import NetworkMessage from "./universal/network-message";
-import PodOverviewMessage from "./universal/pod-overview-message";
-import PodDetailMessage from "./universal/pod-detail-message";
+// import PodOverviewMessage from "./universal/pod-overview-message";
+// import PodDetailMessage from "./universal/pod-detail-message";
 import DiagnoseNetworkMessage from "./universal/diagnose-network-message";
 import CustomDomainMessage from "./universal/custom-domain-message";
 import DevboxNetworkMessage from "./devbox/devbox-network-message";
@@ -106,10 +106,10 @@ export const SystemMessageType = {
     monitor: (target: ResourceTarget) => <MonitorMessage target={target} />,
     log: (target: ResourceTarget) => <LogMessage target={target} />,
     network: (target: ResourceTarget) => <NetworkMessage target={target} />,
-    podOverview: (target: ResourceTarget) => (
-      <PodOverviewMessage target={target} />
-    ),
-    podDetail: (target: ResourceTarget) => <PodDetailMessage target={target} />,
+    // podOverview: (target: ResourceTarget) => (
+    //   <PodOverviewMessage target={target} />
+    // ),
+    // podDetail: (target: ResourceTarget) => <PodDetailMessage target={target} />,
     diagnoseNetwork: (target: ResourceTarget) => (
       <DiagnoseNetworkMessage target={target} />
     ),

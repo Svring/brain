@@ -61,6 +61,10 @@ export function transformRegionUrl(url: string): string {
  * @returns The extracted image name (e.g., 'cpp-gcc-12.2.0')
  */
 import { formatUnixTimeInLocalTimezone } from "@/lib/date/date-utils";
+import { LAUNCHPAD_DEFAULT_ICON } from "@/lib/sealos/resources/launchpad/launchpad-constant/launchpad-constant-icons";
+import { OBJECTSTORAGE_DEFAULT_ICON } from "@/lib/sealos/resources/objectstorage/objectstorage-constant/objectstorage-constant-icons";
+import { DEVBOX_DEFAULT_ICON } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-icons";
+import { CLUSTER_DEFAULT_ICON } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
 
 export function truncateImage(imageUrl: string): string {
   // Split by '/' to get the last part which contains the image name and tag
@@ -214,52 +218,22 @@ export function transformCombinedMonitorData(monitorData: {
 }
 
 /**
- * Infers the appropriate color class based on a status string
- * @param status - The status string to evaluate
- * @param type - The type of color to return ('text', 'bg', or 'border')
- * @returns The appropriate color class string
+ * Gets the default icon URL for a given resource type
+ * @param resourceType - The type of resource (e.g., 'deployment', 'devbox', 'cluster', etc.)
+ * @returns The default icon URL for the resource type, or null if not found
  */
-export function inferStatusColor(
-  status: string,
-  type: "text" | "bg" | "border" = "text"
-): string {
-  const normalizedStatus = status.toLowerCase();
-
-  // Define status to color mappings
-  const statusColorMap: Record<string, string> = {
-    running: "theme-green",
-
-    error: "theme-red",
-    failed: "theme-red",
-    terminated: "theme-red",
-    crashloopbackoff: "theme-red",
-    unhealthy: "theme-red",
-
-    pending: "theme-gray",
-    waiting: "theme-gray",
-    unknown: "theme-gray",
-    stopped: "theme-purple",
-    shutdown: "theme-purple",
-    deleting: "theme-gray",
-
-    warning: "theme-yellow",
-    imagepullbackoff: "theme-yellow",
-    containercreating: "theme-yellow",
-    podinitializing: "theme-yellow",
-  };
-
-  // Get the base color
-  const baseColor = statusColorMap[normalizedStatus] || "theme-gray";
-
-  // Return the appropriate color class based on type
-  switch (type) {
-    case "text":
-      return `text-${baseColor}`;
-    case "bg":
-      return `bg-${baseColor}`;
-    case "border":
-      return `border-${baseColor}`;
+export function getResourceDefaultIcon(resourceType: string): string | null {
+  switch (resourceType) {
+    case "deployment":
+    case "statefulset":
+      return LAUNCHPAD_DEFAULT_ICON;
+    case "objectstoragebucket":
+      return OBJECTSTORAGE_DEFAULT_ICON;
+    case "devbox":
+      return DEVBOX_DEFAULT_ICON;
+    case "cluster":
+      return CLUSTER_DEFAULT_ICON;
     default:
-      return `text-${baseColor}`;
+      return null;
   }
 }
