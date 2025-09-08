@@ -36,7 +36,7 @@ export default function AppSidebar() {
                   children: "Sealos Brain",
                 }}
               >
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg grayscale cursor-pointer">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg grayscale">
                   <Image
                     src="/sealos-brain-icon-grayscale.svg"
                     className="grayscale"

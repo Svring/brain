@@ -8,12 +8,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
+import { cn } from "@/lib/utils";
 
 // Types
 export interface NavigationItem {
@@ -75,11 +71,12 @@ export const MainSection: React.FC = () => {
                     tooltip={{
                       children: item.title,
                     }}
-                    className={
+                    className={cn(
                       isActive
                         ? "outline outline-border-primary bg-foreground/90! text-background!"
-                        : ""
-                    }
+                        : "",
+                      "cursor-pointer"
+                    )}
                   >
                     <item.icon />
                   </SidebarMenuButton>
