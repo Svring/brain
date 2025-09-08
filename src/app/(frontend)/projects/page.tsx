@@ -27,56 +27,56 @@ export default function Page() {
   } = useProjectSearch();
 
   // Dummy project proposal data for preview demonstration
-  const dummyProposal: ProjectProposal = {
-    name: "Full-Stack Web Application",
-    resources: {
-      devbox: [
-        {
-          name: "frontend-dev",
-          runtime: "next.js",
-          ports: [
-            { number: 3000, publicAccess: true },
-            { number: 8080, publicAccess: false },
-          ],
-        },
-        {
-          name: "backend-dev",
-          runtime: "python",
-          ports: [{ number: 8000, publicAccess: true }],
-        },
-      ],
-      database: [
-        {
-          name: "postgres-db",
-          type: "postgresql",
-        },
-      ],
-      bucket: [
-        {
-          name: "user-uploads",
-          policy: "private",
-        },
-      ],
-      app: [
-        {
-          name: "api-server",
-          image: "nginx:latest",
-          ports: [
-            { number: 80, publicAccess: true },
-            { number: 443, publicAccess: true },
-          ],
-          env: [
-            { name: "NODE_ENV", value: "production" },
-            { name: "DATABASE_URL", value: "postgresql://..." },
-          ],
-          reliances: {
-            database: ["postgres-db"],
-            bucket: ["user-uploads"],
-          },
-        },
-      ],
-    },
-  };
+  // const dummyProposal: ProjectProposal = {
+  //   name: "Full-Stack Web Application",
+  //   resources: {
+  //     devbox: [
+  //       {
+  //         name: "frontend-dev",
+  //         runtime: "next.js",
+  //         ports: [
+  //           { number: 3000, publicAccess: true },
+  //           { number: 8080, publicAccess: false },
+  //         ],
+  //       },
+  //       {
+  //         name: "backend-dev",
+  //         runtime: "python",
+  //         ports: [{ number: 8000, publicAccess: true }],
+  //       },
+  //     ],
+  //     database: [
+  //       {
+  //         name: "postgres-db",
+  //         type: "postgresql",
+  //       },
+  //     ],
+  //     bucket: [
+  //       {
+  //         name: "user-uploads",
+  //         policy: "private",
+  //       },
+  //     ],
+  //     app: [
+  //       {
+  //         name: "api-server",
+  //         image: "nginx:latest",
+  //         ports: [
+  //           { number: 80, publicAccess: true },
+  //           { number: 443, publicAccess: true },
+  //         ],
+  //         env: [
+  //           { name: "NODE_ENV", value: "production" },
+  //           { name: "DATABASE_URL", value: "postgresql://..." },
+  //         ],
+  //         reliances: {
+  //           database: ["postgres-db"],
+  //           bucket: ["user-uploads"],
+  //         },
+  //       },
+  //     ],
+  //   },
+  // };
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
@@ -93,7 +93,7 @@ export default function Page() {
     <div className="flex min-h-screen w-full flex-col items-center p-8">
       {/* Header */}
       <div className="mb-8 flex w-4xl">
-        <div className="flex w-full items-center gap-4">
+        <div className="flex w-full items-center gap-4 justify-between">
           <h1 className="rounded-md px-3 py-1 font-semibold text-lg">
             Projects
           </h1>
@@ -158,17 +158,7 @@ export default function Page() {
       </div>
 
       {/* Project Proposal Demo */}
-      <div className="mb-8 w-4xl">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold mb-2">
-            Project Proposal Demo
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Interactive project proposal with list/graph view toggle and create functionality
-          </p>
-        </div>
-        <ProjectProposalPresentation proposal={dummyProposal} />
-      </div>
+      {/* <ProjectProposalPresentation proposal={dummyProposal} /> */}
       {/* <ProjectProposalDemo /> */}
       {/* <CreateProjectDialog /> */}
     </div>

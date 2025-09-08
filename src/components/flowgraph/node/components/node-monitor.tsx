@@ -119,10 +119,7 @@ export default function NodeMonitor({ target }: NodeMonitorProps) {
             />
           </div>
         </TooltipTrigger>
-        <TooltipContent
-          side="bottom"
-          className="bg-background-secondary rounded-lg p-2"
-        >
+        <TooltipContent side="bottom">
           <p className="font-medium">
             {isMonitorReady ? "Check Usage" : "No monitor data available"}
           </p>

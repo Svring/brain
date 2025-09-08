@@ -62,10 +62,7 @@ export default function ClusterNodeBackup({
             <DatabaseBackup className="h-4 w-4 text-theme-green" />
           </div>
         </TooltipTrigger>
-        <TooltipContent
-          side="bottom"
-          className="bg-background-secondary rounded-lg p-2"
-        >
+        <TooltipContent side="bottom">
           <p className="font-medium">View backup</p>
         </TooltipContent>
       </Tooltip>

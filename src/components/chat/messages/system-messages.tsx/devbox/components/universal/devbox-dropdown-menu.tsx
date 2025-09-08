@@ -5,12 +5,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import {
-  Pause,
-  RotateCcw,
-  Trash2,
-  PencilLine,
-} from "lucide-react";
+import { Pause, RotateCcw, Trash2, PencilLine } from "lucide-react";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -50,10 +45,7 @@ export default function DevboxDropdownMenu({
   });
 
   return (
-    <DropdownMenuContent
-      className="rounded-xl bg-background-secondary"
-      align="start"
-    >
+    <DropdownMenuContent align="start">
       {status !== "Running" && (
         <DropdownMenuItem
           onClick={(e) => {

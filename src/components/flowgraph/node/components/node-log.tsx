@@ -105,10 +105,7 @@ export default function NodeLog({ target }: NodeLogProps) {
             />
           </button>
         </TooltipTrigger>
-        <TooltipContent
-          side="bottom"
-          className="bg-background-secondary rounded-lg p-2"
-        >
+        <TooltipContent side="bottom">
           <p className="font-medium">
             {isLogsReady ? "Analyze Logs" : "No logs available"}
           </p>

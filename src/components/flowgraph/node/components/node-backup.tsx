@@ -24,7 +24,6 @@ export default function NodeBackup({ target }: NodeBackupProps) {
     messageType: "info.clusterBackup",
   });
 
-
   return (
     <TooltipProvider delayDuration={0}>
       <Tooltip>
@@ -40,10 +39,7 @@ export default function NodeBackup({ target }: NodeBackupProps) {
             <DatabaseBackup className="h-4 w-4 text-theme-green" />
           </div>
         </TooltipTrigger>
-        <TooltipContent
-          side="bottom"
-          className="bg-background-secondary rounded-lg p-2"
-        >
+        <TooltipContent side="bottom">
           <p className="font-medium">View backups</p>
         </TooltipContent>
       </Tooltip>

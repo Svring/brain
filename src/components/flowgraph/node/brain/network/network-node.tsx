@@ -274,12 +274,8 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
                       onClick={handleIconClick}
                     />
                   </TooltipTrigger>
-                  <TooltipContent
-                    className="bg-background-tertiary border border-border-primary"
-                    side="bottom"
-                    align="start"
-                  >
-                    <p>Click to diagnose network issues with AI</p>
+                  <TooltipContent side="bottom">
+                    <p>Diagnose network issues with AI</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -296,11 +292,7 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
                       )}
                     />
                   </TooltipTrigger>
-                  <TooltipContent
-                    className="bg-background-tertiary border border-border-primary"
-                    side="bottom"
-                    align="start"
-                  >
+                  <TooltipContent side="bottom">
                     <p>
                       {frontCardType === "public"
                         ? "Accessible on public network"

@@ -82,7 +82,7 @@ export function FlowgraphBreadcrumb({ projectName }: FlowgraphHeaderProps) {
                       <ChevronDown className="h-3 w-3" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-48">
+                  <DropdownMenuContent align="start" className="">
                     {projects
                       ?.filter((proj) => proj.name !== projectName)
                       .map((proj) => (
