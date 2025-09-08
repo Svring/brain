@@ -46,6 +46,8 @@ export const chatMachine = createMachine({
         sidebarChat: ({ context, event }) => ({
           ...context.sidebarChat,
           open: event.open,
+          // Reset maximized state when chat is closed
+          maximized: event.open ? context.sidebarChat.maximized : false,
         }),
       }),
     },

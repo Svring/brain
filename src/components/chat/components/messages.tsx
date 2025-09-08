@@ -148,29 +148,31 @@ export function AiMessages({
     <>
       {messages.length !== 0 && (
         <div className={`w-full px-4 h-full relative ${className || ""}`}>
-          {externalScrollRef ? (
-            // If external scroll ref is provided, don't create internal scroll container
-            <div className="h-full">{memoizedMessages}</div>
-          ) : (
-            // Otherwise, use internal scroll container
-            <div
-              ref={scrollRef}
-              className="h-full overflow-y-auto scrollbar-hide"
-            >
-              {memoizedMessages}
-            </div>
-          )}
+          <div className="max-w-3xl mx-auto h-full">
+            {externalScrollRef ? (
+              // If external scroll ref is provided, don't create internal scroll container
+              <div className="h-full">{memoizedMessages}</div>
+            ) : (
+              // Otherwise, use internal scroll container
+              <div
+                ref={scrollRef}
+                className="h-full overflow-y-auto scrollbar-hide"
+              >
+                {memoizedMessages}
+              </div>
+            )}
 
-          {!isAtBottom && (
-            <Button
-              size="icon"
-              variant="outline"
-              className="absolute bottom-4 right-4 rounded-full shadow-lg"
-              onClick={scrollToBottom}
-            >
-              <ArrowDown className="h-4 w-4" />
-            </Button>
-          )}
+            {!isAtBottom && (
+              <Button
+                size="icon"
+                variant="outline"
+                className="absolute bottom-4 right-4 rounded-full shadow-lg"
+                onClick={scrollToBottom}
+              >
+                <ArrowDown className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
       )}
       {interrupt}

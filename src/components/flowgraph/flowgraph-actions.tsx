@@ -1,12 +1,19 @@
 "use client";
 
-import { SearchIcon, Scan, RefreshCcw } from "lucide-react";
+import { SearchIcon, Scan, RefreshCcw, MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { StarBorder } from "@/components/ui/star-border";
 import { cn } from "@/lib/utils";
 import { useFlowgraphActions } from "@/contexts/flowgraph/flowgraph-context";
+import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
 
 interface FlowgraphActionsProps {
   onSearchChange?: (searchTerm: string) => void;
@@ -21,6 +28,8 @@ export function FlowgraphActions({
 }: FlowgraphActionsProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const { fitView } = useFlowgraphActions();
+  const { openSidebarChat } = useChatActions();
+  const { sidebarChatOpen } = useChatState();
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
@@ -32,11 +41,15 @@ export function FlowgraphActions({
     onScan?.();
   };
 
+  const handleOpenSidebar = () => {
+    openSidebarChat();
+  };
+
   return (
     <TooltipProvider>
       <div className="flex items-center gap-1">
         {/* Search Bar */}
-        <div className="relative">
+        {/* <div className="relative">
           <Input
             className="h-8 w-48 pl-8 pr-8"
             placeholder="Search node..."
@@ -51,12 +64,17 @@ export function FlowgraphActions({
           <kbd className="bg-muted pointer-events-none absolute end-[0.3rem] top-[0.3rem] hidden h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none">
             <span className="text-xs">⌘</span>K
           </kbd>
-        </div>
+        </div> */}
 
         {/* Scan Button */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleScan}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={handleScan}
+            >
               <Scan className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
@@ -81,6 +99,26 @@ export function FlowgraphActions({
             <p>Refresh</p>
           </TooltipContent>
         </Tooltip>
+
+        {/* Open Sidebar Button */}
+        {!sidebarChatOpen && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <StarBorder
+                isRound
+                className={cn(
+                  "h-10 w-10 cursor-pointer hover:scale-105 transition-transform"
+                )}
+                onClick={handleOpenSidebar}
+              >
+                <MessageCircle className="h-4 w-4" />
+              </StarBorder>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Open Chat</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
       </div>
     </TooltipProvider>
   );

@@ -105,7 +105,7 @@ function ProjectFloatingUI({
         isOpen={isCommandOpen}
         onOpenChange={onCommandOpenChange}
       />
-      <AiCoin />
+      {/* <AiCoin /> */}
     </>
   );
 }
@@ -206,7 +206,7 @@ export default function ProjectPage({
           </div>
           <div
             className={cn(
-              "h-full shrink-0 transition-all duration-200 ease-in-out",
+              "h-full shrink-0 transition-all duration-300 ease-in-out",
               sidebarChatOpen ? (sidebarChatMaximized ? "w-full p-2" : "w-[35%] p-2 pl-0") : "w-0"
             )}
           >

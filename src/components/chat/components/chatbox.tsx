@@ -13,7 +13,7 @@ export default function AiChatbox() {
   return (
     <div
       className={cn(
-        "h-full w-full p-0 flex flex-col gap-2 border rounded-xl bg-background relative transition-all duration-200 ease-in-out transform mr-2",
+        "h-full w-full p-0 flex flex-col gap-2 border rounded-xl bg-background relative transition-all duration-100 ease-in-out transform mr-2",
         sidebarChatOpen
           ? "translate-x-0 opacity-100"
           : "translate-x-full opacity-0"
@@ -36,7 +36,9 @@ export default function AiChatbox() {
       </div>
 
       <div className="p-2 pt-0 shrink-0">
-        <AiChatInput />
+        <div className="max-w-3xl mx-auto">
+          <AiChatInput />
+        </div>
       </div>
     </div>
   );
