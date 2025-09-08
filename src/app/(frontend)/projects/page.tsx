@@ -1,20 +1,26 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import ProjectCard from "@/components/project/project-card";
-import SearchBar from "@/components/ui/search-bar";
 import useProjectSearch from "@/hooks/brain/use-projects-search";
 import { useProjectActions } from "@/contexts/project/project-context";
 import { Spinner } from "@/components/ui/spinner";
 import EmptyState from "@/components/project/empty-state";
 import { ProjectObjectSchema } from "@/lib/brain/resources/project/project-schemas/project-object-schema";
 import { z } from "zod";
+import { SearchIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 export default function Page() {
   const { setAllProjects } = useProjectActions();
 
   const { setSearchTerm, filteredProjects, projects, isLoading, isError } =
     useProjectSearch();
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+  };
 
   // Update the global project context with all projects when they're loaded
   useEffect(() => {
@@ -35,10 +41,21 @@ export default function Page() {
           </div>
           {/* Search bar and plus button in the same row */}
           <div className="flex items-center gap-3">
-            <SearchBar
-              onSearchChange={setSearchTerm}
-              placeholder="Search projects..."
-            />
+            <div className="relative">
+              <Input
+                className="h-8 w-48 pl-8 pr-8"
+                placeholder="Search projects..."
+                onChange={(e) => handleSearchChange(e.target.value)}
+              />
+              <SearchIcon
+                aria-hidden="true"
+                className="absolute start-1.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                size={16}
+              />
+              <kbd className="bg-muted pointer-events-none absolute end-[0.3rem] top-[0.3rem] hidden h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none">
+                <span className="text-xs">⌘</span>K
+              </kbd>
+            </div>
             {/* <Button variant="ghost" onClick={openDialog}>
               <Plus />
             </Button> */}

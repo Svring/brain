@@ -11,6 +11,10 @@ import PvcNode from "./sealos/pvc/pvc-node";
 import ServiceNode from "./sealos/service/service-node";
 import StatefulsetNode from "./sealos/statefulset/statefulset-node";
 import NetworkNode from "./brain/network/network-node";
+import DevboxPreviewNode from "./preview/devbox-preview-node";
+import DatabasePreviewNode from "./preview/database-preview-node";
+import BucketPreviewNode from "./preview/bucket-preview-node";
+import AppPreviewNode from "./preview/app-preview-node";
 import { NodeTypes } from "@xyflow/react";
 
 const nodeTypes: NodeTypes = {
@@ -27,6 +31,11 @@ const nodeTypes: NodeTypes = {
   service: ServiceNode,
   statefulset: StatefulsetNode,
   network: NetworkNode,
+  // Preview nodes for project proposals
+  "devbox-preview": DevboxPreviewNode,
+  "database-preview": DatabasePreviewNode,
+  "bucket-preview": BucketPreviewNode,
+  "app-preview": AppPreviewNode,
 };
 
 export default nodeTypes;

@@ -4,11 +4,12 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Settings, Sparkles, Loader2 } from "lucide-react";
+import { Settings, Sparkles, Loader2, Grid, List } from "lucide-react";
 import { ProjectDevBoxCard } from "./project-devbox-card";
 import { ProjectDatabaseCard } from "./project-database-card";
 import { ProjectBucketCard } from "./project-bucket-card";
 import { ProjectAppCard } from "./project-app-card";
+import { ProjectProposalPreview } from "./project-proposal-preview";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -36,6 +37,7 @@ export function ProjectProposalCard({ proposal }: ProjectProposalCardProps) {
   const [internalProposal, setInternalProposal] =
     useState<ProjectProposal>(proposal);
   const [isCreating, setIsCreating] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "graph">("list");
   const router = useRouter();
 
   // Get tRPC clients
@@ -526,35 +528,72 @@ export function ProjectProposalCard({ proposal }: ProjectProposalCardProps) {
       className={`w-full max-w-3xl mx-auto bg-background-primary rounded-xl`}
     >
       <CardContent className="space-y-6">
-        {hasResources ? (
-          resourceSections.map(
-            ({ title, key, resources, Component }) =>
-              resources.length > 0 && (
-                <div key={key} className="space-y-3">
-                  <h4 className="text-md font-medium flex items-center gap-2">
-                    {title}
-                    <Badge variant="secondary">{resources.length}</Badge>
-                  </h4>
-                  <div className="space-y-2">
-                    {resources.map((resource, index) => (
-                      <Component
-                        key={`${key}-${index}`}
-                        resource={resource}
-                        onSave={(updatedResource: any) =>
-                          updateResource(key, index, updatedResource)
-                        }
-                      />
-                    ))}
+        {/* View Toggle */}
+        {hasResources && (
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <Button
+                variant={viewMode === "list" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("list")}
+                className="flex items-center gap-2"
+              >
+                <List className="h-4 w-4" />
+                List View
+              </Button>
+              <Button
+                variant={viewMode === "graph" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("graph")}
+                className="flex items-center gap-2"
+              >
+                <Grid className="h-4 w-4" />
+                Graph View
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Content based on view mode */}
+        {viewMode === "list" ? (
+          hasResources ? (
+            resourceSections.map(
+              ({ title, key, resources, Component }) =>
+                resources.length > 0 && (
+                  <div key={key} className="space-y-3">
+                    <h4 className="text-md font-medium flex items-center gap-2">
+                      {title}
+                      <Badge variant="secondary">{resources.length}</Badge>
+                    </h4>
+                    <div className="space-y-2">
+                      {resources.map((resource, index) => (
+                        <Component
+                          key={`${key}-${index}`}
+                          resource={resource}
+                          onSave={(updatedResource: any) =>
+                            updateResource(key, index, updatedResource)
+                          }
+                        />
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )
+                )
+            )
+          ) : (
+            <div className="flex items-center justify-center py-12 text-muted-foreground">
+              <div className="text-center">
+                <Settings className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No resources configured for this project</p>
+              </div>
+            </div>
           )
         ) : (
-          <div className="flex items-center justify-center py-12 text-muted-foreground">
-            <div className="text-center">
-              <Settings className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No resources configured for this project</p>
-            </div>
+          <div className="space-y-4">
+            <h4 className="text-md font-medium">Project Architecture Preview</h4>
+            <ProjectProposalPreview 
+              proposal={internalProposal} 
+              className="border rounded-lg"
+            />
           </div>
         )}
 

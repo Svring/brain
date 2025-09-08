@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreHorizontal, Trash2, Edit2 } from "lucide-react";
+import { MoreHorizontal, Trash2, Edit2, AlertCircleIcon } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import React from "react";
@@ -12,6 +12,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -35,6 +46,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const queryClient = useQueryClient();
   const { isOpen: isDropdownOpen, onOpenChange } = useDisclosure();
   const [isRenameDialogOpen, setIsRenameDialogOpen] = React.useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const { resources } = useProjectResources(project.name);
 
   const avatarData = React.useMemo(() => {
@@ -65,7 +77,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     onOpenChange();
     action === "rename"
       ? setIsRenameDialogOpen(true)
-      : deleteProject(project.name);
+      : setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    deleteProject(project.name);
+    setIsDeleteDialogOpen(false);
   };
 
   const commonLinkProps = {
@@ -151,6 +168,44 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         projectName={project.name}
         currentDisplayName={project.displayName}
       />
+
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Project</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete the project "{project.displayName}
+              "?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <Alert
+            variant="destructive"
+            className="bg-status-deleting/80 text-status-error border-none"
+          >
+            <AlertCircleIcon />
+            {/* <AlertTitle>Warning</AlertTitle> */}
+            <AlertDescription>
+              This action cannot be undone and will permanently remove the
+              project and all its resources.
+            </AlertDescription>
+          </Alert>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+              className="bg-status-deleting/80 text-status-error border border-status-error"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
