@@ -1,6 +1,6 @@
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import type React from "react";
-import { MessageCirclePlus, LayoutGrid } from "lucide-react";
+import { MessageCirclePlus, LayoutGrid, Plus } from "lucide-react";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -34,7 +34,7 @@ export interface SubNavigationItem {
 const NAVIGATION_ITEMS: NavigationItem[] = [
   {
     title: "New",
-    icon: MessageCirclePlus,
+    icon: Plus,
     group: "overview",
     path: "/home",
   },
@@ -48,11 +48,11 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
 
 export const MainSection: React.FC = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const { setMessages } = useCopilotChatHeadless_c();
 
   const handleNavigation = (path: string) => {
     if (path === "/home") {
-      // reset();
       setMessages([]);
     }
     router.push(path);
@@ -61,25 +61,32 @@ export const MainSection: React.FC = () => {
   return (
     <SidebarGroup>
       <SidebarGroupContent>
-        <SidebarMenu>
+        <SidebarMenu className="gap-2">
           {NAVIGATION_ITEMS.filter((item) => item.group === "overview").map(
-            (item) => (
-              <SidebarMenuItem key={item.title}>
-                <Tooltip delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    <SidebarMenuButton
-                      onClick={() => handleNavigation(item.path)}
-                    >
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </SidebarMenuButton>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" align="start">
-                    <p>{item.title}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </SidebarMenuItem>
-            )
+            (item) => {
+              const isActive = pathname === item.path;
+              const isNewIcon = item.title === "New";
+
+              return (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    onClick={() => handleNavigation(item.path)}
+                    isActive={isActive}
+                    size="lg"
+                    tooltip={{
+                      children: item.title,
+                    }}
+                    className={
+                      isActive
+                        ? "bg-background-secondary outline outline-border-primary transition-all duration-200"
+                        : ""
+                    }
+                  >
+                    <item.icon className={isActive ? "fill-current" : ""} />
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            }
           )}
         </SidebarMenu>
       </SidebarGroupContent>

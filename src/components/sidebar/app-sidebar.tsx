@@ -12,31 +12,47 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { BookOpen } from "lucide-react";
 import { useAuthState } from "@/contexts/auth/auth-context";
+import Image from "next/image";
 
 export default function AppSidebar() {
   const { mode } = useAuthState();
   return (
     <>
       <Sidebar className="" collapsible="icon">
-        {/* <SidebarHeader className={cn("rounded-t-lg bg-background-secondary")}>
-          <RegionSwitcher
-            regions={[
-              {
-                name: auth?.regionUrl ?? "",
-                logo: Globe,
-                namespace: auth?.namespace ?? "",
-              },
-            ]}
-          />
-        </SidebarHeader> */}
+        <SidebarHeader
+          className={cn("bg-background-primary")}
+        >
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                className="group-data-[collapsible=icon]:justify-center p-0 border-border-primary"
+                size="lg"
+                tooltip={{
+                  children: "Sealos Brain",
+                }}
+              >
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg">
+                  <Image
+                    src="/sealos-brain-icon.svg"
+                    alt="Sealos Brain"
+                    width={32}
+                    height={32}
+                  />
+                </div>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarHeader>
+        {/* <SidebarSeparator /> */}
         <SidebarContent className={cn("bg-background-primary")}>
           <MainSection />
         </SidebarContent>
-        <SidebarFooter className={cn("rounded-b-lg bg-background-primary")}>
+        <SidebarFooter className={cn("bg-background-primary")}>
           {/* <AIAccess /> */}
           {mode === "production" ? (
             <BrainTokenStats />
@@ -58,7 +74,7 @@ export default function AppSidebar() {
             </SidebarMenuItem>
           </SidebarMenu> */}
         </SidebarFooter>
-        <SidebarRail />
+        {/* <SidebarRail /> */}
       </Sidebar>
     </>
   );
