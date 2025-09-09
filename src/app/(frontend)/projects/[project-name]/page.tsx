@@ -151,7 +151,6 @@ function ProjectFlow({ projectName }: { projectName: string }) {
         size={REACT_FLOW_CONFIG.background.size}
         variant={REACT_FLOW_CONFIG.background.variant}
       /> */}
-      {/* <Controls showFitView={false} showInteractive={true} showZoom={false} /> */}
     </ReactFlow>
   );
 }

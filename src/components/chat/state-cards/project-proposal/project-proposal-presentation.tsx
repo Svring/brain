@@ -40,7 +40,7 @@ export function ProjectProposalPresentation({
     project.createProject.mutationOptions()
   );
   const createDevboxMutation = useMutation(
-    devbox.createDevbox.mutationOptions()
+    devbox.create.mutationOptions()
   );
   const createClusterMutation = useMutation(
     cluster.createCluster.mutationOptions()

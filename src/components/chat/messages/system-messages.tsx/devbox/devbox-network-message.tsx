@@ -30,10 +30,10 @@ export const DevboxNetworkMessage: React.FC<DevboxNetworkMessageProps> = ({
   const ports = devboxObject?.ports || [];
 
   const { mutateAsync: updateDevbox, isPending: isUpdating } = useMutation({
-    ...devbox.updateDevbox.mutationOptions(),
+    ...devbox.update.mutationOptions(),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: devbox.getDevbox.queryKey(target),
+        queryKey: devbox.get.queryKey(target),
       });
       setIsPortsEditing(false);
     },

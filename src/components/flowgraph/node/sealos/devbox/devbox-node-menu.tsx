@@ -31,7 +31,7 @@ export default function DevboxNodeMenu({ object }: { object: DevboxObject }) {
   const queryClient = useQueryClient();
 
   const deleteDevboxMutation = useMutation({
-    ...devbox.deleteDevbox.mutationOptions(),
+    ...devbox.delete.mutationOptions(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },

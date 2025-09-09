@@ -108,7 +108,7 @@ function DevboxNode({
 
   // Fetch devbox releases directly using TRPC client
   const { data: releasesData, isLoading: isReleasesLoading } = useQuery(
-    devbox.getDevboxReleases.queryOptions(name)
+    devbox.releases.queryOptions(name)
   );
 
   const mainCard = (

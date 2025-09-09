@@ -24,21 +24,21 @@ export default function DevboxDropdownMenu({
   const queryClient = useQueryClient();
 
   const startDevboxMutation = useMutation({
-    ...devbox.startDevbox.mutationOptions(),
+    ...devbox.start.mutationOptions(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
   });
 
   const pauseDevboxMutation = useMutation({
-    ...devbox.pauseDevbox.mutationOptions(),
+    ...devbox.pause.mutationOptions(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },
   });
 
   const restartDevboxMutation = useMutation({
-    ...devbox.restartDevbox.mutationOptions(),
+    ...devbox.restart.mutationOptions(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["devbox"] });
     },

@@ -110,7 +110,7 @@ export const useResourceMetricsStatus = ({
 
   // Fetch monitor data for first devbox pod
   const { data: devboxMonitorData, isLoading: isDevboxLoading } = useQuery({
-    ...devbox.getDevboxMonitor.queryOptions({
+    ...devbox.monitor.queryOptions({
       devboxName: firstPodName || "",
     }),
     enabled:

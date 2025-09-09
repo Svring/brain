@@ -54,7 +54,7 @@ export const useResourceDelete = (
 
   // Use existing mutation hooks
   const devboxDeleteMutation = useMutation(
-    devboxTrpcClient.deleteDevbox.mutationOptions()
+    devboxTrpcClient.delete.mutationOptions()
   );
   const launchpadDeleteMutation = useMutation(
     launchpadTrpcClient.deleteLaunchpad.mutationOptions()

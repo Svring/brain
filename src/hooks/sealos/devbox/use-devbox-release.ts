@@ -24,9 +24,9 @@ export const useDevboxRelease = (devboxName: string) => {
   >({});
   const [isReleasePopoverOpen, setIsReleasePopoverOpen] = useState(false);
 
-  const releaseMutation = useMutation(devbox.releaseDevbox.mutationOptions());
+  const releaseMutation = useMutation(devbox.release.mutationOptions());
   const deleteReleaseMutation = useMutation(
-    devbox.deleteDevboxRelease.mutationOptions()
+    devbox.deleteRelease.mutationOptions()
   );
   const manageDevboxLifecycleMutation = useMutation(
     devbox.manageDevboxLifecycle.mutationOptions()

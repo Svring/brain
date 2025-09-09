@@ -30,17 +30,17 @@ export const devboxRouter = t.router({
   // ===== QUERY PROCEDURES =====
 
   // DevBox Listing & Information
-  listDevboxes: t.procedure.query(async ({ ctx }) => {
+  list: t.procedure.query(async ({ ctx }) => {
     return await listDevboxes(ctx);
   }),
 
-  getDevbox: t.procedure
+  get: t.procedure
     .input(CustomResourceTargetSchema)
     .query(async ({ input, ctx }) => {
       return await getDevbox(ctx, input);
     }),
 
-  getDevboxMonitor: t.procedure
+  monitor: t.procedure
     .input(
       z.object({
         devboxName: z.string(),
@@ -66,7 +66,7 @@ export const devboxRouter = t.router({
       return result;
     }),
 
-  checkDevboxReady: t.procedure
+  networkStatus: t.procedure
     .input(
       z.object({
         devboxName: z.string(),
@@ -77,22 +77,20 @@ export const devboxRouter = t.router({
     }),
 
   // Release Information
-  getDevboxReleases: t.procedure
-    .input(z.string())
-    .query(async ({ ctx, input }) => {
-      return await getDevboxReleases(ctx, input);
-    }),
+  releases: t.procedure.input(z.string()).query(async ({ ctx, input }) => {
+    return await getDevboxReleases(ctx, input);
+  }),
 
   // ===== MUTATION PROCEDURES =====
 
   // DevBox Lifecycle Management
-  createDevbox: t.procedure
+  create: t.procedure
     .input(devboxCreateFormSchema)
     .mutation(async ({ ctx, input }) => {
       return await createDevbox(ctx, input);
     }),
 
-  updateDevbox: t.procedure
+  update: t.procedure
     .input(
       z.object({
         devboxName: z.string(),
@@ -103,38 +101,28 @@ export const devboxRouter = t.router({
       return await updateDevbox(ctx, input.devboxName, input.request);
     }),
 
-  startDevbox: t.procedure
-    .input(z.string())
-    .mutation(async ({ ctx, input }) => {
-      return await startDevbox(ctx, input);
-    }),
+  start: t.procedure.input(z.string()).mutation(async ({ ctx, input }) => {
+    return await startDevbox(ctx, input);
+  }),
 
-  pauseDevbox: t.procedure
-    .input(z.string())
-    .mutation(async ({ ctx, input }) => {
-      return await pauseDevbox(ctx, input);
-    }),
+  pause: t.procedure.input(z.string()).mutation(async ({ ctx, input }) => {
+    return await pauseDevbox(ctx, input);
+  }),
 
-  shutdownDevbox: t.procedure
-    .input(z.string())
-    .mutation(async ({ ctx, input }) => {
-      return await shutdownDevbox(ctx, input);
-    }),
+  shutdown: t.procedure.input(z.string()).mutation(async ({ ctx, input }) => {
+    return await shutdownDevbox(ctx, input);
+  }),
 
-  restartDevbox: t.procedure
-    .input(z.string())
-    .mutation(async ({ ctx, input }) => {
-      return await restartDevbox(ctx, input);
-    }),
+  restart: t.procedure.input(z.string()).mutation(async ({ ctx, input }) => {
+    return await restartDevbox(ctx, input);
+  }),
 
-  deleteDevbox: t.procedure
-    .input(z.string())
-    .mutation(async ({ ctx, input }) => {
-      return await deleteDevbox(ctx, input);
-    }),
+  delete: t.procedure.input(z.string()).mutation(async ({ ctx, input }) => {
+    return await deleteDevbox(ctx, input);
+  }),
 
   // Release Management
-  releaseDevbox: t.procedure
+  release: t.procedure
     .input(
       z.object({
         devboxName: z.string().min(1, "DevBox name is required"),
@@ -147,13 +135,13 @@ export const devboxRouter = t.router({
       return await releaseDevbox(ctx, devboxName, tag, releaseDes);
     }),
 
-  deleteDevboxRelease: t.procedure
+  deleteRelease: t.procedure
     .input(z.string())
     .mutation(async ({ ctx, input }) => {
       return await deleteDevboxRelease(ctx, input);
     }),
 
-  deployDevbox: t.procedure
+  deploy: t.procedure
     .input(
       z.object({
         devboxName: z.string().min(1, "DevBox name is required"),

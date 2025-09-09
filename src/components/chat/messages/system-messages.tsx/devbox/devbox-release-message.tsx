@@ -140,19 +140,19 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
     isLoading,
     error,
   } = useQuery(
-    devboxTrpcClient.getDevboxReleases.queryOptions(target.name || "")
+    devboxTrpcClient.releases.queryOptions(target.name || "")
   );
 
   const pauseMutation = useMutation({
-    ...devboxTrpcClient.pauseDevbox.mutationOptions(),
+    ...devboxTrpcClient.pause.mutationOptions(),
   });
 
   const startMutation = useMutation({
-    ...devboxTrpcClient.startDevbox.mutationOptions(),
+    ...devboxTrpcClient.start.mutationOptions(),
     onSuccess: () => {
       // Invalidate and refetch releases
       queryClient.invalidateQueries({
-        queryKey: devboxTrpcClient.getDevboxReleases.queryKey(
+        queryKey: devboxTrpcClient.releases.queryKey(
           target.name || ""
         ),
       });
@@ -166,7 +166,7 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
   });
 
   const releaseMutation = useMutation({
-    ...devboxTrpcClient.releaseDevbox.mutationOptions(),
+    ...devboxTrpcClient.release.mutationOptions(),
     onSuccess: () => {
       // Start the devbox after successful release
       startMutation.mutate(target.name || "");
@@ -177,11 +177,11 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
   });
 
   const deleteReleaseMutation = useMutation({
-    ...devboxTrpcClient.deleteDevboxRelease.mutationOptions(),
+    ...devboxTrpcClient.deleteRelease.mutationOptions(),
     onSuccess: () => {
       // Invalidate and refetch releases
       queryClient.invalidateQueries({
-        queryKey: devboxTrpcClient.getDevboxReleases.queryKey(
+        queryKey: devboxTrpcClient.releases.queryKey(
           target.name || ""
         ),
       });

@@ -49,7 +49,7 @@ export default function DevboxMessageMenu({ target }: DevboxMessageMenuProps) {
   const pauseHook = useResourcePause(target);
 
   const deleteDevbox = useMutation(
-    devboxTrpcClient.deleteDevbox.mutationOptions()
+    devboxTrpcClient.delete.mutationOptions()
   );
 
   const handleDelete = () => {
@@ -58,10 +58,10 @@ export default function DevboxMessageMenu({ target }: DevboxMessageMenuProps) {
       onSuccess: () => {
         // Invalidate relevant queries
         queryClient.invalidateQueries({
-          queryKey: devboxTrpcClient.getDevbox.queryKey(target),
+          queryKey: devboxTrpcClient.get.queryKey(target),
         });
         queryClient.invalidateQueries({
-          queryKey: devboxTrpcClient.listDevboxes.queryKey(),
+          queryKey: devboxTrpcClient.list.queryKey(),
         });
       },
     });

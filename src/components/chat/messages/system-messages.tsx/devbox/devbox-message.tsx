@@ -30,7 +30,7 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
     isLoading,
     error,
   } = useQuery(
-    devboxTrpcClient.getDevbox.queryOptions(target)
+    devboxTrpcClient.get.queryOptions(target)
   );
 
   const actions: MessageAction[] = devboxObject

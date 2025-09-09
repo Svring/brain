@@ -60,11 +60,21 @@ export function transformRegionUrl(url: string): string {
  * @param imageUrl - The full Docker image URL (e.g., 'ghcr.io/labring-actions/devbox/cpp-gcc-12.2.0:13aacd8')
  * @returns The extracted image name (e.g., 'cpp-gcc-12.2.0')
  */
+import { z } from "zod";
 import { formatUnixTimeInLocalTimezone } from "@/lib/date/date-utils";
 import { LAUNCHPAD_DEFAULT_ICON } from "@/lib/sealos/resources/launchpad/launchpad-constant/launchpad-constant-icons";
 import { OBJECTSTORAGE_DEFAULT_ICON } from "@/lib/sealos/resources/objectstorage/objectstorage-constant/objectstorage-constant-icons";
 import { DEVBOX_DEFAULT_ICON } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-icons";
 import { CLUSTER_DEFAULT_ICON } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
+
+/**
+ * Helper function to create a Zod union schema from an array of numbers
+ * @param options - Array of number literals to create union from
+ * @returns Zod union schema
+ */
+export const createNumberUnionSchema = <T extends readonly number[]>(
+  options: T
+) => z.union(options.map((value) => z.literal(value)) as any);
 
 export function truncateImage(imageUrl: string): string {
   // Split by '/' to get the last part which contains the image name and tag

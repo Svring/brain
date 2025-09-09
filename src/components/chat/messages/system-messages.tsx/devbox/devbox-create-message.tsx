@@ -24,7 +24,7 @@ export const DevboxCreateMessage: React.FC<DevboxCreateMessageProps> = ({
   );
 
   const createDevboxMutation = useMutation({
-    ...devbox.createDevbox.mutationOptions(),
+    ...devbox.create.mutationOptions(),
     onSuccess: async (_, variables) => {
       if (!selectedProject) {
         toast.error("No project selected. Please select a project first.");

@@ -158,7 +158,7 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
   });
 
   const deployMutation = useMutation({
-    ...devbox.deployDevbox.mutationOptions(),
+    ...devbox.deploy.mutationOptions(),
     onSuccess: (response) => {
       console.log("[DevboxDeployedMessage] deployDevbox onSuccess", response);
 

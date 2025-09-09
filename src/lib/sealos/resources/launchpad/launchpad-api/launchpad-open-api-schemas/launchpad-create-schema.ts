@@ -4,6 +4,7 @@ import {
   MEMORY_OPTIONS,
   REPLICAS_OPTIONS,
 } from "@/lib/k8s/k8s-constant/k8s-constant-resource";
+import { createNumberUnionSchema } from "@/lib/sealos/sealos-utils";
 
 // GPU resource configuration schema
 const GpuResourceSchema = z.object({
@@ -14,11 +15,6 @@ const GpuResourceSchema = z.object({
 
 // Storage size options for launchpad
 export const storageSizeOptions = ["1Gi", "5Gi", "10Gi", "20Gi"] as const;
-
-// Resource configuration schema - updated to match OpenAPI spec with enum constraints
-// Helper function to create a Zod union schema from an array of numbers
-const createNumberUnionSchema = <T extends readonly number[]>(options: T) =>
-  z.union(options.map((value) => z.literal(value)) as any);
 
 // Resource configuration schema
 const ResourceSchema = z.object({

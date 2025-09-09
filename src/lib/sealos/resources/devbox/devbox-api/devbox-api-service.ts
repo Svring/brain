@@ -91,12 +91,12 @@ export async function getDevboxMonitor(
 
 export async function checkDevboxReady(
   context: SealosApiContext,
-  devboxName: string
+  name: string
 ): Promise<any> {
   const api = createOldDevboxAxios(context);
   const response = await api.get("/checkReady", {
     params: {
-      devboxName,
+      name,
     },
   });
   return response.data.data;
@@ -105,11 +105,11 @@ export async function checkDevboxReady(
 // Release Information
 export async function getDevboxReleases(
   context: SealosApiContext,
-  devboxName: string
+  name: string
 ): Promise<any> {
   const api = createDevboxAxios(context);
   const response = await api.get("/releases", {
-    params: { devboxName },
+    params: { name },
   });
   return response.data.data;
 }
@@ -129,65 +129,63 @@ export async function createDevbox(
 
 export async function updateDevbox(
   context: SealosApiContext,
-  devboxName: string,
+  name: string,
   request: DevboxUpdateFormData
 ): Promise<any> {
   const api = createDevboxAxios(context);
-  const response = await api.patch(`/${devboxName}`, request);
+  const response = await api.patch(`/${name}`, request);
   return response.data;
 }
 
 export async function startDevbox(
   context: SealosApiContext,
-  devboxName: string
+  name: string
 ): Promise<any> {
   const api = createDevboxAxios(context);
-  const response = await api.post(`/${devboxName}/start`, {});
+  const response = await api.post(`/${name}/start`, {});
   return response.data;
 }
 
 export async function pauseDevbox(
   context: SealosApiContext,
-  devboxName: string
+  name: string
 ): Promise<any> {
   const api = createDevboxAxios(context);
-  const response = await api.post(`/${devboxName}/pause`, {});
+  const response = await api.post(`/${name}/pause`, {});
   return response.data;
 }
 
 export async function shutdownDevbox(
   context: SealosApiContext,
-  devboxName: string
+  name: string
 ): Promise<any> {
   const api = createDevboxAxios(context);
-  const response = await api.post(`/${devboxName}/shutdown`, {});
+  const response = await api.post(`/${name}/shutdown`, {});
   return response.data;
 }
 
 export async function restartDevbox(
   context: SealosApiContext,
-  devboxName: string
+  name: string
 ): Promise<any> {
   const api = createDevboxAxios(context);
-  const response = await api.post(`/${devboxName}/restart`, {});
+  const response = await api.post(`/${name}/restart`, {});
   return response.data;
 }
 
 export async function deleteDevbox(
   context: SealosApiContext,
-  devboxName: string
+  name: string
 ): Promise<any> {
   const api = createDevboxAxios(context);
-  const response = await api.delete("/delete", {
-    params: { devboxName },
-  });
+  const response = await api.delete(`/${name}/delete`);
   return response.data;
 }
 
 // Release Management
 export async function releaseDevbox(
   context: SealosApiContext,
-  devboxName: string,
+  name: string,
   tag: string,
   releaseDes?: string
 ): Promise<any> {
@@ -196,7 +194,7 @@ export async function releaseDevbox(
     tag,
     releaseDes: releaseDes || "",
   };
-  const response = await api.post(`/${devboxName}/release`, request);
+  const response = await api.post(`/${name}/release`, request);
   return response.data;
 }
 
@@ -204,7 +202,7 @@ export async function deleteDevboxRelease(
   context: SealosApiContext,
   releaseName: string
 ): Promise<any> {
-  const api = createDevboxAxios(context);
+  const api = createOldDevboxAxios(context);
   const response = await api.delete("/delDevboxVersionByName", {
     params: {
       versionName: releaseName,
@@ -215,10 +213,10 @@ export async function deleteDevboxRelease(
 
 export async function deployDevbox(
   context: SealosApiContext,
-  devboxName: string,
+  name: string,
   tag: string
 ): Promise<any> {
   const api = createDevboxAxios(context);
-  const response = await api.post(`/${devboxName}/release/${tag}/deploy`, {});
+  const response = await api.post(`/${name}/release/${tag}/deploy`, {});
   return response.data;
 }

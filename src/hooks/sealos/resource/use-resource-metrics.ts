@@ -27,7 +27,7 @@ export const useResourceMetrics = (
 
   // Fetch monitor data based on resource kind
   const { data: devboxMonitorData } = useQuery({
-    ...devbox.getDevboxMonitor.queryOptions({
+    ...devbox.monitor.queryOptions({
       devboxName: resource?.pods?.[0]?.name || "",
     }),
     enabled:

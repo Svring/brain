@@ -38,11 +38,11 @@ export const DevboxMessageDetail: React.FC<DevboxInfoDetailsProps> = ({
 
   // Update devbox mutation
   const updateDevboxMutation = useMutation({
-    ...devbox.updateDevbox.mutationOptions(),
+    ...devbox.update.mutationOptions(),
     onSuccess: () => {
       // Invalidate and refetch devbox data
       queryClient.invalidateQueries({
-        queryKey: devbox.getDevbox.queryKey(target),
+        queryKey: devbox.get.queryKey(target),
       });
       toast.success("Devbox updated successfully!");
     },

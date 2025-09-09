@@ -44,7 +44,7 @@ export const useResourceStatus = <TSelected = any>(
   // Handle custom resources
   if (target.type === "custom") {
     if (target.resourceType === "devbox") {
-      const query = useQuery(devbox.getDevbox.queryOptions(target));
+      const query = useQuery(devbox.get.queryOptions(target));
       return createReturn(query.data, query);
     }
 
