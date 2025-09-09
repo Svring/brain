@@ -6,7 +6,6 @@ import { activateProjectActions } from "@/lib/copilot/brain/project/copilot-proj
 
 import {
   createK8sContext,
-  useDevboxContext,
   useSealosContext,
 } from "@/lib/auth/auth-utils";
 
@@ -17,9 +16,9 @@ export default function useCopilotActions() {
   // Activate actions based on the provided types
   activateDevboxActions();
 
-  // activateClusterActions(k8sContext, sealosContext);
+  activateClusterActions();
 
-  activateLaunchpadActions(sealosContext, k8sContext);
+  // activateLaunchpadActions(sealosContext, k8sContext);
 
   // activateObjectStorageBucketActions(k8sContext, sealosContext);
 

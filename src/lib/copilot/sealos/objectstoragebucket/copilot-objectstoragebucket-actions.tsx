@@ -1,19 +1,8 @@
 "use client";
 
 import { useCopilotAction } from "@copilotkit/react-core";
-import { useQueryClient } from "@tanstack/react-query";
-import {
-  getObjectStorageOptions,
-  listObjectStorageOptions,
-} from "@/lib/sealos/resources/objectstorage/objectstorage-method/objectstorage-query";
-import {
-  useCreateObjectStorageMutation,
-  useDeleteObjectStorageMutation,
-} from "@/lib/sealos/resources/objectstorage/objectstorage-method/objectstorage-mutation";
-import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
-import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
-import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { useMutation } from "@tanstack/react-query";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import {
   AITool,
   AIToolContent,
@@ -28,17 +17,13 @@ import { objectStorageCreateSchema } from "@/schemas/forms/objectstorage/objects
 import { ObjectStorageCreateActionMessage } from "@/components/copilot/sealos/objectstorage/objectstorage-create-action-message";
 import { ObjectStorageCreateFormData } from "@/schemas/forms/objectstorage/objectstorage-create-form-schema";
 
-export function activateObjectStorageBucketActions(
-  k8sContext: K8sApiContext,
-  sealosContext: SealosApiContext
-) {
-  createObjectStorageBucketAction(sealosContext);
-  listObjectStorageBucketAction(k8sContext);
-  getObjectStorageBucketAction(k8sContext);
-  deleteObjectStorageBucketAction(sealosContext);
+export function activateObjectStorageBucketActions() {
+  // CRUD operations
+  createObjectStorageBucketAction();
+  deleteObjectStorageBucketAction();
 }
 
-function createObjectStorageBucketAction(sealosContext: SealosApiContext) {
+function createObjectStorageBucketAction() {
   useCopilotAction({
     name: "createObjectStorageBucket",
     description: "Create a new object storage bucket with specified configuration",
@@ -58,84 +43,12 @@ function createObjectStorageBucketAction(sealosContext: SealosApiContext) {
   });
 }
 
-function listObjectStorageBucketAction(k8sContext: K8sApiContext) {
-  const queryClient = useQueryClient();
 
-  useCopilotAction({
-    name: "listObjectStorageBuckets",
-    description: "List all object storage buckets",
-    parameters: [],
-    handler: async () => {
-      const bucketList = await queryClient.fetchQuery(
-        listObjectStorageOptions(k8sContext)
-      );
-      return bucketList;
-    },
-    render: ({ args, result, status }) => {
-      return (
-        <AITool key={"listObjectStorageBuckets"}>
-          <AIToolHeader
-            description={"List all object storage buckets"}
-            name={"listObjectStorageBuckets"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
-      );
-    },
+function deleteObjectStorageBucketAction() {
+  const { objectstorage } = useTRPCClients();
+  const deleteObjectStorageMutation = useMutation({
+    ...objectstorage.delete.mutationOptions(),
   });
-}
-
-function getObjectStorageBucketAction(k8sContext: K8sApiContext) {
-  const queryClient = useQueryClient();
-
-  useCopilotAction({
-    name: "getObjectStorageBucket",
-    description: "Get details of a specific object storage bucket",
-    parameters: [
-      {
-        name: "bucketName",
-        type: "string",
-        description: "Name of the bucket to get details for",
-        required: true,
-      },
-    ],
-    handler: async ({ bucketName }) => {
-      const target = CustomResourceTargetSchema.parse({
-        ...convertResourceTypeToTarget("objectstoragebucket"),
-        name: bucketName,
-      });
-      return await queryClient.fetchQuery(
-        getObjectStorageOptions(k8sContext, target)
-      );
-    },
-    render: ({ args, result, status }) => {
-      return (
-        <AITool key={"getObjectStorageBucket"}>
-          <AIToolHeader
-            description={"Get details of a specific object storage bucket"}
-            name={"getObjectStorageBucket"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
-      );
-    },
-  });
-}
-
-function deleteObjectStorageBucketAction(sealosContext: SealosApiContext) {
-  const deleteObjectStorage = useDeleteObjectStorageMutation(sealosContext);
 
   useCopilotAction({
     name: "deleteObjectStorageBucket",
@@ -149,11 +62,8 @@ function deleteObjectStorageBucketAction(sealosContext: SealosApiContext) {
       },
     ],
     handler: async ({ bucketName }) => {
-      const deleteRequest = {
-        bucketName,
-      };
-
-      return await deleteObjectStorage.mutateAsync(deleteRequest);
+      const result = await deleteObjectStorageMutation.mutateAsync({ bucketName });
+      return `Object storage bucket "${bucketName}" deleted successfully`;
     },
     render: ({ args, result, status }) => {
       return (

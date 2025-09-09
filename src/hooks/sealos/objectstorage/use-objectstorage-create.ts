@@ -23,7 +23,7 @@ export const useObjectStorageCreate = (
   );
 
   const createObjectStorageMutation = useMutation({
-    ...objectstorage.createObjectStorage.mutationOptions(),
+    ...objectstorage.create.mutationOptions(),
     onSuccess: async (_, variables) => {
       if (addToProject && selectedProject) {
         const resourceTarget = convertResourceTypeToTarget(

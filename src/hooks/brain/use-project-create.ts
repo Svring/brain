@@ -30,7 +30,7 @@ export function useProjectCreate(options?: CreateProjectOptions) {
     launchpad.create.mutationOptions()
   );
   const createObjectStorageMutation = useMutation(
-    objectstorage.createObjectStorage.mutationOptions()
+    objectstorage.create.mutationOptions()
   );
   const addToProjectMutation = useMutation(
     project.addResources.mutationOptions()

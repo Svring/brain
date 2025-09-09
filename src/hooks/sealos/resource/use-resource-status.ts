@@ -54,9 +54,7 @@ export const useResourceStatus = <TSelected = any>(
     }
 
     if (target.resourceType === "objectstoragebucket") {
-      const query = useQuery(
-        objectstorage.getObjectStorage.queryOptions(target)
-      );
+      const query = useQuery(objectstorage.get.queryOptions(target));
       return createReturn(query.data, query);
     }
 

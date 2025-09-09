@@ -42,52 +42,10 @@ import { runParallelAction } from "next-server-actions-parallel";
 const t = initTRPC.context<ObjectStorageContext>().create();
 
 export const objectStorageRouter = t.router({
-  // ObjectStorage Lifecycle Management
-  createObjectStorage: t.procedure
-    .input(ObjectStorageCreateRequestSchema)
-    .output(ObjectStorageCreateResponseSchema)
-    .mutation(async ({ ctx, input }) => {
-      return await runParallelAction(createObjectStorage(input, ctx));
-    }),
+  // ===== QUERY PROCEDURES =====
 
-  deleteObjectStorage: t.procedure
-    .input(ObjectStorageDeleteRequestSchema)
-    .output(ObjectStorageDeleteResponseSchema)
-    .mutation(async ({ ctx, input }) => {
-      return await runParallelAction(deleteObjectStorage(input, ctx));
-    }),
-
-  // Host Management
-  closeObjectStorageHost: t.procedure
-    .input(ObjectStorageCloseHostRequestSchema)
-    .output(ObjectStorageCloseHostResponseSchema)
-    .mutation(async ({ ctx, input }) => {
-      return await runParallelAction(closeObjectStorageHost(input, ctx));
-    }),
-
-  openObjectStorageHost: t.procedure
-    .input(ObjectStorageOpenHostRequestSchema)
-    .output(ObjectStorageOpenHostResponseSchema)
-    .mutation(async ({ ctx, input }) => {
-      return await runParallelAction(openObjectStorageHost(input, ctx));
-    }),
-
-  getObjectStorageStatus: t.procedure
-    .input(ObjectStorageStatusRequestSchema)
-    .output(ObjectStorageStatusResponseSchema)
-    .query(async ({ ctx, input }) => {
-      return await runParallelAction(getObjectStorageStatus(input, ctx));
-    }),
-
-  // User Management
-  initObjectStorageUser: t.procedure
-    .output(ObjectStorageInitResponseSchema)
-    .query(async ({ ctx }) => {
-      return await runParallelAction(initObjectStorageUser(ctx));
-    }),
-
-  // K8s Operations
-  getObjectStorage: t.procedure
+  // ObjectStorage Information
+  get: t.procedure
     .input(CustomResourceTargetSchema)
     .query(async ({ input, ctx }) => {
       const k8sContext = K8sApiContextSchema.parse({
@@ -98,13 +56,55 @@ export const objectStorageRouter = t.router({
       return await getObjectStorage(k8sContext, input);
     }),
 
-  listObjectStorages: t.procedure
-    .input(K8sApiContextSchema)
-    .query(async ({ input }) => {
-      return await listObjectStorage(input);
+  list: t.procedure.input(K8sApiContextSchema).query(async ({ input }) => {
+    return await listObjectStorage(input);
+  }),
+
+  // Status and User Management
+  getStatus: t.procedure
+    .input(ObjectStorageStatusRequestSchema)
+    .output(ObjectStorageStatusResponseSchema)
+    .query(async ({ ctx, input }) => {
+      return await runParallelAction(getObjectStorageStatus(input, ctx));
     }),
 
-  // No React Query options exposed via tRPC
+  initUser: t.procedure
+    .output(ObjectStorageInitResponseSchema)
+    .query(async ({ ctx }) => {
+      return await runParallelAction(initObjectStorageUser(ctx));
+    }),
+
+  // ===== MUTATION PROCEDURES =====
+
+  // ObjectStorage Lifecycle Management
+  create: t.procedure
+    .input(ObjectStorageCreateRequestSchema)
+    .output(ObjectStorageCreateResponseSchema)
+    .mutation(async ({ ctx, input }) => {
+      return await runParallelAction(createObjectStorage(input, ctx));
+    }),
+
+  delete: t.procedure
+    .input(ObjectStorageDeleteRequestSchema)
+    .output(ObjectStorageDeleteResponseSchema)
+    .mutation(async ({ ctx, input }) => {
+      return await runParallelAction(deleteObjectStorage(input, ctx));
+    }),
+
+  // Host Management
+  closeHost: t.procedure
+    .input(ObjectStorageCloseHostRequestSchema)
+    .output(ObjectStorageCloseHostResponseSchema)
+    .mutation(async ({ ctx, input }) => {
+      return await runParallelAction(closeObjectStorageHost(input, ctx));
+    }),
+
+  openHost: t.procedure
+    .input(ObjectStorageOpenHostRequestSchema)
+    .output(ObjectStorageOpenHostResponseSchema)
+    .mutation(async ({ ctx, input }) => {
+      return await runParallelAction(openObjectStorageHost(input, ctx));
+    }),
 });
 
 export type ObjectStorageRouter = typeof objectStorageRouter;

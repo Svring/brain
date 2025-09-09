@@ -29,7 +29,7 @@ export const ObjectStorageCreateMessage: React.FC<
   );
 
   const createObjectStorageMutation = useMutation({
-    ...objectstorage.createObjectStorage.mutationOptions(),
+    ...objectstorage.create.mutationOptions(),
     onSuccess: async (_, variables) => {
       if (!selectedProject) {
         toast.error("No project selected. Please select a project first.");

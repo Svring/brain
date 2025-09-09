@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUp, SendHorizonal, Square } from "lucide-react";
 import React from "react";
 import { useDebounce } from "@reactuses/core";
+import { Typewriter } from "@/components/ui/typewriter-text";
 // import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
 
 // Utility function for className merging
@@ -325,6 +326,7 @@ interface PromptInputBoxProps {
   autoFocus?: boolean;
   disableInput?: boolean;
   disableSend?: boolean;
+  exhibition?: boolean;
 }
 export const PromptInputBox = React.forwardRef(
   (props: PromptInputBoxProps, ref: React.Ref<HTMLDivElement>) => {
@@ -338,6 +340,7 @@ export const PromptInputBox = React.forwardRef(
       autoFocus = false,
       disableInput = false,
       disableSend = false,
+      exhibition = false,
     } = props;
 
     // const { openDialog, CreateProjectDialog } = useProjectCreateDialog();
@@ -346,6 +349,13 @@ export const PromptInputBox = React.forwardRef(
     const internalTextareaRef = React.useRef<HTMLTextAreaElement>(null);
     // For tracking previous loading state
     const prevLoading = React.useRef(isLoading);
+
+    // Exhibition texts for typewriter effect
+    const exhibitionTexts = [
+      "Ask me to create a new project...",
+      "Tell me what you want to build today...",
+      "Describe your next cloud application..."
+    ];
 
     // Focus when loading finishes
     React.useEffect(() => {
@@ -422,18 +432,32 @@ export const PromptInputBox = React.forwardRef(
           ref={ref || promptBoxRef}
           value={input}
         >
-          <PromptInputTextarea
-            placeholder={placeholder}
-            className="flex-1"
-            ref={(node) => {
-              internalTextareaRef.current = node;
-              if (typeof textareaRef === "function") textareaRef(node);
-              else if (textareaRef)
-                (
-                  textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>
-                ).current = node;
-            }}
-          />
+          <div className="flex-1 relative">
+            <PromptInputTextarea
+              placeholder={placeholder}
+              className="flex-1"
+              ref={(node) => {
+                internalTextareaRef.current = node;
+                if (typeof textareaRef === "function") textareaRef(node);
+                else if (textareaRef)
+                  (
+                    textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>
+                  ).current = node;
+              }}
+            />
+            {exhibition && !input.trim() && (
+              <div className="absolute inset-0 pointer-events-none flex items-start px-3 py-2.5">
+                <Typewriter
+                  text={exhibitionTexts}
+                  speed={80}
+                  deleteSpeed={40}
+                  delay={2000}
+                  loop={true}
+                  className="text-gray-400"
+                />
+              </div>
+            )}
+          </div>
 
           <PromptInputActions className="flex items-end justify-end gap-2 p-0 mt-auto">
             <PromptInputAction

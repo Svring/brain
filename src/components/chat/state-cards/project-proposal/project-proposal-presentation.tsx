@@ -60,6 +60,7 @@ export function ProjectProposalPresentation({
       onApply={handleCreate}
       isSubmitting={isCreating}
       disabled={isCreating}
+      className="bg-background-primary"
     >
       {/* Content based on view mode */}
       {viewMode === "list" ? (

@@ -10,9 +10,10 @@ import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 
 interface AiChatInputProps {
   className?: string;
+  exhibition?: boolean;
 }
 
-export function AiChatInput({ className }: AiChatInputProps) {
+export function AiChatInput({ className, exhibition = false }: AiChatInputProps) {
   const { mutate: sendMessage, isPending: isSendingMessage } =
     useSendMessageMutation();
   const { selectThread } = useChatActions();
@@ -47,10 +48,11 @@ export function AiChatInput({ className }: AiChatInputProps) {
       className={className}
       isLoading={isLoading}
       onSend={handleSendMessage}
-      placeholder="Type your message..."
+      placeholder=""
       disableInput={false}
       disableSend={isLoading}
       onStop={stopGeneration}
+      exhibition={exhibition}
     />
   );
 }

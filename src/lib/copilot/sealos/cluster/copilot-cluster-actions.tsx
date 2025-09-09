@@ -1,22 +1,6 @@
-import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
-import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
-import { useQueryClient } from "@tanstack/react-query";
-import {
-  listClusterOptions,
-  getClusterOptions,
-  getClusterLogsOptions,
-} from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
-import {
-  useCreateClusterMutation,
-  useStartClusterMutation,
-  usePauseClusterMutation,
-  useDeleteClusterMutation,
-  useUpdateClusterMutation,
-} from "@/lib/sealos/resources/cluster/cluster-method/cluster-mutation";
 import { useCopilotAction } from "@copilotkit/react-core";
-import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import type { CreateClusterRequest } from "@/lib/sealos/resources/cluster/cluster-api/cluster-open-api-schemas";
+import { useMutation } from "@tanstack/react-query";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import {
   AITool,
   AIToolContent,
@@ -36,21 +20,21 @@ import { clusterCreateFormSchema } from "@/schemas/forms/cluster/cluster-create-
 import { ClusterCreateActionMessage } from "@/components/copilot/sealos/cluster/cluster-create-action-message";
 import { ClusterCreateFormData } from "@/schemas/forms/cluster/cluster-create-form-schema";
 
-export const activateClusterActions = (
-  k8sContext: K8sApiContext,
-  sealosContext: SealosApiContext
-) => {
-  listClusterAction(k8sContext);
-  getClusterAction(k8sContext);
-  createClusterAction(sealosContext);
-  updateClusterAction(sealosContext);
-  deleteClusterAction(sealosContext);
-  startClusterAction(sealosContext);
-  stopClusterAction(sealosContext);
-  getClusterLogAction(k8sContext, sealosContext);
+export const activateClusterActions = () => {
+  // CRUD operations
+  createClusterAction();
+  updateClusterAction();
+  deleteClusterAction();
+
+  // Lifecycle management
+  startClusterAction();
+  stopClusterAction();
+  // restartClusterAction();
+  // getClusterMonitorAction();
+  // backupClusterAction();
 };
 
-export const createClusterAction = (context: SealosApiContext) => {
+export const createClusterAction = () => {
   useCopilotAction({
     name: "createCluster",
     description: "Create a new database cluster with specified configuration",
@@ -70,115 +54,11 @@ export const createClusterAction = (context: SealosApiContext) => {
   });
 };
 
-export const listClusterAction = (context: K8sApiContext) => {
-  const queryClient = useQueryClient();
-
-  useCopilotAction({
-    name: "listClusters",
-    description: "List all database clusters",
-    handler: async () => {
-      return await queryClient.fetchQuery(listClusterOptions(context));
-    },
-    render: ({ args, result, status }) => {
-      return (
-        <AITool key={"listClusters"}>
-          <AIToolHeader
-            description={"List all database clusters"}
-            name={"listClusters"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
-      );
-    },
+export const updateClusterAction = () => {
+  const { cluster } = useTRPCClients();
+  const updateClusterMutation = useMutation({
+    ...cluster.update.mutationOptions(),
   });
-};
-
-export const getClusterAction = (context: K8sApiContext) => {
-  const queryClient = useQueryClient();
-
-  useCopilotAction({
-    name: "getCluster",
-    description: "Get a specific cluster by name",
-    parameters: [
-      {
-        name: "clusterName",
-        type: "string",
-        required: true,
-        description: "Name of the cluster",
-      },
-    ],
-    handler: ({ clusterName }) => {
-      const target = CustomResourceTargetSchema.parse({
-        ...convertResourceTypeToTarget("cluster"),
-        name: clusterName,
-      });
-      return queryClient.fetchQuery(getClusterOptions(context, target));
-    },
-    render: ({ args, result, status }) => {
-      return (
-        <AITool key={"getCluster"}>
-          <AIToolHeader
-            description={"Get a specific cluster by name"}
-            name={"getCluster"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
-      );
-    },
-  });
-};
-
-export const deleteClusterAction = (context: SealosApiContext) => {
-  const deleteCluster = useDeleteClusterMutation(context);
-
-  useCopilotAction({
-    name: "deleteCluster",
-    description: "Delete a cluster by its name",
-    parameters: [
-      {
-        name: "clusterName",
-        type: "string",
-        required: true,
-        description: "Name of the cluster to delete",
-      },
-    ],
-    handler: ({ clusterName }) => {
-      return deleteCluster.mutateAsync({ name: clusterName });
-    },
-    render: ({ args, result, status }) => {
-      return (
-        <AITool key={"deleteCluster"}>
-          <AIToolHeader
-            description={"Delete a cluster by its name"}
-            name={"deleteCluster"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
-      );
-    },
-  });
-};
-
-export const updateClusterAction = (context: SealosApiContext) => {
-  const updateCluster = useUpdateClusterMutation(context);
 
   useCopilotAction({
     name: "updateCluster",
@@ -220,7 +100,7 @@ export const updateClusterAction = (context: SealosApiContext) => {
         description: "Storage (3Gi to 300Gi, leave empty to keep current)",
       },
     ],
-    handler: ({ clusterName, replicas, cpu, memory, storage }) => {
+    handler: async ({ clusterName, replicas, cpu, memory, storage }) => {
       // Only include fields that are actually provided
       const resourceUpdates: any = {};
 
@@ -248,7 +128,11 @@ export const updateClusterAction = (context: SealosApiContext) => {
         resource: resourceUpdates,
       };
 
-      return updateCluster.mutateAsync({ clusterName, request: updateRequest });
+      const result = await updateClusterMutation.mutateAsync({
+        clusterName,
+        request: updateRequest,
+      });
+      return `Cluster "${clusterName}" updated successfully`;
     },
     render: ({ args, result, status }) => {
       return (
@@ -270,38 +154,35 @@ export const updateClusterAction = (context: SealosApiContext) => {
   });
 };
 
-export const getClusterLogAction = (
-  k8sContext: K8sApiContext,
-  clusterContext: SealosApiContext
-) => {
-  const queryClient = useQueryClient();
+export const deleteClusterAction = () => {
+  const { cluster } = useTRPCClients();
+  const deleteClusterMutation = useMutation({
+    ...cluster.delete.mutationOptions(),
+  });
 
   useCopilotAction({
-    name: "getClusterLogs",
-    description: "Get log files for a specific cluster",
+    name: "deleteCluster",
+    description: "Delete a cluster by its name",
     parameters: [
       {
         name: "clusterName",
         type: "string",
         required: true,
-        description: "Name of the cluster to get logs for",
+        description: "Name of the cluster to delete",
       },
     ],
-    handler: ({ clusterName }) => {
-      const target = CustomResourceTargetSchema.parse({
-        ...convertResourceTypeToTarget("cluster"),
+    handler: async ({ clusterName }) => {
+      const result = await deleteClusterMutation.mutateAsync({
         name: clusterName,
       });
-      return queryClient.fetchQuery(
-        getClusterLogsOptions(k8sContext, clusterContext, target)
-      );
+      return `Cluster "${clusterName}" deleted successfully`;
     },
     render: ({ args, result, status }) => {
       return (
-        <AITool key={"getClusterLogs"}>
+        <AITool key={"deleteCluster"}>
           <AIToolHeader
-            description={"Get log files for a specific cluster"}
-            name={"getClusterLogs"}
+            description={"Delete a cluster by its name"}
+            name={"deleteCluster"}
             status={status}
           />
           <AIToolContent>
@@ -316,8 +197,11 @@ export const getClusterLogAction = (
   });
 };
 
-export const startClusterAction = (context: SealosApiContext) => {
-  const startCluster = useStartClusterMutation(context);
+export const startClusterAction = () => {
+  const { cluster } = useTRPCClients();
+  const startClusterMutation = useMutation({
+    ...cluster.start.mutationOptions(),
+  });
 
   useCopilotAction({
     name: "startCluster",
@@ -330,8 +214,9 @@ export const startClusterAction = (context: SealosApiContext) => {
         description: "Name of the database to start",
       },
     ],
-    handler: ({ dbName }) => {
-      return startCluster.mutateAsync({ dbName });
+    handler: async ({ dbName }) => {
+      const result = await startClusterMutation.mutateAsync(dbName);
+      return `Cluster "${dbName}" started successfully`;
     },
     render: ({ args, result, status }) => {
       return (
@@ -353,8 +238,11 @@ export const startClusterAction = (context: SealosApiContext) => {
   });
 };
 
-export const stopClusterAction = (context: SealosApiContext) => {
-  const pauseCluster = usePauseClusterMutation(context);
+export const stopClusterAction = () => {
+  const { cluster } = useTRPCClients();
+  const pauseClusterMutation = useMutation({
+    ...cluster.pause.mutationOptions(),
+  });
 
   useCopilotAction({
     name: "stopCluster",
@@ -367,8 +255,9 @@ export const stopClusterAction = (context: SealosApiContext) => {
         description: "Name of the database to stop",
       },
     ],
-    handler: ({ dbName }) => {
-      return pauseCluster.mutateAsync({ dbName });
+    handler: async ({ dbName }) => {
+      const result = await pauseClusterMutation.mutateAsync(dbName);
+      return `Cluster "${dbName}" stopped successfully`;
     },
     render: ({ args, result, status }) => {
       return (
@@ -390,8 +279,14 @@ export const stopClusterAction = (context: SealosApiContext) => {
   });
 };
 
-export const restartClusterAction = async () => {};
+export const restartClusterAction = () => {
+  // TODO: Implement restart cluster action
+};
 
-export const getClusterMonitorAction = async () => {};
+export const getClusterMonitorAction = () => {
+  // TODO: Implement cluster monitoring action
+};
 
-export const backupClusterAction = async () => {};
+export const backupClusterAction = () => {
+  // TODO: Implement cluster backup action
+};

@@ -23,7 +23,7 @@ export const ObjectStorageMessage: React.FC<ObjectStorageMessageProps> = ({
     data: objectstorageObject,
     isLoading,
     error,
-  } = useQuery(objectstorage.getObjectStorage.queryOptions(target));
+  } = useQuery(objectstorage.get.queryOptions(target));
 
   // console.log("objectstorageObject", objectstorageObject);
 
