@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Grid, List, FolderPlus } from "lucide-react";
+import { Grid, List, FolderPlus, Workflow } from "lucide-react";
 import { ProjectProposalCard } from "./project-proposal-card";
 import { ProjectProposalPreview } from "./project-proposal-preview";
 import { useProjectCreate } from "@/hooks/brain/use-project-create";
@@ -36,7 +36,7 @@ export function ProjectProposalPresentation({
         className="flex items-center gap-2"
       >
         <List className="h-4 w-4" />
-        List View
+        Resources
       </Button>
       <Button
         variant={viewMode === "graph" ? "default" : "outline"}
@@ -44,8 +44,8 @@ export function ProjectProposalPresentation({
         onClick={() => setViewMode("graph")}
         className="flex items-center gap-2"
       >
-        <Grid className="h-4 w-4" />
-        Graph View
+        <Workflow className="h-4 w-4" />
+        Preview
       </Button>
     </div>
   );
@@ -60,6 +60,7 @@ export function ProjectProposalPresentation({
       onApply={handleCreate}
       isSubmitting={isCreating}
       disabled={isCreating}
+      applyButtonText="Create"
       className="bg-background-primary"
     >
       {/* Content based on view mode */}

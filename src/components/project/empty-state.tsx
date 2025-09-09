@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { useRouter } from "next/navigation";
 
 const ProjectCardSkeleton: React.FC = () => {
   return (
@@ -24,8 +25,17 @@ const ProjectCardSkeleton: React.FC = () => {
 };
 
 const EmptyState: React.FC = () => {
+  const router = useRouter();
+
+  const handleClick = () => {
+    router.push("/home");
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] space-y-6 border border-dashed rounded-xl hover:bg-background-secondary transition-all duration-300 cursor-pointer">
+    <div 
+      className="flex flex-col items-center justify-center min-h-[400px] space-y-6 border border-dashed rounded-xl hover:bg-background-secondary transition-all duration-300 cursor-pointer"
+      onClick={handleClick}
+    >
       {/* Skeleton card in center */}
       <div className="w-full max-w-sm">
         <ProjectCardSkeleton />

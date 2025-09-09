@@ -16,7 +16,7 @@ import Image from "next/image";
 import type { ObjectStorageBucket } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 
 // Policy options matching the ObjectStorageBucket schema
-const bucketPolicyOptions = ["Private", "PublicRead", "PublicReadwrite"] as const;
+const bucketPolicyOptions = ["private", "publicRead", "publicReadwrite"] as const;
 
 interface ProjectBucketCardProps {
   resource: ObjectStorageBucket;

@@ -17,6 +17,7 @@ export interface BaseActionMessageProps {
   isSubmitting?: boolean;
   disabled?: boolean;
   headerSlot?: React.ReactNode;
+  applyButtonText?: string;
 }
 
 export default function BaseActionMessage({
@@ -28,6 +29,7 @@ export default function BaseActionMessage({
   isSubmitting = false,
   disabled = false,
   headerSlot,
+  applyButtonText = "Apply",
 }: BaseActionMessageProps) {
   const applyButton = (
     <Button
@@ -40,7 +42,7 @@ export default function BaseActionMessage({
       onClick={onApply}
     >
       <Sparkles className="w-3 h-3 text-theme-blue" />
-      Apply
+      {applyButtonText}
     </Button>
   );
 

@@ -49,7 +49,7 @@ export const LanggraphConfigWrapper = ({
       : undefined,
     modelName: aiProxyContext.baseUrl?.endsWith("io")
       ? "gpt-5-mini"
-      : "qwen3-235b-a22b",
+      : "kimi-k2-0711-preview",
   };
 
   // Check if configuration is ready

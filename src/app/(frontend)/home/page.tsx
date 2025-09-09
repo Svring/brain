@@ -89,7 +89,7 @@ export default function HomePage() {
           <div className="container mx-auto relative max-w-3xl">
             <AiChatInput
               className={`max-w-3xl${!hasMessages ? " min-h-[140px]" : ""}`}
-              exhibition={true}
+              exhibition={!hasMessages}
             />
             {!hasMessages && (
               <Button
