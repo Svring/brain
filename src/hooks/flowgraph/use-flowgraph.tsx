@@ -1,83 +1,37 @@
-import { useEffect, useMemo } from "react";
-import useFlowgraphEdges from "./use-flowgraph-edges";
-import useFlowgraphNodes from "./use-flowgraph-nodes";
+import { useEffect, useRef } from "react";
 import useProjectResources from "@/hooks/brain/use-project-resources";
-import useResourceReliances from "@/hooks/sealos/resource/use-resource-reliances";
-import { useProjectState } from "@/contexts/project/project-context";
+import useFlowgraphNodes from "./use-flowgraph-nodes";
 import { useFlowgraphActions } from "@/contexts/flowgraph/flowgraph-context";
 
+/**
+ * Simplified flowgraph hook that only:
+ * 1. Fetches basic K8s resource list
+ * 2. Creates initial basic nodes for immediate display
+ * 3. Individual nodes handle their own data fetching and enhancement
+ */
 export default function useFlowgraph(projectName: string) {
-  const { resources, k8sResources, isLoading } =
-    useProjectResources(projectName);
+  const { k8sResources, isLoading } = useProjectResources(projectName);
+  const { nodes: basicNodes } = useFlowgraphNodes(k8sResources ?? []);
+  const { setNodes, setEdges, fitView } = useFlowgraphActions();
+  const initializedRef = useRef(false);
 
-  // Get project resources from project state
-  const { selectedProjectResources } = useProjectState();
-
-  // Phase 1: Generate basic nodes from K8sResource objects immediately
-  const { nodes: basicNodes } = useFlowgraphNodes(k8sResources ?? [], true);
-
-  // Phase 2: Generate enhanced nodes with network nodes from complete objects
-  const { nodes: enhancedNodes, edges: networkEdges } = useFlowgraphNodes(
-    selectedProjectResources ?? []
-  );
-
-  const { reliances } = useResourceReliances(selectedProjectResources ?? []);
-  const { edges: computedEdges } = useFlowgraphEdges(reliances);
-
-  const { setNodes, setEdges } = useFlowgraphActions();
-
-  // Merge basic nodes with enhanced nodes (enhanced nodes replace basic nodes when available)
-  const currentNodes = useMemo(() => {
-    if (selectedProjectResources?.length === 0) {
-      return basicNodes;
-    }
-
-    // Create a map of enhanced nodes by their IDs
-    const enhancedNodeMap = new Map(
-      enhancedNodes.map((node) => [node.id, node])
-    );
-
-    // Start with basic nodes and replace with enhanced versions when available
-    const mergedNodes = basicNodes.map((basicNode) => {
-      const enhancedNode = enhancedNodeMap.get(basicNode.id);
-      return enhancedNode || basicNode;
-    });
-
-    // Add any enhanced nodes that don't have basic counterparts (e.g., network nodes)
-    const basicNodeIds = new Set(basicNodes.map((node) => node.id));
-    const additionalEnhancedNodes = enhancedNodes.filter(
-      (node) => !basicNodeIds.has(node.id)
-    );
-
-    const result = [...mergedNodes, ...additionalEnhancedNodes];
-    // console.log("currentNodes result:", result);
-    return result;
-  }, [basicNodes, enhancedNodes, selectedProjectResources?.length]);
-
-  // Combine network edges (from ports) with computed edges (from reliances)
-  const finalEdges = useMemo(() => {
-    return [...networkEdges, ...computedEdges];
-  }, [networkEdges, computedEdges]);
-
-  const { fitView } = useFlowgraphActions();
-
+  // Set initial basic nodes and clear edges (only on first render)
   useEffect(() => {
-    // Set nodes and edges (network nodes are now included when objects are ready)
-    setNodes(currentNodes);
-    setEdges(finalEdges);
-
-    // Trigger fitView when nodes change (only if there are nodes)
-    if (currentNodes.length > 0) {
+    if (basicNodes.length > 0 && !initializedRef.current) {
+      setNodes(basicNodes);
+      setEdges([]); // Clear edges only when setting initial nodes
       fitView();
+      initializedRef.current = true;
     }
-  }, [currentNodes, finalEdges]);
+  }, [basicNodes, setNodes, setEdges, fitView]);
+
+  // Reset when project changes
+  useEffect(() => {
+    initializedRef.current = false;
+  }, [projectName]);
 
   return {
-    resources,
-    k8sResources,
     isLoading,
-    selectedProjectResources,
-    currentNodes,
-    finalEdges,
+    nodes: basicNodes,
   };
 }

@@ -4,11 +4,11 @@ import { useMachine } from "@xstate/react";
 import { createContext, type ReactNode, useContext, useEffect } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import { orchestratorMachine } from "@/contexts/orchestrator/orchestrator-machine";
-import { useProjectActions } from "../project/project-context";
+import { useProjectActions, useProjectState } from "../project/project-context";
 import { useChatState } from "../chat/chat-context";
 import { useLanggraphAgent } from "@/hooks/langgraph/use-langgraph-agent";
 import { useLanggraphContext } from "../langgraph/langgraph-context";
-import { useFlowgraphState } from "../flowgraph/flowgraph-context";
+import { useFlowgraphState, useFlowgraphActions } from "../flowgraph/flowgraph-context";
 import { useReactFlow } from "@xyflow/react";
 
 interface OrchestratorContextValue {
@@ -24,10 +24,12 @@ export const OrchestratorContext = createContext<
 export const OrchestratorProvider = ({ children }: { children: ReactNode }) => {
   const [state, send, actorRef] = useMachine(orchestratorMachine);
   const { sidebarChatOpen, sidebarChatMaximized } = useChatState();
-  const { clearSelectedResource } = useProjectActions();
+  const { selectedProject } = useProjectState();
+  const { clearSelectedResource, clearSelectedProjectResources } = useProjectActions();
   const { state: langgraphState } = useLanggraphContext();
   const { setState: setLanggraphState } = useLanggraphAgent();
   const { selectedNode } = useFlowgraphState();
+  const { clearAllState: clearFlowgraphState } = useFlowgraphActions();
   const { fitView } = useReactFlow();
 
   useEffect(() => {
@@ -44,6 +46,24 @@ export const OrchestratorProvider = ({ children }: { children: ReactNode }) => {
       send({ type: "UPDATE_SIDEBAR_CHAT_MAXIMIZED", maximized: sidebarChatMaximized });
     }
   }, [sidebarChatMaximized, state.context.monitoredStates.sidebarChatMaximized]);
+
+  // Monitor project changes and cleanup when project changes
+  useEffect(() => {
+    const prev = state.context.monitoredStates.selectedProject;
+    if (prev !== selectedProject) {
+      send({ type: "UPDATE_SELECTED_PROJECT", project: selectedProject });
+      
+      // If there was a previous project and it's different from the new one, cleanup
+      if (prev && prev !== selectedProject) {
+        // Clear flowgraph nodes and edges
+        clearFlowgraphState();
+        // Clear project resources
+        clearSelectedProjectResources();
+        // Clear selected resource
+        clearSelectedResource();
+      }
+    }
+  }, [selectedProject, state.context.monitoredStates.selectedProject, clearFlowgraphState, clearSelectedProjectResources, clearSelectedResource, send]);
 
   // Handle fitView when chat is maximized and there's a selected node
   useEffect(() => {
@@ -109,5 +129,7 @@ export function useOrchestratorActions() {
       send({ type: "UPDATE_SIDEBAR_CHAT_STATE", open }),
     updateSidebarChatMaximized: (maximized: boolean) =>
       send({ type: "UPDATE_SIDEBAR_CHAT_MAXIMIZED", maximized }),
+    updateSelectedProject: (project: string | null) =>
+      send({ type: "UPDATE_SELECTED_PROJECT", project }),
   };
 }

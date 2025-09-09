@@ -23,7 +23,7 @@ import {
   useOpenObjectStorageHostMutation,
 } from "@/lib/sealos/resources/objectstorage/objectstorage-method/objectstorage-mutation";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
-import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
+import { useNodeData } from "@/hooks/flowgraph/use-node-data";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import NodeLoading from "../../components/node-loading";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
@@ -53,7 +53,7 @@ function ObjectStorageNodeWrapper({
 
   // Always call hooks in the same order
   const { completeResource, isLoadingComplete } =
-    useResourceNodeEnhancer(resourceData);
+    useNodeData(resourceData);
   const target = CustomResourceTargetSchema.parse(
     convertResourceObjectToTarget(resourceData)
   );

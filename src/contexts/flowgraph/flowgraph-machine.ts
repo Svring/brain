@@ -93,23 +93,48 @@ export const flowgraphMachine = createMachine({
     },
     ADD_NODE: {
       actions: assign({
-        nodes: ({ context, event }) =>
-          applySplitLayout(
+        nodes: ({ context, event }) => {
+          // Check if node already exists
+          const existingNode = context.nodes.find(
+            (n) => n.id === event.node.id
+          );
+          if (existingNode) {
+            return context.nodes; // Don't add duplicate
+          }
+          return applySplitLayout(
             [...context.nodes, event.node],
             context.edges,
             SPLIT_OPTIONS
-          ),
+          );
+        },
       }),
     },
     ADD_EDGE: {
       actions: assign({
-        edges: ({ context, event }) => [...context.edges, event.edge],
-        nodes: ({ context, event }) =>
-          applySplitLayout(
+        edges: ({ context, event }) => {
+          // Check if edge already exists
+          const existingEdge = context.edges.find(
+            (e) => e.id === event.edge.id
+          );
+          if (existingEdge) {
+            return context.edges; // Don't add duplicate
+          }
+          return [...context.edges, event.edge];
+        },
+        nodes: ({ context, event }) => {
+          // Only re-layout if edge was actually added
+          const existingEdge = context.edges.find(
+            (e) => e.id === event.edge.id
+          );
+          if (existingEdge) {
+            return context.nodes; // Don't re-layout for duplicates
+          }
+          return applySplitLayout(
             context.nodes,
             [...context.edges, event.edge],
             SPLIT_OPTIONS
-          ),
+          );
+        },
       }),
     },
     UPDATE_NODE: {

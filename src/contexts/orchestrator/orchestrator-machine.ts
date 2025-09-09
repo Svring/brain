@@ -6,6 +6,7 @@ export interface OrchestratorContextState {
   monitoredStates: {
     sidebarChatOpen: boolean;
     sidebarChatMaximized: boolean;
+    selectedProject: string | null;
   };
 }
 
@@ -17,6 +18,10 @@ export type OrchestratorEvent =
   | {
       type: "UPDATE_SIDEBAR_CHAT_MAXIMIZED";
       maximized: boolean;
+    }
+  | {
+      type: "UPDATE_SELECTED_PROJECT";
+      project: string | null;
     };
 
 export const orchestratorMachine = createMachine({
@@ -28,6 +33,7 @@ export const orchestratorMachine = createMachine({
     monitoredStates: {
       sidebarChatOpen: false,
       sidebarChatMaximized: false,
+      selectedProject: null,
     },
   },
   states: {
@@ -47,6 +53,14 @@ export const orchestratorMachine = createMachine({
         monitoredStates: ({ context, event }) => ({
           ...context.monitoredStates,
           sidebarChatMaximized: event.maximized,
+        }),
+      }),
+    },
+    UPDATE_SELECTED_PROJECT: {
+      actions: assign({
+        monitoredStates: ({ context, event }) => ({
+          ...context.monitoredStates,
+          selectedProject: event.project,
         }),
       }),
     },

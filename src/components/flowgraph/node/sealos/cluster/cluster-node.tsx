@@ -25,7 +25,7 @@ import { composeClusterPublicConnectionString } from "@/lib/sealos/resources/clu
 import { Globe, HardDrive } from "lucide-react";
 import { useClusterObject } from "@/hooks/sealos/cluster/use-cluster-object";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
-import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
+import { useNodeData } from "@/hooks/flowgraph/use-node-data";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import NodeLoading from "../../components/node-loading";
@@ -57,7 +57,7 @@ function ClusterNodeWrapper({
 
   // Always call hooks in the same order
   const { completeResource, isLoadingComplete } =
-    useResourceNodeEnhancer(resourceData);
+    useNodeData(resourceData);
   const target = CustomResourceTargetSchema.parse(
     convertResourceTypeToTarget("cluster", resourceData.name)
   );

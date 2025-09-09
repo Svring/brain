@@ -12,7 +12,7 @@ import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-o
 import { truncateImage } from "@/lib/sealos/sealos-utils";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useLaunchpadObject } from "@/hooks/sealos/launchpad/use-launchpad-object";
-import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
+import { useNodeData } from "@/hooks/flowgraph/use-node-data";
 import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import NodeLoading from "../../components/node-loading";
 import NodePods from "../../components/node-pods";
@@ -39,7 +39,7 @@ function DeploymentNodeWrapper({
   const nodeId = `${resourceData.kind.toLowerCase()}-${resourceData.name}`;
 
   // Always call hooks in the same order
-  const { completeResource, status } = useResourceNodeEnhancer(resourceData);
+  const { completeResource, status } = useNodeData(resourceData);
 
   // console.log("completeResource", completeResource);
 

@@ -13,7 +13,7 @@ import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbo
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
-import { useResourceNodeEnhancer } from "@/hooks/flowgraph/use-resource-node-enhancer";
+import { useNodeData } from "@/hooks/flowgraph/use-node-data";
 import NodeLoading from "../../components/node-loading";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
@@ -42,7 +42,7 @@ function DevboxNodeWrapper({
   // console.log("resourceData", resourceData);
 
   // Always call hooks in the same order
-  const { completeResource, status } = useResourceNodeEnhancer(resourceData);
+  const { completeResource, status } = useNodeData(resourceData);
 
   // console.log("completeResource", completeResource);
 
