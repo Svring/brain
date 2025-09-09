@@ -5,9 +5,13 @@ import { useMutation } from "@tanstack/react-query";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { jsonSchemaToActionParameters } from "@copilotkit/shared";
 import { zodToJsonSchema } from "zod-to-json-schema";
+import { z } from "zod";
 import { launchpadCreateFormSchema } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
+import { launchpadUpdateFormSchema } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
 import { LaunchpadCreateActionMessage } from "@/components/copilot/sealos/launchpad/launchpad-create-action-message";
+import { LaunchpadUpdateActionMessage } from "@/components/copilot/sealos/launchpad/launchpad-update-action-message";
 import { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
+import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
 import {
   AITool,
   AIToolContent,
@@ -20,6 +24,7 @@ import { AIResponse } from "@/components/shadcn-io/ai/response";
 export function activateLaunchpadActions() {
   // CRUD operations
   createLaunchpadAction();
+  updateLaunchpadAction();
   // deleteLaunchpadAction();
 
   // Lifecycle management
@@ -40,6 +45,28 @@ function createLaunchpadAction() {
       return (
         <LaunchpadCreateActionMessage
           args={props.args as Partial<LaunchpadCreateFormData>}
+          respond={props.respond}
+          status={props.status}
+        />
+      );
+    },
+  });
+}
+
+function updateLaunchpadAction() {
+  useCopilotAction({
+    name: "updateLaunchpad",
+    description: "Update a launchpad configuration (resource, ports, etc.)",
+    followUp: false,
+    parameters: jsonSchemaToActionParameters(
+      zodToJsonSchema(launchpadUpdateFormSchema.extend({
+        launchpadName: z.string().min(1, "Launchpad name is required"),
+      })) as any
+    ),
+    renderAndWaitForResponse: (props) => {
+      return (
+        <LaunchpadUpdateActionMessage
+          args={props.args as Partial<LaunchpadUpdateFormData> & { launchpadName: string }}
           respond={props.respond}
           status={props.status}
         />

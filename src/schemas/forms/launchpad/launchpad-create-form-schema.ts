@@ -4,7 +4,7 @@ import { ImageSchema } from "@/schemas/forms/universal/image-schema";
 import { CommandSchema } from "@/schemas/forms/universal/command-schema";
 import { ArgsSchema } from "@/schemas/forms/universal/args-schema";
 import { ResourceSchema } from "../universal/resource-schema";
-import { PortSchema } from "../universal/port-schema";
+import { LaunchpadPortCreateSchema } from "../universal/port-schema";
 import { EnvSchema } from "../universal/env-schema";
 import { HpaSchema } from "../universal/hpa-schema";
 import { ImageRegistrySchema } from "../universal/image-registry-schema";
@@ -22,11 +22,10 @@ export const launchpadCreateFormSchema = z.object({
     cpu: 0.5,
     memory: 0.5,
   }),
-  ports: z.array(PortSchema).default([
+  ports: z.array(LaunchpadPortCreateSchema).default([
     {
-      port: 80,
-      protocol: "TCP",
-      appProtocol: "HTTP",
+      number: 80,
+      protocol: "HTTP",
       exposesPublicDomain: true,
     },
   ]),
@@ -56,7 +55,10 @@ export {
   type GpuResource,
 } from "../universal/gpu-resource-schema";
 export { ResourceSchema, type Resource } from "../universal/resource-schema";
-export { PortSchema, type Port } from "../universal/port-schema";
+export {
+  LaunchpadPortCreateSchema,
+  type LaunchpadPortCreate,
+} from "../universal/port-schema";
 export { EnvSchema, type Env } from "../universal/env-schema";
 export { HpaSchema, type Hpa } from "../universal/hpa-schema";
 export {

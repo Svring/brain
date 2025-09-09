@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
 import { useFormContext } from "react-hook-form";
-import { LaunchpadPort } from "@/schemas/forms/universal/port-schema";
+import { LaunchpadPort } from "@/schemas/forms/launchpad/components/launchpad-port-schema";
 
 interface LaunchpadPortsFieldsProps {
   fieldArray: any; // useFieldArray return type
@@ -27,15 +27,17 @@ export const LaunchpadPortsFields = ({ fieldArray }: LaunchpadPortsFieldsProps) 
 
   // Port management functions
   const addPort = () => {
-    // Find the next available port number starting from 8080
-    const existingNumbers = ports.map(port => port.number).filter(num => num !== undefined);
-    let nextPortNumber = 8080;
-    
+    // Find the next available port number starting from 80
+    const existingNumbers = ports
+      .map((port) => port.number)
+      .filter((num) => num !== undefined);
+    let nextPortNumber = 80;
+
     // Find the first available port number
     while (existingNumbers.includes(nextPortNumber)) {
       nextPortNumber++;
     }
-    
+
     // New ports should NOT have portName field (backend will know it's new)
     fieldArray.append({
       number: nextPortNumber,
@@ -77,29 +79,31 @@ export const LaunchpadPortsFields = ({ fieldArray }: LaunchpadPortsFieldsProps) 
                   {...form.register(`ports.${index}.number` as const, {
                     setValueAs: (value) => {
                       const num = parseInt(value, 10);
-                      return isNaN(num) ? 8080 : num;
+                      return isNaN(num) ? 80 : num;
                     },
                     validate: (value) => {
                       if (!value) return "Port number is required";
-                      
+
                       const num = parseInt(value.toString(), 10);
                       if (isNaN(num)) return "Invalid port number";
-                      
+
                       // Check for duplicates (excluding current port)
                       const otherPorts = ports.filter((_, i) => i !== index);
-                      const isDuplicate = otherPorts.some(port => port.number === num);
-                      
+                      const isDuplicate = otherPorts.some(
+                        (port) => port.number === num
+                      );
+
                       if (isDuplicate) {
                         return "Port number already exists";
                       }
-                      
+
                       return true;
                     },
                   })}
                   type="text"
-                  placeholder="8080"
+                  placeholder="80"
                   className="w-full border-none shadow-none focus-visible:ring-0 bg-transparent! pl-0"
-                  defaultValue={portValue || 8080}
+                  defaultValue={portValue || 80}
                 />
               </div>
 

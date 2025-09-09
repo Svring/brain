@@ -23,26 +23,14 @@ export const useLaunchpadUpdateForm = (
     name: "ports",
   });
 
-  const envFieldArray = useFieldArray({
+  const simplePortsFieldArray = useFieldArray({
     control: form.control,
-    name: "env",
-  });
-
-  const storageFieldArray = useFieldArray({
-    control: form.control,
-    name: "storage",
-  });
-
-  const configMapFieldArray = useFieldArray({
-    control: form.control,
-    name: "configMap",
+    name: "simplePorts",
   });
 
   return {
     form,
     portsFieldArray,
-    envFieldArray,
-    storageFieldArray,
-    configMapFieldArray,
+    simplePortsFieldArray,
   };
 };
