@@ -17,18 +17,19 @@ import { zodToJsonSchema } from "zod-to-json-schema";
 import { DevboxCreateFormData } from "@/schemas/forms/devbox/devbox-create-form-schema";
 import { DevboxCreateActionMessage } from "@/components/copilot/sealos/devbox/devbox-create-action-message";
 import { DevboxUpdateActionMessage } from "@/components/copilot/sealos/devbox/devbox-update-action-message";
+import { DevboxLifecycleActionMessage } from "@/components/copilot/sealos/devbox/devbox-lifecycle-action-message";
 
 export const activateDevboxActions = () => {
   // CRUD operations
   createDevboxAction();
   updateDevboxAction();
-  // deleteDevboxAction();
+  deleteDevboxAction();
 
-  // // Lifecycle management
-  // startDevboxAction();
-  // pauseDevboxAction();
-  // restartDevboxAction();
-  // shutdownDevboxAction();
+  // Lifecycle management
+  startDevboxAction();
+  pauseDevboxAction();
+  restartDevboxAction();
+  shutdownDevboxAction();
 
   // // Release management
   // releaseDevboxAction();
@@ -76,11 +77,6 @@ export const updateDevboxAction = () => {
 };
 
 export const deleteDevboxAction = () => {
-  const { devbox } = useTRPCClients();
-  const deleteDevboxMutation = useMutation({
-    ...devbox.delete.mutationOptions(),
-  });
-
   useCopilotAction({
     name: "deleteDevbox",
     description: "Delete a devbox by its name",
@@ -92,36 +88,20 @@ export const deleteDevboxAction = () => {
         description: "Name of the devbox to delete",
       },
     ],
-    handler: async ({ devboxName }) => {
-      const result = await deleteDevboxMutation.mutateAsync(devboxName);
-      return `Devbox "${devboxName}" deleted successfully`;
-    },
-    render: ({ args, result, status }) => {
+    renderAndWaitForResponse: (props) => {
       return (
-        <AITool key={"deleteDevbox"}>
-          <AIToolHeader
-            description={"Delete a devbox by its name"}
-            name={"deleteDevbox"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
+        <DevboxLifecycleActionMessage
+          args={props.args as { devboxName: string }}
+          respond={props.respond}
+          status={props.status}
+          action="delete"
+        />
       );
     },
   });
 };
 
 export const startDevboxAction = () => {
-  const { devbox } = useTRPCClients();
-  const startDevboxMutation = useMutation({
-    ...devbox.start.mutationOptions(),
-  });
-
   useCopilotAction({
     name: "startDevbox",
     description: "Start a devbox",
@@ -133,36 +113,20 @@ export const startDevboxAction = () => {
         description: "Name of the devbox to start",
       },
     ],
-    handler: async ({ devboxName }) => {
-      const result = await startDevboxMutation.mutateAsync(devboxName);
-      return `Devbox "${devboxName}" started successfully`;
-    },
-    render: ({ args, result, status }) => {
+    renderAndWaitForResponse: (props) => {
       return (
-        <AITool key={"startDevbox"}>
-          <AIToolHeader
-            description={"Start a devbox"}
-            name={"startDevbox"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
+        <DevboxLifecycleActionMessage
+          args={props.args as { devboxName: string }}
+          respond={props.respond}
+          status={props.status}
+          action="start"
+        />
       );
     },
   });
 };
 
 export const pauseDevboxAction = () => {
-  const { devbox } = useTRPCClients();
-  const pauseDevboxMutation = useMutation({
-    ...devbox.pause.mutationOptions(),
-  });
-
   useCopilotAction({
     name: "pauseDevbox",
     description: "Pause a devbox",
@@ -174,36 +138,20 @@ export const pauseDevboxAction = () => {
         description: "Name of the devbox to pause",
       },
     ],
-    handler: async ({ devboxName }) => {
-      const result = await pauseDevboxMutation.mutateAsync(devboxName);
-      return `Devbox "${devboxName}" paused successfully`;
-    },
-    render: ({ args, result, status }) => {
+    renderAndWaitForResponse: (props) => {
       return (
-        <AITool key={"pauseDevbox"}>
-          <AIToolHeader
-            description={"Pause a devbox"}
-            name={"pauseDevbox"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
+        <DevboxLifecycleActionMessage
+          args={props.args as { devboxName: string }}
+          respond={props.respond}
+          status={props.status}
+          action="pause"
+        />
       );
     },
   });
 };
 
 export const restartDevboxAction = () => {
-  const { devbox } = useTRPCClients();
-  const restartDevboxMutation = useMutation({
-    ...devbox.restart.mutationOptions(),
-  });
-
   useCopilotAction({
     name: "restartDevbox",
     description: "Restart a devbox",
@@ -215,36 +163,20 @@ export const restartDevboxAction = () => {
         description: "Name of the devbox to restart",
       },
     ],
-    handler: async ({ devboxName }) => {
-      const result = await restartDevboxMutation.mutateAsync(devboxName);
-      return `Devbox "${devboxName}" restarted successfully`;
-    },
-    render: ({ args, result, status }) => {
+    renderAndWaitForResponse: (props) => {
       return (
-        <AITool key={"restartDevbox"}>
-          <AIToolHeader
-            description={"Restart a devbox"}
-            name={"restartDevbox"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
+        <DevboxLifecycleActionMessage
+          args={props.args as { devboxName: string }}
+          respond={props.respond}
+          status={props.status}
+          action="restart"
+        />
       );
     },
   });
 };
 
 export const shutdownDevboxAction = () => {
-  const { devbox } = useTRPCClients();
-  const shutdownDevboxMutation = useMutation({
-    ...devbox.shutdown.mutationOptions(),
-  });
-
   useCopilotAction({
     name: "shutdownDevbox",
     description: "Shutdown a devbox",
@@ -256,25 +188,14 @@ export const shutdownDevboxAction = () => {
         description: "Name of the devbox to shutdown",
       },
     ],
-    handler: async ({ devboxName }) => {
-      const result = await shutdownDevboxMutation.mutateAsync(devboxName);
-      return `Devbox "${devboxName}" shutdown successfully`;
-    },
-    render: ({ args, result, status }) => {
+    renderAndWaitForResponse: (props) => {
       return (
-        <AITool key={"shutdownDevbox"}>
-          <AIToolHeader
-            description={"Shutdown a devbox"}
-            name={"shutdownDevbox"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
+        <DevboxLifecycleActionMessage
+          args={props.args as { devboxName: string }}
+          respond={props.respond}
+          status={props.status}
+          action="shutdown"
+        />
       );
     },
   });

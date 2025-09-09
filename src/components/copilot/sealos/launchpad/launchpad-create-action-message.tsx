@@ -5,9 +5,10 @@ import { LaunchpadCreateForm } from "@/components/forms/launchpad/launchpad-crea
 import { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
 import { useLaunchpadCreate } from "@/hooks/sealos/launchpad/use-launchpad-create";
 import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
-import { Rocket } from "lucide-react";
+import { Rocket, CircleCheckBigIcon } from "lucide-react";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
+import { Button } from "@/components/ui/button";
 
 // Component that handles the success message and system message appending
 const LaunchpadCreationSuccessMessage = ({ args }: { args: any }) => {
@@ -18,19 +19,15 @@ const LaunchpadCreationSuccessMessage = ({ args }: { args: any }) => {
   });
 
   return (
-    <div className="w-full p-4">
-      <div className="flex items-center justify-center p-8">
-        <div className="flex flex-col items-center gap-4">
-          <p className="text-sm text-muted-foreground text-center">
-            The launchpad application has been created successfully.
-          </p>
-          <button
-            onClick={handleNodeSelect}
-            className="text-sm text-blue-600 hover:text-blue-800 underline"
-          >
-            View launchpad details
-          </button>
+    <div className="w-full">
+      <div className="flex items-center justify-between p-2 border rounded-lg">
+        <div className="flex items-center gap-2">
+          <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
+          <p className="text-sm">Launchpad created successfully</p>
         </div>
+        <Button onClick={handleNodeSelect} variant="outline" size="sm">
+          View launchpad details
+        </Button>
       </div>
     </div>
   );

@@ -30,7 +30,8 @@ export function AiChatHeader({
 }: AiChatHeaderProps) {
   const { selectedResource } = useProjectState();
   const { selectedThreadId, sidebarChatMaximized } = useChatState();
-  const { closeSidebarChat, maximizeSidebar, minimizeSidebar } = useChatActions();
+  const { closeSidebarChat, maximizeSidebar, minimizeSidebar } =
+    useChatActions();
   const { setMessages } = useCopilotChatHeadless_c();
   const { isPending } = useCreateNewChatSessionMutation();
 
@@ -102,35 +103,58 @@ export function AiChatHeader({
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <Button
-            onClick={() => setMessages([])}
-            disabled={isPending}
-            size="icon"
-            className="h-8 w-8"
-            variant="ghost"
-          >
-            {isPending ? (
-              <Spinner className="h-4 w-4" />
-            ) : (
-              <Eraser className="h-4 w-4" />
-            )}
-          </Button>
-          <Button
-            onClick={() => sidebarChatMaximized ? minimizeSidebar() : maximizeSidebar()}
-            size="icon"
-            variant="ghost"
-            className="h-8 w-8"
-          >
-            <Maximize2 className="h-4 w-4" />
-          </Button>
-          <Button
-            onClick={closeSidebarChat}
-            size="icon"
-            variant="ghost"
-            className="h-8 w-8"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={() => setMessages([])}
+                disabled={isPending}
+                size="icon"
+                className="h-8 w-8"
+                variant="ghost"
+              >
+                {isPending ? (
+                  <Spinner className="h-4 w-4" />
+                ) : (
+                  <Eraser className="h-4 w-4" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Clear</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={() =>
+                  sidebarChatMaximized ? minimizeSidebar() : maximizeSidebar()
+                }
+                size="icon"
+                variant="ghost"
+                className="h-8 w-8"
+              >
+                <Maximize2 className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{sidebarChatMaximized ? "Minimize" : "Maximize"}</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={closeSidebarChat}
+                size="icon"
+                variant="ghost"
+                className="h-8 w-8"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Close</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
     </div>

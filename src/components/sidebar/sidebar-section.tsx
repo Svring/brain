@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { cn } from "@/lib/utils";
+import { useChatActions } from "@/contexts/chat/chat-context";
 
 // Types
 export interface NavigationItem {
@@ -46,10 +47,12 @@ export const MainSection: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const { setMessages } = useCopilotChatHeadless_c();
+  const { closeSidebarChat } = useChatActions();
 
   const handleNavigation = (path: string) => {
     if (path === "/home") {
       setMessages([]);
+      closeSidebarChat();
     }
     router.push(path);
   };

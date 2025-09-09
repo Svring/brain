@@ -19,11 +19,13 @@ import { zodToJsonSchema } from "zod-to-json-schema";
 import { clusterCreateFormSchema } from "@/schemas/forms/cluster/cluster-create-form-schema";
 import { ClusterCreateActionMessage } from "@/components/copilot/sealos/cluster/cluster-create-action-message";
 import { ClusterCreateFormData } from "@/schemas/forms/cluster/cluster-create-form-schema";
+import { ClusterUpdateRuntimeSchema } from "@/lib/copilot/sealos/cluster/copilot-cluster-utils";
+import { ClusterUpdateActionMessage } from "@/components/copilot/sealos/cluster/cluster-update-action-message";
 
 export const activateClusterActions = () => {
   // CRUD operations
   createClusterAction();
-  // updateClusterAction();
+  updateClusterAction();
   // deleteClusterAction();
 
   // Lifecycle management
@@ -55,100 +57,20 @@ export const createClusterAction = () => {
 };
 
 export const updateClusterAction = () => {
-  const { cluster } = useTRPCClients();
-  const updateClusterMutation = useMutation({
-    ...cluster.update.mutationOptions(),
-  });
-
   useCopilotAction({
     name: "updateCluster",
-    description: "Update an existing database cluster configuration",
-    parameters: [
-      {
-        name: "clusterName",
-        type: "string",
-        required: true,
-        description: "Name of the existing cluster to update",
-      },
-      {
-        name: "replicas",
-        type: "number",
-        enum: Array.from({ length: 10 }, (_, i) => i + 1),
-        required: false,
-        description: "Number of replicas (1-10, leave empty to keep current)",
-      },
-      {
-        name: "cpu",
-        type: "string",
-        enum: generateClusterCpuOptions(),
-        required: false,
-        description:
-          "CPU in millicores (500m to 8000m, leave empty to keep current)",
-      },
-      {
-        name: "memory",
-        type: "string",
-        enum: generateClusterMemoryOptions(),
-        required: false,
-        description: "Memory (512Mi to 32Gi, leave empty to keep current)",
-      },
-      {
-        name: "storage",
-        type: "string",
-        enum: generateClusterStorageOptions(),
-        required: false,
-        description: "Storage (3Gi to 300Gi, leave empty to keep current)",
-      },
-    ],
-    handler: async ({ clusterName, replicas, cpu, memory, storage }) => {
-      // Only include fields that are actually provided
-      const resourceUpdates: any = {};
-
-      if (replicas !== undefined) {
-        resourceUpdates.replicas = replicas;
-      }
-      if (cpu !== undefined) {
-        resourceUpdates.cpu = cpu;
-      }
-      if (memory !== undefined) {
-        resourceUpdates.memory = memory;
-      }
-      if (storage !== undefined) {
-        resourceUpdates.storage = storage;
-      }
-
-      // If no resource updates provided, throw error
-      if (Object.keys(resourceUpdates).length === 0) {
-        throw new Error(
-          "At least one resource field must be specified for update"
-        );
-      }
-
-      const updateRequest = {
-        resource: resourceUpdates,
-      };
-
-      const result = await updateClusterMutation.mutateAsync({
-        clusterName,
-        request: updateRequest,
-      });
-      return `Cluster "${clusterName}" updated successfully`;
-    },
-    render: ({ args, result, status }) => {
+    description: "Update a cluster configuration (resource, etc.)",
+    followUp: false,
+    parameters: jsonSchemaToActionParameters(
+      zodToJsonSchema(ClusterUpdateRuntimeSchema) as any
+    ),
+    renderAndWaitForResponse: (props) => {
       return (
-        <AITool key={"updateCluster"}>
-          <AIToolHeader
-            description={"Update an existing database cluster configuration"}
-            name={"updateCluster"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
+        <ClusterUpdateActionMessage
+          args={props.args as { clusterName: string; [key: string]: any }}
+          respond={props.respond}
+          status={props.status}
+        />
       );
     },
   });

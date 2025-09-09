@@ -84,11 +84,13 @@ export const useAppendSystemMessageMutation = () => {
     target,
     payload,
     onSuccess,
+    resetMessages,
   }: {
     type: string;
     target: CustomResourceTarget | BuiltinResourceTarget;
     payload?: any;
     onSuccess?: () => void;
+    resetMessages?: boolean;
   }) => {
     try {
       // Create system message data
@@ -99,14 +101,22 @@ export const useAppendSystemMessageMutation = () => {
       };
 
       // Send a message about the resource in current session
-      const newMessages = [
-        ...messages,
-        {
-          id: randomId(),
-          role: "system" as const,
-          content: JSON.stringify(systemMessageData),
-        },
-      ];
+      const newMessages = resetMessages
+        ? [
+            {
+              id: randomId(),
+              role: "system" as const,
+              content: JSON.stringify(systemMessageData),
+            },
+          ]
+        : [
+            ...messages,
+            {
+              id: randomId(),
+              role: "system" as const,
+              content: JSON.stringify(systemMessageData),
+            },
+          ];
 
       setMessages(newMessages);
       openSidebarChat();

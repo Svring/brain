@@ -19,6 +19,12 @@ import { getUser } from "@/payload/operations/users-operation";
 
 import "@/styles/globals.css";
 import "@copilotkit/react-ui/styles.css";
+import {
+  CircleCheckBigIcon,
+  InfoIcon,
+  TriangleAlertIcon,
+  Loader,
+} from "lucide-react";
 
 // const lora = Lora({
 //   subsets: ["latin"],
@@ -91,8 +97,20 @@ export default async function RootLayout({
           </AuthProvider>
           <Toaster
             position="top-center"
+            icons={{
+              success: (
+                <CircleCheckBigIcon size={20} className="text-theme-green" />
+              ),
+              info: <InfoIcon size={20} className="text-theme-blue" />,
+              warning: (
+                <TriangleAlertIcon size={20} className="text-theme-yellow" />
+              ),
+              error: <TriangleAlertIcon size={20} className="text-theme-red" />,
+              loading: <Loader size={20} />,
+            }}
             toastOptions={{
-              duration: 5000,
+              duration: 3000,
+              className: "bg-background-tertiary! border-border-primary! p-3!",
             }}
           />
         </ThemeProvider>

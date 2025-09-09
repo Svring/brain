@@ -1,17 +1,10 @@
 "use client";
 
-import { MoreHorizontal, Trash2, Edit2, AlertCircleIcon } from "lucide-react";
+import { Trash2, AlertCircleIcon, Pencil, PencilLine } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import React from "react";
-import { useDisclosure } from "@reactuses/core";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,7 +37,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 }) => {
   const { project: projectClient } = useTRPCClients();
   const queryClient = useQueryClient();
-  const { isOpen: isDropdownOpen, onOpenChange } = useDisclosure();
   const [isRenameDialogOpen, setIsRenameDialogOpen] = React.useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const { resources } = useProjectResources(project.name);
@@ -62,22 +54,25 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   }, [resources]);
 
   const { mutate: deleteProject, isPending: isDeleting } = useMutation({
-    ...projectClient.deleteProject.mutationOptions(),
+    ...projectClient.delete.mutationOptions(),
     onSuccess: (_, name) => {
       queryClient.invalidateQueries({
-        queryKey: projectClient.listProjects.queryKey(),
+        queryKey: projectClient.list.queryKey(),
       });
       toast.success(`Project ${name} deleted successfully`);
     },
   });
 
-  const handleAction = (e: React.MouseEvent, action: "delete" | "rename") => {
+  const handleRename = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    onOpenChange();
-    action === "rename"
-      ? setIsRenameDialogOpen(true)
-      : setIsDeleteDialogOpen(true);
+    setIsRenameDialogOpen(true);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDeleteDialogOpen(true);
   };
 
   const handleDeleteConfirm = () => {
@@ -94,53 +89,49 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     <>
       <Link {...commonLinkProps}>
         <motion.div
-          className={`relative flex w-full cursor-pointer rounded-lg border bg-background-secondary text-left shadow-sm hover:brightness-135 ${
+          className={`relative flex w-full cursor-pointer rounded-lg border bg-background-secondary text-left shadow-sm ${
             variant === "lite"
               ? "h-10 items-center px-4"
-              : `min-h-[160px] flex-col p-4 ${
+              : `min-h-[160px] flex-col p-4 py-3 ${
                   isDeleting ? "bg-status-deleting/50 border-theme-red" : ""
                 }`
           }`}
+          whileHover={{ y: -5 }}
           transition={{ duration: 0.15, ease: "easeInOut" }}
         >
-          {variant === "full" && (
-            <DropdownMenu open={isDropdownOpen} onOpenChange={onOpenChange}>
-              <DropdownMenuTrigger asChild>
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2 flex-1 min-w-0 group">
+              <p
+                className="text-foreground truncate cursor-pointer hover:text-foreground/80 transition-colors group-hover:underline"
+                onClick={handleRename}
+              >
+                {project.displayName}
+              </p>
+              {variant === "full" && (
                 <Button
-                  className="absolute top-2 right-2 h-8 w-8 p-0 hover:bg-muted"
+                  className="h-4 w-4 p-0 hover:bg-muted opacity-40 hover:opacity-100 transition-opacity"
                   size="sm"
                   variant="ghost"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onOpenChange();
-                  }}
+                  onClick={handleRename}
                 >
-                  <MoreHorizontal className="h-4 w-4" />
-                  <span className="sr-only">Open menu</span>
+                  <PencilLine className="h-3 w-3" />
+                  <span className="sr-only">Rename project</span>
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="rounded-lg bg-background-secondary"
-                align="start"
+              )}
+            </div>
+            {variant === "full" && (
+              <Button
+                className="h-8 w-8 p-0 hover:bg-muted opacity-40 hover:opacity-100 transition-opacity"
+                size="sm"
+                variant="ghost"
+                onClick={handleDelete}
+                disabled={isDeleting}
               >
-                <DropdownMenuItem onClick={(e) => handleAction(e, "rename")}>
-                  <Edit2 className="mr-2 h-4 w-4" />
-                  Rename
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-theme-red"
-                  disabled={isDeleting}
-                  onClick={(e) => handleAction(e, "delete")}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-
-          <h3 className="text-foreground truncate">{project.displayName}</h3>
+                <Trash2 className="h-4 w-4 text-theme-red" />
+                <span className="sr-only">Delete project</span>
+              </Button>
+            )}
+          </div>
           {variant === "full" && project.displayName !== project.name && (
             <p className="text-xs text-muted-foreground mb-2">{project.name}</p>
           )}

@@ -1,5 +1,15 @@
 import React, { useState } from "react";
-import { Check, Cpu, MemoryStick, HardDrive, Apple, PenLine, X } from "lucide-react";
+import {
+  Check,
+  Cpu,
+  MemoryStick,
+  HardDrive,
+  Apple,
+  PenLine,
+  X,
+  FileStack,
+  Layers,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ClusterUpdateForm } from "@/components/forms/cluster/cluster-update-form";
 import { ClusterUpdateFormData } from "@/schemas/forms/cluster/cluster-update-form-schema";
@@ -130,7 +140,7 @@ export const ResourceQuota: React.FC<ResourceQuotaProps> = ({
             </div>
             <div className="flex flex-col items-center gap-1">
               <div className="text-sm text-muted-foreground">Replicas</div>
-              <Apple className="h-4 w-4 text-muted-foreground" />
+              <Layers className="h-4 w-4 text-muted-foreground" />
               <div className="text-sm font-medium">
                 {resource?.replicas || "N/A"}
               </div>

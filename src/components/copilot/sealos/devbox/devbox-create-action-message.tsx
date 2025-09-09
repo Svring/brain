@@ -5,10 +5,11 @@ import { DevboxCreateForm } from "@/components/forms/devbox/devbox-create-form";
 import { DevboxCreateFormData } from "@/schemas/forms/devbox/devbox-create-form-schema";
 import { useDevboxCreate } from "@/hooks/sealos/devbox/use-devbox-create";
 import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
-import { Code } from "lucide-react";
+import { Code, CircleCheckBigIcon } from "lucide-react";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 import { Spinner } from "@/components/ui/spinner";
+import { Button } from "@/components/ui/button";
 
 // Component that handles the success message and system message appending
 const DevboxCreationSuccessMessage = ({ args }: { args: any }) => {
@@ -19,19 +20,15 @@ const DevboxCreationSuccessMessage = ({ args }: { args: any }) => {
   });
 
   return (
-    <div className="w-full p-4">
-      <div className="flex items-center justify-center p-8">
-        <div className="flex flex-col items-center gap-4">
-          <p className="text-sm text-muted-foreground text-center">
-            The devbox has been created successfully.
-          </p>
-          <button
-            onClick={handleNodeSelect}
-            className="text-sm text-blue-600 hover:text-blue-800 underline"
-          >
-            View devbox details
-          </button>
+    <div className="w-full">
+      <div className="flex items-center justify-between p-2 border rounded-lg">
+        <div className="flex items-center gap-2">
+          <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
+          <p className="text-sm">Devbox created successfully</p>
         </div>
+        <Button onClick={handleNodeSelect} variant="outline" size="sm">
+          View devbox details
+        </Button>
       </div>
     </div>
   );
@@ -43,11 +40,9 @@ interface DevboxCreateActionMessageProps {
   status: "inProgress" | "complete" | "executing";
 }
 
-export const DevboxCreateActionMessage: React.FC<DevboxCreateActionMessageProps> = ({
-  args,
-  respond,
-  status,
-}) => {
+export const DevboxCreateActionMessage: React.FC<
+  DevboxCreateActionMessageProps
+> = ({ args, respond, status }) => {
   const { createDevbox, isLoading } = useDevboxCreate({ addToProject: true });
 
   const handleSubmit = async (data: DevboxCreateFormData) => {

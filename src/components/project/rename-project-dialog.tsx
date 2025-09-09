@@ -33,10 +33,10 @@ export function RenameProjectDialog({
   const [editValue, setEditValue] = React.useState(currentDisplayName);
 
   const renameProjectMutation = useMutation(
-    projectClient.updateProjectName.mutationOptions({
+    projectClient.updateName.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries({
-          queryKey: projectClient.listProjects.queryKey(),
+          queryKey: projectClient.list.queryKey(),
         });
         toast.success("Project renamed successfully");
         onClose();
