@@ -23,6 +23,7 @@ import { FlowgraphActions } from "@/components/flowgraph/flowgraph-actions";
 import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
 import useFlowgraph from "@/hooks/flowgraph/use-flowgraph";
 import { useFlowgraphCommand } from "@/hooks/flowgraph/use-flowgraph-command";
+import { useRelianceEdges } from "@/hooks/flowgraph/use-reliance-edges";
 import { useChatActions } from "@/contexts/chat/chat-context";
 
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
@@ -112,6 +113,9 @@ function ProjectFloatingUI({
 function ProjectFlow({ projectName }: { projectName: string }) {
   // Use the flowgraph hook to handle all node and edge computation
   const { isLoading } = useFlowgraph(projectName);
+
+  // Add reliance-based edges (environment variables and image dependencies)
+  useRelianceEdges();
 
   const { nodes, edges } = useFlowgraphState();
   // console.log("nodes", nodes);

@@ -19,7 +19,7 @@ export default function useFlowgraph(projectName: string) {
   useEffect(() => {
     if (basicNodes.length > 0 && !initializedRef.current) {
       setNodes(basicNodes);
-      setEdges([]); // Clear edges only when setting initial nodes
+      // setEdges([]); // Clear edges only when setting initial nodes
       fitView();
       initializedRef.current = true;
     }
