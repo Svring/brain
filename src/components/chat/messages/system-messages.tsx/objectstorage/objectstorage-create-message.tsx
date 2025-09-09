@@ -25,7 +25,7 @@ export const ObjectStorageCreateMessage: React.FC<
   const { selectedProject } = useProjectState();
 
   const addToProjectMutation = useMutation(
-    project.addToProject.mutationOptions()
+    project.addResources.mutationOptions()
   );
 
   const createObjectStorageMutation = useMutation({

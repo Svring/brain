@@ -16,7 +16,7 @@ export function useInvalidateProjectResources() {
 
     // Invalidate the specific project's resources query
     queryClient.invalidateQueries({
-      // queryKey: k8s.listAllResources.queryKey({
+      // queryKey: k8s.list.queryKey({
       //   labelSelector,
       //   builtinResourceTypes: [
       //     "deployment",
@@ -34,7 +34,7 @@ export function useInvalidateProjectResources() {
   };
 
   const invalidateAllProjectResources = () => {
-    // Invalidate all k8s.listAllResources queries
+    // Invalidate all k8s.list queries
     queryClient.invalidateQueries({
       queryKey: ["k8s", "listAllResources"],
     });
@@ -45,7 +45,7 @@ export function useInvalidateProjectResources() {
 
     // Force refetch the specific project's resources
     await queryClient.refetchQueries({
-      queryKey: k8s.listAllResources.queryKey({
+      queryKey: k8s.list.queryKey({
         labelSelector,
         builtinResourceTypes: ["deployment", "statefulset"],
         customResourceTypes: ["devbox", "cluster", "objectstoragebucket"],

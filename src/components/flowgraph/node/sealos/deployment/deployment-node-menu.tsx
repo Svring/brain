@@ -50,7 +50,7 @@ export default function DeploymentNodeMenu({
       {
         onSuccess: () => {
           queryClient.invalidateQueries({
-            queryKey: k8s.listAllResources.queryKey(),
+            queryKey: k8s.list.queryKey(),
           });
         },
       }

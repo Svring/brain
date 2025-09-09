@@ -12,7 +12,7 @@ export const useDevboxDeploy = (devboxName: string) => {
   const [openPopovers, setOpenPopovers] = useState<Record<string, boolean>>({});
 
   const deployDevbox = useMutation(devbox.deploy.mutationOptions());
-  const addToProject = useMutation(project.addToProject.mutationOptions());
+  const addToProject = useMutation(project.addResources.mutationOptions());
 
   const handleDeploy = async (releaseTag: string) => {
     try {

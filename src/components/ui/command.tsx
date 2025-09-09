@@ -97,7 +97,7 @@ function CommandList({
   )
 }
 
-function CommandListWithMovingBg({
+function CommandListAnimated({
   className,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.List>) {
@@ -307,7 +307,7 @@ export {
   CommandDialog,
   CommandInput,
   CommandList,
-  CommandListWithMovingBg,
+  CommandListAnimated,
   CommandEmpty,
   CommandGroup,
   CommandItem,

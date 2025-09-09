@@ -19,8 +19,9 @@ import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
 import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import { jsonSchemaToActionParameters } from "@copilotkit/shared";
 import { zodToJsonSchema } from "zod-to-json-schema";
-import LaunchpadCreateMessage from "@/components/chat/messages/system-messages.tsx/launchpad/launchpad-create-message";
-import { LaunchpadCreateRequestSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
+import { launchpadCreateFormSchema } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
+import { LaunchpadCreateActionMessage } from "@/components/copilot/sealos/launchpad/launchpad-create-action-message";
+import { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
 import { LaunchpadUpdateForm } from "@/components/forms/launchpad/launchpad-update-form";
 import { UpdateImageForm } from "@/components/copilot/sealos/launchpad/update-image-form";
 import { AddPortsForm } from "@/components/copilot/sealos/launchpad/add-ports-form";
@@ -38,11 +39,11 @@ export function activateLaunchpadActions(
   sealosContext: SealosApiContext,
   k8sContext: K8sApiContext
 ) {
+  createLaunchpadAction(sealosContext);
   updateLaunchpadResourceAction(sealosContext);
   updateLaunchpadImageAction(sealosContext);
   addLaunchpadPortsAction(sealosContext);
   // deleteLaunchpadPortsAction(sealosContext);
-  // createLaunchpadAction(sealosContext);
   // deleteLaunchpadAction(sealosContext);
   // startLaunchpadAction(sealosContext);
   // pauseLaunchpadAction(sealosContext);
@@ -306,23 +307,25 @@ function addLaunchpadPortsAction(context: SealosApiContext) {
 //   });
 // }
 
-// function createLaunchpadAction(context: SealosApiContext) {
-//   useCopilotAction({
-//     name: "createLaunchpad",
-//     description: "Create a new launchpad with specified configuration",
-//     followUp: false,
-//     parameters: jsonSchemaToActionParameters(
-//       zodToJsonSchema(LaunchpadCreateRequestSchema) as any
-//     ),
-//     handler: ({ name, image }) => {
-//       // This will be handled by the UI component
-//       return `Creating launchpad "${name}" with image ${image}`;
-//     },
-//     render: ({ args }) => {
-//       return <LaunchpadCreateMessage payload={args as any} />;
-//     },
-//   });
-// }
+function createLaunchpadAction(context: SealosApiContext) {
+  useCopilotAction({
+    name: "createLaunchpad",
+    description: "Create a new launchpad with specified configuration",
+    followUp: false,
+    parameters: jsonSchemaToActionParameters(
+      zodToJsonSchema(launchpadCreateFormSchema) as any
+    ),
+    renderAndWaitForResponse: (props) => {
+      return (
+        <LaunchpadCreateActionMessage
+          args={props.args as Partial<LaunchpadCreateFormData>}
+          respond={props.respond}
+          status={props.status}
+        />
+      );
+    },
+  });
+}
 
 // function deleteLaunchpadAction(context: SealosApiContext) {
 //   const deleteLaunchpad = useDeleteLaunchpadMutation(context);

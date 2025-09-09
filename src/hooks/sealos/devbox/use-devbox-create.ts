@@ -17,7 +17,7 @@ export const useDevboxCreate = (options: UseDevboxCreateOptions = {}) => {
   const { selectedProject } = useProjectState();
 
   const addToProjectMutation = useMutation(
-    project.addToProject.mutationOptions()
+    project.addResources.mutationOptions()
   );
 
   const createDevboxMutation = useMutation({

@@ -16,7 +16,7 @@ function ThreadCreator({ children }: { children: React.ReactNode }) {
   const { auth } = useAuthState();
 
   const createThreadMutation = useMutation(
-    langgraph.createThread.mutationOptions({
+    langgraph.create.mutationOptions({
       onSuccess: (newThread) => {
         // Select the newly created thread
         selectThread(newThread.thread_id);

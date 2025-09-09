@@ -39,7 +39,7 @@ export function FlowgraphBreadcrumb({ projectName }: FlowgraphHeaderProps) {
   const { projects } = useProjectSearch();
 
   const { data: projectData } = useQuery(
-    project.getProject.queryOptions(projectName)
+    project.get.queryOptions(projectName)
   );
 
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);

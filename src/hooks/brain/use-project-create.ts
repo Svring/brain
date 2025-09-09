@@ -23,9 +23,7 @@ export function useProjectCreate(options?: CreateProjectOptions) {
     useTRPCClients();
 
   // Create mutations
-  const createProjectMutation = useMutation(
-    project.createProject.mutationOptions()
-  );
+  const createProjectMutation = useMutation(project.create.mutationOptions());
   const createDevboxMutation = useMutation(devbox.create.mutationOptions());
   const createClusterMutation = useMutation(cluster.create.mutationOptions());
   const createLaunchpadMutation = useMutation(
@@ -35,7 +33,7 @@ export function useProjectCreate(options?: CreateProjectOptions) {
     objectstorage.createObjectStorage.mutationOptions()
   );
   const addToProjectMutation = useMutation(
-    project.addToProject.mutationOptions()
+    project.addResources.mutationOptions()
   );
 
   const createProject = async (proposal: ProjectProposal) => {

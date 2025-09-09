@@ -96,7 +96,7 @@ export default function LaunchpadCreateMessage({
   });
 
   const addToProjectMutation = useMutation({
-    ...project.addToProject.mutationOptions(),
+    ...project.addResources.mutationOptions(),
     onError: (error: any) => {
       toast.error(error.message || "Failed to add application to project");
     },

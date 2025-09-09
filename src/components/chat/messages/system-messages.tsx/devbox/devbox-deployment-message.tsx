@@ -145,7 +145,7 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
     isLoading,
     error,
   } = useQuery({
-    ...k8s.listAllResources.queryOptions({
+    ...k8s.list.queryOptions({
       labelSelector: `${APP_DEVBOX_ID}=${devboxObject.name || ""}`,
       builtinResourceTypes: ["deployment", "statefulset"],
       customResourceTypes: [],
@@ -154,7 +154,7 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
   });
 
   const addToProjectMutation = useMutation({
-    ...project.addToProject.mutationOptions(),
+    ...project.addResources.mutationOptions(),
   });
 
   const deployMutation = useMutation({
@@ -164,7 +164,7 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
 
       // Invalidate and refetch deployments
       queryClient.invalidateQueries({
-        queryKey: k8s.listAllResources.pathKey(),
+        queryKey: k8s.list.pathKey(),
       });
 
       // Extract appName from response and append launchpad.detail system message
@@ -208,7 +208,7 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
     onSuccess: () => {
       // Invalidate and refetch deployments
       queryClient.invalidateQueries({
-        queryKey: k8s.listAllResources.pathKey(),
+        queryKey: k8s.list.pathKey(),
       });
       setDeletingDeploymentId(null);
     },

@@ -11,8 +11,27 @@ import {
 const t = initTRPC.context<LanggraphContext>().create();
 
 export const langgraphRouter = t.router({
-  // Thread Management
-  createThread: t.procedure
+  // ===== QUERY PROCEDURES =====
+
+  // Thread Information
+  list: t.procedure.query(async () => {
+    return await listThreads();
+  }),
+
+  get: t.procedure.input(z.string()).query(async ({ input }) => {
+    return await getThread(input);
+  }),
+
+  search: t.procedure.input(z.record(z.any())).query(async ({ input }) => {
+    const response = await searchThreads(input);
+    console.log("response", response);
+    return response;
+  }),
+
+  // ===== MUTATION PROCEDURES =====
+
+  // Thread Lifecycle Management
+  create: t.procedure
     .input(
       z.object({
         kubeconfig: z.string(),
@@ -20,26 +39,11 @@ export const langgraphRouter = t.router({
       })
     )
     .mutation(async ({ input }) => {
+      const { kubeconfig, projectName } = input;
       return await createThread({
-        kubeconfig: input.kubeconfig,
-        projectName: input.projectName,
+        kubeconfig,
+        projectName,
       });
-    }),
-
-  listThreads: t.procedure.query(async () => {
-    return await listThreads();
-  }),
-
-  getThread: t.procedure.input(z.string()).query(async ({ input }) => {
-    return await getThread(input);
-  }),
-
-  searchThreads: t.procedure
-    .input(z.record(z.any()))
-    .query(async ({ input }) => {
-      const response = await searchThreads(input);
-      console.log("response", response);
-      return response;
     }),
 });
 

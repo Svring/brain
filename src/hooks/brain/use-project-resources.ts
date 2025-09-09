@@ -20,7 +20,7 @@ export default function useProjectResources(projectName: string) {
     isLoading,
     error,
   } = useQuery({
-    ...k8s.listAllResources.queryOptions({
+    ...k8s.list.queryOptions({
       labelSelector,
       builtinResourceTypes: [
         "deployment",

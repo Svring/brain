@@ -20,7 +20,7 @@ export const LaunchpadCreateMessage: React.FC<LaunchpadCreateMessageProps> = ({
   const { selectedProject } = useProjectState();
 
   const addToProjectMutation = useMutation(
-    project.addToProject.mutationOptions()
+    project.addResources.mutationOptions()
   );
 
   const createLaunchpadMutation = useMutation({

@@ -24,9 +24,9 @@ import {
 import { AIResponse } from "@/components/shadcn-io/ai/response";
 import { jsonSchemaToActionParameters } from "@copilotkit/shared";
 import { zodToJsonSchema } from "zod-to-json-schema";
-import ObjectStorageCreateMessage, {
-  objectStorageFormSchema,
-} from "@/components/chat/messages/system-messages.tsx/objectstorage/objectstorage-create-message";
+import { objectStorageCreateSchema } from "@/schemas/forms/objectstorage/objectstorage-create-form-schema";
+import { ObjectStorageCreateActionMessage } from "@/components/copilot/sealos/objectstorage/objectstorage-create-action-message";
+import { ObjectStorageCreateFormData } from "@/schemas/forms/objectstorage/objectstorage-create-form-schema";
 
 export function activateObjectStorageBucketActions(
   k8sContext: K8sApiContext,
@@ -44,20 +44,14 @@ function createObjectStorageBucketAction(sealosContext: SealosApiContext) {
     description: "Create a new object storage bucket with specified configuration",
     followUp: false,
     parameters: jsonSchemaToActionParameters(
-      zodToJsonSchema(objectStorageFormSchema) as any
+      zodToJsonSchema(objectStorageCreateSchema) as any
     ),
-    handler: ({ name, policy }) => {
-      // This will be handled by the UI component
-      return `Creating object storage bucket "${name}" with ${policy} policy`;
-    },
-    render: ({ status, args }) => {
-      // Always render the component, but pass undefined for incomplete parameters
+    renderAndWaitForResponse: (props) => {
       return (
-        <ObjectStorageCreateMessage
-          payload={{
-            name: typeof args.name === "string" ? args.name : undefined,
-            policy: typeof args.policy === "string" ? args.policy as "private" | "publicRead" | "publicReadWrite" : undefined,
-          }}
+        <ObjectStorageCreateActionMessage
+          args={props.args as Partial<ObjectStorageCreateFormData>}
+          respond={props.respond}
+          status={props.status}
         />
       );
     },

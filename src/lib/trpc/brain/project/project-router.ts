@@ -32,21 +32,23 @@ import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schema
 const t = initTRPC.context<ProjectContext>().create();
 
 export const projectRouter = t.router({
-  // Project Query Operations
-  listProjects: t.procedure
+  // ===== QUERY PROCEDURES =====
+
+  // Project Information
+  list: t.procedure
     .output(z.array(ProjectObjectSchema))
     .query(async ({ ctx }) => {
       return await listProjects(ctx);
     }),
 
-  getProject: t.procedure
+  get: t.procedure
     .input(z.string())
     .output(ProjectObjectSchema)
     .query(async ({ ctx, input }) => {
       return await getProject(ctx, input);
     }),
 
-  getProjectResources: t.procedure
+  getResources: t.procedure
     .input(
       z.object({
         name: z.string(),
@@ -55,17 +57,15 @@ export const projectRouter = t.router({
     )
     .output(z.array(CustomResourceTargetSchema))
     .query(async ({ ctx, input }) => {
-      const enabledSubModules = input.enabledSubModules || [
-        "devbox",
-        "cluster",
-        "deployment",
-        "statefulset",
-      ];
+      const {
+        name,
+        enabledSubModules = ["devbox", "cluster", "deployment", "statefulset"],
+      } = input;
 
       // Get project related resources
       const projectResources = await getProjectRelatedResources(
         ctx,
-        input.name,
+        name,
         enabledSubModules
       );
 
@@ -111,8 +111,10 @@ export const projectRouter = t.router({
       return targets;
     }),
 
-  // Project Mutation Operations
-  createProject: t.procedure
+  // ===== MUTATION PROCEDURES =====
+
+  // Project Lifecycle Management
+  create: t.procedure
     .input(
       z.object({
         name: z.string(),
@@ -120,17 +122,18 @@ export const projectRouter = t.router({
     )
     .output(ProjectObjectSchema)
     .mutation(async ({ ctx, input }) => {
+      const { name } = input;
       const target = CustomResourceTargetSchema.parse(
-        convertResourceTypeToTarget("instance", input.name)
+        convertResourceTypeToTarget("instance", name)
       );
       const resourceBody = {
         apiVersion: "app.sealos.io/v1",
         kind: "Instance",
         metadata: {
-          name: input.name,
+          name,
           namespace: ctx.namespace,
           labels: {
-            [INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS]: input.name,
+            [INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS]: name,
           },
         },
         spec: {
@@ -138,10 +141,10 @@ export const projectRouter = t.router({
           defaults: {
             app_name: {
               type: "string",
-              value: input.name,
+              value: name,
             },
           },
-          title: input.name,
+          title: name,
         },
       };
 
@@ -156,7 +159,59 @@ export const projectRouter = t.router({
       return project;
     }),
 
-  addToProject: t.procedure
+  delete: t.procedure.input(z.string()).mutation(async ({ ctx, input }) => {
+    // 1. Get all resources related to the project
+    const projectResources = await getProjectRelatedResources(ctx, input, [
+      "deployment",
+      "statefulset",
+      "instance",
+      "devbox",
+    ]);
+
+    // 2. Delete all found resources
+    const deletePromises: Promise<any>[] = [];
+
+    // Delete custom resources
+    for (const resourceList of Object.values(projectResources.custom || {})) {
+      if (resourceList?.items) {
+        for (const resource of resourceList.items) {
+          if (resource.metadata?.name) {
+            const target = convertResourceTypeToTarget(
+              resource.kind?.toLowerCase() || "instance",
+              resource.metadata.name
+            );
+            if (target.type === "custom") {
+              deletePromises.push(deleteCustomResource(ctx, target));
+            }
+          }
+        }
+      }
+    }
+
+    // Delete builtin resources
+    for (const resourceList of Object.values(projectResources.builtin || {})) {
+      if (resourceList?.items) {
+        for (const resource of resourceList.items) {
+          if (resource.metadata?.name) {
+            const target = convertResourceTypeToTarget(
+              resource.kind?.toLowerCase() || "deployment",
+              resource.metadata.name
+            );
+            if (target.type === "builtin") {
+              deletePromises.push(deleteBuiltinResource(ctx, target));
+            }
+          }
+        }
+      }
+    }
+
+    await Promise.allSettled(deletePromises);
+
+    return { name: input, success: true };
+  }),
+
+  // Resource Management
+  addResources: t.procedure
     .input(
       z.object({
         resources: z.array(
@@ -166,15 +221,17 @@ export const projectRouter = t.router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const { resources, name } = input;
+
       // Add labels to all resources
-      for (const resource of input.resources) {
+      for (const resource of resources) {
         if (resource.type === "custom") {
           await patchCustomResourceMetadata(
             ctx,
             resource,
             "labels",
             INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS,
-            input.name
+            name
           );
         } else {
           await patchBuiltinResourceMetadata(
@@ -182,7 +239,7 @@ export const projectRouter = t.router({
             resource,
             "labels",
             INSTANCE_RELATE_RESOURCE_LABELS.DEPLOY_ON_SEALOS,
-            input.name
+            name
           );
         }
       }
@@ -190,15 +247,17 @@ export const projectRouter = t.router({
       return { success: true };
     }),
 
-  removeFromProject: t.procedure
+  removeResources: t.procedure
     .input(
       z.object({
         resources: z.array(ResourceTargetSchema),
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const { resources } = input;
+
       // Remove project label from all resources
-      for (const resource of input.resources) {
+      for (const resource of resources) {
         if (resource.type === "custom") {
           await removeCustomResourceMetadata(
             ctx,
@@ -221,62 +280,8 @@ export const projectRouter = t.router({
       return { success: true };
     }),
 
-  deleteProject: t.procedure
-    .input(z.string())
-    .mutation(async ({ ctx, input }) => {
-      // 1. Get all resources related to the project
-      const projectResources = await getProjectRelatedResources(ctx, input, [
-        "deployment",
-        "statefulset",
-        "instance",
-        "devbox",
-      ]);
-
-      // 2. Delete all found resources
-      const deletePromises: Promise<any>[] = [];
-
-      // Delete custom resources
-      for (const resourceList of Object.values(projectResources.custom || {})) {
-        if (resourceList?.items) {
-          for (const resource of resourceList.items) {
-            if (resource.metadata?.name) {
-              const target = convertResourceTypeToTarget(
-                resource.kind?.toLowerCase() || "instance",
-                resource.metadata.name
-              );
-              if (target.type === "custom") {
-                deletePromises.push(deleteCustomResource(ctx, target));
-              }
-            }
-          }
-        }
-      }
-
-      // Delete builtin resources
-      for (const resourceList of Object.values(
-        projectResources.builtin || {}
-      )) {
-        if (resourceList?.items) {
-          for (const resource of resourceList.items) {
-            if (resource.metadata?.name) {
-              const target = convertResourceTypeToTarget(
-                resource.kind?.toLowerCase() || "deployment",
-                resource.metadata.name
-              );
-              if (target.type === "builtin") {
-                deletePromises.push(deleteBuiltinResource(ctx, target));
-              }
-            }
-          }
-        }
-      }
-
-      await Promise.allSettled(deletePromises);
-
-      return { name: input, success: true };
-    }),
-
-  updateProjectName: t.procedure
+  // Project Configuration
+  updateName: t.procedure
     .input(
       z.object({
         name: z.string(),
@@ -290,8 +295,9 @@ export const projectRouter = t.router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const { name, newDisplayName } = input;
       const target = CustomResourceTargetSchema.parse(
-        convertResourceTypeToTarget("instance", input.name)
+        convertResourceTypeToTarget("instance", name)
       );
 
       await patchCustomResourceMetadata(
@@ -299,12 +305,12 @@ export const projectRouter = t.router({
         target,
         "annotations",
         PROJECT_DISPLAY_NAME_ANNOTATION_KEY,
-        input.newDisplayName
+        newDisplayName
       );
 
       return {
-        name: input.name,
-        newDisplayName: input.newDisplayName,
+        name,
+        newDisplayName,
       };
     }),
 });

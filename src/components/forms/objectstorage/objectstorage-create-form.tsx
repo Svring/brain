@@ -24,12 +24,14 @@ interface ObjectStorageCreateFormProps {
   defaultValues?: Partial<ObjectStorageCreateFormData>;
   onSubmit: (data: ObjectStorageCreateFormData) => void;
   isLoading?: boolean;
+  hideDefaultButton?: boolean;
 }
 
 export const ObjectStorageCreateForm = ({
   defaultValues,
   onSubmit,
   isLoading = false,
+  hideDefaultButton = false,
 }: ObjectStorageCreateFormProps) => {
   const { form } = useObjectStorageCreateForm(defaultValues);
 
@@ -39,7 +41,7 @@ export const ObjectStorageCreateForm = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form id="objectstorage-create-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <div className="space-y-4">
           <NameField />
 
@@ -67,19 +69,21 @@ export const ObjectStorageCreateForm = ({
           />
         </div>
 
-        <div className="flex justify-end space-x-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => form.reset()}
-            disabled={isLoading}
-          >
-            Reset
-          </Button>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Creating..." : "Create"}
-          </Button>
-        </div>
+        {!hideDefaultButton && (
+          <div className="flex justify-end space-x-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => form.reset()}
+              disabled={isLoading}
+            >
+              Reset
+            </Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Creating..." : "Create"}
+            </Button>
+          </div>
+        )}
       </form>
     </Form>
   );

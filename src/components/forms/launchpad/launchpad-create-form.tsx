@@ -22,12 +22,14 @@ interface LaunchpadCreateFormProps {
   defaultValues?: Partial<LaunchpadCreateFormData>;
   onSubmit: (data: LaunchpadCreateFormData) => void;
   isLoading?: boolean;
+  hideDefaultButton?: boolean;
 }
 
 export const LaunchpadCreateForm = ({
   defaultValues,
   onSubmit,
   isLoading = false,
+  hideDefaultButton = false,
 }: LaunchpadCreateFormProps) => {
   const { form, portsFieldArray, envFieldArray, storageFieldArray, configMapFieldArray } =
     useLaunchpadCreateForm(defaultValues);
@@ -40,7 +42,7 @@ export const LaunchpadCreateForm = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form id="launchpad-create-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         {/* Basic Configuration */}
         <div className="space-y-4">
           <NameField />
@@ -113,19 +115,21 @@ export const LaunchpadCreateForm = ({
           )}
         </div>
 
-        <div className="flex justify-end space-x-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => form.reset()}
-            disabled={isLoading}
-          >
-            Reset
-          </Button>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Creating..." : "Create"}
-          </Button>
-        </div>
+        {!hideDefaultButton && (
+          <div className="flex justify-end space-x-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => form.reset()}
+              disabled={isLoading}
+            >
+              Reset
+            </Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Creating..." : "Create"}
+            </Button>
+          </div>
+        )}
       </form>
     </Form>
   );

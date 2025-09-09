@@ -28,8 +28,10 @@ import { Operation } from "fast-json-patch";
 const t = initTRPC.context<K8sContext>().create();
 
 export const k8sRouter = t.router({
-  // Query Operations
-  listAllResources: t.procedure
+  // ===== QUERY PROCEDURES =====
+
+  // Resource Information
+  list: t.procedure
     .input(
       z.object({
         labelSelector: z.string().optional(),
@@ -38,21 +40,23 @@ export const k8sRouter = t.router({
       })
     )
     .query(async ({ ctx, input }) => {
+      const { labelSelector, builtinResourceTypes, customResourceTypes } =
+        input;
       return await listAllResources(
         ctx,
-        input.labelSelector,
-        input.builtinResourceTypes,
-        input.customResourceTypes
+        labelSelector,
+        builtinResourceTypes,
+        customResourceTypes
       );
     }),
 
-  getResource: t.procedure
+  get: t.procedure
     .input(z.union([CustomResourceTargetSchema, BuiltinResourceTargetSchema]))
     .query(async ({ ctx, input }) => {
       return await getResource(ctx, input);
     }),
 
-  listAnnotationBasedResources: t.procedure
+  listByAnnotation: t.procedure
     .input(
       z.object({
         annotation: z.object({
@@ -63,110 +67,14 @@ export const k8sRouter = t.router({
       })
     )
     .query(async ({ ctx, input }) => {
-      return await listAnnotationBasedResources(
-        ctx,
-        input.annotation,
-        input.projectName
-      );
+      const { annotation, projectName } = input;
+      return await listAnnotationBasedResources(ctx, annotation, projectName);
     }),
 
-  // Mutation Operations
-  patchResourceMetadata: t.procedure
-    .input(
-      z.object({
-        target: z.union([
-          CustomResourceTargetSchema,
-          BuiltinResourceTargetSchema,
-          z.array(
-            z.union([CustomResourceTargetSchema, BuiltinResourceTargetSchema])
-          ),
-        ]),
-        metadataType: z.enum(["annotations", "labels"]),
-        key: z.string(),
-        value: z.string(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const targets = Array.isArray(input.target)
-        ? input.target
-        : [input.target];
+  // ===== MUTATION PROCEDURES =====
 
-      const results = await Promise.all(
-        targets.map(async (target) => {
-          if (target.type === "custom") {
-            return await runParallelAction(
-              patchCustomResourceMetadata(
-                ctx,
-                target,
-                input.metadataType,
-                input.key,
-                input.value
-              )
-            );
-          } else {
-            return await runParallelAction(
-              patchBuiltinResourceMetadata(
-                ctx,
-                target,
-                input.metadataType,
-                input.key,
-                input.value
-              )
-            );
-          }
-        })
-      );
-
-      return results;
-    }),
-
-  removeResourceMetadata: t.procedure
-    .input(
-      z.object({
-        target: z.union([
-          CustomResourceTargetSchema,
-          BuiltinResourceTargetSchema,
-          z.array(
-            z.union([CustomResourceTargetSchema, BuiltinResourceTargetSchema])
-          ),
-        ]),
-        metadataType: z.enum(["annotations", "labels"]),
-        key: z.string(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const targets = Array.isArray(input.target)
-        ? input.target
-        : [input.target];
-
-      const results = await Promise.all(
-        targets.map(async (target) => {
-          if (target.type === "custom") {
-            return await runParallelAction(
-              removeCustomResourceMetadata(
-                ctx,
-                target,
-                input.metadataType,
-                input.key
-              )
-            );
-          } else {
-            return await runParallelAction(
-              removeBuiltinResourceMetadata(
-                ctx,
-                target,
-                input.metadataType,
-                input.key
-              )
-            );
-          }
-        })
-      );
-
-      return results;
-    }),
-
-  deleteResource: t.procedure
+  // Resource Lifecycle Management
+  delete: t.procedure
     .input(
       z.object({
         target: z.union([
@@ -196,7 +104,7 @@ export const k8sRouter = t.router({
       return results;
     }),
 
-  upsertResource: t.procedure
+  upsert: t.procedure
     .input(
       z.object({
         target: z.union([
@@ -207,18 +115,21 @@ export const k8sRouter = t.router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      if (input.target.type === "custom") {
+      const { target, resourceBody } = input;
+
+      if (target.type === "custom") {
         return await runParallelAction(
-          upsertCustomResource(ctx, input.target, input.resourceBody)
+          upsertCustomResource(ctx, target, resourceBody)
         );
       } else {
         return await runParallelAction(
-          upsertBuiltinResource(ctx, input.target, input.resourceBody)
+          upsertBuiltinResource(ctx, target, resourceBody)
         );
       }
     }),
 
-  patchResource: t.procedure
+  // Resource Patching
+  patch: t.procedure
     .input(
       z.object({
         target: z.union([
@@ -229,26 +140,20 @@ export const k8sRouter = t.router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      if (input.target.type === "custom") {
+      const { target, patchBody } = input;
+
+      if (target.type === "custom") {
         return await runParallelAction(
-          patchCustomResource(
-            ctx,
-            input.target,
-            input.patchBody as unknown as Operation[]
-          )
+          patchCustomResource(ctx, target, patchBody as unknown as Operation[])
         );
       } else {
         return await runParallelAction(
-          patchBuiltinResource(
-            ctx,
-            input.target,
-            input.patchBody as unknown as Operation[]
-          )
+          patchBuiltinResource(ctx, target, patchBody as unknown as Operation[])
         );
       }
     }),
 
-  strategicMergePatchResource: t.procedure
+  strategicMergePatch: t.procedure
     .input(
       z.object({
         target: z.union([
@@ -259,15 +164,95 @@ export const k8sRouter = t.router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      if (input.target.type === "custom") {
+      const { target, patchBody } = input;
+
+      if (target.type === "custom") {
         return await runParallelAction(
-          strategicMergePatchCustomResource(ctx, input.target, input.patchBody)
+          strategicMergePatchCustomResource(ctx, target, patchBody)
         );
       } else {
         return await runParallelAction(
-          strategicMergePatchBuiltinResource(ctx, input.target, input.patchBody)
+          strategicMergePatchBuiltinResource(ctx, target, patchBody)
         );
       }
+    }),
+
+  // Metadata Management
+  patchMetadata: t.procedure
+    .input(
+      z.object({
+        target: z.union([
+          CustomResourceTargetSchema,
+          BuiltinResourceTargetSchema,
+          z.array(
+            z.union([CustomResourceTargetSchema, BuiltinResourceTargetSchema])
+          ),
+        ]),
+        metadataType: z.enum(["annotations", "labels"]),
+        key: z.string(),
+        value: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { target, metadataType, key, value } = input;
+      const targets = Array.isArray(target) ? target : [target];
+
+      const results = await Promise.all(
+        targets.map(async (target) => {
+          if (target.type === "custom") {
+            return await runParallelAction(
+              patchCustomResourceMetadata(ctx, target, metadataType, key, value)
+            );
+          } else {
+            return await runParallelAction(
+              patchBuiltinResourceMetadata(
+                ctx,
+                target,
+                metadataType,
+                key,
+                value
+              )
+            );
+          }
+        })
+      );
+
+      return results;
+    }),
+
+  removeMetadata: t.procedure
+    .input(
+      z.object({
+        target: z.union([
+          CustomResourceTargetSchema,
+          BuiltinResourceTargetSchema,
+          z.array(
+            z.union([CustomResourceTargetSchema, BuiltinResourceTargetSchema])
+          ),
+        ]),
+        metadataType: z.enum(["annotations", "labels"]),
+        key: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { target, metadataType, key } = input;
+      const targets = Array.isArray(target) ? target : [target];
+
+      const results = await Promise.all(
+        targets.map(async (target) => {
+          if (target.type === "custom") {
+            return await runParallelAction(
+              removeCustomResourceMetadata(ctx, target, metadataType, key)
+            );
+          } else {
+            return await runParallelAction(
+              removeBuiltinResourceMetadata(ctx, target, metadataType, key)
+            );
+          }
+        })
+      );
+
+      return results;
     }),
 });
 

@@ -19,12 +19,14 @@ interface ClusterCreateFormProps {
   defaultValues?: Partial<ClusterCreateFormData>;
   onSubmit: (data: ClusterCreateFormData) => void;
   isLoading?: boolean;
+  hideDefaultButton?: boolean;
 }
 
 export const ClusterCreateForm = ({
   defaultValues,
   onSubmit,
   isLoading = false,
+  hideDefaultButton = false,
 }: ClusterCreateFormProps) => {
   const { form } = useClusterCreateForm(defaultValues);
 
@@ -34,7 +36,7 @@ export const ClusterCreateForm = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form id="cluster-create-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <div className="space-y-4">
           <NameField />
           
@@ -50,19 +52,21 @@ export const ClusterCreateForm = ({
           storageOptions={STORAGE_OPTIONS}
         />
 
-        <div className="flex justify-end space-x-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => form.reset()}
-            disabled={isLoading}
-          >
-            Reset
-          </Button>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Creating..." : "Create"}
-          </Button>
-        </div>
+        {!hideDefaultButton && (
+          <div className="flex justify-end space-x-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => form.reset()}
+              disabled={isLoading}
+            >
+              Reset
+            </Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Creating..." : "Create"}
+            </Button>
+          </div>
+        )}
       </form>
     </Form>
   );

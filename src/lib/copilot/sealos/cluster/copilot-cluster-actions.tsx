@@ -32,9 +32,9 @@ import {
 } from "@/lib/sealos/resources/cluster/cluster-utils";
 import { jsonSchemaToActionParameters } from "@copilotkit/shared";
 import { zodToJsonSchema } from "zod-to-json-schema";
-import ClusterCreateMessage, {
-  clusterFormSchema,
-} from "@/components/chat/messages/system-messages.tsx/cluster/cluster-create-message";
+import { clusterCreateFormSchema } from "@/schemas/forms/cluster/cluster-create-form-schema";
+import { ClusterCreateActionMessage } from "@/components/copilot/sealos/cluster/cluster-create-action-message";
+import { ClusterCreateFormData } from "@/schemas/forms/cluster/cluster-create-form-schema";
 
 export const activateClusterActions = (
   k8sContext: K8sApiContext,
@@ -43,6 +43,7 @@ export const activateClusterActions = (
   listClusterAction(k8sContext);
   getClusterAction(k8sContext);
   createClusterAction(sealosContext);
+  updateClusterAction(sealosContext);
   deleteClusterAction(sealosContext);
   startClusterAction(sealosContext);
   stopClusterAction(sealosContext);
@@ -55,48 +56,14 @@ export const createClusterAction = (context: SealosApiContext) => {
     description: "Create a new database cluster with specified configuration",
     followUp: false,
     parameters: jsonSchemaToActionParameters(
-      zodToJsonSchema(clusterFormSchema) as any
+      zodToJsonSchema(clusterCreateFormSchema) as any
     ),
-    handler: ({
-      name,
-      type,
-      version,
-      cpu,
-      memory,
-      storage,
-      replicas,
-      terminationPolicy,
-    }) => {
-      // This will be handled by the UI component
-      return `Creating cluster "${name}" with ${type} version ${version}`;
-    },
-    render: ({ status, args }) => {
-      // Always render the component, but pass undefined for incomplete parameters
+    renderAndWaitForResponse: (props) => {
       return (
-        <ClusterCreateMessage
-          payload={{
-            name: typeof args.name === "string" ? args.name : undefined,
-            type: typeof args.type === "string" ? args.type : undefined,
-            version:
-              typeof args.version === "string" ? args.version : undefined,
-            cpu: typeof args.cpu === "string" ? parseInt(args.cpu) : undefined,
-            memory:
-              typeof args.memory === "string"
-                ? parseInt(args.memory)
-                : undefined,
-            storage:
-              typeof args.storage === "string"
-                ? parseInt(args.storage)
-                : undefined,
-            replicas:
-              typeof args.replicas === "string"
-                ? parseInt(args.replicas)
-                : undefined,
-            terminationPolicy:
-              typeof args.terminationPolicy === "string"
-                ? (args.terminationPolicy as "Delete" | "WipeOut")
-                : undefined,
-          }}
+        <ClusterCreateActionMessage
+          args={props.args as Partial<ClusterCreateFormData>}
+          respond={props.respond}
+          status={props.status}
         />
       );
     },
