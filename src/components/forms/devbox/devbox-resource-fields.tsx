@@ -30,7 +30,7 @@ export const DevboxResourceFields = ({
   const resourceValues = form.watch("resource");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-2">
       {/* CPU Options - only show if cpu value is defined */}
       {resourceValues?.cpu !== undefined && (
         <FormField

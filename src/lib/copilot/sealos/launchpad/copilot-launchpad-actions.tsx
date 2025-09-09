@@ -24,7 +24,7 @@ import { AIResponse } from "@/components/shadcn-io/ai/response";
 export function activateLaunchpadActions() {
   // CRUD operations
   createLaunchpadAction();
-  updateLaunchpadAction();
+  // updateLaunchpadAction();
   // deleteLaunchpadAction();
 
   // Lifecycle management
@@ -53,27 +53,29 @@ function createLaunchpadAction() {
   });
 }
 
-function updateLaunchpadAction() {
-  useCopilotAction({
-    name: "updateLaunchpad",
-    description: "Update a launchpad configuration (resource, ports, etc.)",
-    followUp: false,
-    parameters: jsonSchemaToActionParameters(
-      zodToJsonSchema(launchpadUpdateFormSchema.extend({
-        launchpadName: z.string().min(1, "Launchpad name is required"),
-      })) as any
-    ),
-    renderAndWaitForResponse: (props) => {
-      return (
-        <LaunchpadUpdateActionMessage
-          args={props.args as Partial<LaunchpadUpdateFormData> & { launchpadName: string }}
-          respond={props.respond}
-          status={props.status}
-        />
-      );
-    },
-  });
-}
+// function updateLaunchpadAction() {
+//   useCopilotAction({
+//     name: "updateLaunchpad",
+//     description: "Update a launchpad configuration (resource, ports, etc.)",
+//     followUp: false,
+//     parameters: jsonSchemaToActionParameters(
+//       zodToJsonSchema(
+//         launchpadUpdateFormSchema.extend({
+//           launchpadName: z.string().min(1, "Launchpad name is required"),
+//         })
+//       ) as any
+//     ),
+//     renderAndWaitForResponse: (props) => {
+//       return (
+//         <LaunchpadUpdateActionMessage
+//           args={props.args as any}
+//           respond={props.respond || (() => {})}
+//           status={props.status}
+//         />
+//       );
+//     },
+//   });
+// }
 
 export const deleteLaunchpadAction = () => {
   const { launchpad } = useTRPCClients();

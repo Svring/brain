@@ -15,6 +15,7 @@ interface DevboxUpdateFormProps {
   isLoading?: boolean;
   hideDefaultButton?: boolean;
   useSimplePortsMode?: boolean;
+  hidePorts?: boolean;
 }
 
 export const DevboxUpdateForm = ({
@@ -23,11 +24,18 @@ export const DevboxUpdateForm = ({
   isLoading = false,
   hideDefaultButton = false,
   useSimplePortsMode = false,
+  hidePorts = false,
 }: DevboxUpdateFormProps) => {
   const { form, portsFieldArray, simplePortsFieldArray } = useDevboxUpdateForm(defaultValues);
 
   const handleSubmit = (data: DevboxUpdateFormData) => {
-    onSubmit(data);
+    // If ports are hidden, exclude ports data from submission
+    if (hidePorts) {
+      const { ports, simplePorts, ...dataWithoutPorts } = data;
+      onSubmit(dataWithoutPorts);
+    } else {
+      onSubmit(data);
+    }
   };
 
   const handleSubmitError = (errors: any) => {
@@ -45,8 +53,8 @@ export const DevboxUpdateForm = ({
   const hasSimplePorts = defaultValues?.simplePorts !== undefined;
 
   // Determine which ports field to show
-  const showSimplePortsField = useSimplePortsMode || hasSimplePorts;
-  const showRegularPortsField = hasPorts && !showSimplePortsField;
+  const showSimplePortsField = !hidePorts && (useSimplePortsMode || hasSimplePorts);
+  const showRegularPortsField = !hidePorts && hasPorts && !showSimplePortsField;
 
   return (
     <Form {...form}>

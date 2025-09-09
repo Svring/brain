@@ -10,11 +10,10 @@ import {
 } from "@/schemas/forms/devbox/components/devbox-port-schema";
 import { DevboxResourceSchema } from "@/schemas/forms/devbox/components/devbox-resource-schema";
 
-// Runtime schema for Copilot update parameters (devboxName, optional resource, simple port ops)
+// Runtime schema for Copilot update parameters (devboxName, optional resource)
 export const DevboxUpdateRuntimeSchema = z.object({
   devboxName: z.string().min(1, "Devbox name is required"),
   resource: DevboxResourceSchema.optional(),
-  ports: DevboxPortBatchUpdateSchema.optional(),
 });
 
 export type DevboxUpdateRuntime = z.infer<typeof DevboxUpdateRuntimeSchema>;

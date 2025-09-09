@@ -5,9 +5,10 @@ import { DevboxUpdateForm } from "@/components/forms/devbox/devbox-update-form";
 import { DevboxUpdateFormData } from "@/schemas/forms/devbox/devbox-update-form-schema";
 import { useDevboxUpdate } from "@/hooks/sealos/devbox/use-devbox-update";
 import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
-import { Code } from "lucide-react";
+import { Code, Check, CircleCheckBigIcon } from "lucide-react";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 import { Spinner } from "@/components/ui/spinner";
+import { Button } from "@/components/ui/button";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { convertSimplePortOpsToFormPorts } from "@/lib/copilot/sealos/devbox/copilot-devbox-utils";
@@ -22,19 +23,15 @@ const DevboxUpdateSuccessMessage = ({ args }: { args: any }) => {
   });
 
   return (
-    <div className="w-full p-4">
-      <div className="flex items-center justify-center p-8">
-        <div className="flex flex-col items-center gap-4">
-          <p className="text-sm text-muted-foreground text-center">
-            The devbox has been updated successfully.
-          </p>
-          <button
-            onClick={handleNodeSelect}
-            className="text-sm text-blue-600 hover:text-blue-800 underline"
-          >
-            View devbox details
-          </button>
+    <div className="w-full">
+      <div className="flex items-center justify-between p-2 border rounded-lg">
+        <div className="flex items-center gap-2">
+          <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
+          <p className="text-sm">Devbox updated successfully</p>
         </div>
+        <Button onClick={handleNodeSelect} variant="outline" size="sm">
+          View devbox details
+        </Button>
       </div>
     </div>
   );
@@ -83,45 +80,35 @@ export const DevboxUpdateActionMessage: React.FC<
     return <DevboxUpdateSuccessMessage args={args} />;
   }
 
-  // Show spinner when status is executing
-  // if (status === "executing") {
-  //   return (
-  //     <div className="w-full p-4">
-  //       <div className="flex items-center justify-center p-8">
-  //         <div className="flex flex-col items-center gap-4">
-  //           <Spinner variant="circle" size={32} />
-  //           <p className="text-sm text-muted-foreground text-center">
-  //             Updating devbox...
-  //           </p>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
   // Extract update data from args (excluding devboxName)
-  const { devboxName, ports: simplePortsBatch, resource, ...updateRest } = args as any;
+  const {
+    devboxName,
+    ports: simplePortsBatch,
+    resource,
+    ...updateRest
+  } = args as any;
 
   // Determine if we should use simple ports mode (when simple port operations are provided)
   const useSimplePortsMode = Boolean(simplePortsBatch?.payload?.length);
 
   // Build defaultValues for the update form
-  const defaultValues: Partial<DevboxUpdateFormData> | undefined = existingDevbox
-    ? useSimplePortsMode
-      ? {
-          resource,
-          simplePorts: simplePortsBatch?.payload || [],
-          ...updateRest,
-        }
-      : {
-          resource,
-          ports: convertSimplePortOpsToFormPorts(
-            (existingDevbox as any)?.ports || [],
-            simplePortsBatch?.payload
-          ),
-          ...updateRest,
-        }
-    : undefined;
+  const defaultValues: Partial<DevboxUpdateFormData> | undefined =
+    existingDevbox
+      ? useSimplePortsMode
+        ? {
+            resource,
+            simplePorts: simplePortsBatch?.payload || [],
+            ...updateRest,
+          }
+        : {
+            resource,
+            ports: convertSimplePortOpsToFormPorts(
+              (existingDevbox as any)?.ports || [],
+              simplePortsBatch?.payload
+            ),
+            ...updateRest,
+          }
+      : undefined;
 
   return (
     <BaseActionMessage
@@ -150,6 +137,7 @@ export const DevboxUpdateActionMessage: React.FC<
           isLoading={status === "inProgress" || isLoading}
           hideDefaultButton={true}
           useSimplePortsMode={useSimplePortsMode}
+          hidePorts={true}
         />
       )}
     </BaseActionMessage>

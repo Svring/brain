@@ -18,6 +18,7 @@ interface UseNodeSelectParams {
   messageType?: string;
   payload?: unknown;
   onSuccess?: () => void;
+  resetMessages?: boolean;
 }
 
 export const useNodeSelect = ({
@@ -25,12 +26,14 @@ export const useNodeSelect = ({
   messageType,
   payload,
   onSuccess,
+  resetMessages,
 }: UseNodeSelectParams) => {
   const { selectResource } = useProjectActions();
   const { selectNode } = useFlowgraphActions();
   const { appendSystemMessage } = useAppendSystemMessageMutation();
   const { selectThread } = useChatActions();
   const { sidebarChatResponding } = useChatState();
+  const { setMessages } = useCopilotChatHeadless_c();
 
   // Create new chat session mutation
   const createChatMutation = useCreateNewChatSessionMutation(target);
@@ -51,6 +54,11 @@ export const useNodeSelect = ({
   // console.log("sidebarChatResponding", sidebarChatResponding);
 
   const handleNodeSelect = () => {
+    // Reset messages if requested
+    if (resetMessages) {
+      setMessages([]);
+    }
+
     // Select the resource in project context
     selectResource(target);
 
