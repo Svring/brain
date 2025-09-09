@@ -31,7 +31,7 @@ export function AiChatHeader({
   const { selectedResource } = useProjectState();
   const { selectedThreadId, sidebarChatMaximized } = useChatState();
   const { closeSidebarChat, maximizeSidebar, minimizeSidebar } = useChatActions();
-  const { reset } = useCopilotChatHeadless_c();
+  const { setMessages } = useCopilotChatHeadless_c();
   const { isPending } = useCreateNewChatSessionMutation();
 
   const getIconUrl = () => {
@@ -103,7 +103,7 @@ export function AiChatHeader({
         </div>
         <div className="flex items-center gap-1">
           <Button
-            onClick={() => reset()}
+            onClick={() => setMessages([])}
             disabled={isPending}
             size="icon"
             className="h-8 w-8"

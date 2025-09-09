@@ -5,7 +5,7 @@ import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { APP_DEVBOX_ID } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-label";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import BaseSystemMessage from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import {
   Play,
   Trash2,
@@ -221,7 +221,7 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
   // Show loading state
   if (isLoading) {
     return (
-      <BaseActionMessage
+      <BaseSystemMessage
         headerTitle={{ icon: Server, name: "Devbox Resources" }}
       >
         <div className="flex items-center justify-center h-20">
@@ -229,14 +229,14 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
             Loading resources...
           </div>
         </div>
-      </BaseActionMessage>
+      </BaseSystemMessage>
     );
   }
 
   // Show error state
   if (error || !allResources) {
     return (
-      <BaseActionMessage
+      <BaseSystemMessage
         headerTitle={{ icon: Server, name: "Devbox Resources" }}
       >
         <div className="flex items-center justify-center h-20">
@@ -244,7 +244,7 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
             Failed to load devbox resources
           </span>
         </div>
-      </BaseActionMessage>
+      </BaseSystemMessage>
     );
   }
 
@@ -255,7 +255,7 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
   );
 
   return (
-    <BaseActionMessage headerTitle={{ icon: Server, name: "Devbox Resources" }}>
+    <BaseSystemMessage headerTitle={{ icon: Server, name: "Devbox Resources" }}>
       <div className="space-y-3">
         {(deployments.length > 0 || payload?.tag) && (
           <div className="flex items-center justify-between">
@@ -339,7 +339,7 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
           </div>
         </div>
       </div>
-    </BaseActionMessage>
+    </BaseSystemMessage>
   );
 };
 

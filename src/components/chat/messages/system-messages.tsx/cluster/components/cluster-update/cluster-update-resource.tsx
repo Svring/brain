@@ -24,7 +24,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
-import BaseActionMessage from "../../../components/base-action-message";
+import BaseSystemMessage from "../../../components/base-system-message";
 import { Spinner } from "@/components/ui/spinner";
 
 interface ClusterUpdateResourceProps {
@@ -112,7 +112,7 @@ export default function ClusterUpdateResource({
   // Show loading state
   if (isLoading) {
     return (
-      <BaseActionMessage
+      <BaseSystemMessage
         headerTitle={{
           icon: Settings2,
           name: "Update Cluster Resources",
@@ -125,14 +125,14 @@ export default function ClusterUpdateResource({
             </div>
           </div>
         </div>
-      </BaseActionMessage>
+      </BaseSystemMessage>
     );
   }
 
   // Show error state
   if (error) {
     return (
-      <BaseActionMessage
+      <BaseSystemMessage
         headerTitle={{
           icon: Settings2,
           name: "Update Cluster Resources",
@@ -145,14 +145,14 @@ export default function ClusterUpdateResource({
             </div>
           </div>
         </div>
-      </BaseActionMessage>
+      </BaseSystemMessage>
     );
   }
 
   // Show success message when update is completed
   if (isUpdateCompleted) {
     return (
-      <BaseActionMessage
+      <BaseSystemMessage
         headerTitle={{
           icon: Settings2,
           name: "Update Cluster Resources",
@@ -166,12 +166,12 @@ export default function ClusterUpdateResource({
             </div>
           </div>
         </div>
-      </BaseActionMessage>
+      </BaseSystemMessage>
     );
   }
 
   return (
-    <BaseActionMessage
+    <BaseSystemMessage
       headerTitle={{
         icon: Settings2,
         name: "Update Resource Quota",
@@ -307,6 +307,6 @@ export default function ClusterUpdateResource({
           </div>
         )}
       </div>
-    </BaseActionMessage>
+    </BaseSystemMessage>
   );
 }

@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { LaunchpadPortsCreateRequestSchema } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-open-api-schemas/launchpad-create-schema";
 import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
 import { CircleCheckBig, Network, Sparkles } from "lucide-react";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import BaseSystemMessage from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 
 interface AddPortsFormProps {
   initialValues: {
@@ -87,7 +87,7 @@ export function AddPortsForm({ initialValues, onSubmit, context }: AddPortsFormP
   // Show success message when update is completed
   if (isUpdateCompleted) {
     return (
-      <BaseActionMessage
+      <BaseSystemMessage
         headerTitle={{
           icon: Network,
           name: "Add Launchpad Ports",
@@ -99,12 +99,12 @@ export function AddPortsForm({ initialValues, onSubmit, context }: AddPortsFormP
             Launchpad ports added successfully!
           </div>
         </div>
-      </BaseActionMessage>
+      </BaseSystemMessage>
     );
   }
 
   return (
-    <BaseActionMessage
+    <BaseSystemMessage
       headerTitle={{
         icon: Network,
         name: "Add Ports",
@@ -168,6 +168,6 @@ export function AddPortsForm({ initialValues, onSubmit, context }: AddPortsFormP
           ))}
         </form>
       </Form>
-    </BaseActionMessage>
+    </BaseSystemMessage>
   );
 }

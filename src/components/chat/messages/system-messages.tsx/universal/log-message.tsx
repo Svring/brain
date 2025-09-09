@@ -8,7 +8,7 @@ import {
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { Loader2, FileText } from "lucide-react";
 import { useResourceLogs } from "@/hooks/sealos/resource/use-resource-logs";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import BaseSystemMessage from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 
 interface ResourceLogProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -36,7 +36,7 @@ const ResourceLog: React.FC<ResourceLogProps> = ({ target: payload }) => {
   };
 
   return (
-    <BaseActionMessage
+    <BaseSystemMessage
       headerTitle={{
         icon: FileText,
         name: "Resource Logs",
@@ -64,7 +64,7 @@ const ResourceLog: React.FC<ResourceLogProps> = ({ target: payload }) => {
           </div>
         )}
       </div>
-    </BaseActionMessage>
+    </BaseSystemMessage>
   );
 };
 

@@ -2,8 +2,8 @@ import React from "react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useQuery } from "@tanstack/react-query";
 import { clusterClient } from "@/components/provider/trpc-provider";
-import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
-import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
+import { BaseResourceMessage } from "@/components/chat/messages/system-messages.tsx/components/base-resource-message";
+import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-resource-message";
 import { EthernetPort, Pencil } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import ClusterMessageDetails from "./components/cluster-message-details";
@@ -39,37 +39,37 @@ export const ClusterMessage: React.FC<ClusterMessageProps> = ({ target }) => {
   // Show loading state
   if (isLoading) {
     return (
-      <BaseSystemMessage target={target}>
+      <BaseResourceMessage target={target}>
         <div className="flex items-center justify-center">
           <span className="text-muted-foreground">
             Loading cluster information...
           </span>
         </div>
-      </BaseSystemMessage>
+      </BaseResourceMessage>
     );
   }
 
   // Show error state
   if (error || !clusterObject) {
     return (
-      <BaseSystemMessage target={target}>
+      <BaseResourceMessage target={target}>
         <div className="flex items-center justify-center">
           <span className="text-destructive">
             Failed to load cluster information
           </span>
         </div>
-      </BaseSystemMessage>
+      </BaseResourceMessage>
     );
   }
 
   return (
-    <BaseSystemMessage
+    <BaseResourceMessage
       target={target}
       actions={actions}
       headerSlot={<ClusterMessageMenu target={target} />}
     >
       <ClusterMessageDetails target={target} />
-    </BaseSystemMessage>
+    </BaseResourceMessage>
   );
 };
 

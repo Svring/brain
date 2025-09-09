@@ -2,8 +2,8 @@ import React from "react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useQuery } from "@tanstack/react-query";
 import { devboxClient } from "@/components/provider/trpc-provider";
-import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
-import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
+import { BaseResourceMessage } from "@/components/chat/messages/system-messages.tsx/components/base-resource-message";
+import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-resource-message";
 import {
   GitBranch,
   BarChart3,
@@ -55,31 +55,31 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
   // Show loading state
   if (isLoading) {
     return (
-      <BaseSystemMessage target={target}>
+      <BaseResourceMessage target={target}>
         <div className="flex items-center justify-center">
           <span className="text-muted-foreground">
             Loading devbox information...
           </span>
         </div>
-      </BaseSystemMessage>
+      </BaseResourceMessage>
     );
   }
 
   // Show error state
   if (error || !devboxObject) {
     return (
-      <BaseSystemMessage target={target}>
+      <BaseResourceMessage target={target}>
         <div className="flex items-center justify-center">
           <span className="text-destructive">
             Failed to load devbox information
           </span>
         </div>
-      </BaseSystemMessage>
+      </BaseResourceMessage>
     );
   }
 
   return (
-    <BaseSystemMessage
+    <BaseResourceMessage
       target={target}
       actions={actions}
       headerSlot={
@@ -90,7 +90,7 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
       }
     >
       <DevboxMessageDetail target={target} />
-    </BaseSystemMessage>
+    </BaseResourceMessage>
   );
 };
 

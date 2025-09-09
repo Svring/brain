@@ -4,7 +4,7 @@ import React from "react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useQuery } from "@tanstack/react-query";
 import { clusterClient } from "@/components/provider/trpc-provider";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import BaseSystemMessage from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import {
   DatabaseBackup,
   Plus,
@@ -94,7 +94,7 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
   // Show loading state
   if (isLoading) {
     return (
-      <BaseActionMessage
+      <BaseSystemMessage
         headerTitle={{
           icon: DatabaseBackup,
           name: "Cluster Backup",
@@ -106,14 +106,14 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
             <span>Loading backup information...</span>
           </div>
         </div>
-      </BaseActionMessage>
+      </BaseSystemMessage>
     );
   }
 
   // Show error state
   if (error) {
     return (
-      <BaseActionMessage
+      <BaseSystemMessage
         headerTitle={{
           icon: DatabaseBackup,
           name: "Cluster Backup",
@@ -125,12 +125,12 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
             <span>Failed to load backup information</span>
           </div>
         </div>
-      </BaseActionMessage>
+      </BaseSystemMessage>
     );
   }
 
   return (
-    <BaseActionMessage
+    <BaseSystemMessage
       headerTitle={{
         icon: DatabaseBackup,
         name: `Cluster Backup: ${backupList?.length}`,
@@ -315,7 +315,7 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
           </div>
         )}
       </div>
-    </BaseActionMessage>
+    </BaseSystemMessage>
   );
 };
 

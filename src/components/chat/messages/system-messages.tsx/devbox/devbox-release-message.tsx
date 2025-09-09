@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { devboxClient } from "@/components/provider/trpc-provider";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
-import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import BaseSystemMessage from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
+import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import {
   Play,
   Trash2,
@@ -196,31 +196,31 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
   // Show loading state
   if (isLoading) {
     return (
-      <BaseActionMessage headerTitle={{ icon: Tag, name: "Devbox Releases" }}>
+      <BaseSystemMessage headerTitle={{ icon: Tag, name: "Devbox Releases" }}>
         <div className="flex items-center justify-center h-20">
           <div className="text-xs text-muted-foreground">Loading...</div>
         </div>
-      </BaseActionMessage>
+      </BaseSystemMessage>
     );
   }
 
   // Show error state
   if (error || !releasesData) {
     return (
-      <BaseActionMessage headerTitle={{ icon: Tag, name: "Devbox Releases" }}>
+      <BaseSystemMessage headerTitle={{ icon: Tag, name: "Devbox Releases" }}>
         <div className="flex items-center justify-center h-20">
           <span className="text-destructive text-xs">
             Failed to load devbox releases
           </span>
         </div>
-      </BaseActionMessage>
+      </BaseSystemMessage>
     );
   }
 
   const releases = (releasesData as any)?.data || [];
 
   return (
-    <BaseActionMessage headerTitle={{ icon: Tag, name: "Devbox Releases" }}>
+    <BaseSystemMessage headerTitle={{ icon: Tag, name: "Devbox Releases" }}>
       <div className="space-y-3">
         {releases.length > 0 && (
           <div className="flex items-center justify-between">
@@ -330,7 +330,7 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
           </div>
         )}
       </div>
-    </BaseActionMessage>
+    </BaseSystemMessage>
   );
 };
 

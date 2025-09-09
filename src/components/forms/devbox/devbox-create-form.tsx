@@ -13,12 +13,16 @@ interface DevboxCreateFormProps {
   defaultValues?: Partial<DevboxCreateFormData>;
   onSubmit: (data: DevboxCreateFormData) => void;
   isLoading?: boolean;
+  hideDefaultButton?: boolean;
+  formId?: string;
 }
 
 export const DevboxCreateForm = ({
   defaultValues,
   onSubmit,
   isLoading = false,
+  hideDefaultButton = false,
+  formId = "devbox-create-form",
 }: DevboxCreateFormProps) => {
   const { form, portsFieldArray } = useDevboxCreateForm(defaultValues);
 
@@ -28,7 +32,7 @@ export const DevboxCreateForm = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form id={formId} onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <div className="space-y-4">
           <NameField />
           <DevboxRuntimeField />
@@ -44,19 +48,21 @@ export const DevboxCreateForm = ({
           <DevboxPortsFields fieldArray={portsFieldArray} />
         </div>
 
-        <div className="flex justify-end space-x-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => form.reset()}
-            disabled={isLoading}
-          >
-            Reset
-          </Button>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Creating..." : "Create"}
-          </Button>
-        </div>
+        {!hideDefaultButton && (
+          <div className="flex justify-end space-x-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => form.reset()}
+              disabled={isLoading}
+            >
+              Reset
+            </Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Creating..." : "Create"}
+            </Button>
+          </div>
+        )}
       </form>
     </Form>
   );

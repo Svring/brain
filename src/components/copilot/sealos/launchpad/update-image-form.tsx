@@ -11,7 +11,7 @@ import {
   Image as ImageIcon,
   Sparkles,
 } from "lucide-react";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import BaseSystemMessage from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 
 interface UpdateImageFormProps {
   initialValues: {
@@ -66,7 +66,7 @@ export function UpdateImageForm({
   // Show success message when update is completed
   if (isUpdateCompleted) {
     return (
-      <BaseActionMessage
+      <BaseSystemMessage
         headerTitle={{
           icon: ImageIcon,
           name: "Update Launchpad Image",
@@ -78,12 +78,12 @@ export function UpdateImageForm({
             Launchpad image updated successfully!
           </div>
         </div>
-      </BaseActionMessage>
+      </BaseSystemMessage>
     );
   }
 
   return (
-    <BaseActionMessage
+    <BaseSystemMessage
       headerTitle={{
         icon: ImageIcon,
         name: "Update Image",
@@ -111,6 +111,6 @@ export function UpdateImageForm({
           className="w-full"
         />
       </div>
-    </BaseActionMessage>
+    </BaseSystemMessage>
   );
 }

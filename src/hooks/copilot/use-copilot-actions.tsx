@@ -12,11 +12,10 @@ import {
 
 export default function useCopilotActions() {
   const k8sContext = createK8sContext();
-  const devboxContext = useDevboxContext();
   const sealosContext = useSealosContext();
 
   // Activate actions based on the provided types
-  // activateDevboxActions(k8sContext, devboxContext);
+  activateDevboxActions();
 
   // activateClusterActions(k8sContext, sealosContext);
 

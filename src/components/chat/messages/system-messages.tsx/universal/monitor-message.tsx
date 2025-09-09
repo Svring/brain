@@ -5,10 +5,10 @@ import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import BaseSystemMessage from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { ArrowBigUpDash, BarChart3 } from "lucide-react";
-import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 
 interface MonitorMessageProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -42,7 +42,7 @@ export const MonitorMessage: React.FC<MonitorMessageProps> = ({ target }) => {
   ];
 
   return (
-    <BaseActionMessage
+    <BaseSystemMessage
       className="pb-4"
       headerTitle={{
         icon: BarChart3,
@@ -53,7 +53,7 @@ export const MonitorMessage: React.FC<MonitorMessageProps> = ({ target }) => {
       <div className="border rounded-lg p-4">
         <CombinedMetricsChart data={monitorData || []} isLoading={isLoading} />
       </div>
-    </BaseActionMessage>
+    </BaseSystemMessage>
   );
 };
 

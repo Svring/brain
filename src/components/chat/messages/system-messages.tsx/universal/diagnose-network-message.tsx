@@ -1,7 +1,7 @@
 import React from "react";
 import { ScanSearch, CheckCircle, HelpCircle } from "lucide-react";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import BaseActionMessage from "../components/base-action-message";
+import BaseSystemMessage from "../components/base-system-message";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useNetworkStatus } from "@/hooks/sealos/network/use-network-status";
 import { useContainerStatus } from "@/hooks/sealos/network/use-container-status";
@@ -96,7 +96,7 @@ export const DiagnoseNetworkMessage: React.FC<DiagnoseNetworkMessageProps> = ({
   // console.log("combinedStatusData", combinedStatusData);
 
   return (
-    <BaseActionMessage
+    <BaseSystemMessage
       headerTitle={{
         icon: ScanSearch,
         name: "Diagnosis",
@@ -221,7 +221,7 @@ export const DiagnoseNetworkMessage: React.FC<DiagnoseNetworkMessageProps> = ({
           )}
         </div>
       </div>
-    </BaseActionMessage>
+    </BaseSystemMessage>
   );
 };
 

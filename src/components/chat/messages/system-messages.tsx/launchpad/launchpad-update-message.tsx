@@ -6,7 +6,7 @@ import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { LaunchpadUpdateForm } from "@/components/forms/launchpad/launchpad-update-form";
-import BaseSystemMessage from "../components/base-system-message";
+import BaseResourceMessage from "../components/base-resource-message";
 import {
   LaunchpadUpdateRequestSchema,
   LaunchpadUpdateRequest,
@@ -108,11 +108,11 @@ export default function LaunchpadUpdateMessage({
   // Show loading state while fetching current resource
   if (isLoadingResource) {
     return (
-      <BaseSystemMessage target={target}>
+      <BaseResourceMessage target={target}>
         <div className="text-center py-4 text-muted-foreground">
           Loading current resource data...
         </div>
-      </BaseSystemMessage>
+      </BaseResourceMessage>
     );
   }
 
@@ -124,17 +124,17 @@ export default function LaunchpadUpdateMessage({
   // Show message if no fields provided
   if (!hasResource && !hasImage && !hasEnv) {
     return (
-      <BaseSystemMessage target={target}>
+      <BaseResourceMessage target={target}>
         <div className="text-center py-4 text-muted-foreground">
           No update fields provided. Please specify resource, image, or
           environment variables to update.
         </div>
-      </BaseSystemMessage>
+      </BaseResourceMessage>
     );
   }
 
   return (
-    <BaseSystemMessage target={target}>
+    <BaseResourceMessage target={target}>
       <div className="space-y-3 flex-col p-3 rounded-xl">
         <LaunchpadUpdateForm
           defaultValues={formValues}
@@ -142,6 +142,6 @@ export default function LaunchpadUpdateMessage({
           isLoading={updateLaunchpadMutation.isPending}
         />
       </div>
-    </BaseSystemMessage>
+    </BaseResourceMessage>
   );
 }

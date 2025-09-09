@@ -5,7 +5,7 @@ import { Copy, ExternalLink, Database, Check } from "lucide-react";
 import { useCopy } from "@/hooks/use-copy";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { Button } from "@/components/ui/button";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import BaseSystemMessage from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface ClusterConnectionMessageProps {
@@ -25,7 +25,7 @@ export const ClusterConnectionMessage: React.FC<
   // Show loading state
   if (isLoading) {
     return (
-      <BaseActionMessage
+      <BaseSystemMessage
         headerTitle={{
           icon: Database,
           name: "Cluster Connection",
@@ -36,14 +36,14 @@ export const ClusterConnectionMessage: React.FC<
             Loading cluster connection information...
           </span>
         </div>
-      </BaseActionMessage>
+      </BaseSystemMessage>
     );
   }
 
   // Show error state
   if (error || !clusterObject || !clusterObject.connection) {
     return (
-      <BaseActionMessage
+      <BaseSystemMessage
         headerTitle={{
           icon: Database,
           name: "Cluster Connection",
@@ -54,7 +54,7 @@ export const ClusterConnectionMessage: React.FC<
             Failed to load cluster connection information
           </span>
         </div>
-      </BaseActionMessage>
+      </BaseSystemMessage>
     );
   }
 
@@ -76,7 +76,7 @@ export const ClusterConnectionMessage: React.FC<
       : null;
 
   return (
-    <BaseActionMessage
+    <BaseSystemMessage
       headerTitle={{
         icon: Database,
         name: "Cluster Connection",
@@ -197,7 +197,7 @@ export const ClusterConnectionMessage: React.FC<
           )}
         </div>
       </div>
-    </BaseActionMessage>
+    </BaseSystemMessage>
   );
 };
 

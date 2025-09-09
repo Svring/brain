@@ -7,7 +7,7 @@ import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import BaseActionMessage from "../components/base-action-message";
+import BaseSystemMessage from "../components/base-system-message";
 import { FileText, Search, RefreshCw, Edit, ExternalLink } from "lucide-react";
 
 interface CustomDomainMessageProps {
@@ -51,7 +51,7 @@ export default function CustomDomainMessage({
   ];
 
   return (
-    <BaseActionMessage
+    <BaseSystemMessage
       headerTitle={{
         icon: FileText,
         name: "Your Domain",
@@ -118,6 +118,6 @@ export default function CustomDomainMessage({
           </CardContent>
         </Card>
       </div>
-    </BaseActionMessage>
+    </BaseSystemMessage>
   );
 }

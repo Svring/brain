@@ -2,10 +2,14 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import BaseActionHeader from "./base-system-header";
+import MessageHeader from "./base-resourec-message-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import {
+  CustomResourceTarget,
+  BuiltinResourceTarget,
+} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 export interface MessageAction {
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
@@ -14,39 +18,33 @@ export interface MessageAction {
   disabled?: boolean;
 }
 
-export interface BaseSystemMessageProps {
-  headerTitle: {
-    icon: React.ElementType;
-    name: string;
-  };
+export interface BaseResourceMessageProps {
+  target?: CustomResourceTarget | BuiltinResourceTarget;
+  actions?: MessageAction[];
+  showHeader?: boolean;
   headerSlot?: React.ReactNode;
   children?: React.ReactNode;
-  className?: string;
-  actions?: MessageAction[];
   prompt?: string;
 }
 
-export default function BaseSystemMessage({
-  headerTitle,
+export function BaseResourceMessage({
+  target,
+  actions = [],
+  showHeader = true,
   headerSlot,
   children,
-  className,
-  actions = [],
   prompt,
-}: BaseSystemMessageProps) {
+}: BaseResourceMessageProps) {
   return (
     <div className="flex justify-start w-full">
-      <Card
-        className={cn(
-          "w-full bg-background-secondary border border-border-primary py-0 gap-0",
-          className
-        )}
-      >
+      <Card className="w-full bg-background-secondary border border-border-primary pt-0">
         {/* Header Section */}
-        <BaseActionHeader headerTitle={headerTitle} headerSlot={headerSlot} />
+        {showHeader && target && (
+          <MessageHeader target={target} headerSlot={headerSlot} />
+        )}
 
         {/* Content Section */}
-        <CardContent className="p-4">{children}</CardContent>
+        <CardContent className="px-4 space-y-4">{children}</CardContent>
 
         {/* Actions Section */}
         {actions.length > 0 && (
@@ -85,3 +83,5 @@ export default function BaseSystemMessage({
     </div>
   );
 }
+
+export default BaseResourceMessage;

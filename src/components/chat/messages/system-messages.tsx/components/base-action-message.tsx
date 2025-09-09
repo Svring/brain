@@ -1,87 +1,54 @@
 "use client";
 
 import React from "react";
-import { cn } from "@/lib/utils";
-import BaseActionHeader from "./base-action-header";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-
-export interface MessageAction {
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  label: string;
-  onClick: () => void;
-  disabled?: boolean;
-}
+import { Sparkles } from "lucide-react";
+import BaseSystemMessage, { BaseSystemMessageProps } from "./base-system-message";
 
 export interface BaseActionMessageProps {
   headerTitle: {
     icon: React.ElementType;
     name: string;
   };
-  headerSlot?: React.ReactNode;
   children?: React.ReactNode;
   className?: string;
-  actions?: MessageAction[];
-  prompt?: string;
+  formId?: string;
+  onApply?: () => void;
+  isSubmitting?: boolean;
+  disabled?: boolean;
 }
 
 export default function BaseActionMessage({
   headerTitle,
-  headerSlot,
   children,
   className,
-  actions = [],
-  prompt,
+  formId,
+  onApply,
+  isSubmitting = false,
+  disabled = false,
 }: BaseActionMessageProps) {
+  const headerSlot = (
+    <Button
+      type="submit"
+      form={formId}
+      size="sm"
+      variant="outline"
+      disabled={disabled || isSubmitting}
+      className="flex items-center gap-2 border border-border-primary brightness-150"
+      onClick={onApply}
+    >
+      <Sparkles className="w-3 h-3 text-theme-blue" />
+      Apply
+    </Button>
+  );
+
   return (
-    <div className="flex justify-start w-full">
-      <Card
-        className={cn(
-          "w-full bg-background-secondary border border-border-primary py-0 gap-0",
-          className
-        )}
-      >
-        {/* Header Section */}
-        <BaseActionHeader headerTitle={headerTitle} headerSlot={headerSlot} />
-
-        {/* Content Section */}
-        <CardContent className="p-4">{children}</CardContent>
-
-        {/* Actions Section */}
-        {actions.length > 0 && (
-          <div className="px-4 space-y-3">
-            {/* Actions Title */}
-            <div className="relative flex items-center">
-              <Separator className="flex-1" />
-              <h3 className="text-sm font-medium text-foreground px-4">
-                Actions
-              </h3>
-              <Separator className="flex-1" />
-            </div>
-
-            {/* Prompt */}
-            {prompt && <div className="font-medium">{prompt}</div>}
-
-            {/* Action Buttons */}
-            <div className="space-y-2">
-              {actions.map((action, index) => (
-                <Button
-                  key={`${action.label}-${index}`}
-                  variant="outline"
-                  size="sm"
-                  onClick={action.onClick}
-                  disabled={action.disabled}
-                  className="w-full flex items-center gap-2"
-                >
-                  <action.icon className="h-4 w-4" />
-                  {action.label}
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
-      </Card>
-    </div>
+    <BaseSystemMessage
+      headerTitle={headerTitle}
+      headerSlot={headerSlot}
+      className={className}
+    >
+      {children}
+    </BaseSystemMessage>
   );
 }

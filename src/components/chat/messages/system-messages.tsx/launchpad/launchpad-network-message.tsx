@@ -6,7 +6,7 @@ import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import BaseActionMessage from "../components/base-action-message";
+import BaseSystemMessage from "../components/base-system-message";
 import {
   LaunchpadObjectSchema,
   LaunchpadObject,
@@ -50,7 +50,7 @@ export const LaunchpadNetworkMessage: React.FC<LaunchpadNetworkMessageProps> = (
   if (!launchpadObject || !ports.length) return null;
 
   return (
-    <BaseActionMessage
+    <BaseSystemMessage
       headerTitle={{ icon: Globe, name: "Launchpad Network Ports" }}
       headerSlot={
         isPortsEditing ? (
@@ -146,7 +146,7 @@ export const LaunchpadNetworkMessage: React.FC<LaunchpadNetworkMessageProps> = (
           ))}
         </div>
       )}
-    </BaseActionMessage>
+    </BaseSystemMessage>
   );
 };
 

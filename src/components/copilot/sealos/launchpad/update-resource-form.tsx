@@ -19,7 +19,7 @@ import {
   Settings2,
   Sparkles,
 } from "lucide-react";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import BaseSystemMessage from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 
 interface UpdateResourceFormProps {
   initialValues: {
@@ -111,7 +111,7 @@ export function UpdateResourceForm({
   // Show success message when update is completed
   if (isUpdateCompleted) {
     return (
-      <BaseActionMessage
+      <BaseSystemMessage
         headerTitle={{
           icon: Settings2,
           name: "Update Launchpad Resources",
@@ -123,12 +123,12 @@ export function UpdateResourceForm({
             Launchpad resources updated successfully!
           </div>
         </div>
-      </BaseActionMessage>
+      </BaseSystemMessage>
     );
   }
 
   return (
-    <BaseActionMessage
+    <BaseSystemMessage
       headerTitle={{
         icon: Settings2,
         name: "Update Resource Quota",
@@ -222,6 +222,6 @@ export function UpdateResourceForm({
           </div>
         )}
       </div>
-    </BaseActionMessage>
+    </BaseSystemMessage>
   );
 }

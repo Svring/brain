@@ -112,7 +112,7 @@ import { toast } from "sonner";
 import { CheckCircle, Settings, Cpu, Database } from "lucide-react";
 import type { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import type { ClusterResource } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
-import BaseSystemMessage from "../components/base-system-message";
+import BaseResourceMessage from "../components/base-resource-message";
 
 interface ClusterUpdateMessageProps {
   target: CustomResourceTarget;
@@ -200,7 +200,7 @@ export default function ClusterUpdateMessage({
 
   if (isCompleted) {
     return (
-      <BaseSystemMessage target={target}>
+      <BaseResourceMessage target={target}>
         <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
           <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
           <div>
@@ -217,12 +217,12 @@ export default function ClusterUpdateMessage({
         <div className="text-sm text-muted-foreground">
           <p>Your cluster configuration has been updated successfully.</p>
         </div>
-      </BaseSystemMessage>
+      </BaseResourceMessage>
     );
   }
 
   return (
-    <BaseSystemMessage target={target}>
+    <BaseResourceMessage target={target}>
       {/* Resources Section */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
@@ -339,6 +339,6 @@ export default function ClusterUpdateMessage({
           <p>Target is required to update cluster configuration.</p>
         </div>
       )}
-    </BaseSystemMessage>
+    </BaseResourceMessage>
   );
 }

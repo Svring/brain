@@ -10,15 +10,15 @@ import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/resources/cluster/cluster-co
 import { DEVBOX_RUNTIME_ICONS } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-icons";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 
-interface BaseMessageHeaderProps {
+interface BaseResourceMessageHeaderProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
   headerSlot?: React.ReactNode;
 }
 
-export default function BaseMessageHeader({
+export default function BaseResourceMessageHeader({
   target,
   headerSlot,
-}: BaseMessageHeaderProps) {
+}: BaseResourceMessageHeaderProps) {
   const { resource } = useResourceStatus(target);
 
   const getIconUrl = () => {

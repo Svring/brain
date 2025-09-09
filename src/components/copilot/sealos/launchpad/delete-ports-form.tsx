@@ -8,7 +8,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
 import { CircleCheckBig, Network, Sparkles } from "lucide-react";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import BaseSystemMessage from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 
 interface DeletePortsFormProps {
   initialValues: {
@@ -67,7 +67,7 @@ export function DeletePortsForm({
   // Show success message when update is completed
   if (isUpdateCompleted) {
     return (
-      <BaseActionMessage
+      <BaseSystemMessage
         headerTitle={{
           icon: Network,
           name: "Delete Launchpad Ports",
@@ -79,12 +79,12 @@ export function DeletePortsForm({
             Launchpad ports deleted successfully!
           </div>
         </div>
-      </BaseActionMessage>
+      </BaseSystemMessage>
     );
   }
 
   return (
-    <BaseActionMessage
+    <BaseSystemMessage
       headerTitle={{
         icon: Network,
         name: "Delete Ports",
@@ -120,6 +120,6 @@ export function DeletePortsForm({
           )}
         </div>
       </div>
-    </BaseActionMessage>
+    </BaseSystemMessage>
   );
 }

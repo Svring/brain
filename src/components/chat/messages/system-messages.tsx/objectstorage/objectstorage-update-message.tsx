@@ -24,7 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
-import BaseSystemMessage from "../components/base-system-message";
+import BaseResourceMessage from "../components/base-resource-message";
 
 // Form schema with Zod validation
 const objectStorageUpdateFormSchema = z.object({
@@ -81,31 +81,31 @@ export const ObjectStorageUpdateMessage: React.FC<
   // Handle loading state
   if (isLoading) {
     return (
-      <BaseSystemMessage target={target}>
+      <BaseResourceMessage target={target}>
         <div className="flex items-center justify-center">
           <span className="text-muted-foreground">
             Loading bucket information...
           </span>
         </div>
-      </BaseSystemMessage>
+      </BaseResourceMessage>
     );
   }
 
   // Handle error state
   if (error || !resource) {
     return (
-      <BaseSystemMessage target={target}>
+      <BaseResourceMessage target={target}>
         <div className="flex items-center justify-center">
           <span className="text-destructive">
             Failed to load object storage information
           </span>
         </div>
-      </BaseSystemMessage>
+      </BaseResourceMessage>
     );
   }
 
   return (
-    <BaseSystemMessage target={target}>
+    <BaseResourceMessage target={target}>
       <Form {...form}>
         <div className="space-y-4">
           <div className="space-y-2">
@@ -171,7 +171,7 @@ export const ObjectStorageUpdateMessage: React.FC<
           </div>
         </div>
       </div>
-    </BaseSystemMessage>
+    </BaseResourceMessage>
   );
 };
 

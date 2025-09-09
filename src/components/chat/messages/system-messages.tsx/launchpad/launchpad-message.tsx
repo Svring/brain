@@ -1,8 +1,8 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { BaseSystemMessage } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
-import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
+import { BaseResourceMessage } from "@/components/chat/messages/system-messages.tsx/components/base-resource-message";
+import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-resource-message";
 import { FileText, Container, BarChart3, Pencil } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import LaunchpadMessageDetails from "./components/launchpad-message-details";
@@ -33,13 +33,13 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
   // Show loading state
   if (isLoading) {
     return (
-      <BaseSystemMessage target={target}>
+      <BaseResourceMessage target={target}>
         <div className="flex items-center justify-center">
           <span className="text-muted-foreground">
             Loading launchpad information...
           </span>
         </div>
-      </BaseSystemMessage>
+      </BaseResourceMessage>
     );
   }
 
@@ -48,24 +48,24 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
   // Show error state
   if (error || !launchpadObject) {
     return (
-      <BaseSystemMessage target={target}>
+      <BaseResourceMessage target={target}>
         <div className="flex items-center justify-center">
           <span className="text-destructive">
             Failed to load launchpad information
           </span>
         </div>
-      </BaseSystemMessage>
+      </BaseResourceMessage>
     );
   }
 
   return (
-    <BaseSystemMessage
+    <BaseResourceMessage
       target={target}
       actions={actions}
       headerSlot={<LaunchpadMessageMenu target={target} />}
     >
       <LaunchpadMessageDetails target={target} />
-    </BaseSystemMessage>
+    </BaseResourceMessage>
   );
 };
 

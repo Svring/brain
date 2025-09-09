@@ -1,19 +1,6 @@
-import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
-import { DevboxApiContext } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  listDevboxOptions,
-  getDevboxOptions,
-  getDevboxReleasesOptions,
-} from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
-import {
-  useDeleteDevboxMutation,
-  useCreateDevboxMutation,
-  useManageDevboxLifecycleMutation,
-  useReleaseDevboxMutation,
-  useDeployDevboxMutation,
-} from "@/lib/sealos/resources/devbox/devbox-method/devbox-mutation";
 import { useCopilotAction } from "@copilotkit/react-core";
+import { useMutation } from "@tanstack/react-query";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import {
@@ -24,122 +11,139 @@ import {
   AIToolResult,
 } from "@/components/shadcn-io/ai/tool";
 import { AIResponse } from "@/components/shadcn-io/ai/response";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Check, X, Hammer } from "lucide-react";
-import { Spinner } from "@/components/ui/spinner";
-import DevboxCreateMessage, {
-  devboxFormSchema,
-} from "@/components/chat/messages/system-messages.tsx/devbox/devbox-create-message";
+import { devboxCreateFormSchema } from "@/schemas/forms/devbox/devbox-create-form-schema";
+import { devboxUpdateFormSchema } from "@/schemas/forms/devbox/devbox-update-form-schema";
+import { DevboxCreateForm } from "@/components/forms/devbox/devbox-create-form";
+import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
 import { jsonSchemaToActionParameters } from "@copilotkit/shared";
 import { zodToJsonSchema } from "zod-to-json-schema";
+import { DevboxCreateFormData } from "@/schemas/forms/devbox/devbox-create-form-schema";
+import { Code } from "lucide-react";
+import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
-export const activateDevboxActions = (
-  k8sContext: K8sApiContext,
-  devboxContext: DevboxApiContext
-) => {
-  listDevboxAction(k8sContext);
-  getDevboxAction(k8sContext);
-  createDevboxAction(devboxContext);
-  deleteDevboxAction(devboxContext);
-  startDevboxAction(devboxContext);
-  stopDevboxAction(devboxContext);
-  restartDevboxAction(devboxContext);
-  releaseDevboxAction(devboxContext);
-  deployDevboxAction(devboxContext);
-  listDevboxReleasesAction(devboxContext);
+export const activateDevboxActions = () => {
+  // CRUD operations
+  createDevboxAction();
+  // updateDevboxAction();
+  // deleteDevboxAction();
+
+  // // Lifecycle management
+  // startDevboxAction();
+  // pauseDevboxAction();
+  // restartDevboxAction();
+  // shutdownDevboxAction();
+
+  // // Release management
+  // releaseDevboxAction();
+  // deployDevboxAction();
 };
 
-export const createDevboxAction = (context: DevboxApiContext) => {
+export const createDevboxAction = () => {
+  const { devbox } = useTRPCClients();
+  const createDevboxMutation = useMutation({
+    ...devbox.create.mutationOptions(),
+  });
+  const { appendSystemMessage } = useAppendSystemMessageMutation();
+
   useCopilotAction({
     name: "createDevbox",
     description: "Create a new devbox with specified configuration",
     followUp: false,
     parameters: jsonSchemaToActionParameters(
-      zodToJsonSchema(devboxFormSchema) as any
+      zodToJsonSchema(devboxCreateFormSchema) as any
     ),
-    handler: ({ name, runtimeName, cpu, memory }) => {
-      // This will be handled by the UI component
-      return `Creating devbox "${name}" with ${runtimeName} runtime`;
-    },
-    render: ({ status, args }) => {
-      // Always render the component, but pass undefined for incomplete parameters
+    renderAndWaitForResponse: (props) => {
+      const { args, respond, status } = props;
+
+      const handleSubmit = async (data: DevboxCreateFormData) => {
+        await createDevboxMutation.mutateAsync(data, {
+          onSuccess: (response) => {
+            console.log("response", response);
+
+            // Create target for the created devbox
+            const target = convertResourceTypeToTarget("devbox", data.name);
+
+            // Append system message for devbox creation
+            appendSystemMessage({
+              type: "devbox.detail",
+              target,
+            });
+
+            if (respond) {
+              respond(`Devbox "${data.name}" created successfully`);
+            }
+          },
+          onError: (error) => {
+            console.error("Failed to create devbox:", error);
+            if (respond) {
+              respond("Failed to create devbox");
+            }
+          },
+        });
+      };
+
+      // Show completion message when status is complete
+      if (status === "complete") {
+        return (
+          <div className="w-full p-4">
+            <div className="flex items-center justify-center p-8">
+              <div className="flex flex-col items-center gap-4">
+                <p className="text-sm text-muted-foreground text-center">
+                  The devbox has been created successfully.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
       return (
-        <DevboxCreateMessage
-          payload={{
-            name: typeof args.name === "string" ? args.name : undefined,
-            runtimeName:
-              typeof args.runtimeName === "string"
-                ? args.runtimeName
-                : undefined,
-            cpu: typeof args.cpu === "number" ? args.cpu : undefined,
-            memory: typeof args.memory === "number" ? args.memory : undefined,
+        <BaseActionMessage
+          headerTitle={{
+            icon: Code,
+            name: "Create Devbox",
           }}
-        />
-      );
-    },
-  });
-};
-
-export const listDevboxAction = (context: K8sApiContext) => {
-  const queryClient = useQueryClient();
-
-  useCopilotAction({
-    name: "listDevboxes",
-    description: "List all devboxes",
-    handler: () => {
-      return queryClient.fetchQuery(listDevboxOptions(context));
-    },
-    render: ({ args, result, status }) => {
-      return (
-        <AITool key={"listDevboxes"}>
-          <AIToolHeader
-            description={"List all devboxes"}
-            name={"listDevboxes"}
-            status={status}
+          formId="devbox-create-form"
+          isSubmitting={status === "inProgress"}
+        >
+          <DevboxCreateForm
+            defaultValues={args as Partial<DevboxCreateFormData>}
+            onSubmit={handleSubmit}
+            isLoading={createDevboxMutation.isPending}
+            hideDefaultButton={true}
           />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult
-                // error={error}
-                result={<AIResponse>{result}</AIResponse>}
-              />
-            )}
-          </AIToolContent>
-        </AITool>
+        </BaseActionMessage>
       );
     },
   });
 };
 
-export const getDevboxAction = (context: K8sApiContext) => {
-  const queryClient = useQueryClient();
-
+export const updateDevboxAction = () => {
   useCopilotAction({
-    name: "getDevbox",
-    description: "Get a specific devbox by name",
+    name: "updateDevbox",
+    description: "Update a devbox configuration (resource, ports, etc.)",
     parameters: [
       {
         name: "devboxName",
         type: "string",
         required: true,
-        description: "Name of the devbox",
+        description: "Name of the devbox to update",
       },
+      ...jsonSchemaToActionParameters(
+        zodToJsonSchema(devboxUpdateFormSchema) as any
+      ),
     ],
-    handler: ({ devboxName }) => {
-      const target = CustomResourceTargetSchema.parse({
-        ...convertResourceTypeToTarget("devbox"),
-        name: devboxName,
-      });
-      return queryClient.fetchQuery(getDevboxOptions(context, target));
+    handler: async (input) => {
+      const { devboxName, ...updateData } = input;
+      // This would need to be implemented with the actual update mutation
+      return `Devbox "${devboxName}" update requested`;
     },
     render: ({ args, result, status }) => {
       return (
-        <AITool key={"getDevbox"}>
+        <AITool key={"updateDevbox"}>
           <AIToolHeader
-            description={"Get a specific devbox by name"}
-            name={"getDevbox"}
+            description={"Update a devbox configuration"}
+            name={"updateDevbox"}
             status={status}
           />
           <AIToolContent>
@@ -154,8 +158,11 @@ export const getDevboxAction = (context: K8sApiContext) => {
   });
 };
 
-export const deleteDevboxAction = (context: DevboxApiContext) => {
-  const deleteDevbox = useDeleteDevboxMutation(context);
+export const deleteDevboxAction = () => {
+  const { devbox } = useTRPCClients();
+  const deleteDevboxMutation = useMutation({
+    ...devbox.delete.mutationOptions(),
+  });
 
   useCopilotAction({
     name: "deleteDevbox",
@@ -168,8 +175,9 @@ export const deleteDevboxAction = (context: DevboxApiContext) => {
         description: "Name of the devbox to delete",
       },
     ],
-    handler: ({ devboxName }) => {
-      deleteDevbox.mutateAsync(devboxName);
+    handler: async ({ devboxName }) => {
+      const result = await deleteDevboxMutation.mutateAsync(devboxName);
+      return `Devbox "${devboxName}" deleted successfully`;
     },
     render: ({ args, result, status }) => {
       return (
@@ -191,8 +199,11 @@ export const deleteDevboxAction = (context: DevboxApiContext) => {
   });
 };
 
-export const startDevboxAction = (context: DevboxApiContext) => {
-  const manageDevboxLifecycle = useManageDevboxLifecycleMutation(context);
+export const startDevboxAction = () => {
+  const { devbox } = useTRPCClients();
+  const startDevboxMutation = useMutation({
+    ...devbox.start.mutationOptions(),
+  });
 
   useCopilotAction({
     name: "startDevbox",
@@ -205,78 +216,16 @@ export const startDevboxAction = (context: DevboxApiContext) => {
         description: "Name of the devbox to start",
       },
     ],
-    // handler: ({ devboxName }) => {
-    //   manageDevboxLifecycle.mutateAsync({ devboxName, action: "start" });
-    // },
-    renderAndWaitForResponse: (props) => {
-      const { status, args, result, respond } = props;
-      return (
-        <div className="bg-background-secondary border border-border-primary rounded-2xl rounded-bl-md p-4 py-2 gap-2 flex flex-col shadow-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Hammer className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-md font-semibold">startDevbox</h4>
-              {status !== "complete" && (
-                <Spinner
-                  variant="bars"
-                  className="h-4 w-4 text-muted-foreground"
-                />
-              )}
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant={"outline"}
-                className="px-2 py-1 rounded-xl border hover:brightness-135"
-                onClick={() =>
-                  respond?.(`${args.devboxName} started successfully`)
-                }
-              >
-                <Check className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={"outline"}
-                className="px-2 py-1 rounded-xl border hover:brightness-135"
-                onClick={() => respond?.(`user cancelled the action`)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-          <Separator />
-          <div className="py-2">
-            <p className="text-muted-foreground">
-              starting devbox {args.devboxName}
-            </p>
-          </div>
-        </div>
-      );
-    },
-  });
-};
-
-export const stopDevboxAction = (context: DevboxApiContext) => {
-  const manageDevboxLifecycle = useManageDevboxLifecycleMutation(context);
-
-  useCopilotAction({
-    name: "stopDevbox",
-    description: "Stop a devbox",
-    parameters: [
-      {
-        name: "devboxName",
-        type: "string",
-        required: true,
-        description: "Name of the devbox to stop",
-      },
-    ],
-    handler: ({ devboxName }) => {
-      manageDevboxLifecycle.mutateAsync({ devboxName, action: "stop" });
+    handler: async ({ devboxName }) => {
+      const result = await startDevboxMutation.mutateAsync(devboxName);
+      return `Devbox "${devboxName}" started successfully`;
     },
     render: ({ args, result, status }) => {
       return (
-        <AITool key={"stopDevbox"}>
+        <AITool key={"startDevbox"}>
           <AIToolHeader
-            description={"Stop a devbox"}
-            name={"stopDevbox"}
+            description={"Start a devbox"}
+            name={"startDevbox"}
             status={status}
           />
           <AIToolContent>
@@ -291,8 +240,52 @@ export const stopDevboxAction = (context: DevboxApiContext) => {
   });
 };
 
-export const restartDevboxAction = (context: DevboxApiContext) => {
-  const manageDevboxLifecycle = useManageDevboxLifecycleMutation(context);
+export const pauseDevboxAction = () => {
+  const { devbox } = useTRPCClients();
+  const pauseDevboxMutation = useMutation({
+    ...devbox.pause.mutationOptions(),
+  });
+
+  useCopilotAction({
+    name: "pauseDevbox",
+    description: "Pause a devbox",
+    parameters: [
+      {
+        name: "devboxName",
+        type: "string",
+        required: true,
+        description: "Name of the devbox to pause",
+      },
+    ],
+    handler: async ({ devboxName }) => {
+      const result = await pauseDevboxMutation.mutateAsync(devboxName);
+      return `Devbox "${devboxName}" paused successfully`;
+    },
+    render: ({ args, result, status }) => {
+      return (
+        <AITool key={"pauseDevbox"}>
+          <AIToolHeader
+            description={"Pause a devbox"}
+            name={"pauseDevbox"}
+            status={status}
+          />
+          <AIToolContent>
+            <AIToolParameters parameters={args} />
+            {result && (
+              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
+            )}
+          </AIToolContent>
+        </AITool>
+      );
+    },
+  });
+};
+
+export const restartDevboxAction = () => {
+  const { devbox } = useTRPCClients();
+  const restartDevboxMutation = useMutation({
+    ...devbox.restart.mutationOptions(),
+  });
 
   useCopilotAction({
     name: "restartDevbox",
@@ -305,8 +298,9 @@ export const restartDevboxAction = (context: DevboxApiContext) => {
         description: "Name of the devbox to restart",
       },
     ],
-    handler: ({ devboxName }) => {
-      manageDevboxLifecycle.mutateAsync({ devboxName, action: "restart" });
+    handler: async ({ devboxName }) => {
+      const result = await restartDevboxMutation.mutateAsync(devboxName);
+      return `Devbox "${devboxName}" restarted successfully`;
     },
     render: ({ args, result, status }) => {
       return (
@@ -328,39 +322,33 @@ export const restartDevboxAction = (context: DevboxApiContext) => {
   });
 };
 
-export const deployDevboxAction = (context: DevboxApiContext) => {
-  const deployDevbox = useDeployDevboxMutation(context);
+export const shutdownDevboxAction = () => {
+  const { devbox } = useTRPCClients();
+  const shutdownDevboxMutation = useMutation({
+    ...devbox.shutdown.mutationOptions(),
+  });
 
   useCopilotAction({
-    name: "deployDevbox",
-    description: "Deploy a devbox release with fixed resource configuration (2 CPU cores, 2GB memory)",
+    name: "shutdownDevbox",
+    description: "Shutdown a devbox",
     parameters: [
       {
         name: "devboxName",
         type: "string",
         required: true,
-        description: "Name of the devbox to deploy",
-      },
-      {
-        name: "tag",
-        type: "string",
-        required: true,
-        description: "Devbox release version tag to deploy",
+        description: "Name of the devbox to shutdown",
       },
     ],
-    handler: ({ devboxName, tag }) => {
-      const deployRequest = {
-        devboxName,
-        tag,
-      };
-      deployDevbox.mutateAsync(deployRequest);
+    handler: async ({ devboxName }) => {
+      const result = await shutdownDevboxMutation.mutateAsync(devboxName);
+      return `Devbox "${devboxName}" shutdown successfully`;
     },
     render: ({ args, result, status }) => {
       return (
-        <AITool key={"deployDevbox"}>
+        <AITool key={"shutdownDevbox"}>
           <AIToolHeader
-            description={"Deploy a devbox release with fixed resource configuration (2 CPU cores, 2GB memory)"}
-            name={"deployDevbox"}
+            description={"Shutdown a devbox"}
+            name={"shutdownDevbox"}
             status={status}
           />
           <AIToolContent>
@@ -375,12 +363,11 @@ export const deployDevboxAction = (context: DevboxApiContext) => {
   });
 };
 
-export const updateDevboxAction = async () => {};
-
-export const getDevboxMonitorAction = async () => {};
-
-export const releaseDevboxAction = (context: DevboxApiContext) => {
-  const releaseDevbox = useReleaseDevboxMutation(context);
+export const releaseDevboxAction = () => {
+  const { devbox } = useTRPCClients();
+  const releaseDevboxMutation = useMutation({
+    ...devbox.release.mutationOptions(),
+  });
 
   useCopilotAction({
     name: "releaseDevbox",
@@ -405,12 +392,13 @@ export const releaseDevboxAction = (context: DevboxApiContext) => {
         description: "Optional description for the release",
       },
     ],
-    handler: ({ devboxName, tag, releaseDes }) => {
-      releaseDevbox.mutateAsync({
+    handler: async ({ devboxName, tag, releaseDes }) => {
+      const result = await releaseDevboxMutation.mutateAsync({
         devboxName,
         tag,
         releaseDes: releaseDes || "",
       });
+      return `Devbox "${devboxName}" released with tag "${tag}" successfully`;
     },
     render: ({ args, result, status }) => {
       return (
@@ -432,31 +420,45 @@ export const releaseDevboxAction = (context: DevboxApiContext) => {
   });
 };
 
-export const listDevboxReleasesAction = (context: DevboxApiContext) => {
-  const queryClient = useQueryClient();
+export const deployDevboxAction = () => {
+  const { devbox } = useTRPCClients();
+  const deployDevboxMutation = useMutation({
+    ...devbox.deploy.mutationOptions(),
+  });
 
   useCopilotAction({
-    name: "listDevboxReleases",
-    description: "List all releases for a specific devbox",
+    name: "deployDevbox",
+    description:
+      "Deploy a devbox release with fixed resource configuration (2 CPU cores, 2GB memory)",
     parameters: [
       {
         name: "devboxName",
         type: "string",
         required: true,
-        description: "Name of the devbox to get releases for",
+        description: "Name of the devbox to deploy",
+      },
+      {
+        name: "tag",
+        type: "string",
+        required: true,
+        description: "Devbox release version tag to deploy",
       },
     ],
-    handler: ({ devboxName }) => {
-      return queryClient.fetchQuery(
-        getDevboxReleasesOptions(context, devboxName)
-      );
+    handler: async ({ devboxName, tag }) => {
+      const result = await deployDevboxMutation.mutateAsync({
+        devboxName,
+        tag,
+      });
+      return `Devbox "${devboxName}" deployed with tag "${tag}" successfully`;
     },
     render: ({ args, result, status }) => {
       return (
-        <AITool key={"listDevboxReleases"}>
+        <AITool key={"deployDevbox"}>
           <AIToolHeader
-            description={"List all releases for a specific devbox"}
-            name={"listDevboxReleases"}
+            description={
+              "Deploy a devbox release with fixed resource configuration (2 CPU cores, 2GB memory)"
+            }
+            name={"deployDevbox"}
             status={status}
           />
           <AIToolContent>
@@ -470,5 +472,3 @@ export const listDevboxReleasesAction = (context: DevboxApiContext) => {
     },
   });
 };
-
-export const openDevboxTerminalAction = async () => {};

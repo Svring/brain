@@ -130,7 +130,7 @@ import {
 } from "lucide-react";
 import type { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import type { DevboxPort } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
-import BaseSystemMessage from "../components/base-system-message";
+import BaseResourceMessage from "../components/base-resource-message";
 
 // CPU options for devbox update
 const cpuOptions = [500, 1000, 2000, 4000, 6000, 8000] as const;
@@ -287,7 +287,7 @@ export default function DevboxUpdateMessage({
 
   if (isCompleted) {
     return (
-      <BaseSystemMessage target={target}>
+      <BaseResourceMessage target={target}>
         <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
           <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
           <div>
@@ -304,12 +304,12 @@ export default function DevboxUpdateMessage({
         <div className="text-sm text-muted-foreground">
           <p>Your devbox configuration has been updated successfully.</p>
         </div>
-      </BaseSystemMessage>
+      </BaseResourceMessage>
     );
   }
 
   return (
-    <BaseSystemMessage target={target}>
+    <BaseResourceMessage target={target}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           {/* Resources Section */}
@@ -503,6 +503,6 @@ export default function DevboxUpdateMessage({
           )}
         </form>
       </Form>
-    </BaseSystemMessage>
+    </BaseResourceMessage>
   );
 }

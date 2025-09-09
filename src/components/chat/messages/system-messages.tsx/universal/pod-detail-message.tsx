@@ -16,7 +16,7 @@ import {
 import { Pod } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { ContainerStatus } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/pod-schemas";
 import { inferStatusColor } from "@/lib/sealos/sealos-utils";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import BaseSystemMessage from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import { CombinedMetricsChart } from "@/components/chat/messages/system-messages.tsx/components/combined-metrics-chart";
 
 interface PodDetailsProps {
@@ -53,7 +53,7 @@ export default function PodDetail({ target: payload }: PodDetailsProps) {
   // Handle loading state
   if (isLoading) {
     return (
-      <BaseActionMessage
+      <BaseSystemMessage
         headerTitle={{
           icon: Container,
           name: "Pod Details",
@@ -64,14 +64,14 @@ export default function PodDetail({ target: payload }: PodDetailsProps) {
             Loading pod details...
           </p>
         </div>
-      </BaseActionMessage>
+      </BaseSystemMessage>
     );
   }
 
   // Handle error state
   if (error) {
     return (
-      <BaseActionMessage
+      <BaseSystemMessage
         headerTitle={{
           icon: Container,
           name: "Pod Details",
@@ -80,12 +80,12 @@ export default function PodDetail({ target: payload }: PodDetailsProps) {
         <div className="text-center py-4">
           <p className="text-sm text-theme-red">Failed to load pod details</p>
         </div>
-      </BaseActionMessage>
+      </BaseSystemMessage>
     );
   }
 
   return (
-    <BaseActionMessage
+    <BaseSystemMessage
       headerTitle={{
         icon: Container,
         name: "Pod Details",
@@ -211,6 +211,6 @@ export default function PodDetail({ target: payload }: PodDetailsProps) {
           <p className="text-sm text-muted-foreground">No pods available</p>
         </div>
       )}
-    </BaseActionMessage>
+    </BaseSystemMessage>
   );
 }
