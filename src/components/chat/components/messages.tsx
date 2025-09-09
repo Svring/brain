@@ -65,9 +65,7 @@ export function AiMessages({
   scrollRef: externalScrollRef,
   className,
 }: AiMessagesProps = {}) {
-  const { messages, isLoading, interrupt, reset } = useCopilotChatHeadless_c({
-    id: "chat",
-  });
+  const { messages, isLoading, interrupt, reset } = useCopilotChatHeadless_c();
   const { setSidebarResponding } = useChatActions();
 
   // console.log("loading", isLoading);

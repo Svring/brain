@@ -24,7 +24,7 @@ export const ClusterCreateMessage: React.FC<ClusterCreateMessageProps> = ({
   );
 
   const createClusterMutation = useMutation({
-    ...cluster.createCluster.mutationOptions(),
+    ...cluster.create.mutationOptions(),
     onSuccess: async (_, variables) => {
       if (!selectedProject) {
         toast.error("No project selected. Please select a project first.");

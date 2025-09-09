@@ -46,20 +46,20 @@ export const useResourcePause = (
 
   // Use existing mutation hooks
   const devboxPauseMutation = useMutation(
-    devboxTrpcClient.manageDevboxLifecycle.mutationOptions()
+    devboxTrpcClient.pause.mutationOptions()
   );
   const launchpadPauseMutation = useMutation(
     launchpadTrpcClient.pauseLaunchpad.mutationOptions()
   );
   const clusterPauseMutation = useMutation(
-    clusterTrpcClient.pauseCluster.mutationOptions()
+    clusterTrpcClient.pause.mutationOptions()
   );
 
   // Return the appropriate mutation based on resource type
   if (isDevbox) {
     return {
-      pause: (request: DevboxLifecycleRequest) => {
-        devboxPauseMutation.mutate(request);
+      pause: (devboxName: string) => {
+        devboxPauseMutation.mutate(devboxName);
       },
       isPending: devboxPauseMutation.isPending,
       isError: devboxPauseMutation.isError,
@@ -69,7 +69,7 @@ export const useResourcePause = (
   } else if (isLaunchpad) {
     return {
       pause: (request: LaunchpadPauseRequest) => {
-        launchpadPauseMutation.mutate({ request });
+        launchpadPauseMutation.mutate(request);
       },
       isPending: launchpadPauseMutation.isPending,
       isError: launchpadPauseMutation.isError,

@@ -43,7 +43,7 @@ export default function ClusterMessageMenu({
 
   // Use tRPC mutations from cluster router
   const deleteCluster = useMutation(
-    clusterTrpcClient.deleteCluster.mutationOptions()
+    clusterTrpcClient.delete.mutationOptions()
   );
 
   const handleDelete = () => {
@@ -54,7 +54,7 @@ export default function ClusterMessageMenu({
         onSuccess: () => {
           // Invalidate relevant queries
           queryClient.invalidateQueries({
-            queryKey: clusterTrpcClient.getCluster.queryKey(target),
+            queryKey: clusterTrpcClient.get.queryKey(target),
           });
         },
       }

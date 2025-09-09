@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Command as CommandPrimitive } from "cmdk"
 import { SearchIcon } from "lucide-react"
+import { motion } from "framer-motion"
 
 import { cn } from "@/lib/utils"
 import {
@@ -96,6 +97,138 @@ function CommandList({
   )
 }
 
+function CommandListWithMovingBg({
+  className,
+  ...props
+}: React.ComponentProps<typeof CommandPrimitive.List>) {
+  const [selectedElement, setSelectedElement] = React.useState<HTMLElement | null>(null);
+  const [backgroundBounds, setBackgroundBounds] = React.useState({
+    top: 0,
+    left: 0,
+    width: 0,
+    height: 0,
+  });
+  const listRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleSelectionChange = () => {
+      const selected = document.querySelector('[data-slot="command-item"][data-selected="true"]') as HTMLElement;
+      if (selected && listRef.current) {
+        setSelectedElement(selected);
+        const listRect = listRef.current.getBoundingClientRect();
+        const selectedRect = selected.getBoundingClientRect();
+        
+        setBackgroundBounds({
+          top: selectedRect.top - listRect.top + listRef.current.scrollTop,
+          left: selectedRect.left - listRect.left,
+          width: selectedRect.width,
+          height: selectedRect.height,
+        });
+      } else {
+        // If no selected item found, hide the background
+        setSelectedElement(null);
+      }
+    };
+
+    // Use MutationObserver to watch for selection changes and DOM structure changes
+    const observer = new MutationObserver((mutations) => {
+      let shouldUpdate = false;
+      
+      mutations.forEach((mutation) => {
+        // Check for attribute changes (selection changes)
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-selected') {
+          shouldUpdate = true;
+        }
+        // Check for childList changes (new items added/removed)
+        if (mutation.type === 'childList') {
+          shouldUpdate = true;
+        }
+      });
+      
+      if (shouldUpdate) {
+        // Small delay to ensure DOM is fully updated
+        setTimeout(handleSelectionChange, 10);
+      }
+    });
+
+    if (listRef.current) {
+      observer.observe(listRef.current, {
+        attributes: true,
+        attributeFilter: ['data-selected'],
+        subtree: true,
+        childList: true, // Watch for children being added/removed
+      });
+    }
+
+    // Initial check with a small delay to ensure content is rendered
+    const timeoutId = setTimeout(handleSelectionChange, 50);
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(timeoutId);
+    };
+  }, []);
+
+  // Also run the selection check when the component content changes
+  React.useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      const selected = document.querySelector('[data-slot="command-item"][data-selected="true"]') as HTMLElement;
+      if (selected && listRef.current) {
+        setSelectedElement(selected);
+        const listRect = listRef.current.getBoundingClientRect();
+        const selectedRect = selected.getBoundingClientRect();
+        
+        setBackgroundBounds({
+          top: selectedRect.top - listRect.top + listRef.current.scrollTop,
+          left: selectedRect.left - listRect.left,
+          width: selectedRect.width,
+          height: selectedRect.height,
+        });
+      }
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [props.children]);
+
+  return (
+    <div ref={listRef} className="relative">
+      {selectedElement && (
+        <motion.div
+          className="absolute bg-accent rounded-lg pointer-events-none"
+          style={{ zIndex: 0 }}
+          initial={{
+            top: backgroundBounds.top,
+            left: backgroundBounds.left,
+            width: backgroundBounds.width,
+            height: backgroundBounds.height,
+          }}
+          animate={{
+            top: backgroundBounds.top,
+            left: backgroundBounds.left,
+            width: backgroundBounds.width,
+            height: backgroundBounds.height,
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 500,
+            damping: 30,
+            mass: 0.8,
+          }}
+          layout
+        />
+      )}
+      <CommandPrimitive.List
+        data-slot="command-list"
+        className={cn(
+          "scroll-py-1 overflow-x-hidden overflow-y-auto transition-all duration-300 ease-out relative",
+          className
+        )}
+        {...props}
+      />
+    </div>
+  )
+}
+
 function CommandEmpty({
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.Empty>) {
@@ -145,7 +278,7 @@ function CommandItem({
     <CommandPrimitive.Item
       data-slot="command-item"
       className={cn(
-        "data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground relative flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-hidden select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "data-[selected=true]:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground relative flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-hidden select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 z-10",
         className
       )}
       {...props}
@@ -174,6 +307,7 @@ export {
   CommandDialog,
   CommandInput,
   CommandList,
+  CommandListWithMovingBg,
   CommandEmpty,
   CommandGroup,
   CommandItem,

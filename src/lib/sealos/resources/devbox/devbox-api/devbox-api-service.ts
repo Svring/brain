@@ -109,7 +109,7 @@ export async function getDevboxReleases(
 ): Promise<any> {
   const api = createDevboxAxios(context);
   const response = await api.get("/releases", {
-    params: { name },
+    params: { devboxName: name },
   });
   return response.data.data;
 }

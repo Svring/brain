@@ -61,9 +61,7 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
     error,
     refetch,
   } = useQuery(
-    clusterTrpcClient.getClusterBackupList.queryOptions({
-      target: target,
-    })
+    clusterTrpcClient.backupList.queryOptions(target)
   );
 
   const handleDeleteBackup = async (backupName: string) => {

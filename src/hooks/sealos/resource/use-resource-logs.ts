@@ -12,9 +12,7 @@ export const useResourceLogs = (
 
   // Handle cluster logs
   const clusterLogsQuery = useQuery({
-    ...cluster.getClusterLog.queryOptions({
-      target: target as CustomResourceTarget,
-    }),
+    ...cluster.logs.queryOptions(target as CustomResourceTarget),
     enabled: target.type === "custom" && target.resourceType === "cluster",
   });
 

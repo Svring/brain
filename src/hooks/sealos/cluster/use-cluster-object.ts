@@ -12,5 +12,5 @@ export const useClusterObject = (clusterName: string) => {
     convertResourceTypeToTarget("cluster", clusterName)
   );
 
-  return useQuery(cluster.getCluster.queryOptions(target));
+  return useQuery(cluster.get.queryOptions(target));
 };

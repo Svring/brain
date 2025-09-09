@@ -60,7 +60,7 @@ export const useResourceDelete = (
     launchpadTrpcClient.deleteLaunchpad.mutationOptions()
   );
   const clusterDeleteMutation = useMutation(
-    clusterTrpcClient.deleteCluster.mutationOptions()
+    clusterTrpcClient.delete.mutationOptions()
   );
   const objectStorageDeleteMutation = useMutation(
     objectStorageTrpcClient.deleteObjectStorage.mutationOptions()

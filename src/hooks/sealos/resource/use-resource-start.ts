@@ -46,20 +46,20 @@ export const useResourceStart = (
 
   // Use existing mutation hooks
   const devboxStartMutation = useMutation(
-    devboxTrpcClient.manageDevboxLifecycle.mutationOptions()
+    devboxTrpcClient.start.mutationOptions()
   );
   const launchpadStartMutation = useMutation(
     launchpadTrpcClient.startLaunchpad.mutationOptions()
   );
   const clusterStartMutation = useMutation(
-    clusterTrpcClient.startCluster.mutationOptions()
+    clusterTrpcClient.start.mutationOptions()
   );
 
   // Return the appropriate mutation based on resource type
   if (isDevbox) {
     return {
-      start: (request: DevboxLifecycleRequest) => {
-        devboxStartMutation.mutate(request);
+      start: (devboxName: string) => {
+        devboxStartMutation.mutate(devboxName);
       },
       isPending: devboxStartMutation.isPending,
       isError: devboxStartMutation.isError,
@@ -69,7 +69,7 @@ export const useResourceStart = (
   } else if (isLaunchpad) {
     return {
       start: (request: LaunchpadStartRequest) => {
-        launchpadStartMutation.mutate({ request });
+        launchpadStartMutation.mutate(request);
       },
       isPending: launchpadStartMutation.isPending,
       isError: launchpadStartMutation.isError,

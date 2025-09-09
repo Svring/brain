@@ -24,7 +24,6 @@ import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schema
 export const useCreateNewChatSessionMutation = (
   resourceTarget?: ResourceTarget
 ) => {
-  const { reset } = useCopilotChatHeadless_c();
   const { auth } = useAuthState();
   const { selectedProject, selectedResource } = useProjectState();
 
@@ -35,9 +34,6 @@ export const useCreateNewChatSessionMutation = (
         projectName: selectedProject || undefined,
         resourceTarget: resourceTarget || selectedResource || undefined,
       });
-    },
-    onSuccess: (_) => {
-      // reset();
     },
     onError: (error) => {
       console.error("Failed to create chat session:", error);

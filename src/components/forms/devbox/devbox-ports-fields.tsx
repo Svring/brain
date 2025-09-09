@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
 import { useFormContext } from "react-hook-form";
-import { DevboxPort } from "@/schemas/forms/devbox/devbox-create-form-schema";
+import { DevboxPort } from "@/schemas/forms/devbox/components/devbox-port-schema";
 
 interface DevboxPortsFieldsProps {
   fieldArray: any; // useFieldArray return type
@@ -28,14 +28,16 @@ export const DevboxPortsFields = ({ fieldArray }: DevboxPortsFieldsProps) => {
   // Port management functions
   const addPort = () => {
     // Find the next available port number starting from 8080
-    const existingNumbers = ports.map(port => port.number).filter(num => num !== undefined);
+    const existingNumbers = ports
+      .map((port) => port.number)
+      .filter((num) => num !== undefined);
     let nextPortNumber = 8080;
-    
+
     // Find the first available port number
     while (existingNumbers.includes(nextPortNumber)) {
       nextPortNumber++;
     }
-    
+
     // New ports should NOT have portName field (backend will know it's new)
     fieldArray.append({
       number: nextPortNumber,
@@ -81,18 +83,20 @@ export const DevboxPortsFields = ({ fieldArray }: DevboxPortsFieldsProps) => {
                     },
                     validate: (value) => {
                       if (!value) return "Port number is required";
-                      
+
                       const num = parseInt(value.toString(), 10);
                       if (isNaN(num)) return "Invalid port number";
-                      
+
                       // Check for duplicates (excluding current port)
                       const otherPorts = ports.filter((_, i) => i !== index);
-                      const isDuplicate = otherPorts.some(port => port.number === num);
-                      
+                      const isDuplicate = otherPorts.some(
+                        (port) => port.number === num
+                      );
+
                       if (isDuplicate) {
                         return "Port number already exists";
                       }
-                      
+
                       return true;
                     },
                   })}

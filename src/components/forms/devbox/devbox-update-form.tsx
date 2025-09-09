@@ -6,6 +6,7 @@ import { useDevboxUpdateForm } from "@/hooks/forms/devbox/use-devbox-update-form
 import { DevboxUpdateFormData } from "@/schemas/forms/devbox/devbox-update-form-schema";
 import { DevboxResourceFields } from "./devbox-resource-fields";
 import { DevboxPortsFields } from "./devbox-ports-fields";
+import { DevboxSimplePortsFields } from "./devbox-simple-ports-fields";
 import { toast } from "sonner";
 
 interface DevboxUpdateFormProps {
@@ -13,6 +14,7 @@ interface DevboxUpdateFormProps {
   onSubmit: (data: DevboxUpdateFormData) => void;
   isLoading?: boolean;
   hideDefaultButton?: boolean;
+  useSimplePortsMode?: boolean;
 }
 
 export const DevboxUpdateForm = ({
@@ -20,8 +22,9 @@ export const DevboxUpdateForm = ({
   onSubmit,
   isLoading = false,
   hideDefaultButton = false,
+  useSimplePortsMode = false,
 }: DevboxUpdateFormProps) => {
-  const { form, portsFieldArray } = useDevboxUpdateForm(defaultValues);
+  const { form, portsFieldArray, simplePortsFieldArray } = useDevboxUpdateForm(defaultValues);
 
   const handleSubmit = (data: DevboxUpdateFormData) => {
     onSubmit(data);
@@ -39,6 +42,11 @@ export const DevboxUpdateForm = ({
   // Only show fields that have values in defaultValues
   const hasResource = defaultValues?.resource !== undefined;
   const hasPorts = defaultValues?.ports !== undefined;
+  const hasSimplePorts = defaultValues?.simplePorts !== undefined;
+
+  // Determine which ports field to show
+  const showSimplePortsField = useSimplePortsMode || hasSimplePorts;
+  const showRegularPortsField = hasPorts && !showSimplePortsField;
 
   return (
     <Form {...form}>
@@ -49,9 +57,17 @@ export const DevboxUpdateForm = ({
       >
         {hasResource && <DevboxResourceFields />}
 
-        {hasPorts && (
+        {showRegularPortsField && (
           <div className="space-y-2">
+            <div className="text-sm font-medium text-foreground">Ports</div>
             <DevboxPortsFields fieldArray={portsFieldArray} />
+          </div>
+        )}
+
+        {showSimplePortsField && (
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-foreground">Port Operations</div>
+            <DevboxSimplePortsFields fieldArray={simplePortsFieldArray} />
           </div>
         )}
 

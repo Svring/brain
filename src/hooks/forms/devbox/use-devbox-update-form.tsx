@@ -23,8 +23,14 @@ export const useDevboxUpdateForm = (
     name: "ports",
   });
 
+  const simplePortsFieldArray = useFieldArray({
+    control: form.control,
+    name: "simplePorts",
+  });
+
   return {
     form,
     portsFieldArray,
+    simplePortsFieldArray,
   };
 };

@@ -6,6 +6,7 @@ import {
   CommandEmpty,
   CommandInput,
   CommandList,
+  CommandListWithMovingBg,
 } from "@/components/ui/command";
 import { CommandPanelMain } from "./command-panel-main";
 import { ResourceList, ResourceCreate } from "./command-panel-add-resource";
@@ -84,19 +85,19 @@ export function FlowgraphCommandDialog({
               />
             ) : showResourceList ? (
               // Show resource list when "Add Resource" is selected
-              <CommandList>
+              <CommandListWithMovingBg>
                 <CommandEmpty>No resources found.</CommandEmpty>
                 <ResourceList
                   onSelect={handleResourceSelect}
                   onBack={() => setShowResourceList(false)}
                 />
-              </CommandList>
+              </CommandListWithMovingBg>
             ) : (
               // Show main command list
-              <CommandList>
+              <CommandListWithMovingBg>
                 <CommandEmpty>No commands found.</CommandEmpty>
                 <CommandPanelMain onSelect={handleSelect} />
-              </CommandList>
+              </CommandListWithMovingBg>
             )}
           </div>
 

@@ -32,37 +32,33 @@ import {
 const t = initTRPC.context<ClusterContext>().create();
 
 export const clusterRouter = t.router({
-  getCluster: t.procedure
+  // ===== QUERY PROCEDURES =====
+
+  // Cluster Information
+  get: t.procedure
     .input(CustomResourceTargetSchema)
     .query(async ({ input, ctx }) => {
       return await getCluster(ctx, input);
     }),
 
-  getClusterBackupList: t.procedure
-    .input(
-      z.object({
-        target: CustomResourceTargetSchema,
-      })
-    )
+  backupList: t.procedure
+    .input(CustomResourceTargetSchema)
     .query(async ({ input, ctx }) => {
-      return await getClusterBackupList(ctx, input.target);
+      return await getClusterBackupList(ctx, input);
     }),
 
-  getClusterLog: t.procedure
-    .input(
-      z.object({
-        target: CustomResourceTargetSchema,
-      })
-    )
+  logs: t.procedure
+    .input(CustomResourceTargetSchema)
     .query(async ({ input, ctx }) => {
-      return await getClusterLogs(ctx, ctx, input.target);
+      return await getClusterLogs(ctx, ctx, input);
     }),
 
-  getClusterVersions: t.procedure.query(async ({ ctx }) => {
+  versions: t.procedure.query(async ({ ctx }) => {
     return await runParallelAction(getClusterVersions(ctx));
   }),
 
-  getClusterMonitorData: t.procedure
+  // Monitoring
+  monitor: t.procedure
     .input(
       z.object({
         dbName: z.string(),
@@ -71,15 +67,11 @@ export const clusterRouter = t.router({
       })
     )
     .query(async ({ input, ctx }) => {
-      return await getClusterMonitorData(
-        ctx,
-        input.dbName,
-        input.dbType,
-        input.queryKey
-      );
+      const { dbName, dbType, queryKey } = input;
+      return await getClusterMonitorData(ctx, dbName, dbType, queryKey);
     }),
 
-  getClusterCombinedMonitorData: t.procedure
+  combinedMonitor: t.procedure
     .input(
       z.object({
         dbName: z.string(),
@@ -87,15 +79,13 @@ export const clusterRouter = t.router({
       })
     )
     .query(async ({ input, ctx }) => {
-      const [cpuResult, memoryResult, diskResult] = await Promise.allSettled([
-        getClusterMonitorData(ctx, input.dbName, input.dbType, "cpu"),
-        getClusterMonitorData(ctx, input.dbName, input.dbType, "memory"),
-        getClusterMonitorData(ctx, input.dbName, input.dbType, "disk"),
-      ]);
+      const { dbName, dbType } = input;
 
-      // console.log("cpuResult", JSON.stringify(cpuResult, null, 2));
-      // console.log("memoryResult", JSON.stringify(memoryResult, null, 2));
-      // console.log("diskResult", JSON.stringify(diskResult, null, 2));
+      const [cpuResult, memoryResult, diskResult] = await Promise.allSettled([
+        getClusterMonitorData(ctx, dbName, dbType, "cpu"),
+        getClusterMonitorData(ctx, dbName, dbType, "memory"),
+        getClusterMonitorData(ctx, dbName, dbType, "disk"),
+      ]);
 
       const cpuData =
         cpuResult.status === "fulfilled" ? cpuResult.value : undefined;
@@ -110,31 +100,27 @@ export const clusterRouter = t.router({
         storage: diskData,
       });
 
-      // console.log("result", JSON.stringify(result, null, 2));
-
       return result;
     }),
 
-  createCluster: t.procedure
+  // ===== MUTATION PROCEDURES =====
+
+  // Cluster Lifecycle Management
+  create: t.procedure
     .input(clusterCreateFormSchema)
-    // .output(CreateClusterResponseSchema)
     .mutation(async ({ input, ctx }) => {
       return await runParallelAction(createCluster(input, ctx));
     }),
 
-  startCluster: t.procedure
-    .input(z.string())
-    .mutation(async ({ input, ctx }) => {
-      return await startCluster(input, ctx);
-    }),
+  start: t.procedure.input(z.string()).mutation(async ({ input, ctx }) => {
+    return await startCluster(input, ctx);
+  }),
 
-  pauseCluster: t.procedure
-    .input(z.string())
-    .mutation(async ({ input, ctx }) => {
-      return await pauseCluster(input, ctx);
-    }),
+  pause: t.procedure.input(z.string()).mutation(async ({ input, ctx }) => {
+    return await pauseCluster(input, ctx);
+  }),
 
-  updateCluster: t.procedure
+  update: t.procedure
     .input(
       z.object({
         clusterName: z.string(),
@@ -143,12 +129,11 @@ export const clusterRouter = t.router({
     )
     .output(UpdateClusterResponseSchema)
     .mutation(async ({ input, ctx }) => {
-      return await runParallelAction(
-        updateCluster(input.clusterName, input.request, ctx)
-      );
+      const { clusterName, request } = input;
+      return await runParallelAction(updateCluster(clusterName, request, ctx));
     }),
 
-  deleteCluster: t.procedure
+  delete: t.procedure
     .input(ClusterDeleteRequestSchema)
     .output(ClusterDeleteResponseSchema)
     .mutation(async ({ input, ctx }) => {

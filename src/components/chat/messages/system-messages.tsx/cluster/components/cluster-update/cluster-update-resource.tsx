@@ -43,7 +43,7 @@ export default function ClusterUpdateResource({
 
   const { cluster } = useTRPCClients();
   const updateCluster = useMutation(
-    cluster.updateCluster.mutationOptions()
+    cluster.update.mutationOptions()
   );
 
   // Get current resource status using the hook

@@ -3,7 +3,6 @@ import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { devboxClient } from "@/components/provider/trpc-provider";
 import BaseSystemMessage from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
-import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import {
   Play,
   Trash2,
@@ -139,9 +138,9 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
     data: releasesData,
     isLoading,
     error,
-  } = useQuery(
-    devboxTrpcClient.releases.queryOptions(target.name || "")
-  );
+  } = useQuery(devboxTrpcClient.releases.queryOptions(target.name || ""));
+
+  console.log("releasesData", releasesData);
 
   const pauseMutation = useMutation({
     ...devboxTrpcClient.pause.mutationOptions(),
@@ -152,9 +151,7 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
     onSuccess: () => {
       // Invalidate and refetch releases
       queryClient.invalidateQueries({
-        queryKey: devboxTrpcClient.releases.queryKey(
-          target.name || ""
-        ),
+        queryKey: devboxTrpcClient.releases.queryKey(target.name || ""),
       });
       setIsCreatingRelease(false);
       setNewReleaseTag("");
@@ -181,9 +178,7 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
     onSuccess: () => {
       // Invalidate and refetch releases
       queryClient.invalidateQueries({
-        queryKey: devboxTrpcClient.releases.queryKey(
-          target.name || ""
-        ),
+        queryKey: devboxTrpcClient.releases.queryKey(target.name || ""),
       });
       setDeletingReleaseId(null);
     },
@@ -217,7 +212,7 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
     );
   }
 
-  const releases = (releasesData as any)?.data || [];
+  const releases = releasesData || [];
 
   return (
     <BaseSystemMessage headerTitle={{ icon: Tag, name: "Devbox Releases" }}>
@@ -236,18 +231,20 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
         ) : (
           <ScrollArea className="max-h-80">
             <div className="space-y-2">
-              {releases.map((release: DevboxReleaseItem) => (
-                <ReleaseItem
-                  key={release.id}
-                  release={release}
-                  target={target}
-                  onDelete={(versionName) => {
-                    setDeletingReleaseId(release.id);
-                    deleteReleaseMutation.mutate(versionName);
-                  }}
-                  isDeleting={deletingReleaseId === release.id}
-                />
-              ))}
+              {Array.isArray(releases) &&
+                releases.length > 0 &&
+                releases.map((release: DevboxReleaseItem) => (
+                  <ReleaseItem
+                    key={release.id}
+                    release={release}
+                    target={target}
+                    onDelete={(versionName) => {
+                      setDeletingReleaseId(release.id);
+                      deleteReleaseMutation.mutate(versionName);
+                    }}
+                    isDeleting={deletingReleaseId === release.id}
+                  />
+                ))}
             </div>
           </ScrollArea>
         )}

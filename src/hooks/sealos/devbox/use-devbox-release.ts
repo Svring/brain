@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
-import { useMutation } from "@tanstack/react-query";
-import { getDevboxReleasesOptions } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useDevboxDeploy } from "@/hooks/sealos/devbox/use-devbox-deploy";
 import { useDevboxContext } from "@/lib/auth/auth-utils";
 
@@ -28,13 +26,12 @@ export const useDevboxRelease = (devboxName: string) => {
   const deleteReleaseMutation = useMutation(
     devbox.deleteRelease.mutationOptions()
   );
-  const manageDevboxLifecycleMutation = useMutation(
-    devbox.manageDevboxLifecycle.mutationOptions()
-  );
+  const startDevboxMutation = useMutation(devbox.start.mutationOptions());
+  const shutdownDevboxMutation = useMutation(devbox.shutdown.mutationOptions());
 
   // Fetch devbox releases
   const { data: releases, isLoading } = useQuery(
-    getDevboxReleasesOptions(devboxContext, devboxName)
+    devbox.releases.queryOptions(devboxName)
   );
 
   // Use the deploy hook for deploy-related functionality
@@ -42,21 +39,18 @@ export const useDevboxRelease = (devboxName: string) => {
 
   const handleRelease = async (config: ReleaseConfig) => {
     try {
-      await manageDevboxLifecycleMutation.mutateAsync({
-        devboxName,
-        action: "stop",
-      });
+      // Stop the devbox before releasing
+      await shutdownDevboxMutation.mutateAsync(devboxName);
 
+      // Create the release
       await releaseMutation.mutateAsync({
         devboxName,
         tag: config.tag,
         releaseDes: config.releaseDes,
       });
 
-      await manageDevboxLifecycleMutation.mutateAsync({
-        devboxName,
-        action: "start",
-      });
+      // Start the devbox after releasing
+      await startDevboxMutation.mutateAsync(devboxName);
 
       setIsReleasePopoverOpen(false);
       setReleaseConfig({ tag: "", releaseDes: "" });
@@ -99,6 +93,8 @@ export const useDevboxRelease = (devboxName: string) => {
     // Mutations
     releaseMutation,
     deleteReleaseMutation,
+    startDevboxMutation,
+    shutdownDevboxMutation,
 
     // Actions
     handleRelease,

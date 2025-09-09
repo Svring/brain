@@ -36,7 +36,7 @@ export const useResourceMetrics = (
   });
 
   const { data: clusterMonitorData } = useQuery({
-    ...cluster.getClusterCombinedMonitorData.queryOptions({
+    ...cluster.combinedMonitor.queryOptions({
       dbName: target.name || "",
       dbType: target.type!,
     }),

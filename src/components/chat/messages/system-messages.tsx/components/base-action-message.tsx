@@ -16,6 +16,7 @@ export interface BaseActionMessageProps {
   onApply?: () => void;
   isSubmitting?: boolean;
   disabled?: boolean;
+  headerSlot?: React.ReactNode;
 }
 
 export default function BaseActionMessage({
@@ -26,8 +27,9 @@ export default function BaseActionMessage({
   onApply,
   isSubmitting = false,
   disabled = false,
+  headerSlot,
 }: BaseActionMessageProps) {
-  const headerSlot = (
+  const applyButton = (
     <Button
       type="submit"
       form={formId}
@@ -42,10 +44,17 @@ export default function BaseActionMessage({
     </Button>
   );
 
+  const combinedHeaderSlot = (
+    <div className="flex items-center gap-2">
+      {headerSlot}
+      {applyButton}
+    </div>
+  );
+
   return (
     <BaseSystemMessage
       headerTitle={headerTitle}
-      headerSlot={headerSlot}
+      headerSlot={combinedHeaderSlot}
       className={className}
     >
       {children}

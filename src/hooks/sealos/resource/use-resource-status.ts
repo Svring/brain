@@ -49,7 +49,7 @@ export const useResourceStatus = <TSelected = any>(
     }
 
     if (target.resourceType === "cluster") {
-      const query = useQuery(cluster.getCluster.queryOptions(target));
+      const query = useQuery(cluster.get.queryOptions(target));
       return createReturn(query.data, query);
     }
 

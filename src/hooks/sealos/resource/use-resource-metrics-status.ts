@@ -94,7 +94,7 @@ export const useResourceMetricsStatus = ({
 
   // Fetch monitor data for cluster
   const { data: clusterMonitorData } = useQuery({
-    ...cluster.getClusterCombinedMonitorData.queryOptions({
+    ...cluster.combinedMonitor.queryOptions({
       dbName: target.name || "",
       dbType: (resource as ClusterObject)?.type || "",
     }),

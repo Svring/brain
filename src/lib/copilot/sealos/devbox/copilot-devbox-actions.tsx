@@ -1,8 +1,6 @@
 import { useCopilotAction } from "@copilotkit/react-core";
 import { useMutation } from "@tanstack/react-query";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
-import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import {
   AITool,
   AIToolContent,
@@ -13,18 +11,17 @@ import {
 import { AIResponse } from "@/components/shadcn-io/ai/response";
 import { devboxCreateFormSchema } from "@/schemas/forms/devbox/devbox-create-form-schema";
 import { devboxUpdateFormSchema } from "@/schemas/forms/devbox/devbox-update-form-schema";
-import { DevboxCreateForm } from "@/components/forms/devbox/devbox-create-form";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import { DevboxUpdateRuntimeSchema } from "@/lib/copilot/sealos/devbox/copilot-devbox-utils";
 import { jsonSchemaToActionParameters } from "@copilotkit/shared";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { DevboxCreateFormData } from "@/schemas/forms/devbox/devbox-create-form-schema";
-import { Code } from "lucide-react";
-import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { DevboxCreateActionMessage } from "@/components/copilot/sealos/devbox/devbox-create-action-message";
+import { DevboxUpdateActionMessage } from "@/components/copilot/sealos/devbox/devbox-update-action-message";
 
 export const activateDevboxActions = () => {
   // CRUD operations
   createDevboxAction();
-  // updateDevboxAction();
+  updateDevboxAction();
   // deleteDevboxAction();
 
   // // Lifecycle management
@@ -39,12 +36,6 @@ export const activateDevboxActions = () => {
 };
 
 export const createDevboxAction = () => {
-  const { devbox } = useTRPCClients();
-  const createDevboxMutation = useMutation({
-    ...devbox.create.mutationOptions(),
-  });
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
-
   useCopilotAction({
     name: "createDevbox",
     description: "Create a new devbox with specified configuration",
@@ -53,66 +44,12 @@ export const createDevboxAction = () => {
       zodToJsonSchema(devboxCreateFormSchema) as any
     ),
     renderAndWaitForResponse: (props) => {
-      const { args, respond, status } = props;
-
-      const handleSubmit = async (data: DevboxCreateFormData) => {
-        await createDevboxMutation.mutateAsync(data, {
-          onSuccess: (response) => {
-            console.log("response", response);
-
-            // Create target for the created devbox
-            const target = convertResourceTypeToTarget("devbox", data.name);
-
-            // Append system message for devbox creation
-            appendSystemMessage({
-              type: "devbox.detail",
-              target,
-            });
-
-            if (respond) {
-              respond(`Devbox "${data.name}" created successfully`);
-            }
-          },
-          onError: (error) => {
-            console.error("Failed to create devbox:", error);
-            if (respond) {
-              respond("Failed to create devbox");
-            }
-          },
-        });
-      };
-
-      // Show completion message when status is complete
-      if (status === "complete") {
-        return (
-          <div className="w-full p-4">
-            <div className="flex items-center justify-center p-8">
-              <div className="flex flex-col items-center gap-4">
-                <p className="text-sm text-muted-foreground text-center">
-                  The devbox has been created successfully.
-                </p>
-              </div>
-            </div>
-          </div>
-        );
-      }
-
       return (
-        <BaseActionMessage
-          headerTitle={{
-            icon: Code,
-            name: "Create Devbox",
-          }}
-          formId="devbox-create-form"
-          isSubmitting={status === "inProgress"}
-        >
-          <DevboxCreateForm
-            defaultValues={args as Partial<DevboxCreateFormData>}
-            onSubmit={handleSubmit}
-            isLoading={createDevboxMutation.isPending}
-            hideDefaultButton={true}
-          />
-        </BaseActionMessage>
+        <DevboxCreateActionMessage
+          args={props.args as Partial<DevboxCreateFormData>}
+          respond={props.respond}
+          status={props.status}
+        />
       );
     },
   });
@@ -122,37 +59,17 @@ export const updateDevboxAction = () => {
   useCopilotAction({
     name: "updateDevbox",
     description: "Update a devbox configuration (resource, ports, etc.)",
-    parameters: [
-      {
-        name: "devboxName",
-        type: "string",
-        required: true,
-        description: "Name of the devbox to update",
-      },
-      ...jsonSchemaToActionParameters(
-        zodToJsonSchema(devboxUpdateFormSchema) as any
-      ),
-    ],
-    handler: async (input) => {
-      const { devboxName, ...updateData } = input;
-      // This would need to be implemented with the actual update mutation
-      return `Devbox "${devboxName}" update requested`;
-    },
-    render: ({ args, result, status }) => {
+    followUp: false,
+    parameters: jsonSchemaToActionParameters(
+      zodToJsonSchema(DevboxUpdateRuntimeSchema) as any
+    ),
+    renderAndWaitForResponse: (props) => {
       return (
-        <AITool key={"updateDevbox"}>
-          <AIToolHeader
-            description={"Update a devbox configuration"}
-            name={"updateDevbox"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
+        <DevboxUpdateActionMessage
+          args={props.args as { devboxName: string; [key: string]: any }}
+          respond={props.respond}
+          status={props.status}
+        />
       );
     },
   });
