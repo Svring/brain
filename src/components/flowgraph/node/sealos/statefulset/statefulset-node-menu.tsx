@@ -35,7 +35,7 @@ export default function StatefulsetNodeMenu({
   const queryClient = useQueryClient();
 
   const deleteLaunchpad = useMutation(
-    launchpad.deleteLaunchpad.mutationOptions()
+    launchpad.delete.mutationOptions()
   );
 
   const { name, resource, status } = object;

@@ -18,9 +18,7 @@ export const useResourceLogs = (
 
   // Handle launchpad logs
   const launchpadLogsQuery = useQuery({
-    ...launchpad.getLaunchpadLogs.queryOptions({
-      target: target as BuiltinResourceTarget,
-    }),
+    ...launchpad.logs.queryOptions(target as BuiltinResourceTarget),
     enabled: target.type === "builtin",
   });
 

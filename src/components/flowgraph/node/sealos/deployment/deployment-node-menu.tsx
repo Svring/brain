@@ -35,7 +35,7 @@ export default function DeploymentNodeMenu({
   const queryClient = useQueryClient();
 
   const deleteLaunchpad = useMutation(
-    launchpad.deleteLaunchpad.mutationOptions()
+    launchpad.delete.mutationOptions()
   );
 
   // console.log("object", object);

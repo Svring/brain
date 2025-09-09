@@ -56,7 +56,7 @@ function ResourceItem({
   ) as { resource: any };
   const { launchpad } = useTRPCClients();
   const updateLaunchpadMutation = useMutation(
-    launchpad.updateLaunchpad.mutationOptions()
+    launchpad.update.mutationOptions()
   );
 
   // Check if the resource is already connected to the launchpad target

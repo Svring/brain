@@ -51,38 +51,31 @@ import { QueryLogsRequestSchema } from "@/lib/sealos/resources/launchpad/launchp
 const t = initTRPC.context<LaunchpadContext>().create();
 
 export const launchpadRouter = t.router({
-  // Query Operations
-  getLaunchpad: t.procedure
+  // ===== QUERY PROCEDURES =====
+
+  // Launchpad Information
+  get: t.procedure
     .input(BuiltinResourceTargetSchema)
     .query(async ({ ctx, input }) => {
       return await getLaunchpad(ctx, input);
     }),
 
-  listLaunchpads: t.procedure.query(async ({ ctx }) => {
+  list: t.procedure.query(async ({ ctx }) => {
     return await listLaunchpads(ctx);
   }),
 
-  getLaunchpadLogs: t.procedure
-    .input(
-      z.object({
-        target: BuiltinResourceTargetSchema,
-      })
-    )
+  logs: t.procedure
+    .input(BuiltinResourceTargetSchema)
     .query(async ({ ctx, input }) => {
-      return await getLaunchpadLogs(ctx, ctx, input.target);
+      return await getLaunchpadLogs(ctx, ctx, input);
     }),
 
-  checkLaunchpadReady: t.procedure
-    .input(
-      z.object({
-        launchpadName: z.string(),
-      })
-    )
-    .query(async ({ input, ctx }) => {
-      return await checkLaunchpadReady({ name: input.launchpadName }, ctx);
-    }),
+  networkStatus: t.procedure.input(z.string()).query(async ({ input, ctx }) => {
+    return await checkLaunchpadReady({ name: input }, ctx);
+  }),
 
-  getLaunchpadCombinedMonitorData: t.procedure
+  // Monitoring
+  combinedMonitor: t.procedure
     .input(
       z.object({
         queryName: z.string(),
@@ -90,19 +83,11 @@ export const launchpadRouter = t.router({
       })
     )
     .query(async ({ input, ctx }) => {
+      const { queryName, step } = input;
+
       const [cpuData, memoryData] = await Promise.all([
-        getLaunchpadMonitorData(
-          ctx,
-          "average_cpu",
-          input.queryName,
-          input.step
-        ),
-        getLaunchpadMonitorData(
-          ctx,
-          "average_memory",
-          input.queryName,
-          input.step
-        ),
+        getLaunchpadMonitorData(ctx, "average_cpu", queryName, step),
+        getLaunchpadMonitorData(ctx, "average_memory", queryName, step),
       ]);
 
       return transformCombinedMonitorData({
@@ -111,14 +96,38 @@ export const launchpadRouter = t.router({
       });
     }),
 
-  // Mutation Operations
-  createLaunchpad: t.procedure
+  // Application-specific queries
+  getApplication: t.procedure
+    .input(z.string())
+    .query(async ({ input, ctx }) => {
+      return await getLaunchpadApplication(ctx, input);
+    }),
+
+  getPods: t.procedure.input(z.string()).query(async ({ input, ctx }) => {
+    return await getLaunchpadApplicationPods(ctx, input);
+  }),
+
+  getPodsMetrics: t.procedure
+    .input(
+      z.object({
+        podsName: z.array(z.string()),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const { podsName } = input;
+      return await getLaunchpadPodsMetrics(ctx, { podsName });
+    }),
+
+  // ===== MUTATION PROCEDURES =====
+
+  // Launchpad Lifecycle Management
+  create: t.procedure
     .input(launchpadCreateFormSchema)
     .mutation(async ({ input, ctx }) => {
       return await createLaunchpadApplication(ctx, input);
     }),
 
-  updateLaunchpad: t.procedure
+  update: t.procedure
     .input(
       z.object({
         name: z.string(),
@@ -126,10 +135,49 @@ export const launchpadRouter = t.router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      return await updateLaunchpadApplication(ctx, input.name, input.request);
+      const { name, request } = input;
+      return await updateLaunchpadApplication(ctx, name, request);
     }),
 
-  updateLaunchpadConfigMap: t.procedure
+  start: t.procedure
+    .input(LaunchpadStartRequestSchema)
+    .mutation(async ({ input, ctx }) => {
+      return await runParallelAction(startLaunchpad(input, ctx));
+    }),
+
+  pause: t.procedure
+    .input(LaunchpadPauseRequestSchema)
+    .mutation(async ({ input, ctx }) => {
+      return await runParallelAction(pauseLaunchpad(input, ctx));
+    }),
+
+  delete: t.procedure
+    .input(LaunchpadDeleteRequestSchema)
+    .mutation(async ({ input, ctx }) => {
+      return await runParallelAction(deleteLaunchpad(input, ctx));
+    }),
+
+  // Application-specific mutations
+  startApplication: t.procedure
+    .input(z.string())
+    .mutation(async ({ input, ctx }) => {
+      return await startLaunchpadApplication(ctx, input);
+    }),
+
+  pauseApplication: t.procedure
+    .input(z.string())
+    .mutation(async ({ input, ctx }) => {
+      return await pauseLaunchpadApplication(ctx, input);
+    }),
+
+  deleteApplication: t.procedure
+    .input(z.string())
+    .mutation(async ({ input, ctx }) => {
+      return await deleteLaunchpadApplication(ctx, input);
+    }),
+
+  // Configuration Management
+  updateConfigMap: t.procedure
     .input(
       z.object({
         name: z.string(),
@@ -137,47 +185,24 @@ export const launchpadRouter = t.router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      return await updateLaunchpadConfigMap(ctx, input.name, input.request);
+      const { name, request } = input;
+      return await updateLaunchpadConfigMap(ctx, name, request);
     }),
 
-  updateLaunchpadPorts: t.procedure
+  updateStorage: t.procedure
     .input(
       z.object({
         name: z.string(),
-        request: LaunchpadPortsUpdateRequestSchema,
+        request: LaunchpadStorageUpdateRequestSchema,
       })
     )
     .mutation(async ({ input, ctx }) => {
-      return await updateLaunchpadPorts(ctx, input.name, input.request);
+      const { name, request } = input;
+      return await updateLaunchpadStorage(ctx, name, request);
     }),
 
-  // ============= NEW STANDARDIZED API ENDPOINTS =============
-
-  getLaunchpadApplication: t.procedure
-    .input(z.string())
-    .query(async ({ input, ctx }) => {
-      return await getLaunchpadApplication(ctx, input);
-    }),
-
-  deleteLaunchpadApplication: t.procedure
-    .input(z.string())
-    .mutation(async ({ input, ctx }) => {
-      return await deleteLaunchpadApplication(ctx, input);
-    }),
-
-  startLaunchpadApplication: t.procedure
-    .input(z.string())
-    .mutation(async ({ input, ctx }) => {
-      return await startLaunchpadApplication(ctx, input);
-    }),
-
-  pauseLaunchpadApplication: t.procedure
-    .input(z.string())
-    .mutation(async ({ input, ctx }) => {
-      return await pauseLaunchpadApplication(ctx, input);
-    }),
-
-  createLaunchpadPorts: t.procedure
+  // Port Management
+  createPorts: t.procedure
     .input(
       z.object({
         name: z.string(),
@@ -185,10 +210,23 @@ export const launchpadRouter = t.router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      return await createLaunchpadPorts(ctx, input.name, input.request);
+      const { name, request } = input;
+      return await createLaunchpadPorts(ctx, name, request);
     }),
 
-  deleteLaunchpadPorts: t.procedure
+  updatePorts: t.procedure
+    .input(
+      z.object({
+        name: z.string(),
+        request: LaunchpadPortsUpdateRequestSchema,
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { name, request } = input;
+      return await updateLaunchpadPorts(ctx, name, request);
+    }),
+
+  deletePorts: t.procedure
     .input(
       z.object({
         name: z.string(),
@@ -199,59 +237,11 @@ export const launchpadRouter = t.router({
       return await deleteLaunchpadPorts(ctx, input.name, input);
     }),
 
-  updateLaunchpadStorage: t.procedure
-    .input(
-      z.object({
-        name: z.string(),
-        request: LaunchpadStorageUpdateRequestSchema,
-      })
-    )
+  // Network Status Check
+  checkReady: t.procedure
+    .input(LaunchpadCheckReadyRequestSchema)
     .mutation(async ({ input, ctx }) => {
-      return await updateLaunchpadStorage(ctx, input.name, input.request);
-    }),
-
-  getLaunchpadPods: t.procedure
-    .input(z.string())
-    .query(async ({ input, ctx }) => {
-      return await getLaunchpadApplicationPods(ctx, input);
-    }),
-
-  getLaunchpadPodsMetrics: t.procedure
-    .input(
-      z.object({
-        podsName: z.array(z.string()),
-      })
-    )
-    .query(async ({ input, ctx }) => {
-      return await getLaunchpadPodsMetrics(ctx, { podsName: input.podsName });
-    }),
-
-  deleteLaunchpad: t.procedure
-    .input(LaunchpadDeleteRequestSchema)
-    .mutation(async ({ input, ctx }) => {
-      return await runParallelAction(deleteLaunchpad(input, ctx));
-    }),
-
-  pauseLaunchpad: t.procedure
-    .input(LaunchpadPauseRequestSchema)
-    .mutation(async ({ input, ctx }) => {
-      return await runParallelAction(pauseLaunchpad(input, ctx));
-    }),
-
-  startLaunchpad: t.procedure
-    .input(LaunchpadStartRequestSchema)
-    .mutation(async ({ input, ctx }) => {
-      return await runParallelAction(startLaunchpad(input, ctx));
-    }),
-
-  checkReadyLaunchpad: t.procedure
-    .input(
-      z.object({
-        request: LaunchpadCheckReadyRequestSchema,
-      })
-    )
-    .mutation(async ({ input, ctx }) => {
-      return await runParallelAction(checkReadyLaunchpad(input.request, ctx));
+      return await runParallelAction(checkReadyLaunchpad(input, ctx));
     }),
 });
 

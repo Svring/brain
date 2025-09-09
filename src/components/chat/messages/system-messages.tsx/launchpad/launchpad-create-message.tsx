@@ -24,7 +24,7 @@ export const LaunchpadCreateMessage: React.FC<LaunchpadCreateMessageProps> = ({
   );
 
   const createLaunchpadMutation = useMutation({
-    ...launchpad.createLaunchpad.mutationOptions(),
+    ...launchpad.create.mutationOptions(),
     onSuccess: async (_, variables) => {
       if (!selectedProject) {
         toast.error("No project selected. Please select a project first.");

@@ -96,7 +96,7 @@ export async function checkDevboxReady(
   const api = createOldDevboxAxios(context);
   const response = await api.get("/checkReady", {
     params: {
-      name,
+      devboxName: name,
     },
   });
   return response.data.data;

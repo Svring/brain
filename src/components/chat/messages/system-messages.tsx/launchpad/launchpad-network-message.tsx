@@ -30,10 +30,10 @@ export const LaunchpadNetworkMessage: React.FC<LaunchpadNetworkMessageProps> = (
   const ports = launchpadObject?.ports || [];
 
   const { mutateAsync: updateLaunchpad, isPending: isUpdating } = useMutation({
-    ...launchpad.updateLaunchpad.mutationOptions(),
+    ...launchpad.update.mutationOptions(),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: launchpad.getLaunchpad.queryKey(target),
+        queryKey: launchpad.get.queryKey(target),
       });
       setIsPortsEditing(false);
     },

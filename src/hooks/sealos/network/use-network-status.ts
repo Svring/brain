@@ -27,12 +27,8 @@ export const useNetworkStatus = (target: ResourceTarget) => {
   const isDevbox = target.type === "custom" && target.resourceType === "devbox";
   const { data: readyStatus } = useQuery({
     ...(isDevbox
-      ? devbox.networkStatus.queryOptions({
-          devboxName: resource?.name || target.name || "",
-        })
-      : launchpad.checkLaunchpadReady.queryOptions({
-          launchpadName: resource?.name || target.name || "",
-        })),
+      ? devbox.networkStatus.queryOptions(resource?.name)
+      : launchpad.networkStatus.queryOptions(resource?.name)),
     enabled: !!(resource?.name || target.name),
   });
 

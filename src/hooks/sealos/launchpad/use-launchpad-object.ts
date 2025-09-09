@@ -14,5 +14,5 @@ export const useLaunchpadObject = (
     convertResourceTypeToTarget(resourceKind.toLowerCase(), resourceName)
   );
 
-  return useQuery(launchpad.getLaunchpad.queryOptions(target));
+  return useQuery(launchpad.get.queryOptions(target));
 };

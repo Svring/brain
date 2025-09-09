@@ -66,15 +66,9 @@ export const devboxRouter = t.router({
       return result;
     }),
 
-  networkStatus: t.procedure
-    .input(
-      z.object({
-        devboxName: z.string(),
-      })
-    )
-    .query(async ({ input, ctx }) => {
-      return await checkDevboxReady(ctx, input.devboxName);
-    }),
+  networkStatus: t.procedure.input(z.string()).query(async ({ input, ctx }) => {
+    return await checkDevboxReady(ctx, input);
+  }),
 
   // Release Information
   releases: t.procedure.input(z.string()).query(async ({ ctx, input }) => {

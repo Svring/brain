@@ -25,7 +25,7 @@ export const LaunchpadMessageDetails: React.FC<
   const { launchpad } = useTRPCClients();
 
   const updateLaunchpad = useMutation(
-    launchpad.updateLaunchpad.mutationOptions()
+    launchpad.update.mutationOptions()
   );
 
   // Parse the resource data as LaunchpadObject
@@ -44,7 +44,7 @@ export const LaunchpadMessageDetails: React.FC<
     await updateLaunchpad.mutateAsync(updateRequest, {
       onSuccess: () => {
         queryClient.invalidateQueries({
-          queryKey: launchpad.getLaunchpad.queryKey(target),
+          queryKey: launchpad.get.queryKey(target),
         });
 
         toast.success("Launchpad updated successfully!");

@@ -29,7 +29,7 @@ export function useProjectCreate(options?: CreateProjectOptions) {
   const createDevboxMutation = useMutation(devbox.create.mutationOptions());
   const createClusterMutation = useMutation(cluster.create.mutationOptions());
   const createLaunchpadMutation = useMutation(
-    launchpad.createLaunchpad.mutationOptions()
+    launchpad.create.mutationOptions()
   );
   const createObjectStorageMutation = useMutation(
     objectstorage.createObjectStorage.mutationOptions()

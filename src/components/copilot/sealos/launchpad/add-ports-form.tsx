@@ -39,7 +39,7 @@ export function AddPortsForm({ initialValues, onSubmit, context }: AddPortsFormP
   console.log(initialValues);
   
   const createLaunchpadPorts = useMutation(
-    launchpad.createLaunchpadPorts.mutationOptions()
+    launchpad.createPorts.mutationOptions()
   );
 
   const form = useForm({
@@ -70,7 +70,7 @@ export function AddPortsForm({ initialValues, onSubmit, context }: AddPortsFormP
       
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({
-        queryKey: launchpad.getLaunchpad.queryKey({ name: initialValues.name }),
+        queryKey: launchpad.get.queryKey({ name: initialValues.name }),
       });
 
       toast.success("Ports added successfully!");

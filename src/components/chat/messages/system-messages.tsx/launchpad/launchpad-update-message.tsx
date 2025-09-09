@@ -76,7 +76,7 @@ export default function LaunchpadUpdateMessage({
   }, [currentResource, payload]);
 
   const updateLaunchpadMutation = useMutation({
-    ...launchpad.updateLaunchpad.mutationOptions(),
+    ...launchpad.update.mutationOptions(),
     onSuccess: async (_, variables) => {
       if (!testMode) {
         toast.success(

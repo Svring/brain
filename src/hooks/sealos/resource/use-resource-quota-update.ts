@@ -15,7 +15,7 @@ export const useResourceQuotaUpdate = (
   const { launchpad } = useTRPCClients();
 
   // Always call useMutation at the top level
-  const mutation = useMutation(launchpad.updateLaunchpad.mutationOptions());
+  const mutation = useMutation(launchpad.update.mutationOptions());
 
   // Enhanced mutation with target context
   const updateResourceQuota = async (quotaData: Record<string, unknown>) => {

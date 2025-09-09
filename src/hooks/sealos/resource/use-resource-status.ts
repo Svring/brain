@@ -65,7 +65,7 @@ export const useResourceStatus = <TSelected = any>(
 
   // Handle builtin resources
   if (target.type === "builtin") {
-    const query = useQuery(launchpad.getLaunchpad.queryOptions(target));
+    const query = useQuery(launchpad.get.queryOptions(target));
     return createReturn(query.data, query);
   }
 

@@ -204,7 +204,7 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
   });
 
   const deleteDeploymentMutation = useMutation({
-    ...launchpad.deleteLaunchpad.mutationOptions(),
+    ...launchpad.delete.mutationOptions(),
     onSuccess: () => {
       // Invalidate and refetch deployments
       queryClient.invalidateQueries({

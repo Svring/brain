@@ -44,8 +44,7 @@ export const useResourceMetrics = (
   });
 
   const { data: launchpadMonitorData } = useQuery({
-    ...launchpad.getLaunchpadCombinedMonitorData.queryOptions({
-      context: sealosContext,
+    ...launchpad.combinedMonitor.queryOptions({
       queryName: resource?.pods?.[0]?.name || "",
     }),
     enabled:

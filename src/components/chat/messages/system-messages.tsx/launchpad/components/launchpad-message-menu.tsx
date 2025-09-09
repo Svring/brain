@@ -42,7 +42,7 @@ export default function LaunchpadMessageMenu({
   const currentStatus = status || "Pending";
 
   const deleteLaunchpad = useMutation(
-    launchpad.deleteLaunchpad.mutationOptions()
+    launchpad.delete.mutationOptions()
   );
 
   const handleDelete = () => {

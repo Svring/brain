@@ -38,10 +38,10 @@ export default function LaunchpadDropdownMenu({
   const queryClient = useQueryClient();
 
   const startLaunchpad = useMutation(
-    launchpad.startLaunchpad.mutationOptions()
+    launchpad.start.mutationOptions()
   );
   const pauseLaunchpad = useMutation(
-    launchpad.pauseLaunchpad.mutationOptions()
+    launchpad.pause.mutationOptions()
   );
 
   const handleStart = () => {
@@ -50,7 +50,7 @@ export default function LaunchpadDropdownMenu({
       {
         onSuccess: () => {
           queryClient.invalidateQueries({
-            queryKey: launchpad.getLaunchpad.queryKey({ name }),
+            queryKey: launchpad.get.queryKey({ name }),
           });
         },
       }
@@ -63,7 +63,7 @@ export default function LaunchpadDropdownMenu({
       {
         onSuccess: () => {
           queryClient.invalidateQueries({
-            queryKey: launchpad.getLaunchpad.queryKey({ name }),
+            queryKey: launchpad.get.queryKey({ name }),
           });
         },
       }

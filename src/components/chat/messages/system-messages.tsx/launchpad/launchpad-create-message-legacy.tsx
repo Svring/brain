@@ -65,7 +65,7 @@ export default function LaunchpadCreateMessage({
   }, [formValues, form]);
 
   const createLaunchpadMutation = useMutation({
-    ...launchpad.createLaunchpad.mutationOptions(),
+    ...launchpad.create.mutationOptions(),
     onSuccess: async (_, variables) => {
       if (!testMode) {
         if (!selectedProject) {

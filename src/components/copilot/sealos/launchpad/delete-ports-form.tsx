@@ -32,7 +32,7 @@ export function DeletePortsForm({
   console.log(initialValues);
 
   const deleteLaunchpadPorts = useMutation(
-    launchpad.deleteLaunchpadPorts.mutationOptions()
+    launchpad.deletePorts.mutationOptions()
   );
 
   const handleSubmit = async () => {
@@ -50,7 +50,7 @@ export function DeletePortsForm({
 
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({
-        queryKey: launchpad.getLaunchpad.queryKey({ name: initialValues.name }),
+        queryKey: launchpad.get.queryKey({ name: initialValues.name }),
       });
 
       toast.success("Ports deleted successfully!");
