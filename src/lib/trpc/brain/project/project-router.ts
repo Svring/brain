@@ -28,6 +28,7 @@ import { INSTANCE_RELATE_RESOURCE_LABELS } from "@/lib/k8s/k8s-constant/k8s-cons
 import { getProjectRelatedResources } from "@/lib/brain/resources/project/project-method/project-relevance";
 import { convertInstanceToProject } from "@/lib/brain/resources/project/project-method/project-utils";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { getAllProjectLogs } from "@/lib/brain/resources/project/project-api/project-api-service";
 
 const t = initTRPC.context<ProjectContext>().create();
 
@@ -109,6 +110,38 @@ export const projectRouter = t.router({
       }
 
       return targets;
+    }),
+
+  allLogs: t.procedure
+    .input(
+      z.object({
+        clusterResources: z.array(
+          z.object({
+            name: z.string(),
+            kind: z.string(),
+          })
+        ),
+        launchpadResources: z.array(
+          z.object({
+            name: z.string(),
+            kind: z.string(),
+          })
+        ),
+      })
+    )
+    .output(
+      z.object({
+        logs: z.array(
+          z.object({
+            name: z.string(),
+            kind: z.string(),
+            logs: z.any(),
+          })
+        ),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      return await getAllProjectLogs(ctx, ctx.sealosContext, input);
     }),
 
   // ===== MUTATION PROCEDURES =====

@@ -449,8 +449,8 @@ export const PromptInputBox = React.forwardRef(
               <div className="absolute inset-0 pointer-events-none flex items-start px-3 py-2.5">
                 <Typewriter
                   text={exhibitionTexts}
-                  speed={80}
-                  deleteSpeed={40}
+                  speed={20}
+                  deleteSpeed={20}
                   delay={2000}
                   loop={true}
                   className="text-gray-400"

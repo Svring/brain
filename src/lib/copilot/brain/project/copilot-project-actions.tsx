@@ -1,21 +1,17 @@
-import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 import { useCopilotAction } from "@copilotkit/react-core";
 import {
   ProjectProposal,
   ProjectProposalSchema,
 } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 import { ProjectProposalPresentation } from "@/components/chat/state-cards/project-proposal/project-proposal-presentation";
-import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
-import { getAllProjectLogs } from "@/lib/brain/resources/project/project-api/project-api-service";
 import { ProjectLogRender } from "@/components/copilot/brain/project/copilot-project-log";
 import { useFlowgraphResources } from "@/hooks/flowgraph/use-flowgraph-resources";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useQueryClient } from "@tanstack/react-query";
 
-export const activateProjectActions = (
-  context: K8sApiContext,
-  sealosContext: SealosApiContext
-) => {
+export const activateProjectActions = () => {
   proposeProjectAction();
-  checkAllLogsAction(context, sealosContext);
+  checkAllLogsAction();
 };
 
 export const proposeProjectAction = () => {
@@ -39,10 +35,9 @@ export const proposeProjectAction = () => {
   });
 };
 
-export const checkAllLogsAction = (
-  k8sContext: K8sApiContext,
-  sealosContext: SealosApiContext
-) => {
+export const checkAllLogsAction = () => {
+  const { project } = useTRPCClients();
+  const queryClient = useQueryClient();
   const { clusterResources, launchpadResources } = useFlowgraphResources();
 
   useCopilotAction({
@@ -51,10 +46,12 @@ export const checkAllLogsAction = (
       "Check all recent logs for the project to see if there are any errors or warnings.",
     available: "enabled",
     handler: async () => {
-      const response = await getAllProjectLogs(k8sContext, sealosContext, {
-        clusterResources,
-        launchpadResources,
-      });
+      const response = await queryClient.fetchQuery(
+        project.allLogs.queryOptions({
+          clusterResources,
+          launchpadResources,
+        })
+      );
       return response.logs;
     },
     render: ({ result }) => {
@@ -62,11 +59,3 @@ export const checkAllLogsAction = (
     },
   });
 };
-
-export const addResourcesAction = () => {};
-
-export const deleteResourcesAction = () => {};
-
-export const connectResourcesAction = () => {};
-
-export const disconnectResourcesAction = () => {};

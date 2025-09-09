@@ -23,12 +23,12 @@ import { ClusterCreateFormData } from "@/schemas/forms/cluster/cluster-create-fo
 export const activateClusterActions = () => {
   // CRUD operations
   createClusterAction();
-  updateClusterAction();
-  deleteClusterAction();
+  // updateClusterAction();
+  // deleteClusterAction();
 
   // Lifecycle management
-  startClusterAction();
-  stopClusterAction();
+  // startClusterAction();
+  // stopClusterAction();
   // restartClusterAction();
   // getClusterMonitorAction();
   // backupClusterAction();

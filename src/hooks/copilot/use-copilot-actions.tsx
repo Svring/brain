@@ -4,23 +4,15 @@ import { activateObjectStorageBucketActions } from "@/lib/copilot/sealos/objects
 import { activateLaunchpadActions } from "@/lib/copilot/sealos/launchpad/copilot-launchpad-actions";
 import { activateProjectActions } from "@/lib/copilot/brain/project/copilot-project-actions";
 
-import {
-  createK8sContext,
-  useSealosContext,
-} from "@/lib/auth/auth-utils";
-
 export default function useCopilotActions() {
-  const k8sContext = createK8sContext();
-  const sealosContext = useSealosContext();
-
   // Activate actions based on the provided types
   activateDevboxActions();
 
   activateClusterActions();
 
-  // activateLaunchpadActions(sealosContext, k8sContext);
+  activateLaunchpadActions();
 
-  // activateObjectStorageBucketActions(k8sContext, sealosContext);
+  activateObjectStorageBucketActions();
 
-  activateProjectActions(k8sContext, sealosContext);
+  activateProjectActions();
 }

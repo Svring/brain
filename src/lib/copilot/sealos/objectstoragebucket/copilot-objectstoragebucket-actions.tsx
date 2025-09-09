@@ -20,7 +20,7 @@ import { ObjectStorageCreateFormData } from "@/schemas/forms/objectstorage/objec
 export function activateObjectStorageBucketActions() {
   // CRUD operations
   createObjectStorageBucketAction();
-  deleteObjectStorageBucketAction();
+  // deleteObjectStorageBucketAction();
 }
 
 function createObjectStorageBucketAction() {
