@@ -10,6 +10,8 @@ import { ChatProvider } from "@/contexts/chat/chat-context";
 import { ProjectProvider } from "@/contexts/project/project-context";
 import { LanggraphConfigWrapper } from "@/components/provider/langgraph-provider";
 import { OrchestratorProvider } from "@/contexts/orchestrator/orchestrator-context";
+import { FlowgraphProvider } from "@/contexts/flowgraph/flowgraph-context";
+import { ReactFlowProvider } from "@xyflow/react";
 import { ReactScan } from "@/components/provider/react-scan-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/auth/auth-context";
@@ -71,12 +73,16 @@ export default async function RootLayout({
                 <CopilotProvider>
                   <LanggraphConfigWrapper>
                     <ProjectProvider>
-                      <OrchestratorProvider>
-                        <SidebarProvider defaultOpen={false}>
-                          <AppSidebar />
-                          {children}
-                        </SidebarProvider>
-                      </OrchestratorProvider>
+                      <ReactFlowProvider>
+                        <FlowgraphProvider>
+                          <OrchestratorProvider>
+                            <SidebarProvider defaultOpen={false}>
+                              <AppSidebar />
+                              {children}
+                            </SidebarProvider>
+                          </OrchestratorProvider>
+                        </FlowgraphProvider>
+                      </ReactFlowProvider>
                     </ProjectProvider>
                   </LanggraphConfigWrapper>
                 </CopilotProvider>

@@ -69,7 +69,7 @@ export const useNodeSelect = ({
     selectResource(target);
 
     // Select and focus the node in flowgraph context
-    // selectNode(nodeId);
+    selectNode(nodeId);
     // focusNode(nodeId);
 
     // Simply append the message if messageType is provided

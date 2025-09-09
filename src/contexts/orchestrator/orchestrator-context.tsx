@@ -8,6 +8,8 @@ import { useProjectActions } from "../project/project-context";
 import { useChatState } from "../chat/chat-context";
 import { useLanggraphAgent } from "@/hooks/langgraph/use-langgraph-agent";
 import { useLanggraphContext } from "../langgraph/langgraph-context";
+import { useFlowgraphState } from "../flowgraph/flowgraph-context";
+import { useReactFlow } from "@xyflow/react";
 
 interface OrchestratorContextValue {
   state: StateFrom<typeof orchestratorMachine>;
@@ -21,10 +23,12 @@ export const OrchestratorContext = createContext<
 
 export const OrchestratorProvider = ({ children }: { children: ReactNode }) => {
   const [state, send, actorRef] = useMachine(orchestratorMachine);
-  const { sidebarChatOpen } = useChatState();
+  const { sidebarChatOpen, sidebarChatMaximized } = useChatState();
   const { clearSelectedResource } = useProjectActions();
   const { state: langgraphState } = useLanggraphContext();
   const { setState: setLanggraphState } = useLanggraphAgent();
+  const { selectedNode } = useFlowgraphState();
+  const { fitView } = useReactFlow();
 
   useEffect(() => {
     const prev = state.context.monitoredStates.sidebarChatOpen;
@@ -33,6 +37,30 @@ export const OrchestratorProvider = ({ children }: { children: ReactNode }) => {
       if (prev && !sidebarChatOpen) clearSelectedResource();
     }
   }, [sidebarChatOpen, state.context.monitoredStates.sidebarChatOpen]);
+
+  useEffect(() => {
+    const prev = state.context.monitoredStates.sidebarChatMaximized;
+    if (prev !== sidebarChatMaximized) {
+      send({ type: "UPDATE_SIDEBAR_CHAT_MAXIMIZED", maximized: sidebarChatMaximized });
+    }
+  }, [sidebarChatMaximized, state.context.monitoredStates.sidebarChatMaximized]);
+
+  // Handle fitView when chat is maximized and there's a selected node
+  useEffect(() => {
+    if (sidebarChatMaximized && selectedNode) {
+      // Small delay to ensure the layout has updated
+      const timer = setTimeout(() => {
+        fitView({
+          nodes: [{ id: selectedNode }],
+          padding: 0.2,
+          duration: 300,
+          maxZoom: 1.5,
+        });
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [sidebarChatMaximized, selectedNode, fitView]);
 
   useEffect(() => {
     const { base_url, api_key, model_name } = langgraphState.context;
@@ -79,5 +107,7 @@ export function useOrchestratorActions() {
   return {
     updateSidebarChatState: (open: boolean) =>
       send({ type: "UPDATE_SIDEBAR_CHAT_STATE", open }),
+    updateSidebarChatMaximized: (maximized: boolean) =>
+      send({ type: "UPDATE_SIDEBAR_CHAT_MAXIMIZED", maximized }),
   };
 }

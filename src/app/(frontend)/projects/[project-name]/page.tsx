@@ -6,7 +6,6 @@ import { useEffect, use } from "react";
 import {
   Background,
   ReactFlow,
-  ReactFlowProvider,
   Controls,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -30,7 +29,6 @@ import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 
 // Context and utilities
 import {
-  FlowgraphProvider,
   useFlowgraphActions,
   useFlowgraphState,
 } from "@/contexts/flowgraph/flowgraph-context";
@@ -189,31 +187,27 @@ export default function ProjectPage({
   }, [projectName]);
 
   return (
-    <ReactFlowProvider>
-      <FlowgraphProvider>
-        <div className="relative h-screen w-full flex overflow-hidden">
-          <div
-            className={cn(
-              "relative h-full transition-all duration-300 ease-in-out",
-              sidebarChatOpen && !sidebarChatMaximized ? "w-[65%]" : sidebarChatMaximized ? "w-0" : "w-full"
-            )}
-          >
-            <ProjectFlow projectName={projectName} />
-            <ProjectFloatingUI 
-              projectName={projectName} 
-              sidebarChatMaximized={sidebarChatMaximized}
-            />
-          </div>
-          <div
-            className={cn(
-              "h-full shrink-0 transition-all duration-300 ease-in-out",
-              sidebarChatOpen ? (sidebarChatMaximized ? "w-full p-2" : "w-[35%] p-2 pl-0") : "w-0"
-            )}
-          >
-            <AiChatbox />
-          </div>
-        </div>
-      </FlowgraphProvider>
-    </ReactFlowProvider>
+    <div className="relative h-screen w-full flex overflow-hidden">
+      <div
+        className={cn(
+          "relative h-full transition-all duration-300 ease-in-out",
+          sidebarChatOpen && !sidebarChatMaximized ? "w-[65%]" : sidebarChatMaximized ? "w-[50%]" : "w-full"
+        )}
+      >
+        <ProjectFlow projectName={projectName} />
+        <ProjectFloatingUI 
+          projectName={projectName} 
+          sidebarChatMaximized={sidebarChatMaximized}
+        />
+      </div>
+      <div
+        className={cn(
+          "h-full shrink-0 transition-all duration-300 ease-in-out",
+          sidebarChatOpen ? (sidebarChatMaximized ? "w-[50%] p-2" : "w-[35%] p-2 pl-0") : "w-0"
+        )}
+      >
+        <AiChatbox />
+      </div>
+    </div>
   );
 }

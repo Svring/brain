@@ -42,17 +42,6 @@ function FlowgraphFocusHandler() {
   const { state } = useFlowgraphContext();
   const { fitView } = useReactFlow();
 
-  // useEffect(() => {
-  //   if (state.context.selectedNode) {
-  //     fitView({
-  //       nodes: [{ id: state.context.selectedNode }],
-  //       padding: 0.2,
-  //       duration: 0,
-  //       maxZoom: 1,
-  //     });
-  //   }
-  // }, [state.context.selectedNode]);
-
   // Handle programmatic fitView calls
   useEffect(() => {
     if (state.context.fitViewTrigger > 0) {
