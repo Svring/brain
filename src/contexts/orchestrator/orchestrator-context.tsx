@@ -99,13 +99,13 @@ export const OrchestratorProvider = ({ children }: { children: ReactNode }) => {
           nodes: [{ id: selectedNode }],
           padding: 0.2,
           duration: 300,
-          maxZoom: 1.5,
+          maxZoom: 1,
         });
       }, 100);
 
       return () => clearTimeout(timer);
     }
-  }, [sidebarChatMaximized, selectedNode, fitView]);
+  }, [sidebarChatMaximized, selectedNode]);
 
   useEffect(() => {
     const { base_url, api_key, model_name } = langgraphState.context;

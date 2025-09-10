@@ -18,6 +18,7 @@ export const ClusterConnectionMessage: React.FC<
   const { copyToClipboard, isCopied } = useCopy();
   const [showPrivateConnection, setShowPrivateConnection] = useState(false);
   const [showPublicConnection, setShowPublicConnection] = useState(false);
+  const [publicConnectionEnabled, setPublicConnectionEnabled] = useState(false);
 
   const { resource, isLoading, error } = useResourceStatus(target);
   const clusterObject = resource as ClusterObject;
@@ -152,8 +153,8 @@ export const ClusterConnectionMessage: React.FC<
               Public Connection
             </span>
             <Checkbox
-              checked={!!publicConnectionString}
-              disabled
+              checked={publicConnectionEnabled}
+              onCheckedChange={(checked) => setPublicConnectionEnabled(checked === true)}
               className="h-4 w-4"
             />
           </div>

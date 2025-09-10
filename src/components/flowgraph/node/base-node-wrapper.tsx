@@ -54,9 +54,9 @@ export default function BaseNodeWrapper({
       return "bg-status-deleting/50 border-border-deleting";
     }
 
-    // If resource is selected, show blue border
+    // If resource is selected, show blue border and elevate above overlay
     if (isSelected) {
-      return "border-theme-blue/50 border";
+      return "border-theme-blue/50 border relative z-20";
     }
 
     // Default styling

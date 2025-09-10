@@ -1,28 +1,15 @@
 import React, { useState } from "react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { devboxClient } from "@/components/provider/trpc-provider";
 import BaseSystemMessage from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
-import {
-  Play,
-  Trash2,
-  Calendar,
-  Tag,
-  ArrowBigUpDash,
-  Plus,
-  Check,
-  X,
-} from "lucide-react";
+import { Trash2, Tag, ArrowBigUpDash, Plus, Check, X } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import {
-  DevboxReleaseItem,
-  DevboxReleaseRequestSchema,
-} from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas/devbox-release-schema";
+import { DevboxReleaseItem } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas/devbox-release-schema";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
+import { useDevboxRelease } from "@/hooks/sealos/devbox/use-devbox-release";
+import { useDevboxLifecycle } from "@/hooks/sealos/devbox/use-devbox-lifecycle";
 
 interface DevboxReleaseMessageProps {
   target: CustomResourceTarget;
@@ -114,7 +101,10 @@ const ReleaseItem: React.FC<{
         <div className="text-xs text-muted-foreground">
           <span className="font-medium">Release Notes:</span>{" "}
           <span className="rounded">
-            {release.description || "No release notes available"}
+            {release.description &&
+            release.description.trim().toLowerCase() !== "release notes"
+              ? release.description
+              : "No release notes available"}
           </span>
         </div>
       </div>
@@ -125,8 +115,6 @@ const ReleaseItem: React.FC<{
 export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
   target,
 }) => {
-  const devboxTrpcClient = devboxClient.useTRPC();
-  const queryClient = useQueryClient();
   const [isCreatingRelease, setIsCreatingRelease] = useState(false);
   const [newReleaseTag, setNewReleaseTag] = useState("");
   const [newReleaseDescription, setNewReleaseDescription] = useState("");
@@ -134,59 +122,30 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
     null
   );
 
+  const devboxName = target.name || "";
+
+  // Use the devbox release hook
   const {
-    data: releasesData,
+    releases: releasesData,
     isLoading,
-    error,
-  } = useQuery(devboxTrpcClient.releases.queryOptions(target.name || ""));
+    handleRelease,
+    handleDeleteRelease,
+    releaseMutation,
+    deleteReleaseMutation,
+    shutdownDevboxMutation,
+    startDevboxMutation,
+  } = useDevboxRelease(devboxName);
 
-  console.log("releasesData", releasesData);
-
-  const pauseMutation = useMutation({
-    ...devboxTrpcClient.pause.mutationOptions(),
-  });
-
-  const startMutation = useMutation({
-    ...devboxTrpcClient.start.mutationOptions(),
+  // Use the devbox lifecycle hook for pause/start operations
+  const { executeAction, isPending } = useDevboxLifecycle({
     onSuccess: () => {
-      // Invalidate and refetch releases
-      queryClient.invalidateQueries({
-        queryKey: devboxTrpcClient.releases.queryKey(target.name || ""),
-      });
       setIsCreatingRelease(false);
       setNewReleaseTag("");
       setNewReleaseDescription("");
     },
-    onError: (error) => {
-      console.error("Failed to start devbox after release:", error);
-    },
   });
 
-  const releaseMutation = useMutation({
-    ...devboxTrpcClient.release.mutationOptions(),
-    onSuccess: () => {
-      // Start the devbox after successful release
-      startMutation.mutate(target.name || "");
-    },
-    onError: (error) => {
-      console.error("Failed to create release:", error);
-    },
-  });
-
-  const deleteReleaseMutation = useMutation({
-    ...devboxTrpcClient.deleteRelease.mutationOptions(),
-    onSuccess: () => {
-      // Invalidate and refetch releases
-      queryClient.invalidateQueries({
-        queryKey: devboxTrpcClient.releases.queryKey(target.name || ""),
-      });
-      setDeletingReleaseId(null);
-    },
-    onError: (error) => {
-      console.error("Failed to delete release:", error);
-      setDeletingReleaseId(null);
-    },
-  });
+  console.log("releasesData", releasesData);
 
   // Show loading state
   if (isLoading) {
@@ -200,7 +159,7 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
   }
 
   // Show error state
-  if (error || !releasesData) {
+  if (!releasesData) {
     return (
       <BaseSystemMessage headerTitle={{ icon: Tag, name: "Devbox Releases" }}>
         <div className="flex items-center justify-center h-20">
@@ -229,24 +188,26 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
             <div className="text-xs text-muted-foreground">No releases yet</div>
           </div>
         ) : (
-          <ScrollArea className="max-h-80">
-            <div className="space-y-2">
-              {Array.isArray(releases) &&
-                releases.length > 0 &&
-                releases.map((release: DevboxReleaseItem) => (
-                  <ReleaseItem
-                    key={release.id}
-                    release={release}
-                    target={target}
-                    onDelete={(versionName) => {
-                      setDeletingReleaseId(release.id);
-                      deleteReleaseMutation.mutate(versionName);
-                    }}
-                    isDeleting={deletingReleaseId === release.id}
-                  />
-                ))}
-            </div>
-          </ScrollArea>
+          <div
+            className={`space-y-2 ${
+              releases.length > 3 ? "max-h-48 overflow-y-auto" : ""
+            }`}
+          >
+            {Array.isArray(releases) &&
+              releases.length > 0 &&
+              releases.map((release: DevboxReleaseItem) => (
+                <ReleaseItem
+                  key={release.id}
+                  release={release}
+                  target={target}
+                  onDelete={(versionName) => {
+                    setDeletingReleaseId(release.id);
+                    handleDeleteRelease(release.tag);
+                  }}
+                  isDeleting={deletingReleaseId === release.id}
+                />
+              ))}
+          </div>
         )}
 
         {/* Add new release section - fixed at bottom */}
@@ -283,29 +244,23 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
                 className="h-8 w-8 p-0"
                 onClick={() => {
                   if (newReleaseTag.trim()) {
-                    // First pause the devbox, then release it
-                    pauseMutation.mutate(target.name || "", {
-                      onSuccess: () => {
-                        releaseMutation.mutate({
-                          devboxName: target.name || "",
-                          tag: newReleaseTag.trim(),
-                          releaseDes: newReleaseDescription.trim(),
-                        });
-                      },
+                    handleRelease({
+                      tag: newReleaseTag.trim(),
+                      releaseDes: newReleaseDescription.trim(),
                     });
                   }
                 }}
                 disabled={
                   !newReleaseTag.trim() ||
-                  pauseMutation.isPending ||
                   releaseMutation.isPending ||
-                  startMutation.isPending
+                  shutdownDevboxMutation.isPending ||
+                  startDevboxMutation.isPending
                 }
                 title="Create release"
               >
-                {pauseMutation.isPending ||
-                releaseMutation.isPending ||
-                startMutation.isPending ? (
+                {releaseMutation.isPending ||
+                shutdownDevboxMutation.isPending ||
+                startDevboxMutation.isPending ? (
                   <Spinner className="h-4 w-4" />
                 ) : (
                   <Check className="h-4 w-4" />

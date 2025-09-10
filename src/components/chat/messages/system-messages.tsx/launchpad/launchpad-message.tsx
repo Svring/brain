@@ -32,7 +32,7 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
     ? [
         {
           icon: Globe,
-          label: "Network Status",
+          label: "Ports",
           onClick: () => {
             appendSystemMessage({ type: "launchpad.network", target });
           },

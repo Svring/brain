@@ -10,6 +10,7 @@ import { FlowgraphCommandHint } from "@/components/flowgraph/flowgraph-command-h
 import { FlowgraphCommandDialog } from "@/components/flowgraph/command/flowgraph-command-dialog";
 import { FlowgraphActions } from "@/components/flowgraph/flowgraph-actions";
 import FloatingConnectionLine from "@/components/flowgraph/edge/floating-connection-line";
+import { FlowgraphOverlay } from "@/components/flowgraph/flowgraph-overlay";
 
 import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
 import useFlowgraph from "@/hooks/flowgraph/use-flowgraph";
@@ -52,10 +53,16 @@ function ProjectFloatingUI({
   );
 }
 
-function ProjectFlow({ projectName }: { projectName: string }) {
+function ProjectFlow({
+  projectName,
+  sidebarChatMaximized,
+}: {
+  projectName: string;
+  sidebarChatMaximized: boolean;
+}) {
   const { isLoading } = useFlowgraph(projectName);
   useRelianceEdges();
-  const { nodes, edges } = useFlowgraphState();
+  const { nodes, edges, selectedNode } = useFlowgraphState();
   const { onNodesChange, onEdgesChange } = useFlowgraphActions();
   useCopilotActions();
 
@@ -78,12 +85,20 @@ function ProjectFlow({ projectName }: { projectName: string }) {
       nodeTypes={nodeTypes}
       onEdgesChange={onEdgesChange}
       onNodesChange={onNodesChange}
-      panOnScroll
+      panOnScroll={!sidebarChatMaximized}
+      panOnDrag={!sidebarChatMaximized}
+      zoomOnScroll={!sidebarChatMaximized}
+      zoomOnPinch={!sidebarChatMaximized}
       snapToGrid
       snapGrid={REACT_FLOW_CONFIG.snapGrid}
       connectionLineComponent={FloatingConnectionLine}
       proOptions={REACT_FLOW_CONFIG.proOptions}
-    />
+    >
+      <FlowgraphOverlay 
+        chatMaximized={sidebarChatMaximized}
+        selectedNodeId={selectedNode}
+      />
+    </ReactFlow>
   );
 }
 
@@ -123,7 +138,10 @@ export default function ProjectPage({
             : "w-full"
         )}
       >
-        <ProjectFlow projectName={projectName} />
+        <ProjectFlow
+          projectName={projectName}
+          sidebarChatMaximized={sidebarChatMaximized}
+        />
         <ProjectFloatingUI
           projectName={projectName}
           sidebarChatMaximized={sidebarChatMaximized}

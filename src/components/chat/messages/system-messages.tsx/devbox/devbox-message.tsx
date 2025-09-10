@@ -50,7 +50,7 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
         },
         {
           icon: Globe,
-          label: "Network Status",
+          label: "Ports",
           onClick: () => {
             appendSystemMessage({ type: "devbox.network", target });
           },
