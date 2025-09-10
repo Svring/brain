@@ -1,8 +1,9 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 interface UseLaunchpadLifecycleOptions {
@@ -15,7 +16,7 @@ export const useLaunchpadLifecycle = (
 ) => {
   const { onSuccess, onError } = options;
   const { launchpad } = useTRPCClients();
-  const queryClient = useQueryClient();
+  const { invalidateQueries } = useInvalidateQueries();
 
   const startMutation = useMutation({
     ...launchpad.start.mutationOptions(),
@@ -23,12 +24,11 @@ export const useLaunchpadLifecycle = (
       const message = "Launchpad started successfully";
       toast.success(message);
       onSuccess?.(message);
-      // Invalidate queries to refresh data
-      queryClient.invalidateQueries({ queryKey: launchpad.list.queryKey() });
       const target = convertResourceTypeToTarget("deployment", launchpadName);
-      queryClient.invalidateQueries({
-        queryKey: launchpad.get.queryKey(target as any),
-      });
+      invalidateQueries([
+        launchpad.list.queryKey(),
+        launchpad.get.queryKey(target as any),
+      ]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to start launchpad";
@@ -43,12 +43,11 @@ export const useLaunchpadLifecycle = (
       const message = "Launchpad paused successfully";
       toast.success(message);
       onSuccess?.(message);
-      // Invalidate queries to refresh data
-      queryClient.invalidateQueries({ queryKey: launchpad.list.queryKey() });
       const target = convertResourceTypeToTarget("deployment", launchpadName);
-      queryClient.invalidateQueries({
-        queryKey: launchpad.get.queryKey(target as any),
-      });
+      invalidateQueries([
+        launchpad.list.queryKey(),
+        launchpad.get.queryKey(target as any),
+      ]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to pause launchpad";

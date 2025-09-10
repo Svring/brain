@@ -140,8 +140,6 @@ export function AiMessages({
     }
   }, [contentHash]); // Use contentHash to detect both new messages and content updates
 
-  console.log("messages", messages);
-
   return (
     <>
       {messages.length !== 0 && (

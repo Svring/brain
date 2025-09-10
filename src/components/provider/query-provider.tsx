@@ -4,8 +4,10 @@
 // Since QueryClientProvider relies on useContext under the hood, we have to put 'use client' on top
 import {
   isServer,
+  MutationCache,
   QueryClient,
   QueryClientProvider,
+  useQueryClient,
 } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
@@ -15,7 +17,7 @@ function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 30 * 1000, // Reduced from 60s to 5s
+        staleTime: 30 * 1000,
         refetchOnMount: true,
         refetchOnWindowFocus: true,
         refetchOnReconnect: true,

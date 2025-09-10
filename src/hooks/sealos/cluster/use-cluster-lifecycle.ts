@@ -1,8 +1,9 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 interface UseClusterLifecycleOptions {
@@ -15,7 +16,7 @@ export const useClusterLifecycle = (
 ) => {
   const { onSuccess, onError } = options;
   const { cluster } = useTRPCClients();
-  const queryClient = useQueryClient();
+  const { invalidateQueries } = useInvalidateQueries();
 
   const startMutation = useMutation({
     ...cluster.start.mutationOptions(),
@@ -23,11 +24,8 @@ export const useClusterLifecycle = (
       const message = "Cluster started successfully";
       toast.success(message);
       onSuccess?.(message);
-      // Invalidate queries to refresh data
       const target = convertResourceTypeToTarget("cluster", clusterName);
-      queryClient.invalidateQueries({
-        queryKey: cluster.get.queryKey(target as any),
-      });
+      invalidateQueries([cluster.get.queryKey(target as any)]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to start cluster";
@@ -42,11 +40,8 @@ export const useClusterLifecycle = (
       const message = "Cluster paused successfully";
       toast.success(message);
       onSuccess?.(message);
-      // Invalidate queries to refresh data
       const target = convertResourceTypeToTarget("cluster", clusterName);
-      queryClient.invalidateQueries({
-        queryKey: cluster.get.queryKey(target as any),
-      });
+      invalidateQueries([cluster.get.queryKey(target as any)]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to pause cluster";

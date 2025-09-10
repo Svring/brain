@@ -1,8 +1,9 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 interface UseDevboxLifecycleOptions {
@@ -13,7 +14,7 @@ interface UseDevboxLifecycleOptions {
 export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
   const { onSuccess, onError } = options;
   const { devbox } = useTRPCClients();
-  const queryClient = useQueryClient();
+  const { invalidateQueries } = useInvalidateQueries();
 
   const startMutation = useMutation({
     ...devbox.start.mutationOptions(),
@@ -21,12 +22,11 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
       const message = "Devbox started successfully";
       toast.success(message);
       onSuccess?.(message);
-      // Invalidate queries to refresh data
-      queryClient.invalidateQueries({ queryKey: devbox.list.queryKey() });
       const target = convertResourceTypeToTarget("devbox", devboxName);
-      queryClient.invalidateQueries({
-        queryKey: devbox.get.queryKey(target as any),
-      });
+      invalidateQueries([
+        devbox.list.queryKey(),
+        devbox.get.queryKey(target as any),
+      ]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to start devbox";
@@ -41,12 +41,11 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
       const message = "Devbox paused successfully";
       toast.success(message);
       onSuccess?.(message);
-      // Invalidate queries to refresh data
-      queryClient.invalidateQueries({ queryKey: devbox.list.queryKey() });
       const target = convertResourceTypeToTarget("devbox", devboxName);
-      queryClient.invalidateQueries({
-        queryKey: devbox.get.queryKey(target as any),
-      });
+      invalidateQueries([
+        devbox.list.queryKey(),
+        devbox.get.queryKey(target as any),
+      ]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to pause devbox";
@@ -61,12 +60,11 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
       const message = "Devbox restarted successfully";
       toast.success(message);
       onSuccess?.(message);
-      // Invalidate queries to refresh data
-      queryClient.invalidateQueries({ queryKey: devbox.list.queryKey() });
       const target = convertResourceTypeToTarget("devbox", devboxName);
-      queryClient.invalidateQueries({
-        queryKey: devbox.get.queryKey(target as any),
-      });
+      invalidateQueries([
+        devbox.list.queryKey(),
+        devbox.get.queryKey(target as any),
+      ]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to restart devbox";
@@ -81,12 +79,11 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
       const message = "Devbox shutdown successfully";
       toast.success(message);
       onSuccess?.(message);
-      // Invalidate queries to refresh data
-      queryClient.invalidateQueries({ queryKey: devbox.list.queryKey() });
       const target = convertResourceTypeToTarget("devbox", devboxName);
-      queryClient.invalidateQueries({
-        queryKey: devbox.get.queryKey(target as any),
-      });
+      invalidateQueries([
+        devbox.list.queryKey(),
+        devbox.get.queryKey(target as any),
+      ]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to shutdown devbox";
@@ -101,12 +98,11 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
       const message = "Devbox deleted successfully";
       toast.success(message);
       onSuccess?.(message);
-      // Invalidate queries to refresh data
-      queryClient.invalidateQueries({ queryKey: devbox.list.queryKey() });
       const target = convertResourceTypeToTarget("devbox", devboxName);
-      queryClient.invalidateQueries({
-        queryKey: devbox.get.queryKey(target as any),
-      });
+      invalidateQueries([
+        devbox.list.queryKey(),
+        devbox.get.queryKey(target as any),
+      ]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to delete devbox";
