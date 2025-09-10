@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { NameSchema } from "@/schemas/forms/universal/name-schema";
 import { LaunchCommandSchema } from "./components/launch-command-schema";
-import { ImageConfigSchema } from "./components/image-schema";
+import { ImageSchema } from "./components/image-schema";
 import { LaunchpadResourceSchema } from "./components/launchpad-resource-schema";
 import { LaunchpadPortSchema } from "./components/launchpad-port-schema";
 import { EnvSchema } from "../universal/env-schema";
@@ -11,7 +11,7 @@ import { ConfigMapSchema } from "../universal/config-map-schema";
 // Main launchpad create form schema
 export const launchpadCreateFormSchema = z.object({
   name: NameSchema.default("hello-world"),
-  image: ImageConfigSchema.default({
+  image: ImageSchema.default({
     imageName: "nginx",
     imageRegistry: null,
   }),
@@ -46,7 +46,6 @@ export {
   LaunchCommandSchema,
   type LaunchCommand,
 } from "./components/launch-command-schema";
-export { ImageConfigSchema, type ImageConfig } from "./components/image-schema";
 export {
   LaunchpadResourceSchema,
   type LaunchpadResource,

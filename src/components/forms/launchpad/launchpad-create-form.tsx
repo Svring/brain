@@ -5,14 +5,11 @@ import { Button } from "@/components/ui/button";
 import { useLaunchpadCreateForm } from "@/hooks/forms/launchpad/use-launchpad-create-form";
 import { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
 import { NameField } from "@/components/forms/universal/name-field";
-import { ImageField } from "@/components/forms/universal/image-field";
-import { ResourceFields } from "../universal/resource-fields";
+import { ImageConfigFields } from "../universal/image-config-fields";
+import { LaunchpadResourceFields } from "./launchpad-resource-fields";
 import { LaunchpadPortsFields } from "./launchpad-ports-fields";
 import { EnvFields } from "../universal/env-fields";
-import {
-  CommandField,
-  ArgsField,
-} from "@/components/forms/universal/command-args-fields";
+import { LaunchCommandFields } from "../universal/launch-command-fields";
 import { ConfigMapFields } from "../universal/config-map-fields";
 import { StorageFields } from "../universal/storage-fields";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -55,7 +52,10 @@ export const LaunchpadCreateForm = ({
         {/* Basic Configuration */}
         <div className="space-y-4">
           <NameField />
-          <ImageField />
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-foreground">Image Configuration</div>
+            <ImageConfigFields />
+          </div>
         </div>
 
         {/* Resource Configuration */}
@@ -64,7 +64,7 @@ export const LaunchpadCreateForm = ({
             <h3 className="font-medium">Resource Configuration</h3>
           </div>
           <div className="p-4">
-            <ResourceFields />
+            <LaunchpadResourceFields />
           </div>
         </div>
 
@@ -95,9 +95,9 @@ export const LaunchpadCreateForm = ({
 
           {isAdvancedExpanded && (
             <div className="p-4 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <CommandField />
-                <ArgsField />
+              <div className="space-y-2">
+                <div className="text-sm font-medium text-foreground">Launch Command</div>
+                <LaunchCommandFields />
               </div>
 
               <div className="space-y-2">

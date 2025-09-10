@@ -5,6 +5,7 @@ import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { toast } from "sonner";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { ImageCreatedAt } from "./launchpad-message-detail/image-created-at";
+import { CreatedAt } from "./launchpad-message-detail/created-at";
 import { ResourceQuota } from "./launchpad-message-detail/resource-quota";
 import { Deployment } from "./launchpad-message-detail/deployment";
 import { Configuration } from "./launchpad-message-detail/configuration";
@@ -86,10 +87,11 @@ export const LaunchpadMessageDetails: React.FC<
       <ImageCreatedAt
         target={target}
         image={launchpadObject?.image}
-        createdAt={launchpadObject?.operationalStatus?.createdAt}
         onImageUpdate={handleSubmit}
         isLoading={updateLaunchpad.isPending}
       />
+
+      <CreatedAt createdAt={launchpadObject?.operationalStatus?.createdAt} />
 
       <ResourceQuota
         resource={launchpadObject?.resource}

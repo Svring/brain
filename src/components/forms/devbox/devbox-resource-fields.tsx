@@ -58,23 +58,13 @@ export const DevboxResourceFields = ({
                     className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
                     aria-label="CPU slider"
                   />
-                  <div className="relative">
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      {cpuOptions.map((cpu, index) => {
-                        const position =
-                          (index / (cpuOptions.length - 1)) * 100;
-                        return (
-                          <span
-                            key={cpu}
-                            className="absolute text-center transform -translate-x-1/4"
-                            style={{ left: `${position}%` }}
-                          >
-                            {cpu}C
-                          </span>
-                        );
-                      })}
-                    </div>
-                    <div className="h-4"></div> {/* Spacer for labels */}
+                  <div className="flex justify-between">
+                    <span className="text-xs text-muted-foreground">
+                      {cpuOptions[0]}C
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {cpuOptions[cpuOptions.length - 1]}C
+                    </span>
                   </div>
                 </div>
                 <FormMessage />
@@ -111,23 +101,13 @@ export const DevboxResourceFields = ({
                     className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
                     aria-label="Memory slider"
                   />
-                  <div className="relative">
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      {memoryOptions.map((memory, index) => {
-                        const position =
-                          (index / (memoryOptions.length - 1)) * 100;
-                        return (
-                          <span
-                            key={memory}
-                            className="absolute text-center transform -translate-x-1/4"
-                            style={{ left: `${position}%` }}
-                          >
-                            {memory}G
-                          </span>
-                        );
-                      })}
-                    </div>
-                    <div className="h-4"></div> {/* Spacer for labels */}
+                  <div className="flex justify-between">
+                    <span className="text-xs text-muted-foreground">
+                      {memoryOptions[0]}G
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {memoryOptions[memoryOptions.length - 1]}G
+                    </span>
                   </div>
                 </div>
                 <FormMessage />

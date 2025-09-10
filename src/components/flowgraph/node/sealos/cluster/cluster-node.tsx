@@ -2,32 +2,20 @@
 
 import BaseNode from "../../base-node-wrapper";
 import NodeStatusLight from "../../components/node-status-light";
-import NodeInternalUrl from "../../components/node-internal-url";
-import NodeMonitor from "../../components/node-monitor";
 import NodeLog from "../../components/node-log";
-import NodePods from "../../components/node-pods";
-import NodeBackup from "../../components/node-backup";
-import NodeStack from "../../components/node-stack";
-import NodeHem from "../../components/node-hem";
+import NodeMonitor from "../../components/node-monitor";
 import ClusterNodeTitle from "./cluster-node-title";
 import ClusterNodeMenu from "./cluster-node-menu";
 import ClusterNodeBackup from "./cluster-node-backup";
-
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { createK8sContext } from "@/lib/auth/auth-utils";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import {
-  CustomResourceTarget,
-  CustomResourceTargetSchema,
-} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { convertToDbconnUrl } from "@/lib/sealos/sealos-utils";
+import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { composeClusterPublicConnectionString } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
 import { Globe, HardDrive } from "lucide-react";
 import { useClusterObject } from "@/hooks/sealos/cluster/use-cluster-object";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
-import { useNodeData } from "@/hooks/flowgraph/use-node-data";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
-import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
 import NodeLoading from "../../components/node-loading";
 import {
   Tooltip,
@@ -36,136 +24,75 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-// Enhanced wrapper that can handle both K8sResource and ClusterObject
-function ClusterNodeWrapper({
-  data,
-}: {
-  data: ClusterObject | CustomResourceTarget;
-}) {
-  // Check if we have a complete ClusterObject or just a basic K8sResource
-  const isCompleteObject =
-    "type" in data && "resource" in data && "connection" in data;
+interface ClusterNodeProps {
+  data: ClusterObject | { name: string };
+}
 
-  // Always extract resource data to ensure consistent hook calls
-  const resourceData = {
-    kind: "cluster", // Hardcoded kind
-    name: data.name!,
-  };
-
-  // Construct node ID following the same pattern as other nodes
-  const nodeId = `${resourceData.kind.toLowerCase()}-${resourceData.name}`;
-
-  // Always call hooks in the same order
-  const { completeResource, isLoadingComplete } =
-    useNodeData(resourceData);
+function ClusterNodeWrapper({ data }: ClusterNodeProps) {
+  const resourceData = { kind: "cluster", name: data.name };
+  const nodeId = `cluster-${data.name}`;
   const target = CustomResourceTargetSchema.parse(
-    convertResourceTypeToTarget("cluster", resourceData.name)
+    convertResourceTypeToTarget("cluster", data.name)
   );
   const { status, isLoading: isLoadingStatus } = useResourceStatus(target);
+  const { data: clusterData = data } = useClusterObject(data.name);
 
-  // If we have complete object data, render the full node
-  if (isCompleteObject) {
-    return (
-      <ClusterNode
-        resource={data as ClusterObject}
-        status={status || "Pending"}
-        nodeId={nodeId}
-      />
-    );
-  }
-
-  // If we have complete resource data from enhancement, render the full node
   if (
-    completeResource &&
-    "type" in completeResource &&
-    "connection" in completeResource
+    !("type" in data && "resource" in data && "connection" in data) &&
+    isLoadingStatus
   ) {
     return (
-      <ClusterNode
-        resource={completeResource as ClusterObject}
+      <NodeLoading
+        kind={resourceData.kind}
+        name={resourceData.name}
         status={status || "Pending"}
-        nodeId={nodeId}
       />
     );
   }
 
-  // Otherwise, show loading state
   return (
-    <NodeLoading
-      kind={resourceData.kind}
-      name={resourceData.name}
+    <ClusterNode
+      resource={clusterData as ClusterObject}
       status={status || "Pending"}
+      nodeId={nodeId}
     />
   );
 }
 
-// Main component that receives the loaded resource data
-function ClusterNode({
-  resource,
-  status,
-  nodeId,
-}: {
+interface ClusterNodeInnerProps {
   resource: ClusterObject;
-  status?: string;
+  status: string;
   nodeId: string;
-}) {
-  // Create contexts for API calls
-  const k8sContext = createK8sContext();
+}
 
-  // Create target for the cluster
+function ClusterNode({ resource, status, nodeId }: ClusterNodeInnerProps) {
+  const k8sContext = createK8sContext();
   const target = CustomResourceTargetSchema.parse(
     convertResourceTypeToTarget("cluster", resource.name || "")
   );
-
-  // Use the new hook to get cluster data
-  const { data: clusterData = resource } = useClusterObject(
-    resource.name || ""
+  const { latestData } = useResourceMetricsStatus({ target });
+  const storagePercent = Math.min(
+    100,
+    Math.max(
+      0,
+      Number(latestData?.storage) <= 1
+        ? Number(latestData?.storage) * 100
+        : Number(latestData?.storage) || 0
+    )
   );
-
-  // console.log("resource cluster", resource);
-  // console.log("status", status);
-
-  // Get resource metrics status using the new hook
-  const { latestData } = useResourceMetricsStatus({
-    target,
-  });
-
-  // console.log("latestData", latestData);
-
-  // // Derive a safe storage percentage (0-100). Accepts values in 0-1 or 0-100.
-  const storagePercent: number = (() => {
-    const raw = latestData?.storage;
-    if (raw === undefined || raw === null || Number.isNaN(raw as number)) {
-      return 0;
-    }
-    const value = Number(raw);
-    // If it's a fraction (0-1), convert to percent; else clamp to 0-100
-    const percent = value <= 1 ? value * 100 : value;
-    return Math.max(0, Math.min(100, percent));
-  })();
-
-  const { name, type } = clusterData;
-  const safeName = name || "";
-  const safeType = type || "";
-
-  // Construct connection string
   const connectionString = composeClusterPublicConnectionString(
-    clusterData,
+    resource,
     k8sContext.regionUrl
   );
+  const { name = "", type = "", resource: clusterResource } = resource;
 
   const mainCard = (
     <BaseNode target={target} nodeId={nodeId} messageType="cluster.detail">
       <div className="flex h-full flex-col gap-4 justify-between">
-        {/* Header with Name and Menu */}
         <div className="flex items-center justify-between">
-          <ClusterNodeTitle name={safeName} type={safeType} />
-          <div className="flex-shrink-0">
-            <ClusterNodeMenu object={clusterData} />
-          </div>
+          <ClusterNodeTitle name={name} type={type!} />
+          <ClusterNodeMenu object={resource} />
         </div>
-
-        {/* Public Access Indicator */}
         <div className="flex items-center gap-2 text-md">
           <Globe
             className={`h-4 w-4 ${
@@ -173,26 +100,18 @@ function ClusterNode({
             }`}
           />
           <span
-            className={`${
+            className={
               connectionString ? "text-foreground" : "text-muted-foreground"
-            }`}
+            }
           >
             Public Access
           </span>
         </div>
-
-        {/* Bottom section with status and icons */}
         <div className="mt-auto flex justify-between items-center">
-          {/* Left: Status light */}
-          <NodeStatusLight status={status || "Pending"} />
-
-          {/* Right: Icon components */}
+          <NodeStatusLight status={status} />
           <div className="flex items-center gap-2">
-            {/* <NodeInternalUrl ports={[]} /> */}
-            {/* <NodePods target={target} /> */}
-            <NodeLog target={target} />
             <ClusterNodeBackup target={target} />
-            {/* <NodeBackup /> */}
+            <NodeLog target={target} />
             <NodeMonitor target={target} />
           </div>
         </div>
@@ -200,31 +119,24 @@ function ClusterNode({
     </BaseNode>
   );
 
-  // Hem component displaying storage information as a progress bar (left-to-right fill)
   const hemComponent = (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="relative bg-node-background w-full h-full flex items-center rounded-b-xl text-xs text-muted-foreground overflow-hidden px-2 py-1 cursor-pointer hover:brightness-120">
-            {/* Filled background representing used percentage */}
+          <div className="relative bg-node-background w-full h-10 flex items-center rounded-b-xl text-xs text-muted-foreground overflow-hidden px-2 cursor-pointer hover:brightness-120">
             <div
               className="absolute inset-y-0 left-0 bg-muted"
               style={{ width: `${storagePercent}%` }}
             />
-
-            {/* Foreground content row */}
             <div className="relative z-10 flex items-center justify-between w-full">
-              {/* Left side: Volume icon and label */}
               <div className="flex items-center gap-1">
                 <HardDrive className="h-5 w-5" />
                 <span className="text-md">Volume</span>
               </div>
-
-              {/* Right side: Resource storage label (capacity) */}
               <div className="text-xs">
-                {Array.isArray(clusterData.resource)
+                {Array.isArray(clusterResource)
                   ? "N/A"
-                  : clusterData.resource?.storage || "N/A"}
+                  : clusterResource?.storage || "N/A"}{" "}
                 GB
               </div>
             </div>
@@ -234,49 +146,23 @@ function ClusterNode({
           side="bottom"
           className="bg-background-secondary rounded-lg p-2"
         >
-          <div className="text-xs">
-            {/* <div className="">Storage Usage</div> */}
-            <div>{storagePercent.toFixed(1)}% used</div>
-            {/* <div className="text-muted-foreground">
-              Capacity: {clusterData.resource?.storage || "N/A"}
-            </div> */}
-          </div>
+          <div className="text-xs">{storagePercent.toFixed(1)}% used</div>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
 
   return (
-    <NodeStack
-      target={target}
-      mainCard={
-        <div className="relative">
-          {/* Hem component - positioned above background cards */}
-          {hemComponent && (
-            <div className="absolute inset-x-0 top-0 z-10">
-              <div className="bg-muted border border-border-primary rounded-xl pt-8 text-xs flex flex-col h-60">
-                <div className="flex-1"></div>
-                <div className="h-10">{hemComponent}</div>
-              </div>
-            </div>
-          )}
-
-          {/* Main card - positioned at the top */}
-          <div className="relative z-20">{mainCard}</div>
+    <div className="relative">
+      <div className="absolute inset-x-0 top-0 z-10">
+        <div className="bg-muted border border-border-primary rounded-xl pt-8 text-xs flex flex-col h-60">
+          <div className="flex-1" />
+          {hemComponent}
         </div>
-      }
-      data={Array.from({
-        length:
-          (Array.isArray(clusterData.resource)
-            ? 0
-            : clusterData.resource?.replicas || 0) - 1 || 0,
-      })}
-      height="60"
-      backgroundColor="bg-node-background"
-      nodeId={nodeId}
-    />
+      </div>
+      <div className="relative z-20">{mainCard}</div>
+    </div>
   );
 }
 
-// Export the wrapper as the default component
 export default ClusterNodeWrapper;

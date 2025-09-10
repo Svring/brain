@@ -1,10 +1,16 @@
 import { z } from "zod";
-import { ImageSchema } from "@/schemas/forms/universal/image-schema";
-import { ImageRegistrySchema } from "@/schemas/forms/universal/image-registry-schema";
 
-export const ImageConfigSchema = z.object({
-  imageName: ImageSchema.optional(),
+// Image registry schema
+const ImageRegistrySchema = z.object({
+  username: z.string(),
+  password: z.string(),
+  serverAddress: z.string(),
+});
+
+export const ImageSchema = z.object({
+  imageName: z.string().optional(),
   imageRegistry: ImageRegistrySchema.nullable().optional(),
 });
 
-export type ImageConfig = z.infer<typeof ImageConfigSchema>;
+export type Image = z.infer<typeof ImageSchema>;
+export type ImageRegistry = z.infer<typeof ImageRegistrySchema>;

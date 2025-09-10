@@ -9,6 +9,8 @@ import {
 import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
 import { DEVBOX_RUNTIME_ICONS } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-icons";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useCopy } from "@/hooks/use-copy";
+import { Copy, Check } from "lucide-react";
 
 interface BaseResourceMessageHeaderProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -20,6 +22,7 @@ export default function BaseResourceMessageHeader({
   headerSlot,
 }: BaseResourceMessageHeaderProps) {
   const { resource } = useResourceStatus(target);
+  const { copyToClipboard, isCopied } = useCopy();
 
   const getIconUrl = () => {
     switch (target.resourceType) {
@@ -91,6 +94,11 @@ export default function BaseResourceMessageHeader({
     return name.length > maxLength ? `${name.slice(0, maxLength)}...` : name;
   };
 
+  const handleNameClick = () => {
+    const fullName = target.name || "Unknown";
+    copyToClipboard(fullName, "resource-name");
+  };
+
   return (
     <div className="px-4 py-2 bg-message-header rounded-t-xl border-b-border-primary border-b">
       <div className="flex items-center justify-between">
@@ -109,8 +117,17 @@ export default function BaseResourceMessageHeader({
                 <span className="text-xs text-muted-foreground leading-none">
                   {getResourceTypeLabel()}
                 </span>
-                <span className="text-lg text-foreground leading-tight truncate">
+                <span 
+                  className="text-lg text-foreground leading-tight truncate cursor-pointer hover:text-primary transition-colors flex items-center gap-1"
+                  onClick={handleNameClick}
+                  title="Click to copy resource name"
+                >
                   {getDisplayName()}
+                  {isCopied("resource-name") ? (
+                    <Check className="h-3 w-3 text-green-500" />
+                  ) : (
+                    <Copy className="h-3 w-3 opacity-50" />
+                  )}
                 </span>
               </span>
             </span>

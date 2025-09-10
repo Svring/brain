@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { LaunchCommandSchema } from "./components/launch-command-schema";
-import { ImageConfigSchema } from "./components/image-schema";
+import { ImageSchema } from "./components/image-schema";
 import { LaunchpadResourceSchema } from "./components/launchpad-resource-schema";
 import {
   LaunchpadPortSchema,
@@ -14,7 +14,7 @@ import { ConfigMapSchema } from "@/schemas/forms/universal/config-map-schema";
 export const launchpadUpdateFormSchema = z.object({
   // Keep all existing fields from create schema
   name: z.string().optional(),
-  image: ImageConfigSchema.optional(),
+  image: ImageSchema.optional(),
   launchCommand: LaunchCommandSchema.optional(),
   resource: LaunchpadResourceSchema.optional(),
   ports: z

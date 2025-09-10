@@ -67,9 +67,13 @@ export function ClusterResourceConfiguration({
                   className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
                   aria-label="CPU slider"
                 />
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{CPU_OPTIONS[0]}C</span>
-                  <span>{CPU_OPTIONS[CPU_OPTIONS.length - 1]}C</span>
+                <div className="flex justify-between">
+                  <span className="text-xs text-muted-foreground">
+                    {CPU_OPTIONS[0]}C
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {CPU_OPTIONS[CPU_OPTIONS.length - 1]}C
+                  </span>
                 </div>
               </div>
               <FormMessage />
@@ -105,47 +109,13 @@ export function ClusterResourceConfiguration({
                   className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
                   aria-label="Memory slider"
                 />
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{MEMORY_OPTIONS[0]}G</span>
-                  <span>{MEMORY_OPTIONS[MEMORY_OPTIONS.length - 1]}G</span>
-                </div>
-              </div>
-              <FormMessage />
-            </FormItem>
-          );
-        }}
-      />
-
-      {/* Storage Options */}
-      <FormField
-        control={form.control}
-        name="storage"
-        render={({ field }) => {
-          const currentValue = parseFloat(field.value) || STORAGE_OPTIONS[0];
-          const currentIndex =
-            STORAGE_OPTIONS.findIndex((option) => option === currentValue) || 0;
-
-          return (
-            <FormItem>
-              <div className="flex items-center gap-2">
-                <FormLabel className="font-medium">Storage:</FormLabel>
-                <span className="">{currentValue}Gi</span>
-              </div>
-              <div className="space-y-2">
-                <Slider
-                  value={[currentIndex]}
-                  onValueChange={(value) =>
-                    field.onChange(STORAGE_OPTIONS[value[0]].toString())
-                  }
-                  min={0}
-                  max={STORAGE_OPTIONS.length - 1}
-                  step={1}
-                  className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
-                  aria-label="Storage slider"
-                />
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{STORAGE_OPTIONS[0]}Gi</span>
-                  <span>{STORAGE_OPTIONS[STORAGE_OPTIONS.length - 1]}Gi</span>
+                <div className="flex justify-between">
+                  <span className="text-xs text-muted-foreground">
+                    {MEMORY_OPTIONS[0]}G
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {MEMORY_OPTIONS[MEMORY_OPTIONS.length - 1]}G
+                  </span>
                 </div>
               </div>
               <FormMessage />
@@ -181,9 +151,55 @@ export function ClusterResourceConfiguration({
                   className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
                   aria-label="Replicas slider"
                 />
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{REPLICAS_OPTIONS[0]}</span>
-                  <span>{REPLICAS_OPTIONS[REPLICAS_OPTIONS.length - 1]}</span>
+                <div className="flex justify-between">
+                  <span className="text-xs text-muted-foreground">
+                    {REPLICAS_OPTIONS[0]}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {REPLICAS_OPTIONS[REPLICAS_OPTIONS.length - 1]}
+                  </span>
+                </div>
+              </div>
+              <FormMessage />
+            </FormItem>
+          );
+        }}
+      />
+
+      {/* Storage Options */}
+      <FormField
+        control={form.control}
+        name="storage"
+        render={({ field }) => {
+          const currentValue = parseFloat(field.value) || STORAGE_OPTIONS[0];
+          const currentIndex =
+            STORAGE_OPTIONS.findIndex((option) => option === currentValue) || 0;
+
+          return (
+            <FormItem>
+              <div className="flex items-center gap-2">
+                <FormLabel className="font-medium">Storage:</FormLabel>
+                <span className="">{currentValue}Gi</span>
+              </div>
+              <div className="space-y-2">
+                <Slider
+                  value={[currentIndex]}
+                  onValueChange={(value) =>
+                    field.onChange(STORAGE_OPTIONS[value[0]].toString())
+                  }
+                  min={0}
+                  max={STORAGE_OPTIONS.length - 1}
+                  step={1}
+                  className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
+                  aria-label="Storage slider"
+                />
+                <div className="flex justify-between">
+                  <span className="text-xs text-muted-foreground">
+                    {STORAGE_OPTIONS[0]}Gi
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {STORAGE_OPTIONS[STORAGE_OPTIONS.length - 1]}Gi
+                  </span>
                 </div>
               </div>
               <FormMessage />
