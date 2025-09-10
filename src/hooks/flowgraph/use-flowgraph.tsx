@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import useProjectResources from "@/hooks/brain/use-project-resources";
-import useFlowgraphNodes from "./use-flowgraph-nodes";
+import useFlowgraphInitialNodes from "./use-flowgraph-initial-nodes";
 import { useFlowgraphActions } from "@/contexts/flowgraph/flowgraph-context";
 
 /**
@@ -10,20 +10,19 @@ import { useFlowgraphActions } from "@/contexts/flowgraph/flowgraph-context";
  * 3. Individual nodes handle their own data fetching and enhancement
  */
 export default function useFlowgraph(projectName: string) {
-  const { k8sResources, isLoading } = useProjectResources(projectName);
-  const { nodes: basicNodes } = useFlowgraphNodes(k8sResources ?? []);
-  const { setNodes, setEdges, fitView } = useFlowgraphActions();
+  const { resources, isLoading } = useProjectResources(projectName);
+  const { initialNodes } = useFlowgraphInitialNodes(resources ?? []);
+  const { setNodes, fitView } = useFlowgraphActions();
   const initializedRef = useRef(false);
 
   // Set initial basic nodes and clear edges (only on first render)
   useEffect(() => {
-    if (basicNodes.length > 0 && !initializedRef.current) {
-      setNodes(basicNodes);
-      // setEdges([]); // Clear edges only when setting initial nodes
+    if (initialNodes.length > 0 && !initializedRef.current) {
+      setNodes(initialNodes);
       fitView();
       initializedRef.current = true;
     }
-  }, [basicNodes, setNodes, setEdges, fitView]);
+  }, [initialNodes]);
 
   // Reset when project changes
   useEffect(() => {
@@ -32,6 +31,6 @@ export default function useFlowgraph(projectName: string) {
 
   return {
     isLoading,
-    nodes: basicNodes,
+    nodes: initialNodes,
   };
 }
