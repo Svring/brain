@@ -99,11 +99,10 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
       toast.success(message);
       onSuccess?.(message);
       const target = convertResourceTypeToTarget("devbox", devboxName);
-      invalidateQueries([
-        devbox.list.queryKey(),
-        devbox.get.queryKey(target as any),
-        project.getResources.queryKey(),
-      ]);
+      invalidateQueries(
+        [devbox.list.queryKey(), devbox.get.queryKey(target as any)],
+        true
+      );
     },
     onError: (error: any) => {
       const message = error.message || "Failed to delete devbox";

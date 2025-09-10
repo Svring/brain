@@ -76,7 +76,6 @@ function DropdownMenuItem({
   };
 
   const handleSelect = (event: Event) => {
-    event.preventDefault();
     event.stopPropagation();
     onSelect?.(event);
   };

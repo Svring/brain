@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { BaseResourceMessage } from "@/components/chat/messages/system-messages.tsx/components/base-resource-message";
 import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-resource-message";
-import { FileText, Container, BarChart3, Pencil } from "lucide-react";
+import { FileText, Container, BarChart3, Pencil, Globe } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import LaunchpadMessageDetails from "./components/launchpad-message-details";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
@@ -28,7 +28,17 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
   } = useQuery(launchpad.get.queryOptions(target));
 
   // Remove the update image action since it's now handled inline
-  const actions: MessageAction[] = [];
+  const actions: MessageAction[] = launchpadObjectData
+    ? [
+        {
+          icon: Globe,
+          label: "Network Status",
+          onClick: () => {
+            appendSystemMessage({ type: "launchpad.network", target });
+          },
+        },
+      ]
+    : [];
 
   // Show loading state
   if (isLoading) {

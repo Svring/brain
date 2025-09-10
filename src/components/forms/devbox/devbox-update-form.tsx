@@ -26,7 +26,8 @@ export const DevboxUpdateForm = ({
   useSimplePortsMode = false,
   hidePorts = false,
 }: DevboxUpdateFormProps) => {
-  const { form, portsFieldArray, simplePortsFieldArray } = useDevboxUpdateForm(defaultValues);
+  const { form, portsFieldArray, simplePortsFieldArray } =
+    useDevboxUpdateForm(defaultValues);
 
   const handleSubmit = (data: DevboxUpdateFormData) => {
     // If ports are hidden, exclude ports data from submission
@@ -41,7 +42,9 @@ export const DevboxUpdateForm = ({
   const handleSubmitError = (errors: any) => {
     // Handle form validation errors
     if (errors.ports) {
-      toast.error("Port validation failed. Please check for duplicate port numbers.");
+      toast.error(
+        "Port validation failed. Please check for duplicate port numbers."
+      );
     } else {
       toast.error("Form validation failed. Please check your inputs.");
     }
@@ -53,7 +56,8 @@ export const DevboxUpdateForm = ({
   const hasSimplePorts = defaultValues?.simplePorts !== undefined;
 
   // Determine which ports field to show
-  const showSimplePortsField = !hidePorts && (useSimplePortsMode || hasSimplePorts);
+  const showSimplePortsField =
+    !hidePorts && (useSimplePortsMode || hasSimplePorts);
   const showRegularPortsField = !hidePorts && hasPorts && !showSimplePortsField;
 
   return (
@@ -66,17 +70,11 @@ export const DevboxUpdateForm = ({
         {hasResource && <DevboxResourceFields />}
 
         {showRegularPortsField && (
-          <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">Ports</div>
-            <DevboxPortsFields fieldArray={portsFieldArray} />
-          </div>
+          <DevboxPortsFields fieldArray={portsFieldArray} />
         )}
 
         {showSimplePortsField && (
-          <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">Port Operations</div>
-            <DevboxSimplePortsFields fieldArray={simplePortsFieldArray} />
-          </div>
+          <DevboxSimplePortsFields fieldArray={simplePortsFieldArray} />
         )}
 
         {!hideDefaultButton && (

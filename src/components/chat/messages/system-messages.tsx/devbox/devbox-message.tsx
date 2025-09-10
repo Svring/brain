@@ -10,6 +10,7 @@ import {
   Pencil,
   ArrowBigUpDash,
   History,
+  Globe,
 } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { DevboxMessageDetail } from "./components/devbox-message-details";
@@ -29,9 +30,7 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
     data: devboxObject,
     isLoading,
     error,
-  } = useQuery(
-    devboxTrpcClient.get.queryOptions(target)
-  );
+  } = useQuery(devboxTrpcClient.get.queryOptions(target));
 
   const actions: MessageAction[] = devboxObject
     ? [
@@ -47,6 +46,13 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
           label: "Release History",
           onClick: () => {
             appendSystemMessage({ type: "devbox.release", target });
+          },
+        },
+        {
+          icon: Globe,
+          label: "Network Status",
+          onClick: () => {
+            appendSystemMessage({ type: "devbox.network", target });
           },
         },
       ]

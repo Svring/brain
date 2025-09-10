@@ -47,7 +47,7 @@ export const DevboxNetworkMessage: React.FC<DevboxNetworkMessageProps> = ({
     });
   };
 
-  if (!devboxObject || !ports.length) return null;
+  if (!devboxObject) return null;
 
   return (
     <BaseSystemMessage
@@ -99,12 +99,16 @@ export const DevboxNetworkMessage: React.FC<DevboxNetworkMessageProps> = ({
       {isPortsEditing ? (
         <DevboxUpdateForm
           defaultValues={{
-            ports: ports.map((port) => ({
-              portName: port.name || `port-${port.number}`,
-              number: port.number,
-              protocol: (port.protocol as "HTTP" | "GRPC" | "WS") || "HTTP",
-              exposesPublicDomain: !!port.publicAddress,
-            })),
+            ports:
+              ports.length > 0
+                ? ports.map((port) => ({
+                    portName: port.name || `port-${port.number}`,
+                    number: port.number,
+                    protocol:
+                      (port.protocol as "HTTP" | "GRPC" | "WS") || "HTTP",
+                    exposesPublicDomain: !!port.publicAddress,
+                  }))
+                : [],
           }}
           onSubmit={handlePortsSubmit}
           isLoading={isUpdating}
@@ -112,38 +116,58 @@ export const DevboxNetworkMessage: React.FC<DevboxNetworkMessageProps> = ({
         />
       ) : (
         <div className="max-h-80 overflow-y-auto space-y-2">
-          {ports.map((port, index) => (
-            <div key={`${port.number}-${index}`} className="border rounded-lg">
-              <div className="flex items-center justify-between gap-2 px-3 py-2 border-b">
-                <span className="text-sm font-medium">
-                  Number: {port.number}
-                </span>
-                {port.protocol && (
-                  <span className="text-xs bg-muted px-2 py-1 rounded">
-                    {port.protocol}
+          {ports.length > 0 ? (
+            ports.map((port, index) => (
+              <div
+                key={`${port.number}-${index}`}
+                className="border rounded-lg"
+              >
+                <div className="flex items-center justify-between gap-2 px-3 py-2 border-b">
+                  <span className="text-sm font-medium">
+                    Number: {port.number}
                   </span>
+                  {port.protocol && (
+                    <span className="text-xs bg-muted px-2 py-1 rounded">
+                      {port.protocol}
+                    </span>
+                  )}
+                </div>
+                {port.privateAddress && (
+                  <div className="flex items-center gap-2 px-3 py-2 border-b">
+                    <span className="text-xs text-muted-foreground">
+                      Private:
+                    </span>
+                    <span className="text-xs font-mono">
+                      {port.privateAddress}
+                    </span>
+                  </div>
+                )}
+                {port.publicAddress && (
+                  <div className="flex items-center gap-2 px-3 py-2">
+                    <span className="text-xs text-muted-foreground">
+                      Public:
+                    </span>
+                    <span className="text-xs font-mono">
+                      {port.publicAddress}
+                    </span>
+                  </div>
                 )}
               </div>
-              {port.privateAddress && (
-                <div className="flex items-center gap-2 px-3 py-2 border-b">
-                  <span className="text-xs text-muted-foreground">
-                    Private:
-                  </span>
-                  <span className="text-xs font-mono">
-                    {port.privateAddress}
-                  </span>
-                </div>
-              )}
-              {port.publicAddress && (
-                <div className="flex items-center gap-2 px-3 py-2">
-                  <span className="text-xs text-muted-foreground">Public:</span>
-                  <span className="text-xs font-mono">
-                    {port.publicAddress}
-                  </span>
-                </div>
-              )}
-            </div>
-          ))}
+            ))
+            ) : (
+              <div 
+                className="flex flex-col items-center justify-center py-4 text-center border border-dashed rounded-xl cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => setIsPortsEditing(true)}
+              >
+                <Globe className="h-8 w-8 text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground mb-1">
+                  No ports configured
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Click here or edit button to add ports
+                </p>
+              </div>
+            )}
         </div>
       )}
     </BaseSystemMessage>
