@@ -96,13 +96,6 @@ export const launchpadRouter = t.router({
       });
     }),
 
-  // Application-specific queries
-  getApplication: t.procedure
-    .input(z.string())
-    .query(async ({ input, ctx }) => {
-      return await getLaunchpadApplication(ctx, input);
-    }),
-
   getPods: t.procedure.input(z.string()).query(async ({ input, ctx }) => {
     return await getLaunchpadApplicationPods(ctx, input);
   }),
@@ -139,102 +132,18 @@ export const launchpadRouter = t.router({
       return await updateLaunchpadApplication(ctx, name, request);
     }),
 
-  start: t.procedure
-    .input(LaunchpadStartRequestSchema)
-    .mutation(async ({ input, ctx }) => {
-      return await runParallelAction(startLaunchpad(input, ctx));
-    }),
+  start: t.procedure.input(z.string()).mutation(async ({ input, ctx }) => {
+    return await runParallelAction(startLaunchpad({ name: input }, ctx));
+  }),
 
-  pause: t.procedure
-    .input(LaunchpadPauseRequestSchema)
-    .mutation(async ({ input, ctx }) => {
-      return await runParallelAction(pauseLaunchpad(input, ctx));
-    }),
+  pause: t.procedure.input(z.string()).mutation(async ({ input, ctx }) => {
+    return await runParallelAction(pauseLaunchpad({ name: input }, ctx));
+  }),
 
   delete: t.procedure
     .input(LaunchpadDeleteRequestSchema)
     .mutation(async ({ input, ctx }) => {
       return await runParallelAction(deleteLaunchpad(input, ctx));
-    }),
-
-  // Application-specific mutations
-  startApplication: t.procedure
-    .input(z.string())
-    .mutation(async ({ input, ctx }) => {
-      return await startLaunchpadApplication(ctx, input);
-    }),
-
-  pauseApplication: t.procedure
-    .input(z.string())
-    .mutation(async ({ input, ctx }) => {
-      return await pauseLaunchpadApplication(ctx, input);
-    }),
-
-  deleteApplication: t.procedure
-    .input(z.string())
-    .mutation(async ({ input, ctx }) => {
-      return await deleteLaunchpadApplication(ctx, input);
-    }),
-
-  // Configuration Management
-  updateConfigMap: t.procedure
-    .input(
-      z.object({
-        name: z.string(),
-        request: LaunchpadConfigMapUpdateRequestSchema,
-      })
-    )
-    .mutation(async ({ input, ctx }) => {
-      const { name, request } = input;
-      return await updateLaunchpadConfigMap(ctx, name, request);
-    }),
-
-  updateStorage: t.procedure
-    .input(
-      z.object({
-        name: z.string(),
-        request: LaunchpadStorageUpdateRequestSchema,
-      })
-    )
-    .mutation(async ({ input, ctx }) => {
-      const { name, request } = input;
-      return await updateLaunchpadStorage(ctx, name, request);
-    }),
-
-  // Port Management
-  createPorts: t.procedure
-    .input(
-      z.object({
-        name: z.string(),
-        request: LaunchpadPortsCreateRequestSchema,
-      })
-    )
-    .mutation(async ({ input, ctx }) => {
-      const { name, request } = input;
-      return await createLaunchpadPorts(ctx, name, request);
-    }),
-
-  updatePorts: t.procedure
-    .input(
-      z.object({
-        name: z.string(),
-        request: LaunchpadPortsUpdateRequestSchema,
-      })
-    )
-    .mutation(async ({ input, ctx }) => {
-      const { name, request } = input;
-      return await updateLaunchpadPorts(ctx, name, request);
-    }),
-
-  deletePorts: t.procedure
-    .input(
-      z.object({
-        name: z.string(),
-        ports: z.array(z.number()),
-      })
-    )
-    .mutation(async ({ input, ctx }) => {
-      return await deleteLaunchpadPorts(ctx, input.name, input);
     }),
 
   // Network Status Check

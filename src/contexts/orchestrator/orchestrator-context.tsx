@@ -42,7 +42,7 @@ export const OrchestratorProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const stage = pathname === "/home" ? "propose_project" : "manage_project";
     setLanggraphState({ ...langgraphState.context, stage });
-  }, [pathname, langgraphState.context.stage]);
+  }, [pathname, langgraphState.context.stage, selectedProject]);
 
   useEffect(() => {
     const prev = state.context.monitoredStates.sidebarChatOpen;

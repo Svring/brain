@@ -108,6 +108,7 @@ export default function ProjectPage({
   useEffect(() => {
     selectProject(projectName);
     clearSelectedProjectResources();
+    setStage("manage_project");
     return () => {
       clearSelectedProject();
       setMessages([]);

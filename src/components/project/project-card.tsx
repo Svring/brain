@@ -196,7 +196,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               disabled={isDeleting}
               className="bg-status-deleting/80 text-status-error border border-status-error"
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? "Deleting..." : "Confirm"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

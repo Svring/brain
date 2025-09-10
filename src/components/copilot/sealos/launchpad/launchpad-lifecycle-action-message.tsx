@@ -7,19 +7,19 @@ import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Play, Pause, RotateCcw, Power, Trash2, CircleCheckBigIcon } from "lucide-react";
+import { Play, Pause, CircleCheckBigIcon } from "lucide-react";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import NodeStatusLight from "@/components/flowgraph/node/components/node-status-light";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 import { Button } from "@/components/ui/button";
 
-interface DevboxLifecycleActionMessageProps {
+interface LaunchpadLifecycleActionMessageProps {
   args: {
-    devboxName: string;
+    launchpadName: string;
   };
   respond?: (message: string) => void;
   status: "inProgress" | "complete" | "executing";
-  action: "start" | "pause" | "restart" | "shutdown" | "delete";
+  action: "start" | "pause";
 }
 
 const getActionConfig = (action: string) => {
@@ -27,42 +27,18 @@ const getActionConfig = (action: string) => {
     case "start":
       return {
         icon: Play,
-        name: "Start Devbox",
-        actionText: "Start the devbox",
-        successMessage: "Devbox started successfully",
-        errorMessage: "Failed to start devbox",
+        name: "Start Launchpad",
+        actionText: "Start the launchpad",
+        successMessage: "Launchpad started successfully",
+        errorMessage: "Failed to start launchpad",
       };
     case "pause":
       return {
         icon: Pause,
-        name: "Pause Devbox",
-        actionText: "Pause the devbox",
-        successMessage: "Devbox paused successfully",
-        errorMessage: "Failed to pause devbox",
-      };
-    case "restart":
-      return {
-        icon: RotateCcw,
-        name: "Restart Devbox",
-        actionText: "Restart the devbox",
-        successMessage: "Devbox restarted successfully",
-        errorMessage: "Failed to restart devbox",
-      };
-    case "shutdown":
-      return {
-        icon: Power,
-        name: "Shutdown Devbox",
-        actionText: "Shutdown the devbox",
-        successMessage: "Devbox shutdown successfully",
-        errorMessage: "Failed to shutdown devbox",
-      };
-    case "delete":
-      return {
-        icon: Trash2,
-        name: "Delete Devbox",
-        actionText: "Delete the devbox",
-        successMessage: "Devbox deleted successfully",
-        errorMessage: "Failed to delete devbox",
+        name: "Pause Launchpad",
+        actionText: "Pause the launchpad",
+        successMessage: "Launchpad paused successfully",
+        errorMessage: "Failed to pause launchpad",
       };
     default:
       throw new Error(`Unknown action: ${action}`);
@@ -70,17 +46,17 @@ const getActionConfig = (action: string) => {
 };
 
 // Component that handles the success message
-const DevboxLifecycleSuccessMessage = ({ 
+const LaunchpadLifecycleSuccessMessage = ({ 
   args, 
   action 
 }: { 
-  args: { devboxName: string }; 
+  args: { launchpadName: string }; 
   action: string;
 }) => {
-  const target = convertResourceTypeToTarget("devbox", args.devboxName);
+  const target = convertResourceTypeToTarget("deployment", args.launchpadName);
   const { handleNodeSelect } = useNodeSelect({
     target,
-    messageType: "devbox.detail",
+    messageType: "launchpad.detail",
   });
   const config = getActionConfig(action);
 
@@ -92,39 +68,33 @@ const DevboxLifecycleSuccessMessage = ({
           <p className="text-sm">{config.successMessage}</p>
         </div>
         <Button onClick={handleNodeSelect} variant="outline" size="sm">
-          View devbox details
+          View launchpad details
         </Button>
       </div>
     </div>
   );
 };
 
-export const DevboxLifecycleActionMessage: React.FC<
-  DevboxLifecycleActionMessageProps
+export const LaunchpadLifecycleActionMessage: React.FC<
+  LaunchpadLifecycleActionMessageProps
 > = ({ args, respond, status, action }) => {
-  const { devbox } = useTRPCClients();
-  const target = convertResourceTypeToTarget("devbox", args.devboxName);
+  const { launchpad } = useTRPCClients();
+  const target = convertResourceTypeToTarget("deployment", args.launchpadName);
   const config = getActionConfig(action);
   const { resource } = useResourceStatus(target);
 
   // Show completion message when status is complete
   if (status === "complete") {
-    return <DevboxLifecycleSuccessMessage args={args} action={action} />;
+    return <LaunchpadLifecycleSuccessMessage args={args} action={action} />;
   }
 
   const mutation = useMutation({
     ...(() => {
       switch (action) {
         case "start":
-          return devbox.start.mutationOptions();
+          return launchpad.start.mutationOptions();
         case "pause":
-          return devbox.pause.mutationOptions();
-        case "restart":
-          return devbox.restart.mutationOptions();
-        case "shutdown":
-          return devbox.shutdown.mutationOptions();
-        case "delete":
-          return devbox.delete.mutationOptions();
+          return launchpad.pause.mutationOptions();
         default:
           throw new Error(`Unknown action: ${action}`);
       }
@@ -141,9 +111,9 @@ export const DevboxLifecycleActionMessage: React.FC<
 
   const handleSubmit = async () => {
     try {
-      await mutation.mutateAsync(args.devboxName);
+      await mutation.mutateAsync(args.launchpadName);
     } catch (error) {
-      console.error(`Failed to ${action} devbox:`, error);
+      console.error(`Failed to ${action} launchpad:`, error);
     }
   };
 
@@ -153,16 +123,16 @@ export const DevboxLifecycleActionMessage: React.FC<
         icon: config.icon,
         name: config.name,
       }}
-      formId={`devbox-${action}-form`}
+      formId={`launchpad-${action}-form`}
       isSubmitting={status === "inProgress" || mutation.isPending}
       onApply={handleSubmit}
       applyButtonText={config.name}
     >
       <div className="space-y-4">
-        <div className="flex items-center gap-4 ">
+        <div className="flex items-center gap-4">
           <BaseResourceIcon target={target} size={32} />
           <div className="flex-1">
-            <span className="text-lg font-medium">{args.devboxName}</span>
+            <span className="text-lg font-medium">{args.launchpadName}</span>
           </div>
           <NodeStatusLight status={resource?.status || "Pending"} />
         </div>

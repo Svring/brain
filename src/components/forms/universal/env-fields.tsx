@@ -49,9 +49,10 @@ export const EnvFields = ({ fieldArray }: EnvFieldsProps) => {
     <div className="space-y-2 border border-border rounded-lg p-4">
       {/* Table Header - only show when there are items */}
       {fieldArray.fields.length > 0 && (
-        <div className="grid grid-cols-2 gap-4 text-sm font-medium text-muted-foreground">
+        <div className="grid grid-cols-3 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
           <div>Name</div>
           <div>Value</div>
+          <div>Action</div>
         </div>
       )}
 
@@ -62,9 +63,9 @@ export const EnvFields = ({ fieldArray }: EnvFieldsProps) => {
           const isValueFrom = isValueFromEnv(envData || {});
 
           return (
-            <div key={field.id} className="flex items-center gap-4">
+            <div key={field.id} className="grid grid-cols-3 gap-4 items-center">
               {/* Name Column */}
-              <div className="flex-1">
+              <div>
                 {isValueFrom ? (
                   <div
                     className="text-sm font-medium text-muted-foreground truncate"
@@ -82,7 +83,7 @@ export const EnvFields = ({ fieldArray }: EnvFieldsProps) => {
               </div>
 
               {/* Value Column */}
-              <div className="flex-1">
+              <div>
                 {isValueFrom ? (
                   <div className="text-sm text-muted-foreground">
                     from secret
@@ -96,7 +97,7 @@ export const EnvFields = ({ fieldArray }: EnvFieldsProps) => {
                 )}
               </div>
 
-              {/* Delete Button */}
+              {/* Action Column */}
               <div>
                 <Button
                   type="button"
