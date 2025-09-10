@@ -3,32 +3,34 @@
 import { Hero } from "@/components/ui/hero";
 import { AiChatInput } from "@/components/chat/components/input";
 import { AiMessages } from "@/components/chat/components/messages";
-import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { motion } from "framer-motion";
 import { useLanggraphAgent } from "@/hooks/langgraph/use-langgraph-agent";
 import useProjectSearch from "@/hooks/brain/use-projects-search";
 import RecentProjects from "@/components/project/recent-projects";
-import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
-import { useMount } from "@reactuses/core";
 import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
 import { Button } from "@/components/ui/button";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { proposeProjectAction } from "@/lib/copilot/brain/project/copilot-project-actions";
+import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
+import Suggestions from "@/components/chat/components/suggestions";
 
 export default function HomePage() {
   const { messages } = useCopilotChatHeadless_c();
   const hasMessages = messages.length > 0;
   const { filteredProjects, projects, isLoading, isError } = useProjectSearch();
-  const { setStage } = useLanggraphActions();
   const { CreateProjectDialog, openDialog } = useProjectCreateDialog();
   const messagesScrollRef = useRef<HTMLDivElement>(null);
+  
+  // Track visibility of recent projects
+  const showRecentProjects = !hasMessages && projects && projects.length > 0;
+  // const showRecentProjects = false;
 
   proposeProjectAction();
   useLanggraphAgent();
 
-  useMount(() => {
-    setStage("propose_project");
-  });
+  // useMount(() => {
+  //   setStage("propose_project");
+  // });
 
   // console.log("projects", projects);
 
@@ -106,7 +108,7 @@ export default function HomePage() {
         </motion.div>
 
         {/* Projects section - hidden when messages appear */}
-        {!hasMessages && projects && projects.length > 0 && (
+        {showRecentProjects && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -125,6 +127,11 @@ export default function HomePage() {
               displayProjects={filteredProjects.slice(0, 3)}
             />
           </motion.div>
+        )}
+
+        {/* Suggestions section - shown when recent projects are not visible */}
+        {!hasMessages && !showRecentProjects && (
+          <Suggestions />
         )}
       </div>
     </div>

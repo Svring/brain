@@ -100,16 +100,20 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           transition={{ duration: 0.15, ease: "easeInOut" }}
         >
           <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-2 flex-1 min-w-0 group">
+            <div className="flex items-center gap-1 flex-1 min-w-0 group">
               <p
-                className="text-foreground truncate cursor-pointer hover:text-foreground/80 transition-colors group-hover:underline"
-                onClick={handleRename}
+                className={`text-foreground truncate transition-colors ${
+                  variant === "full"
+                    ? "cursor-pointer hover:text-foreground/80 group-hover:underline"
+                    : ""
+                }`}
+                onClick={variant === "full" ? handleRename : undefined}
               >
                 {project.displayName}
               </p>
               {variant === "full" && (
                 <Button
-                  className="h-4 w-4 p-0 hover:bg-muted opacity-40 hover:opacity-100 transition-opacity"
+                  className="h-4 w-4 p-0 opacity-40 transition-opacity"
                   size="sm"
                   variant="ghost"
                   onClick={handleRename}

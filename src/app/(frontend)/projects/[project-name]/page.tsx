@@ -1,129 +1,69 @@
 "use client";
 
-import { useEffect, use } from "react";
-
-// React Flow imports
-import {
-  Background,
-  ReactFlow,
-  Controls,
-} from "@xyflow/react";
+import { use, useEffect } from "react";
+import { Background, ReactFlow, Controls } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
-// Custom component imports
 import AiChatbox from "@/components/chat/components/chatbox";
-import AiCoin from "@/components/chat/components/coin";
-import FloatingConnectionLine from "@/components/flowgraph/edge/floating-connection-line";
 import { FlowgraphBreadcrumb } from "@/components/flowgraph/flowgraph-breadcrumb";
 import { FlowgraphCommandHint } from "@/components/flowgraph/flowgraph-command-hint";
 import { FlowgraphCommandDialog } from "@/components/flowgraph/command/flowgraph-command-dialog";
 import { FlowgraphActions } from "@/components/flowgraph/flowgraph-actions";
+import FloatingConnectionLine from "@/components/flowgraph/edge/floating-connection-line";
 
-// Custom hooks
 import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
 import useFlowgraph from "@/hooks/flowgraph/use-flowgraph";
 import { useFlowgraphCommand } from "@/hooks/flowgraph/use-flowgraph-command";
 import { useRelianceEdges } from "@/hooks/flowgraph/use-reliance-edges";
-import { useChatActions } from "@/contexts/chat/chat-context";
-
-import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
-
-// Context and utilities
+import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
 import {
   useFlowgraphActions,
   useFlowgraphState,
 } from "@/contexts/flowgraph/flowgraph-context";
-import {
-  useProjectActions,
-  useProjectState,
-} from "@/contexts/project/project-context";
-import { useDisclosure } from "@reactuses/core";
+import { useProjectActions } from "@/contexts/project/project-context";
+import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
+import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { cn } from "@/lib/utils";
-
-// Types and constants
+import { Spinner } from "@/components/ui/spinner";
 import { REACT_FLOW_CONFIG } from "@/lib/flowgraph/flowgraph-constant/flowgraph-constant-config";
 import edgeTypes from "@/components/flowgraph/edge/edge-types";
 import nodeTypes from "@/components/flowgraph/node/node-types";
-import { Spinner } from "@/components/ui/spinner";
 
-import {
-  useLanggraphActions,
-  useLanggraphState,
-} from "@/contexts/langgraph/langgraph-context";
-import { useChatState } from "@/contexts/chat/chat-context";
-
-// Floating UI Component
-function ProjectFloatingUI({ 
-  projectName, 
-  sidebarChatMaximized 
-}: { 
+function ProjectFloatingUI({
+  projectName,
+  sidebarChatMaximized,
+}: {
   projectName: string;
   sidebarChatMaximized: boolean;
 }) {
   const { clearAllState } = useFlowgraphActions();
+  const { isOpen, onOpenChange, onOpen } = useFlowgraphCommand();
 
   useEffect(() => {
     clearAllState();
   }, [projectName]);
 
-  // Command dialog hook
-  const {
-    isOpen: isCommandOpen,
-    onOpenChange: onCommandOpenChange,
-    onOpen: onCommandOpen,
-  } = useFlowgraphCommand();
-
-  // Hide floating UI when chat is maximized
-  if (sidebarChatMaximized) {
-    return null;
-  }
+  if (sidebarChatMaximized) return null;
 
   return (
     <>
       <FlowgraphBreadcrumb projectName={projectName} />
-      <div className="absolute top-2 right-2 z-20">
-        <div className="bg-background/30 backdrop-blur-lg rounded-lg p-2">
-          <FlowgraphActions
-            onSearchChange={(searchTerm) => {
-              // TODO: Implement search functionality
-              console.log("Search:", searchTerm);
-            }}
-            onScan={() => {
-              // TODO: Implement scan functionality
-              console.log("Scan clicked");
-            }}
-            onRefresh={() => {
-              // TODO: Implement refresh functionality
-              console.log("Refresh clicked");
-            }}
-          />
-        </div>
+      <div className="absolute top-2 right-2 z-20 bg-background/30 backdrop-blur-lg rounded-lg p-2">
+        <FlowgraphActions />
       </div>
-      <FlowgraphCommandHint onOpen={onCommandOpen} />
-      <FlowgraphCommandDialog
-        isOpen={isCommandOpen}
-        onOpenChange={onCommandOpenChange}
-      />
-      {/* <AiCoin /> */}
+      <FlowgraphCommandHint onOpen={onOpen} />
+      <FlowgraphCommandDialog isOpen={isOpen} onOpenChange={onOpenChange} />
     </>
   );
 }
 
-// Flow Component
 function ProjectFlow({ projectName }: { projectName: string }) {
-  // Use the flowgraph hook to handle all node and edge computation
   const { isLoading } = useFlowgraph(projectName);
-
-  // Add reliance-based edges (environment variables and image dependencies)
   useRelianceEdges();
-
   const { nodes, edges } = useFlowgraphState();
-  // console.log("nodes", nodes);
   const { onNodesChange, onEdgesChange } = useFlowgraphActions();
-
   useCopilotActions();
 
-  // Show loading state only when initially loading resources
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full w-full">
@@ -148,18 +88,10 @@ function ProjectFlow({ projectName }: { projectName: string }) {
       snapGrid={REACT_FLOW_CONFIG.snapGrid}
       connectionLineComponent={FloatingConnectionLine}
       proOptions={REACT_FLOW_CONFIG.proOptions}
-      // zoomOnScroll
-    >
-      {/* <Background
-        gap={REACT_FLOW_CONFIG.background.gap}
-        size={REACT_FLOW_CONFIG.background.size}
-        variant={REACT_FLOW_CONFIG.background.variant}
-      /> */}
-    </ReactFlow>
+    />
   );
 }
 
-// Main Page Component
 export default function ProjectPage({
   params,
 }: {
@@ -174,14 +106,8 @@ export default function ProjectPage({
   const { setMessages } = useCopilotChatHeadless_c();
 
   useEffect(() => {
-    // Set the selected project when the component mounts
     selectProject(projectName);
-    setStage("manage_project");
-
-    // Clear resource data when project changes
     clearSelectedProjectResources();
-
-    // Cleanup: clear the selected project when the component unmounts
     return () => {
       clearSelectedProject();
       setMessages([]);
@@ -194,19 +120,27 @@ export default function ProjectPage({
       <div
         className={cn(
           "relative h-full transition-all duration-300 ease-in-out",
-          sidebarChatOpen && !sidebarChatMaximized ? "w-[65%]" : sidebarChatMaximized ? "w-[50%]" : "w-full"
+          sidebarChatOpen && !sidebarChatMaximized
+            ? "w-[65%]"
+            : sidebarChatMaximized
+            ? "w-[50%]"
+            : "w-full"
         )}
       >
         <ProjectFlow projectName={projectName} />
-        <ProjectFloatingUI 
-          projectName={projectName} 
+        <ProjectFloatingUI
+          projectName={projectName}
           sidebarChatMaximized={sidebarChatMaximized}
         />
       </div>
       <div
         className={cn(
           "h-full shrink-0 transition-all duration-300 ease-in-out",
-          sidebarChatOpen ? (sidebarChatMaximized ? "w-[50%] p-2" : "w-[35%] p-2 pl-0") : "w-0"
+          sidebarChatOpen
+            ? sidebarChatMaximized
+              ? "w-[50%] p-2"
+              : "w-[35%] p-2 pl-0"
+            : "w-0"
         )}
       >
         <AiChatbox />
