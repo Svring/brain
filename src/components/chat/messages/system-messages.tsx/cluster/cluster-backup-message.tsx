@@ -56,13 +56,11 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
 
   // Fetch the backup list using the cluster router
   const {
-    data: backupList,
+    data: backups,
     isLoading,
     error,
     refetch,
-  } = useQuery(
-    clusterTrpcClient.backupList.queryOptions(target)
-  );
+  } = useQuery(clusterTrpcClient.backups.queryOptions(target));
 
   const handleDeleteBackup = async (backupName: string) => {
     try {
@@ -131,11 +129,11 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
     <BaseSystemMessage
       headerTitle={{
         icon: DatabaseBackup,
-        name: `Cluster Backup: ${backupList?.length}`,
+        name: `Cluster Backup: ${backups?.length}`,
       }}
     >
       <div className="space-y-4">
-        {!backupList || backupList.length === 0 ? (
+        {!backups || backups.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Database className="h-8 w-8 text-muted-foreground mb-2 opacity-50" />
             <div className="text-sm text-muted-foreground">
@@ -145,7 +143,7 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
         ) : (
           <ScrollArea className="h-64">
             <div className="space-y-2">
-              {backupList.map((backup: Backup, index: number) => {
+              {backups.map((backup: Backup, index: number) => {
                 const backupTime =
                   backup.time && typeof backup.time === "string"
                     ? new Date(backup.time)

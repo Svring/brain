@@ -10,24 +10,17 @@ import {
   deleteApplication,
   startApplication,
   pauseApplication,
-  updateApplicationConfigMap,
   createApplicationPorts,
-  updateApplicationPorts,
-  deleteApplicationPorts,
-  updateApplicationStorage,
   getApplicationPods,
   getPodsMetrics,
 } from "./launchpad-open-api";
 import type {
   LaunchpadPatchRequest,
-  LaunchpadConfigMapUpdateRequest,
   LaunchpadPortsCreateRequest,
-  LaunchpadPortsUpdateRequest,
-  LaunchpadPortsDeleteRequest,
-  LaunchpadStorageUpdateRequest,
   LaunchpadPodsMetricsRequest,
 } from "./launchpad-open-api-schemas/launchpad-create-schema";
 import type { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
+import type { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
 
 // ============= LEGACY API OPERATIONS =============
 
@@ -71,7 +64,7 @@ export async function getLaunchpadApplication(
 export async function updateLaunchpadApplication(
   context: SealosApiContext,
   name: string,
-  request: LaunchpadPatchRequest
+  request: LaunchpadUpdateFormData
 ): Promise<any> {
   return await runParallelAction(updateApplication(context, name, request));
 }
@@ -98,17 +91,6 @@ export async function pauseLaunchpadApplication(
   return await runParallelAction(pauseApplication(context, name));
 }
 
-// ConfigMap Management
-export async function updateLaunchpadConfigMap(
-  context: SealosApiContext,
-  name: string,
-  request: LaunchpadConfigMapUpdateRequest
-): Promise<any> {
-  return await runParallelAction(
-    updateApplicationConfigMap(context, name, request)
-  );
-}
-
 // Ports Management
 export async function createLaunchpadPorts(
   context: SealosApiContext,
@@ -117,37 +99,6 @@ export async function createLaunchpadPorts(
 ): Promise<any> {
   return await runParallelAction(
     createApplicationPorts(context, name, request)
-  );
-}
-
-export async function updateLaunchpadPorts(
-  context: SealosApiContext,
-  name: string,
-  request: LaunchpadPortsUpdateRequest
-): Promise<any> {
-  return await runParallelAction(
-    updateApplicationPorts(context, name, request)
-  );
-}
-
-export async function deleteLaunchpadPorts(
-  context: SealosApiContext,
-  name: string,
-  request: LaunchpadPortsDeleteRequest
-): Promise<any> {
-  return await runParallelAction(
-    deleteApplicationPorts(context, name, request)
-  );
-}
-
-// Storage Management
-export async function updateLaunchpadStorage(
-  context: SealosApiContext,
-  name: string,
-  request: LaunchpadStorageUpdateRequest
-): Promise<any> {
-  return await runParallelAction(
-    updateApplicationStorage(context, name, request)
   );
 }
 

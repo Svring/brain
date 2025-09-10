@@ -34,13 +34,13 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
 
   const actions: MessageAction[] = devboxObject
     ? [
-        {
-          icon: ArrowBigUpDash,
-          label: "Release and Deploy",
-          onClick: () => {
-            appendSystemMessage({ type: "devbox.createRelease", target });
-          },
-        },
+        // {
+        //   icon: ArrowBigUpDash,
+        //   label: "Release and Deploy",
+        //   onClick: () => {
+        //     appendSystemMessage({ type: "devbox.createRelease", target });
+        //   },
+        // },
         {
           icon: History,
           label: "Release History",

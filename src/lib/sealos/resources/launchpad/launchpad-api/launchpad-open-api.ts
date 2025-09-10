@@ -15,15 +15,13 @@ import {
   LaunchpadPodsMetricsRequest,
   LaunchpadPodsMetricsResponse,
   LaunchpadConfigMapUpdateRequest,
-  LaunchpadConfigMapUpdateResponse,
   LaunchpadPortsCreateRequest,
   LaunchpadPortsUpdateRequest,
-  LaunchpadPortsUpdateResponse,
   LaunchpadPortsDeleteRequest,
   LaunchpadStorageUpdateRequest,
-  LaunchpadStorageUpdateResponse,
 } from "./launchpad-open-api-schemas/launchpad-create-schema";
 import type { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
+import type { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
 
 function createLaunchpadApi(context: SealosApiContext) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
@@ -71,13 +69,10 @@ export const updateApplication = createParallelAction(
   async (
     context: SealosApiContext,
     name: string,
-    data: LaunchpadPatchRequest
+    data: LaunchpadUpdateFormData
   ) => {
     const api = createLaunchpadApi(context);
-    const response = await api.patch<LaunchpadPatchResponse>(
-      `/app/${name}`,
-      data
-    );
+    const response = await api.patch(`/app/${name}`, data);
     return response.data;
   }
 );
@@ -125,10 +120,7 @@ export const updateApplicationConfigMap = createParallelAction(
     data: LaunchpadConfigMapUpdateRequest
   ) => {
     const api = createLaunchpadApi(context);
-    const response = await api.patch<LaunchpadConfigMapUpdateResponse>(
-      `/app/${name}/configmap`,
-      data
-    );
+    const response = await api.patch(`/app/${name}/configmap`, data);
     return response.data;
   }
 );
@@ -143,10 +135,7 @@ export const createApplicationPorts = createParallelAction(
     data: LaunchpadPortsCreateRequest
   ) => {
     const api = createLaunchpadApi(context);
-    const response = await api.post<LaunchpadPortsUpdateResponse>(
-      `/app/${name}/ports`,
-      data
-    );
+    const response = await api.post(`/app/${name}/ports`, data);
     return response.data;
   }
 );
@@ -159,10 +148,7 @@ export const updateApplicationPorts = createParallelAction(
     data: LaunchpadPortsUpdateRequest
   ) => {
     const api = createLaunchpadApi(context);
-    const response = await api.patch<LaunchpadPortsUpdateResponse>(
-      `/app/${name}/ports`,
-      data
-    );
+    const response = await api.patch(`/app/${name}/ports`, data);
     return response.data;
   }
 );
@@ -175,10 +161,7 @@ export const deleteApplicationPorts = createParallelAction(
     data: LaunchpadPortsDeleteRequest
   ) => {
     const api = createLaunchpadApi(context);
-    const response = await api.delete<LaunchpadPortsUpdateResponse>(
-      `/app/${name}/ports`,
-      { data }
-    );
+    const response = await api.delete(`/app/${name}/ports`, { data });
     return response.data;
   }
 );
@@ -193,10 +176,7 @@ export const updateApplicationStorage = createParallelAction(
     data: LaunchpadStorageUpdateRequest
   ) => {
     const api = createLaunchpadApi(context);
-    const response = await api.patch<LaunchpadStorageUpdateResponse>(
-      `/app/${name}/storage`,
-      data
-    );
+    const response = await api.patch(`/app/${name}/storage`, data);
     return response.data;
   }
 );
