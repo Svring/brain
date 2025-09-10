@@ -1,18 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
-import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useDevboxObject } from "@/hooks/sealos/devbox/use-devbox-object";
+import { useClusterObject } from "@/hooks/sealos/cluster/use-cluster-object";
+import { useObjectstorageObject } from "@/hooks/sealos/objectstorage/use-objectstorage-object";
+import { useLaunchpadObject } from "@/hooks/sealos/launchpad/use-launchpad-object";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
-// ============================================================================
-// TYPES
-// ============================================================================
-
-/**
- * Select function type for transforming resource data
- */
-export type ResourceSelectFunction<TResource = any, TSelected = any> = (
+type ResourceSelectFunction<TResource = any, TSelected = any> = (
   resource: TResource
 ) => TSelected;
 
@@ -20,54 +15,39 @@ export const useResourceStatus = <TSelected = any>(
   target: CustomResourceTarget | BuiltinResourceTarget,
   select?: ResourceSelectFunction<any, TSelected>
 ) => {
-  const { devbox, cluster, launchpad, objectstorage } = useTRPCClients();
+  const createReturn = (resource: any, query: any) => ({
+    ...query,
+    resource: select ? select(resource) : resource,
+    originalResource: resource,
+    status: resource?.status,
+  });
 
-  // Helper function to create consistent return object
-  const createReturn = (
-    resource: any,
-    rest: any
-  ): {
-    resource: TSelected;
-    originalResource: any;
-    status: any;
-    [key: string]: any;
-  } => {
-    const processedResource = select ? select(resource) : resource;
-    return {
-      ...rest,
-      resource: processedResource,
-      originalResource: resource,
-      status: resource?.status,
-    };
-  };
-
-  // Handle custom resources
-  if (target.type === "custom") {
-    if (target.resourceType === "devbox") {
-      const query = useQuery(devbox.get.queryOptions(target));
-      return createReturn(query.data, query);
-    }
-
-    if (target.resourceType === "cluster") {
-      const query = useQuery(cluster.get.queryOptions(target));
-      return createReturn(query.data, query);
-    }
-
-    if (target.resourceType === "objectstoragebucket") {
-      const query = useQuery(objectstorage.get.queryOptions(target));
-      return createReturn(query.data, query);
-    }
-
-    throw new Error(`Unsupported custom resource type: ${target.resourceType}`);
+  if (!target.name) {
+    throw new Error("Resource name is required");
   }
 
-  // Handle builtin resources
+  if (target.type === "custom") {
+    const queries = {
+      devbox: useDevboxObject,
+      cluster: useClusterObject,
+      objectstoragebucket: useObjectstorageObject,
+    };
+
+    const queryFn = queries[target.resourceType as keyof typeof queries];
+    if (!queryFn) {
+      throw new Error(
+        `Unsupported custom resource type: ${target.resourceType}`
+      );
+    }
+
+    return createReturn(queryFn(target.name).data, queryFn(target.name));
+  }
+
   if (target.type === "builtin") {
-    const query = useQuery(launchpad.get.queryOptions(target));
+    const query = useLaunchpadObject(target.name, target.resourceType);
     return createReturn(query.data, query);
   }
 
-  // Fallback case - return a default object to prevent undefined destructuring
   return {
     resource: undefined,
     status: undefined,
