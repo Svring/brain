@@ -1,6 +1,6 @@
 import { initTRPC } from "@trpc/server";
 import { z } from "zod";
-import type { ProjectContext } from "./project-context";
+import type { ProjectContext } from "./project-trpc-context";
 import {
   CustomResourceTargetSchema,
   BuiltinResourceTargetSchema,

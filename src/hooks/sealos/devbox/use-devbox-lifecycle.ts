@@ -13,7 +13,7 @@ interface UseDevboxLifecycleOptions {
 
 export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
   const { onSuccess, onError } = options;
-  const { devbox } = useTRPCClients();
+  const { devbox, project } = useTRPCClients();
   const { invalidateQueries } = useInvalidateQueries();
 
   const startMutation = useMutation({
@@ -102,6 +102,7 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
       invalidateQueries([
         devbox.list.queryKey(),
         devbox.get.queryKey(target as any),
+        project.getResources.queryKey(),
       ]);
     },
     onError: (error: any) => {

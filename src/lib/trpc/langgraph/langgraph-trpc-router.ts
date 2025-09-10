@@ -1,6 +1,6 @@
 import { initTRPC } from "@trpc/server";
 import { z } from "zod";
-import type { LanggraphContext } from "./langgraph-context";
+import type { LanggraphContext } from "./langgraph-trpc-context";
 import {
   createThread,
   listThreads,

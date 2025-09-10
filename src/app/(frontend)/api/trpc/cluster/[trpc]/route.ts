@@ -1,7 +1,7 @@
 // app/api/trpc/cluster/[trpc]/route.ts
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { clusterRouter } from "@/lib/trpc/sealos/cluster/cluster-router";
-import { useClusterContext } from "@/lib/trpc/sealos/cluster/cluster-context";
+import { clusterRouter } from "@/lib/trpc/sealos/cluster/cluster-trpc-router";
+import { useClusterContext } from "@/lib/trpc/sealos/cluster/cluster-trpc-context";
 
 const handler = (req: Request) =>
   fetchRequestHandler({

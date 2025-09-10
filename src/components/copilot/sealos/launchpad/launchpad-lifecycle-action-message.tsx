@@ -5,7 +5,7 @@ import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/co
 import BaseResourceIcon from "@/components/chat/messages/system-messages.tsx/components/base-resource-icon";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useLaunchpadLifecycle } from "@/hooks/sealos/launchpad/use-launchpad-lifecycle";
-import { Play, Pause, CircleCheckBigIcon } from "lucide-react";
+import { Play, Pause, Trash2, CircleCheckBigIcon } from "lucide-react";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import NodeStatusLight from "@/components/flowgraph/node/components/node-status-light";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
@@ -17,7 +17,7 @@ interface LaunchpadLifecycleActionMessageProps {
   };
   respond?: (message: string) => void;
   status: "inProgress" | "complete" | "executing";
-  action: "start" | "pause";
+  action: "start" | "pause" | "delete";
 }
 
 const getActionConfig = (action: string) => {
@@ -37,6 +37,14 @@ const getActionConfig = (action: string) => {
         actionText: "Pause the launchpad",
         successMessage: "Launchpad paused successfully",
         errorMessage: "Failed to pause launchpad",
+      };
+    case "delete":
+      return {
+        icon: Trash2,
+        name: "Delete Launchpad",
+        actionText: "Delete the launchpad",
+        successMessage: "Launchpad deleted successfully",
+        errorMessage: "Failed to delete launchpad",
       };
     default:
       throw new Error(`Unknown action: ${action}`);

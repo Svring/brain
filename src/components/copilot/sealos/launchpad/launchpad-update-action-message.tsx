@@ -35,14 +35,12 @@ const LaunchpadUpdateSuccessMessage = ({ args }: { args: any }) => {
 interface LaunchpadUpdateActionMessageProps {
   args: Partial<LaunchpadUpdateFormData> & { launchpadName: string };
   respond: (data: any) => void;
-  status: "awaiting_message" | "in_progress" | "complete";
+  status: "executing" | "inProgress" | "complete";
 }
 
-export const LaunchpadUpdateActionMessage: React.FC<LaunchpadUpdateActionMessageProps> = ({
-  args,
-  respond,
-  status,
-}) => {
+export const LaunchpadUpdateActionMessage: React.FC<
+  LaunchpadUpdateActionMessageProps
+> = ({ args, respond, status }) => {
   const { launchpadName, ...formData } = args;
 
   const handleSubmit = (data: LaunchpadUpdateFormData) => {
@@ -66,15 +64,15 @@ export const LaunchpadUpdateActionMessage: React.FC<LaunchpadUpdateActionMessage
       onApply={() => {
         // This will be handled by the form submission
       }}
-      isSubmitting={status === "in_progress"}
-      disabled={status === "in_progress"}
+      isSubmitting={status === "inProgress"}
+      disabled={status === "inProgress"}
       applyButtonText="Update"
       className="bg-background-primary"
     >
       <LaunchpadUpdateForm
         defaultValues={formData}
         onSubmit={handleSubmit}
-        isLoading={status === "in_progress"}
+        isLoading={status === "inProgress"}
         hideDefaultButton={true}
         useSimplePortsMode={!!formData.simplePorts}
       />

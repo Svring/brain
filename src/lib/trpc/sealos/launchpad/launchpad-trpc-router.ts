@@ -1,6 +1,6 @@
 import { initTRPC } from "@trpc/server";
 import { z } from "zod";
-import type { LaunchpadContext } from "./launchpad-context";
+import type { LaunchpadContext } from "./launchpad-trpc-context";
 import {
   getLaunchpadMonitorData,
   checkLaunchpadReady,

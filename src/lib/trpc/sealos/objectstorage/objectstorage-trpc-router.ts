@@ -1,6 +1,6 @@
 import { initTRPC } from "@trpc/server";
 import { z } from "zod";
-import type { ObjectStorageContext } from "./objectstorage-context";
+import type { ObjectStorageContext } from "./objectstorage-trpc-context";
 
 import {
   ObjectStorageCreateRequestSchema,

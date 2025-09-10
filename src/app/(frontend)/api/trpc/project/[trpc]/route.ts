@@ -1,6 +1,6 @@
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { projectRouter } from "@/lib/trpc/brain/project/project-router";
-import { createProjectContext } from "@/lib/trpc/brain/project/project-context";
+import { projectRouter } from "@/lib/trpc/brain/project/project-trpc-router";
+import { createProjectContext } from "@/lib/trpc/brain/project/project-trpc-context";
 
 const handler = (req: Request) =>
   fetchRequestHandler({

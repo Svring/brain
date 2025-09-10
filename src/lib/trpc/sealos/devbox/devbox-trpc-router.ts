@@ -1,6 +1,6 @@
 import { initTRPC } from "@trpc/server";
 import { z } from "zod";
-import type { DevboxContext } from "./devbox-context";
+import type { DevboxContext } from "./devbox-trpc-context";
 
 import { devboxCreateFormSchema } from "@/schemas/forms/devbox/devbox-create-form-schema";
 import { devboxUpdateFormSchema } from "@/schemas/forms/devbox/devbox-update-form-schema";

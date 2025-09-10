@@ -1,5 +1,5 @@
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { langgraphRouter } from "@/lib/trpc/langgraph/langgraph-router";
+import { langgraphRouter } from "@/lib/trpc/langgraph/langgraph-trpc-router";
 
 const handler = (req: Request) =>
   fetchRequestHandler({

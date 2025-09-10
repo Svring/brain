@@ -1,6 +1,6 @@
 import { initTRPC } from "@trpc/server";
 import { z } from "zod";
-import type { ClusterContext } from "./cluster-context";
+import type { ClusterContext } from "./cluster-trpc-context";
 import { getClusterMonitorData } from "@/lib/sealos/resources/cluster/cluster-api/cluster-api-service";
 import { transformCombinedMonitorData } from "@/lib/sealos/sealos-utils";
 import {

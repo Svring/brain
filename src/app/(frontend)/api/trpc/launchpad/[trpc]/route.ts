@@ -1,7 +1,7 @@
 // app/api/trpc/launchpad/[trpc]/route.ts
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { launchpadRouter } from "@/lib/trpc/sealos/launchpad/launchpad-router";
-import { createLaunchpadContext } from "@/lib/trpc/sealos/launchpad/launchpad-context";
+import { launchpadRouter } from "@/lib/trpc/sealos/launchpad/launchpad-trpc-router";
+import { createLaunchpadContext } from "@/lib/trpc/sealos/launchpad/launchpad-trpc-context";
 
 const handler = (req: Request) =>
   fetchRequestHandler({

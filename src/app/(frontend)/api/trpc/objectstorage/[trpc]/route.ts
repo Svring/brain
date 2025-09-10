@@ -1,7 +1,7 @@
 // app/api/trpc/objectstorage/[trpc]/route.ts
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { objectStorageRouter } from "@/lib/trpc/sealos/objectstorage/objectstorage-router";
-import { useObjectStorageContext } from "@/lib/trpc/sealos/objectstorage/objectstorage-context";
+import { objectStorageRouter } from "@/lib/trpc/sealos/objectstorage/objectstorage-trpc-router";
+import { useObjectStorageContext } from "@/lib/trpc/sealos/objectstorage/objectstorage-trpc-context";
 
 const handler = (req: Request) =>
   fetchRequestHandler({
