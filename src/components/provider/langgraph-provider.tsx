@@ -46,7 +46,7 @@ export const LanggraphConfigWrapper = ({
   const config = {
     apiKey: brainToken ? `sk-${brainToken.key}` : undefined,
     baseUrl: aiProxyContext.baseUrl
-      ? `https://aiproxy.${aiProxyContext.baseUrl}/v1`
+      ? `http://aiproxy.${aiProxyContext.baseUrl}/v1`
       : undefined,
     modelName: aiProxyContext.baseUrl?.endsWith("io")
       ? "gpt-4.1"
@@ -88,7 +88,7 @@ export const LanggraphConfigWrapper = ({
         name: "brain",
       },
       {
-        onSuccess: () => {
+        onSuccess: (response) => {
           window.location.reload();
         },
       }

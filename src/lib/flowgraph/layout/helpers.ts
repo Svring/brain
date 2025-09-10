@@ -138,8 +138,14 @@ export function splitOvercrowdedRanks(
   ranks: Map<string, number>,
   nodes: Node[]
 ): Map<string, number> {
-  const maxNodesPerRank = 4;
+  const maxNodesPerRank = 3;
   const adjustedRanks = new Map<string, number>();
+
+  // Create a map to look up node types by ID
+  const nodeTypeById = new Map<string, string>();
+  for (const node of nodes) {
+    nodeTypeById.set(node.id, node.type || "");
+  }
 
   // Group nodes by their current rank
   const nodesByRank = new Map<number, string[]>();
@@ -150,14 +156,29 @@ export function splitOvercrowdedRanks(
     nodesByRank.get(rank)!.push(nodeId);
   }
 
-  // Sort ranks in descending order to process from highest to lowest
-  const sortedRanks = Array.from(nodesByRank.keys()).sort((a, b) => b - a);
+  // Separate priority nodes (network/ingress) from regular nodes
+  const priorityNodeTypes = new Set(["network", "ingress", "network-preview"]);
+  const priorityRanks = new Set<number>();
+  const regularRanks = new Set<number>();
 
-  let rankOffset = 0;
+  for (const [rank, nodeIds] of nodesByRank.entries()) {
+    const hasPriorityNodes = nodeIds.some((nodeId) =>
+      priorityNodeTypes.has(nodeTypeById.get(nodeId) || "")
+    );
+    if (hasPriorityNodes) {
+      priorityRanks.add(rank);
+    } else {
+      regularRanks.add(rank);
+    }
+  }
 
-  for (const originalRank of sortedRanks) {
+  // Process regular ranks first (from lowest to highest) - overflow goes DOWN (lower ranks)
+  const sortedRegularRanks = Array.from(regularRanks).sort((a, b) => a - b);
+  let regularRankOffset = 0;
+
+  for (const originalRank of sortedRegularRanks) {
     const nodesInRank = nodesByRank.get(originalRank) || [];
-    const adjustedRank = originalRank + rankOffset;
+    const adjustedRank = originalRank - regularRankOffset; // Subtract to go down
 
     if (nodesInRank.length <= maxNodesPerRank) {
       // Rank fits within limit, assign all nodes to this rank
@@ -165,7 +186,7 @@ export function splitOvercrowdedRanks(
         adjustedRanks.set(nodeId, adjustedRank);
       }
     } else {
-      // Split the rank into multiple sub-ranks
+      // Split the rank into multiple sub-ranks going DOWN
       const numSubRanks = Math.ceil(nodesInRank.length / maxNodesPerRank);
 
       for (let subRank = 0; subRank < numSubRanks; subRank++) {
@@ -174,12 +195,39 @@ export function splitOvercrowdedRanks(
         const subRankNodes = nodesInRank.slice(startIdx, endIdx);
 
         for (const nodeId of subRankNodes) {
-          adjustedRanks.set(nodeId, adjustedRank + subRank);
+          adjustedRanks.set(nodeId, adjustedRank - subRank); // Subtract to go down
         }
       }
 
-      // Update rank offset for subsequent ranks
-      rankOffset += numSubRanks - 1;
+      // Update rank offset for subsequent regular ranks
+      regularRankOffset += numSubRanks - 1;
+    }
+  }
+
+  // Process priority ranks (network/ingress) - these stay at their high ranks
+  const sortedPriorityRanks = Array.from(priorityRanks).sort((a, b) => b - a);
+
+  for (const originalRank of sortedPriorityRanks) {
+    const nodesInRank = nodesByRank.get(originalRank) || [];
+
+    if (nodesInRank.length <= maxNodesPerRank) {
+      // Rank fits within limit, assign all nodes to this rank
+      for (const nodeId of nodesInRank) {
+        adjustedRanks.set(nodeId, originalRank);
+      }
+    } else {
+      // Split priority nodes across multiple ranks at the top
+      const numSubRanks = Math.ceil(nodesInRank.length / maxNodesPerRank);
+
+      for (let subRank = 0; subRank < numSubRanks; subRank++) {
+        const startIdx = subRank * maxNodesPerRank;
+        const endIdx = Math.min(startIdx + maxNodesPerRank, nodesInRank.length);
+        const subRankNodes = nodesInRank.slice(startIdx, endIdx);
+
+        for (const nodeId of subRankNodes) {
+          adjustedRanks.set(nodeId, originalRank + subRank); // Add to go up
+        }
+      }
     }
   }
 

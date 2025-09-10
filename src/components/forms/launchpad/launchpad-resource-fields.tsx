@@ -8,7 +8,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useFormContext } from "react-hook-form";
-import { LaunchpadResource } from "@/schemas/forms/launchpad/components/launchpad-resource-schema";
+import { LaunchpadResourceUpdate } from "@/schemas/forms/launchpad/components/launchpad-resource-schema";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { HpaFields } from "../universal/hpa-fields";
@@ -30,7 +30,7 @@ export const LaunchpadResourceFields = ({
   cpuOptions = LAUNCHPAD_CPU_OPTIONS,
   memoryOptions = LAUNCHPAD_MEMORY_OPTIONS,
 }: LaunchpadResourceFieldsProps = {}) => {
-  const form = useFormContext<{ resource: LaunchpadResource }>();
+  const form = useFormContext<{ resource: LaunchpadResourceUpdate }>();
   const resourceValues = form.watch("resource");
   const [scalingMode, setScalingMode] = useState<"replicas" | "hpa">(
     "replicas"

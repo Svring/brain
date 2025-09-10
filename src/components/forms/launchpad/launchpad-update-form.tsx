@@ -37,15 +37,39 @@ export const LaunchpadUpdateForm = ({
     envFieldArray,
     storageFieldArray,
     configMapFieldArray,
-    launchCommandFieldArray,
   } = useLaunchpadUpdateForm(defaultValues);
 
   const handleSubmit = (data: LaunchpadUpdateFormData) => {
-    onSubmit(data);
+    // Filter out empty arrays and undefined values to only submit relevant fields
+    const filteredData = Object.entries(data).reduce((acc, [key, value]) => {
+      // Only include the field if it has a meaningful value
+      if (value !== undefined && value !== null) {
+        // For arrays, only include if they have items
+        if (Array.isArray(value)) {
+          if (value.length > 0) {
+            (acc as any)[key] = value;
+          }
+        } else {
+          // For objects, only include if they have properties
+          if (typeof value === 'object' && Object.keys(value).length > 0) {
+            (acc as any)[key] = value;
+          } else if (typeof value !== 'object') {
+            // For primitives, include if they have a value
+            (acc as any)[key] = value;
+          }
+        }
+      }
+      return acc;
+    }, {} as Record<string, any>);
+
+    console.log("filtered data", filteredData);
+    onSubmit(filteredData as LaunchpadUpdateFormData);
   };
 
   const handleSubmitError = (errors: any) => {
-    // Handle form validation errors
+    console.log("Form validation errors:", errors);
+    
+    // Handle form validation errors with more specific messages
     if (errors.ports) {
       toast.error(
         "Port validation failed. Please check for duplicate port numbers."
@@ -54,8 +78,19 @@ export const LaunchpadUpdateForm = ({
       toast.error(
         "Port operations validation failed. Please check for duplicate port numbers."
       );
+    } else if (errors.launchCommand) {
+      toast.error(
+        "Launch command validation failed. Please check your command and arguments."
+      );
+    } else if (errors.resource) {
+      toast.error(
+        "Resource validation failed. Please check your CPU, memory, and scaling settings."
+      );
     } else {
-      toast.error("Form validation failed. Please check your inputs.");
+      // Show the first error message for better debugging
+      const firstError = Object.keys(errors)[0];
+      const errorMessage = errors[firstError]?.message || "Unknown validation error";
+      toast.error(`Form validation failed: ${firstError} - ${errorMessage}`);
     }
   };
 

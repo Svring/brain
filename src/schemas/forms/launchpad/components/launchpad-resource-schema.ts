@@ -15,4 +15,15 @@ export const LaunchpadResourceSchema = z.object({
   hpa: HpaSchema.nullable().optional(),
 });
 
+// Schema for partial updates (all fields optional)
+export const LaunchpadResourceUpdateSchema = z.object({
+  replicas: z.number().min(1).max(10).optional(),
+  cpu: createNumberUnionSchema(LAUNCHPAD_CPU_OPTIONS).optional(),
+  memory: createNumberUnionSchema(LAUNCHPAD_MEMORY_OPTIONS).optional(),
+  hpa: HpaSchema.nullable().optional(),
+});
+
 export type LaunchpadResource = z.infer<typeof LaunchpadResourceSchema>;
+export type LaunchpadResourceUpdate = z.infer<
+  typeof LaunchpadResourceUpdateSchema
+>;

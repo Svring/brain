@@ -1,4 +1,5 @@
 import { useFlowgraphState } from "@/contexts/flowgraph/flowgraph-context";
+import _ from "lodash";
 
 export interface FlowgraphResource {
   name: string;
@@ -20,32 +21,58 @@ export interface FlowgraphResources {
  */
 export function useFlowgraphResources(): FlowgraphResources {
   const { nodes } = useFlowgraphState();
-  
-  const selectedProjectResources = nodes
-    .map((node) => node.data)
-    .filter((resource) => resource.kind)
-    .map((resource) => ({
-      name: resource.name as string,
-      kind: resource.kind as string,
-      resourceType: (resource as any).resourceType,
-    }));
 
-  const clusterResources = selectedProjectResources.filter(
-    (resource) => resource.kind.toLowerCase() === "cluster"
+  // console.log("nodes", nodes);
+
+  // Extract resources from nodes using lodash
+  const selectedProjectResources = _.chain(nodes)
+    .map("data")
+    .filter(
+      (data: any) => data && !data.label && (data.resourceType || data.target)
+    )
+    .flatMap((data: any) => {
+      const resources: FlowgraphResource[] = [];
+
+      // Handle direct resource nodes
+      if (data.resourceType && data.name) {
+        resources.push({
+          name: data.name as string,
+          kind: data.resourceType as string,
+          resourceType: data.resourceType as string,
+        });
+      }
+
+      // Handle network nodes with targets
+      if (data.target?.resourceType && data.target?.name) {
+        resources.push({
+          name: data.target.name as string,
+          kind: data.target.resourceType as string,
+          resourceType: data.target.resourceType as string,
+        });
+      }
+
+      return resources;
+    })
+    .value();
+
+  // Categorize resources using lodash
+  const clusterResources = _.filter(
+    selectedProjectResources,
+    (resource) => _.toLower(resource.kind) === "cluster"
   );
 
-  const launchpadResources = selectedProjectResources.filter(
-    (resource) =>
-      resource.kind.toLowerCase() === "deployment" ||
-      resource.kind.toLowerCase() === "statefulset"
+  const launchpadResources = _.filter(selectedProjectResources, (resource) =>
+    _.includes(["deployment", "statefulset"], _.toLower(resource.kind))
   );
 
-  const devboxResources = selectedProjectResources.filter(
-    (resource) => resource.kind.toLowerCase() === "devbox"
+  const devboxResources = _.filter(
+    selectedProjectResources,
+    (resource) => _.toLower(resource.kind) === "devbox"
   );
 
-  const objectStorageBucketResources = selectedProjectResources.filter(
-    (resource) => resource.kind.toLowerCase() === "objectstoragebucket"
+  const objectStorageBucketResources = _.filter(
+    selectedProjectResources,
+    (resource) => _.toLower(resource.kind) === "objectstoragebucket"
   );
 
   return {

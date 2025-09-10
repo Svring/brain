@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { LaunchCommandSchema } from "./components/launch-command-schema";
 import { ImageSchema } from "./components/image-schema";
-import { LaunchpadResourceSchema } from "./components/launchpad-resource-schema";
+import { LaunchpadResourceUpdateSchema } from "./components/launchpad-resource-schema";
 import {
   LaunchpadPortSchema,
   LaunchpadPortSimpleUpdateSchema,
@@ -16,7 +16,7 @@ export const launchpadUpdateFormSchema = z.object({
   name: z.string().optional(),
   image: ImageSchema.optional(),
   launchCommand: LaunchCommandSchema.optional(),
-  resource: LaunchpadResourceSchema.optional(),
+  resource: LaunchpadResourceUpdateSchema.optional(),
   ports: z
     .array(LaunchpadPortSchema)
     .optional()

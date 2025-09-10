@@ -26,7 +26,7 @@ export async function createAiProxyApi(
 ): Promise<AxiosInstance> {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
   return axios.create({
-    baseURL: `https://aiproxy-web.${context.baseUrl}/api`,
+    baseURL: `http://aiproxy-web.${context.baseUrl}/api`,
     headers: {
       "Content-Type": "application/json",
       ...(context?.authorization
@@ -47,6 +47,7 @@ export const createAiProxyToken = createParallelAction(
     const validatedRequest = AiProxyCreateTokenRequestSchema.parse(request);
     const api = await createAiProxyApi(context);
     const response = await api.post("/user/token", validatedRequest);
+    console.log("AI Proxy Token Response:", JSON.stringify(response.data));
     return AiProxyCreateTokenResponseSchema.parse(response.data);
   }
 );

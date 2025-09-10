@@ -65,7 +65,7 @@ export default async function RootLayout({
       <head>
         <script src="https://unpkg.com/react-scan/dist/auto.global.js" />
       </head>
-      <ReactScan />
+      {/* <ReactScan /> */}
       <body className={`antialiased`}>
         <ThemeProvider
           attribute="class"

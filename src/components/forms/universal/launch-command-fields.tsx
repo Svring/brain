@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useFormContext } from "react-hook-form";
-import { LaunchCommand } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
+import { LaunchCommand } from "@/schemas/forms/launchpad/components/launch-command-schema";
 
 export const LaunchCommandFields = () => {
   const form = useFormContext<{ launchCommand: LaunchCommand }>();

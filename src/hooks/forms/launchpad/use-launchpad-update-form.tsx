@@ -43,12 +43,6 @@ export const useLaunchpadUpdateForm = (
     name: "configMap",
   });
 
-  // New field arrays for the restructured fields
-  const launchCommandFieldArray = useFieldArray({
-    control: form.control,
-    name: "launchCommand",
-  });
-
   return {
     form,
     portsFieldArray,
@@ -56,6 +50,5 @@ export const useLaunchpadUpdateForm = (
     envFieldArray,
     storageFieldArray,
     configMapFieldArray,
-    launchCommandFieldArray,
   };
 };

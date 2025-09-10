@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
@@ -24,6 +24,9 @@ export const LaunchpadMessageDetails: React.FC<
   const { resource, isLoading, error } = useResourceStatus(target);
   const queryClient = useQueryClient();
   const { launchpad } = useTRPCClients();
+  
+  // Track which specific field is being updated
+  const [updatingField, setUpdatingField] = useState<string | null>(null);
 
   const updateLaunchpad = useMutation(
     launchpad.update.mutationOptions()
@@ -39,6 +42,9 @@ export const LaunchpadMessageDetails: React.FC<
   // Keep the original env for display, format only when editing
   const handleSubmit = async (type: string, data?: any) => {
     // console.log("requestData", data);
+    
+    // Set the updating field to show loading state for this specific field
+    setUpdatingField(type);
 
     const updateRequest = { name: target.name!, request: data };
 
@@ -52,6 +58,10 @@ export const LaunchpadMessageDetails: React.FC<
       },
       onError: () => {
         toast.error("Failed to update launchpad");
+      },
+      onSettled: () => {
+        // Clear the updating field when the request is complete
+        setUpdatingField(null);
       },
     });
   };
@@ -88,7 +98,7 @@ export const LaunchpadMessageDetails: React.FC<
         target={target}
         image={launchpadObject?.image}
         onImageUpdate={handleSubmit}
-        isLoading={updateLaunchpad.isPending}
+        isLoading={updatingField === "image"}
       />
 
       <CreatedAt createdAt={launchpadObject?.operationalStatus?.createdAt} />
@@ -96,14 +106,14 @@ export const LaunchpadMessageDetails: React.FC<
       <ResourceQuota
         resource={launchpadObject?.resource}
         onResourceUpdate={handleSubmit}
-        isLoading={updateLaunchpad.isPending}
+        isLoading={updatingField === "resource"}
       />
 
       <Deployment
         resource={launchpadObject?.resource}
         strategy={launchpadObject?.strategy}
         onDeploymentUpdate={handleSubmit}
-        isLoading={updateLaunchpad.isPending}
+        isLoading={updatingField === "replicas"}
       />
 
       <Configuration
@@ -117,7 +127,7 @@ export const LaunchpadMessageDetails: React.FC<
             : undefined
         }
         onConfigUpdate={handleSubmit}
-        isLoading={updateLaunchpad.isPending}
+        isLoading={updatingField === "config"}
       />
     </div>
   );

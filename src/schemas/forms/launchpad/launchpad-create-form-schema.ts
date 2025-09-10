@@ -3,7 +3,10 @@ import { NameSchema } from "@/schemas/forms/universal/name-schema";
 import { LaunchCommandSchema } from "./components/launch-command-schema";
 import { ImageSchema } from "./components/image-schema";
 import { LaunchpadResourceSchema } from "./components/launchpad-resource-schema";
-import { LaunchpadPortSchema } from "./components/launchpad-port-schema";
+import {
+  LaunchpadPortCreateSchema,
+  LaunchpadPortSchema,
+} from "./components/launchpad-port-schema";
 import { EnvSchema } from "../universal/env-schema";
 import { StorageSchema } from "../universal/storage-schema";
 import { ConfigMapSchema } from "../universal/config-map-schema";
@@ -25,7 +28,7 @@ export const launchpadCreateFormSchema = z.object({
     memory: 0.5,
     hpa: null,
   }),
-  ports: z.array(LaunchpadPortSchema).default([
+  ports: z.array(LaunchpadPortCreateSchema).default([
     {
       number: 80,
       protocol: "HTTP",
