@@ -1,7 +1,10 @@
 import { initTRPC } from "@trpc/server";
 import { z } from "zod";
 import type { ClusterContext } from "./cluster-trpc-context";
-import { getClusterMonitorData } from "@/lib/sealos/resources/cluster/cluster-api/cluster-api-service";
+import {
+  getClusterMonitorData,
+  deleteClusterBackup,
+} from "@/lib/sealos/resources/cluster/cluster-api/cluster-api-service";
 import { transformCombinedMonitorData } from "@/lib/sealos/sealos-utils";
 import {
   getCluster,
@@ -138,6 +141,18 @@ export const clusterRouter = t.router({
     .output(ClusterDeleteResponseSchema)
     .mutation(async ({ input, ctx }) => {
       return await runParallelAction(deleteClusterOld(input, ctx));
+    }),
+
+  deleteBackup: t.procedure
+    .input(
+      z.object({
+        clusterName: z.string(),
+        backupName: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { clusterName, backupName } = input;
+      return await deleteClusterBackup(ctx, clusterName, backupName);
     }),
 });
 

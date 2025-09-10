@@ -11,12 +11,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import ClusterNodeBackupTitle from "./cluster-node-backup-title";
 import ClusterNodeBackupList from "./cluster-node-backup-list";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 
 export default function ClusterNodeBackup({
   target,
@@ -25,7 +25,6 @@ export default function ClusterNodeBackup({
 }) {
   const sealosContext = useSealosContext();
   const [isExpanded, setIsExpanded] = useState(false);
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
 
   // Get cluster object using resource status hook
   const { resource, isLoading: isLoadingResource } = useResourceStatus(target);
@@ -34,6 +33,11 @@ export default function ClusterNodeBackup({
   const { data: backupList, isLoading } = useQuery(
     getClusterBackupListOptions(sealosContext, target)
   );
+
+  const { handleNodeSelect } = useNodeSelect({
+    target,
+    messageType: "cluster.backup",
+  });
 
   const clusterName = clusterObject?.name || "Unknown Cluster";
 
@@ -56,7 +60,7 @@ export default function ClusterNodeBackup({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              appendSystemMessage({ type: "cluster.backup", target });
+              handleNodeSelect();
             }}
           >
             <DatabaseBackup className="h-4 w-4 text-theme-green" />
