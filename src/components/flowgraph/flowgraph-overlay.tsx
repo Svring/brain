@@ -7,7 +7,10 @@ interface FlowgraphOverlayProps {
   selectedNodeId: string | null;
 }
 
-export function FlowgraphOverlay({ chatMaximized, selectedNodeId }: FlowgraphOverlayProps) {
+export function FlowgraphOverlay({
+  chatMaximized,
+  selectedNodeId,
+}: FlowgraphOverlayProps) {
   // Only show overlay when chat is maximized
   const dimRef = useRef<HTMLDivElement>(null);
 
@@ -39,10 +42,7 @@ export function FlowgraphOverlay({ chatMaximized, selectedNodeId }: FlowgraphOve
       const padding = 8; // visual breathing room
       const x = Math.max(0, nodeRect.left - containerRect.left - padding);
       const y = Math.max(0, nodeRect.top - containerRect.top - padding);
-      const w = Math.min(
-        nodeRect.width + padding * 2,
-        containerRect.width - x
-      );
+      const w = Math.min(nodeRect.width + padding * 2, containerRect.width - x);
       const h = Math.min(
         nodeRect.height + padding * 2,
         containerRect.height - y

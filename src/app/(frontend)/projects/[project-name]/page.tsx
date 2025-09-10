@@ -10,7 +10,6 @@ import { FlowgraphCommandHint } from "@/components/flowgraph/flowgraph-command-h
 import { FlowgraphCommandDialog } from "@/components/flowgraph/command/flowgraph-command-dialog";
 import { FlowgraphActions } from "@/components/flowgraph/flowgraph-actions";
 import FloatingConnectionLine from "@/components/flowgraph/edge/floating-connection-line";
-import { FlowgraphOverlay } from "@/components/flowgraph/flowgraph-overlay";
 
 import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
 import useFlowgraph from "@/hooks/flowgraph/use-flowgraph";
@@ -62,7 +61,7 @@ function ProjectFlow({
 }) {
   const { isLoading } = useFlowgraph(projectName);
   useRelianceEdges();
-  const { nodes, edges, selectedNode } = useFlowgraphState();
+  const { nodes, edges } = useFlowgraphState();
   const { onNodesChange, onEdgesChange } = useFlowgraphActions();
   useCopilotActions();
 
@@ -93,12 +92,7 @@ function ProjectFlow({
       snapGrid={REACT_FLOW_CONFIG.snapGrid}
       connectionLineComponent={FloatingConnectionLine}
       proOptions={REACT_FLOW_CONFIG.proOptions}
-    >
-      <FlowgraphOverlay 
-        chatMaximized={sidebarChatMaximized}
-        selectedNodeId={selectedNode}
-      />
-    </ReactFlow>
+    />
   );
 }
 
@@ -134,7 +128,7 @@ export default function ProjectPage({
           sidebarChatOpen && !sidebarChatMaximized
             ? "w-[65%]"
             : sidebarChatMaximized
-            ? "w-[50%]"
+            ? "w-[60%]"
             : "w-full"
         )}
       >
@@ -152,7 +146,7 @@ export default function ProjectPage({
           "h-full shrink-0 transition-all duration-300 ease-in-out",
           sidebarChatOpen
             ? sidebarChatMaximized
-              ? "w-[50%] p-2"
+              ? "w-[40%] p-2"
               : "w-[35%] p-2 pl-0"
             : "w-0"
         )}

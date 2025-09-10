@@ -275,44 +275,46 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
             </div>
           </div>
         ) : (
-          <ScrollArea className="max-h-80">
-            <div className="space-y-2">
-              {deployments.map((deployment) => (
-                <DeploymentItem
-                  key={deployment.metadata?.uid || deployment.metadata?.name}
-                  deployment={deployment}
-                  onDelete={(deploymentName) => {
-                    setDeletingDeploymentId(
-                      deployment.metadata?.uid || deployment.metadata?.name
-                    );
-                    deleteDeploymentMutation.mutate({
-                      name: deploymentName,
-                    });
-                  }}
-                  isDeleting={
-                    deletingDeploymentId ===
-                    (deployment.metadata?.uid || deployment.metadata?.name)
-                  }
-                  onClick={(deploymentName) => {
-                    // Find the deployment object to get its kind
-                    const deploymentObj = deployments.find(
-                      (d) => d.metadata?.name === deploymentName
-                    );
-                    const resourceKind =
-                      deploymentObj?.kind?.toLowerCase() || "deployment";
-                    const deploymentTarget = convertResourceTypeToTarget(
-                      resourceKind,
-                      deploymentName
-                    );
-                    appendSystemMessage({
-                      type: "launchpad.detail",
-                      target: deploymentTarget,
-                    });
-                  }}
-                />
-              ))}
-            </div>
-          </ScrollArea>
+          <div
+            className={`space-y-2 ${
+              deployments.length > 3 ? "max-h-48 overflow-y-auto" : ""
+            }`}
+          >
+            {deployments.map((deployment) => (
+              <DeploymentItem
+                key={deployment.metadata?.uid || deployment.metadata?.name}
+                deployment={deployment}
+                onDelete={(deploymentName) => {
+                  setDeletingDeploymentId(
+                    deployment.metadata?.uid || deployment.metadata?.name
+                  );
+                  deleteDeploymentMutation.mutate({
+                    name: deploymentName,
+                  });
+                }}
+                isDeleting={
+                  deletingDeploymentId ===
+                  (deployment.metadata?.uid || deployment.metadata?.name)
+                }
+                onClick={(deploymentName) => {
+                  // Find the deployment object to get its kind
+                  const deploymentObj = deployments.find(
+                    (d) => d.metadata?.name === deploymentName
+                  );
+                  const resourceKind =
+                    deploymentObj?.kind?.toLowerCase() || "deployment";
+                  const deploymentTarget = convertResourceTypeToTarget(
+                    resourceKind,
+                    deploymentName
+                  );
+                  appendSystemMessage({
+                    type: "launchpad.detail",
+                    target: deploymentTarget,
+                  });
+                }}
+              />
+            ))}
+          </div>
         )}
 
         {/* Add new deployment section - fixed at bottom */}
