@@ -64,13 +64,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 
   const handleRename = (e: React.MouseEvent) => {
     e.preventDefault();
-    e.stopPropagation();
     setIsRenameDialogOpen(true);
   };
 
   const handleDelete = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
     setIsDeleteDialogOpen(true);
   };
 

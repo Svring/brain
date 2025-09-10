@@ -10,8 +10,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X, Check } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -28,21 +29,19 @@ export function RenameProjectDialog({
   projectName,
   currentDisplayName,
 }: RenameProjectDialogProps) {
-  const { project: projectClient } = useTRPCClients();
-  const queryClient = useQueryClient();
+  const { project } = useTRPCClients();
+  const { invalidateQueries } = useInvalidateQueries();
   const [editValue, setEditValue] = React.useState(currentDisplayName);
 
   const renameProjectMutation = useMutation(
-    projectClient.updateName.mutationOptions({
+    project.updateName.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: projectClient.list.queryKey(),
-        });
+        invalidateQueries([project.list.queryKey()]);
         toast.success("Project renamed successfully");
         onClose();
         setEditValue(currentDisplayName);
       },
-      onError: (error) => {
+      onError: (error: any) => {
         toast.error("Failed to rename project");
         console.error("Failed to rename project:", error);
       },
