@@ -14,6 +14,8 @@ import { StarBorder } from "@/components/ui/star-border";
 import { cn } from "@/lib/utils";
 import { useFlowgraphActions } from "@/contexts/flowgraph/flowgraph-context";
 import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
+import { useQueryClient } from "@tanstack/react-query";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 
 interface FlowgraphActionsProps {
   onSearchChange?: (searchTerm: string) => void;
@@ -30,6 +32,8 @@ export function FlowgraphActions({
   const { fitView } = useFlowgraphActions();
   const { openSidebarChat } = useChatActions();
   const { sidebarChatOpen } = useChatState();
+  const queryClient = useQueryClient();
+  const { project } = useTRPCClients();
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
@@ -43,6 +47,14 @@ export function FlowgraphActions({
 
   const handleOpenSidebar = () => {
     openSidebarChat();
+  };
+
+  const handleRefresh = () => {
+    // Refetch project resources
+    queryClient.refetchQueries({
+      queryKey: project.getResources.queryKey(),
+    });
+    onRefresh?.();
   };
 
   return (
@@ -90,7 +102,7 @@ export function FlowgraphActions({
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              onClick={onRefresh}
+              onClick={handleRefresh}
             >
               <RefreshCcw className="h-4 w-4" />
             </Button>

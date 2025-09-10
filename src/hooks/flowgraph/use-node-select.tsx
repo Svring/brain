@@ -37,6 +37,12 @@ export const useNodeSelect = ({
   const createChatMutation = useCreateNewChatSessionMutation(target);
   const threadData = useLatestThread({ target });
 
+  if (!target) {
+    return {
+      handleNodeSelect: () => {},
+    };
+  }
+
   const nodeId = `${target.resourceType.toLowerCase()}-${target.name}`;
 
   const handleNodeSelect = () => {

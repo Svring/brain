@@ -10,19 +10,13 @@ import {
 export const useClusterCreateForm = (
   defaultValues?: Partial<ClusterCreateFormData>
 ) => {
+  // Get default values from schema
+  const schemaDefaults = clusterCreateFormSchema.parse({});
+  
   const form = useForm<ClusterCreateFormData>({
     resolver: zodResolver(clusterCreateFormSchema),
     defaultValues: {
-      name: "my-cluster",
-      type: "kubernetes",
-      version: "1.28",
-      resource: {
-        replicas: 1,
-        cpu: 2,
-        memory: 4,
-        storage: 20,
-      },
-      terminationPolicy: "Delete",
+      ...schemaDefaults,
       ...defaultValues,
     },
     mode: "onChange",

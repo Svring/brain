@@ -14,7 +14,7 @@ export const clusterCreateFormSchema = z.object({
     replicas: 1,
     cpu: 2,
     memory: 2,
-    storage: 20,
+    storage: 5,
   }),
   terminationPolicy: ClusterTerminationPolicySchema.default("Delete"),
 });

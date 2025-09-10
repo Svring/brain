@@ -43,24 +43,32 @@ export const ObjectStorageUpdateForm = ({
 
   return (
     <Form {...form}>
-      <form id="objectstorage-update-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form
+        id="objectstorage-update-form"
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="space-y-6"
+      >
         {hasPolicy && (
           <FormField
             control={form.control}
             name="policy"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Access Policy</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger size="sm">
                       <SelectValue placeholder="Select access policy" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     <SelectItem value="private">Private</SelectItem>
                     <SelectItem value="publicRead">Public Read</SelectItem>
-                    <SelectItem value="publicReadWrite">Public Read/Write</SelectItem>
+                    <SelectItem value="publicReadwrite">
+                      Public Read/Write
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

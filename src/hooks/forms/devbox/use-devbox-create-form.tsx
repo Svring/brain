@@ -11,22 +11,13 @@ import {
 export const useDevboxCreateForm = (
   defaultValues?: Partial<DevboxCreateFormData>
 ) => {
+  // Get default values from schema
+  const schemaDefaults = devboxCreateFormSchema.parse({});
+  
   const form = useForm<DevboxCreateFormData>({
     resolver: zodResolver(devboxCreateFormSchema),
     defaultValues: {
-      name: "my-devbox",
-      runtime: "python",
-      resource: {
-        cpu: 2,
-        memory: 2,
-      },
-      ports: [
-        {
-          number: 80,
-          protocol: "HTTP",
-          exposesPublicDomain: true,
-        },
-      ],
+      ...schemaDefaults,
       ...defaultValues,
     },
     mode: "onChange",

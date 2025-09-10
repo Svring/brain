@@ -11,15 +11,18 @@ import { Label } from "@/components/ui/label";
 import { useFormContext } from "react-hook-form";
 import { ClusterCreateFormData } from "@/schemas/forms/cluster/cluster-create-form-schema";
 import { CLUSTER_CONSTANT_TYPE_VERSION } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-versions";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 export const ClusterTypeField = () => {
-  const { setValue, watch } = useFormContext<ClusterCreateFormData>();
+  const { setValue, watch, getValues } = useFormContext<ClusterCreateFormData>();
   const selectedType = watch("type");
+  const selectedVersion = watch("version");
 
   // Extract cluster types from the constant data, filtering out types with no versions
-  const clusterTypes = Object.keys(CLUSTER_CONSTANT_TYPE_VERSION).filter(
-    (type) => CLUSTER_CONSTANT_TYPE_VERSION[type as keyof typeof CLUSTER_CONSTANT_TYPE_VERSION].length > 0
+  const clusterTypes = useMemo(() => 
+    Object.keys(CLUSTER_CONSTANT_TYPE_VERSION).filter(
+      (type) => CLUSTER_CONSTANT_TYPE_VERSION[type as keyof typeof CLUSTER_CONSTANT_TYPE_VERSION].length > 0
+    ), []
   );
 
   // Get versions for the selected type
@@ -46,17 +49,40 @@ export const ClusterTypeField = () => {
   useEffect(() => {
     if (!selectedType && clusterTypes.length > 0) {
       const defaultType = clusterTypes[0];
-
-      setValue("type", defaultType);
-
-      // Auto-select first version for the selected type
       const versions = CLUSTER_CONSTANT_TYPE_VERSION[defaultType as keyof typeof CLUSTER_CONSTANT_TYPE_VERSION];
+      
+      console.log("Auto-selecting type:", defaultType);
+      console.log("Available versions:", versions);
+      
+      // Set type first
+      setValue("type", defaultType, { shouldValidate: true, shouldDirty: true });
+      
+      // Set version after a small delay to ensure type is set
       if (versions && versions.length > 0) {
-        setValue("version", versions[0]);
+        setTimeout(() => {
+          setValue("version", versions[0], { shouldValidate: true, shouldDirty: true });
+          console.log("Auto-selected version:", versions[0]);
+        }, 0);
       }
     }
   }, [selectedType, clusterTypes, setValue]);
 
+  // Additional effect to ensure version is set when type changes
+  useEffect(() => {
+    if (selectedType && selectedType !== "") {
+      const versions = CLUSTER_CONSTANT_TYPE_VERSION[selectedType as keyof typeof CLUSTER_CONSTANT_TYPE_VERSION];
+      
+      console.log("Type changed to:", selectedType);
+      console.log("Current version:", selectedVersion);
+      console.log("Available versions for type:", versions);
+      
+      // If no version is selected, auto-select the first one
+      if ((!selectedVersion || selectedVersion === "") && versions && versions.length > 0) {
+        setValue("version", versions[0], { shouldValidate: true, shouldDirty: true });
+        console.log("Setting version to:", versions[0]);
+      }
+    }
+  }, [selectedType, selectedVersion, setValue]);
 
   return (
     <div className="grid grid-cols-2 gap-4">
@@ -79,7 +105,7 @@ export const ClusterTypeField = () => {
       <div className="space-y-2">
         <Label htmlFor="version">Cluster Version</Label>
         {selectedType && selectedVersions.length > 0 ? (
-          <Select value={watch("version")} onValueChange={handleVersionChange}>
+          <Select value={selectedVersion} onValueChange={handleVersionChange}>
             <SelectTrigger>
               <SelectValue placeholder="Select version" />
             </SelectTrigger>

@@ -4,7 +4,7 @@ import { z } from "zod";
 export const PolicySchema = z.enum([
   "private",
   "publicRead",
-  "publicReadWrite",
+  "publicReadwrite",
 ]);
 
 export type Policy = z.infer<typeof PolicySchema>;

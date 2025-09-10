@@ -7,7 +7,6 @@ import { ClusterCreateFormData } from "@/schemas/forms/cluster/cluster-create-fo
 import { NameField } from "@/components/forms/universal/name-field";
 import { ResourceFields } from "../universal/resource-fields";
 import { ClusterTypeField } from "./components/cluster-type-field";
-import { ClusterTerminationPolicyField } from "./components/cluster-termination-policy-field";
 import {
   CPU_OPTIONS,
   MEMORY_OPTIONS,
@@ -41,8 +40,6 @@ export const ClusterCreateForm = ({
           <NameField />
           
           <ClusterTypeField />
-          
-          <ClusterTerminationPolicyField />
         </div>
 
         <ResourceFields 

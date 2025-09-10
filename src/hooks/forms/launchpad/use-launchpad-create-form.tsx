@@ -11,30 +11,13 @@ import {
 export const useLaunchpadCreateForm = (
   defaultValues?: Partial<LaunchpadCreateFormData>
 ) => {
+  // Get default values from schema
+  const schemaDefaults = launchpadCreateFormSchema.parse({});
+  
   const form = useForm<LaunchpadCreateFormData>({
     resolver: zodResolver(launchpadCreateFormSchema),
     defaultValues: {
-      name: "hello-world",
-      image: "nginx",
-      command: "",
-      args: "",
-      resource: {
-        replicas: 1,
-        cpu: 0.1,
-        memory: 0.5,
-      },
-      ports: [
-        {
-          number: 80,
-          protocol: "HTTP",
-          exposesPublicDomain: true,
-        },
-      ],
-      env: [],
-      hpa: null,
-      imageRegistry: null,
-      storage: [],
-      configMap: [],
+      ...schemaDefaults,
       ...defaultValues,
     },
     mode: "onChange",

@@ -60,7 +60,7 @@ export const ObjectStorageCreateForm = ({
                   <SelectContent>
                     <SelectItem value="private">Private</SelectItem>
                     <SelectItem value="publicRead">Public Read</SelectItem>
-                    <SelectItem value="publicReadWrite">Public Read/Write</SelectItem>
+                    <SelectItem value="publicReadwrite">Public Read/Write</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

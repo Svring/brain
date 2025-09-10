@@ -31,9 +31,14 @@ export const LaunchpadCreateForm = ({
   isLoading = false,
   hideDefaultButton = false,
 }: LaunchpadCreateFormProps) => {
-  const { form, portsFieldArray, envFieldArray, storageFieldArray, configMapFieldArray } =
-    useLaunchpadCreateForm(defaultValues);
-  
+  const {
+    form,
+    portsFieldArray,
+    envFieldArray,
+    storageFieldArray,
+    configMapFieldArray,
+  } = useLaunchpadCreateForm(defaultValues);
+
   const [isAdvancedExpanded, setIsAdvancedExpanded] = useState(false);
 
   const handleSubmit = (data: any) => {
@@ -42,17 +47,15 @@ export const LaunchpadCreateForm = ({
 
   return (
     <Form {...form}>
-      <form id="launchpad-create-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form
+        id="launchpad-create-form"
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="space-y-6"
+      >
         {/* Basic Configuration */}
         <div className="space-y-4">
           <NameField />
           <ImageField />
-        </div>
-
-        {/* Ports Configuration */}
-        <div className="space-y-2">
-          <div className="text-sm font-medium text-foreground">Ports</div>
-          <LaunchpadPortsFields fieldArray={portsFieldArray} />
         </div>
 
         {/* Resource Configuration */}
@@ -65,9 +68,15 @@ export const LaunchpadCreateForm = ({
           </div>
         </div>
 
+        {/* Ports Configuration */}
+        <div className="space-y-2">
+          <div className="text-sm font-medium text-foreground">Ports</div>
+          <LaunchpadPortsFields fieldArray={portsFieldArray} />
+        </div>
+
         {/* Advanced Configuration */}
         <div className="border border-dashed rounded-lg">
-          <div 
+          <div
             className="flex items-center justify-between p-2 border-b border-dashed cursor-pointer transition-colors"
             onClick={() => setIsAdvancedExpanded(!isAdvancedExpanded)}
             title="Click to toggle advanced configuration"

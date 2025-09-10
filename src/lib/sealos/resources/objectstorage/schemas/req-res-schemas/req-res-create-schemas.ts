@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const ObjectStorageCreateRequestSchema = z.object({
   bucketName: z.string(),
-  bucketPolicy: z.enum(["private", "publicRead", "publicReadWrite"]),
+  bucketPolicy: z.enum(["private", "publicRead", "publicReadwrite"]),
 });
 
 export const ObjectStorageCreateResponseSchema = z.object({

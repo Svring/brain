@@ -48,7 +48,7 @@ function FlowgraphFocusHandler() {
       fitView({
         padding: 0.2,
         duration: 300,
-        maxZoom: 1.5,
+        maxZoom: 1,
       });
     }
   }, [state.context.fitViewTrigger]);

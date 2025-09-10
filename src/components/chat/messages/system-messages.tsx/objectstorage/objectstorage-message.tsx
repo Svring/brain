@@ -60,6 +60,7 @@ export const ObjectStorageMessage: React.FC<ObjectStorageMessageProps> = ({
     >
       <ObjectStorageMessageDetails
         objectstorageObject={objectstorageObject as any}
+        target={target}
       />
     </BaseResourceMessage>
   );
