@@ -21,6 +21,7 @@ import { ClusterCreateActionMessage } from "@/components/copilot/sealos/cluster/
 import { ClusterCreateFormData } from "@/schemas/forms/cluster/cluster-create-form-schema";
 import { ClusterUpdateRuntimeSchema } from "@/lib/copilot/sealos/cluster/copilot-cluster-utils";
 import { ClusterUpdateActionMessage } from "@/components/copilot/sealos/cluster/cluster-update-action-message";
+import { ClusterLifecycleActionMessage } from "@/components/copilot/sealos/cluster/cluster-lifecycle-action-message";
 
 export const activateClusterActions = () => {
   // CRUD operations
@@ -29,11 +30,7 @@ export const activateClusterActions = () => {
   // deleteClusterAction();
 
   // Lifecycle management
-  // startClusterAction();
-  // stopClusterAction();
-  // restartClusterAction();
-  // getClusterMonitorAction();
-  // backupClusterAction();
+  clusterLifecycleAction();
 };
 
 export const createClusterAction = () => {
@@ -119,83 +116,33 @@ export const deleteClusterAction = () => {
   });
 };
 
-export const startClusterAction = () => {
-  const { cluster } = useTRPCClients();
-  const startClusterMutation = useMutation({
-    ...cluster.start.mutationOptions(),
-  });
-
+export const clusterLifecycleAction = () => {
   useCopilotAction({
-    name: "startCluster",
-    description: "Start a database cluster",
+    name: "clusterLifecycle",
+    description: "Manage cluster lifecycle (start, pause)",
     parameters: [
       {
-        name: "dbName",
+        name: "clusterName",
         type: "string",
         required: true,
-        description: "Name of the database to start",
+        description: "Name of the cluster",
       },
-    ],
-    handler: async ({ dbName }) => {
-      const result = await startClusterMutation.mutateAsync(dbName);
-      return `Cluster "${dbName}" started successfully`;
-    },
-    render: ({ args, result, status }) => {
-      return (
-        <AITool key={"startCluster"}>
-          <AIToolHeader
-            description={"Start a database cluster"}
-            name={"startCluster"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
-      );
-    },
-  });
-};
-
-export const stopClusterAction = () => {
-  const { cluster } = useTRPCClients();
-  const pauseClusterMutation = useMutation({
-    ...cluster.pause.mutationOptions(),
-  });
-
-  useCopilotAction({
-    name: "stopCluster",
-    description: "Stop (pause) a database cluster",
-    parameters: [
       {
-        name: "dbName",
+        name: "action",
         type: "string",
         required: true,
-        description: "Name of the database to stop",
+        description: "Lifecycle action to perform",
+        enum: ["start", "pause"],
       },
     ],
-    handler: async ({ dbName }) => {
-      const result = await pauseClusterMutation.mutateAsync(dbName);
-      return `Cluster "${dbName}" stopped successfully`;
-    },
-    render: ({ args, result, status }) => {
+    renderAndWaitForResponse: (props) => {
       return (
-        <AITool key={"stopCluster"}>
-          <AIToolHeader
-            description={"Stop (pause) a database cluster"}
-            name={"stopCluster"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
+        <ClusterLifecycleActionMessage
+          args={props.args as { clusterName: string }}
+          respond={props.respond}
+          status={props.status}
+          action={props.args.action as "start" | "pause"}
+        />
       );
     },
   });

@@ -10,6 +10,7 @@ import { launchpadCreateFormSchema } from "@/schemas/forms/launchpad/launchpad-c
 import { launchpadUpdateFormSchema } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
 import { LaunchpadCreateActionMessage } from "@/components/copilot/sealos/launchpad/launchpad-create-action-message";
 import { LaunchpadUpdateActionMessage } from "@/components/copilot/sealos/launchpad/launchpad-update-action-message";
+import { LaunchpadLifecycleActionMessage } from "@/components/copilot/sealos/launchpad/launchpad-lifecycle-action-message";
 import { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
 import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
 import {
@@ -28,9 +29,7 @@ export function activateLaunchpadActions() {
   // deleteLaunchpadAction();
 
   // Lifecycle management
-  // startLaunchpadAction();
-  // pauseLaunchpadAction();
-  // checkReadyLaunchpadAction();
+  launchpadLifecycleAction();
 }
 
 function createLaunchpadAction() {
@@ -113,6 +112,38 @@ export const deleteLaunchpadAction = () => {
             )}
           </AIToolContent>
         </AITool>
+      );
+    },
+  });
+};
+
+export const launchpadLifecycleAction = () => {
+  useCopilotAction({
+    name: "launchpadLifecycle",
+    description: "Manage launchpad lifecycle (start, pause)",
+    parameters: [
+      {
+        name: "launchpadName",
+        type: "string",
+        required: true,
+        description: "Name of the launchpad",
+      },
+      {
+        name: "action",
+        type: "string",
+        required: true,
+        description: "Lifecycle action to perform",
+        enum: ["start", "pause"],
+      },
+    ],
+    renderAndWaitForResponse: (props) => {
+      return (
+        <LaunchpadLifecycleActionMessage
+          args={props.args as { launchpadName: string }}
+          respond={props.respond}
+          status={props.status}
+          action={props.args.action as "start" | "pause"}
+        />
       );
     },
   });

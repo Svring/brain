@@ -4,9 +4,7 @@ import React from "react";
 import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
 import BaseResourceIcon from "@/components/chat/messages/system-messages.tsx/components/base-resource-icon";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useLaunchpadLifecycle } from "@/hooks/sealos/launchpad/use-launchpad-lifecycle";
 import { Play, Pause, CircleCheckBigIcon } from "lucide-react";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import NodeStatusLight from "@/components/flowgraph/node/components/node-status-light";
@@ -78,43 +76,24 @@ const LaunchpadLifecycleSuccessMessage = ({
 export const LaunchpadLifecycleActionMessage: React.FC<
   LaunchpadLifecycleActionMessageProps
 > = ({ args, respond, status, action }) => {
-  const { launchpad } = useTRPCClients();
   const target = convertResourceTypeToTarget("deployment", args.launchpadName);
   const config = getActionConfig(action);
   const { resource } = useResourceStatus(target);
+
+  const { executeAction, getMutationForAction, isPending } = useLaunchpadLifecycle({
+    onSuccess: (message) => respond?.(message),
+    onError: (message) => respond?.(message),
+  });
 
   // Show completion message when status is complete
   if (status === "complete") {
     return <LaunchpadLifecycleSuccessMessage args={args} action={action} />;
   }
 
-  const mutation = useMutation({
-    ...(() => {
-      switch (action) {
-        case "start":
-          return launchpad.start.mutationOptions();
-        case "pause":
-          return launchpad.pause.mutationOptions();
-        default:
-          throw new Error(`Unknown action: ${action}`);
-      }
-    })(),
-    onSuccess: () => {
-      toast.success(config.successMessage);
-      respond?.(config.successMessage);
-    },
-    onError: (error: any) => {
-      toast.error(error.message || config.errorMessage);
-      respond?.(config.errorMessage);
-    },
-  });
+  const mutation = getMutationForAction(action);
 
   const handleSubmit = async () => {
-    try {
-      await mutation.mutateAsync(args.launchpadName);
-    } catch (error) {
-      console.error(`Failed to ${action} launchpad:`, error);
-    }
+    await executeAction(action, args.launchpadName);
   };
 
   return (
@@ -124,7 +103,7 @@ export const LaunchpadLifecycleActionMessage: React.FC<
         name: config.name,
       }}
       formId={`launchpad-${action}-form`}
-      isSubmitting={status === "inProgress" || mutation.isPending}
+      isSubmitting={status === "inProgress" || isPending(action)}
       onApply={handleSubmit}
       applyButtonText={config.name}
     >

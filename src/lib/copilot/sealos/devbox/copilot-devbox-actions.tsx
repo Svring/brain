@@ -23,13 +23,9 @@ export const activateDevboxActions = () => {
   // CRUD operations
   createDevboxAction();
   updateDevboxAction();
-  deleteDevboxAction();
 
   // Lifecycle management
-  startDevboxAction();
-  pauseDevboxAction();
-  restartDevboxAction();
-  shutdownDevboxAction();
+  devboxLifecycleAction();
 
   // // Release management
   // releaseDevboxAction();
@@ -76,16 +72,24 @@ export const updateDevboxAction = () => {
   });
 };
 
-export const deleteDevboxAction = () => {
+export const devboxLifecycleAction = () => {
   useCopilotAction({
-    name: "deleteDevbox",
-    description: "Delete a devbox by its name",
+    name: "devboxLifecycle",
+    description:
+      "Manage devbox lifecycle (start, pause, restart, shutdown, delete)",
     parameters: [
       {
         name: "devboxName",
         type: "string",
         required: true,
-        description: "Name of the devbox to delete",
+        description: "Name of the devbox",
+      },
+      {
+        name: "action",
+        type: "string",
+        required: true,
+        description: "Lifecycle action to perform",
+        enum: ["start", "pause", "restart", "shutdown", "delete"],
       },
     ],
     renderAndWaitForResponse: (props) => {
@@ -94,107 +98,14 @@ export const deleteDevboxAction = () => {
           args={props.args as { devboxName: string }}
           respond={props.respond}
           status={props.status}
-          action="delete"
-        />
-      );
-    },
-  });
-};
-
-export const startDevboxAction = () => {
-  useCopilotAction({
-    name: "startDevbox",
-    description: "Start a devbox",
-    parameters: [
-      {
-        name: "devboxName",
-        type: "string",
-        required: true,
-        description: "Name of the devbox to start",
-      },
-    ],
-    renderAndWaitForResponse: (props) => {
-      return (
-        <DevboxLifecycleActionMessage
-          args={props.args as { devboxName: string }}
-          respond={props.respond}
-          status={props.status}
-          action="start"
-        />
-      );
-    },
-  });
-};
-
-export const pauseDevboxAction = () => {
-  useCopilotAction({
-    name: "pauseDevbox",
-    description: "Pause a devbox",
-    parameters: [
-      {
-        name: "devboxName",
-        type: "string",
-        required: true,
-        description: "Name of the devbox to pause",
-      },
-    ],
-    renderAndWaitForResponse: (props) => {
-      return (
-        <DevboxLifecycleActionMessage
-          args={props.args as { devboxName: string }}
-          respond={props.respond}
-          status={props.status}
-          action="pause"
-        />
-      );
-    },
-  });
-};
-
-export const restartDevboxAction = () => {
-  useCopilotAction({
-    name: "restartDevbox",
-    description: "Restart a devbox",
-    parameters: [
-      {
-        name: "devboxName",
-        type: "string",
-        required: true,
-        description: "Name of the devbox to restart",
-      },
-    ],
-    renderAndWaitForResponse: (props) => {
-      return (
-        <DevboxLifecycleActionMessage
-          args={props.args as { devboxName: string }}
-          respond={props.respond}
-          status={props.status}
-          action="restart"
-        />
-      );
-    },
-  });
-};
-
-export const shutdownDevboxAction = () => {
-  useCopilotAction({
-    name: "shutdownDevbox",
-    description: "Shutdown a devbox",
-    parameters: [
-      {
-        name: "devboxName",
-        type: "string",
-        required: true,
-        description: "Name of the devbox to shutdown",
-      },
-    ],
-    renderAndWaitForResponse: (props) => {
-      return (
-        <DevboxLifecycleActionMessage
-          args={props.args as { devboxName: string }}
-          respond={props.respond}
-          status={props.status}
-          action="shutdown"
+          action={
+            props.args.action as
+              | "start"
+              | "pause"
+              | "restart"
+              | "shutdown"
+              | "delete"
+          }
         />
       );
     },

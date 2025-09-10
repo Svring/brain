@@ -4,27 +4,20 @@ import React from "react";
 import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
 import BaseResourceIcon from "@/components/chat/messages/system-messages.tsx/components/base-resource-icon";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import { useDevboxLifecycle } from "@/hooks/sealos/devbox/use-devbox-lifecycle";
-import {
-  Play,
-  Pause,
-  RotateCcw,
-  Power,
-  Trash2,
-  CircleCheckBigIcon,
-} from "lucide-react";
+import { useClusterLifecycle } from "@/hooks/sealos/cluster/use-cluster-lifecycle";
+import { Play, Pause, CircleCheckBigIcon } from "lucide-react";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import NodeStatusLight from "@/components/flowgraph/node/components/node-status-light";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 import { Button } from "@/components/ui/button";
 
-interface DevboxLifecycleActionMessageProps {
+interface ClusterLifecycleActionMessageProps {
   args: {
-    devboxName: string;
+    clusterName: string;
   };
   respond?: (message: string) => void;
   status: "inProgress" | "complete" | "executing";
-  action: "start" | "pause" | "restart" | "shutdown" | "delete";
+  action: "start" | "pause";
 }
 
 const getActionConfig = (action: string) => {
@@ -32,42 +25,18 @@ const getActionConfig = (action: string) => {
     case "start":
       return {
         icon: Play,
-        name: "Start Devbox",
-        actionText: "Start the devbox",
-        successMessage: "Devbox started successfully",
-        errorMessage: "Failed to start devbox",
+        name: "Start Cluster",
+        actionText: "Start the cluster",
+        successMessage: "Cluster started successfully",
+        errorMessage: "Failed to start cluster",
       };
     case "pause":
       return {
         icon: Pause,
-        name: "Pause Devbox",
-        actionText: "Pause the devbox",
-        successMessage: "Devbox paused successfully",
-        errorMessage: "Failed to pause devbox",
-      };
-    case "restart":
-      return {
-        icon: RotateCcw,
-        name: "Restart Devbox",
-        actionText: "Restart the devbox",
-        successMessage: "Devbox restarted successfully",
-        errorMessage: "Failed to restart devbox",
-      };
-    case "shutdown":
-      return {
-        icon: Power,
-        name: "Shutdown Devbox",
-        actionText: "Shutdown the devbox",
-        successMessage: "Devbox shutdown successfully",
-        errorMessage: "Failed to shutdown devbox",
-      };
-    case "delete":
-      return {
-        icon: Trash2,
-        name: "Delete Devbox",
-        actionText: "Delete the devbox",
-        successMessage: "Devbox deleted successfully",
-        errorMessage: "Failed to delete devbox",
+        name: "Pause Cluster",
+        actionText: "Pause the cluster",
+        successMessage: "Cluster paused successfully",
+        errorMessage: "Failed to pause cluster",
       };
     default:
       throw new Error(`Unknown action: ${action}`);
@@ -75,17 +44,17 @@ const getActionConfig = (action: string) => {
 };
 
 // Component that handles the success message
-const DevboxLifecycleSuccessMessage = ({
-  args,
-  action,
-}: {
-  args: { devboxName: string };
+const ClusterLifecycleSuccessMessage = ({ 
+  args, 
+  action 
+}: { 
+  args: { clusterName: string }; 
   action: string;
 }) => {
-  const target = convertResourceTypeToTarget("devbox", args.devboxName);
+  const target = convertResourceTypeToTarget("cluster", args.clusterName);
   const { handleNodeSelect } = useNodeSelect({
     target,
-    messageType: "devbox.detail",
+    messageType: "cluster.detail",
   });
   const config = getActionConfig(action);
 
@@ -97,36 +66,34 @@ const DevboxLifecycleSuccessMessage = ({
           <p className="text-sm">{config.successMessage}</p>
         </div>
         <Button onClick={handleNodeSelect} variant="outline" size="sm">
-          View devbox details
+          View cluster details
         </Button>
       </div>
     </div>
   );
 };
 
-export const DevboxLifecycleActionMessage: React.FC<
-  DevboxLifecycleActionMessageProps
+export const ClusterLifecycleActionMessage: React.FC<
+  ClusterLifecycleActionMessageProps
 > = ({ args, respond, status, action }) => {
-  const target = convertResourceTypeToTarget("devbox", args.devboxName);
+  const target = convertResourceTypeToTarget("cluster", args.clusterName);
   const config = getActionConfig(action);
   const { resource } = useResourceStatus(target);
 
-  const { executeAction, getMutationForAction, isPending } = useDevboxLifecycle(
-    {
-      onSuccess: (message) => respond?.(message),
-      onError: (message) => respond?.(message),
-    }
-  );
+  const { executeAction, getMutationForAction, isPending } = useClusterLifecycle({
+    onSuccess: (message) => respond?.(message),
+    onError: (message) => respond?.(message),
+  });
 
   // Show completion message when status is complete
   if (status === "complete") {
-    return <DevboxLifecycleSuccessMessage args={args} action={action} />;
+    return <ClusterLifecycleSuccessMessage args={args} action={action} />;
   }
 
   const mutation = getMutationForAction(action);
 
   const handleSubmit = async () => {
-    await executeAction(action, args.devboxName);
+    await executeAction(action, args.clusterName);
   };
 
   return (
@@ -135,16 +102,16 @@ export const DevboxLifecycleActionMessage: React.FC<
         icon: config.icon,
         name: config.name,
       }}
-      formId={`devbox-${action}-form`}
+      formId={`cluster-${action}-form`}
       isSubmitting={status === "inProgress" || isPending(action)}
       onApply={handleSubmit}
       applyButtonText={config.name}
     >
       <div className="space-y-4">
-        <div className="flex items-center gap-4 ">
+        <div className="flex items-center gap-4">
           <BaseResourceIcon target={target} size={32} />
           <div className="flex-1">
-            <span className="text-lg font-medium">{args.devboxName}</span>
+            <span className="text-lg font-medium">{args.clusterName}</span>
           </div>
           <NodeStatusLight status={resource?.status || "Pending"} />
         </div>
