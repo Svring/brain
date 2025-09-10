@@ -17,14 +17,29 @@ import {
   LaunchpadPortSimpleUpdateSchema,
 } from "./components/launchpad-port-schema";
 
+// New combined schemas
+const LaunchCommandSchema = z.object({
+  command: CommandSchema.optional(),
+  args: ArgsSchema.optional(),
+});
+
+const ImageConfigSchema = z.object({
+  imageName: ImageSchema.optional(),
+  imageRegistry: ImageRegistrySchema.nullable().optional(),
+});
+
+// Enhanced resource schema that includes HPA
+const EnhancedLaunchpadResourceSchema = LaunchpadResourceSchema.extend({
+  hpa: HpaSchema.nullable().optional(),
+});
+
 // Update form schema (all fields optional for partial updates)
 export const launchpadUpdateFormSchema = z.object({
   // Keep all existing fields from create schema
   name: z.string().optional(),
-  image: ImageSchema.optional(),
-  command: CommandSchema.optional(),
-  args: ArgsSchema.optional(),
-  resource: LaunchpadResourceSchema.optional(),
+  image: ImageConfigSchema.optional(),
+  launchCommand: LaunchCommandSchema.optional(),
+  resource: EnhancedLaunchpadResourceSchema.optional(),
   ports: z
     .array(LaunchpadPortSchema)
     .optional()
@@ -48,8 +63,6 @@ export const launchpadUpdateFormSchema = z.object({
       }
     ),
   env: z.array(EnvSchema).optional(),
-  hpa: HpaSchema.nullable().optional(),
-  imageRegistry: ImageRegistrySchema.nullable().optional(),
   storage: z.array(StorageSchema).optional(),
   configMap: z.array(ConfigMapSchema).optional(),
   // Alternative simple ports for when using simple operations
@@ -78,3 +91,8 @@ export const launchpadUpdateFormSchema = z.object({
 });
 
 export type LaunchpadUpdateFormData = z.infer<typeof launchpadUpdateFormSchema>;
+export type LaunchCommand = z.infer<typeof LaunchCommandSchema>;
+export type ImageConfig = z.infer<typeof ImageConfigSchema>;
+export type EnhancedLaunchpadResource = z.infer<
+  typeof EnhancedLaunchpadResourceSchema
+>;

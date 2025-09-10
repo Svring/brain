@@ -7,6 +7,12 @@ import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-upd
 import { LaunchpadResourceFields } from "./launchpad-resource-fields";
 import { LaunchpadPortsFields } from "./launchpad-ports-fields";
 import { LaunchpadSimplePortsFields } from "./launchpad-simple-ports-fields";
+import { CommandField, ArgsField } from "../universal/command-args-fields";
+import { EnvFields } from "../universal/env-fields";
+import { ConfigMapFields } from "../universal/config-map-fields";
+import { StorageFields } from "../universal/storage-fields";
+import { LaunchCommandFields } from "../universal/launch-command-fields";
+import { ImageConfigFields } from "../universal/image-config-fields";
 import { toast } from "sonner";
 
 interface LaunchpadUpdateFormProps {
@@ -24,8 +30,15 @@ export const LaunchpadUpdateForm = ({
   hideDefaultButton = false,
   useSimplePortsMode = false,
 }: LaunchpadUpdateFormProps) => {
-  const { form, portsFieldArray, simplePortsFieldArray } =
-    useLaunchpadUpdateForm(defaultValues);
+  const {
+    form,
+    portsFieldArray,
+    simplePortsFieldArray,
+    envFieldArray,
+    storageFieldArray,
+    configMapFieldArray,
+    launchCommandFieldArray,
+  } = useLaunchpadUpdateForm(defaultValues);
 
   const handleSubmit = (data: LaunchpadUpdateFormData) => {
     onSubmit(data);
@@ -50,6 +63,11 @@ export const LaunchpadUpdateForm = ({
   const hasResource = defaultValues?.resource !== undefined;
   const hasPorts = defaultValues?.ports !== undefined;
   const hasSimplePorts = defaultValues?.simplePorts !== undefined;
+  const hasLaunchCommand = defaultValues?.launchCommand !== undefined;
+  const hasImage = defaultValues?.image !== undefined;
+  const hasEnv = defaultValues?.env !== undefined;
+  const hasConfigMap = defaultValues?.configMap !== undefined;
+  const hasStorage = defaultValues?.storage !== undefined;
 
   // Determine which ports field to show
   const showSimplePortsField = useSimplePortsMode || hasSimplePorts;
@@ -77,6 +95,50 @@ export const LaunchpadUpdateForm = ({
               Port Operations
             </div>
             <LaunchpadSimplePortsFields fieldArray={simplePortsFieldArray} />
+          </div>
+        )}
+
+        {/* Launch Command Fields */}
+        {hasLaunchCommand && (
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-foreground">Launch Command</div>
+            <LaunchCommandFields />
+          </div>
+        )}
+
+        {/* Image Configuration */}
+        {hasImage && (
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-foreground">Image Configuration</div>
+            <ImageConfigFields />
+          </div>
+        )}
+
+        {/* Environment Variables */}
+        {hasEnv && (
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-foreground">
+              Environment Variables
+            </div>
+            <EnvFields fieldArray={envFieldArray} />
+          </div>
+        )}
+
+        {/* Config Map */}
+        {hasConfigMap && (
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-foreground">
+              Config Map
+            </div>
+            <ConfigMapFields fieldArray={configMapFieldArray} />
+          </div>
+        )}
+
+        {/* Storage */}
+        {hasStorage && (
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-foreground">Storage</div>
+            <StorageFields fieldArray={storageFieldArray} />
           </div>
         )}
 

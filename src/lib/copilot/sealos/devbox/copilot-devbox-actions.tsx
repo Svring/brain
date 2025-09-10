@@ -28,8 +28,8 @@ export const activateDevboxActions = () => {
   devboxLifecycleAction();
 
   // // Release management
-  // releaseDevboxAction();
-  // deployDevboxAction();
+  releaseDevboxAction();
+  deployDevboxAction();
 };
 
 export const createDevboxAction = () => {

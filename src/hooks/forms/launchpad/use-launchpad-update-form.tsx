@@ -28,9 +28,34 @@ export const useLaunchpadUpdateForm = (
     name: "simplePorts",
   });
 
+  const envFieldArray = useFieldArray({
+    control: form.control,
+    name: "env",
+  });
+
+  const storageFieldArray = useFieldArray({
+    control: form.control,
+    name: "storage",
+  });
+
+  const configMapFieldArray = useFieldArray({
+    control: form.control,
+    name: "configMap",
+  });
+
+  // New field arrays for the restructured fields
+  const launchCommandFieldArray = useFieldArray({
+    control: form.control,
+    name: "launchCommand",
+  });
+
   return {
     form,
     portsFieldArray,
     simplePortsFieldArray,
+    envFieldArray,
+    storageFieldArray,
+    configMapFieldArray,
+    launchCommandFieldArray,
   };
 };

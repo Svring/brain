@@ -49,8 +49,9 @@ function updateLaunchpadAction() {
     followUp: false,
     parameters: jsonSchemaToActionParameters(
       zodToJsonSchema(
-        launchpadUpdateFormSchema.extend({
+        z.object({
           launchpadName: z.string().min(1, "Launchpad name is required"),
+          resource: launchpadUpdateFormSchema.shape.resource,
         })
       ) as any
     ),

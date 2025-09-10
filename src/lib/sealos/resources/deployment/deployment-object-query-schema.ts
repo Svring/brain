@@ -101,6 +101,7 @@ export const DeploymentObjectQuerySchema = z.object({
       })
     )
     .transform((resource) => {
+      // console.log("resource", resource);
       const status = resource.status;
       const paused =
         resource.metadata.annotations?.["deploy.cloud.sealos.io/pause"];

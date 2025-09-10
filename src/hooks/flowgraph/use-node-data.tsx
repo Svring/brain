@@ -33,14 +33,22 @@ export function useNodeData(resourceData: { kind: string; name: string }) {
   // Create stable resource key for tracking
   const resourceKey = `${resourceData.kind}-${resourceData.name}`;
 
+  // Get complete resource object
+  const { resource: completeResource, isLoading } = useResourceStatus(target);
+
   // Reset flags when resource data changes
   useEffect(() => {
     setHasReportedResource(false);
     setHasCreatedNetworkNodes(false);
   }, [resourceKey]);
 
-  // Get complete resource object
-  const { resource: completeResource, isLoading } = useResourceStatus(target);
+  // Also reset network nodes flag when complete resource data changes
+  // This ensures network nodes are recreated if ports data changes during refresh
+  useEffect(() => {
+    if (completeResource && "ports" in completeResource) {
+      setHasCreatedNetworkNodes(false);
+    }
+  }, [completeResource]);
 
   useEffect(() => {
     // When complete resource becomes available, update the central store
@@ -72,19 +80,20 @@ export function useNodeData(resourceData: { kind: string; name: string }) {
         );
 
         // If this is a devbox resource, ensure affiliated nodes are added to the dev group
-        const processedNodes = resourceData.kind.toLowerCase() === "devbox" 
-          ? newNodes.map((node) => {
-              // Only group network and ingress nodes (matching the original grouping logic)
-              if (node.type === "network" || node.type === "ingress") {
-                return {
-                  ...node,
-                  parentId: "devbox-group",
-                  extent: "parent" as const,
-                };
-              }
-              return node;
-            })
-          : newNodes;
+        const processedNodes =
+          resourceData.kind.toLowerCase() === "devbox"
+            ? newNodes.map((node) => {
+                // Only group network and ingress nodes (matching the original grouping logic)
+                if (node.type === "network" || node.type === "ingress") {
+                  return {
+                    ...node,
+                    parentId: "devbox-group",
+                    extent: "parent" as const,
+                  };
+                }
+                return node;
+              })
+            : newNodes;
 
         // Add new nodes and edges to the flowgraph (only if they don't already exist)
         processedNodes.forEach((node) => {

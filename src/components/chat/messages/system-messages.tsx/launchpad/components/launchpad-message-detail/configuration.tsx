@@ -32,8 +32,10 @@ export const Configuration: React.FC<ConfigurationProps> = ({
     switch (fieldType) {
       case "commandArgs":
         updateData = {
-          command: data.command,
-          args: data.args,
+          launchCommand: {
+            command: data.launchCommand?.command,
+            args: data.launchCommand?.args,
+          },
         };
         break;
       case "env":
@@ -266,8 +268,10 @@ export const Configuration: React.FC<ConfigurationProps> = ({
           fieldType="commandArgs"
           fieldTitle="Command & Arguments"
           defaultValues={{
-            command: command || "",
-            args: args || "",
+            launchCommand: {
+              command: command || "",
+              args: args || "",
+            },
           }}
           onSubmit={(data) => handleFieldSubmit("commandArgs", data)}
           isLoading={isLoading}
