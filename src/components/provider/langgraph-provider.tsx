@@ -21,9 +21,10 @@ export const LanggraphConfigWrapper = ({
   const [skipApiKey, setSkipApiKey] = useState(false);
 
   const aiProxyContext = useAiProxyContext();
-  const { data: aiProxyTokens, isLoading } = useQuery(
-    listAiProxyTokensOptions(aiProxyContext)
-  );
+  const { data: aiProxyTokens, isLoading } = useQuery({
+    ...listAiProxyTokensOptions(aiProxyContext),
+    enabled: isProduction,
+  });
 
   const brainToken = aiProxyTokens?.tokens?.find(
     (token) => token.name === "brain"
@@ -54,7 +55,7 @@ export const LanggraphConfigWrapper = ({
 
   // Check if configuration is ready
   const isConfigReady = config.apiKey && config.baseUrl && config.modelName;
-  
+
   // If user chose to skip API key, use minimal config
   if (skipApiKey) {
     const minimalConfig = {
@@ -62,7 +63,9 @@ export const LanggraphConfigWrapper = ({
       baseUrl: undefined,
       modelName: "gpt-4.1",
     };
-    return <LanggraphProvider config={minimalConfig}>{children}</LanggraphProvider>;
+    return (
+      <LanggraphProvider config={minimalConfig}>{children}</LanggraphProvider>
+    );
   }
 
   if (isProduction && isLoading) {

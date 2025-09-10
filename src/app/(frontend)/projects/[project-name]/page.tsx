@@ -36,12 +36,7 @@ function ProjectFloatingUI({
   projectName: string;
   sidebarChatMaximized: boolean;
 }) {
-  const { clearAllState } = useFlowgraphActions();
   const { isOpen, onOpenChange, onOpen } = useFlowgraphCommand();
-
-  useEffect(() => {
-    clearAllState();
-  }, [projectName]);
 
   if (sidebarChatMaximized) return null;
 

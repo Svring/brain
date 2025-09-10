@@ -13,20 +13,30 @@ export default function useFlowgraph(projectName: string) {
   const { resources, isLoading } = useProjectResources(projectName);
   const { initialNodes } = useFlowgraphInitialNodes(resources ?? []);
   const { setNodes, fitView } = useFlowgraphActions();
-  const initializedRef = useRef(false);
+  const hasSetNodesRef = useRef(false);
 
-  // Set initial basic nodes and clear edges (only on first render)
+  // Set nodes whenever initialNodes change and we have nodes to display
   useEffect(() => {
-    if (initialNodes.length > 0 && !initializedRef.current) {
+    console.log("useFlowgraph effect:", { 
+      initialNodesLength: initialNodes.length, 
+      hasSetNodes: hasSetNodesRef.current,
+      projectName,
+      resources: resources?.length || 0
+    });
+    
+    if (initialNodes.length > 0) {
+      console.log("Setting nodes:", initialNodes);
       setNodes(initialNodes);
-      fitView();
-      initializedRef.current = true;
+      setTimeout(() => fitView(), 100); // Small delay to ensure DOM is ready
+      hasSetNodesRef.current = true;
     }
   }, [initialNodes]);
 
   // Reset when project changes
   useEffect(() => {
-    initializedRef.current = false;
+    console.log("Project changed, resetting:", projectName);
+    hasSetNodesRef.current = false;
+    // setNodes([]); // Clear nodes immediately when project changes
   }, [projectName]);
 
   return {

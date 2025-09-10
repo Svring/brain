@@ -18,7 +18,8 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
+import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { ProjectObjectSchema } from "@/lib/brain/resources/project/project-schemas/project-object-schema";
 import { z } from "zod";
 import useProjectResources from "@/hooks/brain/use-project-resources";
@@ -36,14 +37,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   variant = "full",
 }) => {
   const { project: projectClient } = useTRPCClients();
-  const queryClient = useQueryClient();
+  const { invalidateQueries } = useInvalidateQueries();
   const [isRenameDialogOpen, setIsRenameDialogOpen] = React.useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
-  const { resources } = useProjectResources(project.name);
+  const { targets } = useProjectResources(project.name);
 
   const avatarData = React.useMemo(() => {
-    if (!resources?.length) return { avatarUrls: [], numPeople: 0 };
-    const avatarUrls = resources
+    if (!targets?.length) return { avatarUrls: [], numPeople: 0 };
+    const avatarUrls = targets
       .map((r) => getResourceDefaultIcon(r.resourceType))
       .filter(Boolean) as string[];
     const maxDisplayed = avatarUrls.length > 2 ? 2 : 1;
@@ -51,14 +52,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       avatarUrls: avatarUrls.slice(0, maxDisplayed),
       numPeople: avatarUrls.length - maxDisplayed,
     };
-  }, [resources]);
+  }, [targets]);
 
   const { mutate: deleteProject, isPending: isDeleting } = useMutation({
     ...projectClient.delete.mutationOptions(),
     onSuccess: (_, name) => {
-      queryClient.invalidateQueries({
-        queryKey: projectClient.list.queryKey(),
-      });
+      invalidateQueries([projectClient.list.queryKey()]);
       toast.success(`Project ${name} deleted successfully`);
     },
   });
