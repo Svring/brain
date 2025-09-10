@@ -15,44 +15,34 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Pause,
-  RotateCcw,
-  Trash2,
-  Power,
-} from "lucide-react";
-import { useLaunchpadLifecycle } from "@/hooks/sealos/launchpad/use-launchpad-lifecycle";
+import { Pause, Trash2, PencilLine, Power } from "lucide-react";
+import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
+import { useClusterLifecycle } from "@/hooks/sealos/cluster/use-cluster-lifecycle";
 
-interface LaunchpadObject {
-  name: string;
-  status: string;
-  resource?: any;
+interface ClusterDropdownMenuProps {
+  object: ClusterObject;
+  onDelete?: (clusterName: string) => void;
 }
 
-interface LaunchpadDropdownMenuProps {
-  object: LaunchpadObject;
-  onDelete?: (name: string) => void;
-  showRestart?: boolean;
-}
-
-export default function LaunchpadDropdownMenu({
+export default function ClusterDropdownMenu({
   object,
   onDelete,
-  showRestart = true,
-}: LaunchpadDropdownMenuProps) {
-  const { name, status } = object;
-  const isRunning = status === "Running";
-  const isPending = status === "Pending";
-  const { executeAction, isPending: isActionPending } = useLaunchpadLifecycle();
+}: ClusterDropdownMenuProps) {
+  const { name: clusterName, status } = object;
+  const { executeAction, isPending: isActionPending } = useClusterLifecycle();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  const isCreating = status === "Creating";
+  const isUpdating = status === "Updating";
+  const isPending = isCreating || isUpdating;
 
   const handleDeleteClick = () => {
     setShowDeleteDialog(true);
   };
 
   const handleDeleteConfirm = () => {
-    executeAction("delete", name);
-    onDelete?.(name);
+    executeAction("delete", clusterName);
+    onDelete?.(clusterName);
     setShowDeleteDialog(false);
   };
 
@@ -66,9 +56,9 @@ export default function LaunchpadDropdownMenu({
       className="rounded-xl bg-background-secondary"
       align="start"
     >
-      {!isRunning && !isPending && (
+      {status !== "Running" && (
         <DropdownMenuItem
-          onClick={() => executeAction("start", name)}
+          onClick={() => executeAction("start", clusterName)}
           disabled={isPending || isActionPending("start")}
           className={isPending ? "opacity-50" : ""}
         >
@@ -76,9 +66,9 @@ export default function LaunchpadDropdownMenu({
           Start
         </DropdownMenuItem>
       )}
-      {isRunning && (
+      {status !== "Stopped" && status !== "Shutdown" && (
         <DropdownMenuItem
-          onClick={() => executeAction("pause", name)}
+          onClick={() => executeAction("pause", clusterName)}
           disabled={isPending || isActionPending("pause")}
           className={isPending ? "opacity-50" : ""}
         >
@@ -86,38 +76,13 @@ export default function LaunchpadDropdownMenu({
           Pause
         </DropdownMenuItem>
       )}
-      {isPending && (
-        <>
-          <DropdownMenuItem
-            onClick={() => executeAction("start", name)}
-            disabled={true}
-            className="opacity-50"
-          >
-            <Power className="mr-2 h-4 w-4" />
-            Start
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => executeAction("pause", name)}
-            disabled={true}
-            className="opacity-50"
-          >
-            <Pause className="mr-2 h-4 w-4" />
-            Pause
-          </DropdownMenuItem>
-        </>
-      )}
-      {showRestart && (
-        <DropdownMenuItem
-          onClick={() => {
-            // Restart functionality
-          }}
-          disabled={isPending}
-          className={isPending ? "opacity-50" : ""}
-        >
-          <RotateCcw className="mr-2 h-4 w-4" />
-          Restart
-        </DropdownMenuItem>
-      )}
+      <DropdownMenuItem
+        disabled={isPending}
+        className={isPending ? "opacity-50" : ""}
+      >
+        <PencilLine className="mr-2 h-4 w-4" />
+        Update
+      </DropdownMenuItem>
       <DropdownMenuItem
         onClick={handleDeleteClick}
         className="text-destructive"
@@ -131,9 +96,9 @@ export default function LaunchpadDropdownMenu({
     <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete Launchpad</AlertDialogTitle>
+          <AlertDialogTitle>Delete Cluster</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete "{name}"? This action cannot be undone.
+            Are you sure you want to delete "{clusterName}"? This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

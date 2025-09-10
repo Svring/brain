@@ -15,7 +15,7 @@ export const useLaunchpadLifecycle = (
   options: UseLaunchpadLifecycleOptions = {}
 ) => {
   const { onSuccess, onError } = options;
-  const { launchpad } = useTRPCClients();
+  const { launchpad, project } = useTRPCClients();
   const { invalidateQueries } = useInvalidateQueries();
 
   const startMutation = useMutation({
@@ -56,6 +56,29 @@ export const useLaunchpadLifecycle = (
     },
   });
 
+  const deleteMutation = useMutation({
+    ...launchpad.delete.mutationOptions(),
+    onSuccess: (_, deleteRequest) => {
+      const message = "Launchpad deleted successfully";
+      toast.success(message);
+      onSuccess?.(message);
+      const target = convertResourceTypeToTarget(
+        "deployment",
+        deleteRequest.name
+      );
+      invalidateQueries([
+        launchpad.list.queryKey(),
+        launchpad.get.queryKey(target as any),
+        project.getResources.queryKey(),
+      ]);
+    },
+    onError: (error: any) => {
+      const message = error.message || "Failed to delete launchpad";
+      toast.error(message);
+      onError?.(message);
+    },
+  });
+
   const executeAction = async (action: string, launchpadName: string) => {
     try {
       switch (action) {
@@ -64,6 +87,9 @@ export const useLaunchpadLifecycle = (
           break;
         case "pause":
           await pauseMutation.mutateAsync(launchpadName);
+          break;
+        case "delete":
+          await deleteMutation.mutateAsync({ name: launchpadName });
           break;
         default:
           throw new Error(`Unknown action: ${action}`);
@@ -79,6 +105,8 @@ export const useLaunchpadLifecycle = (
         return startMutation;
       case "pause":
         return pauseMutation;
+      case "delete":
+        return deleteMutation;
       default:
         throw new Error(`Unknown action: ${action}`);
     }

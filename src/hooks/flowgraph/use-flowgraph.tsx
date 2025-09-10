@@ -17,15 +17,7 @@ export default function useFlowgraph(projectName: string) {
 
   // Set nodes whenever initialNodes change and we have nodes to display
   useEffect(() => {
-    console.log("useFlowgraph effect:", { 
-      initialNodesLength: initialNodes.length, 
-      hasSetNodes: hasSetNodesRef.current,
-      projectName,
-      resources: resources?.length || 0
-    });
-    
     if (initialNodes.length > 0) {
-      console.log("Setting nodes:", initialNodes);
       setNodes(initialNodes);
       setTimeout(() => fitView(), 100); // Small delay to ensure DOM is ready
       hasSetNodesRef.current = true;
@@ -34,7 +26,6 @@ export default function useFlowgraph(projectName: string) {
 
   // Reset when project changes
   useEffect(() => {
-    console.log("Project changed, resetting:", projectName);
     hasSetNodesRef.current = false;
     // setNodes([]); // Clear nodes immediately when project changes
   }, [projectName]);

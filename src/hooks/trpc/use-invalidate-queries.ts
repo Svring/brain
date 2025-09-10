@@ -5,10 +5,12 @@ export const useInvalidateQueries = () => {
 
   const invalidateQueries = (queryKeys: any[]) => {
     console.log("Invalidating queries:", queryKeys);
-    queryKeys.forEach((queryKey) => {
-      const key = typeof queryKey === "function" ? queryKey() : queryKey;
-      queryClient.invalidateQueries({ queryKey: key });
-    });
+    setTimeout(() => {
+      queryKeys.forEach((queryKey) => {
+        const key = typeof queryKey === "function" ? queryKey() : queryKey;
+        queryClient.invalidateQueries({ queryKey: key });
+      });
+    }, 1000);
   };
 
   return { invalidateQueries };

@@ -3,6 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { useProjectState } from "@/contexts/project/project-context";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { DevboxCreateFormData } from "@/schemas/forms/devbox/devbox-create-form-schema";
@@ -14,6 +15,7 @@ interface UseDevboxCreateOptions {
 export const useDevboxCreate = (options: UseDevboxCreateOptions = {}) => {
   const { addToProject = true } = options;
   const { devbox, project } = useTRPCClients();
+  const { invalidateQueries } = useInvalidateQueries();
   const { selectedProject } = useProjectState();
 
   const addToProjectMutation = useMutation(
@@ -38,6 +40,12 @@ export const useDevboxCreate = (options: UseDevboxCreateOptions = {}) => {
       } else {
         toast.success("Devbox created successfully!");
       }
+
+      // Invalidate queries to refresh the data
+      invalidateQueries([
+        devbox.list.queryKey(),
+        project.getResources.queryKey(),
+      ]);
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to create devbox");

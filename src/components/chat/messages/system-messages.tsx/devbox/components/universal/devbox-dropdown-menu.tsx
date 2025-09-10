@@ -1,14 +1,23 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Pause, RotateCcw, Trash2, PencilLine } from "lucide-react";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
-import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useDevboxLifecycle } from "@/hooks/sealos/devbox/use-devbox-lifecycle";
 
 interface DevboxDropdownMenuProps {
   object: DevboxObject;
@@ -20,99 +29,87 @@ export default function DevboxDropdownMenu({
   onDelete,
 }: DevboxDropdownMenuProps) {
   const { name: devboxName, status } = object;
-  const { devbox } = useTRPCClients();
-  const queryClient = useQueryClient();
+  const { executeAction, isPending } = useDevboxLifecycle();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const startDevboxMutation = useMutation({
-    ...devbox.start.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["devbox"] });
-    },
-  });
+  const handleDeleteClick = () => {
+    setShowDeleteDialog(true);
+  };
 
-  const pauseDevboxMutation = useMutation({
-    ...devbox.pause.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["devbox"] });
-    },
-  });
+  const handleDeleteConfirm = () => {
+    executeAction("delete", devboxName);
+    onDelete?.(devboxName);
+    setShowDeleteDialog(false);
+  };
 
-  const restartDevboxMutation = useMutation({
-    ...devbox.restart.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["devbox"] });
-    },
-  });
+  const handleDeleteCancel = () => {
+    setShowDeleteDialog(false);
+  };
 
   return (
-    <DropdownMenuContent align="start">
-      {status !== "Running" && (
+    <>
+      <DropdownMenuContent align="start">
+        {status !== "Running" && (
+          <DropdownMenuItem
+            onClick={() => executeAction("start", devboxName)}
+            disabled={status === "Pending" || isPending("start")}
+            className={status === "Pending" ? "opacity-50" : ""}
+          >
+            <PencilLine className="mr-2 h-4 w-4" />
+            Start
+          </DropdownMenuItem>
+        )}
+        {status !== "Stopped" && status !== "Shutdown" && (
+          <DropdownMenuItem
+            onClick={() => executeAction("pause", devboxName)}
+            disabled={status === "Pending" || isPending("pause")}
+            className={status === "Pending" ? "opacity-50" : ""}
+          >
+            <Pause className="mr-2 h-4 w-4" />
+            Pause
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem
-          onClick={(e) => {
-            e.stopPropagation();
-            startDevboxMutation.mutate(devboxName);
-          }}
-          onSelect={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          disabled={status === "Pending" || startDevboxMutation.isPending}
+          onClick={() => executeAction("restart", devboxName)}
+          disabled={status === "Pending" || isPending("restart")}
           className={status === "Pending" ? "opacity-50" : ""}
         >
-          <PencilLine className="mr-2 h-4 w-4" />
-          Start
+          <RotateCcw className="mr-2 h-4 w-4" />
+          Restart
         </DropdownMenuItem>
-      )}
-      {status !== "Stopped" && status !== "Shutdown" && (
         <DropdownMenuItem
-          onClick={(e) => {
-            e.stopPropagation();
-            pauseDevboxMutation.mutate(devboxName);
-          }}
-          onSelect={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          disabled={status === "Pending" || pauseDevboxMutation.isPending}
-          className={status === "Pending" ? "opacity-50" : ""}
+          onClick={handleDeleteClick}
+          className="text-destructive"
+          disabled={isPending("delete")}
         >
-          <Pause className="mr-2 h-4 w-4" />
-          Pause
+          <Trash2 className="mr-2 h-4 w-4" />
+          Delete
         </DropdownMenuItem>
-      )}
-      <DropdownMenuItem
-        onClick={(e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          restartDevboxMutation.mutate(devboxName);
-        }}
-        onSelect={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
-        disabled={status === "Pending" || restartDevboxMutation.isPending}
-        className={status === "Pending" ? "opacity-50" : ""}
-      >
-        <RotateCcw className="mr-2 h-4 w-4" />
-        Restart
-      </DropdownMenuItem>
-      <DropdownMenuItem
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete?.(devboxName);
-        }}
-        onSelect={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
-        className={`text-destructive ${
-          status === "Pending" ? "opacity-50" : ""
-        }`}
-        disabled={status === "Pending"}
-      >
-        <Trash2 className="mr-2 h-4 w-4" />
-        Delete
-      </DropdownMenuItem>
-    </DropdownMenuContent>
+      </DropdownMenuContent>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Devbox</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{devboxName}"? This action cannot
+              be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleDeleteCancel}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isPending("delete")}
+            >
+              {isPending("delete") ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

@@ -15,7 +15,7 @@ export const useClusterLifecycle = (
   options: UseClusterLifecycleOptions = {}
 ) => {
   const { onSuccess, onError } = options;
-  const { cluster } = useTRPCClients();
+  const { cluster, project } = useTRPCClients();
   const { invalidateQueries } = useInvalidateQueries();
 
   const startMutation = useMutation({
@@ -50,6 +50,25 @@ export const useClusterLifecycle = (
     },
   });
 
+  const deleteMutation = useMutation({
+    ...cluster.delete.mutationOptions(),
+    onSuccess: (_, deleteRequest) => {
+      const message = "Cluster deleted successfully";
+      toast.success(message);
+      onSuccess?.(message);
+      const target = convertResourceTypeToTarget("cluster", deleteRequest.name);
+      invalidateQueries([
+        cluster.get.queryKey(target as any),
+        project.getResources.queryKey(),
+      ]);
+    },
+    onError: (error: any) => {
+      const message = error.message || "Failed to delete cluster";
+      toast.error(message);
+      onError?.(message);
+    },
+  });
+
   const executeAction = async (action: string, clusterName: string) => {
     try {
       switch (action) {
@@ -58,6 +77,9 @@ export const useClusterLifecycle = (
           break;
         case "pause":
           await pauseMutation.mutateAsync(clusterName);
+          break;
+        case "delete":
+          await deleteMutation.mutateAsync({ name: clusterName });
           break;
         default:
           throw new Error(`Unknown action: ${action}`);
@@ -73,6 +95,8 @@ export const useClusterLifecycle = (
         return startMutation;
       case "pause":
         return pauseMutation;
+      case "delete":
+        return deleteMutation;
       default:
         throw new Error(`Unknown action: ${action}`);
     }
