@@ -28,6 +28,33 @@ import { Spinner } from "@/components/ui/spinner";
 
 import "@/styles/github-markdown-dark.css";
 
+// Function to get dot color for categories
+const getDotColor = (category: string): string => {
+  const lowerCategory = category.toLowerCase();
+  if (
+    lowerCategory.includes("ai") ||
+    lowerCategory.includes("artificial intelligence")
+  ) {
+    return "bg-theme-blue";
+  }
+  if (
+    lowerCategory.includes("ml") ||
+    lowerCategory.includes("machine learning")
+  ) {
+    return "bg-theme-green";
+  }
+  if (lowerCategory.includes("data") || lowerCategory.includes("analytics")) {
+    return "bg-theme-purple";
+  }
+  if (lowerCategory.includes("web") || lowerCategory.includes("frontend")) {
+    return "bg-theme-yellow";
+  }
+  if (lowerCategory.includes("api") || lowerCategory.includes("backend")) {
+    return "bg-theme-red";
+  }
+  return "bg-theme-darkblue";
+};
+
 export type TemplateDetailsProps = {
   template: TemplateResource;
   onBack: () => void;
@@ -84,13 +111,6 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
             `${template.spec.title} has been deployed to your project.`
           );
           setShowInputDialog(false);
-          openSidebarChat();
-          sendMessage([
-            {
-              role: "system",
-              content: `The user has created a new instance of ${template.spec.title} and entered the detail view of the project, send your greeting and gently hint the user what they could do next.`,
-            },
-          ]);
           const instanceResource = data.data?.find(
             (resource: any) => resource.kind === "Instance"
           );
@@ -169,7 +189,13 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
                     template.spec.categories.length > 0 && (
                       <div className="flex flex-wrap gap-2">
                         {template.spec.categories.map((category) => (
-                          <Badge key={category} variant="secondary">
+                          <Badge
+                            key={category}
+                            variant="outline"
+                            dot
+                            dotColor={getDotColor(category)}
+                            className="bg-background-tertiary"
+                          >
                             {category}
                           </Badge>
                         ))}
@@ -178,7 +204,7 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
                 </div>
                 <Button
                   onClick={handleDeploy}
-                  variant="outline"
+                  variant="default"
                   disabled={createInstanceMutation.isPending}
                 >
                   {createInstanceMutation.isPending
@@ -196,7 +222,7 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
             {/* Description Section */}
             {template.spec.description && (
               <div>
-                <h3 className="font-semibold text-lg mb-3">Description</h3>
+                {/* <h3 className="font-semibold text-lg mb-3">Description</h3> */}
                 <p className="text-muted-foreground leading-relaxed">
                   {template.spec.description}
                 </p>
@@ -204,7 +230,7 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
             )}
 
             {/* Template Information Section */}
-            <div>
+            {/* <div>
               <h3 className="font-semibold text-lg mb-3">
                 Template Information
               </h3>
@@ -255,10 +281,10 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
                   </div>
                 )}
               </div>
-            </div>
+            </div> */}
 
             {/* Configuration Parameters Section */}
-            {template.spec.inputs &&
+            {/* {template.spec.inputs &&
               Object.keys(template.spec.inputs).length > 0 && (
                 <div>
                   <h3 className="font-semibold text-lg mb-3">
@@ -296,7 +322,7 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
                     )}
                   </div>
                 </div>
-              )}
+              )} */}
 
             {/* Documentation Section */}
             {template.spec.readme && (

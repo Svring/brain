@@ -73,6 +73,7 @@ export function useFlowgraphState() {
     selectedNode: state.context.selectedNode,
     selectedEdge: state.context.selectedEdge,
     fitViewTrigger: state.context.fitViewTrigger,
+    refreshTrigger: state.context.refreshTrigger,
   };
 }
 
@@ -110,6 +111,7 @@ export function useFlowgraphActions() {
         edges: applyEdgeChanges(changes, state.context.edges),
       }),
     fitView: () => send({ type: "FIT_VIEW" }),
+    refresh: () => send({ type: "REFRESH" }),
   };
 }
 

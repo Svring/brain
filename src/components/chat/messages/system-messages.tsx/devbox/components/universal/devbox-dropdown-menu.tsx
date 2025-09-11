@@ -15,7 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Pause, RotateCcw, Trash2, PencilLine } from "lucide-react";
+import { Pause, RotateCcw, Trash2, Play } from "lucide-react";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import { useDevboxLifecycle } from "@/hooks/sealos/devbox/use-devbox-lifecycle";
 
@@ -55,7 +55,7 @@ export default function DevboxDropdownMenu({
             disabled={status === "Pending" || isPending("start")}
             className={status === "Pending" ? "opacity-50" : ""}
           >
-            <PencilLine className="mr-2 h-4 w-4" />
+            <Play className="mr-2 h-4 w-4" />
             Start
           </DropdownMenuItem>
         )}

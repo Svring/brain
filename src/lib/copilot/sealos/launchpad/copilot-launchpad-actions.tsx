@@ -26,7 +26,7 @@ function createLaunchpadAction() {
   useCopilotAction({
     name: "createLaunchpad",
     description: "Create a new launchpad with specified configuration",
-    followUp: false,
+    // followUp: false,
     parameters: jsonSchemaToActionParameters(
       zodToJsonSchema(launchpadCreateFormSchema) as any
     ),
@@ -46,7 +46,7 @@ function updateLaunchpadAction() {
   useCopilotAction({
     name: "updateLaunchpad",
     description: "Update a launchpad configuration (resource, ports, etc.)",
-    followUp: false,
+    // followUp: false,
     parameters: jsonSchemaToActionParameters(
       zodToJsonSchema(
         z.object({

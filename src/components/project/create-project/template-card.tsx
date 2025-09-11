@@ -50,8 +50,8 @@ export const TemplateCard = memo(function TemplateCard({
         <div className="mb-3 flex items-center gap-4">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted p-2">
             {template.spec.icon ? (
-              <Image
-                alt={`${template.spec.title} icon`}
+              <img
+                // alt={`${template.spec.title} icon`}
                 className="size-6"
                 height={24}
                 src={template.spec.icon}

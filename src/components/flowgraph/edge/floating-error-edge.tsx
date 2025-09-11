@@ -9,8 +9,8 @@ import {
 
 import { getEdgeParams } from "@/lib/flowgraph/edges/flowgraph-edges-utils";
 
-function FloatingEdge(props: EdgeProps) {
-  const { id, source, target, markerEnd, style } = props;
+function FloatingErrorEdge(props: EdgeProps) {
+  const { id, source, target, markerEnd } = props;
   const [isHovered, setIsHovered] = useState(false);
 
   const sourceNode = useInternalNode(source);
@@ -34,18 +34,20 @@ function FloatingEdge(props: EdgeProps) {
     targetY: ty,
   });
 
+  const errorColor = "#9F833B";
+  
   const edgeStyle = {
-    stroke: isHovered ? "var(--color-theme-blue)" : "hsl(var(--primary))",
-    strokeWidth: isHovered ? 1.5 : 1,
+    stroke: errorColor,
+    strokeWidth: isHovered ? 2 : 1.5,
+    strokeDasharray: "5,5", // Dashed line to indicate error state
     transition: "all 0.2s ease-in-out",
-    ...style,
   };
 
   return (
     <g
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      style={{ cursor: "default" }}
+      // style={{ cursor: "default" }}
     >
       <BaseEdge
         id={id}
@@ -57,4 +59,4 @@ function FloatingEdge(props: EdgeProps) {
   );
 }
 
-export default FloatingEdge;
+export default FloatingErrorEdge;

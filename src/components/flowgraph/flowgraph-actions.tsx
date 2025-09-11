@@ -1,6 +1,12 @@
 "use client";
 
-import { SearchIcon, Scan, RefreshCcw, MessageCircle } from "lucide-react";
+import {
+  SearchIcon,
+  Scan,
+  RefreshCcw,
+  MessageCircle,
+  Command,
+} from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,15 +28,17 @@ interface FlowgraphActionsProps {
   onSearchChange?: (searchTerm: string) => void;
   onScan?: () => void;
   onRefresh?: () => void;
+  onOpenCommand?: () => void;
 }
 
 export function FlowgraphActions({
   onSearchChange,
   onScan,
   onRefresh,
+  onOpenCommand,
 }: FlowgraphActionsProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const { fitView } = useFlowgraphActions();
+  const { fitView, refresh } = useFlowgraphActions();
   const { openSidebarChat } = useChatActions();
   const { sidebarChatOpen } = useChatState();
   const queryClient = useQueryClient();
@@ -52,31 +60,36 @@ export function FlowgraphActions({
   };
 
   const handleRefresh = () => {
+    // Call the flowgraph refresh function
+    refresh();
     // Invalidate queries with empty array and invalidateProjectResources set to true
     invalidateQueries([], true);
     onRefresh?.();
   };
 
+  const handleOpenCommand = () => {
+    onOpenCommand?.();
+  };
+
   return (
     <TooltipProvider>
       <div className="flex items-center gap-1">
-        {/* Search Bar */}
-        {/* <div className="relative">
-          <Input
-            className="h-8 w-48 pl-8 pr-8"
-            placeholder="Search node..."
-            value={searchTerm}
-            onChange={(e) => handleSearchChange(e.target.value)}
-          />
-          <SearchIcon
-            aria-hidden="true"
-            className="absolute start-1.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-            size={16}
-          />
-          <kbd className="bg-muted pointer-events-none absolute end-[0.3rem] top-[0.3rem] hidden h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none">
-            <span className="text-xs">⌘</span>K
-          </kbd>
-        </div> */}
+        {/* Command Button */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={handleOpenCommand}
+            >
+              <Command className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Open Command Menu</p>
+          </TooltipContent>
+        </Tooltip>
 
         {/* Scan Button */}
         <Tooltip>

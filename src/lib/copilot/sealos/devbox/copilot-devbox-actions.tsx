@@ -36,7 +36,7 @@ export const createDevboxAction = () => {
   useCopilotAction({
     name: "createDevbox",
     description: "Create a new devbox with specified configuration",
-    followUp: false,
+    // followUp: false,
     parameters: jsonSchemaToActionParameters(
       zodToJsonSchema(devboxCreateFormSchema) as any
     ),
@@ -56,7 +56,7 @@ export const updateDevboxAction = () => {
   useCopilotAction({
     name: "updateDevbox",
     description: "Update a devbox configuration (resource, ports, etc.)",
-    followUp: false,
+    // followUp: false,
     parameters: jsonSchemaToActionParameters(
       zodToJsonSchema(DevboxUpdateRuntimeSchema) as any
     ),

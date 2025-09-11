@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import useProjectResources from "@/hooks/brain/use-project-resources";
 import {
   useFlowgraphActions,
@@ -33,8 +33,8 @@ export default function useFlowgraph(projectName: string) {
   const { resources, isLoading: isLoadingResources } =
     useProjectResources(projectName);
   const { setNodes, setEdges, fitView } = useFlowgraphActions();
+  const { refreshTrigger } = useFlowgraphState();
   const { updateResource } = useProjectActions();
-  const hasSetNodesRef = useRef(false);
   const [completeResources, setCompleteResources] = useState<
     CompleteResource[]
   >([]);
@@ -101,6 +101,7 @@ export default function useFlowgraph(projectName: string) {
   }, [
     resourceQueries.map((q: any) => q.isLoading).join(","),
     resourceQueries.map((q: any) => q.resource?.name).join(","),
+    refreshTrigger,
   ]);
 
   // Compute reliances from complete resources
@@ -108,7 +109,8 @@ export default function useFlowgraph(projectName: string) {
 
   // Generate final nodes and edges when complete resources are ready
   useEffect(() => {
-    if (completeResources.length === 0 && resourceTargets.length > 0) return;
+    // Only return early if we're still loading resources
+    if (isLoadingComplete) return;
 
     // Generate resource nodes from complete data
     const resourceNodes = convertResourceObjectsToNodes(completeResources);
@@ -165,17 +167,16 @@ export default function useFlowgraph(projectName: string) {
     setNodes(allNodes);
     setEdges(allEdges);
 
-    // Fit view only once after first population
-    if (!hasSetNodesRef.current && allNodes.length > 0) {
+    // Fit view whenever all nodes and edges are set
+    if (allNodes.length > 0) {
       setTimeout(() => fitView(), 100);
-      hasSetNodesRef.current = true;
     }
-  }, [completeResources, reliances]);
+  }, [completeResources, reliances, isLoadingComplete]);
 
   // Reset when project changes
   useEffect(() => {
-    hasSetNodesRef.current = false;
     setCompleteResources([]);
+    setIsLoadingComplete(false);
   }, [projectName]);
 
   return {

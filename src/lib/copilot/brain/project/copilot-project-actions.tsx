@@ -4,7 +4,7 @@ import {
   ProjectProposalSchema,
 } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 import { ProjectProposalPresentation } from "@/components/chat/state-cards/project-proposal/project-proposal-presentation";
-import { ProjectLogRender } from "@/components/copilot/brain/project/copilot-project-log";
+import { ProjectLogsActionMessage } from "@/components/copilot/brain/project/project-logs-action-message";
 import { useFlowgraphResources } from "@/hooks/flowgraph/use-flowgraph-resources";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useQueryClient } from "@tanstack/react-query";
@@ -54,8 +54,8 @@ export const checkAllLogsAction = () => {
       );
       return response.logs;
     },
-    render: ({ result }) => {
-      return <ProjectLogRender result={result} />;
+    render: ({ result, status }) => {
+      return <ProjectLogsActionMessage result={result} status={status} />;
     },
   });
 };

@@ -33,11 +33,18 @@ import nodeTypes from "@/components/flowgraph/node/node-types";
 function ProjectFloatingUI({
   projectName,
   sidebarChatMaximized,
+  isLoading,
 }: {
   projectName: string;
   sidebarChatMaximized: boolean;
+  isLoading: boolean;
 }) {
   const { isOpen, onOpenChange, onOpen } = useFlowgraphCommand();
+
+  // Don't show floating UI when loading
+  if (isLoading) {
+    return null;
+  }
 
   if (sidebarChatMaximized) {
     return (
@@ -52,9 +59,8 @@ function ProjectFloatingUI({
     <>
       <FlowgraphBreadcrumb projectName={projectName} />
       <div className="absolute top-2 right-2 z-20 bg-background/30 backdrop-blur-lg rounded-lg p-2">
-        <FlowgraphActions />
+        <FlowgraphActions onOpenCommand={onOpen} />
       </div>
-      <FlowgraphCommandHint onOpen={onOpen} />
       <FlowgraphCommandDialog isOpen={isOpen} onOpenChange={onOpenChange} />
       <FlowgraphChatLoadingHint />
     </>
@@ -72,6 +78,10 @@ function ProjectFlow({
   const { nodes, edges } = useFlowgraphState();
   const { onNodesChange, onEdgesChange } = useFlowgraphActions();
   useCopilotActions();
+  
+  // console.log("isLoading", isLoading);
+  // console.log("nodes", nodes);
+  // console.log("edges", edges);
 
   if (isLoading) {
     return (
@@ -83,6 +93,7 @@ function ProjectFlow({
 
   return (
     <ReactFlow
+      key={projectName}
       connectionLineType={REACT_FLOW_CONFIG.connectionLineType}
       edges={edges}
       edgeTypes={edgeTypes}
@@ -116,11 +127,15 @@ export default function ProjectPage({
   const { sidebarChatOpen, sidebarChatMaximized } = useChatState();
   const { closeSidebarChat } = useChatActions();
   const { setMessages } = useCopilotChatHeadless_c();
+  const { refresh } = useFlowgraphActions();
+  const { isLoading } = useFlowgraph(projectName);
 
   useEffect(() => {
     selectProject(projectName);
     clearSelectedProjectResources();
     setStage("manage_project");
+    // Trigger refresh to force re-fetching of flowgraph data
+    refresh();
     return () => {
       clearSelectedProject();
       setMessages([]);
@@ -147,6 +162,7 @@ export default function ProjectPage({
         <ProjectFloatingUI
           projectName={projectName}
           sidebarChatMaximized={sidebarChatMaximized}
+          isLoading={isLoading}
         />
       </div>
       <div

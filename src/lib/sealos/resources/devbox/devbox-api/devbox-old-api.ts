@@ -8,7 +8,7 @@ import { DevboxApiContext } from "../devbox-schemas/devbox-api-context-schema";
 function createDevboxApi(context: DevboxApiContext) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
   return axios.create({
-    baseURL: `https://devbox.${context.baseUrl}/api/`,
+    baseURL: `http://devbox.${context.baseUrl}/api/`,
     headers: {
       "Content-Type": "application/json",
       ...(context.authorization

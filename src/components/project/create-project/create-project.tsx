@@ -80,7 +80,7 @@ export default function CreateProject({ closeDialog }: CreateProjectProps) {
 
           {/* Fixed search and categories bar */}
           <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 gap-4 py-2">
-            <div className="my-4 flex items-end justify-between sm:my-0 sm:items-center">
+            <div className="my-4 mx-1 flex items-end justify-between sm:my-0 sm:items-center">
               <div className="relative">
                 <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input

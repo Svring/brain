@@ -37,7 +37,7 @@ export const createClusterAction = () => {
   useCopilotAction({
     name: "createCluster",
     description: "Create a new database cluster with specified configuration",
-    followUp: false,
+    // followUp: false,
     parameters: jsonSchemaToActionParameters(
       zodToJsonSchema(clusterCreateFormSchema) as any
     ),
@@ -57,7 +57,7 @@ export const updateClusterAction = () => {
   useCopilotAction({
     name: "updateCluster",
     description: "Update a cluster configuration (resource, etc.)",
-    followUp: false,
+    // followUp: false,
     parameters: jsonSchemaToActionParameters(
       zodToJsonSchema(ClusterUpdateRuntimeSchema) as any
     ),

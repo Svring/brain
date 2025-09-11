@@ -1,15 +1,10 @@
 "use client";
 
 import React from "react";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
-import DevboxDropdownMenu from "./universal/devbox-dropdown-menu";
+import DevboxIconButtons from "./universal/devbox-icon-buttons";
 
 interface DevboxMessageMenuProps {
   target: CustomResourceTarget;
@@ -35,25 +30,13 @@ export default function DevboxMessageMenu({ target }: DevboxMessageMenuProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-            className="p-1 hover:bg-muted rounded transition-colors"
-          >
-            <MoreHorizontal className="h-4 w-4" />
-          </button>
-        </DropdownMenuTrigger>
-        <DevboxDropdownMenu
-          object={devboxObject}
-          onDelete={(devboxName) => {
-            // Handle delete callback if needed
-            console.log("Delete devbox:", devboxName);
-          }}
-        />
-      </DropdownMenu>
+      <DevboxIconButtons
+        object={devboxObject}
+        onDelete={(devboxName) => {
+          // Handle delete callback if needed
+          console.log("Delete devbox:", devboxName);
+        }}
+      />
     </div>
   );
 }

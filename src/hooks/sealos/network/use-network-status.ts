@@ -46,8 +46,6 @@ export const useNetworkStatus = (target: ResourceTarget) => {
       : "";
 
   useEffect(() => {
-    if (statusKey !== "allNotReady") return;
-
     const desiredStroke = "#9F833B";
     const desiredMarker = {
       type: MarkerType.Arrow,
@@ -57,24 +55,29 @@ export const useNetworkStatus = (target: ResourceTarget) => {
     };
 
     connectedEdges.forEach((edge) => {
-      const currentStroke = edge.style?.stroke;
       const currentType = edge.type;
-      const currentMarkerColor = (edge.markerEnd as any)?.color;
 
-      if (
-        currentStroke !== desiredStroke ||
-        currentType !== "floating" ||
-        currentMarkerColor !== desiredStroke
-      ) {
-        updateEdge({
-          ...edge,
-          style: { ...edge.style, stroke: desiredStroke },
-          markerEnd: desiredMarker,
-          type: "floating",
-        });
+      if (statusKey === "allNotReady" || statusKey === "partial") {
+        // Use error edge type for not ready or partial status
+        if (currentType !== "floatingError") {
+          updateEdge({
+            ...edge,
+            type: "floatingError",
+            markerEnd: desiredMarker,
+          });
+        }
+      } else {
+        // Use normal floating edge for ready status
+        if (currentType !== "floating") {
+          updateEdge({
+            ...edge,
+            type: "floating",
+            markerEnd: undefined,
+          });
+        }
       }
     });
-  }, [statusKey, connectedEdges]);
+  }, [statusKey, connectedEdges, updateEdge]);
 
   return { readyStatus, getBackgroundColor };
 };
