@@ -1,7 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Eraser, ChevronRight, Maximize2 } from "lucide-react";
+import { Toggle } from "@/components/ui/toggle";
+import { Eraser, ChevronRight, Focus } from "lucide-react";
 import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { Spinner } from "@/components/ui/spinner";
 import { useProjectState } from "@/contexts/project/project-context";
@@ -10,6 +11,7 @@ import Image from "next/image";
 import { useChatState } from "@/contexts/chat/chat-context";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
@@ -125,19 +127,22 @@ export function AiChatHeader({
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                onClick={() =>
-                  sidebarChatMaximized ? minimizeSidebar() : maximizeSidebar()
+              <Toggle
+                pressed={sidebarChatMaximized}
+                onPressedChange={(pressed) =>
+                  pressed ? maximizeSidebar() : minimizeSidebar()
                 }
-                size="icon"
-                variant="ghost"
-                className="h-8 w-8"
+                size="sm"
+                className={cn(
+                  "h-8 w-8 hover:text-theme-blue",
+                  sidebarChatMaximized && "text-theme-blue"
+                )}
               >
-                <Maximize2 className="h-4 w-4" />
-              </Button>
+                <Focus className="h-4 w-4" />
+              </Toggle>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{sidebarChatMaximized ? "Minimize" : "Maximize"}</p>
+              <p>{sidebarChatMaximized ? "Unfocus" : "Focus"}</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>

@@ -16,6 +16,7 @@ import { useFlowgraphActions } from "@/contexts/flowgraph/flowgraph-context";
 import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 
 interface FlowgraphActionsProps {
   onSearchChange?: (searchTerm: string) => void;
@@ -34,6 +35,7 @@ export function FlowgraphActions({
   const { sidebarChatOpen } = useChatState();
   const queryClient = useQueryClient();
   const { project } = useTRPCClients();
+  const { invalidateQueries } = useInvalidateQueries();
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
@@ -50,10 +52,8 @@ export function FlowgraphActions({
   };
 
   const handleRefresh = () => {
-    // Refetch project resources
-    queryClient.refetchQueries({
-      queryKey: project.getResources.queryKey(),
-    });
+    // Invalidate queries with empty array and invalidateProjectResources set to true
+    invalidateQueries([], true);
     onRefresh?.();
   };
 

@@ -17,6 +17,7 @@ interface ClusterUpdateFormProps {
   onSubmit: (data: ClusterUpdateFormData) => void;
   isLoading?: boolean;
   hideDefaultButton?: boolean;
+  formId?: string;
 }
 
 export const ClusterUpdateForm = ({
@@ -24,6 +25,7 @@ export const ClusterUpdateForm = ({
   onSubmit,
   isLoading = false,
   hideDefaultButton = false,
+  formId = "cluster-update-form",
 }: ClusterUpdateFormProps) => {
   const { form } = useClusterUpdateForm(defaultValues);
 
@@ -37,7 +39,7 @@ export const ClusterUpdateForm = ({
   return (
     <Form {...form}>
       <form
-        id="cluster-update-form"
+        id={formId}
         onSubmit={form.handleSubmit(handleSubmit)}
         className="space-y-6"
       >

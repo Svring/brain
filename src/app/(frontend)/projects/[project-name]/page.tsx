@@ -7,6 +7,7 @@ import "@xyflow/react/dist/style.css";
 import AiChatbox from "@/components/chat/components/chatbox";
 import { FlowgraphBreadcrumb } from "@/components/flowgraph/flowgraph-breadcrumb";
 import { FlowgraphCommandHint } from "@/components/flowgraph/flowgraph-command-hint";
+import { FlowgraphFocusHint } from "@/components/flowgraph/flowgraph-focus-hint";
 import { FlowgraphCommandDialog } from "@/components/flowgraph/command/flowgraph-command-dialog";
 import { FlowgraphActions } from "@/components/flowgraph/flowgraph-actions";
 import FloatingConnectionLine from "@/components/flowgraph/edge/floating-connection-line";
@@ -38,7 +39,9 @@ function ProjectFloatingUI({
 }) {
   const { isOpen, onOpenChange, onOpen } = useFlowgraphCommand();
 
-  if (sidebarChatMaximized) return null;
+  if (sidebarChatMaximized) {
+    return <FlowgraphFocusHint projectName={projectName} />;
+  }
 
   return (
     <>
