@@ -96,7 +96,7 @@ export const LaunchpadMessageDetails: React.FC<
     <div className="space-y-4">
       <ImageCreatedAt
         target={target}
-        image={launchpadObject?.image}
+        image={launchpadObject?.image?.imageName}
         onImageUpdate={handleSubmit}
         isLoading={updatingField === "image"}
       />

@@ -47,7 +47,16 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     const avatarUrls = targets
       .map((r) => getResourceDefaultIcon(r.resourceType))
       .filter(Boolean) as string[];
-    const maxDisplayed = avatarUrls.length > 2 ? 2 : 1;
+
+    // Only show the '+X' indicator if there are 3 or more resources
+    if (avatarUrls.length < 3) {
+      return {
+        avatarUrls: avatarUrls,
+        numPeople: 0,
+      };
+    }
+
+    const maxDisplayed = 2;
     return {
       avatarUrls: avatarUrls.slice(0, maxDisplayed),
       numPeople: avatarUrls.length - maxDisplayed,
@@ -68,6 +77,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   };
 
   const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
     setIsDeleteDialogOpen(true);
   };
 
@@ -145,7 +155,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               }`}
             >
               <AvatarCircles
-                numPeople={avatarData.numPeople}
+                numPeople={
+                  avatarData.numPeople > 0 ? avatarData.numPeople : undefined
+                }
                 avatarUrls={avatarData.avatarUrls}
                 disableLink
               />
@@ -168,18 +180,21 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Project</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete the project "{project.displayName}
-              "?
+              Are you sure you want to delete the project{" "}
+              <span className="font-semibold text-foreground">
+                "{project.displayName}"
+              </span>
+              ?
             </AlertDialogDescription>
           </AlertDialogHeader>
 
           <Alert
             variant="destructive"
-            className="bg-status-deleting/80 text-status-error border-none"
+            className="bg-status-deleting text-red-700 border-none"
           >
             <AlertCircleIcon />
             {/* <AlertTitle>Warning</AlertTitle> */}
-            <AlertDescription>
+            <AlertDescription className="text-red-700!">
               This action cannot be undone and will permanently remove the
               project and all its resources.
             </AlertDescription>
@@ -190,7 +205,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             <AlertDialogAction
               onClick={handleDeleteConfirm}
               disabled={isDeleting}
-              className="bg-status-deleting/80 text-status-error border border-status-error"
+              className="bg-status-deleting/80 text-red-700! hover:bg-status-deleting! border border-status-error"
             >
               {isDeleting ? "Deleting..." : "Confirm"}
             </AlertDialogAction>

@@ -51,9 +51,9 @@ export const LaunchpadUpdateForm = ({
           }
         } else {
           // For objects, only include if they have properties
-          if (typeof value === 'object' && Object.keys(value).length > 0) {
+          if (typeof value === "object" && Object.keys(value).length > 0) {
             (acc as any)[key] = value;
-          } else if (typeof value !== 'object') {
+          } else if (typeof value !== "object") {
             // For primitives, include if they have a value
             (acc as any)[key] = value;
           }
@@ -63,12 +63,12 @@ export const LaunchpadUpdateForm = ({
     }, {} as Record<string, any>);
 
     console.log("filtered data", filteredData);
-    onSubmit(filteredData as LaunchpadUpdateFormData);
+    // onSubmit(filteredData as LaunchpadUpdateFormData);
   };
 
   const handleSubmitError = (errors: any) => {
     console.log("Form validation errors:", errors);
-    
+
     // Handle form validation errors with more specific messages
     if (errors.ports) {
       toast.error(
@@ -89,7 +89,8 @@ export const LaunchpadUpdateForm = ({
     } else {
       // Show the first error message for better debugging
       const firstError = Object.keys(errors)[0];
-      const errorMessage = errors[firstError]?.message || "Unknown validation error";
+      const errorMessage =
+        errors[firstError]?.message || "Unknown validation error";
       toast.error(`Form validation failed: ${firstError} - ${errorMessage}`);
     }
   };
@@ -136,7 +137,9 @@ export const LaunchpadUpdateForm = ({
         {/* Launch Command Fields */}
         {hasLaunchCommand && (
           <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">Launch Command</div>
+            <div className="text-sm font-medium text-foreground">
+              Launch Command
+            </div>
             <LaunchCommandFields />
           </div>
         )}
@@ -144,7 +147,9 @@ export const LaunchpadUpdateForm = ({
         {/* Image Configuration */}
         {hasImage && (
           <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">Image Configuration</div>
+            <div className="text-sm font-medium text-foreground">
+              Image Configuration
+            </div>
             <ImageConfigFields />
           </div>
         )}

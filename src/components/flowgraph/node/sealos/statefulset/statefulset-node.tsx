@@ -113,7 +113,7 @@ function StatefulsetNode({
           <div className="flex items-center gap-2 mt-2">
             <Package className="h-4 w-4 text-muted-foreground" />
             <div className="text-sm text-muted-foreground truncate flex-1">
-              Image: {resource.image ? truncateImage(resource.image) : "N/A"}
+              Image: {resource.image?.imageName ? truncateImage(resource.image.imageName) : "N/A"}
             </div>
           </div>
 

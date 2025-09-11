@@ -8,6 +8,7 @@ import { NameField } from "@/components/forms/universal/name-field";
 import { ResourceFields } from "../universal/resource-fields";
 import { DevboxPortsFields } from "./devbox-ports-fields";
 import { DevboxRuntimeField } from "./components/devbox-runtime-field";
+import { toast } from "sonner";
 
 interface DevboxCreateFormProps {
   defaultValues?: Partial<DevboxCreateFormData>;
@@ -26,13 +27,21 @@ export const DevboxCreateForm = ({
 }: DevboxCreateFormProps) => {
   const { form, portsFieldArray } = useDevboxCreateForm(defaultValues);
 
-  const handleSubmit = (data: any) => {
-    onSubmit(data as DevboxCreateFormData);
+  const handleSubmit = (data: DevboxCreateFormData) => {
+    onSubmit(data);
+  };
+
+  const handleFormError = (errors: any) => {
+    toast.error("Form validation errors:", errors);
   };
 
   return (
     <Form {...form}>
-      <form id={formId} onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form
+        id={formId}
+        onSubmit={form.handleSubmit(handleSubmit, handleFormError)}
+        className="space-y-6"
+      >
         <div className="space-y-4">
           <NameField />
           <DevboxRuntimeField />
@@ -53,12 +62,17 @@ export const DevboxCreateForm = ({
             <Button
               type="button"
               variant="outline"
+              form={formId}
               onClick={() => form.reset()}
               disabled={isLoading}
             >
               Reset
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button
+              type="submit"
+              form={formId}
+              disabled={isLoading}
+            >
               {isLoading ? "Creating..." : "Create"}
             </Button>
           </div>

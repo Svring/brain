@@ -20,16 +20,69 @@ export const StatefulsetObjectQuerySchema = z.object({
   image: z
     .any()
     .describe(
-      JSON.stringify({
-        resourceType: "statefulset",
-        path: ["spec.template.spec.containers"],
-      })
+      JSON.stringify([
+        {
+          resourceType: "statefulset",
+          path: ["spec.template.spec.containers"],
+        },
+        {
+          resourceType: "secret",
+          path: ["data"],
+        },
+      ])
     )
-    .transform((containers) => {
-      if (Array.isArray(containers) && containers.length > 0) {
-        return containers[0].image;
+    .transform((resources) => {
+      if (!Array.isArray(resources) || resources.length < 2) {
+        return {
+          imageName: "",
+          imageRegistry: null,
+        };
       }
-      return "";
+
+      const [containers, secretData] = resources;
+
+      // Extract image name from containers
+      let imageName = "";
+      if (Array.isArray(containers) && containers.length > 0) {
+        imageName = containers[0].image || "";
+      }
+
+      // Extract registry information from secret data
+      let imageRegistry = null;
+      if (secretData && secretData[".dockerconfigjson"]) {
+        try {
+          // Decode the base64 encoded docker config
+          const dockerConfigJson = Buffer.from(
+            secretData[".dockerconfigjson"],
+            "base64"
+          ).toString("utf-8");
+
+          const dockerConfig = JSON.parse(dockerConfigJson);
+
+          // Extract registry information from auths
+          if (dockerConfig.auths && typeof dockerConfig.auths === "object") {
+            const serverAddresses = Object.keys(dockerConfig.auths);
+
+            if (serverAddresses.length > 0) {
+              const serverAddress = serverAddresses[0];
+              const authInfo = dockerConfig.auths[serverAddress];
+
+              imageRegistry = {
+                serverAddress,
+                username: authInfo.username || "",
+                password: authInfo.password || "",
+              };
+            }
+          }
+        } catch (error) {
+          console.error("Error parsing docker config:", error);
+        }
+      }
+
+      return {
+        imageName,
+        imageRegistry,
+      };
     }),
   resource: z
     .any()

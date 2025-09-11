@@ -50,7 +50,7 @@ function Button({
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
-    event.preventDefault();
+    // event.preventDefault();
     onClick?.(event);
   };
 

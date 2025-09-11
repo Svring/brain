@@ -41,7 +41,7 @@ function DeploymentNodeWrapper({
   // Always call hooks in the same order
   const { completeResource, status } = useNodeData(resourceData);
 
-  // console.log("completeResource", completeResource);
+  console.log("completeResource", completeResource);
 
   // If we have complete object data, render the full node
   if (isCompleteObject) {
@@ -108,11 +108,7 @@ function DeploymentNode({
 
   const mainCard = (
     <NodeConnect onConnect={handleConnect} target={target}>
-      <BaseNode
-        target={target}
-        nodeId={nodeId}
-        messageType="launchpad.detail"
-      >
+      <BaseNode target={target} nodeId={nodeId} messageType="launchpad.detail">
         <div className="flex h-full flex-col gap-2 justify-between">
           {/* Header with Name and Dropdown */}
           <div className="flex items-center justify-between">
@@ -125,7 +121,9 @@ function DeploymentNode({
             <Package className="h-4 w-4 text-muted-foreground" />
             <div className="text-md text-muted-foreground truncate flex-1">
               Image:{" "}
-              {deploymentData.image ? truncateImage(deploymentData.image) : "N/A"}
+              {deploymentData.image?.imageName
+                ? truncateImage(deploymentData.image.imageName)
+                : "N/A"}
             </div>
           </div>
 
@@ -153,7 +151,14 @@ function DeploymentNode({
     (_, i) => i
   );
 
-  return <NodeStack target={target} mainCard={mainCard} data={replicasArray} nodeId={nodeId} />;
+  return (
+    <NodeStack
+      target={target}
+      mainCard={mainCard}
+      data={replicasArray}
+      nodeId={nodeId}
+    />
+  );
 }
 
 // Export the wrapper as the default component

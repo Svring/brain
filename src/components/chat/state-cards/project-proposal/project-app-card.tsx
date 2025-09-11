@@ -72,7 +72,7 @@ export function ProjectAppCard({ resource, onSave }: ProjectAppCardProps) {
             className="w-full"
           />
         </div>
-        
+
         {/* Ports Section */}
         <div className="mt-3">
           <ProjectPortTable
@@ -81,7 +81,6 @@ export function ProjectAppCard({ resource, onSave }: ProjectAppCardProps) {
             onPortsChange={(ports) => setEditData({ ...editData, ports })}
           />
         </div>
-        
       </div>
     );
   }
@@ -124,18 +123,14 @@ export function ProjectAppCard({ resource, onSave }: ProjectAppCardProps) {
       <div className="text-sm pl-1 text-muted-foreground">
         Image: <span className="text-foreground">{resource.image}</span>
       </div>
-      
+
       {/* Ports Display */}
       {resource.ports && resource.ports.length > 0 && (
         <div className="mt-3">
           <div className="text-sm pl-1 text-muted-foreground mb-2">Ports:</div>
-          <ProjectPortTable
-            ports={resource.ports}
-            allowEditing={false}
-          />
+          <ProjectPortTable ports={resource.ports} allowEditing={false} />
         </div>
       )}
-      
     </div>
   );
 }

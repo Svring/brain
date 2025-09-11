@@ -29,17 +29,19 @@ const AvatarCircles = ({
           alt={`Avatar ${index + 1}`}
         />
       ))}
-      {disableLink ? (
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-white bg-black text-center font-medium text-white hover:bg-gray-600 dark:border-gray-800 dark:bg-background-tertiary dark:text-foreground">
-          +{numPeople}
-        </div>
-      ) : (
-        <a
-          className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-white bg-black text-center text-xs font-medium text-white hover:bg-gray-600 dark:border-gray-800 dark:bg-background-tertiary dark:text-foreground"
-          href=""
-        >
-          +{numPeople}
-        </a>
+      {numPeople && numPeople > 0 && (
+        disableLink ? (
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-white bg-black text-center font-medium text-white hover:bg-gray-600 dark:border-gray-800 dark:bg-background-tertiary dark:text-foreground">
+            +{numPeople}
+          </div>
+        ) : (
+          <a
+            className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-white bg-black text-center text-xs font-medium text-white hover:bg-gray-600 dark:border-gray-800 dark:bg-background-tertiary dark:text-foreground"
+            href=""
+          >
+            +{numPeople}
+          </a>
+        )
       )}
     </div>
   );

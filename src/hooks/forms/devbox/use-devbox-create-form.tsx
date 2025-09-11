@@ -20,7 +20,7 @@ export const useDevboxCreateForm = (
       ...schemaDefaults,
       ...defaultValues,
     },
-    mode: "onChange",
+    mode: "onBlur",
   });
 
   // Field arrays for dynamic fields

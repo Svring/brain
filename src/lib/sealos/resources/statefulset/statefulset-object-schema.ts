@@ -60,10 +60,21 @@ const OperationalStatusSchema = z.object({
   createdAt: z.string(),
 });
 
+const ImageRegistrySchema = z.object({
+  serverAddress: z.string(),
+  username: z.string(),
+  password: z.string(),
+});
+
+const ImageSchema = z.object({
+  imageName: z.string(),
+  imageRegistry: ImageRegistrySchema.nullable().optional(),
+});
+
 export const StatefulsetObjectSchema = z.object({
   name: z.string(),
   kind: z.string(),
-  image: z.string(),
+  image: ImageSchema,
   resource: ResourceSchema,
   status: z.string(),
   launchCommand: z
