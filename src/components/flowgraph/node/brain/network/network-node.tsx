@@ -227,7 +227,12 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
 
   if (isLoading) {
     return (
-      <BaseNode target={target} nodeId={nodeId} className="h-14 p-2 bg-muted">
+      <BaseNode
+        target={target}
+        nodeId={nodeId}
+        className="h-14 p-2 bg-muted"
+        width="auto"
+      >
         <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
           Loading...
         </div>
@@ -241,6 +246,7 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
         target={target}
         nodeId={nodeId}
         className="h-14 p-2 bg-status-error/20"
+        width="auto"
       >
         <div className="flex items-center justify-center h-full text-sm text-theme-red">
           Error loading resource
@@ -264,6 +270,7 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
       nodeId={nodeId}
       messageType={messageType}
       className={cn("h-14 p-2", getBackgroundColor())}
+      // width="auto"
     >
       <div className="flex items-center justify-center h-full">
         {frontCardUrl ? (
@@ -348,6 +355,7 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
       target={target}
       messageType={messageType}
       nodeId={nodeId}
+      width="auto"
     />
   );
 }

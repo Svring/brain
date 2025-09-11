@@ -13,16 +13,24 @@ const SPLIT_OPTIONS = {
   childNodeWidth: 280,
   childNodeHeight: 200,
   // Account for smaller network nodes inside the group
+  // StatefulSet nodes are taller due to hem component
   getChildNodeSize: (node: Node) => {
     if (node.type === "network") {
       return { width: 280, height: 56 };
     }
+    if (node.type === "statefulset") {
+      return { width: 280, height: 240 }; // h-60 in Tailwind = 240px (hem component height)
+    }
     return { width: 280, height: 200 };
   },
   // Treat network nodes as shorter than default nodes during outside layout
+  // StatefulSet nodes are taller due to hem component
   getOutsideNodeSize: (node: Node) => {
     if (node.type === "network") {
       return { width: 280, height: 56 }; // h-14 in Tailwind = 56px
+    }
+    if (node.type === "statefulset") {
+      return { width: 280, height: 240 }; // h-60 in Tailwind = 240px (hem component height)
     }
     return { width: 280, height: 200 };
   },

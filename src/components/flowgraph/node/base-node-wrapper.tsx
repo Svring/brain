@@ -16,6 +16,7 @@ interface BaseNodeProps {
   target: ResourceTarget;
   className?: string;
   messageType?: string;
+  width?: "auto" | "fixed";
 }
 
 export default function BaseNodeWrapper({
@@ -24,6 +25,7 @@ export default function BaseNodeWrapper({
   target,
   className,
   messageType,
+  width = "fixed",
 }: BaseNodeProps) {
   const { selectedResource } = useProjectState();
 
@@ -48,18 +50,25 @@ export default function BaseNodeWrapper({
 
   // Determine the appropriate styling based on status
   const getNodeStyling = () => {
+    let baseStyles = "";
+    
+    // Add width classes based on width prop
+    if (width === "auto") {
+      baseStyles += " w-auto min-w-70 max-w-96";
+    }
+    
     // If resource is being deleted or has high metrics status, show deleting styles
     if (target && (isDeleting || metricsStatus === "high")) {
-      return "bg-status-deleting/50 border-border-deleting";
+      return baseStyles + " bg-status-deleting/50 border-border-deleting";
     }
 
     // If resource is selected, show blue border and elevate above overlay
     if (isSelected) {
-      return "border-theme-blue/50 border relative z-20";
+      return baseStyles + " border-theme-blue/50 border relative z-20";
     }
 
     // Default styling
-    return "";
+    return baseStyles;
   };
 
   return (

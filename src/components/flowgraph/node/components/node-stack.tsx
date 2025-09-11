@@ -16,6 +16,7 @@ interface NodeStackProps {
   target: ResourceTarget;
   messageType?: string;
   nodeId: any; // Added nodeId to the interface
+  width?: "auto" | "fixed"; // Width setting for adaptive sizing
 }
 
 export default function NodeStack({
@@ -29,6 +30,7 @@ export default function NodeStack({
   target,
   messageType,
   nodeId,
+  width = "fixed",
 }: NodeStackProps) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -73,6 +75,7 @@ export default function NodeStack({
             className={`${height ? `h-${height}` : ""} ${
               cardBackgroundColor || ""
             }`}
+            width={width}
           >
             {/* Empty content for background cards */}
             <div className="w-full h-full" />

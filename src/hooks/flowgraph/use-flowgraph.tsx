@@ -32,6 +32,7 @@ interface CompleteResource {
 export default function useFlowgraph(projectName: string) {
   const { resources, isLoading: isLoadingResources } =
     useProjectResources(projectName);
+  console.log("resources", resources);
   const { setNodes, setEdges, fitView } = useFlowgraphActions();
   const { refreshTrigger } = useFlowgraphState();
   const { updateResource } = useProjectActions();

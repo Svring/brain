@@ -8,7 +8,9 @@ export const BaseNode = forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     className={cn(
-      "relative cursor-pointer rounded-xl border border-border-primary bg-node-background p-5 text-card-foreground w-70 h-50",
+      "relative cursor-pointer rounded-xl border border-border-primary bg-node-background p-5 text-card-foreground h-50",
+      // Only apply fixed width if not overridden by className
+      !className?.includes("w-") && "w-70",
       className,
       "hover:brightness-120"
     )}

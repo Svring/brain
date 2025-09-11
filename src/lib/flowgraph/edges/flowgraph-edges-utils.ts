@@ -56,12 +56,30 @@ export const convertReliancesToEdges = (
   return edges;
 };
 
+// Helper function to get the actual node size, accounting for custom node types
+function getActualNodeSize(node: any): { width: number; height: number } {
+  // Use the same logic as in the layout system
+  if (node.type === "network") {
+    return { width: 280, height: 56 }; // h-14 in Tailwind = 56px
+  }
+  if (node.type === "statefulset") {
+    return { width: 280, height: 240 }; // h-60 in Tailwind = 240px (hem component height)
+  }
+
+  // Fallback to measured dimensions or default size
+  if (node.measured?.width && node.measured?.height) {
+    return { width: node.measured.width, height: node.measured.height };
+  }
+
+  return { width: 280, height: 200 }; // default size
+}
+
 // this helper function returns the intersection point
 // of the line between the center of the intersectionNode and the target node
 function getNodeIntersection(intersectionNode: any, targetNode: any) {
   // https://math.stackexchange.com/questions/1724792/an-algorithm-for-finding-the-intersection-point-between-a-center-of-vision-and-a
   const { width: intersectionNodeWidth, height: intersectionNodeHeight } =
-    intersectionNode.measured;
+    getActualNodeSize(intersectionNode);
   const intersectionNodePosition = intersectionNode.internals.positionAbsolute;
   const targetPosition = targetNode.internals.positionAbsolute;
 
@@ -70,8 +88,9 @@ function getNodeIntersection(intersectionNode: any, targetNode: any) {
 
   const x2 = intersectionNodePosition.x + w;
   const y2 = intersectionNodePosition.y + h;
-  const x1 = targetPosition.x + targetNode.measured.width / 2;
-  const y1 = targetPosition.y + targetNode.measured.height / 2;
+  const targetSize = getActualNodeSize(targetNode);
+  const x1 = targetPosition.x + targetSize.width / 2;
+  const y1 = targetPosition.y + targetSize.height / 2;
 
   const xx1 = (x1 - x2) / (2 * w) - (y1 - y2) / (2 * h);
   const yy1 = (x1 - x2) / (2 * w) + (y1 - y2) / (2 * h);
@@ -87,6 +106,7 @@ function getNodeIntersection(intersectionNode: any, targetNode: any) {
 // returns the position (top,right,bottom or right) passed node compared to the intersection point
 function getEdgePosition(node: any, intersectionPoint: any) {
   const n = { ...node.internals.positionAbsolute, ...node };
+  const nodeSize = getActualNodeSize(node);
   const nx = Math.round(n.x);
   const ny = Math.round(n.y);
   const px = Math.round(intersectionPoint.x);
@@ -95,13 +115,13 @@ function getEdgePosition(node: any, intersectionPoint: any) {
   if (px <= nx + 1) {
     return Position.Left;
   }
-  if (px >= nx + n.measured.width - 1) {
+  if (px >= nx + nodeSize.width - 1) {
     return Position.Right;
   }
   if (py <= ny + 1) {
     return Position.Top;
   }
-  if (py >= n.y + n.measured.height - 1) {
+  if (py >= ny + nodeSize.height - 1) {
     return Position.Bottom;
   }
 
