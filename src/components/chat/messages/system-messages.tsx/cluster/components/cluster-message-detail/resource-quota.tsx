@@ -119,28 +119,28 @@ export const ResourceQuota: React.FC<ResourceQuotaProps> = ({
           <div className="flex items-center justify-around">
             <div className="flex flex-col items-center gap-1">
               <div className="text-sm text-muted-foreground">CPU</div>
-              <Cpu className="h-4 w-4 text-muted-foreground" />
+              {/* <Cpu className="h-4 w-4 text-muted-foreground" /> */}
               <div className="text-sm font-medium">
                 {formatValue(resource?.cpu, "cpu")}
               </div>
             </div>
             <div className="flex flex-col items-center gap-1">
               <div className="text-sm text-muted-foreground">Memory</div>
-              <MemoryStick className="h-4 w-4 text-muted-foreground" />
+              {/* <MemoryStick className="h-4 w-4 text-muted-foreground" /> */}
               <div className="text-sm font-medium">
                 {formatValue(resource?.memory, "memory")}
               </div>
             </div>
             <div className="flex flex-col items-center gap-1">
               <div className="text-sm text-muted-foreground">Storage</div>
-              <HardDrive className="h-4 w-4 text-muted-foreground" />
+              {/* <HardDrive className="h-4 w-4 text-muted-foreground" /> */}
               <div className="text-sm font-medium">
                 {formatValue(resource?.storage, "storage")}
               </div>
             </div>
             <div className="flex flex-col items-center gap-1">
               <div className="text-sm text-muted-foreground">Replicas</div>
-              <Layers className="h-4 w-4 text-muted-foreground" />
+              {/* <Layers className="h-4 w-4 text-muted-foreground" /> */}
               <div className="text-sm font-medium">
                 {resource?.replicas || "N/A"}
               </div>

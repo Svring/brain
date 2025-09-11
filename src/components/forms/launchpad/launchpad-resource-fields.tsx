@@ -38,12 +38,24 @@ export const LaunchpadResourceFields = ({
 
   // Watch hpa field and clean up when null
   const hpaValue = form.watch("resource.hpa");
-  
+
   useEffect(() => {
     if (hpaValue === null) {
       form.unregister("resource.hpa");
     }
   }, [hpaValue, form]);
+
+  // Initialize HPA field when switching to HPA tab
+  useEffect(() => {
+    if (scalingMode === "hpa" && !hpaValue) {
+      form.setValue("resource.hpa", {
+        target: "cpu",
+        value: 70,
+        minReplicas: 1,
+        maxReplicas: 10,
+      });
+    }
+  }, [scalingMode, hpaValue, form]);
 
   return (
     <div className="space-y-6 p-2">
@@ -135,7 +147,9 @@ export const LaunchpadResourceFields = ({
 
       {/* Scaling Configuration - Replicas or HPA */}
       {(resourceValues?.replicas !== undefined ||
-        resourceValues?.hpa !== undefined) && (
+        resourceValues?.hpa !== undefined ||
+        resourceValues?.cpu !== undefined ||
+        resourceValues?.memory !== undefined) && (
         <div className="space-y-4">
           <FormLabel className="font-medium">Scaling Configuration</FormLabel>
           <Tabs
@@ -187,23 +201,21 @@ export const LaunchpadResourceFields = ({
             </TabsContent>
 
             <TabsContent value="hpa" className="space-y-4">
-              {resourceValues?.hpa !== undefined && (
-                <FormField
-                  control={form.control}
-                  name="resource.hpa"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="font-medium">
-                        Horizontal Pod Autoscaler (HPA)
-                      </FormLabel>
-                      <div className="p-4 border border-dashed rounded-lg">
-                        <HpaFields />
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
+              <FormField
+                control={form.control}
+                name="resource.hpa"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-medium">
+                      Horizontal Pod Autoscaler (HPA)
+                    </FormLabel>
+                    <div className="p-4 border border-dashed rounded-lg">
+                      <HpaFields />
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </TabsContent>
           </Tabs>
         </div>

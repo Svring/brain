@@ -4,7 +4,7 @@ import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { toast } from "sonner";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
-import { ImageCreatedAt } from "./launchpad-message-detail/image-created-at";
+import { LaunchpadImage } from "./launchpad-message-detail/launchpad-image";
 import { CreatedAt } from "./launchpad-message-detail/created-at";
 import { ResourceAndDeployment } from "./launchpad-message-detail/resource-and-deployment";
 import { Configuration } from "./launchpad-message-detail/configuration";
@@ -93,8 +93,7 @@ export const LaunchpadMessageDetails: React.FC<
     <div className="space-y-4">
       <CreatedAt createdAt={launchpadObject?.operationalStatus?.createdAt} />
       
-      <ImageCreatedAt
-        target={target}
+      <LaunchpadImage
         image={launchpadObject?.image?.imageName}
         onImageUpdate={handleSubmit}
         isLoading={updatingField === "image"}

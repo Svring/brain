@@ -18,6 +18,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useCopy } from "@/hooks/use-copy";
+import { Copy, Check } from "lucide-react";
 
 interface AiChatHeaderProps {
   title?: string;
@@ -36,6 +38,7 @@ export function AiChatHeader({
     useChatActions();
   const { setMessages } = useCopilotChatHeadless_c();
   const { isPending } = useCreateNewChatSessionMutation();
+  const { copyToClipboard, isCopied } = useCopy();
 
   const getIconUrl = () => {
     if (!selectedResource) return "https://sealos.run/logo.svg";
@@ -70,7 +73,6 @@ export function AiChatHeader({
             <Separator orientation="vertical" className="h-4!" />
             {selectedResource && (
               <div className="flex items-center gap-2 text text-muted-foreground">
-                <span>Selected: </span>
                 <Image
                   src={getIconUrl()}
                   alt={`${selectedResource.resourceType} Icon`}
@@ -82,16 +84,35 @@ export function AiChatHeader({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="truncate max-w-[120px] cursor-help">
-                        {selectedResource.name}
-                      </span>
+                      <div
+                        className="flex items-center gap-1 truncate max-w-[120px] cursor-pointer hover:text-theme-blue transition-colors"
+                        onClick={() =>
+                          copyToClipboard(
+                            selectedResource.name || "",
+                            "resource-name"
+                          )
+                        }
+                      >
+                        <span className="truncate">
+                          {selectedResource.name}
+                        </span>
+                        {isCopied("resource-name") ? (
+                          <Check className="h-3 w-3 flex-shrink-0" />
+                        ) : (
+                          <Copy className="h-3 w-3 flex-shrink-0" />
+                        )}
+                      </div>
                     </TooltipTrigger>
                     <TooltipContent
                       className="bg-background-tertiary border border-border-primary"
                       side="bottom"
                       align="start"
                     >
-                      <p>{selectedResource.name}</p>
+                      <p>
+                        {isCopied("resource-name")
+                          ? "Copied!"
+                          : "Click to copy"}
+                      </p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>

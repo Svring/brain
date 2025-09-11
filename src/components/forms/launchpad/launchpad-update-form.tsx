@@ -130,9 +130,6 @@ export const LaunchpadUpdateForm = ({
         {/* Image Configuration */}
         {hasImage && (
           <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">
-              Image Configuration
-            </div>
             <ImageConfigFields />
           </div>
         )}
@@ -141,16 +138,12 @@ export const LaunchpadUpdateForm = ({
 
         {showRegularPortsField && (
           <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">Ports</div>
             <LaunchpadPortsFields fieldArray={portsFieldArray} />
           </div>
         )}
 
         {showSimplePortsField && (
           <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">
-              Port Operations
-            </div>
             <LaunchpadSimplePortsFields fieldArray={simplePortsFieldArray} />
           </div>
         )}
@@ -158,9 +151,6 @@ export const LaunchpadUpdateForm = ({
         {/* Launch Command Fields */}
         {hasLaunchCommand && (
           <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">
-              Launch Command
-            </div>
             <LaunchCommandFields />
           </div>
         )}
@@ -168,9 +158,6 @@ export const LaunchpadUpdateForm = ({
         {/* Environment Variables */}
         {hasEnv && (
           <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">
-              Environment Variables
-            </div>
             <EnvFields fieldArray={envFieldArray} />
           </div>
         )}
@@ -178,9 +165,6 @@ export const LaunchpadUpdateForm = ({
         {/* Config Map */}
         {hasConfigMap && (
           <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">
-              Config Map
-            </div>
             <ConfigMapFields fieldArray={configMapFieldArray} />
           </div>
         )}
@@ -188,7 +172,6 @@ export const LaunchpadUpdateForm = ({
         {/* Storage */}
         {hasStorage && (
           <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">Storage</div>
             <StorageFields fieldArray={storageFieldArray} />
           </div>
         )}
