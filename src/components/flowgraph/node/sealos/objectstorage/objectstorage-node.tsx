@@ -5,56 +5,24 @@ import { Globe, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import BaseNode from "../../base-node-wrapper";
-import NodeLoading from "../../components/node-loading";
 import ObjectStorageNodeTitle from "./objectstorage-node-title";
 import ObjectStorageNodeMenu from "./objectstorage-node-menu";
 import ObjectStoragePolicyBadge from "./objectstorage-policy-badge";
-import { useNodeData } from "@/hooks/flowgraph/use-node-data";
-import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import type { ObjectStorageObject } from "@/lib/sealos/resources/objectstorage/objectstorage-schemas/objectstorage-object-schema";
 
 function ObjectStorageNodeWrapper({
   data,
 }: {
-  data: ObjectStorageObject | any;
+  data: ObjectStorageObject;
 }) {
-  const isCompleteObject = "policy" in data && "access" in data;
-  const resourceData = { kind: "objectstoragebucket", name: data.name };
-  const nodeId = `${resourceData.kind}-${resourceData.name}`;
-
-  const { completeResource, isLoadingComplete } = useNodeData(resourceData);
-  const target = CustomResourceTargetSchema.parse(
-    convertResourceObjectToTarget(resourceData)
-  );
-  const { status } = useResourceStatus(target);
-
-  if (isCompleteObject) {
-    return (
-      <ObjectStorageNode
-        resource={data}
-        status={status || "Pending"}
-        nodeId={nodeId}
-      />
-    );
-  }
-
-  if (completeResource?.policy && completeResource?.access) {
-    return (
-      <ObjectStorageNode
-        resource={completeResource}
-        status={status || "Pending"}
-        nodeId={nodeId}
-      />
-    );
-  }
+  const nodeId = `${data.kind}-${data.name}`;
 
   return (
-    <NodeLoading
-      kind={resourceData.kind}
-      name={resourceData.name}
-      status={status || "Pending"}
+    <ObjectStorageNode
+      resource={data}
+      status="Running" // ObjectStorage doesn't have status, assume running if data is complete
+      nodeId={nodeId}
     />
   );
 }

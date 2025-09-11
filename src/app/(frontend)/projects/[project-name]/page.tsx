@@ -16,7 +16,6 @@ import FloatingConnectionLine from "@/components/flowgraph/edge/floating-connect
 import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
 import useFlowgraph from "@/hooks/flowgraph/use-flowgraph";
 import { useFlowgraphCommand } from "@/hooks/flowgraph/use-flowgraph-command";
-import { useRelianceEdges } from "@/hooks/flowgraph/use-reliance-edges";
 import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
 import {
   useFlowgraphActions,
@@ -70,7 +69,6 @@ function ProjectFlow({
   sidebarChatMaximized: boolean;
 }) {
   const { isLoading } = useFlowgraph(projectName);
-  useRelianceEdges();
   const { nodes, edges } = useFlowgraphState();
   const { onNodesChange, onEdgesChange } = useFlowgraphActions();
   useCopilotActions();

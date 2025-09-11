@@ -14,10 +14,7 @@ import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/re
 import { composeClusterPublicConnectionString } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
 import { Globe, HardDrive } from "lucide-react";
 import { useClusterObject } from "@/hooks/sealos/cluster/use-cluster-object";
-import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
-import { useNodeData } from "@/hooks/flowgraph/use-node-data";
-import NodeLoading from "../../components/node-loading";
 import {
   Tooltip,
   TooltipContent,
@@ -26,58 +23,18 @@ import {
 } from "@/components/ui/tooltip";
 
 interface ClusterNodeProps {
-  data: ClusterObject | { name: string };
+  data: ClusterObject;
 }
 
 function ClusterNodeWrapper({ data }: ClusterNodeProps) {
-  // Check if we have a complete ClusterObject or just a basic resource
-  const isCompleteObject =
-    "type" in data && "resource" in data && "connection" in data;
-
-  // Always extract resource data to ensure consistent hook calls
-  const resourceData = {
-    kind: "cluster", // Hardcoded kind
-    name: data.name,
-  };
-
   // Construct node ID following the same pattern as other nodes
-  const nodeId = `${resourceData.kind.toLowerCase()}-${resourceData.name}`;
+  const nodeId = `${data.kind.toLowerCase()}-${data.name}`;
 
-  // Always call hooks in the same order
-  const { completeResource, status } = useNodeData(resourceData);
-
-  // If we have complete object data, render the full node
-  if (isCompleteObject) {
-    return (
-      <ClusterNode
-        resource={data as ClusterObject}
-        status={status || "Pending"}
-        nodeId={nodeId}
-      />
-    );
-  }
-
-  // If we have complete resource data from enhancement, render the full node
-  if (
-    completeResource &&
-    "type" in completeResource &&
-    "resource" in completeResource
-  ) {
-    return (
-      <ClusterNode
-        resource={completeResource as ClusterObject}
-        status={status || "Pending"}
-        nodeId={nodeId}
-      />
-    );
-  }
-
-  // Otherwise, show loading state
   return (
-    <NodeLoading
-      kind={resourceData.kind}
-      name={resourceData.name}
-      status={status || "Pending"}
+    <ClusterNode
+      resource={data}
+      status={data.status || "Pending"}
+      nodeId={nodeId}
     />
   );
 }

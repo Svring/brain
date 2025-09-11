@@ -1,69 +1,185 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import useProjectResources from "@/hooks/brain/use-project-resources";
-import useFlowgraphInitialNodes from "./use-flowgraph-initial-nodes";
 import {
   useFlowgraphActions,
   useFlowgraphState,
 } from "@/contexts/flowgraph/flowgraph-context";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import {
+  convertResourceObjectsToNodes,
+  addDevboxToDevGroup,
+  convertResourceToNetworkNodes,
+} from "@/lib/flowgraph/nodes/flowgraph-nodes-utils";
+import { useProjectActions } from "@/contexts/project/project-context";
+import useResourceReliances from "@/hooks/sealos/resource/use-resource-reliances";
+import { convertReliancesToEdges } from "@/lib/flowgraph/edges/flowgraph-edges-utils";
+import type { Node, Edge } from "@xyflow/react";
+
+interface CompleteResource {
+  name: string;
+  kind: string;
+  [key: string]: any;
+}
 
 /**
- * Simplified flowgraph hook that only:
+ * Centralized flowgraph hook that:
  * 1. Fetches basic K8s resource list
- * 2. Creates initial basic nodes for immediate display
- * 3. Individual nodes handle their own data fetching and enhancement
+ * 2. Fetches complete resource data for each resource
+ * 3. Generates all nodes and edges (including derived ones)
+ * 4. Sets final nodes and edges in one go when all data is ready
  */
 export default function useFlowgraph(projectName: string) {
-  const { resources, isLoading } = useProjectResources(projectName);
-  const { initialNodes } = useFlowgraphInitialNodes(resources ?? []);
-  const { nodes: currentNodes } = useFlowgraphState();
-  const { addNode, updateNode, removeNode, fitView } = useFlowgraphActions();
+  const { resources, isLoading: isLoadingResources } =
+    useProjectResources(projectName);
+  const { setNodes, setEdges, fitView } = useFlowgraphActions();
+  const { updateResource } = useProjectActions();
   const hasSetNodesRef = useRef(false);
+  const [completeResources, setCompleteResources] = useState<
+    CompleteResource[]
+  >([]);
+  const [isLoadingComplete, setIsLoadingComplete] = useState(false);
 
-  // Incrementally merge resource nodes to preserve derived nodes (network/ingress)
+  // Create resource targets for fetching complete data
+  const resourceTargets = (resources ?? [])
+    .map((resource: any) => ({
+      target: convertResourceObjectToTarget({
+        kind: resource.kind || "",
+        name: resource.metadata?.name || "",
+      }),
+      kind: resource.kind || "",
+      name: resource.metadata?.name || "",
+    }))
+    .filter((r: any) => r.kind && r.name);
+
+  // Fetch complete resource data for each resource
+  const resourceQueries = resourceTargets.map(({ target, kind, name }: any) => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const query = useResourceStatus(target);
+    return {
+      ...query,
+      kind,
+      name,
+      target,
+    };
+  });
+
+  // Process complete resources when all data is loaded
   useEffect(() => {
-    if (initialNodes.length === 0) return;
+    if (isLoadingResources || resourceQueries.length === 0) return;
 
-    // Build quick lookups
-    const existingById = new Map(currentNodes.map((n) => [n.id, n]));
-    const initialById = new Map(initialNodes.map((n) => [n.id, n]));
+    // Check if all queries have loaded
+    const allLoaded = resourceQueries.every((q: any) => !q.isLoading);
+    const hasValidData = resourceQueries.some(
+      (q: any) => q.resource && !q.error
+    );
 
-    // Add or update resource nodes
-    for (const node of initialNodes) {
-      const existing = existingById.get(node.id);
-      if (!existing) {
-        addNode(node);
-      } else {
-        // Preserve layout fields while refreshing data/type
-        updateNode({ ...existing, type: node.type, data: node.data });
-      }
+    if (!allLoaded) {
+      setIsLoadingComplete(true);
+      return;
     }
 
-    // Remove resource nodes that no longer exist, but keep derived ones
-    for (const existing of currentNodes) {
-      const type = existing.type as string | undefined;
-      const isDerived =
-        type === "network" || type === "ingress" || type === "devgroup";
-      if (isDerived) continue;
-      if (!initialById.has(existing.id)) {
-        removeNode(existing.id);
+    setIsLoadingComplete(false);
+
+    // Extract complete resources
+    const newCompleteResources: CompleteResource[] = [];
+
+    resourceQueries.forEach(({ resource, kind, name, target }: any) => {
+      if (
+        resource &&
+        typeof resource === "object" &&
+        "name" in resource &&
+        "kind" in resource
+      ) {
+        newCompleteResources.push(resource as CompleteResource);
+        // Update project context with complete resource
+        updateResource(resource as any);
       }
+    });
+
+    setCompleteResources(newCompleteResources);
+  }, [
+    resourceQueries.map((q: any) => q.isLoading).join(","),
+    resourceQueries.map((q: any) => q.resource?.name).join(","),
+  ]);
+
+  // Compute reliances from complete resources
+  const { reliances } = useResourceReliances(completeResources);
+
+  // Generate final nodes and edges when complete resources are ready
+  useEffect(() => {
+    if (completeResources.length === 0 && resourceTargets.length > 0) return;
+
+    // Generate resource nodes from complete data
+    const resourceNodes = convertResourceObjectsToNodes(completeResources);
+
+    // Group devbox nodes if any exist
+    const groupedResourceNodes = addDevboxToDevGroup(resourceNodes);
+
+    // Generate derived nodes (network, ingress) and edges
+    const allNodes: Node[] = [...groupedResourceNodes];
+    const allEdges: Edge[] = [];
+
+    completeResources.forEach((resource) => {
+      // Generate network nodes and edges for resources with ports
+      if (
+        resource.ports &&
+        Array.isArray(resource.ports) &&
+        resource.ports.length > 0
+      ) {
+        const { newNodes, newEdges } = convertResourceToNetworkNodes(
+          resource,
+          resource.name,
+          resource.kind,
+          allNodes,
+          allEdges
+        );
+
+        // Process nodes for devbox grouping
+        const processedNodes =
+          resource.kind.toLowerCase() === "devbox"
+            ? newNodes.map((node) => {
+                if (node.type === "network" || node.type === "ingress") {
+                  return {
+                    ...node,
+                    parentId: "devbox-group",
+                    extent: "parent" as const,
+                  };
+                }
+                return node;
+              })
+            : newNodes;
+
+        allNodes.push(...processedNodes);
+        allEdges.push(...newEdges);
+      }
+    });
+
+    // Generate reliance edges (environment variables and image dependencies)
+    if (reliances && Object.keys(reliances).length > 0) {
+      const relianceEdges = convertReliancesToEdges(reliances);
+      allEdges.push(...relianceEdges);
     }
+
+    // Set all nodes and edges at once
+    setNodes(allNodes);
+    setEdges(allEdges);
 
     // Fit view only once after first population
-    if (!hasSetNodesRef.current) {
+    if (!hasSetNodesRef.current && allNodes.length > 0) {
       setTimeout(() => fitView(), 100);
       hasSetNodesRef.current = true;
     }
-  }, [initialNodes]);
+  }, [completeResources, reliances]);
 
   // Reset when project changes
   useEffect(() => {
     hasSetNodesRef.current = false;
-    // setNodes([]); // Clear nodes immediately when project changes
+    setCompleteResources([]);
   }, [projectName]);
 
   return {
-    isLoading,
-    nodes: initialNodes,
+    isLoading: isLoadingResources || isLoadingComplete,
+    nodes: completeResources,
   };
 }

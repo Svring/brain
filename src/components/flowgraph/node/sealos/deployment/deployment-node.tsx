@@ -12,69 +12,23 @@ import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-o
 import { truncateImage } from "@/lib/sealos/sealos-utils";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useLaunchpadObject } from "@/hooks/sealos/launchpad/use-launchpad-object";
-import { useNodeData } from "@/hooks/flowgraph/use-node-data";
-import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
-import NodeLoading from "../../components/node-loading";
 import NodePods from "../../components/node-pods";
 import NodeConnect from "../../components/node-connect";
-import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
-// Enhanced wrapper that can handle both K8sResource and DeploymentObject
+// Simplified wrapper that only accepts complete DeploymentObject
 function DeploymentNodeWrapper({
   data,
 }: {
-  data: DeploymentObject | BuiltinResourceTarget;
+  data: DeploymentObject;
 }) {
-  // Check if we have a complete DeploymentObject or just a basic K8sResource
-  const isCompleteObject =
-    "image" in data && "resource" in data && "ports" in data;
-
-  // Always extract resource data to ensure consistent hook calls
-  const resourceData = {
-    kind: "deployment", // Hardcoded kind
-    name: data.name!,
-  };
-
   // Construct node ID following the same pattern as other nodes
-  const nodeId = `${resourceData.kind.toLowerCase()}-${resourceData.name}`;
+  const nodeId = `${data.kind.toLowerCase()}-${data.name}`;
 
-  // Always call hooks in the same order
-  const { completeResource, status } = useNodeData(resourceData);
-
-  // console.log("completeResource", completeResource);
-
-  // If we have complete object data, render the full node
-  if (isCompleteObject) {
-    return (
-      <DeploymentNode
-        resource={data as DeploymentObject}
-        status={status || "Pending"}
-        nodeId={nodeId}
-      />
-    );
-  }
-
-  // If we have complete resource data from enhancement, render the full node
-  if (
-    completeResource &&
-    "image" in completeResource &&
-    "resource" in completeResource
-  ) {
-    return (
-      <DeploymentNode
-        resource={completeResource as DeploymentObject}
-        status={status || "Pending"}
-        nodeId={nodeId}
-      />
-    );
-  }
-
-  // Otherwise, show loading state
   return (
-    <NodeLoading
-      kind={resourceData.kind}
-      name={resourceData.name}
-      status={status || "Pending"}
+    <DeploymentNode
+      resource={data}
+      status={data.status || "Pending"}
+      nodeId={nodeId}
     />
   );
 }

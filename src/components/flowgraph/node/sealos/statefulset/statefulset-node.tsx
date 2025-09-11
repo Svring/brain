@@ -10,69 +10,23 @@ import { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulse
 import { truncateImage } from "@/lib/sealos/sealos-utils";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import NodeLog from "../../components/node-log";
-import { useNodeData } from "@/hooks/flowgraph/use-node-data";
-import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
-import NodeLoading from "../../components/node-loading";
 import NodeConnect from "../../components/node-connect";
-import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import StatefulsetNodeMenu from "./statefulset-node-menu";
 
-// Enhanced wrapper that can handle both K8sResource and StatefulsetObject
+// Simplified wrapper that only accepts complete StatefulsetObject
 function StatefulsetNodeWrapper({
   data,
 }: {
-  data: StatefulsetObject | BuiltinResourceTarget;
+  data: StatefulsetObject;
 }) {
-  // Check if we have a complete StatefulsetObject or just a basic K8sResource
-  const isCompleteObject =
-    "image" in data && "resource" in data && "ports" in data;
-
-  // Always extract resource data to ensure consistent hook calls
-  const resourceData = {
-    kind: "statefulset", // Hardcoded kind
-    name: data.name!,
-  };
-
   // Construct node ID following the same pattern as other nodes
-  const nodeId = `${resourceData.kind.toLowerCase()}-${resourceData.name}`;
+  const nodeId = `${data.kind.toLowerCase()}-${data.name}`;
 
-  // Always call hooks in the same order
-  const { completeResource, status } = useNodeData(resourceData);
-
-  // console.log("completeResource", completeResource);
-
-  // If we have complete object data, render the full node
-  if (isCompleteObject) {
-    return (
-      <StatefulsetNode
-        resource={data as StatefulsetObject}
-        status={status || "Pending"}
-        nodeId={nodeId}
-      />
-    );
-  }
-
-  // If we have complete resource data from enhancement, render the full node
-  if (
-    completeResource &&
-    "image" in completeResource &&
-    "resource" in completeResource
-  ) {
-    return (
-      <StatefulsetNode
-        resource={completeResource as StatefulsetObject}
-        status={status || "Pending"}
-        nodeId={nodeId}
-      />
-    );
-  }
-
-  // Otherwise, show loading state
   return (
-    <NodeLoading
-      kind={resourceData.kind}
-      name={resourceData.name}
-      status={status || "Pending"}
+    <StatefulsetNode
+      resource={data}
+      status={data.status || "Pending"}
+      nodeId={nodeId}
     />
   );
 }

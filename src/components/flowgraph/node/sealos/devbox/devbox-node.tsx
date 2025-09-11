@@ -10,74 +10,25 @@ import DevboxNodeMenu from "./devbox-node-menu";
 import NodeMonitor from "../../components/node-monitor";
 import NodeStack from "../../components/node-stack";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
-import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
-import { useNodeData } from "@/hooks/flowgraph/use-node-data";
-import NodeLoading from "../../components/node-loading";
-import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useQuery } from "@tanstack/react-query";
 
-// Enhanced wrapper that can handle both K8sResource and DevboxObject
+// Simplified component that only accepts complete DevboxObject
 function DevboxNodeWrapper({
   data,
 }: {
-  data: DevboxObject | CustomResourceTarget;
+  data: DevboxObject;
 }) {
-  // Check if we have a complete DevboxObject or just a basic K8sResource
-  const isCompleteObject = "ports" in data && "ssh" in data && "image" in data;
-
-  // console.log("data", data);
-
-  // Always extract resource data to ensure consistent hook calls
-  const resourceData = {
-    kind: "devbox", // Hardcoded kind
-    name: data.name!,
-  };
-
   // Construct node ID following the same pattern as other nodes
-  const nodeId = `${resourceData.kind.toLowerCase()}-${resourceData.name}`;
+  const nodeId = `${data.kind.toLowerCase()}-${data.name}`;
 
-  // console.log("resourceData", resourceData);
-
-  // Always call hooks in the same order
-  const { completeResource, status } = useNodeData(resourceData);
-
-  // console.log("completeResource", completeResource);
-
-  // If we have complete object data, render the full node
-  if (isCompleteObject) {
-    return (
-      <DevboxNode
-        resource={data as DevboxObject}
-        status={status || "Pending"}
-        nodeId={nodeId}
-      />
-    );
-  }
-
-  // If we have complete resource data from enhancement, render the full node
-  if (
-    completeResource &&
-    "image" in completeResource &&
-    "ports" in completeResource
-  ) {
-    return (
-      <DevboxNode
-        resource={completeResource as DevboxObject}
-        status={status || "Pending"}
-        nodeId={nodeId}
-      />
-    );
-  }
-
-  // Otherwise, show loading state
   return (
-    <NodeLoading
-      kind={resourceData.kind}
-      name={resourceData.name}
-      status={status || "Pending"}
+    <DevboxNode
+      resource={data}
+      status={data.status || "Pending"}
+      nodeId={nodeId}
     />
   );
 }
