@@ -19,6 +19,19 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
+import { getResourceDefaultIcon } from "@/lib/sealos/sealos-utils";
+import { useResourceThreads } from "@/hooks/langgraph/use-resource-thread";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown } from "lucide-react";
+import {
+  extractLanggraphMessages,
+  convertToCopilotKitMessages,
+} from "@/lib/langgraph/langgraph-method/langgraph-utils";
 
 interface AiChatHeaderProps {
   title?: string;
@@ -38,6 +51,15 @@ export function AiChatHeader({
   const { setMessages } = useCopilotChatHeadless_c();
   const { isPending } = useCreateNewChatSessionMutation();
 
+  const {
+    threads,
+    threadsLoading,
+    latestThreadId,
+    latestThreadState,
+    threadStateLoading,
+    hasThreads,
+  } = useResourceThreads();
+
   // Use node select hook for resource name click functionality
   const getMessageType = (resourceType: string) => {
     switch (resourceType) {
@@ -56,29 +78,19 @@ export function AiChatHeader({
     messageType: selectedResource
       ? getMessageType(selectedResource.resourceType)
       : undefined,
-    resetMessages: false,
   });
 
   const getIconUrl = () => {
     if (!selectedResource) return "https://sealos.run/logo.svg";
 
-    switch (selectedResource.resourceType) {
-      case "devbox":
-        return "https://devbox.bja.sealos.run/logo.svg";
+    const defaultIcon = getResourceDefaultIcon(selectedResource.resourceType);
+    return defaultIcon || "https://sealos.run/logo.svg";
+  };
 
-      case "cluster":
-        return "https://dbprovider.bja.sealos.run/logo.svg";
-
-      case "deployment":
-      case "statefulset":
-        return "https://applaunchpad.bja.sealos.run/logo.svg";
-
-      case "objectstoragebucket":
-        return "https://objectstorage.bja.sealos.run/logo.svg";
-
-      default:
-        return "https://sealos.run/logo.svg";
-    }
+  const handleThreadSelect = (thread: any) => {
+    const extractedMessages = extractLanggraphMessages(thread);
+    const convertedMessages = convertToCopilotKitMessages(extractedMessages);
+    setMessages(convertedMessages);
   };
 
   return (
@@ -90,35 +102,41 @@ export function AiChatHeader({
           </div>
           <div className="flex items-center gap-4">
             <Separator orientation="vertical" className="h-4!" />
-            {selectedResource && (
+            {threads && threads.length > 0 && (
               <div className="flex items-center gap-2 text text-muted-foreground">
-                <Image
-                  src={getIconUrl()}
-                  alt={`${selectedResource.resourceType} Icon`}
-                  width={16}
-                  height={16}
-                  className="rounded-sm h-4 w-4 flex-shrink-0"
-                  priority
-                />
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span
-                        className="truncate max-w-[120px] cursor-pointer hover:text-theme-blue transition-colors"
-                        onClick={handleNodeSelect}
-                      >
-                        {selectedResource.name}
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent
-                      className="bg-background-tertiary border border-border-primary"
-                      side="bottom"
-                      align="start"
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-auto p-0 text-muted-foreground hover:text-theme-blue transition-colors"
                     >
-                      <p>Click to view details</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                      <span className="truncate max-w-[120px]">
+                        {threads.length} Thread{threads.length !== 1 ? "s" : ""}
+                      </span>
+                      <ChevronDown className="h-3 w-3 ml-1" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-64">
+                    {threads.map((thread, index) => (
+                      <DropdownMenuItem
+                        key={thread.thread_id}
+                        className="flex flex-col items-start cursor-pointer"
+                        onClick={() => handleThreadSelect(thread)}
+                      >
+                        <div className="font-medium text-sm">
+                          Thread {index + 1}
+                        </div>
+                        <div className="text-xs text-muted-foreground truncate w-full">
+                          {thread.thread_id}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {new Date(thread.created_at).toLocaleDateString()}
+                        </div>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             )}
             {/* {selectedThreadId && (

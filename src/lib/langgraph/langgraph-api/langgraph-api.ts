@@ -61,7 +61,7 @@ export const searchThreads = async (metadata: Record<string, any>) => {
   const client = createClient();
 
   // Convert kubeconfig to kubeconfigHash if present, after URL decoding
-  const searchMetadata = { ...metadata };
+  const searchMetadata: Record<string, any> = { ...metadata, graph_id: "orca" };
   if (searchMetadata.kubeconfig) {
     const decodedKubeconfig = decodeURIComponent(searchMetadata.kubeconfig);
     const kubeconfigHash = createHash("sha256")
