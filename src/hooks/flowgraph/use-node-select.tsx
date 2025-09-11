@@ -1,5 +1,8 @@
 import { useFlowgraphActions } from "@/contexts/flowgraph/flowgraph-context";
-import { useProjectActions } from "@/contexts/project/project-context";
+import {
+  useProjectActions,
+  useProjectState,
+} from "@/contexts/project/project-context";
 import {
   useAppendSystemMessageMutation,
   useCreateNewChatSessionMutation,
@@ -12,13 +15,13 @@ import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { useLatestThread } from "@/hooks/langgraph/use-latest-thread";
 import { toast } from "sonner";
+import _ from "lodash";
 
 interface UseNodeSelectParams {
   target: CustomResourceTarget | BuiltinResourceTarget;
   messageType?: string;
   payload?: unknown;
   onSuccess?: () => void;
-  resetMessages?: boolean;
 }
 
 export const useNodeSelect = ({
@@ -26,11 +29,11 @@ export const useNodeSelect = ({
   messageType,
   payload,
   onSuccess,
-  resetMessages,
 }: UseNodeSelectParams) => {
   const { selectResource } = useProjectActions();
+  const { selectedResource } = useProjectState();
   const { selectNode } = useFlowgraphActions();
-  const { selectThread } = useChatActions();
+  const { selectThread, enableSidebarLoading, disableSidebarLoading } = useChatActions();
   const { sidebarChatResponding } = useChatState();
   const { setMessages } = useCopilotChatHeadless_c();
   const { appendSystemMessage } = useAppendSystemMessageMutation();
@@ -55,7 +58,12 @@ export const useNodeSelect = ({
     selectNode(nodeId);
 
     if (messageType) {
-      if (resetMessages) setMessages([]);
+      // Set loading to true when starting the process
+      enableSidebarLoading();
+      
+      // Reset messages if the selected resource equals the target
+      const shouldResetMessages = !_.isEqual(selectedResource, target);
+      if (shouldResetMessages) setMessages([]);
 
       createChatMutation.mutate(undefined, {
         onSuccess: (thread) => {
@@ -64,8 +72,12 @@ export const useNodeSelect = ({
             type: messageType,
             target,
             payload,
-            onSuccess,
-            resetMessages,
+            onSuccess: () => {
+              // Set loading to false when appendSystemMessage is triggered
+              disableSidebarLoading();
+              onSuccess?.();
+            },
+            resetMessages: shouldResetMessages,
           });
         },
       });

@@ -45,9 +45,10 @@ export const createAiProxyToken = createParallelAction(
     context: AiProxyApiContext
   ): Promise<AiProxyCreateTokenResponse> => {
     const validatedRequest = AiProxyCreateTokenRequestSchema.parse(request);
+    // console.log("AI Proxy Token Request:", JSON.stringify(validatedRequest));
     const api = await createAiProxyApi(context);
     const response = await api.post("/user/token", validatedRequest);
-    console.log("AI Proxy Token Response:", JSON.stringify(response.data));
+    // console.log("AI Proxy Token Response:", JSON.stringify(response.data));
     return AiProxyCreateTokenResponseSchema.parse(response.data);
   }
 );

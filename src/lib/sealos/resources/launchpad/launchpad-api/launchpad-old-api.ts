@@ -45,7 +45,7 @@ import https from "https";
 function createLaunchpadApi(context: SealosApiContext) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
   return axios.create({
-    baseURL: `https://applaunchpad.${context.baseUrl}/api`,
+    baseURL: `http://applaunchpad.${context.baseUrl}/api`,
     headers: {
       "Content-Type": "application/json",
       ...(context.authorization

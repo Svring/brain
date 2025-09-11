@@ -6,34 +6,45 @@ import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { Loader2, FileText } from "lucide-react";
+import { Loader2, FileText, CheckCircle } from "lucide-react";
 import { useResourceLogs } from "@/hooks/sealos/resource/use-resource-logs";
 import BaseSystemMessage from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
+import { parseClusterLogFiles } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
+import { parseLaunchpadLogFiles } from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-utils";
 
 interface ResourceLogProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
 }
 
-const ResourceLog: React.FC<ResourceLogProps> = ({ target: payload }) => {
-  const logsQuery = useResourceLogs(payload);
+const ResourceLog: React.FC<ResourceLogProps> = ({ target }) => {
+  const logsQuery = useResourceLogs(target);
 
   const isLoading = logsQuery?.isLoading || false;
   const logsData = logsQuery?.data;
 
-  const hasLogs = logsData && Object.keys(logsData).length > 0;
+  // Process logs based on resource type
+  const getLogFiles = (): string[] => {
+    if (!logsData) return [];
 
-  const formatLogsData = (data: any) => {
-    if (!data) return "";
+    const resourceType = target.resourceType;
 
-    const stringified = JSON.stringify(data, null, 2);
-    const lines = stringified.split("\n");
-
-    if (lines.length <= 10) {
-      return stringified;
+    if (resourceType === "cluster") {
+      return parseClusterLogFiles(logsData);
+    } else if (
+      resourceType === "deployment" ||
+      resourceType === "statefulset"
+    ) {
+      // Ensure logsData is an array for launchpad parsing
+      if (Array.isArray(logsData)) {
+        return parseLaunchpadLogFiles(logsData);
+      }
     }
 
-    return lines.slice(0, 10).join("\n") + "\n... (truncated)";
+    return [];
   };
+
+  const logFiles = getLogFiles();
+  const hasLogFiles = logFiles.length > 0;
 
   return (
     <BaseSystemMessage
@@ -42,7 +53,15 @@ const ResourceLog: React.FC<ResourceLogProps> = ({ target: payload }) => {
         name: "Resource Logs",
       }}
     >
-      <div className="relative bg-background-secondary rounded-xl p-2">
+      <div className="space-y-3">
+        {/* {hasLogFiles && (
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium">
+              Log Files: {logFiles.length}
+            </h3>
+          </div>
+        )} */}
+
         {isLoading ? (
           <div className="flex items-center justify-center py-4">
             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -50,17 +69,45 @@ const ResourceLog: React.FC<ResourceLogProps> = ({ target: payload }) => {
               Loading logs...
             </span>
           </div>
-        ) : hasLogs ? (
-          <div className="max-h-60 overflow-y-auto">
-            <pre className="text-xs text-muted-foreground whitespace-pre-wrap break-words">
-              {formatLogsData(logsData)}
-            </pre>
+        ) : hasLogFiles ? (
+          <div
+            className={`space-y-2 ${
+              logFiles.length > 5 ? "max-h-48 overflow-y-auto" : ""
+            }`}
+          >
+            {logFiles.slice(0, 5).map((fileName, index) => (
+              <div
+                key={index}
+                className="border rounded-lg p-2 transition-colors"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-xs font-medium truncate">
+                      {fileName}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <CheckCircle className="h-4 w-4 text-theme-green" />
+                    <span className="text-xs text-muted-foreground">
+                      analyzed
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {logFiles.length > 5 && (
+              <div className="text-xs text-muted-foreground text-center py-2">
+                ... and {logFiles.length - 5} more files
+              </div>
+            )}
           </div>
         ) : (
-          <div className="flex items-center justify-center py-4">
-            <span className="text-sm text-muted-foreground">
-              No logs available
-            </span>
+          <div className="flex flex-col items-center justify-center h-20 text-center">
+            <FileText className="h-6 w-6 text-muted-foreground mb-2" />
+            <div className="text-xs text-muted-foreground">
+              No log files available
+            </div>
           </div>
         )}
       </div>

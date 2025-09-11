@@ -79,6 +79,8 @@ export const getLaunchpadLogs = async (
     getLaunchpadLogsApi(validatedRequest, sealosContext)
   );
 
+  // console.log("logResponse", logResponse);
+
   const parsedLogResponse = QueryLogsResponseSchema.parse(logResponse);
 
   // Step 1: Split the data string into lines

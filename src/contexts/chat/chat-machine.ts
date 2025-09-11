@@ -7,6 +7,7 @@ export interface ChatSectionState {
   open: boolean;
   responding: boolean;
   maximized: boolean;
+  loading: boolean;
 }
 
 export interface ChatContextState {
@@ -23,6 +24,8 @@ export type ChatEvent =
   | { type: "SET_FLOATING_RESPONDING"; responding: boolean }
   | { type: "SET_SIDEBAR_MAXIMIZED"; maximized: boolean }
   | { type: "SET_FLOATING_MAXIMIZED"; maximized: boolean }
+  | { type: "SET_SIDEBAR_LOADING"; loading: boolean }
+  | { type: "SET_FLOATING_LOADING"; loading: boolean }
   | { type: "SELECT_THREAD"; threadId: string }
   | { type: "SET_THREADS"; threads: Thread[] };
 
@@ -32,8 +35,18 @@ export const chatMachine = createMachine({
   id: "chat",
   initial: "idle",
   context: {
-    sidebarChat: { open: false, responding: false, maximized: false },
-    floatingChat: { open: false, responding: false, maximized: false },
+    sidebarChat: {
+      open: false,
+      responding: false,
+      maximized: false,
+      loading: false,
+    },
+    floatingChat: {
+      open: false,
+      responding: false,
+      maximized: false,
+      loading: false,
+    },
     selectedThreadId: "",
     threads: [],
   },
@@ -88,6 +101,22 @@ export const chatMachine = createMachine({
         floatingChat: ({ context, event }) => ({
           ...context.floatingChat,
           maximized: event.maximized,
+        }),
+      }),
+    },
+    SET_SIDEBAR_LOADING: {
+      actions: assign({
+        sidebarChat: ({ context, event }) => ({
+          ...context.sidebarChat,
+          loading: event.loading,
+        }),
+      }),
+    },
+    SET_FLOATING_LOADING: {
+      actions: assign({
+        floatingChat: ({ context, event }) => ({
+          ...context.floatingChat,
+          loading: event.loading,
         }),
       }),
     },

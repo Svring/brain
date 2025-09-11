@@ -47,6 +47,8 @@ export function useChatState() {
     floatingChatResponding: state.context.floatingChat.responding,
     sidebarChatMaximized: state.context.sidebarChat.maximized,
     floatingChatMaximized: state.context.floatingChat.maximized,
+    sidebarChatLoading: state.context.sidebarChat.loading,
+    floatingChatLoading: state.context.floatingChat.loading,
     selectedThreadId: state.context.selectedThreadId,
     threads: state.context.threads,
   };
@@ -70,7 +72,7 @@ export function useChatActions() {
       send({ type: "SET_SIDEBAR_RESPONDING", responding }),
     setFloatingResponding: (responding: boolean) =>
       send({ type: "SET_FLOATING_RESPONDING", responding }),
-    
+
     enableSidebarResponding: () =>
       send({ type: "SET_SIDEBAR_RESPONDING", responding: true }),
     disableSidebarResponding: () =>
@@ -84,7 +86,7 @@ export function useChatActions() {
       send({ type: "SET_SIDEBAR_MAXIMIZED", maximized }),
     setFloatingMaximized: (maximized: boolean) =>
       send({ type: "SET_FLOATING_MAXIMIZED", maximized }),
-    
+
     maximizeSidebar: () =>
       send({ type: "SET_SIDEBAR_MAXIMIZED", maximized: true }),
     minimizeSidebar: () =>
@@ -93,6 +95,20 @@ export function useChatActions() {
       send({ type: "SET_FLOATING_MAXIMIZED", maximized: true }),
     minimizeFloating: () =>
       send({ type: "SET_FLOATING_MAXIMIZED", maximized: false }),
+
+    setSidebarLoading: (loading: boolean) =>
+      send({ type: "SET_SIDEBAR_LOADING", loading }),
+    setFloatingLoading: (loading: boolean) =>
+      send({ type: "SET_FLOATING_LOADING", loading }),
+
+    enableSidebarLoading: () =>
+      send({ type: "SET_SIDEBAR_LOADING", loading: true }),
+    disableSidebarLoading: () =>
+      send({ type: "SET_SIDEBAR_LOADING", loading: false }),
+    enableFloatingLoading: () =>
+      send({ type: "SET_FLOATING_LOADING", loading: true }),
+    disableFloatingLoading: () =>
+      send({ type: "SET_FLOATING_LOADING", loading: false }),
 
     selectThread: (threadId: string) =>
       send({ type: "SELECT_THREAD", threadId }),

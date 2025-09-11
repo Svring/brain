@@ -32,3 +32,29 @@ export const determineLaunchpadStatus = (
 
   return "Pending";
 };
+
+/**
+ * Parses launchpad log data and extracts unique container names as log file names
+ * @param logData - Array of launchpad log entries containing container and pod information
+ * @returns Array of unique container names from the log data
+ */
+export const parseLaunchpadLogFiles = (logData: any[]): string[] => {
+  try {
+    if (!Array.isArray(logData)) {
+      return [];
+    }
+
+    const containerNames = new Set<string>();
+
+    logData.forEach((logEntry) => {
+      if (logEntry?.container && typeof logEntry.container === "string") {
+        containerNames.add(logEntry.container);
+      }
+    });
+
+    return Array.from(containerNames);
+  } catch (error) {
+    console.error("Error parsing launchpad log files:", error);
+    return [];
+  }
+};

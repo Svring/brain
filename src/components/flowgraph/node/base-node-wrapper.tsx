@@ -31,7 +31,6 @@ export default function BaseNodeWrapper({
   const { handleNodeSelect } = useNodeSelect({
     target: target,
     messageType,
-    resetMessages: !_.isEqual(selectedResource, target),
   });
 
   // Get resource metrics status and delete status (only when target exists)

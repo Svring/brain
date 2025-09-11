@@ -152,3 +152,38 @@ export const mapDatabaseTypeToEnum = (type: string): string => {
   };
   return typeMap[type] || "postgresql";
 };
+
+/**
+ * Parses cluster log data and extracts logFiles as an array of strings
+ * @param logData - The cluster log data object containing supported flag and data
+ * @returns Array of log file names from all cluster instances
+ */
+export const parseClusterLogFiles = (logData: any): string[] => {
+  try {
+    if (!logData?.data || typeof logData.data !== "object") {
+      return [];
+    }
+
+    const logFiles: string[] = [];
+
+    // Iterate through each cluster instance
+    Object.values(logData.data).forEach((clusterInstance: any) => {
+      if (
+        clusterInstance?.logFiles &&
+        Array.isArray(clusterInstance.logFiles)
+      ) {
+        // Extract file names from logFiles array
+        clusterInstance.logFiles.forEach((logFile: any) => {
+          if (logFile?.name && typeof logFile.name === "string") {
+            logFiles.push(logFile.name);
+          }
+        });
+      }
+    });
+
+    return logFiles;
+  } catch (error) {
+    console.error("Error parsing cluster log files:", error);
+    return [];
+  }
+};

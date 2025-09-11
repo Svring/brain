@@ -48,9 +48,11 @@ export const LanggraphConfigWrapper = ({
     baseUrl: aiProxyContext.baseUrl
       ? `http://aiproxy.${aiProxyContext.baseUrl}/v1`
       : undefined,
-    modelName: aiProxyContext.baseUrl?.endsWith("io")
-      ? "kimi-k2-0711-preview"
-      : "kimi-k2-0711-preview",
+    modelName:
+      aiProxyContext.baseUrl?.endsWith("io") &&
+      !aiProxyContext.baseUrl?.endsWith("nip.io")
+        ? "gpt-4.1"
+        : "kimi-k2-0711-preview",
     // modelName: aiProxyContext.baseUrl?.endsWith("io")
     //   ? "qwen3-235b-a22b"
     //   : "qwen3-235b-a22b",
@@ -122,13 +124,13 @@ export const LanggraphConfigWrapper = ({
                 "Create Token"
               )}
             </Button>
-            <Button
+            {/* <Button
               onClick={() => setSkipApiKey(true)}
               variant="outline"
               className="w-full max-w-xs"
             >
               Enter App Without API Key
-            </Button>
+            </Button> */}
             {createTokenMutation.isError && (
               <p className="text-sm text-destructive">
                 Failed to create token. Please try again.

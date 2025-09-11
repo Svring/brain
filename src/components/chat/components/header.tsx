@@ -18,8 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useCopy } from "@/hooks/use-copy";
-import { Copy, Check } from "lucide-react";
+import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 
 interface AiChatHeaderProps {
   title?: string;
@@ -38,7 +37,27 @@ export function AiChatHeader({
     useChatActions();
   const { setMessages } = useCopilotChatHeadless_c();
   const { isPending } = useCreateNewChatSessionMutation();
-  const { copyToClipboard, isCopied } = useCopy();
+
+  // Use node select hook for resource name click functionality
+  const getMessageType = (resourceType: string) => {
+    switch (resourceType) {
+      case "objectstoragebucket":
+        return "objectstorage.detail";
+      case "deployment":
+      case "statefulset":
+        return "launchpad.detail";
+      default:
+        return `${resourceType}.detail`;
+    }
+  };
+
+  const { handleNodeSelect } = useNodeSelect({
+    target: selectedResource as any,
+    messageType: selectedResource
+      ? getMessageType(selectedResource.resourceType)
+      : undefined,
+    resetMessages: false,
+  });
 
   const getIconUrl = () => {
     if (!selectedResource) return "https://sealos.run/logo.svg";
@@ -84,35 +103,19 @@ export function AiChatHeader({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div
-                        className="flex items-center gap-1 truncate max-w-[120px] cursor-pointer hover:text-theme-blue transition-colors"
-                        onClick={() =>
-                          copyToClipboard(
-                            selectedResource.name || "",
-                            "resource-name"
-                          )
-                        }
+                      <span
+                        className="truncate max-w-[120px] cursor-pointer hover:text-theme-blue transition-colors"
+                        onClick={handleNodeSelect}
                       >
-                        <span className="truncate">
-                          {selectedResource.name}
-                        </span>
-                        {isCopied("resource-name") ? (
-                          <Check className="h-3 w-3 flex-shrink-0" />
-                        ) : (
-                          <Copy className="h-3 w-3 flex-shrink-0" />
-                        )}
-                      </div>
+                        {selectedResource.name}
+                      </span>
                     </TooltipTrigger>
                     <TooltipContent
                       className="bg-background-tertiary border border-border-primary"
                       side="bottom"
                       align="start"
                     >
-                      <p>
-                        {isCopied("resource-name")
-                          ? "Copied!"
-                          : "Click to copy"}
-                      </p>
+                      <p>Click to view details</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>

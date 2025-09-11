@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { Focus, Unplug } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useChatActions } from "@/contexts/chat/chat-context";
@@ -14,7 +15,12 @@ export function FlowgraphFocusHint({ projectName }: FlowgraphFocusHintProps) {
   return (
     <div className="absolute top-9 inset-x-0 z-20 pointer-events-none">
       <div className="flex items-center justify-center">
-        <div className="flex items-center gap-2 px-4 py-2 bg-background-tertiary backdrop-blur-lg rounded-lg border border-border-primary shadow-lg pointer-events-auto">
+        <motion.div
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.3, ease: "easeOut", delay: 0.5 }}
+          className="flex items-center gap-2 px-4 py-2 bg-background-tertiary backdrop-blur-lg rounded-lg border border-border-primary shadow-lg pointer-events-auto"
+        >
           <Focus className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">
             Focused on{" "}
@@ -28,7 +34,7 @@ export function FlowgraphFocusHint({ projectName }: FlowgraphFocusHintProps) {
           >
             <Unplug className="h-3 w-3" />
           </Button>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
