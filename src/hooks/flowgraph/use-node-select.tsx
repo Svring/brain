@@ -15,6 +15,9 @@ import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { toast } from "sonner";
 import _ from "lodash";
+import { useResourceThreads } from "@/hooks/langgraph/use-resource-thread";
+import { extractLanggraphMessages, convertToCopilotKitMessages } from "@/lib/langgraph/langgraph-method/langgraph-utils";
+import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
 
 interface UseNodeSelectParams {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -32,12 +35,16 @@ export const useNodeSelect = ({
   const { selectResource } = useProjectActions();
   const { selectedResource } = useProjectState();
   const { selectNode } = useFlowgraphActions();
-  const { selectThread, enableSidebarLoading, disableSidebarLoading } =
+  const { selectThread, enableSidebarLoading, disableSidebarLoading, openSidebarChat } =
     useChatActions();
   const { sidebarChatResponding } = useChatState();
   const { setMessages } = useCopilotChatHeadless_c();
   const { appendSystemMessage } = useAppendSystemMessageMutation();
   const createChatMutation = useCreateNewChatSessionMutation(target);
+  const { setConfig } = useLanggraphActions();
+  
+  // Use resource threads to get the latest thread
+  const { threads, threadsLoading } = useResourceThreads();
   // const threadData = useLatestThread({ target });
 
   if (!target) {
@@ -61,33 +68,68 @@ export const useNodeSelect = ({
       // Set loading to true when starting the process
       enableSidebarLoading();
 
-      // Reset messages if the selected resource equals the target
-      const shouldResetMessages = !_.isEqual(selectedResource, target);
-      if (shouldResetMessages) setMessages([]);
-
-      createChatMutation.mutate(undefined, {
-        onSuccess: (thread) => {
-          selectThread(thread.thread_id);
+      // Standard process: Load/Create thread first
+      const ensureThreadExists = () => {
+        if (threads && threads.length > 0) {
+          // Thread exists, select it with langgraph action
+          const latestThread = threads[0];
+          selectThread(latestThread.thread_id);
+          
+          // Load messages from latest thread
+          const extractedMessages = extractLanggraphMessages(latestThread);
+          const convertedMessages = convertToCopilotKitMessages(extractedMessages);
+          setMessages(convertedMessages);
+          
+          // Proceed to append system message
           appendSystemMessage({
             type: messageType,
             target,
             payload,
             onSuccess: () => {
-              // Set loading to false when appendSystemMessage is triggered
               disableSidebarLoading();
               onSuccess?.();
             },
-            resetMessages: shouldResetMessages,
+            resetMessages: false,
           });
-        },
-      });
+        } else {
+          // No thread exists, create one first
+          createChatMutation.mutate(undefined, {
+            onSuccess: (newThread) => {
+              // Select the new thread with langgraph action
+              selectThread(newThread.thread_id);
+              
+              // Proceed to append system message
+              appendSystemMessage({
+                type: messageType,
+                target,
+                payload,
+                onSuccess: () => {
+                  disableSidebarLoading();
+                  onSuccess?.();
+                },
+                resetMessages: true,
+              });
+            },
+            onError: () => {
+              disableSidebarLoading();
+            },
+          });
+        }
+      };
+
+      // Wait for threads to load if necessary
+      if (threadsLoading) {
+        setTimeout(ensureThreadExists, 100);
+      } else {
+        ensureThreadExists();
+      }
     }
   };
 
   return {
     nodeId,
     handleNodeSelect,
-    // ...threadData,
     createChatMutation,
+    // ...threadData,
   };
 };

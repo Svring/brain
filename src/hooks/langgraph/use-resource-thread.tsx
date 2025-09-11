@@ -27,7 +27,7 @@ export const useResourceThreads = () => {
     })
   );
 
-  console.log("threads", threads);
+  // console.log("threads", threads);
 
   // Extract and convert messages from each thread
   // if (threads && threads.length > 0) {

@@ -7,6 +7,9 @@ import {
 } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useChatActions } from "@/contexts/chat/chat-context";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
+import { useResourceThreads } from "@/hooks/langgraph/use-resource-thread";
+import { extractLanggraphMessages, convertToCopilotKitMessages } from "@/lib/langgraph/langgraph-method/langgraph-utils";
+import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
 
 interface AiChatInputProps {
   className?: string;
@@ -16,30 +19,57 @@ interface AiChatInputProps {
 export function AiChatInput({ className, exhibition = false }: AiChatInputProps) {
   const { mutate: sendMessage, isPending: isSendingMessage } =
     useSendMessageMutation();
-  const { selectThread } = useChatActions();
   const { stopGeneration, isLoading } = useCopilotChatHeadless_c();
-  // Create new chat session mutation
+  const { setMessages } = useCopilotChatHeadless_c();
+  const { selectThread } = useChatActions();
+  const { setConfig } = useLanggraphActions();
+  
+  // Use resource threads to get the latest thread
+  const { threads, threadsLoading } = useResourceThreads();
   const createChatMutation = useCreateNewChatSessionMutation();
 
-  // NOTE: There are three bugs in copilotkit: messages aren't reset when a new chat session is created, loading existing thread could not restore its state, and sending follow-up messages in a thread has a certain probability to fail(no message sent to the server, reason unkown)
-  // To Tackle the third bug, there would be a new thread created for each message sent or appended, so that there is no follow-up messages anymore, every thread is a one-shot conversation.
-  // To Tackle the first bug, the 'creating new session' button would only reset the messages history rather than actually creating a new session, so that the chatbox would be clean immediately after the button has been pressed, and when the user sends a message, a new thread would be created with empty messages sent.
-  // The second bug has no solution for now, so there is no laoding old thread functionality for now.
   const handleSendMessage = (message: string) => {
     if (message.trim() && !isLoading) {
-      // Create a new chat session first, then send the message
-      createChatMutation.mutate(undefined, {
-        onSuccess: (thread) => {
-          // Select the newly created thread
-          selectThread(thread.thread_id);
-
-          // Send the message
+      // Standard process: Load/Create thread first
+      const ensureThreadExists = () => {
+        if (threads && threads.length > 0) {
+          // Thread exists, select it with langgraph action
+          const latestThread = threads[0];
+          selectThread(latestThread.thread_id);
+          
+          // Load messages from latest thread
+          const extractedMessages = extractLanggraphMessages(latestThread);
+          const convertedMessages = convertToCopilotKitMessages(extractedMessages);
+          setMessages(convertedMessages);
+          
+          // Proceed to send message
           sendMessage({
             role: "user",
             content: message.trim(),
           });
-        },
-      });
+        } else {
+          // No thread exists, create one first
+          createChatMutation.mutate(undefined, {
+            onSuccess: (newThread) => {
+              // Select the new thread with langgraph action
+              selectThread(newThread.thread_id);
+              
+              // Proceed to send message
+              sendMessage({
+                role: "user",
+                content: message.trim(),
+              });
+            },
+          });
+        }
+      };
+
+      // Wait for threads to load if necessary
+      if (threadsLoading) {
+        setTimeout(ensureThreadExists, 100);
+      } else {
+        ensureThreadExists();
+      }
     }
   };
 

@@ -15,7 +15,7 @@ export default function DevboxNodeTitle({
   image,
   regionUrl,
 }: DevboxNodeTitleProps) {
-  console.log("image", transformDevboxImage(image).split("-").slice(0, -1).join("-"));
+  // console.log("image", transformDevboxImage(image).split("-").slice(0, -1).join("-"));
   return (
     <div className="flex items-center gap-2 truncate font-medium flex-1 min-w-0">
       <div className="flex flex-col items-start">

@@ -27,11 +27,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Copy } from "lucide-react";
 import {
   extractLanggraphMessages,
   convertToCopilotKitMessages,
 } from "@/lib/langgraph/langgraph-method/langgraph-utils";
+import { useCopy } from "@/hooks/use-copy";
 
 interface AiChatHeaderProps {
   title?: string;
@@ -46,7 +47,7 @@ export function AiChatHeader({
 }: AiChatHeaderProps) {
   const { selectedResource } = useProjectState();
   const { selectedThreadId, sidebarChatMaximized } = useChatState();
-  const { closeSidebarChat, maximizeSidebar, minimizeSidebar } =
+  const { closeSidebarChat, maximizeSidebar, minimizeSidebar, selectThread } =
     useChatActions();
   const { setMessages } = useCopilotChatHeadless_c();
   const { isPending } = useCreateNewChatSessionMutation();
@@ -59,6 +60,7 @@ export function AiChatHeader({
     threadStateLoading,
     hasThreads,
   } = useResourceThreads();
+  const { copyToClipboard } = useCopy();
 
   // Use node select hook for resource name click functionality
   const getMessageType = (resourceType: string) => {
@@ -88,9 +90,19 @@ export function AiChatHeader({
   };
 
   const handleThreadSelect = (thread: any) => {
+    // Select the thread with langgraph action
+    selectThread(thread.thread_id);
+
+    // Load and set messages from the selected thread
     const extractedMessages = extractLanggraphMessages(thread);
     const convertedMessages = convertToCopilotKitMessages(extractedMessages);
     setMessages(convertedMessages);
+  };
+
+  const handleCopyThreadId = () => {
+    if (selectedThreadId) {
+      copyToClipboard(selectedThreadId, "threadId");
+    }
   };
 
   return (
@@ -109,7 +121,7 @@ export function AiChatHeader({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-auto p-0 text-muted-foreground hover:text-theme-blue transition-colors"
+                      className="h-auto text-muted-foreground transition-colors"
                     >
                       <span className="truncate max-w-[120px]">
                         {threads.length} Thread{threads.length !== 1 ? "s" : ""}
@@ -117,26 +129,42 @@ export function AiChatHeader({
                       <ChevronDown className="h-3 w-3 ml-1" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-64">
+                  <DropdownMenuContent align="start" className="w-80">
                     {threads.map((thread, index) => (
                       <DropdownMenuItem
                         key={thread.thread_id}
-                        className="flex flex-col items-start cursor-pointer"
+                        className="flex items-center justify-between cursor-pointer p-3"
                         onClick={() => handleThreadSelect(thread)}
                       >
-                        <div className="font-medium text-sm">
-                          Thread {index + 1}
-                        </div>
-                        <div className="text-xs text-muted-foreground truncate w-full">
-                          {thread.thread_id}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {new Date(thread.created_at).toLocaleDateString()}
+                        <div className="flex flex-col items-start min-w-0 flex-1">
+                          <div className="text-sm font-mono truncate w-full">
+                            {thread.thread_id}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {new Date(thread.created_at).toLocaleString()}
+                          </div>
                         </div>
                       </DropdownMenuItem>
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
+                {selectedThreadId && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={handleCopyThreadId}
+                        size="icon"
+                        variant="ghost"
+                        className="h-6 w-6 text-muted-foreground hover:text-theme-blue"
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Copy thread ID</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
               </div>
             )}
             {/* {selectedThreadId && (
