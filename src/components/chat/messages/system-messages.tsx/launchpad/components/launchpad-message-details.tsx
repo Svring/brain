@@ -6,8 +6,7 @@ import { toast } from "sonner";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { ImageCreatedAt } from "./launchpad-message-detail/image-created-at";
 import { CreatedAt } from "./launchpad-message-detail/created-at";
-import { ResourceQuota } from "./launchpad-message-detail/resource-quota";
-import { Deployment } from "./launchpad-message-detail/deployment";
+import { ResourceAndDeployment } from "./launchpad-message-detail/resource-and-deployment";
 import { Configuration } from "./launchpad-message-detail/configuration";
 import {
   LaunchpadObjectSchema,
@@ -24,13 +23,11 @@ export const LaunchpadMessageDetails: React.FC<
   const { resource, isLoading, error } = useResourceStatus(target);
   const queryClient = useQueryClient();
   const { launchpad } = useTRPCClients();
-  
+
   // Track which specific field is being updated
   const [updatingField, setUpdatingField] = useState<string | null>(null);
 
-  const updateLaunchpad = useMutation(
-    launchpad.update.mutationOptions()
-  );
+  const updateLaunchpad = useMutation(launchpad.update.mutationOptions());
 
   // Parse the resource data as LaunchpadObject
   const launchpadObject: LaunchpadObject | null = resource
@@ -42,7 +39,7 @@ export const LaunchpadMessageDetails: React.FC<
   // Keep the original env for display, format only when editing
   const handleSubmit = async (type: string, data?: any) => {
     // console.log("requestData", data);
-    
+
     // Set the updating field to show loading state for this specific field
     setUpdatingField(type);
 
@@ -94,6 +91,8 @@ export const LaunchpadMessageDetails: React.FC<
 
   return (
     <div className="space-y-4">
+      <CreatedAt createdAt={launchpadObject?.operationalStatus?.createdAt} />
+      
       <ImageCreatedAt
         target={target}
         image={launchpadObject?.image?.imageName}
@@ -101,19 +100,11 @@ export const LaunchpadMessageDetails: React.FC<
         isLoading={updatingField === "image"}
       />
 
-      <CreatedAt createdAt={launchpadObject?.operationalStatus?.createdAt} />
-
-      <ResourceQuota
-        resource={launchpadObject?.resource}
-        onResourceUpdate={handleSubmit}
-        isLoading={updatingField === "resource"}
-      />
-
-      <Deployment
+      <ResourceAndDeployment
         resource={launchpadObject?.resource}
         strategy={launchpadObject?.strategy}
-        onDeploymentUpdate={handleSubmit}
-        isLoading={updatingField === "replicas"}
+        onResourceAndDeploymentUpdate={handleSubmit}
+        isLoading={updatingField === "resource"}
       />
 
       <Configuration
