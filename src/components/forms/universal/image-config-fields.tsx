@@ -12,11 +12,26 @@ import { Button } from "@/components/ui/button";
 import { useFormContext } from "react-hook-form";
 import { Image } from "@/schemas/forms/launchpad/components/launchpad-image-schema";
 import { ChevronDown, ChevronRight, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export const ImageConfigFields = () => {
   const form = useFormContext<{ image: Image }>();
   const [isRegistryExpanded, setIsRegistryExpanded] = useState(false);
+
+  // Watch for changes in image registry fields and clean up when empty
+  const imageRegistry = form.watch("image.imageRegistry");
+  
+  useEffect(() => {
+    if (imageRegistry) {
+      const { username, password, serverAddress } = imageRegistry;
+      // If all registry fields are empty, remove the imageRegistry property
+      if (!username && !password && !serverAddress) {
+        const currentImage = form.getValues("image");
+        const { imageRegistry: _, ...imageWithoutRegistry } = currentImage;
+        form.setValue("image", imageWithoutRegistry);
+      }
+    }
+  }, [imageRegistry, form]);
 
   const clearRegistryData = () => {
     // Clear the entire registry object

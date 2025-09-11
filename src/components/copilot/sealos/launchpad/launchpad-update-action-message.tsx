@@ -3,6 +3,7 @@
 import React from "react";
 import { LaunchpadUpdateForm } from "@/components/forms/launchpad/launchpad-update-form";
 import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
+import { useLaunchpadUpdate } from "@/hooks/sealos/launchpad/use-launchpad-update";
 import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
 import { Settings, CircleCheckBigIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -34,7 +35,7 @@ const LaunchpadUpdateSuccessMessage = ({ args }: { args: any }) => {
 
 interface LaunchpadUpdateActionMessageProps {
   args: Partial<LaunchpadUpdateFormData> & { launchpadName: string };
-  respond: (data: any) => void;
+  respond?: (message: string) => void;
   status: "executing" | "inProgress" | "complete";
 }
 
@@ -43,11 +44,22 @@ export const LaunchpadUpdateActionMessage: React.FC<
 > = ({ args, respond, status }) => {
   const { launchpadName, ...formData } = args;
 
-  const handleSubmit = (data: LaunchpadUpdateFormData) => {
-    respond({
-      launchpadName,
-      ...data,
-    });
+  const { updateLaunchpad, isLoading } = useLaunchpadUpdate({
+    onSuccess: () => {
+      respond?.(`Launchpad "${launchpadName}" updated successfully`);
+    },
+    onError: () => {
+      respond?.("Failed to update launchpad");
+    },
+  });
+
+  const handleSubmit = async (data: LaunchpadUpdateFormData) => {
+    try {
+      console.log("Updating launchpad", data);
+      await updateLaunchpad(launchpadName, data);
+    } catch (error) {
+      console.error("Failed to update launchpad:", error);
+    }
   };
 
   // Show completion message when status is complete
@@ -61,20 +73,19 @@ export const LaunchpadUpdateActionMessage: React.FC<
         icon: Settings,
         name: "Update Launchpad",
       }}
-      onApply={() => {
-        // This will be handled by the form submission
-      }}
-      isSubmitting={status === "inProgress"}
-      disabled={status === "inProgress"}
+      formId="launchpad-update-form"
+      isSubmitting={status === "inProgress" || isLoading}
+      disabled={status === "inProgress" || isLoading}
       applyButtonText="Update"
       className="bg-background-primary"
     >
       <LaunchpadUpdateForm
         defaultValues={formData}
         onSubmit={handleSubmit}
-        isLoading={status === "inProgress"}
+        isLoading={status === "inProgress" || isLoading}
         hideDefaultButton={true}
         useSimplePortsMode={!!formData.simplePorts}
+        formId="launchpad-update-form"
       />
     </BaseActionMessage>
   );

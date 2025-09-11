@@ -61,7 +61,7 @@ export const getAiProxyTokens = createParallelAction(
     const response = await api.get("/user/token", {
       params: { page: 1, perPage: 10 },
     });
-    console.log("AI Proxy Tokens Response:", JSON.stringify(response.data));
+    // console.log("AI Proxy Tokens Response:", JSON.stringify(response.data));
     return response.data.data;
   }
 );

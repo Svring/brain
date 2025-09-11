@@ -13,7 +13,7 @@ import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { HpaFields } from "../universal/hpa-fields";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // CPU options from launchpad resource schema
 const LAUNCHPAD_CPU_OPTIONS = [0.1, 0.2, 0.5, 1, 2, 4, 8, 16] as const;
@@ -35,6 +35,15 @@ export const LaunchpadResourceFields = ({
   const [scalingMode, setScalingMode] = useState<"replicas" | "hpa">(
     "replicas"
   );
+
+  // Watch hpa field and clean up when null
+  const hpaValue = form.watch("resource.hpa");
+  
+  useEffect(() => {
+    if (hpaValue === null) {
+      form.unregister("resource.hpa");
+    }
+  }, [hpaValue, form]);
 
   return (
     <div className="space-y-6 p-2">

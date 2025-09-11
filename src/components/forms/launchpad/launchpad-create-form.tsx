@@ -14,6 +14,7 @@ import { ConfigMapFields } from "../universal/config-map-fields";
 import { StorageFields } from "../universal/storage-fields";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface LaunchpadCreateFormProps {
   defaultValues?: Partial<LaunchpadCreateFormData>;
@@ -39,29 +40,62 @@ export const LaunchpadCreateForm = ({
   const [isAdvancedExpanded, setIsAdvancedExpanded] = useState(false);
 
   const handleSubmit = (data: any) => {
-    // Handle image registry: if all registry fields are empty strings, set to null
-    if (data.image && data.image.imageRegistry) {
-      const { username, password, serverAddress } = data.image.imageRegistry;
-      if (!username && !password && !serverAddress) {
-        data.image.imageRegistry = null;
-      }
-    }
-    
+    // Data cleaning is now handled by individual field components
+    console.log("Submitting data:", JSON.stringify(data, null, 2));
     onSubmit(data as LaunchpadCreateFormData);
+  };
+
+  const handleSubmitError = (errors: any) => {
+    console.log("Form validation errors:", errors);
+
+    // Handle form validation errors with more specific messages
+    if (errors.ports) {
+      toast.error(
+        "Port validation failed. Please check for duplicate port numbers."
+      );
+    } else if (errors.simplePorts) {
+      toast.error(
+        "Port operations validation failed. Please check for duplicate port numbers."
+      );
+    } else if (errors.launchCommand) {
+      toast.error(
+        "Launch command validation failed. Please check your command and arguments."
+      );
+    } else if (errors.resource) {
+      toast.error(
+        "Resource validation failed. Please check your CPU, memory, and scaling settings."
+      );
+    } else if (errors.image) {
+      toast.error(
+        "Image configuration validation failed. Please check your image settings."
+      );
+    } else if (errors.name) {
+      toast.error(
+        "Application name validation failed. Please check your application name."
+      );
+    } else {
+      // Show the first error message for better debugging
+      const firstError = Object.keys(errors)[0];
+      const errorMessage =
+        errors[firstError]?.message || "Unknown validation error";
+      toast.error(`Form validation failed: ${firstError} - ${errorMessage}`);
+    }
   };
 
   return (
     <Form {...form}>
       <form
         id="launchpad-create-form"
-        onSubmit={form.handleSubmit(handleSubmit)}
+        onSubmit={form.handleSubmit(handleSubmit, handleSubmitError)}
         className="space-y-6"
       >
         {/* Basic Configuration */}
         <div className="space-y-4">
           <NameField />
           <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">Image Configuration</div>
+            <div className="text-sm font-medium text-foreground">
+              Image Configuration
+            </div>
             <ImageConfigFields />
           </div>
         </div>
@@ -104,7 +138,9 @@ export const LaunchpadCreateForm = ({
           {isAdvancedExpanded && (
             <div className="p-4 space-y-6">
               <div className="space-y-2">
-                <div className="text-sm font-medium text-foreground">Launch Command</div>
+                <div className="text-sm font-medium text-foreground">
+                  Launch Command
+                </div>
                 <LaunchCommandFields />
               </div>
 

@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, X } from "lucide-react";
 import { UseFieldArrayReturn, useFormContext } from "react-hook-form";
 import { storageSizeOptions } from "@/schemas/forms/universal/storage-schema";
+import { useEffect } from "react";
 
 interface StorageFieldsProps {
   fieldArray: UseFieldArrayReturn<any, "storage", "id">;
@@ -16,7 +17,16 @@ export const StorageFields: React.FC<StorageFieldsProps> = ({
   fieldArray,
 }) => {
   const { fields, append, remove } = fieldArray;
-  const { register, setValue, watch } = useFormContext();
+  const { register, setValue, watch, unregister } = useFormContext();
+
+  // Watch storage array and clean up when empty
+  const storageArray = watch("storage");
+  
+  useEffect(() => {
+    if (storageArray && Array.isArray(storageArray) && storageArray.length === 0) {
+      unregister("storage");
+    }
+  }, [storageArray, unregister]);
 
   const addStorage = () => {
     append({ path: "", size: "1Gi" });

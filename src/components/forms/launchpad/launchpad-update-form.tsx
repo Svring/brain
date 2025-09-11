@@ -21,6 +21,7 @@ interface LaunchpadUpdateFormProps {
   isLoading?: boolean;
   hideDefaultButton?: boolean;
   useSimplePortsMode?: boolean;
+  formId?: string;
 }
 
 export const LaunchpadUpdateForm = ({
@@ -29,6 +30,7 @@ export const LaunchpadUpdateForm = ({
   isLoading = false,
   hideDefaultButton = false,
   useSimplePortsMode = false,
+  formId = "launchpad-update-form",
 }: LaunchpadUpdateFormProps) => {
   const {
     form,
@@ -72,7 +74,7 @@ export const LaunchpadUpdateForm = ({
     }
 
     console.log("filtered data", filteredData);
-    // onSubmit(filteredData as LaunchpadUpdateFormData);
+    onSubmit(filteredData as LaunchpadUpdateFormData);
   };
 
   const handleSubmitError = (errors: any) => {
@@ -121,7 +123,7 @@ export const LaunchpadUpdateForm = ({
   return (
     <Form {...form}>
       <form
-        id="launchpad-update-form"
+        id={formId}
         onSubmit={form.handleSubmit(handleSubmit, handleSubmitError)}
         className="space-y-6"
       >

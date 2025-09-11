@@ -64,7 +64,6 @@ export const DevboxUpdateActionMessage: React.FC<
     onError: () => {
       respond?.("Failed to update devbox");
     },
-    existingPorts: (existingDevbox as any)?.ports || [],
   });
 
   const handleSubmit = async (data: DevboxUpdateFormData) => {

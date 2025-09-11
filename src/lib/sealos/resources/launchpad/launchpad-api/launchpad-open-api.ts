@@ -28,7 +28,7 @@ function createLaunchpadApi(context: SealosApiContext) {
   return axios.create({
     baseURL: isDevelopment
       ? `http://applaunchpad.${context.baseUrl}/api/v1`
-      : `https://applaunchpad.${context.baseUrl}/api/v1`,
+      : `http://applaunchpad.${context.baseUrl}/api/v1`,
     headers: {
       "Content-Type": "application/json",
       ...(context.authorization

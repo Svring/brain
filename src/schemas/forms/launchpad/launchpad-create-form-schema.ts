@@ -16,17 +16,12 @@ export const launchpadCreateFormSchema = z.object({
   name: NameSchema.default("hello-world"),
   image: ImageSchema.default({
     imageName: "nginx",
-    imageRegistry: null,
   }),
-  launchCommand: LaunchCommandSchema.default({
-    command: "",
-    args: "",
-  }),
+  launchCommand: LaunchCommandSchema.optional(),
   resource: LaunchpadResourceSchema.default({
     replicas: 1,
     cpu: 0.5,
     memory: 0.5,
-    hpa: null,
   }),
   ports: z.array(LaunchpadPortCreateSchema).default([
     {
@@ -35,9 +30,9 @@ export const launchpadCreateFormSchema = z.object({
       exposesPublicDomain: true,
     },
   ]),
-  env: z.array(EnvSchema).default([]),
-  storage: z.array(StorageSchema).default([]),
-  configMap: z.array(ConfigMapSchema).default([]),
+  env: z.array(EnvSchema).optional(),
+  storage: z.array(StorageSchema).optional(),
+  configMap: z.array(ConfigMapSchema).optional(),
 });
 
 // Export types

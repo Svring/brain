@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, X, Edit3 } from "lucide-react";
 import { UseFieldArrayReturn, useFormContext } from "react-hook-form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -21,9 +21,18 @@ export const ConfigMapFields: React.FC<ConfigMapFieldsProps> = ({
   fieldArray,
 }) => {
   const { fields, append, remove } = fieldArray;
-  const { register, setValue, watch } = useFormContext();
+  const { register, setValue, watch, unregister } = useFormContext();
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [tempValue, setTempValue] = useState("");
+
+  // Watch configMap array and clean up when empty
+  const configMapArray = watch("configMap");
+  
+  useEffect(() => {
+    if (configMapArray && Array.isArray(configMapArray) && configMapArray.length === 0) {
+      unregister("configMap");
+    }
+  }, [configMapArray, unregister]);
 
   const addConfigMap = () => {
     append({ path: "", value: "" });

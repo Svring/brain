@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Plus, Trash2 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,13 @@ export const EnvFields = ({ fieldArray }: EnvFieldsProps) => {
 
   // Watch the entire env array to force re-renders when any env var changes
   const envVars = form.watch("env");
+
+  // Clean up empty env array
+  useEffect(() => {
+    if (envVars && Array.isArray(envVars) && envVars.length === 0) {
+      form.unregister("env");
+    }
+  }, [envVars, form]);
 
   const addEnv = () => {
     // Only allow adding direct value env vars (not valueFrom)
