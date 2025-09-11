@@ -10,11 +10,6 @@ import {
   deleteLaunchpadApplication,
   startLaunchpadApplication,
   pauseLaunchpadApplication,
-  updateLaunchpadConfigMap,
-  createLaunchpadPorts,
-  updateLaunchpadPorts,
-  deleteLaunchpadPorts,
-  updateLaunchpadStorage,
   getLaunchpadApplicationPods,
   getLaunchpadPodsMetrics,
 } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-api-service";
@@ -71,7 +66,9 @@ export const launchpadRouter = t.router({
     }),
 
   networkStatus: t.procedure.input(z.string()).query(async ({ input, ctx }) => {
-    return await checkLaunchpadReady({ name: input }, ctx);
+    const response = await checkLaunchpadReady({ name: input }, ctx);
+    console.log("response", response);
+    return response;
   }),
 
   // Monitoring

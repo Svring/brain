@@ -102,6 +102,9 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
   const { selectResource } = useProjectActions();
   const { copyToClipboard, isCopied } = useCopy();
 
+  console.log("readyStatus", readyStatus);
+  console.log("color", getBackgroundColor());
+
   // Get container ports data for network diagnosis
   const containerStatusResult = useResourceStatus<ContainerPortsResult>(
     target,

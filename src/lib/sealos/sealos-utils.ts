@@ -84,7 +84,7 @@ export function truncateImage(imageUrl: string): string {
   // Split by ':' to remove the tag and get only the image name
   const imageName = imageWithTag.split(":")[0];
 
-  return imageName;
+  return imageWithTag;
 }
 
 /**
