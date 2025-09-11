@@ -242,12 +242,21 @@ export const DevboxReleaseMessage: React.FC<DevboxReleaseMessageProps> = ({
                 size="sm"
                 variant="default"
                 className="h-8 w-8 p-0"
-                onClick={() => {
+                onClick={async () => {
                   if (newReleaseTag.trim()) {
-                    handleRelease({
-                      tag: newReleaseTag.trim(),
-                      releaseDes: newReleaseDescription.trim(),
-                    });
+                    try {
+                      await handleRelease({
+                        tag: newReleaseTag.trim(),
+                        releaseDes: newReleaseDescription.trim(),
+                      });
+                      // Close edit mode after successful release creation
+                      setIsCreatingRelease(false);
+                      setNewReleaseTag("");
+                      setNewReleaseDescription("");
+                    } catch (error) {
+                      // Keep edit mode open if there's an error
+                      console.error("Failed to create release:", error);
+                    }
                   }
                 }}
                 disabled={

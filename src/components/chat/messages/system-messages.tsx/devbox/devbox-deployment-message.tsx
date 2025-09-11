@@ -95,7 +95,7 @@ const DeploymentItem: React.FC<{
         </div>
         <div className="flex items-center gap-1">
           {/* Update button */}
-          <Button
+          {/* <Button
             size="sm"
             variant="ghost"
             className="p-0 border border-border-primary bg-background-tertiary hover:brightness-150"
@@ -105,7 +105,7 @@ const DeploymentItem: React.FC<{
           >
             <ArrowBigUpDash className="h-4 w-4" />
             Update
-          </Button>
+          </Button> */}
           {/* Delete button */}
           <Button
             variant="destructive"

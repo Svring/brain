@@ -3,6 +3,7 @@ import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useDevboxDeploy } from "@/hooks/sealos/devbox/use-devbox-deploy";
 import { useDevboxContext } from "@/lib/auth/auth-utils";
+import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 
 interface ReleaseConfig {
   tag: string;
@@ -12,6 +13,7 @@ interface ReleaseConfig {
 export const useDevboxRelease = (devboxName: string) => {
   const { devbox } = useTRPCClients();
   const devboxContext = useDevboxContext();
+  const { invalidateQueries } = useInvalidateQueries();
 
   const [releaseConfig, setReleaseConfig] = useState<ReleaseConfig>({
     tag: "",
@@ -52,6 +54,9 @@ export const useDevboxRelease = (devboxName: string) => {
       // Start the devbox after releasing
       await startDevboxMutation.mutateAsync(devboxName);
 
+      // Invalidate releases query to refresh the list
+      invalidateQueries([devbox.releases.queryKey(devboxName)]);
+
       setIsReleasePopoverOpen(false);
       setReleaseConfig({ tag: "", releaseDes: "" });
     } catch (error) {
@@ -64,6 +69,9 @@ export const useDevboxRelease = (devboxName: string) => {
     try {
       const versionName = `${devboxName}-${releaseTag}`;
       await deleteReleaseMutation.mutateAsync(versionName);
+
+      // Invalidate releases query to refresh the list
+      invalidateQueries([devbox.releases.queryKey(devboxName)]);
 
       setDeletePopoverOpen(releaseTag, false);
     } catch (error) {

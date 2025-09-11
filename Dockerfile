@@ -39,6 +39,7 @@ COPY --from=builder /app/public ./public
 EXPOSE 3000
 # Set environment variables
 ENV NODE_ENV=production
-ENV NEXT_PUBLIC_MODE=development
+ENV NEXT_PUBLIC_MODE=production
+ENV NEXT_PUBLIC_COPILOT_API_KEY=ck_pub_c39ebdafd676f4088caf3dd0a8558d3e
 # Run the Next.js app with pnpm
 CMD ["pnpm", "start"]

@@ -1,4 +1,6 @@
+import React, { useState } from "react";
 import {
+  BaseEdge,
   EdgeProps,
   getBezierPath,
   MarkerType,
@@ -9,6 +11,7 @@ import { getEdgeParams } from "@/lib/flowgraph/edges/flowgraph-edges-utils";
 
 function FloatingEdge(props: EdgeProps) {
   const { id, source, target, markerEnd, style } = props;
+  const [isHovered, setIsHovered] = useState(false);
 
   const sourceNode = useInternalNode(source);
   const targetNode = useInternalNode(target);
@@ -31,14 +34,25 @@ function FloatingEdge(props: EdgeProps) {
     targetY: ty,
   });
 
+  const edgeStyle = {
+    stroke: isHovered ? "var(--color-theme-blue)" : "hsl(var(--primary))",
+    strokeWidth: isHovered ? 1.5 : 1,
+    transition: "all 0.2s ease-in-out",
+    ...style,
+  };
+
   return (
-    <path
-      id={id}
-      className="react-flow__edge-path"
-      d={edgePath}
-      markerEnd={markerEnd}
-      style={style}
-    />
+    <g
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <BaseEdge
+        id={id}
+        path={edgePath}
+        markerEnd={markerEnd}
+        style={edgeStyle}
+      />
+    </g>
   );
 }
 
