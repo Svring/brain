@@ -33,6 +33,7 @@ import {
   convertToCopilotKitMessages,
 } from "@/lib/langgraph/langgraph-method/langgraph-utils";
 import { useCopy } from "@/hooks/use-copy";
+import { useReactFlow } from "@xyflow/react";
 
 interface AiChatHeaderProps {
   title?: string;
@@ -61,6 +62,7 @@ export function AiChatHeader({
     hasThreads,
   } = useResourceThreads();
   const { copyToClipboard } = useCopy();
+  const { fitView } = useReactFlow();
 
   // Use node select hook for resource name click functionality
   const getMessageType = (resourceType: string) => {
@@ -199,9 +201,19 @@ export function AiChatHeader({
             <TooltipTrigger asChild>
               <Toggle
                 pressed={sidebarChatMaximized}
-                onPressedChange={(pressed) =>
-                  pressed ? maximizeSidebar() : minimizeSidebar()
-                }
+                onPressedChange={(pressed) => {
+                  if (selectedResource) {
+                    // When resource is selected, toggle maximize/minimize
+                    pressed ? maximizeSidebar() : minimizeSidebar();
+                  } else {
+                    // When no resource is selected, just fitView
+                    fitView({
+                      padding: 0.2,
+                      duration: 300,
+                      maxZoom: 1,
+                    });
+                  }
+                }}
                 size="sm"
                 className={cn(
                   "h-8 w-8 hover:text-theme-blue",
@@ -212,7 +224,13 @@ export function AiChatHeader({
               </Toggle>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{sidebarChatMaximized ? "Unfocus" : "Focus"}</p>
+              <p>
+                {selectedResource
+                  ? sidebarChatMaximized
+                    ? "Unfocus"
+                    : "Focus"
+                  : "Fit View"}
+              </p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>

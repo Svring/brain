@@ -107,6 +107,22 @@ export const OrchestratorProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [sidebarChatMaximized, selectedNode]);
 
+  // Handle fitView when chat is minimized
+  useEffect(() => {
+    if (!sidebarChatMaximized) {
+      // Small delay to ensure the layout has updated
+      const timer = setTimeout(() => {
+        fitView({
+          padding: 0.2,
+          duration: 300,
+          maxZoom: 1,
+        });
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [sidebarChatMaximized]);
+
   useEffect(() => {
     const { base_url, api_key, model_name } = langgraphState.context;
     if (base_url || api_key || model_name) {
