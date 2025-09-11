@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { LaunchCommandSchema } from "./components/launch-command-schema";
-import { ImageSchema } from "./components/image-schema";
+import { ImageSchema } from "./components/launchpad-image-schema";
 import { LaunchpadResourceUpdateSchema } from "./components/launchpad-resource-schema";
 import {
   LaunchpadPortSchema,

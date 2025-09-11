@@ -1,9 +1,10 @@
 import { truncateImage } from "@/lib/sealos/sealos-utils";
+import { Image } from "@/schemas/forms/launchpad/components/launchpad-image-schema";
 
 interface ResourceObject {
   name: string;
   kind: string;
-  image?: string;
+  image?: Image;
   [key: string]: any;
 }
 
@@ -48,9 +49,9 @@ export function inferRelianceFromImage(
     result[deploymentKind][deploymentName] = [];
 
     // Process deployment image if it exists
-    if (deployment.image) {
+    if (deployment.image?.imageName) {
       // Use truncateImage to extract the meaningful part of the image name
-      const processedImage = truncateImage(deployment.image);
+      const processedImage = truncateImage(deployment.image.imageName);
 
       // Find devboxes whose names match the processed image
       for (const devbox of devboxResources) {

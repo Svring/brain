@@ -33,10 +33,19 @@ export const ImageCreatedAt: React.FC<ImageCreatedAtProps> = ({
   };
 
   const handleImageSubmit = async (data: LaunchpadUpdateFormData) => {
+    // Handle image registry: if all registry fields are empty strings, set to null
+    let imageRegistry = data.image?.imageRegistry;
+    if (imageRegistry) {
+      const { username, password, serverAddress } = imageRegistry;
+      if (!username && !password && !serverAddress) {
+        imageRegistry = null;
+      }
+    }
+
     await onImageUpdate("image", {
       image: {
         imageName: data.image?.imageName,
-        imageRegistry: data.image?.imageRegistry,
+        imageRegistry: imageRegistry,
       },
     });
     setIsEditingImage(false);

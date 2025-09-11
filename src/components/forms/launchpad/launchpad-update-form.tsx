@@ -62,6 +62,15 @@ export const LaunchpadUpdateForm = ({
       return acc;
     }, {} as Record<string, any>);
 
+    // Handle image registry: if all registry fields are empty strings, set to null
+    if (filteredData.image && filteredData.image.imageRegistry) {
+      const { username, password, serverAddress } =
+        filteredData.image.imageRegistry;
+      if (!username && !password && !serverAddress) {
+        filteredData.image.imageRegistry = null;
+      }
+    }
+
     console.log("filtered data", filteredData);
     // onSubmit(filteredData as LaunchpadUpdateFormData);
   };
@@ -116,6 +125,16 @@ export const LaunchpadUpdateForm = ({
         onSubmit={form.handleSubmit(handleSubmit, handleSubmitError)}
         className="space-y-6"
       >
+        {/* Image Configuration */}
+        {hasImage && (
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-foreground">
+              Image Configuration
+            </div>
+            <ImageConfigFields />
+          </div>
+        )}
+
         {hasResource && <LaunchpadResourceFields />}
 
         {showRegularPortsField && (
@@ -141,16 +160,6 @@ export const LaunchpadUpdateForm = ({
               Launch Command
             </div>
             <LaunchCommandFields />
-          </div>
-        )}
-
-        {/* Image Configuration */}
-        {hasImage && (
-          <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">
-              Image Configuration
-            </div>
-            <ImageConfigFields />
           </div>
         )}
 

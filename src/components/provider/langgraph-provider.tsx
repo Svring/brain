@@ -49,8 +49,11 @@ export const LanggraphConfigWrapper = ({
       ? `http://aiproxy.${aiProxyContext.baseUrl}/v1`
       : undefined,
     modelName: aiProxyContext.baseUrl?.endsWith("io")
-      ? "gpt-4.1"
+      ? "kimi-k2-0711-preview"
       : "kimi-k2-0711-preview",
+    // modelName: aiProxyContext.baseUrl?.endsWith("io")
+    //   ? "qwen3-235b-a22b"
+    //   : "qwen3-235b-a22b",
   };
 
   // Check if configuration is ready

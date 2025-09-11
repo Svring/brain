@@ -8,14 +8,24 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useFormContext } from "react-hook-form";
-import { Image } from "@/schemas/forms/launchpad/components/image-schema";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { Image } from "@/schemas/forms/launchpad/components/launchpad-image-schema";
+import { ChevronDown, ChevronRight, X } from "lucide-react";
 import { useState } from "react";
 
 export const ImageConfigFields = () => {
   const form = useFormContext<{ image: Image }>();
   const [isRegistryExpanded, setIsRegistryExpanded] = useState(false);
+
+  const clearRegistryData = () => {
+    // Clear the entire registry object
+    form.setValue("image.imageRegistry", null);
+    // Also clear individual fields to ensure they show empty
+    form.setValue("image.imageRegistry.username", "");
+    form.setValue("image.imageRegistry.password", "");
+    form.setValue("image.imageRegistry.serverAddress", "");
+  };
 
   return (
     <div className="border border-dashed rounded-lg p-4 space-y-4">
@@ -54,6 +64,20 @@ export const ImageConfigFields = () => {
 
         {isRegistryExpanded && (
           <div className="p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-medium">Registry Configuration</h4>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={clearRegistryData}
+                className="h-8 w-8 p-0"
+                title="Clear registry data"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
             <FormField
               control={form.control}
               name="image.imageRegistry.username"
@@ -61,7 +85,11 @@ export const ImageConfigFields = () => {
                 <FormItem>
                   <FormLabel>Registry Username</FormLabel>
                   <FormControl>
-                    <Input placeholder="username" {...field} />
+                    <Input 
+                      placeholder="username" 
+                      value={field.value || ""} 
+                      onChange={field.onChange}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -75,7 +103,12 @@ export const ImageConfigFields = () => {
                 <FormItem>
                   <FormLabel>Registry Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="password" {...field} />
+                    <Input 
+                      type="password" 
+                      placeholder="password" 
+                      value={field.value || ""} 
+                      onChange={field.onChange}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -89,7 +122,11 @@ export const ImageConfigFields = () => {
                 <FormItem>
                   <FormLabel>Server Address</FormLabel>
                   <FormControl>
-                    <Input placeholder="registry.example.com" {...field} />
+                    <Input 
+                      placeholder="registry.example.com" 
+                      value={field.value || ""} 
+                      onChange={field.onChange}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

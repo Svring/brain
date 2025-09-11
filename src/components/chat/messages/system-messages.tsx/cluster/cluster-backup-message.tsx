@@ -38,7 +38,7 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
   target,
 }) => {
   const { appendSystemMessage } = useAppendSystemMessageMutation();
-  
+
   // Use the cluster backup hook
   const {
     backups,
@@ -54,7 +54,6 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
     setBackupConfig,
     resetBackupConfig,
   } = useClusterBackup(target);
-
 
   const formatShortDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -84,21 +83,24 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
     );
   }
 
-
   return (
     <BaseSystemMessage
       headerTitle={{
         icon: DatabaseBackup,
-        name: `Cluster Backup: ${backups?.length}`,
+        name: "Cluster Backup",
       }}
     >
-      <div className="space-y-4">
+      <div className="space-y-3">
+        {backups && backups.length > 0 && (
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium">Backups: {backups.length}</h3>
+          </div>
+        )}
+
         {!backups || backups.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <Database className="h-8 w-8 text-muted-foreground mb-2 opacity-50" />
-            <div className="text-sm text-muted-foreground">
-              No backups found for this cluster
-            </div>
+          <div className="flex flex-col items-center justify-center h-20 text-center">
+            <Database className="h-6 w-6 text-muted-foreground mb-2" />
+            <div className="text-xs text-muted-foreground">No backups yet</div>
           </div>
         ) : (
           <div
@@ -116,26 +118,24 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
               return (
                 <div
                   key={backup.name || index}
-                  className="border rounded-lg p-2 hover:bg-muted/50 transition-colors"
+                  className="border rounded-lg p-2 transition-colors"
                 >
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center justify-between gap-2 mb-2">
                     <div className="flex items-center gap-2">
                       <Database className="h-3 w-3 text-muted-foreground" />
-                      <div className="flex flex-col max-w-[200px]">
-                        <span className="text-sm font-medium truncate">
+                      <div className="flex flex-col">
+                        <span className="text-xs font-medium truncate">
                           {backup.name}
                         </span>
                         {isValidTime && (
-                          <div className="flex items-center gap-1 text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            <span className="text-xs">
-                              {formatShortDate(backup.time as string)}
-                            </span>
-                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            {formatShortDate(backup.time as string)}
+                          </span>
                         )}
                       </div>
+                      {/* Status indicator */}
+                      <Check className="h-3 w-3 text-theme-green" />
                     </div>
-
                     <div className="flex items-center gap-1">
                       <Button
                         size="sm"
@@ -158,13 +158,16 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
                       >
                         <PopoverTrigger asChild>
                           <Button
-                            size="sm"
-                            variant="ghost"
-                            className="p-0 text-destructive hover:text-destructive"
+                            variant="destructive"
+                            className="p-0 h-8 w-8 hover:text-destructive"
                             disabled={deleteBackupMutation.isPending}
                             title="Delete backup"
                           >
-                            <Trash2 className="h-3 w-3" />
+                            {deleteBackupMutation.isPending ? (
+                              <Spinner className="h-3 w-3" />
+                            ) : (
+                              <Trash2 className="h-3 w-3" />
+                            )}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent
@@ -207,13 +210,25 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
                       </Popover>
                     </div>
                   </div>
+
+                  {/* Backup info section with border */}
+                  <div className="border-t border-dashed pt-2">
+                    <div className="text-xs text-muted-foreground">
+                      <span className="font-medium">Created:</span>{" "}
+                      <span className="rounded">
+                        {isValidTime
+                          ? formatShortDate(backup.time as string)
+                          : "Unknown"}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               );
             })}
           </div>
         )}
 
-        {/* Add new backup section */}
+        {/* Add new backup section - fixed at bottom */}
         {!isCreatingBackup ? (
           <div
             className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-3 hover:border-muted-foreground/50 hover:bg-muted/20 transition-colors cursor-pointer"
@@ -232,13 +247,17 @@ export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
               <Input
                 placeholder="Backup name"
                 value={backupConfig.name}
-                onChange={(e) => setBackupConfig({ ...backupConfig, name: e.target.value })}
+                onChange={(e) =>
+                  setBackupConfig({ ...backupConfig, name: e.target.value })
+                }
                 className="h-8 text-xs flex-1"
               />
               <Input
                 placeholder="Notes"
                 value={backupConfig.notes}
-                onChange={(e) => setBackupConfig({ ...backupConfig, notes: e.target.value })}
+                onChange={(e) =>
+                  setBackupConfig({ ...backupConfig, notes: e.target.value })
+                }
                 className="h-8 text-xs flex-1"
               />
               <Button

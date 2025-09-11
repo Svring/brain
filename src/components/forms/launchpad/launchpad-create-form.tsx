@@ -39,6 +39,14 @@ export const LaunchpadCreateForm = ({
   const [isAdvancedExpanded, setIsAdvancedExpanded] = useState(false);
 
   const handleSubmit = (data: any) => {
+    // Handle image registry: if all registry fields are empty strings, set to null
+    if (data.image && data.image.imageRegistry) {
+      const { username, password, serverAddress } = data.image.imageRegistry;
+      if (!username && !password && !serverAddress) {
+        data.image.imageRegistry = null;
+      }
+    }
+    
     onSubmit(data as LaunchpadCreateFormData);
   };
 
