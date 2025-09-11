@@ -3,11 +3,12 @@
 import { assign, createMachine } from "xstate";
 import type { Env } from "@/schemas/forms/universal/env-schema";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { Image } from "@/schemas/forms/launchpad/components/launchpad-image-schema";
 
 export interface ResourceObject {
   name: string;
   kind: string;
-  image?: string;
+  image?: Image | string;
   env?: Env[];
   ports?: Array<{
     number: number;

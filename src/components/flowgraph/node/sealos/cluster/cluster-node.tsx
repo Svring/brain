@@ -16,6 +16,7 @@ import { Globe, HardDrive } from "lucide-react";
 import { useClusterObject } from "@/hooks/sealos/cluster/use-cluster-object";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
+import { useNodeData } from "@/hooks/flowgraph/use-node-data";
 import NodeLoading from "../../components/node-loading";
 import {
   Tooltip,
@@ -29,32 +30,54 @@ interface ClusterNodeProps {
 }
 
 function ClusterNodeWrapper({ data }: ClusterNodeProps) {
-  const resourceData = { kind: "cluster", name: data.name };
-  const nodeId = `cluster-${data.name}`;
-  const target = CustomResourceTargetSchema.parse(
-    convertResourceTypeToTarget("cluster", data.name)
-  );
-  const { status, isLoading: isLoadingStatus } = useResourceStatus(target);
-  const { data: clusterData = data } = useClusterObject(data.name);
+  // Check if we have a complete ClusterObject or just a basic resource
+  const isCompleteObject =
+    "type" in data && "resource" in data && "connection" in data;
 
-  if (
-    !("type" in data && "resource" in data && "connection" in data) &&
-    isLoadingStatus
-  ) {
+  // Always extract resource data to ensure consistent hook calls
+  const resourceData = {
+    kind: "cluster", // Hardcoded kind
+    name: data.name,
+  };
+
+  // Construct node ID following the same pattern as other nodes
+  const nodeId = `${resourceData.kind.toLowerCase()}-${resourceData.name}`;
+
+  // Always call hooks in the same order
+  const { completeResource, status } = useNodeData(resourceData);
+
+  // If we have complete object data, render the full node
+  if (isCompleteObject) {
     return (
-      <NodeLoading
-        kind={resourceData.kind}
-        name={resourceData.name}
+      <ClusterNode
+        resource={data as ClusterObject}
         status={status || "Pending"}
+        nodeId={nodeId}
       />
     );
   }
 
+  // If we have complete resource data from enhancement, render the full node
+  if (
+    completeResource &&
+    "type" in completeResource &&
+    "resource" in completeResource
+  ) {
+    return (
+      <ClusterNode
+        resource={completeResource as ClusterObject}
+        status={status || "Pending"}
+        nodeId={nodeId}
+      />
+    );
+  }
+
+  // Otherwise, show loading state
   return (
-    <ClusterNode
-      resource={clusterData as ClusterObject}
+    <NodeLoading
+      kind={resourceData.kind}
+      name={resourceData.name}
       status={status || "Pending"}
-      nodeId={nodeId}
     />
   );
 }
@@ -70,6 +93,7 @@ function ClusterNode({ resource, status, nodeId }: ClusterNodeInnerProps) {
   const target = CustomResourceTargetSchema.parse(
     convertResourceTypeToTarget("cluster", resource.name || "")
   );
+  const { data: clusterData = resource } = useClusterObject(resource.name);
   const { latestData } = useResourceMetricsStatus({ target });
   const storagePercent = Math.min(
     100,
@@ -81,17 +105,17 @@ function ClusterNode({ resource, status, nodeId }: ClusterNodeInnerProps) {
     )
   );
   const connectionString = composeClusterPublicConnectionString(
-    resource,
+    clusterData,
     k8sContext.regionUrl
   );
-  const { name = "", type = "", resource: clusterResource } = resource;
+  const { name = "", type = "", resource: clusterResource } = clusterData;
 
   const mainCard = (
     <BaseNode target={target} nodeId={nodeId} messageType="cluster.detail">
       <div className="flex h-full flex-col gap-4 justify-between">
         <div className="flex items-center justify-between">
           <ClusterNodeTitle name={name} type={type!} />
-          <ClusterNodeMenu object={resource} />
+          <ClusterNodeMenu object={clusterData} />
         </div>
         <div className="flex items-center gap-2 text-md">
           <Globe

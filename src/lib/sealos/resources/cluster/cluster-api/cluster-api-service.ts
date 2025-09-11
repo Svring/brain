@@ -20,7 +20,7 @@ export async function getClusterMonitorData(
 function createClusterApi(context: SealosApiContext) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
   return axios.create({
-    baseURL: `https://dbprovider.${context.baseUrl}/api/database`,
+    baseURL: `http://dbprovider.${context.baseUrl}/api/database`,
     headers: {
       "Content-Type": "application/json",
       ...(context.authorization

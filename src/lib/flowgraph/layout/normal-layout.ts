@@ -22,7 +22,7 @@ export function applyLayout(
 
   const incoming = computeIncoming(nodes, edges);
   const outgoing = computeOutgoing(nodes, edges);
-  const ranks = calculateNodeRanks(nodes, incoming);
+  const ranks = calculateNodeRanks(nodes, incoming, edges);
   const ranked = groupByRank(nodes, ranks);
   const rankKeys = Object.keys(ranked)
     .map((k) => Number(k))

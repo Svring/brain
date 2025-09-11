@@ -28,7 +28,7 @@ function createHttpsAgent() {
 
 function createOldDevboxAxios(context: SealosApiContext) {
   return axios.create({
-    baseURL: `https://devbox.${context.baseUrl}/api/`,
+    baseURL: `http://devbox.${context.baseUrl}/api/`,
     headers: {
       "Content-Type": "application/json",
       ...(context.authorization
@@ -41,7 +41,7 @@ function createOldDevboxAxios(context: SealosApiContext) {
 
 function createDevboxAxios(context: SealosApiContext) {
   return axios.create({
-    baseURL: `https://devbox.${context.baseUrl}/api/v1/devbox`,
+    baseURL: `http://devbox.${context.baseUrl}/api/v1/devbox`,
     headers: {
       "Content-Type": "application/json",
       ...(context.authorization

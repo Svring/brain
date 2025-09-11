@@ -61,6 +61,8 @@ export function useFlowgraphResources(): FlowgraphResources {
     (resource) => _.toLower(resource.kind) === "cluster"
   );
 
+  // console.log("clusterResources", clusterResources);
+
   const launchpadResources = _.filter(selectedProjectResources, (resource) =>
     _.includes(["deployment", "statefulset"], _.toLower(resource.kind))
   );

@@ -57,7 +57,7 @@ import https from "https";
 function createClusterApi(context: SealosApiContext) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
   return axios.create({
-    baseURL: `https://dbprovider.${context.baseUrl}/api`,
+    baseURL: `http://dbprovider.${context.baseUrl}/api`,
     headers: {
       "Content-Type": "application/json",
       ...(context.authorization

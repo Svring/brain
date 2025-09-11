@@ -1,5 +1,5 @@
 import type { Edge, Node } from "./types";
-import _ from "lodash";
+import * as _ from "lodash";
 
 export const DEFAULT_OPTIONS = {
   direction: "TB" as const,
@@ -58,7 +58,8 @@ export function computeOutgoing(nodes: Node[], edges: Edge[]) {
 
 export function calculateNodeRanks(
   nodes: Node[],
-  incomingEdges: Map<string, string[]>
+  incomingEdges: Map<string, string[]>,
+  edges: Edge[]
 ): Map<string, number> {
   const ranks = new Map<string, number>();
   const processed = new Set<string>();
@@ -129,16 +130,17 @@ export function calculateNodeRanks(
   }
 
   // Split ranks that have more than 4 nodes
-  const adjustedRanks = splitOvercrowdedRanks(ranks, nodes);
+  const adjustedRanks = splitOvercrowdedRanks(ranks, nodes, edges);
 
   return adjustedRanks;
 }
 
 export function splitOvercrowdedRanks(
   ranks: Map<string, number>,
-  nodes: Node[]
+  nodes: Node[],
+  edges: Edge[]
 ): Map<string, number> {
-  const maxNodesPerRank = 3;
+  const maxNodesPerRank = 4;
   const adjustedRanks = new Map<string, number>();
 
   // Create a map to look up node types by ID
@@ -147,9 +149,29 @@ export function splitOvercrowdedRanks(
     nodeTypeById.set(node.id, node.type || "");
   }
 
+  // Build parent-child relationships from edges
+  const childrenMap = new Map<string, string[]>();
+  const parentsMap = new Map<string, string[]>();
+
+  for (const node of nodes) {
+    childrenMap.set(node.id, []);
+    parentsMap.set(node.id, []);
+  }
+
+  for (const edge of edges) {
+    const children = childrenMap.get(edge.source) || [];
+    children.push(edge.target);
+    childrenMap.set(edge.source, children);
+
+    const parents = parentsMap.get(edge.target) || [];
+    parents.push(edge.source);
+    parentsMap.set(edge.target, parents);
+  }
+
   // Group nodes by their current rank
   const nodesByRank = new Map<number, string[]>();
-  for (const [nodeId, rank] of ranks.entries()) {
+  for (const nodeId of Array.from(ranks.keys())) {
+    const rank = ranks.get(nodeId)!;
     if (!nodesByRank.has(rank)) {
       nodesByRank.set(rank, []);
     }
@@ -158,74 +180,93 @@ export function splitOvercrowdedRanks(
 
   // Separate priority nodes (network/ingress) from regular nodes
   const priorityNodeTypes = new Set(["network", "ingress", "network-preview"]);
-  const priorityRanks = new Set<number>();
-  const regularRanks = new Set<number>();
 
-  for (const [rank, nodeIds] of nodesByRank.entries()) {
-    const hasPriorityNodes = nodeIds.some((nodeId) =>
+  // Process ranks from top to bottom to maintain hierarchy
+  const sortedRanks = Array.from(nodesByRank.keys()).sort((a, b) => b - a);
+
+  for (const originalRank of sortedRanks) {
+    const nodesInRank = nodesByRank.get(originalRank) || [];
+
+    // Separate priority and regular nodes in this rank
+    const priorityNodes = nodesInRank.filter((nodeId) =>
       priorityNodeTypes.has(nodeTypeById.get(nodeId) || "")
     );
-    if (hasPriorityNodes) {
-      priorityRanks.add(rank);
-    } else {
-      regularRanks.add(rank);
-    }
-  }
+    const regularNodes = nodesInRank.filter(
+      (nodeId) => !priorityNodeTypes.has(nodeTypeById.get(nodeId) || "")
+    );
 
-  // Process regular ranks first (from lowest to highest) - overflow goes DOWN (lower ranks)
-  const sortedRegularRanks = Array.from(regularRanks).sort((a, b) => a - b);
-  let regularRankOffset = 0;
+    // Handle priority nodes - they can be split horizontally but stay at high ranks
+    if (priorityNodes.length > 0) {
+      if (priorityNodes.length <= maxNodesPerRank) {
+        for (const nodeId of priorityNodes) {
+          adjustedRanks.set(nodeId, originalRank);
+        }
+      } else {
+        // Split priority nodes across multiple high ranks
+        const numSubRanks = Math.ceil(priorityNodes.length / maxNodesPerRank);
+        for (let subRank = 0; subRank < numSubRanks; subRank++) {
+          const startIdx = subRank * maxNodesPerRank;
+          const endIdx = Math.min(
+            startIdx + maxNodesPerRank,
+            priorityNodes.length
+          );
+          const subRankNodes = priorityNodes.slice(startIdx, endIdx);
 
-  for (const originalRank of sortedRegularRanks) {
-    const nodesInRank = nodesByRank.get(originalRank) || [];
-    const adjustedRank = originalRank - regularRankOffset; // Subtract to go down
-
-    if (nodesInRank.length <= maxNodesPerRank) {
-      // Rank fits within limit, assign all nodes to this rank
-      for (const nodeId of nodesInRank) {
-        adjustedRanks.set(nodeId, adjustedRank);
-      }
-    } else {
-      // Split the rank into multiple sub-ranks going DOWN
-      const numSubRanks = Math.ceil(nodesInRank.length / maxNodesPerRank);
-
-      for (let subRank = 0; subRank < numSubRanks; subRank++) {
-        const startIdx = subRank * maxNodesPerRank;
-        const endIdx = Math.min(startIdx + maxNodesPerRank, nodesInRank.length);
-        const subRankNodes = nodesInRank.slice(startIdx, endIdx);
-
-        for (const nodeId of subRankNodes) {
-          adjustedRanks.set(nodeId, adjustedRank - subRank); // Subtract to go down
+          for (const nodeId of subRankNodes) {
+            adjustedRanks.set(nodeId, originalRank + subRank);
+          }
         }
       }
-
-      // Update rank offset for subsequent regular ranks
-      regularRankOffset += numSubRanks - 1;
     }
-  }
 
-  // Process priority ranks (network/ingress) - these stay at their high ranks
-  const sortedPriorityRanks = Array.from(priorityRanks).sort((a, b) => b - a);
+    // Handle regular nodes - respect hierarchy when splitting
+    if (regularNodes.length > 0) {
+      if (regularNodes.length <= maxNodesPerRank) {
+        for (const nodeId of regularNodes) {
+          adjustedRanks.set(nodeId, originalRank);
+        }
+      } else {
+        // For overcrowded ranks, we need to be smart about which nodes to push down
+        // Prioritize keeping nodes with fewer children in the current rank
+        // and push nodes with more children to lower ranks
 
-  for (const originalRank of sortedPriorityRanks) {
-    const nodesInRank = nodesByRank.get(originalRank) || [];
+        const nodesByChildCount = regularNodes.map((nodeId) => ({
+          nodeId,
+          childCount: (childrenMap.get(nodeId) || []).length,
+          hasUnprocessedChildren: (childrenMap.get(nodeId) || []).some(
+            (childId) => !adjustedRanks.has(childId)
+          ),
+        }));
 
-    if (nodesInRank.length <= maxNodesPerRank) {
-      // Rank fits within limit, assign all nodes to this rank
-      for (const nodeId of nodesInRank) {
-        adjustedRanks.set(nodeId, originalRank);
-      }
-    } else {
-      // Split priority nodes across multiple ranks at the top
-      const numSubRanks = Math.ceil(nodesInRank.length / maxNodesPerRank);
+        // Sort by: 1) nodes with unprocessed children last, 2) then by child count (fewer children first)
+        nodesByChildCount.sort((a, b) => {
+          if (a.hasUnprocessedChildren !== b.hasUnprocessedChildren) {
+            return a.hasUnprocessedChildren ? 1 : -1;
+          }
+          return a.childCount - b.childCount;
+        });
 
-      for (let subRank = 0; subRank < numSubRanks; subRank++) {
-        const startIdx = subRank * maxNodesPerRank;
-        const endIdx = Math.min(startIdx + maxNodesPerRank, nodesInRank.length);
-        const subRankNodes = nodesInRank.slice(startIdx, endIdx);
+        // Keep first maxNodesPerRank nodes in current rank
+        const nodesToKeep = nodesByChildCount.slice(0, maxNodesPerRank);
+        const nodesToPush = nodesByChildCount.slice(maxNodesPerRank);
 
-        for (const nodeId of subRankNodes) {
-          adjustedRanks.set(nodeId, originalRank + subRank); // Add to go up
+        // Assign nodes to keep in current rank
+        for (const { nodeId } of nodesToKeep) {
+          adjustedRanks.set(nodeId, originalRank);
+        }
+
+        // Push remaining nodes to lower ranks, trying to maintain some hierarchy
+        let currentPushRank = originalRank - 1;
+        let nodesInCurrentPushRank = 0;
+
+        for (const { nodeId } of nodesToPush) {
+          if (nodesInCurrentPushRank >= maxNodesPerRank) {
+            currentPushRank--;
+            nodesInCurrentPushRank = 0;
+          }
+
+          adjustedRanks.set(nodeId, currentPushRank);
+          nodesInCurrentPushRank++;
         }
       }
     }

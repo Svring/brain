@@ -12,6 +12,8 @@ export function useRelianceEdges() {
   const { selectedProjectResources } = useProjectState();
   const { addEdge } = useFlowgraphActions();
 
+  // console.log("selectedProjectResources", selectedProjectResources);
+
   // Compute reliances from environment variables and image dependencies
   const { reliances } = useResourceReliances(selectedProjectResources ?? []);
 

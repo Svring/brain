@@ -26,6 +26,8 @@ export function inferRelianceFromEnv(
 ): ResourceReliances {
   const result: ResourceReliances = {};
 
+  console.log("resourceObjects", resourceObjects);
+
   // Filter owner resources (deployment, statefulset, and devbox)
   const ownerResources = resourceObjects.filter(
     (resource) =>
@@ -101,6 +103,8 @@ export function inferRelianceFromEnv(
       }
     }
   }
+
+  console.log("result", result);
 
   return result;
 }
