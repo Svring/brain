@@ -3,7 +3,10 @@
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import { Plus, ChevronRight, Focus, History } from "lucide-react";
-import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import {
+  useCreateNewChatSessionMutation,
+  useSendMessageMutation,
+} from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { Spinner } from "@/components/ui/spinner";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useChatActions } from "@/contexts/chat/chat-context";
@@ -27,10 +30,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  extractLanggraphMessages,
-  convertToCopilotKitMessages,
-} from "@/lib/langgraph/langgraph-method/langgraph-utils";
+import { convertThreadToCopilotKitMessages } from "@/lib/langgraph/langgraph-method/langgraph-utils";
 import { useReactFlow } from "@xyflow/react";
 
 interface AiChatHeaderProps {
@@ -49,7 +49,8 @@ export function AiChatHeader({
   const { closeSidebarChat, maximizeSidebar, minimizeSidebar, selectThread } =
     useChatActions();
   const { setMessages } = useCopilotChatHeadless_c();
-  const { isPending } = useCreateNewChatSessionMutation();
+  const createChatMutation = useCreateNewChatSessionMutation();
+  const { mutate: sendMessage } = useSendMessageMutation();
 
   const {
     threads,
@@ -91,13 +92,19 @@ export function AiChatHeader({
   const handleThreadSelect = (thread: any) => {
     // Select the thread with langgraph action
     selectThread(thread.thread_id);
-
-    // Load and set messages from the selected thread
-    const extractedMessages = extractLanggraphMessages(thread);
-    const convertedMessages = convertToCopilotKitMessages(extractedMessages);
-    setMessages(convertedMessages);
   };
 
+  const handleNewChat = () => {
+    createChatMutation.mutate(undefined, {
+      onSuccess: (newThread) => {
+        console.log("newThread", newThread);
+        selectThread(newThread.thread_id);
+      },
+      onError: (error) => {
+        console.error("Failed to create new chat:", error);
+      },
+    });
+  };
 
   return (
     <div className={`${className}`}>
@@ -114,13 +121,13 @@ export function AiChatHeader({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                onClick={() => setMessages([])}
-                disabled={isPending}
+                onClick={handleNewChat}
+                disabled={createChatMutation.isPending}
                 size="icon"
                 className="h-8 w-8"
                 variant="ghost"
               >
-                {isPending ? (
+                {createChatMutation.isPending ? (
                   <Spinner className="h-4 w-4" />
                 ) : (
                   <Plus className="h-4 w-4" />
@@ -135,54 +142,47 @@ export function AiChatHeader({
             <TooltipTrigger asChild>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                  >
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
                     <History className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-[calc(100vw-2rem)] max-w-sm">
+                <DropdownMenuContent
+                  align="end"
+                  className="w-[calc(100vw-2rem)] max-w-sm space-y-1"
+                >
                   {selectedThreadId && (
                     <DropdownMenuItem
                       key={selectedThreadId}
-                      className="flex items-center justify-between cursor-pointer p-3 bg-muted/50"
+                      className="flex items-center justify-between cursor-pointer p-2 bg-muted/50"
                       onClick={() => {
                         // Current thread is already selected, no action needed
                       }}
                     >
                       <div className="flex flex-col items-start min-w-0 flex-1">
-                        <div className="text-sm font-mono truncate w-full">
+                        <div className="text-sm truncate w-full">
                           {selectedThreadId}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          Current thread
                         </div>
                       </div>
                     </DropdownMenuItem>
                   )}
                   {threads && threads.length > 0 ? (
                     threads
-                      .filter(thread => thread.thread_id !== selectedThreadId)
+                      .filter((thread) => thread.thread_id !== selectedThreadId)
                       .map((thread, index) => (
                         <DropdownMenuItem
                           key={thread.thread_id}
-                          className="flex items-center justify-between cursor-pointer p-3"
+                          className="flex items-center justify-between cursor-pointer p-2"
                           onClick={() => handleThreadSelect(thread)}
                         >
                           <div className="flex flex-col items-start min-w-0 flex-1">
-                            <div className="text-sm font-mono truncate w-full">
+                            <div className="text-sm truncate w-full">
                               {thread.thread_id}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {new Date(thread.created_at).toLocaleString()}
                             </div>
                           </div>
                         </DropdownMenuItem>
                       ))
                   ) : !selectedThreadId ? (
-                    <div className="p-3 text-sm text-muted-foreground text-center">
+                    <div className="p-2 text-sm text-muted-foreground text-center">
                       No chat history available
                     </div>
                   ) : null}

@@ -16,6 +16,7 @@ import { ReactScan } from "@/components/provider/react-scan-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/auth/auth-context";
 import { getUser } from "@/payload/operations/users-operation";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import "@/styles/globals.css";
 import "@copilotkit/react-ui/styles.css";
@@ -73,28 +74,30 @@ export default async function RootLayout({
           disableTransitionOnChange
           enableSystem
         >
-          <AuthProvider payloadUser={payloadUser}>
-            <QueryProvider>
-              <ChatProvider>
-                <CopilotProvider>
-                  <LanggraphConfigWrapper>
-                    <ProjectProvider>
-                      <ReactFlowProvider>
-                        <FlowgraphProvider>
-                          <OrchestratorProvider>
-                            <SidebarProvider defaultOpen={false}>
-                              <AppSidebar />
-                              {children}
-                            </SidebarProvider>
-                          </OrchestratorProvider>
-                        </FlowgraphProvider>
-                      </ReactFlowProvider>
-                    </ProjectProvider>
-                  </LanggraphConfigWrapper>
-                </CopilotProvider>
-              </ChatProvider>
-            </QueryProvider>
-          </AuthProvider>
+          <NuqsAdapter>
+            <AuthProvider payloadUser={payloadUser}>
+              <QueryProvider>
+                <ChatProvider>
+                  <CopilotProvider>
+                    <LanggraphConfigWrapper>
+                      <ProjectProvider>
+                        <ReactFlowProvider>
+                          <FlowgraphProvider>
+                            <OrchestratorProvider>
+                              <SidebarProvider defaultOpen={false}>
+                                <AppSidebar />
+                                {children}
+                              </SidebarProvider>
+                            </OrchestratorProvider>
+                          </FlowgraphProvider>
+                        </ReactFlowProvider>
+                      </ProjectProvider>
+                    </LanggraphConfigWrapper>
+                  </CopilotProvider>
+                </ChatProvider>
+              </QueryProvider>
+            </AuthProvider>
+          </NuqsAdapter>
           <Toaster
             position="top-center"
             icons={{

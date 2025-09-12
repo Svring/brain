@@ -1,7 +1,10 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createThread } from "../langgraph-api/langgraph-api";
+import {
+  createThread,
+  updateThreadState,
+} from "../langgraph-api/langgraph-api";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { useChatActions } from "@/contexts/chat/chat-context";
 import { useAuthState } from "@/contexts/auth/auth-context";
@@ -13,6 +16,7 @@ import {
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { ThreadState } from "@langchain/langgraph-sdk";
 
 // ============================================================================
 // MUTATION HOOKS
@@ -26,6 +30,7 @@ export const useCreateNewChatSessionMutation = (
 ) => {
   const { auth } = useAuthState();
   const { selectedProject, selectedResource } = useProjectState();
+  const updateThreadStateMutation = useUpdateThreadStateMutation();
 
   return useMutation({
     mutationFn: async () => {
@@ -34,6 +39,29 @@ export const useCreateNewChatSessionMutation = (
         projectName: selectedProject || undefined,
         resourceTarget: resourceTarget || selectedResource || undefined,
       });
+    },
+    onSuccess: (newThread) => {
+      // Update the thread state with initial "hi" message
+      // updateThreadStateMutation.mutate({
+      //   threadId: newThread.thread_id,
+      //   state: {
+      //     values: {
+      //       messages: [
+      //         {
+      //           content: "hi",
+      //           additional_kwargs: {
+      //             type: "human",
+      //           },
+      //           response_metadata: {},
+      //           type: "human",
+      //           name: null,
+      //           id: "ck-444cb6c6-522a-47c5-8064-395f083e836b",
+      //           example: false,
+      //         },
+      //       ],
+      //     },
+      //   },
+      // });
     },
     onError: (error) => {
       console.error("Failed to create chat session:", error);
@@ -129,6 +157,31 @@ export const useAppendSystemMessageMutation = () => {
   };
 
   return { appendSystemMessage };
+};
+
+/**
+ * Hook for updating thread state
+ */
+export const useUpdateThreadStateMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      threadId,
+      state,
+    }: {
+      threadId: string;
+      state: any;
+    }) => {
+      return await updateThreadState(threadId, state);
+    },
+    onSuccess: (data, variables) => {
+      // Invalidate and refetch thread-related queries
+    },
+    onError: (error) => {
+      console.error("Failed to update thread state:", error);
+    },
+  });
 };
 
 // /**

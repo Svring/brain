@@ -44,6 +44,7 @@ export const createThread = async ({
 
   return await client.threads.create({
     metadata,
+    graphId: "orca",
   });
 };
 
@@ -55,6 +56,11 @@ export const listThreads = async () => {
 export const getThread = async (threadId: string) => {
   const client = createClient();
   return await client.threads.get(threadId);
+};
+
+export const updateThreadState = async (threadId: string, state: any) => {
+  const client = createClient();
+  return await client.threads.updateState(threadId, state);
 };
 
 export const searchThreads = async (metadata: Record<string, any>) => {

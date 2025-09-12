@@ -62,7 +62,7 @@ export default function useFlowgraph(
 
   // Fetch complete resource data for each resource
 
-  console.log("resourceTargets", resourceTargets);
+  // console.log("resourceTargets", resourceTargets);
 
   const resourceQueries = resourceTargets.map(({ target, kind, name }: any) => {
     // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -82,7 +82,7 @@ export default function useFlowgraph(
     };
   });
 
-  console.log("resourceQueries", resourceQueries);
+  // console.log("resourceQueries", resourceQueries);
 
   // Process complete resources when all data is loaded
 

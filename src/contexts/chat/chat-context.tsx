@@ -7,6 +7,7 @@ import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import type { Thread } from "@langchain/langgraph-sdk";
 import { chatMachine } from "@/contexts/chat/chat-machine";
 import { useProjectActions } from "../project/project-context";
+import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
 // const inspector = createBrowserInspector();
 
@@ -110,8 +111,9 @@ export function useChatActions() {
     disableFloatingLoading: () =>
       send({ type: "SET_FLOATING_LOADING", loading: false }),
 
-    selectThread: (threadId: string) =>
-      send({ type: "SELECT_THREAD", threadId }),
+    selectThread: (threadId: string) => {
+      send({ type: "SELECT_THREAD", threadId });
+    },
     setThreads: (threads: Thread[]) => send({ type: "SET_THREADS", threads }),
   };
 }

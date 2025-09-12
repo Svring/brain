@@ -101,6 +101,7 @@
     "next-themes": "latest",
     "node-ssh": "^13.2.1",
     "nookies": "^2.5.2",
+    "nuqs": "^2.6.0",
     "payload": "3.41.0",
     "portscanner": "^2.2.0",
     "process": "^0.11.10",

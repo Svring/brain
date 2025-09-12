@@ -5,10 +5,7 @@ import {
 } from "@/lib/langgraph/langgraph-method/langgraph-query";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useProjectState } from "@/contexts/project/project-context";
-import {
-  extractLanggraphMessages,
-  convertToCopilotKitMessages,
-} from "@/lib/langgraph/langgraph-method/langgraph-utils";
+import { convertThreadToCopilotKitMessages } from "@/lib/langgraph/langgraph-method/langgraph-utils";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { useEffect } from "react";
 
@@ -48,16 +45,15 @@ export const useResourceThreads = () => {
   useEffect(() => {
     if (threads && threads.length > 0) {
       const firstThread = threads[0];
-      const extractedMessages = extractLanggraphMessages(firstThread);
-      const convertedMessages = convertToCopilotKitMessages(extractedMessages);
+      const convertedMessages = convertThreadToCopilotKitMessages(firstThread);
       console.log("Converted messages:", convertedMessages);
       setMessages(convertedMessages);
     }
   }, [threads, setMessages]);
 
-  // Get the latest thread ID (first in the sorted list)
-  const latestThreadId =
-    threads && threads.length > 0 ? threads[0].thread_id : null;
+  // Get the latest thread (first in the sorted list)
+  const latestThread = threads && threads.length > 0 ? threads[0] : null;
+  const latestThreadId = latestThread?.thread_id || null;
 
   // Get the state of the latest thread if available
   const { data: latestThreadState, isLoading: threadStateLoading } = useQuery(
@@ -67,6 +63,7 @@ export const useResourceThreads = () => {
   return {
     threads,
     threadsLoading,
+    latestThread,
     latestThreadId,
     latestThreadState,
     threadStateLoading,

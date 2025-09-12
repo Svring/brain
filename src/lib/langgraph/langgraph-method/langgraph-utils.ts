@@ -68,3 +68,11 @@ export function extractLanggraphMessages(
 ): LangGraphMessage[] {
   return thread.values?.messages || [];
 }
+
+// Unified function that converts a thread directly to CopilotKit messages
+export function convertThreadToCopilotKitMessages(
+  thread: ThreadWithValues
+): Message[] {
+  const messages = extractLanggraphMessages(thread);
+  return convertToCopilotKitMessages(messages);
+}

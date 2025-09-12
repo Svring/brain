@@ -7,6 +7,8 @@ import { useAuthState } from "@/contexts/auth/auth-context";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMount } from "@reactuses/core";
 import { LoadingScreen } from "@/components/ui/loading-screen";
+import { useQueryState } from "nuqs";
+import { useEffect } from "react";
 
 // Component for creating threads
 function ThreadCreator({ children }: { children: React.ReactNode }) {
@@ -64,7 +66,14 @@ function ThreadCreator({ children }: { children: React.ReactNode }) {
 // Component for rendering CopilotKit with thread
 function CopilotKitRenderer({ children }: { children: React.ReactNode }) {
   const { selectedThreadId } = useChatState();
-  // console.log("selectedThreadId in CopilotKitRenderer", selectedThreadId);
+
+  const [, setThreadId] = useQueryState("threadId");
+
+  useEffect(() => {
+    if (selectedThreadId) {
+      setThreadId(selectedThreadId);
+    }
+  }, [selectedThreadId]);
 
   return (
     <CopilotKit
