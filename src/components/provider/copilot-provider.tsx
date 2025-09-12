@@ -6,7 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMount } from "@reactuses/core";
-import { Spinner } from "@/components/ui/spinner";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 
 // Component for creating threads
 function ThreadCreator({ children }: { children: React.ReactNode }) {
@@ -33,11 +33,7 @@ function ThreadCreator({ children }: { children: React.ReactNode }) {
 
   // Loading state
   if (createThreadMutation.isPending) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spinner variant="bars" size={24} />
-      </div>
-    );
+    return <LoadingScreen text="Creating chat thread..." />;
   }
 
   // Error state
@@ -59,11 +55,7 @@ function ThreadCreator({ children }: { children: React.ReactNode }) {
 
   // Don't render children until thread is available
   if (!selectedThreadId) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spinner variant="bars" size={24} />
-      </div>
-    );
+    return <LoadingScreen text="Initializing chat..." />;
   }
 
   return <>{children}</>;

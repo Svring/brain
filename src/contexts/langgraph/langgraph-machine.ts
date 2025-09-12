@@ -5,7 +5,7 @@ export const langgraphMachine = createMachine({
   /** XState v5 generics */
   types: {} as { context: BrainState; events: LanggraphEvent },
   id: "langgraph",
-  initial: "idle",
+  initial: "loading",
   context: {
     base_url: "",
     api_key: "",
@@ -20,6 +20,50 @@ export const langgraphMachine = createMachine({
     },
   },
   states: {
+    loading: {
+      on: {
+        SET_CONFIG: {
+          target: "loaded",
+          actions: assign({
+            base_url: ({ context, event }) =>
+              event.base_url ?? context.base_url,
+            api_key: ({ context, event }) => event.api_key ?? context.api_key,
+            model_name: ({ context, event }) =>
+              event.model_name ?? context.model_name,
+          }),
+        },
+        SET_CONFIG_FAILED: {
+          target: "unloaded",
+        },
+      },
+    },
+    loaded: {
+      on: {
+        SET_CONFIG: {
+          actions: assign({
+            base_url: ({ context, event }) =>
+              event.base_url ?? context.base_url,
+            api_key: ({ context, event }) => event.api_key ?? context.api_key,
+            model_name: ({ context, event }) =>
+              event.model_name ?? context.model_name,
+          }),
+        },
+      },
+    },
+    unloaded: {
+      on: {
+        SET_CONFIG: {
+          target: "loaded",
+          actions: assign({
+            base_url: ({ context, event }) =>
+              event.base_url ?? context.base_url,
+            api_key: ({ context, event }) => event.api_key ?? context.api_key,
+            model_name: ({ context, event }) =>
+              event.model_name ?? context.model_name,
+          }),
+        },
+      },
+    },
     idle: {},
     active: {},
   },

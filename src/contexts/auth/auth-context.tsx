@@ -9,6 +9,7 @@ import type { Auth } from "@/contexts/auth/auth-machine";
 import { authMachine } from "@/contexts/auth/auth-machine";
 import { authenticateDev, authenticateProd } from "@/lib/auth/auth-utils";
 import type { User } from "@/payload-types";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 
 // const inspector = createBrowserInspector();
 
@@ -42,11 +43,7 @@ export const AuthProvider = ({
   });
 
   if (state.matches("authenticating")) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div>Authenticating...</div>
-      </div>
-    );
+    return <LoadingScreen text="Authenticating..." />;
   }
 
   return (

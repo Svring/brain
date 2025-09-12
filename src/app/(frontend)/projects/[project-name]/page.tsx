@@ -25,7 +25,7 @@ import { useProjectActions } from "@/contexts/project/project-context";
 import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { cn } from "@/lib/utils";
-import { Spinner } from "@/components/ui/spinner";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 import { REACT_FLOW_CONFIG } from "@/lib/flowgraph/flowgraph-constant/flowgraph-constant-config";
 import edgeTypes from "@/components/flowgraph/edge/edge-types";
 import nodeTypes from "@/components/flowgraph/node/node-types";
@@ -78,16 +78,19 @@ function ProjectFlow({
   const { nodes, edges } = useFlowgraphState();
   const { onNodesChange, onEdgesChange } = useFlowgraphActions();
   useCopilotActions();
-  
+
   // console.log("isLoading", isLoading);
   // console.log("nodes", nodes);
   // console.log("edges", edges);
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full w-full">
-        <Spinner variant="bars" size={24} />
-      </div>
+      <LoadingScreen
+        text="Loading project..."
+        variant="bars"
+        size={24}
+        className="h-full w-full"
+      />
     );
   }
 

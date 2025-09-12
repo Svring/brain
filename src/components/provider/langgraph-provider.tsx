@@ -1,30 +1,34 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { useAiProxyContext } from "@/lib/auth/auth-utils";
 import { listAiProxyTokensOptions } from "@/lib/sealos/resources/ai-proxy/ai-proxy-method/ai-proxy-query";
 import { useCreateAiProxyTokenMutation } from "@/lib/sealos/resources/ai-proxy/ai-proxy-method/ai-proxy-mutation";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
-import { LanggraphProvider } from "@/contexts/langgraph/langgraph-context";
+import {
+  LanggraphProvider,
+  useLanggraphState,
+  useLanggraphActions,
+} from "@/contexts/langgraph/langgraph-context";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { toast } from "sonner";
 import Image from "next/image";
 
-export const LanggraphConfigWrapper = ({
-  children,
-}: {
-  children: ReactNode;
-}) => {
+// Inner component that uses langgraph state and actions
+function LanggraphConfigInner({ children }: { children: ReactNode }) {
   const isProduction = process.env.NEXT_PUBLIC_MODE === "production";
   const { auth } = useAuthState();
   const aiProxyContext = useAiProxyContext();
+  const { isLoading, isLoaded, isUnloaded } = useLanggraphState();
+  const { setConfig, setConfigFailed } = useLanggraphActions();
 
-  // Query AI proxy tokens in production
-  const { data: aiProxyTokens, isLoading } = useQuery({
+  // Query AI proxy tokens in production - only when not loaded
+  const { data: aiProxyTokens, isLoading: tokensLoading } = useQuery({
     ...listAiProxyTokensOptions(aiProxyContext),
-    enabled: isProduction,
+    enabled: isProduction && !isLoaded,
   });
 
   const brainToken = aiProxyTokens?.tokens?.find(
@@ -32,24 +36,48 @@ export const LanggraphConfigWrapper = ({
   );
   const createTokenMutation = useCreateAiProxyTokenMutation(aiProxyContext);
 
-  // Build configuration
-  const config = isProduction
-    ? {
-        apiKey: brainToken ? `sk-${brainToken.key}` : undefined,
-        baseUrl: aiProxyContext.baseUrl
-          ? `http://aiproxy.${aiProxyContext.baseUrl}/v1`
-          : undefined,
-        modelName:
-          aiProxyContext.baseUrl?.endsWith("io") &&
-          !aiProxyContext.baseUrl?.endsWith("nip.io")
-            ? "gpt-4.1"
-            : "kimi-k2-0711-preview",
+  // Handle initial config loading
+  useEffect(() => {
+    if (isLoading) {
+      const config = isProduction
+        ? {
+            apiKey: brainToken ? `sk-${brainToken.key}` : undefined,
+            baseUrl: aiProxyContext.baseUrl
+              ? `http://aiproxy.${aiProxyContext.baseUrl}/v1`
+              : undefined,
+            modelName:
+              aiProxyContext.baseUrl?.endsWith("io") &&
+              !aiProxyContext.baseUrl?.endsWith("nip.io")
+                ? "gpt-4.1"
+                : "kimi-k2-0711-preview",
+          }
+        : {
+            apiKey: auth?.apiKey,
+            baseUrl: auth?.baseUrl,
+            modelName: "gpt-4.1",
+          };
+
+      // Check if config is complete
+      if (config.apiKey && config.baseUrl && config.modelName) {
+        setConfig({
+          base_url: config.baseUrl,
+          api_key: config.apiKey,
+          model_name: config.modelName,
+        });
+      } else if (isProduction && !tokensLoading) {
+        // No brain token found in production
+        setConfigFailed();
       }
-    : {
-        apiKey: auth?.apiKey,
-        baseUrl: auth?.baseUrl,
-        modelName: "gpt-4.1",
-      };
+    }
+  }, [
+    isLoading,
+    isProduction,
+    brainToken,
+    aiProxyContext.baseUrl,
+    auth?.apiKey,
+    auth?.baseUrl,
+    tokensLoading,
+  ]);
 
   // Handle token creation
   const handleCreateToken = () => {
@@ -69,21 +97,13 @@ export const LanggraphConfigWrapper = ({
     );
   };
 
-  // Show loading state in production
-  if (isProduction && isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
-        <Spinner variant="bars" className="text-primary" />
-        <p className="text-muted-foreground">Checking token configuration...</p>
-      </div>
-    );
+  // Show loading state
+  if (isLoading || (isProduction && tokensLoading)) {
+    return <LoadingScreen text="Checking token configuration..." />;
   }
 
-  // Show token creation UI if config is incomplete
-  if (
-    isProduction &&
-    (!config.apiKey || !config.baseUrl || !config.modelName)
-  ) {
+  // Show token creation UI if unloaded (no token found)
+  if (isUnloaded) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
         <div className="flex flex-col items-center space-y-4">
@@ -105,7 +125,7 @@ export const LanggraphConfigWrapper = ({
           onClick={handleCreateToken}
           disabled={createTokenMutation.isPending}
           className="max-w-xs"
-          size='sm'
+          size="sm"
         >
           {createTokenMutation.isPending ? (
             <>
@@ -120,6 +140,18 @@ export const LanggraphConfigWrapper = ({
     );
   }
 
-  // Render provider with config
-  return <LanggraphProvider config={config}>{children}</LanggraphProvider>;
+  // Render children when loaded
+  return <>{children}</>;
+}
+
+export const LanggraphConfigWrapper = ({
+  children,
+}: {
+  children: ReactNode;
+}) => {
+  return (
+    <LanggraphProvider config={{}}>
+      <LanggraphConfigInner>{children}</LanggraphConfigInner>
+    </LanggraphProvider>
+  );
 };

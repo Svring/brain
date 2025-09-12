@@ -30,8 +30,8 @@ export const LanggraphProvider = ({
   };
 }) => {
   const [state, send, actorRef] = useMachine(langgraphMachine);
-  const isProduction = process.env.NEXT_PUBLIC_MODE === "production";
 
+  // Only set config from props if provided (for backward compatibility)
   useEffect(() => {
     if (config.apiKey && config.baseUrl && config.modelName) {
       send({
@@ -41,7 +41,7 @@ export const LanggraphProvider = ({
         model_name: config.modelName,
       });
     }
-  }, [config.apiKey, config.baseUrl, config.modelName]);
+  }, [config.apiKey, config.baseUrl, config.modelName, send]);
 
   return (
     <LanggraphContext.Provider value={{ state, send, actorRef }}>
@@ -69,6 +69,9 @@ export function useLanggraphState() {
     stage: state.context.stage,
     isIdle: state.matches("idle"),
     isActive: state.matches("active"),
+    isLoading: state.matches("loading"),
+    isLoaded: state.matches("loaded"),
+    isUnloaded: state.matches("unloaded"),
   };
 }
 
@@ -84,6 +87,9 @@ export function useLanggraphActions() {
     }) => {
       send({ type: "SET_CONFIG", ...config });
       setLanggraphState({ ...state.context, ...config });
+    },
+    setConfigFailed: () => {
+      send({ type: "SET_CONFIG_FAILED" });
     },
     setStage: (stage: "propose_project" | "manage_project") => {
       send({ type: "SET_STAGE", stage });

@@ -93,6 +93,9 @@ export type LanggraphEvent =
       model_name?: string;
     }
   | {
+      type: "SET_CONFIG_FAILED";
+    }
+  | {
       type: "SET_STAGE";
       stage: "propose_project" | "manage_project";
     }

@@ -1,18 +1,5 @@
-// import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 
 export default function Loading() {
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "50vh",
-      }}
-    >
-      {/* <Skeleton style={{ width: 48, height: 48, borderRadius: "50%" }} /> */}
-      {/* <span style={{ marginTop: 16, fontSize: 18 }}>Loading...</span> */}
-    </div>
-  );
+  return <LoadingScreen text="Loading..." />;
 }
