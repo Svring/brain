@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
-import { Eraser, ChevronRight, Focus } from "lucide-react";
+import { Plus, ChevronRight, Focus, History } from "lucide-react";
 import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { Spinner } from "@/components/ui/spinner";
 import { useProjectState } from "@/contexts/project/project-context";
@@ -27,12 +27,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Copy } from "lucide-react";
 import {
   extractLanggraphMessages,
   convertToCopilotKitMessages,
 } from "@/lib/langgraph/langgraph-method/langgraph-utils";
-import { useCopy } from "@/hooks/use-copy";
 import { useReactFlow } from "@xyflow/react";
 
 interface AiChatHeaderProps {
@@ -61,7 +59,6 @@ export function AiChatHeader({
     threadStateLoading,
     hasThreads,
   } = useResourceThreads();
-  const { copyToClipboard } = useCopy();
   const { fitView } = useReactFlow();
 
   // Use node select hook for resource name click functionality
@@ -101,11 +98,6 @@ export function AiChatHeader({
     setMessages(convertedMessages);
   };
 
-  const handleCopyThreadId = () => {
-    if (selectedThreadId) {
-      copyToClipboard(selectedThreadId, "threadId");
-    }
-  };
 
   return (
     <div className={`${className}`}>
@@ -116,64 +108,6 @@ export function AiChatHeader({
           </div>
           <div className="flex items-center gap-4">
             <Separator orientation="vertical" className="h-4!" />
-            {threads && threads.length > 0 && (
-              <div className="flex items-center gap-2 text text-muted-foreground">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-auto text-muted-foreground transition-colors"
-                    >
-                      <span className="truncate max-w-[120px]">
-                        {threads.length} Thread{threads.length !== 1 ? "s" : ""}
-                      </span>
-                      <ChevronDown className="h-3 w-3 ml-1" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-80">
-                    {threads.map((thread, index) => (
-                      <DropdownMenuItem
-                        key={thread.thread_id}
-                        className="flex items-center justify-between cursor-pointer p-3"
-                        onClick={() => handleThreadSelect(thread)}
-                      >
-                        <div className="flex flex-col items-start min-w-0 flex-1">
-                          <div className="text-sm font-mono truncate w-full">
-                            {thread.thread_id}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {new Date(thread.created_at).toLocaleString()}
-                          </div>
-                        </div>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                {selectedThreadId && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        onClick={handleCopyThreadId}
-                        size="icon"
-                        variant="ghost"
-                        className="h-6 w-6 text-muted-foreground hover:text-theme-blue"
-                      >
-                        <Copy className="h-3 w-3" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Copy thread ID</p>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-              </div>
-            )}
-            {/* {selectedThreadId && (
-              <div className="flex items-center gap-2 text text-muted-foreground">
-                <span>{selectedThreadId.slice(0, 8)}</span>
-              </div>
-            )} */}
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -189,12 +123,74 @@ export function AiChatHeader({
                 {isPending ? (
                   <Spinner className="h-4 w-4" />
                 ) : (
-                  <Eraser className="h-4 w-4" />
+                  <Plus className="h-4 w-4" />
                 )}
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Clear</p>
+              <p>New Chat</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                  >
+                    <History className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[calc(100vw-2rem)] max-w-sm">
+                  {selectedThreadId && (
+                    <DropdownMenuItem
+                      key={selectedThreadId}
+                      className="flex items-center justify-between cursor-pointer p-3 bg-muted/50"
+                      onClick={() => {
+                        // Current thread is already selected, no action needed
+                      }}
+                    >
+                      <div className="flex flex-col items-start min-w-0 flex-1">
+                        <div className="text-sm font-mono truncate w-full">
+                          {selectedThreadId}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Current thread
+                        </div>
+                      </div>
+                    </DropdownMenuItem>
+                  )}
+                  {threads && threads.length > 0 ? (
+                    threads
+                      .filter(thread => thread.thread_id !== selectedThreadId)
+                      .map((thread, index) => (
+                        <DropdownMenuItem
+                          key={thread.thread_id}
+                          className="flex items-center justify-between cursor-pointer p-3"
+                          onClick={() => handleThreadSelect(thread)}
+                        >
+                          <div className="flex flex-col items-start min-w-0 flex-1">
+                            <div className="text-sm font-mono truncate w-full">
+                              {thread.thread_id}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {new Date(thread.created_at).toLocaleString()}
+                            </div>
+                          </div>
+                        </DropdownMenuItem>
+                      ))
+                  ) : !selectedThreadId ? (
+                    <div className="p-3 text-sm text-muted-foreground text-center">
+                      No chat history available
+                    </div>
+                  ) : null}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Chat History</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>

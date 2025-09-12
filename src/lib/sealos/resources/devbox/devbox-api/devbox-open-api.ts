@@ -168,7 +168,7 @@ export const deployDevbox = createParallelAction(
     const validatedRequest = DevboxDeployRequestSchema.parse(request);
     const api = await createAppApi(context);
     const response = await api.post("/deployDevbox", validatedRequest);
-    console.log("response", response);
+    // console.log("response", response);
     return DevboxDeployResponseSchema.parse(response.data);
   }
 );

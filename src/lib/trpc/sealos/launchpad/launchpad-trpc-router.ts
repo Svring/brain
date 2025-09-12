@@ -67,7 +67,7 @@ export const launchpadRouter = t.router({
 
   networkStatus: t.procedure.input(z.string()).query(async ({ input, ctx }) => {
     const response = await checkLaunchpadReady({ name: input }, ctx);
-    console.log("response", response);
+    // console.log("response", response);
     return response;
   }),
 

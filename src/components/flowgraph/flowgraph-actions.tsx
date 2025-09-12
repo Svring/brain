@@ -138,7 +138,7 @@ export function FlowgraphActions({
         </Tooltip>
 
         {/* Scan Button */}
-        <Tooltip>
+        {/* <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
@@ -152,7 +152,7 @@ export function FlowgraphActions({
           <TooltipContent>
             <p>Fit Viewport</p>
           </TooltipContent>
-        </Tooltip>
+        </Tooltip> */}
 
         {/* Refresh Button */}
         <Tooltip>

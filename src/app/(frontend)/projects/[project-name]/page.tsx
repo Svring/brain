@@ -96,7 +96,7 @@ function ProjectFlow({
   if (isLoading) {
     return (
       <LoadingScreen
-        text="Loading project..."
+        text="Loading..."
         variant="bars"
         size={24}
         className="h-full w-full"
@@ -125,6 +125,40 @@ function ProjectFlow({
       connectionLineComponent={FloatingConnectionLine}
       proOptions={REACT_FLOW_CONFIG.proOptions}
     />
+  );
+}
+
+function ProjectFlowWithLoading({
+  projectName,
+  sidebarChatMaximized,
+  resourceTargets,
+  isLoadingResources,
+}: {
+  projectName: string;
+  sidebarChatMaximized: boolean;
+  resourceTargets: any[];
+  isLoadingResources: boolean;
+}) {
+  const { isLoading } = useFlowgraph(
+    projectName,
+    resourceTargets,
+    isLoadingResources
+  );
+
+  return (
+    <>
+      <ProjectFlow
+        projectName={projectName}
+        sidebarChatMaximized={sidebarChatMaximized}
+        resourceTargets={resourceTargets}
+        isLoadingResources={isLoadingResources}
+      />
+      <ProjectFloatingUI
+        projectName={projectName}
+        sidebarChatMaximized={sidebarChatMaximized}
+        isLoading={isLoading}
+      />
+    </>
   );
 }
 
@@ -195,16 +229,11 @@ export default function ProjectPage({
             : "w-full"
         )}
       >
-        <ProjectFlow
+        <ProjectFlowWithLoading
           projectName={projectName}
           sidebarChatMaximized={sidebarChatMaximized}
           resourceTargets={resourceTargets}
           isLoadingResources={isLoadingResources}
-        />
-        <ProjectFloatingUI
-          projectName={projectName}
-          sidebarChatMaximized={sidebarChatMaximized}
-          isLoading={false}
         />
       </div>
       <div
