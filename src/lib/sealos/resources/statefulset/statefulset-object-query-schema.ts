@@ -345,12 +345,13 @@ export const StatefulsetObjectQuerySchema = z.object({
         return {
           name: pod.metadata.name,
           status: pod.status.phase,
-          containers: pod.status.containerStatuses.map((container: any) => ({
-            name: container.name,
-            ready: container.ready,
-            state: container.state,
-            restartCount: container.restartCount,
-          })),
+          containers:
+            pod.status.containerStatuses?.map((container: any) => ({
+              name: container.name,
+              ready: container.ready,
+              state: container.state,
+              restartCount: container.restartCount,
+            })) || [],
         };
       });
     }),

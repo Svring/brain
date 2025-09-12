@@ -29,6 +29,8 @@ import { LoadingScreen } from "@/components/ui/loading-screen";
 import { REACT_FLOW_CONFIG } from "@/lib/flowgraph/flowgraph-constant/flowgraph-constant-config";
 import edgeTypes from "@/components/flowgraph/edge/edge-types";
 import nodeTypes from "@/components/flowgraph/node/node-types";
+import useProjectResources from "@/hooks/brain/use-project-resources";
+import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 function ProjectFloatingUI({
   projectName,
@@ -70,11 +72,19 @@ function ProjectFloatingUI({
 function ProjectFlow({
   projectName,
   sidebarChatMaximized,
+  resourceTargets,
+  isLoadingResources,
 }: {
   projectName: string;
   sidebarChatMaximized: boolean;
+  resourceTargets: any[];
+  isLoadingResources: boolean;
 }) {
-  const { isLoading } = useFlowgraph(projectName);
+  const { isLoading } = useFlowgraph(
+    projectName,
+    resourceTargets,
+    isLoadingResources
+  );
   const { nodes, edges } = useFlowgraphState();
   const { onNodesChange, onEdgesChange } = useFlowgraphActions();
   useCopilotActions();
@@ -131,7 +141,22 @@ export default function ProjectPage({
   const { closeSidebarChat } = useChatActions();
   const { setMessages } = useCopilotChatHeadless_c();
   const { refresh } = useFlowgraphActions();
-  const { isLoading } = useFlowgraph(projectName);
+
+  // Fetch project resources and compose resource targets
+  const { resources, isLoading: isLoadingResources } =
+    useProjectResources(projectName);
+
+  // Create resource targets for fetching complete data
+  const resourceTargets = (resources ?? [])
+    .map((resource: any) => ({
+      target: convertResourceObjectToTarget({
+        kind: resource.kind || "",
+        name: resource.metadata?.name || "",
+      }),
+      kind: resource.kind || "",
+      name: resource.metadata?.name || "",
+    }))
+    .filter((r: any) => r.kind && r.name);
 
   useEffect(() => {
     selectProject(projectName);
@@ -145,6 +170,18 @@ export default function ProjectPage({
       closeSidebarChat();
     };
   }, [projectName]);
+
+  // Show loading screen while resources are being fetched
+  if (isLoadingResources) {
+    return (
+      <LoadingScreen
+        text="Loading project resources..."
+        variant="bars"
+        size={24}
+        className="h-screen w-full"
+      />
+    );
+  }
 
   return (
     <div className="relative h-screen w-full flex overflow-hidden">
@@ -161,11 +198,13 @@ export default function ProjectPage({
         <ProjectFlow
           projectName={projectName}
           sidebarChatMaximized={sidebarChatMaximized}
+          resourceTargets={resourceTargets}
+          isLoadingResources={isLoadingResources}
         />
         <ProjectFloatingUI
           projectName={projectName}
           sidebarChatMaximized={sidebarChatMaximized}
-          isLoading={isLoading}
+          isLoading={false}
         />
       </div>
       <div

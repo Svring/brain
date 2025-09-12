@@ -31,12 +31,15 @@ export const ClusterObjectQuerySchema = z.object({
       path: ["spec.clusterVersionRef"],
     })
   ),
-  status: z.string().describe(
-    JSON.stringify({
-      resourceType: "cluster",
-      path: ["status.phase"],
-    })
-  ),
+  status: z
+    .string()
+    .nullable()
+    .describe(
+      JSON.stringify({
+        resourceType: "cluster",
+        path: ["status.phase"],
+      })
+    ),
   resource: z
     .any()
     .describe(
@@ -126,6 +129,7 @@ export const ClusterObjectQuerySchema = z.object({
     privateConnection: z.object({
       endpoint: z
         .string()
+        .nullable()
         .describe(
           JSON.stringify({
             resourceType: "secret",
@@ -134,9 +138,12 @@ export const ClusterObjectQuerySchema = z.object({
             path: ["data.endpoint"],
           })
         )
-        .transform((val) => Buffer.from(val, "base64").toString("utf-8")),
+        .transform((val) =>
+          val ? Buffer.from(val, "base64").toString("utf-8") : null
+        ),
       host: z
         .string()
+        .nullable()
         .describe(
           JSON.stringify({
             resourceType: "secret",
@@ -145,9 +152,12 @@ export const ClusterObjectQuerySchema = z.object({
             path: ["data.host"],
           })
         )
-        .transform((val) => Buffer.from(val, "base64").toString("utf-8")),
+        .transform((val) =>
+          val ? Buffer.from(val, "base64").toString("utf-8") : null
+        ),
       port: z
         .string()
+        .nullable()
         .describe(
           JSON.stringify({
             resourceType: "secret",
@@ -156,9 +166,12 @@ export const ClusterObjectQuerySchema = z.object({
             path: ["data.port"],
           })
         )
-        .transform((val) => Buffer.from(val, "base64").toString("utf-8")),
+        .transform((val) =>
+          val ? Buffer.from(val, "base64").toString("utf-8") : null
+        ),
       username: z
         .string()
+        .nullable()
         .describe(
           JSON.stringify({
             resourceType: "secret",
@@ -167,9 +180,12 @@ export const ClusterObjectQuerySchema = z.object({
             path: ["data.username"],
           })
         )
-        .transform((val) => Buffer.from(val, "base64").toString("utf-8")),
+        .transform((val) =>
+          val ? Buffer.from(val, "base64").toString("utf-8") : null
+        ),
       password: z
         .string()
+        .nullable()
         .describe(
           JSON.stringify({
             resourceType: "secret",
@@ -178,7 +194,9 @@ export const ClusterObjectQuerySchema = z.object({
             path: ["data.password"],
           })
         )
-        .transform((val) => Buffer.from(val, "base64").toString("utf-8")),
+        .transform((val) =>
+          val ? Buffer.from(val, "base64").toString("utf-8") : null
+        ),
     }),
     publicConnection: z
       .any()

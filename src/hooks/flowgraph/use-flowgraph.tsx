@@ -1,15 +1,11 @@
 import { useEffect, useState } from "react";
 
-import useProjectResources from "@/hooks/brain/use-project-resources";
-
 import {
   useFlowgraphActions,
   useFlowgraphState,
 } from "@/contexts/flowgraph/flowgraph-context";
 
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
-
-import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 import {
   convertResourceObjectsToNodes,
@@ -37,7 +33,7 @@ interface CompleteResource {
 
  * Centralized flowgraph hook that:
 
- * 1. Fetches basic K8s resource list
+ * 1. Accepts resource targets from parent component
 
  * 2. Fetches complete resource data for each resource
 
@@ -47,12 +43,11 @@ interface CompleteResource {
 
  */
 
-export default function useFlowgraph(projectName: string) {
-  const { resources, isLoading: isLoadingResources } =
-    useProjectResources(projectName);
-
-  // console.log("resources", resources);
-
+export default function useFlowgraph(
+  projectName: string,
+  resourceTargets: any[],
+  isLoadingResources: boolean
+) {
   const { setNodes, setEdges, fitView } = useFlowgraphActions();
 
   const { refreshTrigger } = useFlowgraphState();
@@ -65,30 +60,16 @@ export default function useFlowgraph(projectName: string) {
 
   const [isLoadingComplete, setIsLoadingComplete] = useState(false);
 
-  // Create resource targets for fetching complete data
-
-  const resourceTargets = (resources ?? [])
-
-    .map((resource: any) => ({
-      target: convertResourceObjectToTarget({
-        kind: resource.kind || "",
-
-        name: resource.metadata?.name || "",
-      }),
-
-      kind: resource.kind || "",
-
-      name: resource.metadata?.name || "",
-    }))
-
-    .filter((r: any) => r.kind && r.name);
-
   // Fetch complete resource data for each resource
+
+  console.log("resourceTargets", resourceTargets);
 
   const resourceQueries = resourceTargets.map(({ target, kind, name }: any) => {
     // eslint-disable-next-line react-hooks/rules-of-hooks
 
     const query = useResourceStatus(target);
+
+    // console.log("query", query);
 
     return {
       ...query,
@@ -100,6 +81,8 @@ export default function useFlowgraph(projectName: string) {
       target,
     };
   });
+
+  console.log("resourceQueries", resourceQueries);
 
   // Process complete resources when all data is loaded
 

@@ -74,7 +74,7 @@ function StatefulsetNode({
           {/* Bottom section with status and icons */}
           <div className="mt-auto flex justify-between items-center">
             {/* Left: Status light */}
-            {/* <NodeStatusLight status={status || "Pending"} /> */}
+            <NodeStatusLight status={status || "Pending"} />
 
             {/* Right: Icon components */}
             <div className="flex items-center gap-2">

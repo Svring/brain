@@ -76,7 +76,7 @@ export const StatefulsetObjectSchema = z.object({
   kind: z.string(),
   image: ImageSchema,
   resource: ResourceSchema,
-  status: z.string(),
+  status: z.string().nullable(),
   launchCommand: z
     .object({
       command: z.array(z.string()),

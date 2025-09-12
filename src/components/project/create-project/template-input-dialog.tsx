@@ -148,6 +148,7 @@ export const TemplateInputDialog = memo(function TemplateInputDialog({
       }
     });
     onSubmit(templateForm);
+    onClose(); // Close the dialog immediately when submit is clicked
   };
 
   const renderFormField = (key: string, input: any) => {

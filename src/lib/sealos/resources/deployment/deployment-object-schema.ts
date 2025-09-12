@@ -60,7 +60,7 @@ export const DeploymentObjectSchema = z.object({
   kind: z.string(),
   image: ImageSchema,
   resource: ResourceSchema,
-  status: z.string().optional().nullable(),
+  status: z.string().nullable().optional(),
   launchCommand: z
     .object({
       command: z.array(z.string()),
