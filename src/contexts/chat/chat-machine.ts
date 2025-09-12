@@ -13,7 +13,7 @@ export interface ChatSectionState {
 export interface ChatContextState {
   sidebarChat: ChatSectionState;
   floatingChat: ChatSectionState;
-  selectedThreadId: string;
+  selectedThreadId: string | null;
   threads: Thread[];
 }
 
@@ -26,7 +26,7 @@ export type ChatEvent =
   | { type: "SET_FLOATING_MAXIMIZED"; maximized: boolean }
   | { type: "SET_SIDEBAR_LOADING"; loading: boolean }
   | { type: "SET_FLOATING_LOADING"; loading: boolean }
-  | { type: "SELECT_THREAD"; threadId: string }
+  | { type: "SELECT_THREAD"; threadId: string | null }
   | { type: "SET_THREADS"; threads: Thread[] };
 
 export const chatMachine = createMachine({
@@ -47,7 +47,7 @@ export const chatMachine = createMachine({
       maximized: false,
       loading: false,
     },
-    selectedThreadId: "",
+    selectedThreadId: null,
     threads: [],
   },
   states: {
@@ -122,7 +122,7 @@ export const chatMachine = createMachine({
     },
     SELECT_THREAD: {
       actions: assign({
-        selectedThreadId: ({ event }) => event.threadId,
+        selectedThreadId: ({ event }) => event.threadId as string | null,
       }),
     },
     SET_THREADS: {

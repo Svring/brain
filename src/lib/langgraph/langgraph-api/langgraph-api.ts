@@ -38,8 +38,9 @@ export const createThread = async ({
   if (projectName) {
     metadata.projectName = projectName;
   }
-  if (resourceTarget) {
-    metadata.resourceTarget = JSON.stringify(resourceTarget);
+  if (resourceTarget !== undefined) {
+    metadata.resourceTarget =
+      resourceTarget === null ? null : JSON.stringify(resourceTarget);
   }
 
   return await client.threads.create({
@@ -78,13 +79,15 @@ export const searchThreads = async (metadata: Record<string, any>) => {
   }
 
   // Handle resourceTarget if present - stringify it for search
-  if (
-    searchMetadata.resourceTarget &&
-    typeof searchMetadata.resourceTarget === "object"
-  ) {
-    searchMetadata.resourceTarget = JSON.stringify(
-      searchMetadata.resourceTarget
-    );
+  if (searchMetadata.resourceTarget !== undefined) {
+    if (searchMetadata.resourceTarget === null) {
+      // Keep null as is
+      searchMetadata.resourceTarget = null;
+    } else if (typeof searchMetadata.resourceTarget === "object") {
+      searchMetadata.resourceTarget = JSON.stringify(
+        searchMetadata.resourceTarget
+      );
+    }
   }
 
   return await client.threads

@@ -18,7 +18,7 @@ export default function AiChatbox() {
   const createChatMutation = useCreateNewChatSessionMutation();
   const { selectedResource } = useProjectState();
 
-  // console.log("latestThreadId", latestThreadId);
+  console.log("latestThreadId", latestThreadId);
   // console.log("hasThreads", hasThreads);
   // console.log("threadsLoading", threadsLoading);
   // console.log("selectedThreadId", selectedThreadId);
@@ -29,9 +29,8 @@ export default function AiChatbox() {
     if (sidebarChatOpen && !threadsLoading) {
       if (hasThreads && latestThreadId) {
         // Select the latest thread if available
-        if (selectedThreadId !== latestThreadId) {
-          selectThread(latestThreadId);
-        }
+        console.log("selecting", latestThreadId);
+        selectThread(latestThreadId);
       } else {
         // Create a new thread if none exists
         createChatMutation.mutate(undefined, {

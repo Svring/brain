@@ -55,11 +55,6 @@ function ThreadCreator({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Don't render children until thread is available
-  if (!selectedThreadId) {
-    return <LoadingScreen text="Initializing chat..." />;
-  }
-
   return <>{children}</>;
 }
 
@@ -70,7 +65,6 @@ function CopilotKitRenderer({ children }: { children: React.ReactNode }) {
   const [threadId, setThreadId] = useQueryState("threadId");
 
   console.log("selectedThreadId", selectedThreadId);
-  console.log("threadId", threadId);
 
   useEffect(() => {
     if (selectedThreadId) {
@@ -84,7 +78,7 @@ function CopilotKitRenderer({ children }: { children: React.ReactNode }) {
       agent="orca"
       runtimeUrl="/api/copilot"
       publicApiKey={process.env.NEXT_PUBLIC_COPILOT_API_KEY}
-      threadId={selectedThreadId}
+      threadId={selectedThreadId || undefined}
     >
       {children}
     </CopilotKit>

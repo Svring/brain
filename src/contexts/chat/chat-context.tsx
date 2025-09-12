@@ -111,7 +111,7 @@ export function useChatActions() {
     disableFloatingLoading: () =>
       send({ type: "SET_FLOATING_LOADING", loading: false }),
 
-    selectThread: (threadId: string) => {
+    selectThread: (threadId: string | null) => {
       send({ type: "SELECT_THREAD", threadId });
     },
     setThreads: (threads: Thread[]) => send({ type: "SET_THREADS", threads }),
