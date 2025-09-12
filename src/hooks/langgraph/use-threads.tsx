@@ -9,7 +9,7 @@ import { convertThreadToCopilotKitMessages } from "@/lib/langgraph/langgraph-met
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { useEffect } from "react";
 
-export const useResourceThreads = () => {
+export const useThreads = () => {
   const { auth } = useAuthState();
   const { selectedProject, selectedResource } = useProjectState();
   const kubeconfig = auth?.kubeconfig;
@@ -20,11 +20,9 @@ export const useResourceThreads = () => {
     searchThreadsOptions({
       kubeconfig,
       projectName: selectedProject,
-      resourceTarget: selectedResource,
+      resourceTarget: selectedResource || null,
     })
   );
-
-  // console.log("threads", threads);
 
   // Extract and convert messages from each thread
   // if (threads && threads.length > 0) {
@@ -40,16 +38,6 @@ export const useResourceThreads = () => {
   //     console.log("Converted messages:", convertedMessages);
   //   });
   // }
-
-  // Set messages for the first thread using useEffect to avoid render issues
-  useEffect(() => {
-    if (threads && threads.length > 0) {
-      const firstThread = threads[0];
-      const convertedMessages = convertThreadToCopilotKitMessages(firstThread);
-      console.log("Converted messages:", convertedMessages);
-      setMessages(convertedMessages);
-    }
-  }, [threads, setMessages]);
 
   // Get the latest thread (first in the sorted list)
   const latestThread = threads && threads.length > 0 ? threads[0] : null;

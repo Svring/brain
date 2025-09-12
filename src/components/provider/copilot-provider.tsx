@@ -67,7 +67,10 @@ function ThreadCreator({ children }: { children: React.ReactNode }) {
 function CopilotKitRenderer({ children }: { children: React.ReactNode }) {
   const { selectedThreadId } = useChatState();
 
-  const [, setThreadId] = useQueryState("threadId");
+  const [threadId, setThreadId] = useQueryState("threadId");
+
+  console.log("selectedThreadId", selectedThreadId);
+  console.log("threadId", threadId);
 
   useEffect(() => {
     if (selectedThreadId) {

@@ -7,7 +7,7 @@ import {
 } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useChatActions } from "@/contexts/chat/chat-context";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
-import { useResourceThreads } from "@/hooks/langgraph/use-resource-thread";
+import { useThreads } from "@/hooks/langgraph/use-threads";
 import { convertThreadToCopilotKitMessages } from "@/lib/langgraph/langgraph-method/langgraph-utils";
 import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
 
@@ -22,10 +22,9 @@ export function AiChatInput({
 }: AiChatInputProps) {
   const { mutate: sendMessage } = useSendMessageMutation();
   const { stopGeneration, isLoading } = useCopilotChatHeadless_c();
-  const { selectThread } = useChatActions();
 
   // Use resource threads to get the latest thread
-  const { latestThreadId } = useResourceThreads();
+  const { latestThreadId } = useThreads();
 
   const handleSendMessage = (message: string) => {
     if (message.trim() && !isLoading) {

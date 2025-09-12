@@ -5,10 +5,46 @@ import { AiMessages } from "./messages";
 import { AiChatInput } from "./input";
 import { AiChatHeader } from "./header";
 import { cn } from "@/lib/utils";
+import { useThreads } from "@/hooks/langgraph/use-threads";
+import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useEffect } from "react";
+import { useProjectState } from "@/contexts/project/project-context";
+import { useMount } from "@reactuses/core";
 
 export default function AiChatbox() {
-  const { sidebarChatOpen } = useChatState();
-  const { closeSidebarChat } = useChatActions();
+  const { sidebarChatOpen, selectedThreadId } = useChatState();
+  const { closeSidebarChat, selectThread } = useChatActions();
+  const { latestThreadId, hasThreads, threadsLoading } = useThreads();
+  const createChatMutation = useCreateNewChatSessionMutation();
+  const { selectedResource } = useProjectState();
+
+  // console.log("latestThreadId", latestThreadId);
+  // console.log("hasThreads", hasThreads);
+  // console.log("threadsLoading", threadsLoading);
+  // console.log("selectedThreadId", selectedThreadId);
+  // console.log("sidebarChatOpen", sidebarChatOpen);
+
+  // Handle thread selection/creation when chatbox opens
+  useEffect(() => {
+    if (sidebarChatOpen && !threadsLoading) {
+      if (hasThreads && latestThreadId) {
+        // Select the latest thread if available
+        if (selectedThreadId !== latestThreadId) {
+          selectThread(latestThreadId);
+        }
+      } else {
+        // Create a new thread if none exists
+        createChatMutation.mutate(undefined, {
+          onSuccess: (newThread) => {
+            selectThread(newThread.thread_id);
+          },
+          onError: (error) => {
+            console.error("Failed to create new chat:", error);
+          },
+        });
+      }
+    }
+  }, [sidebarChatOpen, selectedResource]);
 
   return (
     <div

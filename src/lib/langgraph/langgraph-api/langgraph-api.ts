@@ -23,7 +23,7 @@ export const createThread = async ({
 }: {
   kubeconfig: string;
   projectName?: string;
-  resourceTarget?: ResourceTarget;
+  resourceTarget?: ResourceTarget | null;
 }) => {
   const client = createClient();
 

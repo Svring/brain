@@ -15,7 +15,7 @@ import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { toast } from "sonner";
 import _ from "lodash";
-import { useResourceThreads } from "@/hooks/langgraph/use-resource-thread";
+import { useThreads } from "@/hooks/langgraph/use-threads";
 import { convertThreadToCopilotKitMessages } from "@/lib/langgraph/langgraph-method/langgraph-utils";
 
 interface UseNodeSelectParams {
@@ -45,9 +45,7 @@ export const useNodeSelect = ({
   const createChatMutation = useCreateNewChatSessionMutation(target);
 
   // Use resource threads to get the latest thread
-  const { latestThread, latestThreadId, threadsLoading } = useResourceThreads();
-
-  console.log("latestThread", latestThread);
+  const { latestThread, latestThreadId, threadsLoading } = useThreads();
 
   if (!target) {
     return {
@@ -65,11 +63,7 @@ export const useNodeSelect = ({
 
     selectResource(target);
     selectNode(nodeId);
-
-    if (latestThreadId) {
-      selectThread(latestThreadId);
-      openSidebarChat();
-    }
+    openSidebarChat();
   };
 
   return {

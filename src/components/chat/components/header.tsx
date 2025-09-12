@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 import { getResourceDefaultIcon } from "@/lib/sealos/sealos-utils";
-import { useResourceThreads } from "@/hooks/langgraph/use-resource-thread";
+import { useThreads } from "@/hooks/langgraph/use-threads";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,7 +59,7 @@ export function AiChatHeader({
     latestThreadState,
     threadStateLoading,
     hasThreads,
-  } = useResourceThreads();
+  } = useThreads();
   const { fitView } = useReactFlow();
 
   // Use node select hook for resource name click functionality
@@ -97,7 +97,6 @@ export function AiChatHeader({
   const handleNewChat = () => {
     createChatMutation.mutate(undefined, {
       onSuccess: (newThread) => {
-        console.log("newThread", newThread);
         selectThread(newThread.thread_id);
       },
       onError: (error) => {
@@ -110,12 +109,22 @@ export function AiChatHeader({
     <div className={`${className}`}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <div>
-            <h2 className="font-semibold text-foreground text-lg">{title}</h2>
-          </div>
-          <div className="flex items-center gap-4">
-            <Separator orientation="vertical" className="h-4!" />
-          </div>
+          <h2 className="font-semibold text-foreground text-lg">{title}</h2>
+          {selectedResource && (
+            <>
+              <Separator orientation="vertical" className="h-4" />
+              <Image
+                src={getIconUrl()}
+                alt={selectedResource.resourceType}
+                width={20}
+                height={20}
+                className="rounded-sm"
+              />
+              <span className="text-sm text-muted-foreground truncate max-w-[120px]">
+                {selectedResource.name}
+              </span>
+            </>
+          )}
         </div>
         <div className="flex items-center gap-1">
           <Tooltip>
