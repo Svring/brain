@@ -37,7 +37,7 @@ interface Backup {
 export const ClusterBackupMessage: React.FC<ClusterBackupMessageProps> = ({
   target,
 }) => {
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
+  const appendSystemMessageMutation = useAppendSystemMessageMutation();
 
   // Use the cluster backup hook
   const {

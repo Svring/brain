@@ -10,11 +10,20 @@ export interface ChatSectionState {
   loading: boolean;
 }
 
+export interface PendingMessage {
+  timestamp: Date;
+  type: "append" | "send";
+  messageType: string;
+  target: any;
+  payload?: any;
+}
+
 export interface ChatContextState {
   sidebarChat: ChatSectionState;
   floatingChat: ChatSectionState;
   selectedThreadId: string | null;
   threads: Thread[];
+  pendingMessages: PendingMessage[];
 }
 
 export type ChatEvent =
@@ -27,7 +36,11 @@ export type ChatEvent =
   | { type: "SET_SIDEBAR_LOADING"; loading: boolean }
   | { type: "SET_FLOATING_LOADING"; loading: boolean }
   | { type: "SELECT_THREAD"; threadId: string | null }
-  | { type: "SET_THREADS"; threads: Thread[] };
+  | { type: "SET_THREADS"; threads: Thread[] }
+  | { type: "ADD_PENDING_MESSAGE"; message: PendingMessage }
+  | { type: "REMOVE_PENDING_MESSAGE" }
+  | { type: "READ_FIRST_PENDING_MESSAGE" }
+  | { type: "CLEAR_PENDING_MESSAGES" };
 
 export const chatMachine = createMachine({
   /** XState v5 generics */
@@ -49,6 +62,7 @@ export const chatMachine = createMachine({
     },
     selectedThreadId: null,
     threads: [],
+    pendingMessages: [],
   },
   states: {
     idle: {},
@@ -128,6 +142,35 @@ export const chatMachine = createMachine({
     SET_THREADS: {
       actions: assign({
         threads: ({ event }) => event.threads,
+      }),
+    },
+    ADD_PENDING_MESSAGE: {
+      actions: assign({
+        pendingMessages: ({ context, event }) => [
+          ...context.pendingMessages,
+          event.message,
+        ],
+      }),
+    },
+    REMOVE_PENDING_MESSAGE: {
+      actions: assign({
+        pendingMessages: ({ context }) => context.pendingMessages.slice(1), // Remove first element (FIFO)
+      }),
+    },
+    READ_FIRST_PENDING_MESSAGE: {
+      actions: ({ context }) => {
+        // This action doesn't modify state, it just reads the first message
+        // The actual reading is handled by the useChatState hook
+        // This event can be used to trigger side effects or logging
+        const firstMessage = context.pendingMessages[0];
+        if (firstMessage) {
+          console.log("Reading first pending message:", firstMessage);
+        }
+      },
+    },
+    CLEAR_PENDING_MESSAGES: {
+      actions: assign({
+        pendingMessages: () => [],
       }),
     },
   },

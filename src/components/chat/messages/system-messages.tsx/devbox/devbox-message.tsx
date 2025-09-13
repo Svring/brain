@@ -15,23 +15,23 @@ import {
   SshSection,
   NetworkSection,
   ReleaseSection,
-  BasicInfoPopoverContent,
   CpuMemoryPopoverContent,
   SshPopoverContent,
   NetworkPopoverContent,
   ReleasePopoverContent,
 } from "./components/devbox-message";
 
-type ActiveSection = "basic-info" | "resource" | "network" | "ssh" | "release" | null;
+type ActiveSection = "resource" | "network" | "ssh" | "release" | null;
 
 interface DevboxMessageProps {
   target: CustomResourceTarget;
 }
 
 export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
+  const appendSystemMessageMutation = useAppendSystemMessageMutation();
   const [activeSection, setActiveSection] = useState<ActiveSection>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [closingSection, setClosingSection] = useState<ActiveSection>(null);
 
   const devboxTrpcClient = devboxClient.useTRPC();
 
@@ -102,8 +102,6 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
   // Get popover title based on active section
   const getPopoverTitle = () => {
     switch (activeSection) {
-      case "basic-info":
-        return "Basic Information";
       case "resource":
         return "Resource Metrics";
       case "ssh":
@@ -112,30 +110,22 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
         return "Network Ports";
       case "release":
         return "Devbox Releases";
-      default:
-        return "Devbox Details";
+      // default:
+      //   return "Devbox Details";
     }
   };
 
   // Dynamic popover content based on active section
   const getPopoverContent = () => {
-    if (!activeSection) {
-      return (
-        <div className="space-y-4">
-          <div className="border-b pb-2">
-            <h3 className="font-semibold text-lg">Devbox Details</h3>
-            <p className="text-sm text-muted-foreground">
-              Click on any section to view detailed information
-            </p>
-          </div>
-        </div>
-      );
+    // Use closingSection if popover is closing, otherwise use activeSection
+    const currentSection = closingSection || activeSection;
+    
+    if (!currentSection) {
+      return null;
     }
 
     // Use extracted popover content components
-    switch (activeSection) {
-      case "basic-info":
-        return <BasicInfoPopoverContent target={target} />;
+    switch (currentSection) {
       case "resource":
         return <CpuMemoryPopoverContent target={target} />;
       case "ssh":
@@ -153,10 +143,7 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
   const mainContent = (
     <div className="space-y-2">
       {/* Basic Info Section - Full Width */}
-      <BasicInfoSection
-        target={target}
-        onSectionClick={() => handleSectionClick("basic-info")}
-      />
+      <BasicInfoSection target={target} />
       
       {/* Two-column layout for other sections */}
       <div className="flex gap-2">
@@ -196,9 +183,12 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
       open={isPopoverOpen}
       onOpenChange={(open) => {
         setIsPopoverOpen(open);
-        // If popover is being closed externally, reset the active section
+        // If popover is being closed externally, preserve content during close animation
         if (!open) {
+          setClosingSection(activeSection);
           setActiveSection(null);
+          // Clear closingSection after animation completes
+          setTimeout(() => setClosingSection(null), 200);
         }
       }}
     >

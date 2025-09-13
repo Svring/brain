@@ -93,7 +93,7 @@ export const searchThreads = async (metadata: Record<string, any>) => {
   return await client.threads
     .search({
       metadata: searchMetadata,
-      sortBy: "created_at",
+      sortBy: "updated_at",
       sortOrder: "desc",
     })
     .then((res) => {

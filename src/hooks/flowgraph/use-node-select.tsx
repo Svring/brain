@@ -12,6 +12,7 @@ import {
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
+import type { PendingMessage } from "@/contexts/chat/chat-machine";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { toast } from "sonner";
 import _ from "lodash";
@@ -38,13 +39,8 @@ export const useNodeSelect = ({
     enableSidebarLoading,
     disableSidebarLoading,
     openSidebarChat,
+    addPendingMessage,
   } = useChatActions();
-  const { sidebarChatResponding } = useChatState();
-  const { setMessages } = useCopilotChatHeadless_c();
-  const createChatMutation = useCreateNewChatSessionMutation(target);
-
-  // Use resource threads to get the latest thread
-  const { latestThread, latestThreadId, threadsLoading } = useThreads();
 
   if (!target) {
     return {
@@ -54,10 +50,25 @@ export const useNodeSelect = ({
 
   const nodeId = `${target.resourceType.toLowerCase()}-${target.name}`;
 
-  const handleNodeSelect = () => {
+  const handleNodeSelect = (type?: "append" | "send") => {
     selectResource(target);
     selectNode(nodeId);
     openSidebarChat();
+
+    // If messageType is provided, append a pending message
+    if (messageType) {
+      const pendingMessage: PendingMessage = {
+        timestamp: new Date(),
+        type: type || "append", // Use type or default to append
+        messageType,
+        target,
+        payload,
+      };
+      addPendingMessage(pendingMessage);
+    }
+
+    // Execute onSuccess callback if provided
+    onSuccess?.();
   };
 
   return {

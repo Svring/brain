@@ -118,9 +118,8 @@ export default function useFlowgraph(
       ) {
         newCompleteResources.push(resource as CompleteResource);
 
-        // Update project context with complete resource
-
-        updateResource(resource as any);
+        // Only update name and kind of CompleteResource with updateResource
+        updateResource({ name: resource.name, kind: resource.kind });
       }
     });
 

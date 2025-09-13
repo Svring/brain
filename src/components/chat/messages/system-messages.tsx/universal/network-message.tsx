@@ -31,7 +31,7 @@ interface NetworkMessageProps {
 }
 
 export default function NetworkMessage({ target }: NetworkMessageProps) {
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
+  const appendSystemMessageMutation = useAppendSystemMessageMutation();
   const [showPortForm, setShowPortForm] = useState(false);
   const [newPort, setNewPort] = useState({
     number: 8080,
@@ -54,7 +54,7 @@ export default function NetworkMessage({ target }: NetworkMessageProps) {
       target.type === "builtin" &&
       ["deployment", "statefulset"].includes(target.resourceType.toLowerCase())
     ) {
-      appendSystemMessage({ type: "launchpad.updatePort", target });
+      appendSystemMessageMutation.mutate({ type: "launchpad.updatePort", target });
     }
     setShowPortForm(false);
     setNewPort({

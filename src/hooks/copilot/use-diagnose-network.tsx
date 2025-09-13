@@ -78,7 +78,7 @@ const analyzeNetworkPrompt = `
 `;
 
 export function useDiagnoseNetwork(target: CustomResourceTarget | BuiltinResourceTarget) {
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
+  const appendSystemMessageMutation = useAppendSystemMessageMutation();
   const { mutate: sendMessage } = useSendMessageMutation();
   const { selectResource } = useProjectActions();
 
@@ -107,7 +107,7 @@ export function useDiagnoseNetwork(target: CustomResourceTarget | BuiltinResourc
       selectResource(target);
       
       // Append system message for network diagnosis
-      appendSystemMessage({ type: "universal.diagnoseNetwork", target });
+      appendSystemMessageMutation.mutate({ type: "universal.diagnoseNetwork", target });
 
       // Prepare network status data for analysis
       const networkStatusData = {

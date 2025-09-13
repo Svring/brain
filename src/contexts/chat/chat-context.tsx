@@ -5,7 +5,7 @@ import { useMachine } from "@xstate/react";
 import { createContext, type ReactNode, useContext } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import type { Thread } from "@langchain/langgraph-sdk";
-import { chatMachine } from "@/contexts/chat/chat-machine";
+import { chatMachine, type PendingMessage } from "@/contexts/chat/chat-machine";
 import { useProjectActions } from "../project/project-context";
 import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 
@@ -52,11 +52,14 @@ export function useChatState() {
     floatingChatLoading: state.context.floatingChat.loading,
     selectedThreadId: state.context.selectedThreadId,
     threads: state.context.threads,
+    pendingMessages: state.context.pendingMessages,
+    nextPendingMessage: state.context.pendingMessages[0] || null,
+    hasPendingMessages: state.context.pendingMessages.length > 0,
   };
 }
 
 export function useChatActions() {
-  const { send } = useChatContext();
+  const { send, state } = useChatContext();
 
   return {
     openSidebarChat: () => send({ type: "SET_SIDEBAR_CHAT_OPEN", open: true }),
@@ -115,5 +118,20 @@ export function useChatActions() {
       send({ type: "SELECT_THREAD", threadId });
     },
     setThreads: (threads: Thread[]) => send({ type: "SET_THREADS", threads }),
+
+    addPendingMessage: (message: PendingMessage) => {
+      send({ type: "ADD_PENDING_MESSAGE", message });
+    },
+    removePendingMessage: () => {
+      send({ type: "REMOVE_PENDING_MESSAGE" });
+    },
+    readFirstPendingMessage: () => {
+      const firstMessage = state.context.pendingMessages[0] || null;
+      send({ type: "READ_FIRST_PENDING_MESSAGE" });
+      return firstMessage;
+    },
+    clearPendingMessages: () => {
+      send({ type: "CLEAR_PENDING_MESSAGES" });
+    },
   };
 }

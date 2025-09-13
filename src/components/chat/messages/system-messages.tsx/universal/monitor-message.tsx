@@ -14,12 +14,12 @@ interface MonitorMessageProps {
 }
 
 export const MonitorMessage: React.FC<MonitorMessageProps> = ({ target }) => {
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
+  const appendSystemMessageMutation = useAppendSystemMessageMutation();
 
   const handleUpdateResource = () => {
     const resourceType = target.resourceType.toLowerCase();
     if (resourceType === "deployment" || resourceType === "statefulset") {
-      appendSystemMessage({ type: "launchpad.updateResource", target });
+      appendSystemMessageMutation.mutate({ type: "launchpad.updateResource", target });
     }
   };
 

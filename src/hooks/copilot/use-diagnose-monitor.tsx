@@ -51,7 +51,7 @@ const analyzeMonitorPrompt = `
 `;
 
 export function useDiagnoseMonitor(target: CustomResourceTarget | BuiltinResourceTarget) {
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
+  const appendSystemMessageMutation = useAppendSystemMessageMutation();
   const { mutate: sendMessage } = useSendMessageMutation();
   const { selectResource } = useProjectActions();
   const { color, monitorData, isLoading } = useResourceMetricsStatus({
@@ -64,7 +64,7 @@ export function useDiagnoseMonitor(target: CustomResourceTarget | BuiltinResourc
       selectResource(target);
       
       // Append system message for monitor diagnosis
-      appendSystemMessage({ type: "universal.monitor", target });
+      appendSystemMessageMutation.mutate({ type: "universal.monitor", target });
 
       // Send monitor data for analysis after system message is appended
       sendMessage({

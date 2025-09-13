@@ -19,10 +19,10 @@ const ReleaseItem: React.FC<{
   onDelete: (versionName: string) => void;
   isDeleting?: boolean;
 }> = ({ release, target, onDelete, isDeleting = false }) => {
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
+  const appendSystemMessageMutation = useAppendSystemMessageMutation();
 
   const handleDeploy = () => {
-    appendSystemMessage({
+    appendSystemMessageMutation.mutate({
       type: "devbox.deployment",
       target,
       payload: { tag: release.tag },

@@ -42,7 +42,7 @@ function FloatingErrorEdge(props: EdgeProps) {
   const { resource, isLoading, error } = useResourceStatus(resourceTarget!);
 
   // Message sending hooks
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
+  const appendSystemMessageMutation = useAppendSystemMessageMutation();
   const { mutate: sendMessage } = useSendMessageMutation();
   const { selectResource } = useProjectActions();
 
@@ -140,7 +140,7 @@ function FloatingErrorEdge(props: EdgeProps) {
 
     if (resourceTarget) {
       selectResource(resourceTarget);
-      appendSystemMessage({
+      appendSystemMessageMutation.mutate({
         type: "universal.diagnoseNetwork",
         target: resourceTarget,
       });

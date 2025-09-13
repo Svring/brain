@@ -17,7 +17,7 @@ interface PodOverviewProps {
 
 export const PodOverview: React.FC<PodOverviewProps> = ({ target }) => {
   const { resource, isLoading, error } = useResourceStatus(target);
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
+  const appendSystemMessageMutation = useAppendSystemMessageMutation();
 
   // Extract pods from resource based on resource type
   const getPodList = (): Pod[] => {
@@ -40,7 +40,7 @@ export const PodOverview: React.FC<PodOverviewProps> = ({ target }) => {
           {
             icon: Container,
             label: "View Pod Details",
-            onClick: () => appendSystemMessage({ type: "universal.podDetail", target }),
+            onClick: () => appendSystemMessageMutation.mutate({ type: "universal.podDetail", target }),
           },
         ]
       : [];

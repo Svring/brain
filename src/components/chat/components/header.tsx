@@ -39,8 +39,7 @@ export function AiChatHeader({
     useChatActions();
   const { threads } = useThreads();
   const { fitView } = useReactFlow();
-  const { mutate: createChat, isPending: isCreatingChat } =
-    useCreateNewChatSessionMutation();
+  const createChatMutation = useCreateNewChatSessionMutation();
 
   const getIconUrl = () =>
     selectedResource
@@ -49,9 +48,8 @@ export function AiChatHeader({
       : "/sealos-brain-icon-grayscale.svg";
 
   const handleNewChat = () =>
-    createChat(undefined, {
-      onSuccess: (newThread) => selectThread(newThread.thread_id),
-      onError: (error) => console.error("Failed to create new chat:", error),
+    createChatMutation.mutate(undefined, {
+      onSuccess: (newThread) => selectThread(newThread.thread_id as string),
     });
 
   return (
@@ -63,16 +61,11 @@ export function AiChatHeader({
             <TooltipTrigger asChild>
               <Button
                 onClick={handleNewChat}
-                disabled={isCreatingChat}
                 size="icon"
                 variant="ghost"
                 className="h-8 w-8"
               >
-                {isCreatingChat ? (
-                  <Spinner className="h-4 w-4" />
-                ) : (
-                  <Plus className="h-4 w-4" />
-                )}
+                <Plus className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>New Chat</TooltipContent>
@@ -85,10 +78,7 @@ export function AiChatHeader({
                     <History className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="w-[calc(100vw-2rem)] max-w-sm space-y-1"
-                >
+                <DropdownMenuContent align="end" className="max-w-sm space-y-1">
                   {selectedThreadId && (
                     <DropdownMenuItem className="p-2 bg-muted/50 cursor-pointer">
                       <div className="text-sm truncate w-full">
@@ -191,8 +181,8 @@ export function AiChatHeader({
             side="bottom"
             align="start"
           >
-            Agent would focuse on {selectedResource?.name || selectedProject} context
-            and operations.
+            Agent would focuse on {selectedResource?.name || selectedProject}{" "}
+            context and operations.
           </TooltipContent>
         </Tooltip>
       )}

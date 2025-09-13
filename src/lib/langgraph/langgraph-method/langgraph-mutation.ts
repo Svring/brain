@@ -45,29 +45,6 @@ export const useCreateNewChatSessionMutation = (
         resourceTarget: resourceTarget || selectedResource || null,
       });
     },
-    onSuccess: (newThread) => {
-      // Update the thread state with initial "hi" message
-      // updateThreadStateMutation.mutate({
-      //   threadId: newThread.thread_id,
-      //   state: {
-      //     values: {
-      //       messages: [
-      //         {
-      //           content: "hi",
-      //           additional_kwargs: {
-      //             type: "human",
-      //           },
-      //           response_metadata: {},
-      //           type: "human",
-      //           name: null,
-      //           id: "ck-444cb6c6-522a-47c5-8064-395f083e836b",
-      //           example: false,
-      //         },
-      //       ],
-      //     },
-      //   },
-      // });
-    },
     onError: (error) => {
       console.error("Failed to create chat session:", error);
     },
@@ -109,23 +86,23 @@ export const useSendMessageMutation = () => {
  */
 
 export const useAppendSystemMessageMutation = () => {
-  const { setMessages, messages } = useCopilotChatHeadless_c();
+  const { setMessages } = useCopilotChatHeadless_c();
   const { openSidebarChat } = useChatActions();
 
-  const appendSystemMessage = ({
-    type,
-    target,
-    payload,
-    onSuccess,
-    resetMessages,
-  }: {
-    type: string;
-    target: CustomResourceTarget | BuiltinResourceTarget;
-    payload?: any;
-    onSuccess?: () => void;
-    resetMessages?: boolean;
-  }) => {
-    try {
+  return useMutation({
+    mutationFn: async ({
+      type,
+      target,
+      payload,
+      currentMessages,
+      resetMessages,
+    }: {
+      type: string;
+      target: CustomResourceTarget | BuiltinResourceTarget;
+      payload?: any;
+      currentMessages?: any[];
+      resetMessages?: boolean;
+    }) => {
       // Create system message data
       const systemMessageData: SystemMessage = {
         type,
@@ -134,6 +111,7 @@ export const useAppendSystemMessageMutation = () => {
       };
 
       // Send a message about the resource in current session
+      const baseMessages = currentMessages || [];
       const newMessages = resetMessages
         ? [
             {
@@ -143,7 +121,7 @@ export const useAppendSystemMessageMutation = () => {
             },
           ]
         : [
-            ...messages,
+            ...baseMessages,
             {
               id: randomId(),
               role: "system" as const,
@@ -151,17 +129,17 @@ export const useAppendSystemMessageMutation = () => {
             },
           ];
 
+      console.log("newMessages", newMessages);
+
       setMessages(newMessages);
       openSidebarChat();
 
-      // Execute the onSuccess callback if provided
-      onSuccess?.();
-    } catch (error) {
+      return newMessages;
+    },
+    onError: (error) => {
       console.error("Failed to append system message:", error);
-    }
-  };
-
-  return { appendSystemMessage };
+    },
+  });
 };
 
 /**

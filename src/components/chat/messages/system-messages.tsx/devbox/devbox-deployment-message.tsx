@@ -132,7 +132,7 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
 }) => {
   const { k8s, devbox, launchpad, project } = useTRPCClients();
   const queryClient = useQueryClient();
-  const { appendSystemMessage } = useAppendSystemMessageMutation();
+  const appendSystemMessageMutation = useAppendSystemMessageMutation();
   const { selectedProject } = useProjectState();
   const { resource } = useResourceStatus(target);
   const devboxObject = DevboxObjectSchema.parse(resource);
@@ -177,7 +177,7 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
           "[DevboxDeployedMessage] Appending system message for deploymentTarget:",
           deploymentTarget
         );
-        appendSystemMessage({
+        appendSystemMessageMutation.mutate({
           type: "launchpad.detail",
           target: deploymentTarget,
         });
@@ -307,7 +307,7 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
                     resourceKind,
                     deploymentName
                   );
-                  appendSystemMessage({
+                  appendSystemMessageMutation.mutate({
                     type: "launchpad.detail",
                     target: deploymentTarget,
                   });
