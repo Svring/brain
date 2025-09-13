@@ -7,6 +7,8 @@ import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-metho
 import { Spinner } from "@/components/ui/spinner";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
+import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
+import { convertThreadToCopilotKitMessages } from "@/lib/langgraph/langgraph-method/langgraph-utils";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import {
@@ -40,6 +42,7 @@ export function AiChatHeader({
   const { threads } = useThreads();
   const { fitView } = useReactFlow();
   const createChatMutation = useCreateNewChatSessionMutation();
+  const { setMessages } = useCopilotChatHeadless_c();
 
   const getIconUrl = () =>
     selectedResource
@@ -49,8 +52,63 @@ export function AiChatHeader({
 
   const handleNewChat = () =>
     createChatMutation.mutate(undefined, {
-      onSuccess: (newThread) => selectThread(newThread.thread_id as string),
+      onSuccess: (newThread) => {
+        selectThread(newThread.thread_id as string);
+        setMessages(convertThreadToCopilotKitMessages(newThread));
+      },
     });
+
+  const handleThreadSelect = (threadId: string): void => {
+    const thread = threads?.find((t) => t.thread_id === threadId);
+    if (thread) {
+      selectThread(threadId);
+      setMessages(convertThreadToCopilotKitMessages(thread));
+    }
+  };
+
+  const formatThreadDate = (updatedAt: string): string => {
+    const date = new Date(updatedAt);
+    const now = new Date();
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+    );
+
+    if (diffInHours < 1) {
+      return "Just now";
+    } else if (diffInHours < 24) {
+      return `${diffInHours}h ago`;
+    } else {
+      const diffInDays = Math.floor(diffInHours / 24);
+      if (diffInDays < 7) {
+        return `${diffInDays}d ago`;
+      } else {
+        return date.toLocaleDateString();
+      }
+    }
+  };
+
+  const getThreadTitle = (thread: any): string => {
+    try {
+      // Convert thread messages to CopilotKit format first
+      const convertedMessages = convertThreadToCopilotKitMessages(thread);
+      
+      // Find the first human message in the converted messages
+      const firstHumanMessage = convertedMessages.find(
+        (msg: any) => msg.role === "user"
+      );
+      
+      if (firstHumanMessage?.content) {
+        // Truncate the content to a reasonable length for display
+        const content = String(firstHumanMessage.content);
+        return content.length > 50 ? content.substring(0, 50) + "..." : content;
+      }
+    } catch (error) {
+      console.warn("Failed to convert thread messages:", error);
+    }
+    
+    // Display "New Thread" if no human message found or conversion fails
+    return "New Thread";
+  };
 
   return (
     <div className={className}>
@@ -78,11 +136,30 @@ export function AiChatHeader({
                     <History className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="max-w-sm space-y-1">
+                <DropdownMenuContent align="end" className="max-w-xs space-y-1">
                   {selectedThreadId && (
-                    <DropdownMenuItem className="p-2 bg-muted/50 cursor-pointer">
-                      <div className="text-sm truncate w-full">
-                        {selectedThreadId}
+                    <DropdownMenuItem className="p-2 bg-muted/50 cursor-pointer border border-theme-blue/30 rounded-md">
+                      <div className="flex items-center justify-between w-full gap-2">
+                        <div className="text-sm font-medium truncate flex-1 max-w-[200px]">
+                          {(() => {
+                            const selectedThread = threads?.find(
+                              (t) => t.thread_id === selectedThreadId
+                            );
+                            return selectedThread ? getThreadTitle(selectedThread) : "New Thread";
+                          })()}
+                        </div>
+                        {(() => {
+                          const selectedThread = threads?.find(
+                            (t) => t.thread_id === selectedThreadId
+                          );
+                          return selectedThread ? (
+                            <div className="text-xs text-muted-foreground shrink-0 max-w-[60px]">
+                              {selectedThread.updated_at
+                                ? formatThreadDate(selectedThread.updated_at)
+                                : "Unknown"}
+                            </div>
+                          ) : null;
+                        })()}
                       </div>
                     </DropdownMenuItem>
                   )}
@@ -93,11 +170,18 @@ export function AiChatHeader({
                         .map((thread) => (
                           <DropdownMenuItem
                             key={thread.thread_id}
-                            onClick={() => selectThread(thread.thread_id)}
+                            onClick={() => handleThreadSelect(thread.thread_id)}
                             className="p-2 cursor-pointer"
                           >
-                            <div className="text-sm truncate w-full">
-                              {thread.thread_id}
+                            <div className="flex items-center justify-between w-full gap-2">
+                              <div className="text-sm font-medium truncate flex-1 max-w-[200px]">
+                                {getThreadTitle(thread)}
+                              </div>
+                              <div className="text-xs text-muted-foreground shrink-0 max-w-[60px]">
+                                {thread.updated_at
+                                  ? formatThreadDate(thread.updated_at)
+                                  : "Unknown"}
+                              </div>
                             </div>
                           </DropdownMenuItem>
                         ))

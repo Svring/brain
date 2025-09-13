@@ -77,7 +77,9 @@ const analyzeNetworkPrompt = `
 </Instruction>
 `;
 
-export function useDiagnoseNetwork(target: CustomResourceTarget | BuiltinResourceTarget) {
+export function useDiagnoseNetwork(
+  target: CustomResourceTarget | BuiltinResourceTarget
+) {
   const appendSystemMessageMutation = useAppendSystemMessageMutation();
   const { mutate: sendMessage } = useSendMessageMutation();
   const { selectResource } = useProjectActions();
@@ -105,9 +107,12 @@ export function useDiagnoseNetwork(target: CustomResourceTarget | BuiltinResourc
     (readyStatus: any) => {
       // Select the resource first
       selectResource(target);
-      
+
       // Append system message for network diagnosis
-      appendSystemMessageMutation.mutate({ type: "universal.diagnoseNetwork", target });
+      appendSystemMessageMutation.mutate({
+        type: "universal.diagnoseNetwork",
+        target,
+      });
 
       // Prepare network status data for analysis
       const networkStatusData = {
@@ -123,13 +128,13 @@ export function useDiagnoseNetwork(target: CustomResourceTarget | BuiltinResourc
       // Send network status data for analysis after system message is appended
       sendMessage({
         role: "system",
-        content: analyzeNetworkPrompt + "\n\n" + JSON.stringify(networkStatusData),
+        content:
+          analyzeNetworkPrompt + "\n\n" + JSON.stringify(networkStatusData),
       });
     },
     [
       target,
       selectResource,
-      appendSystemMessage,
       sendMessage,
       containerStatus,
       containerPortsData,

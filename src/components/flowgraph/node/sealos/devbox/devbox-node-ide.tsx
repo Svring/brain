@@ -58,7 +58,7 @@ export default function DevboxNodeIde({ object }: DevboxNodeIdeProps) {
         }}
         className="p-1.5 hover:bg-muted transition-colors flex items-center gap-2"
       >
-        <Image
+        <img
           src={`https://devbox.${context.regionUrl}/images/ide/${selectedIde}.svg`}
           alt={`${selectedIde} icon`}
           width={16}

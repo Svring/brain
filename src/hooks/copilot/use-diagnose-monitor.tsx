@@ -50,7 +50,9 @@ const analyzeMonitorPrompt = `
 不要向用户重复原始监控数据，仅总结您的解读。
 `;
 
-export function useDiagnoseMonitor(target: CustomResourceTarget | BuiltinResourceTarget) {
+export function useDiagnoseMonitor(
+  target: CustomResourceTarget | BuiltinResourceTarget
+) {
   const appendSystemMessageMutation = useAppendSystemMessageMutation();
   const { mutate: sendMessage } = useSendMessageMutation();
   const { selectResource } = useProjectActions();
@@ -58,22 +60,19 @@ export function useDiagnoseMonitor(target: CustomResourceTarget | BuiltinResourc
     target,
   });
 
-  const diagnoseMonitor = useCallback(
-    () => {
-      // Select the resource first
-      selectResource(target);
-      
-      // Append system message for monitor diagnosis
-      appendSystemMessageMutation.mutate({ type: "universal.monitor", target });
+  const diagnoseMonitor = useCallback(() => {
+    // Select the resource first
+    selectResource(target);
 
-      // Send monitor data for analysis after system message is appended
-      sendMessage({
-        role: "system",
-        content: analyzeMonitorPrompt + "\n\n" + JSON.stringify(monitorData),
-      });
-    },
-    [target, selectResource, appendSystemMessage, sendMessage, monitorData]
-  );
+    // Append system message for monitor diagnosis
+    appendSystemMessageMutation.mutate({ type: "universal.monitor", target });
+
+    // Send monitor data for analysis after system message is appended
+    sendMessage({
+      role: "system",
+      content: analyzeMonitorPrompt + "\n\n" + JSON.stringify(monitorData),
+    });
+  }, [target, selectResource, sendMessage, monitorData]);
 
   // Check if monitor data is ready (not loading and has data)
   const isMonitorReady =
