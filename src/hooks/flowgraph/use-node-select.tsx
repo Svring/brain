@@ -16,7 +16,6 @@ import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { toast } from "sonner";
 import _ from "lodash";
 import { useThreads } from "@/hooks/langgraph/use-threads";
-import { convertThreadToCopilotKitMessages } from "@/lib/langgraph/langgraph-method/langgraph-utils";
 
 interface UseNodeSelectParams {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -56,11 +55,6 @@ export const useNodeSelect = ({
   const nodeId = `${target.resourceType.toLowerCase()}-${target.name}`;
 
   const handleNodeSelect = () => {
-    // if (sidebarChatResponding) {
-    //   toast.info("Agent is responding, please wait...");
-    //   return;
-    // }
-
     selectResource(target);
     selectNode(nodeId);
     openSidebarChat();

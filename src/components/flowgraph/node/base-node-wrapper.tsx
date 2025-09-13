@@ -51,12 +51,12 @@ export default function BaseNodeWrapper({
   // Determine the appropriate styling based on status
   const getNodeStyling = () => {
     let baseStyles = "";
-    
+
     // Add width classes based on width prop
     if (width === "auto") {
       baseStyles += " w-auto min-w-70 max-w-96";
     }
-    
+
     // If resource is being deleted or has high metrics status, show deleting styles
     if (target && (isDeleting || metricsStatus === "high")) {
       return baseStyles + " bg-status-deleting/50 border-border-deleting";

@@ -11,11 +11,7 @@ import ObjectStoragePolicyBadge from "./objectstorage-policy-badge";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import type { ObjectStorageObject } from "@/lib/sealos/resources/objectstorage/objectstorage-schemas/objectstorage-object-schema";
 
-function ObjectStorageNodeWrapper({
-  data,
-}: {
-  data: ObjectStorageObject;
-}) {
+function ObjectStorageNodeWrapper({ data }: { data: ObjectStorageObject }) {
   const nodeId = `${data.kind}-${data.name}`;
 
   return (
