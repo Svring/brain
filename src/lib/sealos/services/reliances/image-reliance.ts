@@ -19,8 +19,8 @@ interface ResourceReliances {
 
 /**
  * Infers resource dependencies based on image names
- * Matches deployment images (processed by truncateImage) against devbox names
- * @param resourceObjects Array of resource objects to analyze (devbox and deployment only)
+ * Matches deployment and statefulset images (processed by truncateImage) against devbox names
+ * @param resourceObjects Array of resource objects to analyze (devbox, deployment, and statefulset)
  * @returns Object containing resource dependencies grouped by kind and name
  */
 export function inferRelianceFromImage(
@@ -28,30 +28,33 @@ export function inferRelianceFromImage(
 ): ResourceReliances {
   const result: ResourceReliances = {};
 
-  // Filter devbox and deployment resources
+  // Filter devbox resources
   const devboxResources = resourceObjects.filter(
     (resource) => resource.kind.toLowerCase() === "devbox"
   );
 
-  const deploymentResources = resourceObjects.filter(
-    (resource) => resource.kind.toLowerCase() === "deployment"
+  // Filter deployment and statefulset resources (both are workload resources)
+  const workloadResources = resourceObjects.filter(
+    (resource) =>
+      resource.kind.toLowerCase() === "deployment" ||
+      resource.kind.toLowerCase() === "statefulset"
   );
 
-  // Process each deployment to find matching devboxes
-  for (const deployment of deploymentResources) {
-    const deploymentKind = deployment.kind.toLowerCase();
-    const deploymentName = deployment.name;
+  // Process each workload resource to find matching devboxes
+  for (const workload of workloadResources) {
+    const workloadKind = workload.kind.toLowerCase();
+    const workloadName = workload.name;
 
     // Initialize result structure
-    if (!result[deploymentKind]) {
-      result[deploymentKind] = {};
+    if (!result[workloadKind]) {
+      result[workloadKind] = {};
     }
-    result[deploymentKind][deploymentName] = [];
+    result[workloadKind][workloadName] = [];
 
-    // Process deployment image if it exists
-    if (deployment.image?.imageName) {
+    // Process workload image if it exists
+    if (workload.image?.imageName) {
       // Use truncateImage to extract the meaningful part of the image name
-      const processedImage = truncateImage(deployment.image.imageName);
+      const processedImage = truncateImage(workload.image.imageName);
 
       // Find devboxes whose names match the processed image
       for (const devbox of devboxResources) {
@@ -62,11 +65,11 @@ export function inferRelianceFromImage(
         if (processedImage.includes(devboxName)) {
           // Add the devbox as a dependency if not already added
           if (
-            !result[deploymentKind][deploymentName].some(
+            !result[workloadKind][workloadName].some(
               (r) => r.name === devboxName
             )
           ) {
-            result[deploymentKind][deploymentName].push({
+            result[workloadKind][workloadName].push({
               name: devboxName,
               kind: devbox.kind,
             });

@@ -164,6 +164,8 @@ export const ReleaseChart: React.FC<ReleaseChartProps> = ({ target }) => {
 
   const releases = releasesData || [];
 
+  console.log("releases", releases);
+
   return (
     <div className="space-y-3">
       {releases.length > 0 && (
