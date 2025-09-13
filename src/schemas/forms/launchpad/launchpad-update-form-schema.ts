@@ -42,29 +42,6 @@ export const launchpadUpdateFormSchema = z.object({
   env: z.array(EnvSchema).optional(),
   storage: z.array(StorageSchema).optional(),
   configMap: z.array(ConfigMapSchema).optional(),
-  // Alternative simple ports for when using simple operations
-  simplePorts: z
-    .array(LaunchpadPortSimpleUpdateSchema)
-    .optional()
-    .refine(
-      (ports) => {
-        // Ensure all ports have unique port numbers
-        if (!ports || ports.length === 0) {
-          return true; // No ports to validate
-        }
-
-        const portNumbers = ports
-          .map((port) => port.number)
-          .filter((num) => num !== undefined);
-
-        const uniqueNumbers = new Set(portNumbers);
-
-        return uniqueNumbers.size === portNumbers.length;
-      },
-      {
-        message: "All port operations must have unique port numbers",
-      }
-    ),
 });
 
 export type LaunchpadUpdateFormData = z.infer<typeof launchpadUpdateFormSchema>;

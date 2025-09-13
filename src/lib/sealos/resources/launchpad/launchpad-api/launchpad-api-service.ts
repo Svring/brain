@@ -1,28 +1,79 @@
 import { getMonitorData } from "./launchpad-old-api";
-import { checkReadyLaunchpad } from "./launchpad-old-api";
+import {
+  checkReadyLaunchpad,
+  startLaunchpad,
+  pauseLaunchpad,
+  deleteLaunchpad,
+} from "./launchpad-old-api";
 import type { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
+import type { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
+import type { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { runParallelAction } from "next-server-actions-parallel";
 import type { LaunchpadCheckReadyRequest } from "./launchpad-old-api-schemas/req-res-check-ready-schemas";
 import {
-  createApplication,
-  getApplication,
-  updateApplication,
-  deleteApplication,
-  startApplication,
-  pauseApplication,
-  createApplicationPorts,
+  createApplication as createLaunchpad,
+  updateApplication as updateLaunchpad,
   getApplicationPods,
   getPodsMetrics,
 } from "./launchpad-open-api";
-import type {
-  LaunchpadPatchRequest,
-  LaunchpadPortsCreateRequest,
-  LaunchpadPodsMetricsRequest,
-} from "./launchpad-open-api-schemas/launchpad-create-schema";
+import type { LaunchpadPodsMetricsRequest } from "./launchpad-open-api-schemas/launchpad-create-schema";
 import type { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
 import type { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
+import {
+  getLaunchpad as getLaunchpadQuery,
+  listLaunchpads as listLaunchpadsQuery,
+  getLaunchpadLogs as getLaunchpadLogsQuery,
+} from "../launchpad-method/launchpad-query";
+import {
+  getDeployment,
+  listDeployment,
+} from "../../deployment/deployment-method/deployment-query";
+import {
+  getStatefulSet,
+  listStatefulSet,
+} from "../../statefulset/statefulset-method/statefulset-query";
+import type { LaunchpadDeleteRequest } from "./launchpad-old-api-schemas/req-res-delete-schemas";
+import type { LaunchpadStartRequest } from "./launchpad-old-api-schemas/req-res-start-schemas";
+import type { LaunchpadPauseRequest } from "./launchpad-old-api-schemas/req-res-pause-schemas";
 
-// ============= LEGACY API OPERATIONS =============
+// ===== QUERY OPERATIONS =====
+
+// Launchpad Information
+export async function getLaunchpad(
+  context: K8sApiContext,
+  target: BuiltinResourceTarget
+) {
+  switch (target.resourceType) {
+    case "deployment":
+      return await getDeployment(context, target);
+    case "statefulset":
+      return await getStatefulSet(context, target);
+    default:
+      throw new Error(
+        `Resource type ${target.resourceType} is not supported for app queries`
+      );
+  }
+}
+
+export async function listLaunchpads(context: K8sApiContext) {
+  // Get both deployments and statefulsets
+  const [deployments, statefulsets] = await Promise.all([
+    listDeployment(context),
+    listStatefulSet(context),
+  ]);
+
+  // Combine both lists
+  return [...deployments, ...statefulsets];
+}
+
+export async function getLaunchpadLogs(
+  k8sContext: K8sApiContext,
+  launchpadContext: SealosApiContext,
+  target: BuiltinResourceTarget
+) {
+  // Use the existing implementation from launchpad-query
+  return await getLaunchpadLogsQuery(k8sContext, launchpadContext, target);
+}
 
 // Monitor Data Operations
 export async function getLaunchpadMonitorData(
@@ -36,70 +87,38 @@ export async function getLaunchpadMonitorData(
   );
 }
 
+export async function getLaunchpadCombinedMonitor(
+  context: SealosApiContext,
+  queryName: string,
+  step: string = "2m"
+): Promise<any> {
+  const [cpuResult, memoryResult] = await Promise.allSettled([
+    getLaunchpadMonitorData(context, "average_cpu", queryName, step),
+    getLaunchpadMonitorData(context, "average_memory", queryName, step),
+  ]);
+
+  const cpuData =
+    cpuResult.status === "fulfilled" ? cpuResult.value : undefined;
+  const memoryData =
+    memoryResult.status === "fulfilled" ? memoryResult.value : undefined;
+
+  // Import transformCombinedMonitorData here to avoid circular dependency
+  const { transformCombinedMonitorData } = await import(
+    "@/lib/sealos/sealos-utils"
+  );
+
+  return transformCombinedMonitorData({
+    cpu: cpuData,
+    memory: memoryData,
+  });
+}
+
 // Check Ready Operations
 export async function checkLaunchpadReady(
   request: LaunchpadCheckReadyRequest,
   context: SealosApiContext
 ): Promise<any> {
   return await runParallelAction(checkReadyLaunchpad(request, context));
-}
-
-// ============= NEW STANDARDIZED API OPERATIONS =============
-
-// Application Lifecycle Management
-export async function createLaunchpadApplication(
-  context: SealosApiContext,
-  request: LaunchpadCreateFormData
-): Promise<any> {
-  return await runParallelAction(createApplication(context, request));
-}
-
-export async function getLaunchpadApplication(
-  context: SealosApiContext,
-  name: string
-): Promise<any> {
-  return await runParallelAction(getApplication(context, name));
-}
-
-export async function updateLaunchpadApplication(
-  context: SealosApiContext,
-  name: string,
-  request: LaunchpadUpdateFormData
-): Promise<any> {
-  return await runParallelAction(updateApplication(context, name, request));
-}
-
-export async function deleteLaunchpadApplication(
-  context: SealosApiContext,
-  name: string
-): Promise<any> {
-  return await runParallelAction(deleteApplication(context, name));
-}
-
-// Application Control Operations
-export async function startLaunchpadApplication(
-  context: SealosApiContext,
-  name: string
-): Promise<any> {
-  return await runParallelAction(startApplication(context, name));
-}
-
-export async function pauseLaunchpadApplication(
-  context: SealosApiContext,
-  name: string
-): Promise<any> {
-  return await runParallelAction(pauseApplication(context, name));
-}
-
-// Ports Management
-export async function createLaunchpadPorts(
-  context: SealosApiContext,
-  name: string,
-  request: LaunchpadPortsCreateRequest
-): Promise<any> {
-  return await runParallelAction(
-    createApplicationPorts(context, name, request)
-  );
 }
 
 // Pods and Metrics
@@ -115,4 +134,50 @@ export async function getLaunchpadPodsMetrics(
   request: LaunchpadPodsMetricsRequest
 ): Promise<any> {
   return await runParallelAction(getPodsMetrics(context, request));
+}
+
+// ===== MUTATION OPERATIONS =====
+
+// Launchpad Lifecycle Management
+export async function createLaunchpadService(
+  context: SealosApiContext,
+  request: LaunchpadCreateFormData
+): Promise<any> {
+  return await runParallelAction(createLaunchpad(context, request));
+}
+
+export async function updateLaunchpadService(
+  context: SealosApiContext,
+  name: string,
+  request: LaunchpadUpdateFormData
+): Promise<any> {
+  return await runParallelAction(updateLaunchpad(context, name, request));
+}
+
+export async function startLaunchpadService(
+  request: LaunchpadStartRequest,
+  context: SealosApiContext
+): Promise<any> {
+  return await runParallelAction(startLaunchpad(request, context));
+}
+
+export async function pauseLaunchpadService(
+  request: LaunchpadPauseRequest,
+  context: SealosApiContext
+): Promise<any> {
+  return await runParallelAction(pauseLaunchpad(request, context));
+}
+
+export async function deleteLaunchpadService(
+  request: LaunchpadDeleteRequest,
+  context: SealosApiContext
+): Promise<any> {
+  return await runParallelAction(deleteLaunchpad(request, context));
+}
+
+export async function checkReadyLaunchpadService(
+  request: LaunchpadCheckReadyRequest,
+  context: SealosApiContext
+): Promise<any> {
+  return await runParallelAction(checkReadyLaunchpad(request, context));
 }

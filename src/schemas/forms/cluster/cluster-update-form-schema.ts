@@ -5,6 +5,7 @@ import { ClusterResourceSchema } from "./components/cluster-resource-schema";
 
 // Update form schema (all fields optional for partial updates)
 export const clusterUpdateFormSchema = z.object({
+  name: z.string().min(1, "Cluster name is required"),
   resource: ClusterResourceSchema.optional(),
 });
 

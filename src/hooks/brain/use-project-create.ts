@@ -148,7 +148,7 @@ export function useProjectCreate(options?: CreateProjectOptions) {
                 bucketPolicy: objectStorageData.policy as
                   | "private"
                   | "publicRead"
-                  | "publicReadWrite",
+                  | "publicReadwrite",
               })
               .then((result) => ({
                 type: "objectstorage",

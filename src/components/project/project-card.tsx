@@ -26,6 +26,7 @@ import useProjectResources from "@/hooks/brain/use-project-resources";
 import { AvatarCircles } from "@/components/ui/avatar-circles";
 import { getResourceDefaultIcon } from "@/lib/sealos/sealos-utils";
 import { RenameProjectDialog } from "./rename-project-dialog";
+import { useProjectRename } from "@/hooks/brain/use-project-rename";
 
 interface ProjectCardProps {
   project: z.infer<typeof ProjectObjectSchema>;
@@ -38,9 +39,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 }) => {
   const { project: projectClient } = useTRPCClients();
   const { invalidateQueries } = useInvalidateQueries();
-  const [isRenameDialogOpen, setIsRenameDialogOpen] = React.useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const { targets } = useProjectResources(project.name);
+  const { isRenameDialogOpen, handleRename, handleRenameConfirm, handleRenameCancel } = useProjectRename({
+    projectName: project.name,
+    currentDisplayName: project.displayName,
+  });
 
   const avatarData = React.useMemo(() => {
     if (!targets?.length) return { avatarUrls: [], numPeople: 0 };
@@ -71,9 +75,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     },
   });
 
-  const handleRename = (e: React.MouseEvent) => {
+  const handleRenameClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    setIsRenameDialogOpen(true);
+    handleRename();
   };
 
   const handleDelete = (e: React.MouseEvent) => {
@@ -113,7 +117,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                     ? "cursor-pointer hover:text-foreground/80 group-hover:underline"
                     : ""
                 }`}
-                onClick={variant === "full" ? handleRename : undefined}
+                onClick={variant === "full" ? handleRenameClick : undefined}
               >
                 {project.displayName}
               </p>
@@ -122,7 +126,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                   className="h-4 w-4 p-0 opacity-40 transition-opacity"
                   size="sm"
                   variant="ghost"
-                  onClick={handleRename}
+                  onClick={handleRenameClick}
                 >
                   <PencilLine className="h-3 w-3" />
                   <span className="sr-only">Rename project</span>
@@ -167,9 +171,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       </Link>
       <RenameProjectDialog
         isOpen={isRenameDialogOpen}
-        onClose={() => setIsRenameDialogOpen(false)}
+        onClose={handleRenameCancel}
         projectName={project.name}
         currentDisplayName={project.displayName}
+        onConfirm={handleRenameConfirm}
+        onCancel={handleRenameCancel}
       />
 
       <AlertDialog

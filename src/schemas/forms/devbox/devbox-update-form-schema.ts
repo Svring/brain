@@ -9,6 +9,7 @@ import {
 
 // Update form schema (all fields optional for partial updates)
 export const devboxUpdateFormSchema = z.object({
+  name: z.string().min(1, "DevBox name is required"),
   resource: DevboxResourceSchema.optional(),
   ports: z
     .array(DevboxPortSchema)
@@ -30,29 +31,6 @@ export const devboxUpdateFormSchema = z.object({
       },
       {
         message: "All ports must have unique port numbers",
-      }
-    ),
-  // Alternative simple ports for when using simple operations
-  simplePorts: z
-    .array(DevboxPortSimpleUpdateSchema)
-    .optional()
-    .refine(
-      (ports) => {
-        // Ensure all ports have unique port numbers
-        if (!ports || ports.length === 0) {
-          return true; // No ports to validate
-        }
-
-        const portNumbers = ports
-          .map((port) => port.number)
-          .filter((num) => num !== undefined);
-
-        const uniqueNumbers = new Set(portNumbers);
-
-        return uniqueNumbers.size === portNumbers.length;
-      },
-      {
-        message: "All port operations must have unique port numbers",
       }
     ),
 });

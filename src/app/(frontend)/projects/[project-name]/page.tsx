@@ -42,9 +42,12 @@ function ProjectFloatingUI({
   isLoading: boolean;
 }) {
   const { isOpen, onOpenChange, onOpen } = useFlowgraphCommand();
+  const { nodes, edges } = useFlowgraphState();
 
-  // Don't show floating UI when loading
-  if (isLoading) {
+  // Don't show floating UI when loading or when nodes/edges are empty
+  const shouldShowLoading = isLoading || nodes.length === 0;
+
+  if (shouldShowLoading) {
     return null;
   }
 
@@ -93,7 +96,10 @@ function ProjectFlow({
   // console.log("nodes", nodes);
   // console.log("edges", edges);
 
-  if (isLoading) {
+  // Show loading if either isLoading is true OR if nodes or edges length equals 0
+  const shouldShowLoading = isLoading || nodes.length === 0;
+
+  if (shouldShowLoading) {
     return (
       <LoadingScreen
         text="Loading..."
@@ -124,6 +130,9 @@ function ProjectFlow({
       snapGrid={REACT_FLOW_CONFIG.snapGrid}
       connectionLineComponent={FloatingConnectionLine}
       proOptions={REACT_FLOW_CONFIG.proOptions}
+      onEdgeClick={(event, edge) => {
+        console.log("edge clicked", edge);
+      }}
     />
   );
 }
@@ -144,6 +153,10 @@ function ProjectFlowWithLoading({
     resourceTargets,
     isLoadingResources
   );
+  const { nodes, edges } = useFlowgraphState();
+
+  // Use the same loading logic as ProjectFlow
+  const shouldShowLoading = isLoading || nodes.length === 0;
 
   return (
     <>
@@ -156,7 +169,7 @@ function ProjectFlowWithLoading({
       <ProjectFloatingUI
         projectName={projectName}
         sidebarChatMaximized={sidebarChatMaximized}
-        isLoading={isLoading}
+        isLoading={shouldShowLoading}
       />
     </>
   );

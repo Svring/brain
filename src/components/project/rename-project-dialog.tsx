@@ -21,6 +21,9 @@ interface RenameProjectDialogProps {
   onClose: () => void;
   projectName: string;
   currentDisplayName: string;
+  onConfirm?: (newDisplayName: string) => void;
+  onCancel?: () => void;
+  isPending?: boolean;
 }
 
 export function RenameProjectDialog({
@@ -28,6 +31,9 @@ export function RenameProjectDialog({
   onClose,
   projectName,
   currentDisplayName,
+  onConfirm,
+  onCancel,
+  isPending: externalIsPending,
 }: RenameProjectDialogProps) {
   const { project } = useTRPCClients();
   const { invalidateQueries } = useInvalidateQueries();
@@ -48,6 +54,8 @@ export function RenameProjectDialog({
     })
   );
 
+  const isPending = externalIsPending ?? renameProjectMutation.isPending;
+
   React.useEffect(() => {
     if (isOpen) {
       setEditValue(currentDisplayName);
@@ -55,23 +63,31 @@ export function RenameProjectDialog({
   }, [isOpen, currentDisplayName]);
 
   const handleSave = async () => {
-    if (editValue.trim() && editValue !== currentDisplayName) {
-      try {
-        await renameProjectMutation.mutateAsync({
-          name: projectName,
-          newDisplayName: editValue.trim(),
-        });
-      } catch (error) {
-        console.error("Failed to rename project:", error);
-      }
+    if (onConfirm) {
+      onConfirm(editValue);
     } else {
-      onClose();
+      if (editValue.trim() && editValue !== currentDisplayName) {
+        try {
+          await renameProjectMutation.mutateAsync({
+            name: projectName,
+            newDisplayName: editValue.trim(),
+          });
+        } catch (error) {
+          console.error("Failed to rename project:", error);
+        }
+      } else {
+        onClose();
+      }
     }
   };
 
   const handleCancel = () => {
-    setEditValue(currentDisplayName);
-    onClose();
+    if (onCancel) {
+      onCancel();
+    } else {
+      setEditValue(currentDisplayName);
+      onClose();
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -94,7 +110,7 @@ export function RenameProjectDialog({
                 size="sm"
                 className="h-8 w-8"
                 onClick={handleCancel}
-                disabled={renameProjectMutation.isPending}
+                disabled={isPending}
               >
                 <X />
               </Button>
@@ -103,9 +119,9 @@ export function RenameProjectDialog({
                 size="sm"
                 className="h-8 w-8"
                 onClick={handleSave}
-                disabled={renameProjectMutation.isPending}
+                disabled={isPending}
               >
-                {renameProjectMutation.isPending ? (
+                {isPending ? (
                   <Spinner variant="bars" className="h-4 w-4" />
                 ) : (
                   <Check />

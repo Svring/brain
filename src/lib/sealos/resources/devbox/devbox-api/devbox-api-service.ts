@@ -1,5 +1,3 @@
-import axios from "axios";
-import https from "https";
 import type { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
 import type { DevboxCreateFormData } from "@/schemas/forms/devbox/devbox-create-form-schema";
 import type { DevboxUpdateFormData } from "@/schemas/forms/devbox/devbox-update-form-schema";
@@ -11,6 +9,7 @@ import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { convertDevboxListToSimplified } from "../devbox-method/devbox-utils";
 import { runParallelAction } from "next-server-actions-parallel";
+import { createSealosApi } from "@/lib/sealos/sealos-utils";
 
 // Inline request schemas
 type DevboxReleaseRequest = {
@@ -18,38 +17,13 @@ type DevboxReleaseRequest = {
   releaseDes?: string;
 };
 
-function createHttpsAgent() {
-  const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
-  return new https.Agent({
-    keepAlive: true,
-    rejectUnauthorized: isDevelopment ? false : true,
-  });
-}
-
+// Helper functions using the universal API utility
 function createOldDevboxAxios(context: SealosApiContext) {
-  return axios.create({
-    baseURL: `http://devbox.${context.baseUrl}/api/`,
-    headers: {
-      "Content-Type": "application/json",
-      ...(context.authorization
-        ? { Authorization: context.authorization }
-        : {}),
-    },
-    httpsAgent: createHttpsAgent(),
-  });
+  return createSealosApi(context, "devbox");
 }
 
 function createDevboxAxios(context: SealosApiContext) {
-  return axios.create({
-    baseURL: `http://devbox.${context.baseUrl}/api/v1/devbox`,
-    headers: {
-      "Content-Type": "application/json",
-      ...(context.authorization
-        ? { Authorization: context.authorization }
-        : {}),
-    },
-    httpsAgent: createHttpsAgent(),
-  });
+  return createSealosApi(context, "devbox", "v1/devbox");
 }
 
 // ===== QUERY OPERATIONS =====
@@ -87,6 +61,32 @@ export async function getDevboxMonitor(
     },
   });
   return response.data;
+}
+
+export async function getDevboxCombinedMonitor(
+  context: SealosApiContext,
+  devboxName: string,
+  step: string = "2m"
+): Promise<any> {
+  const [cpuResult, memoryResult] = await Promise.allSettled([
+    getDevboxMonitor(context, "average_cpu", devboxName, step),
+    getDevboxMonitor(context, "average_memory", devboxName, step),
+  ]);
+
+  const cpuData =
+    cpuResult.status === "fulfilled" ? cpuResult.value : undefined;
+  const memoryData =
+    memoryResult.status === "fulfilled" ? memoryResult.value : undefined;
+
+  // Import transformCombinedMonitorData here to avoid circular dependency
+  const { transformCombinedMonitorData } = await import(
+    "@/lib/sealos/sealos-utils"
+  );
+
+  return transformCombinedMonitorData({
+    cpu: cpuData,
+    memory: memoryData,
+  });
 }
 
 export async function checkDevboxReady(

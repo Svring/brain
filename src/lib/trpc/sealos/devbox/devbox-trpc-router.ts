@@ -20,9 +20,9 @@ import {
   getDevbox,
   listDevboxes,
   getDevboxMonitor,
+  getDevboxCombinedMonitor,
   checkDevboxReady,
 } from "@/lib/sealos/resources/devbox/devbox-api/devbox-api-service";
-import { transformCombinedMonitorData } from "@/lib/sealos/sealos-utils";
 
 const t = initTRPC.context<DevboxContext>().create();
 
@@ -48,22 +48,7 @@ export const devboxRouter = t.router({
       })
     )
     .query(async ({ input, ctx }) => {
-      const [cpuResult, memoryResult] = await Promise.allSettled([
-        getDevboxMonitor(ctx, "average_cpu", input.devboxName, input.step),
-        getDevboxMonitor(ctx, "average_memory", input.devboxName, input.step),
-      ]);
-
-      const cpuData =
-        cpuResult.status === "fulfilled" ? cpuResult.value : undefined;
-      const memoryData =
-        memoryResult.status === "fulfilled" ? memoryResult.value : undefined;
-
-      const result = transformCombinedMonitorData({
-        cpu: cpuData,
-        memory: memoryData,
-      });
-
-      return result;
+      return await getDevboxCombinedMonitor(ctx, input.devboxName, input.step);
     }),
 
   networkStatus: t.procedure.input(z.string()).query(async ({ input, ctx }) => {
@@ -85,14 +70,9 @@ export const devboxRouter = t.router({
     }),
 
   update: t.procedure
-    .input(
-      z.object({
-        devboxName: z.string(),
-        request: devboxUpdateFormSchema,
-      })
-    )
+    .input(devboxUpdateFormSchema)
     .mutation(async ({ ctx, input }) => {
-      return await updateDevbox(ctx, input.devboxName, input.request);
+      return await updateDevbox(ctx, input.name, input);
     }),
 
   start: t.procedure.input(z.string()).mutation(async ({ ctx, input }) => {

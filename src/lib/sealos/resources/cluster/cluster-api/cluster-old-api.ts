@@ -1,8 +1,8 @@
 "use server";
 
-import axios from "axios";
 import { createParallelAction } from "next-server-actions-parallel";
 import { SealosApiContext } from "@/lib/sealos/sealos-api-context-schema";
+import { createSealosApi } from "@/lib/sealos/sealos-utils";
 import {
   ClusterCreateRequest,
   ClusterCreateRequestSchema,
@@ -51,23 +51,10 @@ import {
   ClusterBackupDeleteResponse,
   ClusterBackupDeleteResponseSchema,
 } from "../schemas/req-res-schemas/req-res-delete-backup-schemas";
-import https from "https";
 
-// Helper to create axios instance per request
+// Helper to create axios instance per request using universal utility
 function createClusterApi(context: SealosApiContext) {
-  const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
-  return axios.create({
-    baseURL: `http://dbprovider.${context.baseUrl}/api`,
-    headers: {
-      "Content-Type": "application/json",
-      ...(context.authorization
-        ? { Authorization: context.authorization }
-        : {}),
-    },
-    httpsAgent: isDevelopment
-      ? new https.Agent({ rejectUnauthorized: false })
-      : undefined,
-  });
+  return createSealosApi(context, "cluster");
 }
 
 export const createCluster = createParallelAction(

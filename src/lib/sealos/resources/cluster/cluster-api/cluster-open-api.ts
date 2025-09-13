@@ -33,6 +33,8 @@ import {
 } from "./cluster-open-api-schemas";
 import { clusterCreateFormSchema } from "@/schemas/forms/cluster/cluster-create-form-schema";
 import type { ClusterCreateFormData } from "@/schemas/forms/cluster/cluster-create-form-schema";
+import { clusterUpdateFormSchema } from "@/schemas/forms/cluster/cluster-update-form-schema";
+import type { ClusterUpdateFormData } from "@/schemas/forms/cluster/cluster-update-form-schema";
 import https from "https";
 
 // Helper to create axios instance per request
@@ -123,21 +125,23 @@ export const getCluster = createParallelAction(
  * @example
  * ```typescript
  * // Scale up cluster resources
- * const result = await updateCluster("my-postgres", {
+ * const result = await updateCluster({
+ *   name: "my-postgres",
  *   resource: {
- *     cpu: "2000m",      // Increase from 1000m to 2000m
- *     memory: "2048Mi",  // Increase from 1024Mi to 2048Mi
- *     storage: "5Gi",    // Increase from 3Gi to 5Gi
+ *     cpu: 2,            // Increase from 1 to 2 cores
+ *     memory: 2,         // Increase from 1 to 2 GB
+ *     storage: 5,        // Increase from 3 to 5 GB
  *     replicas: 2        // Increase from 1 to 2
  *   }
  * }, context);
  *
  * // Scale down cluster resources
- * const result = await updateCluster("my-postgres", {
+ * const result = await updateCluster({
+ *   name: "my-postgres",
  *   resource: {
- *     cpu: "500m",       // Decrease to 500m
- *     memory: "512Mi",   // Decrease to 512Mi
- *     storage: "2Gi",    // Decrease to 2Gi
+ *     cpu: 0.5,          // Decrease to 0.5 cores
+ *     memory: 0.5,       // Decrease to 0.5 GB
+ *     storage: 2,        // Decrease to 2 GB
  *     replicas: 1        // Keep at 1
  *   }
  * }, context);
@@ -145,17 +149,20 @@ export const getCluster = createParallelAction(
  */
 export const updateCluster = createParallelAction(
   async (
-    clusterName: string,
-    request: UpdateClusterRequest,
+    formData: ClusterUpdateFormData,
     context: ClusterApiContext
   ): Promise<UpdateClusterResponse> => {
-    const validatedRequest = UpdateClusterRequestSchema.parse(request);
+    // Parse with form schema to get defaults and validation
+    const validatedFormData = clusterUpdateFormSchema.parse(formData);
+    const { name, resource } = validatedFormData;
+
+    if (!resource) {
+      throw new Error("Resource configuration is required for cluster update");
+    }
+
     const api = createClusterApi(context);
-    const response = await api.patch(
-      `/database/${clusterName}`,
-      validatedRequest
-    );
-    return UpdateClusterResponseSchema.parse(response.data);
+    const response = await api.patch(`/database/${name}`, { resource });
+    return response.data;
   }
 );
 

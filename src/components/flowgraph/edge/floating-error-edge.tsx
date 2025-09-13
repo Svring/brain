@@ -33,11 +33,14 @@ function FloatingErrorEdge(props: EdgeProps) {
   const sourceNode = useInternalNode(source);
   const targetNode = useInternalNode(target);
 
-  const resourceTarget = targetNode?.data.target as CustomResourceTarget | BuiltinResourceTarget | undefined;
+  const resourceTarget = targetNode?.data.target as
+    | CustomResourceTarget
+    | BuiltinResourceTarget
+    | undefined;
 
   // Get resource data similar to network node
   const { resource, isLoading, error } = useResourceStatus(resourceTarget!);
-  
+
   // Message sending hooks
   const { appendSystemMessage } = useAppendSystemMessageMutation();
   const { mutate: sendMessage } = useSendMessageMutation();
@@ -62,7 +65,7 @@ function FloatingErrorEdge(props: EdgeProps) {
   });
 
   const errorColor = "#9F833B";
-  
+
   const edgeStyle = {
     stroke: errorColor,
     strokeWidth: isHovered ? 2 : 1.5,
@@ -134,10 +137,13 @@ function FloatingErrorEdge(props: EdgeProps) {
   const handleButtonClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    
+
     if (resourceTarget) {
       selectResource(resourceTarget);
-      appendSystemMessage({ type: "universal.diagnoseNetwork", target: resourceTarget });
+      appendSystemMessage({
+        type: "universal.diagnoseNetwork",
+        target: resourceTarget,
+      });
 
       // Prepare network status data for analysis (same as network node)
       const networkStatusData = {
@@ -155,46 +161,25 @@ function FloatingErrorEdge(props: EdgeProps) {
       // Send network status data for analysis after system message is appended
       sendMessage({
         role: "system",
-        content: analyzeNetworkPrompt + "\n\n" + JSON.stringify(networkStatusData),
+        content:
+          analyzeNetworkPrompt + "\n\n" + JSON.stringify(networkStatusData),
       });
     }
   };
 
   return (
-    <>
+    <g
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{ cursor: "help" }}
+    >
       <BaseEdge
         id={id}
         path={edgePath}
         markerEnd={markerEnd}
         style={edgeStyle}
       />
-      <EdgeLabelRenderer>
-        <div
-          className="nodrag nopan pointer-events-auto absolute"
-          style={{
-            transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-          }}
-        >
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="w-8 h-8 rounded-full border-2 bg-theme-yellow/30! text-theme-yellow duration-200 shadow-md"
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-                onClick={handleButtonClick}
-              >
-                ?
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>diagnose with ai</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-      </EdgeLabelRenderer>
-    </>
+    </g>
   );
 }
 

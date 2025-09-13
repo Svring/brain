@@ -3,30 +3,26 @@ import { z } from "zod";
 import type { ClusterContext } from "./cluster-trpc-context";
 import {
   getClusterMonitorData,
+  getCombinedMonitor,
   deleteClusterBackup,
-} from "@/lib/sealos/resources/cluster/cluster-api/cluster-api-service";
-import { transformCombinedMonitorData } from "@/lib/sealos/sealos-utils";
-import {
   getCluster,
   getClusterBackupList,
   getClusterLogs,
-} from "@/lib/sealos/resources/cluster/cluster-method/cluster-query";
+  fetchClusterVersions,
+  createClusterService,
+  startClusterService,
+  pauseClusterService,
+  updateClusterService,
+  deleteClusterService,
+} from "@/lib/sealos/resources/cluster/cluster-api/cluster-api-service";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import {
-  startCluster,
-  pauseCluster,
-  createCluster,
-  updateCluster,
-  getClusterVersions,
-} from "@/lib/sealos/resources/cluster/cluster-api/cluster-open-api";
-import {
-  CreateClusterResponseSchema,
   UpdateClusterRequestSchema,
   UpdateClusterResponseSchema,
 } from "@/lib/sealos/resources/cluster/cluster-api/cluster-open-api-schemas";
 import { clusterCreateFormSchema } from "@/schemas/forms/cluster/cluster-create-form-schema";
+import { clusterUpdateFormSchema } from "@/schemas/forms/cluster/cluster-update-form-schema";
 import { runParallelAction } from "next-server-actions-parallel";
-import { deleteCluster as deleteClusterOld } from "@/lib/sealos/resources/cluster/cluster-api/cluster-old-api";
 import {
   ClusterDeleteRequestSchema,
   ClusterDeleteResponseSchema,
@@ -57,7 +53,7 @@ export const clusterRouter = t.router({
     }),
 
   versions: t.procedure.query(async ({ ctx }) => {
-    return await runParallelAction(getClusterVersions(ctx));
+    return await fetchClusterVersions(ctx);
   }),
 
   // Monitoring
@@ -83,27 +79,7 @@ export const clusterRouter = t.router({
     )
     .query(async ({ input, ctx }) => {
       const { dbName, dbType } = input;
-
-      const [cpuResult, memoryResult, diskResult] = await Promise.allSettled([
-        getClusterMonitorData(ctx, dbName, dbType, "cpu"),
-        getClusterMonitorData(ctx, dbName, dbType, "memory"),
-        getClusterMonitorData(ctx, dbName, dbType, "disk"),
-      ]);
-
-      const cpuData =
-        cpuResult.status === "fulfilled" ? cpuResult.value : undefined;
-      const memoryData =
-        memoryResult.status === "fulfilled" ? memoryResult.value : undefined;
-      const diskData =
-        diskResult.status === "fulfilled" ? diskResult.value : undefined;
-
-      const result = transformCombinedMonitorData({
-        cpu: cpuData,
-        memory: memoryData,
-        storage: diskData,
-      });
-
-      return result;
+      return await getCombinedMonitor(ctx, dbName, dbType);
     }),
 
   // ===== MUTATION PROCEDURES =====
@@ -112,35 +88,33 @@ export const clusterRouter = t.router({
   create: t.procedure
     .input(clusterCreateFormSchema)
     .mutation(async ({ input, ctx }) => {
-      return await runParallelAction(createCluster(input, ctx));
+      return await createClusterService(input, ctx);
     }),
 
-  start: t.procedure.input(z.string()).mutation(async ({ input, ctx }) => {
-    return await startCluster(input, ctx);
-  }),
+  start: t.procedure
+    .input(CustomResourceTargetSchema)
+    .mutation(async ({ input, ctx }) => {
+      return await startClusterService(input, ctx);
+    }),
 
-  pause: t.procedure.input(z.string()).mutation(async ({ input, ctx }) => {
-    return await pauseCluster(input, ctx);
-  }),
+  pause: t.procedure
+    .input(CustomResourceTargetSchema)
+    .mutation(async ({ input, ctx }) => {
+      return await pauseClusterService(input, ctx);
+    }),
 
   update: t.procedure
-    .input(
-      z.object({
-        clusterName: z.string(),
-        request: UpdateClusterRequestSchema,
-      })
-    )
+    .input(clusterUpdateFormSchema)
     .output(UpdateClusterResponseSchema)
     .mutation(async ({ input, ctx }) => {
-      const { clusterName, request } = input;
-      return await runParallelAction(updateCluster(clusterName, request, ctx));
+      return await updateClusterService(input, ctx);
     }),
 
   delete: t.procedure
     .input(ClusterDeleteRequestSchema)
     .output(ClusterDeleteResponseSchema)
     .mutation(async ({ input, ctx }) => {
-      return await runParallelAction(deleteClusterOld(input, ctx));
+      return await deleteClusterService(input, ctx);
     }),
 
   deleteBackup: t.procedure

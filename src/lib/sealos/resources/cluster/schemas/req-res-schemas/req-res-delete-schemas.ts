@@ -1,8 +1,9 @@
 import { z } from "zod";
 import { K8sResourceSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/kubernetes-resource-schemas";
+import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
-// Cluster delete request schema
-export const ClusterDeleteRequestSchema = z.object({
+// Cluster delete request schema - extends CustomResourceTarget but requires name
+export const ClusterDeleteRequestSchema = CustomResourceTargetSchema.extend({
   name: z.string().min(1, "Database name is required"),
 });
 

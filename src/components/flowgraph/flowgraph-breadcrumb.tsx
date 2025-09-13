@@ -2,11 +2,11 @@
 
 import { ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { Button } from "@/components/ui/button";
 import { RenameProjectDialog } from "@/components/project/rename-project-dialog";
+import { useProjectRename } from "@/hooks/brain/use-project-rename";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -42,17 +42,16 @@ export function FlowgraphBreadcrumb({ projectName }: FlowgraphHeaderProps) {
     project.get.queryOptions(projectName)
   );
 
-  const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+  const { isRenameDialogOpen, handleRename, handleRenameConfirm, handleRenameCancel } = useProjectRename({
+    projectName,
+    currentDisplayName: projectData?.displayName || projectName,
+  });
 
   if (!projectData) {
     return null;
   }
 
   const projectDisplayName = projectData.displayName;
-
-  const handleProjectNameClick = () => {
-    setIsRenameDialogOpen(true);
-  };
 
   const handleProjectSelect = (selectedProjectName: string) => {
     router.push(`/projects/${selectedProjectName}`);
@@ -85,7 +84,7 @@ export function FlowgraphBreadcrumb({ projectName }: FlowgraphHeaderProps) {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button
-                        onClick={handleProjectNameClick}
+                        onClick={handleRename}
                         className="font-medium hover:underline cursor-pointer"
                       >
                         {projectDisplayName.length > 14
@@ -125,9 +124,11 @@ export function FlowgraphBreadcrumb({ projectName }: FlowgraphHeaderProps) {
         </div>
         <RenameProjectDialog
           isOpen={isRenameDialogOpen}
-          onClose={() => setIsRenameDialogOpen(false)}
+          onClose={handleRenameCancel}
           projectName={projectName}
           currentDisplayName={projectDisplayName}
+          onConfirm={handleRenameConfirm}
+          onCancel={handleRenameCancel}
         />
       </div>
     </TooltipProvider>
