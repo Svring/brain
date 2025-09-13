@@ -180,6 +180,7 @@ export const DevboxPortsFields = ({ fieldArray }: DevboxPortsFieldsProps) => {
         variant="outline"
         onClick={addPort}
         className="w-full"
+        size="sm"
       >
         <Plus className="h-4 w-4 mr-2" />
         Add Port

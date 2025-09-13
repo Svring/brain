@@ -82,21 +82,18 @@ export default function DevboxNodeIde({ object }: DevboxNodeIdeProps) {
             <ChevronDown className="h-5 w-3" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent
-          className="rounded-xl bg-background-tertiary border border-border-primary"
-          align="end"
-        >
+        <DropdownMenuContent className="rounded-xl bg-background-tertiary border border-border-primary">
           {DEVBOX_IDE.map((ide) => (
             <DropdownMenuItem
               key={ide}
               onClick={async (e) => {
                 e.stopPropagation();
                 setSelectedIde(ide);
-                
+
                 // Directly trigger connection when IDE is selected
                 try {
                   const token = await getDevboxSshInfo(devboxContext, target);
-                  
+
                   if (object.ssh) {
                     const sshUri = composeSshConnectionUri(
                       ide,

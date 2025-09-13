@@ -60,7 +60,7 @@ export const getDevboxObject = async (
 
     portMap.set(servicePort.number, {
       number: servicePort.number,
-      name: servicePort.name,
+      portName: servicePort.name,
       protocol: servicePort.protocol,
       serviceName: servicePort.serviceName,
       privateAddress: privateAddress,

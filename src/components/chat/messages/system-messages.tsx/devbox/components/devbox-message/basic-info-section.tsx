@@ -10,7 +10,6 @@ interface BasicInfoSectionProps {
   target: CustomResourceTarget;
 }
 
-
 export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   target,
 }) => {
@@ -34,31 +33,31 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
 
   return (
     <div className="p-2 border rounded-lg">
-        <div className="flex gap-4">
-          {/* Runtime */}
-          <div className="flex-1 flex flex-col">
-            <span className="font-medium text-sm">Runtime</span>
-            <span className="text-xs text-muted-foreground truncate">
-              {parsedDevboxObject?.runtime || "Unknown"}
-            </span>
-          </div>
-
-          {/* Created At */}
-          <div className="flex-1 flex flex-col">
-            <span className="font-medium text-sm">Created</span>
-            <span className="text-xs text-muted-foreground truncate">
-              {parsedDevboxObject?.operationalStatus?.createdAt || "Unknown"}
-            </span>
-          </div>
-
-          {/* Uptime */}
-          <div className="flex-1 flex flex-col">
-            <span className="font-medium text-sm">Uptime</span>
-            <span className="text-xs text-muted-foreground truncate">
-              {getUptime(parsedDevboxObject?.status || "")}
-            </span>
-          </div>
+      <div className="flex gap-4">
+        {/* Runtime */}
+        <div className="flex-1 flex flex-col">
+          <span className="font-medium text-sm">Runtime</span>
+          <span className="text-xs text-muted-foreground truncate">
+            {parsedDevboxObject?.runtime || "Unknown"}
+          </span>
         </div>
+
+        {/* Created At */}
+        <div className="flex-1 flex flex-col">
+          <span className="font-medium text-sm">Created</span>
+          <span className="text-xs text-muted-foreground truncate">
+            {parsedDevboxObject?.operationalStatus?.createdAt || "Unknown"}
+          </span>
+        </div>
+
+        {/* Uptime */}
+        <div className="flex-1 flex flex-col">
+          <span className="font-medium text-sm">Uptime</span>
+          <span className="text-xs text-muted-foreground truncate">
+            {getUptime(parsedDevboxObject?.status || "")}
+          </span>
+        </div>
+      </div>
     </div>
   );
 };

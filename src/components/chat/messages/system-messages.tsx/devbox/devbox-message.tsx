@@ -31,7 +31,6 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
   const appendSystemMessageMutation = useAppendSystemMessageMutation();
   const [activeSection, setActiveSection] = useState<ActiveSection>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [closingSection, setClosingSection] = useState<ActiveSection>(null);
 
   const devboxTrpcClient = devboxClient.useTRPC();
 
@@ -117,15 +116,13 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
 
   // Dynamic popover content based on active section
   const getPopoverContent = () => {
-    // Use closingSection if popover is closing, otherwise use activeSection
-    const currentSection = closingSection || activeSection;
-    
-    if (!currentSection) {
+    // Only show content if popover is open and we have an active section
+    if (!isPopoverOpen || !activeSection) {
       return null;
     }
 
     // Use extracted popover content components
-    switch (currentSection) {
+    switch (activeSection) {
       case "resource":
         return <CpuMemoryPopoverContent target={target} />;
       case "ssh":
@@ -183,12 +180,9 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
       open={isPopoverOpen}
       onOpenChange={(open) => {
         setIsPopoverOpen(open);
-        // If popover is being closed externally, preserve content during close animation
+        // Clear active section when popover closes
         if (!open) {
-          setClosingSection(activeSection);
           setActiveSection(null);
-          // Clear closingSection after animation completes
-          setTimeout(() => setClosingSection(null), 200);
         }
       }}
     >

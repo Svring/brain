@@ -10,6 +10,10 @@ import {
 import { useFormContext } from "react-hook-form";
 import { DevboxResource } from "@/schemas/forms/devbox/components/devbox-resource-schema";
 import { Slider } from "@/components/ui/slider";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useEffect, useState } from "react";
+import { convertK8sResourceToNumeric } from "@/lib/k8s/k8s-method/k8s-utils";
 
 // CPU options from devbox resource schema
 const DEVBOX_CPU_OPTIONS = [0.1, 0.2, 0.5, 1, 2, 4, 8, 16] as const;
@@ -26,11 +30,54 @@ export const DevboxResourceFields = ({
   cpuOptions = DEVBOX_CPU_OPTIONS,
   memoryOptions = DEVBOX_MEMORY_OPTIONS,
 }: DevboxResourceFieldsProps = {}) => {
-  const form = useFormContext<{ resource: DevboxResource }>();
+  const form = useFormContext<{ resource: DevboxResource; name: string }>();
   const resourceValues = form.watch("resource");
+  const nameValue = form.watch("name");
+  const target = convertResourceTypeToTarget("devbox", nameValue);
+
+  // Use useResourceStatus to get the devbox resource
+  const { resource: object } = useResourceStatus(
+    target,
+    (object) => object.resources
+  );
+
+  // Helper function to create comparison display
+  const createComparisonDisplay = (
+    formValue: number,
+    objectValue: number | undefined,
+    unit: string
+  ) => {
+    if (objectValue !== undefined && objectValue !== formValue) {
+      return (
+        <div className="flex items-center gap-2">
+          <span className="text-muted-foreground line-through">
+            {objectValue}
+            {unit}
+          </span>
+          <span className="text-muted-foreground">→</span>
+          <span className="font-medium">
+            {formValue}
+            {unit}
+          </span>
+        </div>
+      );
+    }
+    return (
+      <span className="font-medium">
+        {formValue}
+        {unit}
+      </span>
+    );
+  };
+
+  // Convert object values to numeric for comparison
+  const objectNumeric = convertK8sResourceToNumeric({
+    cpu: object.cpu,
+    memory: object.memory,
+  });
 
   return (
-    <div className="space-y-6 p-2">
+    <div className="space-y-2 px-2">
       {/* CPU Options - only show if cpu value is defined */}
       {resourceValues?.cpu !== undefined && (
         <FormField
@@ -44,7 +91,11 @@ export const DevboxResourceFields = ({
               <FormItem>
                 <div className="flex items-center gap-2">
                   <FormLabel className="font-medium">CPU:</FormLabel>
-                  <span className="">{field.value || cpuOptions[0]}C</span>
+                  {createComparisonDisplay(
+                    field.value || cpuOptions[0],
+                    objectNumeric.cpu.nearest,
+                    "C"
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Slider
@@ -87,7 +138,11 @@ export const DevboxResourceFields = ({
               <FormItem>
                 <div className="flex items-center gap-2">
                   <FormLabel className="font-medium">Memory:</FormLabel>
-                  <span className="">{field.value || memoryOptions[0]}G</span>
+                  {createComparisonDisplay(
+                    field.value || memoryOptions[0],
+                    objectNumeric.memory.nearest,
+                    "G"
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Slider

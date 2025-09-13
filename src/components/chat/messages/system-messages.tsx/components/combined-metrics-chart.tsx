@@ -187,7 +187,7 @@ export const CombinedMetricsChart: React.FC<CombinedMetricsChartProps> = ({
   if (isLoading) {
     return (
       <div
-        className={`flex items-center justify-center ${height} text-sm text-muted-foreground`}
+        className={`flex items-center justify-center text-sm text-muted-foreground`}
       >
         Loading metrics...
       </div>
@@ -197,7 +197,7 @@ export const CombinedMetricsChart: React.FC<CombinedMetricsChartProps> = ({
   if (!data || data.length === 0) {
     return (
       <div
-        className={`flex items-center justify-center ${height} text-sm text-muted-foreground`}
+        className={`flex items-center justify-center text-sm text-muted-foreground`}
       >
         No metrics data available
       </div>

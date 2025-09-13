@@ -44,7 +44,7 @@ export const getStatefulSetObject = async (
   servicePorts.forEach((servicePort) => {
     portMap.set(servicePort.number, {
       number: servicePort.number,
-      name: servicePort.name,
+      portName: servicePort.name,
       protocol: servicePort.protocol || "TCP",
       serviceName: servicePort.serviceName,
       privateAddress: servicePort.privateAddress,

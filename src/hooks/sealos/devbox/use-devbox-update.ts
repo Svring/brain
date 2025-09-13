@@ -25,10 +25,7 @@ export const useDevboxUpdate = ({
       toast.success("Devbox updated successfully!");
       onSuccess?.(data);
       const target = convertResourceTypeToTarget("devbox", data.name);
-      invalidateQueries(
-        [devbox.list.queryKey(), devbox.get.queryKey(target as any)],
-        true
-      );
+      invalidateQueries([devbox.list.queryKey(), devbox.get.queryKey()]);
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to update devbox");

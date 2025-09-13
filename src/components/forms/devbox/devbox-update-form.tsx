@@ -6,7 +6,6 @@ import { useDevboxUpdateForm } from "@/hooks/forms/devbox/use-devbox-update-form
 import { DevboxUpdateFormData } from "@/schemas/forms/devbox/devbox-update-form-schema";
 import { DevboxResourceFields } from "./devbox-resource-fields";
 import { DevboxPortsFields } from "./devbox-ports-fields";
-import { DevboxSimplePortsFields } from "./devbox-simple-ports-fields";
 import { toast } from "sonner";
 
 interface DevboxUpdateFormProps {
@@ -14,7 +13,6 @@ interface DevboxUpdateFormProps {
   onSubmit: (data: DevboxUpdateFormData) => void;
   isLoading?: boolean;
   hideDefaultButton?: boolean;
-  useSimplePortsMode?: boolean;
   hidePorts?: boolean;
 }
 
@@ -23,16 +21,16 @@ export const DevboxUpdateForm = ({
   onSubmit,
   isLoading = false,
   hideDefaultButton = false,
-  useSimplePortsMode = false,
   hidePorts = false,
 }: DevboxUpdateFormProps) => {
-  const { form, portsFieldArray, simplePortsFieldArray } =
-    useDevboxUpdateForm(defaultValues);
+  const { form, portsFieldArray } = useDevboxUpdateForm(defaultValues);
+
+  console.log("portsFieldArray", portsFieldArray);
 
   const handleSubmit = (data: DevboxUpdateFormData) => {
     // If ports are hidden, exclude ports data from submission
     if (hidePorts) {
-      const { ports, simplePorts, ...dataWithoutPorts } = data;
+      const { ports, ...dataWithoutPorts } = data;
       onSubmit(dataWithoutPorts);
     } else {
       onSubmit(data);
@@ -53,12 +51,6 @@ export const DevboxUpdateForm = ({
   // Only show fields that have values in defaultValues
   const hasResource = defaultValues?.resource !== undefined;
   const hasPorts = defaultValues?.ports !== undefined;
-  const hasSimplePorts = defaultValues?.simplePorts !== undefined;
-
-  // Determine which ports field to show
-  const showSimplePortsField =
-    !hidePorts && (useSimplePortsMode || hasSimplePorts);
-  const showRegularPortsField = !hidePorts && hasPorts && !showSimplePortsField;
 
   return (
     <Form {...form}>
@@ -69,12 +61,8 @@ export const DevboxUpdateForm = ({
       >
         {hasResource && <DevboxResourceFields />}
 
-        {showRegularPortsField && (
+        {!hidePorts && hasPorts && (
           <DevboxPortsFields fieldArray={portsFieldArray} />
-        )}
-
-        {showSimplePortsField && (
-          <DevboxSimplePortsFields fieldArray={simplePortsFieldArray} />
         )}
 
         {!hideDefaultButton && (

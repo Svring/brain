@@ -20,7 +20,7 @@ export default function HomePage() {
   const { filteredProjects, projects, isLoading, isError } = useProjectSearch();
   const { CreateProjectDialog, openDialog } = useProjectCreateDialog();
   const messagesScrollRef = useRef<HTMLDivElement>(null);
-  
+
   // Track visibility of recent projects
   const showRecentProjects = !hasMessages && projects && projects.length > 0;
   // const showRecentProjects = false;
@@ -129,10 +129,8 @@ export default function HomePage() {
           </motion.div>
         )}
 
-        {/* Suggestions section - shown when recent projects are not visible */}
-        {!hasMessages && !showRecentProjects && (
-          <Suggestions />
-        )}
+        {/* Suggestions section - shown when recent projects are not visible and not loading */}
+        {!hasMessages && !showRecentProjects && !isLoading && <Suggestions />}
       </div>
     </div>
   );

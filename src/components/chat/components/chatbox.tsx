@@ -89,7 +89,7 @@ export default function AiChatbox() {
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
         <AiMessages />
       </div>
-      <div className="p-2 pt-0 shrink-0">
+      <div className="p-2 pt-0 shrink-0 relative z-[9999]">
         <div className="max-w-3xl mx-auto">
           <AiChatInput />
         </div>

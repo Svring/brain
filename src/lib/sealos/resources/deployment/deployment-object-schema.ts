@@ -3,7 +3,7 @@ import { EnvSchema } from "@/schemas/forms/universal/env-schema";
 
 export const PortSchema = z.object({
   number: z.number(),
-  name: z.string().optional(),
+  portName: z.string().optional(),
   nodePort: z.number().optional(),
   protocol: z.string(),
   serviceName: z.string().optional(),

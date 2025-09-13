@@ -15,7 +15,7 @@ export const DevboxSshSchema = z.object({
 
 export const DevboxPortSchema = z.object({
   number: z.number(),
-  name: z.string().optional(),
+  portName: z.string().optional(),
   protocol: z.string().optional(),
   serviceName: z.string().optional(),
   privateAddress: z.string().optional(),

@@ -92,6 +92,7 @@ export function MessagePopover({
             )}
             style={{
               width: "var(--radix-popover-trigger-width)",
+              zIndex: 50,
             }}
             align="center"
             side="top"
