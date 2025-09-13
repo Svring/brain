@@ -23,12 +23,6 @@ interface LangGraphMessage {
   usage_metadata?: any;
 }
 
-interface CopilotKitMessage {
-  id: string;
-  role: "human" | "system" | "assistant";
-  content: string;
-}
-
 export function convertToCopilotKitMessages(
   messages: LangGraphMessage[]
 ): Message[] {

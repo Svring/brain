@@ -12,9 +12,9 @@ interface BasicInfoSectionProps {
 }
 
 // Basic Info Popover Content Component
-export const BasicInfoPopoverContent: React.FC<{ target: CustomResourceTarget }> = ({
-  target,
-}) => {
+export const BasicInfoPopoverContent: React.FC<{
+  target: CustomResourceTarget;
+}> = ({ target }) => {
   const { resource: devboxResource } = useResourceStatus(target);
   const parsedDevboxObject = devboxResource
     ? DevboxObjectSchema.parse(devboxResource)
@@ -37,37 +37,14 @@ export const BasicInfoPopoverContent: React.FC<{ target: CustomResourceTarget }>
           <h4 className="font-medium text-sm">Basic Information</h4>
           <div className="space-y-2 text-sm">
             <div>
-              <span className="text-muted-foreground">Name:</span>
-              <span className="ml-2 font-mono">{parsedDevboxObject.name}</span>
-            </div>
-            <div>
-              <span className="text-muted-foreground">ID:</span>
-              <span className="ml-2 font-mono text-xs">{parsedDevboxObject.id}</span>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Kind:</span>
-              <span className="ml-2">{parsedDevboxObject.kind}</span>
-            </div>
-            <div>
               <span className="text-muted-foreground">Runtime:</span>
               <span className="ml-2">{parsedDevboxObject.runtime}</span>
             </div>
             <div>
-              <span className="text-muted-foreground">Status:</span>
-              <span className="ml-2">{parsedDevboxObject.status}</span>
-            </div>
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          <h4 className="font-medium text-sm">Image Details</h4>
-          <div className="bg-background-tertiary rounded-lg p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <Image className="h-4 w-4 text-primary" />
-              <span className="font-medium text-sm">Container Image</span>
-            </div>
-            <div className="font-mono text-xs break-all text-muted-foreground">
-              {parsedDevboxObject.image}
+              <span className="text-muted-foreground">CreatedAt:</span>
+              <span className="ml-2">
+                {parsedDevboxObject.operationalStatus?.createdAt}
+              </span>
             </div>
           </div>
         </div>

@@ -10,31 +10,31 @@ import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-metho
 import { useEffect } from "react";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useMount } from "@reactuses/core";
+import { convertThreadToCopilotKitMessages } from "@/lib/langgraph/langgraph-method/langgraph-utils";
+import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 
 export default function AiChatbox() {
   const { sidebarChatOpen, selectedThreadId } = useChatState();
   const { closeSidebarChat, selectThread } = useChatActions();
-  const { latestThreadId, hasThreads, threadsLoading } = useThreads();
+  const { latestThreadId, hasThreads, threadsLoading, latestThread } =
+    useThreads();
   const createChatMutation = useCreateNewChatSessionMutation();
   const { selectedResource } = useProjectState();
-
-  console.log("latestThreadId", latestThreadId);
-  // console.log("hasThreads", hasThreads);
-  // console.log("threadsLoading", threadsLoading);
-  // console.log("selectedThreadId", selectedThreadId);
-  // console.log("sidebarChatOpen", sidebarChatOpen);
+  const { setMessages } = useCopilotChatHeadless_c();
 
   // Handle thread selection/creation when chatbox opens
   useEffect(() => {
     if (sidebarChatOpen && !threadsLoading) {
-      if (hasThreads && latestThreadId) {
+      if (hasThreads && latestThreadId && latestThread) {
         // Select the latest thread if available
-        console.log("selecting", latestThreadId);
         selectThread(latestThreadId);
+        setMessages(convertThreadToCopilotKitMessages(latestThread));
       } else {
         // Create a new thread if none exists
         createChatMutation.mutate(undefined, {
           onSuccess: (newThread) => {
+            // console.log("newThread", newThread);
+            setMessages(convertThreadToCopilotKitMessages(newThread));
             selectThread(newThread.thread_id);
           },
           onError: (error) => {
@@ -43,7 +43,7 @@ export default function AiChatbox() {
         });
       }
     }
-  }, [sidebarChatOpen, selectedResource, latestThreadId]);
+  }, [sidebarChatOpen, selectedResource, latestThreadId, latestThread]);
 
   return (
     <div

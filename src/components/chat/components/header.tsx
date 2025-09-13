@@ -1,28 +1,20 @@
 "use client";
 
-import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
-import { Plus, ChevronRight, Focus, History, Wifi, Link } from "lucide-react";
-import {
-  useCreateNewChatSessionMutation,
-  useSendMessageMutation,
-} from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { Plus, ChevronRight, Focus, History, Link } from "lucide-react";
+import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { Spinner } from "@/components/ui/spinner";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useChatActions } from "@/contexts/chat/chat-context";
 import Image from "next/image";
 import { useChatState } from "@/contexts/chat/chat-context";
-import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 import { getResourceDefaultIcon } from "@/lib/sealos/sealos-utils";
 import { useThreads } from "@/hooks/langgraph/use-threads";
 import {
@@ -31,80 +23,35 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { convertThreadToCopilotKitMessages } from "@/lib/langgraph/langgraph-method/langgraph-utils";
 import { useReactFlow } from "@xyflow/react";
-import NodeStatusLight from "@/components/flowgraph/node/components/node-status-light";
-import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 
 interface AiChatHeaderProps {
   title?: string;
-  description?: string;
   className?: string;
 }
 
 export function AiChatHeader({
   title = "Chat",
-  description = "Chat with Sealos Brain AI to help with your projects",
   className = "px-4 pt-2 shrink-0",
 }: AiChatHeaderProps) {
-  const { selectedResource } = useProjectState();
+  const { selectedResource, selectedProject } = useProjectState();
   const { selectedThreadId, sidebarChatMaximized } = useChatState();
   const { closeSidebarChat, maximizeSidebar, minimizeSidebar, selectThread } =
     useChatActions();
-  const { setMessages } = useCopilotChatHeadless_c();
   const createChatMutation = useCreateNewChatSessionMutation();
-  const { mutate: sendMessage } = useSendMessageMutation();
 
-  // console.log("selectedResource", selectedResource);
-
-  // Get resource status for the selected resource
-  // const { status: resourceStatus } = useResourceStatus(
-  //   selectedResource as any,
-  //   (resource) => resource?.status
-  // );
-
-  // Ref for the tooltip trigger element
-  const triggerRef = useRef<HTMLDivElement>(null);
-
-  const {
-    threads,
-    threadsLoading,
-    latestThreadId,
-    latestThreadState,
-    threadStateLoading,
-    hasThreads,
-  } = useThreads();
+  const { threads } = useThreads();
   const { fitView } = useReactFlow();
-
-  // Use node select hook for resource name click functionality
-  const getMessageType = (resourceType: string) => {
-    switch (resourceType) {
-      case "objectstoragebucket":
-        return "objectstorage.detail";
-      case "deployment":
-      case "statefulset":
-        return "launchpad.detail";
-      default:
-        return `${resourceType}.detail`;
-    }
-  };
-
-  const { handleNodeSelect } = useNodeSelect({
-    target: selectedResource as any,
-    messageType: selectedResource
-      ? getMessageType(selectedResource.resourceType)
-      : undefined,
-  });
 
   const getIconUrl = () => {
     if (!selectedResource) return "https://sealos.run/logo.svg";
-
-    const defaultIcon = getResourceDefaultIcon(selectedResource.resourceType);
-    return defaultIcon || "https://sealos.run/logo.svg";
+    return (
+      getResourceDefaultIcon(selectedResource.resourceType) ||
+      "https://sealos.run/logo.svg"
+    );
   };
 
   const handleThreadSelect = (thread: any) => {
-    // Select the thread with langgraph action
     selectThread(thread.thread_id);
   };
 
@@ -120,7 +67,7 @@ export function AiChatHeader({
   };
 
   return (
-    <div className={`${className}`}>
+    <div className={className}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <h2 className="font-semibold text-foreground text-lg">{title}</h2>
@@ -162,9 +109,7 @@ export function AiChatHeader({
                     <DropdownMenuItem
                       key={selectedThreadId}
                       className="flex items-center justify-between cursor-pointer p-2 bg-muted/50"
-                      onClick={() => {
-                        // Current thread is already selected, no action needed
-                      }}
+                      onClick={() => {}}
                     >
                       <div className="flex flex-col items-start min-w-0 flex-1">
                         <div className="text-sm truncate w-full">
@@ -176,7 +121,7 @@ export function AiChatHeader({
                   {threads && threads.length > 0 ? (
                     threads
                       .filter((thread) => thread.thread_id !== selectedThreadId)
-                      .map((thread, index) => (
+                      .map((thread) => (
                         <DropdownMenuItem
                           key={thread.thread_id}
                           className="flex items-center justify-between cursor-pointer p-2"
@@ -207,10 +152,8 @@ export function AiChatHeader({
                 pressed={sidebarChatMaximized}
                 onPressedChange={(pressed) => {
                   if (selectedResource) {
-                    // When resource is selected, toggle maximize/minimize
                     pressed ? maximizeSidebar() : minimizeSidebar();
                   } else {
-                    // When no resource is selected, just fitView
                     fitView({
                       padding: 0.2,
                       duration: 300,
@@ -255,35 +198,43 @@ export function AiChatHeader({
         </div>
       </div>
 
-      {/* Additional row for selected resource info */}
-      {selectedResource && (
+      {(selectedResource || selectedProject) && (
         <Tooltip>
           <TooltipTrigger asChild>
-            <div
-              ref={triggerRef}
-              className="flex items-center justify-between gap-2 mt-2 px-3 py-2 border border-border rounded-md bg-muted/30"
-            >
+            <div className="flex items-center justify-between gap-2 mt-2 px-3 py-2 border border-border rounded-md bg-muted/30">
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <Image
-                  src={getIconUrl()}
-                  alt={selectedResource.resourceType}
-                  width={16}
-                  height={16}
-                  className="rounded-sm"
-                />
-                <span className="text-sm text-muted-foreground truncate">
-                  {selectedResource.name}
-                </span>
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <Link className="h-3 w-3 text-theme-blue" />
-                  <span className="text-xs text-theme-blue">Connected</span>
-                </div>
+                {selectedResource ? (
+                  <>
+                    <Image
+                      src={getIconUrl()}
+                      alt={selectedResource.resourceType}
+                      width={16}
+                      height={16}
+                      className="rounded-sm"
+                    />
+                    <span className="text-sm text-muted-foreground truncate">
+                      {selectedResource.name}
+                    </span>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <Link className="h-3 w-3 text-theme-blue" />
+                      <span className="text-xs text-theme-blue">Connected</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Image
+                      src="/sealos-brain-icon-grayscale.svg"
+                      alt="Sealos Brain"
+                      width={16}
+                      height={16}
+                      className="rounded-sm grayscale"
+                    />
+                    <span className="text-sm text-muted-foreground truncate">
+                      {selectedProject}
+                    </span>
+                  </>
+                )}
               </div>
-              {/* {resourceStatus && (
-                <div className="flex-shrink-0">
-                  <NodeStatusLight status={resourceStatus} />
-                </div>
-              )} */}
             </div>
           </TooltipTrigger>
           <TooltipContent
@@ -294,7 +245,10 @@ export function AiChatHeader({
             side="bottom"
             align="start"
           >
-            <p>once connected, agent would focus on the context and operations of a single resource</p>
+            <p>
+              once connected, agent would focus on the context and operations of
+              a single resource
+            </p>
           </TooltipContent>
         </Tooltip>
       )}
