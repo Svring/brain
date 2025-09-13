@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 interface MessagePopoverProps {
   children: React.ReactNode;
   popoverContent: React.ReactNode;
+  popoverTitle?: string;
   triggerIcon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   triggerLabel?: string;
   triggerClassName?: string;
@@ -20,11 +21,13 @@ interface MessagePopoverProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   showTrigger?: boolean;
+  disableOutsideClick?: boolean;
 }
 
 export function MessagePopover({
   children,
   popoverContent,
+  popoverTitle,
   triggerIcon: TriggerIcon = MoreHorizontal,
   triggerLabel = "More options",
   triggerClassName,
@@ -32,6 +35,7 @@ export function MessagePopover({
   open,
   onOpenChange,
   showTrigger = true,
+  disableOutsideClick = false,
 }: MessagePopoverProps) {
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const isOpen = open !== undefined ? open : internalIsOpen;
@@ -47,7 +51,15 @@ export function MessagePopover({
         {children}
 
         {/* Popover trigger positioned absolutely */}
-        <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <Popover
+          open={isOpen}
+          onOpenChange={(open) => {
+            // Only allow closing if outside click is not disabled
+            if (!disableOutsideClick || !open) {
+              setIsOpen(open);
+            }
+          }}
+        >
           {showTrigger ? (
             <PopoverTrigger asChild>
               <Button
@@ -66,36 +78,47 @@ export function MessagePopover({
             </PopoverTrigger>
           ) : (
             <PopoverTrigger asChild>
-              <div ref={triggerRef} className="absolute inset-0 z-10" />
+              <div
+                ref={triggerRef}
+                className="absolute inset-0 pointer-events-none opacity-0"
+                style={{ zIndex: -1 }}
+              />
             </PopoverTrigger>
           )}
 
           <PopoverContent
             className={cn(
-              "p-0 border border-border-primary shadow-lg bg-background-secondary rounded-xl"
+              "p-2 border border-border-primary shadow-lg bg-background-secondary rounded-xl"
             )}
             style={{
               width: "var(--radix-popover-trigger-width)",
             }}
             align="center"
             side="top"
-            sideOffset={12}
+            sideOffset={8}
             avoidCollisions={true}
           >
-            <div className="relative">
-              {/* Close button */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute top-2 right-2 z-20 h-8 w-8 p-0 hover:bg-background-tertiary"
-                onClick={() => setIsOpen(false)}
-                aria-label="Close popover"
-              >
-                <X className="h-4 w-4" />
-              </Button>
+            <div className="relative space-y-2">
+              {/* Header row with title and close button */}
+              <div className="flex items-center justify-between border-border-primary px-1">
+                {popoverTitle && (
+                  <h3 className="font-semibold text-sm text-foreground">
+                    {popoverTitle}
+                  </h3>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 hover:bg-background-tertiary"
+                  onClick={() => setIsOpen(false)}
+                  aria-label="Close popover"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
 
               {/* Popover content */}
-              <div className="p-4 pt-12">{popoverContent}</div>
+              <div className="">{popoverContent}</div>
             </div>
           </PopoverContent>
         </Popover>
@@ -111,6 +134,7 @@ Example Usage:
 
 // Basic usage with custom content
 <MessagePopover 
+  popoverTitle="Custom Title"
   popoverContent={
     <div>
       <h3>Custom Content</h3>
@@ -123,6 +147,7 @@ Example Usage:
 
 // With custom trigger icon and styling
 <MessagePopover 
+  popoverTitle="Settings"
   popoverContent={<CustomSettingsPanel />}
   triggerIcon={Settings}
   triggerLabel="Open settings"
@@ -134,10 +159,10 @@ Example Usage:
 
 // Complex popover content example
 <MessagePopover 
+  popoverTitle="Advanced Options"
   popoverContent={
     <div className="space-y-4">
       <div>
-        <h3 className="font-semibold">Advanced Options</h3>
         <p className="text-sm text-muted-foreground">Configure your resource</p>
       </div>
       <div className="space-y-2">

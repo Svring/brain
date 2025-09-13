@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
-import { Plus, ChevronRight, Focus, History } from "lucide-react";
+import { Plus, ChevronRight, Focus, History, Wifi, Link } from "lucide-react";
 import {
   useCreateNewChatSessionMutation,
   useSendMessageMutation,
@@ -55,7 +55,7 @@ export function AiChatHeader({
   const createChatMutation = useCreateNewChatSessionMutation();
   const { mutate: sendMessage } = useSendMessageMutation();
 
-  console.log("selectedResource", selectedResource);
+  // console.log("selectedResource", selectedResource);
 
   // Get resource status for the selected resource
   // const { status: resourceStatus } = useResourceStatus(
@@ -274,6 +274,10 @@ export function AiChatHeader({
                 <span className="text-sm text-muted-foreground truncate">
                   {selectedResource.name}
                 </span>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <Link className="h-3 w-3 text-theme-blue" />
+                  <span className="text-xs text-theme-blue">Connected</span>
+                </div>
               </div>
               {/* {resourceStatus && (
                 <div className="flex-shrink-0">
@@ -283,14 +287,14 @@ export function AiChatHeader({
             </div>
           </TooltipTrigger>
           <TooltipContent
-            className="p-2"
+            className="p-2 text-sm"
             style={{
               width: "var(--radix-tooltip-trigger-width)",
             }}
             side="bottom"
             align="start"
           >
-            <p>context loaded</p>
+            <p>once connected, agent would focus on the context and operations of a single resource</p>
           </TooltipContent>
         </Tooltip>
       )}

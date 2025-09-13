@@ -43,7 +43,7 @@ export default function AiChatbox() {
         });
       }
     }
-  }, [sidebarChatOpen, selectedResource]);
+  }, [sidebarChatOpen, selectedResource, latestThreadId]);
 
   return (
     <div

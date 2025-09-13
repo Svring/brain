@@ -100,7 +100,7 @@ export default function BaseResourceMessageHeader({
   };
 
   return (
-    <div className="p-2 rounded-lg border-border-primary border">
+    <div className="p-2 rounded-lg border">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 truncate font-medium flex-1 min-w-0">
           <div className="flex flex-col items-start">

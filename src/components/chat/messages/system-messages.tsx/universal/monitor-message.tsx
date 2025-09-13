@@ -1,6 +1,4 @@
-import React, { useMemo } from "react";
-import { CombinedMetricsChart } from "@/components/chat/messages/system-messages.tsx/components/combined-metrics-chart";
-import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
+import React from "react";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
@@ -9,18 +7,13 @@ import BaseSystemMessage from "@/components/chat/messages/system-messages.tsx/co
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { ArrowBigUpDash, BarChart3 } from "lucide-react";
 import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
+import { MonitorChart } from "@/components/chat/messages/system-messages.tsx/components/monitor-chart";
 
 interface MonitorMessageProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
 }
 
 export const MonitorMessage: React.FC<MonitorMessageProps> = ({ target }) => {
-  const { monitorData, isLoading } = useResourceMetricsStatus({
-    target,
-  });
-
-  // console.log("monitorData", monitorData);
-
   const { appendSystemMessage } = useAppendSystemMessageMutation();
 
   const handleUpdateResource = () => {
@@ -50,9 +43,7 @@ export const MonitorMessage: React.FC<MonitorMessageProps> = ({ target }) => {
       }}
       actions={actions}
     >
-      <div className="border rounded-lg p-4">
-        <CombinedMetricsChart data={monitorData || []} isLoading={isLoading} />
-      </div>
+      <MonitorChart target={target} />
     </BaseSystemMessage>
   );
 };

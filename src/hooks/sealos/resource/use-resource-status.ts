@@ -22,8 +22,12 @@ export const useResourceStatus = <TSelected = any>(
     status: resource?.status,
   });
 
-  if (!target.name) {
-    throw new Error("Resource name is required");
+  if (!target || !target.name) {
+    return {
+      resource: undefined,
+      status: undefined,
+      isLoading: false,
+    };
   }
 
   if (target.type === "custom") {

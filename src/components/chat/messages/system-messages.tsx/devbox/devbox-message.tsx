@@ -9,18 +9,20 @@ import { History, Globe } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import DevboxMessageMenu from "./components/devbox-message-menu";
 import DevboxNodeIde from "@/components/flowgraph/node/sealos/devbox/devbox-node-ide";
-import { 
-  CpuMemorySection, 
-  SshSection, 
-  NetworkSection, 
-  ReleaseSection 
+import {
+  BasicInfoSection,
+  CpuMemorySection,
+  SshSection,
+  NetworkSection,
+  ReleaseSection,
+  BasicInfoPopoverContent,
+  CpuMemoryPopoverContent,
+  SshPopoverContent,
+  NetworkPopoverContent,
+  ReleasePopoverContent,
 } from "./components/devbox-message";
-import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
-import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
-import { useDevboxRelease } from "@/hooks/sealos/devbox/use-devbox-release";
-import { DevboxReleaseMessage } from "./devbox-release-message";
 
-type ActiveSection = "resource" | "network" | "ssh" | "release" | null;
+type ActiveSection = "basic-info" | "resource" | "network" | "ssh" | "release" | null;
 
 interface DevboxMessageProps {
   target: CustomResourceTarget;
@@ -38,11 +40,6 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
     isLoading,
     error,
   } = useQuery(devboxTrpcClient.get.queryOptions(target));
-
-  // Get data for popover content
-  const { resource: devboxResource } = useResourceStatus(target);
-  const { latestData, isLoading: isMetricsLoading } = useResourceMetricsStatus({ target });
-  const { releases } = useDevboxRelease(target.name || "");
 
   const actions: MessageAction[] = devboxObject
     ? [
@@ -91,8 +88,33 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
 
   // Handle section click
   const handleSectionClick = (section: ActiveSection) => {
-    setActiveSection(section);
-    setIsPopoverOpen(true);
+    // If clicking the same section that's already active and popover is open, close it
+    if (activeSection === section && isPopoverOpen) {
+      setIsPopoverOpen(false);
+      setActiveSection(null);
+    } else {
+      // If clicking a different section or popover is closed, open with new section
+      setActiveSection(section);
+      setIsPopoverOpen(true);
+    }
+  };
+
+  // Get popover title based on active section
+  const getPopoverTitle = () => {
+    switch (activeSection) {
+      case "basic-info":
+        return "Basic Information";
+      case "resource":
+        return "Resource Metrics";
+      case "ssh":
+        return "SSH Connection";
+      case "network":
+        return "Network Ports";
+      case "release":
+        return "Devbox Releases";
+      default:
+        return "Devbox Details";
+    }
   };
 
   // Dynamic popover content based on active section
@@ -110,102 +132,75 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
       );
     }
 
-    const sectionTitles = {
-      resource: "Resource Information",
-      network: "Network Configuration",
-      ssh: "SSH Connection Details",
-      release: "Release Information",
-    };
-
-    // Special handling for release section - show full component
-    if (activeSection === "release") {
-      return (
-        <div className="w-full">
-          <DevboxReleaseMessage target={target} />
-        </div>
-      );
+    // Use extracted popover content components
+    switch (activeSection) {
+      case "basic-info":
+        return <BasicInfoPopoverContent target={target} />;
+      case "resource":
+        return <CpuMemoryPopoverContent target={target} />;
+      case "ssh":
+        return <SshPopoverContent target={target} />;
+      case "network":
+        return <NetworkPopoverContent target={target} />;
+      case "release":
+        return <ReleasePopoverContent target={target} />;
+      default:
+        return null;
     }
-
-    return (
-      <div className="space-y-4">
-        <div className="border-b pb-2">
-          <h3 className="font-semibold text-lg">{sectionTitles[activeSection]}</h3>
-          <p className="text-sm text-muted-foreground">
-            Detailed information for {target.name}
-          </p>
-        </div>
-        
-        <div className="p-4 bg-background-tertiary rounded-lg">
-          <h4 className="font-medium mb-3 text-lg">{sectionTitles[activeSection]}</h4>
-          <div className="text-sm space-y-2">
-            {activeSection === "resource" && (
-              <>
-                <p><span className="font-medium">Name:</span> {target.name}</p>
-                <p><span className="font-medium">Type:</span> {target.resourceType}</p>
-                <p><span className="font-medium">Resource:</span> {target.plural}</p>
-                <p><span className="font-medium">Group:</span> {target.group}</p>
-                <p><span className="font-medium">Version:</span> {target.version}</p>
-                
-                <div className="border-t pt-2 mt-2">
-                  <h5 className="font-medium mb-1">Resource Allocation</h5>
-                  <p><span className="font-medium">CPU Allocated:</span> {devboxResource?.resources?.cpu || 0}</p>
-                  <p><span className="font-medium">Memory Allocated:</span> {devboxResource?.resources?.memory || 0}</p>
-                </div>
-                
-                <div className="border-t pt-2 mt-2">
-                  <h5 className="font-medium mb-1">Current Usage</h5>
-                  <p><span className="font-medium">CPU Usage:</span> {isMetricsLoading ? "Loading..." : `${(latestData?.cpu || 0).toFixed(1)}%`}</p>
-                  <p><span className="font-medium">Memory Usage:</span> {isMetricsLoading ? "Loading..." : `${(latestData?.memory || 0).toFixed(1)}%`}</p>
-                </div>
-              </>
-            )}
-            {activeSection === "network" && (
-              <>
-                <p><span className="font-medium">Network Type:</span> Internal</p>
-                <p><span className="font-medium">Domain:</span> {target.name}.devbox.local</p>
-                <p><span className="font-medium">Protocol:</span> HTTP/HTTPS</p>
-                <p><span className="font-medium">Status:</span> Active</p>
-                <p><span className="font-medium">Ports:</span> {devboxResource?.ports?.length || 0}</p>
-              </>
-            )}
-            {activeSection === "ssh" && (
-              <>
-                <p><span className="font-medium">Host:</span> {target.name}.devbox.local</p>
-                <p><span className="font-medium">Port:</span> 22</p>
-                <p><span className="font-medium">User:</span> root</p>
-                <p><span className="font-medium">Key Type:</span> RSA</p>
-                <p><span className="font-medium">Connection:</span> Secure</p>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-    );
   };
 
-  // Main content with two-column layout using new components
+  // Main content with basic info at top and two-column layout below
   const mainContent = (
-    <div className="flex gap-2">
-      {/* Left Half - CPU/Memory and SSH */}
-      <div className="w-1/2 space-y-2">
-        <CpuMemorySection target={target} onSectionClick={() => handleSectionClick("resource")} />
-        <SshSection target={target} onSectionClick={() => handleSectionClick("ssh")} />
-      </div>
+    <div className="space-y-2">
+      {/* Basic Info Section - Full Width */}
+      <BasicInfoSection
+        target={target}
+        onSectionClick={() => handleSectionClick("basic-info")}
+      />
+      
+      {/* Two-column layout for other sections */}
+      <div className="flex gap-2">
+        {/* Left Half - CPU/Memory and SSH */}
+        <div className="w-1/2 space-y-2">
+          <CpuMemorySection
+            target={target}
+            onSectionClick={() => handleSectionClick("resource")}
+          />
+          <SshSection
+            target={target}
+            onSectionClick={() => handleSectionClick("ssh")}
+          />
+        </div>
 
-      {/* Right Half - Network and Release */}
-      <div className="w-1/2 space-y-2">
-        <NetworkSection target={target} onSectionClick={() => handleSectionClick("network")} />
-        <ReleaseSection target={target} onSectionClick={() => handleSectionClick("release")} />
+        {/* Right Half - Network and Release */}
+        <div className="w-1/2 space-y-2">
+          <NetworkSection
+            target={target}
+            onSectionClick={() => handleSectionClick("network")}
+          />
+          <ReleaseSection
+            target={target}
+            onSectionClick={() => handleSectionClick("release")}
+          />
+        </div>
       </div>
     </div>
   );
 
   return (
     <MessagePopover
+      popoverTitle={getPopoverTitle()}
       popoverContent={getPopoverContent()}
       showTrigger={false}
+      disableOutsideClick={true}
       open={isPopoverOpen}
-      onOpenChange={setIsPopoverOpen}
+      onOpenChange={(open) => {
+        setIsPopoverOpen(open);
+        // If popover is being closed externally, reset the active section
+        if (!open) {
+          setActiveSection(null);
+        }
+      }}
     >
       <BaseResourceMessage
         target={target}

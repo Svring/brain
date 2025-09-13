@@ -24,6 +24,7 @@ import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method
 import BaseSystemMessage from "../components/base-system-message";
 import { PortDisplayTable } from "../components/port-display-table";
 import { Checkbox } from "@/components/ui/checkbox";
+import { NetworkChart } from "../components/network-chart";
 
 interface NetworkMessageProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -117,96 +118,7 @@ export default function NetworkMessage({ target }: NetworkMessageProps) {
         name: "Network Ports",
       }}
     >
-      <div className="space-y-3">
-        <PortDisplayTable ports={ports} />
-
-        {/* {!showPortForm ? (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleAddPort}
-            className="w-full"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Port
-          </Button>
-        ) : (
-          <div className="flex items-center gap-3 rounded-lg">
-            <div className="flex-1 flex items-center gap-3">
-              <div className="">
-                <Input
-                  type="number"
-                  placeholder="Port number"
-                  className="w-auto px-2 py-1 text-sm"
-                  style={{
-                    width: `${String(newPort.number || "").length * 10 + 40}px`,
-                  }}
-                  value={newPort.number}
-                  onChange={(e) =>
-                    setNewPort({
-                      ...newPort,
-                      number: parseInt(e.target.value) || 0,
-                    })
-                  }
-                  inputMode="numeric"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
-                  Public access
-                </span>
-                <Checkbox
-                  checked={newPort.public}
-                  onCheckedChange={(checked) =>
-                    setNewPort({ ...newPort, public: checked as boolean })
-                  }
-                />
-              </div>
-              {newPort.public && (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
-                    Protocol
-                  </span>
-                  <Select
-                    value={getProtocolDisplayValue()}
-                    onValueChange={handleProtocolSelection}
-                  >
-                    <SelectTrigger className="w-28">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="TCP">TCP</SelectItem>
-                      <SelectItem value="UDP">UDP</SelectItem>
-                      <SelectItem value="SCTP">SCTP</SelectItem>
-                      <SelectItem value="HTTP">HTTP</SelectItem>
-                      <SelectItem value="GRPC">GRPC</SelectItem>
-                      <SelectItem value="WS">WS</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleSavePort}
-              className="h-8 w-8 p-0"
-            >
-              <Check className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleCancelPort}
-              className="h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        )} */}
-      </div>
+      <NetworkChart target={target} />
     </BaseSystemMessage>
   );
 }
