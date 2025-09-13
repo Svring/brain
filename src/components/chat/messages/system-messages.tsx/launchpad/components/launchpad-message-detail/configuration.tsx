@@ -195,15 +195,15 @@ export const Configuration: React.FC<ConfigurationProps> = ({
             const fieldInfo = getFieldInfo("storage");
             return (
               <div
-                className="flex flex-col space-y-1 flex-1 cursor-pointer transition-colors"
-                onClick={() => setDialogOpen("storage")}
+                className="flex flex-col space-y-1 flex-1 transition-colors"
+                // onClick={() => setDialogOpen("storage")}
                 title="Click to edit storage volumes"
               >
                 <div className="flex items-center gap-1">
                   <span className="text-sm text-muted-foreground">
                     {fieldInfo.title}
                   </span>
-                  <Edit3 className="h-3 w-3 text-muted-foreground/60" />
+                  {/* <Edit3 className="h-3 w-3 text-muted-foreground/60" /> */}
                 </div>
                 <span className="text-sm font-medium truncate">
                   {fieldInfo.summary}

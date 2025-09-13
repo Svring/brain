@@ -50,10 +50,15 @@ export default function LaunchpadDropdownMenu({
     setShowDeleteDialog(true);
   };
 
-  const handleDeleteConfirm = () => {
-    executeAction("delete", name);
-    onDelete?.(name);
-    setShowDeleteDialog(false);
+  const handleDeleteConfirm = async () => {
+    try {
+      await executeAction("delete", name);
+      onDelete?.(name);
+      setShowDeleteDialog(false);
+    } catch (error) {
+      // Error is already handled by the mutation, just keep dialog open
+      console.error("Delete failed:", error);
+    }
   };
 
   const handleDeleteCancel = () => {
@@ -128,7 +133,16 @@ export default function LaunchpadDropdownMenu({
       </DropdownMenuItem>
     </DropdownMenuContent>
 
-    <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+    <AlertDialog 
+      open={showDeleteDialog} 
+      onOpenChange={(open) => {
+        // Prevent closing dialog while delete is in progress
+        if (!open && isActionPending("delete")) {
+          return;
+        }
+        setShowDeleteDialog(open);
+      }}
+    >
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Launchpad</AlertDialogTitle>
@@ -137,7 +151,10 @@ export default function LaunchpadDropdownMenu({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={handleDeleteCancel}>
+          <AlertDialogCancel 
+            onClick={handleDeleteCancel}
+            disabled={isActionPending("delete")}
+          >
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction

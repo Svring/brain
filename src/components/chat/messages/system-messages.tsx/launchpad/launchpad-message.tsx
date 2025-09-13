@@ -139,8 +139,8 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
   const mainContent = (
     <div className="space-y-2">
       {/* Basic Info Section - Full Width */}
-      <BasicInfoSection 
-        target={target} 
+      <BasicInfoSection
+        target={target}
         onSectionClick={() => handleSectionClick("basic-info")}
       />
 

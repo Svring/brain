@@ -5,7 +5,7 @@ import {
   useFlowgraphState,
 } from "@/contexts/flowgraph/flowgraph-context";
 
-import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useResourceStatuses } from "@/hooks/sealos/resource/use-resource-statuses";
 
 import {
   convertResourceObjectsToNodes,
@@ -64,23 +64,7 @@ export default function useFlowgraph(
 
   // console.log("resourceTargets", resourceTargets);
 
-  const resourceQueries = resourceTargets.map(({ target, kind, name }: any) => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-
-    const query = useResourceStatus(target);
-
-    // console.log("query", query);
-
-    return {
-      ...query,
-
-      kind,
-
-      name,
-
-      target,
-    };
-  });
+  const resourceQueries = useResourceStatuses(resourceTargets as any);
 
   // console.log("resourceQueries", resourceQueries);
 

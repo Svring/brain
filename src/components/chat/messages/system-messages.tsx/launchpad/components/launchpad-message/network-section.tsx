@@ -41,14 +41,17 @@ export const NetworkPopoverContent: React.FC<{
     portName: port.portName || port.name || `port-${port.port || port.number}`,
     number: port.port || port.number || 0,
     protocol: (port.protocol as "HTTP" | "GRPC" | "WS") || "HTTP",
-    exposesPublicDomain: !!port.publicAddress || !!port.publicDomain || !!port.customDomain || !!port.domain,
+    exposesPublicDomain:
+      !!port.publicAddress ||
+      !!port.publicDomain ||
+      !!port.customDomain ||
+      !!port.domain,
     customDomain: port.customDomain || port.domain,
   }));
 
   const handleFormSubmit = async (data: LaunchpadUpdateFormData) => {
     try {
-      const updateRequest = { name: target.name!, request: data };
-      await updateLaunchpad.mutateAsync(updateRequest, {
+      await updateLaunchpad.mutateAsync(data, {
         onSuccess: () => {
           queryClient.invalidateQueries({
             queryKey: launchpad.get.queryKey(target),
@@ -91,7 +94,11 @@ export const NetworkPopoverContent: React.FC<{
   const transformedPorts = launchpadPorts.map((port: any) => ({
     number: port.port || port.number || 0,
     privateAddress: port.privateAddress || port.privateHost || port.serviceName,
-    publicAddress: port.publicAddress || port.publicDomain || port.customDomain || port.domain,
+    publicAddress:
+      port.publicAddress ||
+      port.publicDomain ||
+      port.customDomain ||
+      port.domain,
     protocol: port.protocol,
     name: port.portName,
     serviceName: port.serviceName,

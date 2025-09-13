@@ -59,7 +59,7 @@ export const ImageConfigFields = () => {
                 control={form.control}
                 name="image.imageRegistry"
                 render={() => (
-                  <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                  <FormItem className="flex flex-row items-center">
                     <FormControl>
                       <Checkbox
                         checked={isPrivateRegistry}

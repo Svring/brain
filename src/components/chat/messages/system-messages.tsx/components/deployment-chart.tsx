@@ -6,12 +6,7 @@ import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { APP_DEVBOX_ID } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-label";
 import { useLaunchpadLifecycle } from "@/hooks/sealos/launchpad/use-launchpad-lifecycle";
-import {
-  Trash2,
-  Plus,
-  Server,
-  ArrowBigUpDash,
-} from "lucide-react";
+import { Trash2, Plus, Server, ArrowBigUpDash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
@@ -31,7 +26,14 @@ const DeploymentItem: React.FC<{
   onClick?: (deploymentName: string) => void;
   onUpdate?: (deploymentName: string) => void;
   isUpdating?: boolean;
-}> = ({ deployment, onDelete, isDeleting = false, onClick, onUpdate, isUpdating = false }) => {
+}> = ({
+  deployment,
+  onDelete,
+  isDeleting = false,
+  onClick,
+  onUpdate,
+  isUpdating = false,
+}) => {
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     onDelete(deployment.metadata?.name);
@@ -144,18 +146,20 @@ export const DeploymentChart: React.FC<DeploymentChartProps> = ({
   });
 
   // Use the devbox deploy hook
-  const { handleDeploy, deployDevbox } = useDevboxDeploy(devboxObject.name || "");
+  const { handleDeploy, deployDevbox } = useDevboxDeploy(
+    devboxObject.name || ""
+  );
 
   // Enhanced handleDeploy that also appends system message
   const handleDeployWithMessage = async (releaseTag: string) => {
     try {
       await handleDeploy(releaseTag);
-      
+
       // Invalidate and refetch deployments
       queryClient.invalidateQueries({
         queryKey: k8s.list.pathKey(),
       });
-      
+
       // Note: The system message will be handled by the hook's success callback
       // which adds the deployment to the project and triggers the message
     } catch (error) {
@@ -173,12 +177,12 @@ export const DeploymentChart: React.FC<DeploymentChartProps> = ({
     try {
       setUpdatingDeploymentId(deploymentName);
       await handleDeploy(payload.tag);
-      
+
       // Invalidate and refetch deployments
       queryClient.invalidateQueries({
         queryKey: k8s.list.pathKey(),
       });
-      
+
       setUpdatingDeploymentId(null);
     } catch (error) {
       console.error("Update failed:", error);
@@ -199,7 +203,6 @@ export const DeploymentChart: React.FC<DeploymentChartProps> = ({
     enabled: !!devboxObject,
   });
 
-
   // Handle delete deployment
   const handleDeleteDeployment = async (deploymentName: string) => {
     try {
@@ -214,7 +217,9 @@ export const DeploymentChart: React.FC<DeploymentChartProps> = ({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-20">
-        <div className="text-xs text-muted-foreground">Loading resources...</div>
+        <div className="text-xs text-muted-foreground">
+          Loading resources...
+        </div>
       </div>
     );
   }
@@ -238,16 +243,6 @@ export const DeploymentChart: React.FC<DeploymentChartProps> = ({
 
   return (
     <div className="space-y-3">
-      {(deployments.length > 0 || payload?.tag) && (
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium">
-            {payload?.tag
-              ? `Deploy ${payload.tag} to...`
-              : `Resources: ${deployments.length}`}
-          </h3>
-        </div>
-      )}
-
       {deployments.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-20 text-center">
           <Server className="h-6 w-6 text-muted-foreground mb-2" />
@@ -271,9 +266,7 @@ export const DeploymentChart: React.FC<DeploymentChartProps> = ({
                 isPending("delete")
               }
               onUpdate={handleUpdateDeployment}
-              isUpdating={
-                updatingDeploymentId === deployment.metadata?.name
-              }
+              isUpdating={updatingDeploymentId === deployment.metadata?.name}
               onClick={(deploymentName) => {
                 // Find the deployment object to get its kind
                 const deploymentObj = deployments.find(

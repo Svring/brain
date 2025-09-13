@@ -4,10 +4,12 @@ import { BuiltinResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/r
 import { useProjectState } from "@/contexts/project/project-context";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation } from "@tanstack/react-query";
+import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 
 export const useDevboxDeploy = (devboxName: string) => {
   const { selectedProject } = useProjectState();
-  const { devbox, project } = useTRPCClients();
+  const { devbox, project, k8s } = useTRPCClients();
+  const { invalidateQueries } = useInvalidateQueries();
 
   const [openPopovers, setOpenPopovers] = useState<Record<string, boolean>>({});
 
@@ -30,10 +32,12 @@ export const useDevboxDeploy = (devboxName: string) => {
           resources: [target],
           name: selectedProject,
         });
-
-        // Reload the page after adding resource to project
-        window.location.reload();
       }
+
+      invalidateQueries(
+        [devbox.list.queryKey(), devbox.get.queryKey(), k8s.list.queryKey()],
+        true
+      );
 
       setOpenPopovers((prev) => ({ ...prev, [releaseTag]: false }));
     } catch (error) {

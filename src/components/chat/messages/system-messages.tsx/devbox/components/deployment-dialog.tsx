@@ -18,7 +18,7 @@ export const DeploymentDialog: React.FC<DeploymentDialogProps> = ({
 }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle>Deploy {releaseTag} to...</DialogTitle>
         </DialogHeader>

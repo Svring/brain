@@ -34,8 +34,7 @@ export const BasicInfoPopoverContent: React.FC<{
 
   const handleFormSubmit = async (data: LaunchpadUpdateFormData) => {
     try {
-      const updateRequest = { name: target.name!, request: data };
-      await updateLaunchpad.mutateAsync(updateRequest, {
+      await updateLaunchpad.mutateAsync(data, {
         onSuccess: () => {
           queryClient.invalidateQueries({
             queryKey: launchpad.get.queryKey(target),
@@ -119,12 +118,20 @@ export const BasicInfoPopoverContent: React.FC<{
   return (
     <div className="w-full rounded-lg space-y-3">
       {/* Image Display */}
-      <div className="flex items-center justify-center">
+      <div className="flex items-center justify-around">
         {/* Image Name */}
         <div className="flex flex-col items-center gap-1">
           <div className="text-sm text-muted-foreground">Image</div>
           <div className="text-sm font-medium">
             {getImageName(parsedLaunchpadObject?.image?.imageName || "")}
+          </div>
+        </div>
+
+        {/* Created At */}
+        <div className="flex flex-col items-center gap-1">
+          <div className="text-sm text-muted-foreground">Created</div>
+          <div className="text-sm font-medium">
+            {parsedLaunchpadObject?.operationalStatus?.createdAt || "Unknown"}
           </div>
         </div>
       </div>
@@ -161,8 +168,12 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   };
 
   return (
-    <div 
-      className={`p-2 border rounded-lg ${onSectionClick ? 'cursor-pointer hover:bg-background-tertiary transition-colors' : ''}`}
+    <div
+      className={`p-2 border rounded-lg ${
+        onSectionClick
+          ? "cursor-pointer hover:bg-background-tertiary transition-colors"
+          : ""
+      }`}
       onClick={onSectionClick}
     >
       <div className="flex gap-4">
