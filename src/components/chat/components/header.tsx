@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import { Plus, ChevronRight, Focus, History } from "lucide-react";
@@ -32,6 +33,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { convertThreadToCopilotKitMessages } from "@/lib/langgraph/langgraph-method/langgraph-utils";
 import { useReactFlow } from "@xyflow/react";
+import NodeStatusLight from "@/components/flowgraph/node/components/node-status-light";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 
 interface AiChatHeaderProps {
   title?: string;
@@ -51,6 +54,17 @@ export function AiChatHeader({
   const { setMessages } = useCopilotChatHeadless_c();
   const createChatMutation = useCreateNewChatSessionMutation();
   const { mutate: sendMessage } = useSendMessageMutation();
+
+  console.log("selectedResource", selectedResource);
+
+  // Get resource status for the selected resource
+  // const { status: resourceStatus } = useResourceStatus(
+  //   selectedResource as any,
+  //   (resource) => resource?.status
+  // );
+
+  // Ref for the tooltip trigger element
+  const triggerRef = useRef<HTMLDivElement>(null);
 
   const {
     threads,
@@ -110,21 +124,6 @@ export function AiChatHeader({
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <h2 className="font-semibold text-foreground text-lg">{title}</h2>
-          {selectedResource && (
-            <>
-              <Separator orientation="vertical" className="h-4" />
-              <Image
-                src={getIconUrl()}
-                alt={selectedResource.resourceType}
-                width={20}
-                height={20}
-                className="rounded-sm"
-              />
-              <span className="text-sm text-muted-foreground truncate max-w-[120px]">
-                {selectedResource.name}
-              </span>
-            </>
-          )}
         </div>
         <div className="flex items-center gap-1">
           <Tooltip>
@@ -255,6 +254,46 @@ export function AiChatHeader({
           </Tooltip>
         </div>
       </div>
+
+      {/* Additional row for selected resource info */}
+      {selectedResource && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div
+              ref={triggerRef}
+              className="flex items-center justify-between gap-2 mt-2 px-3 py-2 border border-border rounded-md bg-muted/30"
+            >
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <Image
+                  src={getIconUrl()}
+                  alt={selectedResource.resourceType}
+                  width={16}
+                  height={16}
+                  className="rounded-sm"
+                />
+                <span className="text-sm text-muted-foreground truncate">
+                  {selectedResource.name}
+                </span>
+              </div>
+              {/* {resourceStatus && (
+                <div className="flex-shrink-0">
+                  <NodeStatusLight status={resourceStatus} />
+                </div>
+              )} */}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent
+            className="p-2"
+            style={{
+              width: "var(--radix-tooltip-trigger-width)",
+            }}
+            side="bottom"
+            align="start"
+          >
+            <p>context loaded</p>
+          </TooltipContent>
+        </Tooltip>
+      )}
     </div>
   );
 }

@@ -100,7 +100,7 @@ export default function BaseResourceMessageHeader({
   };
 
   return (
-    <div className="px-4 py-2 bg-message-header rounded-t-xl border-b-border-primary border-b">
+    <div className="p-2 rounded-lg border-border-primary border">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 truncate font-medium flex-1 min-w-0">
           <div className="flex flex-col items-start">
@@ -117,8 +117,8 @@ export default function BaseResourceMessageHeader({
                 <span className="text-xs text-muted-foreground leading-none">
                   {getResourceTypeLabel()}
                 </span>
-                <span 
-                  className="text-lg text-foreground leading-tight truncate cursor-pointer hover:text-primary transition-colors flex items-center gap-1"
+                <span
+                  className="text-foreground leading-tight truncate cursor-pointer hover:text-primary transition-colors flex items-center gap-1"
                   onClick={handleNameClick}
                   title="Click to copy resource name"
                 >

@@ -122,7 +122,7 @@ export const useResourceMetricsStatus = ({
   // Fetch monitor data for first launchpad pod
   const { data: launchpadMonitorData, isLoading: isLaunchpadLoading } =
     useQuery({
-      ...launchpad.combinedMonitor.queryOptions({
+      ...launchpad.monitor.queryOptions({
         queryName: firstPodName || "",
       }),
       enabled:

@@ -37,18 +37,18 @@ export function BaseResourceMessage({
 }: BaseResourceMessageProps) {
   return (
     <div className="flex justify-start w-full">
-      <Card className="w-full bg-background-secondary border border-border-primary pt-0">
+      <Card className="w-full bg-background-secondary border border-border-primary p-2">
         {/* Header Section */}
         {showHeader && target && (
           <MessageHeader target={target} headerSlot={headerSlot} />
         )}
 
         {/* Content Section */}
-        <CardContent className="px-4 space-y-4">{children}</CardContent>
+        <CardContent className="p-0">{children}</CardContent>
 
         {/* Actions Section */}
         {actions.length > 0 && (
-          <div className="px-4 space-y-3">
+          <div className="p-0 space-y-3">
             {/* Actions Title */}
             <div className="relative flex items-center">
               <Separator className="flex-1" />

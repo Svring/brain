@@ -22,7 +22,7 @@ interface DevboxNodeIdeProps {
 }
 
 export default function DevboxNodeIde({ object }: DevboxNodeIdeProps) {
-  const [selectedIde, setSelectedIde] = useState<string>("cursor");
+  const [selectedIde, setSelectedIde] = useState<string>("vscode");
   const context = createK8sContext();
   const devboxContext = useDevboxContext();
 
@@ -65,7 +65,6 @@ export default function DevboxNodeIde({ object }: DevboxNodeIdeProps) {
           height={16}
           className="h-5 w-5"
         />
-        <span className="text-sm font-medium capitalize">{selectedIde}</span>
       </button>
 
       {/* Separator */}
@@ -90,9 +89,27 @@ export default function DevboxNodeIde({ object }: DevboxNodeIdeProps) {
           {DEVBOX_IDE.map((ide) => (
             <DropdownMenuItem
               key={ide}
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.stopPropagation();
                 setSelectedIde(ide);
+                
+                // Directly trigger connection when IDE is selected
+                try {
+                  const token = await getDevboxSshInfo(devboxContext, target);
+                  
+                  if (object.ssh) {
+                    const sshUri = composeSshConnectionUri(
+                      ide,
+                      context,
+                      object.ssh,
+                      object.name,
+                      token
+                    );
+                    window.open(sshUri, "_blank");
+                  }
+                } catch (error) {
+                  console.error("Failed to get SSH info:", error);
+                }
               }}
               className={selectedIde === ide ? "bg-muted" : ""}
             >
