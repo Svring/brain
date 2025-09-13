@@ -93,7 +93,7 @@ export const AdvancedConfigSection: React.FC<AdvancedConfigSectionProps> = ({
 
   return (
     <div
-      className="p-2 border rounded-lg cursor-pointer hover:bg-background-secondary transition-colors"
+      className="p-2 border rounded-lg cursor-pointer hover:bg-background-tertiary transition-colors"
       onClick={onSectionClick}
     >
       <div className="flex items-center gap-2">

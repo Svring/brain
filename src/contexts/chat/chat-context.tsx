@@ -52,9 +52,8 @@ export function useChatState() {
     floatingChatLoading: state.context.floatingChat.loading,
     selectedThreadId: state.context.selectedThreadId,
     threads: state.context.threads,
-    pendingMessages: state.context.pendingMessages,
-    nextPendingMessage: state.context.pendingMessages[0] || null,
-    hasPendingMessages: state.context.pendingMessages.length > 0,
+    pendingMessage: state.context.pendingMessage,
+    hasPendingMessage: state.context.pendingMessage !== null,
   };
 }
 
@@ -119,19 +118,11 @@ export function useChatActions() {
     },
     setThreads: (threads: Thread[]) => send({ type: "SET_THREADS", threads }),
 
-    addPendingMessage: (message: PendingMessage) => {
-      send({ type: "ADD_PENDING_MESSAGE", message });
+    setPendingMessage: (message: PendingMessage | null) => {
+      send({ type: "SET_PENDING_MESSAGE", message });
     },
-    removePendingMessage: () => {
-      send({ type: "REMOVE_PENDING_MESSAGE" });
-    },
-    readFirstPendingMessage: () => {
-      const firstMessage = state.context.pendingMessages[0] || null;
-      send({ type: "READ_FIRST_PENDING_MESSAGE" });
-      return firstMessage;
-    },
-    clearPendingMessages: () => {
-      send({ type: "CLEAR_PENDING_MESSAGES" });
+    clearPendingMessage: () => {
+      send({ type: "CLEAR_PENDING_MESSAGE" });
     },
   };
 }

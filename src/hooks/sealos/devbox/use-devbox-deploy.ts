@@ -30,6 +30,9 @@ export const useDevboxDeploy = (devboxName: string) => {
           resources: [target],
           name: selectedProject,
         });
+
+        // Reload the page after adding resource to project
+        window.location.reload();
       }
 
       setOpenPopovers((prev) => ({ ...prev, [releaseTag]: false }));

@@ -1,17 +1,152 @@
 "use client";
 
-import React from "react";
-import { Calendar, Image } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { Calendar, Image, Pencil } from "lucide-react";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { LaunchpadObjectSchema } from "@/lib/sealos/resources/launchpad/launchpad-object-schema";
+import { Button } from "@/components/ui/button";
+import { LaunchpadUpdateForm } from "@/components/forms/launchpad/launchpad-update-form";
+import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface BasicInfoSectionProps {
   target: BuiltinResourceTarget;
+  onSectionClick?: () => void;
 }
+
+// Basic Info Popover Content Component
+export const BasicInfoPopoverContent: React.FC<{
+  target: BuiltinResourceTarget;
+}> = ({ target }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const { resource: launchpadResource } = useResourceStatus(target);
+  const parsedLaunchpadObject = launchpadResource
+    ? LaunchpadObjectSchema.parse(launchpadResource)
+    : null;
+
+  const queryClient = useQueryClient();
+  const { launchpad } = useTRPCClients();
+
+  const updateLaunchpad = useMutation(launchpad.update.mutationOptions());
+
+  const handleFormSubmit = async (data: LaunchpadUpdateFormData) => {
+    try {
+      const updateRequest = { name: target.name!, request: data };
+      await updateLaunchpad.mutateAsync(updateRequest, {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: launchpad.get.queryKey(target),
+          });
+          toast.success("Launchpad updated successfully!");
+          setIsEditing(false);
+        },
+        onError: () => {
+          toast.error("Failed to update launchpad");
+        },
+      });
+    } catch (error) {
+      console.error("Error updating launchpad image:", error);
+    }
+  };
+
+  // Memoize the form content to prevent unnecessary re-renders
+  const formContent = useMemo(
+    () => (
+      <LaunchpadUpdateForm
+        key={`basic-info-edit-${target.name}`}
+        defaultValues={{
+          name: parsedLaunchpadObject?.name || target.name!,
+          image: {
+            imageName: parsedLaunchpadObject?.image?.imageName || "",
+            imageRegistry: parsedLaunchpadObject?.image?.imageRegistry || null,
+          },
+        }}
+        onSubmit={handleFormSubmit}
+        isLoading={updateLaunchpad.isPending}
+        hideDefaultButton={true}
+      />
+    ),
+    [
+      parsedLaunchpadObject?.name,
+      parsedLaunchpadObject?.image?.imageName,
+      parsedLaunchpadObject?.image?.imageRegistry,
+      target.name,
+      updateLaunchpad.isPending,
+    ]
+  );
+
+  // Helper function to format image name (extract just the image name without full path)
+  const getImageName = (image: string) => {
+    if (!image) return "Unknown";
+    const parts = image.split("/");
+    return parts[parts.length - 1] || image;
+  };
+
+  if (isEditing) {
+    return (
+      <div className="w-full rounded-lg">
+        <div className="space-y-3">{formContent}</div>
+
+        {/* Cancel and Confirm Buttons - Fixed at bottom */}
+        <div className="flex gap-2 mt-3 pt-3 border-t">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            onClick={() => setIsEditing(false)}
+            disabled={updateLaunchpad.isPending}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            form="launchpad-update-form"
+            variant="default"
+            size="sm"
+            className="flex-1"
+            disabled={updateLaunchpad.isPending}
+          >
+            {updateLaunchpad.isPending ? "Updating..." : "Confirm"}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full rounded-lg space-y-3">
+      {/* Image Display */}
+      <div className="flex items-center justify-center">
+        {/* Image Name */}
+        <div className="flex flex-col items-center gap-1">
+          <div className="text-sm text-muted-foreground">Image</div>
+          <div className="text-sm font-medium">
+            {getImageName(parsedLaunchpadObject?.image?.imageName || "")}
+          </div>
+        </div>
+      </div>
+
+      {/* Edit Button - Full Row */}
+      <div className="w-full">
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={() => setIsEditing(true)}
+        >
+          Edit Image
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   target,
+  onSectionClick,
 }) => {
   const { resource: launchpadResource } = useResourceStatus(target);
   const parsedLaunchpadObject = launchpadResource
@@ -25,29 +160,32 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
     return parts[parts.length - 1] || image;
   };
 
-  // Helper function to format uptime (using status as a proxy for uptime info)
-  const getUptime = (status: string) => {
-    if (!status) return "Unknown";
-    return status === "Running" ? "Active" : status;
-  };
-
   return (
-    <div className="p-2 border rounded-lg">
+    <div 
+      className={`p-2 border rounded-lg ${onSectionClick ? 'cursor-pointer hover:bg-background-tertiary transition-colors' : ''}`}
+      onClick={onSectionClick}
+    >
       <div className="flex gap-4">
         {/* Image */}
-        <div className="flex-1 flex flex-col">
-          <span className="font-medium text-sm">Image</span>
-          <span className="text-xs text-muted-foreground truncate">
-            {getImageName(parsedLaunchpadObject?.image?.imageName || "")}
-          </span>
+        <div className="flex-1 flex items-center gap-2">
+          <Image className="h-5 w-5 text-primary" />
+          <div className="flex flex-col">
+            <span className="font-medium text-sm">Image</span>
+            <span className="text-xs text-muted-foreground truncate">
+              {getImageName(parsedLaunchpadObject?.image?.imageName || "")}
+            </span>
+          </div>
         </div>
 
         {/* Created At */}
-        <div className="flex-1 flex flex-col">
-          <span className="font-medium text-sm">Created</span>
-          <span className="text-xs text-muted-foreground truncate">
-            {parsedLaunchpadObject?.operationalStatus?.createdAt || "Unknown"}
-          </span>
+        <div className="flex-1 flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-primary" />
+          <div className="flex flex-col">
+            <span className="font-medium text-sm">Created</span>
+            <span className="text-xs text-muted-foreground truncate">
+              {parsedLaunchpadObject?.operationalStatus?.createdAt || "Unknown"}
+            </span>
+          </div>
         </div>
       </div>
     </div>

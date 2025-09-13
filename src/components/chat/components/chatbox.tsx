@@ -16,13 +16,9 @@ import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { convertThreadToCopilotKitMessages } from "@/lib/langgraph/langgraph-method/langgraph-utils";
 
 export default function AiChatbox() {
-  const { sidebarChatOpen, selectedThreadId } = useChatState();
-  const {
-    closeSidebarChat,
-    selectThread,
-    readFirstPendingMessage,
-    removePendingMessage,
-  } = useChatActions();
+  const { sidebarChatOpen, selectedThreadId, pendingMessage } = useChatState();
+  const { closeSidebarChat, selectThread, clearPendingMessage } =
+    useChatActions();
   const { latestThreadId, hasThreads, threadsLoading, latestThread } =
     useThreads();
   const { selectedResource } = useProjectState();
@@ -36,19 +32,18 @@ export default function AiChatbox() {
     const handleThread = (thread: any, isNew = false) => {
       selectThread(thread.thread_id);
       setMessages(convertThreadToCopilotKitMessages(thread));
-      const firstMessage = readFirstPendingMessage();
-      if (firstMessage) {
+      if (pendingMessage) {
         appendSystemMessageMutation.mutate(
           {
-            type: firstMessage.messageType,
-            target: firstMessage.target,
-            payload: firstMessage.payload,
+            type: pendingMessage.messageType,
+            target: pendingMessage.target,
+            payload: pendingMessage.payload,
             currentMessages: convertThreadToCopilotKitMessages(thread),
           },
           {
-            onSuccess: () => {
-              removePendingMessage();
-            },
+            // onSuccess: () => {
+            //   clearPendingMessage();
+            // },
           }
         );
       }
@@ -66,7 +61,13 @@ export default function AiChatbox() {
         },
       });
     }
-  }, [sidebarChatOpen, selectedResource, latestThreadId, latestThread]);
+  }, [
+    sidebarChatOpen,
+    selectedResource,
+    latestThreadId,
+    latestThread,
+    pendingMessage,
+  ]);
 
   return (
     <div

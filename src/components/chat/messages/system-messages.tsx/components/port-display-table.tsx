@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, Globe, HelpCircle } from "lucide-react";
+import { Copy, Check, HelpCircle } from "lucide-react";
 import { useCopy } from "@/hooks/use-copy";
 import { cn } from "@/lib/utils";
 import {
@@ -78,14 +78,6 @@ export function PortDisplayTable({ ports }: PortDisplayTableProps) {
                 <div className="flex items-center gap-2">
                   {port.publicAddress ? (
                     <>
-                      <Globe
-                        className={cn(
-                          "h-4 w-4 flex-shrink-0",
-                          port.publicAddress.startsWith("http")
-                            ? "text-theme-green"
-                            : "text-theme-blue"
-                        )}
-                      />
                       <span
                         className={cn(
                           "truncate cursor-pointer hover:text-foreground/80 hover:underline",

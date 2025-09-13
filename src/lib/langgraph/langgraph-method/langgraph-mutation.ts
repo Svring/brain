@@ -34,11 +34,6 @@ export const useCreateNewChatSessionMutation = (
 
   return useMutation({
     mutationFn: async () => {
-      console.log("createThread", {
-        kubeconfig: auth?.kubeconfig || "",
-        projectName: selectedProject || undefined,
-        resourceTarget: resourceTarget || selectedResource || null,
-      });
       return await createThread({
         kubeconfig: auth?.kubeconfig || "",
         projectName: selectedProject || undefined,

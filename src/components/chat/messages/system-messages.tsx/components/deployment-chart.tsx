@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { APP_DEVBOX_ID } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-label";
+import { useLaunchpadLifecycle } from "@/hooks/sealos/launchpad/use-launchpad-lifecycle";
 import {
   Trash2,
   Plus,
@@ -120,7 +121,7 @@ export const DeploymentChart: React.FC<DeploymentChartProps> = ({
   target,
   payload,
 }) => {
-  const { k8s, launchpad } = useTRPCClients();
+  const { k8s } = useTRPCClients();
   const queryClient = useQueryClient();
   const appendSystemMessageMutation = useAppendSystemMessageMutation();
   const { resource } = useResourceStatus(target);
@@ -131,6 +132,16 @@ export const DeploymentChart: React.FC<DeploymentChartProps> = ({
   const [updatingDeploymentId, setUpdatingDeploymentId] = useState<
     string | null
   >(null);
+
+  // Use launchpad lifecycle hook for deletion
+  const { executeAction, isPending } = useLaunchpadLifecycle({
+    onSuccess: () => {
+      setDeletingDeploymentId(null);
+    },
+    onError: () => {
+      setDeletingDeploymentId(null);
+    },
+  });
 
   // Use the devbox deploy hook
   const { handleDeploy, deployDevbox } = useDevboxDeploy(devboxObject.name || "");
@@ -189,20 +200,15 @@ export const DeploymentChart: React.FC<DeploymentChartProps> = ({
   });
 
 
-  const deleteDeploymentMutation = useMutation({
-    ...launchpad.delete.mutationOptions(),
-    onSuccess: () => {
-      // Invalidate and refetch deployments
-      queryClient.invalidateQueries({
-        queryKey: k8s.list.pathKey(),
-      });
-      setDeletingDeploymentId(null);
-    },
-    onError: (error) => {
+  // Handle delete deployment
+  const handleDeleteDeployment = async (deploymentName: string) => {
+    try {
+      setDeletingDeploymentId(deploymentName);
+      await executeAction("delete", deploymentName);
+    } catch (error) {
       console.error("Failed to delete deployment:", error);
-      setDeletingDeploymentId(null);
-    },
-  });
+    }
+  };
 
   // Show loading state
   if (isLoading) {
@@ -259,19 +265,10 @@ export const DeploymentChart: React.FC<DeploymentChartProps> = ({
             <DeploymentItem
               key={deployment.metadata?.uid || deployment.metadata?.name}
               deployment={deployment}
-              onDelete={(deploymentName) => {
-                setDeletingDeploymentId(
-                  deployment.metadata?.uid || deployment.metadata?.name
-                );
-                deleteDeploymentMutation.mutate({
-                  type: "builtin",
-                  resourceType: "deployment",
-                  name: deploymentName,
-                });
-              }}
+              onDelete={handleDeleteDeployment}
               isDeleting={
-                deletingDeploymentId ===
-                (deployment.metadata?.uid || deployment.metadata?.name)
+                deletingDeploymentId === deployment.metadata?.name ||
+                isPending("delete")
               }
               onUpdate={handleUpdateDeployment}
               isUpdating={

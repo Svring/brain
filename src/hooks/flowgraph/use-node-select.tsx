@@ -39,7 +39,7 @@ export const useNodeSelect = ({
     enableSidebarLoading,
     disableSidebarLoading,
     openSidebarChat,
-    addPendingMessage,
+    setPendingMessage,
   } = useChatActions();
 
   if (!target) {
@@ -55,7 +55,7 @@ export const useNodeSelect = ({
     selectNode(nodeId);
     openSidebarChat();
 
-    // If messageType is provided, append a pending message
+    // If messageType is provided, set a pending message
     if (messageType) {
       const pendingMessage: PendingMessage = {
         timestamp: new Date(),
@@ -64,7 +64,7 @@ export const useNodeSelect = ({
         target,
         payload,
       };
-      addPendingMessage(pendingMessage);
+      setPendingMessage(pendingMessage);
     }
 
     // Execute onSuccess callback if provided

@@ -11,6 +11,7 @@ import LaunchpadMessageMenu from "./components/launchpad-message-menu";
 import { LaunchpadObjectSchema } from "@/lib/sealos/resources/launchpad/launchpad-object-schema";
 import {
   BasicInfoSection,
+  BasicInfoPopoverContent,
   ResourceSection,
   DeploymentSection,
   NetworkSection,
@@ -22,6 +23,7 @@ import {
 } from "./components/launchpad-message";
 
 type ActiveSection =
+  | "basic-info"
   | "resource"
   | "deployment"
   | "network"
@@ -66,6 +68,8 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
   // Get popover title based on active section
   const getPopoverTitle = () => {
     switch (activeSection) {
+      case "basic-info":
+        return "Basic Information";
       case "resource":
         return "Resource Metrics";
       case "deployment":
@@ -88,6 +92,8 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
 
     // Use extracted popover content components
     switch (currentSection) {
+      case "basic-info":
+        return <BasicInfoPopoverContent target={target} />;
       case "resource":
         return <ResourcePopoverContent target={target} />;
       case "deployment":
@@ -133,7 +139,10 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
   const mainContent = (
     <div className="space-y-2">
       {/* Basic Info Section - Full Width */}
-      <BasicInfoSection target={target} />
+      <BasicInfoSection 
+        target={target} 
+        onSectionClick={() => handleSectionClick("basic-info")}
+      />
 
       {/* Resource and Deployment in one row */}
       <div className="flex gap-2">

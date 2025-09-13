@@ -1,4 +1,7 @@
-export { BasicInfoSection } from "./basic-info-section";
+export {
+  BasicInfoSection,
+  BasicInfoPopoverContent,
+} from "./basic-info-section";
 export { ResourceSection, ResourcePopoverContent } from "./resource-section";
 export {
   DeploymentSection,

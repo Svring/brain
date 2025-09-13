@@ -1,27 +1,24 @@
 import React, { useState } from "react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { APP_DEVBOX_ID } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-label";
+import { useLaunchpadLifecycle } from "@/hooks/sealos/launchpad/use-launchpad-lifecycle";
+import { useDevboxDeploy } from "@/hooks/sealos/devbox/use-devbox-deploy";
 import BaseSystemMessage from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
 import {
-  Play,
   Trash2,
   Plus,
   Server,
-  Check,
   ArrowBigUpDash,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { DevboxObjectSchema } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import { flattenListAllResourcesResponse } from "@/lib/k8s/k8s-method/k8s-utils";
-import { useProjectState } from "@/contexts/project/project-context";
 
 interface DevboxDeployedMessageProps {
   target: CustomResourceTarget;
@@ -35,7 +32,14 @@ const DeploymentItem: React.FC<{
   onClick?: (deploymentName: string) => void;
   onUpdate?: (deploymentName: string) => void;
   isUpdating?: boolean;
-}> = ({ deployment, onDelete, isDeleting = false, onClick, onUpdate, isUpdating = false }) => {
+}> = ({
+  deployment,
+  onDelete,
+  isDeleting = false,
+  onClick,
+  onUpdate,
+  isUpdating = false,
+}) => {
   const handleUpdate = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onUpdate) {
@@ -138,15 +142,30 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
   target,
   payload,
 }) => {
-  const { k8s, devbox, launchpad, project } = useTRPCClients();
+  const { k8s } = useTRPCClients();
   const queryClient = useQueryClient();
   const appendSystemMessageMutation = useAppendSystemMessageMutation();
-  const { selectedProject } = useProjectState();
   const { resource } = useResourceStatus(target);
   const devboxObject = DevboxObjectSchema.parse(resource);
   const [deletingDeploymentId, setDeletingDeploymentId] = useState<
     string | null
   >(null);
+  const [updatingDeploymentId, setUpdatingDeploymentId] = useState<
+    string | null
+  >(null);
+
+  // Use launchpad lifecycle hook for deletion
+  const { executeAction, isPending } = useLaunchpadLifecycle({
+    onSuccess: () => {
+      setDeletingDeploymentId(null);
+    },
+    onError: () => {
+      setDeletingDeploymentId(null);
+    },
+  });
+
+  // Use devbox deploy hook
+  const { handleDeploy, deployDevbox } = useDevboxDeploy(devboxObject.name || "");
 
   const {
     data: allResources,
@@ -161,70 +180,33 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
     enabled: !!devboxObject,
   });
 
-  const addToProjectMutation = useMutation({
-    ...project.addResources.mutationOptions(),
-  });
 
-  const deployMutation = useMutation({
-    ...devbox.deploy.mutationOptions(),
-    onSuccess: (response) => {
-      console.log("[DevboxDeployedMessage] deployDevbox onSuccess", response);
-
-      // Invalidate and refetch deployments
-      queryClient.invalidateQueries({
-        queryKey: k8s.list.pathKey(),
-      });
-
-      // Extract appName from response and append launchpad.detail system message
-      if (response?.data?.appName) {
-        const deploymentTarget = convertResourceTypeToTarget(
-          "deployment",
-          response.data.appName
-        );
-        console.log(
-          "[DevboxDeployedMessage] Appending system message for deploymentTarget:",
-          deploymentTarget
-        );
-        appendSystemMessageMutation.mutate({
-          type: "launchpad.detail",
-          target: deploymentTarget,
-        });
-
-        // Add the deployment to the project
-        console.log("[DevboxDeployedMessage] Adding deployment to project:", {
-          resources: [deploymentTarget],
-          name: target.name || "",
-        });
-        addToProjectMutation.mutate({
-          resources: [deploymentTarget],
-          name: selectedProject || "",
-        });
-      } else {
-        console.warn(
-          "[DevboxDeployedMessage] No appName found in deployDevbox response",
-          response
-        );
-      }
-    },
-    onError: (error) => {
-      console.error("Failed to deploy devbox:", error);
-    },
-  });
-
-  const deleteDeploymentMutation = useMutation({
-    ...launchpad.delete.mutationOptions(),
-    onSuccess: () => {
-      // Invalidate and refetch deployments
-      queryClient.invalidateQueries({
-        queryKey: k8s.list.pathKey(),
-      });
-      setDeletingDeploymentId(null);
-    },
-    onError: (error) => {
+  // Handle delete deployment
+  const handleDeleteDeployment = async (deploymentName: string) => {
+    try {
+      setDeletingDeploymentId(deploymentName);
+      await executeAction("delete", deploymentName);
+    } catch (error) {
       console.error("Failed to delete deployment:", error);
-      setDeletingDeploymentId(null);
-    },
-  });
+    }
+  };
+
+  // Handle update deployment
+  const handleUpdateDeployment = async (deploymentName: string) => {
+    if (!payload?.tag) {
+      console.error("No release tag available for update");
+      return;
+    }
+
+    try {
+      setUpdatingDeploymentId(deploymentName);
+      await handleDeploy(payload.tag);
+      setUpdatingDeploymentId(null);
+    } catch (error) {
+      console.error("Update failed:", error);
+      setUpdatingDeploymentId(null);
+    }
+  };
 
   // Show loading state
   if (isLoading) {
@@ -292,18 +274,13 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
               <DeploymentItem
                 key={deployment.metadata?.uid || deployment.metadata?.name}
                 deployment={deployment}
-                onDelete={(deploymentName) => {
-                  setDeletingDeploymentId(
-                    deployment.metadata?.uid || deployment.metadata?.name
-                  );
-                  deleteDeploymentMutation.mutate({
-                    name: deploymentName,
-                  });
-                }}
+                onDelete={handleDeleteDeployment}
                 isDeleting={
-                  deletingDeploymentId ===
-                  (deployment.metadata?.uid || deployment.metadata?.name)
+                  deletingDeploymentId === deployment.metadata?.name ||
+                  isPending("delete")
                 }
+                onUpdate={handleUpdateDeployment}
+                isUpdating={updatingDeploymentId === deployment.metadata?.name}
                 onClick={(deploymentName) => {
                   // Find the deployment object to get its kind
                   const deploymentObj = deployments.find(
@@ -330,21 +307,18 @@ export const DevboxDeployedMessage: React.FC<DevboxDeployedMessageProps> = ({
           className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-3 hover:border-muted-foreground/50 hover:bg-muted/20 transition-colors cursor-pointer"
           onClick={() => {
             if (payload?.tag) {
-              deployMutation.mutate({
-                devboxName: target.name || "",
-                tag: payload.tag,
-              });
+              handleDeploy(payload.tag);
             }
           }}
         >
           <div className="flex items-center justify-center gap-2">
-            {deployMutation.isPending ? (
+            {deployDevbox.isPending ? (
               <Spinner className="h-4 w-4 text-muted-foreground" />
             ) : (
               <Plus className="h-4 w-4 text-muted-foreground" />
             )}
             <span className="text-xs text-muted-foreground">
-              {deployMutation.isPending ? "Deploying..." : "Add new deployment"}
+              {deployDevbox.isPending ? "Deploying..." : "Add new deployment"}
             </span>
           </div>
         </div>
