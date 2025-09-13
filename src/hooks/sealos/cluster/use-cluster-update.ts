@@ -26,15 +26,9 @@ export const useClusterUpdate = (options: UseClusterUpdateOptions = {}) => {
     },
   });
 
-  const updateCluster = async (
-    clusterName: string,
-    data: ClusterUpdateFormData
-  ) => {
+  const updateCluster = async (data: ClusterUpdateFormData) => {
     try {
-      await updateClusterMutation.mutateAsync({
-        clusterName,
-        request: data,
-      });
+      await updateClusterMutation.mutateAsync(data);
     } catch (error) {
       console.error("Error updating cluster:", error);
     }

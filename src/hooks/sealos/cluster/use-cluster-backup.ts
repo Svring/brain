@@ -23,6 +23,12 @@ export const useClusterBackup = (target: CustomResourceTarget) => {
   const deleteBackupMutation = useMutation(
     cluster.deleteBackup.mutationOptions()
   );
+  const createBackupMutation = useMutation(
+    cluster.createBackup.mutationOptions()
+  );
+  const restoreBackupMutation = useMutation(
+    cluster.restoreBackup.mutationOptions()
+  );
 
   // Fetch cluster backups
   const {
@@ -33,8 +39,10 @@ export const useClusterBackup = (target: CustomResourceTarget) => {
 
   const handleCreateBackup = async (config: BackupConfig) => {
     try {
-      // TODO: Implement create backup mutation when available
-      console.log("Create backup:", config);
+      await createBackupMutation.mutateAsync({
+        databaseName: target.name!,
+        remark: config.notes,
+      });
 
       setIsCreatingBackup(false);
       setBackupConfig({ name: "", notes: "" });
@@ -63,6 +71,21 @@ export const useClusterBackup = (target: CustomResourceTarget) => {
     }
   };
 
+  const handleRestoreBackup = async (backupName: string) => {
+    try {
+      await restoreBackupMutation.mutateAsync({
+        databaseName: target.name!,
+        backupName,
+      });
+
+      // Refetch the backup list after restore
+      refetch();
+    } catch (error) {
+      console.error("Restore backup failed:", error);
+      throw error;
+    }
+  };
+
   const setDeletePopoverOpen = (backupName: string, open: boolean) => {
     setOpenDeletePopovers((prev) => ({ ...prev, [backupName]: open }));
   };
@@ -83,10 +106,13 @@ export const useClusterBackup = (target: CustomResourceTarget) => {
 
     // Mutations
     deleteBackupMutation,
+    createBackupMutation,
+    restoreBackupMutation,
 
     // Actions
     handleCreateBackup,
     handleDeleteBackup,
+    handleRestoreBackup,
     setDeletePopoverOpen,
     setIsCreatingBackup,
     setBackupConfig,

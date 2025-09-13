@@ -5,6 +5,10 @@ import {
   getClusterMonitorData,
   getCombinedMonitor,
   deleteClusterBackup,
+  createClusterBackup,
+  restoreClusterBackup,
+  enableClusterPublicAccess,
+  disableClusterPublicAccess,
   getCluster,
   getClusterBackupList,
   getClusterLogs,
@@ -27,6 +31,20 @@ import {
   ClusterDeleteRequestSchema,
   ClusterDeleteResponseSchema,
 } from "@/lib/sealos/resources/cluster/schemas/req-res-schemas/req-res-delete-schemas";
+import {
+  CreateBackupRequestSchema,
+  CreateBackupResponseSchema,
+  DeleteBackupRequestSchema,
+  DeleteBackupResponseSchema,
+  RestoreBackupRequestSchema,
+  RestoreBackupResponseSchema,
+} from "@/lib/sealos/resources/cluster/schemas/req-res-schemas/req-res-backup-schemas";
+import {
+  EnablePublicAccessRequestSchema,
+  EnablePublicAccessResponseSchema,
+  DisablePublicAccessRequestSchema,
+  DisablePublicAccessResponseSchema,
+} from "@/lib/sealos/resources/cluster/schemas/req-res-schemas/req-res-public-access-schemas";
 
 const t = initTRPC.context<ClusterContext>().create();
 
@@ -127,6 +145,40 @@ export const clusterRouter = t.router({
     .mutation(async ({ input, ctx }) => {
       const { clusterName, backupName } = input;
       return await deleteClusterBackup(ctx, clusterName, backupName);
+    }),
+
+  // Backup Management
+  createBackup: t.procedure
+    .input(CreateBackupRequestSchema)
+    .output(CreateBackupResponseSchema)
+    .mutation(async ({ input, ctx }) => {
+      const { databaseName, remark } = input;
+      return await createClusterBackup(ctx, databaseName, remark);
+    }),
+
+  restoreBackup: t.procedure
+    .input(RestoreBackupRequestSchema)
+    .output(RestoreBackupResponseSchema)
+    .mutation(async ({ input, ctx }) => {
+      const { databaseName, backupName } = input;
+      return await restoreClusterBackup(ctx, databaseName, backupName);
+    }),
+
+  // Public Access Management
+  enablePublic: t.procedure
+    .input(EnablePublicAccessRequestSchema)
+    .output(EnablePublicAccessResponseSchema)
+    .mutation(async ({ input, ctx }) => {
+      const { databaseName } = input;
+      return await enableClusterPublicAccess(ctx, databaseName);
+    }),
+
+  disablePublic: t.procedure
+    .input(DisablePublicAccessRequestSchema)
+    .output(DisablePublicAccessResponseSchema)
+    .mutation(async ({ input, ctx }) => {
+      const { databaseName } = input;
+      return await disableClusterPublicAccess(ctx, databaseName);
     }),
 });
 

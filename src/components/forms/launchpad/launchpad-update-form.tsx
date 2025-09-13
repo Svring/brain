@@ -6,8 +6,6 @@ import { useLaunchpadUpdateForm } from "@/hooks/forms/launchpad/use-launchpad-up
 import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
 import { LaunchpadResourceFields } from "./launchpad-resource-fields";
 import { LaunchpadPortsFields } from "./launchpad-ports-fields";
-import { LaunchpadSimplePortsFields } from "./launchpad-simple-ports-fields";
-import { CommandField, ArgsField } from "../universal/command-args-fields";
 import { EnvFields } from "../universal/env-fields";
 import { ConfigMapFields } from "../universal/config-map-fields";
 import { StorageFields } from "../universal/storage-fields";
@@ -20,7 +18,6 @@ interface LaunchpadUpdateFormProps {
   onSubmit: (data: LaunchpadUpdateFormData) => void;
   isLoading?: boolean;
   hideDefaultButton?: boolean;
-  useSimplePortsMode?: boolean;
   formId?: string;
 }
 
@@ -29,13 +26,11 @@ export const LaunchpadUpdateForm = ({
   onSubmit,
   isLoading = false,
   hideDefaultButton = false,
-  useSimplePortsMode = false,
   formId = "launchpad-update-form",
 }: LaunchpadUpdateFormProps) => {
   const {
     form,
     portsFieldArray,
-    simplePortsFieldArray,
     envFieldArray,
     storageFieldArray,
     configMapFieldArray,
@@ -109,16 +104,11 @@ export const LaunchpadUpdateForm = ({
   // Only show fields that have values in defaultValues
   const hasResource = defaultValues?.resource !== undefined;
   const hasPorts = defaultValues?.ports !== undefined;
-  const hasSimplePorts = defaultValues?.simplePorts !== undefined;
   const hasLaunchCommand = defaultValues?.launchCommand !== undefined;
   const hasImage = defaultValues?.image !== undefined;
   const hasEnv = defaultValues?.env !== undefined;
   const hasConfigMap = defaultValues?.configMap !== undefined;
   const hasStorage = defaultValues?.storage !== undefined;
-
-  // Determine which ports field to show
-  const showSimplePortsField = useSimplePortsMode || hasSimplePorts;
-  const showRegularPortsField = hasPorts && !showSimplePortsField;
 
   return (
     <Form {...form}>
@@ -136,15 +126,9 @@ export const LaunchpadUpdateForm = ({
 
         {hasResource && <LaunchpadResourceFields />}
 
-        {showRegularPortsField && (
+        {hasPorts && (
           <div className="space-y-2">
             <LaunchpadPortsFields fieldArray={portsFieldArray} />
-          </div>
-        )}
-
-        {showSimplePortsField && (
-          <div className="space-y-2">
-            <LaunchpadSimplePortsFields fieldArray={simplePortsFieldArray} />
           </div>
         )}
 

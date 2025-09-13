@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import type { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface UseClusterLifecycleOptions {
   onSuccess?: (message: string) => void;
@@ -20,12 +21,11 @@ export const useClusterLifecycle = (
 
   const startMutation = useMutation({
     ...cluster.start.mutationOptions(),
-    onSuccess: (_, clusterName) => {
+    onSuccess: (_, target) => {
       const message = "Cluster started successfully";
       toast.success(message);
       onSuccess?.(message);
-      const target = convertResourceTypeToTarget("cluster", clusterName);
-      invalidateQueries([cluster.get.queryKey(target as any)]);
+      invalidateQueries([cluster.get.queryKey(target)]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to start cluster";
@@ -36,12 +36,11 @@ export const useClusterLifecycle = (
 
   const pauseMutation = useMutation({
     ...cluster.pause.mutationOptions(),
-    onSuccess: (_, clusterName) => {
+    onSuccess: (_, target) => {
       const message = "Cluster paused successfully";
       toast.success(message);
       onSuccess?.(message);
-      const target = convertResourceTypeToTarget("cluster", clusterName);
-      invalidateQueries([cluster.get.queryKey(target as any)]);
+      invalidateQueries([cluster.get.queryKey(target)]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to pause cluster";
@@ -56,9 +55,12 @@ export const useClusterLifecycle = (
       const message = "Cluster deleted successfully";
       toast.success(message);
       onSuccess?.(message);
-      const target = convertResourceTypeToTarget("cluster", deleteRequest.name);
+      const target = convertResourceTypeToTarget(
+        "cluster",
+        deleteRequest.name
+      ) as CustomResourceTarget;
       invalidateQueries([
-        cluster.get.queryKey(target as any),
+        cluster.get.queryKey(target),
         project.getResources.queryKey(),
       ]);
     },
@@ -71,15 +73,20 @@ export const useClusterLifecycle = (
 
   const executeAction = async (action: string, clusterName: string) => {
     try {
+      const target = convertResourceTypeToTarget(
+        "cluster",
+        clusterName
+      ) as CustomResourceTarget;
+
       switch (action) {
         case "start":
-          await startMutation.mutateAsync(clusterName);
+          await startMutation.mutateAsync(target);
           break;
         case "pause":
-          await pauseMutation.mutateAsync(clusterName);
+          await pauseMutation.mutateAsync(target);
           break;
         case "delete":
-          await deleteMutation.mutateAsync({ name: clusterName });
+          await deleteMutation.mutateAsync({ ...target, name: clusterName });
           break;
         default:
           throw new Error(`Unknown action: ${action}`);

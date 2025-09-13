@@ -278,3 +278,46 @@ export async function deleteClusterBackup(
   const response = await api.delete(`/${clusterName}/backup/${backupName}`);
   return response.data;
 }
+
+export async function createClusterBackup(
+  context: SealosApiContext,
+  databaseName: string,
+  remark?: string
+): Promise<any> {
+  const api = createClusterApi(context);
+  const response = await api.post(`/database/${databaseName}/backup`, {
+    remark,
+  });
+  return response.data;
+}
+
+export async function restoreClusterBackup(
+  context: SealosApiContext,
+  databaseName: string,
+  backupName: string
+): Promise<any> {
+  const api = createClusterApi(context);
+  const response = await api.post(
+    `/database/${databaseName}/backup/${backupName}/restore`
+  );
+  return response.data;
+}
+
+// Public Access Operations
+export async function enableClusterPublicAccess(
+  context: SealosApiContext,
+  databaseName: string
+): Promise<any> {
+  const api = createClusterApi(context);
+  const response = await api.post(`/database/${databaseName}/enablePublic`);
+  return response.data;
+}
+
+export async function disableClusterPublicAccess(
+  context: SealosApiContext,
+  databaseName: string
+): Promise<any> {
+  const api = createClusterApi(context);
+  const response = await api.post(`/database/${databaseName}/disablePublic`);
+  return response.data;
+}

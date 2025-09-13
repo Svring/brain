@@ -4,6 +4,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useDevboxDeploy } from "@/hooks/sealos/devbox/use-devbox-deploy";
 import { useDevboxContext } from "@/lib/auth/auth-utils";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import type { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface ReleaseConfig {
   tag: string;
@@ -41,8 +43,13 @@ export const useDevboxRelease = (devboxName: string) => {
 
   const handleRelease = async (config: ReleaseConfig) => {
     try {
+      const target = convertResourceTypeToTarget(
+        "devbox",
+        devboxName
+      ) as CustomResourceTarget;
+
       // Stop the devbox before releasing
-      await shutdownDevboxMutation.mutateAsync(devboxName);
+      await shutdownDevboxMutation.mutateAsync(target);
 
       // Create the release
       await releaseMutation.mutateAsync({
@@ -52,7 +59,7 @@ export const useDevboxRelease = (devboxName: string) => {
       });
 
       // Start the devbox after releasing
-      await startDevboxMutation.mutateAsync(devboxName);
+      await startDevboxMutation.mutateAsync(target);
 
       // Invalidate releases query to refresh the list
       invalidateQueries([devbox.releases.queryKey(devboxName)]);

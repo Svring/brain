@@ -19,7 +19,6 @@ import {
   deployDevbox,
   getDevbox,
   listDevboxes,
-  getDevboxMonitor,
   getDevboxCombinedMonitor,
   checkDevboxReady,
 } from "@/lib/sealos/resources/devbox/devbox-api/devbox-api-service";
@@ -75,25 +74,35 @@ export const devboxRouter = t.router({
       return await updateDevbox(ctx, input.name, input);
     }),
 
-  start: t.procedure.input(z.string()).mutation(async ({ ctx, input }) => {
-    return await startDevbox(ctx, input);
-  }),
+  start: t.procedure
+    .input(CustomResourceTargetSchema)
+    .mutation(async ({ ctx, input }) => {
+      return await startDevbox(ctx, input.name!);
+    }),
 
-  pause: t.procedure.input(z.string()).mutation(async ({ ctx, input }) => {
-    return await pauseDevbox(ctx, input);
-  }),
+  pause: t.procedure
+    .input(CustomResourceTargetSchema)
+    .mutation(async ({ ctx, input }) => {
+      return await pauseDevbox(ctx, input.name!);
+    }),
 
-  shutdown: t.procedure.input(z.string()).mutation(async ({ ctx, input }) => {
-    return await shutdownDevbox(ctx, input);
-  }),
+  shutdown: t.procedure
+    .input(CustomResourceTargetSchema)
+    .mutation(async ({ ctx, input }) => {
+      return await shutdownDevbox(ctx, input.name!);
+    }),
 
-  restart: t.procedure.input(z.string()).mutation(async ({ ctx, input }) => {
-    return await restartDevbox(ctx, input);
-  }),
+  restart: t.procedure
+    .input(CustomResourceTargetSchema)
+    .mutation(async ({ ctx, input }) => {
+      return await restartDevbox(ctx, input.name!);
+    }),
 
-  delete: t.procedure.input(z.string()).mutation(async ({ ctx, input }) => {
-    return await deleteDevbox(ctx, input);
-  }),
+  delete: t.procedure
+    .input(CustomResourceTargetSchema)
+    .mutation(async ({ ctx, input }) => {
+      return await deleteDevbox(ctx, input.name!);
+    }),
 
   // Release Management
   release: t.procedure

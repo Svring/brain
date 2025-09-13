@@ -21,10 +21,10 @@ export const useDevboxUpdate = ({
 
   const mutation = useMutation({
     ...devbox.update.mutationOptions(),
-    onSuccess: (data, { devboxName }) => {
+    onSuccess: (data) => {
       toast.success("Devbox updated successfully!");
       onSuccess?.(data);
-      const target = convertResourceTypeToTarget("devbox", devboxName);
+      const target = convertResourceTypeToTarget("devbox", data.name);
       invalidateQueries(
         [devbox.list.queryKey(), devbox.get.queryKey(target as any)],
         true
@@ -36,11 +36,8 @@ export const useDevboxUpdate = ({
     },
   });
 
-  const updateDevbox = async (
-    devboxName: string,
-    data: DevboxUpdateFormData
-  ) => {
-    await mutation.mutateAsync({ devboxName, request: data });
+  const updateDevbox = async (data: DevboxUpdateFormData) => {
+    await mutation.mutateAsync(data);
   };
 
   return {

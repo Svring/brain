@@ -39,12 +39,9 @@ export const useLaunchpadUpdate = (options: UseLaunchpadUpdateOptions = {}) => {
     },
   });
 
-  const updateLaunchpad = async (
-    name: string,
-    data: LaunchpadUpdateFormData
-  ) => {
+  const updateLaunchpad = async (data: LaunchpadUpdateFormData) => {
     try {
-      await updateLaunchpadMutation.mutateAsync({ name, request: data });
+      await updateLaunchpadMutation.mutateAsync(data);
     } catch (error) {
       console.error("Error updating launchpad:", error);
     }

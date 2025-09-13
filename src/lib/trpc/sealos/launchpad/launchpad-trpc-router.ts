@@ -88,15 +88,9 @@ export const launchpadRouter = t.router({
     }),
 
   update: t.procedure
-    .input(
-      z.object({
-        name: z.string(),
-        request: launchpadUpdateFormSchema,
-      })
-    )
+    .input(launchpadUpdateFormSchema)
     .mutation(async ({ input, ctx }) => {
-      const { name, request } = input;
-      return await updateLaunchpadService(ctx, name, request);
+      return await updateLaunchpadService(ctx, input.name!, input);
     }),
 
   start: t.procedure

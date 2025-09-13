@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import type { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface UseDevboxLifecycleOptions {
   onSuccess?: (message: string) => void;
@@ -18,15 +19,11 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
 
   const startMutation = useMutation({
     ...devbox.start.mutationOptions(),
-    onSuccess: (_, devboxName) => {
+    onSuccess: (_, target) => {
       const message = "Devbox started successfully";
       toast.success(message);
       onSuccess?.(message);
-      const target = convertResourceTypeToTarget("devbox", devboxName);
-      invalidateQueries([
-        devbox.list.queryKey(),
-        devbox.get.queryKey(target as any),
-      ]);
+      invalidateQueries([devbox.list.queryKey(), devbox.get.queryKey(target)]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to start devbox";
@@ -37,15 +34,11 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
 
   const pauseMutation = useMutation({
     ...devbox.pause.mutationOptions(),
-    onSuccess: (_, devboxName) => {
+    onSuccess: (_, target) => {
       const message = "Devbox paused successfully";
       toast.success(message);
       onSuccess?.(message);
-      const target = convertResourceTypeToTarget("devbox", devboxName);
-      invalidateQueries([
-        devbox.list.queryKey(),
-        devbox.get.queryKey(target as any),
-      ]);
+      invalidateQueries([devbox.list.queryKey(), devbox.get.queryKey(target)]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to pause devbox";
@@ -56,15 +49,11 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
 
   const restartMutation = useMutation({
     ...devbox.restart.mutationOptions(),
-    onSuccess: (_, devboxName) => {
+    onSuccess: (_, target) => {
       const message = "Devbox restarted successfully";
       toast.success(message);
       onSuccess?.(message);
-      const target = convertResourceTypeToTarget("devbox", devboxName);
-      invalidateQueries([
-        devbox.list.queryKey(),
-        devbox.get.queryKey(target as any),
-      ]);
+      invalidateQueries([devbox.list.queryKey(), devbox.get.queryKey(target)]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to restart devbox";
@@ -75,15 +64,11 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
 
   const shutdownMutation = useMutation({
     ...devbox.shutdown.mutationOptions(),
-    onSuccess: (_, devboxName) => {
+    onSuccess: (_, target) => {
       const message = "Devbox shutdown successfully";
       toast.success(message);
       onSuccess?.(message);
-      const target = convertResourceTypeToTarget("devbox", devboxName);
-      invalidateQueries([
-        devbox.list.queryKey(),
-        devbox.get.queryKey(target as any),
-      ]);
+      invalidateQueries([devbox.list.queryKey(), devbox.get.queryKey(target)]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to shutdown devbox";
@@ -94,13 +79,12 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
 
   const deleteMutation = useMutation({
     ...devbox.delete.mutationOptions(),
-    onSuccess: (_, devboxName) => {
+    onSuccess: (_, target) => {
       const message = "Devbox deleted successfully";
       toast.success(message);
       onSuccess?.(message);
-      const target = convertResourceTypeToTarget("devbox", devboxName);
       invalidateQueries(
-        [devbox.list.queryKey(), devbox.get.queryKey(target as any)],
+        [devbox.list.queryKey(), devbox.get.queryKey(target)],
         true
       );
     },
@@ -113,21 +97,26 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
 
   const executeAction = async (action: string, devboxName: string) => {
     try {
+      const target = convertResourceTypeToTarget(
+        "devbox",
+        devboxName
+      ) as CustomResourceTarget;
+
       switch (action) {
         case "start":
-          await startMutation.mutateAsync(devboxName);
+          await startMutation.mutateAsync(target);
           break;
         case "pause":
-          await pauseMutation.mutateAsync(devboxName);
+          await pauseMutation.mutateAsync(target);
           break;
         case "restart":
-          await restartMutation.mutateAsync(devboxName);
+          await restartMutation.mutateAsync(target);
           break;
         case "shutdown":
-          await shutdownMutation.mutateAsync(devboxName);
+          await shutdownMutation.mutateAsync(target);
           break;
         case "delete":
-          await deleteMutation.mutateAsync(devboxName);
+          await deleteMutation.mutateAsync(target);
           break;
         default:
           throw new Error(`Unknown action: ${action}`);
