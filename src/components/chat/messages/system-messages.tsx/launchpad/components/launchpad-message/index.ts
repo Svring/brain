@@ -1,8 +1,9 @@
 export { BasicInfoSection } from "./basic-info-section";
+export { ResourceSection, ResourcePopoverContent } from "./resource-section";
 export {
-  ResourceQuotaSection,
-  ResourceQuotaPopoverContent,
-} from "./resource-quota-section";
+  DeploymentSection,
+  DeploymentPopoverContent,
+} from "./deployment-section";
 export { NetworkSection, NetworkPopoverContent } from "./network-section";
 export {
   AdvancedConfigSection,

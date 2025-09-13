@@ -11,15 +11,22 @@ import LaunchpadMessageMenu from "./components/launchpad-message-menu";
 import { LaunchpadObjectSchema } from "@/lib/sealos/resources/launchpad/launchpad-object-schema";
 import {
   BasicInfoSection,
-  ResourceQuotaSection,
+  ResourceSection,
+  DeploymentSection,
   NetworkSection,
   AdvancedConfigSection,
-  ResourceQuotaPopoverContent,
+  ResourcePopoverContent,
+  DeploymentPopoverContent,
   NetworkPopoverContent,
   AdvancedConfigPopoverContent,
 } from "./components/launchpad-message";
 
-type ActiveSection = "resource" | "network" | "advanced-config" | null;
+type ActiveSection =
+  | "resource"
+  | "deployment"
+  | "network"
+  | "advanced-config"
+  | null;
 
 interface LaunchpadInfoMessageProps {
   target: BuiltinResourceTarget;
@@ -73,7 +80,9 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
   const getPopoverTitle = () => {
     switch (activeSection) {
       case "resource":
-        return "Resource Quota";
+        return "Resource Metrics";
+      case "deployment":
+        return "Deployment Configuration";
       case "network":
         return "Network Ports";
       case "advanced-config":
@@ -85,7 +94,7 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
   const getPopoverContent = () => {
     // Use closingSection if popover is closing, otherwise use activeSection
     const currentSection = closingSection || activeSection;
-    
+
     if (!currentSection) {
       return null;
     }
@@ -93,7 +102,9 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
     // Use extracted popover content components
     switch (currentSection) {
       case "resource":
-        return <ResourceQuotaPopoverContent target={target} />;
+        return <ResourcePopoverContent target={target} />;
+      case "deployment":
+        return <DeploymentPopoverContent target={target} />;
       case "network":
         return <NetworkPopoverContent target={target} />;
       case "advanced-config":
@@ -131,29 +142,43 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
     );
   }
 
-  // Main content with basic info at top and sectioned layout below
+  // Main content with basic info at top and reorganized sections below
   const mainContent = (
     <div className="space-y-2">
       {/* Basic Info Section - Full Width */}
       <BasicInfoSection target={target} />
-      
-      {/* Resource Quota and Network in same row */}
+
+      {/* Resource and Deployment in one row */}
       <div className="flex gap-2">
-        <ResourceQuotaSection
-          target={target}
-          onSectionClick={() => handleSectionClick("resource")}
-        />
-        <NetworkSection
-          target={target}
-          onSectionClick={() => handleSectionClick("network")}
-        />
+        <div className="flex-1">
+          <ResourceSection
+            target={target}
+            onSectionClick={() => handleSectionClick("resource")}
+          />
+        </div>
+        <div className="flex-1">
+          <DeploymentSection
+            target={target}
+            onSectionClick={() => handleSectionClick("deployment")}
+          />
+        </div>
       </div>
 
-      {/* Advanced Configuration - Full Width */}
-      <AdvancedConfigSection
-        target={target}
-        onSectionClick={() => handleSectionClick("advanced-config")}
-      />
+      {/* Network and Advanced Config in one row */}
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <NetworkSection
+            target={target}
+            onSectionClick={() => handleSectionClick("network")}
+          />
+        </div>
+        <div className="flex-1">
+          <AdvancedConfigSection
+            target={target}
+            onSectionClick={() => handleSectionClick("advanced-config")}
+          />
+        </div>
+      </div>
     </div>
   );
 

@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import { ChevronDown, ChevronRight, Edit3 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
+import { Edit3 } from "lucide-react";
 import { ConfigDialog } from "./config-dialog";
 
 interface ConfigurationProps {
@@ -23,7 +21,6 @@ export const Configuration: React.FC<ConfigurationProps> = ({
   onConfigUpdate,
   isLoading = false,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
   const [dialogOpen, setDialogOpen] = useState<string | null>(null);
 
   const handleFieldSubmit = async (fieldType: string, data: any) => {
@@ -146,119 +143,99 @@ export const Configuration: React.FC<ConfigurationProps> = ({
   };
 
   return (
-    <div className="border border-dashed rounded-lg">
-      {/* Header with Collapse Toggle */}
-      <div 
-        className="flex items-center justify-between p-2 border-b border-dashed cursor-pointer transition-colors"
-        onClick={() => setIsExpanded(!isExpanded)}
-        title="Click to toggle advanced configuration"
-      >
-        <div className="flex items-center gap-2">
-          <div className="h-6 w-6 flex items-center justify-center">
-            {isExpanded ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronRight className="h-4 w-4" />
-            )}
-          </div>
-          <h3 className="font-medium">Advanced Configuration</h3>
+    <div className="">
+      {/* Content - Always Visible */}
+      <div className="p-2">
+        <div className="grid grid-cols-2 gap-4">
+          {/* Command & Arguments */}
+          {(() => {
+            const fieldInfo = getFieldInfo("commandArgs");
+            return (
+              <div
+                className="flex flex-col space-y-1 flex-1 cursor-pointer transition-colors"
+                onClick={() => setDialogOpen("commandArgs")}
+                title="Click to edit command & arguments"
+              >
+                <div className="flex items-center gap-1">
+                  <span className="text-sm text-muted-foreground">
+                    {fieldInfo.title}
+                  </span>
+                  <Edit3 className="h-3 w-3 text-muted-foreground/60" />
+                </div>
+                <span className="text-sm font-medium truncate">
+                  {fieldInfo.summary}
+                </span>
+              </div>
+            );
+          })()}
+
+          {/* Environment Variables */}
+          {(() => {
+            const fieldInfo = getFieldInfo("env");
+            return (
+              <div
+                className="flex flex-col space-y-1 flex-1 cursor-pointer transition-colors"
+                onClick={() => setDialogOpen("env")}
+                title="Click to edit environment variables"
+              >
+                <div className="flex items-center gap-1">
+                  <span className="text-sm text-muted-foreground">
+                    {fieldInfo.title}
+                  </span>
+                  <Edit3 className="h-3 w-3 text-muted-foreground/60" />
+                </div>
+                <span className="text-sm font-medium truncate">
+                  {fieldInfo.summary}
+                </span>
+              </div>
+            );
+          })()}
+
+          {/* Config Map Entries */}
+          {(() => {
+            const fieldInfo = getFieldInfo("configMap");
+            return (
+              <div
+                className="flex flex-col space-y-1 flex-1 cursor-pointer transition-colors"
+                onClick={() => setDialogOpen("configMap")}
+                title="Click to edit config map entries"
+              >
+                <div className="flex items-center gap-1">
+                  <span className="text-sm text-muted-foreground">
+                    {fieldInfo.title}
+                  </span>
+                  <Edit3 className="h-3 w-3 text-muted-foreground/60" />
+                </div>
+                <span className="text-sm font-medium truncate">
+                  {fieldInfo.summary}
+                </span>
+              </div>
+            );
+          })()}
+
+          {/* Storage Volumes */}
+          {(() => {
+            const fieldInfo = getFieldInfo("storage");
+            return (
+              <div
+                className="flex flex-col space-y-1 flex-1 cursor-pointer transition-colors"
+                onClick={() => setDialogOpen("storage")}
+                title="Click to edit storage volumes"
+              >
+                <div className="flex items-center gap-1">
+                  <span className="text-sm text-muted-foreground">
+                    {fieldInfo.title}
+                  </span>
+                  <Edit3 className="h-3 w-3 text-muted-foreground/60" />
+                </div>
+                <span className="text-sm font-medium truncate">
+                  {fieldInfo.summary}
+                </span>
+              </div>
+            );
+          })()}
         </div>
       </div>
-
-      {/* Collapsible Content */}
-      {isExpanded && (
-        <div className="p-4">
-          <div className="grid grid-cols-2 gap-4">
-            {/* Command & Arguments */}
-            {(() => {
-              const fieldInfo = getFieldInfo("commandArgs");
-              return (
-                <div 
-                  className="flex flex-col space-y-1 flex-1 cursor-pointer transition-colors"
-                  onClick={() => setDialogOpen("commandArgs")}
-                  title="Click to edit command & arguments"
-                >
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm text-muted-foreground">
-                      {fieldInfo.title}
-                    </span>
-                    <Edit3 className="h-3 w-3 text-muted-foreground/60" />
-                  </div>
-                  <span className="text-sm font-medium truncate">
-                    {fieldInfo.summary}
-                  </span>
-                </div>
-              );
-            })()}
-
-            {/* Environment Variables */}
-            {(() => {
-              const fieldInfo = getFieldInfo("env");
-              return (
-                <div 
-                  className="flex flex-col space-y-1 flex-1 cursor-pointer transition-colors"
-                  onClick={() => setDialogOpen("env")}
-                  title="Click to edit environment variables"
-                >
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm text-muted-foreground">
-                      {fieldInfo.title}
-                    </span>
-                    <Edit3 className="h-3 w-3 text-muted-foreground/60" />
-                  </div>
-                  <span className="text-sm font-medium truncate">
-                    {fieldInfo.summary}
-                  </span>
-                </div>
-              );
-            })()}
-
-            {/* Config Map Entries */}
-            {(() => {
-              const fieldInfo = getFieldInfo("configMap");
-              return (
-                <div 
-                  className="flex flex-col space-y-1 flex-1 cursor-pointer transition-colors"
-                  onClick={() => setDialogOpen("configMap")}
-                  title="Click to edit config map entries"
-                >
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm text-muted-foreground">
-                      {fieldInfo.title}
-                    </span>
-                    <Edit3 className="h-3 w-3 text-muted-foreground/60" />
-                  </div>
-                  <span className="text-sm font-medium truncate">
-                    {fieldInfo.summary}
-                  </span>
-                </div>
-              );
-            })()}
-
-            {/* Storage Volumes */}
-            {(() => {
-              const fieldInfo = getFieldInfo("storage");
-              return (
-                <div 
-                  className="flex flex-col space-y-1 flex-1 cursor-pointer transition-colors"
-                  onClick={() => setDialogOpen("storage")}
-                  title="Click to edit storage volumes"
-                >
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm text-muted-foreground">
-                      {fieldInfo.title}
-                    </span>
-                    <Edit3 className="h-3 w-3 text-muted-foreground/60" />
-                  </div>
-                  <span className="text-sm font-medium truncate">
-                    {fieldInfo.summary}
-                  </span>
-                </div>
-              );
-            })()}
-          </div>
-        </div>
-      )}
 
       {/* Configuration Dialogs */}
       {dialogOpen === "commandArgs" && (

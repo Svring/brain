@@ -92,21 +92,21 @@ export function AiChatHeader({
       // Convert thread messages to CopilotKit format first
       const convertedMessages = convertThreadToCopilotKitMessages(thread);
       
-      // Find the first human message in the converted messages
-      const firstHumanMessage = convertedMessages.find(
-        (msg: any) => msg.role === "user"
+      // Find the first message from either human or assistant
+      const firstMessage = convertedMessages.find(
+        (msg: any) => msg.role === "user" || msg.role === "assistant"
       );
       
-      if (firstHumanMessage?.content) {
+      if (firstMessage?.content) {
         // Truncate the content to a reasonable length for display
-        const content = String(firstHumanMessage.content);
+        const content = String(firstMessage.content);
         return content.length > 50 ? content.substring(0, 50) + "..." : content;
       }
     } catch (error) {
       console.warn("Failed to convert thread messages:", error);
     }
     
-    // Display "New Thread" if no human message found or conversion fails
+    // Display "New Thread" if no message found or conversion fails
     return "New Thread";
   };
 

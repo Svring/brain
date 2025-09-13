@@ -116,15 +116,19 @@ export const ObjectStorageMessage: React.FC<ObjectStorageMessageProps> = ({
       
       {/* Policy and Access Config in same row */}
       <div className="flex gap-2">
-        <PolicySection
-          objectstorageObject={objectstorageObject as any}
-          target={target}
-          onSectionClick={() => handleSectionClick("policy")}
-        />
-        <AccessConfigSection
-          objectstorageObject={objectstorageObject as any}
-          onSectionClick={() => handleSectionClick("access-config")}
-        />
+        <div className="flex-1">
+          <PolicySection
+            objectstorageObject={objectstorageObject as any}
+            target={target}
+            onSectionClick={() => handleSectionClick("policy")}
+          />
+        </div>
+        <div className="flex-1">
+          <AccessConfigSection
+            objectstorageObject={objectstorageObject as any}
+            onSectionClick={() => handleSectionClick("access-config")}
+          />
+        </div>
       </div>
     </div>
   );

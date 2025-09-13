@@ -123,20 +123,22 @@ export const ClusterMessage: React.FC<ClusterMessageProps> = ({ target }) => {
     );
   }
 
-  // Main content with basic info at top and two-column layout below
+  // Main content with basic info at top, full-width resource quota, and two-column layout below
   const mainContent = (
     <div className="space-y-2">
       {/* Basic Info Section - Full Width */}
       <BasicInfoSection target={target} />
       
+      {/* Resource Quota Section - Full Width */}
+      <ResourceQuotaSection
+        target={target}
+        onSectionClick={() => handleSectionClick("resource")}
+      />
+      
       {/* Two-column layout for other sections */}
       <div className="flex gap-2">
-        {/* Left Half - Resource Quota and Connect */}
+        {/* Left Half - Connect */}
         <div className="w-1/2 space-y-2">
-          <ResourceQuotaSection
-            target={target}
-            onSectionClick={() => handleSectionClick("resource")}
-          />
           <ConnectSection
             target={target}
             onSectionClick={() => handleSectionClick("connect")}

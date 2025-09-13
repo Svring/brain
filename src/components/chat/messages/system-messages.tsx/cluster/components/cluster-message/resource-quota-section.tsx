@@ -1,18 +1,16 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Cpu, MemoryStick, HardDrive, Layers } from "lucide-react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { ClusterObjectSchema } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
-import { ClusterResourceConfiguration } from "../cluster-resource-configuration";
-import { useForm, FormProvider } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { clusterResourceSchema } from "../cluster-resource-configuration";
 import { Button } from "@/components/ui/button";
-import { Check, PenLine, X } from "lucide-react";
-import { Spinner } from "@/components/ui/spinner";
-import { useState } from "react";
+import { ClusterUpdateForm } from "@/components/forms/cluster/cluster-update-form";
+import { ClusterUpdateFormData } from "@/schemas/forms/cluster/cluster-update-form-schema";
+import { useClusterUpdate } from "@/hooks/sealos/cluster/use-cluster-update";
+import { convertK8sResourceToNumeric } from "@/lib/k8s/k8s-method/k8s-utils";
+import { MonitorChart } from "../../../components/monitor-chart";
 
 interface ResourceQuotaSectionProps {
   target: CustomResourceTarget;
@@ -23,122 +21,172 @@ interface ResourceQuotaSectionProps {
 export const ResourceQuotaPopoverContent: React.FC<{
   target: CustomResourceTarget;
 }> = ({ target }) => {
-  const [isResourceEditing, setIsResourceEditing] = useState(false);
-  const { resource: clusterResource, isLoading } = useResourceStatus(target);
+  const [isEditing, setIsEditing] = useState(false);
+  const { resource: clusterObject } = useResourceStatus(target);
   
-  const parsedClusterObject = clusterResource
-    ? ClusterObjectSchema.parse(clusterResource)
+  const parsedClusterObject = clusterObject
+    ? ClusterObjectSchema.parse(clusterObject)
     : null;
 
-  // Initialize form with cluster resource data
+  // Get resource data from cluster object
   const resourceData = Array.isArray(parsedClusterObject?.resource) || !parsedClusterObject?.resource 
     ? null 
     : parsedClusterObject.resource;
 
-  const form = useForm({
-    resolver: zodResolver(clusterResourceSchema),
-    defaultValues: {
-      cpu: resourceData?.cpu?.toString() || "2",
-      memory: resourceData?.memory?.toString() || "4",
-      storage: resourceData?.storage?.toString() || "20",
-      replicas: resourceData?.replicas?.toString() || "1",
+  // Convert K8s resource strings to numeric for comparison
+  const objectNumeric = convertK8sResourceToNumeric({
+    cpu: resourceData?.cpu,
+    memory: resourceData?.memory,
+    storage: resourceData?.storage,
+  });
+
+  // Update cluster using the custom hook
+  const { updateCluster, isLoading: isUpdating } = useClusterUpdate({
+    onSuccess: () => {
+      setIsEditing(false);
     },
   });
 
-  const handleResourceSubmit = async (data: any) => {
-    // TODO: Implement save functionality
-    console.log("Saving cluster resource configuration:", data);
-    setIsResourceEditing(false);
+  const handleFormSubmit = async (data: ClusterUpdateFormData) => {
+    try {
+      await updateCluster({
+        name: parsedClusterObject?.name || target.name!,
+        resource: data.resource,
+      });
+    } catch (error) {
+      console.error("Error updating cluster resources:", error);
+    }
   };
 
+  // Helper function to create comparison display
+  const createComparisonDisplay = (
+    formValue: number,
+    objectValue: number | undefined,
+    unit: string
+  ) => {
+    if (objectValue !== undefined && objectValue !== formValue) {
+      return (
+        <div className="flex items-center gap-2">
+          <span className="text-muted-foreground line-through">
+            {objectValue}
+            {unit}
+          </span>
+          <span className="text-muted-foreground">→</span>
+          <span className="font-medium">
+            {formValue}
+            {unit}
+          </span>
+        </div>
+      );
+    }
+    return (
+      <span className="font-medium">
+        {formValue}
+        {unit}
+      </span>
+    );
+  };
+
+  if (isEditing) {
+    return (
+      <div className="w-full rounded-lg space-y-3">
+        <ClusterUpdateForm
+          key={`resource-edit-${target.name}`}
+          defaultValues={{
+            name: parsedClusterObject?.name || target.name!,
+            resource: {
+              cpu: objectNumeric.cpu.nearest,
+              memory: objectNumeric.memory.nearest,
+              storage: objectNumeric.storage.nearest,
+              replicas: resourceData?.replicas || 1,
+            },
+          }}
+          onSubmit={handleFormSubmit}
+          isLoading={isUpdating}
+          hideDefaultButton={true}
+        />
+        
+        {/* Cancel and Confirm Buttons */}
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex-1"
+            onClick={() => setIsEditing(false)}
+            disabled={isUpdating}
+          >
+            Cancel
+          </Button>
+          <Button 
+            type="submit"
+            form="cluster-update-form"
+            variant="default" 
+            size="sm" 
+            className="flex-1"
+            disabled={isUpdating}
+          >
+            {isUpdating ? "Updating..." : "Confirm"}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full rounded-lg">
-      <div className="border border-dashed rounded-lg">
-        <div className="flex items-center justify-between p-2 border-b border-dashed">
-          <h3 className="font-medium">Resource Configuration</h3>
-          {isResourceEditing ? (
-            <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 w-8"
-                onClick={() => setIsResourceEditing(false)}
-                disabled={isLoading}
-              >
-                <X />
-              </Button>
-              <Button
-                type="submit"
-                form="cluster-resource-form"
-                variant="outline"
-                size="sm"
-                className="h-8 w-8"
-                onClick={() => form.handleSubmit(handleResourceSubmit)()}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <Spinner variant="bars" className="h-4 w-4" />
-                ) : (
-                  <Check />
-                )}
-              </Button>
+    <div className="w-full rounded-lg space-y-3">
+      {/* Resource Values Display */}
+      <div className="flex items-center border p-2 rounded-lg justify-around">
+        <div className="flex items-center gap-2">
+          <Cpu className="h-6 w-6" />
+          <div className="flex flex-col">
+            <div className="text-xs text-muted-foreground">CPU</div>
+            <div className="text-sm font-medium">
+              {objectNumeric.cpu.nearest}Core
             </div>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 w-8"
-              onClick={() => setIsResourceEditing(true)}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <Spinner variant="bars" className="h-4 w-4" />
-              ) : (
-                <PenLine />
-              )}
-            </Button>
-          )}
+          </div>
         </div>
-        <div className={`${isResourceEditing ? "p-4" : "p-2"}`}>
-          {isResourceEditing ? (
-            <FormProvider {...form}>
-              <form id="cluster-resource-form" onSubmit={form.handleSubmit(handleResourceSubmit)}>
-                <ClusterResourceConfiguration form={form} />
-              </form>
-            </FormProvider>
-          ) : (
-            <div className="flex items-center justify-around">
-              <div className="flex flex-col items-center gap-1">
-                <div className="text-sm text-muted-foreground">CPU</div>
-                <Cpu className="h-4 w-4 text-muted-foreground" />
-                <div className="text-sm font-medium">
-                  {resourceData?.cpu ? `${resourceData.cpu}Core` : "N/A"}
-                </div>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <div className="text-sm text-muted-foreground">Memory</div>
-                <MemoryStick className="h-4 w-4 text-muted-foreground" />
-                <div className="text-sm font-medium">
-                  {resourceData?.memory ? `${resourceData.memory}GB` : "N/A"}
-                </div>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <div className="text-sm text-muted-foreground">Storage</div>
-                <HardDrive className="h-4 w-4 text-muted-foreground" />
-                <div className="text-sm font-medium">
-                  {resourceData?.storage ? `${resourceData.storage}GB` : "N/A"}
-                </div>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <div className="text-sm text-muted-foreground">Replicas</div>
-                <Layers className="h-4 w-4 text-muted-foreground" />
-                <div className="text-sm font-medium">
-                  {resourceData?.replicas ? resourceData.replicas.toString() : "N/A"}
-                </div>
-              </div>
+        <div className="flex items-center gap-2">
+          <MemoryStick className="h-6 w-6" />
+          <div className="flex flex-col">
+            <div className="text-xs text-muted-foreground">Memory</div>
+            <div className="text-sm font-medium">
+              {objectNumeric.memory.nearest}GB
             </div>
-          )}
+          </div>
         </div>
+        <div className="flex items-center gap-2">
+          <HardDrive className="h-6 w-6" />
+          <div className="flex flex-col">
+            <div className="text-xs text-muted-foreground">Storage</div>
+            <div className="text-sm font-medium">
+              {objectNumeric.storage.nearest}GB
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Layers className="h-6 w-6" />
+          <div className="flex flex-col">
+            <div className="text-xs text-muted-foreground">Replicas</div>
+            <div className="text-sm font-medium">
+              {resourceData?.replicas || 1}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Monitor Chart */}
+      <MonitorChart target={target} />
+
+      {/* Edit Button - Full Row */}
+      <div className="w-full">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="w-full"
+          onClick={() => setIsEditing(true)}
+        >
+          Edit Resources
+        </Button>
       </div>
     </div>
   );
@@ -157,9 +205,16 @@ export const ResourceQuotaSection: React.FC<ResourceQuotaSectionProps> = ({
     ? null 
     : parsedClusterObject.resource;
 
+  // Convert K8s resource strings to numeric for display
+  const objectNumeric = convertK8sResourceToNumeric({
+    cpu: resourceData?.cpu,
+    memory: resourceData?.memory,
+    storage: resourceData?.storage,
+  });
+
   return (
     <div
-      className="p-2 border rounded-lg cursor-pointer hover:bg-background-secondary transition-colors"
+      className="p-2 border rounded-lg cursor-pointer hover:bg-background-tertiary transition-colors"
       onClick={onSectionClick}
     >
       <div className="flex gap-2">
@@ -169,7 +224,7 @@ export const ResourceQuotaSection: React.FC<ResourceQuotaSectionProps> = ({
           <div className="flex flex-col">
             <span className="font-medium text-sm">CPU</span>
             <span className="text-xs text-muted-foreground">
-              {resourceData?.cpu ? `${resourceData.cpu}Core` : "N/A"}
+              {objectNumeric.cpu.nearest}Core
             </span>
           </div>
         </div>
@@ -180,7 +235,29 @@ export const ResourceQuotaSection: React.FC<ResourceQuotaSectionProps> = ({
           <div className="flex flex-col">
             <span className="font-medium text-sm">Memory</span>
             <span className="text-xs text-muted-foreground">
-              {resourceData?.memory ? `${resourceData.memory}GB` : "N/A"}
+              {objectNumeric.memory.nearest}GB
+            </span>
+          </div>
+        </div>
+
+        {/* Storage */}
+        <div className="flex-1 flex items-center gap-2">
+          <HardDrive className="h-5 w-5" />
+          <div className="flex flex-col">
+            <span className="font-medium text-sm">Storage</span>
+            <span className="text-xs text-muted-foreground">
+              {objectNumeric.storage.nearest}GB
+            </span>
+          </div>
+        </div>
+
+        {/* Replicas */}
+        <div className="flex-1 flex items-center gap-2">
+          <Layers className="h-5 w-5" />
+          <div className="flex flex-col">
+            <span className="font-medium text-sm">Replicas</span>
+            <span className="text-xs text-muted-foreground">
+              {resourceData?.replicas || 1}
             </span>
           </div>
         </div>

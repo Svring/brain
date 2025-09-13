@@ -34,7 +34,7 @@ export const ResourceFields = ({
   const resourceValues = form.watch("resource");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2 px-2">
       {/* CPU Options - only show if cpu value is defined */}
       {resourceValues?.cpu !== undefined && (
         <FormField
@@ -62,23 +62,13 @@ export const ResourceFields = ({
                     className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
                     aria-label="CPU slider"
                   />
-                  <div className="relative">
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      {cpuOptions.map((cpu, index) => {
-                        const position =
-                          (index / (cpuOptions.length - 1)) * 100;
-                        return (
-                          <span
-                            key={cpu}
-                            className="absolute text-center transform -translate-x-1/4"
-                            style={{ left: `${position}%` }}
-                          >
-                            {cpu}C
-                          </span>
-                        );
-                      })}
-                    </div>
-                    <div className="h-4"></div> {/* Spacer for labels */}
+                  <div className="flex justify-between">
+                    <span className="text-xs text-muted-foreground">
+                      {cpuOptions[0]}C
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {cpuOptions[cpuOptions.length - 1]}C
+                    </span>
                   </div>
                 </div>
                 <FormMessage />
@@ -115,23 +105,13 @@ export const ResourceFields = ({
                     className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
                     aria-label="Memory slider"
                   />
-                  <div className="relative">
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      {memoryOptions.map((memory, index) => {
-                        const position =
-                          (index / (memoryOptions.length - 1)) * 100;
-                        return (
-                          <span
-                            key={memory}
-                            className="absolute text-center transform -translate-x-1/4"
-                            style={{ left: `${position}%` }}
-                          >
-                            {memory}G
-                          </span>
-                        );
-                      })}
-                    </div>
-                    <div className="h-4"></div> {/* Spacer for labels */}
+                  <div className="flex justify-between">
+                    <span className="text-xs text-muted-foreground">
+                      {memoryOptions[0]}G
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {memoryOptions[memoryOptions.length - 1]}G
+                    </span>
                   </div>
                 </div>
                 <FormMessage />
@@ -168,23 +148,13 @@ export const ResourceFields = ({
                     className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
                     aria-label="Storage slider"
                   />
-                  <div className="relative">
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      {storageOptions.map((storage, index) => {
-                        const position =
-                          (index / (storageOptions.length - 1)) * 100;
-                        return (
-                          <span
-                            key={storage}
-                            className="absolute text-center transform -translate-x-1/4"
-                            style={{ left: `${position}%` }}
-                          >
-                            {storage}G
-                          </span>
-                        );
-                      })}
-                    </div>
-                    <div className="h-4"></div> {/* Spacer for labels */}
+                  <div className="flex justify-between">
+                    <span className="text-xs text-muted-foreground">
+                      {storageOptions[0]}G
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {storageOptions[storageOptions.length - 1]}G
+                    </span>
                   </div>
                 </div>
                 <FormMessage />
@@ -222,23 +192,13 @@ export const ResourceFields = ({
                     className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
                     aria-label="Replicas slider"
                   />
-                  <div className="relative">
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      {replicasOptions.map((replica, index) => {
-                        const position =
-                          (index / (replicasOptions.length - 1)) * 100;
-                        return (
-                          <span
-                            key={replica}
-                            className="absolute text-center transform -translate-x-1/4"
-                            style={{ left: `${position}%` }}
-                          >
-                            {replica}
-                          </span>
-                        );
-                      })}
-                    </div>
-                    <div className="h-4"></div> {/* Spacer for labels */}
+                  <div className="flex justify-between">
+                    <span className="text-xs text-muted-foreground">
+                      {replicasOptions[0]}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {replicasOptions[replicasOptions.length - 1]}
+                    </span>
                   </div>
                 </div>
                 <FormMessage />
