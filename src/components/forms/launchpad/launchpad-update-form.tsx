@@ -98,7 +98,6 @@ export const LaunchpadUpdateForm = ({
       }
     }
 
-    console.log("filtered data", filteredData);
     onSubmit(filteredData as LaunchpadUpdateFormData);
   };
 

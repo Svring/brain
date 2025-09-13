@@ -221,16 +221,12 @@ export const Configuration: React.FC<ConfigurationProps> = ({
           onClose={handleDialogClose}
           fieldType="commandArgs"
           fieldTitle="Command & Arguments"
-          defaultValues={
-            command || args
-              ? {
-                  launchCommand: {
-                    command: command || "",
-                    args: args || "",
-                  },
-                }
-              : {}
-          }
+          defaultValues={{
+            launchCommand: {
+              command: command || "",
+              args: args || "",
+            },
+          }}
           onSubmit={(data) => handleFieldSubmit("commandArgs", data)}
           isLoading={isLoading}
         />

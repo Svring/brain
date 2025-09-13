@@ -26,10 +26,7 @@ export const useLaunchpadUpdate = (options: UseLaunchpadUpdateOptions = {}) => {
 
       // Invalidate relevant queries
       const target = convertResourceTypeToTarget("deployment", variables.name);
-      invalidateQueries([
-        launchpad.list.queryKey(),
-        launchpad.get.queryKey(target as any),
-      ]);
+      invalidateQueries([launchpad.list.queryKey(), launchpad.get.queryKey()]);
     },
     onError: (error: any, variables) => {
       const message =

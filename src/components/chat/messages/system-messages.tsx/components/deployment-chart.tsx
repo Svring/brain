@@ -67,7 +67,7 @@ const DeploymentItem: React.FC<{
 
   return (
     <div
-      className="border rounded-lg p-2 hover:brightness-150 transition-colors cursor-pointer"
+      className="border rounded-lg p-2 transition-colors"
       onClick={handleClick}
     >
       <div className="flex items-center justify-between gap-2">
@@ -84,7 +84,7 @@ const DeploymentItem: React.FC<{
         </div>
         <div className="flex items-center gap-1">
           {/* Update button */}
-          <Button
+          {/* <Button
             size="sm"
             variant="ghost"
             className="p-0 border border-border-primary bg-background-tertiary hover:brightness-150"
@@ -98,7 +98,7 @@ const DeploymentItem: React.FC<{
               <ArrowBigUpDash className="h-3 w-3" />
             )}
             Update
-          </Button>
+          </Button> */}
           {/* Delete button */}
           <Button
             variant="destructive"
@@ -267,22 +267,22 @@ export const DeploymentChart: React.FC<DeploymentChartProps> = ({
               }
               onUpdate={handleUpdateDeployment}
               isUpdating={updatingDeploymentId === deployment.metadata?.name}
-              onClick={(deploymentName) => {
-                // Find the deployment object to get its kind
-                const deploymentObj = deployments.find(
-                  (d) => d.metadata?.name === deploymentName
-                );
-                const resourceKind =
-                  deploymentObj?.kind?.toLowerCase() || "deployment";
-                const deploymentTarget = convertResourceTypeToTarget(
-                  resourceKind,
-                  deploymentName
-                );
-                appendSystemMessageMutation.mutate({
-                  type: "launchpad.detail",
-                  target: deploymentTarget,
-                });
-              }}
+              // onClick={(deploymentName) => {
+              //   // Find the deployment object to get its kind
+              //   const deploymentObj = deployments.find(
+              //     (d) => d.metadata?.name === deploymentName
+              //   );
+              //   const resourceKind =
+              //     deploymentObj?.kind?.toLowerCase() || "deployment";
+              //   const deploymentTarget = convertResourceTypeToTarget(
+              //     resourceKind,
+              //     deploymentName
+              //   );
+              //   appendSystemMessageMutation.mutate({
+              //     type: "launchpad.detail",
+              //     target: deploymentTarget,
+              //   });
+              // }}
             />
           ))}
         </div>
