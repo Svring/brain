@@ -31,6 +31,8 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
     enabled: isProduction && !isLoaded,
   });
 
+  // console.log("aiProxyTokens", aiProxyTokens);
+
   const brainToken = aiProxyTokens?.tokens?.find(
     (token) => token.name === "brain"
   );

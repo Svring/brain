@@ -34,7 +34,11 @@ export const LaunchCommandFields = () => {
           <FormItem>
             <FormLabel>Command</FormLabel>
             <FormControl>
-              <Input placeholder="nginx -g 'daemon off;'" {...field} />
+              <Input 
+                placeholder="nginx -g 'daemon off;'" 
+                {...field} 
+                value={field.value || ""}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -48,7 +52,11 @@ export const LaunchCommandFields = () => {
           <FormItem>
             <FormLabel>Arguments</FormLabel>
             <FormControl>
-              <Input placeholder="-c /etc/nginx/nginx.conf" {...field} />
+              <Input 
+                placeholder="-c /etc/nginx/nginx.conf" 
+                {...field} 
+                value={field.value || ""}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>

@@ -36,38 +36,15 @@ export const Configuration: React.FC<ConfigurationProps> = ({
         };
         break;
       case "env":
-        // Preserve existing env vars and merge with new ones
-        const currentEnvObj = (envVars || []).reduce(
-          (acc: Record<string, any>, envVar: any) => {
-            if (envVar.name) {
-              acc[envVar.name] = {
-                name: envVar.name,
-                value: envVar.value,
-                valueFrom: envVar.valueFrom,
-              };
-            }
-            return acc;
-          },
-          {}
-        );
-
-        const newEnvObj = (data.env || []).reduce(
-          (acc: Record<string, any>, envVar: any) => {
-            if (envVar.name) {
-              acc[envVar.name] = {
-                name: envVar.name,
-                value: envVar.value,
-                valueFrom: envVar.valueFrom,
-              };
-            }
-            return acc;
-          },
-          {}
-        );
-
-        const mergedEnv = { ...currentEnvObj, ...newEnvObj };
+        // Use dialog-provided env as the source of truth; filter invalid entries
         updateData = {
-          env: Object.values(mergedEnv),
+          env: (data.env || [])
+            .filter((envVar: any) => envVar?.name && envVar.name.trim() !== "")
+            .map((envVar: any) => ({
+              name: envVar.name,
+              value: envVar.value,
+              valueFrom: envVar.valueFrom,
+            })),
         };
         break;
       case "storage":
@@ -80,11 +57,11 @@ export const Configuration: React.FC<ConfigurationProps> = ({
         };
         break;
       case "configMap":
-        // Transform back to the expected format
+        // Transform back to the expected format (use value, not content)
         updateData = {
           configMap: (data.configMap || []).map((item: any) => ({
             path: item.path || "",
-            content: item.value || "",
+            value: item.value || "",
           })),
         };
         break;
@@ -244,12 +221,16 @@ export const Configuration: React.FC<ConfigurationProps> = ({
           onClose={handleDialogClose}
           fieldType="commandArgs"
           fieldTitle="Command & Arguments"
-          defaultValues={{
-            launchCommand: {
-              command: command || "",
-              args: args || "",
-            },
-          }}
+          defaultValues={
+            command || args
+              ? {
+                  launchCommand: {
+                    command: command || "",
+                    args: args || "",
+                  },
+                }
+              : {}
+          }
           onSubmit={(data) => handleFieldSubmit("commandArgs", data)}
           isLoading={isLoading}
         />

@@ -38,11 +38,14 @@ export function FlowgraphBreadcrumb({ projectName }: FlowgraphHeaderProps) {
   const { project } = useTRPCClients();
   const { projects } = useProjectSearch();
 
-  const { data: projectData } = useQuery(
-    project.get.queryOptions(projectName)
-  );
+  const { data: projectData } = useQuery(project.get.queryOptions(projectName));
 
-  const { isRenameDialogOpen, handleRename, handleRenameConfirm, handleRenameCancel } = useProjectRename({
+  const {
+    isRenameDialogOpen,
+    handleRename,
+    handleRenameConfirm,
+    handleRenameCancel,
+  } = useProjectRename({
     projectName,
     currentDisplayName: projectData?.displayName || projectName,
   });
@@ -96,27 +99,33 @@ export function FlowgraphBreadcrumb({ projectName }: FlowgraphHeaderProps) {
                       <p>Rename</p>
                     </TooltipContent>
                   </Tooltip>
-                  {projects && projects.filter((proj) => proj.name !== projectName).length > 0 && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                          <ChevronDown className="h-3 w-3" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="">
-                        {projects
-                          ?.filter((proj) => proj.name !== projectName)
-                          .map((proj) => (
-                            <DropdownMenuItem
-                              key={proj.name}
-                              onClick={() => handleProjectSelect(proj.name)}
-                            >
-                              {proj.displayName || proj.name}
-                            </DropdownMenuItem>
-                          ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
+                  {projects &&
+                    projects.filter((proj) => proj.name !== projectName)
+                      .length > 0 && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0"
+                          >
+                            <ChevronDown className="h-3 w-3" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="">
+                          {projects
+                            ?.filter((proj) => proj.name !== projectName)
+                            .map((proj) => (
+                              <DropdownMenuItem
+                                key={proj.name}
+                                onClick={() => handleProjectSelect(proj.name)}
+                              >
+                                {proj.displayName || proj.name}
+                              </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                 </div>
               </BreadcrumbItem>
             </BreadcrumbList>

@@ -37,6 +37,8 @@ export const LaunchpadUpdateForm = ({
   } = useLaunchpadUpdateForm(defaultValues);
 
   const handleSubmit = (data: LaunchpadUpdateFormData) => {
+    console.log("Raw form data before filtering:", JSON.stringify(data, null, 2));
+    
     // Filter out empty arrays and undefined values to only submit relevant fields
     const filteredData = Object.entries(data).reduce((acc, [key, value]) => {
       // Only include the field if it has a meaningful value
@@ -44,7 +46,35 @@ export const LaunchpadUpdateForm = ({
         // For arrays, only include if they have items
         if (Array.isArray(value)) {
           if (value.length > 0) {
-            (acc as any)[key] = value;
+            // Special handling for env array - filter out items with empty names
+            if (key === "env") {
+              const validEnvVars = value.filter((env: any) => 
+                env && env.name && env.name.trim() !== ""
+              );
+              if (validEnvVars.length > 0) {
+                (acc as any)[key] = validEnvVars;
+              }
+            } 
+            // Special handling for configMap array - filter out items with empty paths
+            else if (key === "configMap") {
+              const validConfigMaps = value.filter((configMap: any) => 
+                configMap && configMap.path && configMap.path.trim() !== ""
+              );
+              if (validConfigMaps.length > 0) {
+                (acc as any)[key] = validConfigMaps;
+              }
+            } 
+            // Special handling for storage array - filter out items with empty paths  
+            else if (key === "storage") {
+              const validStorage = value.filter((storage: any) => 
+                storage && storage.path && storage.path.trim() !== ""
+              );
+              if (validStorage.length > 0) {
+                (acc as any)[key] = validStorage;
+              }
+            } else {
+              (acc as any)[key] = value;
+            }
           }
         } else {
           // For objects, only include if they have properties

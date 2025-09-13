@@ -25,7 +25,7 @@ export const EnvFields = ({ fieldArray }: EnvFieldsProps) => {
   // Watch the entire env array to force re-renders when any env var changes
   const envVars = form.watch("env");
 
-  // Clean up empty env array
+  // Clean up empty env array - let useFieldArray handle the state
   useEffect(() => {
     if (envVars && Array.isArray(envVars) && envVars.length === 0) {
       form.unregister("env");

@@ -34,7 +34,7 @@ export const AdvancedConfigPopoverContent: React.FC<{
   const handleSubmit = async (type: string, data?: any) => {
     setUpdatingField(type);
 
-    const updateRequest = { name: target.name!, request: data };
+    const updateRequest = { name: target.name!, ...data };
 
     await updateLaunchpad.mutateAsync(updateRequest, {
       onSuccess: () => {
@@ -81,13 +81,15 @@ export const AdvancedConfigSection: React.FC<AdvancedConfigSectionProps> = ({
     : null;
 
   // Count configuration items
-  const commandCount = parsedLaunchpadObject?.launchCommand?.command?.length || 0;
+  const commandCount =
+    parsedLaunchpadObject?.launchCommand?.command?.length || 0;
   const argsCount = parsedLaunchpadObject?.launchCommand?.args?.length || 0;
   const envCount = parsedLaunchpadObject?.env?.length || 0;
   const configMapCount = parsedLaunchpadObject?.configMap?.length || 0;
   const storageCount = parsedLaunchpadObject?.localStorage?.length || 0;
 
-  const totalConfigItems = commandCount + argsCount + envCount + configMapCount + storageCount;
+  const totalConfigItems =
+    commandCount + argsCount + envCount + configMapCount + storageCount;
 
   return (
     <div

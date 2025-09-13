@@ -49,14 +49,6 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             {parsedLaunchpadObject?.operationalStatus?.createdAt || "Unknown"}
           </span>
         </div>
-
-        {/* Status */}
-        <div className="flex-1 flex flex-col">
-          <span className="font-medium text-sm">Status</span>
-          <span className="text-xs text-muted-foreground truncate">
-            {getUptime(parsedLaunchpadObject?.status || "")}
-          </span>
-        </div>
       </div>
     </div>
   );

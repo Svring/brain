@@ -4,12 +4,14 @@ import { Form } from "@/components/ui/form";
 import { useLaunchpadUpdateForm } from "@/hooks/forms/launchpad/use-launchpad-update-form";
 import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
 import { LaunchpadDeploymentFields } from "./launchpad-deployment-fields";
+import { useState } from "react";
 
 interface LaunchpadDeploymentUpdateFormProps {
   defaultValues?: Partial<LaunchpadUpdateFormData>;
   onSubmit: (data: LaunchpadUpdateFormData) => void;
   isLoading?: boolean;
   formId?: string;
+  initialScalingMode?: "replicas" | "hpa";
 }
 
 export const LaunchpadDeploymentUpdateForm = ({
@@ -17,34 +19,45 @@ export const LaunchpadDeploymentUpdateForm = ({
   onSubmit,
   isLoading = false,
   formId = "launchpad-deployment-update-form",
+  initialScalingMode = "replicas",
 }: LaunchpadDeploymentUpdateFormProps) => {
   const { form } = useLaunchpadUpdateForm(defaultValues);
+  const [scalingMode, setScalingMode] = useState<"replicas" | "hpa">(initialScalingMode);
 
   const handleSubmit = (data: LaunchpadUpdateFormData) => {
-    // Filter out empty arrays and undefined values to only submit relevant fields
-    const filteredData = Object.entries(data).reduce((acc, [key, value]) => {
-      // Only include the field if it has a meaningful value
-      if (value !== undefined && value !== null) {
-        // For arrays, only include if they have items
-        if (Array.isArray(value)) {
-          if (value.length > 0) {
-            (acc as any)[key] = value;
-          }
-        } else {
-          // For objects, only include if they have properties
-          if (typeof value === "object" && Object.keys(value).length > 0) {
-            (acc as any)[key] = value;
-          } else if (typeof value !== "object") {
-            // For primitives, include if they have a value
-            (acc as any)[key] = value;
-          }
+    // Create a filtered data object that only includes the relevant scaling field
+    const filteredData: LaunchpadUpdateFormData = {
+      name: data.name,
+    };
+
+    // Only include the resource field if it exists
+    if (data.resource) {
+      filteredData.resource = {};
+
+      // Based on the current scaling mode, only submit the relevant field
+      if (scalingMode === "replicas") {
+        // Only submit replicas, exclude hpa
+        if (data.resource.replicas !== undefined) {
+          filteredData.resource.replicas = data.resource.replicas;
+        }
+      } else if (scalingMode === "hpa") {
+        // Only submit hpa, exclude replicas
+        if (data.resource.hpa !== undefined && data.resource.hpa !== null) {
+          filteredData.resource.hpa = data.resource.hpa;
         }
       }
-      return acc;
-    }, {} as Record<string, any>);
+
+      // Always include cpu and memory if they exist
+      if (data.resource.cpu !== undefined) {
+        filteredData.resource.cpu = data.resource.cpu;
+      }
+      if (data.resource.memory !== undefined) {
+        filteredData.resource.memory = data.resource.memory;
+      }
+    }
 
     console.log("filtered deployment data", filteredData);
-    onSubmit(filteredData as LaunchpadUpdateFormData);
+    onSubmit(filteredData);
   };
 
   // Only show deployment fields (replicas and hpa)
@@ -57,7 +70,12 @@ export const LaunchpadDeploymentUpdateForm = ({
         onSubmit={form.handleSubmit(handleSubmit)}
         className="space-y-6"
       >
-        {hasResource && <LaunchpadDeploymentFields />}
+        {hasResource && (
+          <LaunchpadDeploymentFields 
+            scalingMode={scalingMode}
+            onScalingModeChange={setScalingMode}
+          />
+        )}
       </form>
     </Form>
   );

@@ -12,16 +12,19 @@ import { LaunchpadResourceUpdate } from "@/schemas/forms/launchpad/components/la
 import { Slider } from "@/components/ui/slider";
 import { HpaFields } from "../universal/hpa-fields";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 
-interface LaunchpadDeploymentFieldsProps {}
+interface LaunchpadDeploymentFieldsProps {
+  scalingMode: "replicas" | "hpa";
+  onScalingModeChange: (mode: "replicas" | "hpa") => void;
+}
 
-export const LaunchpadDeploymentFields = ({}: LaunchpadDeploymentFieldsProps = {}) => {
+export const LaunchpadDeploymentFields = ({
+  scalingMode,
+  onScalingModeChange,
+}: LaunchpadDeploymentFieldsProps) => {
   const form = useFormContext<{ resource: LaunchpadResourceUpdate }>();
   const resourceValues = form.watch("resource");
-  const [scalingMode, setScalingMode] = useState<"replicas" | "hpa">(
-    "replicas"
-  );
 
   // Watch hpa field and clean up when null
   const hpaValue = form.watch("resource.hpa");
@@ -54,7 +57,7 @@ export const LaunchpadDeploymentFields = ({}: LaunchpadDeploymentFieldsProps = {
           <Tabs
             value={scalingMode}
             onValueChange={(value) =>
-              setScalingMode(value as "replicas" | "hpa")
+              onScalingModeChange(value as "replicas" | "hpa")
             }
           >
             <TabsList className="grid w-full grid-cols-2">

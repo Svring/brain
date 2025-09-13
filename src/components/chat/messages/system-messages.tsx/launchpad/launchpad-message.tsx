@@ -48,20 +48,7 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
     error,
   } = useQuery(launchpad.get.queryOptions(target));
 
-  const actions: MessageAction[] = launchpadObjectData
-    ? [
-        {
-          icon: Globe,
-          label: "Ports",
-          onClick: () => {
-            appendSystemMessageMutation.mutate({
-              type: "launchpad.network",
-              target,
-            });
-          },
-        },
-      ]
-    : [];
+  const actions: MessageAction[] = [];
 
   // Handle section click
   const handleSectionClick = (section: ActiveSection) => {

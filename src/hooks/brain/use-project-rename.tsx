@@ -11,7 +11,10 @@ interface UseProjectRenameProps {
   currentDisplayName: string;
 }
 
-export function useProjectRename({ projectName, currentDisplayName }: UseProjectRenameProps) {
+export function useProjectRename({
+  projectName,
+  currentDisplayName,
+}: UseProjectRenameProps) {
   const { project } = useTRPCClients();
   const { invalidateQueries } = useInvalidateQueries();
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
@@ -19,7 +22,10 @@ export function useProjectRename({ projectName, currentDisplayName }: UseProject
   const renameProjectMutation = useMutation(
     project.updateName.mutationOptions({
       onSuccess: () => {
-        invalidateQueries([project.list.queryKey()]);
+        invalidateQueries([
+          project.list.queryKey(),
+          project.get.queryKey(),
+        ]);
         toast.success("Project renamed successfully");
         setIsRenameDialogOpen(false);
       },

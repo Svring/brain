@@ -13,7 +13,7 @@ export const useLaunchpadUpdateForm = (
 ) => {
   const form = useForm<LaunchpadUpdateFormData>({
     resolver: zodResolver(launchpadUpdateFormSchema),
-    defaultValues,
+    defaultValues: defaultValues || {},
     mode: "onChange",
   });
 

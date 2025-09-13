@@ -129,7 +129,7 @@ export const useAppendSystemMessageMutation = () => {
             },
           ];
 
-      console.log("newMessages", newMessages);
+      // console.log("newMessages", newMessages);
 
       setMessages(newMessages);
       openSidebarChat();

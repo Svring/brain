@@ -11,6 +11,7 @@ import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-upd
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useLaunchpadUpdate } from "@/hooks/sealos/launchpad/use-launchpad-update";
 
 interface DeploymentSectionProps {
   target: BuiltinResourceTarget;
@@ -27,30 +28,25 @@ export const DeploymentPopoverContent: React.FC<{
     ? LaunchpadObjectSchema.parse(launchpadResource)
     : null;
 
-  const queryClient = useQueryClient();
-  const { launchpad } = useTRPCClients();
-
-  const updateLaunchpad = useMutation(launchpad.update.mutationOptions());
+  const { updateLaunchpad, isLoading: isUpdating } = useLaunchpadUpdate({
+    onSuccess: () => {
+      setIsEditing(false);
+    },
+    onError: () => {
+      // Error handling is already done in the hook
+    },
+  });
 
   const handleFormSubmit = async (data: LaunchpadUpdateFormData) => {
     try {
-      const updateRequest = { name: target.name!, request: data };
-      await updateLaunchpad.mutateAsync(updateRequest, {
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: launchpad.get.queryKey(target),
-          });
-          toast.success("Launchpad updated successfully!");
-          setIsEditing(false);
-        },
-        onError: () => {
-          toast.error("Failed to update launchpad");
-        },
-      });
+      console.log("Updating launchpad deployment:", data);
+      await updateLaunchpad(data);
     } catch (error) {
       console.error("Error updating launchpad deployment:", error);
     }
   };
+
+  console.log("parsedLaunchpadObject", parsedLaunchpadObject);
 
   if (isEditing) {
     return (
@@ -60,93 +56,119 @@ export const DeploymentPopoverContent: React.FC<{
           defaultValues={{
             name: parsedLaunchpadObject?.name || target.name!,
             resource: {
-              replicas: parsedLaunchpadObject?.resource?.replicas || 1,
-              hpa: parsedLaunchpadObject?.strategy ? {
-                target: (parsedLaunchpadObject.strategy.threshold?.resource as "cpu" | "memory" | "gpu") || "cpu",
-                value: parsedLaunchpadObject.strategy.threshold?.usage || 70,
-                minReplicas: parsedLaunchpadObject.strategy.minReplicas || 1,
-                maxReplicas: parsedLaunchpadObject.strategy.maxReplicas || 10,
-              } : null,
+              replicas: parsedLaunchpadObject?.resource?.replicas,
+              hpa: parsedLaunchpadObject?.strategy
+                ? {
+                    target:
+                      (parsedLaunchpadObject.strategy.threshold?.resource as
+                        | "cpu"
+                        | "memory"
+                        | "gpu") || "cpu",
+                    value:
+                      parsedLaunchpadObject.strategy.threshold?.usage || 70,
+                    minReplicas:
+                      parsedLaunchpadObject.strategy.minReplicas || 1,
+                    maxReplicas:
+                      parsedLaunchpadObject.strategy.maxReplicas || 10,
+                  }
+                : undefined,
             },
           }}
+          initialScalingMode={
+            parsedLaunchpadObject?.strategy?.type === "flexible"
+              ? "hpa"
+              : "replicas"
+          }
           onSubmit={handleFormSubmit}
-          isLoading={updateLaunchpad.isPending}
+          isLoading={isUpdating}
         />
-        
+
         {/* Cancel and Confirm Buttons */}
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="flex-1"
             onClick={() => setIsEditing(false)}
-            disabled={updateLaunchpad.isPending}
+            disabled={isUpdating}
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             type="submit"
             form="launchpad-deployment-update-form"
-            variant="default" 
-            size="sm" 
+            variant="default"
+            size="sm"
             className="flex-1"
-            disabled={updateLaunchpad.isPending}
+            disabled={isUpdating}
           >
-            {updateLaunchpad.isPending ? "Updating..." : "Confirm"}
+            {isUpdating ? "Updating..." : "Confirm"}
           </Button>
         </div>
       </div>
     );
   }
 
+  const getModeDisplay = () => {
+    if (parsedLaunchpadObject?.strategy?.type === "flexible") {
+      return "Flexible";
+    }
+    return "Fixed";
+  };
+
+  const getReplicasDisplay = () => {
+    if (parsedLaunchpadObject?.strategy?.type === "flexible") {
+      return `${parsedLaunchpadObject.strategy.minReplicas || 1}-${
+        parsedLaunchpadObject.strategy.maxReplicas || 10
+      }`;
+    }
+    return parsedLaunchpadObject?.resource?.replicas || 1;
+  };
+
   return (
     <div className="w-full rounded-lg space-y-3">
-      {/* Replicas and Strategy Display */}
-      <div className="flex items-center border p-2 rounded-lg justify-around">
-        <div className="flex items-center gap-2">
-          <Users className="h-6 w-6" />
-          <div className="flex flex-col">
-            <div className="text-xs text-muted-foreground">Replicas</div>
-            <div className="text-sm font-medium">
-              {parsedLaunchpadObject?.resource?.replicas || 1}
-            </div>
+      {/* Deployment Display */}
+      <div className="flex items-center justify-around">
+        {/* Mode */}
+        <div className="flex flex-col items-center gap-1">
+          <div className="text-sm text-muted-foreground">Mode</div>
+          <div className="text-sm font-medium capitalize">
+            {getModeDisplay()}
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <TrendingUp className="h-6 w-6" />
-          <div className="flex flex-col">
-            <div className="text-xs text-muted-foreground">Strategy</div>
-            <div className="text-sm font-medium">
-              {parsedLaunchpadObject?.strategy?.type || "Fixed"}
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Strategy Details */}
-      {parsedLaunchpadObject?.strategy && (
-        <div className="p-2 bg-background-tertiary rounded-lg">
-          <div className="text-xs text-muted-foreground mb-1">Strategy Details</div>
-          {parsedLaunchpadObject.strategy.type === "flexible" && (
-            <div className="text-xs space-y-1">
-              <div>Min: {parsedLaunchpadObject.strategy.minReplicas || 1}</div>
-              <div>Max: {parsedLaunchpadObject.strategy.maxReplicas || 10}</div>
-              {parsedLaunchpadObject.strategy.threshold && (
-                <div>
-                  Threshold: {parsedLaunchpadObject.strategy.threshold.usage}% 
-                  ({parsedLaunchpadObject.strategy.threshold.resource})
-                </div>
-              )}
-            </div>
-          )}
+        {/* Replicas */}
+        <div className="flex flex-col items-center gap-1">
+          <div className="text-sm text-muted-foreground">Replicas</div>
+          <div className="text-sm font-medium">{getReplicasDisplay()}</div>
         </div>
-      )}
+
+        {/* Flexible Strategy Details */}
+        {parsedLaunchpadObject?.strategy?.type === "flexible" && (
+          <>
+            <div className="flex flex-col items-center gap-1">
+              <div className="text-sm text-muted-foreground">Target</div>
+              <div className="text-sm font-medium capitalize">
+                {parsedLaunchpadObject.strategy.threshold?.resource || "CPU"}
+              </div>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <div className="text-sm text-muted-foreground">Threshold</div>
+              <div className="text-sm font-medium">
+                {parsedLaunchpadObject.strategy.threshold?.usage
+                  ? `${parsedLaunchpadObject.strategy.threshold.usage}%`
+                  : "N/A"}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
 
       {/* Edit Button - Full Row */}
       <div className="w-full">
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           className="w-full"
           onClick={() => setIsEditing(true)}
         >
@@ -166,8 +188,21 @@ export const DeploymentSection: React.FC<DeploymentSectionProps> = ({
     ? LaunchpadObjectSchema.parse(launchpadResource)
     : null;
 
-  const replicas = parsedLaunchpadObject?.resource?.replicas || 1;
-  const strategyType = parsedLaunchpadObject?.strategy?.type || "Fixed";
+  const getModeDisplay = () => {
+    if (parsedLaunchpadObject?.strategy?.type === "flexible") {
+      return "Flexible";
+    }
+    return "Fixed";
+  };
+
+  const getReplicasDisplay = () => {
+    if (parsedLaunchpadObject?.strategy?.type === "flexible") {
+      return `${parsedLaunchpadObject.strategy.minReplicas || 1}-${
+        parsedLaunchpadObject.strategy.maxReplicas || 10
+      }`;
+    }
+    return parsedLaunchpadObject?.resource?.replicas || 1;
+  };
 
   return (
     <div
@@ -175,27 +210,24 @@ export const DeploymentSection: React.FC<DeploymentSectionProps> = ({
       onClick={onSectionClick}
     >
       <div className="flex gap-2">
+        {/* Mode */}
+        <div className="flex-1 flex items-center gap-2">
+          <TrendingUp className="h-5 w-5" />
+          <div className="flex flex-col">
+            <span className="font-medium text-sm">Mode</span>
+            <span className="text-xs text-muted-foreground capitalize">
+              {getModeDisplay()}
+            </span>
+          </div>
+        </div>
+
         {/* Replicas */}
         <div className="flex-1 flex items-center gap-2">
           <Users className="h-5 w-5" />
           <div className="flex flex-col">
             <span className="font-medium text-sm">Replicas</span>
             <span className="text-xs text-muted-foreground">
-              {replicas}
-            </span>
-          </div>
-        </div>
-
-        {/* Strategy */}
-        <div className="flex-1 flex items-center gap-2">
-          <TrendingUp
-            className="h-5 w-5"
-            style={{ color: "hsl(var(--chart-3))" }}
-          />
-          <div className="flex flex-col">
-            <span className="font-medium text-sm">Strategy</span>
-            <span className="text-xs text-muted-foreground">
-              {strategyType}
+              {getReplicasDisplay()}
             </span>
           </div>
         </div>

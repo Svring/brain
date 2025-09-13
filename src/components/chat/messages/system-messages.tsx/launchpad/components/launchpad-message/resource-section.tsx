@@ -12,6 +12,7 @@ import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-upd
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useLaunchpadUpdate } from "@/hooks/sealos/launchpad/use-launchpad-update";
 
 interface ResourceSectionProps {
   target: BuiltinResourceTarget;
@@ -36,26 +37,19 @@ export const ResourcePopoverContent: React.FC<{
   const cpuLimit = launchpadObject?.resource?.cpu || 0;
   const memoryLimit = launchpadObject?.resource?.memory || 0;
 
-  const queryClient = useQueryClient();
-  const { launchpad } = useTRPCClients();
-
-  const updateLaunchpad = useMutation(launchpad.update.mutationOptions());
+  const { updateLaunchpad, isLoading: isUpdating } = useLaunchpadUpdate({
+    onSuccess: () => {
+      setIsEditing(false);
+    },
+    onError: () => {
+      // Error handling is already done in the hook
+    },
+  });
 
   const handleFormSubmit = async (data: LaunchpadUpdateFormData) => {
     try {
-      const updateRequest = { name: target.name!, request: data };
-      await updateLaunchpad.mutateAsync(updateRequest, {
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: launchpad.get.queryKey(target),
-          });
-          toast.success("Launchpad updated successfully!");
-          setIsEditing(false);
-        },
-        onError: () => {
-          toast.error("Failed to update launchpad");
-        },
-      });
+      console.log("Updating launchpad resources:", data);
+      await updateLaunchpad(data);
     } catch (error) {
       console.error("Error updating launchpad resources:", error);
     }
@@ -74,29 +68,29 @@ export const ResourcePopoverContent: React.FC<{
             },
           }}
           onSubmit={handleFormSubmit}
-          isLoading={updateLaunchpad.isPending}
+          isLoading={isUpdating}
         />
-        
+
         {/* Cancel and Confirm Buttons */}
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="flex-1"
             onClick={() => setIsEditing(false)}
-            disabled={updateLaunchpad.isPending}
+            disabled={isUpdating}
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             type="submit"
             form="launchpad-resource-update-form"
-            variant="default" 
-            size="sm" 
+            variant="default"
+            size="sm"
             className="flex-1"
-            disabled={updateLaunchpad.isPending}
+            disabled={isUpdating}
           >
-            {updateLaunchpad.isPending ? "Updating..." : "Confirm"}
+            {isUpdating ? "Updating..." : "Confirm"}
           </Button>
         </div>
       </div>
@@ -128,9 +122,9 @@ export const ResourcePopoverContent: React.FC<{
 
       {/* Edit Button - Full Row */}
       <div className="w-full">
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           className="w-full"
           onClick={() => setIsEditing(true)}
         >
