@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, Globe, HelpCircle, Settings, Trash2 } from "lucide-react";
+import { Copy, Check, Globe, HelpCircle } from "lucide-react";
 import { useCopy } from "@/hooks/use-copy";
 import { cn } from "@/lib/utils";
 import {
@@ -11,24 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { UpdatePortDialog, CustomPortDialog } from "./index";
 
 interface Port {
   number: number;
@@ -46,16 +28,6 @@ interface PortDisplayTableProps {
 
 export function PortDisplayTable({ ports }: PortDisplayTableProps) {
   const { copyToClipboard, isCopied } = useCopy();
-  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
-  const [customDialogOpen, setCustomDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedPort, setSelectedPort] = useState<Port | null>(null);
-
-  const handleDeletePort = (port: Port) => {
-    // TODO: Implement actual port deletion logic
-    console.log("Deleting port:", port);
-    setDeleteDialogOpen(false);
-  };
 
   if (!ports || ports.length === 0) {
     return null;
@@ -116,10 +88,8 @@ export function PortDisplayTable({ ports }: PortDisplayTableProps) {
                       />
                       <span
                         className={cn(
-                          "truncate",
-                          port.publicAddress.startsWith("http")
-                            ? "text-foreground cursor-pointer hover:text-foreground/80"
-                            : "text-foreground"
+                          "truncate cursor-pointer hover:text-foreground/80 hover:underline",
+                          "text-foreground"
                         )}
                         title={port.publicAddress}
                         onClick={() => {
@@ -147,45 +117,6 @@ export function PortDisplayTable({ ports }: PortDisplayTableProps) {
                           <Copy className="w-3 h-3" />
                         )}
                       </Button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-6 w-6 p-0 flex-shrink-0"
-                          >
-                            <Settings className="w-3 h-3" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setSelectedPort(port);
-                              setUpdateDialogOpen(true);
-                            }}
-                          >
-                            Update
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setSelectedPort(port);
-                              setCustomDialogOpen(true);
-                            }}
-                          >
-                            Custom
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setSelectedPort(port);
-                              setDeleteDialogOpen(true);
-                            }}
-                            className="text-destructive focus:text-destructive"
-                          >
-                            <Trash2 className="w-3 h-3 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     </>
                   ) : (
                     <>
@@ -201,42 +132,6 @@ export function PortDisplayTable({ ports }: PortDisplayTableProps) {
           ))}
         </TableBody>
       </Table>
-
-      {/* Update Dialog */}
-      <UpdatePortDialog
-        open={updateDialogOpen}
-        onOpenChange={setUpdateDialogOpen}
-        selectedPort={selectedPort}
-      />
-
-      {/* Custom Dialog */}
-      <CustomPortDialog
-        open={customDialogOpen}
-        onOpenChange={setCustomDialogOpen}
-        selectedPort={selectedPort}
-      />
-
-      {/* Delete Port Alert Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Port</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete port {selectedPort?.number}? This
-              action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => selectedPort && handleDeletePort(selectedPort)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

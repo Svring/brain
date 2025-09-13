@@ -40,24 +40,7 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
     error,
   } = useQuery(devboxTrpcClient.get.queryOptions(target));
 
-  const actions: MessageAction[] = devboxObject
-    ? [
-        // {
-        //   icon: History,
-        //   label: "Release History",
-        //   onClick: () => {
-        //     appendSystemMessage({ type: "devbox.release", target });
-        //   },
-        // },
-        // {
-        //   icon: Globe,
-        //   label: "Ports",
-        //   onClick: () => {
-        //     appendSystemMessage({ type: "devbox.network", target });
-        //   },
-        // },
-      ]
-    : [];
+  const actions: MessageAction[] = [];
 
   // Show loading state
   if (isLoading) {
@@ -141,7 +124,7 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
     <div className="space-y-2">
       {/* Basic Info Section - Full Width */}
       <BasicInfoSection target={target} />
-      
+
       {/* Two-column layout for other sections */}
       <div className="flex gap-2">
         {/* Left Half - CPU/Memory and SSH */}

@@ -9,6 +9,7 @@ import {
   Trash2,
   Plus,
   Server,
+  ArrowBigUpDash,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -27,10 +28,19 @@ const DeploymentItem: React.FC<{
   onDelete: (deploymentName: string) => void;
   isDeleting?: boolean;
   onClick?: (deploymentName: string) => void;
-}> = ({ deployment, onDelete, isDeleting = false, onClick }) => {
+  onUpdate?: (deploymentName: string) => void;
+  isUpdating?: boolean;
+}> = ({ deployment, onDelete, isDeleting = false, onClick, onUpdate, isUpdating = false }) => {
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     onDelete(deployment.metadata?.name);
+  };
+
+  const handleUpdate = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onUpdate) {
+      onUpdate(deployment.metadata?.name);
+    }
   };
 
   const handleClick = () => {
@@ -70,6 +80,22 @@ const DeploymentItem: React.FC<{
           </div>
         </div>
         <div className="flex items-center gap-1">
+          {/* Update button */}
+          <Button
+            size="sm"
+            variant="ghost"
+            className="p-0 border border-border-primary bg-background-tertiary hover:brightness-150"
+            onClick={handleUpdate}
+            disabled={isUpdating}
+            title="Update"
+          >
+            {isUpdating ? (
+              <Spinner className="h-3 w-3" />
+            ) : (
+              <ArrowBigUpDash className="h-3 w-3" />
+            )}
+            Update
+          </Button>
           {/* Delete button */}
           <Button
             variant="destructive"
@@ -102,6 +128,9 @@ export const DeploymentChart: React.FC<DeploymentChartProps> = ({
   const [deletingDeploymentId, setDeletingDeploymentId] = useState<
     string | null
   >(null);
+  const [updatingDeploymentId, setUpdatingDeploymentId] = useState<
+    string | null
+  >(null);
 
   // Use the devbox deploy hook
   const { handleDeploy, deployDevbox } = useDevboxDeploy(devboxObject.name || "");
@@ -120,6 +149,29 @@ export const DeploymentChart: React.FC<DeploymentChartProps> = ({
       // which adds the deployment to the project and triggers the message
     } catch (error) {
       console.error("Deploy failed:", error);
+    }
+  };
+
+  // Handle update deployment
+  const handleUpdateDeployment = async (deploymentName: string) => {
+    if (!payload?.tag) {
+      console.error("No release tag available for update");
+      return;
+    }
+
+    try {
+      setUpdatingDeploymentId(deploymentName);
+      await handleDeploy(payload.tag);
+      
+      // Invalidate and refetch deployments
+      queryClient.invalidateQueries({
+        queryKey: k8s.list.pathKey(),
+      });
+      
+      setUpdatingDeploymentId(null);
+    } catch (error) {
+      console.error("Update failed:", error);
+      setUpdatingDeploymentId(null);
     }
   };
 
@@ -220,6 +272,10 @@ export const DeploymentChart: React.FC<DeploymentChartProps> = ({
               isDeleting={
                 deletingDeploymentId ===
                 (deployment.metadata?.uid || deployment.metadata?.name)
+              }
+              onUpdate={handleUpdateDeployment}
+              isUpdating={
+                updatingDeploymentId === deployment.metadata?.name
               }
               onClick={(deploymentName) => {
                 // Find the deployment object to get its kind

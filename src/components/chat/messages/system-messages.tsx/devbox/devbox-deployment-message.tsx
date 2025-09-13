@@ -33,10 +33,14 @@ const DeploymentItem: React.FC<{
   onDelete: (deploymentName: string) => void;
   isDeleting?: boolean;
   onClick?: (deploymentName: string) => void;
-}> = ({ deployment, onDelete, isDeleting = false, onClick }) => {
+  onUpdate?: (deploymentName: string) => void;
+  isUpdating?: boolean;
+}> = ({ deployment, onDelete, isDeleting = false, onClick, onUpdate, isUpdating = false }) => {
   const handleUpdate = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log("update", deployment);
+    if (onUpdate) {
+      onUpdate(deployment.metadata?.name);
+    }
   };
 
   const handleDelete = (e: React.MouseEvent) => {
@@ -95,17 +99,21 @@ const DeploymentItem: React.FC<{
         </div>
         <div className="flex items-center gap-1">
           {/* Update button */}
-          {/* <Button
+          <Button
             size="sm"
             variant="ghost"
             className="p-0 border border-border-primary bg-background-tertiary hover:brightness-150"
             onClick={handleUpdate}
-            disabled={deployment.status?.phase !== "Running"}
+            disabled={isUpdating}
             title="Update"
           >
-            <ArrowBigUpDash className="h-4 w-4" />
+            {isUpdating ? (
+              <Spinner className="h-3 w-3" />
+            ) : (
+              <ArrowBigUpDash className="h-3 w-3" />
+            )}
             Update
-          </Button> */}
+          </Button>
           {/* Delete button */}
           <Button
             variant="destructive"

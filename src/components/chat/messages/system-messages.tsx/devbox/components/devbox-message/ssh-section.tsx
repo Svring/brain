@@ -89,10 +89,10 @@ export const SshPopoverContent: React.FC<{ target: CustomResourceTarget }> = ({
             <Download className="h-4 w-4 mr-2" />
             Private Key
           </Button>
-          <Button variant="outline" size="sm" className="flex-1 text-sm">
+          {/* <Button variant="outline" size="sm" className="flex-1 text-sm">
             <Terminal className="h-4 w-4 mr-2" />
             SSH Setup
-          </Button>
+          </Button> */}
         </div>
       </div>
     </div>

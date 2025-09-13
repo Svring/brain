@@ -49,14 +49,6 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             {parsedDevboxObject?.operationalStatus?.createdAt || "Unknown"}
           </span>
         </div>
-
-        {/* Uptime */}
-        <div className="flex-1 flex flex-col">
-          <span className="font-medium text-sm">Uptime</span>
-          <span className="text-xs text-muted-foreground truncate">
-            {getUptime(parsedDevboxObject?.status || "")}
-          </span>
-        </div>
       </div>
     </div>
   );

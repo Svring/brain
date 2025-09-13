@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { Trash2, Tag, ArrowBigUpDash, Plus, Check, X } from "lucide-react";
-import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { DevboxReleaseItem } from "@/lib/sealos/resources/devbox/devbox-api/devbox-open-api-schemas/devbox-release-schema";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 import { useDevboxRelease } from "@/hooks/sealos/devbox/use-devbox-release";
 import { useDevboxLifecycle } from "@/hooks/sealos/devbox/use-devbox-lifecycle";
+import { DeploymentDialog } from "../devbox/components/deployment-dialog";
 
 interface ReleaseChartProps {
   target: CustomResourceTarget;
@@ -18,15 +18,10 @@ const ReleaseItem: React.FC<{
   target: CustomResourceTarget;
   onDelete: (versionName: string) => void;
   isDeleting?: boolean;
-}> = ({ release, target, onDelete, isDeleting = false }) => {
-  const appendSystemMessageMutation = useAppendSystemMessageMutation();
-
+  onDeploy: (tag: string) => void;
+}> = ({ release, target, onDelete, isDeleting = false, onDeploy }) => {
   const handleDeploy = () => {
-    appendSystemMessageMutation.mutate({
-      type: "devbox.deployment",
-      target,
-      payload: { tag: release.tag },
-    });
+    onDeploy(release.tag);
   };
 
   const handleDelete = () => {
@@ -115,8 +110,16 @@ export const ReleaseChart: React.FC<ReleaseChartProps> = ({ target }) => {
   const [deletingReleaseId, setDeletingReleaseId] = useState<string | null>(
     null
   );
+  const [deploymentDialogOpen, setDeploymentDialogOpen] = useState(false);
+  const [selectedReleaseTag, setSelectedReleaseTag] = useState("");
 
   const devboxName = target.name || "";
+
+  // Handle deploy action
+  const handleDeploy = (tag: string) => {
+    setSelectedReleaseTag(tag);
+    setDeploymentDialogOpen(true);
+  };
 
   // Use the devbox release hook
   const {
@@ -192,6 +195,7 @@ export const ReleaseChart: React.FC<ReleaseChartProps> = ({ target }) => {
                   handleDeleteRelease(release.tag);
                 }}
                 isDeleting={deletingReleaseId === release.id}
+                onDeploy={handleDeploy}
               />
             ))}
         </div>
@@ -277,6 +281,14 @@ export const ReleaseChart: React.FC<ReleaseChartProps> = ({ target }) => {
           </div>
         </div>
       )}
+
+      {/* Deployment Dialog */}
+      <DeploymentDialog
+        open={deploymentDialogOpen}
+        onOpenChange={setDeploymentDialogOpen}
+        target={target}
+        releaseTag={selectedReleaseTag}
+      />
     </div>
   );
 };

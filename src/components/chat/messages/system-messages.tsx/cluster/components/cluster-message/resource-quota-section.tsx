@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { ClusterUpdateForm } from "@/components/forms/cluster/cluster-update-form";
 import { ClusterUpdateFormData } from "@/schemas/forms/cluster/cluster-update-form-schema";
 import { useClusterUpdate } from "@/hooks/sealos/cluster/use-cluster-update";
-import { convertK8sResourceToNumeric } from "@/lib/k8s/k8s-method/k8s-utils";
 import { MonitorChart } from "../../../components/monitor-chart";
 
 interface ResourceQuotaSectionProps {
@@ -23,22 +22,17 @@ export const ResourceQuotaPopoverContent: React.FC<{
 }> = ({ target }) => {
   const [isEditing, setIsEditing] = useState(false);
   const { resource: clusterObject } = useResourceStatus(target);
-  
+
   const parsedClusterObject = clusterObject
     ? ClusterObjectSchema.parse(clusterObject)
     : null;
 
   // Get resource data from cluster object
-  const resourceData = Array.isArray(parsedClusterObject?.resource) || !parsedClusterObject?.resource 
-    ? null 
-    : parsedClusterObject.resource;
-
-  // Convert K8s resource strings to numeric for comparison
-  const objectNumeric = convertK8sResourceToNumeric({
-    cpu: resourceData?.cpu,
-    memory: resourceData?.memory,
-    storage: resourceData?.storage,
-  });
+  const resourceData =
+    Array.isArray(parsedClusterObject?.resource) ||
+    !parsedClusterObject?.resource
+      ? null
+      : parsedClusterObject.resource;
 
   // Update cluster using the custom hook
   const { updateCluster, isLoading: isUpdating } = useClusterUpdate({
@@ -95,9 +89,9 @@ export const ResourceQuotaPopoverContent: React.FC<{
           defaultValues={{
             name: parsedClusterObject?.name || target.name!,
             resource: {
-              cpu: objectNumeric.cpu.nearest,
-              memory: objectNumeric.memory.nearest,
-              storage: objectNumeric.storage.nearest,
+              cpu: resourceData?.cpu,
+              memory: resourceData?.memory,
+              storage: resourceData?.storage!,
               replicas: resourceData?.replicas || 1,
             },
           }}
@@ -105,23 +99,23 @@ export const ResourceQuotaPopoverContent: React.FC<{
           isLoading={isUpdating}
           hideDefaultButton={true}
         />
-        
+
         {/* Cancel and Confirm Buttons */}
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="flex-1"
             onClick={() => setIsEditing(false)}
             disabled={isUpdating}
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             type="submit"
             form="cluster-update-form"
-            variant="default" 
-            size="sm" 
+            variant="default"
+            size="sm"
             className="flex-1"
             disabled={isUpdating}
           >
@@ -140,27 +134,21 @@ export const ResourceQuotaPopoverContent: React.FC<{
           <Cpu className="h-6 w-6" />
           <div className="flex flex-col">
             <div className="text-xs text-muted-foreground">CPU</div>
-            <div className="text-sm font-medium">
-              {objectNumeric.cpu.nearest}Core
-            </div>
+            <div className="text-sm font-medium">{resourceData?.cpu}Core</div>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <MemoryStick className="h-6 w-6" />
           <div className="flex flex-col">
             <div className="text-xs text-muted-foreground">Memory</div>
-            <div className="text-sm font-medium">
-              {objectNumeric.memory.nearest}GB
-            </div>
+            <div className="text-sm font-medium">{resourceData?.memory}GB</div>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <HardDrive className="h-6 w-6" />
           <div className="flex flex-col">
             <div className="text-xs text-muted-foreground">Storage</div>
-            <div className="text-sm font-medium">
-              {objectNumeric.storage.nearest}GB
-            </div>
+            <div className="text-sm font-medium">{resourceData?.storage}GB</div>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -179,9 +167,9 @@ export const ResourceQuotaPopoverContent: React.FC<{
 
       {/* Edit Button - Full Row */}
       <div className="w-full">
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           className="w-full"
           onClick={() => setIsEditing(true)}
         >
@@ -201,16 +189,11 @@ export const ResourceQuotaSection: React.FC<ResourceQuotaSectionProps> = ({
     ? ClusterObjectSchema.parse(clusterResource)
     : null;
 
-  const resourceData = Array.isArray(parsedClusterObject?.resource) || !parsedClusterObject?.resource 
-    ? null 
-    : parsedClusterObject.resource;
-
-  // Convert K8s resource strings to numeric for display
-  const objectNumeric = convertK8sResourceToNumeric({
-    cpu: resourceData?.cpu,
-    memory: resourceData?.memory,
-    storage: resourceData?.storage,
-  });
+  const resourceData =
+    Array.isArray(parsedClusterObject?.resource) ||
+    !parsedClusterObject?.resource
+      ? null
+      : parsedClusterObject.resource;
 
   return (
     <div
@@ -224,7 +207,7 @@ export const ResourceQuotaSection: React.FC<ResourceQuotaSectionProps> = ({
           <div className="flex flex-col">
             <span className="font-medium text-sm">CPU</span>
             <span className="text-xs text-muted-foreground">
-              {objectNumeric.cpu.nearest}Core
+              {resourceData?.cpu}Core
             </span>
           </div>
         </div>
@@ -235,7 +218,7 @@ export const ResourceQuotaSection: React.FC<ResourceQuotaSectionProps> = ({
           <div className="flex flex-col">
             <span className="font-medium text-sm">Memory</span>
             <span className="text-xs text-muted-foreground">
-              {objectNumeric.memory.nearest}GB
+              {resourceData?.memory}GB
             </span>
           </div>
         </div>
@@ -246,7 +229,7 @@ export const ResourceQuotaSection: React.FC<ResourceQuotaSectionProps> = ({
           <div className="flex flex-col">
             <span className="font-medium text-sm">Storage</span>
             <span className="text-xs text-muted-foreground">
-              {objectNumeric.storage.nearest}GB
+              {resourceData?.storage}GB
             </span>
           </div>
         </div>
