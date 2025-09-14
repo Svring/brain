@@ -15,9 +15,7 @@ import { useProjectState } from "@/contexts/project/project-context";
 export default function AiChatbox() {
   const { sidebarChatOpen, selectedThreadId, pendingMessage } = useChatState();
 
-  const { isLoading, stop, messages, submit } = useLanggraphStream({
-    threadId: selectedThreadId || "",
-  });
+  const { isLoading, stop, messages, submit } = useLanggraphStream();
 
   return (
     <div

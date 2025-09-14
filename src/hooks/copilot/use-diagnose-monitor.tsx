@@ -56,7 +56,7 @@ export function useDiagnoseMonitor(
   const { color, monitorData, isLoading } = useResourceMetricsStatus({
     target,
   });
-  const { submit } = useLanggraphStream({ threadId: selectedThreadId || "" });
+  const { submit } = useLanggraphStream();
 
   // Use node select to handle the selection and message appending
   const { handleNodeSelect } = useNodeSelect({

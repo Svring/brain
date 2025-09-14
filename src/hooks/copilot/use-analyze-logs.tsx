@@ -41,7 +41,7 @@ export function useAnalyzeLogs(
   const { selectedThreadId } = useChatState();
   const logsQuery = useResourceLogs(target);
   const { data: logsData, isLoading } = logsQuery;
-  const { submit } = useLanggraphStream({ threadId: selectedThreadId || "" });
+  const { submit } = useLanggraphStream();
 
   // Use node select to handle the selection and message appending
   const { handleNodeSelect } = useNodeSelect({

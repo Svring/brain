@@ -79,7 +79,7 @@ export function useDiagnoseNetwork(
   target: CustomResourceTarget | BuiltinResourceTarget
 ) {
   const { selectedThreadId } = useChatState();
-  const { submit } = useLanggraphStream({ threadId: selectedThreadId || "" });
+  const { submit } = useLanggraphStream();
 
   // Get container ports data for network diagnosis
   const containerStatusResult = useResourceStatus<ContainerPortsResult>(
@@ -128,19 +128,30 @@ export function useDiagnoseNetwork(
           isContainerLoading,
           containerError,
         };
-        
+
         submit({
           messages: [
             {
               type: "system",
               content:
-                analyzeNetworkPrompt + "\n\n" + JSON.stringify(networkStatusData),
+                analyzeNetworkPrompt +
+                "\n\n" +
+                JSON.stringify(networkStatusData),
             },
           ],
         });
       }
     },
-    [handleNodeSelect, submit, selectedThreadId, containerStatus, containerPortsData, originalResource, isContainerLoading, containerError]
+    [
+      handleNodeSelect,
+      submit,
+      selectedThreadId,
+      containerStatus,
+      containerPortsData,
+      originalResource,
+      isContainerLoading,
+      containerError,
+    ]
   );
 
   return {
