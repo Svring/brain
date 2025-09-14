@@ -5,33 +5,11 @@ import { ClusterUpdateForm } from "@/components/forms/cluster/cluster-update-for
 import { ClusterUpdateFormData } from "@/schemas/forms/cluster/cluster-update-form-schema";
 import { useClusterUpdate } from "@/hooks/sealos/cluster/use-cluster-update";
 import BaseActionMessage from "@/components/chat/messages/system-messages/components/base-action-message";
-import { Database, CircleCheckBigIcon } from "lucide-react";
-import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
-import { Button } from "@/components/ui/button";
+import { Database } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-
-// Component that handles the success message and system message appending
-const ClusterUpdateSuccessMessage = ({ args }: { args: any }) => {
-  const target = convertResourceTypeToTarget("cluster", args.clusterName);
-  const { handleNodeSelect } = useNodeSelect({
-    target,
-    messageType: "cluster.detail",
-  });
-
-  return (
-    <div className="w-full">
-      <div className="flex items-center justify-between p-2 border rounded-lg">
-        <div className="flex items-center gap-2">
-          <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
-          <p className="text-sm">Cluster updated successfully</p>
-        </div>
-        <Button onClick={handleNodeSelect} variant="outline" size="sm">
-          View cluster details
-        </Button>
-      </div>
-    </div>
-  );
-};
+import { useQuery } from "@tanstack/react-query";
 
 interface ClusterUpdateActionMessageProps {
   args: Partial<ClusterUpdateFormData> & { clusterName: string };
@@ -41,11 +19,9 @@ interface ClusterUpdateActionMessageProps {
 export const ClusterUpdateActionMessage: React.FC<
   ClusterUpdateActionMessageProps
 > = ({ args, respond }) => {
-  const { clusterName, ...formData } = args;
-
   const { updateCluster, isLoading } = useClusterUpdate({
     onSuccess: () => {
-      respond?.(`Cluster "${clusterName}" updated successfully`);
+      respond?.(`Cluster "${args.clusterName}" updated successfully`);
     },
     onError: () => {
       respond?.("Failed to update cluster");
@@ -54,17 +30,21 @@ export const ClusterUpdateActionMessage: React.FC<
 
   const handleSubmit = async (data: ClusterUpdateFormData) => {
     try {
-      console.log("Updating cluster", data);
-      await updateCluster(clusterName, data);
+      await updateCluster(data);
     } catch (error) {
       console.error("Failed to update cluster:", error);
     }
   };
 
-  // Show completion message when args are provided (tool result display)
-  if (args && Object.keys(args).length > 0) {
-    return <ClusterUpdateSuccessMessage args={args} />;
-  }
+  // Extract update data from args (excluding clusterName)
+  const { clusterName, resource, ...updateRest } = args as any;
+
+  // Build defaultValues for the update form
+  const defaultValues: Partial<ClusterUpdateFormData> | undefined = {
+    name: args.clusterName,
+    resource,
+    ...updateRest,
+  };
 
   return (
     <BaseActionMessage
@@ -74,17 +54,27 @@ export const ClusterUpdateActionMessage: React.FC<
       }}
       formId="cluster-update-form"
       isSubmitting={isLoading}
-      disabled={isLoading}
-      applyButtonText="Update"
-      className="bg-background-primary"
     >
-      <ClusterUpdateForm
-        defaultValues={formData}
-        onSubmit={handleSubmit}
-        isLoading={isLoading}
-        hideDefaultButton={true}
-        formId="cluster-update-form"
-      />
+      {isLoading ? (
+        <div className="w-full p-4">
+          <div className="flex items-center justify-center p-8">
+            <div className="flex flex-col items-center gap-4">
+              <Spinner variant="circle" size={32} />
+              <p className="text-sm text-muted-foreground text-center">
+                Updating...
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <ClusterUpdateForm
+          defaultValues={defaultValues}
+          onSubmit={handleSubmit}
+          isLoading={isLoading}
+          hideDefaultButton={true}
+          formId="cluster-update-form"
+        />
+      )}
     </BaseActionMessage>
   );
 };

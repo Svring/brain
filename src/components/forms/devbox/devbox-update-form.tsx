@@ -25,8 +25,6 @@ export const DevboxUpdateForm = ({
 }: DevboxUpdateFormProps) => {
   const { form, portsFieldArray } = useDevboxUpdateForm(defaultValues);
 
-  console.log("portsFieldArray", portsFieldArray);
-
   const handleSubmit = (data: DevboxUpdateFormData) => {
     // If ports are hidden, exclude ports data from submission
     if (hidePorts) {
@@ -50,7 +48,11 @@ export const DevboxUpdateForm = ({
 
   // Only show fields that have values in defaultValues
   const hasResource = defaultValues?.resource !== undefined;
-  const hasPorts = defaultValues?.ports !== undefined;
+  const hasPorts = defaultValues?.ports !== undefined && defaultValues.ports.length > 0;
+
+  console.log("DevboxUpdateForm - defaultValues:", defaultValues);
+  console.log("DevboxUpdateForm - hasResource:", hasResource);
+  console.log("DevboxUpdateForm - hasPorts:", hasPorts);
 
   return (
     <Form {...form}>

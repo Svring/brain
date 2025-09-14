@@ -16,6 +16,9 @@ import {
   STORAGE_OPTIONS,
 } from "@/lib/k8s/k8s-constant/k8s-constant-resource";
 import { Slider } from "@/components/ui/slider";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useEffect, useState } from "react";
 
 interface ResourceFieldsProps {
   cpuOptions?: readonly number[];
@@ -30,8 +33,53 @@ export const ResourceFields = ({
   replicasOptions = REPLICAS_OPTIONS,
   storageOptions = STORAGE_OPTIONS,
 }: ResourceFieldsProps = {}) => {
-  const form = useFormContext<{ resource: Resource & { storage?: number } }>();
+  const form = useFormContext<{
+    resource: Resource & { storage?: number };
+    name: string;
+  }>();
   const resourceValues = form.watch("resource");
+  const nameValue = form.watch("name");
+  const target = convertResourceTypeToTarget("cluster", nameValue);
+
+  // Use useResourceStatus to get the cluster resource
+  const { resource: object } = useResourceStatus(
+    target,
+    (object) => object.resource
+  );
+
+  // Return null if object is undefined
+  if (object === undefined) {
+    return null;
+  }
+
+  // Helper function to create comparison display
+  const createComparisonDisplay = (
+    formValue: number,
+    objectValue: number | undefined,
+    unit: string
+  ) => {
+    if (objectValue !== undefined && objectValue !== formValue) {
+      return (
+        <div className="flex items-center gap-2">
+          <span className="text-muted-foreground line-through">
+            {objectValue}
+            {unit}
+          </span>
+          <span className="text-muted-foreground">→</span>
+          <span className="font-medium">
+            {formValue}
+            {unit}
+          </span>
+        </div>
+      );
+    }
+    return (
+      <span className="font-medium">
+        {formValue}
+        {unit}
+      </span>
+    );
+  };
 
   return (
     <div className="space-y-2 px-2">
@@ -48,7 +96,11 @@ export const ResourceFields = ({
               <FormItem>
                 <div className="flex items-center gap-2">
                   <FormLabel className="font-medium">CPU:</FormLabel>
-                  <span className="">{field.value || cpuOptions[0]}C</span>
+                  {createComparisonDisplay(
+                    field.value || cpuOptions[0],
+                    object.cpu,
+                    "C"
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Slider
@@ -91,7 +143,11 @@ export const ResourceFields = ({
               <FormItem>
                 <div className="flex items-center gap-2">
                   <FormLabel className="font-medium">Memory:</FormLabel>
-                  <span className="">{field.value || memoryOptions[0]}G</span>
+                  {createComparisonDisplay(
+                    field.value || memoryOptions[0],
+                    object.memory,
+                    "G"
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Slider
@@ -134,7 +190,11 @@ export const ResourceFields = ({
               <FormItem>
                 <div className="flex items-center gap-2">
                   <FormLabel className="font-medium">Storage:</FormLabel>
-                  <span className="">{field.value || storageOptions[0]}G</span>
+                  {createComparisonDisplay(
+                    field.value || storageOptions[0],
+                    object.storage,
+                    "G"
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Slider
@@ -178,7 +238,11 @@ export const ResourceFields = ({
               <FormItem>
                 <div className="flex items-center gap-2">
                   <FormLabel className="font-medium">Replicas:</FormLabel>
-                  <span className="">{field.value || replicasOptions[0]}</span>
+                  {createComparisonDisplay(
+                    field.value || replicasOptions[0],
+                    object.replicas,
+                    ""
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Slider

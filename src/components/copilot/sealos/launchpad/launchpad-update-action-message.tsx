@@ -5,44 +5,39 @@ import { LaunchpadUpdateForm } from "@/components/forms/launchpad/launchpad-upda
 import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
 import { useLaunchpadUpdate } from "@/hooks/sealos/launchpad/use-launchpad-update";
 import BaseActionMessage from "@/components/chat/messages/system-messages/components/base-action-message";
-import { Settings, CircleCheckBigIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Settings } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
-
-// Component that handles the success message and system message appending
-const LaunchpadUpdateSuccessMessage = ({ args }: { args: any }) => {
-  const target = convertResourceTypeToTarget("deployment", args.launchpadName);
-  const { handleNodeSelect } = useNodeSelect({
-    target,
-    messageType: "launchpad.detail",
-  });
-
-  return (
-    <div className="w-full">
-      <div className="flex items-center justify-between p-2 border rounded-lg">
-        <div className="flex items-center gap-2">
-          <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
-          <p className="text-sm">Launchpad updated successfully</p>
-        </div>
-        <Button onClick={handleNodeSelect} variant="outline" size="sm">
-          View launchpad details
-        </Button>
-      </div>
-    </div>
-  );
-};
+import { useQuery } from "@tanstack/react-query";
+import { LaunchpadObject } from "@/lib/sealos/resources/launchpad/launchpad-object-schema";
 
 interface LaunchpadUpdateActionMessageProps {
   args: Partial<LaunchpadUpdateFormData> & { launchpadName: string };
+  respond?: (message: string) => void;
 }
 
 export const LaunchpadUpdateActionMessage: React.FC<
   LaunchpadUpdateActionMessageProps
-> = ({ args }) => {
-  const { launchpadName, ...formData } = args;
+> = ({ args, respond }) => {
+  const { launchpad } = useTRPCClients();
+  const target = convertResourceTypeToTarget("deployment", args.launchpadName);
 
-  const { updateLaunchpad, isLoading } = useLaunchpadUpdate();
+  // Fetch existing launchpad object (to get current configuration)
+  // const { data: existingLaunchpad, isLoading: isLoadingLaunchpad } = useQuery(
+  //   launchpad.get.queryOptions(target as any) as any
+  // ) as { data: LaunchpadObject | undefined; isLoading: boolean };
+
+  // console.log("existingLaunchpad", existingLaunchpad);
+
+  const { updateLaunchpad, isLoading } = useLaunchpadUpdate({
+    onSuccess: () => {
+      respond?.(`Launchpad "${args.launchpadName}" updated successfully`);
+    },
+    onError: () => {
+      respond?.("Failed to update launchpad");
+    },
+  });
 
   const handleSubmit = async (data: LaunchpadUpdateFormData) => {
     try {
@@ -53,10 +48,17 @@ export const LaunchpadUpdateActionMessage: React.FC<
     }
   };
 
-  // Show completion message when status is complete
-  if (status === "complete") {
-    return <LaunchpadUpdateSuccessMessage args={args} />;
-  }
+  // Extract update data from args (excluding launchpadName)
+  const { launchpadName, resource, ...updateRest } = args as any;
+
+  // Build defaultValues for the update form
+  const defaultValues: Partial<LaunchpadUpdateFormData> | undefined = {
+    name: args.launchpadName,
+    resource,
+    ...updateRest,
+  };
+
+  console.log("LaunchpadUpdateActionMessage - defaultValues:", defaultValues);
 
   return (
     <BaseActionMessage
@@ -66,17 +68,27 @@ export const LaunchpadUpdateActionMessage: React.FC<
       }}
       formId="launchpad-update-form"
       isSubmitting={isLoading}
-      disabled={isLoading}
-      applyButtonText="Update"
-      className="bg-background-primary"
     >
-      <LaunchpadUpdateForm
-        defaultValues={formData}
-        onSubmit={handleSubmit}
-        isLoading={isLoading}
-        hideDefaultButton={true}
-        formId="launchpad-update-form"
-      />
+      {isLoading ? (
+        <div className="w-full p-4">
+          <div className="flex items-center justify-center p-8">
+            <div className="flex flex-col items-center gap-4">
+              <Spinner variant="circle" size={32} />
+              <p className="text-sm text-muted-foreground text-center">
+                Updating...
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <LaunchpadUpdateForm
+          defaultValues={defaultValues}
+          onSubmit={handleSubmit}
+          isLoading={isLoading}
+          hideDefaultButton={true}
+          formId="launchpad-update-form"
+        />
+      )}
     </BaseActionMessage>
   );
 };

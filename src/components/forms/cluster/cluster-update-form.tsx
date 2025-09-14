@@ -30,7 +30,6 @@ export const ClusterUpdateForm = ({
   const { form } = useClusterUpdateForm(defaultValues);
 
   const handleSubmit = (data: any) => {
-    console.log("data", data);
     onSubmit(data as ClusterUpdateFormData);
   };
 

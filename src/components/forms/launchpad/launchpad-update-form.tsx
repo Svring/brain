@@ -4,7 +4,7 @@ import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { useLaunchpadUpdateForm } from "@/hooks/forms/launchpad/use-launchpad-update-form";
 import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
-import { LaunchpadResourceFields } from "./launchpad-resource-fields";
+import { LaunchpadResourceFieldsSimple } from "./launchpad-resource-fields-simple";
 import { LaunchpadPortsFields } from "./launchpad-ports-fields";
 import { EnvFields } from "../universal/env-fields";
 import { ConfigMapFields } from "../universal/config-map-fields";
@@ -132,12 +132,21 @@ export const LaunchpadUpdateForm = ({
 
   // Only show fields that have values in defaultValues
   const hasResource = defaultValues?.resource !== undefined;
-  const hasPorts = defaultValues?.ports !== undefined;
+  const hasPorts = defaultValues?.ports !== undefined && defaultValues.ports.length > 0;
   const hasLaunchCommand = defaultValues?.launchCommand !== undefined;
   const hasImage = defaultValues?.image !== undefined;
-  const hasEnv = defaultValues?.env !== undefined;
-  const hasConfigMap = defaultValues?.configMap !== undefined;
-  const hasStorage = defaultValues?.storage !== undefined;
+  const hasEnv = defaultValues?.env !== undefined && defaultValues.env.length > 0;
+  const hasConfigMap = defaultValues?.configMap !== undefined && defaultValues.configMap.length > 0;
+  const hasStorage = defaultValues?.storage !== undefined && defaultValues.storage.length > 0;
+
+  console.log("LaunchpadUpdateForm - defaultValues:", defaultValues);
+  console.log("LaunchpadUpdateForm - hasResource:", hasResource);
+  // console.log("LaunchpadUpdateForm - hasPorts:", hasPorts);
+  // console.log("LaunchpadUpdateForm - hasLaunchCommand:", hasLaunchCommand);
+  // console.log("LaunchpadUpdateForm - hasImage:", hasImage);
+  // console.log("LaunchpadUpdateForm - hasEnv:", hasEnv);
+  // console.log("LaunchpadUpdateForm - hasConfigMap:", hasConfigMap);
+  // console.log("LaunchpadUpdateForm - hasStorage:", hasStorage);
 
   return (
     <Form {...form}>
@@ -153,7 +162,7 @@ export const LaunchpadUpdateForm = ({
           </div>
         )}
 
-        {hasResource && <LaunchpadResourceFields />}
+        {hasResource && <LaunchpadResourceFieldsSimple />}
 
         {hasPorts && (
           <div className="space-y-2">
