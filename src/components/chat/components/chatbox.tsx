@@ -35,7 +35,7 @@ export default function AiChatbox() {
         resourceTarget: selectedResource || undefined,
       });
     }
-  }, [threadsLoading, latestThreadId]);
+  }, [threadsLoading, selectedResource]);
 
   // console.log("selectedThreadId", selectedThreadId);
 

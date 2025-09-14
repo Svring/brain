@@ -139,8 +139,8 @@ export const LaunchpadUpdateForm = ({
   const hasConfigMap = defaultValues?.configMap !== undefined && defaultValues.configMap.length > 0;
   const hasStorage = defaultValues?.storage !== undefined && defaultValues.storage.length > 0;
 
-  console.log("LaunchpadUpdateForm - defaultValues:", defaultValues);
-  console.log("LaunchpadUpdateForm - hasResource:", hasResource);
+  // console.log("LaunchpadUpdateForm - defaultValues:", defaultValues);
+  // console.log("LaunchpadUpdateForm - hasResource:", hasResource);
   // console.log("LaunchpadUpdateForm - hasPorts:", hasPorts);
   // console.log("LaunchpadUpdateForm - hasLaunchCommand:", hasLaunchCommand);
   // console.log("LaunchpadUpdateForm - hasImage:", hasImage);
