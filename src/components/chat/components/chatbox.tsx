@@ -10,12 +10,14 @@ import { cn } from "@/lib/utils";
 import { useThreads } from "@/hooks/langgraph/use-threads";
 import { useLanggraphStream } from "@/hooks/langgraph/use-langgraph-stream";
 import { useEffect } from "react";
+import { useProjectState } from "@/contexts/project/project-context";
 
 export default function AiChatbox() {
   const { sidebarChatOpen, selectedThreadId } = useChatState();
   const { selectThread } = useChatActions();
-  const { latestThreadId, hasThreads } = useThreads();
-
+  const { latestThreadId, hasThreads, createNewThread, threadsLoading } =
+    useThreads();
+  const { selectedProject, selectedResource } = useProjectState();
   console.log("latestThreadId", latestThreadId);
 
   // Select the latest thread when threads are loaded and no thread is currently selected
@@ -24,6 +26,16 @@ export default function AiChatbox() {
       selectThread(latestThreadId);
     }
   }, [hasThreads, latestThreadId]);
+
+  // Create a new thread if threads are loaded and no thread exists
+  useEffect(() => {
+    if (!threadsLoading && !latestThreadId) {
+      createNewThread.mutate({
+        selectedProject: selectedProject || undefined,
+        resourceTarget: selectedResource || undefined,
+      });
+    }
+  }, [threadsLoading, latestThreadId]);
 
   // console.log("selectedThreadId", selectedThreadId);
 

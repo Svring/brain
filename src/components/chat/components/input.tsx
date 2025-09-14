@@ -42,6 +42,23 @@ export function AiChatInput({
       modelName &&
       stage
     ) {
+      console.log("submitting", {
+        api_key: apiKey,
+        base_url: baseUrl,
+        model_name: modelName,
+        context_window_usage: contextWindowUsage,
+        stage: stage,
+        project_context: {
+          selectedProject,
+          selectedProjectResources,
+        },
+        resource_context: selectedResource
+          ? {
+              selectedResource,
+              selectedResourceContext,
+            }
+          : undefined,
+      });
       submit({
         messages: [{ type: "human", content: message.trim() }],
         api_key: apiKey,
