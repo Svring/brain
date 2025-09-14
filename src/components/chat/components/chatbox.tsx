@@ -16,14 +16,14 @@ export default function AiChatbox() {
   const { selectThread } = useChatActions();
   const { latestThreadId, hasThreads } = useThreads();
 
-  console.log("sidebarChatOpen", sidebarChatOpen)
+  console.log("latestThreadId", latestThreadId);
 
   // Select the latest thread when threads are loaded and no thread is currently selected
   useEffect(() => {
-    if (hasThreads && latestThreadId && !selectedThreadId) {
+    if (hasThreads && latestThreadId) {
       selectThread(latestThreadId);
     }
-  }, [hasThreads, latestThreadId, selectedThreadId]);
+  }, [hasThreads, latestThreadId]);
 
   // console.log("selectedThreadId", selectedThreadId);
 

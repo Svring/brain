@@ -34,7 +34,10 @@ export default function HomePage() {
 
   // Create a new thread on mount
   useMount(() => {
-    createNewThread.mutate();
+    createNewThread.mutate({
+      selectedProject: undefined,
+      resourceTarget: undefined,
+    });
   });
 
   const hasMessages = messages.length > 0;

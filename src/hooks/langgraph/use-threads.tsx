@@ -5,11 +5,16 @@ import {
 } from "@/lib/langgraph/langgraph-method/langgraph-query";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useProjectState } from "@/contexts/project/project-context";
-import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import {
+  useCreateNewChatSessionMutation,
+  useDeleteThreadMutation,
+} from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useChatActions } from "@/contexts/chat/chat-context";
 
 export const useThreads = () => {
   const { auth } = useAuthState();
   const { selectedProject, selectedResource } = useProjectState();
+  const { selectThread } = useChatActions();
   const kubeconfig = auth?.kubeconfig;
 
   // Query threads with metadata for the current target
@@ -33,6 +38,17 @@ export const useThreads = () => {
   // Create new thread mutation
   const createNewThreadMutation = useCreateNewChatSessionMutation();
 
+  // Delete thread mutation with selectThread to null logic
+  const deleteThreadMutation = useDeleteThreadMutation();
+
+  // Wrapper function for delete thread that selects null before deletion
+  const deleteThread = (threadId: string) => {
+    // Select null thread before deletion
+    selectThread(null);
+    // Then delete the thread
+    deleteThreadMutation.mutate(threadId);
+  };
+
   return {
     threads,
     threadsLoading,
@@ -42,5 +58,9 @@ export const useThreads = () => {
     threadStateLoading,
     hasThreads: threads && threads.length > 0,
     createNewThread: createNewThreadMutation,
+    deleteThread: {
+      ...deleteThreadMutation,
+      mutate: deleteThread,
+    },
   };
 };

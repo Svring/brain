@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { History, Trash2 } from "lucide-react";
-import { useDeleteThreadMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
 import { cn } from "@/lib/utils";
 import {
@@ -25,9 +24,8 @@ import { Message, Thread } from "@langchain/langgraph-sdk";
 export function HistoryDropdown() {
   const { selectedThreadId } = useChatState();
   const { selectThread } = useChatActions();
-  const { threads } = useThreads();
+  const { threads, deleteThread } = useThreads();
   const queryClient = useQueryClient();
-  const deleteThreadMutation = useDeleteThreadMutation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [threadToDelete, setThreadToDelete] = useState<string | null>(null);
@@ -74,7 +72,7 @@ export function HistoryDropdown() {
   const getThreadTitle = (thread: Thread): string => {
     try {
       // Find the first message from either human or ai
-      const firstMessage = thread.values?.messages?.find(
+      const firstMessage = (thread.values as any)?.messages?.find(
         (msg: Message) => msg.type === "human" || msg.type === "ai"
       );
 
@@ -159,25 +157,7 @@ export function HistoryDropdown() {
         threadToDelete={threadToDelete}
         onConfirm={() => {
           if (threadToDelete) {
-            deleteThreadMutation.mutate(threadToDelete, {
-              onSuccess: () => {
-                // If we deleted the currently selected thread, select the latest remaining thread
-                if (threadToDelete === selectedThreadId) {
-                  const remainingThreads = threads?.filter(
-                    (t) => t.thread_id !== threadToDelete
-                  );
-                  if (remainingThreads && remainingThreads.length > 0) {
-                    // Sort by updated_at to get the latest thread
-                    const latestThread = remainingThreads.sort(
-                      (a, b) =>
-                        new Date(b.updated_at || 0).getTime() -
-                        new Date(a.updated_at || 0).getTime()
-                    )[0];
-                    selectThread(latestThread.thread_id);
-                  }
-                }
-              },
-            });
+            deleteThread.mutate(threadToDelete);
             setDeleteDialogOpen(false);
             setThreadToDelete(null);
           }
