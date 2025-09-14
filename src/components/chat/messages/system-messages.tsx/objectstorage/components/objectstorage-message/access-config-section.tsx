@@ -36,43 +36,52 @@ export const AccessConfigPopoverContent: React.FC<{
 
   return (
     <div className="w-full rounded-lg p-2">
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Key className="h-4 w-4" />
-          <h3 className="font-medium">Access Configuration</h3>
+      <div className="space-y-2">
+        {/* Access Key and Secret Key in one row */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1">
+            <span className="text-sm text-muted-foreground">Access Key</span>
+            <div className="flex items-center gap-2">
+              <span className="text-base font-medium flex-1 truncate">
+                {access.accessKey}
+              </span>
+              <CopyButton value={access.accessKey} id="access-key" />
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-sm text-muted-foreground">Secret Key</span>
+            <div className="flex items-center gap-2">
+              <span className="text-base font-medium flex-1 truncate">
+                {access.secretKey ? "••••••••••••••••" : "N/A"}
+              </span>
+              <CopyButton value={access.secretKey || "N/A"} id="secret-key" />
+            </div>
+          </div>
         </div>
 
-        <div className="space-y-3">
-          {[
-            { label: "Access Key", value: access.accessKey, id: "access-key" },
-            {
-              label: "Secret Key",
-              value: access.secretKey || "N/A",
-              id: "secret-key",
-              display: access.secretKey ? "••••••••••••••••" : "N/A",
-            },
-            {
-              label: "External Endpoint",
-              value: access.external,
-              id: "external-endpoint",
-            },
-            {
-              label: "Internal Endpoint",
-              value: access.internal,
-              id: "internal-endpoint",
-            },
-          ].map(({ label, value, id, display }) => (
-            <div key={id} className="flex flex-col gap-1">
-              <span className="text-sm text-muted-foreground">{label}</span>
-              <div className="flex items-center gap-2">
-                <span className="text-base font-medium flex-1 truncate">
-                  {display || value}
-                </span>
-                <CopyButton value={value} id={id} />
-              </div>
+        {/* Endpoints */}
+        {[
+          {
+            label: "External Endpoint",
+            value: access.external,
+            id: "external-endpoint",
+          },
+          {
+            label: "Internal Endpoint",
+            value: access.internal,
+            id: "internal-endpoint",
+          },
+        ].map(({ label, value, id }) => (
+          <div key={id} className="flex flex-col gap-1">
+            <span className="text-sm text-muted-foreground">{label}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-base font-medium flex-1 truncate">
+                {value}
+              </span>
+              <CopyButton value={value} id={id} />
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
 import React, { useMemo, memo, useEffect } from "react";
 import { createHash } from "crypto";
-import { useChatActions } from "@/contexts/chat/chat-context";
+import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
 
 // import { Tiktoken } from "js-tiktoken/lite";
 // import o200k_base from "js-tiktoken/ranks/o200k_base";
@@ -67,6 +67,7 @@ export function AiMessages({
 }: AiMessagesProps = {}) {
   const { messages, isLoading, interrupt, reset } = useCopilotChatHeadless_c();
   const { setSidebarResponding } = useChatActions();
+  const { scrollTrigger } = useChatState();
 
   // console.log("loading", isLoading);
 
@@ -105,11 +106,12 @@ export function AiMessages({
 
   // Create a SHA-256 hash of all message content for reliable change detection
   const contentHash = useMemo(() => {
-    const contentString = messages
-      .map((msg) => `${msg.id}-${msg.role}-${msg.content || ""}`)
-      .join("|");
+    const contentString =
+      messages
+        .map((msg) => `${msg.id}-${msg.role}-${msg.content || ""}`)
+        .join("|") + `|scrollTrigger-${scrollTrigger}`;
     return createHash("sha256").update(contentString).digest("hex");
-  }, [messages]);
+  }, [messages, scrollTrigger]);
 
   // console.log("contentHash", contentHash);
 

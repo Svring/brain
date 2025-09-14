@@ -91,7 +91,7 @@ function ClusterNode({ resource, status, nodeId }: ClusterNodeInnerProps) {
         <div className="mt-auto flex justify-between items-center">
           <NodeStatusLight status={status} />
           <div className="flex items-center gap-2">
-            <ClusterNodeBackup target={target} />
+            {/* <ClusterNodeBackup target={target} /> */}
             <NodeLog target={target} />
             <NodeMonitor target={target} />
           </div>

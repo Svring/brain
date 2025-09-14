@@ -8,6 +8,7 @@ import {
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useContainerStatus } from "@/hooks/sealos/network/use-container-status";
 import { useProjectActions } from "@/contexts/project/project-context";
+import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 import {
   extractContainerPorts,
   ContainerPortsResult,
@@ -103,45 +104,33 @@ export function useDiagnoseNetwork(
     2000 // 2 second timeout
   );
 
-  const diagnoseNetwork = useCallback(
-    (readyStatus: any) => {
-      // Select the resource first
-      selectResource(target);
-
-      // Append system message for network diagnosis
-      appendSystemMessageMutation.mutate({
-        type: "universal.diagnoseNetwork",
-        target,
-      });
-
-      // Prepare network status data for analysis
-      const networkStatusData = {
-        containerStatus,
-        networkStatus: readyStatus,
-        containerPortsData,
-        originalResource,
-        isContainerLoading,
-        containerError,
-        ports: originalResource?.ports,
-      };
-
-      // Send network status data for analysis after system message is appended
-      sendMessage({
-        role: "system",
-        content:
-          analyzeNetworkPrompt + "\n\n" + JSON.stringify(networkStatusData),
-      });
-    },
-    [
-      target,
-      selectResource,
-      sendMessage,
+  // Use node select to handle the selection and message appending
+  const { handleNodeSelect } = useNodeSelect({
+    target,
+    messageType: "universal.diagnoseNetwork",
+    payload: {
       containerStatus,
       containerPortsData,
       originalResource,
       isContainerLoading,
       containerError,
-    ]
+      prompt: analyzeNetworkPrompt,
+    },
+  });
+
+  const diagnoseNetwork = useCallback(
+    (readyStatus: any) => {
+      // Use node select to handle the selection and message appending
+      handleNodeSelect("append");
+
+      // Comment out sendMessage for now
+      // sendMessage({
+      //   role: "system",
+      //   content:
+      //     analyzeNetworkPrompt + "\n\n" + JSON.stringify(networkStatusData),
+      // });
+    },
+    [handleNodeSelect]
   );
 
   return {

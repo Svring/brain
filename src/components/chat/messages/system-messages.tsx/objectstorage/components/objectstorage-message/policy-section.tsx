@@ -12,6 +12,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Check, X } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
+import { useChatActions } from "@/contexts/chat/chat-context";
 
 interface PolicySectionProps {
   objectstorageObject: ObjectStorageObject;
@@ -27,6 +28,7 @@ export const PolicyPopoverContent: React.FC<{
   const { objectstorage } = useTRPCClients();
   const queryClient = useQueryClient();
   const [isPolicyEditing, setIsPolicyEditing] = useState(false);
+  const { triggerScrollToBottom } = useChatActions();
 
   const { mutateAsync: updateObjectStorage, isPending: isUpdating } =
     useMutation({
@@ -69,7 +71,10 @@ export const PolicyPopoverContent: React.FC<{
                 variant="outline"
                 size="sm"
                 className="h-8 w-8"
-                onClick={() => setIsPolicyEditing(false)}
+                onClick={() => {
+                  setIsPolicyEditing(false);
+                  triggerScrollToBottom();
+                }}
                 disabled={isUpdating}
               >
                 <X />
@@ -93,7 +98,10 @@ export const PolicyPopoverContent: React.FC<{
               variant="outline"
               size="sm"
               className="h-8 w-8"
-              onClick={() => setIsPolicyEditing(true)}
+              onClick={() => {
+                setIsPolicyEditing(true);
+                triggerScrollToBottom();
+              }}
               disabled={isUpdating}
             >
               {isUpdating ? (

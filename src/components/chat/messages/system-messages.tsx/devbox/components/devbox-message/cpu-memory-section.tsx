@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { DevboxUpdateForm } from "@/components/forms/devbox/devbox-update-form";
 import { DevboxUpdateFormData } from "@/schemas/forms/devbox/devbox-update-form-schema";
 import { useDevboxUpdate } from "@/hooks/sealos/devbox/use-devbox-update";
+import { useChatActions } from "@/contexts/chat/chat-context";
 
 interface CpuMemorySectionProps {
   target: CustomResourceTarget;
@@ -22,6 +23,7 @@ export const CpuMemoryPopoverContent: React.FC<{
 }> = ({ target }) => {
   const [isEditing, setIsEditing] = useState(false);
   const { resource: devboxObject } = useResourceStatus(target);
+  const { triggerScrollToBottom } = useChatActions();
   const { latestData, isLoading: isMetricsLoading } = useResourceMetricsStatus({
     target,
   });
@@ -72,15 +74,18 @@ export const CpuMemoryPopoverContent: React.FC<{
         
         {/* Cancel and Confirm Buttons */}
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="flex-1"
-            onClick={() => setIsEditing(false)}
-            disabled={isUpdating}
-          >
-            Cancel
-          </Button>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="flex-1"
+          onClick={() => {
+            setIsEditing(false);
+            triggerScrollToBottom();
+          }}
+          disabled={isUpdating}
+        >
+          Cancel
+        </Button>
           <Button 
             type="submit"
             form="devbox-update-form"
@@ -125,7 +130,10 @@ export const CpuMemoryPopoverContent: React.FC<{
           variant="outline" 
           size="sm" 
           className="w-full"
-          onClick={() => setIsEditing(true)}
+          onClick={() => {
+            setIsEditing(true);
+            triggerScrollToBottom();
+          }}
         >
           Edit Resources
         </Button>

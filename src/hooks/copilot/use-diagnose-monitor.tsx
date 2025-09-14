@@ -8,6 +8,7 @@ import {
 } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useProjectActions } from "@/contexts/project/project-context";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
+import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
@@ -61,6 +62,16 @@ export function useDiagnoseMonitor(
     target,
   });
 
+  // Use node select to handle the selection and message appending
+  const { handleNodeSelect } = useNodeSelect({
+    target,
+    messageType: "universal.monitor",
+    payload: {
+      monitorData,
+      prompt: analyzeMonitorPrompt,
+    },
+  });
+
   const diagnoseMonitor = useCallback(() => {
     // Check if monitor data is null or empty
     if (
@@ -72,18 +83,15 @@ export function useDiagnoseMonitor(
       return;
     }
 
-    // Select the resource first
-    selectResource(target);
+    // Use node select to handle the selection and message appending
+    handleNodeSelect("append");
 
-    // Append system message for monitor diagnosis
-    appendSystemMessageMutation.mutate({ type: "universal.monitor", target });
-
-    // Send monitor data for analysis after system message is appended
-    sendMessage({
-      role: "system",
-      content: analyzeMonitorPrompt + "\n\n" + JSON.stringify(monitorData),
-    });
-  }, [target, selectResource, sendMessage, monitorData]);
+    // Comment out sendMessage for now
+    // sendMessage({
+    //   role: "system",
+    //   content: analyzeMonitorPrompt + "\n\n" + JSON.stringify(monitorData),
+    // });
+  }, [monitorData, handleNodeSelect]);
 
   // Check if monitor data is ready (not loading and has data)
   const isMonitorReady =

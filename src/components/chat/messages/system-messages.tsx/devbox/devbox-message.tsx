@@ -6,6 +6,7 @@ import { BaseResourceMessage } from "@/components/chat/messages/system-messages.
 import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-resource-message";
 import { History, Globe, ArrowLeft } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useChatActions } from "@/contexts/chat/chat-context";
 import DevboxMessageMenu from "./components/devbox-message-menu";
 import DevboxNodeIde from "@/components/flowgraph/node/sealos/devbox/devbox-node-ide";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ interface DevboxMessageProps {
 export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
   const appendSystemMessageMutation = useAppendSystemMessageMutation();
   const [activeSection, setActiveSection] = useState<ActiveSection>(null);
+  const { triggerScrollToBottom } = useChatActions();
 
   const devboxTrpcClient = devboxClient.useTRPC();
 
@@ -70,11 +72,15 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
   // Handle section click
   const handleSectionClick = (section: ActiveSection) => {
     setActiveSection(section);
+    // Trigger scroll to bottom when section changes
+    triggerScrollToBottom();
   };
 
   // Handle back button click
   const handleBackClick = () => {
     setActiveSection(null);
+    // Trigger scroll to bottom when going back
+    triggerScrollToBottom();
   };
 
   // Get section title based on active section

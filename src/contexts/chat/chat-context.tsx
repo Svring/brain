@@ -54,6 +54,7 @@ export function useChatState() {
     threads: state.context.threads,
     pendingMessage: state.context.pendingMessage,
     hasPendingMessage: state.context.pendingMessage !== null,
+    scrollTrigger: state.context.scrollTrigger,
   };
 }
 
@@ -123,6 +124,10 @@ export function useChatActions() {
     },
     clearPendingMessage: () => {
       send({ type: "CLEAR_PENDING_MESSAGE" });
+    },
+
+    triggerScrollToBottom: () => {
+      send({ type: "TRIGGER_SCROLL_TO_BOTTOM" });
     },
   };
 }

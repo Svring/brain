@@ -6,6 +6,7 @@ import { BaseResourceMessage } from "@/components/chat/messages/system-messages.
 import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-resource-message";
 import { EthernetPort, Pencil, ArrowLeft } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useChatActions } from "@/contexts/chat/chat-context";
 import { Button } from "@/components/ui/button";
 import ClusterMessageMenu from "./components/cluster-message-menu";
 import {
@@ -28,6 +29,7 @@ export const ClusterMessage: React.FC<ClusterMessageProps> = ({ target }) => {
   const clusterTrpcClient = clusterClient.useTRPC();
   const appendSystemMessageMutation = useAppendSystemMessageMutation();
   const [activeSection, setActiveSection] = useState<ActiveSection>(null);
+  const { triggerScrollToBottom } = useChatActions();
 
   // Fetch the cluster data using the target
   const {
@@ -51,11 +53,15 @@ export const ClusterMessage: React.FC<ClusterMessageProps> = ({ target }) => {
   // Handle section click
   const handleSectionClick = (section: ActiveSection) => {
     setActiveSection(section);
+    // Trigger scroll to bottom when section changes
+    triggerScrollToBottom();
   };
 
   // Handle back button click
   const handleBackClick = () => {
     setActiveSection(null);
+    // Trigger scroll to bottom when going back
+    triggerScrollToBottom();
   };
 
   // Get section title based on active section
@@ -117,13 +123,13 @@ export const ClusterMessage: React.FC<ClusterMessageProps> = ({ target }) => {
     <div className="space-y-2">
       {/* Basic Info Section - Full Width */}
       <BasicInfoSection target={target} />
-      
+
       {/* Resource Quota Section - Full Width */}
       <ResourceQuotaSection
         target={target}
         onSectionClick={() => handleSectionClick("resource")}
       />
-      
+
       {/* Two-column layout for other sections */}
       <div className="flex gap-2">
         {/* Left Half - Connect */}

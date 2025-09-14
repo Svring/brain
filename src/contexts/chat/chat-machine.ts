@@ -24,6 +24,7 @@ export interface ChatContextState {
   selectedThreadId: string | null;
   threads: Thread[];
   pendingMessage: PendingMessage | null;
+  scrollTrigger: number;
 }
 
 export type ChatEvent =
@@ -38,7 +39,8 @@ export type ChatEvent =
   | { type: "SELECT_THREAD"; threadId: string | null }
   | { type: "SET_THREADS"; threads: Thread[] }
   | { type: "SET_PENDING_MESSAGE"; message: PendingMessage | null }
-  | { type: "CLEAR_PENDING_MESSAGE" };
+  | { type: "CLEAR_PENDING_MESSAGE" }
+  | { type: "TRIGGER_SCROLL_TO_BOTTOM" };
 
 export const chatMachine = createMachine({
   /** XState v5 generics */
@@ -61,6 +63,7 @@ export const chatMachine = createMachine({
     selectedThreadId: null,
     threads: [],
     pendingMessage: null,
+    scrollTrigger: 0,
   },
   states: {
     idle: {},
@@ -150,6 +153,11 @@ export const chatMachine = createMachine({
     CLEAR_PENDING_MESSAGE: {
       actions: assign({
         pendingMessage: () => null,
+      }),
+    },
+    TRIGGER_SCROLL_TO_BOTTOM: {
+      actions: assign({
+        scrollTrigger: ({ context }) => context.scrollTrigger + 1,
       }),
     },
   },

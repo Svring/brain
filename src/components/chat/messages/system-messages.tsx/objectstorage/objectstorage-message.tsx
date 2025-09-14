@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { BaseResourceMessage } from "@/components/chat/messages/system-messages.tsx/components/base-resource-message";
 import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-resource-message";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useChatActions } from "@/contexts/chat/chat-context";
 import { Pencil, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ObjectStorageObjectSchema } from "@/lib/sealos/resources/objectstorage/objectstorage-schemas/objectstorage-object-schema";
@@ -28,6 +29,7 @@ export const ObjectStorageMessage: React.FC<ObjectStorageMessageProps> = ({
   const { objectstorage } = useTRPCClients();
   const appendSystemMessageMutation = useAppendSystemMessageMutation();
   const [activeSection, setActiveSection] = useState<ActiveSection>(null);
+  const { triggerScrollToBottom } = useChatActions();
 
   const {
     data: objectstorageObjectData,
@@ -45,11 +47,15 @@ export const ObjectStorageMessage: React.FC<ObjectStorageMessageProps> = ({
   // Handle section click
   const handleSectionClick = (section: ActiveSection) => {
     setActiveSection(section);
+    // Trigger scroll to bottom when section changes
+    triggerScrollToBottom();
   };
 
   // Handle back button click
   const handleBackClick = () => {
     setActiveSection(null);
+    // Trigger scroll to bottom when going back
+    triggerScrollToBottom();
   };
 
   // Get section title based on active section

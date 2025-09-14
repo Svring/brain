@@ -3,8 +3,16 @@ import { useQuery } from "@tanstack/react-query";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { BaseResourceMessage } from "@/components/chat/messages/system-messages.tsx/components/base-resource-message";
 import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-resource-message";
-import { FileText, Container, BarChart3, Pencil, Globe, ArrowLeft } from "lucide-react";
+import {
+  FileText,
+  Container,
+  BarChart3,
+  Pencil,
+  Globe,
+  ArrowLeft,
+} from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useChatActions } from "@/contexts/chat/chat-context";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { Button } from "@/components/ui/button";
 import LaunchpadMessageMenu from "./components/launchpad-message-menu";
@@ -40,6 +48,7 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
   const { launchpad } = useTRPCClients();
   const appendSystemMessageMutation = useAppendSystemMessageMutation();
   const [activeSection, setActiveSection] = useState<ActiveSection>(null);
+  const { triggerScrollToBottom } = useChatActions();
 
   // Fetch launchpad data using the target
   const {
@@ -53,11 +62,15 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
   // Handle section click
   const handleSectionClick = (section: ActiveSection) => {
     setActiveSection(section);
+    // Trigger scroll to bottom when section changes
+    triggerScrollToBottom();
   };
 
   // Handle back button click
   const handleBackClick = () => {
     setActiveSection(null);
+    // Trigger scroll to bottom when going back
+    triggerScrollToBottom();
   };
 
   // Get section title based on active section
