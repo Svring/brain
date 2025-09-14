@@ -2,13 +2,10 @@
 
 import { useCallback } from "react";
 import { toast } from "sonner";
-import {
-  useAppendSystemMessageMutation,
-  useSendMessageMutation,
-} from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { useProjectActions } from "@/contexts/project/project-context";
 import { useResourceLogs } from "@/hooks/sealos/resource/use-resource-logs";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
+import { useLanggraphStream } from "@/hooks/langgraph/use-langgraph-stream";
+import { useChatState } from "@/contexts/chat/chat-context";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
@@ -41,11 +38,10 @@ const analyzeLogsPrompt = `
 export function useAnalyzeLogs(
   target: CustomResourceTarget | BuiltinResourceTarget
 ) {
-  const appendSystemMessageMutation = useAppendSystemMessageMutation();
-  const { mutate: sendMessage } = useSendMessageMutation();
-  const { selectResource } = useProjectActions();
+  const { selectedThreadId } = useChatState();
   const logsQuery = useResourceLogs(target);
   const { data: logsData, isLoading } = logsQuery;
+  const { submit } = useLanggraphStream({ threadId: selectedThreadId || "" });
 
   // Use node select to handle the selection and message appending
   const { handleNodeSelect } = useNodeSelect({
@@ -67,12 +63,18 @@ export function useAnalyzeLogs(
     // Use node select to handle the selection and message appending
     handleNodeSelect("append");
 
-    // Comment out sendMessage for now
-    // sendMessage({
-    //   role: "system",
-    //   content: analyzeLogsPrompt + "\n\n" + JSON.stringify(logsData),
-    // });
-  }, [logsData, handleNodeSelect]);
+    // Send message using langgraph stream
+    if (selectedThreadId) {
+      submit({
+        messages: [
+          {
+            type: "system",
+            content: analyzeLogsPrompt + "\n\n" + JSON.stringify(logsData),
+          },
+        ],
+      });
+    }
+  }, [logsData, handleNodeSelect, submit, selectedThreadId]);
 
   // Check if logs are ready (not loading and has data)
   const isLogsReady =

@@ -9,33 +9,58 @@ import { cn } from "@/lib/utils";
 // import { useLanggraphStateUpdate } from "@/hooks/langgraph/use-langgraph-state-update";
 import { useThreads } from "@/hooks/langgraph/use-threads";
 import { useLanggraphStream } from "@/hooks/langgraph/use-langgraph-stream";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useProjectState } from "@/contexts/project/project-context";
 
 export default function AiChatbox() {
-  const { sidebarChatOpen, selectedThreadId } = useChatState();
+  const { sidebarChatOpen, selectedThreadId, pendingMessage } = useChatState();
   const { selectThread } = useChatActions();
   const { latestThreadId, hasThreads, createNewThread, threadsLoading } =
     useThreads();
   const { selectedProject, selectedResource } = useProjectState();
+  const [isThreadSelectionLoading, setIsThreadSelectionLoading] =
+    useState(false);
+
   console.log("latestThreadId", latestThreadId);
 
-  // Select the latest thread when threads are loaded and no thread is currently selected
+  // Handle thread selection and creation in a single effect
   useEffect(() => {
-    if (hasThreads && latestThreadId) {
-      selectThread(latestThreadId);
-    }
-  }, [hasThreads, latestThreadId]);
+    if (!threadsLoading) {
+      setIsThreadSelectionLoading(true);
 
-  // Create a new thread if threads are loaded and no thread exists
-  useEffect(() => {
-    if (!threadsLoading && !latestThreadId) {
-      createNewThread.mutate({
-        selectedProject: selectedProject || undefined,
-        resourceTarget: selectedResource || undefined,
-      });
+      if (latestThreadId) {
+        selectThread(latestThreadId);
+        setIsThreadSelectionLoading(false);
+      } else {
+        createNewThread.mutate(
+          {
+            selectedProject: selectedProject || undefined,
+            resourceTarget: selectedResource || undefined,
+          },
+          {
+            onSuccess: () => {
+              setIsThreadSelectionLoading(false);
+            },
+            onError: () => {
+              setIsThreadSelectionLoading(false);
+            },
+          }
+        );
+      }
     }
-  }, [threadsLoading, selectedResource]);
+  }, [threadsLoading, latestThreadId, selectedProject, selectedResource]);
+
+  // Log pending message after thread is selected and loading is complete
+  useEffect(() => {
+    if (selectedThreadId && pendingMessage && !isThreadSelectionLoading) {
+      setTimeout(() => {
+        console.log(
+          "Pending message detected after thread selection:",
+          pendingMessage
+        );
+      }, 1000);
+    }
+  }, [isThreadSelectionLoading]);
 
   // console.log("selectedThreadId", selectedThreadId);
 

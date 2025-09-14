@@ -14,7 +14,7 @@ import { LaunchpadLifecycleActionMessage } from "@/components/copilot/sealos/lau
 export const ToolMessageType = {
   // Project Actions
   propose_project: (payload: any) => {
-    return <ProjectProposalPresentation proposal={payload.projectProposal} />;
+    return <ProjectProposalPresentation proposal={payload.project_proposal} />;
   },
 
   add_resource_to_project: (payload: any) => {

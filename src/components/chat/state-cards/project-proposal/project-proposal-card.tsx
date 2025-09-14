@@ -20,7 +20,10 @@ interface ProjectProposalCardProps {
   onProposalUpdate?: (proposal: ProjectProposal) => void;
 }
 
-export function ProjectProposalCard({ proposal, onProposalUpdate }: ProjectProposalCardProps) {
+export function ProjectProposalCard({
+  proposal,
+  onProposalUpdate,
+}: ProjectProposalCardProps) {
   const [internalProposal, setInternalProposal] =
     useState<ProjectProposal>(proposal);
 

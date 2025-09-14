@@ -41,7 +41,7 @@ export const LaunchpadUpdateActionMessage: React.FC<
 
   const handleSubmit = async (data: LaunchpadUpdateFormData) => {
     try {
-      console.log("Updating launchpad", data);
+      // console.log("Updating launchpad", data);
       await updateLaunchpad(data);
     } catch (error) {
       console.error("Failed to update launchpad:", error);
@@ -58,7 +58,7 @@ export const LaunchpadUpdateActionMessage: React.FC<
     ...updateRest,
   };
 
-  console.log("LaunchpadUpdateActionMessage - defaultValues:", defaultValues);
+  // console.log("LaunchpadUpdateActionMessage - defaultValues:", defaultValues);
 
   return (
     <BaseActionMessage

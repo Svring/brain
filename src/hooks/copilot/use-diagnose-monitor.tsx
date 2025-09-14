@@ -2,13 +2,10 @@
 
 import { useCallback } from "react";
 import { toast } from "sonner";
-import {
-  useAppendSystemMessageMutation,
-  useSendMessageMutation,
-} from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { useProjectActions } from "@/contexts/project/project-context";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
+import { useLanggraphStream } from "@/hooks/langgraph/use-langgraph-stream";
+import { useChatState } from "@/contexts/chat/chat-context";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
@@ -55,12 +52,11 @@ const analyzeMonitorPrompt = `
 export function useDiagnoseMonitor(
   target: CustomResourceTarget | BuiltinResourceTarget
 ) {
-  const appendSystemMessageMutation = useAppendSystemMessageMutation();
-  const { mutate: sendMessage } = useSendMessageMutation();
-  const { selectResource } = useProjectActions();
+  const { selectedThreadId } = useChatState();
   const { color, monitorData, isLoading } = useResourceMetricsStatus({
     target,
   });
+  const { submit } = useLanggraphStream({ threadId: selectedThreadId || "" });
 
   // Use node select to handle the selection and message appending
   const { handleNodeSelect } = useNodeSelect({
@@ -86,12 +82,23 @@ export function useDiagnoseMonitor(
     // Use node select to handle the selection and message appending
     handleNodeSelect("append");
 
-    // Comment out sendMessage for now
-    // sendMessage({
-    //   role: "system",
-    //   content: analyzeMonitorPrompt + "\n\n" + JSON.stringify(monitorData),
-    // });
-  }, [monitorData, handleNodeSelect]);
+    // Send message using langgraph stream
+    if (selectedThreadId) {
+      submit({
+        messages: [
+          {
+            type: "system",
+            content:
+              analyzeMonitorPrompt + "\n\n" + JSON.stringify(monitorData),
+          },
+          {
+            type: "human",
+            content: "Please analyze the monitor data and provide a diagnosis.",
+          },
+        ],
+      });
+    }
+  }, [monitorData, handleNodeSelect, submit, selectedThreadId]);
 
   // Check if monitor data is ready (not loading and has data)
   const isMonitorReady =

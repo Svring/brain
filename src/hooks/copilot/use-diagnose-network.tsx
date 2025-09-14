@@ -1,14 +1,11 @@
 "use client";
 
 import { useCallback } from "react";
-import {
-  useAppendSystemMessageMutation,
-  useSendMessageMutation,
-} from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useContainerStatus } from "@/hooks/sealos/network/use-container-status";
-import { useProjectActions } from "@/contexts/project/project-context";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
+import { useLanggraphStream } from "@/hooks/langgraph/use-langgraph-stream";
+import { useChatState } from "@/contexts/chat/chat-context";
 import {
   extractContainerPorts,
   ContainerPortsResult,
@@ -81,9 +78,8 @@ const analyzeNetworkPrompt = `
 export function useDiagnoseNetwork(
   target: CustomResourceTarget | BuiltinResourceTarget
 ) {
-  const appendSystemMessageMutation = useAppendSystemMessageMutation();
-  const { mutate: sendMessage } = useSendMessageMutation();
-  const { selectResource } = useProjectActions();
+  const { selectedThreadId } = useChatState();
+  const { submit } = useLanggraphStream({ threadId: selectedThreadId || "" });
 
   // Get container ports data for network diagnosis
   const containerStatusResult = useResourceStatus<ContainerPortsResult>(
@@ -123,14 +119,28 @@ export function useDiagnoseNetwork(
       // Use node select to handle the selection and message appending
       handleNodeSelect("append");
 
-      // Comment out sendMessage for now
-      // sendMessage({
-      //   role: "system",
-      //   content:
-      //     analyzeNetworkPrompt + "\n\n" + JSON.stringify(networkStatusData),
-      // });
+      // Send message using langgraph stream
+      if (selectedThreadId) {
+        const networkStatusData = {
+          containerStatus,
+          containerPortsData,
+          originalResource,
+          isContainerLoading,
+          containerError,
+        };
+        
+        submit({
+          messages: [
+            {
+              type: "system",
+              content:
+                analyzeNetworkPrompt + "\n\n" + JSON.stringify(networkStatusData),
+            },
+          ],
+        });
+      }
     },
-    [handleNodeSelect]
+    [handleNodeSelect, submit, selectedThreadId, containerStatus, containerPortsData, originalResource, isContainerLoading, containerError]
   );
 
   return {

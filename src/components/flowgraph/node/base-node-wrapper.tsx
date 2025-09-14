@@ -76,7 +76,7 @@ export default function BaseNodeWrapper({
       <ContextMenuTrigger>
         <BaseNode
           className={`${className ?? ""} ${getNodeStyling()}`}
-          onClick={handleNodeSelect}
+          onClick={() => handleNodeSelect()}
         >
           <Handle position={Position.Top} type="source" />
           {children}

@@ -35,6 +35,8 @@ export const ConfigDialog: React.FC<ConfigDialogProps> = ({
     onClose();
   };
 
+  console.log("defaultValues", defaultValues);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto" hideCloseButton>
