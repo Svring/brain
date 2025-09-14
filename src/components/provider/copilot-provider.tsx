@@ -9,6 +9,7 @@ import { useMount } from "@reactuses/core";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { useQueryState } from "nuqs";
 import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
 
 // Component for creating threads
 function ThreadCreator({ children }: { children: React.ReactNode }) {
@@ -44,12 +45,9 @@ function ThreadCreator({ children }: { children: React.ReactNode }) {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <p className="text-theme-red mb-2">Failed to create chat thread</p>
-          <button
-            onClick={() => createThreadMutation.reset()}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
+          <Button onClick={() => createThreadMutation.reset()}>
             Retry
-          </button>
+          </Button>
         </div>
       </div>
     );

@@ -32,6 +32,7 @@ export const useCreateNewChatSessionMutation = (
   const { auth } = useAuthState();
   const { selectedProject, selectedResource } = useProjectState();
   const updateThreadStateMutation = useUpdateThreadStateMutation();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async () => {
@@ -39,6 +40,17 @@ export const useCreateNewChatSessionMutation = (
         kubeconfig: auth?.kubeconfig || "",
         projectName: selectedProject || undefined,
         resourceTarget: resourceTarget || selectedResource || null,
+      });
+    },
+    onSuccess: (data, variables) => {
+      queryClient.refetchQueries({ queryKey: ["threads"] });
+      // Invalidate searchThreadsOptions queries
+      queryClient.refetchQueries({
+        queryKey: ["langgraph", "threads", "search"],
+      });
+      // Invalidate getThreadStateOptions queries
+      queryClient.refetchQueries({
+        queryKey: ["langgraph", "thread", "state"],
       });
     },
     onError: (error) => {

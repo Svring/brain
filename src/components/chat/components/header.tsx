@@ -54,6 +54,7 @@ import {
 import { useReactFlow } from "@xyflow/react";
 import { useState, useRef, useEffect } from "react";
 import { SystemMessageType } from "@/components/chat/messages/system-messages.tsx/systemp-message-types";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface AiChatHeaderProps {
   title?: string;
@@ -75,23 +76,33 @@ export function AiChatHeader({
   const createChatMutation = useCreateNewChatSessionMutation();
   const deleteThreadMutation = useDeleteThreadMutation();
   const { setMessages, messages } = useCopilotChatHeadless_c();
+  const queryClient = useQueryClient();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [threadToDelete, setThreadToDelete] = useState<string | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isDetailPopoverOpen, setIsDetailPopoverOpen] = useState(false);
+  const previousMessagesLengthRef = useRef<number | null>(null);
 
-  // Auto-open popover when messages are empty and a resource is selected
+  // Auto-open when a resource is selected and there are no messages
   useEffect(() => {
-    if (
-      selectedResource &&
-      messages &&
-      messages.length === 0 &&
-      !isDetailPopoverOpen &&
-      !isLoading
-    ) {
+    if (selectedResource && !isLoading && (messages?.length || 0) === 0) {
       setIsDetailPopoverOpen(true);
     }
-  }, [selectedResource, messages, isDetailPopoverOpen, isLoading]);
+  }, [selectedResource, isLoading, messages]);
+
+  // Auto-close only when messages length changes (and is non-empty)
+  useEffect(() => {
+    const currentLength = messages?.length || 0;
+    const previousLength = previousMessagesLengthRef.current;
+    if (
+      previousLength !== null &&
+      previousLength !== currentLength &&
+      currentLength > 0
+    ) {
+      setIsDetailPopoverOpen(false);
+    }
+    previousMessagesLengthRef.current = currentLength;
+  }, [messages]);
 
   const getIconUrl = () =>
     selectedResource
@@ -106,6 +117,13 @@ export function AiChatHeader({
         setMessages(convertThreadToCopilotKitMessages(newThread));
       },
     });
+
+  const handleHistoryDropdownHover = () => {
+    // Refetch threads when hovering over the history dropdown
+    queryClient.refetchQueries({
+      queryKey: ["langgraph", "threads", "search"],
+    });
+  };
 
   const handleThreadSelect = (threadId: string): void => {
     const thread = threads?.find((t) => t.thread_id === threadId);
@@ -245,9 +263,7 @@ export function AiChatHeader({
     }
 
     return (
-      <div className="max-h-[500px] overflow-y-auto">
-        {DetailComponent}
-      </div>
+      <div className="max-h-[500px] overflow-y-auto">{DetailComponent}</div>
     );
   };
 
@@ -273,7 +289,12 @@ export function AiChatHeader({
             <TooltipTrigger asChild>
               <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onMouseEnter={handleHistoryDropdownHover}
+                  >
                     <History className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -370,15 +391,9 @@ export function AiChatHeader({
       {(selectedResource || selectedProject) && (
         <div className="mt-2">
           {selectedResource ? (
-            <Popover 
-              open={isDetailPopoverOpen} 
-              onOpenChange={(open) => {
-                // Don't allow closing if messages are empty (auto-opened state) or if loading
-                const shouldDisableClosing = (messages && messages.length === 0) || isLoading;
-                if (!shouldDisableClosing) {
-                  setIsDetailPopoverOpen(open);
-                }
-              }}
+            <Popover
+              open={isDetailPopoverOpen}
+              onOpenChange={setIsDetailPopoverOpen}
             >
               <PopoverTrigger asChild>
                 <div
@@ -409,13 +424,13 @@ export function AiChatHeader({
                   </span>
                 </div>
               </PopoverTrigger>
-              <PopoverContent 
-                className="p-0 rounded-xl" 
+              <PopoverContent
+                className="p-0 rounded-xl"
                 align="start"
                 side="bottom"
                 sideOffset={5}
-                style={{ 
-                  width: 'var(--radix-popover-trigger-width)'
+                style={{
+                  width: "var(--radix-popover-trigger-width)",
                 }}
               >
                 {renderDetailCard()}
