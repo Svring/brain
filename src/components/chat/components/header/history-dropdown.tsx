@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { History, Trash2 } from "lucide-react";
 import { useDeleteThreadMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
-import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
-import { convertThreadToCopilotKitMessages } from "@/lib/langgraph/langgraph-method/langgraph-utils";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -22,12 +20,12 @@ import { useThreads } from "@/hooks/langgraph/use-threads";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { DeleteThreadDialog } from "./delete-thread-dialog";
+import { Message, Thread } from "@langchain/langgraph-sdk";
 
 export function HistoryDropdown() {
   const { selectedThreadId } = useChatState();
   const { selectThread } = useChatActions();
   const { threads } = useThreads();
-  const { setMessages } = useCopilotChatHeadless_c();
   const queryClient = useQueryClient();
   const deleteThreadMutation = useDeleteThreadMutation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -42,11 +40,7 @@ export function HistoryDropdown() {
   };
 
   const handleThreadSelect = (threadId: string): void => {
-    const thread = threads?.find((t) => t.thread_id === threadId);
-    if (thread) {
-      selectThread(threadId);
-      setMessages(convertThreadToCopilotKitMessages(thread));
-    }
+    selectThread(threadId);
   };
 
   const handleDeleteThread = (threadId: string, event: React.MouseEvent) => {
@@ -77,14 +71,11 @@ export function HistoryDropdown() {
     }
   };
 
-  const getThreadTitle = (thread: any): string => {
+  const getThreadTitle = (thread: Thread): string => {
     try {
-      // Convert thread messages to CopilotKit format first
-      const convertedMessages = convertThreadToCopilotKitMessages(thread);
-
-      // Find the first message from either human or assistant
-      const firstMessage = convertedMessages.find(
-        (msg: any) => msg.role === "user" || msg.role === "assistant"
+      // Find the first message from either human or ai
+      const firstMessage = thread.values?.messages?.find(
+        (msg: Message) => msg.type === "human" || msg.type === "ai"
       );
 
       if (firstMessage?.content) {
@@ -93,7 +84,7 @@ export function HistoryDropdown() {
         return content.length > 50 ? content.substring(0, 50) + "..." : content;
       }
     } catch (error) {
-      console.warn("Failed to convert thread messages:", error);
+      console.warn("Failed to get thread title:", error);
     }
 
     // Display "New Thread" if no message found or conversion fails
@@ -183,7 +174,6 @@ export function HistoryDropdown() {
                         new Date(a.updated_at || 0).getTime()
                     )[0];
                     selectThread(latestThread.thread_id);
-                    setMessages(convertThreadToCopilotKitMessages(latestThread));
                   }
                 }
               },

@@ -29,6 +29,7 @@ export interface ProjectContextState {
   selectedProject: string | null;
   selectedProjectResources: ResourceObject[] | null;
   selectedResource: ResourceTarget | null;
+  selectedResourceContext: any;
 }
 
 export type ProjectEvent =
@@ -40,7 +41,8 @@ export type ProjectEvent =
   | { type: "UPDATE_RESOURCE"; resource: ResourceObject }
   | { type: "REMOVE_RESOURCE"; name: string; kind: string }
   | { type: "SELECT_RESOURCE"; target: ResourceTarget }
-  | { type: "CLEAR_SELECTED_RESOURCE" };
+  | { type: "CLEAR_SELECTED_RESOURCE" }
+  | { type: "SET_SELECTED_RESOURCE_CONTEXT"; context: any };
 
 export const projectMachine = createMachine({
   /** XState v5 generics */
@@ -52,6 +54,7 @@ export const projectMachine = createMachine({
     selectedProject: null,
     selectedProjectResources: [],
     selectedResource: null,
+    selectedResourceContext: null,
   },
   states: {
     idle: {},
@@ -123,6 +126,11 @@ export const projectMachine = createMachine({
     },
     CLEAR_SELECTED_RESOURCE: {
       actions: assign({ selectedResource: () => null }),
+    },
+    SET_SELECTED_RESOURCE_CONTEXT: {
+      actions: assign({
+        selectedResourceContext: ({ event }) => event.context,
+      }),
     },
   },
 });

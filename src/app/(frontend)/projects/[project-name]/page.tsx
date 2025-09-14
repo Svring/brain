@@ -23,7 +23,6 @@ import {
 } from "@/contexts/flowgraph/flowgraph-context";
 import { useProjectActions } from "@/contexts/project/project-context";
 import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
-import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { cn } from "@/lib/utils";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { REACT_FLOW_CONFIG } from "@/lib/flowgraph/flowgraph-constant/flowgraph-constant-config";
@@ -186,7 +185,6 @@ export default function ProjectPage({
   const { setStage } = useLanggraphActions();
   const { sidebarChatOpen, sidebarChatMaximized } = useChatState();
   const { closeSidebarChat } = useChatActions();
-  const { setMessages } = useCopilotChatHeadless_c();
   const { refresh } = useFlowgraphActions();
 
   // Fetch project resources and compose resource targets
@@ -213,7 +211,6 @@ export default function ProjectPage({
     refresh();
     return () => {
       clearSelectedProject();
-      setMessages([]);
       closeSidebarChat();
     };
   }, [projectName]);

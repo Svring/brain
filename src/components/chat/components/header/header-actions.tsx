@@ -12,8 +12,6 @@ import {
   useCreateNewChatSessionMutation,
 } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
-import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
-import { convertThreadToCopilotKitMessages } from "@/lib/langgraph/langgraph-method/langgraph-utils";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,

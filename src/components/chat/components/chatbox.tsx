@@ -1,102 +1,84 @@
 "use client";
 
 import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
-import { AiMessages } from "./messages";
+import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
 import { AiChatInput } from "./input";
 import { AiChatHeader } from "./header";
+import { AiMessages } from "./messages";
 import { cn } from "@/lib/utils";
-import { useThreads } from "@/hooks/langgraph/use-threads";
-import {
-  useCreateNewChatSessionMutation,
-  useAppendSystemMessageMutation,
-} from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { useEffect, useState } from "react";
+import { useStream } from "@langchain/langgraph-sdk/react";
+import type { Message } from "@langchain/langgraph-sdk";
+import { useUpdateThreadStateMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useQueryState } from "nuqs";
+import { useEffect } from "react";
+import { listThreadsOptions } from "@/lib/langgraph/langgraph-method/langgraph-query";
+import { useQuery } from "@tanstack/react-query";
 import { useProjectState } from "@/contexts/project/project-context";
-import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
-import { convertThreadToCopilotKitMessages } from "@/lib/langgraph/langgraph-method/langgraph-utils";
-import { Spinner } from "@/components/ui/spinner";
-import SidebarSuggestions from "./sidebar-suggestions";
 
 export default function AiChatbox() {
-  const { sidebarChatOpen, selectedThreadId, pendingMessage } = useChatState();
-  const { closeSidebarChat, selectThread, clearPendingMessage } =
-    useChatActions();
-  const { latestThreadId, hasThreads, threadsLoading, latestThread } =
-    useThreads();
-  const { selectedResource } = useProjectState();
-  const { setMessages, messages } = useCopilotChatHeadless_c();
-  const createChatMutation = useCreateNewChatSessionMutation();
-  const appendSystemMessageMutation = useAppendSystemMessageMutation();
-  const [isLoading, setIsLoading] = useState(true); // Start with loading true
+  const { sidebarChatOpen, selectedThreadId } = useChatState();
+  const { apiKey, baseUrl, modelName, stage } = useLanggraphState();
+  const { mutate: updateThreadState } = useUpdateThreadStateMutation();
+  const {
+    selectedProject,
+    selectedResource,
+    selectedProjectResources,
+    selectedResourceContext,
+  } = useProjectState();
 
-  // console.log("isLoading", isLoading);
+  const { data: threads } = useQuery(listThreadsOptions());
+
+  const [threadId, setThreadId] = useQueryState("threadId", {
+    defaultValue: selectedThreadId || threads?.[0]?.thread_id || "",
+  });
+
+  const { isLoading, stop, messages, values, submit } = useStream<{
+    messages: Message[];
+    api_key: string;
+    base_url: string;
+    model_name: string;
+  }>({
+    apiUrl: "http://localhost:2025",
+    assistantId: "orca",
+    messagesKey: "messages",
+    threadId: threadId,
+  });
 
   useEffect(() => {
-    if (!sidebarChatOpen) {
-      // Reset loading state when chatbox is closed
-      setIsLoading(true);
-      return;
-    }
-
-    if (threadsLoading) return;
-
-    // Set loading to true when chatbox is opened and clear messages
-    setIsLoading(true);
-    setMessages([]); // Clear messages to show spinner
-
-    const handleThread = (thread: any, isNew = false) => {
-      selectThread(thread.thread_id);
-
-      if (pendingMessage) {
-        // Don't set messages yet, wait for system message to be appended
-        console.log("pendingMessage", pendingMessage);
-        appendSystemMessageMutation.mutate(
-          {
-            type: pendingMessage.messageType,
-            target: pendingMessage.target,
-            payload: pendingMessage.payload,
-            currentMessages: convertThreadToCopilotKitMessages(thread),
+    if (apiKey && baseUrl && modelName && stage) {
+      updateThreadState({
+        threadId: threadId,
+        state: {
+          values: {
+            api_key: apiKey,
+            base_url: baseUrl,
+            model_name: modelName,
+            stage: stage,
+            project_context: {
+              selectedProject,
+              selectedProjectResources,
+            },
+            resource_context: selectedResource
+              ? {
+                  selectedResource,
+                  selectedResourceContext,
+                }
+              : undefined,
           },
-          {
-            onSuccess: () => {
-              clearPendingMessage();
-              // Add a small delay to ensure spinner is visible
-              setIsLoading(false);
-            },
-            onError: (error) => {
-              console.error("Failed to append system message:", error);
-              // On error, still show the thread messages and stop loading
-              setMessages(convertThreadToCopilotKitMessages(thread));
-              setIsLoading(false);
-            },
-          }
-        );
-      } else {
-        // If no pending message, set messages after a brief delay to show spinner
-        setMessages(convertThreadToCopilotKitMessages(thread));
-        setIsLoading(false);
-      }
-    };
-
-    if (hasThreads && latestThreadId && latestThread) {
-      handleThread(latestThread);
-    } else {
-      createChatMutation.mutate(undefined, {
-        onSuccess: (newThread) => {
-          handleThread(newThread, true);
-        },
-        onError: (error) => {
-          console.error("Failed to create new chat:", error);
-          setIsLoading(false); // Set loading to false on error
+          as_node: "entry_node",
         },
       });
     }
   }, [
-    sidebarChatOpen,
+    threadId,
+    apiKey,
+    baseUrl,
+    modelName,
+    stage,
+    selectedProject,
+    selectedProjectResources,
     selectedResource,
-    latestThreadId,
-    latestThread,
-    threadsLoading,
+    selectedResourceContext,
   ]);
 
   return (
@@ -108,35 +90,15 @@ export default function AiChatbox() {
           : "translate-x-full opacity-0"
       )}
     >
-      <button
-        onClick={closeSidebarChat}
-        className="absolute -left-2 top-0 h-full w-2 hover:bg-muted/20 cursor-e-resize"
-        aria-label="Close Chat"
-      >
-        <span className="absolute left-1/2 top-0 h-full w-0.5 -translate-x-1/2 rounded bg-muted opacity-0 hover:opacity-100" />
-      </button>
+      <AiChatHeader isLoading={false} />
 
-      <AiChatHeader isLoading={isLoading} />
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-full">
-            <Spinner />
-          </div>
-        ) : (
-          <AiMessages />
-        )}
+        <AiMessages messages={messages} isLoading={isLoading} />
       </div>
-
-      {/* Show suggestions when no messages are present */}
-      {!isLoading && messages && messages.length === 0 && (
-        <div className="shrink-0">
-          <SidebarSuggestions showResourceSuggestions={!!selectedResource} />
-        </div>
-      )}
 
       <div className="p-2 pt-0 shrink-0 relative z-[9999]">
         <div className="max-w-3xl mx-auto">
-          <AiChatInput />
+          <AiChatInput submit={submit} stop={stop} isLoading={isLoading} />
         </div>
       </div>
     </div>

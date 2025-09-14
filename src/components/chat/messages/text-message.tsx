@@ -4,11 +4,12 @@ import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import Markdown from "react-markdown";
 import { Streamdown } from "streamdown";
+import type { Message } from "@langchain/langgraph-sdk";
 
 import "@/styles/github-markdown-dark.css";
 
 interface RenderTextMessageProps {
-  message: any;
+  message: Message;
   inProgress: boolean;
 }
 
@@ -16,18 +17,18 @@ export function RenderTextMessage({
   message,
   inProgress,
 }: RenderTextMessageProps) {
-  const isUser = message.role === "user";
+  const isUser = message.type === "human";
   const isLoading = inProgress && !isUser && !message.content;
 
   if (
     (!message.content && !isLoading) ||
-    message.role === "tool" ||
-    message.role === "system"
+    message.type === "tool" ||
+    message.type === "system"
   ) {
     return null;
   }
 
-  // console.log("message.content", message.content);
+  // console.log("message", message);
 
   return (
     <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
@@ -54,23 +55,23 @@ export function RenderTextMessage({
             ),
           }}
         >
-          {message.content ?? ""}
+          {typeof message.content === "string" ? message.content : ""}
         </Markdown>
         {/* <Streamdown>{message.content ?? ""}</Streamdown> */}
 
-        {isLoading && !message.content && !message.toolCalls && (
+        {isLoading && !message.content && !(message as any).tool_calls && (
           <div className="flex items-center gap-2 text-xs opacity-70">
             <Loader2 className="w-3 h-3 animate-spin" />
             <span>Thinking...</span>
           </div>
         )}
 
-        {message.toolCalls && (
+        {/* {(message as any).tool_calls && (
           <div className="flex items-center gap-2 text-xs opacity-70">
             <Loader2 className="w-3 h-3 animate-spin" />
             <span>Executing...</span>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );
