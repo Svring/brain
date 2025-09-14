@@ -28,6 +28,7 @@ export function convertToCopilotKitMessages(
   messages: LangGraphMessage[]
 ): Message[] {
   const convertedMessages: Message[] = [];
+  const emittedToolCallIds = new Set<string>();
 
   for (const message of messages) {
     // Handle system messages
@@ -58,22 +59,32 @@ export function convertToCopilotKitMessages(
       message.tool_calls &&
       message.tool_calls.length > 0
     ) {
-      // Add the assistant message with content
-      convertedMessages.push({
-        id: message.id,
-        role: "assistant" as const,
-        content: message.content,
-      });
+      // Some backends emit a zero-content AI stub purely to carry tool_calls.
+      // If content is empty/whitespace, do not emit an assistant text message.
+      const hasNonEmptyContent = Boolean((message.content || "").trim());
+      if (hasNonEmptyContent) {
+        convertedMessages.push({
+          id: message.id,
+          role: "assistant" as const,
+          content: message.content,
+        });
+      }
 
       // Add tool call messages
       for (const toolCall of message.tool_calls) {
+        if (toolCall?.id && emittedToolCallIds.has(toolCall.id)) {
+          // Skip duplicates that can appear when state rehydrates
+          continue;
+        }
+        const toolCallId = toolCall?.id || message.id;
+        emittedToolCallIds.add(toolCallId);
         convertedMessages.push({
-          id: toolCall.id,
+          id: toolCallId,
           role: "assistant" as const,
           content: "",
           toolCalls: [
             {
-              id: toolCall.id,
+              id: toolCallId,
               function: {
                 name: toolCall.name,
                 arguments: JSON.stringify(toolCall.args),
@@ -87,6 +98,7 @@ export function convertToCopilotKitMessages(
     }
     // Handle tool result messages
     else if (message.type === "tool") {
+      // Some providers flip status fields; normalize and always emit one tool result.
       convertedMessages.push({
         id: message.id,
         role: "tool" as const,
