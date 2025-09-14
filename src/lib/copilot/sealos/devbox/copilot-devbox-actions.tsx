@@ -11,7 +11,6 @@ import {
 import { AIResponse } from "@/components/shadcn-io/ai/response";
 import { devboxCreateFormSchema } from "@/schemas/forms/devbox/devbox-create-form-schema";
 import { devboxUpdateFormSchema } from "@/schemas/forms/devbox/devbox-update-form-schema";
-import { DevboxUpdateRuntimeSchema } from "@/lib/copilot/sealos/devbox/copilot-devbox-utils";
 import { jsonSchemaToActionParameters } from "@copilotkit/shared";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { DevboxCreateFormData } from "@/schemas/forms/devbox/devbox-create-form-schema";
@@ -63,14 +62,47 @@ export const createDevboxAction = () => {
 
 export const updateDevboxAction = () => {
   const { stage } = useLanggraphState();
+  const { selectedResource } = useProjectState();
+
+  // Check if the selected resource is a devbox
+  const isDevboxResource = selectedResource?.resourceType === "devbox";
+  const isAvailable = stage === "manage_resource" && isDevboxResource;
+
   useCopilotAction({
     name: "updateDevbox",
-    description: "Update a devbox configuration (resource, ports, etc.)",
-    available: stage === "manage_resource" ? "enabled" : "disabled",
+    description: "Update a devbox configuration (resource of cpu and memory.)",
+    available: "enabled",
     // followUp: false,
-    parameters: jsonSchemaToActionParameters(
-      zodToJsonSchema(DevboxUpdateRuntimeSchema) as any
-    ),
+    parameters: [
+      {
+        name: "devboxName",
+        type: "string",
+        required: true,
+        description: "Name of the devbox to update",
+      },
+      {
+        name: "resource",
+        type: "object",
+        required: false,
+        description: "Resource configuration for the devbox",
+        attributes: [
+          {
+            name: "cpu",
+            type: "number",
+            required: true,
+            description: "CPU cores for the devbox",
+            enum: [0.1, 0.2, 0.5, 1, 2, 4, 8, 16],
+          },
+          {
+            name: "memory",
+            type: "number",
+            required: true,
+            description: "Memory in GB for the devbox",
+            enum: [0.1, 0.5, 1, 2, 4, 8, 16, 32],
+          },
+        ],
+      },
+    ],
     renderAndWaitForResponse: (props) => {
       return (
         <DevboxUpdateActionMessage
@@ -85,11 +117,17 @@ export const updateDevboxAction = () => {
 
 export const devboxLifecycleAction = () => {
   const { stage } = useLanggraphState();
+  const { selectedResource } = useProjectState();
+
+  // Check if the selected resource is a devbox
+  const isDevboxResource = selectedResource?.resourceType === "devbox";
+  const isAvailable = stage === "manage_resource" && isDevboxResource;
+
   useCopilotAction({
     name: "devboxLifecycle",
     description:
       "Manage devbox lifecycle (start, pause, restart, shutdown, delete)",
-    available: stage === "manage_resource" ? "enabled" : "disabled",
+    available: isAvailable ? "enabled" : "disabled",
     parameters: [
       {
         name: "devboxName",
@@ -131,13 +169,19 @@ export const getDevboxDataAction = () => {
   const { devbox } = useTRPCClients();
   const queryClient = useQueryClient();
 
+  // Check if the selected resource is a devbox
+  const isDevboxResource = selectedResource?.resourceType === "devbox";
+  const isAvailable = stage === "manage_resource" && isDevboxResource;
+
   useCopilotAction({
     name: "getDevboxData",
-    available: stage === "manage_resource" ? "enabled" : "disabled",
+    available: isAvailable ? "enabled" : "disabled",
     description: "Get detailed information about the currently selected devbox",
     handler: async () => {
       if (!selectedResource || selectedResource.resourceType !== "devbox") {
-        throw new Error("No devbox resource selected. Please select a devbox first.");
+        throw new Error(
+          "No devbox resource selected. Please select a devbox first."
+        );
       }
 
       const result = await queryClient.fetchQuery(

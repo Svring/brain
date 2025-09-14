@@ -3,6 +3,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import BaseSystemMessage, { BaseSystemMessageProps } from "./base-system-message";
 
 export interface BaseActionMessageProps {
@@ -41,7 +42,11 @@ export default function BaseActionMessage({
       className="flex items-center gap-2 border border-border-primary brightness-150"
       onClick={onApply}
     >
-      <Sparkles className="w-3 h-3 text-theme-blue" />
+      {isSubmitting ? (
+        <Spinner className="w-3 h-3 text-theme-blue" />
+      ) : (
+        <Sparkles className="w-3 h-3 text-theme-blue" />
+      )}
       {applyButtonText}
     </Button>
   );

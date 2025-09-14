@@ -54,11 +54,19 @@ function createLaunchpadAction() {
 
 function updateLaunchpadAction() {
   const { stage } = useLanggraphState();
+  const { selectedResource } = useProjectState();
+
+  // Check if the selected resource is a launchpad (deployment or statefulset)
+  const isLaunchpadResource =
+    selectedResource?.resourceType === "deployment" ||
+    selectedResource?.resourceType === "statefulset";
+  const isAvailable = stage === "manage_resource" && isLaunchpadResource;
+
   useCopilotAction({
     name: "updateLaunchpad",
     description: "Update a launchpad configuration (resource, ports, etc.)",
     // followUp: false,
-    available: stage === "manage_resource" ? "enabled" : "disabled",
+    available: isAvailable ? "enabled" : "disabled",
     parameters: jsonSchemaToActionParameters(
       zodToJsonSchema(
         z.object({
@@ -81,10 +89,18 @@ function updateLaunchpadAction() {
 
 export const launchpadLifecycleAction = () => {
   const { stage } = useLanggraphState();
+  const { selectedResource } = useProjectState();
+
+  // Check if the selected resource is a launchpad (deployment or statefulset)
+  const isLaunchpadResource =
+    selectedResource?.resourceType === "deployment" ||
+    selectedResource?.resourceType === "statefulset";
+  const isAvailable = stage === "manage_resource" && isLaunchpadResource;
+
   useCopilotAction({
     name: "launchpadLifecycle",
     description: "Manage launchpad lifecycle (start, pause, delete)",
-    available: stage === "manage_resource" ? "enabled" : "disabled",
+    available: isAvailable ? "enabled" : "disabled",
     parameters: [
       {
         name: "launchpadName",
@@ -119,13 +135,23 @@ export const getLaunchpadDataAction = () => {
   const { launchpad } = useTRPCClients();
   const queryClient = useQueryClient();
 
+  // Check if the selected resource is a launchpad (deployment or statefulset)
+  const isLaunchpadResource =
+    selectedResource?.resourceType === "deployment" ||
+    selectedResource?.resourceType === "statefulset";
+  const isAvailable = stage === "manage_resource" && isLaunchpadResource;
+
   useCopilotAction({
     name: "getLaunchpadData",
-    available: stage === "manage_resource" ? "enabled" : "disabled",
+    available: isAvailable ? "enabled" : "disabled",
     description:
       "Get detailed information about the currently selected launchpad",
     handler: async () => {
-      if (!selectedResource || selectedResource.resourceType !== "deployment") {
+      if (
+        !selectedResource ||
+        (selectedResource.resourceType !== "deployment" &&
+          selectedResource.resourceType !== "statefulset")
+      ) {
         throw new Error(
           "No launchpad resource selected. Please select a launchpad first."
         );

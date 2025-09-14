@@ -11,37 +11,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import { convertSimplePortOpsToFormPorts } from "@/lib/copilot/sealos/devbox/copilot-devbox-utils";
 import { useQuery } from "@tanstack/react-query";
-import { Cpu, MemoryStick } from "lucide-react";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
-
-// Component to display current devbox resource information
-const DevboxResourceDisplay = ({ resource }: { resource?: DevboxObject['resources'] }) => {
-  if (!resource) return null;
-
-  return (
-    <div className="border border-dashed rounded-lg p-3 mb-4">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="font-medium text-sm">Current Resource Configuration</h3>
-      </div>
-      <div className="flex items-center justify-around">
-        <div className="flex flex-col items-center gap-1">
-          <div className="text-xs text-muted-foreground">CPU</div>
-          <div className="text-sm font-medium">
-            {resource?.cpu ? `${resource.cpu}Core` : "N/A"}
-          </div>
-        </div>
-        <div className="flex flex-col items-center gap-1">
-          <div className="text-xs text-muted-foreground">Memory</div>
-          <div className="text-sm font-medium">
-            {resource?.memory ? `${resource.memory}GB` : "N/A"}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // Component that handles the success message and system message appending
 const DevboxUpdateSuccessMessage = ({ args }: { args: any }) => {
@@ -58,7 +29,7 @@ const DevboxUpdateSuccessMessage = ({ args }: { args: any }) => {
           <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
           <p className="text-sm">Devbox updated successfully</p>
         </div>
-        <Button onClick={handleNodeSelect} variant="outline" size="sm">
+        <Button onClick={() => handleNodeSelect()} variant="outline" size="sm">
           View devbox details
         </Button>
       </div>
@@ -97,7 +68,7 @@ export const DevboxUpdateActionMessage: React.FC<
 
   const handleSubmit = async (data: DevboxUpdateFormData) => {
     try {
-      await updateDevbox(args.devboxName, data);
+      await updateDevbox(data);
     } catch (error) {
       console.error("Failed to update devbox:", error);
     }
@@ -109,33 +80,15 @@ export const DevboxUpdateActionMessage: React.FC<
   }
 
   // Extract update data from args (excluding devboxName)
-  const {
-    devboxName,
-    ports: simplePortsBatch,
-    resource,
-    ...updateRest
-  } = args as any;
-
-  // Determine if we should use simple ports mode (when simple port operations are provided)
-  const useSimplePortsMode = Boolean(simplePortsBatch?.payload?.length);
+  const { devboxName, resource, ...updateRest } = args as any;
 
   // Build defaultValues for the update form
   const defaultValues: Partial<DevboxUpdateFormData> | undefined =
     existingDevbox
-      ? useSimplePortsMode
-        ? {
-            resource,
-            simplePorts: simplePortsBatch?.payload || [],
-            ...updateRest,
-          }
-        : {
-            resource,
-            ports: convertSimplePortOpsToFormPorts(
-              (existingDevbox as any)?.ports || [],
-              simplePortsBatch?.payload
-            ),
-            ...updateRest,
-          }
+      ? {
+          resource,
+          ...updateRest,
+        }
       : undefined;
 
   return (
@@ -159,19 +112,13 @@ export const DevboxUpdateActionMessage: React.FC<
           </div>
         </div>
       ) : (
-        <div className="w-full">
-          {/* Display current resource configuration */}
-          <DevboxResourceDisplay resource={existingDevbox?.resources} />
-          
-          <DevboxUpdateForm
-            defaultValues={defaultValues}
-            onSubmit={handleSubmit}
-            isLoading={status === "inProgress" || isLoading}
-            hideDefaultButton={true}
-            useSimplePortsMode={useSimplePortsMode}
-            hidePorts={true}
-          />
-        </div>
+        <DevboxUpdateForm
+          defaultValues={defaultValues}
+          onSubmit={handleSubmit}
+          isLoading={status === "inProgress" || isLoading}
+          hideDefaultButton={true}
+          hidePorts={true}
+        />
       )}
     </BaseActionMessage>
   );

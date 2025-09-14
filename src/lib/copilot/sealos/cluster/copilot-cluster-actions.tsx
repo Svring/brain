@@ -44,7 +44,7 @@ export const createClusterAction = () => {
   const { stage } = useLanggraphState();
   useCopilotAction({
     name: "createCluster",
-    description: "Create a new database cluster with specified configuration",
+    description: "Create a new cluster/database with specified configuration",
     available: stage === "manage_resource" ? "enabled" : "disabled",
     // followUp: false,
     parameters: jsonSchemaToActionParameters(
@@ -64,10 +64,16 @@ export const createClusterAction = () => {
 
 export const updateClusterAction = () => {
   const { stage } = useLanggraphState();
+  const { selectedResource } = useProjectState();
+  
+  // Check if the selected resource is a cluster/database
+  const isClusterResource = selectedResource?.resourceType === "cluster";
+  const isAvailable = stage === "manage_resource" && isClusterResource;
+  
   useCopilotAction({
     name: "updateCluster",
-    description: "Update a cluster configuration (resource, etc.)",
-    available: stage === "manage_resource" ? "enabled" : "disabled",
+    description: "Update a cluster/database configuration (resource, etc.)",
+    available: isAvailable ? "enabled" : "disabled",
     // followUp: false,
     parameters: jsonSchemaToActionParameters(
       zodToJsonSchema(ClusterUpdateRuntimeSchema) as any
@@ -86,16 +92,22 @@ export const updateClusterAction = () => {
 
 export const clusterLifecycleAction = () => {
   const { stage } = useLanggraphState();
+  const { selectedResource } = useProjectState();
+  
+  // Check if the selected resource is a cluster/database
+  const isClusterResource = selectedResource?.resourceType === "cluster";
+  const isAvailable = stage === "manage_resource" && isClusterResource;
+  
   useCopilotAction({
     name: "clusterLifecycle",
-    description: "Manage cluster lifecycle (start, pause)",
-    available: stage === "manage_resource" ? "enabled" : "disabled",
+    description: "Manage cluster/database lifecycle (start, pause)",
+    available: isAvailable ? "enabled" : "disabled",
     parameters: [
       {
         name: "clusterName",
         type: "string",
         required: true,
-        description: "Name of the cluster",
+        description: "Name of the cluster/database",
       },
       {
         name: "action",
@@ -124,13 +136,17 @@ export const getClusterDataAction = () => {
   const { cluster } = useTRPCClients();
   const queryClient = useQueryClient();
 
+  // Check if the selected resource is a cluster/database
+  const isClusterResource = selectedResource?.resourceType === "cluster";
+  const isAvailable = stage === "manage_resource" && isClusterResource;
+
   useCopilotAction({
     name: "getClusterData",
-    available: stage === "manage_resource" ? "enabled" : "disabled",
-    description: "Get detailed information about the currently selected cluster",
+    available: isAvailable ? "enabled" : "disabled",
+    description: "Get detailed information about the currently selected cluster/database",
     handler: async () => {
       if (!selectedResource || selectedResource.resourceType !== "cluster") {
-        throw new Error("No cluster resource selected. Please select a cluster first.");
+        throw new Error("No cluster/database resource selected. Please select a cluster/database first.");
       }
 
       const result = await queryClient.fetchQuery(
@@ -150,7 +166,7 @@ export const getClusterDataAction = () => {
               <div className="flex items-center gap-2">
                 <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
                 <p className="text-sm">
-                  Successfully retrieved cluster data for "{result.resourceName}"
+                  Successfully retrieved cluster/database data for "{result.resourceName}"
                 </p>
               </div>
             </div>

@@ -48,6 +48,7 @@ export const proposeProjectAction = () => {
 
 export const addResourceToProjectAction = () => {
   const { stage } = useLanggraphState();
+  const { selectedProject } = useProjectState();
   useCopilotAction({
     name: "add_resource_to_project",
     available: stage === "manage_project" ? "enabled" : "disabled",
