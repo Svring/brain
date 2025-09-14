@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/command";
 import { CommandPanelMain } from "./command-panel-main";
 import { ResourceList, ResourceCreate } from "./command-panel-add-resource";
+import { ManageResources } from "./command-panel-manage-resources";
 import { useCommandActions } from "./command-actions";
 
 interface FlowgraphCommandDialogProps {
@@ -24,6 +25,7 @@ export function FlowgraphCommandDialog({
   const [search, setSearch] = useState("");
   const [selectedCommand, setSelectedCommand] = useState<string | null>(null);
   const [showResourceList, setShowResourceList] = useState(false);
+  const [showManageResources, setShowManageResources] = useState(false);
 
   // Reset state when dialog is closed
   const handleOpenChange = (open: boolean) => {
@@ -31,6 +33,7 @@ export function FlowgraphCommandDialog({
       setSearch("");
       setSelectedCommand(null);
       setShowResourceList(false);
+      setShowManageResources(false);
     }
     onOpenChange(open);
   };
@@ -40,6 +43,7 @@ export function FlowgraphCommandDialog({
     setSearch,
     setSelectedCommand,
     setShowResourceList,
+    setShowManageResources,
   });
 
   // Handle keyboard events
@@ -52,6 +56,8 @@ export function FlowgraphCommandDialog({
         event.preventDefault();
         if (selectedCommand) {
           setSelectedCommand(null);
+        } else if (showManageResources) {
+          setShowManageResources(false);
         } else if (showResourceList) {
           setShowResourceList(false);
         }
@@ -60,7 +66,7 @@ export function FlowgraphCommandDialog({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, selectedCommand, showResourceList]);
+  }, [isOpen, selectedCommand, showResourceList, showManageResources]);
 
   return (
     <CommandDialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -82,6 +88,11 @@ export function FlowgraphCommandDialog({
               <ResourceCreate
                 resourceId={selectedCommand}
                 onBack={() => setSelectedCommand(null)}
+              />
+            ) : showManageResources ? (
+              // Show manage resources dialog
+              <ManageResources
+                onBack={() => setShowManageResources(false)}
               />
             ) : showResourceList ? (
               // Show resource list when "Add Resource" is selected

@@ -25,7 +25,7 @@ export const useClusterLifecycle = (
       const message = "Cluster started successfully";
       toast.success(message);
       onSuccess?.(message);
-      invalidateQueries([cluster.get.queryKey(target)]);
+      invalidateQueries([cluster.get.queryKey()]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to start cluster";
@@ -40,7 +40,7 @@ export const useClusterLifecycle = (
       const message = "Cluster paused successfully";
       toast.success(message);
       onSuccess?.(message);
-      invalidateQueries([cluster.get.queryKey(target)]);
+      invalidateQueries([cluster.get.queryKey()]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to pause cluster";
@@ -60,7 +60,7 @@ export const useClusterLifecycle = (
         deleteRequest.name
       ) as CustomResourceTarget;
       invalidateQueries([
-        cluster.get.queryKey(target),
+        cluster.get.queryKey(),
         project.getResources.queryKey(),
       ]);
     },

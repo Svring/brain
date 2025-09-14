@@ -55,7 +55,7 @@ export default function AiChatbox() {
               // Add a small delay to ensure spinner is visible
               setTimeout(() => {
                 setIsLoading(false);
-              }, 300);
+              }, 100);
             },
             onError: (error) => {
               console.error("Failed to append system message:", error);
@@ -70,7 +70,7 @@ export default function AiChatbox() {
         setTimeout(() => {
           setMessages(convertThreadToCopilotKitMessages(thread));
           setIsLoading(false);
-        }, 300);
+        }, 100);
       }
     };
 

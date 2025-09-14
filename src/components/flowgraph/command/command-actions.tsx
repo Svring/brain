@@ -5,6 +5,7 @@ interface CommandActionsProps {
   setSearch: (search: string) => void;
   setSelectedCommand: (command: string | null) => void;
   setShowResourceList: (show: boolean) => void;
+  setShowManageResources: (show: boolean) => void;
 }
 
 export function useCommandActions({
@@ -12,17 +13,21 @@ export function useCommandActions({
   setSearch,
   setSelectedCommand,
   setShowResourceList,
+  setShowManageResources,
 }: CommandActionsProps) {
   const resetAndClose = () => {
     onOpenChange(false);
     setSearch("");
     setSelectedCommand(null);
     setShowResourceList(false);
+    setShowManageResources(false);
   };
 
   const handleSelect = (value: string) => {
     if (value === "add-resource") {
       setShowResourceList(true);
+    } else if (value === "manage-resources") {
+      setShowManageResources(true);
     }
   };
 
@@ -33,6 +38,8 @@ export function useCommandActions({
   const handleBack = () => {
     if (setSelectedCommand) {
       setSelectedCommand(null);
+    } else if (setShowManageResources) {
+      setShowManageResources(false);
     } else {
       setShowResourceList(false);
     }

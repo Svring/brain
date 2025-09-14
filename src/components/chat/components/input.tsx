@@ -23,6 +23,8 @@ export function AiChatInput({
   const { mutate: sendMessage } = useSendMessageMutation();
   const { stopGeneration, isLoading } = useCopilotChatHeadless_c();
 
+  console.log("isLoading", isLoading);
+
   // Use resource threads to get the latest thread
   const { latestThreadId } = useThreads();
 

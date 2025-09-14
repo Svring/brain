@@ -25,10 +25,7 @@ export const useLaunchpadLifecycle = (
       const message = "Launchpad started successfully";
       toast.success(message);
       onSuccess?.(message);
-      invalidateQueries([
-        launchpad.list.queryKey(),
-        launchpad.get.queryKey(target),
-      ]);
+      invalidateQueries([launchpad.list.queryKey(), launchpad.get.queryKey()]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to start launchpad";
@@ -43,10 +40,7 @@ export const useLaunchpadLifecycle = (
       const message = "Launchpad paused successfully";
       toast.success(message);
       onSuccess?.(message);
-      invalidateQueries([
-        launchpad.list.queryKey(),
-        launchpad.get.queryKey(target),
-      ]);
+      invalidateQueries([launchpad.list.queryKey(), launchpad.get.queryKey()]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to pause launchpad";
@@ -63,7 +57,7 @@ export const useLaunchpadLifecycle = (
       onSuccess?.(message);
       invalidateQueries([
         launchpad.list.queryKey(),
-        launchpad.get.queryKey(target),
+        launchpad.get.queryKey(),
         project.getResources.queryKey(),
       ]);
     },

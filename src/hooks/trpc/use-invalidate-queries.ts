@@ -12,7 +12,8 @@ export const useInvalidateQueries = () => {
     invalidateProjectResources = false
   ) => {
     console.log("Invalidating queries:", queryKeys);
-    setTimeout(() => {
+
+    const performInvalidation = () => {
       queryKeys.forEach((queryKey) => {
         if (invalidateProjectResources) {
           refresh();
@@ -20,7 +21,15 @@ export const useInvalidateQueries = () => {
         const key = typeof queryKey === "function" ? queryKey() : queryKey;
         queryClient.invalidateQueries({ queryKey: key });
       });
-    }, 1000);
+    };
+
+    // Initial invalidation after 1s
+    setTimeout(performInvalidation, 1000);
+
+    // Additional invalidations at 3s, 5s, and 10s
+    setTimeout(performInvalidation, 3000);
+    setTimeout(performInvalidation, 5000);
+    setTimeout(performInvalidation, 10000);
   };
 
   return { invalidateQueries };

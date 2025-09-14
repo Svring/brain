@@ -23,7 +23,7 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
       const message = "Devbox started successfully";
       toast.success(message);
       onSuccess?.(message);
-      invalidateQueries([devbox.list.queryKey(), devbox.get.queryKey(target)]);
+      invalidateQueries([devbox.list.queryKey(), devbox.get.queryKey()]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to start devbox";
@@ -38,7 +38,7 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
       const message = "Devbox paused successfully";
       toast.success(message);
       onSuccess?.(message);
-      invalidateQueries([devbox.list.queryKey(), devbox.get.queryKey(target)]);
+      invalidateQueries([devbox.list.queryKey(), devbox.get.queryKey()]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to pause devbox";
@@ -53,7 +53,7 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
       const message = "Devbox restarted successfully";
       toast.success(message);
       onSuccess?.(message);
-      invalidateQueries([devbox.list.queryKey(), devbox.get.queryKey(target)]);
+      invalidateQueries([devbox.list.queryKey(), devbox.get.queryKey()]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to restart devbox";
@@ -68,7 +68,7 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
       const message = "Devbox shutdown successfully";
       toast.success(message);
       onSuccess?.(message);
-      invalidateQueries([devbox.list.queryKey(), devbox.get.queryKey(target)]);
+      invalidateQueries([devbox.list.queryKey(), devbox.get.queryKey()]);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to shutdown devbox";
@@ -83,10 +83,7 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
       const message = "Devbox deleted successfully";
       toast.success(message);
       onSuccess?.(message);
-      invalidateQueries(
-        [devbox.list.queryKey(), devbox.get.queryKey(target)],
-        true
-      );
+      invalidateQueries([devbox.list.queryKey(), devbox.get.queryKey()], true);
     },
     onError: (error: any) => {
       const message = error.message || "Failed to delete devbox";
