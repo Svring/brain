@@ -3,15 +3,47 @@ import { usePathname } from "next/navigation";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useLanggraphAgent } from "@/hooks/langgraph/use-langgraph-agent";
 import { useLanggraphContext } from "@/contexts/langgraph/langgraph-context";
+import { useChatState } from "@/contexts/chat/chat-context";
 
 export const useOrchestratorStageManagement = () => {
   const pathname = usePathname();
-  const { selectedProject } = useProjectState();
+  const { selectedProject, selectedResource, selectedProjectResources } =
+    useProjectState();
   const { state: langgraphState } = useLanggraphContext();
   const { setState: setLanggraphState } = useLanggraphAgent();
+  const { sidebarChatOpen } = useChatState();
 
   useEffect(() => {
-    const stage = pathname === "/home" ? "propose_project" : "manage_project";
-    setLanggraphState({ ...langgraphState.context, stage });
-  }, [pathname, langgraphState.context.stage]);
+    let stage: "propose_project" | "manage_project" | "manage_resource";
+    let updatedContext = { ...langgraphState.context };
+
+    if (pathname === "/home") {
+      stage = "propose_project";
+    } else if (selectedResource !== null) {
+      stage = "manage_resource";
+      // Set resource context with selected_resource_context from langgraph state
+      const selectedResourceContext =
+        langgraphState.context.resource_context?.selected_resource_context;
+      updatedContext.resource_context = {
+        ...updatedContext.resource_context,
+        selected_resource_context: selectedResourceContext,
+      };
+    } else {
+      stage = "manage_project";
+      // Set project context to selectedProjectResources
+      updatedContext.project_context = {
+        ...updatedContext.project_context,
+        selectedProjectResources: selectedProjectResources,
+      };
+    }
+
+    setLanggraphState({ ...updatedContext, stage });
+  }, [
+    pathname,
+    selectedResource,
+    selectedProject,
+    selectedProjectResources,
+    sidebarChatOpen,
+    langgraphState.context.stage,
+  ]);
 };

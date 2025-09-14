@@ -67,6 +67,7 @@ export function useLanggraphState() {
     modelName: state.context.model_name,
     contextWindowUsage: state.context.context_window_usage,
     stage: state.context.stage,
+    resourceContext: state.context.resource_context,
     isIdle: state.matches("idle"),
     isActive: state.matches("active"),
     isLoading: state.matches("loading"),
@@ -91,7 +92,7 @@ export function useLanggraphActions() {
     setConfigFailed: () => {
       send({ type: "SET_CONFIG_FAILED" });
     },
-    setStage: (stage: "propose_project" | "manage_project") => {
+    setStage: (stage: "propose_project" | "manage_project" | "manage_resource") => {
       send({ type: "SET_STAGE", stage });
       setLanggraphState({ ...state.context, stage });
     },
@@ -104,6 +105,21 @@ export function useLanggraphActions() {
         type: "SET_CONTEXT_WINDOW_USAGE",
         context_window_usage: contextWindowUsage,
       });
+    },
+    setResourceContext: (resourceContext: any) => {
+      send({ type: "SET_RESOURCE_CONTEXT", resource_context: resourceContext });
+      setLanggraphState({ ...state.context, resource_context: resourceContext });
+    },
+    updateResourceContext: (resourceContext: any) => {
+      send({ type: "UPDATE_RESOURCE_CONTEXT", resource_context: resourceContext });
+      setLanggraphState({ 
+        ...state.context, 
+        resource_context: { ...state.context.resource_context, ...resourceContext }
+      });
+    },
+    clearResourceContext: () => {
+      send({ type: "CLEAR_RESOURCE_CONTEXT" });
+      setLanggraphState({ ...state.context, resource_context: {} });
     },
   };
 }

@@ -81,8 +81,9 @@ export type BrainState = {
   api_key: string;
   model_name: string;
   context_window_usage: number;
-  stage: "propose_project" | "manage_project";
+  stage: "propose_project" | "manage_project" | "manage_resource";
   project_context: ProjectContextState;
+  resource_context: any;
 };
 
 export type LanggraphEvent =
@@ -97,7 +98,7 @@ export type LanggraphEvent =
     }
   | {
       type: "SET_STAGE";
-      stage: "propose_project" | "manage_project";
+      stage: "propose_project" | "manage_project" | "manage_resource";
     }
   | {
       type: "SET_PROJECT_CONTEXT";
@@ -106,4 +107,15 @@ export type LanggraphEvent =
   | {
       type: "SET_CONTEXT_WINDOW_USAGE";
       context_window_usage: number;
+    }
+  | {
+      type: "SET_RESOURCE_CONTEXT";
+      resource_context: any;
+    }
+  | {
+      type: "UPDATE_RESOURCE_CONTEXT";
+      resource_context: any;
+    }
+  | {
+      type: "CLEAR_RESOURCE_CONTEXT";
     };

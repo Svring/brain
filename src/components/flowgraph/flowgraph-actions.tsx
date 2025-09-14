@@ -86,23 +86,6 @@ export function FlowgraphActions({
   return (
     <TooltipProvider>
       <div className="flex items-center gap-1">
-        {/* Command Button */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={handleOpenCommand}
-            >
-              <Command className="h-4 w-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Open Command Menu</p>
-          </TooltipContent>
-        </Tooltip>
-
         {/* Zoom In Button */}
         <Tooltip>
           <TooltipTrigger asChild>
@@ -168,6 +151,23 @@ export function FlowgraphActions({
           </TooltipTrigger>
           <TooltipContent>
             <p>Refresh</p>
+          </TooltipContent>
+        </Tooltip>
+
+        {/* Command Button */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={handleOpenCommand}
+            >
+              <Command className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Open Command Menu</p>
           </TooltipContent>
         </Tooltip>
 

@@ -108,9 +108,7 @@ export async function getDevboxReleases(
   name: string
 ): Promise<any> {
   const api = createDevboxAxios(context);
-  const response = await api.get("/releases", {
-    params: { devboxName: name },
-  });
+  const response = await api.get(`/${name}/release`);
   return response.data.data;
 }
 

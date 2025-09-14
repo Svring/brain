@@ -17,6 +17,8 @@ import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { toast } from "sonner";
 import _ from "lodash";
 import { useThreads } from "@/hooks/langgraph/use-threads";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
 
 interface UseNodeSelectParams {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -41,6 +43,10 @@ export const useNodeSelect = ({
     openSidebarChat,
     setPendingMessage,
   } = useChatActions();
+  const { updateResourceContext } = useLanggraphActions();
+
+  // Get resource status for the target
+  const { resource: resource_context } = useResourceStatus(target);
 
   if (!target) {
     return {
@@ -54,6 +60,11 @@ export const useNodeSelect = ({
     selectResource(target);
     selectNode(nodeId);
     openSidebarChat();
+
+    // Update resource context with the resource status
+    updateResourceContext({
+      selected_resource_context: resource_context,
+    });
 
     // If messageType is provided, set a pending message
     if (messageType) {

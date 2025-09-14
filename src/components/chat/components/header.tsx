@@ -20,6 +20,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
+import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
 import { convertThreadToCopilotKitMessages } from "@/lib/langgraph/langgraph-method/langgraph-utils";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
@@ -69,6 +70,7 @@ export function AiChatHeader({
 }: AiChatHeaderProps) {
   const { selectedResource, selectedProject } = useProjectState();
   const { selectedThreadId, sidebarChatMaximized } = useChatState();
+  const { stage } = useLanggraphState();
   const { closeSidebarChat, maximizeSidebar, minimizeSidebar, selectThread } =
     useChatActions();
   const { threads } = useThreads();
@@ -109,6 +111,19 @@ export function AiChatHeader({
       ? getResourceDefaultIcon(selectedResource.resourceType) ||
         "https://sealos.run/logo.svg"
       : "/sealos-brain-icon-grayscale.svg";
+
+  const getStageDisplay = () => {
+    switch (stage) {
+      case "propose_project":
+        return "Propose";
+      case "manage_project":
+        return "Manage Project";
+      case "manage_resource":
+        return "Manage Resource";
+      default:
+        return "Unknown";
+    }
+  };
 
   const handleNewChat = () =>
     createChatMutation.mutate(undefined, {
@@ -422,6 +437,9 @@ export function AiChatHeader({
                   <span className="text-sm truncate text-theme-blue">
                     Connected
                   </span>
+                  <span className="text-xs text-muted-foreground ml-auto">
+                    {getStageDisplay()}
+                  </span>
                 </div>
               </PopoverTrigger>
               <PopoverContent
@@ -451,6 +469,9 @@ export function AiChatHeader({
               <Link className="h-3 w-3 text-theme-blue" />
               <span className="text-sm truncate text-theme-blue">
                 Connected
+              </span>
+              <span className="text-xs text-muted-foreground ml-auto">
+                {getStageDisplay()}
               </span>
             </div>
           )}

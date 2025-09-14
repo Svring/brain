@@ -12,7 +12,7 @@ type ResourceSelectFunction<TResource = any, TSelected = any> = (
 ) => TSelected;
 
 export const useResourceStatus = <TSelected = any>(
-  target: CustomResourceTarget | BuiltinResourceTarget,
+  target: CustomResourceTarget | BuiltinResourceTarget | null,
   select?: ResourceSelectFunction<any, TSelected>
 ) => {
   const createReturn = (resource: any, query: any) => ({
@@ -56,6 +56,6 @@ export const useResourceStatus = <TSelected = any>(
     resource: undefined,
     status: undefined,
     isLoading: false,
-    error: new Error(`Unsupported target type: ${(target as any).type}`),
+    // error: new Error(`Unsupported target type: ${(target as any).type}`),
   };
 };

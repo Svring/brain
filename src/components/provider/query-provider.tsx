@@ -14,7 +14,7 @@ function makeQueryClient() {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 15 * 1000,
+        staleTime: 5 * 1000,
         refetchOnMount: true,
         refetchOnWindowFocus: true,
         refetchOnReconnect: true,

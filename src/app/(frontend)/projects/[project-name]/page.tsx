@@ -90,7 +90,7 @@ function ProjectFlow({
   );
   const { nodes, edges } = useFlowgraphState();
   const { onNodesChange, onEdgesChange } = useFlowgraphActions();
-  useCopilotActions();
+  // useCopilotActions();
 
   // console.log("isLoading", isLoading);
   // console.log("nodes", nodes);
@@ -208,7 +208,7 @@ export default function ProjectPage({
   useEffect(() => {
     selectProject(projectName);
     clearSelectedProjectResources();
-    setStage("manage_project");
+    // setStage("manage_project");
     // Trigger refresh to force re-fetching of flowgraph data
     refresh();
     return () => {

@@ -11,13 +11,14 @@ export const langgraphMachine = createMachine({
     api_key: "",
     model_name: "",
     context_window_usage: 0,
-    stage: "propose_project",
+    stage: "manage_project",
     project_context: {
       allProjects: [],
       selectedProject: "",
       selectedResource: null,
       selectedProjectResources: [],
     },
+    resource_context: {},
   },
   states: {
     loading: {
@@ -89,6 +90,24 @@ export const langgraphMachine = createMachine({
     SET_CONTEXT_WINDOW_USAGE: {
       actions: assign({
         context_window_usage: ({ event }) => event.context_window_usage,
+      }),
+    },
+    SET_RESOURCE_CONTEXT: {
+      actions: assign({
+        resource_context: ({ event }) => event.resource_context,
+      }),
+    },
+    UPDATE_RESOURCE_CONTEXT: {
+      actions: assign({
+        resource_context: ({ context, event }) => ({
+          ...context.resource_context,
+          ...event.resource_context,
+        }),
+      }),
+    },
+    CLEAR_RESOURCE_CONTEXT: {
+      actions: assign({
+        resource_context: () => ({}),
       }),
     },
   },

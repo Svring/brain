@@ -29,7 +29,7 @@ export default function AiChatbox() {
   const appendSystemMessageMutation = useAppendSystemMessageMutation();
   const [isLoading, setIsLoading] = useState(true); // Start with loading true
 
-  console.log("isLoading", isLoading);
+  // console.log("isLoading", isLoading);
 
   useEffect(() => {
     if (!sidebarChatOpen) {
@@ -37,7 +37,7 @@ export default function AiChatbox() {
       setIsLoading(true);
       return;
     }
-    
+
     if (threadsLoading) return;
 
     // Set loading to true when chatbox is opened and clear messages
@@ -61,9 +61,7 @@ export default function AiChatbox() {
             onSuccess: () => {
               clearPendingMessage();
               // Add a small delay to ensure spinner is visible
-              setTimeout(() => {
-                setIsLoading(false);
-              }, 100);
+              setIsLoading(false);
             },
             onError: (error) => {
               console.error("Failed to append system message:", error);
@@ -75,10 +73,8 @@ export default function AiChatbox() {
         );
       } else {
         // If no pending message, set messages after a brief delay to show spinner
-        setTimeout(() => {
-          setMessages(convertThreadToCopilotKitMessages(thread));
-          setIsLoading(false);
-        }, 100);
+        setMessages(convertThreadToCopilotKitMessages(thread));
+        setIsLoading(false);
       }
     };
 
@@ -130,14 +126,14 @@ export default function AiChatbox() {
           <AiMessages />
         )}
       </div>
-      
+
       {/* Show suggestions when no messages are present */}
       {!isLoading && messages && messages.length === 0 && (
         <div className="shrink-0">
           <SidebarSuggestions showResourceSuggestions={!!selectedResource} />
         </div>
       )}
-      
+
       <div className="p-2 pt-0 shrink-0 relative z-[9999]">
         <div className="max-w-3xl mx-auto">
           <AiChatInput />

@@ -20,6 +20,29 @@ const projectSuggestions = [
   "Add a postgresql database to the project",
 ];
 
+// Reusable suggestion item component
+interface SuggestionItemProps {
+  suggestion: string;
+  index: number;
+  onSuggestionClick: (suggestion: string) => void;
+}
+
+function SuggestionItem({ suggestion, index, onSuggestionClick }: SuggestionItemProps) {
+  return (
+    <div className="flex items-center hover:bg-background-tertiary p-1 rounded-lg">
+      <span className="text-sm text-muted-foreground font-medium">
+        {index + 1}.
+      </span>
+      <span
+        onClick={() => onSuggestionClick(suggestion)}
+        className="text-left px-3 whitespace-normal flex-1 cursor-pointer transition-colors text-sm"
+      >
+        {suggestion}
+      </span>
+    </div>
+  );
+}
+
 export default function SidebarSuggestions({
   onSuggestionClick,
   showResourceSuggestions = false,
@@ -54,37 +77,24 @@ export default function SidebarSuggestions({
               /* Resource-specific suggestions */
               <div className="flex flex-col gap-2">
                 {resourceSuggestions.map((suggestion, index) => (
-                  <div key={`resource-${index}`} className="flex items-center hover:bg-background-tertiary p-1 rounded-lg">
-                    <span className="text-sm text-muted-foreground font-medium">
-                      {index + 1}.
-                    </span>
-                    <span
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      className="text-left px-3 whitespace-normal flex-1 cursor-pointer transition-colors text-sm"
-                    >
-                      {suggestion}
-                    </span>
-                  </div>
+                  <SuggestionItem
+                    key={`resource-${index}`}
+                    suggestion={suggestion}
+                    index={index}
+                    onSuggestionClick={handleSuggestionClick}
+                  />
                 ))}
               </div>
             ) : (
               /* Project-level suggestions */
               <div className="flex flex-col gap-2">
                 {projectSuggestions.map((suggestion, index) => (
-                  <div
+                  <SuggestionItem
                     key={`project-${index}`}
-                    className="flex items-center gap-3"
-                  >
-                    <span className="text-sm text-muted-foreground font-medium min-w-[20px]">
-                      {index + 1}.
-                    </span>
-                    <span
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      className="text-left px-3 whitespace-normal flex-1 cursor-pointer transition-colors text-sm"
-                    >
-                      {suggestion}
-                    </span>
-                  </div>
+                    suggestion={suggestion}
+                    index={index}
+                    onSuggestionClick={handleSuggestionClick}
+                  />
                 ))}
               </div>
             )}
