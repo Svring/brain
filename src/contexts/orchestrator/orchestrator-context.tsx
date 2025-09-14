@@ -9,7 +9,6 @@ import { useOrchestratorStageManagement } from "@/hooks/contexts/orchestrator/us
 import { useOrchestratorSidebarMaximized } from "@/hooks/contexts/orchestrator/use-orchestrator-sidebar-maximized";
 import { useOrchestratorProjectCleanup } from "@/hooks/contexts/orchestrator/use-orchestrator-project-cleanup";
 import { useOrchestratorFitView } from "@/hooks/contexts/orchestrator/use-orchestrator-fitview";
-import { useOrchestratorLanggraphSync } from "@/hooks/contexts/orchestrator/use-orchestrator-langgraph-sync";
 
 interface OrchestratorContextValue {
   state: StateFrom<typeof orchestratorMachine>;
@@ -30,7 +29,6 @@ export const OrchestratorProvider = ({ children }: { children: ReactNode }) => {
   useOrchestratorSidebarMaximized({ state, send });
   useOrchestratorProjectCleanup({ state, send });
   useOrchestratorFitView();
-  useOrchestratorLanggraphSync();
 
   return (
     <OrchestratorContext.Provider value={{ state, send, actorRef }}>

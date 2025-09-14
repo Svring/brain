@@ -4,7 +4,6 @@ import { useMachine } from "@xstate/react";
 import { createContext, type ReactNode, useContext, useEffect } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import { langgraphMachine } from "@/contexts/langgraph/langgraph-machine";
-import { useLanggraphAgent } from "@/hooks/langgraph/use-langgraph-agent";
 import { ProjectContextState } from "@/contexts/project/project-machine";
 
 interface LanggraphContextValue {
@@ -78,7 +77,6 @@ export function useLanggraphState() {
 
 export function useLanggraphActions() {
   const { send, state } = useLanggraphContext();
-  const { setState: setLanggraphState } = useLanggraphAgent();
 
   return {
     setConfig: (config: {
@@ -87,18 +85,15 @@ export function useLanggraphActions() {
       model_name?: string;
     }) => {
       send({ type: "SET_CONFIG", ...config });
-      setLanggraphState({ ...state.context, ...config });
     },
     setConfigFailed: () => {
       send({ type: "SET_CONFIG_FAILED" });
     },
     setStage: (stage: "propose_project" | "manage_project" | "manage_resource") => {
       send({ type: "SET_STAGE", stage });
-      setLanggraphState({ ...state.context, stage });
     },
     setProjectContext: (projectContext: ProjectContextState) => {
       send({ type: "SET_PROJECT_CONTEXT", project_context: projectContext });
-      setLanggraphState({ ...state.context, project_context: projectContext });
     },
     setContextWindowUsage: (contextWindowUsage: number) => {
       send({
@@ -108,18 +103,12 @@ export function useLanggraphActions() {
     },
     setResourceContext: (resourceContext: any) => {
       send({ type: "SET_RESOURCE_CONTEXT", resource_context: resourceContext });
-      setLanggraphState({ ...state.context, resource_context: resourceContext });
     },
     updateResourceContext: (resourceContext: any) => {
       send({ type: "UPDATE_RESOURCE_CONTEXT", resource_context: resourceContext });
-      setLanggraphState({ 
-        ...state.context, 
-        resource_context: { ...state.context.resource_context, ...resourceContext }
-      });
     },
     clearResourceContext: () => {
       send({ type: "CLEAR_RESOURCE_CONTEXT" });
-      setLanggraphState({ ...state.context, resource_context: {} });
     },
   };
 }

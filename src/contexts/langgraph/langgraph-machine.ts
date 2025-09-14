@@ -7,17 +7,13 @@ export const langgraphMachine = createMachine({
   id: "langgraph",
   initial: "loading",
   context: {
+    messages: [],
     base_url: "",
     api_key: "",
     model_name: "",
     context_window_usage: 0,
     stage: "manage_project",
-    project_context: {
-      allProjects: [],
-      selectedProject: "",
-      selectedResource: null,
-      selectedProjectResources: [],
-    },
+    project_context: {},
     resource_context: {},
   },
   states: {

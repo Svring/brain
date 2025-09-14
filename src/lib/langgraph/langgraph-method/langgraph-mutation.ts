@@ -6,7 +6,6 @@ import {
   updateThreadState,
   deleteThread,
 } from "../langgraph-api/langgraph-api";
-import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { useChatActions } from "@/contexts/chat/chat-context";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useProjectState } from "@/contexts/project/project-context";
@@ -31,6 +30,7 @@ export const useCreateNewChatSessionMutation = (
 ) => {
   const { auth } = useAuthState();
   const { selectedProject, selectedResource } = useProjectState();
+  const { selectThread } = useChatActions();
   const updateThreadStateMutation = useUpdateThreadStateMutation();
   const queryClient = useQueryClient();
 
@@ -43,6 +43,13 @@ export const useCreateNewChatSessionMutation = (
       });
     },
     onSuccess: (data, variables) => {
+      // Select the newly created thread
+      if (data?.thread_id) {
+        selectThread(data.thread_id);
+      }
+
+      console.log("new thread created", data.thread_id);
+
       queryClient.refetchQueries({ queryKey: ["threads"] });
       // Invalidate searchThreadsOptions queries
       queryClient.refetchQueries({
@@ -61,9 +68,9 @@ export const useCreateNewChatSessionMutation = (
 
 /**
  * Hook for sending a single message to the chat and opening the sidebar
+ * Note: This is now handled by the useStream hook in components
  */
 export const useSendMessageMutation = () => {
-  const { sendMessage } = useCopilotChatHeadless_c();
   const { openSidebarChat } = useChatActions();
 
   return useMutation({
@@ -71,13 +78,6 @@ export const useSendMessageMutation = () => {
       role: "user" | "assistant" | "system";
       content: string;
     }) => {
-      // Send the message using sendMessage
-      sendMessage({
-        id: randomId(),
-        role: message.role,
-        content: message.content,
-      });
-
       // Open the sidebar chat
       openSidebarChat();
 
@@ -94,7 +94,6 @@ export const useSendMessageMutation = () => {
  */
 
 export const useAppendSystemMessageMutation = () => {
-  const { setMessages } = useCopilotChatHeadless_c();
   const { openSidebarChat } = useChatActions();
 
   return useMutation({
@@ -102,14 +101,10 @@ export const useAppendSystemMessageMutation = () => {
       type,
       target,
       payload,
-      currentMessages,
-      resetMessages,
     }: {
       type: string;
       target: CustomResourceTarget | BuiltinResourceTarget;
       payload?: any;
-      currentMessages?: any[];
-      resetMessages?: boolean;
     }) => {
       // Create system message data
       const systemMessageData: SystemMessage = {
@@ -118,31 +113,10 @@ export const useAppendSystemMessageMutation = () => {
         payload,
       };
 
-      // Send a message about the resource in current session
-      const baseMessages = currentMessages || [];
-      const newMessages = resetMessages
-        ? [
-            {
-              id: randomId(),
-              role: "system" as const,
-              content: JSON.stringify(systemMessageData),
-            },
-          ]
-        : [
-            ...baseMessages,
-            {
-              id: randomId(),
-              role: "system" as const,
-              content: JSON.stringify(systemMessageData),
-            },
-          ];
-
-      // console.log("newMessages", newMessages);
-
-      setMessages(newMessages);
+      // Open the sidebar chat
       openSidebarChat();
 
-      return newMessages;
+      return systemMessageData;
     },
     onError: (error) => {
       console.error("Failed to append system message:", error);

@@ -13,7 +13,6 @@ import {
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
 import type { PendingMessage } from "@/contexts/chat/chat-machine";
-import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { toast } from "sonner";
 import _ from "lodash";
 import { useThreads } from "@/hooks/langgraph/use-threads";

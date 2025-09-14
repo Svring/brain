@@ -4,35 +4,44 @@ import { Hero } from "@/components/ui/hero";
 import { AiChatInput } from "@/components/chat/components/input";
 import { AiMessages } from "@/components/chat/components/messages";
 import { motion } from "framer-motion";
-import { useLanggraphAgent } from "@/hooks/langgraph/use-langgraph-agent";
 import useProjectSearch from "@/hooks/brain/use-projects-search";
 import RecentProjects from "@/components/project/recent-projects";
 import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
 import { Button } from "@/components/ui/button";
 import { useRef } from "react";
 import { proposeProjectAction } from "@/lib/copilot/brain/project/copilot-project-actions";
-import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import Suggestions from "@/components/chat/components/suggestions";
+import { useChatState } from "@/contexts/chat/chat-context";
+import { useLanggraphStream } from "@/hooks/langgraph/use-langgraph-stream";
+import { useThreads } from "@/hooks/langgraph/use-threads";
+import { useMount } from "@reactuses/core";
 
 export default function HomePage() {
-  const { messages } = useCopilotChatHeadless_c();
-  const hasMessages = messages.length > 0;
-  const { filteredProjects, projects, isLoading, isError } = useProjectSearch();
+  const { selectedThreadId } = useChatState();
+  const {
+    filteredProjects,
+    projects,
+    isLoading: projectsLoading,
+    isError,
+  } = useProjectSearch();
   const { CreateProjectDialog, openDialog } = useProjectCreateDialog();
+  const { createNewThread } = useThreads();
   const messagesScrollRef = useRef<HTMLDivElement>(null);
+
+  const { messages, submit, stop, isLoading } = useLanggraphStream({
+    threadId: selectedThreadId || "",
+  });
+
+  // Create a new thread on mount
+  useMount(() => {
+    createNewThread.mutate();
+  });
+
+  const hasMessages = messages.length > 0;
 
   // Track visibility of recent projects
   const showRecentProjects = !hasMessages && projects && projects.length > 0;
   // const showRecentProjects = false;
-
-  proposeProjectAction();
-  useLanggraphAgent();
-
-  // useMount(() => {
-  //   setStage("propose_project");
-  // });
-
-  // console.log("projects", projects);
 
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden">
@@ -70,7 +79,11 @@ export default function HomePage() {
               className="flex-1 overflow-y-auto py-8"
             >
               <div className="max-w-3xl mx-auto w-full">
-                <AiMessages scrollRef={messagesScrollRef} />
+                <AiMessages
+                  messages={messages}
+                  isLoading={isLoading}
+                  scrollRef={messagesScrollRef}
+                />
               </div>
             </div>
           </motion.div>
@@ -92,6 +105,9 @@ export default function HomePage() {
             <AiChatInput
               className={`max-w-3xl${!hasMessages ? " min-h-[140px]" : ""}`}
               exhibition={!hasMessages}
+              submit={submit}
+              stop={stop}
+              isLoading={isLoading}
             />
             {!hasMessages && (
               <>
@@ -122,7 +138,7 @@ export default function HomePage() {
           >
             <RecentProjects
               projects={projects}
-              isLoading={isLoading}
+              isLoading={projectsLoading}
               isError={isError}
               displayProjects={filteredProjects.slice(0, 3)}
             />
@@ -130,7 +146,9 @@ export default function HomePage() {
         )}
 
         {/* Suggestions section - shown when recent projects are not visible and not loading */}
-        {!hasMessages && !showRecentProjects && !isLoading && <Suggestions />}
+        {!hasMessages && !showRecentProjects && !projectsLoading && (
+          <Suggestions />
+        )}
       </div>
     </div>
   );

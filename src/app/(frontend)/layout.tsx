@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import type React from "react";
 import Login from "@/components/auth/login";
-import { CopilotProvider } from "@/components/provider/copilot-provider";
 import QueryProvider from "@/components/provider/query-provider";
 import AppSidebar from "@/components/sidebar/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -19,7 +18,6 @@ import { getUser } from "@/payload/operations/users-operation";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import "@/styles/globals.css";
-import "@copilotkit/react-ui/styles.css";
 import {
   CircleCheckBigIcon,
   InfoIcon,
@@ -78,22 +76,20 @@ export default async function RootLayout({
             <AuthProvider payloadUser={payloadUser}>
               <QueryProvider>
                 <ChatProvider>
-                  <CopilotProvider>
-                    <LanggraphConfigWrapper>
-                      <ProjectProvider>
-                        <ReactFlowProvider>
-                          <FlowgraphProvider>
-                            <OrchestratorProvider>
-                              <SidebarProvider defaultOpen={false}>
-                                <AppSidebar />
-                                {children}
-                              </SidebarProvider>
-                            </OrchestratorProvider>
-                          </FlowgraphProvider>
-                        </ReactFlowProvider>
-                      </ProjectProvider>
-                    </LanggraphConfigWrapper>
-                  </CopilotProvider>
+                  <LanggraphConfigWrapper>
+                    <ProjectProvider>
+                      <ReactFlowProvider>
+                        <FlowgraphProvider>
+                          <OrchestratorProvider>
+                            <SidebarProvider defaultOpen={false}>
+                              <AppSidebar />
+                              {children}
+                            </SidebarProvider>
+                          </OrchestratorProvider>
+                        </FlowgraphProvider>
+                      </ReactFlowProvider>
+                    </ProjectProvider>
+                  </LanggraphConfigWrapper>
                 </ChatProvider>
               </QueryProvider>
             </AuthProvider>

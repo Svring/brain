@@ -49,6 +49,8 @@ export function AiMessages({
   const { setSidebarResponding } = useChatActions();
   const { scrollTrigger } = useChatState();
 
+  console.log("messages", messages);
+
   useEffect(() => {
     setSidebarResponding(isLoading);
   }, [isLoading]);

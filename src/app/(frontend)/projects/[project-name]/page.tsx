@@ -13,7 +13,7 @@ import { FlowgraphCommandDialog } from "@/components/flowgraph/command/flowgraph
 import { FlowgraphActions } from "@/components/flowgraph/flowgraph-actions";
 import FloatingConnectionLine from "@/components/flowgraph/edge/floating-connection-line";
 
-import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
+// import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
 import useFlowgraph from "@/hooks/flowgraph/use-flowgraph";
 import { useFlowgraphCommand } from "@/hooks/flowgraph/use-flowgraph-command";
 import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
@@ -89,7 +89,7 @@ function ProjectFlow({
   );
   const { nodes, edges } = useFlowgraphState();
   const { onNodesChange, onEdgesChange } = useFlowgraphActions();
-  useCopilotActions();
+  // useCopilotActions();
 
   // console.log("isLoading", isLoading);
   // console.log("nodes", nodes);

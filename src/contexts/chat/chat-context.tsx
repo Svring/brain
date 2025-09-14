@@ -2,12 +2,13 @@
 
 import { createBrowserInspector } from "@statelyai/inspect";
 import { useMachine } from "@xstate/react";
-import { createContext, type ReactNode, useContext } from "react";
+import { createContext, type ReactNode, useContext, useEffect } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import type { Thread } from "@langchain/langgraph-sdk";
 import { chatMachine, type PendingMessage } from "@/contexts/chat/chat-machine";
 import { useProjectActions } from "../project/project-context";
 import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useQueryState } from "nuqs";
 
 // const inspector = createBrowserInspector();
 
@@ -60,6 +61,16 @@ export function useChatState() {
 
 export function useChatActions() {
   const { send, state } = useChatContext();
+  const [threadId, setThreadId] = useQueryState("threadId", {
+    defaultValue: state.context.selectedThreadId || "",
+  });
+
+  // Sync URL state with chat context
+  useEffect(() => {
+    if (threadId && threadId !== state.context.selectedThreadId) {
+      send({ type: "SELECT_THREAD", threadId });
+    }
+  }, [threadId, state.context.selectedThreadId, send]);
 
   return {
     openSidebarChat: () => send({ type: "SET_SIDEBAR_CHAT_OPEN", open: true }),
@@ -116,6 +127,7 @@ export function useChatActions() {
 
     selectThread: (threadId: string | null) => {
       send({ type: "SELECT_THREAD", threadId });
+      setThreadId(threadId || "");
     },
     setThreads: (threads: Thread[]) => send({ type: "SET_THREADS", threads }),
 

@@ -6,80 +6,31 @@ import { AiChatInput } from "./input";
 import { AiChatHeader } from "./header";
 import { AiMessages } from "./messages";
 import { cn } from "@/lib/utils";
-import { useStream } from "@langchain/langgraph-sdk/react";
-import type { Message } from "@langchain/langgraph-sdk";
-import { useUpdateThreadStateMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { useQueryState } from "nuqs";
+// import { useLanggraphStateUpdate } from "@/hooks/langgraph/use-langgraph-state-update";
+import { useThreads } from "@/hooks/langgraph/use-threads";
+import { useLanggraphStream } from "@/hooks/langgraph/use-langgraph-stream";
 import { useEffect } from "react";
-import { listThreadsOptions } from "@/lib/langgraph/langgraph-method/langgraph-query";
-import { useQuery } from "@tanstack/react-query";
-import { useProjectState } from "@/contexts/project/project-context";
 
 export default function AiChatbox() {
   const { sidebarChatOpen, selectedThreadId } = useChatState();
-  const { apiKey, baseUrl, modelName, stage } = useLanggraphState();
-  const { mutate: updateThreadState } = useUpdateThreadStateMutation();
-  const {
-    selectedProject,
-    selectedResource,
-    selectedProjectResources,
-    selectedResourceContext,
-  } = useProjectState();
+  const { selectThread } = useChatActions();
+  const { latestThreadId, hasThreads } = useThreads();
 
-  const { data: threads } = useQuery(listThreadsOptions());
-
-  const [threadId, setThreadId] = useQueryState("threadId", {
-    defaultValue: selectedThreadId || threads?.[0]?.thread_id || "",
-  });
-
-  const { isLoading, stop, messages, values, submit } = useStream<{
-    messages: Message[];
-    api_key: string;
-    base_url: string;
-    model_name: string;
-  }>({
-    apiUrl: "http://localhost:2025",
-    assistantId: "orca",
-    messagesKey: "messages",
-    threadId: threadId,
-  });
-
+  // Select the latest thread when threads are loaded and no thread is currently selected
   useEffect(() => {
-    if (apiKey && baseUrl && modelName && stage) {
-      updateThreadState({
-        threadId: threadId,
-        state: {
-          values: {
-            api_key: apiKey,
-            base_url: baseUrl,
-            model_name: modelName,
-            stage: stage,
-            project_context: {
-              selectedProject,
-              selectedProjectResources,
-            },
-            resource_context: selectedResource
-              ? {
-                  selectedResource,
-                  selectedResourceContext,
-                }
-              : undefined,
-          },
-          as_node: "entry_node",
-        },
-      });
+    if (hasThreads && latestThreadId && !selectedThreadId) {
+      selectThread(latestThreadId);
     }
-  }, [
-    threadId,
-    apiKey,
-    baseUrl,
-    modelName,
-    stage,
-    selectedProject,
-    selectedProjectResources,
-    selectedResource,
-    selectedResourceContext,
-  ]);
+  }, [hasThreads, latestThreadId, selectedThreadId]);
+
+  // console.log("selectedThreadId", selectedThreadId);
+
+  const { isLoading, stop, messages, values, submit } = useLanggraphStream({
+    threadId: selectedThreadId || "",
+  });
+
+  // Use the extracted hook for updating langgraph state
+  // useLanggraphStateUpdate({ threadId: selectedThreadId || "" });
 
   return (
     <div

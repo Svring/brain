@@ -1,6 +1,7 @@
 // Langgraph Schema Types
 
 import { ProjectContextState } from "../project/project-machine";
+import type { Message } from "@langchain/langgraph-sdk";
 
 // All possible runtime names from the langgraph schema
 export type LanggraphRuntime =
@@ -77,12 +78,13 @@ export type ProjectProposal = {
 };
 
 export type BrainState = {
+  messages: Message[];
   base_url: string;
   api_key: string;
   model_name: string;
   context_window_usage: number;
   stage: "propose_project" | "manage_project" | "manage_resource";
-  project_context: ProjectContextState;
+  project_context: any;
   resource_context: any;
 };
 
