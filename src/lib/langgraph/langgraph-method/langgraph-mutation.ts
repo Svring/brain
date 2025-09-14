@@ -25,21 +25,23 @@ import { ThreadState } from "@langchain/langgraph-sdk";
 /**
  * Hook for creating a new chat session with copilot context management
  */
-export const useCreateNewChatSessionMutation = (
-  resourceTarget?: ResourceTarget
-) => {
+export const useCreateNewChatSessionMutation = () => {
   const { auth } = useAuthState();
-  const { selectedProject, selectedResource } = useProjectState();
   const { selectThread } = useChatActions();
-  const updateThreadStateMutation = useUpdateThreadStateMutation();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async ({
+      selectedProject,
+      resourceTarget,
+    }: {
+      selectedProject?: string;
+      resourceTarget?: ResourceTarget;
+    }) => {
       return await createThread({
         kubeconfig: auth?.kubeconfig || "",
         projectName: selectedProject || undefined,
-        resourceTarget: resourceTarget || selectedResource || null,
+        resourceTarget: resourceTarget || null,
       });
     },
     onSuccess: (data, variables) => {

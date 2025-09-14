@@ -6,7 +6,7 @@ import { Grid, List, FolderPlus, Workflow } from "lucide-react";
 import { ProjectProposalCard } from "./project-proposal-card";
 import { ProjectProposalPreview } from "./project-proposal-preview";
 import { useProjectCreate } from "@/hooks/brain/use-project-create";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import BaseActionMessage from "@/components/chat/messages/system-messages/components/base-action-message";
 import type { ProjectProposal } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 
 interface ProjectProposalPresentationProps {

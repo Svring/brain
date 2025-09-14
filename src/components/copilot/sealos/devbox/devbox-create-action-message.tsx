@@ -4,7 +4,7 @@ import React from "react";
 import { DevboxCreateForm } from "@/components/forms/devbox/devbox-create-form";
 import { DevboxCreateFormData } from "@/schemas/forms/devbox/devbox-create-form-schema";
 import { useDevboxCreate } from "@/hooks/sealos/devbox/use-devbox-create";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import BaseActionMessage from "@/components/chat/messages/system-messages/components/base-action-message";
 import { Code, CircleCheckBigIcon } from "lucide-react";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
@@ -37,12 +37,11 @@ const DevboxCreationSuccessMessage = ({ args }: { args: any }) => {
 interface DevboxCreateActionMessageProps {
   args: Partial<DevboxCreateFormData>;
   respond?: (message: string) => void;
-  status: "inProgress" | "complete" | "executing";
 }
 
 export const DevboxCreateActionMessage: React.FC<
   DevboxCreateActionMessageProps
-> = ({ args, respond, status }) => {
+> = ({ args, respond }) => {
   const { createDevbox, isLoading } = useDevboxCreate({ addToProject: true });
 
   const handleSubmit = async (data: DevboxCreateFormData) => {
@@ -55,26 +54,10 @@ export const DevboxCreateActionMessage: React.FC<
     }
   };
 
-  // Show completion message when status is complete
-  if (status === "complete") {
+  // Show completion message when args are provided (tool result display)
+  if (args && Object.keys(args).length > 0) {
     return <DevboxCreationSuccessMessage args={args} />;
   }
-
-  // Show spinner when status is executing
-  // if (status === "executing") {
-  //   return (
-  //     <div className="w-full p-4">
-  //       <div className="flex items-center justify-center p-8">
-  //         <div className="flex flex-col items-center gap-4">
-  //           <Spinner variant="circle" size={32} />
-  //           <p className="text-sm text-muted-foreground text-center">
-  //             Creating devbox...
-  //           </p>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
 
   return (
     <BaseActionMessage
@@ -83,12 +66,12 @@ export const DevboxCreateActionMessage: React.FC<
         name: "Create Devbox",
       }}
       formId="devbox-create-form"
-      isSubmitting={status === "inProgress" || isLoading}
+      isSubmitting={isLoading}
     >
       <DevboxCreateForm
         defaultValues={args}
         onSubmit={handleSubmit}
-        isLoading={status === "inProgress" || isLoading}
+        isLoading={isLoading}
         hideDefaultButton={true}
       />
     </BaseActionMessage>

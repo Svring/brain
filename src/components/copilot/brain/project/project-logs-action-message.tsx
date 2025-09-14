@@ -2,7 +2,7 @@
 
 import React from "react";
 import { FileText, CheckCircle, AlertCircle, XCircle } from "lucide-react";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import BaseActionMessage from "@/components/chat/messages/system-messages/components/base-action-message";
 import { parseClusterLogFiles } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
 import { parseLaunchpadLogFiles } from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-utils";
 // Define the log entry type based on the actual structure from getAllProjectLogs
@@ -14,7 +14,6 @@ interface ProjectLogEntry {
 
 interface ProjectLogsActionMessageProps {
   result: ProjectLogEntry[] | undefined;
-  status: "inProgress" | "complete" | "executing";
 }
 
 const getLogStatusIcon = (logs: any) => {
@@ -74,7 +73,6 @@ const getLogFiles = (resourceLogs: ProjectLogEntry): string[] => {
 
 export const ProjectLogsActionMessage: React.FC<ProjectLogsActionMessageProps> = ({
   result,
-  status,
 }) => {
   if (!result || result.length === 0) {
     return (
@@ -84,7 +82,7 @@ export const ProjectLogsActionMessage: React.FC<ProjectLogsActionMessageProps> =
           name: "Check All Logs",
         }}
         formId="project-logs-form"
-        isSubmitting={status === "inProgress"}
+        isSubmitting={false}
         onApply={() => {}}
         applyButtonText="Check Logs"
       >
@@ -105,7 +103,7 @@ export const ProjectLogsActionMessage: React.FC<ProjectLogsActionMessageProps> =
         name: "Check All Logs",
       }}
       formId="project-logs-form"
-      isSubmitting={status === "inProgress"}
+      isSubmitting={false}
       onApply={() => {}}
       applyButtonText="Check Logs"
     >

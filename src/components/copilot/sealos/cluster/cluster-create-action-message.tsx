@@ -4,7 +4,7 @@ import React from "react";
 import { ClusterCreateForm } from "@/components/forms/cluster/cluster-create-form";
 import { ClusterCreateFormData } from "@/schemas/forms/cluster/cluster-create-form-schema";
 import { useClusterCreate } from "@/hooks/sealos/cluster/use-cluster-create";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import BaseActionMessage from "@/components/chat/messages/system-messages/components/base-action-message";
 import { Database, CircleCheckBigIcon } from "lucide-react";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
@@ -36,13 +36,11 @@ const ClusterCreationSuccessMessage = ({ args }: { args: any }) => {
 interface ClusterCreateActionMessageProps {
   args: Partial<ClusterCreateFormData>;
   respond?: (message: string) => void;
-  status: "inProgress" | "complete" | "executing";
 }
 
 export const ClusterCreateActionMessage: React.FC<ClusterCreateActionMessageProps> = ({
   args,
   respond,
-  status,
 }) => {
   const { createCluster, isLoading } = useClusterCreate({ addToProject: true });
 
@@ -56,8 +54,8 @@ export const ClusterCreateActionMessage: React.FC<ClusterCreateActionMessageProp
     }
   };
 
-  // Show completion message when status is complete
-  if (status === "complete") {
+  // Show completion message when args are provided (tool result display)
+  if (args && Object.keys(args).length > 0) {
     return <ClusterCreationSuccessMessage args={args} />;
   }
 
@@ -68,12 +66,12 @@ export const ClusterCreateActionMessage: React.FC<ClusterCreateActionMessageProp
         name: "Create Cluster",
       }}
       formId="cluster-create-form"
-      isSubmitting={status === "inProgress" || isLoading}
+      isSubmitting={isLoading}
     >
       <ClusterCreateForm
         defaultValues={args}
         onSubmit={handleSubmit}
-        isLoading={status === "inProgress" || isLoading}
+        isLoading={isLoading}
         hideDefaultButton={true}
       />
     </BaseActionMessage>

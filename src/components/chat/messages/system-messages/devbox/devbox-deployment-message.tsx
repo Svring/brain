@@ -7,7 +7,7 @@ import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { APP_DEVBOX_ID } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-label";
 import { useLaunchpadLifecycle } from "@/hooks/sealos/launchpad/use-launchpad-lifecycle";
 import { useDevboxDeploy } from "@/hooks/sealos/devbox/use-devbox-deploy";
-import BaseSystemMessage from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
+import BaseSystemMessage from "@/components/chat/messages/system-messages/components/base-system-message";
 import {
   Trash2,
   Plus,

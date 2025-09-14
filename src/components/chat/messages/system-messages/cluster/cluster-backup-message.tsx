@@ -2,7 +2,7 @@
 
 import React from "react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import BaseSystemMessage from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
+import BaseSystemMessage from "@/components/chat/messages/system-messages/components/base-system-message";
 import {
   DatabaseBackup,
   Plus,

@@ -10,8 +10,6 @@ import { AddResourceToProjectActionMessage } from "@/components/copilot/brain/pr
 import { useFlowgraphResources } from "@/hooks/flowgraph/use-flowgraph-resources";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useQueryClient } from "@tanstack/react-query";
-import { jsonSchemaToActionParameters } from "@copilotkit/shared";
-import { zodToJsonSchema } from "zod-to-json-schema";
 import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
 import { useProjectState } from "@/contexts/project/project-context";
 import useProjectResources from "@/hooks/brain/use-project-resources";

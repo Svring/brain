@@ -1,7 +1,8 @@
 "use client";
 
 import { RenderTextMessage } from "../messages/text-message";
-import { SystemMessageType } from "../messages/system-messages.tsx/systemp-message-types";
+import { SystemMessageType } from "../messages/system-messages/systemp-message-types";
+import { ToolMessageType } from "../messages/tool-messages/tool-message-types";
 import { get } from "lodash";
 import { useAutoScroll } from "@/hooks/use-auto-scroll";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,53 @@ const SystemMessageRenderer = memo(function SystemMessageRenderer({
 
   const Component = type ? get(SystemMessageType, type) : null;
   return Component ? Component(target, payload) : null;
+});
+
+const ToolResultRenderer = memo(function ToolResultRenderer({
+  content,
+}: {
+  content: string;
+}) {
+  const { action, payload } = useMemo(() => {
+    try {
+      // First try to parse the outer content
+      const outerParsed = JSON.parse(content);
+
+      // If it has an action and payload, return them
+      if (outerParsed.action && outerParsed.payload) {
+        return {
+          action: outerParsed.action,
+          payload: outerParsed.payload,
+        };
+      }
+
+      // If it's just a string, return as is
+      return { action: null, payload: { content: content } };
+    } catch {
+      // If parsing fails, return the content as plain text
+      return { action: null, payload: { content: content } };
+    }
+  }, [content]);
+
+  // Try to get the specific component for this action
+  const Component = action ? get(ToolMessageType, action) : null;
+  
+  if (Component) {
+    return Component(payload);
+  }
+
+  // Fallback to plain text rendering
+  return (
+    <div className="flex justify-start w-full">
+      <div className="bg-background-secondary border border-border-primary rounded-lg p-4 max-w-full">
+        <div className="text-sm text-foreground">
+          <pre className="whitespace-pre-wrap break-words">
+            {JSON.stringify(payload, null, 2)}
+          </pre>
+        </div>
+      </div>
+    </div>
+  );
 });
 
 interface AiMessagesProps {
@@ -65,6 +113,9 @@ export function AiMessages({
           <RenderTextMessage message={message} inProgress={isCurrentMessage} />
           {message.type === "system" && typeof message.content === "string" && (
             <SystemMessageRenderer content={message.content} />
+          )}
+          {message.type === "tool" && typeof message.content === "string" && (
+            <ToolResultRenderer content={message.content} />
           )}
         </div>
       );

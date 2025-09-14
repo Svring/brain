@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
-import DevboxDropdownMenu from "@/components/chat/messages/system-messages.tsx/devbox/components/universal/devbox-dropdown-menu";
+import DevboxDropdownMenu from "@/components/chat/messages/system-messages/devbox/components/universal/devbox-dropdown-menu";
 
 export default function DevboxNodeMenu({ object }: { object: DevboxObject }) {
 

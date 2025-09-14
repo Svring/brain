@@ -4,7 +4,7 @@ import React from "react";
 import { LaunchpadCreateForm } from "@/components/forms/launchpad/launchpad-create-form";
 import { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
 import { useLaunchpadCreate } from "@/hooks/sealos/launchpad/use-launchpad-create";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import BaseActionMessage from "@/components/chat/messages/system-messages/components/base-action-message";
 import { Rocket, CircleCheckBigIcon } from "lucide-react";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
@@ -36,13 +36,11 @@ const LaunchpadCreationSuccessMessage = ({ args }: { args: any }) => {
 interface LaunchpadCreateActionMessageProps {
   args: Partial<LaunchpadCreateFormData>;
   respond?: (message: string) => void;
-  status: "inProgress" | "complete" | "executing";
 }
 
 export const LaunchpadCreateActionMessage: React.FC<LaunchpadCreateActionMessageProps> = ({
   args,
   respond,
-  status,
 }) => {
   const { createLaunchpad, isLoading } = useLaunchpadCreate({ addToProject: true });
 
@@ -56,8 +54,8 @@ export const LaunchpadCreateActionMessage: React.FC<LaunchpadCreateActionMessage
     }
   };
 
-  // Show completion message when status is complete
-  if (status === "complete") {
+  // Show completion message when args are provided (tool result display)
+  if (args && Object.keys(args).length > 0) {
     return <LaunchpadCreationSuccessMessage args={args} />;
   }
 
@@ -68,12 +66,12 @@ export const LaunchpadCreateActionMessage: React.FC<LaunchpadCreateActionMessage
         name: "Create Launchpad",
       }}
       formId="launchpad-create-form"
-      isSubmitting={status === "inProgress" || isLoading}
+      isSubmitting={isLoading}
     >
       <LaunchpadCreateForm
         defaultValues={args}
         onSubmit={handleSubmit}
-        isLoading={status === "inProgress" || isLoading}
+        isLoading={isLoading}
         hideDefaultButton={true}
       />
     </BaseActionMessage>

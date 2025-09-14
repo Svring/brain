@@ -6,7 +6,7 @@ import { FolderPlus, CircleCheckBigIcon } from "lucide-react";
 import { ProjectProposalCard } from "@/components/chat/state-cards/project-proposal/project-proposal-card";
 import { useProjectAddResource } from "@/hooks/brain/use-project-add-resource";
 import { useProjectState } from "@/contexts/project/project-context";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import BaseActionMessage from "@/components/chat/messages/system-messages/components/base-action-message";
 import type { ProjectResources } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 
 // Component that handles the success message
@@ -34,13 +34,11 @@ const AddResourceSuccessMessage = ({
 interface AddResourceToProjectActionMessageProps {
   resources: ProjectResources;
   respond?: (message: string) => void;
-  status: "inProgress" | "complete" | "executing";
 }
 
 export function AddResourceToProjectActionMessage({
   resources,
   respond,
-  status,
 }: AddResourceToProjectActionMessageProps) {
   const [internalResources, setInternalResources] =
     useState<ProjectResources>(resources);
@@ -64,8 +62,8 @@ export function AddResourceToProjectActionMessage({
     }
   };
 
-  // Show completion message when status is complete
-  if (status === "complete") {
+  // Show completion message when resources are provided (tool result display)
+  if (resources && Object.keys(resources).length > 0) {
     return (
       <AddResourceSuccessMessage
         args={resources}
@@ -92,8 +90,8 @@ export function AddResourceToProjectActionMessage({
         name: "Add Resources to Project",
       }}
       onApply={handleAddResources}
-      isSubmitting={status === "inProgress" || isAdding}
-      disabled={status === "inProgress" || isAdding || !selectedProject}
+      isSubmitting={isAdding}
+      disabled={isAdding || !selectedProject}
       applyButtonText="Add"
       className="bg-background-primary"
     >

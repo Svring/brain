@@ -8,7 +8,7 @@ import {
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { Loader2, FileText, CheckCircle } from "lucide-react";
 import { useResourceLogs } from "@/hooks/sealos/resource/use-resource-logs";
-import BaseSystemMessage from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
+import BaseSystemMessage from "@/components/chat/messages/system-messages/components/base-system-message";
 import { parseClusterLogFiles } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
 import { parseLaunchpadLogFiles } from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-utils";
 

@@ -21,7 +21,7 @@ import {
 import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-object-schema";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import LaunchpadDropdownMenu from "@/components/chat/messages/system-messages.tsx/launchpad/components/universal/launchpad-dropdown-menu";
+import LaunchpadDropdownMenu from "@/components/chat/messages/system-messages/launchpad/components/universal/launchpad-dropdown-menu";
 
 export default function DeploymentNodeMenu({
   object,

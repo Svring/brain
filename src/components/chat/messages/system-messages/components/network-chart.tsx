@@ -7,7 +7,7 @@ import {
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
-import { PortDisplayTable } from "@/components/chat/messages/system-messages.tsx/components/port-display-table";
+import { PortDisplayTable } from "@/components/chat/messages/system-messages/components/port-display-table";
 
 interface NetworkChartProps {
   target: CustomResourceTarget | BuiltinResourceTarget;

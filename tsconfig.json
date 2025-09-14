@@ -36,7 +36,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-  ],
+, "src/components/chat/messages/system-messages"  ],
   "exclude": [
     "node_modules"
   ]

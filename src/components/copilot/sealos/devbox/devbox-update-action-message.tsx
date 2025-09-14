@@ -4,7 +4,7 @@ import React from "react";
 import { DevboxUpdateForm } from "@/components/forms/devbox/devbox-update-form";
 import { DevboxUpdateFormData } from "@/schemas/forms/devbox/devbox-update-form-schema";
 import { useDevboxUpdate } from "@/hooks/sealos/devbox/use-devbox-update";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import BaseActionMessage from "@/components/chat/messages/system-messages/components/base-action-message";
 import { Code, Check, CircleCheckBigIcon } from "lucide-react";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 import { Spinner } from "@/components/ui/spinner";
@@ -43,12 +43,11 @@ interface DevboxUpdateActionMessageProps {
     [key: string]: any;
   };
   respond?: (message: string) => void;
-  status: "inProgress" | "complete" | "executing";
 }
 
 export const DevboxUpdateActionMessage: React.FC<
   DevboxUpdateActionMessageProps
-> = ({ args, respond, status }) => {
+> = ({ args, respond }) => {
   const { devbox } = useTRPCClients();
   const target = convertResourceTypeToTarget("devbox", args.devboxName);
 
@@ -74,8 +73,8 @@ export const DevboxUpdateActionMessage: React.FC<
     }
   };
 
-  // Show completion message when status is complete
-  if (status === "complete") {
+  // Show completion message when args are provided (tool result display)
+  if (args && Object.keys(args).length > 0) {
     return <DevboxUpdateSuccessMessage args={args} />;
   }
 
@@ -98,7 +97,7 @@ export const DevboxUpdateActionMessage: React.FC<
         name: "Update Devbox",
       }}
       formId="devbox-update-form"
-      isSubmitting={status === "inProgress" || isLoading || isLoadingDevbox}
+      isSubmitting={isLoading || isLoadingDevbox}
     >
       {isLoadingDevbox ? (
         <div className="w-full p-4">
@@ -115,7 +114,7 @@ export const DevboxUpdateActionMessage: React.FC<
         <DevboxUpdateForm
           defaultValues={defaultValues}
           onSubmit={handleSubmit}
-          isLoading={status === "inProgress" || isLoading}
+          isLoading={isLoading}
           hideDefaultButton={true}
           hidePorts={true}
         />

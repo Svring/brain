@@ -9,7 +9,7 @@ import type { DeploymentObject } from "@/lib/sealos/resources/deployment/deploym
 import type { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulset-object-schema";
 import { EnvVariablesTable } from "./env-variables-table";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import MessageHeader from "@/components/chat/messages/system-messages.tsx/components/base-resourec-message-header";
+import MessageHeader from "@/components/chat/messages/system-messages/components/base-resourec-message-header";
 import _ from "lodash";
 
 export default function EnvPanel() {

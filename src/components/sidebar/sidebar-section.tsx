@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { useChatActions } from "@/contexts/chat/chat-context";
+import { useThreads } from "@/hooks/langgraph/use-threads";
 
 // Types
 export interface NavigationItem {
@@ -46,10 +47,16 @@ export const MainSection: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const { closeSidebarChat } = useChatActions();
+  const { createNewThread } = useThreads();
 
   const handleNavigation = (path: string) => {
     if (path === "/home") {
       closeSidebarChat();
+      // Create a new thread when navigating to home
+      createNewThread.mutate({
+        selectedProject: undefined,
+        resourceTarget: undefined,
+      });
     }
     router.push(path);
   };

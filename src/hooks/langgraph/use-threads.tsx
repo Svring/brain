@@ -31,9 +31,7 @@ export const useThreads = () => {
   );
 
   // Create new thread mutation
-  const createNewThreadMutation = useCreateNewChatSessionMutation(
-    selectedResource || undefined
-  );
+  const createNewThreadMutation = useCreateNewChatSessionMutation();
 
   return {
     threads,

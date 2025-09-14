@@ -23,7 +23,7 @@ import { EnvironmentVariables } from "./components/universal/environment-variabl
 import { ConfigMap } from "./components/universal/config-map";
 import { Storage } from "./components/universal/storage";
 import { SuccessState } from "./components/launchpad-create/success-state";
-import { EnvTable } from "@/components/chat/messages/system-messages.tsx/components/env-table";
+import { EnvTable } from "@/components/chat/messages/system-messages/components/env-table";
 import {
   LaunchpadCreateRequestSchema,
   LaunchpadCreateRequest,

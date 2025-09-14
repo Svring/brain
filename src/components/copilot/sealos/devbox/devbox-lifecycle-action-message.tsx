@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
-import BaseResourceIcon from "@/components/chat/messages/system-messages.tsx/components/base-resource-icon";
+import BaseActionMessage from "@/components/chat/messages/system-messages/components/base-action-message";
+import BaseResourceIcon from "@/components/chat/messages/system-messages/components/base-resource-icon";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useDevboxLifecycle } from "@/hooks/sealos/devbox/use-devbox-lifecycle";
 import {
@@ -23,7 +23,6 @@ interface DevboxLifecycleActionMessageProps {
     devboxName: string;
   };
   respond?: (message: string) => void;
-  status: "inProgress" | "complete" | "executing";
   action: "start" | "pause" | "restart" | "shutdown" | "delete";
 }
 
@@ -106,7 +105,7 @@ const DevboxLifecycleSuccessMessage = ({
 
 export const DevboxLifecycleActionMessage: React.FC<
   DevboxLifecycleActionMessageProps
-> = ({ args, respond, status, action }) => {
+> = ({ args, respond, action }) => {
   const target = convertResourceTypeToTarget("devbox", args.devboxName);
   const config = getActionConfig(action);
   const { resource } = useResourceStatus(target);
@@ -118,8 +117,8 @@ export const DevboxLifecycleActionMessage: React.FC<
     }
   );
 
-  // Show completion message when status is complete
-  if (status === "complete") {
+  // Show completion message when args are provided (tool result display)
+  if (args && Object.keys(args).length > 0) {
     return <DevboxLifecycleSuccessMessage args={args} action={action} />;
   }
 
@@ -136,7 +135,7 @@ export const DevboxLifecycleActionMessage: React.FC<
         name: config.name,
       }}
       formId={`devbox-${action}-form`}
-      isSubmitting={status === "inProgress" || isPending(action)}
+      isSubmitting={isPending(action)}
       onApply={handleSubmit}
       applyButtonText={config.name}
     >

@@ -4,7 +4,7 @@ import React from "react";
 import { ObjectStorageCreateForm } from "@/components/forms/objectstorage/objectstorage-create-form";
 import { ObjectStorageCreateFormData } from "@/schemas/forms/objectstorage/objectstorage-create-form-schema";
 import { useObjectStorageCreate } from "@/hooks/sealos/objectstorage/use-objectstorage-create";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import BaseActionMessage from "@/components/chat/messages/system-messages/components/base-action-message";
 import { Database } from "lucide-react";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";

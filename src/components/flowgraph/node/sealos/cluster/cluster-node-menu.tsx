@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
-import ClusterDropdownMenu from "@/components/chat/messages/system-messages.tsx/cluster/components/universal/cluster-dropdown-menu";
+import ClusterDropdownMenu from "@/components/chat/messages/system-messages/cluster/components/universal/cluster-dropdown-menu";
 
 
 export default function ClusterNodeMenu({ object }: { object: ClusterObject }) {

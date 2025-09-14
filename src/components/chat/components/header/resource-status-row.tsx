@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/popover";
 import { getResourceDefaultIcon } from "@/lib/sealos/sealos-utils";
 import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
-import { SystemMessageType } from "@/components/chat/messages/system-messages.tsx/systemp-message-types";
+import { SystemMessageType } from "@/components/chat/messages/system-messages/systemp-message-types";
 
 interface ResourceStatusRowProps {
   selectedResource: any;

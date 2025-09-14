@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
-import BaseResourceIcon from "@/components/chat/messages/system-messages.tsx/components/base-resource-icon";
+import BaseActionMessage from "@/components/chat/messages/system-messages/components/base-action-message";
+import BaseResourceIcon from "@/components/chat/messages/system-messages/components/base-resource-icon";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useClusterLifecycle } from "@/hooks/sealos/cluster/use-cluster-lifecycle";
 import { Play, Pause, CircleCheckBigIcon } from "lucide-react";
@@ -16,7 +16,6 @@ interface ClusterLifecycleActionMessageProps {
     clusterName: string;
   };
   respond?: (message: string) => void;
-  status: "inProgress" | "complete" | "executing";
   action: "start" | "pause";
 }
 
@@ -75,7 +74,7 @@ const ClusterLifecycleSuccessMessage = ({
 
 export const ClusterLifecycleActionMessage: React.FC<
   ClusterLifecycleActionMessageProps
-> = ({ args, respond, status, action }) => {
+> = ({ args, respond, action }) => {
   const target = convertResourceTypeToTarget("cluster", args.clusterName);
   const config = getActionConfig(action);
   const { resource } = useResourceStatus(target);
@@ -85,8 +84,8 @@ export const ClusterLifecycleActionMessage: React.FC<
     onError: (message) => respond?.(message),
   });
 
-  // Show completion message when status is complete
-  if (status === "complete") {
+  // Show completion message when args are provided (tool result display)
+  if (args && Object.keys(args).length > 0) {
     return <ClusterLifecycleSuccessMessage args={args} action={action} />;
   }
 
@@ -103,7 +102,7 @@ export const ClusterLifecycleActionMessage: React.FC<
         name: config.name,
       }}
       formId={`cluster-${action}-form`}
-      isSubmitting={status === "inProgress" || isPending(action)}
+      isSubmitting={isPending(action)}
       onApply={handleSubmit}
       applyButtonText={config.name}
     >

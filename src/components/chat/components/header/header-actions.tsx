@@ -8,9 +8,6 @@ import {
   Focus,
   History,
 } from "lucide-react";
-import {
-  useCreateNewChatSessionMutation,
-} from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
 import { cn } from "@/lib/utils";
 import {

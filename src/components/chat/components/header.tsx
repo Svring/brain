@@ -2,10 +2,10 @@
 
 import { useProjectState } from "@/contexts/project/project-context";
 import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
-import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useState, useRef, useEffect } from "react";
 import { HeaderActions } from "./header/header-actions";
 import { ResourceStatusRow } from "./header/resource-status-row";
+import { useThreads } from "@/hooks/langgraph/use-threads";
 
 interface AiChatHeaderProps {
   title?: string;
@@ -20,15 +20,21 @@ export function AiChatHeader({
 }: AiChatHeaderProps) {
   const { selectedResource, selectedProject } = useProjectState();
   const { selectThread } = useChatActions();
-  const createChatMutation = useCreateNewChatSessionMutation();
+  const { createNewThread } = useThreads();
   const [isDetailPopoverOpen, setIsDetailPopoverOpen] = useState(false);
 
   const handleNewChat = () =>
-    createChatMutation.mutate(undefined, {
-      onSuccess: (newThread) => {
-        selectThread(newThread.thread_id as string);
+    createNewThread.mutate(
+      {
+        selectedProject: selectedProject || undefined,
+        resourceTarget: selectedResource || undefined,
       },
-    });
+      {
+        onSuccess: (newThread) => {
+          selectThread(newThread.thread_id as string);
+        },
+      }
+    );
 
   return (
     <div className={className}>

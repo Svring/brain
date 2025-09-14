@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
-import BaseResourceIcon from "@/components/chat/messages/system-messages.tsx/components/base-resource-icon";
+import BaseActionMessage from "@/components/chat/messages/system-messages/components/base-action-message";
+import BaseResourceIcon from "@/components/chat/messages/system-messages/components/base-resource-icon";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useLaunchpadLifecycle } from "@/hooks/sealos/launchpad/use-launchpad-lifecycle";
 import { Play, Pause, Trash2, CircleCheckBigIcon } from "lucide-react";
@@ -16,7 +16,6 @@ interface LaunchpadLifecycleActionMessageProps {
     launchpadName: string;
   };
   respond?: (message: string) => void;
-  status: "inProgress" | "complete" | "executing";
   action: "start" | "pause" | "delete";
 }
 
@@ -83,7 +82,7 @@ const LaunchpadLifecycleSuccessMessage = ({
 
 export const LaunchpadLifecycleActionMessage: React.FC<
   LaunchpadLifecycleActionMessageProps
-> = ({ args, respond, status, action }) => {
+> = ({ args, respond, action }) => {
   const target = convertResourceTypeToTarget("deployment", args.launchpadName);
   const config = getActionConfig(action);
   const { resource } = useResourceStatus(target);
@@ -93,8 +92,8 @@ export const LaunchpadLifecycleActionMessage: React.FC<
     onError: (message) => respond?.(message),
   });
 
-  // Show completion message when status is complete
-  if (status === "complete") {
+  // Show completion message when args are provided (tool result display)
+  if (args && Object.keys(args).length > 0) {
     return <LaunchpadLifecycleSuccessMessage args={args} action={action} />;
   }
 
@@ -111,7 +110,7 @@ export const LaunchpadLifecycleActionMessage: React.FC<
         name: config.name,
       }}
       formId={`launchpad-${action}-form`}
-      isSubmitting={status === "inProgress" || isPending(action)}
+      isSubmitting={isPending(action)}
       onApply={handleSubmit}
       applyButtonText={config.name}
     >

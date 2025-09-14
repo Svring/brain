@@ -1,5 +1,5 @@
 import React from "react";
-import { CombinedMetricsChart } from "@/components/chat/messages/system-messages.tsx/components/combined-metrics-chart";
+import { CombinedMetricsChart } from "@/components/chat/messages/system-messages/components/combined-metrics-chart";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import {
   CustomResourceTarget,

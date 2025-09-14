@@ -4,7 +4,7 @@ import React from "react";
 import { ClusterUpdateForm } from "@/components/forms/cluster/cluster-update-form";
 import { ClusterUpdateFormData } from "@/schemas/forms/cluster/cluster-update-form-schema";
 import { useClusterUpdate } from "@/hooks/sealos/cluster/use-cluster-update";
-import BaseActionMessage from "@/components/chat/messages/system-messages.tsx/components/base-action-message";
+import BaseActionMessage from "@/components/chat/messages/system-messages/components/base-action-message";
 import { Database, CircleCheckBigIcon } from "lucide-react";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 import { Button } from "@/components/ui/button";
@@ -36,12 +36,11 @@ const ClusterUpdateSuccessMessage = ({ args }: { args: any }) => {
 interface ClusterUpdateActionMessageProps {
   args: Partial<ClusterUpdateFormData> & { clusterName: string };
   respond?: (message: string) => void;
-  status: "executing" | "inProgress" | "complete";
 }
 
 export const ClusterUpdateActionMessage: React.FC<
   ClusterUpdateActionMessageProps
-> = ({ args, respond, status }) => {
+> = ({ args, respond }) => {
   const { clusterName, ...formData } = args;
 
   const { updateCluster, isLoading } = useClusterUpdate({
@@ -62,8 +61,8 @@ export const ClusterUpdateActionMessage: React.FC<
     }
   };
 
-  // Show completion message when status is complete
-  if (status === "complete") {
+  // Show completion message when args are provided (tool result display)
+  if (args && Object.keys(args).length > 0) {
     return <ClusterUpdateSuccessMessage args={args} />;
   }
 
@@ -74,15 +73,15 @@ export const ClusterUpdateActionMessage: React.FC<
         name: "Update Cluster",
       }}
       formId="cluster-update-form"
-      isSubmitting={status === "inProgress" || isLoading}
-      disabled={status === "inProgress" || isLoading}
+      isSubmitting={isLoading}
+      disabled={isLoading}
       applyButtonText="Update"
       className="bg-background-primary"
     >
       <ClusterUpdateForm
         defaultValues={formData}
         onSubmit={handleSubmit}
-        isLoading={status === "inProgress" || isLoading}
+        isLoading={isLoading}
         hideDefaultButton={true}
         formId="cluster-update-form"
       />

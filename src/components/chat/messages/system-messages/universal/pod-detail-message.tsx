@@ -16,8 +16,8 @@ import {
 import { Pod } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { ContainerStatus } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/pod-schemas";
 import { inferStatusColor } from "@/lib/sealos/sealos-utils";
-import BaseSystemMessage from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
-import { CombinedMetricsChart } from "@/components/chat/messages/system-messages.tsx/components/combined-metrics-chart";
+import BaseSystemMessage from "@/components/chat/messages/system-messages/components/base-system-message";
+import { CombinedMetricsChart } from "@/components/chat/messages/system-messages/components/combined-metrics-chart";
 
 interface PodDetailsProps {
   target: CustomResourceTarget | BuiltinResourceTarget;

@@ -4,7 +4,6 @@ import {
   useProjectState,
 } from "@/contexts/project/project-context";
 import {
-  useCreateNewChatSessionMutation,
   useSendMessageMutation,
 } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import {

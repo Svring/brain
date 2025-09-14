@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { BaseResourceMessage } from "@/components/chat/messages/system-messages.tsx/components/base-resource-message";
-import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-resource-message";
+import { BaseResourceMessage } from "@/components/chat/messages/system-messages/components/base-resource-message";
+import { MessageAction } from "@/components/chat/messages/system-messages/components/base-resource-message";
 import {
   FileText,
   Container,

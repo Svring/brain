@@ -5,7 +5,7 @@ import { Copy, ExternalLink, Database, Check } from "lucide-react";
 import { useCopy } from "@/hooks/use-copy";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { Button } from "@/components/ui/button";
-import BaseSystemMessage from "@/components/chat/messages/system-messages.tsx/components/base-system-message";
+import BaseSystemMessage from "@/components/chat/messages/system-messages/components/base-system-message";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface ClusterConnectionMessageProps {
