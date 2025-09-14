@@ -32,7 +32,7 @@ export const AISuggestion = ({
   suggestion,
   onClick,
   className,
-  variant = 'outline',
+  variant = 'ghost',
   size = 'sm',
   children,
   ...props
@@ -43,7 +43,7 @@ export const AISuggestion = ({
 
   return (
     <Button
-      className={cn('cursor-pointer rounded-full px-4', className)}
+      className={cn('cursor-pointer', className)}
       onClick={handleClick}
       size={size}
       type="button"

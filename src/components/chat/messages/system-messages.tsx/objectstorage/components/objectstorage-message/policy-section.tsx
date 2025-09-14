@@ -73,7 +73,7 @@ export const PolicyPopoverContent: React.FC<{
                 className="h-8 w-8"
                 onClick={() => {
                   setIsPolicyEditing(false);
-                  triggerScrollToBottom();
+                  //triggerScrollToBottom();
                 }}
                 disabled={isUpdating}
               >
@@ -100,7 +100,7 @@ export const PolicyPopoverContent: React.FC<{
               className="h-8 w-8"
               onClick={() => {
                 setIsPolicyEditing(true);
-                triggerScrollToBottom();
+                //triggerScrollToBottom();
               }}
               disabled={isUpdating}
             >

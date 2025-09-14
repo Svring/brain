@@ -62,7 +62,7 @@ function DeploymentNode({
 
   const mainCard = (
     <NodeConnect onConnect={handleConnect} target={target}>
-      <BaseNode target={target} nodeId={nodeId} messageType="launchpad.detail">
+      <BaseNode target={target} nodeId={nodeId}>
         <div className="flex h-full flex-col gap-2 justify-between">
           {/* Header with Name and Dropdown */}
           <div className="flex items-center justify-between">

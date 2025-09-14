@@ -11,7 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 export const activateProjectActions = () => {
   proposeProjectAction();
-  checkAllLogsAction();
+  // checkAllLogsAction();
 };
 
 export const proposeProjectAction = () => {

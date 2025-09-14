@@ -1,20 +1,17 @@
-// In Next.js, this file would be called: app/providers.tsx
+// app/providers.tsx
 "use client";
 
-// Since QueryClientProvider relies on useContext under the hood, we have to put 'use client' on top
 import {
   isServer,
   MutationCache,
   QueryClient,
   QueryClientProvider,
-  useQueryClient,
 } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-
 import TRPCProvider from "./trpc-provider";
 
 function makeQueryClient() {
-  return new QueryClient({
+  const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
         staleTime: 15 * 1000,
@@ -23,7 +20,17 @@ function makeQueryClient() {
         refetchOnReconnect: true,
       },
     },
+    mutationCache: new MutationCache({
+      onSuccess: (_data, _variables, _context, mutation) => {
+        // Use the queryClient instance from the outer scope
+        queryClient.invalidateQueries({
+          queryKey: mutation.options.mutationKey,
+        });
+      },
+    }),
   });
+
+  return queryClient;
 }
 
 let browserQueryClient: QueryClient | undefined = undefined;

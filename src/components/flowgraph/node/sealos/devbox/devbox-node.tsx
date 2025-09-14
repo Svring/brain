@@ -16,11 +16,7 @@ import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useQuery } from "@tanstack/react-query";
 
 // Simplified component that only accepts complete DevboxObject
-function DevboxNodeWrapper({
-  data,
-}: {
-  data: DevboxObject;
-}) {
+function DevboxNodeWrapper({ data }: { data: DevboxObject }) {
   // Construct node ID following the same pattern as other nodes
   const nodeId = `${data.kind.toLowerCase()}-${data.name}`;
 
@@ -63,7 +59,7 @@ function DevboxNode({
   );
 
   const mainCard = (
-    <BaseNode target={target} nodeId={nodeId} messageType="devbox.detail">
+    <BaseNode target={target} nodeId={nodeId}>
       <div className="flex h-full flex-col gap-2 justify-between">
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
@@ -107,7 +103,7 @@ function DevboxNode({
       mainCard={mainCard}
       data={Array.isArray(releasesData) ? releasesData : []}
       target={target}
-      messageType="devbox.release"
+      // messageType="devbox.release"
       nodeId={nodeId}
     />
   );

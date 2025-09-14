@@ -54,7 +54,6 @@ function StatefulsetNode({
       <BaseNode
         target={target}
         nodeId={nodeId}
-        messageType="launchpad.detail"
       >
         <div className="flex h-full flex-col gap-2 justify-between">
           {/* Header with Name and Dropdown */}

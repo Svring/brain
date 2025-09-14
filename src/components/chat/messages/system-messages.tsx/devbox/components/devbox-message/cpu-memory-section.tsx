@@ -80,7 +80,7 @@ export const CpuMemoryPopoverContent: React.FC<{
           className="flex-1"
           onClick={() => {
             setIsEditing(false);
-            triggerScrollToBottom();
+            //triggerScrollToBottom();
           }}
           disabled={isUpdating}
         >
@@ -132,7 +132,7 @@ export const CpuMemoryPopoverContent: React.FC<{
           className="w-full"
           onClick={() => {
             setIsEditing(true);
-            triggerScrollToBottom();
+            //triggerScrollToBottom();
           }}
         >
           Edit Resources

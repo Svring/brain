@@ -15,6 +15,7 @@ import { useProjectState } from "@/contexts/project/project-context";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { convertThreadToCopilotKitMessages } from "@/lib/langgraph/langgraph-method/langgraph-utils";
 import { Spinner } from "@/components/ui/spinner";
+import SidebarSuggestions from "./sidebar-suggestions";
 
 export default function AiChatbox() {
   const { sidebarChatOpen, selectedThreadId, pendingMessage } = useChatState();
@@ -23,15 +24,21 @@ export default function AiChatbox() {
   const { latestThreadId, hasThreads, threadsLoading, latestThread } =
     useThreads();
   const { selectedResource } = useProjectState();
-  const { setMessages } = useCopilotChatHeadless_c();
+  const { setMessages, messages } = useCopilotChatHeadless_c();
   const createChatMutation = useCreateNewChatSessionMutation();
   const appendSystemMessageMutation = useAppendSystemMessageMutation();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start with loading true
 
   console.log("isLoading", isLoading);
 
   useEffect(() => {
-    if (!sidebarChatOpen || threadsLoading) return;
+    if (!sidebarChatOpen) {
+      // Reset loading state when chatbox is closed
+      setIsLoading(true);
+      return;
+    }
+    
+    if (threadsLoading) return;
 
     // Set loading to true when chatbox is opened and clear messages
     setIsLoading(true);
@@ -42,6 +49,7 @@ export default function AiChatbox() {
 
       if (pendingMessage) {
         // Don't set messages yet, wait for system message to be appended
+        console.log("pendingMessage", pendingMessage);
         appendSystemMessageMutation.mutate(
           {
             type: pendingMessage.messageType,
@@ -112,7 +120,7 @@ export default function AiChatbox() {
         <span className="absolute left-1/2 top-0 h-full w-0.5 -translate-x-1/2 rounded bg-muted opacity-0 hover:opacity-100" />
       </button>
 
-      <AiChatHeader />
+      <AiChatHeader isLoading={isLoading} />
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
@@ -122,6 +130,14 @@ export default function AiChatbox() {
           <AiMessages />
         )}
       </div>
+      
+      {/* Show suggestions when no messages are present */}
+      {!isLoading && messages && messages.length === 0 && (
+        <div className="shrink-0">
+          <SidebarSuggestions showResourceSuggestions={!!selectedResource} />
+        </div>
+      )}
+      
       <div className="p-2 pt-0 shrink-0 relative z-[9999]">
         <div className="max-w-3xl mx-auto">
           <AiChatInput />

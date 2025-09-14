@@ -73,14 +73,14 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
   const handleSectionClick = (section: ActiveSection) => {
     setActiveSection(section);
     // Trigger scroll to bottom when section changes
-    triggerScrollToBottom();
+    //triggerScrollToBottom();
   };
 
   // Handle back button click
   const handleBackClick = () => {
     setActiveSection(null);
     // Trigger scroll to bottom when going back
-    triggerScrollToBottom();
+    //triggerScrollToBottom();
   };
 
   // Get section title based on active section
