@@ -84,9 +84,6 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
       toast.success(message);
       onSuccess?.(message);
       invalidateQueries([devbox.list.queryKey(), devbox.get.queryKey()], true);
-
-      // Reload window to ensure all data is fresh
-      window.location.reload();
     },
     onError: (error: any) => {
       const message = error.message || "Failed to delete devbox";

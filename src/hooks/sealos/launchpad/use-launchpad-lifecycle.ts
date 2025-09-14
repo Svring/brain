@@ -55,14 +55,10 @@ export const useLaunchpadLifecycle = (
       const message = "Launchpad deleted successfully";
       toast.success(message);
       onSuccess?.(message);
-      invalidateQueries([
-        launchpad.list.queryKey(),
-        launchpad.get.queryKey(),
-        project.getResources.queryKey(),
-      ]);
-
-      // Reload window to ensure all data is fresh
-      window.location.reload();
+      invalidateQueries(
+        [launchpad.list.queryKey(), launchpad.get.queryKey()],
+        true
+      ); // Enable invalidateProjectResources flag
     },
     onError: (error: any) => {
       const message = error.message || "Failed to delete launchpad";

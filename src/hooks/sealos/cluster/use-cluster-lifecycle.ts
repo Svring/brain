@@ -59,13 +59,7 @@ export const useClusterLifecycle = (
         "cluster",
         deleteRequest.name
       ) as CustomResourceTarget;
-      invalidateQueries([
-        cluster.get.queryKey(),
-        project.getResources.queryKey(),
-      ]);
-
-      // Reload window to ensure all data is fresh
-      window.location.reload();
+      invalidateQueries([cluster.get.queryKey()], true); // Enable invalidateProjectResources flag
     },
     onError: (error: any) => {
       const message = error.message || "Failed to delete cluster";

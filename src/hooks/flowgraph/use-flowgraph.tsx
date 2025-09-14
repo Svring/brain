@@ -110,9 +110,9 @@ export default function useFlowgraph(
     setCompleteResources(newCompleteResources);
   }, [
     resourceQueries.map((q: any) => q.isLoading).join(","),
-
     resourceQueries.map((q: any) => q.resource?.name).join(","),
-
+    resourceQueries.map((q: any) => q.resource?.status?.phase).join(","), // Also track status changes
+    resourceTargets.length, // Track changes in resource targets array
     refreshTrigger,
   ]);
 
