@@ -29,19 +29,14 @@ export const useCreateNewChatSessionMutation = () => {
   const { auth } = useAuthState();
   const { selectThread } = useChatActions();
   const queryClient = useQueryClient();
+  const { selectedResource, selectedProject } = useProjectState();
 
   return useMutation({
-    mutationFn: async ({
-      selectedProject,
-      resourceTarget,
-    }: {
-      selectedProject?: string;
-      resourceTarget?: ResourceTarget;
-    }) => {
+    mutationFn: async () => {
       return await createThread({
         kubeconfig: auth?.kubeconfig || "",
         projectName: selectedProject || undefined,
-        resourceTarget: resourceTarget || null,
+        resourceTarget: selectedResource || null,
       });
     },
     onSuccess: (data, variables) => {
@@ -50,7 +45,7 @@ export const useCreateNewChatSessionMutation = () => {
         selectThread(data.thread_id);
       }
 
-      console.log("new thread created", data.thread_id);
+      // console.log("new thread created", data.thread_id);
 
       queryClient.refetchQueries({ queryKey: ["threads"] });
       // Invalidate searchThreadsOptions queries

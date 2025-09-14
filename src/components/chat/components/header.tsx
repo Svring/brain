@@ -24,17 +24,12 @@ export function AiChatHeader({
   const [isDetailPopoverOpen, setIsDetailPopoverOpen] = useState(false);
 
   const handleNewChat = () =>
-    createNewThread.mutate(
-      {
-        selectedProject: selectedProject || undefined,
-        resourceTarget: selectedResource || undefined,
+    createNewThread.mutate(undefined, {
+      onSuccess: (newThread) => {
+        console.log("newThread", newThread);
+        selectThread(newThread.thread_id as string);
       },
-      {
-        onSuccess: (newThread) => {
-          selectThread(newThread.thread_id as string);
-        },
-      }
-    );
+    });
 
   return (
     <div className={className}>

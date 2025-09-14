@@ -43,9 +43,9 @@ export function ResourceStatusRow({
       case "propose_project":
         return "Propose";
       case "manage_project":
-        return "Project Mode";
+        return "Project";
       case "manage_resource":
-        return "Resource Mode";
+        return "Resource";
       default:
         return "Unknown";
     }

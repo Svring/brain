@@ -1,28 +1,27 @@
 import { useQuery } from "@tanstack/react-query";
 import {
-  searchThreadsOptions,
+  listThreadsOptions,
   getThreadStateOptions,
+  searchThreadsOptions,
 } from "@/lib/langgraph/langgraph-method/langgraph-query";
 import { useAuthState } from "@/contexts/auth/auth-context";
-import { useProjectState } from "@/contexts/project/project-context";
 import {
   useCreateNewChatSessionMutation,
   useDeleteThreadMutation,
 } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useChatActions } from "@/contexts/chat/chat-context";
+import { useProjectState } from "@/contexts/project/project-context";
 
 export const useThreads = () => {
   const { auth } = useAuthState();
-  const { selectedProject, selectedResource } = useProjectState();
   const { selectThread } = useChatActions();
-  const kubeconfig = auth?.kubeconfig;
+  const { selectedProject } = useProjectState();
 
   // Query threads with metadata for the current target
   const { data: threads, isLoading: threadsLoading } = useQuery(
     searchThreadsOptions({
-      kubeconfig,
+      kubeconfig: auth?.kubeconfig || "",
       projectName: selectedProject,
-      resourceTarget: selectedResource || null,
     })
   );
 

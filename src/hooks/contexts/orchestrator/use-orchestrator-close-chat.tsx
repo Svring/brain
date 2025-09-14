@@ -23,7 +23,7 @@ export const useOrchestratorCloseChat = ({
       send({ type: "UPDATE_SIDEBAR_CHAT_STATE", open: sidebarChatOpen });
       if (prev && !sidebarChatOpen) {
         clearSelectedResource();
-        selectThread(null);
+        // selectThread(null);
       }
     }
   }, [

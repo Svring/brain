@@ -47,7 +47,7 @@ export const MainSection: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const { closeSidebarChat } = useChatActions();
-  const { createNewThread } = useThreads();
+  // const { createNewThread } = useThreads();
 
   const handleNavigation = (path: string) => {
     if (path === "/home") {

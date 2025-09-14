@@ -25,7 +25,7 @@ export default function HomePage() {
     isError,
   } = useProjectSearch();
   const { CreateProjectDialog, openDialog } = useProjectCreateDialog();
-  const { createNewThread } = useThreads();
+  // const { createNewThread } = useThreads();
   const messagesScrollRef = useRef<HTMLDivElement>(null);
 
   const { messages, submit, stop, isLoading } = useLanggraphStream({
@@ -33,12 +33,12 @@ export default function HomePage() {
   });
 
   // Create a new thread on mount
-  useMount(() => {
-    createNewThread.mutate({
-      selectedProject: undefined,
-      resourceTarget: undefined,
-    });
-  });
+  // useMount(() => {
+  //   createNewThread.mutate({
+  //     selectedProject: undefined,
+  //     resourceTarget: undefined,
+  //   });
+  // });
 
   const hasMessages = messages.length > 0;
 

@@ -14,62 +14,10 @@ import { useProjectState } from "@/contexts/project/project-context";
 
 export default function AiChatbox() {
   const { sidebarChatOpen, selectedThreadId, pendingMessage } = useChatState();
-  const { selectThread } = useChatActions();
-  const { latestThreadId, hasThreads, createNewThread, threadsLoading } =
-    useThreads();
-  const { selectedProject, selectedResource } = useProjectState();
-  const [isThreadSelectionLoading, setIsThreadSelectionLoading] =
-    useState(false);
 
-  console.log("latestThreadId", latestThreadId);
-
-  // Handle thread selection and creation in a single effect
-  useEffect(() => {
-    if (!threadsLoading) {
-      setIsThreadSelectionLoading(true);
-
-      if (latestThreadId) {
-        selectThread(latestThreadId);
-        setIsThreadSelectionLoading(false);
-      } else {
-        createNewThread.mutate(
-          {
-            selectedProject: selectedProject || undefined,
-            resourceTarget: selectedResource || undefined,
-          },
-          {
-            onSuccess: () => {
-              setIsThreadSelectionLoading(false);
-            },
-            onError: () => {
-              setIsThreadSelectionLoading(false);
-            },
-          }
-        );
-      }
-    }
-  }, [threadsLoading, latestThreadId, selectedProject, selectedResource]);
-
-  // Log pending message after thread is selected and loading is complete
-  useEffect(() => {
-    if (selectedThreadId && pendingMessage && !isThreadSelectionLoading) {
-      setTimeout(() => {
-        console.log(
-          "Pending message detected after thread selection:",
-          pendingMessage
-        );
-      }, 1000);
-    }
-  }, [isThreadSelectionLoading]);
-
-  // console.log("selectedThreadId", selectedThreadId);
-
-  const { isLoading, stop, messages, values, submit } = useLanggraphStream({
+  const { isLoading, stop, messages, submit } = useLanggraphStream({
     threadId: selectedThreadId || "",
   });
-
-  // Use the extracted hook for updating langgraph state
-  // useLanggraphStateUpdate({ threadId: selectedThreadId || "" });
 
   return (
     <div
