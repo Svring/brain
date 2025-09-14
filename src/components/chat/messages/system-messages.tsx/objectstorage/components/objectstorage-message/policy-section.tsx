@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Shield } from "lucide-react";
+import { PencilLine, Shield } from "lucide-react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { ObjectStorageObject } from "@/lib/sealos/resources/objectstorage/objectstorage-schemas/objectstorage-object-schema";
 import { ObjectStorageUpdateForm } from "@/components/forms/objectstorage/objectstorage-update-form";
@@ -59,10 +59,10 @@ export const PolicyPopoverContent: React.FC<{
   };
 
   return (
-    <div className="w-full rounded-lg">
-      <div className="space-y-4">
+    <div className="w-full rounded-lg p-2 pt-0">
+      <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h3 className="font-medium">Storage Policy</h3>
+          <h3 className="font-medium">Policy</h3>
           {isPolicyEditing ? (
             <div className="flex gap-1">
               <Button
@@ -99,7 +99,7 @@ export const PolicyPopoverContent: React.FC<{
               {isUpdating ? (
                 <Spinner variant="bars" className="h-4 w-4" />
               ) : (
-                <Shield className="h-4 w-4" />
+                <PencilLine className="h-4 w-4" />
               )}
             </Button>
           )}

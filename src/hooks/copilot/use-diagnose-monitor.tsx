@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
+import { toast } from "sonner";
 import {
   useAppendSystemMessageMutation,
   useSendMessageMutation,
@@ -61,6 +62,16 @@ export function useDiagnoseMonitor(
   });
 
   const diagnoseMonitor = useCallback(() => {
+    // Check if monitor data is null or empty
+    if (
+      !monitorData ||
+      !Array.isArray(monitorData) ||
+      monitorData.length === 0
+    ) {
+      toast.error("No monitor data available for analysis");
+      return;
+    }
+
     // Select the resource first
     selectResource(target);
 

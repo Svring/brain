@@ -4,11 +4,11 @@ import { useQuery } from "@tanstack/react-query";
 import { devboxClient } from "@/components/provider/trpc-provider";
 import { BaseResourceMessage } from "@/components/chat/messages/system-messages.tsx/components/base-resource-message";
 import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-resource-message";
-import { MessagePopover } from "@/components/chat/messages/system-messages.tsx/components/message-popover";
-import { History, Globe } from "lucide-react";
+import { History, Globe, ArrowLeft } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import DevboxMessageMenu from "./components/devbox-message-menu";
 import DevboxNodeIde from "@/components/flowgraph/node/sealos/devbox/devbox-node-ide";
+import { Button } from "@/components/ui/button";
 import {
   BasicInfoSection,
   CpuMemorySection,
@@ -30,7 +30,6 @@ interface DevboxMessageProps {
 export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
   const appendSystemMessageMutation = useAppendSystemMessageMutation();
   const [activeSection, setActiveSection] = useState<ActiveSection>(null);
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   const devboxTrpcClient = devboxClient.useTRPC();
 
@@ -70,19 +69,16 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
 
   // Handle section click
   const handleSectionClick = (section: ActiveSection) => {
-    // If clicking the same section that's already active and popover is open, close it
-    if (activeSection === section && isPopoverOpen) {
-      setIsPopoverOpen(false);
-      setActiveSection(null);
-    } else {
-      // If clicking a different section or popover is closed, open with new section
-      setActiveSection(section);
-      setIsPopoverOpen(true);
-    }
+    setActiveSection(section);
   };
 
-  // Get popover title based on active section
-  const getPopoverTitle = () => {
+  // Handle back button click
+  const handleBackClick = () => {
+    setActiveSection(null);
+  };
+
+  // Get section title based on active section
+  const getSectionTitle = () => {
     switch (activeSection) {
       case "resource":
         return "Resource Metrics";
@@ -92,19 +88,13 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
         return "Network Ports";
       case "release":
         return "Devbox Releases";
-      // default:
-      //   return "Devbox Details";
+      default:
+        return "";
     }
   };
 
-  // Dynamic popover content based on active section
-  const getPopoverContent = () => {
-    // Only show content if popover is open and we have an active section
-    if (!isPopoverOpen || !activeSection) {
-      return null;
-    }
-
-    // Use extracted popover content components
+  // Get section content based on active section
+  const getSectionContent = () => {
     switch (activeSection) {
       case "resource":
         return <CpuMemoryPopoverContent target={target} />;
@@ -154,34 +144,40 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
     </div>
   );
 
+  // Section view with header and back button
+  const sectionContent = (
+    <div className="space-y-3">
+      {/* Header with title and back button */}
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8 p-0"
+          onClick={handleBackClick}
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <h3 className="font-semibold text-sm">{getSectionTitle()}</h3>
+      </div>
+
+      {/* Section content */}
+      <div>{getSectionContent()}</div>
+    </div>
+  );
+
   return (
-    <MessagePopover
-      popoverTitle={getPopoverTitle()}
-      popoverContent={getPopoverContent()}
-      showTrigger={false}
-      disableOutsideClick={true}
-      open={isPopoverOpen}
-      onOpenChange={(open) => {
-        setIsPopoverOpen(open);
-        // Clear active section when popover closes
-        if (!open) {
-          setActiveSection(null);
-        }
-      }}
+    <BaseResourceMessage
+      target={target}
+      actions={actions}
+      headerSlot={
+        <div className="flex items-center gap-2">
+          <DevboxNodeIde object={devboxObject} />
+          <DevboxMessageMenu target={target} />
+        </div>
+      }
     >
-      <BaseResourceMessage
-        target={target}
-        actions={actions}
-        headerSlot={
-          <div className="flex items-center gap-2">
-            <DevboxNodeIde object={devboxObject} />
-            <DevboxMessageMenu target={target} />
-          </div>
-        }
-      >
-        {mainContent}
-      </BaseResourceMessage>
-    </MessagePopover>
+      {activeSection ? sectionContent : mainContent}
+    </BaseResourceMessage>
   );
 };
 

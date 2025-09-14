@@ -27,7 +27,7 @@ export const AccessConfigPopoverContent: React.FC<{
       onClick={() => copyToClipboard(value, id)}
     >
       {isCopied(id) ? (
-        <Check className="w-3 h-3" />
+        <Check className="w-3 h-3 text-theme-green" />
       ) : (
         <Copy className="w-3 h-3" />
       )}
@@ -35,7 +35,7 @@ export const AccessConfigPopoverContent: React.FC<{
   );
 
   return (
-    <div className="w-full rounded-lg">
+    <div className="w-full rounded-lg p-2">
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Key className="h-4 w-4" />

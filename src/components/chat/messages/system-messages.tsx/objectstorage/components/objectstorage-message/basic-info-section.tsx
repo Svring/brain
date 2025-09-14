@@ -24,22 +24,6 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             {name || "Unknown"}
           </span>
         </div>
-
-        {/* Display Name */}
-        <div className="flex-1 flex flex-col">
-          <span className="font-medium text-sm">Display Name</span>
-          <span className="text-xs text-muted-foreground truncate">
-            {displayName || "Unknown"}
-          </span>
-        </div>
-
-        {/* Type */}
-        <div className="flex-1 flex flex-col">
-          <span className="font-medium text-sm">Type</span>
-          <span className="text-xs text-muted-foreground truncate">
-            Object Storage
-          </span>
-        </div>
       </div>
     </div>
   );

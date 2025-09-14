@@ -4,9 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { clusterClient } from "@/components/provider/trpc-provider";
 import { BaseResourceMessage } from "@/components/chat/messages/system-messages.tsx/components/base-resource-message";
 import { MessageAction } from "@/components/chat/messages/system-messages.tsx/components/base-resource-message";
-import { MessagePopover } from "@/components/chat/messages/system-messages.tsx/components/message-popover";
-import { EthernetPort, Pencil } from "lucide-react";
+import { EthernetPort, Pencil, ArrowLeft } from "lucide-react";
 import { useAppendSystemMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { Button } from "@/components/ui/button";
 import ClusterMessageMenu from "./components/cluster-message-menu";
 import {
   BasicInfoSection,
@@ -28,8 +28,6 @@ export const ClusterMessage: React.FC<ClusterMessageProps> = ({ target }) => {
   const clusterTrpcClient = clusterClient.useTRPC();
   const appendSystemMessageMutation = useAppendSystemMessageMutation();
   const [activeSection, setActiveSection] = useState<ActiveSection>(null);
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [closingSection, setClosingSection] = useState<ActiveSection>(null);
 
   // Fetch the cluster data using the target
   const {
@@ -52,19 +50,16 @@ export const ClusterMessage: React.FC<ClusterMessageProps> = ({ target }) => {
 
   // Handle section click
   const handleSectionClick = (section: ActiveSection) => {
-    // If clicking the same section that's already active and popover is open, close it
-    if (activeSection === section && isPopoverOpen) {
-      setIsPopoverOpen(false);
-      setActiveSection(null);
-    } else {
-      // If clicking a different section or popover is closed, open with new section
-      setActiveSection(section);
-      setIsPopoverOpen(true);
-    }
+    setActiveSection(section);
   };
 
-  // Get popover title based on active section
-  const getPopoverTitle = () => {
+  // Handle back button click
+  const handleBackClick = () => {
+    setActiveSection(null);
+  };
+
+  // Get section title based on active section
+  const getSectionTitle = () => {
     switch (activeSection) {
       case "resource":
         return "Resource Configuration";
@@ -72,20 +67,14 @@ export const ClusterMessage: React.FC<ClusterMessageProps> = ({ target }) => {
         return "Cluster Connection";
       case "backup":
         return "Cluster Backups";
+      default:
+        return "";
     }
   };
 
-  // Dynamic popover content based on active section
-  const getPopoverContent = () => {
-    // Use closingSection if popover is closing, otherwise use activeSection
-    const currentSection = closingSection || activeSection;
-    
-    if (!currentSection) {
-      return null;
-    }
-
-    // Use extracted popover content components
-    switch (currentSection) {
+  // Get section content based on active section
+  const getSectionContent = () => {
+    switch (activeSection) {
       case "resource":
         return <ResourceQuotaPopoverContent target={target} />;
       case "connect":
@@ -156,32 +145,35 @@ export const ClusterMessage: React.FC<ClusterMessageProps> = ({ target }) => {
     </div>
   );
 
+  // Section view with header and back button
+  const sectionContent = (
+    <div className="space-y-3">
+      {/* Header with title and back button */}
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8 p-0"
+          onClick={handleBackClick}
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <h3 className="font-semibold text-sm">{getSectionTitle()}</h3>
+      </div>
+
+      {/* Section content */}
+      <div>{getSectionContent()}</div>
+    </div>
+  );
+
   return (
-    <MessagePopover
-      popoverTitle={getPopoverTitle()}
-      popoverContent={getPopoverContent()}
-      showTrigger={false}
-      disableOutsideClick={true}
-      open={isPopoverOpen}
-      onOpenChange={(open) => {
-        setIsPopoverOpen(open);
-        // If popover is being closed externally, preserve content during close animation
-        if (!open) {
-          setClosingSection(activeSection);
-          setActiveSection(null);
-          // Clear closingSection after animation completes
-          setTimeout(() => setClosingSection(null), 200);
-        }
-      }}
+    <BaseResourceMessage
+      target={target}
+      actions={actions}
+      headerSlot={<ClusterMessageMenu target={target} />}
     >
-      <BaseResourceMessage
-        target={target}
-        actions={actions}
-        headerSlot={<ClusterMessageMenu target={target} />}
-      >
-        {mainContent}
-      </BaseResourceMessage>
-    </MessagePopover>
+      {activeSection ? sectionContent : mainContent}
+    </BaseResourceMessage>
   );
 };
 
