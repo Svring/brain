@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { nanoid } from "@/lib/utils";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
@@ -9,21 +8,19 @@ import { clusterCreateFormSchema } from "@/schemas/forms/cluster/cluster-create-
 import { launchpadCreateFormSchema } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
 import { objectStorageCreateSchema } from "@/schemas/forms/objectstorage/objectstorage-create-form-schema";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import type { ProjectProposal } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
+import type { ProjectResources } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 
-interface CreateProjectOptions {
-  onSuccess?: (projectName: string) => void;
+interface AddResourceToProjectOptions {
+  onSuccess?: (projectName: string, addedResources: any[]) => void;
   onError?: (error: any) => void;
 }
 
-export function useProjectCreate(options?: CreateProjectOptions) {
-  const [isCreating, setIsCreating] = useState(false);
-  const router = useRouter();
+export function useProjectAddResource(options?: AddResourceToProjectOptions) {
+  const [isAdding, setIsAdding] = useState(false);
   const { devbox, cluster, launchpad, objectstorage, project } =
     useTRPCClients();
 
   // Create mutations
-  const createProjectMutation = useMutation(project.create.mutationOptions());
   const createDevboxMutation = useMutation(devbox.create.mutationOptions());
   const createClusterMutation = useMutation(cluster.create.mutationOptions());
   const createLaunchpadMutation = useMutation(
@@ -36,32 +33,21 @@ export function useProjectCreate(options?: CreateProjectOptions) {
     project.addResources.mutationOptions()
   );
 
-  const createProject = async (proposal: ProjectProposal) => {
-    if (isCreating) return;
+  const addResourcesToProject = async (
+    projectName: string,
+    resources: ProjectResources
+  ) => {
+    if (isAdding || !projectName) return;
 
     try {
-      setIsCreating(true);
-
-      // Create the project first
-      const sanitizedName = proposal.name
-        .toLowerCase()
-        .replace(/[^a-z0-9-]/g, "-")
-        .replace(/^-+|-+$/g, "")
-        .replace(/-+/g, "-");
-
-      const uniqueProjectName = `${sanitizedName}-${nanoid()}`;
-      const projectResult = await createProjectMutation.mutateAsync({
-        name: uniqueProjectName,
-      });
-
-      const projectName = projectResult.name;
+      setIsAdding(true);
 
       // Create all resources in parallel
       const resourcePromises: Promise<any>[] = [];
 
       // Create DevBoxes
-      if (proposal.resources.devbox?.length) {
-        for (const devboxProposal of proposal.resources.devbox) {
+      if (resources.devbox?.length) {
+        for (const devboxProposal of resources.devbox) {
           const uniqueDevboxName = `${devboxProposal.name}-${nanoid()}`;
           const devboxData = devboxCreateFormSchema.parse({
             name: uniqueDevboxName,
@@ -90,8 +76,8 @@ export function useProjectCreate(options?: CreateProjectOptions) {
       }
 
       // Create Databases (Clusters)
-      if (proposal.resources.database?.length) {
-        for (const databaseProposal of proposal.resources.database) {
+      if (resources.database?.length) {
+        for (const databaseProposal of resources.database) {
           const uniqueDatabaseName = `${databaseProposal.name}-${nanoid()}`;
           const clusterData = clusterCreateFormSchema.parse({
             name: uniqueDatabaseName,
@@ -133,8 +119,8 @@ export function useProjectCreate(options?: CreateProjectOptions) {
       }
 
       // Create Object Storage Buckets
-      if (proposal.resources.bucket?.length) {
-        for (const bucketProposal of proposal.resources.bucket) {
+      if (resources.bucket?.length) {
+        for (const bucketProposal of resources.bucket) {
           const uniqueBucketName = `${bucketProposal.name}-${nanoid()}`;
           const objectStorageData = objectStorageCreateSchema.parse({
             name: uniqueBucketName,
@@ -167,8 +153,8 @@ export function useProjectCreate(options?: CreateProjectOptions) {
       }
 
       // Create Apps (Launchpads)
-      if (proposal.resources.app?.length) {
-        for (const appProposal of proposal.resources.app) {
+      if (resources.app?.length) {
+        for (const appProposal of resources.app) {
           const uniqueAppName = `${appProposal.name}-${nanoid()}`;
           const launchpadData = launchpadCreateFormSchema.parse({
             name: uniqueAppName,
@@ -233,7 +219,7 @@ export function useProjectCreate(options?: CreateProjectOptions) {
 
       if (failedResources.length > 0) {
         toast.error(
-          `Created project but ${failedResources.length} resource(s) failed to create`
+          `Added ${successfulResources.length} resource(s) but ${failedResources.length} resource(s) failed to create`
         );
       }
 
@@ -249,29 +235,26 @@ export function useProjectCreate(options?: CreateProjectOptions) {
       }
 
       toast.success(
-        `Project "${projectName}" created successfully with ${successfulResources.length} resource(s)`
+        `Added ${successfulResources.length} resource(s) to project "${projectName}"`
       );
 
-      // Navigate to the created project
-      router.push(`/projects/${projectName}`);
-
       // Call success callback if provided
-      options?.onSuccess?.(projectName);
+      options?.onSuccess?.(projectName, successfulResources);
 
       return { projectName, successfulResources, failedResources };
     } catch (error: any) {
       toast.error(
-        error.message || "Failed to create project. Please try again."
+        error.message || "Failed to add resources to project. Please try again."
       );
       options?.onError?.(error);
       throw error;
     } finally {
-      setIsCreating(false);
+      setIsAdding(false);
     }
   };
 
   return {
-    createProject,
-    isCreating,
+    addResourcesToProject,
+    isAdding,
   };
 }

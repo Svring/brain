@@ -28,25 +28,25 @@ export function AiChatHeader({
   const previousMessagesLengthRef = useRef<number | null>(null);
 
   // Auto-open when a resource is selected and there are no messages
-  useEffect(() => {
-    if (selectedResource && !isLoading && (messages?.length || 0) === 0) {
-      setIsDetailPopoverOpen(true);
-    }
-  }, [selectedResource, isLoading, messages]);
+  // useEffect(() => {
+  //   if (selectedResource && !isLoading && (messages?.length || 0) === 0) {
+  //     setIsDetailPopoverOpen(true);
+  //   }
+  // }, [selectedResource, isLoading, messages]);
 
   // Auto-close only when messages length changes (and is non-empty)
-  useEffect(() => {
-    const currentLength = messages?.length || 0;
-    const previousLength = previousMessagesLengthRef.current;
-    if (
-      previousLength !== null &&
-      previousLength !== currentLength &&
-      currentLength > 0
-    ) {
-      setIsDetailPopoverOpen(false);
-    }
-    previousMessagesLengthRef.current = currentLength;
-  }, [messages]);
+  // useEffect(() => {
+  //   const currentLength = messages?.length || 0;
+  //   const previousLength = previousMessagesLengthRef.current;
+  //   if (
+  //     previousLength !== null &&
+  //     previousLength !== currentLength &&
+  //     currentLength > 0
+  //   ) {
+  //     setIsDetailPopoverOpen(false);
+  //   }
+  //   previousMessagesLengthRef.current = currentLength;
+  // }, [messages]);
 
   const handleNewChat = () =>
     createChatMutation.mutate(undefined, {

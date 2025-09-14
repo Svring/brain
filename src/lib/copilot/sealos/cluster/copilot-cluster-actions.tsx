@@ -22,21 +22,30 @@ import { ClusterCreateFormData } from "@/schemas/forms/cluster/cluster-create-fo
 import { ClusterUpdateRuntimeSchema } from "@/lib/copilot/sealos/cluster/copilot-cluster-utils";
 import { ClusterUpdateActionMessage } from "@/components/copilot/sealos/cluster/cluster-update-action-message";
 import { ClusterLifecycleActionMessage } from "@/components/copilot/sealos/cluster/cluster-lifecycle-action-message";
+import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
+import { useProjectState } from "@/contexts/project/project-context";
+import { useQueryClient } from "@tanstack/react-query";
+import { CircleCheckBigIcon } from "lucide-react";
 
 export const activateClusterActions = () => {
   // CRUD operations
-  createClusterAction();
+  // createClusterAction();
   updateClusterAction();
   // deleteClusterAction();
 
   // Lifecycle management
   clusterLifecycleAction();
+
+  // Data retrieval
+  getClusterDataAction();
 };
 
 export const createClusterAction = () => {
+  const { stage } = useLanggraphState();
   useCopilotAction({
     name: "createCluster",
     description: "Create a new database cluster with specified configuration",
+    available: stage === "manage_resource" ? "enabled" : "disabled",
     // followUp: false,
     parameters: jsonSchemaToActionParameters(
       zodToJsonSchema(clusterCreateFormSchema) as any
@@ -54,9 +63,11 @@ export const createClusterAction = () => {
 };
 
 export const updateClusterAction = () => {
+  const { stage } = useLanggraphState();
   useCopilotAction({
     name: "updateCluster",
     description: "Update a cluster configuration (resource, etc.)",
+    available: stage === "manage_resource" ? "enabled" : "disabled",
     // followUp: false,
     parameters: jsonSchemaToActionParameters(
       zodToJsonSchema(ClusterUpdateRuntimeSchema) as any
@@ -73,53 +84,12 @@ export const updateClusterAction = () => {
   });
 };
 
-export const deleteClusterAction = () => {
-  const { cluster } = useTRPCClients();
-  const deleteClusterMutation = useMutation({
-    ...cluster.delete.mutationOptions(),
-  });
-
-  useCopilotAction({
-    name: "deleteCluster",
-    description: "Delete a cluster by its name",
-    parameters: [
-      {
-        name: "clusterName",
-        type: "string",
-        required: true,
-        description: "Name of the cluster to delete",
-      },
-    ],
-    handler: async ({ clusterName }) => {
-      const result = await deleteClusterMutation.mutateAsync({
-        name: clusterName,
-      });
-      return `Cluster "${clusterName}" deleted successfully`;
-    },
-    render: ({ args, result, status }) => {
-      return (
-        <AITool key={"deleteCluster"}>
-          <AIToolHeader
-            description={"Delete a cluster by its name"}
-            name={"deleteCluster"}
-            status={status}
-          />
-          <AIToolContent>
-            <AIToolParameters parameters={args} />
-            {result && (
-              <AIToolResult result={<AIResponse>{result}</AIResponse>} />
-            )}
-          </AIToolContent>
-        </AITool>
-      );
-    },
-  });
-};
-
 export const clusterLifecycleAction = () => {
+  const { stage } = useLanggraphState();
   useCopilotAction({
     name: "clusterLifecycle",
     description: "Manage cluster lifecycle (start, pause)",
+    available: stage === "manage_resource" ? "enabled" : "disabled",
     parameters: [
       {
         name: "clusterName",
@@ -148,14 +118,46 @@ export const clusterLifecycleAction = () => {
   });
 };
 
-export const restartClusterAction = () => {
-  // TODO: Implement restart cluster action
-};
+export const getClusterDataAction = () => {
+  const { stage } = useLanggraphState();
+  const { selectedResource } = useProjectState();
+  const { cluster } = useTRPCClients();
+  const queryClient = useQueryClient();
 
-export const getClusterMonitorAction = () => {
-  // TODO: Implement cluster monitoring action
-};
+  useCopilotAction({
+    name: "getClusterData",
+    available: stage === "manage_resource" ? "enabled" : "disabled",
+    description: "Get detailed information about the currently selected cluster",
+    handler: async () => {
+      if (!selectedResource || selectedResource.resourceType !== "cluster") {
+        throw new Error("No cluster resource selected. Please select a cluster first.");
+      }
 
-export const backupClusterAction = () => {
-  // TODO: Implement cluster backup action
+      const result = await queryClient.fetchQuery(
+        cluster.get.queryOptions(selectedResource as any)
+      );
+
+      return {
+        resourceName: selectedResource.name,
+        data: result,
+      };
+    },
+    render: ({ result, status }) => {
+      if (status === "complete" && result) {
+        return (
+          <div className="w-full">
+            <div className="flex items-center justify-between p-2 border rounded-lg">
+              <div className="flex items-center gap-2">
+                <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
+                <p className="text-sm">
+                  Successfully retrieved cluster data for "{result.resourceName}"
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      }
+      return <div />;
+    },
+  });
 };

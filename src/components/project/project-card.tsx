@@ -41,7 +41,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const { invalidateQueries } = useInvalidateQueries();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const { targets } = useProjectResources(project.name);
-  const { isRenameDialogOpen, handleRename, handleRenameConfirm, handleRenameCancel } = useProjectRename({
+  const {
+    isRenameDialogOpen,
+    handleRename,
+    handleRenameConfirm,
+    handleRenameCancel,
+  } = useProjectRename({
     projectName: project.name,
     currentDisplayName: project.displayName,
   });
@@ -110,14 +115,16 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           transition={{ duration: 0.15, ease: "easeInOut" }}
         >
           <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-1 flex-1 min-w-0 group">
+            <div
+              className="flex items-center gap-1 flex-1 min-w-0 group"
+              onClick={variant === "full" ? handleRenameClick : undefined}
+            >
               <p
                 className={`text-foreground truncate transition-colors ${
                   variant === "full"
                     ? "cursor-pointer hover:text-foreground/80 group-hover:underline"
                     : ""
                 }`}
-                onClick={variant === "full" ? handleRenameClick : undefined}
               >
                 {project.displayName}
               </p>

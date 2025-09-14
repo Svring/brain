@@ -18,24 +18,33 @@ import { DevboxCreateFormData } from "@/schemas/forms/devbox/devbox-create-form-
 import { DevboxCreateActionMessage } from "@/components/copilot/sealos/devbox/devbox-create-action-message";
 import { DevboxUpdateActionMessage } from "@/components/copilot/sealos/devbox/devbox-update-action-message";
 import { DevboxLifecycleActionMessage } from "@/components/copilot/sealos/devbox/devbox-lifecycle-action-message";
+import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
+import { useProjectState } from "@/contexts/project/project-context";
+import { useQueryClient } from "@tanstack/react-query";
+import { CircleCheckBigIcon } from "lucide-react";
 
 export const activateDevboxActions = () => {
   // CRUD operations
-  createDevboxAction();
+  // createDevboxAction();
   updateDevboxAction();
 
   // Lifecycle management
   devboxLifecycleAction();
 
+  // Data retrieval
+  getDevboxDataAction();
+
   // // Release management
-  releaseDevboxAction();
-  deployDevboxAction();
+  // releaseDevboxAction();
+  // deployDevboxAction();
 };
 
 export const createDevboxAction = () => {
+  const { stage } = useLanggraphState();
   useCopilotAction({
     name: "createDevbox",
     description: "Create a new devbox with specified configuration",
+    available: stage === "manage_resource" ? "enabled" : "disabled",
     // followUp: false,
     parameters: jsonSchemaToActionParameters(
       zodToJsonSchema(devboxCreateFormSchema) as any
@@ -53,9 +62,11 @@ export const createDevboxAction = () => {
 };
 
 export const updateDevboxAction = () => {
+  const { stage } = useLanggraphState();
   useCopilotAction({
     name: "updateDevbox",
     description: "Update a devbox configuration (resource, ports, etc.)",
+    available: stage === "manage_resource" ? "enabled" : "disabled",
     // followUp: false,
     parameters: jsonSchemaToActionParameters(
       zodToJsonSchema(DevboxUpdateRuntimeSchema) as any
@@ -73,10 +84,12 @@ export const updateDevboxAction = () => {
 };
 
 export const devboxLifecycleAction = () => {
+  const { stage } = useLanggraphState();
   useCopilotAction({
     name: "devboxLifecycle",
     description:
       "Manage devbox lifecycle (start, pause, restart, shutdown, delete)",
+    available: stage === "manage_resource" ? "enabled" : "disabled",
     parameters: [
       {
         name: "devboxName",
@@ -108,6 +121,50 @@ export const devboxLifecycleAction = () => {
           }
         />
       );
+    },
+  });
+};
+
+export const getDevboxDataAction = () => {
+  const { stage } = useLanggraphState();
+  const { selectedResource } = useProjectState();
+  const { devbox } = useTRPCClients();
+  const queryClient = useQueryClient();
+
+  useCopilotAction({
+    name: "getDevboxData",
+    available: stage === "manage_resource" ? "enabled" : "disabled",
+    description: "Get detailed information about the currently selected devbox",
+    handler: async () => {
+      if (!selectedResource || selectedResource.resourceType !== "devbox") {
+        throw new Error("No devbox resource selected. Please select a devbox first.");
+      }
+
+      const result = await queryClient.fetchQuery(
+        devbox.get.queryOptions(selectedResource as any)
+      );
+
+      return {
+        resourceName: selectedResource.name,
+        data: result,
+      };
+    },
+    render: ({ result, status }) => {
+      if (status === "complete" && result) {
+        return (
+          <div className="w-full">
+            <div className="flex items-center justify-between p-2 border rounded-lg">
+              <div className="flex items-center gap-2">
+                <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
+                <p className="text-sm">
+                  Successfully retrieved devbox data for "{result.resourceName}"
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      }
+      return <div />;
     },
   });
 };

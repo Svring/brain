@@ -90,7 +90,7 @@ function ProjectFlow({
   );
   const { nodes, edges } = useFlowgraphState();
   const { onNodesChange, onEdgesChange } = useFlowgraphActions();
-  // useCopilotActions();
+  useCopilotActions();
 
   // console.log("isLoading", isLoading);
   // console.log("nodes", nodes);
