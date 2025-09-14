@@ -35,11 +35,18 @@ export const DevboxResourceFields = ({
   const nameValue = form.watch("name");
   const target = convertResourceTypeToTarget("devbox", nameValue);
 
+  // console.log("target", target);
+
   // Use useResourceStatus to get the devbox resource
   const { resource: object } = useResourceStatus(
     target,
     (object) => object.resources
   );
+
+  // Return null if object is undefined
+  if (object === undefined) {
+    return null;
+  }
 
   // Helper function to create comparison display
   const createComparisonDisplay = (
@@ -70,12 +77,6 @@ export const DevboxResourceFields = ({
     );
   };
 
-  // Convert object values to numeric for comparison
-  const objectNumeric = convertK8sResourceToNumeric({
-    cpu: object.cpu,
-    memory: object.memory,
-  });
-
   return (
     <div className="space-y-2 px-2">
       {/* CPU Options - only show if cpu value is defined */}
@@ -93,7 +94,7 @@ export const DevboxResourceFields = ({
                   <FormLabel className="font-medium">CPU:</FormLabel>
                   {createComparisonDisplay(
                     field.value || cpuOptions[0],
-                    objectNumeric.cpu.nearest,
+                    object.cpu,
                     "C"
                   )}
                 </div>
@@ -140,7 +141,7 @@ export const DevboxResourceFields = ({
                   <FormLabel className="font-medium">Memory:</FormLabel>
                   {createComparisonDisplay(
                     field.value || memoryOptions[0],
-                    objectNumeric.memory.nearest,
+                    object.memory,
                     "G"
                   )}
                 </div>

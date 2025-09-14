@@ -10,10 +10,11 @@ import {
   useCreateNewChatSessionMutation,
   useAppendSystemMessageMutation,
 } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { convertThreadToCopilotKitMessages } from "@/lib/langgraph/langgraph-method/langgraph-utils";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function AiChatbox() {
   const { sidebarChatOpen, selectedThreadId, pendingMessage } = useChatState();
@@ -25,20 +26,51 @@ export default function AiChatbox() {
   const { setMessages } = useCopilotChatHeadless_c();
   const createChatMutation = useCreateNewChatSessionMutation();
   const appendSystemMessageMutation = useAppendSystemMessageMutation();
+  const [isLoading, setIsLoading] = useState(false);
+
+  console.log("isLoading", isLoading);
 
   useEffect(() => {
     if (!sidebarChatOpen || threadsLoading) return;
 
+    // Set loading to true when chatbox is opened and clear messages
+    setIsLoading(true);
+    setMessages([]); // Clear messages to show spinner
+
     const handleThread = (thread: any, isNew = false) => {
       selectThread(thread.thread_id);
-      setMessages(convertThreadToCopilotKitMessages(thread));
+
       if (pendingMessage) {
-        appendSystemMessageMutation.mutate({
-          type: pendingMessage.messageType,
-          target: pendingMessage.target,
-          payload: pendingMessage.payload,
-          currentMessages: convertThreadToCopilotKitMessages(thread),
-        });
+        // Don't set messages yet, wait for system message to be appended
+        appendSystemMessageMutation.mutate(
+          {
+            type: pendingMessage.messageType,
+            target: pendingMessage.target,
+            payload: pendingMessage.payload,
+            currentMessages: convertThreadToCopilotKitMessages(thread),
+          },
+          {
+            onSuccess: () => {
+              clearPendingMessage();
+              // Add a small delay to ensure spinner is visible
+              setTimeout(() => {
+                setIsLoading(false);
+              }, 300);
+            },
+            onError: (error) => {
+              console.error("Failed to append system message:", error);
+              // On error, still show the thread messages and stop loading
+              setMessages(convertThreadToCopilotKitMessages(thread));
+              setIsLoading(false);
+            },
+          }
+        );
+      } else {
+        // If no pending message, set messages after a brief delay to show spinner
+        setTimeout(() => {
+          setMessages(convertThreadToCopilotKitMessages(thread));
+          setIsLoading(false);
+        }, 300);
       }
     };
 
@@ -51,6 +83,7 @@ export default function AiChatbox() {
         },
         onError: (error) => {
           console.error("Failed to create new chat:", error);
+          setIsLoading(false); // Set loading to false on error
         },
       });
     }
@@ -59,7 +92,6 @@ export default function AiChatbox() {
     selectedResource,
     latestThreadId,
     latestThread,
-    pendingMessage,
     threadsLoading,
   ]);
 
@@ -82,7 +114,13 @@ export default function AiChatbox() {
 
       <AiChatHeader />
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
-        <AiMessages />
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <Spinner />
+          </div>
+        ) : (
+          <AiMessages />
+        )}
       </div>
       <div className="p-2 pt-0 shrink-0 relative z-[9999]">
         <div className="max-w-3xl mx-auto">

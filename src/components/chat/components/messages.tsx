@@ -75,7 +75,7 @@ export function AiMessages({
     setSidebarResponding(isLoading);
   }, [isLoading]);
 
-  console.log("messages", messages);
+  // console.log("messages", messages);
 
   // const totalTokens = messages.reduce(
   //   (sum, message) => sum + enc.encode(message.content ?? "").length + 4,

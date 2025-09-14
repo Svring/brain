@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   createThread,
   updateThreadState,
+  deleteThread,
 } from "../langgraph-api/langgraph-api";
 import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 import { useChatActions } from "@/contexts/chat/chat-context";
@@ -158,6 +159,31 @@ export const useUpdateThreadStateMutation = () => {
     },
     onError: (error) => {
       console.error("Failed to update thread state:", error);
+    },
+  });
+};
+
+/**
+ * Hook for deleting a thread
+ */
+export const useDeleteThreadMutation = () => {
+  const queryClient = useQueryClient();
+  const { selectThread } = useChatActions();
+
+  return useMutation({
+    mutationFn: async (threadId: string) => {
+      return await deleteThread(threadId);
+    },
+    onSuccess: (data, variables) => {
+      // Invalidate and refetch thread-related queries
+      queryClient.invalidateQueries({ queryKey: ["threads"] });
+
+      // If the deleted thread was currently selected, clear the selection
+      // This would need to be implemented based on your chat context
+      // selectThread(null);
+    },
+    onError: (error) => {
+      console.error("Failed to delete thread:", error);
     },
   });
 };

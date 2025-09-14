@@ -64,6 +64,11 @@ export const updateThreadState = async (threadId: string, state: any) => {
   return await client.threads.updateState(threadId, state);
 };
 
+export const deleteThread = async (threadId: string) => {
+  const client = createClient();
+  return await client.threads.delete(threadId);
+};
+
 export const searchThreads = async (metadata: Record<string, any>) => {
   const client = createClient();
 

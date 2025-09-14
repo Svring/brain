@@ -2,8 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
-import { Plus, ChevronRight, Focus, History, Link } from "lucide-react";
-import { useCreateNewChatSessionMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { Plus, ChevronRight, Focus, History, Link, Trash2 } from "lucide-react";
+import { useCreateNewChatSessionMutation, useDeleteThreadMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { Spinner } from "@/components/ui/spinner";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
@@ -16,6 +16,16 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { getResourceDefaultIcon } from "@/lib/sealos/sealos-utils";
 import { useThreads } from "@/hooks/langgraph/use-threads";
 import {
@@ -25,6 +35,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useReactFlow } from "@xyflow/react";
+import { useState } from "react";
 
 interface AiChatHeaderProps {
   title?: string;
@@ -42,7 +53,11 @@ export function AiChatHeader({
   const { threads } = useThreads();
   const { fitView } = useReactFlow();
   const createChatMutation = useCreateNewChatSessionMutation();
+  const deleteThreadMutation = useDeleteThreadMutation();
   const { setMessages } = useCopilotChatHeadless_c();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [threadToDelete, setThreadToDelete] = useState<string | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const getIconUrl = () =>
     selectedResource
@@ -64,6 +79,49 @@ export function AiChatHeader({
       selectThread(threadId);
       setMessages(convertThreadToCopilotKitMessages(thread));
     }
+  };
+
+  const handleDeleteThread = (threadId: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent thread selection when clicking delete
+    setThreadToDelete(threadId);
+    setDeleteDialogOpen(true);
+    setDropdownOpen(false); // Close the dropdown menu
+  };
+
+  const confirmDeleteThread = () => {
+    if (threadToDelete) {
+      deleteThreadMutation.mutate(threadToDelete, {
+        onSuccess: () => {
+          // If we deleted the currently selected thread, select the latest remaining thread
+          if (threadToDelete === selectedThreadId) {
+            const remainingThreads = threads?.filter(t => t.thread_id !== threadToDelete);
+            if (remainingThreads && remainingThreads.length > 0) {
+              // Sort by updated_at to get the latest thread
+              const latestThread = remainingThreads.sort((a, b) => 
+                new Date(b.updated_at || 0).getTime() - new Date(a.updated_at || 0).getTime()
+              )[0];
+              selectThread(latestThread.thread_id);
+              setMessages(convertThreadToCopilotKitMessages(latestThread));
+            } else {
+              // No threads left, create a new one
+              createChatMutation.mutate(undefined, {
+                onSuccess: (newThread) => {
+                  selectThread(newThread.thread_id as string);
+                  setMessages(convertThreadToCopilotKitMessages(newThread));
+                },
+              });
+            }
+          }
+        }
+      });
+      setDeleteDialogOpen(false);
+      setThreadToDelete(null);
+    }
+  };
+
+  const cancelDeleteThread = () => {
+    setDeleteDialogOpen(false);
+    setThreadToDelete(null);
   };
 
   const formatThreadDate = (updatedAt: string): string => {
@@ -130,62 +188,46 @@ export function AiChatHeader({
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <DropdownMenu>
+              <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-8 w-8">
                     <History className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="max-w-xs space-y-1">
-                  {selectedThreadId && (
-                    <DropdownMenuItem className="p-2 bg-muted/50 cursor-pointer border border-theme-blue/30 rounded-md">
-                      <div className="flex items-center justify-between w-full gap-2">
-                        <div className="text-sm font-medium truncate flex-1 max-w-[200px]">
-                          {(() => {
-                            const selectedThread = threads?.find(
-                              (t) => t.thread_id === selectedThreadId
-                            );
-                            return selectedThread ? getThreadTitle(selectedThread) : "New Thread";
-                          })()}
-                        </div>
-                        {(() => {
-                          const selectedThread = threads?.find(
-                            (t) => t.thread_id === selectedThreadId
-                          );
-                          return selectedThread ? (
-                            <div className="text-xs text-muted-foreground shrink-0 max-w-[60px]">
-                              {selectedThread.updated_at
-                                ? formatThreadDate(selectedThread.updated_at)
-                                : "Unknown"}
+                  {threads?.length
+                    ? threads.map((thread) => (
+                        <DropdownMenuItem
+                          key={thread.thread_id}
+                          onClick={() => handleThreadSelect(thread.thread_id)}
+                          className={cn(
+                            "p-2 cursor-pointer",
+                            thread.thread_id === selectedThreadId && "bg-muted/50 border border-theme-blue/30 rounded-md"
+                          )}
+                        >
+                          <div className="flex items-center justify-between w-full gap-2">
+                            <div className="text-sm font-medium truncate flex-1 max-w-[200px]">
+                              {getThreadTitle(thread)}
                             </div>
-                          ) : null;
-                        })()}
-                      </div>
-                    </DropdownMenuItem>
-                  )}
-                  {threads?.filter((t) => t.thread_id !== selectedThreadId)
-                    .length
-                    ? threads
-                        .filter((t) => t.thread_id !== selectedThreadId)
-                        .map((thread) => (
-                          <DropdownMenuItem
-                            key={thread.thread_id}
-                            onClick={() => handleThreadSelect(thread.thread_id)}
-                            className="p-2 cursor-pointer"
-                          >
-                            <div className="flex items-center justify-between w-full gap-2">
-                              <div className="text-sm font-medium truncate flex-1 max-w-[200px]">
-                                {getThreadTitle(thread)}
-                              </div>
+                            <div className="flex items-center gap-2">
                               <div className="text-xs text-muted-foreground shrink-0 max-w-[60px]">
                                 {thread.updated_at
                                   ? formatThreadDate(thread.updated_at)
                                   : "Unknown"}
                               </div>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-6 w-6 hover:bg-destructive/10 hover:text-destructive"
+                                onClick={(e) => handleDeleteThread(thread.thread_id, e)}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
                             </div>
-                          </DropdownMenuItem>
-                        ))
-                    : !selectedThreadId && (
+                          </div>
+                        </DropdownMenuItem>
+                      ))
+                    : (
                         <div className="p-2 text-sm text-muted-foreground text-center">
                           No chat history available
                         </div>
@@ -270,6 +312,28 @@ export function AiChatHeader({
           </TooltipContent>
         </Tooltip>
       )}
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Chat Thread</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this chat thread? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelDeleteThread}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteThread}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
