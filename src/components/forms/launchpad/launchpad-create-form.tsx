@@ -41,7 +41,7 @@ export const LaunchpadCreateForm = ({
 
   const handleSubmit = (data: any) => {
     // Data cleaning is now handled by individual field components
-    console.log("Submitting data:", JSON.stringify(data, null, 2));
+    // console.log("Submitting data:", JSON.stringify(data, null, 2));
     onSubmit(data as LaunchpadCreateFormData);
   };
 

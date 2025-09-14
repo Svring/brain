@@ -9,78 +9,26 @@ import {
 } from "@/components/ui/form";
 import { useFormContext } from "react-hook-form";
 import { Resource } from "@/schemas/forms/universal/resource-schema";
-import {
-  CPU_OPTIONS,
-  MEMORY_OPTIONS,
-  REPLICAS_OPTIONS,
-  STORAGE_OPTIONS,
-} from "@/lib/k8s/k8s-constant/k8s-constant-resource";
 import { Slider } from "@/components/ui/slider";
-import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
-import { useEffect, useState } from "react";
 
-interface ResourceFieldsProps {
+interface ClusterCreateResourceFieldsProps {
   cpuOptions?: readonly number[];
   memoryOptions?: readonly number[];
   replicasOptions?: readonly number[];
   storageOptions?: readonly number[];
 }
 
-export const ResourceFields = ({
-  cpuOptions = CPU_OPTIONS,
-  memoryOptions = MEMORY_OPTIONS,
-  replicasOptions = REPLICAS_OPTIONS,
-  storageOptions = STORAGE_OPTIONS,
-}: ResourceFieldsProps = {}) => {
+export const ClusterCreateResourceFields = ({
+  cpuOptions = [0.1, 0.2, 0.5, 1, 2, 4, 8, 16],
+  memoryOptions = [0.1, 0.5, 1, 2, 4, 8, 16, 32],
+  replicasOptions = [1, 2, 3, 5, 10],
+  storageOptions = [1, 2, 5, 10, 20, 50, 100],
+}: ClusterCreateResourceFieldsProps = {}) => {
   const form = useFormContext<{
     resource: Resource & { storage?: number };
     name: string;
   }>();
   const resourceValues = form.watch("resource");
-  const nameValue = form.watch("name");
-  
-  // Only create target and fetch resource status if we have a valid name
-  const target = nameValue ? convertResourceTypeToTarget("cluster", nameValue) : null;
-  const { resource: object } = useResourceStatus(
-    target,
-    (object) => object.resource,
-    !!nameValue // Only enable when we have a name
-  );
-
-  // Return null if object is undefined (no resource found or no name provided)
-  if (object === undefined) {
-    return null;
-  }
-
-  // Helper function to create comparison display
-  const createComparisonDisplay = (
-    formValue: number,
-    objectValue: number | undefined,
-    unit: string
-  ) => {
-    if (objectValue !== undefined && objectValue !== formValue) {
-      return (
-        <div className="flex items-center gap-2">
-          <span className="text-muted-foreground line-through">
-            {objectValue}
-            {unit}
-          </span>
-          <span className="text-muted-foreground">→</span>
-          <span className="font-medium">
-            {formValue}
-            {unit}
-          </span>
-        </div>
-      );
-    }
-    return (
-      <span className="font-medium">
-        {formValue}
-        {unit}
-      </span>
-    );
-  };
 
   return (
     <div className="space-y-2 px-2">
@@ -97,11 +45,9 @@ export const ResourceFields = ({
               <FormItem>
                 <div className="flex items-center gap-2">
                   <FormLabel className="font-medium">CPU:</FormLabel>
-                  {createComparisonDisplay(
-                    field.value || cpuOptions[0],
-                    object.cpu,
-                    "C"
-                  )}
+                  <span className="font-medium">
+                    {field.value || cpuOptions[0]}C
+                  </span>
                 </div>
                 <div className="space-y-2">
                   <Slider
@@ -144,11 +90,9 @@ export const ResourceFields = ({
               <FormItem>
                 <div className="flex items-center gap-2">
                   <FormLabel className="font-medium">Memory:</FormLabel>
-                  {createComparisonDisplay(
-                    field.value || memoryOptions[0],
-                    object.memory,
-                    "G"
-                  )}
+                  <span className="font-medium">
+                    {field.value || memoryOptions[0]}G
+                  </span>
                 </div>
                 <div className="space-y-2">
                   <Slider
@@ -191,11 +135,9 @@ export const ResourceFields = ({
               <FormItem>
                 <div className="flex items-center gap-2">
                   <FormLabel className="font-medium">Storage:</FormLabel>
-                  {createComparisonDisplay(
-                    field.value || storageOptions[0],
-                    object.storage,
-                    "G"
-                  )}
+                  <span className="font-medium">
+                    {field.value || storageOptions[0]}G
+                  </span>
                 </div>
                 <div className="space-y-2">
                   <Slider
@@ -239,11 +181,9 @@ export const ResourceFields = ({
               <FormItem>
                 <div className="flex items-center gap-2">
                   <FormLabel className="font-medium">Replicas:</FormLabel>
-                  {createComparisonDisplay(
-                    field.value || replicasOptions[0],
-                    object.replicas,
-                    ""
-                  )}
+                  <span className="font-medium">
+                    {field.value || replicasOptions[0]}
+                  </span>
                 </div>
                 <div className="space-y-2">
                   <Slider

@@ -72,9 +72,9 @@ export const ClusterTypeField = () => {
     if (selectedType && selectedType !== "") {
       const versions = CLUSTER_CONSTANT_TYPE_VERSION[selectedType as keyof typeof CLUSTER_CONSTANT_TYPE_VERSION];
       
-      console.log("Type changed to:", selectedType);
-      console.log("Current version:", selectedVersion);
-      console.log("Available versions for type:", versions);
+      // console.log("Type changed to:", selectedType);
+      // console.log("Current version:", selectedVersion);
+      // console.log("Available versions for type:", versions);
       
       // If no version is selected, auto-select the first one
       if ((!selectedVersion || selectedVersion === "") && versions && versions.length > 0) {

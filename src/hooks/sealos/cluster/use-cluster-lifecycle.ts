@@ -63,6 +63,9 @@ export const useClusterLifecycle = (
         cluster.get.queryKey(),
         project.getResources.queryKey(),
       ]);
+
+      // Reload window to ensure all data is fresh
+      window.location.reload();
     },
     onError: (error: any) => {
       const message = error.message || "Failed to delete cluster";

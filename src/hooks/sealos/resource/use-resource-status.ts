@@ -13,16 +13,17 @@ type ResourceSelectFunction<TResource = any, TSelected = any> = (
 
 export const useResourceStatus = <TSelected = any>(
   target: CustomResourceTarget | BuiltinResourceTarget | null,
-  select?: ResourceSelectFunction<any, TSelected>
+  select?: ResourceSelectFunction<any, TSelected>,
+  enabled: boolean = true
 ) => {
   const createReturn = (resource: any, query: any) => ({
     ...query,
-    resource: select ? select(resource) : resource,
+    resource: resource && select ? select(resource) : resource,
     originalResource: resource,
     status: resource?.status,
   });
 
-  if (!target || !target.name) {
+  if (!enabled || !target || !target.name) {
     return {
       resource: undefined,
       status: undefined,

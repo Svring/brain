@@ -38,6 +38,9 @@ export const useClusterCreate = (options: UseClusterCreateOptions = {}) => {
       } else {
         toast.success("Cluster created successfully!");
       }
+
+      // Reload window to ensure all data is fresh
+      window.location.reload();
     },
     onError: async (error: any, variables) => {
       console.error("Cluster creation error:", error);

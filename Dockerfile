@@ -2,6 +2,8 @@
 # Build for AMD64
 # docker build --platform linux/amd64 -t orca-app .
 # docker build --platform linux/amd64 -t sealos-brain-frontend:v0.2 .
+# 
+# 
 
 # # Tag for your repository
 # docker tag orca-app puddlecat/orca-app:latest

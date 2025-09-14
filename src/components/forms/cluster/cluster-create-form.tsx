@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useClusterCreateForm } from "@/hooks/forms/cluster/use-cluster-create-form";
 import { ClusterCreateFormData } from "@/schemas/forms/cluster/cluster-create-form-schema";
 import { NameField } from "@/components/forms/universal/name-field";
-import { ResourceFields } from "../universal/resource-fields";
+import { ClusterCreateResourceFields } from "./cluster-create-resource-fields";
 import { ClusterTypeField } from "./components/cluster-type-field";
 import {
   CPU_OPTIONS,
@@ -42,7 +42,7 @@ export const ClusterCreateForm = ({
           <ClusterTypeField />
         </div>
 
-        <ResourceFields 
+        <ClusterCreateResourceFields 
           cpuOptions={CPU_OPTIONS}
           memoryOptions={[...MEMORY_OPTIONS, 32]}
           replicasOptions={REPLICAS_OPTIONS}

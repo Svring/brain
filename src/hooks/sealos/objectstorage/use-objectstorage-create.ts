@@ -42,6 +42,9 @@ export const useObjectStorageCreate = (
       } else {
         toast.success("Object storage bucket created successfully!");
       }
+
+      // Reload window to ensure all data is fresh
+      window.location.reload();
     },
     onError: async (error: any, variables) => {
       console.error("Object storage creation error:", error);

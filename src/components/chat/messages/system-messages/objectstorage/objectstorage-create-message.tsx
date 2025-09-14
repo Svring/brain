@@ -52,11 +52,11 @@ export const ObjectStorageCreateMessage: React.FC<
 
   const handleSubmit = async (data: ObjectStorageCreateFormData) => {
     try {
-      console.log("data", data);
-      // await createObjectStorageMutation.mutateAsync({
-      //   bucketName: data.name,
-      //   bucketPolicy: data.policy,
-      // });
+      // console.log("data", data);
+      await createObjectStorageMutation.mutateAsync({
+        bucketName: data.name,
+        bucketPolicy: data.policy,
+      });
     } catch (error) {
       console.error("Error creating object storage:", error);
     }

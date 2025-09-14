@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useDevboxCreateForm } from "@/hooks/forms/devbox/use-devbox-create-form";
 import { DevboxCreateFormData } from "@/schemas/forms/devbox/devbox-create-form-schema";
 import { NameField } from "@/components/forms/universal/name-field";
-import { ResourceFields } from "../universal/resource-fields";
+import { DevboxCreateResourceFields } from "./devbox-create-resource-fields";
 import { DevboxPortsFields } from "./devbox-ports-fields";
 import { DevboxRuntimeField } from "./components/devbox-runtime-field";
 import { toast } from "sonner";
@@ -47,7 +47,7 @@ export const DevboxCreateForm = ({
           <DevboxRuntimeField />
         </div>
 
-        <ResourceFields
+        <DevboxCreateResourceFields
           cpuOptions={[0.1, 0.2, 0.5, 1, 2, 4, 8, 16]}
           memoryOptions={[0.1, 0.5, 1, 2, 4, 8, 16, 32]}
         />

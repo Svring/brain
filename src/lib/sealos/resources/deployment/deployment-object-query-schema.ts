@@ -93,12 +93,15 @@ export const DeploymentObjectQuerySchema = z.object({
       })
     )
     .transform((spec) => {
+      if (!spec) return {};
+
       const replicas = spec.replicas;
-      const containers = spec.template.spec.containers;
+      const containers = spec.template?.spec?.containers;
       if (Array.isArray(containers) && containers.length > 0) {
+        const limits = containers[0].resources?.limits || {};
         const k8sResource = {
           replicas,
-          ...containers[0].resources.limits,
+          ...limits,
         };
 
         // Convert Kubernetes resource strings to numeric values
@@ -113,7 +116,7 @@ export const DeploymentObjectQuerySchema = z.object({
           memory: convertedResource.memory.original,
         };
       }
-      return {};
+      return { replicas };
     }),
   strategy: z
     .any()
@@ -154,15 +157,16 @@ export const DeploymentObjectQuerySchema = z.object({
       })
     )
     .transform((resource) => {
-      // console.log("resource", resource);
-      const status = resource.status;
+      if (!resource) return "Unknown";
+
+      const status = resource.status || {};
       const paused =
-        resource.metadata.annotations?.["deploy.cloud.sealos.io/pause"];
+        resource.metadata?.annotations?.["deploy.cloud.sealos.io/pause"];
       const statusObject = {
-        replicas: status.replicas,
-        readyReplicas: status.readyReplicas,
-        unavailableReplicas: status.unavailableReplicas,
-        availableReplicas: status.availableReplicas,
+        replicas: status.replicas || 0,
+        readyReplicas: status.readyReplicas || 0,
+        unavailableReplicas: status.unavailableReplicas || 0,
+        availableReplicas: status.availableReplicas || 0,
         paused: paused ? true : false,
       };
 
@@ -177,7 +181,9 @@ export const DeploymentObjectQuerySchema = z.object({
       })
     )
     .transform((resource) => {
-      const metadata = resource.metadata;
+      if (!resource) return { createdAt: "Unknown" };
+
+      const metadata = resource.metadata || {};
 
       // Get createdAt from metadata and format it
       const createdAt = formatIsoDateToReadable(metadata.creationTimestamp);
@@ -323,16 +329,19 @@ export const DeploymentObjectQuerySchema = z.object({
       })
     )
     .transform((pods) => {
+      if (!Array.isArray(pods)) return [];
+
       return pods.map((pod: any) => {
         return {
-          name: pod.metadata.name,
-          status: pod.status.phase,
-          containers: pod.status.containerStatuses.map((container: any) => ({
-            name: container.name,
-            ready: container.ready,
-            state: container.state,
-            restartCount: container.restartCount,
-          })),
+          name: pod.metadata?.name || "",
+          status: pod.status?.phase || "Unknown",
+          containers:
+            pod.status?.containerStatuses?.map((container: any) => ({
+              name: container.name,
+              ready: container.ready,
+              state: container.state,
+              restartCount: container.restartCount,
+            })) || [],
         };
       });
     }),

@@ -46,6 +46,9 @@ export const useDevboxCreate = (options: UseDevboxCreateOptions = {}) => {
         devbox.list.queryKey(),
         project.getResources.queryKey(),
       ]);
+
+      // Reload window to ensure all data is fresh
+      window.location.reload();
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to create devbox");

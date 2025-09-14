@@ -40,6 +40,9 @@ export const useLaunchpadCreate = (options: UseLaunchpadCreateOptions = {}) => {
       } else {
         toast.success("Launchpad application created successfully!");
       }
+
+      // Reload window to ensure all data is fresh
+      window.location.reload();
     },
     onError: async (error: any, variables) => {
       console.error("Launchpad creation error:", error);
