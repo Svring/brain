@@ -21,40 +21,99 @@ interface LangGraphMessage {
   tool_calls?: any[];
   invalid_tool_calls?: any[];
   usage_metadata?: any;
+  tool_call_id?: string;
 }
 
 export function convertToCopilotKitMessages(
   messages: LangGraphMessage[]
 ): Message[] {
-  return messages.map((message) => {
-    // Determine role based on type and additional_kwargs
+  const convertedMessages: Message[] = [];
+
+  for (const message of messages) {
+    // Handle system messages
     if (
-      message.type === "human" ||
-      message.additional_kwargs?.type === "human"
-    ) {
-      return {
-        id: message.id,
-        role: "user" as const,
-        content: message.content,
-      };
-    } else if (
       message.type === "system" ||
       message.additional_kwargs?.type === "system"
     ) {
-      return {
+      convertedMessages.push({
         id: message.id,
         role: "system" as const,
         content: message.content,
-      };
-    } else {
-      // Default to 'assistant' when no role is specified
-      return {
+      });
+    }
+    // Handle human messages
+    else if (
+      message.type === "human" ||
+      message.additional_kwargs?.type === "human"
+    ) {
+      convertedMessages.push({
+        id: message.id,
+        role: "user" as const,
+        content: message.content,
+      });
+    }
+    // Handle AI messages with tool calls
+    else if (
+      message.type === "ai" &&
+      message.tool_calls &&
+      message.tool_calls.length > 0
+    ) {
+      // Add the assistant message with content
+      convertedMessages.push({
         id: message.id,
         role: "assistant" as const,
         content: message.content,
-      };
+      });
+
+      // Add tool call messages
+      for (const toolCall of message.tool_calls) {
+        convertedMessages.push({
+          id: toolCall.id,
+          role: "assistant" as const,
+          content: "",
+          toolCalls: [
+            {
+              id: toolCall.id,
+              function: {
+                name: toolCall.name,
+                arguments: JSON.stringify(toolCall.args),
+              },
+              type: "function",
+            },
+          ],
+          name: toolCall.name,
+        });
+      }
     }
-  });
+    // Handle tool result messages
+    else if (message.type === "tool") {
+      convertedMessages.push({
+        id: message.id,
+        role: "tool" as const,
+        content: message.content,
+        toolCallId: message.tool_call_id || "",
+        toolName: message.name || "unknown",
+      });
+    }
+    // Handle regular AI messages without tool calls
+    else if (message.type === "ai") {
+      convertedMessages.push({
+        id: message.id,
+        role: "assistant" as const,
+        content: message.content,
+      });
+    }
+    // Default fallback
+    else {
+      convertedMessages.push({
+        id: message.id,
+        role: "assistant" as const,
+        content: message.content,
+      });
+    }
+  }
+
+  return convertedMessages;
 }
 
 export function extractLanggraphMessages(

@@ -33,19 +33,12 @@ export default function AiChatbox() {
       selectThread(thread.thread_id);
       setMessages(convertThreadToCopilotKitMessages(thread));
       if (pendingMessage) {
-        appendSystemMessageMutation.mutate(
-          {
-            type: pendingMessage.messageType,
-            target: pendingMessage.target,
-            payload: pendingMessage.payload,
-            currentMessages: convertThreadToCopilotKitMessages(thread),
-          },
-          {
-            // onSuccess: () => {
-            //   clearPendingMessage();
-            // },
-          }
-        );
+        appendSystemMessageMutation.mutate({
+          type: pendingMessage.messageType,
+          target: pendingMessage.target,
+          payload: pendingMessage.payload,
+          currentMessages: convertThreadToCopilotKitMessages(thread),
+        });
       }
     };
 
@@ -67,6 +60,7 @@ export default function AiChatbox() {
     latestThreadId,
     latestThread,
     pendingMessage,
+    threadsLoading,
   ]);
 
   return (

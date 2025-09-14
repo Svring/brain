@@ -90,13 +90,13 @@ const DevboxLifecycleSuccessMessage = ({
   const config = getActionConfig(action);
 
   return (
-    <div className="w-full">
+    <div className="w-full bg-background-secondary">
       <div className="flex items-center justify-between p-2 border rounded-lg">
         <div className="flex items-center gap-2">
           <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
           <p className="text-sm">{config.successMessage}</p>
         </div>
-        <Button onClick={handleNodeSelect} variant="outline" size="sm">
+        <Button onClick={() => handleNodeSelect()} variant="outline" size="sm">
           View devbox details
         </Button>
       </div>
