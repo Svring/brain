@@ -14,32 +14,11 @@ import { LaunchpadLifecycleActionMessage } from "@/components/copilot/sealos/lau
 export const ToolMessageType = {
   // Project Actions
   propose_project: (payload: any) => {
-    // Extract the project proposal from the payload
-    const projectProposal = payload?.project_proposal;
-    
-    if (!projectProposal) {
-      return (
-        <div className="flex justify-start w-full">
-          <div className="bg-background-secondary border border-border-primary rounded-lg p-4 max-w-full">
-            <div className="text-sm text-foreground">
-              <pre className="whitespace-pre-wrap break-words">
-                {JSON.stringify(payload, null, 2)}
-              </pre>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    return <ProjectProposalPresentation proposal={projectProposal} />;
+    return <ProjectProposalPresentation proposal={payload.projectProposal} />;
   },
 
   add_resource_to_project: (payload: any) => {
-    return (
-      <AddResourceToProjectActionMessage
-        resources={payload}
-      />
-    );
+    return <AddResourceToProjectActionMessage resources={payload} />;
   },
 
   get_project_resources: (payload: any) => {
@@ -62,27 +41,16 @@ export const ToolMessageType = {
 
   // Devbox Actions
   createDevbox: (payload: any) => {
-    return (
-      <DevboxCreateActionMessage
-        args={payload}
-      />
-    );
+    return <DevboxCreateActionMessage args={payload} />;
   },
 
   updateDevbox: (payload: any) => {
-    return (
-      <DevboxUpdateActionMessage
-        args={payload}
-      />
-    );
+    return <DevboxUpdateActionMessage args={payload} />;
   },
 
   devboxLifecycle: (payload: any) => {
     return (
-      <DevboxLifecycleActionMessage
-        args={payload}
-        action={payload.action}
-      />
+      <DevboxLifecycleActionMessage args={payload} action={payload.action} />
     );
   },
 
@@ -130,27 +98,16 @@ export const ToolMessageType = {
 
   // Cluster Actions
   createCluster: (payload: any) => {
-    return (
-      <ClusterCreateActionMessage
-        args={payload}
-      />
-    );
+    return <ClusterCreateActionMessage args={payload} />;
   },
 
   updateCluster: (payload: any) => {
-    return (
-      <ClusterUpdateActionMessage
-        args={payload}
-      />
-    );
+    return <ClusterUpdateActionMessage args={payload} />;
   },
 
   clusterLifecycle: (payload: any) => {
     return (
-      <ClusterLifecycleActionMessage
-        args={payload}
-        action={payload.action}
-      />
+      <ClusterLifecycleActionMessage args={payload} action={payload.action} />
     );
   },
 
@@ -170,27 +127,16 @@ export const ToolMessageType = {
 
   // Launchpad Actions
   createLaunchpad: (payload: any) => {
-    return (
-      <LaunchpadCreateActionMessage
-        args={payload}
-      />
-    );
+    return <LaunchpadCreateActionMessage args={payload} />;
   },
 
   updateLaunchpad: (payload: any) => {
-    return (
-      <LaunchpadUpdateActionMessage
-        args={payload}
-      />
-    );
+    return <LaunchpadUpdateActionMessage args={payload} />;
   },
 
   launchpadLifecycle: (payload: any) => {
     return (
-      <LaunchpadLifecycleActionMessage
-        args={payload}
-        action={payload.action}
-      />
+      <LaunchpadLifecycleActionMessage args={payload} action={payload.action} />
     );
   },
 

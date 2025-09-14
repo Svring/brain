@@ -2,20 +2,23 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
-  CustomResourceTarget,
-  BuiltinResourceTarget,
-} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import BaseSystemMessage from "../components/base-system-message";
 import { FileText, Search, RefreshCw, Edit, ExternalLink } from "lucide-react";
 
 interface CustomDomainMessageProps {
-  target: CustomResourceTarget | BuiltinResourceTarget;
+  publicAddress: string;
 }
 
 export default function CustomDomainMessage({
-  target,
+  publicAddress,
 }: CustomDomainMessageProps) {
   const handleFilingEntry = () => {
     // Handle filing entry action
@@ -61,16 +64,27 @@ export default function CustomDomainMessage({
       <div className="space-y-6">
         {/* Domain binding info */}
         <div className="text-sm text-muted-foreground">
-          Domain binding for this availability zone requires Alibaba Cloud registration.
+          Domain binding for this availability zone requires Alibaba Cloud
+          registration.
         </div>
 
         {/* Filing buttons */}
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleFilingEntry} className="flex-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleFilingEntry}
+            className="flex-1"
+          >
             <FileText className="h-4 w-4 mr-2" />
             Filing Entry
           </Button>
-          <Button variant="outline" size="sm" onClick={handleFilingQuery} className="flex-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleFilingQuery}
+            className="flex-1"
+          >
             <Search className="h-4 w-4 mr-2" />
             Filing Query
           </Button>
@@ -80,11 +94,21 @@ export default function CustomDomainMessage({
         <div className="space-y-3">
           <Input placeholder="Enter your custom domain..." className="w-full" />
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleRefresh} className="flex-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              className="flex-1"
+            >
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
             </Button>
-            <Button variant="outline" size="sm" onClick={handleEdit} className="flex-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleEdit}
+              className="flex-1"
+            >
               <Edit className="h-4 w-4 mr-2" />
               Edit
             </Button>
@@ -96,9 +120,10 @@ export default function CustomDomainMessage({
           <CardContent className="p-4 space-y-3">
             <h4 className="text-sm font-medium text-foreground">DNS Records</h4>
             <p className="text-sm text-muted-foreground">
-              The DNS records at your provider must match the following records to verify and connect your domain to Sealos.
+              The DNS records at your provider must match the following records
+              to verify and connect your domain to Sealos.
             </p>
-            
+
             <Table>
               <TableHeader>
                 <TableRow>

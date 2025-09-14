@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, Check, HelpCircle } from "lucide-react";
 import { useCopy } from "@/hooks/use-copy";
@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import CustomPortDialog from "./custom-port-dialog";
 
 interface Port {
   number: number;
@@ -28,6 +29,8 @@ interface PortDisplayTableProps {
 
 export function PortDisplayTable({ ports }: PortDisplayTableProps) {
   const { copyToClipboard, isCopied } = useCopy();
+  const [isCustomDialogOpen, setIsCustomDialogOpen] = useState(false);
+  const [selectedPort, setSelectedPort] = useState<Port | null>(null);
 
   if (!ports || ports.length === 0) {
     return null;
@@ -109,6 +112,17 @@ export function PortDisplayTable({ ports }: PortDisplayTableProps) {
                           <Copy className="w-3 h-3" />
                         )}
                       </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+                        onClick={() => {
+                          setSelectedPort(port);
+                          setIsCustomDialogOpen(true);
+                        }}
+                      >
+                        Custom
+                      </Button>
                     </>
                   ) : (
                     <>
@@ -124,6 +138,13 @@ export function PortDisplayTable({ ports }: PortDisplayTableProps) {
           ))}
         </TableBody>
       </Table>
+      
+      {/* Custom Port Dialog */}
+      <CustomPortDialog
+        open={isCustomDialogOpen}
+        onOpenChange={setIsCustomDialogOpen}
+        selectedPort={selectedPort}
+      />
     </div>
   );
 }

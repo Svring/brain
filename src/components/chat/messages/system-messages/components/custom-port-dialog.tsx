@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -71,6 +71,15 @@ export function CustomPortDialog({
     { type: "CNAME", ttl: "Auto", value: selectedPort?.publicAddress || "XXX" },
   ]);
 
+  // Update DNS records when selectedPort changes
+  useEffect(() => {
+    if (selectedPort?.publicAddress) {
+      setDnsRecords([
+        { type: "CNAME", ttl: "Auto", value: selectedPort.publicAddress },
+      ]);
+    }
+  }, [selectedPort]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -95,10 +104,6 @@ export function CustomPortDialog({
             <Button variant="outline">
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
-            </Button>
-            <Button variant="outline">
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
             </Button>
           </div>
 
