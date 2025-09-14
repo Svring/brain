@@ -8,6 +8,7 @@ import { ProjectProposalPreview } from "./project-proposal-preview";
 import { useProjectCreate } from "@/hooks/brain/use-project-create";
 import BaseActionMessage from "@/components/chat/messages/system-messages/components/base-action-message";
 import type { ProjectProposal } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
+import { useChatActions } from "@/contexts/chat/chat-context";
 
 interface ProjectProposalPresentationProps {
   proposal: ProjectProposal;
@@ -22,8 +23,11 @@ export function ProjectProposalPresentation({
 
   const { createProject, isCreating } = useProjectCreate();
 
+  const { openSidebarChat } = useChatActions();
+
   // Handle project creation
   const handleCreate = async () => {
+    openSidebarChat();
     await createProject(internalProposal);
   };
 
@@ -71,9 +75,7 @@ export function ProjectProposalPresentation({
         />
       ) : (
         <div className="space-y-4">
-          <h4 className="text-md font-medium">
-            Project Architecture Preview
-          </h4>
+          <h4 className="text-md font-medium">Project Architecture Preview</h4>
           <ProjectProposalPreview
             proposal={internalProposal}
             className="border rounded-lg"

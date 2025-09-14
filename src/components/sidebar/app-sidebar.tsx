@@ -23,9 +23,7 @@ export default function AppSidebar() {
   return (
     <>
       <Sidebar className="" collapsible="icon">
-        <SidebarHeader
-          className={cn("bg-background-primary pt-3")}
-        >
+        <SidebarHeader className={cn("bg-background-primary pt-3")}>
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton
@@ -52,28 +50,7 @@ export default function AppSidebar() {
         <SidebarContent className={cn("bg-background-primary")}>
           <MainSection />
         </SidebarContent>
-        <SidebarFooter className={cn("bg-background-primary")}>
-          {/* <AIAccess /> */}
-          {/* {mode === "production" ? (
-            <BrainTokenStats />
-          ) : (
-            <UserCard
-              user={{
-                name: "Brain",
-                email: "brain@sealos.io",
-                avatar: "https://github.com/vercel.png",
-              }}
-            />
-          )} */}
-          {/* <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton>
-                <BookOpen />
-                <span>Documentation</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu> */}
-        </SidebarFooter>
+        <SidebarFooter className={cn("bg-background-primary")}></SidebarFooter>
         <SidebarRail />
       </Sidebar>
     </>

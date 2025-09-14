@@ -53,10 +53,18 @@ export const MainSection: React.FC = () => {
     if (path === "/home") {
       closeSidebarChat();
       // Create a new thread when navigating to home
-      createNewThread.mutate({
-        selectedProject: undefined,
-        resourceTarget: undefined,
-      });
+      // createNewThread.mutate(
+      //   {
+      //     selectedProject: undefined,
+      //     resourceTarget: undefined,
+      //   },
+      //   {
+      //     onSuccess: () => {
+      //       router.push(path);
+      //     },
+      //   }
+      // );
+      // router.push(path);
     }
     router.push(path);
   };

@@ -30,7 +30,7 @@ export function ResourceStatusRow({
   onDetailPopoverChange,
 }: ResourceStatusRowProps) {
   const { stage } = useLanggraphState();
-  console.log("stage", stage);
+  // console.log("stage", stage);
 
   const getIconUrl = () =>
     selectedResource
