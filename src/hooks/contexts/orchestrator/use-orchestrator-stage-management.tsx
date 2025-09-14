@@ -2,7 +2,10 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useLanggraphAgent } from "@/hooks/langgraph/use-langgraph-agent";
-import { useLanggraphContext } from "@/contexts/langgraph/langgraph-context";
+import {
+  useLanggraphContext,
+  useLanggraphActions,
+} from "@/contexts/langgraph/langgraph-context";
 import { useChatState } from "@/contexts/chat/chat-context";
 
 export const useOrchestratorStageManagement = () => {
@@ -12,6 +15,8 @@ export const useOrchestratorStageManagement = () => {
   const { state: langgraphState } = useLanggraphContext();
   const { setState: setLanggraphState } = useLanggraphAgent();
   const { sidebarChatOpen } = useChatState();
+  const { setStage, setProjectContext, updateResourceContext } =
+    useLanggraphActions();
 
   useEffect(() => {
     let stage: "propose_project" | "manage_project" | "manage_resource";
@@ -37,7 +42,14 @@ export const useOrchestratorStageManagement = () => {
       };
     }
 
+    // Set the stage in the updated context
+    updatedContext.stage = stage;
+
+    // Sync to langgraph agent state (as before)
     setLanggraphState({ ...updatedContext, stage });
+
+    // Also sync to langgraph context/XState machine
+    setStage(stage);
   }, [
     pathname,
     selectedResource,
