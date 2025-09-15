@@ -29,6 +29,5 @@ export const useOrchestratorCloseChat = ({
   }, [
     sidebarChatOpen,
     state.context.monitoredStates.sidebarChatOpen,
-    clearSelectedResource,
   ]);
 };

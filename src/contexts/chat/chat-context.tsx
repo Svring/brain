@@ -70,7 +70,7 @@ export function useChatActions() {
     if (threadId && threadId !== state.context.selectedThreadId) {
       send({ type: "SELECT_THREAD", threadId });
     }
-  }, [threadId, state.context.selectedThreadId, send]);
+  }, [threadId, state.context.selectedThreadId]);
 
   return {
     openSidebarChat: () => send({ type: "SET_SIDEBAR_CHAT_OPEN", open: true }),

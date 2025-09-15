@@ -17,13 +17,14 @@ import { useEffect } from "react";
 export const useThreads = () => {
   const { auth } = useAuthState();
   const { selectThread } = useChatActions();
-  const { selectedProject } = useProjectState();
+  const { selectedProject, selectedResource } = useProjectState();
 
   // Query threads with metadata for the current target
   const { data: threads, isLoading: threadsLoading } = useQuery(
     searchThreadsOptions({
       kubeconfig: auth?.kubeconfig || "",
       projectName: selectedProject,
+      resourceTarget: selectedResource,
     })
   );
 

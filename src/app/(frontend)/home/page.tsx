@@ -8,13 +8,14 @@ import useProjectSearch from "@/hooks/brain/use-projects-search";
 import RecentProjects from "@/components/project/recent-projects";
 import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
 import { Button } from "@/components/ui/button";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { proposeProjectAction } from "@/lib/copilot/brain/project/copilot-project-actions";
 import Suggestions from "@/components/chat/components/suggestions";
 import { useChatState } from "@/contexts/chat/chat-context";
-import { useLanggraphStream } from "@/hooks/langgraph/use-langgraph-stream";
+import { useLanggraphStream } from "@/contexts/langgraph/langgraph-context";
 import { useThreads } from "@/hooks/langgraph/use-threads";
 import { useMount } from "@reactuses/core";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 
 export default function HomePage() {
   const { selectedThreadId } = useChatState();
@@ -27,12 +28,20 @@ export default function HomePage() {
   const { CreateProjectDialog, openDialog } = useProjectCreateDialog();
   const { createNewThread } = useThreads();
   const messagesScrollRef = useRef<HTMLDivElement>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   const { messages, submit, stop, isLoading } = useLanggraphStream();
 
   // Create a new thread on mount
   useMount(() => {
-    createNewThread.mutate();
+    createNewThread.mutate(undefined, {
+      onSuccess: () => {
+        setIsInitializing(false);
+      },
+      onError: () => {
+        setIsInitializing(false);
+      },
+    });
   });
 
   const hasMessages = messages.length > 0;
@@ -40,6 +49,11 @@ export default function HomePage() {
   // Track visibility of recent projects
   const showRecentProjects = !hasMessages && projects && projects.length > 0;
   // const showRecentProjects = false;
+
+  // Show loading screen while initializing
+  if (isInitializing) {
+    return <LoadingScreen text="Initializing..." />;
+  }
 
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden">
@@ -103,7 +117,7 @@ export default function HomePage() {
             <AiChatInput
               className={`max-w-3xl${!hasMessages ? " min-h-[140px]" : ""}`}
               exhibition={!hasMessages}
-              submit={submit}
+              // submit={submit}
               stop={stop}
               isLoading={isLoading}
             />

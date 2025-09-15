@@ -77,7 +77,7 @@ export const useNetworkStatus = (target: ResourceTarget) => {
         }
       }
     });
-  }, [statusKey, connectedEdges, updateEdge]);
+  }, [statusKey, connectedEdges]);
 
   return { readyStatus, getBackgroundColor };
 };

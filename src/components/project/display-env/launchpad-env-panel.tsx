@@ -62,7 +62,7 @@ export default function LaunchpadEnvPanel({ deploymentResources }: LaunchpadEnvP
     if (deploymentResources.length > 0) {
       resolveDeploymentEnvs();
     }
-  }, [deploymentResources, context]);
+  }, [deploymentResources]);
 
   if (deploymentResources.length === 0) {
     return (

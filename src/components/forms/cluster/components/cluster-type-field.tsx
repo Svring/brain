@@ -65,7 +65,7 @@ export const ClusterTypeField = () => {
         }, 0);
       }
     }
-  }, [selectedType, clusterTypes, setValue]);
+  }, [selectedType, clusterTypes]);
 
   // Additional effect to ensure version is set when type changes
   useEffect(() => {
@@ -82,7 +82,7 @@ export const ClusterTypeField = () => {
         console.log("Setting version to:", versions[0]);
       }
     }
-  }, [selectedType, selectedVersion, setValue]);
+  }, [selectedType, selectedVersion]);
 
   return (
     <div className="grid grid-cols-2 gap-4">

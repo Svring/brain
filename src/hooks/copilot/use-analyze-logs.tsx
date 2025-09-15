@@ -76,7 +76,7 @@ export function useAnalyzeLogs(
           },
           {
             type: "system",
-            content: analyzeLogsPrompt + "\n\n" + JSON.stringify(logsData),
+            content: analyzeLogsPrompt + "\n" + JSON.stringify(logsData),
           },
         ],
       });

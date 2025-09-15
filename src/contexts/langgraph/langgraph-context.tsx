@@ -46,7 +46,7 @@ export const LanggraphProvider = ({
         model_name: config.modelName,
       });
     }
-  }, [config.apiKey, config.baseUrl, config.modelName, send]);
+  }, [config.apiKey, config.baseUrl, config.modelName]);
 
   return (
     <LanggraphContext.Provider value={{ state, send, actorRef, stream }}>
@@ -127,16 +127,20 @@ export function useLanggraphActions() {
 export function useLanggraphStream() {
   const { stream } = useLanggraphContext();
   const { state } = useLanggraphContext();
-  const { selectedProject, selectedResource, selectedProjectResources, selectedResourceContext } = useProjectState();
+  const {
+    selectedProject,
+    selectedResource,
+    selectedProjectResources,
+    selectedResourceContext,
+  } = useProjectState();
 
   // Create a wrapper that automatically includes BrainState context
-  const submitWithContext = (data: {
-    messages: Message[];
-  }) => {
-    const { api_key, base_url, model_name, context_window_usage, stage } = state.context;
-    
+  const submitWithContext = (data: { messages: Message[] }) => {
+    const { api_key, base_url, model_name, context_window_usage, stage } =
+      state.context;
+
     if (!api_key || !base_url || !model_name || !stage) {
-      console.warn('Missing required langgraph configuration');
+      console.warn("Missing required langgraph configuration");
       return;
     }
 

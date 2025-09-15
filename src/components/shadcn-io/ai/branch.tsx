@@ -90,7 +90,7 @@ export const AIBranchMessages = ({ children }: AIBranchMessagesProps) => {
     if (branches.length !== childrenArray.length) {
       setBranches(childrenArray);
     }
-  }, [childrenArray, branches, setBranches]);
+  }, [childrenArray, branches]);
 
   return childrenArray.map((branch, index) => (
     <div

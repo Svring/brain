@@ -9,7 +9,9 @@ interface UseLanggraphStateUpdateProps {
   threadId: string;
 }
 
-export function useLanggraphStateUpdate({ threadId }: UseLanggraphStateUpdateProps) {
+export function useLanggraphStateUpdate({
+  threadId,
+}: UseLanggraphStateUpdateProps) {
   const { apiKey, baseUrl, modelName, stage } = useLanggraphState();
   const {
     selectedProject,
@@ -54,6 +56,5 @@ export function useLanggraphStateUpdate({ threadId }: UseLanggraphStateUpdatePro
     selectedProjectResources,
     selectedResource,
     selectedResourceContext,
-    updateThreadState,
   ]);
 }
