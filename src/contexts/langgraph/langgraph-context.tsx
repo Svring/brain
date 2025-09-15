@@ -5,11 +5,14 @@ import { createContext, type ReactNode, useContext, useEffect } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import { langgraphMachine } from "@/contexts/langgraph/langgraph-machine";
 import { ProjectContextState } from "@/contexts/project/project-machine";
+import { useLanggraphStream as useOriginalLanggraphStream } from "@/hooks/langgraph/use-langgraph-stream";
+import type { BrainState } from "@/contexts/langgraph/langgraph-schema";
 
 interface LanggraphContextValue {
   state: StateFrom<typeof langgraphMachine>;
   send: (event: EventFrom<typeof langgraphMachine>) => void;
   actorRef: ActorRefFrom<typeof langgraphMachine>;
+  stream: ReturnType<typeof useOriginalLanggraphStream>;
 }
 
 export const LanggraphContext = createContext<
@@ -29,6 +32,7 @@ export const LanggraphProvider = ({
   };
 }) => {
   const [state, send, actorRef] = useMachine(langgraphMachine);
+  const stream = useOriginalLanggraphStream();
 
   // Only set config from props if provided (for backward compatibility)
   useEffect(() => {
@@ -43,7 +47,7 @@ export const LanggraphProvider = ({
   }, [config.apiKey, config.baseUrl, config.modelName, send]);
 
   return (
-    <LanggraphContext.Provider value={{ state, send, actorRef }}>
+    <LanggraphContext.Provider value={{ state, send, actorRef, stream }}>
       {children}
     </LanggraphContext.Provider>
   );
@@ -89,7 +93,9 @@ export function useLanggraphActions() {
     setConfigFailed: () => {
       send({ type: "SET_CONFIG_FAILED" });
     },
-    setStage: (stage: "propose_project" | "manage_project" | "manage_resource") => {
+    setStage: (
+      stage: "propose_project" | "manage_project" | "manage_resource"
+    ) => {
       send({ type: "SET_STAGE", stage });
     },
     setProjectContext: (projectContext: ProjectContextState) => {
@@ -105,10 +111,18 @@ export function useLanggraphActions() {
       send({ type: "SET_RESOURCE_CONTEXT", resource_context: resourceContext });
     },
     updateResourceContext: (resourceContext: any) => {
-      send({ type: "UPDATE_RESOURCE_CONTEXT", resource_context: resourceContext });
+      send({
+        type: "UPDATE_RESOURCE_CONTEXT",
+        resource_context: resourceContext,
+      });
     },
     clearResourceContext: () => {
       send({ type: "CLEAR_RESOURCE_CONTEXT" });
     },
   };
+}
+
+export function useLanggraphStream() {
+  const { stream } = useLanggraphContext();
+  return stream;
 }

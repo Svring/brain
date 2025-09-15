@@ -45,9 +45,9 @@ export const useInvalidateQueries = () => {
 
     // Perform invalidation immediately, then with a small delay for any race conditions
     performInvalidation();
-    setTimeout(performInvalidation, 1000);
-    setTimeout(performInvalidation, 5000);
-    setTimeout(performInvalidation, 10000);
+    setTimeout(performInvalidation, 2000);
+    // setTimeout(performInvalidation, 5000);
+    // setTimeout(performInvalidation, 10000);
   };
 
   return { invalidateQueries };

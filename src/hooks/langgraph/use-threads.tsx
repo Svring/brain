@@ -8,9 +8,11 @@ import { useAuthState } from "@/contexts/auth/auth-context";
 import {
   useCreateNewChatSessionMutation,
   useDeleteThreadMutation,
+  useUpdateThreadStateMutation,
 } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useChatActions } from "@/contexts/chat/chat-context";
 import { useProjectState } from "@/contexts/project/project-context";
+import { useEffect } from "react";
 
 export const useThreads = () => {
   const { auth } = useAuthState();
@@ -29,6 +31,10 @@ export const useThreads = () => {
   const latestThread = threads && threads.length > 0 ? threads[0] : null;
   const latestThreadId = latestThread?.thread_id || null;
 
+  useEffect(() => {
+    selectThread(latestThreadId || null);
+  }, [latestThreadId]);
+
   // Get the state of the latest thread if available
   const { data: latestThreadState, isLoading: threadStateLoading } = useQuery(
     getThreadStateOptions(latestThreadId || "")
@@ -36,6 +42,9 @@ export const useThreads = () => {
 
   // Create new thread mutation
   const createNewThreadMutation = useCreateNewChatSessionMutation();
+
+  // Update thread state mutation
+  const updateThreadStateMutation = useUpdateThreadStateMutation();
 
   // Delete thread mutation with selectThread to null logic
   const deleteThreadMutation = useDeleteThreadMutation();
@@ -57,6 +66,7 @@ export const useThreads = () => {
     threadStateLoading,
     hasThreads: threads && threads.length > 0,
     createNewThread: createNewThreadMutation,
+    updateThreadState: updateThreadStateMutation,
     deleteThread: {
       ...deleteThreadMutation,
       mutate: deleteThread,

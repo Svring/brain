@@ -3,9 +3,7 @@ import {
   useProjectActions,
   useProjectState,
 } from "@/contexts/project/project-context";
-import {
-  useSendMessageMutation,
-} from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
@@ -16,7 +14,11 @@ import { toast } from "sonner";
 import _ from "lodash";
 import { useThreads } from "@/hooks/langgraph/use-threads";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
-import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
+import {
+  useLanggraphActions,
+  useLanggraphStream,
+  useLanggraphState,
+} from "@/contexts/langgraph/langgraph-context";
 
 interface UseNodeSelectParams {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -34,14 +36,15 @@ export const useNodeSelect = ({
   const { selectResource } = useProjectActions();
   const { selectedResource } = useProjectState();
   const { selectNode } = useFlowgraphActions();
-  const {
-    selectThread,
-    enableSidebarLoading,
-    disableSidebarLoading,
-    openSidebarChat,
-    setPendingMessage,
-  } = useChatActions();
+  const { openSidebarChat } = useChatActions();
+  const { selectedThreadId } = useChatState();
   const { updateResourceContext } = useLanggraphActions();
+  const { updateThreadState } = useThreads();
+  const { submit } = useLanggraphStream();
+  const { apiKey, baseUrl, modelName, stage, contextWindowUsage } =
+    useLanggraphState();
+  const { selectedProject, selectedProjectResources, selectedResourceContext } =
+    useProjectState();
 
   // Get resource status for the target
   const { resource: resource_context } = useResourceStatus(target);
@@ -57,24 +60,41 @@ export const useNodeSelect = ({
   const handleNodeSelect = (type?: "append" | "send") => {
     selectResource(target);
     selectNode(nodeId);
-    openSidebarChat();
-
-    // Update resource context with the resource status
     updateResourceContext({
       selected_resource_context: resource_context,
     });
 
-    // If messageType is provided, set a pending message
-    if (messageType) {
-      const pendingMessage: PendingMessage = {
-        timestamp: new Date(),
-        type: type || "append", // Use type or default to append
-        messageType,
-        target,
-        payload,
-      };
-      setPendingMessage(pendingMessage);
-    }
+    openSidebarChat();
+
+    // if (messageType && apiKey && baseUrl && modelName && stage) {
+    //   submit({
+    //     messages: [
+    //       {
+    //         type: "system",
+    //         content: JSON.stringify({
+    //           type: messageType,
+    //           target,
+    //           payload,
+    //         }),
+    //       },
+    //     ],
+    //     api_key: apiKey,
+    //     base_url: baseUrl,
+    //     model_name: modelName,
+    //     context_window_usage: contextWindowUsage,
+    //     stage: stage,
+    //     project_context: {
+    //       selectedProject,
+    //       selectedProjectResources,
+    //     },
+    //     resource_context: selectedResource
+    //       ? {
+    //           selectedResource,
+    //           selectedResourceContext,
+    //         }
+    //       : undefined,
+    //   });
+    // }
 
     // Execute onSuccess callback if provided
     onSuccess?.();
@@ -83,5 +103,6 @@ export const useNodeSelect = ({
   return {
     nodeId,
     handleNodeSelect,
+    updateThreadState,
   };
 };

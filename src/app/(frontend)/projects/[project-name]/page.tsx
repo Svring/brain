@@ -91,10 +91,6 @@ function ProjectFlow({
   const { onNodesChange, onEdgesChange } = useFlowgraphActions();
   // useCopilotActions();
 
-  // console.log("isLoading", isLoading);
-  // console.log("nodes", nodes);
-  // console.log("edges", edges);
-
   // Show loading if either isLoading is true OR if nodes or edges length equals 0
   const shouldShowLoading = isLoading || nodes.length === 0;
 
