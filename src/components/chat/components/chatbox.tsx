@@ -1,20 +1,16 @@
 "use client";
 
-import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
-import { useLanggraphState, useLanggraphStream } from "@/contexts/langgraph/langgraph-context";
+import { useChatState } from "@/contexts/chat/chat-context";
+import { useLanggraphStream } from "@/contexts/langgraph/langgraph-context";
 import { AiChatInput } from "./input";
 import { AiChatHeader } from "./header";
 import { AiMessages } from "./messages";
 import { cn } from "@/lib/utils";
-// import { useLanggraphStateUpdate } from "@/hooks/langgraph/use-langgraph-state-update";
-import { useThreads } from "@/hooks/langgraph/use-threads";
-import { useEffect, useState } from "react";
-import { useProjectState } from "@/contexts/project/project-context";
 
 export default function AiChatbox() {
-  const { sidebarChatOpen, selectedThreadId, pendingMessage } = useChatState();
+  const { sidebarChatOpen } = useChatState();
 
-  const { isLoading, stop, messages, submit } = useLanggraphStream();
+  const { isLoading, stop, messages } = useLanggraphStream();
 
   return (
     <div
@@ -33,7 +29,7 @@ export default function AiChatbox() {
 
       <div className="p-2 pt-0 shrink-0 relative z-[9999]">
         <div className="max-w-3xl mx-auto">
-          <AiChatInput submit={submit} stop={stop} isLoading={isLoading} />
+          <AiChatInput stop={stop} isLoading={isLoading} />
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { useProjectState } from "@/contexts/project/project-context";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { ClusterCreateFormData } from "@/schemas/forms/cluster/cluster-create-form-schema";
@@ -14,6 +15,7 @@ interface UseClusterCreateOptions {
 export const useClusterCreate = (options: UseClusterCreateOptions = {}) => {
   const { addToProject = true } = options;
   const { cluster, project } = useTRPCClients();
+  const { invalidateQueries } = useInvalidateQueries();
   const { selectedProject } = useProjectState();
 
   const addToProjectMutation = useMutation(
@@ -39,8 +41,11 @@ export const useClusterCreate = (options: UseClusterCreateOptions = {}) => {
         toast.success("Cluster created successfully!");
       }
 
-      // Reload window to ensure all data is fresh
-      window.location.reload();
+      // Invalidate queries to refresh the data
+      invalidateQueries(
+        [cluster.get.queryKey(), project.getResources.queryKey()],
+        true
+      );
     },
     onError: async (error: any, variables) => {
       console.error("Cluster creation error:", error);

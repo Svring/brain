@@ -171,7 +171,7 @@ function FloatingErrorEdge(props: EdgeProps) {
     <g
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      style={{ cursor: "help" }}
+      style={{ cursor: "default" }}
     >
       <BaseEdge
         id={id}

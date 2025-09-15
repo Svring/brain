@@ -42,13 +42,10 @@ export const useDevboxCreate = (options: UseDevboxCreateOptions = {}) => {
       }
 
       // Invalidate queries to refresh the data
-      invalidateQueries([
-        devbox.list.queryKey(),
-        project.getResources.queryKey(),
-      ]);
-
-      // Reload window to ensure all data is fresh
-      window.location.reload();
+      invalidateQueries(
+        [devbox.list.queryKey(), project.getResources.queryKey()],
+        true
+      );
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to create devbox");

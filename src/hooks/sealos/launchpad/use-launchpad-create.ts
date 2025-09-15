@@ -3,6 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { useProjectState } from "@/contexts/project/project-context";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
@@ -14,6 +15,7 @@ interface UseLaunchpadCreateOptions {
 export const useLaunchpadCreate = (options: UseLaunchpadCreateOptions = {}) => {
   const { addToProject = true } = options;
   const { launchpad, project } = useTRPCClients();
+  const { invalidateQueries } = useInvalidateQueries();
   const { selectedProject } = useProjectState();
 
   const addToProjectMutation = useMutation(
@@ -41,8 +43,11 @@ export const useLaunchpadCreate = (options: UseLaunchpadCreateOptions = {}) => {
         toast.success("Launchpad application created successfully!");
       }
 
-      // Reload window to ensure all data is fresh
-      window.location.reload();
+      // Invalidate queries to refresh the data
+      invalidateQueries(
+        [launchpad.list.queryKey(), project.getResources.queryKey()],
+        true
+      );
     },
     onError: async (error: any, variables) => {
       console.error("Launchpad creation error:", error);
