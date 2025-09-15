@@ -17,36 +17,57 @@ const createClient = () => {
 };
 
 export const createThread = async ({
-  kubeconfig,
-  projectName,
-  resourceTarget,
+  metadata,
+  supersteps,
 }: {
-  kubeconfig: string;
-  projectName?: string;
-  resourceTarget?: ResourceTarget | null;
+  metadata: Record<string, any>;
+  supersteps?: Array<{
+    updates: Array<{
+      values: Record<string, any>;
+      as_node: string;
+    }>;
+  }>;
 }) => {
   const client = createClient();
 
-  // URL decode the kubeconfig before hashing
-  const decodedKubeconfig = decodeURIComponent(kubeconfig);
-  const kubeconfigHash = createHash("sha256")
-    .update(decodedKubeconfig)
-    .digest("hex");
+  // Process kubeconfig if present in metadata
+  if (metadata.kubeconfig) {
+    // URL decode the kubeconfig before hashing
+    const decodedKubeconfig = decodeURIComponent(metadata.kubeconfig);
+    const kubeconfigHash = createHash("sha256")
+      .update(decodedKubeconfig)
+      .digest("hex");
 
-  // Store the hash in metadata instead of the plain kubeconfig
-  const metadata: Record<string, any> = { kubeconfigHash };
-  if (projectName) {
-    metadata.projectName = projectName;
+    // Replace kubeconfig with kubeconfigHash
+    metadata.kubeconfigHash = kubeconfigHash;
+    delete metadata.kubeconfig;
   }
-  if (resourceTarget !== undefined) {
+
+  // Process projectName if present in metadata
+  if (metadata.projectName !== undefined) {
+    // Keep projectName as is, no conversion needed
+    metadata.projectName = metadata.projectName;
+  }
+
+  // Process resourceTarget if present in metadata
+  if (metadata.resourceTarget !== undefined) {
     metadata.resourceTarget =
-      resourceTarget === null ? null : JSON.stringify(resourceTarget);
+      metadata.resourceTarget === null
+        ? null
+        : JSON.stringify(metadata.resourceTarget);
   }
 
-  return await client.threads.create({
+  const createOptions: any = {
     metadata,
     graphId: "orca",
-  });
+  };
+
+  // Add supersteps if provided
+  if (supersteps) {
+    createOptions.supersteps = supersteps;
+  }
+
+  return await client.threads.create(createOptions);
 };
 
 export const listThreads = async () => {

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { nanoid } from "@/lib/utils";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useThreads } from "@/components/provider/thread-provider";
 import { devboxCreateFormSchema } from "@/schemas/forms/devbox/devbox-create-form-schema";
 import { clusterCreateFormSchema } from "@/schemas/forms/cluster/cluster-create-form-schema";
 import { launchpadCreateFormSchema } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
@@ -21,6 +22,7 @@ export function useProjectCreate(options?: CreateProjectOptions) {
   const router = useRouter();
   const { devbox, cluster, launchpad, objectstorage, project } =
     useTRPCClients();
+  const { selectedThreadId, updateThreadState } = useThreads();
 
   // Create mutations
   const createProjectMutation = useMutation(project.create.mutationOptions());
@@ -251,6 +253,28 @@ export function useProjectCreate(options?: CreateProjectOptions) {
       toast.success(
         `Project "${projectName}" created successfully with ${successfulResources.length} resource(s)`
       );
+
+      // Update thread metadata with the created project name
+      if (selectedThreadId) {
+        try {
+          await updateThreadState.mutate({
+            threadId: selectedThreadId,
+            state: {
+              projectName: projectName,
+              createdResources: successfulResources.map((r) => ({
+                type: r.type,
+                name: r.target.name,
+                target: r.target,
+              })),
+            },
+          });
+        } catch (error) {
+          console.warn(
+            "Failed to update thread state with project name:",
+            error
+          );
+        }
+      }
 
       // Navigate to the created project
       router.push(`/projects/${projectName}`);

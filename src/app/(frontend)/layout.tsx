@@ -76,8 +76,8 @@ export default async function RootLayout({
             <AuthProvider payloadUser={payloadUser}>
               <QueryProvider>
                 <ChatProvider>
-                  <LanggraphConfigWrapper>
-                    <ProjectProvider>
+                  <ProjectProvider>
+                    <LanggraphConfigWrapper>
                       <ReactFlowProvider>
                         <FlowgraphProvider>
                           <OrchestratorProvider>
@@ -88,8 +88,8 @@ export default async function RootLayout({
                           </OrchestratorProvider>
                         </FlowgraphProvider>
                       </ReactFlowProvider>
-                    </ProjectProvider>
-                  </LanggraphConfigWrapper>
+                    </LanggraphConfigWrapper>
+                  </ProjectProvider>
                 </ChatProvider>
               </QueryProvider>
             </AuthProvider>

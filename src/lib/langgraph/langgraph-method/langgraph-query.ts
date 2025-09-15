@@ -5,8 +5,8 @@ import {
   listThreads,
   getThread,
   searchThreads,
-  getThreadState,
-} from "../langgraph-api/langgraph-api";
+} from "../langgraph-api/langgraph-trpc-service";
+import { getThreadState } from "../langgraph-api/langgraph-api";
 
 // ============================================================================
 // OPTIONS FUNCTIONS (React Query wrappers)

@@ -4,8 +4,8 @@ import { useCallback } from "react";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useContainerStatus } from "@/hooks/sealos/network/use-container-status";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
-import { useLanggraphStream } from "@/contexts/langgraph/langgraph-context";
-import { useChatState } from "@/contexts/chat/chat-context";
+import { useStreamContext } from "@/components/provider/stream-provider";
+import { useThreads } from "@/components/provider/thread-provider";
 import {
   extractContainerPorts,
   ContainerPortsResult,
@@ -78,8 +78,8 @@ const analyzeNetworkPrompt = `
 export function useDiagnoseNetwork(
   target: CustomResourceTarget | BuiltinResourceTarget
 ) {
-  const { selectedThreadId } = useChatState();
-  const { submitWithContext } = useLanggraphStream();
+  const { selectedThreadId } = useThreads();
+  const { submitWithContext } = useStreamContext();
 
   // Get container ports data for network diagnosis
   const containerStatusResult = useResourceStatus<ContainerPortsResult>(

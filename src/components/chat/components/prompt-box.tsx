@@ -345,6 +345,8 @@ export const PromptInputBox = React.forwardRef(
 
     // const { openDialog, CreateProjectDialog } = useProjectCreateDialog();
     const [input, setInput] = React.useState("");
+    const [isFocused, setIsFocused] = React.useState(false);
+    const [showTypewriter, setShowTypewriter] = React.useState(false);
     const promptBoxRef = React.useRef<HTMLDivElement>(null);
     const internalTextareaRef = React.useRef<HTMLTextAreaElement>(null);
     // For tracking previous loading state
@@ -352,9 +354,9 @@ export const PromptInputBox = React.forwardRef(
 
     // Exhibition texts for typewriter effect
     const exhibitionTexts = [
-      "Ask me to create a new project...",
-      "Tell me what you want to build today...",
-      "Describe your next cloud application..."
+      "Create a workspace for a travel blog.",
+      "Start a project for an online bookstore.",
+      "Set up a site for sharing cooking recipes.",
     ];
 
     // Focus when loading finishes
@@ -371,6 +373,18 @@ export const PromptInputBox = React.forwardRef(
         internalTextareaRef.current?.focus();
       }
     }, [autoFocus]);
+
+    // Show typewriter with 1s delay when conditions are met
+    React.useEffect(() => {
+      if (exhibition && !input.trim() && !isFocused) {
+        const timer = setTimeout(() => {
+          setShowTypewriter(true);
+        }, 1500);
+        return () => clearTimeout(timer);
+      } else {
+        setShowTypewriter(false);
+      }
+    }, [exhibition, input, isFocused]);
 
     // Focus prompt and insert typed character when user starts typing anywhere
     React.useEffect(() => {
@@ -436,6 +450,8 @@ export const PromptInputBox = React.forwardRef(
             <PromptInputTextarea
               placeholder={placeholder}
               className="flex-1"
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
               ref={(node) => {
                 internalTextareaRef.current = node;
                 if (typeof textareaRef === "function") textareaRef(node);
@@ -445,12 +461,12 @@ export const PromptInputBox = React.forwardRef(
                   ).current = node;
               }}
             />
-            {exhibition && !input.trim() && (
+            {showTypewriter && (
               <div className="absolute inset-0 pointer-events-none flex items-start px-3 py-2.5">
                 <Typewriter
                   text={exhibitionTexts}
-                  speed={20}
-                  deleteSpeed={20}
+                  speed={50}
+                  deleteSpeed={50}
                   delay={2000}
                   loop={true}
                   className="text-gray-400"

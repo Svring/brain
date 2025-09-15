@@ -4,8 +4,8 @@ import { useCallback } from "react";
 import { toast } from "sonner";
 import { useResourceLogs } from "@/hooks/sealos/resource/use-resource-logs";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
-import { useLanggraphStream } from "@/contexts/langgraph/langgraph-context";
-import { useChatState } from "@/contexts/chat/chat-context";
+import { useStreamContext } from "@/components/provider/stream-provider";
+import { useThreads } from "@/components/provider/thread-provider";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
@@ -38,10 +38,10 @@ const analyzeLogsPrompt = `
 export function useAnalyzeLogs(
   target: CustomResourceTarget | BuiltinResourceTarget
 ) {
-  const { selectedThreadId } = useChatState();
+  const { selectedThreadId } = useThreads();
   const logsQuery = useResourceLogs(target);
   const { data: logsData, isLoading } = logsQuery;
-  const { submitWithContext } = useLanggraphStream();
+  const { submitWithContext } = useStreamContext();
 
   // Use node select to handle the selection and message appending
   const { handleNodeSelect } = useNodeSelect({

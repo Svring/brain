@@ -17,6 +17,7 @@ import FloatingConnectionLine from "@/components/flowgraph/edge/floating-connect
 // import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
 import { useFlowgraphCommand } from "@/hooks/flowgraph/use-flowgraph-command";
 import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
+import { useThreads } from "@/components/provider/thread-provider";
 import {
   useFlowgraphActions,
   useFlowgraphState,

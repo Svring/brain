@@ -1,7 +1,7 @@
 "use client";
 
 import { PromptInputBox } from "./prompt-box";
-import { useLanggraphStream } from "@/contexts/langgraph/langgraph-context";
+import { useStreamContext } from "@/components/provider/stream-provider";
 
 interface AiChatInputProps {
   className?: string;
@@ -16,7 +16,7 @@ export function AiChatInput({
   stop,
   isLoading,
 }: AiChatInputProps) {
-  const { submitWithContext } = useLanggraphStream();
+  const { submitWithContext } = useStreamContext();
 
   const handleSendMessage = (message: string) => {
     if (message.trim() && !isLoading) {

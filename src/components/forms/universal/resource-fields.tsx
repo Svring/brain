@@ -39,9 +39,11 @@ export const ResourceFields = ({
   }>();
   const resourceValues = form.watch("resource");
   const nameValue = form.watch("name");
-  
+
   // Only create target and fetch resource status if we have a valid name
-  const target = nameValue ? convertResourceTypeToTarget("cluster", nameValue) : null;
+  const target = nameValue
+    ? convertResourceTypeToTarget("cluster", nameValue)
+    : null;
   const { resource: object } = useResourceStatus(
     target,
     (object) => object.resource,
@@ -62,12 +64,12 @@ export const ResourceFields = ({
     if (objectValue !== undefined && objectValue !== formValue) {
       return (
         <div className="flex items-center gap-2">
-          <span className="text-muted-foreground line-through">
+          <span className="text-muted-foreground line-through text-xs">
             {objectValue}
             {unit}
           </span>
-          <span className="text-muted-foreground">→</span>
-          <span className="font-medium">
+          <span className="text-muted-foreground text-xs">→</span>
+          <span className="font-xs">
             {formValue}
             {unit}
           </span>
@@ -75,7 +77,7 @@ export const ResourceFields = ({
       );
     }
     return (
-      <span className="font-medium">
+      <span className="font-xs">
         {formValue}
         {unit}
       </span>

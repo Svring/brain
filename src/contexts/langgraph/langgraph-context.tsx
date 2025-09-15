@@ -5,7 +5,7 @@ import { createContext, type ReactNode, useContext, useEffect } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import { langgraphMachine } from "@/contexts/langgraph/langgraph-machine";
 import { ProjectContextState } from "@/contexts/project/project-machine";
-import { useLanggraphStream as useOriginalLanggraphStream } from "@/hooks/langgraph/use-langgraph-stream";
+// import { useLanggraphStream as useOriginalLanggraphStream } from "@/hooks/langgraph/use-langgraph-stream";
 import type { BrainState } from "@/contexts/langgraph/langgraph-schema";
 import { useProjectState } from "@/contexts/project/project-context";
 import type { Message } from "@langchain/langgraph-sdk";
@@ -14,7 +14,6 @@ interface LanggraphContextValue {
   state: StateFrom<typeof langgraphMachine>;
   send: (event: EventFrom<typeof langgraphMachine>) => void;
   actorRef: ActorRefFrom<typeof langgraphMachine>;
-  stream: ReturnType<typeof useOriginalLanggraphStream>;
 }
 
 export const LanggraphContext = createContext<
@@ -34,7 +33,6 @@ export const LanggraphProvider = ({
   };
 }) => {
   const [state, send, actorRef] = useMachine(langgraphMachine);
-  const stream = useOriginalLanggraphStream();
 
   // Only set config from props if provided (for backward compatibility)
   useEffect(() => {
@@ -49,7 +47,7 @@ export const LanggraphProvider = ({
   }, [config.apiKey, config.baseUrl, config.modelName]);
 
   return (
-    <LanggraphContext.Provider value={{ state, send, actorRef, stream }}>
+    <LanggraphContext.Provider value={{ state, send, actorRef }}>
       {children}
     </LanggraphContext.Provider>
   );
@@ -124,48 +122,5 @@ export function useLanggraphActions() {
   };
 }
 
-export function useLanggraphStream() {
-  const { stream } = useLanggraphContext();
-  const { state } = useLanggraphContext();
-  const {
-    selectedProject,
-    selectedResource,
-    selectedProjectResources,
-    selectedResourceContext,
-  } = useProjectState();
-
-  // Create a wrapper that automatically includes BrainState context
-  const submitWithContext = (data: { messages: Message[] }) => {
-    const { api_key, base_url, model_name, context_window_usage, stage } =
-      state.context;
-
-    if (!api_key || !base_url || !model_name || !stage) {
-      console.warn("Missing required langgraph configuration");
-      return;
-    }
-
-    return stream.submit({
-      ...data,
-      api_key,
-      base_url,
-      model_name,
-      context_window_usage,
-      stage,
-      project_context: {
-        selectedProject,
-        selectedProjectResources,
-      },
-      resource_context: selectedResource
-        ? {
-            selectedResource,
-            selectedResourceContext,
-          }
-        : undefined,
-    });
-  };
-
-  return {
-    ...stream,
-    submitWithContext,
-  };
-}
+// useLanggraphStream is now provided by StreamProvider
+// Use useStreamContext from stream-provider instead

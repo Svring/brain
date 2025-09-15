@@ -46,7 +46,7 @@ export default function BaseSystemMessage({
         <BaseActionHeader headerTitle={headerTitle} headerSlot={headerSlot} />
 
         {/* Content Section */}
-        <CardContent className="p-4">{children}</CardContent>
+        <CardContent className="p-2">{children}</CardContent>
 
         {/* Actions Section */}
         {actions.length > 0 && (

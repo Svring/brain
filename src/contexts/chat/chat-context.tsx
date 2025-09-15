@@ -51,8 +51,9 @@ export function useChatState() {
     floatingChatMaximized: state.context.floatingChat.maximized,
     sidebarChatLoading: state.context.sidebarChat.loading,
     floatingChatLoading: state.context.floatingChat.loading,
-    selectedThreadId: state.context.selectedThreadId,
-    threads: state.context.threads,
+    // selectedThreadId and threads are now managed by ThreadProvider
+    // selectedThreadId: state.context.selectedThreadId,
+    // threads: state.context.threads,
     pendingMessage: state.context.pendingMessage,
     hasPendingMessage: state.context.pendingMessage !== null,
     scrollTrigger: state.context.scrollTrigger,
@@ -61,16 +62,17 @@ export function useChatState() {
 
 export function useChatActions() {
   const { send, state } = useChatContext();
-  const [threadId, setThreadId] = useQueryState("threadId", {
-    defaultValue: state.context.selectedThreadId || "",
-  });
+  // Thread management is now handled by ThreadProvider
+  // const [threadId, setThreadId] = useQueryState("threadId", {
+  //   defaultValue: state.context.selectedThreadId || "",
+  // });
 
-  // Sync URL state with chat context
-  useEffect(() => {
-    if (threadId && threadId !== state.context.selectedThreadId) {
-      send({ type: "SELECT_THREAD", threadId });
-    }
-  }, [threadId, state.context.selectedThreadId]);
+  // Sync URL state with chat context - now handled by ThreadProvider
+  // useEffect(() => {
+  //   if (threadId && threadId !== state.context.selectedThreadId) {
+  //     send({ type: "SELECT_THREAD", threadId });
+  //   }
+  // }, [threadId, state.context.selectedThreadId]);
 
   return {
     openSidebarChat: () => send({ type: "SET_SIDEBAR_CHAT_OPEN", open: true }),
@@ -125,11 +127,12 @@ export function useChatActions() {
     disableFloatingLoading: () =>
       send({ type: "SET_FLOATING_LOADING", loading: false }),
 
-    selectThread: (threadId: string | null) => {
-      send({ type: "SELECT_THREAD", threadId });
-      setThreadId(threadId || "");
-    },
-    setThreads: (threads: Thread[]) => send({ type: "SET_THREADS", threads }),
+    // Thread management is now handled by ThreadProvider
+    // selectThread: (threadId: string | null) => {
+    //   send({ type: "SELECT_THREAD", threadId });
+    //   setThreadId(threadId || "");
+    // },
+    // setThreads: (threads: Thread[]) => send({ type: "SET_THREADS", threads }),
 
     setPendingMessage: (message: PendingMessage | null) => {
       send({ type: "SET_PENDING_MESSAGE", message });

@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { History, Trash2 } from "lucide-react";
-import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -15,16 +14,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useThreads } from "@/hooks/langgraph/use-threads";
+import { useThreads } from "@/components/provider/thread-provider";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { DeleteThreadDialog } from "./delete-thread-dialog";
 import { Message, Thread } from "@langchain/langgraph-sdk";
 
 export function HistoryDropdown() {
-  const { selectedThreadId } = useChatState();
-  const { selectThread } = useChatActions();
-  const { threads, deleteThread } = useThreads();
+  const { selectedThreadId, selectThread, threads, deleteThread } = useThreads();
   const queryClient = useQueryClient();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);

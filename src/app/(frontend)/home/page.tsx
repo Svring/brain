@@ -12,13 +12,12 @@ import { useRef, useState } from "react";
 import { proposeProjectAction } from "@/lib/copilot/brain/project/copilot-project-actions";
 import Suggestions from "@/components/chat/components/suggestions";
 import { useChatState } from "@/contexts/chat/chat-context";
-import { useLanggraphStream } from "@/contexts/langgraph/langgraph-context";
-import { useThreads } from "@/hooks/langgraph/use-threads";
-import { useMount } from "@reactuses/core";
+import { useStreamContext } from "@/components/provider/stream-provider";
+import { useThreads } from "@/components/provider/thread-provider";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 
 export default function HomePage() {
-  const { selectedThreadId } = useChatState();
+  const { selectedThreadId } = useThreads();
   const {
     filteredProjects,
     projects,
@@ -26,39 +25,15 @@ export default function HomePage() {
     isError,
   } = useProjectSearch();
   const { CreateProjectDialog, openDialog } = useProjectCreateDialog();
-  const { createNewThread } = useThreads();
   const messagesScrollRef = useRef<HTMLDivElement>(null);
-  const [isInitializing, setIsInitializing] = useState(true);
 
-  const { messages, submit, stop, isLoading } = useLanggraphStream();
-
-  // Create a new thread on mount
-  useMount(() => {
-    createNewThread.mutate(undefined, {
-      onSuccess: () => {
-        setTimeout(() => {
-          setIsInitializing(false);
-        }, 1000);
-      },
-      onError: () => {
-        setTimeout(() => {
-          setIsInitializing(false);
-        }, 1000);
-        setIsInitializing(false);
-      },
-    });
-  });
+  const { messages, submit, stop, isLoading } = useStreamContext();
 
   const hasMessages = messages.length > 0;
 
   // Track visibility of recent projects
   const showRecentProjects = !hasMessages && projects && projects.length > 0;
   // const showRecentProjects = false;
-
-  // Show loading screen while initializing
-  if (isInitializing) {
-    return <LoadingScreen text="Initializing..." />;
-  }
 
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden">

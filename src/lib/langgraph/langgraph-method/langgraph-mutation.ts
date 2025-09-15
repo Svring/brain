@@ -5,10 +5,10 @@ import {
   createThread,
   updateThreadState,
   deleteThread,
-} from "../langgraph-api/langgraph-api";
-import { useChatActions } from "@/contexts/chat/chat-context";
+} from "../langgraph-api/langgraph-trpc-service";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useProjectState } from "@/contexts/project/project-context";
+import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
 import { randomId } from "@copilotkit/shared";
 import { SystemMessage } from "@/lib/copilot/message/message-utils";
 import {
@@ -27,24 +27,36 @@ import { ThreadState } from "@langchain/langgraph-sdk";
  */
 export const useCreateNewChatSessionMutation = () => {
   const { auth } = useAuthState();
-  const { selectThread } = useChatActions();
   const queryClient = useQueryClient();
   const { selectedResource, selectedProject } = useProjectState();
+  const { baseUrl } = useLanggraphState();
 
   return useMutation({
     mutationFn: async () => {
+      const supersteps = baseUrl
+        ? [
+            {
+              updates: [
+                {
+                  values: {
+                    base_url: baseUrl,
+                  },
+                  as_node: "entry_node",
+                },
+              ],
+            },
+          ]
+        : undefined;
+
       return await createThread({
         kubeconfig: auth?.kubeconfig || "",
         projectName: selectedProject || undefined,
         resourceTarget: selectedResource || null,
+        supersteps,
       });
     },
     onSuccess: (data, variables) => {
-      // Select the newly created thread
-      if (data?.thread_id) {
-        selectThread(data.thread_id);
-      }
-
+      // Thread selection is now handled by ThreadProvider
       // console.log("new thread created", data.thread_id);
 
       queryClient.refetchQueries({ queryKey: ["threads"] });
@@ -68,16 +80,14 @@ export const useCreateNewChatSessionMutation = () => {
  * Note: This is now handled by the useStream hook in components
  */
 export const useSendMessageMutation = () => {
-  const { openSidebarChat } = useChatActions();
+  // Note: openSidebarChat is now handled by components directly
 
   return useMutation({
     mutationFn: async (message: {
       role: "user" | "assistant" | "system";
       content: string;
     }) => {
-      // Open the sidebar chat
-      openSidebarChat();
-
+      // Sidebar chat opening is now handled by components directly
       return message;
     },
     onError: (error) => {
@@ -91,7 +101,7 @@ export const useSendMessageMutation = () => {
  */
 
 export const useAppendSystemMessageMutation = () => {
-  const { openSidebarChat } = useChatActions();
+  // Note: openSidebarChat is now handled by components directly
 
   return useMutation({
     mutationFn: async ({
@@ -110,9 +120,7 @@ export const useAppendSystemMessageMutation = () => {
         payload,
       };
 
-      // Open the sidebar chat
-      openSidebarChat();
-
+      // Sidebar chat opening is now handled by components directly
       return systemMessageData;
     },
     onError: (error) => {
@@ -151,7 +159,7 @@ export const useUpdateThreadStateMutation = () => {
  */
 export const useDeleteThreadMutation = () => {
   const queryClient = useQueryClient();
-  const { selectThread } = useChatActions();
+  // Note: selectThread is now handled by ThreadProvider
 
   return useMutation({
     mutationFn: async (threadId: string) => {
@@ -161,9 +169,7 @@ export const useDeleteThreadMutation = () => {
       // Invalidate and refetch thread-related queries
       queryClient.invalidateQueries({ queryKey: ["threads"] });
 
-      // If the deleted thread was currently selected, clear the selection
-      // This would need to be implemented based on your chat context
-      // selectThread(null);
+      // Thread selection management is now handled by ThreadProvider
     },
     onError: (error) => {
       console.error("Failed to delete thread:", error);

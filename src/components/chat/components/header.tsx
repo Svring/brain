@@ -1,11 +1,10 @@
 "use client";
 
 import { useProjectState } from "@/contexts/project/project-context";
-import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { HeaderActions } from "./header/header-actions";
 import { ResourceStatusRow } from "./header/resource-status-row";
-import { useThreads } from "@/hooks/langgraph/use-threads";
+import { useThreads } from "@/components/provider/thread-provider";
 
 interface AiChatHeaderProps {
   title?: string;
@@ -19,13 +18,12 @@ export function AiChatHeader({
   isLoading = false,
 }: AiChatHeaderProps) {
   const { selectedResource, selectedProject } = useProjectState();
-  const { selectThread } = useChatActions();
-  const { createNewThread } = useThreads();
+  const { createNewThread, selectThread } = useThreads();
   const [isDetailPopoverOpen, setIsDetailPopoverOpen] = useState(false);
 
   const handleNewChat = () =>
     createNewThread.mutate(undefined, {
-      onSuccess: (newThread) => {
+      onSuccess: (newThread: any) => {
         console.log("newThread", newThread);
         selectThread(newThread.thread_id as string);
       },

@@ -12,7 +12,7 @@ import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
 import type { PendingMessage } from "@/contexts/chat/chat-machine";
 import { toast } from "sonner";
 import _ from "lodash";
-import { useThreads } from "@/hooks/langgraph/use-threads";
+import { useThreads } from "@/components/provider/thread-provider";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import {
   useLanggraphActions,

@@ -16,6 +16,8 @@ import {
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { toast } from "sonner";
 import Image from "next/image";
+import { ThreadProvider } from "./thread-provider";
+import { StreamProvider } from "./stream-provider";
 
 // Inner component that uses langgraph state and actions
 function LanggraphConfigInner({ children }: { children: ReactNode }) {
@@ -142,8 +144,14 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
     );
   }
 
-  // Render children when loaded
-  return <>{children}</>;
+  // Render children when loaded with nested providers
+  return (
+    <ThreadProvider>
+      <StreamProvider>
+        {children}
+      </StreamProvider>
+    </ThreadProvider>
+  );
 }
 
 export const LanggraphConfigWrapper = ({

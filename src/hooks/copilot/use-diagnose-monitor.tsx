@@ -4,8 +4,8 @@ import { useCallback } from "react";
 import { toast } from "sonner";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
-import { useLanggraphStream } from "@/contexts/langgraph/langgraph-context";
-import { useChatState } from "@/contexts/chat/chat-context";
+import { useStreamContext } from "@/components/provider/stream-provider";
+import { useThreads } from "@/components/provider/thread-provider";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
@@ -52,11 +52,11 @@ const analyzeMonitorPrompt = `
 export function useDiagnoseMonitor(
   target: CustomResourceTarget | BuiltinResourceTarget
 ) {
-  const { selectedThreadId } = useChatState();
+  const { selectedThreadId } = useThreads();
   const { color, monitorData, isLoading } = useResourceMetricsStatus({
     target,
   });
-  const { submitWithContext } = useLanggraphStream();
+  const { submitWithContext } = useStreamContext();
 
   // Use node select to handle the selection and message appending
   const { handleNodeSelect } = useNodeSelect({

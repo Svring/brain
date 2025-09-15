@@ -1,7 +1,7 @@
 "use client";
 
 import { useChatState } from "@/contexts/chat/chat-context";
-import { useLanggraphStream } from "@/contexts/langgraph/langgraph-context";
+import { useStreamContext } from "@/components/provider/stream-provider";
 import { AiChatInput } from "./input";
 import { AiChatHeader } from "./header";
 import { AiMessages } from "./messages";
@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 export default function AiChatbox() {
   const { sidebarChatOpen } = useChatState();
 
-  const { isLoading, stop, messages } = useLanggraphStream();
+  const { isLoading, stop, messages } = useStreamContext();
 
   return (
     <div
