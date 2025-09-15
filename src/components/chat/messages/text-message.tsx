@@ -57,9 +57,8 @@ export function RenderTextMessage({
         >
           {typeof message.content === "string" ? message.content : ""}
         </Markdown>
-        {/* <Streamdown>{message.content ?? ""}</Streamdown> */}
 
-        {isLoading && !message.content && !(message as any).tool_calls && (
+        {isLoading && (
           <div className="flex items-center gap-2 text-xs opacity-70">
             <Loader2 className="w-3 h-3 animate-spin" />
             <span>Thinking...</span>

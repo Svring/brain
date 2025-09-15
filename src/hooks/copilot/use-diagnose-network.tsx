@@ -4,7 +4,7 @@ import { useCallback } from "react";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useContainerStatus } from "@/hooks/sealos/network/use-container-status";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
-import { useLanggraphStream } from "@/hooks/langgraph/use-langgraph-stream";
+import { useLanggraphStream } from "@/contexts/langgraph/langgraph-context";
 import { useChatState } from "@/contexts/chat/chat-context";
 import {
   extractContainerPorts,
@@ -79,7 +79,7 @@ export function useDiagnoseNetwork(
   target: CustomResourceTarget | BuiltinResourceTarget
 ) {
   const { selectedThreadId } = useChatState();
-  const { submit } = useLanggraphStream();
+  const { submitWithContext } = useLanggraphStream();
 
   // Get container ports data for network diagnosis
   const containerStatusResult = useResourceStatus<ContainerPortsResult>(
@@ -117,7 +117,7 @@ export function useDiagnoseNetwork(
   const diagnoseNetwork = useCallback(
     (readyStatus: any) => {
       // Use node select to handle the selection and message appending
-      handleNodeSelect("append");
+      handleNodeSelect();
 
       // Send message using langgraph stream
       if (selectedThreadId) {
@@ -129,8 +129,15 @@ export function useDiagnoseNetwork(
           containerError,
         };
 
-        submit({
+        submitWithContext({
           messages: [
+            {
+              type: "system",
+              content: JSON.stringify({
+                type: "universal.diagnoseNetwork",
+                target,
+              }),
+            },
             {
               type: "system",
               content:
@@ -144,7 +151,6 @@ export function useDiagnoseNetwork(
     },
     [
       handleNodeSelect,
-      submit,
       selectedThreadId,
       containerStatus,
       containerPortsData,

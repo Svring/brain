@@ -57,7 +57,7 @@ export const useNodeSelect = ({
 
   const nodeId = `${target.resourceType.toLowerCase()}-${target.name}`;
 
-  const handleNodeSelect = (type?: "append" | "send") => {
+  const handleNodeSelect = () => {
     selectResource(target);
     selectNode(nodeId);
     updateResourceContext({
@@ -65,38 +65,6 @@ export const useNodeSelect = ({
     });
 
     openSidebarChat();
-
-    // if (messageType && apiKey && baseUrl && modelName && stage) {
-    //   submit({
-    //     messages: [
-    //       {
-    //         type: "system",
-    //         content: JSON.stringify({
-    //           type: messageType,
-    //           target,
-    //           payload,
-    //         }),
-    //       },
-    //     ],
-    //     api_key: apiKey,
-    //     base_url: baseUrl,
-    //     model_name: modelName,
-    //     context_window_usage: contextWindowUsage,
-    //     stage: stage,
-    //     project_context: {
-    //       selectedProject,
-    //       selectedProjectResources,
-    //     },
-    //     resource_context: selectedResource
-    //       ? {
-    //           selectedResource,
-    //           selectedResourceContext,
-    //         }
-    //       : undefined,
-    //   });
-    // }
-
-    // Execute onSuccess callback if provided
     onSuccess?.();
   };
 

@@ -4,12 +4,8 @@ import { useCallback } from "react";
 import { toast } from "sonner";
 import { useResourceLogs } from "@/hooks/sealos/resource/use-resource-logs";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
-import {
-  useLanggraphStream,
-  useLanggraphState,
-} from "@/contexts/langgraph/langgraph-context";
+import { useLanggraphStream } from "@/contexts/langgraph/langgraph-context";
 import { useChatState } from "@/contexts/chat/chat-context";
-import { useProjectState } from "@/contexts/project/project-context";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
@@ -45,15 +41,7 @@ export function useAnalyzeLogs(
   const { selectedThreadId } = useChatState();
   const logsQuery = useResourceLogs(target);
   const { data: logsData, isLoading } = logsQuery;
-  const { submit } = useLanggraphStream();
-  const { apiKey, baseUrl, modelName, stage, contextWindowUsage } =
-    useLanggraphState();
-  const {
-    selectedProject,
-    selectedResource,
-    selectedProjectResources,
-    selectedResourceContext,
-  } = useProjectState();
+  const { submitWithContext } = useLanggraphStream();
 
   // Use node select to handle the selection and message appending
   const { handleNodeSelect } = useNodeSelect({
@@ -73,35 +61,27 @@ export function useAnalyzeLogs(
     }
 
     // Use node select to handle the selection and message appending
-    handleNodeSelect("append");
+    handleNodeSelect();
 
     // Send message using langgraph stream
-    if (selectedThreadId && apiKey && baseUrl && modelName && stage) {
-      submit({
+    if (selectedThreadId) {
+      submitWithContext({
         messages: [
+          {
+            type: "system",
+            content: JSON.stringify({
+              type: "universal.log",
+              target,
+            }),
+          },
           {
             type: "system",
             content: analyzeLogsPrompt + "\n\n" + JSON.stringify(logsData),
           },
         ],
-        api_key: apiKey,
-        base_url: baseUrl,
-        model_name: modelName,
-        context_window_usage: contextWindowUsage,
-        stage: stage,
-        project_context: {
-          selectedProject,
-          selectedProjectResources,
-        },
-        resource_context: selectedResource
-          ? {
-              selectedResource,
-              selectedResourceContext,
-            }
-          : undefined,
       });
     }
-  }, [logsData, handleNodeSelect]);
+  }, [logsData, selectedThreadId]);
 
   // Check if logs are ready (not loading and has data)
   const isLogsReady =

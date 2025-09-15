@@ -4,12 +4,8 @@ import { useCallback } from "react";
 import { toast } from "sonner";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
-import {
-  useLanggraphStream,
-  useLanggraphState,
-} from "@/contexts/langgraph/langgraph-context";
+import { useLanggraphStream } from "@/contexts/langgraph/langgraph-context";
 import { useChatState } from "@/contexts/chat/chat-context";
-import { useProjectState } from "@/contexts/project/project-context";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
@@ -60,15 +56,7 @@ export function useDiagnoseMonitor(
   const { color, monitorData, isLoading } = useResourceMetricsStatus({
     target,
   });
-  const { submit } = useLanggraphStream();
-  const { apiKey, baseUrl, modelName, stage, contextWindowUsage } =
-    useLanggraphState();
-  const {
-    selectedProject,
-    selectedResource,
-    selectedProjectResources,
-    selectedResourceContext,
-  } = useProjectState();
+  const { submitWithContext } = useLanggraphStream();
 
   // Use node select to handle the selection and message appending
   const { handleNodeSelect } = useNodeSelect({
@@ -92,40 +80,27 @@ export function useDiagnoseMonitor(
     }
 
     // Use node select to handle the selection and message appending
-    handleNodeSelect("append");
+    handleNodeSelect();
 
     // Send message using langgraph stream
-    if (selectedThreadId && apiKey && baseUrl && modelName && stage) {
-      submit({
+    if (selectedThreadId) {
+      submitWithContext({
         messages: [
           {
             type: "system",
-            content:
-              analyzeMonitorPrompt + "\n\n" + JSON.stringify(monitorData),
+            content: JSON.stringify({
+              type: "universal.monitor",
+              target,
+            }),
           },
           {
-            type: "human",
-            content: "Please analyze the monitor data and provide a diagnosis.",
+            type: "system",
+            content: analyzeMonitorPrompt + "\n\n" + JSON.stringify(monitorData),
           },
         ],
-        api_key: apiKey,
-        base_url: baseUrl,
-        model_name: modelName,
-        context_window_usage: contextWindowUsage,
-        stage: stage,
-        project_context: {
-          selectedProject,
-          selectedProjectResources,
-        },
-        resource_context: selectedResource
-          ? {
-              selectedResource,
-              selectedResourceContext,
-            }
-          : undefined,
       });
     }
-  }, [monitorData, selectedThreadId, apiKey, baseUrl, modelName]);
+  }, [monitorData, selectedThreadId]);
 
   // Check if monitor data is ready (not loading and has data)
   const isMonitorReady =

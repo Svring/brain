@@ -7,6 +7,8 @@ import { langgraphMachine } from "@/contexts/langgraph/langgraph-machine";
 import { ProjectContextState } from "@/contexts/project/project-machine";
 import { useLanggraphStream as useOriginalLanggraphStream } from "@/hooks/langgraph/use-langgraph-stream";
 import type { BrainState } from "@/contexts/langgraph/langgraph-schema";
+import { useProjectState } from "@/contexts/project/project-context";
+import type { Message } from "@langchain/langgraph-sdk";
 
 interface LanggraphContextValue {
   state: StateFrom<typeof langgraphMachine>;
@@ -124,5 +126,42 @@ export function useLanggraphActions() {
 
 export function useLanggraphStream() {
   const { stream } = useLanggraphContext();
-  return stream;
+  const { state } = useLanggraphContext();
+  const { selectedProject, selectedResource, selectedProjectResources, selectedResourceContext } = useProjectState();
+
+  // Create a wrapper that automatically includes BrainState context
+  const submitWithContext = (data: {
+    messages: Message[];
+  }) => {
+    const { api_key, base_url, model_name, context_window_usage, stage } = state.context;
+    
+    if (!api_key || !base_url || !model_name || !stage) {
+      console.warn('Missing required langgraph configuration');
+      return;
+    }
+
+    return stream.submit({
+      ...data,
+      api_key,
+      base_url,
+      model_name,
+      context_window_usage,
+      stage,
+      project_context: {
+        selectedProject,
+        selectedProjectResources,
+      },
+      resource_context: selectedResource
+        ? {
+            selectedResource,
+            selectedResourceContext,
+          }
+        : undefined,
+    });
+  };
+
+  return {
+    ...stream,
+    submitWithContext,
+  };
 }
