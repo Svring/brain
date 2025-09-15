@@ -14,23 +14,16 @@ import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useLaunchpadObject } from "@/hooks/sealos/launchpad/use-launchpad-object";
 import NodePods from "../../components/node-pods";
 import NodeConnect from "../../components/node-connect";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 
 // Simplified wrapper that only accepts complete DeploymentObject
-function DeploymentNodeWrapper({
-  data,
-}: {
-  data: DeploymentObject;
-}) {
+function DeploymentNodeWrapper({ data }: { data: DeploymentObject }) {
   // Construct node ID following the same pattern as other nodes
-  const nodeId = `${data.kind?.toLowerCase() || "deployment"}-${data.name || ""}`;
+  const nodeId = `${data.kind?.toLowerCase() || "deployment"}-${
+    data.name || ""
+  }`;
 
-  return (
-    <DeploymentNode
-      resource={data}
-      status={data.status || "Pending"}
-      nodeId={nodeId}
-    />
-  );
+  return <DeploymentNode resource={data} nodeId={nodeId} />;
 }
 
 // Main component that receives the loaded resource data

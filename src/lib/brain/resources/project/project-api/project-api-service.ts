@@ -217,7 +217,7 @@ export async function deleteProject(
     k8sContext,
     labelSelector,
     ["deployment", "statefulset"], // builtin resource types
-    ["devbox", "cluster", "objectstoragebucket", "instance"] // custom resource types including instance
+    ["devbox", "cluster", "objectstoragebucket", "instance", "app"] // custom resource types including instance
   );
 
   // 2. Flatten and convert to targets

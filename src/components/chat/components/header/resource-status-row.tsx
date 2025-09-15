@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Link,
   ChevronDown,
@@ -30,6 +31,7 @@ export function ResourceStatusRow({
   onDetailPopoverChange,
 }: ResourceStatusRowProps) {
   const { stage } = useLanggraphState();
+  const [isExpanded, setIsExpanded] = useState(false);
   // console.log("stage", stage);
 
   const getIconUrl = () =>
@@ -102,8 +104,8 @@ export function ResourceStatusRow({
     <div className="mt-2">
       {selectedResource ? (
         <Popover
-          open={true}
-          onOpenChange={() => {}} // Prevent closing
+          open={isExpanded}
+          onOpenChange={setIsExpanded}
         >
           <PopoverTrigger asChild>
             <div
@@ -112,7 +114,11 @@ export function ResourceStatusRow({
               )}
             >
               <div className="flex items-center">
-                <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                {isExpanded ? (
+                  <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                ) : (
+                  <ChevronRightIcon className="h-3 w-3 text-muted-foreground" />
+                )}
               </div>
               <Image
                 src={getIconUrl()}

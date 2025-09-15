@@ -15,20 +15,13 @@ import NodeConnect from "../../components/node-connect";
 import StatefulsetNodeMenu from "./statefulset-node-menu";
 
 // Simplified wrapper that only accepts complete StatefulsetObject
-function StatefulsetNodeWrapper({
-  data,
-}: {
-  data: StatefulsetObject;
-}) {
+function StatefulsetNodeWrapper({ data }: { data: StatefulsetObject }) {
   // Construct node ID following the same pattern as other nodes
-  const nodeId = `${data.kind?.toLowerCase() || "statefulset"}-${data.name || ""}`;
+  const nodeId = `${data.kind?.toLowerCase() || "statefulset"}-${
+    data.name || ""
+  }`;
 
-  return (
-    <StatefulsetNode
-      resource={data}
-      nodeId={nodeId}
-    />
-  );
+  return <StatefulsetNode resource={data} nodeId={nodeId} />;
 }
 
 // Main component that receives the loaded resource data
@@ -40,7 +33,7 @@ function StatefulsetNode({
   nodeId: string;
 }) {
   const target = convertResourceObjectToTarget(resource);
-  
+
   const { resource: data, status } = useResourceStatus(target);
   const statefulsetData = data || resource;
 
@@ -51,10 +44,7 @@ function StatefulsetNode({
 
   const mainCard = (
     <NodeConnect onConnect={handleConnect} target={target}>
-      <BaseNode
-        target={target}
-        nodeId={nodeId}
-      >
+      <BaseNode target={target} nodeId={nodeId}>
         <div className="flex h-full flex-col gap-2 justify-between">
           {/* Header with Name and Dropdown */}
           <div className="flex items-center justify-between">
@@ -66,7 +56,10 @@ function StatefulsetNode({
           <div className="flex items-center gap-2 mt-2">
             <Package className="h-4 w-4 text-muted-foreground" />
             <div className="text-sm text-muted-foreground truncate flex-1">
-              Image: {statefulsetData.image?.imageName ? truncateImage(statefulsetData.image.imageName) : "N/A"}
+              Image:{" "}
+              {statefulsetData.image?.imageName
+                ? truncateImage(statefulsetData.image.imageName)
+                : "N/A"}
             </div>
           </div>
 
@@ -99,7 +92,9 @@ function StatefulsetNode({
         </div>
 
         {/* Right side: Storage capacity */}
-        <div className="text-xs">{statefulsetData.resource?.storage || "N/A"}GB</div>
+        <div className="text-xs">
+          {statefulsetData.resource?.storage || "N/A"}GB
+        </div>
       </div>
     </div>
   );
@@ -109,7 +104,7 @@ function StatefulsetNode({
       {/* Hem component - positioned above main card */}
       {hemComponent && (
         <div className="absolute inset-x-0 top-0 z-10">
-          <div className="bg-muted border border-border-primary rounded-xl pt-8 text-xs flex flex-col h-60">
+          <div className="bg-muted border rounded-xl pt-8 text-xs flex flex-col h-60">
             <div className="flex-1"></div>
             <div className="h-10">{hemComponent}</div>
           </div>

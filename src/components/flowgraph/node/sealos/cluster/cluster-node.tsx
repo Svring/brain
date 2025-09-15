@@ -135,7 +135,7 @@ function ClusterNode({ resource, nodeId }: ClusterNodeInnerProps) {
   return (
     <div className="relative">
       <div className="absolute inset-x-0 top-0 z-10">
-        <div className="bg-muted border border-border-primary rounded-xl pt-8 text-xs flex flex-col h-60">
+        <div className="bg-muted border rounded-xl pt-8 text-xs flex flex-col h-60">
           <div className="flex-1" />
           {hemComponent}
         </div>
