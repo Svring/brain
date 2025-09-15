@@ -18,7 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Pause, RotateCcw, Trash2, Power } from "lucide-react";
+import { Pause, Trash2, Power } from "lucide-react";
 import { useLaunchpadLifecycle } from "@/hooks/sealos/launchpad/use-launchpad-lifecycle";
 
 interface LaunchpadObject {
@@ -30,13 +30,11 @@ interface LaunchpadObject {
 interface LaunchpadIconButtonsProps {
   object: LaunchpadObject;
   onDelete?: (name: string) => void;
-  showRestart?: boolean;
 }
 
 export default function LaunchpadIconButtons({
   object,
   onDelete,
-  showRestart = true,
 }: LaunchpadIconButtonsProps) {
   const { name, status } = object;
   const { executeAction, isPending } = useLaunchpadLifecycle();
@@ -108,31 +106,6 @@ export default function LaunchpadIconButtons({
               </TooltipTrigger>
               <TooltipContent side="bottom">
                 <p>Pause</p>
-              </TooltipContent>
-            </Tooltip>
-          )}
-
-          {/* Restart Button - Show when restart is enabled */}
-          {showRestart && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    // Restart functionality - can be implemented later
-                    console.log("Restart launchpad:", name);
-                  }}
-                  disabled={isResourcePending}
-                  className={`h-8 w-8 p-0 ${
-                    isResourcePending ? "opacity-50" : ""
-                  }`}
-                >
-                  <RotateCcw className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                <p>Restart</p>
               </TooltipContent>
             </Tooltip>
           )}

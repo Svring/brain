@@ -7,11 +7,11 @@ interface NodeStatusLightProps {
 }
 
 export default function NodeStatusLight({
-  status,
-  className = "",
+  status = "Pending",
+  // className = "",
 }: NodeStatusLightProps) {
   return (
-    <div className={`flex items-center justify-center gap-2 ${className}`}>
+    <div className={`flex items-center justify-center gap-2`}>
       <Square
         className={`h-3 w-3 ${
           status === "Running"

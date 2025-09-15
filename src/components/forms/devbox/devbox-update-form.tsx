@@ -52,7 +52,7 @@ export const DevboxUpdateForm = ({
 
   console.log("DevboxUpdateForm - defaultValues:", defaultValues);
   console.log("DevboxUpdateForm - hasResource:", hasResource);
-  console.log("DevboxUpdateForm - hasPorts:", hasPorts);
+  // console.log("DevboxUpdateForm - hasPorts:", hasPorts);
 
   return (
     <Form {...form}>

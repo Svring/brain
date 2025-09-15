@@ -76,7 +76,7 @@ export async function getCombinedMonitor(
 
 // Helper to create axios instance per request using universal utility
 function createClusterApi(context: SealosApiContext) {
-  return createSealosApi(context, "cluster", "database");
+  return createSealosApi(context, "cluster", "v1/database");
 }
 
 // ===== QUERY OPERATIONS =====
@@ -285,7 +285,7 @@ export async function createClusterBackup(
   remark?: string
 ): Promise<any> {
   const api = createClusterApi(context);
-  const response = await api.post(`/database/${databaseName}/backup`, {
+  const response = await api.post(`/${databaseName}/backup`, {
     remark,
   });
   return response.data;
@@ -298,7 +298,7 @@ export async function restoreClusterBackup(
 ): Promise<any> {
   const api = createClusterApi(context);
   const response = await api.post(
-    `/database/${databaseName}/backup/${backupName}/restore`
+    `/${databaseName}/backup/${backupName}/restore`
   );
   return response.data;
 }
@@ -309,7 +309,7 @@ export async function enableClusterPublicAccess(
   databaseName: string
 ): Promise<any> {
   const api = createClusterApi(context);
-  const response = await api.post(`/database/${databaseName}/enablePublic`);
+  const response = await api.post(`/${databaseName}/enablePublic`);
   return response.data;
 }
 
@@ -318,6 +318,6 @@ export async function disableClusterPublicAccess(
   databaseName: string
 ): Promise<any> {
   const api = createClusterApi(context);
-  const response = await api.post(`/database/${databaseName}/disablePublic`);
+  const response = await api.post(`/${databaseName}/disablePublic`);
   return response.data;
 }

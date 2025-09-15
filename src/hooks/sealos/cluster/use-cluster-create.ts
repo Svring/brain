@@ -47,37 +47,9 @@ export const useClusterCreate = (options: UseClusterCreateOptions = {}) => {
         true
       );
     },
-    onError: async (error: any, variables) => {
+    onError: async (error: any) => {
       console.error("Cluster creation error:", error);
-
-      // Even if cluster creation failed or output validation failed,
-      // we still want to try adding it to the project by name
-      if (addToProject && selectedProject && variables?.name) {
-        try {
-          console.log(
-            "⚠️ Cluster creation failed, but still adding to project by name:",
-            variables.name
-          );
-          const resourceTarget = convertResourceTypeToTarget(
-            "cluster",
-            variables.name
-          );
-          await addToProjectMutation.mutateAsync({
-            resources: [resourceTarget],
-            name: selectedProject,
-          });
-          toast.warning(
-            "Cluster creation had issues, but it was still added to the project"
-          );
-        } catch (addError) {
-          console.error("Failed to add cluster to project:", addError);
-          toast.error(
-            "Cluster creation failed and could not be added to project"
-          );
-        }
-      } else {
-        toast.error(error.message || "Failed to create cluster");
-      }
+      toast.error(error.message || "Failed to create cluster");
     },
   });
 

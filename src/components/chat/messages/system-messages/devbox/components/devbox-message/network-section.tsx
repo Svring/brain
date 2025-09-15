@@ -43,31 +43,39 @@ export const NetworkPopoverContent: React.FC<{
   };
 
   // Memoize the form content to prevent unnecessary re-renders
-  const formContent = useMemo(() => (
-    <DevboxUpdateForm
-      key={`network-edit-${target.name}`}
-      defaultValues={{
-        name: devboxObject?.name || target.name!,
-        ports: devboxObject?.ports || [],
-      }}
-      onSubmit={handleFormSubmit}
-      isLoading={isUpdating}
-      hideDefaultButton={true}
-    />
-  ), [devboxObject?.name, devboxObject?.ports, target.name, isUpdating]);
+  const formContent = useMemo(
+    () => (
+      <DevboxUpdateForm
+        key={`network-edit-${target.name}`}
+        defaultValues={{
+          name: devboxObject?.name || target.name!,
+          ports:
+            devboxObject?.ports?.map((port: any) => ({
+              portName: port.portName,
+              number: port.number,
+              protocol: (port.protocol as "HTTP" | "GRPC" | "WS") || "HTTP",
+              exposesPublicDomain: !!port.publicAddress,
+              customDomain: port.host,
+            })) || [],
+        }}
+        onSubmit={handleFormSubmit}
+        isLoading={isUpdating}
+        hideDefaultButton={true}
+      />
+    ),
+    [devboxObject?.name, devboxObject?.ports, target.name, isUpdating]
+  );
 
   if (isEditing) {
     return (
       <div className="w-full rounded-lg">
-        <div className="space-y-3">
-          {formContent}
-        </div>
-        
+        <div className="space-y-3">{formContent}</div>
+
         {/* Cancel and Confirm Buttons - Fixed at bottom */}
         <div className="flex gap-2 mt-3 pt-3 border-t">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="flex-1"
             onClick={() => {
               setIsEditing(false);
@@ -77,11 +85,11 @@ export const NetworkPopoverContent: React.FC<{
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             type="submit"
             form="devbox-update-form"
-            variant="default" 
-            size="sm" 
+            variant="default"
+            size="sm"
             className="flex-1"
             disabled={isUpdating}
           >
@@ -95,13 +103,13 @@ export const NetworkPopoverContent: React.FC<{
   return (
     <div className="w-full rounded-lg space-y-3">
       <NetworkChart target={target} />
-      
+
       {/* Edit Button - Full Row */}
-      <div className="w-full">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="w-full"
+      <div className="w-full flex">
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-1"
           onClick={() => {
             setIsEditing(true);
             //triggerScrollToBottom();

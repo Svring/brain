@@ -62,7 +62,11 @@ export const useDevboxRelease = (devboxName: string) => {
       await startDevboxMutation.mutateAsync(target);
 
       // Invalidate releases query to refresh the list
-      invalidateQueries([devbox.releases.queryKey(devboxName)]);
+      invalidateQueries([
+        devbox.releases.queryKey(devboxName),
+        devbox.get.queryKey(),
+        devbox.list.queryKey(),
+      ]);
 
       setIsReleasePopoverOpen(false);
       setReleaseConfig({ tag: "", releaseDes: "" });
@@ -78,7 +82,11 @@ export const useDevboxRelease = (devboxName: string) => {
       await deleteReleaseMutation.mutateAsync(versionName);
 
       // Invalidate releases query to refresh the list
-      invalidateQueries([devbox.releases.queryKey(devboxName)]);
+      invalidateQueries([
+        devbox.releases.queryKey(devboxName),
+        devbox.get.queryKey(),
+        devbox.list.queryKey(),
+      ]);
 
       setDeletePopoverOpen(releaseTag, false);
     } catch (error) {

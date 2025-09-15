@@ -54,7 +54,7 @@ export function ResourceStatusRow({
   const renderDetailCard = () => {
     if (!selectedResource) return null;
 
-    const resourceType = selectedResource.resourceType.toLowerCase();
+    const resourceType = selectedResource.resourceType?.toLowerCase() || "";
 
     // Get the appropriate detail component based on resource type
     let DetailComponent = null;
@@ -102,8 +102,8 @@ export function ResourceStatusRow({
     <div className="mt-2">
       {selectedResource ? (
         <Popover
-          open={isDetailPopoverOpen}
-          onOpenChange={onDetailPopoverChange}
+          open={true}
+          onOpenChange={() => {}} // Prevent closing
         >
           <PopoverTrigger asChild>
             <div
@@ -112,11 +112,7 @@ export function ResourceStatusRow({
               )}
             >
               <div className="flex items-center">
-                {isDetailPopoverOpen ? (
-                  <ChevronDown className="h-3 w-3 text-muted-foreground" />
-                ) : (
-                  <ChevronRightIcon className="h-3 w-3 text-muted-foreground" />
-                )}
+                <ChevronDown className="h-3 w-3 text-muted-foreground" />
               </div>
               <Image
                 src={getIconUrl()}

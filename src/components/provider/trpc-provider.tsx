@@ -21,6 +21,22 @@ export const projectClient = createTRPCContext<ProjectRouter>();
 export const k8sClient = createTRPCContext<K8sRouter>();
 export const langgraphClient = createTRPCContext<LanggraphRouter>();
 
+// Raw TRPC clients for direct API calls
+export const createRawDevboxClient = (auth: any) =>
+  createTRPCClient<DevboxRouter>({
+    links: [
+      httpBatchLink({
+        url: "/api/trpc/devbox",
+        maxURLLength: 4000,
+        headers: () => ({
+          namespace: auth.namespace,
+          kubeconfig: auth.kubeconfig,
+          regionUrl: auth.regionUrl,
+        }),
+      }),
+    ],
+  });
+
 interface TRPCProviderProps {
   children: React.ReactNode;
   queryClient: QueryClient;

@@ -2,7 +2,7 @@
 
 import { createBrowserInspector } from "@statelyai/inspect";
 import { useMachine } from "@xstate/react";
-import { createContext, type ReactNode, useContext, useEffect } from "react";
+import { createContext, type ReactNode, useContext } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import { flowgraphMachine } from "@/contexts/flowgraph/flowgraph-machine";
 import type { Edge, Node, EdgeChange, NodeChange } from "@xyflow/react";
@@ -31,30 +31,10 @@ export const FlowgraphProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <FlowgraphContext.Provider value={{ state, send, actorRef }}>
-      <FlowgraphFocusHandler />
       {children}
     </FlowgraphContext.Provider>
   );
 };
-
-// Component to handle node focusing and fit view triggers
-function FlowgraphFocusHandler() {
-  const { state } = useFlowgraphContext();
-  const { fitView } = useReactFlow();
-
-  // Handle programmatic fitView calls
-  useEffect(() => {
-    if (state.context.fitViewTrigger > 0) {
-      fitView({
-        padding: 0.2,
-        duration: 300,
-        maxZoom: 1,
-      });
-    }
-  }, [state.context.fitViewTrigger]);
-
-  return null;
-}
 
 export function useFlowgraphContext() {
   const ctx = useContext(FlowgraphContext);

@@ -17,7 +17,7 @@ export const MonitorMessage: React.FC<MonitorMessageProps> = ({ target }) => {
   const appendSystemMessageMutation = useAppendSystemMessageMutation();
 
   const handleUpdateResource = () => {
-    const resourceType = target.resourceType.toLowerCase();
+    const resourceType = target.resourceType?.toLowerCase() || "";
     if (resourceType === "deployment" || resourceType === "statefulset") {
       appendSystemMessageMutation.mutate({ type: "launchpad.updateResource", target });
     }
@@ -29,7 +29,7 @@ export const MonitorMessage: React.FC<MonitorMessageProps> = ({ target }) => {
       label: "Update Resource Quota",
       onClick: handleUpdateResource,
       disabled: !["deployment", "statefulset"].includes(
-        target.resourceType.toLowerCase()
+        target.resourceType?.toLowerCase() || ""
       ),
     },
   ];

@@ -111,9 +111,7 @@ export const ObjectStorageUpdateMessage: React.FC<
           <div className="space-y-2">
             <FormLabel>Current Policy</FormLabel>
             <div className="flex items-center gap-2">
-              <Badge
-                variant={getPolicyBadgeVariant(form.watch("policy"))}
-              >
+              <Badge variant={getPolicyBadgeVariant(form.watch("policy"))}>
                 {getPolicyDisplayName(form.watch("policy"))}
               </Badge>
             </div>
@@ -125,10 +123,7 @@ export const ObjectStorageUpdateMessage: React.FC<
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Policy Selection</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select bucket policy" />
@@ -136,9 +131,7 @@ export const ObjectStorageUpdateMessage: React.FC<
                   </FormControl>
                   <SelectContent>
                     <SelectItem value="private">Private</SelectItem>
-                    <SelectItem value="publicRead">
-                      Public Read
-                    </SelectItem>
+                    <SelectItem value="publicRead">Public Read</SelectItem>
                     <SelectItem value="publicReadWrite">
                       Public Read/Write
                     </SelectItem>

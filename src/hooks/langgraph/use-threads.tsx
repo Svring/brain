@@ -10,12 +10,13 @@ import {
   useDeleteThreadMutation,
   useUpdateThreadStateMutation,
 } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { useChatActions } from "@/contexts/chat/chat-context";
+import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useEffect } from "react";
 
 export const useThreads = () => {
   const { auth } = useAuthState();
+  const { selectedThreadId } = useChatState();
   const { selectThread } = useChatActions();
   const { selectedProject, selectedResource } = useProjectState();
 
@@ -28,21 +29,23 @@ export const useThreads = () => {
     })
   );
 
+  console.log("selectedThreadId", selectedThreadId);
+
+  // Create new thread mutation
+  const createNewThreadMutation = useCreateNewChatSessionMutation();
+
   // Get the latest thread (first in the sorted list)
   const latestThread = threads && threads.length > 0 ? threads[0] : null;
   const latestThreadId = latestThread?.thread_id || null;
 
   useEffect(() => {
-    selectThread(latestThreadId || null);
+    selectThread(latestThreadId);
   }, [latestThreadId]);
 
   // Get the state of the latest thread if available
   const { data: latestThreadState, isLoading: threadStateLoading } = useQuery(
     getThreadStateOptions(latestThreadId || "")
   );
-
-  // Create new thread mutation
-  const createNewThreadMutation = useCreateNewChatSessionMutation();
 
   // Update thread state mutation
   const updateThreadStateMutation = useUpdateThreadStateMutation();

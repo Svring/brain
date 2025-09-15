@@ -29,7 +29,7 @@ export default function PvcNode({ data }: { data: BuiltinResourceTarget }) {
   const { resourceType, name } = data;
 
   // Construct node ID following the same pattern as other nodes
-  const nodeId = `${resourceType.toLowerCase()}-${name || ""}`;
+  const nodeId = `${resourceType?.toLowerCase() || "pvc"}-${name || ""}`;
 
   return (
     <BaseNode nodeId={nodeId} className="">

@@ -36,9 +36,14 @@ export default function HomePage() {
   useMount(() => {
     createNewThread.mutate(undefined, {
       onSuccess: () => {
-        setIsInitializing(false);
+        setTimeout(() => {
+          setIsInitializing(false);
+        }, 1000);
       },
       onError: () => {
+        setTimeout(() => {
+          setIsInitializing(false);
+        }, 1000);
         setIsInitializing(false);
       },
     });

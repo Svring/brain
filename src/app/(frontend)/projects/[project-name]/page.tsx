@@ -1,6 +1,7 @@
 "use client";
 
-import { use, useEffect } from "react";
+import { useEffect } from "react";
+import { useParams } from "next/navigation";
 import { Background, ReactFlow, Controls } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
@@ -14,7 +15,6 @@ import { FlowgraphActions } from "@/components/flowgraph/flowgraph-actions";
 import FloatingConnectionLine from "@/components/flowgraph/edge/floating-connection-line";
 
 // import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
-import useFlowgraph from "@/hooks/flowgraph/use-flowgraph";
 import { useFlowgraphCommand } from "@/hooks/flowgraph/use-flowgraph-command";
 import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
 import {
@@ -28,20 +28,24 @@ import { LoadingScreen } from "@/components/ui/loading-screen";
 import { REACT_FLOW_CONFIG } from "@/lib/flowgraph/flowgraph-constant/flowgraph-constant-config";
 import edgeTypes from "@/components/flowgraph/edge/edge-types";
 import nodeTypes from "@/components/flowgraph/node/node-types";
+import useFlowgraph from "@/hooks/flowgraph/use-flowgraph";
 import useProjectResources from "@/hooks/brain/use-project-resources";
+import { useProjectRefresh } from "@/hooks/brain/use-project-refresh";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 function ProjectFloatingUI({
   projectName,
   sidebarChatMaximized,
   isLoading,
+  onRefresh,
 }: {
   projectName: string;
   sidebarChatMaximized: boolean;
   isLoading: boolean;
+  onRefresh: () => void;
 }) {
   const { isOpen, onOpenChange, onOpen } = useFlowgraphCommand();
-  const { nodes, edges } = useFlowgraphState();
+  const { nodes } = useFlowgraphState();
 
   // Don't show floating UI when loading or when nodes/edges are empty
   const shouldShowLoading = isLoading || nodes.length === 0;
@@ -63,7 +67,7 @@ function ProjectFloatingUI({
     <>
       <FlowgraphBreadcrumb projectName={projectName} />
       <div className="absolute top-2 right-2 z-20 bg-background/30 backdrop-blur-lg rounded-lg p-2">
-        <FlowgraphActions onOpenCommand={onOpen} />
+        <FlowgraphActions onOpenCommand={onOpen} onRefresh={onRefresh} />
       </div>
       <FlowgraphCommandDialog isOpen={isOpen} onOpenChange={onOpenChange} />
       <FlowgraphChatLoadingHint />
@@ -76,17 +80,14 @@ function ProjectFlow({
   sidebarChatMaximized,
   resourceTargets,
   isLoadingResources,
+  isLoading,
 }: {
   projectName: string;
   sidebarChatMaximized: boolean;
   resourceTargets: any[];
   isLoadingResources: boolean;
+  isLoading: boolean;
 }) {
-  const { isLoading } = useFlowgraph(
-    projectName,
-    resourceTargets,
-    isLoadingResources
-  );
   const { nodes, edges } = useFlowgraphState();
   const { onNodesChange, onEdgesChange } = useFlowgraphActions();
   // useCopilotActions();
@@ -137,20 +138,17 @@ function ProjectFlowWithLoading({
   sidebarChatMaximized,
   resourceTargets,
   isLoadingResources,
+  onRefresh,
 }: {
   projectName: string;
   sidebarChatMaximized: boolean;
   resourceTargets: any[];
   isLoadingResources: boolean;
+  onRefresh: () => void;
 }) {
-  const { isLoading } = useFlowgraph(
-    projectName,
-    resourceTargets,
-    isLoadingResources
-  );
-  const { nodes, edges } = useFlowgraphState();
+  const { isLoading } = useFlowgraph(resourceTargets, isLoadingResources);
+  const { nodes } = useFlowgraphState();
 
-  // Use the same loading logic as ProjectFlow
   const shouldShowLoading = isLoading || nodes.length === 0;
 
   return (
@@ -160,50 +158,67 @@ function ProjectFlowWithLoading({
         sidebarChatMaximized={sidebarChatMaximized}
         resourceTargets={resourceTargets}
         isLoadingResources={isLoadingResources}
+        isLoading={isLoading}
       />
       <ProjectFloatingUI
         projectName={projectName}
         sidebarChatMaximized={sidebarChatMaximized}
         isLoading={shouldShowLoading}
+        onRefresh={onRefresh}
       />
     </>
   );
 }
 
-export default function ProjectPage({
-  params,
-}: {
-  params: Promise<{ "project-name": string }>;
-}) {
-  const { "project-name": projectName } = use(params);
+export default function ProjectPage() {
+  const params = useParams<{ "project-name": string }>();
+  const projectName = params["project-name"];
   const { selectProject, clearSelectedProject, clearSelectedProjectResources } =
     useProjectActions();
   const { setStage } = useLanggraphActions();
   const { sidebarChatOpen, sidebarChatMaximized } = useChatState();
   const { closeSidebarChat } = useChatActions();
   const { refresh } = useFlowgraphActions();
+  const { refreshProject } = useProjectRefresh(projectName);
 
-  // Fetch project resources and compose resource targets
+  // Fetch project resources
   const { resources, isLoading: isLoadingResources } =
     useProjectResources(projectName);
 
-  // Create resource targets for fetching complete data
+  // Create resource targets for flowgraph
   const resourceTargets = (resources ?? [])
-    .map((resource: any) => ({
-      target: convertResourceObjectToTarget({
-        kind: resource.kind || "",
-        name: resource.metadata?.name || "",
-      }),
-      kind: resource.kind || "",
-      name: resource.metadata?.name || "",
-    }))
-    .filter((r: any) => r.kind && r.name);
+    .filter((resource: any) => {
+      return (
+        resource &&
+        resource.kind &&
+        typeof resource.kind === "string" &&
+        resource.metadata?.name &&
+        typeof resource.metadata.name === "string"
+      );
+    })
+    .map((resource: any) => {
+      try {
+        return {
+          target: convertResourceObjectToTarget({
+            kind: resource.kind,
+            name: resource.metadata.name,
+          }),
+          kind: resource.kind,
+          name: resource.metadata.name,
+        };
+      } catch (error) {
+        console.warn(
+          `Failed to convert resource to target: ${resource.kind}/${resource.metadata?.name}`,
+          error
+        );
+        return null;
+      }
+    })
+    .filter((r: any) => r !== null && r.kind && r.name);
 
   useEffect(() => {
     selectProject(projectName);
     clearSelectedProjectResources();
-    // setStage("manage_project");
-    // Trigger refresh to force re-fetching of flowgraph data
     refresh();
     return () => {
       clearSelectedProject();
@@ -240,6 +255,7 @@ export default function ProjectPage({
           sidebarChatMaximized={sidebarChatMaximized}
           resourceTargets={resourceTargets}
           isLoadingResources={isLoadingResources}
+          onRefresh={refreshProject}
         />
       </div>
       <div

@@ -218,3 +218,16 @@ export async function deployDevbox(
   const response = await api.post(`/${name}/release/${tag}/deploy`, {});
   return response.data;
 }
+
+export async function authCname(
+  context: SealosApiContext,
+  publicDomain: string,
+  customDomain: string
+): Promise<any> {
+  const api = createOldDevboxAxios(context);
+  const response = await api.post("/platform/authCname", {
+    publicDomain,
+    customDomain,
+  });
+  return response.data;
+}

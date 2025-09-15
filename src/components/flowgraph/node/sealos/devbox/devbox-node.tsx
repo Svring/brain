@@ -14,16 +14,17 @@ import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useQuery } from "@tanstack/react-query";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 
 // Simplified component that only accepts complete DevboxObject
 function DevboxNodeWrapper({ data }: { data: DevboxObject }) {
   // Construct node ID following the same pattern as other nodes
-  const nodeId = `${data.kind.toLowerCase()}-${data.name}`;
+  const nodeId = `${data.kind?.toLowerCase() || "devbox"}-${data.name || ""}`;
 
   return (
     <DevboxNode
       resource={data}
-      status={data.status || "Pending"}
+      // status={data.status || "Pending"}
       nodeId={nodeId}
     />
   );
@@ -32,20 +33,19 @@ function DevboxNodeWrapper({ data }: { data: DevboxObject }) {
 // Main component that receives the loaded resource data
 function DevboxNode({
   resource,
-  status,
   nodeId,
 }: {
   resource: DevboxObject;
-  status?: string;
   nodeId: string;
 }) {
-  // const { name, image, ports, pods } = data;
   const target = convertResourceObjectToTarget({
     kind: resource.kind,
     name: resource.name,
   });
 
-  const { name, image } = resource;
+  const { resource: object, status } = useResourceStatus(target);
+
+  const { name, image } = object || resource;
 
   // console.log("resource", resource);
   // console.log("status", status);
@@ -71,7 +71,7 @@ function DevboxNode({
 
           {/* Actions Dropdown Menu */}
           <div className="flex flex-row items-center gap-2 flex-shrink-0">
-            <DevboxNodeMenu object={resource} />
+            <DevboxNodeMenu object={object} />
           </div>
         </div>
 

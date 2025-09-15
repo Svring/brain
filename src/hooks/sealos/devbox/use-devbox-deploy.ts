@@ -35,7 +35,12 @@ export const useDevboxDeploy = (devboxName: string) => {
       }
 
       invalidateQueries(
-        [devbox.list.queryKey(), devbox.get.queryKey(), k8s.list.queryKey()],
+        [
+          devbox.list.queryKey(),
+          devbox.get.queryKey(),
+          devbox.releases.queryKey(devboxName),
+          k8s.list.queryKey(),
+        ],
         true
       );
 

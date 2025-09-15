@@ -24,6 +24,7 @@ export const useClusterUpdate = (options: UseClusterUpdateOptions = {}) => {
       invalidateQueries([cluster.get.queryKey()]);
     },
     onError: (error: any) => {
+      console.error("Cluster update error:", error);
       toast.error(error.message || "Failed to update cluster");
       onError?.(error);
     },

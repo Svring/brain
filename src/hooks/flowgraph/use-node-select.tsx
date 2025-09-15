@@ -55,7 +55,7 @@ export const useNodeSelect = ({
     };
   }
 
-  const nodeId = `${target.resourceType.toLowerCase()}-${target.name}`;
+  const nodeId = `${target.resourceType?.toLowerCase() || "unknown"}-${target.name || ""}`;
 
   const handleNodeSelect = () => {
     selectResource(target);

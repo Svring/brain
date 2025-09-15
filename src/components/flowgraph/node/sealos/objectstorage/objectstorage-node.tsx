@@ -9,32 +9,30 @@ import ObjectStorageNodeTitle from "./objectstorage-node-title";
 import ObjectStorageNodeMenu from "./objectstorage-node-menu";
 import ObjectStoragePolicyBadge from "./objectstorage-policy-badge";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import type { ObjectStorageObject } from "@/lib/sealos/resources/objectstorage/objectstorage-schemas/objectstorage-object-schema";
 
 function ObjectStorageNodeWrapper({ data }: { data: ObjectStorageObject }) {
   const nodeId = `${data.kind}-${data.name}`;
 
-  return (
-    <ObjectStorageNode
-      resource={data}
-      status="Running" // ObjectStorage doesn't have status, assume running if data is complete
-      nodeId={nodeId}
-    />
-  );
+  return <ObjectStorageNode resource={data} nodeId={nodeId} />;
 }
 
 function ObjectStorageNode({
   resource,
-  status,
   nodeId,
 }: {
   resource: ObjectStorageObject;
-  status?: string;
   nodeId: string;
 }) {
   const [staticHosting, setStaticHosting] = useState(false);
-  const { name, policy } = resource;
-  const target = convertResourceObjectToTarget({ kind: resource.kind, name });
+  const target = convertResourceObjectToTarget({
+    kind: resource.kind,
+    name: resource.name,
+  });
+
+  const { resource: data, status } = useResourceStatus(target);
+  const { name, policy } = data || resource;
 
   const hemComponent = policy !== "private" && (
     <div className="flex items-center justify-between gap-2">

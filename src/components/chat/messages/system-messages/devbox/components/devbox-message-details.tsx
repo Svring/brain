@@ -44,6 +44,12 @@ export const DevboxMessageDetail: React.FC<DevboxInfoDetailsProps> = ({
       queryClient.invalidateQueries({
         queryKey: devbox.get.queryKey(target),
       });
+      queryClient.invalidateQueries({
+        queryKey: devbox.list.queryKey(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: devbox.releases.queryKey(target.name),
+      });
       toast.success("Devbox updated successfully!");
     },
     onError: (error: any) => {

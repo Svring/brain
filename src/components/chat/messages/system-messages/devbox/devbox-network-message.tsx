@@ -35,6 +35,12 @@ export const DevboxNetworkMessage: React.FC<DevboxNetworkMessageProps> = ({
       queryClient.invalidateQueries({
         queryKey: devbox.get.queryKey(target),
       });
+      queryClient.invalidateQueries({
+        queryKey: devbox.list.queryKey(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: devbox.releases.queryKey(target.name),
+      });
       setIsPortsEditing(false);
     },
     onError: (error) => console.error("Failed to update devbox ports:", error),

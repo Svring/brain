@@ -30,7 +30,7 @@ export const RESOURCE_BRIDGE_MAP = {
  */
 export function getResourceTypeFromTarget(target: ResourceTarget): string {
   // Both custom and builtin targets have resourceType property
-  return target.resourceType.toLowerCase();
+  return target.resourceType?.toLowerCase() || "unknown";
 }
 
 /**

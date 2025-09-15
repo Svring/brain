@@ -105,6 +105,16 @@ export const createDevbox = createParallelAction(
     const validatedRequest = DevboxCreateRequestSchema.parse(request);
     const api = await createDevboxApi(context);
     const response = await api.post("/create", validatedRequest);
+
+    // Check if response code is not 200-299 range
+    if (response.data.code < 200 || response.data.code >= 300) {
+      throw new Error(
+        `Failed to create devbox: ${
+          response.data.message || `HTTP ${response.data.code}`
+        }`
+      );
+    }
+
     return DevboxCreateResponseSchema.parse(response.data);
   }
 );
@@ -117,6 +127,16 @@ export const manageDevboxLifecycle = createParallelAction(
     const validatedRequest = DevboxLifecycleRequestSchema.parse(request);
     const api = await createDevboxApi(context);
     const response = await api.post("/lifecycle", validatedRequest);
+
+    // Check if response code is not 200-299 range
+    if (response.data.code < 200 || response.data.code >= 300) {
+      throw new Error(
+        `Failed to manage devbox lifecycle: ${
+          response.data.message || `HTTP ${response.data.code}`
+        }`
+      );
+    }
+
     return DevboxLifecycleResponseSchema.parse(response.data);
   }
 );
@@ -130,6 +150,16 @@ export const deleteDevbox = createParallelAction(
     const response = await api.delete("/delete", {
       params: { devboxName },
     });
+
+    // Check if response code is not 200-299 range
+    if (response.data.code < 200 || response.data.code >= 300) {
+      throw new Error(
+        `Failed to delete devbox: ${
+          response.data.message || `HTTP ${response.data.code}`
+        }`
+      );
+    }
+
     return DevboxDeleteResponseSchema.parse(response.data);
   }
 );
@@ -143,6 +173,16 @@ export const releaseDevbox = createParallelAction(
     const validatedRequest = DevboxReleaseRequestSchema.parse(request);
     const api = await createDevboxApi(context);
     const response = await api.post("/release", validatedRequest);
+
+    // Check if response code is not 200-299 range
+    if (response.data.code < 200 || response.data.code >= 300) {
+      throw new Error(
+        `Failed to release devbox: ${
+          response.data.message || `HTTP ${response.data.code}`
+        }`
+      );
+    }
+
     return DevboxReleaseResponseSchema.parse(response.data);
   }
 );
@@ -168,7 +208,16 @@ export const deployDevbox = createParallelAction(
     const validatedRequest = DevboxDeployRequestSchema.parse(request);
     const api = await createAppApi(context);
     const response = await api.post("/deployDevbox", validatedRequest);
-    // console.log("response", response);
+
+    // Check if response code is not 200-299 range
+    if (response.data.code < 200 || response.data.code >= 300) {
+      throw new Error(
+        `Failed to deploy devbox: ${
+          response.data.message || `HTTP ${response.data.code}`
+        }`
+      );
+    }
+
     return DevboxDeployResponseSchema.parse(response.data);
   }
 );

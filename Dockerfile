@@ -2,8 +2,8 @@
 # Build for AMD64
 # docker build --platform linux/amd64 -t orca-app .
 # docker build --platform linux/amd64 -t sealos-brain-frontend:v0.2 .
-# 
-# 
+# docker tag sha256:119e4f8da993c856b199d970b14c83e13edbda9d1b934252a5f76e1c2b1b3d50 crpi-xgxlm7ulopyatpv5.cn-shanghai.personal.cr.aliyuncs.com/hydrangeas/sealos-brain-frontend:v0.3
+# docker push crpi-xgxlm7ulopyatpv5.cn-shanghai.personal.cr.aliyuncs.com/hydrangeas/sealos-brain-frontend:v0.3
 
 # # Tag for your repository
 # docker tag orca-app puddlecat/orca-app:latest
@@ -43,5 +43,7 @@ EXPOSE 3000
 # Set environment variables
 ENV NODE_ENV=production
 ENV NEXT_PUBLIC_MODE=production
+ENV NEXT_PUBLIC_LANGGRAPH_DEPLOYMENT_URL=https://kccpbrlxlwnp.sealosbja.site
+ENV NEXT_PUBLIC_LANGGRAPH_GRAPH_ID=orca
 # Run the Next.js app with pnpm
 CMD ["pnpm", "start"]

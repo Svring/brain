@@ -26,6 +26,7 @@ export const useClusterPublicAccess = (
       invalidateQueries([cluster.get.queryKey(target)]);
     },
     onError: (error: any) => {
+      console.error("Cluster enable public access error:", error);
       const message = error.message || "Failed to enable public access";
       toast.error(message);
       onError?.(message);
@@ -41,6 +42,7 @@ export const useClusterPublicAccess = (
       invalidateQueries([cluster.get.queryKey(target)]);
     },
     onError: (error: any) => {
+      console.error("Cluster disable public access error:", error);
       const message = error.message || "Failed to disable public access";
       toast.error(message);
       onError?.(message);

@@ -137,11 +137,11 @@ export const BasicInfoPopoverContent: React.FC<{
       </div>
 
       {/* Edit Button - Full Row */}
-      <div className="w-full">
+      <div className="w-full flex">
         <Button
           variant="outline"
           size="sm"
-          className="w-full"
+          className="flex-1"
           onClick={() => setIsEditing(true)}
         >
           Edit Image

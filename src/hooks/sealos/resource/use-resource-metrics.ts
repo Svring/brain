@@ -31,7 +31,7 @@ export const useResourceMetrics = (
       devboxName: resource?.pods?.[0]?.name || "",
     }),
     enabled:
-      target.resourceType.toLowerCase() === "devbox" &&
+      target.resourceType?.toLowerCase() === "devbox" &&
       !!resource?.pods?.[0]?.name,
   });
 
@@ -40,21 +40,21 @@ export const useResourceMetrics = (
       dbName: target.name || "",
       dbType: target.type!,
     }),
-    enabled: target.resourceType.toLowerCase() === "cluster",
+    enabled: target.resourceType?.toLowerCase() === "cluster",
   });
 
   const { data: launchpadMonitorData } = useQuery({
-    ...launchpad.combinedMonitor.queryOptions({
+    ...launchpad.monitor.queryOptions({
       queryName: resource?.pods?.[0]?.name || "",
     }),
     enabled:
-      target.resourceType.toLowerCase() === "deployment" ||
-      target.resourceType.toLowerCase() === "statefulset",
+      target.resourceType?.toLowerCase() === "deployment" ||
+      target.resourceType?.toLowerCase() === "statefulset",
   });
 
   // Get the appropriate monitor data based on resource type
   const getMonitorData = (): MetricsDataPoint[] | undefined => {
-    const resourceType = target.resourceType.toLowerCase();
+    const resourceType = target.resourceType?.toLowerCase() || "";
 
     if (resourceType === "devbox") {
       return devboxMonitorData as MetricsDataPoint[] | undefined;
@@ -77,11 +77,11 @@ export const useResourceMetrics = (
 
   // Determine loading state
   const isLoading =
-    (target.resourceType.toLowerCase() === "devbox" && !devboxMonitorData) ||
-    (target.resourceType.toLowerCase() === "cluster" && !clusterMonitorData) ||
+    (target.resourceType?.toLowerCase() === "devbox" && !devboxMonitorData) ||
+    (target.resourceType?.toLowerCase() === "cluster" && !clusterMonitorData) ||
     (_.includes(
       ["deployment", "statefulset"],
-      target.resourceType.toLowerCase()
+      target.resourceType?.toLowerCase() || ""
     ) &&
       !launchpadMonitorData);
 

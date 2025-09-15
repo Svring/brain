@@ -68,11 +68,22 @@ export function transformProjectResourcesToItems(
     return [];
   }
 
-  return resources.map((resource: any) => ({
-    name: resource.name,
-    kind: resource.kind?.toLowerCase(),
-    type: resource.type, // For clusters, this is the dbType (postgresql, mongodb, etc.)
-  }));
+  return resources
+    .filter((resource: any) => {
+      // Filter out invalid resources
+      return (
+        resource &&
+        resource.name &&
+        resource.kind &&
+        typeof resource.name === "string" &&
+        typeof resource.kind === "string"
+      );
+    })
+    .map((resource: any) => ({
+      name: resource.name,
+      kind: resource.kind.toLowerCase(),
+      type: resource.type, // For clusters, this is the dbType (postgresql, mongodb, etc.)
+    }));
 }
 
 /**
@@ -167,6 +178,11 @@ export const createResourceOperationTasks = (
   const tasks: Promise<unknown>[] = [];
 
   for (const resource of resources) {
+    // Skip invalid resources
+    if (!resource || !resource.name || !resource.kind) {
+      continue;
+    }
+
     const kind = resource.kind.toLowerCase();
     if (!resource.name) continue;
 

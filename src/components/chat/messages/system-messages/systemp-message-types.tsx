@@ -8,12 +8,12 @@ import DevboxMessage from "./devbox/devbox-message";
 import DevboxDeployedMessage from "./devbox/devbox-deployment-message";
 import DevboxReleaseMessage from "./devbox/devbox-release-message";
 import DevboxCreateMessage from "./devbox/devbox-create-message";
-import DevboxUpdateMessage from "./devbox/devbox-update-message";
+// import DevboxUpdateMessage from "./devbox/devbox-update-message";
 
 import ClusterMessage from "./cluster/cluster-message";
 import ClusterBackupMessage from "./cluster/cluster-backup-message";
 import ClusterCreateMessage from "./cluster/cluster-create-message";
-import ClusterUpdateMessage from "./cluster/cluster-update-message";
+// import ClusterUpdateMessage from "./cluster/cluster-update-message";
 import ClusterUpdateResource from "./cluster/components/cluster-update/cluster-update-resource";
 import ClusterConnectionMessage from "./cluster/cluster-connection-message";
 
@@ -47,9 +47,9 @@ export const SystemMessageType = {
       <DevboxReleaseMessage target={target} />
     ),
     create: (payload?: any) => <DevboxCreateMessage payload={payload} />,
-    update: (target: CustomResourceTarget, payload: any) => (
-      <DevboxUpdateMessage target={target} payload={payload} />
-    ),
+    // update: (target: CustomResourceTarget, payload: any) => (
+    //   <DevboxUpdateMessage target={target} payload={payload} />
+    // ),
     network: (target: CustomResourceTarget) => (
       <DevboxNetworkMessage target={target} />
     ),
@@ -65,9 +65,9 @@ export const SystemMessageType = {
       <ClusterConnectionMessage target={target} />
     ),
     create: (payload?: any) => <ClusterCreateMessage payload={payload} />,
-    update: (target: CustomResourceTarget, payload: any) => (
-      <ClusterUpdateMessage target={target} payload={payload} />
-    ),
+    // update: (target: CustomResourceTarget, payload: any) => (
+    //   <ClusterUpdateMessage target={target} payload={payload} />
+    // ),
     updateResource: (target: CustomResourceTarget) => (
       <ClusterUpdateResource target={target} />
     ),
@@ -113,8 +113,8 @@ export const SystemMessageType = {
     diagnoseNetwork: (target: ResourceTarget) => (
       <DiagnoseNetworkMessage target={target} />
     ),
-    customDomain: (target: ResourceTarget) => (
-      <CustomDomainMessage target={target} />
-    ),
+    // customDomain: (target: ResourceTarget) => (
+    //   <CustomDomainMessage target={target} />
+    // ),
   },
 };

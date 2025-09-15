@@ -21,6 +21,7 @@ import {
   listDevboxes,
   getDevboxCombinedMonitor,
   checkDevboxReady,
+  authCname,
 } from "@/lib/sealos/resources/devbox/devbox-api/devbox-api-service";
 
 const t = initTRPC.context<DevboxContext>().create();
@@ -58,6 +59,18 @@ export const devboxRouter = t.router({
   releases: t.procedure.input(z.string()).query(async ({ ctx, input }) => {
     return await getDevboxReleases(ctx, input);
   }),
+
+  // Domain Authentication
+  authCname: t.procedure
+    .input(
+      z.object({
+        publicDomain: z.string().min(1, "Public domain is required"),
+        customDomain: z.string().min(1, "Custom domain is required"),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      return await authCname(ctx, input.publicDomain, input.customDomain);
+    }),
 
   // ===== MUTATION PROCEDURES =====
 

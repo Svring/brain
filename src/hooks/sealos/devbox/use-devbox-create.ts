@@ -47,7 +47,8 @@ export const useDevboxCreate = (options: UseDevboxCreateOptions = {}) => {
         true
       );
     },
-    onError: (error: any) => {
+    onError: async (error: any) => {
+      console.error("Devbox creation error:", error);
       toast.error(error.message || "Failed to create devbox");
     },
   });

@@ -88,7 +88,7 @@ export const useResourceMetricsStatus = ({
 
   // Extract all pod names from the resource
   const podNames = useMemo(() => {
-    if (!resource) return [];
+    if (!resource || !target.resourceType) return [];
     return extractPodNames(resource, target.resourceType.toLowerCase());
   }, [resource, target.resourceType]);
 
@@ -100,7 +100,7 @@ export const useResourceMetricsStatus = ({
     }),
     enabled:
       !isResourceLoading &&
-      target.resourceType.toLowerCase() === "cluster" &&
+      target.resourceType?.toLowerCase() === "cluster" &&
       !!(resource as ClusterObject)?.type,
   });
 
@@ -115,7 +115,7 @@ export const useResourceMetricsStatus = ({
     }),
     enabled:
       !isResourceLoading &&
-      target.resourceType.toLowerCase() === "devbox" &&
+      target.resourceType?.toLowerCase() === "devbox" &&
       !!firstPodName,
   });
 
@@ -127,14 +127,14 @@ export const useResourceMetricsStatus = ({
       }),
       enabled:
         !isResourceLoading &&
-        (target.resourceType.toLowerCase() === "deployment" ||
-          target.resourceType.toLowerCase() === "statefulset") &&
+        (target.resourceType?.toLowerCase() === "deployment" ||
+          target.resourceType?.toLowerCase() === "statefulset") &&
         !!firstPodName,
     });
 
   // Combine all monitor data into a list
   const podMetricsList = useMemo((): PodMetricsData[] => {
-    const resourceType = target.resourceType.toLowerCase();
+    const resourceType = target.resourceType?.toLowerCase() || "";
 
     if (
       resourceType === "devbox" &&
@@ -176,7 +176,7 @@ export const useResourceMetricsStatus = ({
 
   // Determine loading state
   const isLoading = useMemo(() => {
-    const resourceType = target.resourceType.toLowerCase();
+    const resourceType = target.resourceType?.toLowerCase() || "";
 
     if (resourceType === "devbox") {
       return isDevboxLoading;

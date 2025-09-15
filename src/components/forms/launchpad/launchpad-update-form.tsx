@@ -137,16 +137,12 @@ export const LaunchpadUpdateForm = ({
 
   // Only show fields that have values in defaultValues
   const hasResource = defaultValues?.resource !== undefined;
-  const hasPorts =
-    defaultValues?.ports !== undefined && defaultValues.ports.length > 0;
+  const hasPorts = defaultValues?.ports !== undefined;
   const hasLaunchCommand = defaultValues?.launchCommand !== undefined;
   const hasImage = defaultValues?.image !== undefined;
-  const hasEnv =
-    defaultValues?.env !== undefined && defaultValues.env.length > 0;
-  const hasConfigMap =
-    defaultValues?.configMap !== undefined;
-  const hasStorage =
-    defaultValues?.storage !== undefined && defaultValues.storage.length > 0;
+  const hasEnv = defaultValues?.env !== undefined;
+  const hasConfigMap = defaultValues?.configMap !== undefined;
+  const hasStorage = defaultValues?.storage !== undefined;
 
   // console.log("LaunchpadUpdateForm - defaultValues:", defaultValues);
   // console.log("LaunchpadUpdateForm - hasResource:", hasResource);

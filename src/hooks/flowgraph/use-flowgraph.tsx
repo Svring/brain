@@ -1,120 +1,104 @@
-import { useEffect, useState } from "react";
-
+import { useEffect, useMemo, useRef } from "react";
+import { useResourceStatuses } from "@/hooks/sealos/resource/use-resource-statuses";
 import {
   useFlowgraphActions,
   useFlowgraphState,
 } from "@/contexts/flowgraph/flowgraph-context";
-
-import { useResourceStatuses } from "@/hooks/sealos/resource/use-resource-statuses";
-
 import {
   convertResourceObjectsToNodes,
   addDevboxToDevGroup,
   convertResourceToNetworkNodes,
 } from "@/lib/flowgraph/nodes/flowgraph-nodes-utils";
-
 import { useProjectActions } from "@/contexts/project/project-context";
-
 import useResourceReliances from "@/hooks/sealos/resource/use-resource-reliances";
-
 import { convertReliancesToEdges } from "@/lib/flowgraph/edges/flowgraph-edges-utils";
-
 import type { Node, Edge } from "@xyflow/react";
 
 interface CompleteResource {
   name: string;
-
   kind: string;
-
   [key: string]: any;
 }
 
 /**
-
- * Centralized flowgraph hook that:
-
- * 1. Accepts resource targets from parent component
-
- * 2. Fetches complete resource data for each resource
-
- * 3. Generates all nodes and edges (including derived ones)
-
- * 4. Sets final nodes and edges in one go when all data is ready
-
+ * Simple flowgraph hook that takes resource targets and generates nodes/edges
  */
-
 export default function useFlowgraph(
-  projectName: string,
   resourceTargets: any[],
   isLoadingResources: boolean
 ) {
   const { setNodes, setEdges, fitView } = useFlowgraphActions();
-
-  const { refreshTrigger } = useFlowgraphState();
-
+  const {
+    refreshTrigger,
+    nodes: existingNodesState,
+    edges: existingEdgesState,
+  } = useFlowgraphState();
   const { updateResource } = useProjectActions();
 
-  const [completeResources, setCompleteResources] = useState<
-    CompleteResource[]
-  >([]);
-
-  const [isLoadingComplete, setIsLoadingComplete] = useState(false);
-
-  // Fetch complete resource data for each resource
-
-  // console.log("resourceTargets", resourceTargets);
-
+  // Fetch complete resource data for each target
   const resourceQueries = useResourceStatuses(resourceTargets as any);
 
-  // console.log("resourceQueries", resourceQueries);
+  // Determine loading
+  const allLoaded = useMemo(() => {
+    if (isLoadingResources || resourceQueries.length === 0) return false;
+    return resourceQueries.every((q: any) => !q.isLoading);
+  }, [
+    isLoadingResources,
+    resourceQueries.map((q: any) => q.isLoading).join(","),
+    resourceQueries.length,
+  ]);
 
-  // Process complete resources when all data is loaded
-
-  useEffect(() => {
-    if (isLoadingResources || resourceQueries.length === 0) return;
-
-    // Check if all queries have loaded
-
-    const allLoaded = resourceQueries.every((q: any) => !q.isLoading);
-
-    const hasValidData = resourceQueries.some(
-      (q: any) => q.resource && !q.error
-    );
-
-    if (!allLoaded) {
-      setIsLoadingComplete(true);
-
-      return;
-    }
-
-    setIsLoadingComplete(false);
-
-    // Extract complete resources
-
-    const newCompleteResources: CompleteResource[] = [];
-
-    resourceQueries.forEach(({ resource, kind, name, target }: any) => {
+  const completeResources: CompleteResource[] = useMemo(() => {
+    if (!allLoaded) return [];
+    const list: CompleteResource[] = [];
+    resourceQueries.forEach(({ resource }: any) => {
       if (
         resource &&
         typeof resource === "object" &&
         "name" in resource &&
-        "kind" in resource
+        "kind" in resource &&
+        resource.name &&
+        resource.kind &&
+        typeof resource.name === "string" &&
+        typeof resource.kind === "string"
       ) {
-        newCompleteResources.push(resource as CompleteResource);
-
-        // Only update name and kind of CompleteResource with updateResource
-        updateResource({ name: resource.name, kind: resource.kind });
+        list.push(resource as CompleteResource);
       }
     });
-
-    setCompleteResources(newCompleteResources);
+    return list;
   }, [
-    resourceQueries.map((q: any) => q.isLoading).join(","),
-    resourceQueries.map((q: any) => q.resource?.name).join(","),
-    resourceQueries.map((q: any) => q.resource?.status?.phase).join(","), // Also track status changes
-    resourceTargets.length, // Track changes in resource targets array
+    allLoaded,
+    resourceQueries.map((q: any) => q.resource?.name || "").join(","),
+    resourceQueries
+      .map((q: any) => q.resource?.status?.phase || "")
+      .join(","),
+    resourceQueries.map((q: any) => q.resource?.kind || "").join(","),
+    resourceQueries.length,
     refreshTrigger,
   ]);
+
+  // Update project context only when completeResources signature changes
+  const prevSignatureRef = useRef<string>("");
+  useEffect(() => {
+    const signature = (arr: CompleteResource[]) =>
+      arr
+        .map((r) =>
+          [
+            r.kind,
+            r.name,
+            (r as any)?.status?.phase ?? "",
+            Array.isArray((r as any)?.ports) ? (r as any).ports.length : 0,
+          ].join(":")
+        )
+        .join("|");
+    const nextSig = signature(completeResources);
+    if (nextSig !== prevSignatureRef.current) {
+      completeResources.forEach((r) =>
+        updateResource({ name: r.name, kind: r.kind })
+      );
+      prevSignatureRef.current = nextSig;
+    }
+  }, [completeResources]);
 
   // Compute reliances from complete resources
 
@@ -125,7 +109,7 @@ export default function useFlowgraph(
   useEffect(() => {
     // Only return early if we're still loading resources
 
-    if (isLoadingComplete) return;
+    if (!allLoaded) return;
 
     // Generate resource nodes from complete data
 
@@ -142,8 +126,12 @@ export default function useFlowgraph(
     const allEdges: Edge[] = [];
 
     completeResources.forEach((resource) => {
-      // Generate network nodes and edges for resources with ports
+      // Skip processing if resource is invalid
+      if (!resource || !resource.name || !resource.kind) {
+        return;
+      }
 
+      // Generate network nodes and edges for resources with ports
       if (
         resource.ports &&
         Array.isArray(resource.ports) &&
@@ -162,9 +150,8 @@ export default function useFlowgraph(
         );
 
         // Process nodes for devbox grouping
-
         const processedNodes =
-          resource.kind.toLowerCase() === "devbox"
+          resource.kind && resource.kind.toLowerCase() === "devbox"
             ? newNodes.map((node) => {
                 if (node.type === "network" || node.type === "ingress") {
                   return {
@@ -194,30 +181,34 @@ export default function useFlowgraph(
       allEdges.push(...relianceEdges);
     }
 
-    // Set all nodes and edges at once
+    // Guard against redundant updates by comparing id sets
+    const currentNodeIds = new Set((existingNodesState || []).map((n) => n.id));
+    const nextNodeIds = new Set(allNodes.map((n) => n.id));
+    const nodesChanged =
+      currentNodeIds.size !== nextNodeIds.size ||
+      Array.from(nextNodeIds).some((id) => !currentNodeIds.has(id));
 
-    setNodes(allNodes);
+    const currentEdgeIds = new Set((existingEdgesState || []).map((e) => e.id));
+    const nextEdgeIds = new Set(allEdges.map((e) => e.id));
+    const edgesChanged =
+      currentEdgeIds.size !== nextEdgeIds.size ||
+      Array.from(nextEdgeIds).some((id) => !currentEdgeIds.has(id));
 
-    setEdges(allEdges);
+    if (nodesChanged) {
+      setNodes(allNodes);
+    }
+    if (edgesChanged) {
+      setEdges(allEdges);
+    }
 
-    // Fit view whenever all nodes and edges are set
-
-    if (allNodes.length > 0) {
+    // Fit view only when transitioning from 0 -> >0 nodes
+    if ((existingNodesState?.length || 0) === 0 && allNodes.length > 0) {
       setTimeout(() => fitView(), 100);
     }
-  }, [completeResources, reliances, isLoadingComplete]);
-
-  // Reset when project changes
-
-  useEffect(() => {
-    setCompleteResources([]);
-
-    setIsLoadingComplete(false);
-  }, [projectName]);
+  }, [completeResources, reliances, allLoaded]);
 
   return {
-    isLoading: isLoadingResources || isLoadingComplete,
-
+    isLoading: isLoadingResources || !allLoaded,
     nodes: completeResources,
   };
 }

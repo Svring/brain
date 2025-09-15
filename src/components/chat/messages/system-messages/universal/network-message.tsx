@@ -52,7 +52,7 @@ export default function NetworkMessage({ target }: NetworkMessageProps) {
     // Only support launchpad resources (deployment/statefulset) for now
     if (
       target.type === "builtin" &&
-      ["deployment", "statefulset"].includes(target.resourceType.toLowerCase())
+      ["deployment", "statefulset"].includes(target.resourceType?.toLowerCase() || "")
     ) {
       appendSystemMessageMutation.mutate({ type: "launchpad.updatePort", target });
     }

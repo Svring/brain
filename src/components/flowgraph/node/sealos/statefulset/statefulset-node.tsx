@@ -9,6 +9,7 @@ import StatefulsetNodeTitle from "./statefulset-node-title";
 import { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulset-object-schema";
 import { truncateImage } from "@/lib/sealos/sealos-utils";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import NodeLog from "../../components/node-log";
 import NodeConnect from "../../components/node-connect";
 import StatefulsetNodeMenu from "./statefulset-node-menu";
@@ -20,12 +21,11 @@ function StatefulsetNodeWrapper({
   data: StatefulsetObject;
 }) {
   // Construct node ID following the same pattern as other nodes
-  const nodeId = `${data.kind.toLowerCase()}-${data.name}`;
+  const nodeId = `${data.kind?.toLowerCase() || "statefulset"}-${data.name || ""}`;
 
   return (
     <StatefulsetNode
       resource={data}
-      status={data.status || "Pending"}
       nodeId={nodeId}
     />
   );
@@ -34,15 +34,15 @@ function StatefulsetNodeWrapper({
 // Main component that receives the loaded resource data
 function StatefulsetNode({
   resource,
-  status,
   nodeId,
 }: {
   resource: StatefulsetObject;
-  status?: string;
   nodeId: string;
 }) {
-  // Get resource metrics data using the hook data
   const target = convertResourceObjectToTarget(resource);
+  
+  const { resource: data, status } = useResourceStatus(target);
+  const statefulsetData = data || resource;
 
   const handleConnect = () => {
     console.log("Connect clicked");
@@ -58,15 +58,15 @@ function StatefulsetNode({
         <div className="flex h-full flex-col gap-2 justify-between">
           {/* Header with Name and Dropdown */}
           <div className="flex items-center justify-between">
-            <StatefulsetNodeTitle name={resource.name} />
-            <StatefulsetNodeMenu object={resource} />
+            <StatefulsetNodeTitle name={statefulsetData.name} />
+            <StatefulsetNodeMenu object={statefulsetData} />
           </div>
 
           {/* Image with Package Icon */}
           <div className="flex items-center gap-2 mt-2">
             <Package className="h-4 w-4 text-muted-foreground" />
             <div className="text-sm text-muted-foreground truncate flex-1">
-              Image: {resource.image?.imageName ? truncateImage(resource.image.imageName) : "N/A"}
+              Image: {statefulsetData.image?.imageName ? truncateImage(statefulsetData.image.imageName) : "N/A"}
             </div>
           </div>
 
@@ -99,7 +99,7 @@ function StatefulsetNode({
         </div>
 
         {/* Right side: Storage capacity */}
-        <div className="text-xs">{resource.resource?.storage || "N/A"}GB</div>
+        <div className="text-xs">{statefulsetData.resource?.storage || "N/A"}GB</div>
       </div>
     </div>
   );

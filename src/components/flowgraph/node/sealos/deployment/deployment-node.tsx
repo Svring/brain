@@ -22,7 +22,7 @@ function DeploymentNodeWrapper({
   data: DeploymentObject;
 }) {
   // Construct node ID following the same pattern as other nodes
-  const nodeId = `${data.kind.toLowerCase()}-${data.name}`;
+  const nodeId = `${data.kind?.toLowerCase() || "deployment"}-${data.name || ""}`;
 
   return (
     <DeploymentNode
@@ -36,24 +36,18 @@ function DeploymentNodeWrapper({
 // Main component that receives the loaded resource data
 function DeploymentNode({
   resource,
-  status,
   nodeId,
 }: {
   resource: DeploymentObject;
-  status?: string;
   nodeId: string;
 }) {
-  // Use the new hook to get deployment data
-  const { data: deploymentData = resource } = useLaunchpadObject(
-    resource.name,
-    resource.kind
-  );
-
-  // Get resource metrics data using the hook data
   const target = convertResourceObjectToTarget({
-    kind: deploymentData.kind,
-    name: deploymentData.name,
+    kind: resource.kind,
+    name: resource.name,
   });
+
+  const { resource: deploymentData, status } = useResourceStatus(target);
+  const data = deploymentData || resource;
 
   const handleConnect = () => {
     console.log("Connect clicked");
@@ -66,8 +60,8 @@ function DeploymentNode({
         <div className="flex h-full flex-col gap-2 justify-between">
           {/* Header with Name and Dropdown */}
           <div className="flex items-center justify-between">
-            <DeploymentNodeTitle name={deploymentData.name} />
-            <DeploymentNodeMenu object={resource} />
+            <DeploymentNodeTitle name={data.name} />
+            <DeploymentNodeMenu object={data} />
           </div>
 
           {/* Image with Package Icon */}
@@ -75,8 +69,8 @@ function DeploymentNode({
             <Package className="h-4 w-4 text-muted-foreground" />
             <div className="text-md text-muted-foreground truncate flex-1">
               Image:{" "}
-              {deploymentData.image?.imageName
-                ? truncateImage(deploymentData.image.imageName)
+              {data.image?.imageName
+                ? truncateImage(data.image.imageName)
                 : "N/A"}
             </div>
           </div>
@@ -99,9 +93,9 @@ function DeploymentNode({
     </NodeConnect>
   );
 
-  // Create an array with length equal to resource.replicas for the stack
+  // Create an array with length equal to data.replicas for the stack
   const replicasArray = Array.from(
-    { length: deploymentData.resource?.replicas - 1 || 0 },
+    { length: data.resource?.replicas - 1 || 0 },
     (_, i) => i
   );
 

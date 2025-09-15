@@ -93,6 +93,16 @@ export const createCluster = createParallelAction(
     const formData = clusterCreateFormSchema.parse(request);
     const api = createClusterApi(context);
     const response = await api.post("/database", formData);
+
+    // Check if response code is not 200-299 range
+    if (response.data.code < 200 || response.data.code >= 300) {
+      throw new Error(
+        `Failed to create cluster: ${
+          response.data.message || `HTTP ${response.data.code}`
+        }`
+      );
+    }
+
     return response.data;
   }
 );
@@ -162,6 +172,16 @@ export const updateCluster = createParallelAction(
 
     const api = createClusterApi(context);
     const response = await api.patch(`/database/${name}`, { resource });
+
+    // Check if response code is not 200-299 range
+    if (response.data.code < 200 || response.data.code >= 300) {
+      throw new Error(
+        `Failed to update cluster: ${
+          response.data.message || `HTTP ${response.data.code}`
+        }`
+      );
+    }
+
     return response.data;
   }
 );
@@ -187,6 +207,16 @@ export const deleteCluster = createParallelAction(
   ): Promise<DeleteClusterResponse> => {
     const api = createClusterApi(context);
     const response = await api.delete(`/database/${clusterName}`);
+
+    // Check if response code is not 200-299 range
+    if (response.data.code < 200 || response.data.code >= 300) {
+      throw new Error(
+        `Failed to delete cluster: ${
+          response.data.message || `HTTP ${response.data.code}`
+        }`
+      );
+    }
+
     return DeleteClusterResponseSchema.parse(response.data);
   }
 );
@@ -214,6 +244,16 @@ export const startCluster = createParallelAction(
   ): Promise<StartClusterResponse> => {
     const api = createClusterApi(context);
     const response = await api.post(`/database/${clusterName}/start`);
+
+    // Check if response code is not 200-299 range
+    if (response.data.code < 200 || response.data.code >= 300) {
+      throw new Error(
+        `Failed to start cluster: ${
+          response.data.message || `HTTP ${response.data.code}`
+        }`
+      );
+    }
+
     return StartClusterResponseSchema.parse(response.data);
   }
 );
@@ -238,6 +278,16 @@ export const pauseCluster = createParallelAction(
   ): Promise<PauseClusterResponse> => {
     const api = createClusterApi(context);
     const response = await api.post(`/database/${clusterName}/pause`);
+
+    // Check if response code is not 200-299 range
+    if (response.data.code < 200 || response.data.code >= 300) {
+      throw new Error(
+        `Failed to pause cluster: ${
+          response.data.message || `HTTP ${response.data.code}`
+        }`
+      );
+    }
+
     return PauseClusterResponseSchema.parse(response.data);
   }
 );

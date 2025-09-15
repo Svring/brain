@@ -37,6 +37,10 @@ import {
   Copy,
   Check,
 } from "lucide-react";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { createRawDevboxClient } from "@/components/provider/trpc-provider";
+import { useAuthState } from "@/contexts/auth/auth-context";
+import { toast } from "sonner";
 
 interface Port {
   number: number;
@@ -66,6 +70,7 @@ export function CustomPortDialog({
   selectedPort,
 }: CustomPortDialogProps) {
   const { copyToClipboard, isCopied } = useCopy();
+  const { auth } = useAuthState();
   const [customDomain, setCustomDomain] = useState("");
   const [dnsRecords, setDnsRecords] = useState<DnsRecord[]>([
     { type: "CNAME", ttl: "Auto", value: selectedPort?.publicAddress || "XXX" },
@@ -79,6 +84,45 @@ export function CustomPortDialog({
       ]);
     }
   }, [selectedPort]);
+
+  // Handle refresh button click
+  const handleRefresh = async () => {
+    if (!customDomain || !selectedPort?.publicAddress) {
+      toast.error("Please enter a custom domain");
+      return;
+    }
+
+    if (!auth) {
+      toast.error("Authentication required");
+      return;
+    }
+
+    try {
+      const devboxClient = createRawDevboxClient(auth);
+      const response = await devboxClient.authCname.query({
+        publicDomain: selectedPort.publicAddress,
+        customDomain: customDomain,
+      });
+
+      // Check response status
+      if (response.code === 200) {
+        toast.success("Domain authentication successful");
+      } else if (response.code === 409) {
+        toast.error(response.message || "Domain authentication failed");
+      } else {
+        toast.error("Unexpected response from server");
+      }
+    } catch (error: any) {
+      // Handle TRPC errors
+      if (error?.data?.httpStatus === 409) {
+        toast.error(error.message || "Domain authentication failed");
+      } else if (error?.data?.httpStatus === 200) {
+        toast.success("Domain authentication successful");
+      } else {
+        toast.error(error?.message || "Failed to authenticate domain");
+      }
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -101,7 +145,7 @@ export function CustomPortDialog({
               value={customDomain}
               onChange={(e) => setCustomDomain(e.target.value)}
             />
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleRefresh}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
             </Button>

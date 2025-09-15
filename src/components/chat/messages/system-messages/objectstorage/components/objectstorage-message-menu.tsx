@@ -1,13 +1,24 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Trash2, PencilLine } from "lucide-react";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Trash2 } from "lucide-react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRemoveFromProjectMutation } from "@/lib/brain/resources/project/project-method/project-mutation";
@@ -15,6 +26,7 @@ import { createK8sContext } from "@/lib/auth/auth-utils";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 
 interface ObjectStorageMessageMenuProps {
   target: CustomResourceTarget;
@@ -26,6 +38,8 @@ export default function ObjectStorageMessageMenu({
   const { objectstorage: objectstorageTrpcClient } = useTRPCClients();
   const queryClient = useQueryClient();
   const k8sContext = createK8sContext();
+  const { invalidateQueries } = useInvalidateQueries();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   // Extract name and status from the target using the hook
   const { resource, status } = useResourceStatus(target);
@@ -36,22 +50,32 @@ export default function ObjectStorageMessageMenu({
 
   // Mutations using objectstorage router
   const deleteObjectStorage = useMutation(
-    objectstorageTrpcClient.deleteObjectStorage.mutationOptions()
+    objectstorageTrpcClient.delete.mutationOptions()
   );
 
-  const handleDelete = () => {
+  const handleDeleteClick = () => {
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = () => {
     if (!objectStorageName) return;
     deleteObjectStorage.mutate(
       { bucketName: objectStorageName },
       {
         onSuccess: () => {
           // Invalidate relevant queries
-          queryClient.invalidateQueries({
-            queryKey: objectstorageTrpcClient.getObjectStorage.queryKey(target),
-          });
+          invalidateQueries([
+            objectstorageTrpcClient.get.queryKey(target),
+            true,
+          ]);
+          setShowDeleteDialog(false);
         },
       }
     );
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteDialog(false);
   };
 
   // Don't render if we don't have a valid object storage name
@@ -60,54 +84,55 @@ export default function ObjectStorageMessageMenu({
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-            className="p-1 hover:bg-muted rounded transition-colors"
-          >
-            <MoreHorizontal className="h-4 w-4" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          className="rounded-xl bg-background-secondary"
-          align="start"
-        >
-          <DropdownMenuItem>
-            <PencilLine className="mr-2 h-4 w-4" />
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation();
-              const objectStorageTarget = convertResourceTypeToTarget(
-                "objectstoragebucket",
-                objectStorageName
-              );
-              removeFromProject.mutate({
-                resources: [objectStorageTarget],
-              });
-            }}
-            disabled={!objectStorageName}
-          >
-            <PencilLine className="mr-2 h-4 w-4" />
-            Remove from Project
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete();
-            }}
-            className="text-destructive"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+    <>
+      <TooltipProvider>
+        <div className="flex items-center gap-1">
+          {/* Delete Button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteClick();
+                }}
+                disabled={deleteObjectStorage.isPending}
+                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>Delete</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </TooltipProvider>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Object Storage</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{objectStorageName}"? This action cannot
+              be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleDeleteCancel}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deleteObjectStorage.isPending}
+            >
+              {deleteObjectStorage.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

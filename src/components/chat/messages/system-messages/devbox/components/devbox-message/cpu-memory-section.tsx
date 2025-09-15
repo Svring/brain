@@ -125,11 +125,11 @@ export const CpuMemoryPopoverContent: React.FC<{
       <MonitorChart target={target} />
 
       {/* Edit Button - Full Row */}
-      <div className="w-full">
+      <div className="w-full flex">
         <Button 
           variant="outline" 
           size="sm" 
-          className="w-full"
+          className="flex-1"
           onClick={() => {
             setIsEditing(true);
             //triggerScrollToBottom();

@@ -28,6 +28,7 @@ export const useClusterLifecycle = (
       invalidateQueries([cluster.get.queryKey()]);
     },
     onError: (error: any) => {
+      console.error("Cluster start error:", error);
       const message = error.message || "Failed to start cluster";
       toast.error(message);
       onError?.(message);
@@ -43,6 +44,7 @@ export const useClusterLifecycle = (
       invalidateQueries([cluster.get.queryKey()]);
     },
     onError: (error: any) => {
+      console.error("Cluster pause error:", error);
       const message = error.message || "Failed to pause cluster";
       toast.error(message);
       onError?.(message);
@@ -62,6 +64,7 @@ export const useClusterLifecycle = (
       invalidateQueries([cluster.get.queryKey()], true); // Enable invalidateProjectResources flag
     },
     onError: (error: any) => {
+      console.error("Cluster delete error:", error);
       const message = error.message || "Failed to delete cluster";
       toast.error(message);
       onError?.(message);

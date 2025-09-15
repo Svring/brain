@@ -47,10 +47,17 @@ function createLaunchpadApi(context: SealosApiContext) {
 export const createApplication = createParallelAction(
   async (context: SealosApiContext, data: LaunchpadCreateFormData) => {
     const api = createLaunchpadApi(context);
-    const response = await api.post<LaunchpadCreateSuccessResponse>(
-      "/app",
-      data
-    );
+    const response = await api.post("/app", data);
+
+    // Check if response code is not 200-299 range
+    if (response.data.code < 200 || response.data.code >= 300) {
+      throw new Error(
+        `Failed to create application: ${
+          response.data.message || `HTTP ${response.data.code}`
+        }`
+      );
+    }
+
     return response.data;
   }
 );

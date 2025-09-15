@@ -150,7 +150,7 @@ export const clusterRouter = t.router({
   // Backup Management
   createBackup: t.procedure
     .input(CreateBackupRequestSchema)
-    .output(CreateBackupResponseSchema)
+    // .output(CreateBackupResponseSchema)
     .mutation(async ({ input, ctx }) => {
       const { databaseName, remark } = input;
       return await createClusterBackup(ctx, databaseName, remark);

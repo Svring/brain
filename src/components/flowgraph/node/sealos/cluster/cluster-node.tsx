@@ -13,7 +13,7 @@ import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { composeClusterPublicConnectionString } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
 import { Globe, HardDrive } from "lucide-react";
-import { useClusterObject } from "@/hooks/sealos/cluster/use-cluster-object";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import {
   Tooltip,
@@ -28,12 +28,11 @@ interface ClusterNodeProps {
 
 function ClusterNodeWrapper({ data }: ClusterNodeProps) {
   // Construct node ID following the same pattern as other nodes
-  const nodeId = `${data.kind.toLowerCase()}-${data.name}`;
+  const nodeId = `${data.kind?.toLowerCase() || "cluster"}-${data.name || ""}`;
 
   return (
     <ClusterNode
       resource={data}
-      status={data.status || "Pending"}
       nodeId={nodeId}
     />
   );
@@ -41,16 +40,16 @@ function ClusterNodeWrapper({ data }: ClusterNodeProps) {
 
 interface ClusterNodeInnerProps {
   resource: ClusterObject;
-  status: string;
   nodeId: string;
 }
 
-function ClusterNode({ resource, status, nodeId }: ClusterNodeInnerProps) {
+function ClusterNode({ resource, nodeId }: ClusterNodeInnerProps) {
   const k8sContext = createK8sContext();
   const target = CustomResourceTargetSchema.parse(
     convertResourceTypeToTarget("cluster", resource.name || "")
   );
-  const { data: clusterData = resource } = useClusterObject(resource.name);
+  const { resource: clusterData, status } = useResourceStatus(target);
+  const data = clusterData || resource;
   const { latestData } = useResourceMetricsStatus({ target });
   const storagePercent = Math.min(
     100,
@@ -62,17 +61,17 @@ function ClusterNode({ resource, status, nodeId }: ClusterNodeInnerProps) {
     )
   );
   const connectionString = composeClusterPublicConnectionString(
-    clusterData,
+    data,
     k8sContext.regionUrl
   );
-  const { name = "", type = "", resource: clusterResource } = clusterData;
+  const { name = "", type = "", resource: clusterResource } = data;
 
   const mainCard = (
     <BaseNode target={target} nodeId={nodeId}>
       <div className="flex h-full flex-col gap-4 justify-between">
         <div className="flex items-center justify-between">
           <ClusterNodeTitle name={name} type={type!} />
-          <ClusterNodeMenu object={clusterData} />
+          <ClusterNodeMenu object={data} />
         </div>
         <div className="flex items-center gap-2 text-md">
           <Globe
@@ -89,7 +88,7 @@ function ClusterNode({ resource, status, nodeId }: ClusterNodeInnerProps) {
           </span>
         </div>
         <div className="mt-auto flex justify-between items-center">
-          <NodeStatusLight status={status} />
+          <NodeStatusLight status={status || "Pending"} />
           <div className="flex items-center gap-2">
             {/* <ClusterNodeBackup target={target} /> */}
             <NodeLog target={target} />

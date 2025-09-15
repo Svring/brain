@@ -62,15 +62,20 @@ function ResourceItem({
   // Check if the resource is already connected to the launchpad target
   const isConnected = () => {
     if (!launchpadTarget) return false;
-    
+
     // Generate node IDs using the same pattern as flowgraph-nodes-utils
-    const resourceNodeId = `${resource.kind.toLowerCase()}-${resource.name}`;
-    const launchpadNodeId = `${launchpadTarget.resourceType.toLowerCase()}-${launchpadTarget.name}`;
-    
+    const resourceNodeId = `${resource.kind?.toLowerCase() || "unknown"}-${
+      resource.name || ""
+    }`;
+    const launchpadNodeId = `${
+      launchpadTarget.resourceType?.toLowerCase() || "unknown"
+    }-${launchpadTarget.name || ""}`;
+
     // Check if there's an edge connecting the resource to the launchpad target
-    return edges.some(edge => 
-      (edge.source === resourceNodeId && edge.target === launchpadNodeId) ||
-      (edge.source === launchpadNodeId && edge.target === resourceNodeId)
+    return edges.some(
+      (edge) =>
+        (edge.source === resourceNodeId && edge.target === launchpadNodeId) ||
+        (edge.source === launchpadNodeId && edge.target === resourceNodeId)
     );
   };
 
@@ -164,7 +169,13 @@ function ResourceItem({
   };
 
   const handleResourceClick = async () => {
-    if (!launchpadTarget || !fullResource || !launchpadResource || isLoading || isConnected())
+    if (
+      !launchpadTarget ||
+      !fullResource ||
+      !launchpadResource ||
+      isLoading ||
+      isConnected()
+    )
       return;
 
     const envVarsToAdd = getEnvVarsToAdd();
@@ -192,7 +203,7 @@ function ResourceItem({
 
       await updateLaunchpadMutation.mutateAsync({
         name: launchpadTarget.name,
-        request: { env: updatedEnv },
+        env: updatedEnv,
       });
 
       // Reload the page after successful update
@@ -211,11 +222,11 @@ function ResourceItem({
           <div
             className={cn(
               "flex items-center justify-between p-2 border rounded-md",
-              isConnected() 
-                ? "opacity-50 cursor-not-allowed bg-muted/30" 
-                : isLoading 
-                  ? "opacity-50 cursor-not-allowed" 
-                  : "cursor-pointer hover:bg-muted/50"
+              isConnected()
+                ? "opacity-50 cursor-not-allowed bg-muted/30"
+                : isLoading
+                ? "opacity-50 cursor-not-allowed"
+                : "cursor-pointer hover:bg-muted/50"
             )}
             onClick={handleResourceClick}
           >
@@ -226,7 +237,9 @@ function ResourceItem({
               </span>
             </div>
             {isConnected() ? (
-              <span className="text-xs text-green-600 font-medium">Connected</span>
+              <span className="text-xs text-green-600 font-medium">
+                Connected
+              </span>
             ) : isLoading ? (
               <Spinner
                 variant="bars"

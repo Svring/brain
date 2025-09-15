@@ -64,11 +64,12 @@ export function FlowgraphActions({
   };
 
   const handleRefresh = () => {
-    // Call the flowgraph refresh function
-    refresh();
-    // Invalidate queries with empty array and invalidateProjectResources set to true
-    invalidateQueries([], true);
-    onRefresh?.();
+    if (onRefresh) {
+      onRefresh();
+    } else {
+      // Default behavior: just refresh flowgraph
+      refresh();
+    }
   };
 
   const handleOpenCommand = () => {

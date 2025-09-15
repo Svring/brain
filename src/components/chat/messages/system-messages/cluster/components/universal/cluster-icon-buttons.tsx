@@ -18,7 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Pause, Power, PencilLine, Trash2 } from "lucide-react";
+import { Pause, Power, Trash2 } from "lucide-react";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { useClusterLifecycle } from "@/hooks/sealos/cluster/use-cluster-lifecycle";
 
@@ -100,25 +100,6 @@ export default function ClusterIconButtons({
               </TooltipContent>
             </Tooltip>
           )}
-
-          {/* Update Button - Always show but disabled when pending */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={isResourcePending}
-                className={`h-8 w-8 p-0 ${
-                  isResourcePending ? "opacity-50" : ""
-                }`}
-              >
-                <PencilLine className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              <p>Update</p>
-            </TooltipContent>
-          </Tooltip>
 
           {/* Delete Button - Always show */}
           <Tooltip>
