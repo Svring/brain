@@ -16,9 +16,9 @@ import { useThreads } from "@/components/provider/thread-provider";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import {
   useLanggraphActions,
-  useLanggraphStream,
   useLanggraphState,
 } from "@/contexts/langgraph/langgraph-context";
+import { useStreamContext } from "@/components/provider/stream-provider";
 
 interface UseNodeSelectParams {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -34,13 +34,11 @@ export const useNodeSelect = ({
   onSuccess,
 }: UseNodeSelectParams) => {
   const { selectResource } = useProjectActions();
-  const { selectedResource } = useProjectState();
   const { selectNode } = useFlowgraphActions();
   const { openSidebarChat } = useChatActions();
-  const { selectedThreadId } = useChatState();
   const { updateResourceContext } = useLanggraphActions();
   const { updateThreadState } = useThreads();
-  const { submit } = useLanggraphStream();
+  const { submit } = useStreamContext();
   const { apiKey, baseUrl, modelName, stage, contextWindowUsage } =
     useLanggraphState();
   const { selectedProject, selectedProjectResources, selectedResourceContext } =
@@ -55,7 +53,9 @@ export const useNodeSelect = ({
     };
   }
 
-  const nodeId = `${target.resourceType?.toLowerCase() || "unknown"}-${target.name || ""}`;
+  const nodeId = `${target.resourceType?.toLowerCase() || "unknown"}-${
+    target.name || ""
+  }`;
 
   const handleNodeSelect = () => {
     selectResource(target);
