@@ -13,10 +13,13 @@ import { toast } from "sonner";
 import { useMount } from "@reactuses/core";
 import { useCreateThreadRunStreamMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { Client } from "@langchain/langgraph-sdk";
+import { v4 as uuidv4 } from "uuid";
+import { useQueryClient } from "@tanstack/react-query";
 
 type StreamContextType = ReturnType<typeof useStream> & {
   submitWithContext: (data: { messages: Message[] }) => void;
   streamThread: (messages: Message[]) => Promise<any>;
+  sendMessage: (messages: Message[]) => Promise<void>;
   messages: Message[];
 };
 
@@ -39,7 +42,7 @@ async function checkGraphStatus(apiUrl: string): Promise<boolean> {
 const StreamSession = ({ children }: { children: ReactNode }) => {
   const { baseUrl, apiKey, modelName, contextWindowUsage, stage } =
     useLanggraphState();
-  const { selectedThreadId, getThreads, setThreads, messages } = useThreads();
+  const { selectedThreadId, getThreads, setThreads, messages, setMessages, isStreaming, setIsStreaming } = useThreads();
   const {
     selectedProject,
     selectedProjectResources,
@@ -48,6 +51,7 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
   } = useProjectState();
   const { auth } = useAuthState();
   const { LANGGRAPH_DEPLOYMENT_URL } = useEnv();
+  const queryClient = useQueryClient();
 
   // Create thread run stream mutation
   const createThreadRunStreamMutation = useCreateThreadRunStreamMutation();
@@ -138,10 +142,121 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
 
     const stream = client.runs.stream(selectedThreadId, "orca", {
       ...payload,
-      streamMode: "messages",
+      streamMode: "updates",
     });
 
     return stream;
+  };
+
+  // Send message function that handles the entire flow
+  const sendMessage = async (messagesToSend: Message[]) => {
+    if (messagesToSend.length > 0 && !isStreaming) {
+      // Set streaming state to true
+      setIsStreaming(true);
+
+      // Add the messages to the messages list immediately
+      const updatedMessages = [...messages, ...messagesToSend];
+      setMessages(updatedMessages);
+
+      const stream = await streamThread(messagesToSend);
+
+      if (!stream) {
+        setIsStreaming(false);
+        return;
+      }
+
+      try {
+        for await (const event of stream) {
+          console.log("event", event);
+
+          // Handle the new "updates" event format
+          if (event.event === "updates" && event.data) {
+            const streamData = event.data;
+
+            // Extract messages from all nodes in the stream data
+            const newMessages: Message[] = [];
+
+            // Iterate through all nodes in the data
+            for (const [nodeName, nodeData] of Object.entries(streamData)) {
+              if (nodeData && typeof nodeData === "object") {
+                // Check if this node has messages
+                if ("messages" in nodeData) {
+                  const nodeMessages = nodeData.messages;
+
+                  // Handle single message object
+                  if (
+                    nodeMessages &&
+                    typeof nodeMessages === "object" &&
+                    !Array.isArray(nodeMessages)
+                  ) {
+                    // Add required fields if missing
+                    const messageData = nodeMessages as any;
+                    const message: Message = {
+                      id: messageData.id || uuidv4(),
+                      type: messageData.type || "ai",
+                      content: messageData.content || "",
+                      ...messageData,
+                    };
+                    newMessages.push(message);
+                  }
+                  // Handle array of messages
+                  else if (Array.isArray(nodeMessages)) {
+                    nodeMessages.forEach((msg: any) => {
+                      if (msg && typeof msg === "object") {
+                        const message: Message = {
+                          id: msg.id || uuidv4(),
+                          type: msg.type || "tool",
+                          content: msg.content || "",
+                          ...msg,
+                        };
+                        newMessages.push(message);
+                      }
+                    });
+                  }
+                }
+              }
+            }
+
+            // Update messages with new messages from stream
+            if (newMessages.length > 0) {
+              console.log("Adding new messages from stream:", newMessages);
+              setMessages((prevMessages) => {
+                // Remove any existing messages that might be duplicates
+                const existingIds = new Set(prevMessages.map((m) => m.id));
+                const uniqueNewMessages = newMessages.filter(
+                  (m) => !existingIds.has(m.id)
+                );
+
+                return [...prevMessages, ...uniqueNewMessages];
+              });
+            }
+          }
+          // Keep backward compatibility with old format
+          else if ((event as any).event === "messages/partial" && (event as any).data) {
+            const messageData = (event as any).data[0];
+            console.log("messageData", messageData);
+            setMessages((prevMessages) => {
+              const currentMessages = [...prevMessages];
+              const lastIndex = currentMessages.length - 1;
+              if (lastIndex >= 0) {
+                currentMessages[lastIndex] = messageData;
+              }
+              return currentMessages;
+            });
+          }
+        }
+      } finally {
+        // Set streaming state to false when streaming completes
+        setIsStreaming(false);
+
+        // After streaming completes, invalidate thread state query to fetch latest server state
+        if (selectedThreadId) {
+          queryClient.invalidateQueries({
+            queryKey: ["threadState", selectedThreadId],
+          });
+        }
+      }
+    }
   };
 
   useMount(() => {
@@ -159,9 +274,9 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
     ...streamValue,
     submitWithContext,
     streamThread,
+    sendMessage,
     // messages,
   };
-
 
   return (
     <StreamContext.Provider value={contextValue}>

@@ -31,24 +31,12 @@ export default function AiChatbox() {
       <AiChatHeader isLoading={isLoading} />
 
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
-        <AiMessages 
-          messages={messages}
-          isLoading={isLoading}
-        />
+        <AiMessages messages={messages} isLoading={isLoading} />
       </div>
 
       <div className="p-2 pt-0 shrink-0 relative z-[9999]">
         <div className="max-w-3xl mx-auto">
-          <AiChatInput
-            streamThread={streamThread}
-            messages={messages}
-            setMessages={setMessages}
-            selectedThreadId={selectedThreadId}
-            isStreaming={isStreaming}
-            setIsStreaming={setIsStreaming}
-            isLoading={isLoading}
-            stop={stop}
-          />
+          <AiChatInput />
         </div>
       </div>
     </div>

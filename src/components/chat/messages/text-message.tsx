@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
 import Markdown from "react-markdown";
 import { Streamdown } from "streamdown";
 import type { Message } from "@langchain/langgraph-sdk";
@@ -58,12 +57,6 @@ export function RenderTextMessage({
           {typeof message.content === "string" ? message.content : ""}
         </Markdown>
 
-        {isLoading && (
-          <div className="flex items-center gap-2 text-xs opacity-70">
-            <Loader2 className="w-3 h-3 animate-spin" />
-            <span>Thinking...</span>
-          </div>
-        )}
 
         {/* {(message as any).tool_calls && (
           <div className="flex items-center gap-2 text-xs opacity-70">

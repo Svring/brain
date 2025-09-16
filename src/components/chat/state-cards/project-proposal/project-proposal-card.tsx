@@ -102,17 +102,17 @@ export function ProjectProposalCard({
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2">
       {hasResources ? (
         resourceSections.map(
           ({ title, key, resources, Component }) =>
             resources.length > 0 && (
-              <div key={key} className="space-y-3">
-                <h4 className="text-md font-medium flex items-center gap-2">
+              <div key={key} className="">
+                {/* <h4 className="text-md font-medium flex items-center gap-2">
                   {title}
                   <Badge variant="secondary">{resources.length}</Badge>
-                </h4>
-                <div className="space-y-2">
+                </h4> */}
+                <div className="">
                   {resources.map((resource, index) => (
                     <Component
                       key={`${key}-${index}`}

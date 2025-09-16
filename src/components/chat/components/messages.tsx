@@ -6,7 +6,7 @@ import { ToolMessageType } from "../messages/tool-messages/tool-message-types";
 import { get } from "lodash";
 import { useAutoScroll } from "@/hooks/use-auto-scroll";
 import { Button } from "@/components/ui/button";
-import { ArrowDown } from "lucide-react";
+import { ArrowDown, Loader2 } from "lucide-react";
 import React, { useMemo, memo, useEffect } from "react";
 import { createHash } from "crypto";
 import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
@@ -50,9 +50,8 @@ const ToolResultRenderer = memo(function ToolResultRenderer({
   tool_call_id?: string;
   status?: string;
 }) {
-  const { updateThreadState, selectedThreadId, setSelectedCheckpointId } =
-    useThreads();
-  const { submitWithContext } = useStreamContext();
+  const { setMessages } = useThreads();
+  const { sendMessage } = useStreamContext();
 
   const { action, payload } = useMemo(() => {
     try {
@@ -86,45 +85,29 @@ const ToolResultRenderer = memo(function ToolResultRenderer({
     if (result) return undefined; // Don't provide onSuccess if result is already present
 
     return (successResult: any) => {
-      // Update thread state with the success data
-      if (id && tool_call_id) {
-        updateThreadState.mutate(
-          {
-            threadId: selectedThreadId,
-            values: {
-              messages: [
-                {
-                  id: id,
-                  tool_call_id: tool_call_id,
-                  type: "tool",
-                  content: content,
+      // Update the existing message with the new result data
+      if (id) {
+        setMessages((prevMessages) => {
+          return prevMessages.map((message) => {
+            if (message.id === id) {
+              // Update the message with the new result
+              return {
+                ...message,
+                additional_kwargs: {
+                  ...(message as any).additional_kwargs,
                   result: successResult,
                 },
-              ],
-            },
-          },
-          {
-            onSuccess: (data: any) => {
-              // Optional: Add any additional logic to run after successful update
-              submitWithContext({
-                messages: [{ type: "system", content: successResult }],
-              });
-            },
-            onError: (error: any) => {
-              // Handle error silently
-            },
-          }
-        );
+              };
+            }
+            return message;
+          });
+        });
+
+        // Continue with the next step in the conversation
+        sendMessage([{ type: "system", content: successResult }]);
       }
     };
-  }, [
-    result,
-    id,
-    tool_call_id,
-    updateThreadState,
-    content,
-    setSelectedCheckpointId,
-  ]);
+  }, [result, id, setMessages, sendMessage]);
 
   // Try to get the specific component for this action
   const Component = action ? get(ToolMessageType, action) : null;
@@ -162,8 +145,9 @@ export function AiMessages({
 }: AiMessagesProps) {
   const { setSidebarResponding } = useChatActions();
   const { threadsLoading } = useThreads();
+  const { isStreaming } = useThreads();
 
-  // console.log("AiMessages - Displaying messages:", messages);
+  console.log("isStreaming", isStreaming);
 
   // Show loading screen when threads are loading
   if (threadsLoading) {
@@ -175,13 +159,13 @@ export function AiMessages({
   }, [isLoading]);
 
   const memoizedMessages = useMemo(() => {
-    return messages.map((message, index) => {
+    const messageElements = messages.map((message, index) => {
       const isLastMessage = index === messages.length - 1;
       const isCurrentMessage = isLastMessage && isLoading;
 
       return (
         <div key={message.id} className="mb-2">
-          <RenderTextMessage message={message} inProgress={isCurrentMessage} />
+          <RenderTextMessage message={message} inProgress={false} />
           {message.type === "system" && typeof message.content === "string" && (
             <SystemMessageRenderer content={message.content} />
           )}
@@ -197,7 +181,23 @@ export function AiMessages({
         </div>
       );
     });
-  }, [messages, isLoading]);
+
+    // Add "Thinking..." indicator when streaming
+    if (isStreaming) {
+      messageElements.push(
+        <div key="thinking-indicator" className="mb-2">
+          <div className="flex justify-start">
+            <div className="flex items-center gap-2 text-xs opacity-70 px-1">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              <span>Thinking...</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return messageElements;
+  }, [messages, isLoading, isStreaming]);
 
   const contentHash = useMemo(() => {
     const contentString = messages

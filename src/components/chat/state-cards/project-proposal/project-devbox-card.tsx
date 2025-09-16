@@ -6,13 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Edit2, Save, X } from "lucide-react";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Edit2, Save, X, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import type { DevBox } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 import { ProjectPortTable } from "./components/project-port-table";
@@ -24,6 +24,70 @@ import { DEVBOX_RUNTIMES } from "@/lib/sealos/resources/devbox/devbox-constant/d
 interface ProjectDevBoxCardProps {
   resource: DevBox;
   onSave?: (updatedResource: DevBox) => void;
+}
+
+// Runtime Selection Dialog Component
+function RuntimeSelectionDialog({
+  currentRuntime,
+  onRuntimeSelect,
+  children,
+}: {
+  currentRuntime: string;
+  onRuntimeSelect: (runtime: string) => void;
+  children: React.ReactNode;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleRuntimeSelect = (runtime: string) => {
+    onRuntimeSelect(runtime);
+    setIsOpen(false);
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        {children}
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Select Runtime</DialogTitle>
+        </DialogHeader>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+          {DEVBOX_RUNTIMES.map((runtime) => (
+            <div
+              key={runtime}
+              onClick={() => handleRuntimeSelect(runtime)}
+              className={`
+                flex flex-col items-center p-4 rounded-lg border-2 cursor-pointer transition-all
+                hover:bg-muted/50 hover:border-primary/50
+                ${currentRuntime === runtime 
+                  ? 'border-primary bg-primary/10' 
+                  : 'border-border hover:border-primary/30'
+                }
+              `}
+            >
+              <div className="w-12 h-12 mb-3 flex items-center justify-center">
+                <Image
+                  src={
+                    DEVBOX_RUNTIME_ICONS[runtime] ||
+                    "https://devbox.bja.sealos.run/logo.svg"
+                  }
+                  alt={`${runtime} Icon`}
+                  width={48}
+                  height={48}
+                  className="rounded-lg"
+                  priority
+                />
+              </div>
+              <span className="text-sm font-medium text-center leading-tight">
+                {runtime}
+              </span>
+            </div>
+          ))}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 export function ProjectDevBoxCard({
@@ -86,23 +150,33 @@ export function ProjectDevBoxCard({
           </div>
         </div>
         <div className="pl-1">
-          <Select
-            value={editData.runtime}
-            onValueChange={(value) =>
-              setEditData({ ...editData, runtime: value as any })
+          <RuntimeSelectionDialog
+            currentRuntime={editData.runtime}
+            onRuntimeSelect={(runtime) =>
+              setEditData({ ...editData, runtime: runtime as any })
             }
           >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select runtime" />
-            </SelectTrigger>
-            <SelectContent>
-              {DEVBOX_RUNTIMES.map((runtime) => (
-                <SelectItem key={runtime} value={runtime}>
-                  {runtime}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            <Button
+              variant="outline"
+              className="w-full justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <Image
+                  src={
+                    DEVBOX_RUNTIME_ICONS[editData.runtime] ||
+                    "https://devbox.bja.sealos.run/logo.svg"
+                  }
+                  alt={`${editData.runtime} Icon`}
+                  width={20}
+                  height={20}
+                  className="rounded"
+                  priority
+                />
+                <span>{editData.runtime}</span>
+              </div>
+              <ChevronDown className="h-4 w-4 opacity-50" />
+            </Button>
+          </RuntimeSelectionDialog>
         </div>
 
         {/* Ports Section */}

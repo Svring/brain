@@ -12,7 +12,6 @@ import { useRef, useState, useEffect } from "react";
 import { proposeProjectAction } from "@/lib/copilot/brain/project/copilot-project-actions";
 import Suggestions from "@/components/chat/components/suggestions";
 import { useChatState } from "@/contexts/chat/chat-context";
-import { useStreamContext } from "@/components/provider/stream-provider";
 import { useThreads } from "@/components/provider/thread-provider";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { useThreadStateAtCheckpoint } from "@/hooks/langgraph/use-thread-state-at-checkpoint";
@@ -32,7 +31,6 @@ export default function HomePage() {
     isStreaming,
     setIsStreaming,
   } = useThreads();
-  const { streamThread, isLoading, stop } = useStreamContext();
   const {
     filteredProjects,
     projects,
@@ -107,7 +105,7 @@ export default function HomePage() {
                 <AiMessages
                   scrollRef={messagesScrollRef}
                   messages={messages}
-                  isLoading={isLoading}
+                  isLoading={isStreaming}
                 />
               </div>
             </div>
@@ -130,14 +128,6 @@ export default function HomePage() {
             <AiChatInput
               className={`max-w-3xl${!hasMessages ? " min-h-[140px]" : ""}`}
               exhibition={!hasMessages}
-              streamThread={streamThread}
-              messages={messages}
-              setMessages={setMessages}
-              selectedThreadId={selectedThreadId}
-              isStreaming={isStreaming}
-              setIsStreaming={setIsStreaming}
-              isLoading={isLoading}
-              stop={stop}
             />
             {!hasMessages && (
               <>

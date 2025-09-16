@@ -114,13 +114,10 @@ export function ProjectProposalActionMessage({
           onProposalUpdate={setInternalProposal}
         />
       ) : (
-        <div className="space-y-4">
-          <h4 className="text-md font-medium">Project Architecture Preview</h4>
-          <ProjectProposalPreview
-            proposal={internalProposal}
-            className="border rounded-lg"
-          />
-        </div>
+        <ProjectProposalPreview
+          proposal={internalProposal}
+          className="border rounded-lg"
+        />
       )}
     </BaseActionMessage>
   );

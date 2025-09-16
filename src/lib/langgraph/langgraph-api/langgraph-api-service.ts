@@ -160,7 +160,7 @@ export const threadRunStream = async (
   const client = createClient();
   return await client.runs.stream(threadId, assistantId, {
     ...payload,
-    streamMode: "messages",
+    streamMode: "updates",
     // messages-tuple
   });
 };
