@@ -44,8 +44,13 @@ export default function HomePage() {
 
   // Create thread on mount for home page
   useMount(() => {
-    // Always create a new thread on mount and select it
-    // console.log("[HomePage] Creating new thread on mount...");
+    // Always clear messages and create a new thread on mount
+    console.log("[HomePage] Clearing messages and creating new thread on mount...");
+    
+    // Clear messages first
+    setMessages([]);
+    
+    // Create a new thread and select it
     createNewThread.mutate(undefined, {
       onSuccess: (data: any) => {
         if (data?.thread_id) {

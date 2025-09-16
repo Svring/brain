@@ -47,7 +47,7 @@ export const DevboxUpdateActionMessage: React.FC<
   const handleSubmit = async (data: DevboxUpdateFormData) => {
     try {
       const result = await updateDevbox(data);
-      onSuccess?.(result);
+      onSuccess?.("devbox updated successfully");
     } catch (error) {
       console.error("Failed to update devbox:", error);
     }

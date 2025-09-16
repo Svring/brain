@@ -79,7 +79,7 @@ export function useDiagnoseNetwork(
   target: CustomResourceTarget | BuiltinResourceTarget
 ) {
   const { selectedThreadId } = useThreads();
-  const { submitWithContext } = useStreamContext();
+  const { sendMessage } = useStreamContext();
 
   // Get container ports data for network diagnosis
   const containerStatusResult = useResourceStatus<ContainerPortsResult>(
@@ -129,29 +129,28 @@ export function useDiagnoseNetwork(
           containerError,
         };
 
-        submitWithContext({
-          messages: [
-            {
-              type: "system",
-              content: JSON.stringify({
-                type: "universal.diagnoseNetwork",
-                target,
-              }),
-            },
-            {
-              type: "system",
-              content:
-                analyzeNetworkPrompt +
-                "\n\n" +
-                JSON.stringify(networkStatusData),
-            },
-          ],
-        });
+        sendMessage([
+          {
+            type: "system",
+            content: JSON.stringify({
+              type: "universal.diagnoseNetwork",
+              target,
+            }),
+          },
+          {
+            type: "system",
+            content:
+              analyzeNetworkPrompt +
+              "\n\n" +
+              JSON.stringify(networkStatusData),
+          },
+        ]);
       }
     },
     [
       handleNodeSelect,
       selectedThreadId,
+      sendMessage,
       containerStatus,
       containerPortsData,
       originalResource,

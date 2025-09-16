@@ -11,6 +11,7 @@ import { launchpadCreateFormSchema } from "@/schemas/forms/launchpad/launchpad-c
 import { objectStorageCreateSchema } from "@/schemas/forms/objectstorage/objectstorage-create-form-schema";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import type { ProjectProposal } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
+import { useChatActions } from "@/contexts/chat/chat-context";
 
 interface CreateProjectOptions {
   onSuccess?: (projectName: string) => void;
@@ -23,7 +24,7 @@ export function useProjectCreate(options?: CreateProjectOptions) {
   const { devbox, cluster, launchpad, objectstorage, project } =
     useTRPCClients();
   const { selectedThreadId, updateThreadState } = useThreads();
-
+  const { openSidebarChat } = useChatActions();
   // Create mutations
   const createProjectMutation = useMutation(project.create.mutationOptions());
   const createDevboxMutation = useMutation(devbox.create.mutationOptions());

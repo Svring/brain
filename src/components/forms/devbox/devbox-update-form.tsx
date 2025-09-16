@@ -50,8 +50,8 @@ export const DevboxUpdateForm = ({
   const hasResource = defaultValues?.resource !== undefined;
   const hasPorts = defaultValues?.ports !== undefined && defaultValues.ports.length > 0;
 
-  console.log("DevboxUpdateForm - defaultValues:", defaultValues);
-  console.log("DevboxUpdateForm - hasResource:", hasResource);
+  // console.log("DevboxUpdateForm - defaultValues:", defaultValues);
+  // console.log("DevboxUpdateForm - hasResource:", hasResource);
   // console.log("DevboxUpdateForm - hasPorts:", hasPorts);
 
   return (

@@ -41,7 +41,7 @@ export function useAnalyzeLogs(
   const { selectedThreadId } = useThreads();
   const logsQuery = useResourceLogs(target);
   const { data: logsData, isLoading } = logsQuery;
-  const { submitWithContext } = useStreamContext();
+  const { sendMessage } = useStreamContext();
 
   // Use node select to handle the selection and message appending
   const { handleNodeSelect } = useNodeSelect({
@@ -65,23 +65,21 @@ export function useAnalyzeLogs(
 
     // Send message using langgraph stream
     if (selectedThreadId) {
-      submitWithContext({
-        messages: [
-          {
-            type: "system",
-            content: JSON.stringify({
-              type: "universal.log",
-              target,
-            }),
-          },
-          {
-            type: "system",
-            content: analyzeLogsPrompt + "\n" + JSON.stringify(logsData),
-          },
-        ],
-      });
+      sendMessage([
+        {
+          type: "system",
+          content: JSON.stringify({
+            type: "universal.log",
+            target,
+          }),
+        },
+        {
+          type: "system",
+          content: analyzeLogsPrompt + "\n" + JSON.stringify(logsData),
+        },
+      ]);
     }
-  }, [logsData, selectedThreadId]);
+  }, [logsData, selectedThreadId, sendMessage, handleNodeSelect]);
 
   // Check if logs are ready (not loading and has data)
   const isLogsReady =

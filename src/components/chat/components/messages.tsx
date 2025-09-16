@@ -1,142 +1,17 @@
 "use client";
 
 import { RenderTextMessage } from "../messages/text-message";
-import { SystemMessageType } from "../messages/system-messages/systemp-message-types";
-import { ToolMessageType } from "../messages/tool-messages/tool-message-types";
-import { get } from "lodash";
 import { useAutoScroll } from "@/hooks/use-auto-scroll";
 import { Button } from "@/components/ui/button";
 import { ArrowDown, Loader2 } from "lucide-react";
-import React, { useMemo, memo, useEffect, useState } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import { createHash } from "crypto";
 import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
-import { useStreamContext } from "@/components/provider/stream-provider";
 import type { Message } from "@langchain/langgraph-sdk";
 import { useThreads } from "@/components/provider/thread-provider";
 import { LoadingScreen } from "@/components/ui/loading-screen";
-import { useRouter } from "next/navigation";
-
-const SystemMessageRenderer = memo(function SystemMessageRenderer({
-  content,
-}: {
-  content: string;
-}) {
-  const { type, target, payload } = useMemo(() => {
-    try {
-      const parsed = JSON.parse(content);
-      return {
-        type: parsed.type,
-        target: parsed.target,
-        payload: parsed.payload,
-      };
-    } catch {
-      return {};
-    }
-  }, [content]);
-
-  const Component = type ? get(SystemMessageType, type) : null;
-  return Component ? Component(target, payload) : null;
-});
-
-const ToolResultRenderer = memo(function ToolResultRenderer({
-  content,
-  result,
-  id,
-  tool_call_id,
-  status,
-}: {
-  content: string;
-  result?: any;
-  id?: string;
-  tool_call_id?: string;
-  status?: string;
-}) {
-  const { setMessages } = useThreads();
-  const { sendMessage } = useStreamContext();
-  const router = useRouter();
-
-  const { action, payload } = useMemo(() => {
-    try {
-      // First try to parse the outer content
-      const outerParsed = JSON.parse(content);
-
-      // If it has an action and payload, return them
-      if (outerParsed.action && outerParsed.payload) {
-        return {
-          action: outerParsed.action,
-          payload: outerParsed.payload,
-        };
-      }
-
-      // If it's just a string, return as is
-      return {
-        action: null,
-        payload: { content: content },
-      };
-    } catch {
-      // If parsing fails, return the content as plain text
-      return {
-        action: null,
-        payload: { content: content },
-      };
-    }
-  }, [content]);
-
-  // Create onSuccess function when result is not present
-  const onSuccess = useMemo(() => {
-    if (result) return undefined; // Don't provide onSuccess if result is already present
-
-    return (successResult: any) => {
-      // Update the existing message with the new result data
-      if (id) {
-        setMessages((prevMessages) => {
-          return prevMessages.map((message) => {
-            if (message.id === id) {
-              // Update the message with the new result
-              return {
-                ...message,
-                additional_kwargs: {
-                  ...(message as any).additional_kwargs,
-                  result: successResult,
-                },
-              };
-            }
-            return message;
-          });
-        });
-
-        // Check if this is a propose_project action and navigate to the project
-        if (action === "propose_project" && successResult) {
-          // successResult should be the project name
-          router.push(`/projects/${successResult}`);
-        } else {
-          // Continue with the next step in the conversation for other actions
-          sendMessage([{ type: "system", content: successResult }]);
-        }
-      }
-    };
-  }, [result, id, setMessages, sendMessage, action, router]);
-
-  // Try to get the specific component for this action
-  const Component = action ? get(ToolMessageType, action) : null;
-
-  if (Component) {
-    return Component(payload, result, onSuccess);
-  }
-
-  // Fallback to plain text rendering
-  return (
-    <div className="flex justify-start w-full">
-      <div className="bg-background-secondary border border-border-primary rounded-lg p-4 max-w-full">
-        <div className="text-sm text-foreground">
-          <pre className="whitespace-pre-wrap break-words">
-            {JSON.stringify(payload, null, 2)}
-          </pre>
-        </div>
-      </div>
-    </div>
-  );
-});
+import { SystemMessageRenderer } from "./system-message-renderer";
+import { ToolResultRenderer } from "./tool-result-renderer";
 
 interface AiMessagesProps {
   scrollRef?: React.RefObject<HTMLDivElement | null>;
@@ -160,7 +35,24 @@ export function AiMessages({
     setSidebarResponding(isLoading);
   }, [isLoading]);
 
+  // Log messages changes
+  useEffect(() => {
+    console.log("[AiMessages] Messages changed:", {
+      messageCount: messages.length,
+      isLoading,
+      isStreaming,
+      messages: messages.map((msg) => ({
+        id: msg.id,
+        type: msg.type,
+        contentLength: typeof msg.content === "string" ? msg.content.length : 0,
+        hasResult: !!(msg as any).additional_kwargs?.result,
+      })),
+    });
+  }, [messages, isLoading, isStreaming]);
+
   const memoizedMessages = useMemo(() => {
+    console.log("[AiMessages] Rendering messages:", messages);
+
     const messageElements = messages.map((message, index) => {
       const isLastMessage = index === messages.length - 1;
       const isCurrentMessage = isLastMessage && isLoading;

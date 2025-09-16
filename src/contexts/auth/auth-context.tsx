@@ -31,7 +31,7 @@ export const AuthProvider = ({
   payloadUser: User | null;
 }) => {
   const { MODE } = useEnv();
-  
+
   const [state, send, actorRef] = useMachine(authMachine, {
     // inspect: inspector.inspect,
     input: {
@@ -49,7 +49,7 @@ export const AuthProvider = ({
   });
 
   if (state.matches("authenticating")) {
-    return <LoadingScreen text="Authenticating..." />;
+    return null;
   }
 
   return (

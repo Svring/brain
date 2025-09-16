@@ -56,7 +56,8 @@ export function useDiagnoseMonitor(
   const { color, monitorData, isLoading } = useResourceMetricsStatus({
     target,
   });
-  const { submitWithContext } = useStreamContext();
+  const { sendMessage } = useStreamContext();
+  const { setMessages } = useThreads();
 
   // Use node select to handle the selection and message appending
   const { handleNodeSelect } = useNodeSelect({
@@ -84,23 +85,31 @@ export function useDiagnoseMonitor(
 
     // Send message using langgraph stream
     if (selectedThreadId) {
-      submitWithContext({
-        messages: [
-          {
-            type: "system",
-            content: JSON.stringify({
-              type: "universal.monitor",
-              target,
-            }),
-          },
-          {
-            type: "system",
-            content: analyzeMonitorPrompt + "\n\n" + JSON.stringify(monitorData),
-          },
-        ],
-      });
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          type: "system",
+          content: JSON.stringify({
+            type: "universal.monitor",
+            target,
+          }),
+        },
+      ]);
+      sendMessage([
+        {
+          type: "system",
+          content: JSON.stringify({
+            type: "universal.monitor",
+            target,
+          }),
+        },
+        {
+          type: "system",
+          content: analyzeMonitorPrompt + "\n\n" + JSON.stringify(monitorData),
+        },
+      ]);
     }
-  }, [monitorData, selectedThreadId]);
+  }, [monitorData, selectedThreadId, sendMessage, handleNodeSelect]);
 
   // Check if monitor data is ready (not loading and has data)
   const isMonitorReady =

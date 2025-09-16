@@ -15,6 +15,7 @@ import { useCreateThreadRunStreamMutation } from "@/lib/langgraph/langgraph-meth
 import { Client } from "@langchain/langgraph-sdk";
 import { v4 as uuidv4 } from "uuid";
 import { useQueryClient } from "@tanstack/react-query";
+import { getThreadState } from "@/lib/langgraph/langgraph-api/langgraph-api-service";
 
 type StreamContextType = ReturnType<typeof useStream> & {
   submitWithContext: (data: { messages: Message[] }) => void;
@@ -249,8 +250,28 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
         // Set streaming state to false when streaming completes
         setIsStreaming(false);
 
-        // After streaming completes, invalidate thread state query to fetch latest server state
+        // After streaming completes, fetch the current thread's messages and set them
         if (selectedThreadId) {
+          console.log("[StreamProvider] Fetching thread state after streaming completion for thread:", selectedThreadId);
+          
+          try {
+            const threadState = await getThreadState(selectedThreadId);
+            console.log("[StreamProvider] Thread state fetched:", threadState);
+            
+            // Extract messages from thread state
+            const threadMessages = (threadState.values as any)?.messages;
+            if (Array.isArray(threadMessages)) {
+              console.log("[StreamProvider] Setting messages from thread state:", threadMessages);
+              setMessages(threadMessages);
+            } else {
+              console.log("[StreamProvider] No messages found in thread state, keeping current messages");
+            }
+          } catch (error) {
+            console.error("[StreamProvider] Failed to fetch thread state:", error);
+            // Keep current messages on error
+          }
+
+          // Also invalidate thread state query for other components
           queryClient.invalidateQueries({
             queryKey: ["threadState", selectedThreadId],
           });

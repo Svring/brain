@@ -27,7 +27,6 @@ export function ProjectProposalPresentation({
 
   // Handle project creation
   const handleCreate = async () => {
-    openSidebarChat();
     await createProject(internalProposal);
   };
 
