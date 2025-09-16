@@ -24,7 +24,7 @@ import {
   useUpdateThreadStateMutation,
 } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { getThreadStateOptions } from "@/lib/langgraph/langgraph-method/langgraph-query";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useMount } from "@reactuses/core";
 import { useQueryState } from "nuqs";
 import { useEffect } from "react";
@@ -87,7 +87,26 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
   }, [auth?.kubeconfig, selectedProject, selectedResource]);
 
   // Create new thread mutation
-  const createNewThreadMutation = useCreateNewChatSessionMutation();
+  const createNewThreadMutation = useMutation({
+    ...useCreateNewChatSessionMutation(),
+    onSuccess: (data: any) => {
+      console.log(
+        "[ThreadProvider] Thread creation succeeded with data:",
+        data
+      );
+      
+      // Refresh threads list after successful creation
+      if (data?.thread_id) {
+        getThreads().then((threads) => {
+          console.log(
+            "[ThreadProvider] Refreshed threads after creation:",
+            threads
+          );
+          setThreads(threads);
+        });
+      }
+    },
+  });
 
   // Get the latest thread (first in the sorted list)
   const latestThread = threads && threads.length > 0 ? threads[0] : null;

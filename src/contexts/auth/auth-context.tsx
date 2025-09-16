@@ -10,6 +10,7 @@ import { authMachine } from "@/contexts/auth/auth-machine";
 import { authenticateDev, authenticateProd } from "@/lib/auth/auth-utils";
 import type { User } from "@/payload-types";
 import { LoadingScreen } from "@/components/ui/loading-screen";
+import { useEnv } from "@/components/provider/env-provider";
 
 // const inspector = createBrowserInspector();
 
@@ -29,8 +30,13 @@ export const AuthProvider = ({
   children: ReactNode;
   payloadUser: User | null;
 }) => {
+  const { MODE } = useEnv();
+  
   const [state, send, actorRef] = useMachine(authMachine, {
     // inspect: inspector.inspect,
+    input: {
+      mode: MODE as "development" | "production" | null,
+    },
   });
 
   useMount(() => {

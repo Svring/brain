@@ -131,9 +131,6 @@ export function ResourceStatusRow({
                 {selectedResource?.name}
               </span>
               <Link className="h-3 w-3 text-theme-blue" />
-              <span className="text-sm truncate text-theme-blue">
-                Connected
-              </span>
               <span className="text-xs text-theme-blue ml-auto">
                 {getStageDisplay()}
               </span>
@@ -164,7 +161,6 @@ export function ResourceStatusRow({
             {selectedProject}
           </span>
           <Link className="h-3 w-3 text-theme-blue" />
-          <span className="text-sm truncate text-theme-blue">Connected</span>
           <span className="text-xs text-theme-blue ml-auto">
             {getStageDisplay()}
           </span>

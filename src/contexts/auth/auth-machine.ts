@@ -25,22 +25,20 @@ export type AuthEvent =
 
 export const authMachine = createMachine({
   /** @xstate-layout N4IgpgJg5mDOIC5QEMCuAXAFgOjVsAdugJYDGyJBUAxAMoCiAKgPoCCAqowBIDaADAF1EoAA4B7WMRJiCwkAA9EAJiUA2bAA4A7AFY+fAMxbVAFg0m+SgDQgAnohMXsARi0BOVdtV8zBjToBfAJs8HFDCEnJKGgAxVgBJABl+ISQQcUlpWTTFBBV1bT1DYzMLaztlS2wlEzc6rWcavmcDJUDgkFDcDEwIsgpiKmoUuQypYhk5XPzNXX0jU3NLG3s8tw1sLUNnVzKGrQMgkJ7u-CJ+9EhqOKSRtLGsqcQdJQNsE2cLT1UdVVVnZYVBCOPgudyeYw+DR+drHLDYVAEcLnKJXABKTDRAE07qIJONJjlnq93p8+N9fv9AasNM53nU6jodGYVH5nEEOgQxBA4HJQqN8Y8iQgALSqFaIEU6bAM2VyuqHDpdZGRAZUAWZCbZUC5EzlGlKbCmBnmX5aD4NI6dE4qi6QDUE7UKRAGVRaTYAtwmHQaNw+EzuAwS4GqN4-VQqA4aV5KVyKuE4RG21EQB1CnWIUzSvhuIwvUPObzU5QGN58Yw6BrbHRuLRKDkBIA */
-  types: {} as { context: AuthContext; events: AuthEvent },
+  types: {} as {
+    context: AuthContext;
+    events: AuthEvent;
+    input: { mode: "development" | "production" | null };
+  },
   id: "auth",
   initial: "authenticating",
-  context: {
-    mode: null,
+  context: ({ input }) => ({
+    mode: input.mode,
     auth: null,
     error: null,
-  },
+  }),
   states: {
     authenticating: {
-      entry: [
-        assign({
-          mode: () =>
-            process.env.NEXT_PUBLIC_MODE as "development" | "production" | null,
-        }),
-      ],
       always: [
         {
           target: "unauthenticated",

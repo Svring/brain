@@ -18,26 +18,29 @@ import {
 import { useProjectState } from "@/contexts/project/project-context";
 import { useReactFlow } from "@xyflow/react";
 import { HistoryDropdown } from "./history-dropdown";
+import { useThreads } from "@/components/provider/thread-provider";
 
-interface HeaderActionsProps {
-  onNewChat: () => void;
-}
-
-export function HeaderActions({ onNewChat }: HeaderActionsProps) {
+export function HeaderActions() {
   const { selectedResource } = useProjectState();
   const { sidebarChatMaximized } = useChatState();
   const { closeSidebarChat, maximizeSidebar, minimizeSidebar } = useChatActions();
   const { fitView } = useReactFlow();
+  const { createNewThread } = useThreads();
+
+  const handleNewChat = () => {
+    createNewThread.mutate(undefined);
+  };
 
   return (
     <div className="flex items-center gap-1">
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            onClick={onNewChat}
+            onClick={handleNewChat}
             size="icon"
             variant="ghost"
             className="h-8 w-8"
+            disabled={createNewThread.isPending}
           >
             <Plus className="h-4 w-4" />
           </Button>

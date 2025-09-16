@@ -8,6 +8,7 @@ import { useAuthState } from "@/contexts/auth/auth-context";
 import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useThreads } from "./thread-provider";
+import { useEnv } from "./env-provider";
 import { toast } from "sonner";
 import { useMount } from "@reactuses/core";
 
@@ -42,9 +43,10 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
     selectedResourceContext,
   } = useProjectState();
   const { auth } = useAuthState();
+  const { LANGGRAPH_DEPLOYMENT_URL } = useEnv();
 
   const streamValue = useStream({
-    apiUrl: process.env.NEXT_PUBLIC_LANGGRAPH_DEPLOYMENT_URL || "",
+    apiUrl: LANGGRAPH_DEPLOYMENT_URL,
     assistantId: "orca",
     threadId: selectedThreadId || null,
     // fetchStateHistory: true,
@@ -90,12 +92,10 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
   };
 
   useMount(() => {
-    checkGraphStatus(
-      process.env.NEXT_PUBLIC_LANGGRAPH_DEPLOYMENT_URL || ""
-    ).then((ok) => {
+    checkGraphStatus(LANGGRAPH_DEPLOYMENT_URL).then((ok) => {
       if (!ok) {
         toast.error("Failed to connect to LangGraph server", {
-          description: `Please ensure your graph is running at ${process.env.NEXT_PUBLIC_LANGGRAPH_DEPLOYMENT_URL}`,
+          description: `Please ensure your graph is running at ${LANGGRAPH_DEPLOYMENT_URL}`,
           duration: 5000,
         });
       }

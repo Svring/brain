@@ -111,7 +111,7 @@ export const searchThreads = async (metadata: Record<string, any>) => {
     }
   }
 
-  console.log("searchMetadata", searchMetadata);
+  // console.log("searchMetadata", searchMetadata);
 
   const res = await client.threads
     .search({
@@ -123,7 +123,7 @@ export const searchThreads = async (metadata: Record<string, any>) => {
       return res.filter((obj) => obj.values);
     });
 
-  console.log("res", res);
+  // console.log("res", res);
 
   return res;
 };

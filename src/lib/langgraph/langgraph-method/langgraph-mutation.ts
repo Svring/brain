@@ -9,6 +9,7 @@ import {
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
+import { useThreads } from "@/components/provider/thread-provider";
 import { SystemMessage } from "@/lib/copilot/message/message-utils";
 import {
   CustomResourceTarget,
@@ -29,7 +30,7 @@ export const useCreateNewChatSessionMutation = () => {
   const queryClient = useQueryClient();
   const { selectedResource, selectedProject } = useProjectState();
 
-  return useMutation({
+  return {
     mutationFn: async () => {
       console.log(
         "[useCreateNewChatSessionMutation] Creating new chat session with params:",
@@ -65,17 +66,10 @@ export const useCreateNewChatSessionMutation = () => {
 
       return thread;
     },
-    onSuccess: (data, variables) => {
-      console.log(
-        "[useCreateNewChatSessionMutation] Mutation succeeded with data:",
-        data
-      );
-      // Thread selection is now handled by ThreadProvider
-    },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Failed to create chat session:", error);
     },
-  });
+  };
 };
 
 /**

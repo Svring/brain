@@ -13,6 +13,7 @@ import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
 import { useStreamContext } from "@/components/provider/stream-provider";
 import type { Message } from "@langchain/langgraph-sdk";
 import { useThreads } from "@/components/provider/thread-provider";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 
 const SystemMessageRenderer = memo(function SystemMessageRenderer({
   content,
@@ -94,7 +95,14 @@ export function AiMessages({
 }: AiMessagesProps) {
   const { setSidebarResponding } = useChatActions();
   const { isLoading } = useStreamContext();
-  const { messages } = useThreads();
+  const { messages, threadsLoading } = useThreads();
+
+  // console.log("messages", messages);
+
+  // Show loading screen when threads are loading
+  if (threadsLoading) {
+    return <LoadingScreen text="Loading messages..." />;
+  }
 
   useEffect(() => {
     setSidebarResponding(isLoading);

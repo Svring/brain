@@ -16,6 +16,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/auth/auth-context";
 import { getUser } from "@/payload/operations/users-operation";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { EnvProvider } from "@/components/provider/env-provider";
 
 import "@/styles/globals.css";
 import {
@@ -40,8 +41,16 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
+  // Read environment variables on the server side
+  const env = {
+    MODE: process.env.MODE || "production",
+    LANGSMITH_API_KEY: process.env.LANGSMITH_API_KEY || "",
+    LANGGRAPH_DEPLOYMENT_URL: process.env.LANGGRAPH_DEPLOYMENT_URL || "",
+  };
+
+  const isDevelopment = env.MODE === "development";
   const payloadUser = isDevelopment ? await getUser() : null;
+
   if (isDevelopment && !payloadUser) {
     return (
       <html lang="en" suppressHydrationWarning>
@@ -62,9 +71,11 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script src="https://unpkg.com/react-scan/dist/auto.global.js" />
+        {isDevelopment && (
+          <script src="https://unpkg.com/react-scan/dist/auto.global.js" />
+        )}
       </head>
-      {/* <ReactScan /> */}
+      {isDevelopment && <ReactScan />}
       <body className={`antialiased`}>
         <ThemeProvider
           attribute="class"
@@ -73,26 +84,28 @@ export default async function RootLayout({
           enableSystem
         >
           <NuqsAdapter>
-            <AuthProvider payloadUser={payloadUser}>
-              <QueryProvider>
-                <ChatProvider>
-                  <ProjectProvider>
-                    <LanggraphConfigWrapper>
-                      <ReactFlowProvider>
-                        <FlowgraphProvider>
-                          <OrchestratorProvider>
-                            <SidebarProvider defaultOpen={false}>
-                              <AppSidebar />
-                              {children}
-                            </SidebarProvider>
-                          </OrchestratorProvider>
-                        </FlowgraphProvider>
-                      </ReactFlowProvider>
-                    </LanggraphConfigWrapper>
-                  </ProjectProvider>
-                </ChatProvider>
-              </QueryProvider>
-            </AuthProvider>
+            <EnvProvider env={env}>
+              <AuthProvider payloadUser={payloadUser}>
+                <QueryProvider>
+                  <ChatProvider>
+                    <ProjectProvider>
+                      <LanggraphConfigWrapper>
+                        <ReactFlowProvider>
+                          <FlowgraphProvider>
+                            <OrchestratorProvider>
+                              <SidebarProvider defaultOpen={false}>
+                                <AppSidebar />
+                                {children}
+                              </SidebarProvider>
+                            </OrchestratorProvider>
+                          </FlowgraphProvider>
+                        </ReactFlowProvider>
+                      </LanggraphConfigWrapper>
+                    </ProjectProvider>
+                  </ChatProvider>
+                </QueryProvider>
+              </AuthProvider>
+            </EnvProvider>
           </NuqsAdapter>
           <Toaster
             position="top-center"
