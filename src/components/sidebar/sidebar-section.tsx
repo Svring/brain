@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { useChatActions } from "@/contexts/chat/chat-context";
-import { useThreads } from "@/hooks/langgraph/use-threads";
+import { useThreads } from "@/components/provider/thread-provider";
 
 // Types
 export interface NavigationItem {
@@ -47,12 +47,16 @@ export const MainSection: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const { closeSidebarChat } = useChatActions();
-  // const { createNewThread } = useThreads();
+  const { createNewThread, getThreads, setThreads, selectThread } =
+    useThreads();
 
   const handleNavigation = (path: string) => {
+    // If already on the target path, do nothing
+    if (pathname === path) {
+      return;
+    }
     if (path === "/home") {
       closeSidebarChat();
-      // Navigate immediately for home, thread will be created on the home page
       router.push(path);
     } else {
       router.push(path);

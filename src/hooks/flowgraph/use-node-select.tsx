@@ -38,11 +38,7 @@ export const useNodeSelect = ({
   const { openSidebarChat } = useChatActions();
   const { updateResourceContext } = useLanggraphActions();
   const { updateThreadState } = useThreads();
-  const { submit } = useStreamContext();
-  const { apiKey, baseUrl, modelName, stage, contextWindowUsage } =
-    useLanggraphState();
-  const { selectedProject, selectedProjectResources, selectedResourceContext } =
-    useProjectState();
+  const { selectedResource } = useProjectState();
 
   // Get resource status for the target
   const { resource: resource_context } = useResourceStatus(target);
@@ -58,6 +54,10 @@ export const useNodeSelect = ({
   }`;
 
   const handleNodeSelect = () => {
+    if (target === selectedResource) {
+      return;
+    }
+
     selectResource(target);
     selectNode(nodeId);
     updateResourceContext({

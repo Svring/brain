@@ -5,7 +5,9 @@ import {
   createThread,
   updateThreadState,
   deleteThread,
+  threadRunStream,
 } from "../langgraph-api/langgraph-api-service";
+import type { RunsInvokePayload } from "@langchain/langgraph-sdk";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
@@ -177,6 +179,42 @@ export const useDeleteThreadMutation = () => {
     },
     onError: (error) => {
       console.error("Failed to delete thread:", error);
+    },
+  });
+};
+
+/**
+ * Hook for creating a run in an existing thread
+ */
+export const useCreateThreadRunStreamMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      threadId,
+      assistantId,
+      payload,
+    }: {
+      threadId: string;
+      assistantId: string;
+      payload?: RunsInvokePayload;
+    }) => {
+      console.log("Creating run:", { threadId, assistantId, payload });
+      const result = await threadRunStream(threadId, assistantId, payload);
+      return result;
+    },
+    onSuccess: (data, variables) => {
+      // Invalidate and refetch thread-related queries
+      queryClient.invalidateQueries({ queryKey: ["threads"] });
+      queryClient.invalidateQueries({
+        queryKey: ["langgraph", "threads", variables.threadId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["langgraph", "threads", "search"],
+      });
+    },
+    onError: (error) => {
+      console.error("Failed to create run:", error);
     },
   });
 };

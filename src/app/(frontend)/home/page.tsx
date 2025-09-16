@@ -8,16 +8,31 @@ import useProjectSearch from "@/hooks/brain/use-projects-search";
 import RecentProjects from "@/components/project/recent-projects";
 import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
 import { Button } from "@/components/ui/button";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { proposeProjectAction } from "@/lib/copilot/brain/project/copilot-project-actions";
 import Suggestions from "@/components/chat/components/suggestions";
 import { useChatState } from "@/contexts/chat/chat-context";
 import { useStreamContext } from "@/components/provider/stream-provider";
 import { useThreads } from "@/components/provider/thread-provider";
 import { LoadingScreen } from "@/components/ui/loading-screen";
+import { useThreadStateAtCheckpoint } from "@/hooks/langgraph/use-thread-state-at-checkpoint";
+import { useAuthState } from "@/contexts/auth/auth-context";
+import { useProjectState } from "@/contexts/project/project-context";
+import { useMount } from "@reactuses/core";
 
 export default function HomePage() {
-  const { selectedThreadId } = useThreads();
+  const {
+    createNewThread,
+    getThreads,
+    setThreads,
+    selectThread,
+    messages,
+    setMessages,
+    selectedThreadId,
+    isStreaming,
+    setIsStreaming,
+  } = useThreads();
+  const { streamThread, isLoading, stop } = useStreamContext();
   const {
     filteredProjects,
     projects,
@@ -27,9 +42,27 @@ export default function HomePage() {
   const { CreateProjectDialog, openDialog } = useProjectCreateDialog();
   const messagesScrollRef = useRef<HTMLDivElement>(null);
 
-  const { messages, submit, stop, isLoading } = useStreamContext();
-
   const hasMessages = messages.length > 0;
+
+  // Create thread on mount for home page
+  useMount(() => {
+    // Always create a new thread on mount and select it
+    // console.log("[HomePage] Creating new thread on mount...");
+    createNewThread.mutate(undefined, {
+      onSuccess: (data: any) => {
+        if (data?.thread_id) {
+          selectThread(data.thread_id);
+          // Refresh threads list
+          getThreads().then((threads) => {
+            setThreads(threads);
+          });
+        }
+      },
+      onError: (error: any) => {
+        console.error("[HomePage] Failed to create thread on mount:", error);
+      },
+    });
+  });
 
   // Track visibility of recent projects
   const showRecentProjects = !hasMessages && projects && projects.length > 0;
@@ -71,7 +104,11 @@ export default function HomePage() {
               className="flex-1 overflow-y-auto py-8"
             >
               <div className="max-w-3xl mx-auto w-full">
-                <AiMessages scrollRef={messagesScrollRef} />
+                <AiMessages
+                  scrollRef={messagesScrollRef}
+                  messages={messages}
+                  isLoading={isLoading}
+                />
               </div>
             </div>
           </motion.div>
@@ -93,6 +130,14 @@ export default function HomePage() {
             <AiChatInput
               className={`max-w-3xl${!hasMessages ? " min-h-[140px]" : ""}`}
               exhibition={!hasMessages}
+              streamThread={streamThread}
+              messages={messages}
+              setMessages={setMessages}
+              selectedThreadId={selectedThreadId}
+              isStreaming={isStreaming}
+              setIsStreaming={setIsStreaming}
+              isLoading={isLoading}
+              stop={stop}
             />
             {!hasMessages && (
               <>

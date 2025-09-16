@@ -1,6 +1,7 @@
 "use server";
 
 import { Client } from "@langchain/langgraph-sdk";
+import type { RunsInvokePayload } from "@langchain/langgraph-sdk";
 import { createHash } from "crypto"; // Import the crypto module
 
 const createClient = () => {
@@ -136,4 +137,30 @@ export const searchThreads = async (metadata: Record<string, any>) => {
 export const getThreadState = async (threadId: string) => {
   const client = createClient();
   return await client.threads.getState(threadId);
+};
+
+export const getThreadStateAtCheckpoint = async (
+  threadId: string,
+  checkpointId: string,
+  subgraphs?: boolean
+) => {
+  const client = createClient();
+  const options: any = {};
+  if (subgraphs !== undefined) {
+    options.subgraphs = subgraphs;
+  }
+  return await client.threads.getState(threadId, checkpointId, options);
+};
+
+export const threadRunStream = async (
+  threadId: string,
+  assistantId: string,
+  payload?: RunsInvokePayload
+) => {
+  const client = createClient();
+  return await client.runs.stream(threadId, assistantId, {
+    ...payload,
+    streamMode: "messages",
+    // messages-tuple
+  });
 };

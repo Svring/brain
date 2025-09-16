@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Settings } from "lucide-react";
+import { Plus, Settings, FolderOpen } from "lucide-react";
 import {
   CommandGroup,
   CommandItem,
@@ -22,6 +22,13 @@ export function CommandPanelMain({
         >
           <Plus className="h-4 w-4" />
           <span>Add Resource</span>
+        </CommandItem>
+        <CommandItem
+          value="add-existing-resources"
+          onSelect={onSelect}
+        >
+          <FolderOpen className="h-4 w-4" />
+          <span>Add Existing Resources</span>
         </CommandItem>
         <CommandItem
           value="manage-resources"

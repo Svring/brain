@@ -6,6 +6,7 @@ interface CommandActionsProps {
   setSelectedCommand: (command: string | null) => void;
   setShowResourceList: (show: boolean) => void;
   setShowManageResources: (show: boolean) => void;
+  setShowExistingResources: (show: boolean) => void;
 }
 
 export function useCommandActions({
@@ -14,6 +15,7 @@ export function useCommandActions({
   setSelectedCommand,
   setShowResourceList,
   setShowManageResources,
+  setShowExistingResources,
 }: CommandActionsProps) {
   const resetAndClose = () => {
     onOpenChange(false);
@@ -21,11 +23,14 @@ export function useCommandActions({
     setSelectedCommand(null);
     setShowResourceList(false);
     setShowManageResources(false);
+    setShowExistingResources(false);
   };
 
   const handleSelect = (value: string) => {
     if (value === "add-resource") {
       setShowResourceList(true);
+    } else if (value === "add-existing-resources") {
+      setShowExistingResources(true);
     } else if (value === "manage-resources") {
       setShowManageResources(true);
     }
@@ -40,6 +45,8 @@ export function useCommandActions({
       setSelectedCommand(null);
     } else if (setShowManageResources) {
       setShowManageResources(false);
+    } else if (setShowExistingResources) {
+      setShowExistingResources(false);
     } else {
       setShowResourceList(false);
     }

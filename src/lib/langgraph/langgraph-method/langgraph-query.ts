@@ -6,7 +6,10 @@ import {
   getThread,
   searchThreads,
 } from "../langgraph-api/langgraph-trpc-service";
-import { getThreadState } from "../langgraph-api/langgraph-api";
+import {
+  getThreadState,
+  getThreadStateAtCheckpoint,
+} from "../langgraph-api/langgraph-api-service";
 
 // ============================================================================
 // OPTIONS FUNCTIONS (React Query wrappers)
@@ -48,4 +51,27 @@ export const getThreadStateOptions = (threadId: string) =>
     queryKey: ["langgraph", "thread", threadId, "state"],
     queryFn: async () => await getThreadState(threadId),
     enabled: !!threadId,
+  });
+
+/**
+ * Query options for getting thread state at a specific checkpoint
+ */
+export const getThreadStateAtCheckpointOptions = (
+  threadId: string,
+  checkpointId: string,
+  subgraphs?: boolean
+) =>
+  queryOptions({
+    queryKey: [
+      "langgraph",
+      "thread",
+      threadId,
+      "state",
+      "checkpoint",
+      checkpointId,
+      subgraphs,
+    ],
+    queryFn: async () =>
+      await getThreadStateAtCheckpoint(threadId, checkpointId, subgraphs),
+    enabled: !!threadId && !!checkpointId,
   });

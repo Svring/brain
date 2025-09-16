@@ -11,6 +11,7 @@ import {
 import { CommandPanelMain } from "./command-panel-main";
 import { ResourceList, ResourceCreate } from "./command-panel-add-resource";
 import { ManageResources } from "./command-panel-manage-resources";
+import { ExistingResources } from "./command-panel-existing-resources";
 import { useCommandActions } from "./command-actions";
 
 interface FlowgraphCommandDialogProps {
@@ -26,6 +27,7 @@ export function FlowgraphCommandDialog({
   const [selectedCommand, setSelectedCommand] = useState<string | null>(null);
   const [showResourceList, setShowResourceList] = useState(false);
   const [showManageResources, setShowManageResources] = useState(false);
+  const [showExistingResources, setShowExistingResources] = useState(false);
 
   // Reset state when dialog is closed
   const handleOpenChange = (open: boolean) => {
@@ -34,6 +36,7 @@ export function FlowgraphCommandDialog({
       setSelectedCommand(null);
       setShowResourceList(false);
       setShowManageResources(false);
+      setShowExistingResources(false);
     }
     onOpenChange(open);
   };
@@ -44,6 +47,7 @@ export function FlowgraphCommandDialog({
     setSelectedCommand,
     setShowResourceList,
     setShowManageResources,
+    setShowExistingResources,
   });
 
   // Handle keyboard events
@@ -58,6 +62,8 @@ export function FlowgraphCommandDialog({
           setSelectedCommand(null);
         } else if (showManageResources) {
           setShowManageResources(false);
+        } else if (showExistingResources) {
+          setShowExistingResources(false);
         } else if (showResourceList) {
           setShowResourceList(false);
         }
@@ -66,7 +72,7 @@ export function FlowgraphCommandDialog({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, selectedCommand, showResourceList, showManageResources]);
+  }, [isOpen, selectedCommand, showResourceList, showManageResources, showExistingResources]);
 
   return (
     <CommandDialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -93,6 +99,11 @@ export function FlowgraphCommandDialog({
               // Show manage resources dialog
               <ManageResources
                 onBack={() => setShowManageResources(false)}
+              />
+            ) : showExistingResources ? (
+              // Show existing resources dialog
+              <ExistingResources
+                onBack={() => setShowExistingResources(false)}
               />
             ) : showResourceList ? (
               // Show resource list when "Add Resource" is selected

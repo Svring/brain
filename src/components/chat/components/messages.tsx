@@ -50,7 +50,8 @@ const ToolResultRenderer = memo(function ToolResultRenderer({
   tool_call_id?: string;
   status?: string;
 }) {
-  const { updateThreadState, selectedThreadId } = useThreads();
+  const { updateThreadState, selectedThreadId, setSelectedCheckpointId } =
+    useThreads();
   const { submitWithContext } = useStreamContext();
 
   const { action, payload } = useMemo(() => {
@@ -103,23 +104,27 @@ const ToolResultRenderer = memo(function ToolResultRenderer({
             },
           },
           {
-            onSuccess: () => {
+            onSuccess: (data: any) => {
               // Optional: Add any additional logic to run after successful update
               submitWithContext({
                 messages: [{ type: "system", content: successResult }],
               });
             },
             onError: (error: any) => {
-              console.error(
-                "Failed to update thread state with tool result:",
-                error
-              );
+              // Handle error silently
             },
           }
         );
       }
     };
-  }, [result, id, tool_call_id, updateThreadState, content]);
+  }, [
+    result,
+    id,
+    tool_call_id,
+    updateThreadState,
+    content,
+    setSelectedCheckpointId,
+  ]);
 
   // Try to get the specific component for this action
   const Component = action ? get(ToolMessageType, action) : null;
@@ -145,17 +150,20 @@ const ToolResultRenderer = memo(function ToolResultRenderer({
 interface AiMessagesProps {
   scrollRef?: React.RefObject<HTMLDivElement | null>;
   className?: string;
+  messages: Message[];
+  isLoading: boolean;
 }
 
 export function AiMessages({
   scrollRef: externalScrollRef,
   className,
+  messages,
+  isLoading,
 }: AiMessagesProps) {
   const { setSidebarResponding } = useChatActions();
-  const { isLoading, messages } = useStreamContext();
   const { threadsLoading } = useThreads();
 
-  // console.log("messages", messages);
+  // console.log("AiMessages - Displaying messages:", messages);
 
   // Show loading screen when threads are loading
   if (threadsLoading) {
@@ -213,8 +221,7 @@ export function AiMessages({
 
   useEffect(() => {
     if (messages.length > 0) {
-      const timer = setTimeout(() => scrollToBottom(), 100);
-      return () => clearTimeout(timer);
+      scrollToBottom();
     }
   }, [contentHash]);
 

@@ -1,20 +1,16 @@
 "use client";
 
 import { MainSection } from "./sidebar-section";
-import { UserCard } from "./user-card";
-import { BrainTokenStats } from "./brain-token-stats";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarRail,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { BookOpen } from "lucide-react";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import Image from "next/image";
 
@@ -51,7 +47,7 @@ export default function AppSidebar() {
           <MainSection />
         </SidebarContent>
         <SidebarFooter className={cn("bg-background-primary")}></SidebarFooter>
-        <SidebarRail />
+        {/* <SidebarRail /> */}
       </Sidebar>
     </>
   );

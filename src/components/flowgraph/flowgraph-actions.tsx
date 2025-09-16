@@ -159,12 +159,12 @@ export function FlowgraphActions({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
+              variant="outline"
+              className="h-8 px-3 rounded-full border border-gray-300 bg-white hover:bg-gray-50 flex items-center gap-1.5"
               onClick={handleOpenCommand}
             >
-              <Command className="h-4 w-4" />
+              <Command className="h-3.5 w-3.5" />
+              <span className="text-sm font-medium">+ K</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>
