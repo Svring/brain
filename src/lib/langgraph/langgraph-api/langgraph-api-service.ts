@@ -43,10 +43,7 @@ export const createThread = async ({
   }
 
   // Process resourceTarget if present in metadata
-  if (
-    metadata.resourceTarget !== undefined ||
-    metadata.resourceTarget !== null
-  ) {
+  if (metadata.resourceTarget !== null) {
     metadata.resourceTarget = JSON.stringify(metadata.resourceTarget);
   } else {
     metadata.resourceTarget = null;
@@ -114,7 +111,9 @@ export const searchThreads = async (metadata: Record<string, any>) => {
     }
   }
 
-  return await client.threads
+  console.log("searchMetadata", searchMetadata);
+
+  const res = await client.threads
     .search({
       metadata: searchMetadata,
       sortBy: "updated_at",
@@ -123,6 +122,10 @@ export const searchThreads = async (metadata: Record<string, any>) => {
     .then((res) => {
       return res.filter((obj) => obj.values);
     });
+
+  console.log("res", res);
+
+  return res;
 };
 
 export const getThreadState = async (threadId: string) => {

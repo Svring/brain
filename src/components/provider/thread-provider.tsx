@@ -191,6 +191,81 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
     getThreads,
   ]);
 
+  // Handle thread management when selectedResource changes to null
+  useEffect(() => {
+    if (!auth?.kubeconfig || !sidebarChatOpen || selectedResource !== null) {
+      return;
+    }
+
+    console.log(
+      "[ThreadProvider] selectedResource changed to null, managing threads..."
+    );
+
+    const handleResourceClearedThreadManagement = async () => {
+      try {
+        // Get existing threads
+        const existingThreads = await getThreads();
+
+        console.log("[ThreadProvider] Existing threads:", existingThreads);
+
+        console.log(
+          "[ThreadProvider] Found threads after resource cleared:",
+          existingThreads
+        );
+
+        if (existingThreads.length > 0) {
+          // If threads are found, select the latest one
+          const latestThread = existingThreads[0];
+          console.log(
+            "[ThreadProvider] Selecting latest thread after resource cleared:",
+            latestThread?.thread_id
+          );
+          if (latestThread?.thread_id) {
+            enhancedSelectThread(latestThread.thread_id);
+          }
+          setThreads(existingThreads);
+        } else {
+          // If no threads found, create a new one
+          console.log(
+            "[ThreadProvider] No threads found after resource cleared, creating a new thread..."
+          );
+          createNewThreadMutation.mutate(undefined, {
+            onSuccess: (data) => {
+              console.log(
+                "[ThreadProvider] Successfully created new thread after resource cleared:",
+                data
+              );
+              if (data?.thread_id) {
+                enhancedSelectThread(data.thread_id);
+                // Refresh threads list
+                getThreads().then((threads) => {
+                  console.log(
+                    "[ThreadProvider] Refreshed threads after creation (resource cleared):",
+                    threads
+                  );
+                  setThreads(threads);
+                });
+              }
+            },
+            onError: (error) => {
+              console.error(
+                "[ThreadProvider] Failed to create thread after resource cleared:",
+                error
+              );
+            },
+          });
+        }
+      } catch (error) {
+        console.error(
+          "[ThreadProvider] Failed to manage threads after resource cleared:",
+          error
+        );
+      }
+    };
+
+    handleResourceClearedThreadManagement();
+  }, [selectedResource, auth?.kubeconfig, sidebarChatOpen, enhancedSelectThread, getThreads]);
+
   // Create thread on mount if no threads exist
   useMount(() => {
     if (!auth?.kubeconfig) {
