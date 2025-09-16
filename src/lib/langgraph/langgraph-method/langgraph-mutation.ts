@@ -5,11 +5,10 @@ import {
   createThread,
   updateThreadState,
   deleteThread,
-} from "../langgraph-api/langgraph-trpc-service";
+} from "../langgraph-api/langgraph-api-service";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
-import { randomId } from "@copilotkit/shared";
 import { SystemMessage } from "@/lib/copilot/message/message-utils";
 import {
   CustomResourceTarget,
@@ -29,45 +28,49 @@ export const useCreateNewChatSessionMutation = () => {
   const { auth } = useAuthState();
   const queryClient = useQueryClient();
   const { selectedResource, selectedProject } = useProjectState();
-  const { baseUrl } = useLanggraphState();
 
   return useMutation({
     mutationFn: async () => {
-      const supersteps = baseUrl
-        ? [
-            {
-              updates: [
-                {
-                  values: {
-                    base_url: baseUrl,
-                  },
-                  as_node: "entry_node",
-                },
-              ],
-            },
-          ]
-        : undefined;
+      console.log(
+        "[useCreateNewChatSessionMutation] Creating new chat session with params:",
+        {
+          kubeconfig: !!auth?.kubeconfig,
+          projectName: selectedProject,
+          resourceTarget: selectedResource,
+        }
+      );
 
-      return await createThread({
-        kubeconfig: auth?.kubeconfig || "",
-        projectName: selectedProject || undefined,
-        resourceTarget: selectedResource || null,
+      const supersteps = [
+        {
+          updates: [
+            {
+              values: {},
+              asNode: "__input__",
+            },
+          ],
+        },
+      ];
+
+      const thread = await createThread({
+        metadata: {
+          graph_id: process.env.NEXT_PUBLIC_LANGGRAPH_GRAPH_ID || "orca",
+          kubeconfig: auth?.kubeconfig || "",
+          projectName: selectedProject || undefined,
+          resourceTarget: selectedResource || null,
+        },
         supersteps,
       });
+
+      console.log("[useCreateNewChatSessionMutation] Thread created:", thread);
+
+      return thread;
     },
     onSuccess: (data, variables) => {
+      console.log(
+        "[useCreateNewChatSessionMutation] Mutation succeeded with data:",
+        data
+      );
       // Thread selection is now handled by ThreadProvider
-      // console.log("new thread created", data.thread_id);
-
-      queryClient.refetchQueries({ queryKey: ["threads"] });
-      // Invalidate searchThreadsOptions queries
-      queryClient.refetchQueries({
-        queryKey: ["langgraph", "threads", "search"],
-      });
-      // Invalidate getThreadStateOptions queries
-      queryClient.refetchQueries({
-        queryKey: ["langgraph", "thread", "state"],
-      });
     },
     onError: (error) => {
       console.error("Failed to create chat session:", error);
@@ -168,6 +171,9 @@ export const useDeleteThreadMutation = () => {
     onSuccess: (data, variables) => {
       // Invalidate and refetch thread-related queries
       queryClient.invalidateQueries({ queryKey: ["threads"] });
+      queryClient.invalidateQueries({
+        queryKey: ["langgraph", "threads", "search"],
+      });
 
       // Thread selection management is now handled by ThreadProvider
     },

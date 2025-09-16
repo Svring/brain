@@ -16,7 +16,7 @@ import {
   searchThreads,
   updateThreadState,
   deleteThread,
-} from "@/lib/langgraph/langgraph-api/langgraph-trpc-service";
+} from "@/lib/langgraph/langgraph-api/langgraph-api-service";
 import { getThreadState } from "@/lib/langgraph/langgraph-api/langgraph-api";
 import {
   useCreateNewChatSessionMutation,
@@ -28,6 +28,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMount } from "@reactuses/core";
 import { useQueryState } from "nuqs";
 import { useEffect } from "react";
+import { Message } from "@langchain/langgraph-sdk";
 
 interface ThreadContextType {
   getThreads: () => Promise<any[]>;
@@ -41,6 +42,8 @@ interface ThreadContextType {
   threadStateLoading: boolean;
   hasThreads: boolean;
   selectedThreadId: string | null;
+  selectedThread: any;
+  messages: Message[];
   selectThread: (threadId: string | null) => void;
   createNewThread: any;
   updateThreadState: any;
@@ -72,6 +75,7 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
         kubeconfig: auth.kubeconfig,
         projectName: selectedProject,
         resourceTarget: selectedResource,
+        graph_id: process.env.NEXT_PUBLIC_LANGGRAPH_GRAPH_ID || "orca",
       });
       return threads;
     } catch (error) {
@@ -88,6 +92,14 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
   // Get the latest thread (first in the sorted list)
   const latestThread = threads && threads.length > 0 ? threads[0] : null;
   const latestThreadId = latestThread?.thread_id || null;
+
+  // Get the currently selected thread object
+  const selectedThread = selectedThreadId
+    ? threads.find((thread) => thread.thread_id === selectedThreadId) || null
+    : null;
+
+  // Get the messages from the selected thread
+  const selectedThreadMessages = selectedThread?.values?.messages || [];
 
   // Enhanced selectThread function that also updates URL state
   const enhancedSelectThread = useCallback(
@@ -108,52 +120,64 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
   // Handle thread management based on sidebar chat state and project context
   useEffect(() => {
     if (!auth?.kubeconfig || !sidebarChatOpen) {
+      console.log(
+        "[ThreadProvider] Skipping thread management: missing kubeconfig or sidebarChatOpen is false",
+        {
+          kubeconfig: !!auth?.kubeconfig,
+          sidebarChatOpen,
+        }
+      );
       return;
     }
 
     const handleThreadManagement = async () => {
       try {
-        let searchParams: any = {
-          kubeconfig: auth.kubeconfig,
-        };
-
-        // Add project name if available
-        if (selectedProject) {
-          searchParams.projectName = selectedProject;
-        }
-
-        // Add resource target if available
-        if (selectedResource) {
-          searchParams.resourceTarget = selectedResource;
-        }
-
         // Search for existing threads
-        const existingThreads = await searchThreads(searchParams);
+        const existingThreads = await getThreads();
+
+        console.log("[ThreadProvider] Found threads:", existingThreads);
 
         if (existingThreads.length > 0) {
           // If threads are found, select the latest one
           const latestThread = existingThreads[0];
+          console.log(
+            "[ThreadProvider] Selecting latest thread:",
+            latestThread?.thread_id
+          );
           if (latestThread?.thread_id) {
             enhancedSelectThread(latestThread.thread_id);
           }
           setThreads(existingThreads);
         } else {
           // If no threads found, create a new one
+          console.log(
+            "[ThreadProvider] No threads found, creating a new thread..."
+          );
           createNewThreadMutation.mutate(undefined, {
             onSuccess: (data) => {
+              console.log(
+                "[ThreadProvider] Successfully created new thread:",
+                data
+              );
               if (data?.thread_id) {
                 enhancedSelectThread(data.thread_id);
                 // Refresh threads list
-                getThreads().then(setThreads);
+                getThreads().then((threads) => {
+                  console.log(
+                    "[ThreadProvider] Refreshed threads after creation:",
+                    threads
+                  );
+                  setThreads(threads);
+                });
               }
             },
             onError: (error) => {
-              console.error("Failed to create thread:", error);
+              console.error("[ThreadProvider] Failed to create thread:", error);
             },
           });
         }
       } catch (error) {
-        console.error("Failed to manage threads:", error);
+        console.error("[ThreadProvider] Failed to manage threads:", error);
       }
     };
 
@@ -170,15 +194,33 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
   // Create thread on mount if no threads exist
   useMount(() => {
     if (!auth?.kubeconfig) {
+      console.log(
+        "[ThreadProvider] No kubeconfig on mount, skipping thread initialization."
+      );
+      setIsInitializing(false);
+      return;
+    }
+
+    // Skip creating new thread if selectedProject or selectedResource is present
+    if (selectedProject || selectedResource) {
+      console.log(
+        "[ThreadProvider] selectedProject or selectedResource present on mount, skipping thread creation:",
+        { selectedProject, selectedResource }
+      );
       setIsInitializing(false);
       return;
     }
 
     // First, try to get existing threads
     getThreads().then((existingThreads) => {
+      console.log("[ThreadProvider] Threads on mount:", existingThreads);
       if (existingThreads.length > 0) {
         // If threads exist, select the latest one
         const latest = existingThreads[0];
+        console.log(
+          "[ThreadProvider] Selecting latest thread on mount:",
+          latest?.thread_id
+        );
         if (latest?.thread_id) {
           enhancedSelectThread(latest.thread_id);
         }
@@ -186,16 +228,33 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
         setIsInitializing(false);
       } else {
         // If no threads exist, create a new one
+        console.log(
+          "[ThreadProvider] No threads on mount, creating a new thread..."
+        );
         createNewThreadMutation.mutate(undefined, {
           onSuccess: (data) => {
+            console.log(
+              "[ThreadProvider] Successfully created new thread on mount:",
+              data
+            );
             if (data?.thread_id) {
               enhancedSelectThread(data.thread_id);
               // Refresh threads list
-              getThreads().then(setThreads);
+              getThreads().then((threads) => {
+                console.log(
+                  "[ThreadProvider] Refreshed threads after creation on mount:",
+                  threads
+                );
+                setThreads(threads);
+              });
             }
             setIsInitializing(false);
           },
-          onError: () => {
+          onError: (error) => {
+            console.error(
+              "[ThreadProvider] Failed to create thread on mount:",
+              error
+            );
             setIsInitializing(false);
           },
         });
@@ -219,7 +278,15 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
     // Select null thread before deletion
     enhancedSelectThread(null);
     // Then delete the thread
-    deleteThreadMutation.mutate(threadId);
+    deleteThreadMutation.mutate(threadId, {
+      onSuccess: () => {
+        // Refresh threads list after successful deletion
+        getThreads().then((updatedThreads) => {
+          console.log("[ThreadProvider] Threads after deletion:", updatedThreads);
+          setThreads(updatedThreads);
+        });
+      },
+    });
   };
 
   const value = {
@@ -234,6 +301,8 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
     threadStateLoading,
     hasThreads: threads && threads.length > 0,
     selectedThreadId,
+    selectedThread,
+    messages: selectedThreadMessages,
     selectThread: enhancedSelectThread,
     createNewThread: createNewThreadMutation,
     updateThreadState: updateThreadStateMutation,

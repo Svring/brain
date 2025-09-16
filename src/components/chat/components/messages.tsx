@@ -10,7 +10,9 @@ import { ArrowDown } from "lucide-react";
 import React, { useMemo, memo, useEffect } from "react";
 import { createHash } from "crypto";
 import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
+import { useStreamContext } from "@/components/provider/stream-provider";
 import type { Message } from "@langchain/langgraph-sdk";
+import { useThreads } from "@/components/provider/thread-provider";
 
 const SystemMessageRenderer = memo(function SystemMessageRenderer({
   content,
@@ -62,7 +64,7 @@ const ToolResultRenderer = memo(function ToolResultRenderer({
 
   // Try to get the specific component for this action
   const Component = action ? get(ToolMessageType, action) : null;
-  
+
   if (Component) {
     return Component(payload);
   }
@@ -84,20 +86,15 @@ const ToolResultRenderer = memo(function ToolResultRenderer({
 interface AiMessagesProps {
   scrollRef?: React.RefObject<HTMLDivElement | null>;
   className?: string;
-  messages: Message[];
-  isLoading: boolean;
 }
 
 export function AiMessages({
   scrollRef: externalScrollRef,
   className,
-  messages,
-  isLoading,
 }: AiMessagesProps) {
   const { setSidebarResponding } = useChatActions();
-  const { scrollTrigger } = useChatState();
-
-  // console.log("messages", messages);
+  const { isLoading } = useStreamContext();
+  const { messages } = useThreads();
 
   useEffect(() => {
     setSidebarResponding(isLoading);

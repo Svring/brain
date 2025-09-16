@@ -17,16 +17,16 @@ export default function NodeHem({
     <div className={`relative ${className}`}>
       {/* Hem component - positioned behind main card */}
       {hemComponent && (
-        <div className="absolute inset-x-0 top-0 z-0">
-          <div className="bg-node-background border border-border-primary rounded-lg px-3 pt-8 pb-1 text-xs flex flex-col h-60">
-            <div className="flex-1"></div>
-            <div className="flex-shrink-0">{hemComponent}</div>
+        <div className="absolute inset-x-0 top-0 z-10">
+          <div className="bg-muted border rounded-xl pt-8 text-xs flex flex-col h-60">
+            <div className="flex-1 bg-background-secondary"></div>
+            <div className="h-10">{hemComponent}</div>
           </div>
         </div>
       )}
 
       {/* Main card - positioned above hem */}
-      <div className="relative z-10">{mainCard}</div>
+      <div className="relative z-20">{mainCard}</div>
     </div>
   );
 }

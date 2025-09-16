@@ -142,13 +142,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             </div>
             {variant === "full" && (
               <Button
-                className="h-8 w-8 p-0 hover:bg-muted opacity-40 hover:opacity-100 transition-opacity"
+                className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors"
                 size="sm"
                 variant="ghost"
                 onClick={handleDelete}
                 disabled={isDeleting}
               >
-                <Trash2 className="h-4 w-4 text-theme-red" />
+                <Trash2 className="h-4 w-4" />
                 <span className="sr-only">Delete project</span>
               </Button>
             )}

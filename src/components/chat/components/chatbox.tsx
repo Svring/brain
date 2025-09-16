@@ -1,7 +1,6 @@
 "use client";
 
 import { useChatState } from "@/contexts/chat/chat-context";
-import { useStreamContext } from "@/components/provider/stream-provider";
 import { AiChatInput } from "./input";
 import { AiChatHeader } from "./header";
 import { AiMessages } from "./messages";
@@ -9,8 +8,6 @@ import { cn } from "@/lib/utils";
 
 export default function AiChatbox() {
   const { sidebarChatOpen } = useChatState();
-
-  const { isLoading, stop, messages } = useStreamContext();
 
   return (
     <div
@@ -24,12 +21,12 @@ export default function AiChatbox() {
       <AiChatHeader isLoading={false} />
 
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
-        <AiMessages messages={messages} isLoading={isLoading} />
+        <AiMessages />
       </div>
 
       <div className="p-2 pt-0 shrink-0 relative z-[9999]">
         <div className="max-w-3xl mx-auto">
-          <AiChatInput stop={stop} isLoading={isLoading} />
+          <AiChatInput />
         </div>
       </div>
     </div>

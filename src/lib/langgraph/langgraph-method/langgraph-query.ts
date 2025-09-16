@@ -36,7 +36,7 @@ export const getThreadOptions = (threadId: string) =>
  */
 export const searchThreadsOptions = (metadata: Record<string, any>) =>
   queryOptions({
-    queryKey: ["langgraph", "threads", "search", metadata],
+    queryKey: ["threads", metadata],
     queryFn: async () => await searchThreads(metadata),
   });
 

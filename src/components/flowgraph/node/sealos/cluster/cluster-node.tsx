@@ -4,6 +4,7 @@ import BaseNode from "../../base-node-wrapper";
 import NodeStatusLight from "../../components/node-status-light";
 import NodeLog from "../../components/node-log";
 import NodeMonitor from "../../components/node-monitor";
+import NodeHem from "../../components/node-hem";
 import ClusterNodeTitle from "./cluster-node-title";
 import ClusterNodeMenu from "./cluster-node-menu";
 import ClusterNodeBackup from "./cluster-node-backup";
@@ -133,15 +134,7 @@ function ClusterNode({ resource, nodeId }: ClusterNodeInnerProps) {
   );
 
   return (
-    <div className="relative">
-      <div className="absolute inset-x-0 top-0 z-10">
-        <div className="bg-muted border rounded-xl pt-8 text-xs flex flex-col h-60">
-          <div className="flex-1" />
-          {hemComponent}
-        </div>
-      </div>
-      <div className="relative z-20">{mainCard}</div>
-    </div>
+    <NodeHem mainCard={mainCard} hemComponent={hemComponent} />
   );
 }
 

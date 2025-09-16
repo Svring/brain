@@ -19,9 +19,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { DeleteThreadDialog } from "./delete-thread-dialog";
 import { Message, Thread } from "@langchain/langgraph-sdk";
+import { Spinner } from "@/components/ui/spinner";
 
 export function HistoryDropdown() {
-  const { selectedThreadId, selectThread, threads, deleteThread } = useThreads();
+  const { selectedThreadId, selectThread, threads, deleteThread } =
+    useThreads();
   const queryClient = useQueryClient();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -35,6 +37,7 @@ export function HistoryDropdown() {
   };
 
   const handleThreadSelect = (threadId: string): void => {
+    console.log("handleThreadSelect", threadId);
     selectThread(threadId);
   };
 
@@ -130,8 +133,13 @@ export function HistoryDropdown() {
                           onClick={(e) =>
                             handleDeleteThread(thread.thread_id, e)
                           }
+                          disabled={deleteThread.isPending}
                         >
-                          <Trash2 className="h-3 w-3" />
+                          {deleteThread.isPending ? (
+                            <Spinner variant="ellipsis" size={12} />
+                          ) : (
+                            <Trash2 className="h-3 w-3" />
+                          )}
                         </Button>
                       </div>
                     </div>

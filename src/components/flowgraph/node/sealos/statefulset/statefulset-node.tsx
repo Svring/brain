@@ -5,6 +5,7 @@ import { Package, HardDrive } from "lucide-react";
 import NodeStatusLight from "../../components/node-status-light";
 import NodePods from "../../components/node-pods";
 import NodeMonitor from "../../components/node-monitor";
+import NodeHem from "../../components/node-hem";
 import StatefulsetNodeTitle from "./statefulset-node-title";
 import { StatefulsetObject } from "@/lib/sealos/resources/statefulset/statefulset-object-schema";
 import { truncateImage } from "@/lib/sealos/sealos-utils";
@@ -100,20 +101,7 @@ function StatefulsetNode({
   );
 
   return (
-    <div className="relative">
-      {/* Hem component - positioned above main card */}
-      {hemComponent && (
-        <div className="absolute inset-x-0 top-0 z-10">
-          <div className="bg-muted border rounded-xl pt-8 text-xs flex flex-col h-60">
-            <div className="flex-1"></div>
-            <div className="h-10">{hemComponent}</div>
-          </div>
-        </div>
-      )}
-
-      {/* Main card - positioned at the top */}
-      <div className="relative z-20">{mainCard}</div>
-    </div>
+    <NodeHem mainCard={mainCard} hemComponent={hemComponent} />
   );
 }
 

@@ -71,11 +71,7 @@ export default function HomePage() {
               className="flex-1 overflow-y-auto py-8"
             >
               <div className="max-w-3xl mx-auto w-full">
-                <AiMessages
-                  messages={messages}
-                  isLoading={isLoading}
-                  scrollRef={messagesScrollRef}
-                />
+                <AiMessages scrollRef={messagesScrollRef} />
               </div>
             </div>
           </motion.div>
@@ -97,9 +93,6 @@ export default function HomePage() {
             <AiChatInput
               className={`max-w-3xl${!hasMessages ? " min-h-[140px]" : ""}`}
               exhibition={!hasMessages}
-              // submit={submit}
-              stop={stop}
-              isLoading={isLoading}
             />
             {!hasMessages && (
               <>

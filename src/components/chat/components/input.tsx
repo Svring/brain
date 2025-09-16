@@ -6,17 +6,13 @@ import { useStreamContext } from "@/components/provider/stream-provider";
 interface AiChatInputProps {
   className?: string;
   exhibition?: boolean;
-  stop: () => void;
-  isLoading: boolean;
 }
 
 export function AiChatInput({
   className,
   exhibition = false,
-  stop,
-  isLoading,
 }: AiChatInputProps) {
-  const { submitWithContext } = useStreamContext();
+  const { submitWithContext, stop, isLoading } = useStreamContext();
 
   const handleSendMessage = (message: string) => {
     if (message.trim() && !isLoading) {

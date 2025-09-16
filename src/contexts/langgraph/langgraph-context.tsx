@@ -5,7 +5,6 @@ import { createContext, type ReactNode, useContext, useEffect } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import { langgraphMachine } from "@/contexts/langgraph/langgraph-machine";
 import { ProjectContextState } from "@/contexts/project/project-machine";
-// import { useLanggraphStream as useOriginalLanggraphStream } from "@/hooks/langgraph/use-langgraph-stream";
 import type { BrainState } from "@/contexts/langgraph/langgraph-schema";
 import { useProjectState } from "@/contexts/project/project-context";
 import type { Message } from "@langchain/langgraph-sdk";
@@ -121,6 +120,3 @@ export function useLanggraphActions() {
     },
   };
 }
-
-// useLanggraphStream is now provided by StreamProvider
-// Use useStreamContext from stream-provider instead

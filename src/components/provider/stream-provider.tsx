@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  createContext,
-  useContext,
-  ReactNode,
-  useState,
-  useEffect,
-} from "react";
+import React, { createContext, useContext, ReactNode, useMemo } from "react";
 import { useStream } from "@langchain/langgraph-sdk/react";
 import { type Message } from "@langchain/langgraph-sdk";
 import { searchThreads } from "@/lib/langgraph/langgraph-api/langgraph-trpc-service";
@@ -15,6 +9,7 @@ import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useThreads } from "./thread-provider";
 import { toast } from "sonner";
+import { useMount } from "@reactuses/core";
 
 type StreamContextType = ReturnType<typeof useStream> & {
   submitWithContext: (data: { messages: Message[] }) => void;
@@ -26,18 +21,9 @@ async function sleep(ms = 2000) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function checkGraphStatus(
-  apiUrl: string,
-  apiKey: string | null
-): Promise<boolean> {
+async function checkGraphStatus(apiUrl: string): Promise<boolean> {
   try {
-    const res = await fetch(`${apiUrl}/info`, {
-      ...(apiKey && {
-        headers: {
-          "X-Api-Key": apiKey,
-        },
-      }),
-    });
+    const res = await fetch(`${apiUrl}/info`);
     return res.ok;
   } catch (e) {
     console.error(e);
@@ -48,42 +34,26 @@ async function checkGraphStatus(
 const StreamSession = ({ children }: { children: ReactNode }) => {
   const { baseUrl, apiKey, modelName, contextWindowUsage, stage } =
     useLanggraphState();
-  const { selectedThreadId } = useThreads();
+  const { selectedThreadId, getThreads, setThreads } = useThreads();
   const {
     selectedProject,
     selectedProjectResources,
     selectedResource,
     selectedResourceContext,
   } = useProjectState();
-  const { setThreads } = useThreads();
   const { auth } = useAuthState();
 
   const streamValue = useStream({
     apiUrl: process.env.NEXT_PUBLIC_LANGGRAPH_DEPLOYMENT_URL || "",
     assistantId: "orca",
     threadId: selectedThreadId || null,
-    fetchStateHistory: true,
-    onCustomEvent: (event, options) => {
-      // UI message handling removed - no longer using uiMessageReducer
-    },
+    // fetchStateHistory: true,
     onThreadId: async (id) => {
       // Refetch threads list when thread ID changes using searchThreads with proper parameters
       if (auth?.kubeconfig) {
         try {
           await sleep();
-          const searchParams: any = {
-            kubeconfig: auth.kubeconfig,
-          };
-
-          if (selectedProject) {
-            searchParams.projectName = selectedProject;
-          }
-
-          if (selectedResource) {
-            searchParams.resourceTarget = selectedResource;
-          }
-
-          const threads = await searchThreads(searchParams);
+          const threads = await getThreads();
           setThreads(threads);
         } catch (error) {
           console.error("Failed to refetch threads:", error);
@@ -101,38 +71,36 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
 
     return streamValue.submit({
       ...data,
-      context: {
-        api_key: apiKey,
-        base_url: baseUrl,
-        model_name: modelName,
-        context_window_usage: contextWindowUsage,
-        stage,
-        project_context: {
-          selectedProject,
-          selectedProjectResources,
-        },
-        resource_context: selectedResource
-          ? {
-              selectedResource,
-              selectedResourceContext,
-            }
-          : undefined,
+      api_key: apiKey,
+      base_url: baseUrl,
+      model_name: modelName,
+      context_window_usage: contextWindowUsage,
+      stage,
+      project_context: {
+        selectedProject,
+        selectedProjectResources,
       },
+      resource_context: selectedResource
+        ? {
+            selectedResource,
+            selectedResourceContext,
+          }
+        : undefined,
     });
   };
 
-  useEffect(() => {
-    if (baseUrl && apiKey) {
-      checkGraphStatus(baseUrl, apiKey).then((ok) => {
-        if (!ok) {
-          toast.error("Failed to connect to LangGraph server", {
-            description: `Please ensure your graph is running at ${baseUrl}`,
-            duration: 5000,
-          });
-        }
-      });
-    }
-  }, [apiKey, baseUrl]);
+  useMount(() => {
+    checkGraphStatus(
+      process.env.NEXT_PUBLIC_LANGGRAPH_DEPLOYMENT_URL || ""
+    ).then((ok) => {
+      if (!ok) {
+        toast.error("Failed to connect to LangGraph server", {
+          description: `Please ensure your graph is running at ${process.env.NEXT_PUBLIC_LANGGRAPH_DEPLOYMENT_URL}`,
+          duration: 5000,
+        });
+      }
+    });
+  });
 
   const contextValue = {
     ...streamValue,
