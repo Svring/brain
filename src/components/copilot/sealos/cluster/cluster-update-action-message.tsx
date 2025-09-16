@@ -5,32 +5,47 @@ import { ClusterUpdateForm } from "@/components/forms/cluster/cluster-update-for
 import { ClusterUpdateFormData } from "@/schemas/forms/cluster/cluster-update-form-schema";
 import { useClusterUpdate } from "@/hooks/sealos/cluster/use-cluster-update";
 import BaseActionMessage from "@/components/chat/messages/system-messages/components/base-action-message";
-import { Database } from "lucide-react";
+import { Database, CircleCheckBigIcon } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import { useQuery } from "@tanstack/react-query";
+import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
+import { Button } from "@/components/ui/button";
+
+// Component that handles the success message and system message appending
+const ClusterUpdateSuccessMessage = ({ args }: { args: any }) => {
+  const target = convertResourceTypeToTarget("cluster", args.clusterName);
+
+  return (
+    <div className="w-full">
+      <div className="flex items-center justify-between p-2 border rounded-lg">
+        <div className="flex items-center gap-2">
+          <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
+          <p className="text-sm">Cluster updated successfully</p>
+        </div>
+        <Button variant="outline" size="sm">
+          View cluster details
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 interface ClusterUpdateActionMessageProps {
   args: Partial<ClusterUpdateFormData> & { clusterName: string };
-  respond?: (message: string) => void;
+  result?: any;
+  onSuccess?: (data: any) => void;
 }
 
 export const ClusterUpdateActionMessage: React.FC<
   ClusterUpdateActionMessageProps
-> = ({ args, respond }) => {
-  const { updateCluster, isLoading } = useClusterUpdate({
-    onSuccess: () => {
-      respond?.(`Cluster "${args.clusterName}" updated successfully`);
-    },
-    onError: () => {
-      respond?.("Failed to update cluster");
-    },
-  });
+> = ({ args, result, onSuccess }) => {
+  const { updateCluster, isLoading } = useClusterUpdate();
 
   const handleSubmit = async (data: ClusterUpdateFormData) => {
     try {
-      await updateCluster(data);
+      const result = await updateCluster(data);
+      onSuccess?.("cluster updated Successfully");
     } catch (error) {
       console.error("Failed to update cluster:", error);
     }
@@ -45,6 +60,11 @@ export const ClusterUpdateActionMessage: React.FC<
     resource,
     ...updateRest,
   };
+
+  // Show completion message when result is provided (tool result display)
+  if (result) {
+    return <ClusterUpdateSuccessMessage args={args} />;
+  }
 
   return (
     <BaseActionMessage

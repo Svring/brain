@@ -5,8 +5,22 @@ import { DevboxUpdateForm } from "@/components/forms/devbox/devbox-update-form";
 import { DevboxUpdateFormData } from "@/schemas/forms/devbox/devbox-update-form-schema";
 import { useDevboxUpdate } from "@/hooks/sealos/devbox/use-devbox-update";
 import BaseActionMessage from "@/components/chat/messages/system-messages/components/base-action-message";
-import { Code } from "lucide-react";
+import { Code, CircleCheckBigIcon } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
+
+// Component that handles the success message and system message appending
+const DevboxUpdateSuccessMessage = ({ args }: { args: any }) => {
+  return (
+    <div className="w-full">
+      <div className="flex items-center justify-center p-2 border rounded-lg">
+        <div className="flex items-center gap-2">
+          <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
+          <p className="text-sm">Devbox updated successfully</p>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 interface DevboxUpdateActionMessageProps {
   args: {
@@ -14,11 +28,13 @@ interface DevboxUpdateActionMessageProps {
     [key: string]: any;
   };
   respond?: (message: string) => void;
+  result?: any;
+  onSuccess?: (data: any) => void;
 }
 
 export const DevboxUpdateActionMessage: React.FC<
   DevboxUpdateActionMessageProps
-> = ({ args, respond }) => {
+> = ({ args, respond, result, onSuccess }) => {
   const { updateDevbox, isLoading } = useDevboxUpdate({
     onSuccess: () => {
       respond?.(`Devbox "${args.devboxName}" updated successfully`);
@@ -30,7 +46,8 @@ export const DevboxUpdateActionMessage: React.FC<
 
   const handleSubmit = async (data: DevboxUpdateFormData) => {
     try {
-      await updateDevbox(data);
+      const result = await updateDevbox(data);
+      onSuccess?.(result);
     } catch (error) {
       console.error("Failed to update devbox:", error);
     }
@@ -45,6 +62,11 @@ export const DevboxUpdateActionMessage: React.FC<
     resource,
     ...updateRest,
   };
+
+  // Show completion message when result is provided (tool result display)
+  if (result) {
+    return <DevboxUpdateSuccessMessage args={args} />;
+  }
 
   return (
     <BaseActionMessage

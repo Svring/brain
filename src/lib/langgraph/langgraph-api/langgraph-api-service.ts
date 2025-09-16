@@ -72,9 +72,14 @@ export const getThread = async (threadId: string) => {
   return await client.threads.get(threadId);
 };
 
-export const updateThreadState = async (threadId: string, state: any) => {
+export const updateThreadState = async (
+  threadId: string,
+  values: any,
+  asNode: string
+) => {
   const client = createClient();
-  return await client.threads.updateState(threadId, state);
+  console.log("values", values);
+  return await client.threads.updateState(threadId, { values });
 };
 
 export const deleteThread = async (threadId: string) => {

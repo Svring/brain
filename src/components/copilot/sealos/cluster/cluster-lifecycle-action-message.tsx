@@ -8,8 +8,6 @@ import { useClusterLifecycle } from "@/hooks/sealos/cluster/use-cluster-lifecycl
 import { Play, Pause, CircleCheckBigIcon } from "lucide-react";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import NodeStatusLight from "@/components/flowgraph/node/components/node-status-light";
-import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
-import { Button } from "@/components/ui/button";
 
 interface ClusterLifecycleActionMessageProps {
   args: {
@@ -17,6 +15,8 @@ interface ClusterLifecycleActionMessageProps {
   };
   respond?: (message: string) => void;
   action: "start" | "pause";
+  result?: any;
+  onSuccess?: (data: any) => void;
 }
 
 const getActionConfig = (action: string) => {
@@ -50,23 +50,15 @@ const ClusterLifecycleSuccessMessage = ({
   args: { clusterName: string }; 
   action: string;
 }) => {
-  const target = convertResourceTypeToTarget("cluster", args.clusterName);
-  const { handleNodeSelect } = useNodeSelect({
-    target,
-    messageType: "cluster.detail",
-  });
   const config = getActionConfig(action);
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between p-2 border rounded-lg">
+      <div className="flex items-center justify-center p-2 border rounded-lg">
         <div className="flex items-center gap-2">
           <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
           <p className="text-sm">{config.successMessage}</p>
         </div>
-        <Button onClick={handleNodeSelect} variant="outline" size="sm">
-          View cluster details
-        </Button>
       </div>
     </div>
   );
@@ -74,7 +66,7 @@ const ClusterLifecycleSuccessMessage = ({
 
 export const ClusterLifecycleActionMessage: React.FC<
   ClusterLifecycleActionMessageProps
-> = ({ args, respond, action }) => {
+> = ({ args, respond, action, result, onSuccess }) => {
   const target = convertResourceTypeToTarget("cluster", args.clusterName);
   const config = getActionConfig(action);
   const { resource } = useResourceStatus(target);
@@ -84,15 +76,16 @@ export const ClusterLifecycleActionMessage: React.FC<
     onError: (message) => respond?.(message),
   });
 
-  // Show completion message when args are provided (tool result display)
-  if (args && Object.keys(args).length > 0) {
+  // Show completion message when result is provided (tool result display)
+  if (result) {
     return <ClusterLifecycleSuccessMessage args={args} action={action} />;
   }
 
   const mutation = getMutationForAction(action);
 
   const handleSubmit = async () => {
-    await executeAction(action, args.clusterName);
+    const result = await executeAction(action, args.clusterName);
+    onSuccess?.(result);
   };
 
   return (

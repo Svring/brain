@@ -15,8 +15,6 @@ import {
 } from "lucide-react";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import NodeStatusLight from "@/components/flowgraph/node/components/node-status-light";
-import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
-import { Button } from "@/components/ui/button";
 
 interface DevboxLifecycleActionMessageProps {
   args: {
@@ -24,6 +22,8 @@ interface DevboxLifecycleActionMessageProps {
   };
   respond?: (message: string) => void;
   action: "start" | "pause" | "restart" | "shutdown" | "delete";
+  result?: any;
+  onSuccess?: (data: any) => void;
 }
 
 const getActionConfig = (action: string) => {
@@ -81,23 +81,15 @@ const DevboxLifecycleSuccessMessage = ({
   args: { devboxName: string };
   action: string;
 }) => {
-  const target = convertResourceTypeToTarget("devbox", args.devboxName);
-  const { handleNodeSelect } = useNodeSelect({
-    target,
-    messageType: "devbox.detail",
-  });
   const config = getActionConfig(action);
 
   return (
     <div className="w-full bg-background-secondary">
-      <div className="flex items-center justify-between p-2 border rounded-lg">
+      <div className="flex items-center justify-center p-2 border rounded-lg">
         <div className="flex items-center gap-2">
           <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
           <p className="text-sm">{config.successMessage}</p>
         </div>
-        <Button onClick={() => handleNodeSelect()} variant="outline" size="sm">
-          View devbox details
-        </Button>
       </div>
     </div>
   );
@@ -105,7 +97,7 @@ const DevboxLifecycleSuccessMessage = ({
 
 export const DevboxLifecycleActionMessage: React.FC<
   DevboxLifecycleActionMessageProps
-> = ({ args, respond, action }) => {
+> = ({ args, respond, action, result, onSuccess }) => {
   const target = convertResourceTypeToTarget("devbox", args.devboxName);
   const config = getActionConfig(action);
   const { resource } = useResourceStatus(target);
@@ -117,15 +109,16 @@ export const DevboxLifecycleActionMessage: React.FC<
     }
   );
 
-  // Show completion message when args are provided (tool result display)
-  if (args && Object.keys(args).length > 0) {
+  // Show completion message when result is provided (tool result display)
+  if (result) {
     return <DevboxLifecycleSuccessMessage args={args} action={action} />;
   }
 
   const mutation = getMutationForAction(action);
 
   const handleSubmit = async () => {
-    await executeAction(action, args.devboxName);
+    const result = await executeAction(action, args.devboxName);
+    onSuccess?.(result);
   };
 
   return (

@@ -1,5 +1,5 @@
-import { ProjectProposalPresentation } from "@/components/chat/state-cards/project-proposal/project-proposal-presentation";
 import { AddResourceToProjectActionMessage } from "@/components/copilot/brain/project/add-resource-to-project-action-message";
+import { ProjectProposalActionMessage } from "@/components/copilot/brain/project/project-proposal-action-message";
 import { ProjectLogsActionMessage } from "@/components/copilot/brain/project/project-logs-action-message";
 import { DevboxCreateActionMessage } from "@/components/copilot/sealos/devbox/devbox-create-action-message";
 import { DevboxUpdateActionMessage } from "@/components/copilot/sealos/devbox/devbox-update-action-message";
@@ -13,8 +13,8 @@ import { LaunchpadLifecycleActionMessage } from "@/components/copilot/sealos/lau
 
 export const ToolMessageType = {
   // Project Actions
-  propose_project: (payload: any) => {
-    return <ProjectProposalPresentation proposal={payload.project_proposal} />;
+  propose_project: (payload: any, result?: any, onSuccess?: (data: any) => void) => {
+    return <ProjectProposalActionMessage args={payload} result={result} onSuccess={onSuccess} />;
   },
 
   add_resource_to_project: (payload: any) => {
@@ -40,17 +40,22 @@ export const ToolMessageType = {
   },
 
   // Devbox Actions
-  createDevbox: (payload: any) => {
-    return <DevboxCreateActionMessage args={payload} />;
+  createDevbox: (payload: any, result?: any, onSuccess?: (data: any) => void) => {
+    return <DevboxCreateActionMessage args={payload} result={result} onSuccess={onSuccess} />;
   },
 
-  updateDevbox: (payload: any) => {
-    return <DevboxUpdateActionMessage args={payload} />;
+  updateDevbox: (payload: any, result?: any, onSuccess?: (data: any) => void) => {
+    return <DevboxUpdateActionMessage args={payload} result={result} onSuccess={onSuccess} />;
   },
 
-  devboxLifecycle: (payload: any) => {
+  devboxLifecycle: (payload: any, result?: any, onSuccess?: (data: any) => void) => {
     return (
-      <DevboxLifecycleActionMessage args={payload} action={payload.action} />
+      <DevboxLifecycleActionMessage
+        args={payload}
+        action={payload.action}
+        result={result}
+        onSuccess={onSuccess}
+      />
     );
   },
 
@@ -97,17 +102,22 @@ export const ToolMessageType = {
   },
 
   // Cluster Actions
-  createCluster: (payload: any) => {
-    return <ClusterCreateActionMessage args={payload} />;
+  createCluster: (payload: any, result?: any, onSuccess?: (data: any) => void) => {
+    return <ClusterCreateActionMessage args={payload} result={result} onSuccess={onSuccess} />;
   },
 
-  updateCluster: (payload: any) => {
-    return <ClusterUpdateActionMessage args={payload} />;
+  updateCluster: (payload: any, result?: any, onSuccess?: (data: any) => void) => {
+    return <ClusterUpdateActionMessage args={payload} result={result} onSuccess={onSuccess} />;
   },
 
-  clusterLifecycle: (payload: any) => {
+  clusterLifecycle: (payload: any, result?: any, onSuccess?: (data: any) => void) => {
     return (
-      <ClusterLifecycleActionMessage args={payload} action={payload.action} />
+      <ClusterLifecycleActionMessage
+        args={payload}
+        action={payload.action}
+        result={result}
+        onSuccess={onSuccess}
+      />
     );
   },
 
@@ -126,17 +136,22 @@ export const ToolMessageType = {
   },
 
   // Launchpad Actions
-  createLaunchpad: (payload: any) => {
-    return <LaunchpadCreateActionMessage args={payload} />;
+  createLaunchpad: (payload: any, result?: any, onSuccess?: (data: any) => void) => {
+    return <LaunchpadCreateActionMessage args={payload} result={result} onSuccess={onSuccess} />;
   },
 
-  updateLaunchpad: (payload: any) => {
-    return <LaunchpadUpdateActionMessage args={payload} />;
+  updateLaunchpad: (payload: any, result?: any, onSuccess?: (data: any) => void) => {
+    return <LaunchpadUpdateActionMessage args={payload} result={result} onSuccess={onSuccess} />;
   },
 
-  launchpadLifecycle: (payload: any) => {
+  launchpadLifecycle: (payload: any, result?: any, onSuccess?: (data: any) => void) => {
     return (
-      <LaunchpadLifecycleActionMessage args={payload} action={payload.action} />
+      <LaunchpadLifecycleActionMessage
+        args={payload}
+        action={payload.action}
+        result={result}
+        onSuccess={onSuccess}
+      />
     );
   },
 

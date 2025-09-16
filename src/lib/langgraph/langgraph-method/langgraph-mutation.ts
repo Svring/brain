@@ -132,23 +132,27 @@ export const useAppendSystemMessageMutation = () => {
 export const useUpdateThreadStateMutation = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return {
     mutationFn: async ({
       threadId,
-      state,
+      values,
+      asNode = "manage_resource_agent",
     }: {
       threadId: string;
-      state: any;
+      values: any;
+      asNode?: string;
     }) => {
-      return await updateThreadState(threadId, state);
+      console.log("Updating thread state:", { threadId, values, asNode });
+      const result = await updateThreadState(threadId, values, asNode);
+      return result;
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (data: any, variables: any) => {
       // Invalidate and refetch thread-related queries
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Failed to update thread state:", error);
     },
-  });
+  };
 };
 
 /**

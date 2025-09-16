@@ -8,8 +8,6 @@ import { useLaunchpadLifecycle } from "@/hooks/sealos/launchpad/use-launchpad-li
 import { Play, Pause, Trash2, CircleCheckBigIcon } from "lucide-react";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import NodeStatusLight from "@/components/flowgraph/node/components/node-status-light";
-import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
-import { Button } from "@/components/ui/button";
 
 interface LaunchpadLifecycleActionMessageProps {
   args: {
@@ -17,6 +15,8 @@ interface LaunchpadLifecycleActionMessageProps {
   };
   respond?: (message: string) => void;
   action: "start" | "pause" | "delete";
+  result?: any;
+  onSuccess?: (data: any) => void;
 }
 
 const getActionConfig = (action: string) => {
@@ -58,23 +58,15 @@ const LaunchpadLifecycleSuccessMessage = ({
   args: { launchpadName: string }; 
   action: string;
 }) => {
-  const target = convertResourceTypeToTarget("deployment", args.launchpadName);
-  const { handleNodeSelect } = useNodeSelect({
-    target,
-    messageType: "launchpad.detail",
-  });
   const config = getActionConfig(action);
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between p-2 border rounded-lg">
+      <div className="flex items-center justify-center p-2 border rounded-lg">
         <div className="flex items-center gap-2">
           <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
           <p className="text-sm">{config.successMessage}</p>
         </div>
-        <Button onClick={handleNodeSelect} variant="outline" size="sm">
-          View launchpad details
-        </Button>
       </div>
     </div>
   );
@@ -82,7 +74,7 @@ const LaunchpadLifecycleSuccessMessage = ({
 
 export const LaunchpadLifecycleActionMessage: React.FC<
   LaunchpadLifecycleActionMessageProps
-> = ({ args, respond, action }) => {
+> = ({ args, respond, action, result, onSuccess }) => {
   const target = convertResourceTypeToTarget("deployment", args.launchpadName);
   const config = getActionConfig(action);
   const { resource } = useResourceStatus(target);
@@ -92,15 +84,16 @@ export const LaunchpadLifecycleActionMessage: React.FC<
     onError: (message) => respond?.(message),
   });
 
-  // Show completion message when args are provided (tool result display)
-  if (args && Object.keys(args).length > 0) {
+  // Show completion message when result is provided (tool result display)
+  if (result) {
     return <LaunchpadLifecycleSuccessMessage args={args} action={action} />;
   }
 
   const mutation = getMutationForAction(action);
 
   const handleSubmit = async () => {
-    await executeAction(action, args.launchpadName);
+    const result = await executeAction(action, args.launchpadName);
+    onSuccess?.(result);
   };
 
   return (

@@ -5,21 +5,37 @@ import { LaunchpadUpdateForm } from "@/components/forms/launchpad/launchpad-upda
 import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-update-form-schema";
 import { useLaunchpadUpdate } from "@/hooks/sealos/launchpad/use-launchpad-update";
 import BaseActionMessage from "@/components/chat/messages/system-messages/components/base-action-message";
-import { Settings } from "lucide-react";
+import { Settings, CircleCheckBigIcon } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useQuery } from "@tanstack/react-query";
 import { LaunchpadObject } from "@/lib/sealos/resources/launchpad/launchpad-object-schema";
 
+// Component that handles the success message and system message appending
+const LaunchpadUpdateSuccessMessage = ({ args }: { args: any }) => {
+  return (
+    <div className="w-full">
+      <div className="flex items-center justify-center p-2 border rounded-lg">
+        <div className="flex items-center gap-2">
+          <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
+          <p className="text-sm">Launchpad updated successfully</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 interface LaunchpadUpdateActionMessageProps {
   args: Partial<LaunchpadUpdateFormData> & { launchpadName: string };
   respond?: (message: string) => void;
+  result?: any;
+  onSuccess?: (data: any) => void;
 }
 
 export const LaunchpadUpdateActionMessage: React.FC<
   LaunchpadUpdateActionMessageProps
-> = ({ args, respond }) => {
+> = ({ args, respond, result, onSuccess }) => {
   const { launchpad } = useTRPCClients();
   const target = convertResourceTypeToTarget("deployment", args.launchpadName);
 
@@ -42,7 +58,8 @@ export const LaunchpadUpdateActionMessage: React.FC<
   const handleSubmit = async (data: LaunchpadUpdateFormData) => {
     try {
       // console.log("Updating launchpad", data);
-      await updateLaunchpad(data);
+      const result = await updateLaunchpad(data);
+      onSuccess?.(result);
     } catch (error) {
       console.error("Failed to update launchpad:", error);
     }
@@ -59,6 +76,11 @@ export const LaunchpadUpdateActionMessage: React.FC<
   };
 
   // console.log("LaunchpadUpdateActionMessage - defaultValues:", defaultValues);
+
+  // Show completion message when result is provided (tool result display)
+  if (result) {
+    return <LaunchpadUpdateSuccessMessage args={args} />;
+  }
 
   return (
     <BaseActionMessage

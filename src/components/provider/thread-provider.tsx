@@ -362,7 +362,9 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
   );
 
   // Update thread state mutation
-  const updateThreadStateMutation = useUpdateThreadStateMutation();
+  const updateThreadStateMutation = useMutation({
+    ...useUpdateThreadStateMutation(),
+  });
 
   // Delete thread mutation with selectThread to null logic
   const deleteThreadMutation = useDeleteThreadMutation();

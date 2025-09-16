@@ -39,9 +39,20 @@ const SystemMessageRenderer = memo(function SystemMessageRenderer({
 
 const ToolResultRenderer = memo(function ToolResultRenderer({
   content,
+  result,
+  id,
+  tool_call_id,
+  status,
 }: {
   content: string;
+  result?: any;
+  id?: string;
+  tool_call_id?: string;
+  status?: string;
 }) {
+  const { updateThreadState, selectedThreadId } = useThreads();
+  const { submitWithContext } = useStreamContext();
+
   const { action, payload } = useMemo(() => {
     try {
       // First try to parse the outer content
@@ -56,18 +67,65 @@ const ToolResultRenderer = memo(function ToolResultRenderer({
       }
 
       // If it's just a string, return as is
-      return { action: null, payload: { content: content } };
+      return {
+        action: null,
+        payload: { content: content },
+      };
     } catch {
       // If parsing fails, return the content as plain text
-      return { action: null, payload: { content: content } };
+      return {
+        action: null,
+        payload: { content: content },
+      };
     }
   }, [content]);
+
+  // Create onSuccess function when result is not present
+  const onSuccess = useMemo(() => {
+    if (result) return undefined; // Don't provide onSuccess if result is already present
+
+    return (successResult: any) => {
+      // Update thread state with the success data
+      if (id && tool_call_id) {
+        updateThreadState.mutate(
+          {
+            threadId: selectedThreadId,
+            values: {
+              messages: [
+                {
+                  id: id,
+                  tool_call_id: tool_call_id,
+                  type: "tool",
+                  content: content,
+                  result: successResult,
+                },
+              ],
+            },
+          },
+          {
+            onSuccess: () => {
+              // Optional: Add any additional logic to run after successful update
+              submitWithContext({
+                messages: [{ type: "system", content: successResult }],
+              });
+            },
+            onError: (error: any) => {
+              console.error(
+                "Failed to update thread state with tool result:",
+                error
+              );
+            },
+          }
+        );
+      }
+    };
+  }, [result, id, tool_call_id, updateThreadState, content]);
 
   // Try to get the specific component for this action
   const Component = action ? get(ToolMessageType, action) : null;
 
   if (Component) {
-    return Component(payload);
+    return Component(payload, result, onSuccess);
   }
 
   // Fallback to plain text rendering
@@ -94,8 +152,8 @@ export function AiMessages({
   className,
 }: AiMessagesProps) {
   const { setSidebarResponding } = useChatActions();
-  const { isLoading } = useStreamContext();
-  const { messages, threadsLoading } = useThreads();
+  const { isLoading, messages } = useStreamContext();
+  const { threadsLoading } = useThreads();
 
   // console.log("messages", messages);
 
@@ -120,7 +178,13 @@ export function AiMessages({
             <SystemMessageRenderer content={message.content} />
           )}
           {message.type === "tool" && typeof message.content === "string" && (
-            <ToolResultRenderer content={message.content} />
+            <ToolResultRenderer
+              content={message.content}
+              result={(message as any).additional_kwargs?.result}
+              id={message.id}
+              tool_call_id={(message as any).tool_call_id}
+              status={(message as any).status}
+            />
           )}
         </div>
       );
