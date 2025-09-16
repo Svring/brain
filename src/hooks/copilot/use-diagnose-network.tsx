@@ -140,9 +140,7 @@ export function useDiagnoseNetwork(
           {
             type: "system",
             content:
-              analyzeNetworkPrompt +
-              "\n\n" +
-              JSON.stringify(networkStatusData),
+              analyzeNetworkPrompt + "\n\n" + JSON.stringify(networkStatusData),
           },
         ]);
       }
