@@ -37,8 +37,15 @@ export const useNodeSelect = ({
   const { selectNode } = useFlowgraphActions();
   const { openSidebarChat } = useChatActions();
   const { updateResourceContext } = useLanggraphActions();
-  const { updateThreadState } = useThreads();
-  const { selectedResource } = useProjectState();
+  const {
+    updateThreadState,
+    getThreads,
+    setThreads,
+    selectThread,
+    setMessages,
+    createNewThread,
+  } = useThreads();
+  const { selectedResource, selectedProject } = useProjectState();
 
   // Get resource status for the target
   const { resource: resource_context } = useResourceStatus(target);
@@ -53,7 +60,7 @@ export const useNodeSelect = ({
     target.name || ""
   }`;
 
-  const handleNodeSelect = () => {
+  const handleNodeSelect = async () => {
     if (target === selectedResource) {
       return;
     }
@@ -63,6 +70,50 @@ export const useNodeSelect = ({
     updateResourceContext({
       selected_resource_context: resource_context,
     });
+
+    // Fetch threads based on project and target, then select the latest thread
+    try {
+      const threads = await getThreads(selectedProject, target);
+      if (threads && threads.length > 0) {
+        // Threads are already in desc order, so select the first one (latest)
+        const latestThread = threads[0];
+
+        // Select the latest thread
+        selectThread(latestThread.thread_id);
+
+        // Set messages from the latest thread
+        const threadMessages = (latestThread.values as any)?.messages;
+        if (Array.isArray(threadMessages)) {
+          setMessages(threadMessages);
+        } else {
+          setMessages([]);
+        }
+
+        // Update threads list
+        setThreads(threads);
+      } else {
+        // No threads found, create a new thread and select it
+        createNewThread.mutate(undefined, {
+          onSuccess: (data: any) => {
+            if (data?.thread_id) {
+              selectThread(data.thread_id);
+              setMessages([]); // Clear messages for new thread
+              // Refresh threads list to include the new thread
+              getThreads(selectedProject, target).then((updatedThreads) => {
+                setThreads(updatedThreads);
+              });
+            }
+          },
+          onError: (error: any) => {
+            console.error("Failed to create new thread:", error);
+            setMessages([]);
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Failed to fetch threads for node select:", error);
+      setMessages([]);
+    }
 
     openSidebarChat();
     onSuccess?.();

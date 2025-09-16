@@ -1,6 +1,7 @@
 "use client";
 
 import { Spinner } from "@/components/ui/spinner";
+import { TextShimmer } from "@/components/ui/text-shimmer";
 
 interface LoadingScreenProps {
   text: string;
@@ -19,7 +20,9 @@ export function LoadingScreen({
       className={`flex flex-col items-center justify-center h-full w-full space-y-4 ${className}`}
     >
       <Spinner size={size} />
-      {/* <p className="text-muted-foreground text-center">{text}</p> */}
+      <TextShimmer className="text-muted-foreground text-center">
+        {text}
+      </TextShimmer>
     </div>
   );
 }

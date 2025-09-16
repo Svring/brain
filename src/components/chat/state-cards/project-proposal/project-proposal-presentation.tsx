@@ -58,7 +58,7 @@ export function ProjectProposalPresentation({
     <BaseActionMessage
       headerTitle={{
         icon: FolderPlus,
-        name: "Create Project",
+        name: "Create",
       }}
       headerSlot={viewToggleButtons}
       onApply={handleCreate}

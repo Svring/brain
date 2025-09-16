@@ -2,12 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
-import {
-  Plus,
-  ChevronRight,
-  Focus,
-  History,
-} from "lucide-react";
+import { Plus, ChevronRight, Focus, History } from "lucide-react";
 import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
 import { cn } from "@/lib/utils";
 import {
@@ -23,12 +18,25 @@ import { useThreads } from "@/components/provider/thread-provider";
 export function HeaderActions() {
   const { selectedResource } = useProjectState();
   const { sidebarChatMaximized } = useChatState();
-  const { closeSidebarChat, maximizeSidebar, minimizeSidebar } = useChatActions();
+  const { closeSidebarChat, maximizeSidebar, minimizeSidebar } =
+    useChatActions();
   const { fitView } = useReactFlow();
-  const { createNewThread } = useThreads();
+  const { createNewThread, selectThread, setMessages } = useThreads();
 
   const handleNewChat = () => {
-    createNewThread.mutate(undefined);
+    createNewThread.mutate(undefined, {
+      onSuccess: (data: any) => {
+        if (data?.thread_id) {
+          // Select the newly created thread
+          selectThread(data.thread_id);
+          // Clear messages for the new thread
+          setMessages([]);
+        }
+      },
+      onError: (error: any) => {
+        console.error("Failed to create new thread:", error);
+      },
+    });
   };
 
   return (
@@ -47,9 +55,9 @@ export function HeaderActions() {
         </TooltipTrigger>
         <TooltipContent>New Chat</TooltipContent>
       </Tooltip>
-      
+
       <HistoryDropdown />
-      
+
       <Tooltip>
         <TooltipTrigger asChild>
           <Toggle
@@ -78,7 +86,7 @@ export function HeaderActions() {
             : "Fit View"}
         </TooltipContent>
       </Tooltip>
-      
+
       <Tooltip>
         <TooltipTrigger asChild>
           <Button

@@ -7,13 +7,14 @@ import { get } from "lodash";
 import { useAutoScroll } from "@/hooks/use-auto-scroll";
 import { Button } from "@/components/ui/button";
 import { ArrowDown, Loader2 } from "lucide-react";
-import React, { useMemo, memo, useEffect } from "react";
+import React, { useMemo, memo, useEffect, useState } from "react";
 import { createHash } from "crypto";
 import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
 import { useStreamContext } from "@/components/provider/stream-provider";
 import type { Message } from "@langchain/langgraph-sdk";
 import { useThreads } from "@/components/provider/thread-provider";
 import { LoadingScreen } from "@/components/ui/loading-screen";
+import { useRouter } from "next/navigation";
 
 const SystemMessageRenderer = memo(function SystemMessageRenderer({
   content,
@@ -52,6 +53,7 @@ const ToolResultRenderer = memo(function ToolResultRenderer({
 }) {
   const { setMessages } = useThreads();
   const { sendMessage } = useStreamContext();
+  const router = useRouter();
 
   const { action, payload } = useMemo(() => {
     try {
@@ -103,11 +105,17 @@ const ToolResultRenderer = memo(function ToolResultRenderer({
           });
         });
 
-        // Continue with the next step in the conversation
-        sendMessage([{ type: "system", content: successResult }]);
+        // Check if this is a propose_project action and navigate to the project
+        if (action === "propose_project" && successResult) {
+          // successResult should be the project name
+          router.push(`/projects/${successResult}`);
+        } else {
+          // Continue with the next step in the conversation for other actions
+          sendMessage([{ type: "system", content: successResult }]);
+        }
       }
     };
-  }, [result, id, setMessages, sendMessage]);
+  }, [result, id, setMessages, sendMessage, action, router]);
 
   // Try to get the specific component for this action
   const Component = action ? get(ToolMessageType, action) : null;
@@ -146,13 +154,7 @@ export function AiMessages({
   const { setSidebarResponding } = useChatActions();
   const { threadsLoading } = useThreads();
   const { isStreaming } = useThreads();
-
-  console.log("isStreaming", isStreaming);
-
-  // Show loading screen when threads are loading
-  if (threadsLoading) {
-    return <LoadingScreen text="Loading messages..." />;
-  }
+  const [showLoadingScreen, setShowLoadingScreen] = useState(false);
 
   useEffect(() => {
     setSidebarResponding(isLoading);

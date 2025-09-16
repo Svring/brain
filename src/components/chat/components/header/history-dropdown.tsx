@@ -16,29 +16,95 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useThreads } from "@/components/provider/thread-provider";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DeleteThreadDialog } from "./delete-thread-dialog";
 import { Message, Thread } from "@langchain/langgraph-sdk";
 import { Spinner } from "@/components/ui/spinner";
+import { useProjectState } from "@/contexts/project/project-context";
 
 export function HistoryDropdown() {
-  const { selectedThreadId, selectThread, threads, deleteThread } =
-    useThreads();
+  const {
+    selectedThreadId,
+    selectThread,
+    threads,
+    deleteThread,
+    getThreads,
+    setThreads,
+    setMessages,
+  } = useThreads();
+  const { selectedProject, selectedResource } = useProjectState();
   const queryClient = useQueryClient();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [threadToDelete, setThreadToDelete] = useState<string | null>(null);
+  const [filteredThreads, setFilteredThreads] = useState<any[]>([]);
+  const [loadingFilteredThreads, setLoadingFilteredThreads] = useState(false);
 
-  const handleHistoryDropdownHover = () => {
-    // Refetch threads when hovering over the history dropdown
-    queryClient.refetchQueries({
-      queryKey: ["langgraph", "threads", "search"],
-    });
+  // Fetch threads for current project and resource
+  useEffect(() => {
+    const fetchFilteredThreads = async () => {
+      if (!selectedProject && !selectedResource) {
+        setFilteredThreads([]);
+        return;
+      }
+
+      setLoadingFilteredThreads(true);
+      try {
+        const threads = await getThreads(selectedProject, selectedResource);
+        setFilteredThreads(threads);
+      } catch (error) {
+        console.error("Failed to fetch filtered threads:", error);
+        setFilteredThreads([]);
+      } finally {
+        setLoadingFilteredThreads(false);
+      }
+    };
+
+    fetchFilteredThreads();
+  }, [selectedProject, selectedResource]);
+
+  const handleHistoryDropdownHover = async () => {
+    // Refetch threads for current project and resource when hovering
+    if (selectedProject || selectedResource) {
+      setLoadingFilteredThreads(true);
+      try {
+        const threads = await getThreads(selectedProject, selectedResource);
+        setFilteredThreads(threads);
+      } catch (error) {
+        console.error("Failed to refetch filtered threads:", error);
+      } finally {
+        setLoadingFilteredThreads(false);
+      }
+    }
   };
 
-  const handleThreadSelect = (threadId: string): void => {
+  const handleThreadSelect = async (threadId: string): Promise<void> => {
     console.log("handleThreadSelect", threadId);
+
+    // Select the thread first
     selectThread(threadId);
+
+    // Fetch and set messages for the selected thread
+    try {
+      const threads = await getThreads(selectedProject, selectedResource);
+      const selectedThread = threads.find(
+        (thread) => thread.thread_id === threadId
+      );
+
+      if (selectedThread) {
+        // Extract messages from the thread
+        const threadMessages = (selectedThread.values as any)?.messages;
+        if (Array.isArray(threadMessages)) {
+          setThreads(threads); // Update threads list
+          setMessages(threadMessages); // Set the messages for the selected thread
+        } else {
+          setMessages([]); // Clear messages if no messages found
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch thread messages:", error);
+      setMessages([]); // Clear messages on error
+    }
   };
 
   const handleDeleteThread = (threadId: string, event: React.MouseEvent) => {
@@ -105,8 +171,13 @@ export function HistoryDropdown() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="max-w-xs space-y-1">
-              {threads?.length ? (
-                threads.map((thread) => (
+              {loadingFilteredThreads ? (
+                <div className="p-2 text-sm text-muted-foreground text-center flex items-center justify-center">
+                  <Spinner size={16} />
+                  <span className="ml-2">Loading threads...</span>
+                </div>
+              ) : filteredThreads?.length ? (
+                filteredThreads.map((thread) => (
                   <DropdownMenuItem
                     key={thread.thread_id}
                     onClick={() => handleThreadSelect(thread.thread_id)}
@@ -147,7 +218,9 @@ export function HistoryDropdown() {
                 ))
               ) : (
                 <div className="p-2 text-sm text-muted-foreground text-center">
-                  No chat history available
+                  {selectedProject || selectedResource
+                    ? "No chat history for this project/resource"
+                    : "No chat history available"}
                 </div>
               )}
             </DropdownMenuContent>

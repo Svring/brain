@@ -10,13 +10,7 @@ import { cn } from "@/lib/utils";
 
 export default function AiChatbox() {
   const { sidebarChatOpen } = useChatState();
-  const {
-    messages,
-    setMessages,
-    selectedThreadId,
-    isStreaming,
-    setIsStreaming,
-  } = useThreads();
+  const { messages } = useThreads();
   const { streamThread, isLoading, stop } = useStreamContext();
 
   return (

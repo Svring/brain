@@ -277,12 +277,12 @@ export function useProjectCreate(options?: CreateProjectOptions) {
       }
 
       // Navigate to the created project
-      router.push(`/projects/${projectName}`);
+      // router.push(`/projects/${projectName}`);
 
       // Call success callback if provided
       options?.onSuccess?.(projectName);
 
-      return { projectName, successfulResources, failedResources };
+      return projectName;
     } catch (error: any) {
       toast.error(
         error.message || "Failed to create project. Please try again."

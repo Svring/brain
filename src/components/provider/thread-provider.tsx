@@ -31,7 +31,10 @@ import { Message } from "@langchain/langgraph-sdk";
 
 interface ThreadContextType {
   // Thread management
-  getThreads: () => Promise<any[]>;
+  getThreads: (
+    projectName?: string | null,
+    resourceTarget?: any
+  ) => Promise<any[]>;
   threads: any[];
   setThreads: Dispatch<SetStateAction<any[]>>;
   threadsLoading: boolean;
@@ -88,25 +91,31 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
   });
 
   // Get threads function
-  const getThreads = useCallback(async (): Promise<any[]> => {
-    if (!auth?.kubeconfig) return [];
+  const getThreads = useCallback(
+    async (
+      projectName?: string | null,
+      resourceTarget?: any
+    ): Promise<any[]> => {
+      if (!auth?.kubeconfig) return [];
 
-    try {
-      setThreadsLoading(true);
-      const threads = await searchThreads({
-        kubeconfig: auth.kubeconfig,
-        projectName: selectedProject,
-        resourceTarget: selectedResource,
-        graph_id: process.env.NEXT_PUBLIC_LANGGRAPH_GRAPH_ID || "orca",
-      });
-      return threads;
-    } catch (error) {
-      console.error("Failed to fetch threads:", error);
-      return [];
-    } finally {
-      setThreadsLoading(false);
-    }
-  }, [auth?.kubeconfig, selectedProject, selectedResource]);
+      try {
+        setThreadsLoading(true);
+        const threads = await searchThreads({
+          kubeconfig: auth.kubeconfig,
+          projectName: projectName,
+          resourceTarget: resourceTarget,
+          graph_id: process.env.NEXT_PUBLIC_LANGGRAPH_GRAPH_ID || "orca",
+        });
+        return threads;
+      } catch (error) {
+        console.error("Failed to fetch threads:", error);
+        return [];
+      } finally {
+        setThreadsLoading(false);
+      }
+    },
+    [auth?.kubeconfig]
+  );
 
   // Enhanced selectThread function that also updates URL state
   const enhancedSelectThread = useCallback(
