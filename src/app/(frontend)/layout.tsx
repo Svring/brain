@@ -26,11 +26,6 @@ import {
   Loader,
 } from "lucide-react";
 
-// const lora = Lora({
-//   subsets: ["latin"],
-//   variable: "--font-lora",
-// });
-
 export const metadata: Metadata = {
   title: "Sealos Brain",
   description: "Sealos Brain",
@@ -46,12 +41,11 @@ export default async function RootLayout({
     MODE: process.env.MODE || "production",
     LANGSMITH_API_KEY: process.env.LANGSMITH_API_KEY || "",
     LANGGRAPH_DEPLOYMENT_URL: process.env.LANGGRAPH_DEPLOYMENT_URL || "",
+    LANGGRAPH_GRAPH_ID: process.env.LANGGRAPH_GRAPH_ID || "",
     AGENT_BASE_URL: process.env.AGENT_BASE_URL || "",
     AGENT_API_KEY: process.env.AGENT_API_KEY || "",
     AGENT_MODEL_NAME: process.env.AGENT_MODEL_NAME || "",
   };
-
-  console.log("env layout", env);
 
   const isDevelopment = env.MODE === "development";
   const payloadUser = isDevelopment ? await getUser() : null;

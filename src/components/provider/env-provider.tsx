@@ -6,6 +6,7 @@ interface EnvContextType {
   MODE: string;
   LANGSMITH_API_KEY: string;
   LANGGRAPH_DEPLOYMENT_URL: string;
+  LANGGRAPH_GRAPH_ID: string;
   AGENT_BASE_URL: string;
   AGENT_API_KEY: string;
   AGENT_MODEL_NAME: string;
@@ -19,6 +20,7 @@ interface EnvProviderProps {
     MODE: string;
     LANGSMITH_API_KEY: string;
     LANGGRAPH_DEPLOYMENT_URL: string;
+    LANGGRAPH_GRAPH_ID: string;
     AGENT_BASE_URL: string;
     AGENT_API_KEY: string;
     AGENT_MODEL_NAME: string;

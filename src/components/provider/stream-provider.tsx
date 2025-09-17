@@ -59,7 +59,7 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
     selectedResourceContext,
   } = useProjectState();
   const { auth } = useAuthState();
-  const { LANGGRAPH_DEPLOYMENT_URL } = useEnv();
+  const { LANGGRAPH_DEPLOYMENT_URL, LANGGRAPH_GRAPH_ID } = useEnv();
   const queryClient = useQueryClient();
 
   // Create thread run stream mutation
@@ -67,7 +67,7 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
 
   const streamValue = useStream({
     apiUrl: LANGGRAPH_DEPLOYMENT_URL,
-    assistantId: "orca",
+    assistantId: LANGGRAPH_GRAPH_ID,
     threadId: selectedThreadId || null,
     // fetchStateHistory: true,
     onThreadId: async (id) => {
@@ -150,7 +150,7 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
       apiUrl: LANGGRAPH_DEPLOYMENT_URL,
     });
 
-    const stream = client.runs.stream(selectedThreadId, "orca", {
+    const stream = client.runs.stream(selectedThreadId, LANGGRAPH_GRAPH_ID, {
       ...payload,
       streamMode: "updates",
     });

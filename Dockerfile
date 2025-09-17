@@ -42,8 +42,5 @@ COPY --from=builder /app/public ./public
 EXPOSE 3000
 # Set environment variables
 ENV NODE_ENV=production
-ENV NEXT_PUBLIC_MODE=production
-ENV NEXT_PUBLIC_LANGGRAPH_DEPLOYMENT_URL=https://kccpbrlxlwnp.sealosbja.site
-ENV NEXT_PUBLIC_LANGGRAPH_GRAPH_ID=orca
 # Run the Next.js app with pnpm
 CMD ["pnpm", "start"]

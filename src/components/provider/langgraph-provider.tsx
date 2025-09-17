@@ -22,12 +22,13 @@ import { StreamProvider } from "./stream-provider";
 
 // Inner component that uses langgraph state and actions
 function LanggraphConfigInner({ children }: { children: ReactNode }) {
-  const isProduction = process.env.NEXT_PUBLIC_MODE === "production";
   const { auth } = useAuthState();
   const env = useEnv();
   const aiProxyContext = useAiProxyContext();
   const { isLoading, isLoaded, isUnloaded } = useLanggraphState();
   const { setConfig, setConfigFailed } = useLanggraphActions();
+
+  const isProduction = env.MODE === "production";
 
   // Query AI proxy tokens in production - only when not loaded
   const { data: aiProxyTokens, isLoading: tokensLoading } = useQuery({
@@ -42,26 +43,13 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
   );
   const createTokenMutation = useCreateAiProxyTokenMutation(aiProxyContext);
 
-  console.log("env", env);
-
   // Handle initial config loading
   useEffect(() => {
     if (isLoading) {
       // Check if environment variables are available first
-      // Add logs for debugging configuration loading
-      console.log("LanggraphConfigInner: isLoading", isLoading);
-      console.log("LanggraphConfigInner: env", env);
-
       if (env.AGENT_API_KEY && env.AGENT_BASE_URL && env.AGENT_MODEL_NAME) {
-        console.log(
-          "LanggraphConfigInner: Using environment variables for config",
-          {
-            base_url: env.AGENT_BASE_URL,
-            api_key: env.AGENT_API_KEY,
-            model_name: env.AGENT_MODEL_NAME,
-          }
-        );
         // Use environment variables as first priority
+        console.log("env", env);
         setConfig({
           base_url: env.AGENT_BASE_URL,
           api_key: env.AGENT_API_KEY,
@@ -87,18 +75,8 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
               modelName: "gpt-4.1",
             };
 
-        console.log("LanggraphConfigInner: Fallback config", config);
-
         // Check if config is complete
         if (config.apiKey && config.baseUrl && config.modelName) {
-          console.log(
-            "LanggraphConfigInner: Setting config from fallback config",
-            {
-              base_url: config.baseUrl,
-              api_key: config.apiKey,
-              model_name: config.modelName,
-            }
-          );
           setConfig({
             base_url: config.baseUrl,
             api_key: config.apiKey,
@@ -106,9 +84,6 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
           });
         } else if (isProduction && !tokensLoading) {
           // No brain token found in production
-          console.warn(
-            "LanggraphConfigInner: Config incomplete in production, setting config failed"
-          );
           setConfigFailed();
         }
       }
