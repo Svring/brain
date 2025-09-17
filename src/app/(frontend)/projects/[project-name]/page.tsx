@@ -18,10 +18,10 @@ import FloatingConnectionLine from "@/components/flowgraph/edge/floating-connect
 import { useFlowgraphCommand } from "@/hooks/flowgraph/use-flowgraph-command";
 import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
 import { useThreads } from "@/components/provider/thread-provider";
-import {
-  useFlowgraphActions,
-  useFlowgraphState,
-} from "@/contexts/flowgraph/flowgraph-context";
+// import {
+//   useFlowgraphActions,
+//   useFlowgraphState,
+// } from "@/contexts/flowgraph/flowgraph-context";
 import { useProjectActions } from "@/contexts/project/project-context";
 import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
 import { cn } from "@/lib/utils";
@@ -29,24 +29,27 @@ import { LoadingScreen } from "@/components/ui/loading-screen";
 import { REACT_FLOW_CONFIG } from "@/lib/flowgraph/flowgraph-constant/flowgraph-constant-config";
 import edgeTypes from "@/components/flowgraph/edge/edge-types";
 import nodeTypes from "@/components/flowgraph/node/node-types";
-import useFlowgraph from "@/hooks/flowgraph/use-flowgraph";
+// import useFlowgraph from "@/hooks/flowgraph/use-flowgraph";
 import useProjectResources from "@/hooks/brain/use-project-resources";
 import { useProjectRefresh } from "@/hooks/brain/use-project-refresh";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { useFlowgraphNodes } from "@/hooks/flowgraph/use-flowgraph-nodes";
 
 function ProjectFloatingUI({
   projectName,
   sidebarChatMaximized,
   isLoading,
   onRefresh,
+  nodes,
 }: {
   projectName: string;
   sidebarChatMaximized: boolean;
   isLoading: boolean;
   onRefresh: () => void;
+  nodes: any[];
 }) {
   const { isOpen, onOpenChange, onOpen } = useFlowgraphCommand();
-  const { nodes } = useFlowgraphState();
+  // const { nodes } = useFlowgraphState();
 
   // Don't show floating UI when loading or when nodes/edges are empty
   const shouldShowLoading = isLoading || nodes.length === 0;
@@ -82,15 +85,23 @@ function ProjectFlow({
   resourceTargets,
   isLoadingResources,
   isLoading,
-}: {
+  nodes,
+  edges,
+}: // onNodesChange,
+// onEdgesChange,
+{
   projectName: string;
   sidebarChatMaximized: boolean;
   resourceTargets: any[];
   isLoadingResources: boolean;
   isLoading: boolean;
+  nodes: any[];
+  edges: any[];
+  // onNodesChange: (changes: any) => void;
+  // onEdgesChange: (changes: any) => void;
 }) {
-  const { nodes, edges } = useFlowgraphState();
-  const { onNodesChange, onEdgesChange } = useFlowgraphActions();
+  // const { nodes, edges } = useFlowgraphState();
+  // const { onNodesChange, onEdgesChange } = useFlowgraphActions();
   // useCopilotActions();
 
   // Show loading if either isLoading is true OR if nodes or edges length equals 0
@@ -117,8 +128,8 @@ function ProjectFlow({
       fitViewOptions={REACT_FLOW_CONFIG.fitViewOptions}
       nodes={nodes}
       nodeTypes={nodeTypes}
-      onEdgesChange={onEdgesChange}
-      onNodesChange={onNodesChange}
+      // onEdgesChange={onEdgesChange}
+      // onNodesChange={onNodesChange}
       panOnScroll={!sidebarChatMaximized}
       panOnDrag={!sidebarChatMaximized}
       zoomOnScroll={!sidebarChatMaximized}
@@ -147,11 +158,17 @@ function ProjectFlowWithLoading({
   isLoadingResources: boolean;
   onRefresh: () => void;
 }) {
-  console.log("resourceTargets", resourceTargets);
-  const { isLoading } = useFlowgraph(resourceTargets, isLoadingResources);
-  const { nodes } = useFlowgraphState();
+  // console.log("resourceTargets", resourceTargets);
+  // const { isLoading } = useFlowgraph(resourceTargets, isLoadingResources);
+  // const { nodes } = useFlowgraphState();
+  const {
+    nodes: flowgraphNodes,
+    edges: flowgraphEdges,
+    isLoading: isLoadingFlowgraphNodes,
+  } = useFlowgraphNodes(resourceTargets);
 
-  const shouldShowLoading = isLoading || nodes.length === 0;
+  const shouldShowLoading =
+    isLoadingFlowgraphNodes || flowgraphNodes.length === 0;
 
   return (
     <>
@@ -160,13 +177,18 @@ function ProjectFlowWithLoading({
         sidebarChatMaximized={sidebarChatMaximized}
         resourceTargets={resourceTargets}
         isLoadingResources={isLoadingResources}
-        isLoading={isLoading}
+        isLoading={isLoadingFlowgraphNodes}
+        nodes={flowgraphNodes}
+        edges={flowgraphEdges}
+        // onNodesChange={onNodesChange}
+        // onEdgesChange={onEdgesChange}
       />
       <ProjectFloatingUI
         projectName={projectName}
         sidebarChatMaximized={sidebarChatMaximized}
         isLoading={shouldShowLoading}
         onRefresh={onRefresh}
+        nodes={flowgraphNodes}
       />
     </>
   );
@@ -179,7 +201,6 @@ export default function ProjectPage() {
     useProjectActions();
   const { sidebarChatOpen, sidebarChatMaximized } = useChatState();
   const { closeSidebarChat } = useChatActions();
-  const { refresh } = useFlowgraphActions();
   const { refreshProject } = useProjectRefresh(projectName);
 
   // Fetch project resources
@@ -189,7 +210,7 @@ export default function ProjectPage() {
   useEffect(() => {
     selectProject(projectName);
     clearSelectedProjectResources();
-    refresh();
+    // refresh();
     return () => {
       clearSelectedProject();
       closeSidebarChat();

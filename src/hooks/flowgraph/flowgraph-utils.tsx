@@ -7,6 +7,9 @@ import { inferRelianceFromEnv } from "@/lib/sealos/services/reliances/env-relian
 import { inferRelianceFromImage } from "@/lib/sealos/services/reliances/image-reliance";
 import { MarkerType } from "@xyflow/react";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { applyLayout as applyNormalLayout } from "@/lib/flowgraph/layout/normal-layout";
+import { applySplitLayout } from "@/lib/flowgraph/layout/split-layout";
+import type { LayoutOptions } from "@/lib/flowgraph/layout/types";
 import _ from "lodash";
 
 export const convertObjectsToNodes = (objects: ResourceObject[]): Node[] =>
@@ -136,4 +139,80 @@ export const createDevGroup = (nodes: Node[]): Node[] => {
   ];
 };
 
-export const applyLayout = (nodes: Node[]): Node[] => nodes;
+// Layout options matching the flowgraph machine
+const LAYOUT_OPTIONS = { direction: "BT", rankSep: 150, nodeSep: 150 } as const;
+const SPLIT_OPTIONS = {
+  groupId: "devbox-group",
+  groupPadding: 20,
+  gapBetweenGroupAndRest: 200,
+  groupPosition: { x: -700, y: 0 },
+  childNodeWidth: 280,
+  childNodeHeight: 200,
+  // Account for smaller network nodes inside the group
+  // StatefulSet nodes are taller due to hem component
+  getChildNodeSize: (node: Node) => {
+    if (node.type === "network") {
+      return { width: 280, height: 56 };
+    }
+    if (node.type === "statefulset") {
+      return { width: 280, height: 240 }; // h-60 in Tailwind = 240px (hem component height)
+    }
+    return { width: 280, height: 200 };
+  },
+  // Treat network nodes as shorter than default nodes during outside layout
+  // StatefulSet nodes are taller due to hem component
+  getOutsideNodeSize: (node: Node) => {
+    if (node.type === "network") {
+      return { width: 280, height: 56 }; // h-14 in Tailwind = 56px
+    }
+    if (node.type === "statefulset") {
+      return { width: 280, height: 240 }; // h-60 in Tailwind = 240px (hem component height)
+    }
+    return { width: 280, height: 200 };
+  },
+  groupLayoutOptions: {
+    ...LAYOUT_OPTIONS,
+    edgeAware: true,
+    barycentricIterations: 3,
+  },
+  outsideLayoutOptions: {
+    ...LAYOUT_OPTIONS,
+    edgeAware: true,
+    barycentricIterations: 3,
+  },
+} as const;
+
+export const applyLayout = (
+  nodes: Node[],
+  edges: Edge[] = [],
+  options: LayoutOptions = {}
+): Node[] => {
+  if (nodes.length === 0) return nodes;
+
+  // Check if there's a devbox group node
+  const hasDevboxGroup = nodes.some((node) => node.id === "devbox-group");
+  
+  if (hasDevboxGroup) {
+    // Use split layout for devbox groups with machine's options
+    return applySplitLayout(nodes, edges, {
+      ...SPLIT_OPTIONS,
+      // Allow options to override default settings
+      groupLayoutOptions: {
+        ...SPLIT_OPTIONS.groupLayoutOptions,
+        ...options,
+      },
+      outsideLayoutOptions: {
+        ...SPLIT_OPTIONS.outsideLayoutOptions,
+        ...options,
+      },
+    });
+  } else {
+    // Use normal layout for regular nodes with machine's options
+    return applyNormalLayout(nodes, edges, {
+      ...LAYOUT_OPTIONS,
+      edgeAware: true,
+      barycentricIterations: 3,
+      ...options,
+    });
+  }
+};

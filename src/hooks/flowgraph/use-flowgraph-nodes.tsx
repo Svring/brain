@@ -26,36 +26,51 @@ export const useFlowgraphNodes = (targets: ResourceTarget[]) => {
   // Fetch resource objects for the given targets
   const resourceObjectsQuery = useResourceObjects(targets);
 
-  // Extract resource objects from the query results
-  const objects = resourceObjectsQuery.data;
+  // Memoize the computation of nodes and edges
+  const { nodes, edges } = useMemo(() => {
+    // Return empty arrays if still loading or no data
+    if (resourceObjectsQuery.isLoading || !resourceObjectsQuery.data) {
+      return {
+        nodes: [],
+        edges: [],
+      };
+    }
 
-  // Pass objects to the utility functions
-  const baseNodes = convertObjectsToNodes(objects);
-  const reliances = inferObjectsReliances(objects);
+    // Extract resource objects from the query results
+    const objects = resourceObjectsQuery.data;
 
-  // Convert reliances to edges
-  const baseEdges = convertReliancesToEdges(reliances);
+    // Pass objects to the utility functions
+    const baseNodes = convertObjectsToNodes(objects);
+    const reliances = inferObjectsReliances(objects);
 
-  // Derive network nodes and edges from the base nodes
-  const { nodes: networkNodes, edges: networkEdges } =
-    deriveNetworkNodesAndEdges(objects);
+    // Convert reliances to edges
+    const baseEdges = convertReliancesToEdges(reliances);
 
-  // Merge base nodes and network nodes
-  const mergedNodes = [...baseNodes, ...networkNodes];
+    // Derive network nodes and edges from the base nodes
+    const { nodes: networkNodes, edges: networkEdges } =
+      deriveNetworkNodesAndEdges(objects);
 
-  // Apply devbox grouping to merged nodes
-  const groupedNodes = createDevGroup(mergedNodes);
+    // Merge base nodes and network nodes
+    const mergedNodes = [...baseNodes, ...networkNodes];
 
-  // Apply layout to the grouped nodes
-  const nodes = applyLayout(groupedNodes);
+    // Apply devbox grouping to merged nodes
+    const groupedNodes = createDevGroup(mergedNodes);
+
+    // Combine all edges for layout calculation
+    const allEdges = [...(baseEdges || []), ...(networkEdges || [])];
+
+    // Apply layout to the grouped nodes
+    const layoutedNodes = applyLayout(groupedNodes, allEdges);
+
+    return {
+      nodes: layoutedNodes,
+      edges: allEdges,
+    };
+  }, [resourceObjectsQuery.data]);
 
   return {
     nodes,
-    baseNodes,
-    reliances,
-    baseEdges,
-    networkNodes,
-    networkEdges,
+    edges,
     isLoading: resourceObjectsQuery.isLoading,
     isPending: resourceObjectsQuery.pending,
     error: resourceObjectsQuery.error,
