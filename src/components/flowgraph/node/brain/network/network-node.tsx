@@ -23,7 +23,6 @@ type NetworkNodeProps = {
   data: { target: CustomResourceTarget | BuiltinResourceTarget };
 };
 
-
 export default function NetworkNode({ data }: NetworkNodeProps) {
   const { target } = data;
   const nodeId = `network-${target.name || target.resourceType}`;

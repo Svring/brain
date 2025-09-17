@@ -1,20 +1,4 @@
-import type { Env } from "@/schemas/forms/universal/env-schema";
-
-interface ResourceObject {
-  name: string;
-  kind: string;
-  env?: Env[];
-  [key: string]: any;
-}
-
-interface ResourceReliances {
-  [kind: string]: {
-    [resourceName: string]: Array<{
-      name: string;
-      kind: string;
-    }>;
-  };
-}
+import type { ResourceObject, ResourceReliances } from "./reliances-schema";
 
 /**
  * Infers resource dependencies based on environment variables

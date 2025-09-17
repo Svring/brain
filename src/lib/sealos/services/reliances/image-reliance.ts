@@ -1,28 +1,12 @@
 import { truncateImage } from "@/lib/sealos/sealos-utils";
-import { Image } from "@/schemas/forms/launchpad/components/launchpad-image-schema";
-
-interface ResourceObject {
-  name: string;
-  kind: string;
-  image?: Image | string; // Can be either ImageSchema object or string
-  [key: string]: any;
-}
-
-interface ResourceReliances {
-  [kind: string]: {
-    [resourceName: string]: Array<{
-      name: string;
-      kind: string;
-    }>;
-  };
-}
+import type { ResourceObject, ResourceReliances } from "./reliances-schema";
 
 /**
  * Extracts image name from either ImageSchema object or string
  * @param image - Image can be either ImageSchema object or string
  * @returns The image name string or undefined if not available
  */
-function getImageName(image: Image | string | undefined): string | undefined {
+function getImageName(image: any | string | undefined): string | undefined {
   if (!image) return undefined;
 
   if (typeof image === "string") {

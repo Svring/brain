@@ -19,12 +19,8 @@ export const useResourceObjects = (targets: ResourceTarget[]) => {
     ),
     combine: (results) => {
       return {
-        data: results.map((result, index) => {
-          const object: any = (result as any).data;
-          return {
-            object,
-            target: targets[index],
-          } as any;
+        data: results.map((result) => {
+          return (result as any).data;
         }),
         pending: results.some((result) => result.isPending),
         error: results.find((result) => result.error)?.error,

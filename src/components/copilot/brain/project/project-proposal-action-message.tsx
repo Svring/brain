@@ -71,28 +71,28 @@ export function ProjectProposalActionMessage({
     return <ProjectCreationSuccessMessage args={args.project_proposal} />;
   }
 
-  const viewToggleButtons = (
-    <div className="flex items-center gap-2">
-      <Button
-        variant={viewMode === "list" ? "default" : "outline"}
-        size="sm"
-        onClick={() => setViewMode("list")}
-        className="flex items-center gap-2"
-      >
-        <List className="h-4 w-4" />
-        Resources
-      </Button>
-      <Button
-        variant={viewMode === "graph" ? "default" : "outline"}
-        size="sm"
-        onClick={() => setViewMode("graph")}
-        className="flex items-center gap-2"
-      >
-        <Workflow className="h-4 w-4" />
-        Preview
-      </Button>
-    </div>
-  );
+  // const viewToggleButtons = (
+  //   <div className="flex items-center gap-2">
+  //     <Button
+  //       variant={viewMode === "list" ? "default" : "outline"}
+  //       size="sm"
+  //       onClick={() => setViewMode("list")}
+  //       className="flex items-center gap-2"
+  //     >
+  //       <List className="h-4 w-4" />
+  //       Resources
+  //     </Button>
+  //     <Button
+  //       variant={viewMode === "graph" ? "default" : "outline"}
+  //       size="sm"
+  //       onClick={() => setViewMode("graph")}
+  //       className="flex items-center gap-2"
+  //     >
+  //       <Workflow className="h-4 w-4" />
+  //       Preview
+  //     </Button>
+  //   </div>
+  // );
 
   return (
     <BaseActionMessage
@@ -100,7 +100,7 @@ export function ProjectProposalActionMessage({
         icon: FolderPlus,
         name: "Create Project",
       }}
-      headerSlot={viewToggleButtons}
+      // headerSlot={viewToggleButtons}
       onApply={handleCreate}
       isSubmitting={isCreating}
       disabled={isCreating}
@@ -108,17 +108,17 @@ export function ProjectProposalActionMessage({
       className="bg-background-primary"
     >
       {/* Content based on view mode */}
-      {viewMode === "list" ? (
+      {/* {viewMode === "list" ? ( */}
         <ProjectProposalCard
           proposal={internalProposal}
           onProposalUpdate={setInternalProposal}
         />
-      ) : (
+      {/* ) : (
         <ProjectProposalPreview
           proposal={internalProposal}
           className="border rounded-lg"
         />
-      )}
+      )} */}
     </BaseActionMessage>
   );
 }

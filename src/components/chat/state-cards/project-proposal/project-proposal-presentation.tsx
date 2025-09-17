@@ -30,28 +30,28 @@ export function ProjectProposalPresentation({
     await createProject(internalProposal);
   };
 
-  const viewToggleButtons = (
-    <div className="flex items-center gap-2">
-      <Button
-        variant={viewMode === "list" ? "default" : "outline"}
-        size="sm"
-        onClick={() => setViewMode("list")}
-        className="flex items-center gap-2"
-      >
-        <List className="h-4 w-4" />
-        Resources
-      </Button>
-      <Button
-        variant={viewMode === "graph" ? "default" : "outline"}
-        size="sm"
-        onClick={() => setViewMode("graph")}
-        className="flex items-center gap-2"
-      >
-        <Workflow className="h-4 w-4" />
-        Preview
-      </Button>
-    </div>
-  );
+  // const viewToggleButtons = (
+  //   <div className="flex items-center gap-2">
+  //     <Button
+  //       variant={viewMode === "list" ? "default" : "outline"}
+  //       size="sm"
+  //       onClick={() => setViewMode("list")}
+  //       className="flex items-center gap-2"
+  //     >
+  //       <List className="h-4 w-4" />
+  //       Resources
+  //     </Button>
+  //     <Button
+  //       variant={viewMode === "graph" ? "default" : "outline"}
+  //       size="sm"
+  //       onClick={() => setViewMode("graph")}
+  //       className="flex items-center gap-2"
+  //     >
+  //       <Workflow className="h-4 w-4" />
+  //       Preview
+  //     </Button>
+  //   </div>
+  // );
 
   return (
     <BaseActionMessage
@@ -59,7 +59,7 @@ export function ProjectProposalPresentation({
         icon: FolderPlus,
         name: "Create",
       }}
-      headerSlot={viewToggleButtons}
+      // headerSlot={viewToggleButtons}
       onApply={handleCreate}
       isSubmitting={isCreating}
       disabled={isCreating}
@@ -67,12 +67,12 @@ export function ProjectProposalPresentation({
       className="bg-background-primary"
     >
       {/* Content based on view mode */}
-      {viewMode === "list" ? (
+      {/* {viewMode === "list" ? ( */}
         <ProjectProposalCard
           proposal={internalProposal}
           onProposalUpdate={setInternalProposal}
         />
-      ) : (
+      {/* ) : (
         <div className="space-y-4">
           <h4 className="text-md font-medium">Project Architecture Preview</h4>
           <ProjectProposalPreview
@@ -80,7 +80,7 @@ export function ProjectProposalPresentation({
             className="border rounded-lg"
           />
         </div>
-      )}
+      )} */}
     </BaseActionMessage>
   );
 }
