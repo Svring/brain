@@ -4,7 +4,7 @@ import { Image } from "@/schemas/forms/launchpad/components/launchpad-image-sche
 interface ResourceObject {
   name: string;
   kind: string;
-  image?: Image;
+  image?: Image | string; // Can be either ImageSchema object or string
   [key: string]: any;
 }
 
@@ -15,6 +15,21 @@ interface ResourceReliances {
       kind: string;
     }>;
   };
+}
+
+/**
+ * Extracts image name from either ImageSchema object or string
+ * @param image - Image can be either ImageSchema object or string
+ * @returns The image name string or undefined if not available
+ */
+function getImageName(image: Image | string | undefined): string | undefined {
+  if (!image) return undefined;
+
+  if (typeof image === "string") {
+    return image;
+  }
+
+  return image.imageName;
 }
 
 /**
@@ -51,17 +66,21 @@ export function inferRelianceFromImage(
     }
     result[workloadKind][workloadName] = [];
 
-    // Process workload image if it exists
-    if (workload.image?.imageName) {
+    // Extract image name from workload (should be ImageSchema object)
+    const workloadImageName = getImageName(workload.image);
+
+    if (workloadImageName) {
       // Use truncateImage to extract the meaningful part of the image name
-      const processedImage = truncateImage(workload.image.imageName);
+      const processedImage = truncateImage(workloadImageName);
 
       // Find devboxes whose names match the processed image
       for (const devbox of devboxResources) {
         const devboxName = devbox.name;
+        // Extract devbox image name (should be string)
+        const devboxImageName = getImageName(devbox.image);
 
-        // Check if the processed image contains the devbox name
-        // This handles cases where devbox name is part of the image name
+        // Check if the processed workload image contains the devbox name
+        // This handles cases where devbox name is part of the workload image name
         if (processedImage.includes(devboxName)) {
           // Add the devbox as a dependency if not already added
           if (

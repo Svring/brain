@@ -51,9 +51,7 @@ function mergeReliances(
   return merged;
 }
 
-export default function useResourceReliances(
-  resourceObjects: ResourceObject[]
-) {
+export default function useObjectReliances(resourceObjects: ResourceObject[]) {
   const reliances = useMemo(() => {
     const envReliances = inferRelianceFromEnv(resourceObjects);
     const imageReliances = inferRelianceFromImage(resourceObjects);

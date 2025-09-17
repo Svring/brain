@@ -10,7 +10,7 @@ import {
   convertResourceToNetworkNodes,
 } from "@/lib/flowgraph/nodes/flowgraph-nodes-utils";
 import { useProjectActions } from "@/contexts/project/project-context";
-import useResourceReliances from "@/hooks/sealos/resource/use-resource-reliances";
+import useObjectReliances from "@/hooks/sealos/resource/use-object-reliances";
 import { convertReliancesToEdges } from "@/lib/flowgraph/edges/flowgraph-edges-utils";
 import type { Node, Edge } from "@xyflow/react";
 
@@ -102,7 +102,7 @@ export default function useFlowgraph(
 
   // Compute reliances from complete resources
 
-  const { reliances } = useResourceReliances(completeResources);
+  const { reliances } = useObjectReliances(completeResources);
 
   // Generate final nodes and edges when complete resources are ready
 

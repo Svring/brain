@@ -147,6 +147,7 @@ function ProjectFlowWithLoading({
   isLoadingResources: boolean;
   onRefresh: () => void;
 }) {
+  console.log("resourceTargets", resourceTargets);
   const { isLoading } = useFlowgraph(resourceTargets, isLoadingResources);
   const { nodes } = useFlowgraphState();
 
@@ -176,46 +177,14 @@ export default function ProjectPage() {
   const projectName = params["project-name"];
   const { selectProject, clearSelectedProject, clearSelectedProjectResources } =
     useProjectActions();
-  const { setStage } = useLanggraphActions();
   const { sidebarChatOpen, sidebarChatMaximized } = useChatState();
   const { closeSidebarChat } = useChatActions();
   const { refresh } = useFlowgraphActions();
   const { refreshProject } = useProjectRefresh(projectName);
 
   // Fetch project resources
-  const { resources, isLoading: isLoadingResources } =
+  const { targets, isLoading: isLoadingResources } =
     useProjectResources(projectName);
-
-  // Create resource targets for flowgraph
-  const resourceTargets = (resources ?? [])
-    .filter((resource: any) => {
-      return (
-        resource &&
-        resource.kind &&
-        typeof resource.kind === "string" &&
-        resource.metadata?.name &&
-        typeof resource.metadata.name === "string"
-      );
-    })
-    .map((resource: any) => {
-      try {
-        return {
-          target: convertResourceObjectToTarget({
-            kind: resource.kind,
-            name: resource.metadata.name,
-          }),
-          kind: resource.kind,
-          name: resource.metadata.name,
-        };
-      } catch (error) {
-        console.warn(
-          `Failed to convert resource to target: ${resource.kind}/${resource.metadata?.name}`,
-          error
-        );
-        return null;
-      }
-    })
-    .filter((r: any) => r !== null && r.kind && r.name);
 
   useEffect(() => {
     selectProject(projectName);
@@ -254,7 +223,7 @@ export default function ProjectPage() {
         <ProjectFlowWithLoading
           projectName={projectName}
           sidebarChatMaximized={sidebarChatMaximized}
-          resourceTargets={resourceTargets}
+          resourceTargets={targets}
           isLoadingResources={isLoadingResources}
           onRefresh={refreshProject}
         />

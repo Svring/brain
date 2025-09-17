@@ -52,6 +52,8 @@ export const LaunchpadResourceFieldsSimple = ({
   // Use the object that exists (only one will have valid data)
   const object = deploymentObject?.resource || statefulsetObject?.resource;
 
+  console.log("object", object);
+
   // Helper function to create comparison display
   const createComparisonDisplay = (
     formValue: number,
@@ -87,36 +89,41 @@ export const LaunchpadResourceFieldsSimple = ({
     memory: object?.memory,
   });
 
+  // Helper function to find the nearest available option
+  const findNearestOption = (value: number, options: readonly number[]) => {
+    return options.reduce((prev, curr) =>
+      Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev
+    );
+  };
+
+  // Get rounded values for comparison (rounded to nearest available options)
+  const roundedObjectValues = {
+    cpu: objectNumeric.cpu.nearest !== undefined 
+      ? findNearestOption(objectNumeric.cpu.nearest, cpuOptions)
+      : undefined,
+    memory: objectNumeric.memory.nearest !== undefined 
+      ? findNearestOption(objectNumeric.memory.nearest, memoryOptions)
+      : undefined,
+  };
+
   // Initialize form values with object values when resource values are null
   useEffect(() => {
     if (
       objectNumeric.cpu.nearest !== undefined &&
       resourceValues?.cpu === null
     ) {
-      // Find the closest CPU option to the current object value
-      const closestCpuOption = cpuOptions.reduce((prev, curr) =>
-        Math.abs(curr - objectNumeric.cpu.nearest!) <
-        Math.abs(prev - objectNumeric.cpu.nearest!)
-          ? curr
-          : prev
-      );
-      form.setValue("resource.cpu", closestCpuOption);
+      // Use the rounded value as the initial form value
+      form.setValue("resource.cpu", roundedObjectValues.cpu!);
     }
 
     if (
       objectNumeric.memory.nearest !== undefined &&
       resourceValues?.memory === null
     ) {
-      // Find the closest memory option to the current object value
-      const closestMemoryOption = memoryOptions.reduce((prev, curr) =>
-        Math.abs(curr - objectNumeric.memory.nearest!) <
-        Math.abs(prev - objectNumeric.memory.nearest!)
-          ? curr
-          : prev
-      );
-      form.setValue("resource.memory", closestMemoryOption);
+      // Use the rounded value as the initial form value
+      form.setValue("resource.memory", roundedObjectValues.memory!);
     }
-  }, [objectNumeric, resourceValues, cpuOptions, memoryOptions, form]);
+  }, [objectNumeric, resourceValues, cpuOptions, memoryOptions, form, roundedObjectValues]);
 
   return (
     <div className="space-y-2 px-2">
@@ -135,7 +142,7 @@ export const LaunchpadResourceFieldsSimple = ({
                   <FormLabel className="font-medium">CPU:</FormLabel>
                   {createComparisonDisplay(
                     field.value || cpuOptions[0],
-                    objectNumeric.cpu.nearest,
+                    roundedObjectValues.cpu,
                     "C"
                   )}
                 </div>
@@ -182,7 +189,7 @@ export const LaunchpadResourceFieldsSimple = ({
                   <FormLabel className="font-medium">Memory:</FormLabel>
                   {createComparisonDisplay(
                     field.value || memoryOptions[0],
-                    objectNumeric.memory.nearest,
+                    roundedObjectValues.memory,
                     "G"
                   )}
                 </div>

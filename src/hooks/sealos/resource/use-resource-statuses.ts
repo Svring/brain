@@ -2,22 +2,19 @@
 
 import { useQueries } from "@tanstack/react-query";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
-import type {
-  CustomResourceTarget,
-  BuiltinResourceTarget,
-} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import type { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
-type TargetWithMeta = {
-  target: CustomResourceTarget | BuiltinResourceTarget;
-  kind: string;
-  name: string;
-};
+// type TargetWithMeta = {
+//   target: CustomResourceTarget | BuiltinResourceTarget;
+//   kind: string;
+//   name: string;
+// };
 
-export const useResourceStatuses = (targets: TargetWithMeta[]) => {
+export const useResourceStatuses = (targets: ResourceTarget[]) => {
   const { devbox, cluster, objectstorage, launchpad } = useTRPCClients();
 
   const queryResults = useQueries({
-    queries: targets.map(({ target }) => {
+    queries: targets.map((target) => {
       if (!target || !(target as any).name) {
         return {
           queryKey: ["resource", "invalid", target],
@@ -72,16 +69,16 @@ export const useResourceStatuses = (targets: TargetWithMeta[]) => {
   });
 
   return queryResults.map((query, index) => {
-    const { kind, name, target } = targets[index] || ({} as TargetWithMeta);
+    const { resourceType, name } = targets[index] || ({} as ResourceTarget);
     const resource: any = (query as any).data;
     return {
       ...query,
       resource,
       originalResource: resource,
       status: resource?.status,
-      kind,
+      resourceType,
       name,
-      target,
+      target: targets[index],
     } as any;
   });
 };

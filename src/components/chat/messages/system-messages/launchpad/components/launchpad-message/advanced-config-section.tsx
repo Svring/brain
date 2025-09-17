@@ -99,7 +99,7 @@ export const AdvancedConfigSection: React.FC<AdvancedConfigSectionProps> = ({
       <div className="flex items-center gap-2">
         <Settings className="h-5 w-5 text-primary" />
         <div className="flex flex-col">
-          <span className="font-medium text-sm">Advanced Config</span>
+          <span className="font-medium text-sm">Advanced</span>
           <span className="text-xs text-muted-foreground">
             {totalConfigItems} item{totalConfigItems !== 1 ? "s" : ""}
           </span>
