@@ -23,19 +23,25 @@ export const convertObjectsToNodes = (objects: ResourceObject[]): Node[] =>
 export const inferObjectsReliances = (
   objects: ResourceObject[]
 ): ResourceReliances => {
+  // Custom merge function to avoid TypeError when merging non-iterable values
   const mergeReliances = (
     envReliances: ResourceReliances,
     imageReliances: ResourceReliances
   ): ResourceReliances =>
-    _.mergeWith(
-      { ...envReliances },
-      imageReliances,
-      (objValue: any[], srcValue: any[]) =>
-        _.uniqBy(
-          [...(objValue || []), ...(srcValue || [])],
+    _.mergeWith({ ...envReliances }, imageReliances, (objValue, srcValue) => {
+      // Only merge arrays, otherwise return undefined to use default merge
+      if (Array.isArray(objValue) && Array.isArray(srcValue)) {
+        return _.uniqBy(
+          [...objValue, ...srcValue],
           (r) => `${r.kind}-${r.name}`
-        )
-    );
+        );
+      }
+      // If only one is array, return the array
+      if (Array.isArray(objValue)) return objValue;
+      if (Array.isArray(srcValue)) return srcValue;
+      // Otherwise, use default merge (return undefined)
+      return undefined;
+    });
 
   return mergeReliances(
     inferRelianceFromEnv(objects),
@@ -191,7 +197,7 @@ export const applyLayout = (
 
   // Check if there's a devbox group node
   const hasDevboxGroup = nodes.some((node) => node.id === "devbox-group");
-  
+
   if (hasDevboxGroup) {
     // Use split layout for devbox groups with machine's options
     return applySplitLayout(nodes, edges, {

@@ -49,7 +49,7 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
       // Check if environment variables are available first
       if (env.AGENT_API_KEY && env.AGENT_BASE_URL && env.AGENT_MODEL_NAME) {
         // Use environment variables as first priority
-        console.log("env", env);
+        // console.log("env", env);
         setConfig({
           base_url: env.AGENT_BASE_URL,
           api_key: env.AGENT_API_KEY,
