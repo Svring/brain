@@ -180,12 +180,8 @@ export default function HomePage() {
                       </TooltipContent>
                     </Tooltip>
 
-                    <Tooltip>
+                    {/* <Tooltip>
                       <TooltipTrigger asChild>
-                        {/* 
-                          To allow Tooltip to show even when the button is disabled,
-                          wrap the disabled button in a span (span is not disabled).
-                        */}
                         <span tabIndex={0}>
                           <Button
                             variant="outline"
@@ -199,7 +195,7 @@ export default function HomePage() {
                       <TooltipContent>
                         <p>Allocate resources for a new project</p>
                       </TooltipContent>
-                    </Tooltip>
+                    </Tooltip> */}
                   </TooltipProvider>
                 </div>
               </>

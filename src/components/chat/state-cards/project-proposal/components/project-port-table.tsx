@@ -8,7 +8,15 @@ import { Switch } from "@/components/ui/switch";
 
 // Custom Hooks and Types
 import type { Port } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
+import type { LaunchpadPortCreate } from "@/schemas/forms/launchpad/components/launchpad-port-schema";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Component Props
 interface ProjectPortTableProps {
@@ -17,10 +25,12 @@ interface ProjectPortTableProps {
   onPortsChange?: (ports: Port[]) => void;
 }
 
-// New Port State
+// New Port State - supporting both old and new schemas
 interface NewPort {
   number: number;
   publicAccess: boolean;
+  protocol?: "HTTP" | "GRPC" | "WS";
+  exposesPublicDomain?: boolean;
 }
 
 export function ProjectPortTable({
@@ -33,6 +43,8 @@ export function ProjectPortTable({
   const [newPort, setNewPort] = useState<NewPort>({
     number: 3000,
     publicAccess: false,
+    protocol: "HTTP",
+    exposesPublicDomain: true,
   });
 
   // Handlers for Add/Edit/Delete Operations
@@ -53,6 +65,8 @@ export function ProjectPortTable({
     setNewPort({
       number: port.number,
       publicAccess: port.publicAccess,
+      protocol: "HTTP", // Default for old schema ports
+      exposesPublicDomain: port.publicAccess, // Map publicAccess to exposesPublicDomain
     });
     setEditingIndex(index);
   };
@@ -78,7 +92,12 @@ export function ProjectPortTable({
 
   const handleCancel = () => {
     setEditingIndex(null);
-    setNewPort({ number: 3000, publicAccess: false });
+    setNewPort({
+      number: 3000,
+      publicAccess: false,
+      protocol: "HTTP",
+      exposesPublicDomain: true,
+    });
   };
 
   const handleAddNewClick = () => {
@@ -91,7 +110,9 @@ export function ProjectPortTable({
   const renderPortRow = (port: Port, index: number) => {
     // When allowEditing is true, all rows are automatically editable
     const isEditing = allowEditing && editingIndex === index;
-    const currentPort = isEditing ? newPort : port;
+    const currentPort = isEditing
+      ? newPort
+      : { ...port, protocol: "HTTP" as const };
 
     return (
       <div
@@ -129,6 +150,34 @@ export function ProjectPortTable({
                 />
               </div>
               <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Protocol:</span>
+                <Select
+                  value={currentPort.protocol || "HTTP"}
+                  onValueChange={(value: "HTTP" | "GRPC" | "WS") => {
+                    if (isEditing) {
+                      setNewPort({ ...newPort, protocol: value });
+                    } else {
+                      // Direct update for inline editing
+                      const updatedPorts = [...ports];
+                      updatedPorts[index] = {
+                        ...updatedPorts[index],
+                        protocol: value,
+                      } as any;
+                      onPortsChange?.(updatedPorts);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-20 h-8">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="HTTP">HTTP</SelectItem>
+                    <SelectItem value="GRPC">GRPC</SelectItem>
+                    <SelectItem value="WS">WS</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
                   Public Access:
                 </span>
@@ -158,6 +207,10 @@ export function ProjectPortTable({
               <span className="text-sm">
                 <span className="text-muted-foreground">Port:</span>{" "}
                 {port.number}
+              </span>
+              <span className="text-sm">
+                <span className="text-muted-foreground">Protocol:</span>{" "}
+                {(port as any).protocol || "HTTP"}
               </span>
               <span className="text-sm">
                 <span className="text-muted-foreground">Public Access:</span>{" "}
@@ -214,6 +267,24 @@ export function ProjectPortTable({
             max="65535"
             className="w-20 h-8"
           />
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Protocol:</span>
+          <Select
+            value={newPort.protocol || "HTTP"}
+            onValueChange={(value: "HTTP" | "GRPC" | "WS") =>
+              setNewPort({ ...newPort, protocol: value })
+            }
+          >
+            <SelectTrigger className="w-20 h-8">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="HTTP">HTTP</SelectItem>
+              <SelectItem value="GRPC">GRPC</SelectItem>
+              <SelectItem value="WS">WS</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Public Access:</span>

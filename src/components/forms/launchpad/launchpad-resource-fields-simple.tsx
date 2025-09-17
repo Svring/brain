@@ -87,10 +87,41 @@ export const LaunchpadResourceFieldsSimple = ({
     memory: object?.memory,
   });
 
+  // Initialize form values with object values when resource values are null
+  useEffect(() => {
+    if (
+      objectNumeric.cpu.nearest !== undefined &&
+      resourceValues?.cpu === null
+    ) {
+      // Find the closest CPU option to the current object value
+      const closestCpuOption = cpuOptions.reduce((prev, curr) =>
+        Math.abs(curr - objectNumeric.cpu.nearest!) <
+        Math.abs(prev - objectNumeric.cpu.nearest!)
+          ? curr
+          : prev
+      );
+      form.setValue("resource.cpu", closestCpuOption);
+    }
+
+    if (
+      objectNumeric.memory.nearest !== undefined &&
+      resourceValues?.memory === null
+    ) {
+      // Find the closest memory option to the current object value
+      const closestMemoryOption = memoryOptions.reduce((prev, curr) =>
+        Math.abs(curr - objectNumeric.memory.nearest!) <
+        Math.abs(prev - objectNumeric.memory.nearest!)
+          ? curr
+          : prev
+      );
+      form.setValue("resource.memory", closestMemoryOption);
+    }
+  }, [objectNumeric, resourceValues, cpuOptions, memoryOptions, form]);
+
   return (
     <div className="space-y-2 px-2">
-      {/* CPU Options - only show if cpu value is defined */}
-      {resourceValues?.cpu !== undefined && (
+      {/* CPU Options - show if cpu is provided (either as value or null) */}
+      {resourceValues && "cpu" in resourceValues && (
         <FormField
           control={form.control}
           name="resource.cpu"
@@ -136,8 +167,8 @@ export const LaunchpadResourceFieldsSimple = ({
         />
       )}
 
-      {/* Memory Options - only show if memory value is defined */}
-      {resourceValues?.memory !== undefined && (
+      {/* Memory Options - show if memory is provided (either as value or null) */}
+      {resourceValues && "memory" in resourceValues && (
         <FormField
           control={form.control}
           name="resource.memory"

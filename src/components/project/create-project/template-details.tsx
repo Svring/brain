@@ -204,7 +204,7 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
                 </div>
                 <Button
                   onClick={handleDeploy}
-                  variant="default"
+                  variant="outline"
                   disabled={createInstanceMutation.isPending}
                 >
                   {createInstanceMutation.isPending

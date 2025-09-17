@@ -175,14 +175,25 @@ export function useProjectCreate(options?: CreateProjectOptions) {
           const uniqueAppName = `${appProposal.name}-${nanoid()}`;
           const launchpadData = launchpadCreateFormSchema.parse({
             name: uniqueAppName,
-            image: appProposal.image,
-            ports: appProposal.ports?.map((port) => ({
-              port: port.number,
-              protocol: "TCP" as const,
-              appProtocol: "HTTP" as const,
-              exposesPublicDomain: port.publicAccess,
-            })),
-            env: appProposal.env,
+            image: {
+              imageName: appProposal.image,
+            },
+            ports:
+              appProposal.ports?.map((port) => ({
+                number: port.number,
+                protocol: "HTTP" as const,
+                exposesPublicDomain: port.publicAccess,
+              })) || [],
+            env:
+              appProposal.env?.map((envVar) => ({
+                name: envVar.name,
+                value: envVar.value,
+              })) || [],
+            resource: {
+              replicas: 1,
+              cpu: 0.5,
+              memory: 0.5,
+            },
           });
 
           resourcePromises.push(
