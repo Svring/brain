@@ -27,30 +27,16 @@ interface ClusterNodeProps {
   data: ClusterObject;
 }
 
-function ClusterNodeWrapper({ data }: ClusterNodeProps) {
+function ClusterNode({ data }: ClusterNodeProps) {
   // Construct node ID following the same pattern as other nodes
   const nodeId = `${data.kind?.toLowerCase() || "cluster"}-${data.name || ""}`;
-
-  return (
-    <ClusterNode
-      resource={data}
-      nodeId={nodeId}
-    />
-  );
-}
-
-interface ClusterNodeInnerProps {
-  resource: ClusterObject;
-  nodeId: string;
-}
-
-function ClusterNode({ resource, nodeId }: ClusterNodeInnerProps) {
+  const resource = data;
   const k8sContext = createK8sContext();
   const target = CustomResourceTargetSchema.parse(
     convertResourceTypeToTarget("cluster", resource.name || "")
   );
   const { resource: clusterData, status } = useResourceStatus(target);
-  const data = clusterData || resource;
+  const clusterResource = clusterData || resource;
   const { latestData } = useResourceMetricsStatus({ target });
   const storagePercent = Math.min(
     100,
@@ -62,17 +48,17 @@ function ClusterNode({ resource, nodeId }: ClusterNodeInnerProps) {
     )
   );
   const connectionString = composeClusterPublicConnectionString(
-    data,
+    clusterResource,
     k8sContext.regionUrl
   );
-  const { name = "", type = "", resource: clusterResource } = data;
+  const { name = "", type = "", resource: clusterResourceData } = clusterResource;
 
   const mainCard = (
     <BaseNode target={target} nodeId={nodeId}>
       <div className="flex h-full flex-col gap-4 justify-between">
         <div className="flex items-center justify-between">
           <ClusterNodeTitle name={name} type={type!} />
-          <ClusterNodeMenu object={data} />
+          <ClusterNodeMenu object={clusterResource} />
         </div>
         <div className="flex items-center gap-2 text-md">
           <Globe
@@ -91,7 +77,6 @@ function ClusterNode({ resource, nodeId }: ClusterNodeInnerProps) {
         <div className="mt-auto flex justify-between items-center">
           <NodeStatusLight status={status || "Pending"} />
           <div className="flex items-center gap-2">
-            {/* <ClusterNodeBackup target={target} /> */}
             <NodeLog target={target} />
             <NodeMonitor target={target} />
           </div>
@@ -115,9 +100,9 @@ function ClusterNode({ resource, nodeId }: ClusterNodeInnerProps) {
                 <span className="text-md">Volume</span>
               </div>
               <div className="text-xs">
-                {Array.isArray(clusterResource)
+                {Array.isArray(clusterResourceData)
                   ? "N/A"
-                  : clusterResource?.storage || "N/A"}{" "}
+                  : clusterResourceData?.storage || "N/A"}{" "}
                 GB
               </div>
             </div>
@@ -138,4 +123,4 @@ function ClusterNode({ resource, nodeId }: ClusterNodeInnerProps) {
   );
 }
 
-export default ClusterNodeWrapper;
+export default ClusterNode;

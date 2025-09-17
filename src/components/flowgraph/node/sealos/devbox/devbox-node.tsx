@@ -16,28 +16,11 @@ import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useQuery } from "@tanstack/react-query";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 
-// Simplified component that only accepts complete DevboxObject
-function DevboxNodeWrapper({ data }: { data: DevboxObject }) {
+// Main component that receives the loaded resource data
+function DevboxNode({ data }: { data: DevboxObject }) {
   // Construct node ID following the same pattern as other nodes
   const nodeId = `${data.kind?.toLowerCase() || "devbox"}-${data.name || ""}`;
-
-  return (
-    <DevboxNode
-      resource={data}
-      // status={data.status || "Pending"}
-      nodeId={nodeId}
-    />
-  );
-}
-
-// Main component that receives the loaded resource data
-function DevboxNode({
-  resource,
-  nodeId,
-}: {
-  resource: DevboxObject;
-  nodeId: string;
-}) {
+  const resource = data;
   const target = convertResourceObjectToTarget({
     kind: resource.kind,
     name: resource.name,
@@ -46,9 +29,6 @@ function DevboxNode({
   const { resource: object, status } = useResourceStatus(target);
 
   const { name, image } = object || resource;
-
-  // console.log("resource", resource);
-  // console.log("status", status);
 
   const context = createK8sContext();
   const { devbox } = useTRPCClients();
@@ -90,7 +70,6 @@ function DevboxNode({
 
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">
-            {/* <NodeInternalUrl ports={ports} /> */}
             <NodeMonitor target={target} />
           </div>
         </div>
@@ -103,11 +82,10 @@ function DevboxNode({
       mainCard={mainCard}
       data={Array.isArray(releasesData) ? releasesData : []}
       target={target}
-      // messageType="devbox.release"
       nodeId={nodeId}
     />
   );
 }
 
-// Export the wrapper as the default component
-export default DevboxNodeWrapper;
+// Export the main component as the default
+export default DevboxNode;

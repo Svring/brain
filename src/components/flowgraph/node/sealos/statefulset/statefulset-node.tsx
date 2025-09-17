@@ -15,32 +15,20 @@ import NodeLog from "../../components/node-log";
 import NodeConnect from "../../components/node-connect";
 import StatefulsetNodeMenu from "./statefulset-node-menu";
 
-// Simplified wrapper that only accepts complete StatefulsetObject
-function StatefulsetNodeWrapper({ data }: { data: StatefulsetObject }) {
+// Main component that receives the loaded resource data
+function StatefulsetNode({ data }: { data: StatefulsetObject }) {
   // Construct node ID following the same pattern as other nodes
   const nodeId = `${data.kind?.toLowerCase() || "statefulset"}-${
     data.name || ""
   }`;
-
-  return <StatefulsetNode resource={data} nodeId={nodeId} />;
-}
-
-// Main component that receives the loaded resource data
-function StatefulsetNode({
-  resource,
-  nodeId,
-}: {
-  resource: StatefulsetObject;
-  nodeId: string;
-}) {
+  const resource = data;
   const target = convertResourceObjectToTarget(resource);
 
-  const { resource: data, status } = useResourceStatus(target);
-  const statefulsetData = data || resource;
+  const { resource: resourceData, status } = useResourceStatus(target);
+  const statefulsetData = resourceData || resource;
 
   const handleConnect = () => {
     console.log("Connect clicked");
-    // TODO: Implement connection logic
   };
 
   const mainCard = (
@@ -71,7 +59,6 @@ function StatefulsetNode({
 
             {/* Right: Icon components */}
             <div className="flex items-center gap-2">
-              {/* <NodePods target={target} /> */}
               <NodeLog target={target} />
               <NodeMonitor target={target} />
             </div>
@@ -105,5 +92,5 @@ function StatefulsetNode({
   );
 }
 
-// Export the wrapper as the default component
-export default StatefulsetNodeWrapper;
+// Export the main component as the default
+export default StatefulsetNode;

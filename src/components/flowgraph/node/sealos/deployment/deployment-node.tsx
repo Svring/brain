@@ -16,35 +16,23 @@ import NodePods from "../../components/node-pods";
 import NodeConnect from "../../components/node-connect";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 
-// Simplified wrapper that only accepts complete DeploymentObject
-function DeploymentNodeWrapper({ data }: { data: DeploymentObject }) {
+// Main component that receives the loaded resource data
+function DeploymentNode({ data }: { data: DeploymentObject }) {
   // Construct node ID following the same pattern as other nodes
   const nodeId = `${data.kind?.toLowerCase() || "deployment"}-${
     data.name || ""
   }`;
-
-  return <DeploymentNode resource={data} nodeId={nodeId} />;
-}
-
-// Main component that receives the loaded resource data
-function DeploymentNode({
-  resource,
-  nodeId,
-}: {
-  resource: DeploymentObject;
-  nodeId: string;
-}) {
+  const resource = data;
   const target = convertResourceObjectToTarget({
     kind: resource.kind,
     name: resource.name,
   });
 
   const { resource: deploymentData, status } = useResourceStatus(target);
-  const data = deploymentData || resource;
+  const deploymentResource = deploymentData || resource;
 
   const handleConnect = () => {
     console.log("Connect clicked");
-    // TODO: Implement connection logic
   };
 
   const mainCard = (
@@ -53,8 +41,8 @@ function DeploymentNode({
         <div className="flex h-full flex-col gap-2 justify-between">
           {/* Header with Name and Dropdown */}
           <div className="flex items-center justify-between">
-            <DeploymentNodeTitle name={data.name} />
-            <DeploymentNodeMenu object={data} />
+            <DeploymentNodeTitle name={deploymentResource.name} />
+            <DeploymentNodeMenu object={deploymentResource} />
           </div>
 
           {/* Image with Package Icon */}
@@ -62,8 +50,8 @@ function DeploymentNode({
             <Package className="h-4 w-4 text-muted-foreground" />
             <div className="text-md text-muted-foreground truncate flex-1">
               Image:{" "}
-              {data.image?.imageName
-                ? truncateImage(data.image.imageName)
+              {deploymentResource.image?.imageName
+                ? truncateImage(deploymentResource.image.imageName)
                 : "N/A"}
             </div>
           </div>
@@ -75,8 +63,6 @@ function DeploymentNode({
 
             {/* Right: Icon components */}
             <div className="flex items-center gap-2">
-              {/* <NodeInternalUrl ports={deploymentData.ports || []} /> */}
-              {/* <NodePods target={target} /> */}
               <NodeLog target={target} />
               <NodeMonitor target={target} />
             </div>
@@ -86,9 +72,9 @@ function DeploymentNode({
     </NodeConnect>
   );
 
-  // Create an array with length equal to data.replicas for the stack
+  // Create an array with length equal to deploymentResource.replicas for the stack
   const replicasArray = Array.from(
-    { length: data.resource?.replicas - 1 || 0 },
+    { length: deploymentResource.resource?.replicas - 1 || 0 },
     (_, i) => i
   );
 
@@ -102,5 +88,5 @@ function DeploymentNode({
   );
 }
 
-// Export the wrapper as the default component
-export default DeploymentNodeWrapper;
+// Export the main component as the default
+export default DeploymentNode;
