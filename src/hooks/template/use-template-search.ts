@@ -12,7 +12,9 @@ export function useTemplateSearch(templates: TemplateResource[]) {
     const allCategories = templates.flatMap(
       (template) => template.spec.categories || []
     );
-    const uniqueCategories = Array.from(new Set(allCategories)).sort();
+    const uniqueCategories = Array.from(new Set(allCategories))
+      .map((cat) => (cat === "ai" ? "AI" : cat))
+      .sort();
     return uniqueCategories;
   }, [templates]);
 

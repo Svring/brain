@@ -7,7 +7,14 @@ import { motion } from "framer-motion";
 import useProjectSearch from "@/hooks/brain/use-projects-search";
 import RecentProjects from "@/components/project/recent-projects";
 import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
+import { useLaunchpadCreateDialog } from "@/hooks/brain/use-launchpad-create-dialog";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useRef, useState, useEffect } from "react";
 import { proposeProjectAction } from "@/lib/copilot/brain/project/copilot-project-actions";
 import Suggestions from "@/components/chat/components/suggestions";
@@ -38,6 +45,8 @@ export default function HomePage() {
     isError,
   } = useProjectSearch();
   const { CreateProjectDialog, openDialog } = useProjectCreateDialog();
+  const { LaunchpadCreateDialog, openDialog: openLaunchpadDialog } =
+    useLaunchpadCreateDialog();
   const messagesScrollRef = useRef<HTMLDivElement>(null);
 
   const hasMessages = messages.length > 0;
@@ -45,11 +54,13 @@ export default function HomePage() {
   // Create thread on mount for home page
   useMount(() => {
     // Always clear messages and create a new thread on mount
-    console.log("[HomePage] Clearing messages and creating new thread on mount...");
-    
+    console.log(
+      "[HomePage] Clearing messages and creating new thread on mount..."
+    );
+
     // Clear messages first
     setMessages([]);
-    
+
     // Create a new thread and select it
     createNewThread.mutate(undefined, {
       onSuccess: (data: any) => {
@@ -74,6 +85,7 @@ export default function HomePage() {
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden">
       <CreateProjectDialog />
+      <LaunchpadCreateDialog />
       <div className="flex-1 flex flex-col min-h-0">
         {/* Hero overlays the content area and fades out when messages exist */}
         {!hasMessages && (
@@ -136,13 +148,60 @@ export default function HomePage() {
             />
             {!hasMessages && (
               <>
-                <Button
-                  onClick={openDialog}
-                  variant="outline"
-                  className="absolute bottom-2 left-2 bg-background-tertiary! border-border-primary!"
-                >
-                  From template
-                </Button>
+                <div className="absolute bottom-2 left-2 right-2 flex gap-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={openDialog}
+                          variant="outline"
+                          className="bg-background-tertiary! border-border-primary!"
+                        >
+                          From template
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Deploy from app store templates</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={openLaunchpadDialog}
+                          variant="outline"
+                          className="bg-background-tertiary! border-border-primary!"
+                        >
+                          From image
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Deploy from docker image</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        {/* 
+                          To allow Tooltip to show even when the button is disabled,
+                          wrap the disabled button in a span (span is not disabled).
+                        */}
+                        <span tabIndex={0}>
+                          <Button
+                            variant="outline"
+                            disabled
+                            className="bg-background-secondary! border-border-primary!"
+                          >
+                            Start anew
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Allocate resources for a new project</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
               </>
             )}
           </div>
@@ -171,9 +230,9 @@ export default function HomePage() {
         )}
 
         {/* Suggestions section - shown when recent projects are not visible and not loading */}
-        {!hasMessages && !showRecentProjects && !projectsLoading && (
+        {/* {!hasMessages && !showRecentProjects && !projectsLoading && (
           <Suggestions />
-        )}
+        )} */}
       </div>
     </div>
   );

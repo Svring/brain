@@ -11,22 +11,28 @@ export type TemplateCardProps = {
 // Function to get dot color for categories
 const getDotColor = (category: string): string => {
   const lowerCategory = category.toLowerCase();
-  if (lowerCategory.includes('ai') || lowerCategory.includes('artificial intelligence')) {
-    return 'bg-theme-blue';
+  if (
+    lowerCategory.includes("ai") ||
+    lowerCategory.includes("artificial intelligence")
+  ) {
+    return "bg-theme-blue";
   }
-  if (lowerCategory.includes('ml') || lowerCategory.includes('machine learning')) {
-    return 'bg-theme-green';
+  if (
+    lowerCategory.includes("ml") ||
+    lowerCategory.includes("machine learning")
+  ) {
+    return "bg-theme-green";
   }
-  if (lowerCategory.includes('data') || lowerCategory.includes('analytics')) {
-    return 'bg-theme-purple';
+  if (lowerCategory.includes("data") || lowerCategory.includes("analytics")) {
+    return "bg-theme-purple";
   }
-  if (lowerCategory.includes('web') || lowerCategory.includes('frontend')) {
-    return 'bg-theme-yellow';
+  if (lowerCategory.includes("web") || lowerCategory.includes("frontend")) {
+    return "bg-theme-yellow";
   }
-  if (lowerCategory.includes('api') || lowerCategory.includes('backend')) {
-    return 'bg-theme-red';
+  if (lowerCategory.includes("api") || lowerCategory.includes("backend")) {
+    return "bg-theme-red";
   }
-  return 'bg-theme-darkblue';
+  return "bg-theme-darkblue";
 };
 
 export const TemplateCard = memo(function TemplateCard({
@@ -69,7 +75,9 @@ export const TemplateCard = memo(function TemplateCard({
         {/* Description aligned to the left */}
         <div className="mb-4">
           <p className="line-clamp-2 text-muted-foreground text-sm leading-relaxed">
-            {template.spec.description || "No description available"}
+            {template.spec.i18n?.en?.description ||
+              template.spec.description ||
+              "No description available"}
           </p>
         </div>
 
@@ -78,17 +86,23 @@ export const TemplateCard = memo(function TemplateCard({
           <div className="mt-auto pt-4 flex flex-wrap gap-1">
             {template.spec.categories
               .slice(0, 3)
-              .map((category: string, index: number) => (
-                <Badge
-                  dot
-                  key={category}
-                  variant="outline"
-                  dotColor={getDotColor(category)}
-                  className={`bg-background-tertiary`}
-                >
-                  {category}
-                </Badge>
-              ))}
+              .map((category: string, index: number) => {
+                let displayCategory =
+                  category.toLowerCase() === "ai"
+                    ? "AI"
+                    : category.charAt(0).toUpperCase() + category.slice(1);
+                return (
+                  <Badge
+                    dot
+                    key={category}
+                    variant="outline"
+                    dotColor={getDotColor(category)}
+                    className={`bg-background-tertiary`}
+                  >
+                    {displayCategory}
+                  </Badge>
+                );
+              })}
           </div>
         )}
       </div>

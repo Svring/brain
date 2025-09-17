@@ -1,6 +1,6 @@
 import { useRouter, usePathname } from "next/navigation";
 import type React from "react";
-import { MessageCirclePlus, LayoutGrid, Plus } from "lucide-react";
+import { MessageCirclePlus, LayoutGrid } from "lucide-react";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -31,7 +31,7 @@ export interface SubNavigationItem {
 const NAVIGATION_ITEMS: NavigationItem[] = [
   {
     title: "New",
-    icon: Plus,
+    icon: MessageCirclePlus,
     group: "overview",
     path: "/home",
   },
@@ -47,8 +47,6 @@ export const MainSection: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const { closeSidebarChat } = useChatActions();
-  const { createNewThread, getThreads, setThreads, selectThread } =
-    useThreads();
 
   const handleNavigation = (path: string) => {
     // If already on the target path, do nothing

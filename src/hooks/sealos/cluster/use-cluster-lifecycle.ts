@@ -4,6 +4,8 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
+import { useProjectActions } from "@/contexts/project/project-context";
+import { useChatActions } from "@/contexts/chat/chat-context";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import type { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
@@ -18,6 +20,8 @@ export const useClusterLifecycle = (
   const { onSuccess, onError } = options;
   const { cluster, project } = useTRPCClients();
   const { invalidateQueries } = useInvalidateQueries();
+  const { clearSelectedResource } = useProjectActions();
+  const { closeSidebarChat } = useChatActions();
 
   const startMutation = useMutation({
     ...cluster.start.mutationOptions(),
@@ -62,6 +66,11 @@ export const useClusterLifecycle = (
         deleteRequest.name
       ) as CustomResourceTarget;
       invalidateQueries([cluster.get.queryKey()], true); // Enable invalidateProjectResources flag
+      // Clear selected resource and close sidebar chat after successful deletion
+      clearSelectedResource();
+      closeSidebarChat();
+      // Reload the window after successful deletion
+      window.location.reload();
     },
     onError: (error: any) => {
       console.error("Cluster delete error:", error);

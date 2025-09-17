@@ -13,7 +13,11 @@ import { useFormContext } from "react-hook-form";
 import { Image } from "@/schemas/forms/launchpad/components/launchpad-image-schema";
 import { useEffect } from "react";
 
-export const ImageConfigFields = () => {
+interface ImageConfigFieldsProps {
+  hidePrivateRegistry?: boolean;
+}
+
+export const ImageConfigFields = ({ hidePrivateRegistry = false }: ImageConfigFieldsProps) => {
   const form = useFormContext<{ image: Image }>();
 
   // Watch for changes in image registry fields and clean up when empty
@@ -47,7 +51,7 @@ export const ImageConfigFields = () => {
   };
 
   return (
-    <div className="border border-dashed rounded-lg p-4 space-y-4">
+    <div className={`${hidePrivateRegistry ? '' : 'border border-dashed rounded-lg p-4'} space-y-4`}>
       <FormField
         control={form.control}
         name="image.imageName"
@@ -55,23 +59,25 @@ export const ImageConfigFields = () => {
           <FormItem>
             <div className="flex items-center gap-2">
               <FormLabel>Image Name</FormLabel>
-              <FormField
-                control={form.control}
-                name="image.imageRegistry"
-                render={() => (
-                  <FormItem className="flex flex-row items-center">
-                    <FormControl>
-                      <Checkbox
-                        checked={isPrivateRegistry}
-                        onCheckedChange={handlePrivateRegistryToggle}
-                      />
-                    </FormControl>
-                    <FormLabel className="text-sm font-normal">
-                      Private
-                    </FormLabel>
-                  </FormItem>
-                )}
-              />
+              {!hidePrivateRegistry && (
+                <FormField
+                  control={form.control}
+                  name="image.imageRegistry"
+                  render={() => (
+                    <FormItem className="flex flex-row items-center">
+                      <FormControl>
+                        <Checkbox
+                          checked={isPrivateRegistry}
+                          onCheckedChange={handlePrivateRegistryToggle}
+                        />
+                      </FormControl>
+                      <FormLabel className="text-sm font-normal">
+                        Private
+                      </FormLabel>
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
             <FormControl>
               <Input placeholder="nginx:latest" {...field} />
@@ -81,8 +87,8 @@ export const ImageConfigFields = () => {
         )}
       />
 
-      {/* Private Registry Fields - Show when checkbox is checked */}
-      {isPrivateRegistry && (
+      {/* Private Registry Fields - Show when checkbox is checked and not hidden */}
+      {!hidePrivateRegistry && isPrivateRegistry && (
         <div className="space-y-4 pl-4 border-l-2 border-muted">
           <FormField
             control={form.control}

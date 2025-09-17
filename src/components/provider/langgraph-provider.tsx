@@ -141,10 +141,8 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
             className="mb-2 rounded-2xl"
           />
           <div className="text-muted-foreground text-center space-y-2">
-            <p>
-              To activate Sealos Brain agent features, generate an API token.
-            </p>
-            <p>Click the button below to create one in the AI proxy.</p>
+            <p>To activate Sealos Brain agent features, generate an API KEY.</p>
+            <p>Click the button below to create one in the AI Proxy.</p>
           </div>
         </div>
         <Button
@@ -159,7 +157,7 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
               Generating...
             </>
           ) : (
-            "Generate API Token"
+            "Generate API KEY"
           )}
         </Button>
       </div>

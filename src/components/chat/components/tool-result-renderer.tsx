@@ -98,7 +98,12 @@ export const ToolResultRenderer = memo(function ToolResultRenderer({
         sendMessage([
           { type: "remove", id: id, content: "" },
           updatedMessage,
-          { type: "system", role: "system", content: successResult },
+          {
+            type: "system",
+            role: "system",
+            content:
+              "tool executed successfully, go on to explain what happened and motivate the user to continue chatting",
+          },
         ]);
         // Check if this is a propose_project action and navigate to the project
         if (action === "propose_project" && successResult) {

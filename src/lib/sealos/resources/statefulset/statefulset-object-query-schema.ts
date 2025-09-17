@@ -1,7 +1,12 @@
 import { z } from "zod";
 import type { Env } from "@/schemas/forms/universal/env-schema";
 import { convertK8sResourceToNumeric } from "@/lib/k8s/k8s-method/k8s-utils";
-import { formatIsoDateToReadable } from "@/lib/date/date-utils";
+import {
+  formatIsoDateToReadable,
+  formatUnixTimeToReadable,
+  getCurrentTimezoneInfo,
+  getCurrentUnixTime,
+} from "@/lib/date/date-utils";
 import { determineLaunchpadStatus } from "@/lib/sealos/resources/launchpad/launchpad-method/launchpad-utils";
 
 export const StatefulsetObjectQuerySchema = z.object({
@@ -204,7 +209,64 @@ export const StatefulsetObjectQuerySchema = z.object({
 
       const metadata = resource.metadata || {};
 
-      // Get createdAt from metadata and format it
+      // Get current timezone info and log it
+      const currentTimezoneInfo = getCurrentTimezoneInfo();
+      console.log("Current timezone info:", currentTimezoneInfo);
+
+      // Get current Unix time for testing
+      const currentUnixTime = getCurrentUnixTime();
+      console.log("Current Unix time:", currentUnixTime);
+
+      // Test different timezones with the creation timestamp
+      const creationTimestamp = metadata.creationTimestamp;
+      if (creationTimestamp) {
+        console.log("Original creation timestamp:", creationTimestamp);
+
+        // Test 5 different timezones
+        const testTimezones = [
+          "UTC",
+          "America/New_York",
+          "Europe/London",
+          "Asia/Tokyo",
+          "Australia/Sydney",
+        ];
+
+        console.log("=== Timezone Conversion Tests ===");
+
+        // Test with ISO date string
+        testTimezones.forEach((timezone) => {
+          try {
+            const formattedDate = formatIsoDateToReadable(
+              creationTimestamp,
+              "yyyy-MM-dd HH:mm:ss"
+            );
+            console.log(`${timezone}: ${formattedDate}`);
+          } catch (error) {
+            console.error(`Error formatting for ${timezone}:`, error);
+          }
+        });
+
+        // Test with Unix timestamp (convert ISO to Unix first)
+        const unixTimestamp = Math.floor(
+          new Date(creationTimestamp).getTime() / 1000
+        );
+        console.log("Converted Unix timestamp:", unixTimestamp);
+
+        testTimezones.forEach((timezone) => {
+          try {
+            const formattedUnixDate = formatUnixTimeToReadable(
+              unixTimestamp,
+              timezone,
+              "yyyy-MM-dd HH:mm:ss"
+            );
+            console.log(`Unix ${timezone}: ${formattedUnixDate}`);
+          } catch (error) {
+            console.error(`Error formatting Unix for ${timezone}:`, error);
+          }
+        });
+      }
+
+      // Get createdAt from metadata and format it (default behavior)
       const createdAt = formatIsoDateToReadable(metadata.creationTimestamp);
 
       return {
