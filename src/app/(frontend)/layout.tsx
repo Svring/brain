@@ -46,7 +46,12 @@ export default async function RootLayout({
     MODE: process.env.MODE || "production",
     LANGSMITH_API_KEY: process.env.LANGSMITH_API_KEY || "",
     LANGGRAPH_DEPLOYMENT_URL: process.env.LANGGRAPH_DEPLOYMENT_URL || "",
+    AGENT_BASE_URL: process.env.AGENT_BASE_URL || "",
+    AGENT_API_KEY: process.env.AGENT_API_KEY || "",
+    AGENT_MODEL_NAME: process.env.AGENT_MODEL_NAME || "",
   };
+
+  console.log("env layout", env);
 
   const isDevelopment = env.MODE === "development";
   const payloadUser = isDevelopment ? await getUser() : null;

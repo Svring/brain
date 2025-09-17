@@ -43,7 +43,15 @@ async function checkGraphStatus(apiUrl: string): Promise<boolean> {
 const StreamSession = ({ children }: { children: ReactNode }) => {
   const { baseUrl, apiKey, modelName, contextWindowUsage, stage } =
     useLanggraphState();
-  const { selectedThreadId, getThreads, setThreads, messages, setMessages, isStreaming, setIsStreaming } = useThreads();
+  const {
+    selectedThreadId,
+    getThreads,
+    setThreads,
+    messages,
+    setMessages,
+    isStreaming,
+    setIsStreaming,
+  } = useThreads();
   const {
     selectedProject,
     selectedProjectResources,
@@ -122,6 +130,7 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
         base_url: baseUrl,
         model_name: modelName,
         context_window_usage: contextWindowUsage,
+        kubeconfig: auth?.kubeconfig,
         stage,
         project_context: {
           selectedProject,
@@ -233,7 +242,10 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
             }
           }
           // Keep backward compatibility with old format
-          else if ((event as any).event === "messages/partial" && (event as any).data) {
+          else if (
+            (event as any).event === "messages/partial" &&
+            (event as any).data
+          ) {
             const messageData = (event as any).data[0];
             console.log("messageData", messageData);
             setMessages((prevMessages) => {
@@ -252,22 +264,33 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
 
         // After streaming completes, fetch the current thread's messages and set them
         if (selectedThreadId) {
-          console.log("[StreamProvider] Fetching thread state after streaming completion for thread:", selectedThreadId);
-          
+          console.log(
+            "[StreamProvider] Fetching thread state after streaming completion for thread:",
+            selectedThreadId
+          );
+
           try {
             const threadState = await getThreadState(selectedThreadId);
             console.log("[StreamProvider] Thread state fetched:", threadState);
-            
+
             // Extract messages from thread state
             const threadMessages = (threadState.values as any)?.messages;
             if (Array.isArray(threadMessages)) {
-              console.log("[StreamProvider] Setting messages from thread state:", threadMessages);
+              console.log(
+                "[StreamProvider] Setting messages from thread state:",
+                threadMessages
+              );
               setMessages(threadMessages);
             } else {
-              console.log("[StreamProvider] No messages found in thread state, keeping current messages");
+              console.log(
+                "[StreamProvider] No messages found in thread state, keeping current messages"
+              );
             }
           } catch (error) {
-            console.error("[StreamProvider] Failed to fetch thread state:", error);
+            console.error(
+              "[StreamProvider] Failed to fetch thread state:",
+              error
+            );
             // Keep current messages on error
           }
 

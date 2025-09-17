@@ -14,6 +14,7 @@ import {
   useLanggraphActions,
 } from "@/contexts/langgraph/langgraph-context";
 import { useAuthState } from "@/contexts/auth/auth-context";
+import { useEnv } from "@/components/provider/env-provider";
 import { toast } from "sonner";
 import Image from "next/image";
 import { ThreadProvider } from "./thread-provider";
@@ -23,6 +24,7 @@ import { StreamProvider } from "./stream-provider";
 function LanggraphConfigInner({ children }: { children: ReactNode }) {
   const isProduction = process.env.NEXT_PUBLIC_MODE === "production";
   const { auth } = useAuthState();
+  const env = useEnv();
   const aiProxyContext = useAiProxyContext();
   const { isLoading, isLoaded, isUnloaded } = useLanggraphState();
   const { setConfig, setConfigFailed } = useLanggraphActions();
@@ -40,37 +42,75 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
   );
   const createTokenMutation = useCreateAiProxyTokenMutation(aiProxyContext);
 
+  console.log("env", env);
+
   // Handle initial config loading
   useEffect(() => {
     if (isLoading) {
-      const config = isProduction
-        ? {
-            apiKey: brainToken ? `sk-${brainToken.key}` : undefined,
-            baseUrl: aiProxyContext.baseUrl
-              ? `http://aiproxy.${aiProxyContext.baseUrl}/v1`
-              : undefined,
-            modelName:
-              aiProxyContext.baseUrl?.endsWith("io") &&
-              !aiProxyContext.baseUrl?.endsWith("nip.io")
-                ? "gpt-4.1"
-                : "kimi-k2-0711-preview",
-          }
-        : {
-            apiKey: auth?.apiKey,
-            baseUrl: auth?.baseUrl,
-            modelName: "gpt-4.1",
-          };
+      // Check if environment variables are available first
+      // Add logs for debugging configuration loading
+      console.log("LanggraphConfigInner: isLoading", isLoading);
+      console.log("LanggraphConfigInner: env", env);
 
-      // Check if config is complete
-      if (config.apiKey && config.baseUrl && config.modelName) {
+      if (env.AGENT_API_KEY && env.AGENT_BASE_URL && env.AGENT_MODEL_NAME) {
+        console.log(
+          "LanggraphConfigInner: Using environment variables for config",
+          {
+            base_url: env.AGENT_BASE_URL,
+            api_key: env.AGENT_API_KEY,
+            model_name: env.AGENT_MODEL_NAME,
+          }
+        );
+        // Use environment variables as first priority
         setConfig({
-          base_url: config.baseUrl,
-          api_key: config.apiKey,
-          model_name: config.modelName,
+          base_url: env.AGENT_BASE_URL,
+          api_key: env.AGENT_API_KEY,
+          model_name: env.AGENT_MODEL_NAME,
         });
-      } else if (isProduction && !tokensLoading) {
-        // No brain token found in production
-        setConfigFailed();
+      } else {
+        // Fall back to current logic if env vars are not complete
+        const config = isProduction
+          ? {
+              apiKey: brainToken ? `sk-${brainToken.key}` : undefined,
+              baseUrl: aiProxyContext.baseUrl
+                ? `http://aiproxy.${aiProxyContext.baseUrl}/v1`
+                : undefined,
+              modelName:
+                aiProxyContext.baseUrl?.endsWith("io") &&
+                !aiProxyContext.baseUrl?.endsWith("nip.io")
+                  ? "gpt-4.1"
+                  : "kimi-k2-0711-preview",
+            }
+          : {
+              apiKey: auth?.apiKey,
+              baseUrl: auth?.baseUrl,
+              modelName: "gpt-4.1",
+            };
+
+        console.log("LanggraphConfigInner: Fallback config", config);
+
+        // Check if config is complete
+        if (config.apiKey && config.baseUrl && config.modelName) {
+          console.log(
+            "LanggraphConfigInner: Setting config from fallback config",
+            {
+              base_url: config.baseUrl,
+              api_key: config.apiKey,
+              model_name: config.modelName,
+            }
+          );
+          setConfig({
+            base_url: config.baseUrl,
+            api_key: config.apiKey,
+            model_name: config.modelName,
+          });
+        } else if (isProduction && !tokensLoading) {
+          // No brain token found in production
+          console.warn(
+            "LanggraphConfigInner: Config incomplete in production, setting config failed"
+          );
+          setConfigFailed();
+        }
       }
     }
   }, [
@@ -81,6 +121,9 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
     auth?.apiKey,
     auth?.baseUrl,
     tokensLoading,
+    env.AGENT_API_KEY,
+    env.AGENT_BASE_URL,
+    env.AGENT_MODEL_NAME,
   ]);
 
   // Handle token creation
@@ -103,7 +146,11 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
 
   // Show loading state
   if (isLoading || (isProduction && tokensLoading)) {
-    return <LoadingScreen text="Checking token configuration..." />;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
+        <LoadingScreen text="Checking token configuration..." />
+      </div>
+    );
   }
 
   // Show token creation UI if unloaded (no token found)
@@ -147,9 +194,7 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
   // Render children when loaded with nested providers
   return (
     <ThreadProvider>
-      <StreamProvider>
-        {children}
-      </StreamProvider>
+      <StreamProvider>{children}</StreamProvider>
     </ThreadProvider>
   );
 }
