@@ -30,14 +30,13 @@ import {
   listObjectStorage,
 } from "@/lib/sealos/resources/objectstorage/objectstorage-method/objectstorage-query";
 import {
-  createObjectStorage,
-  deleteObjectStorage,
-  closeObjectStorageHost,
-  openObjectStorageHost,
-  getObjectStorageStatus,
-  initObjectStorageUser,
-} from "@/lib/sealos/resources/objectstorage/objectstorage-api/objectstorage-old-api";
-import { runParallelAction } from "next-server-actions-parallel";
+  createObjectStorageBucketWithSealosContext,
+  deleteObjectStorageBucketWithSealosContext,
+  closeObjectStorageHostWithSealosContext,
+  openObjectStorageHostWithSealosContext,
+  getObjectStorageStatusWithSealosContext,
+  initObjectStorageUserWithSealosContext,
+} from "@/lib/sealos/resources/objectstorage/objectstorage-api/objectstorage-api-service";
 
 const t = initTRPC.context<ObjectStorageContext>().create();
 
@@ -65,13 +64,24 @@ export const objectStorageRouter = t.router({
     .input(ObjectStorageStatusRequestSchema)
     .output(ObjectStorageStatusResponseSchema)
     .query(async ({ ctx, input }) => {
-      return await runParallelAction(getObjectStorageStatus(input, ctx));
+      const sealosContext = {
+        baseUrl: ctx.regionUrl,
+        authorization: ctx.kubeconfig,
+      };
+      return await getObjectStorageStatusWithSealosContext(
+        sealosContext,
+        input
+      );
     }),
 
   initUser: t.procedure
     .output(ObjectStorageInitResponseSchema)
     .query(async ({ ctx }) => {
-      return await runParallelAction(initObjectStorageUser(ctx));
+      const sealosContext = {
+        baseUrl: ctx.regionUrl,
+        authorization: ctx.kubeconfig,
+      };
+      return await initObjectStorageUserWithSealosContext(sealosContext);
     }),
 
   // ===== MUTATION PROCEDURES =====
@@ -81,14 +91,28 @@ export const objectStorageRouter = t.router({
     .input(ObjectStorageCreateRequestSchema)
     .output(ObjectStorageCreateResponseSchema)
     .mutation(async ({ ctx, input }) => {
-      return await runParallelAction(createObjectStorage(input, ctx));
+      const sealosContext = {
+        baseUrl: ctx.regionUrl,
+        authorization: ctx.kubeconfig,
+      };
+      return await createObjectStorageBucketWithSealosContext(
+        sealosContext,
+        input
+      );
     }),
 
   delete: t.procedure
     .input(ObjectStorageDeleteRequestSchema)
     .output(ObjectStorageDeleteResponseSchema)
     .mutation(async ({ ctx, input }) => {
-      return await runParallelAction(deleteObjectStorage(input, ctx));
+      const sealosContext = {
+        baseUrl: ctx.regionUrl,
+        authorization: ctx.kubeconfig,
+      };
+      return await deleteObjectStorageBucketWithSealosContext(
+        sealosContext,
+        input
+      );
     }),
 
   // Host Management
@@ -96,14 +120,25 @@ export const objectStorageRouter = t.router({
     .input(ObjectStorageCloseHostRequestSchema)
     .output(ObjectStorageCloseHostResponseSchema)
     .mutation(async ({ ctx, input }) => {
-      return await runParallelAction(closeObjectStorageHost(input, ctx));
+      const sealosContext = {
+        baseUrl: ctx.regionUrl,
+        authorization: ctx.kubeconfig,
+      };
+      return await closeObjectStorageHostWithSealosContext(
+        sealosContext,
+        input
+      );
     }),
 
   openHost: t.procedure
     .input(ObjectStorageOpenHostRequestSchema)
     .output(ObjectStorageOpenHostResponseSchema)
     .mutation(async ({ ctx, input }) => {
-      return await runParallelAction(openObjectStorageHost(input, ctx));
+      const sealosContext = {
+        baseUrl: ctx.regionUrl,
+        authorization: ctx.kubeconfig,
+      };
+      return await openObjectStorageHostWithSealosContext(sealosContext, input);
     }),
 });
 

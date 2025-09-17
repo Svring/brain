@@ -109,14 +109,14 @@ export const CpuMemoryPopoverContent: React.FC<{
           <CpuIcon className="h-6 w-6" />
           <div className="flex flex-col">
             <div className="text-xs text-muted-foreground">CPU</div>
-            <div className="text-sm font-medium">{cpuLimit}Core</div>
+            <div className="text-sm font-medium">{cpuLimit} Core</div>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <MemoryStickIcon className="h-6 w-6" />
           <div className="flex flex-col">
             <div className="text-xs text-muted-foreground">Memory</div>
-            <div className="text-sm font-medium">{memoryLimit}GB</div>
+            <div className="text-sm font-medium">{memoryLimit} GB</div>
           </div>
         </div>
       </div>

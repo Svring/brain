@@ -88,7 +88,7 @@ export function MessagePopover({
 
           <PopoverContent
             className={cn(
-              "p-2 border border-border-primary shadow-lg bg-background-secondary rounded-xl",
+              "p-2 border shadow-lg bg-background-secondary rounded-xl",
               "max-h-[80vh] overflow-y-auto"
             )}
             style={{

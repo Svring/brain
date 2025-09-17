@@ -37,7 +37,7 @@ export function BaseResourceMessage({
 }: BaseResourceMessageProps) {
   return (
     <div className="flex justify-start w-full">
-      <Card className="w-full bg-background-secondary border border-border-primary p-2 gap-2">
+      <Card className="w-full bg-background-secondary border p-2 gap-2">
         {/* Header Section */}
         {showHeader && target && (
           <MessageHeader target={target} headerSlot={headerSlot} />

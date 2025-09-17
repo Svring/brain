@@ -126,19 +126,19 @@ export function CustomPortDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Custom Domain - Port {selectedPort?.number}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="flex-1 flex flex-col space-y-4 min-h-0">
           {/* Domain binding info */}
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-muted-foreground flex-shrink-0">
             Domain binding for this availability zone requires Alibaba Cloud
             registration.
           </div>
 
           {/* Input with refresh and edit buttons */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-shrink-0">
             <Input
               placeholder="Enter your custom domain..."
               className="flex-1"
@@ -152,75 +152,79 @@ export function CustomPortDialog({
           </div>
 
           {/* DNS Records section */}
-          <Card className="border border-border-primary">
-            <CardContent className="space-y-3">
-              <div className="flex items-center">
+          <Card className="border border-border-primary flex-1 flex flex-col min-h-0">
+            <CardContent className="flex-1 flex flex-col space-y-3 min-h-0">
+              <div className="flex items-center flex-shrink-0">
                 <h4 className="text-sm font-medium text-foreground">
                   DNS Records
                 </h4>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground flex-shrink-0">
                 The DNS records at your provider must match the following
                 records to verify and connect your domain to Sealos.
               </p>
 
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-1/4">Type</TableHead>
-                    <TableHead className="w-1/4">TTL</TableHead>
-                    <TableHead className="w-1/2">Value</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {dnsRecords.map((record, index) => (
-                    <TableRow key={index}>
-                      <TableCell>
-                        <p className="text-sm">{record.type}</p>
-                      </TableCell>
-                      <TableCell>
-                        <p className="text-sm">{record.ttl}</p>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-mono">{record.value}</p>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-6 w-6 p-0 flex-shrink-0"
-                            onClick={() =>
-                              copyToClipboard(record.value, `dns-${index}`)
-                            }
-                          >
-                            {isCopied(`dns-${index}`) ? (
-                              <Check className="w-3 h-3 text-theme-green" />
-                            ) : (
-                              <Copy className="w-3 h-3" />
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <div className="h-full flex flex-col">
+                  <Table className="flex-1">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-1/4">Type</TableHead>
+                        <TableHead className="w-1/4">TTL</TableHead>
+                        <TableHead className="w-1/2">Value</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {dnsRecords.map((record, index) => (
+                        <TableRow key={index} className="h-auto">
+                          <TableCell className="py-2">
+                            <p className="text-sm">{record.type}</p>
+                          </TableCell>
+                          <TableCell className="py-2">
+                            <p className="text-sm">{record.ttl}</p>
+                          </TableCell>
+                          <TableCell className="py-2">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-mono truncate flex-1">{record.value}</p>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-6 w-6 p-0 flex-shrink-0"
+                                onClick={() =>
+                                  copyToClipboard(record.value, `dns-${index}`)
+                                }
+                              >
+                                {isCopied(`dns-${index}`) ? (
+                                  <Check className="w-3 h-3 text-theme-green" />
+                                ) : (
+                                  <Copy className="w-3 h-3" />
+                                )}
+                              </Button>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-2">
+                            {dnsRecords.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setDnsRecords(
+                                    dnsRecords.filter((_, i) => i !== index)
+                                  );
+                                }}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                             )}
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {dnsRecords.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setDnsRecords(
-                                dnsRecords.filter((_, i) => i !== index)
-                              );
-                            }}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
 
               {/* Documentation link */}
               {/* <div className="flex justify-start pt-3">

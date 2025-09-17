@@ -134,21 +134,21 @@ export const ResourceQuotaPopoverContent: React.FC<{
           <Cpu className="h-6 w-6" />
           <div className="flex flex-col">
             <div className="text-xs text-muted-foreground">CPU</div>
-            <div className="text-sm font-medium">{resourceData?.cpu}Core</div>
+            <div className="text-sm font-medium">{resourceData?.cpu} Core</div>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <MemoryStick className="h-6 w-6" />
           <div className="flex flex-col">
             <div className="text-xs text-muted-foreground">Memory</div>
-            <div className="text-sm font-medium">{resourceData?.memory}GB</div>
+            <div className="text-sm font-medium">{resourceData?.memory} GB</div>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <HardDrive className="h-6 w-6" />
           <div className="flex flex-col">
             <div className="text-xs text-muted-foreground">Storage</div>
-            <div className="text-sm font-medium">{resourceData?.storage}GB</div>
+            <div className="text-sm font-medium">{resourceData?.storage} GB</div>
           </div>
         </div>
         <div className="flex items-center gap-2">

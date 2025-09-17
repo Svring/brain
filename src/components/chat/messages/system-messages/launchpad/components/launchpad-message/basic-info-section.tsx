@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Calendar, Image, Pencil } from "lucide-react";
+import { Calendar, Image, Pencil, Copy, Check } from "lucide-react";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { LaunchpadObjectSchema } from "@/lib/sealos/resources/launchpad/launchpad-object-schema";
@@ -11,6 +11,7 @@ import { LaunchpadUpdateFormData } from "@/schemas/forms/launchpad/launchpad-upd
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useCopy } from "@/hooks/use-copy";
 
 interface BasicInfoSectionProps {
   target: BuiltinResourceTarget;
@@ -29,6 +30,7 @@ export const BasicInfoPopoverContent: React.FC<{
 
   const queryClient = useQueryClient();
   const { launchpad } = useTRPCClients();
+  const { copyToClipboard, isCopied } = useCopy();
 
   const updateLaunchpad = useMutation(launchpad.update.mutationOptions());
 
@@ -122,8 +124,38 @@ export const BasicInfoPopoverContent: React.FC<{
         {/* Image Name */}
         <div className="flex flex-col items-center gap-1">
           <div className="text-sm text-muted-foreground">Image</div>
-          <div className="text-sm font-medium">
-            {getImageName(parsedLaunchpadObject?.image?.imageName || "")}
+          <div className="flex items-center gap-1">
+            <span
+              className="text-xs truncate"
+              title={getImageName(
+                parsedLaunchpadObject?.image?.imageName || ""
+              )}
+            >
+              {(() => {
+                const name = getImageName(
+                  parsedLaunchpadObject?.image?.imageName || ""
+                );
+                return name.length > 16 ? name.slice(0, 16) + "..." : name;
+              })()}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-3 w-3 p-0 hover:bg-muted"
+              onClick={() => {
+                const imageName = parsedLaunchpadObject?.image?.imageName || "";
+                if (imageName) {
+                  copyToClipboard(imageName, `image-${target.name}`);
+                  toast.success("Image name copied to clipboard");
+                }
+              }}
+            >
+              {isCopied(`image-${target.name}`) ? (
+                <Check className="h-2 w-2 text-green-600" />
+              ) : (
+                <Copy className="h-2 w-2" />
+              )}
+            </Button>
           </div>
         </div>
 
@@ -182,8 +214,18 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           <Image className="h-5 w-5 text-primary" />
           <div className="flex flex-col">
             <span className="font-medium text-sm">Image</span>
-            <span className="text-xs text-muted-foreground truncate">
-              {getImageName(parsedLaunchpadObject?.image?.imageName || "")}
+            <span
+              className="text-xs text-muted-foreground truncate"
+              title={getImageName(
+                parsedLaunchpadObject?.image?.imageName || ""
+              )}
+            >
+              {(() => {
+                const name = getImageName(
+                  parsedLaunchpadObject?.image?.imageName || ""
+                );
+                return name.length > 16 ? name.slice(0, 16) + "..." : name;
+              })()}
             </span>
           </div>
         </div>

@@ -18,6 +18,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useProjectLifecycle } from "@/hooks/brain/use-project-lifecycle";
 import { useMutation } from "@tanstack/react-query";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { ProjectObjectSchema } from "@/lib/brain/resources/project/project-schemas/project-object-schema";
@@ -72,13 +73,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     };
   }, [targets]);
 
-  const { mutate: deleteProject, isPending: isDeleting } = useMutation({
-    ...projectClient.delete.mutationOptions(),
-    onSuccess: (_, name) => {
-      invalidateQueries([projectClient.list.queryKey()]);
-      toast.success(`Project ${name} deleted successfully`);
-    },
-  });
+  const { deleteProject, isDeleting } = useProjectLifecycle();
 
   const handleRenameClick = (e: React.MouseEvent) => {
     e.preventDefault();

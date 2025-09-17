@@ -4,9 +4,13 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
-import { useProjectActions } from "@/contexts/project/project-context";
+import {
+  useProjectActions,
+  useProjectState,
+} from "@/contexts/project/project-context";
 import { useChatActions } from "@/contexts/chat/chat-context";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { useProjectLifecycle } from "@/hooks/brain/use-project-lifecycle";
 import type { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface UseDevboxLifecycleOptions {
@@ -19,7 +23,9 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
   const { devbox, project } = useTRPCClients();
   const { invalidateQueries } = useInvalidateQueries();
   const { clearSelectedResource } = useProjectActions();
+  const { selectedProjectResources, selectedProject } = useProjectState();
   const { closeSidebarChat } = useChatActions();
+  const { deleteProject } = useProjectLifecycle({ shouldRedirect: true });
 
   const startMutation = useMutation({
     ...devbox.start.mutationOptions(),
@@ -103,7 +109,7 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
 
   const deleteMutation = useMutation({
     ...devbox.delete.mutationOptions(),
-    onSuccess: (_, target) => {
+    onSuccess: async (_, target) => {
       const message = "Devbox deleted successfully";
       toast.success(message);
       onSuccess?.(message);
@@ -115,10 +121,17 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
         ],
         true
       );
-      // Clear selected resource and close sidebar chat after successful deletion
+
+      // Check if this was the last resource in the project
+      if (selectedProjectResources?.length === 1 && selectedProject) {
+        // Delete the entire project and redirect
+        await deleteProject(selectedProject);
+        return; // Early return, project deletion handles cleanup
+      }
+
+      // Normal resource deletion cleanup
       clearSelectedResource();
       closeSidebarChat();
-      // Reload the window after successful deletion
       window.location.reload();
     },
     onError: (error: any) => {
