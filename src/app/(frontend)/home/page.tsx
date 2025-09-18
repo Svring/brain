@@ -34,7 +34,6 @@ export default function HomePage() {
     getThreads,
     setThreads,
     selectThread,
-    setMessages,
     selectedThreadId,
   } = useThreads();
 
@@ -96,17 +95,27 @@ export default function HomePage() {
 
   const hasMessages = messages.length > 0;
 
+  // State for delayed message display
+  const [showMessages, setShowMessages] = useState(false);
+
+  // Add 1-second delay before showing messages
+  useEffect(() => {
+    if (hasMessages) {
+      const timer = setTimeout(() => {
+        setShowMessages(true);
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    } else {
+      setShowMessages(false);
+    }
+  }, [hasMessages]);
+
   // Create thread on mount for home page
   useMount(() => {
-    // Always clear messages and create a new thread on mount
-    console.log(
-      "[HomePage] Clearing messages and creating new thread on mount..."
-    );
-
-    // Clear messages first
-    setMessages([]);
-
     // Create a new thread and select it
+    console.log("[HomePage] Creating new thread on mount...");
+
     createNewThread.mutate(undefined, {
       onSuccess: (data: any) => {
         if (data?.thread_id) {
@@ -133,7 +142,7 @@ export default function HomePage() {
       <LaunchpadCreateDialog />
       <div className="flex-1 flex flex-col min-h-0">
         {/* Hero overlays the content area and fades out when messages exist */}
-        {!hasMessages && (
+        {!showMessages && (
           <motion.div
             initial={{ opacity: 0, y: 0 }}
             animate={{ opacity: 1, y: 0 }}
@@ -152,7 +161,7 @@ export default function HomePage() {
         )}
 
         {/* Messages area - only visible when there are messages */}
-        {hasMessages && (
+        {showMessages && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -164,11 +173,7 @@ export default function HomePage() {
               className="flex-1 overflow-y-auto py-8"
             >
               <div className="max-w-3xl mx-auto w-full">
-                <AiMessages
-                  scrollRef={messagesScrollRef}
-                  messages={messages}
-                  isLoading={isLoading}
-                />
+                <AiMessages scrollRef={messagesScrollRef} />
               </div>
             </div>
           </motion.div>
@@ -177,21 +182,21 @@ export default function HomePage() {
         {/* Chat Input - flows naturally in the column */}
         <motion.div
           layout
-          initial={!hasMessages ? { y: 0, opacity: 0 } : false}
+          initial={!showMessages ? { y: 0, opacity: 0 } : false}
           animate={{ y: 0, opacity: 1 }}
           transition={{
-            delay: hasMessages ? 0 : 0.2,
-            duration: hasMessages ? 0.4 : 0.6,
+            delay: showMessages ? 0 : 0.2,
+            duration: showMessages ? 0.4 : 0.6,
             ease: "easeOut",
           }}
-          className={`flex-shrink-0 ${hasMessages ? "pb-8" : "py-0"}`}
+          className={`flex-shrink-0 ${showMessages ? "pb-8" : "py-0"}`}
         >
           <div className="container mx-auto relative max-w-3xl">
             <AiChatInput
-              className={`max-w-3xl${!hasMessages ? " min-h-[140px]" : ""}`}
-              exhibition={!hasMessages}
+              className={`max-w-3xl${!showMessages ? " min-h-[140px]" : ""}`}
+              exhibition={!showMessages}
             />
-            {!hasMessages && (
+            {!showMessages && (
               <>
                 <div className="absolute bottom-2 left-2 right-2 flex gap-2">
                   <TooltipProvider>
@@ -232,7 +237,7 @@ export default function HomePage() {
         </motion.div>
 
         {/* Projects section - hidden when messages appear */}
-        {showRecentProjects && (
+        {showRecentProjects && !showMessages && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

@@ -103,18 +103,16 @@ export function AiMessages({
           className="mt-4 p-4 border border-border-primary rounded-lg bg-background-secondary"
         >
           <p className="text-sm text-foreground mb-3">
-            Interrupted! Action: {interruptData.action}
+            Action: {interruptData.action}
           </p>
 
           {interruptData.payload && (
             <div className="mb-4">
-              <p className="text-sm text-foreground mb-2">
-                Payload (editable):
-              </p>
+              <p className="text-sm text-foreground mb-2">Payload:</p>
               <div className="border border-border-primary rounded p-2 bg-background">
                 <ReactJson
                   src={interruptData.payload}
-                  theme="rjv-default"
+                  theme="pop"
                   displayDataTypes={false}
                   displayObjectSize={false}
                   enableClipboard={false}

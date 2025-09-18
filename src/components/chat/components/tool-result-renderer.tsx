@@ -23,10 +23,11 @@ export const ToolResultRenderer = memo(function ToolResultRenderer({
   status,
 }: ToolResultRendererProps) {
   const { action, payload } = useMemo(() => {
+    console.log("content", content);
     try {
       // First try to parse the outer content
       const outerParsed = JSON.parse(content);
-
+      console.log("outerParsed", outerParsed);
       // If it has an action and payload, return them
       if (outerParsed.action && outerParsed.payload) {
         return {
