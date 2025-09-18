@@ -79,7 +79,7 @@ export function useDiagnoseNetwork(
   target: CustomResourceTarget | BuiltinResourceTarget
 ) {
   const { selectedThreadId } = useThreads();
-  const { sendMessage } = useStreamContext();
+  const { submitWithContext } = useStreamContext();
 
   // Get container ports data for network diagnosis
   const containerStatusResult = useResourceStatus<ContainerPortsResult>(
@@ -119,7 +119,7 @@ export function useDiagnoseNetwork(
       // Use node select to handle the selection and message appending
       handleNodeSelect();
 
-      // Send message using langgraph stream
+      // Send message using submitWithContext
       if (selectedThreadId) {
         const networkStatusData = {
           containerStatus,
@@ -129,26 +129,30 @@ export function useDiagnoseNetwork(
           containerError,
         };
 
-        sendMessage([
-          {
-            type: "system",
-            content: JSON.stringify({
-              type: "universal.diagnoseNetwork",
-              target,
-            }),
-          },
-          {
-            type: "system",
-            content:
-              analyzeNetworkPrompt + "\n\n" + JSON.stringify(networkStatusData),
-          },
-        ]);
+        submitWithContext({
+          messages: [
+            {
+              type: "system",
+              content: JSON.stringify({
+                type: "universal.diagnoseNetwork",
+                target,
+              }),
+            },
+            {
+              type: "system",
+              content:
+                analyzeNetworkPrompt +
+                "\n\n" +
+                JSON.stringify(networkStatusData),
+            },
+          ],
+        });
       }
     },
     [
       handleNodeSelect,
       selectedThreadId,
-      sendMessage,
+      submitWithContext,
       containerStatus,
       containerPortsData,
       originalResource,

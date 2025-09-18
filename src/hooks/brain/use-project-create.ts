@@ -66,7 +66,7 @@ export function useProjectCreate(options?: CreateProjectOptions) {
     try {
       setIsCreating(true);
 
-      // Create the project first
+      // Prepare project name
       const sanitizedName = (projectName || "project")
         .toLowerCase()
         .replace(/[^a-z0-9-]/g, "-")
@@ -74,13 +74,8 @@ export function useProjectCreate(options?: CreateProjectOptions) {
         .replace(/-+/g, "-");
 
       const uniqueProjectName = `${sanitizedName}-${nanoid()}`;
-      const projectResult = await createProjectMutation.mutateAsync({
-        name: uniqueProjectName,
-      });
 
-      const finalProjectName = projectResult.name;
-
-      // Create all resources in parallel
+      // Create all resources in parallel first
       const resourcePromises: Promise<any>[] = [];
 
       // Create DevBox if provided
@@ -218,21 +213,32 @@ export function useProjectCreate(options?: CreateProjectOptions) {
         ...clusterCreationFailures.map((resource) => resource.error)
       );
 
+      // Only create the project if we have at least one successful resource
+      if (successfulResources.length === 0) {
+        toast.error(
+          "No resources were created successfully. Project creation cancelled."
+        );
+        return;
+      }
+
+      // Create the project after resources are successfully created
+      const projectResult = await createProjectMutation.mutateAsync({
+        name: uniqueProjectName,
+      });
+
+      const finalProjectName = projectResult.name;
+
+      // Add all successful resources to the project
+      const targets = successfulResources.map((resource) => resource.target);
+      await addToProjectMutation.mutateAsync({
+        resources: targets,
+        name: finalProjectName,
+      });
+
       if (failedResources.length > 0) {
         toast.error(
           `Created project but ${failedResources.length} resource(s) failed to create`
         );
-      }
-
-      // Add all resources to the project
-      if (allFulfilledResources.length > 0) {
-        const targets = allFulfilledResources.map(
-          (resource) => resource.target
-        );
-        await addToProjectMutation.mutateAsync({
-          resources: targets,
-          name: finalProjectName,
-        });
       }
 
       toast.success(

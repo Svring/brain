@@ -1,7 +1,6 @@
 "use client";
 
 import { useChatState } from "@/contexts/chat/chat-context";
-import { useThreads } from "@/components/provider/thread-provider";
 import { useStreamContext } from "@/components/provider/stream-provider";
 import { AiChatInput } from "./input";
 import { AiChatHeader } from "./header";
@@ -10,8 +9,7 @@ import { cn } from "@/lib/utils";
 
 export default function AiChatbox() {
   const { sidebarChatOpen } = useChatState();
-  const { messages } = useThreads();
-  const { streamThread, isLoading, stop } = useStreamContext();
+  const { messages, isLoading, stop } = useStreamContext();
 
   return (
     <div
