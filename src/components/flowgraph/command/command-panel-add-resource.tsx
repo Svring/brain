@@ -5,9 +5,9 @@ import { ArrowRight, ArrowLeft } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import DevboxCreateMessage from "@/components/chat/messages/system-messages/devbox/devbox-create-message";
-import LaunchpadCreateMessage from "@/components/chat/messages/system-messages/launchpad/launchpad-create-message";
-import ClusterCreateMessage from "@/components/chat/messages/system-messages/cluster/cluster-create-message";
+import DevboxCreateSimpleMessage from "@/components/chat/messages/system-messages/devbox/devbox-create-simple-message";
+import LaunchpadCreateSimpleMessage from "@/components/chat/messages/system-messages/launchpad/launchpad-create-simple-message";
+import ClusterCreateSimpleMessage from "@/components/chat/messages/system-messages/cluster/cluster-create-simple-message";
 import ObjectStorageCreateMessage from "@/components/chat/messages/system-messages/objectstorage/objectstorage-create-message";
 
 interface ResourceListProps {
@@ -147,9 +147,9 @@ export function ResourceCreate({ resourceId, onBack }: ResourceCreateProps) {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
-        {resourceId === "add-devbox" && <DevboxCreateMessage />}
-        {resourceId === "add-database" && <ClusterCreateMessage />}
-        {resourceId === "add-app-launchpad" && <LaunchpadCreateMessage />}
+        {resourceId === "add-devbox" && <DevboxCreateSimpleMessage />}
+        {resourceId === "add-database" && <ClusterCreateSimpleMessage />}
+        {resourceId === "add-app-launchpad" && <LaunchpadCreateSimpleMessage />}
         {resourceId === "add-object-storage" && (
           <ObjectStorageCreateMessage payload={{}} />
         )}

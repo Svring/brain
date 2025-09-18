@@ -6,42 +6,21 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray } from "react-hook-form";
 import { z } from "zod";
-import { DevboxRuntimeSchema } from "@/schemas/forms/devbox/components/devbox-runtime-schema";
-import { DevboxPortCreateSchema } from "@/schemas/forms/devbox/components/devbox-port-schema";
-import { NameField } from "@/components/forms/universal/name-field";
+import { devboxCreateFormSchema } from "@/schemas/forms/devbox/devbox-create-form-schema";
+import { nanoid } from "nanoid";
 import { DevboxRuntimeField } from "./components/devbox-runtime-field";
 import { DevboxPortsFields } from "./devbox-ports-fields";
+import { NameField } from "@/components/forms/universal/name-field";
 import { toast } from "sonner";
 
-// Simplified schema with only the required fields
-const devboxSimpleFormSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Devbox name is required")
-    .max(63, "Devbox name must be 63 characters or less")
-    .regex(
-      /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/,
-      "Devbox name must be DNS compliant: lowercase, numbers, hyphens only"
-    )
-    .default("my-devbox"),
-  runtime: DevboxRuntimeSchema.default("python"),
-  ports: z.array(DevboxPortCreateSchema).default([
-    {
-      number: 80,
-      protocol: "HTTP",
-      exposesPublicDomain: true,
-    },
-  ]),
-});
-
-export type DevboxSimpleFormData = z.infer<typeof devboxSimpleFormSchema>;
+// Use the main schema for parsing with default values
+export type DevboxSimpleFormData = z.infer<typeof devboxCreateFormSchema>;
 
 interface DevboxCreateSimpleFormProps {
   defaultValues?: Partial<DevboxSimpleFormData>;
   onSubmit: (data: DevboxSimpleFormData) => void;
   isLoading?: boolean;
   hideDefaultButton?: boolean;
-  formId?: string;
 }
 
 export const DevboxCreateSimpleForm = ({
@@ -49,18 +28,17 @@ export const DevboxCreateSimpleForm = ({
   onSubmit,
   isLoading = false,
   hideDefaultButton = false,
-  formId = "devbox-create-simple-form",
 }: DevboxCreateSimpleFormProps) => {
   // Get default values from schema
-  const schemaDefaults = devboxSimpleFormSchema.parse({});
-  
+  const schemaDefaults = devboxCreateFormSchema.parse({});
+
   const form = useForm<DevboxSimpleFormData>({
-    resolver: zodResolver(devboxSimpleFormSchema),
+    resolver: zodResolver(devboxCreateFormSchema),
     defaultValues: {
       ...schemaDefaults,
       ...defaultValues,
     },
-    mode: "onBlur",
+    mode: "onChange",
   });
 
   // Only ports field array is needed for the simple form
@@ -85,11 +63,7 @@ export const DevboxCreateSimpleForm = ({
       );
     } else if (errors.runtime) {
       toast.error(
-        "Runtime validation failed. Please check your runtime selection."
-      );
-    } else if (errors.name) {
-      toast.error(
-        "Devbox name validation failed. Please check your devbox name."
+        "Runtime configuration validation failed. Please check your runtime settings."
       );
     } else {
       // Show the first error message for better debugging
@@ -103,15 +77,19 @@ export const DevboxCreateSimpleForm = ({
   return (
     <Form {...form}>
       <form
-        id={formId}
+        id="devbox-create-simple-form"
         onSubmit={form.handleSubmit(handleSubmit, handleSubmitError)}
         className="space-y-6"
       >
+        {/* Basic Configuration */}
         <div className="space-y-4">
           <NameField />
-          <DevboxRuntimeField />
+          <div className="space-y-2">
+            <DevboxRuntimeField />
+          </div>
         </div>
 
+        {/* Ports Configuration */}
         <div className="space-y-2">
           <div className="text-sm font-medium text-foreground">Ports</div>
           <DevboxPortsFields fieldArray={portsFieldArray} />
@@ -122,17 +100,12 @@ export const DevboxCreateSimpleForm = ({
             <Button
               type="button"
               variant="outline"
-              form={formId}
               onClick={() => form.reset()}
               disabled={isLoading}
             >
               Reset
             </Button>
-            <Button
-              type="submit"
-              form={formId}
-              disabled={isLoading}
-            >
+            <Button type="submit" disabled={isLoading}>
               {isLoading ? "Creating..." : "Create"}
             </Button>
           </div>

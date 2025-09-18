@@ -93,23 +93,25 @@ export default function HomePage() {
     useLaunchpadCreateDialog();
   const messagesScrollRef = useRef<HTMLDivElement>(null);
 
-  const hasMessages = messages.length > 0;
+  // const hasMessages = messages.length > 0;
+  const showMessages = messages.length > 0;
+  
 
   // State for delayed message display
-  const [showMessages, setShowMessages] = useState(false);
+  // const [showMessages, setShowMessages] = useState(false);
 
   // Add 1-second delay before showing messages
-  useEffect(() => {
-    if (hasMessages) {
-      const timer = setTimeout(() => {
-        setShowMessages(true);
-      }, 3000);
+  // useEffect(() => {
+  //   if (hasMessages) {
+  //     const timer = setTimeout(() => {
+  //       setShowMessages(true);
+  //     }, 2000);
 
-      return () => clearTimeout(timer);
-    } else {
-      setShowMessages(false);
-    }
-  }, [hasMessages]);
+  //     return () => clearTimeout(timer);
+  //   } else {
+  //     setShowMessages(false);
+  //   }
+  // }, [hasMessages]);
 
   // Create thread on mount for home page
   useMount(() => {
@@ -133,7 +135,7 @@ export default function HomePage() {
   });
 
   // Track visibility of recent projects
-  const showRecentProjects = !hasMessages && projects && projects.length > 0;
+  const showRecentProjects = !showMessages && projects && projects.length > 0;
   // const showRecentProjects = false;
 
   return (

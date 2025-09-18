@@ -56,7 +56,7 @@ export function FlowgraphCommandDialog({
       if (!isOpen) return;
 
       // Handle Tab key for going back
-      if (event.key === 'Tab') {
+      if (event.key === "Tab") {
         event.preventDefault();
         if (selectedCommand) {
           setSelectedCommand(null);
@@ -70,9 +70,15 @@ export function FlowgraphCommandDialog({
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, selectedCommand, showResourceList, showManageResources, showExistingResources]);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [
+    isOpen,
+    selectedCommand,
+    showResourceList,
+    showManageResources,
+    showExistingResources,
+  ]);
 
   return (
     <CommandDialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -97,9 +103,7 @@ export function FlowgraphCommandDialog({
               />
             ) : showManageResources ? (
               // Show manage resources dialog
-              <ManageResources
-                onBack={() => setShowManageResources(false)}
-              />
+              <ManageResources onBack={() => setShowManageResources(false)} />
             ) : showExistingResources ? (
               // Show existing resources dialog
               <ExistingResources

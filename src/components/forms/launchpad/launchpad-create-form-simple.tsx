@@ -10,6 +10,7 @@ import { launchpadCreateFormSchema } from "@/schemas/forms/launchpad/launchpad-c
 import { nanoid } from "nanoid";
 import { ImageConfigFields } from "../universal/image-config-fields";
 import { LaunchpadPortsFields } from "./launchpad-ports-fields";
+import { NameField } from "@/components/forms/universal/name-field";
 import { toast } from "sonner";
 
 // Use the main schema for parsing with default values
@@ -46,23 +47,10 @@ export const LaunchpadCreateSimpleForm = ({
     name: "ports",
   });
 
-  const generateAppName = (): string => {
-    // Use 'app' as prefix and append nanoid
-    const uniqueId = nanoid(6);
-    return `app-${uniqueId}`;
-  };
-
   const handleSubmit = (data: LaunchpadSimpleFormData) => {
-    // Generate name with 'app' prefix
-    const generatedName = generateAppName();
-    const dataWithGeneratedName = {
-      ...data,
-      name: generatedName,
-    };
-
     // Data cleaning is now handled by individual field components
-    // console.log("Submitting simple form data:", JSON.stringify(dataWithGeneratedName, null, 2));
-    onSubmit(dataWithGeneratedName);
+    // console.log("Submitting simple form data:", JSON.stringify(data, null, 2));
+    onSubmit(data);
   };
 
   const handleSubmitError = (errors: any) => {
@@ -95,10 +83,8 @@ export const LaunchpadCreateSimpleForm = ({
       >
         {/* Basic Configuration */}
         <div className="space-y-4">
+          <NameField />
           <div className="space-y-2">
-            <h2 className="font-medium text-foreground pb-2">
-              Image Configuration
-            </h2>
             <ImageConfigFields hidePrivateRegistry={true} />
           </div>
         </div>

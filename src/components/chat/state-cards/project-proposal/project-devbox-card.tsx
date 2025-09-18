@@ -234,7 +234,19 @@ export function ProjectDevBoxCard({
         </div>
       </div>
       <div className="text-sm text-muted-foreground">
-        Runtime: <span className="text-foreground">{resource.runtime}</span>
+        Runtime:{" "}
+        <RuntimeSelectionDialog
+          currentRuntime={resource.runtime}
+          onRuntimeSelect={(runtime) => {
+            if (onSave) {
+              onSave({ ...resource, runtime: runtime as any });
+            }
+          }}
+        >
+          <span className="text-foreground cursor-pointer hover:text-primary transition-colors">
+            {resource.runtime}
+          </span>
+        </RuntimeSelectionDialog>
       </div>
 
       {/* Ports Display */}

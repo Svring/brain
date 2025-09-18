@@ -7,7 +7,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import type { CheckedState } from "@radix-ui/react-checkbox";
 import {
   useProjectState,
-  useProjectActions,
 } from "@/contexts/project/project-context";
 import { ResourceObject } from "@/contexts/project/project-context";
 import { useState } from "react";
@@ -20,13 +19,12 @@ interface ManageResourcesProps {
 
 export function ManageResources({ onBack }: ManageResourcesProps) {
   const { selectedProject, selectedProjectResources } = useProjectState();
-  const { removeResource } = useProjectActions();
   const [selectedResources, setSelectedResources] = useState<Set<string>>(
     new Set()
   );
 
   // Initialize lifecycle hook
-  const { batchStart, batchPause, isPerformingBatchAction } =
+  const { batchStart, batchPause, batchDelete, isPerformingBatchAction } =
     useResourcesLifecycle();
 
   // Helper function to get resource key for selection
@@ -92,32 +90,8 @@ export function ManageResources({ onBack }: ManageResourcesProps) {
       return;
     }
 
-    let successCount = 0;
-    let errorCount = 0;
-
-    try {
-      for (const resource of selectedResourceObjects) {
-        try {
-          removeResource(resource.name, resource.kind);
-          successCount++;
-        } catch (error) {
-          console.error(
-            `Failed to delete ${resource.kind}/${resource.name}:`,
-            error
-          );
-          errorCount++;
-        }
-      }
-
-      if (successCount > 0) {
-        toast.success(`Deleted ${successCount} resource(s) successfully`);
-      }
-      if (errorCount > 0) {
-        toast.error(`Failed to delete ${errorCount} resource(s)`);
-      }
-    } finally {
-      setSelectedResources(new Set()); // Clear selection after batch operation
-    }
+    await batchDelete(selectedResourceObjects);
+    setSelectedResources(new Set()); // Clear selection after batch operation
   };
 
   const getResourceIcon = (kind: string) => {

@@ -48,8 +48,8 @@ export const DevboxCreateForm = ({
         </div>
 
         <DevboxCreateResourceFields
-          cpuOptions={[0.1, 0.2, 0.5, 1, 2, 4, 8, 16]}
-          memoryOptions={[0.1, 0.5, 1, 2, 4, 8, 16, 32]}
+          cpuOptions={[1, 2, 4, 8, 16]}
+          memoryOptions={[1, 2, 4, 8, 16, 32]}
         />
 
         <div className="space-y-2">

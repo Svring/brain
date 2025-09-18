@@ -153,9 +153,48 @@ export const useResourcesLifecycle = (
     }
   };
 
+  // Batch delete resources
+  const batchDelete = async (resources: ResourceObject[]) => {
+    if (resources.length === 0) {
+      toast.error("No resources selected");
+      return;
+    }
+
+    setIsPerformingBatchAction(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    try {
+      for (const resource of resources) {
+        try {
+          await executeResourceAction("delete", resource);
+          successCount++;
+        } catch (error) {
+          console.error(
+            `Failed to delete ${resource.kind}/${resource.name}:`,
+            error
+          );
+          errorCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`Deleted ${successCount} resource(s) successfully`);
+        // Invalidate queries to refresh project resources
+        invalidateQueries([], true);
+      }
+      if (errorCount > 0) {
+        toast.error(`Failed to delete ${errorCount} resource(s)`);
+      }
+    } finally {
+      setIsPerformingBatchAction(false);
+    }
+  };
+
   return {
     batchStart,
     batchPause,
+    batchDelete,
     isPerformingBatchAction,
     executeResourceAction,
   };

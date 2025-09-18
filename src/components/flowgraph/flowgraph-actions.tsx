@@ -140,7 +140,7 @@ export function FlowgraphActions({
         </Tooltip> */}
 
         {/* Refresh Button */}
-        <Tooltip>
+        {/* <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
@@ -154,7 +154,7 @@ export function FlowgraphActions({
           <TooltipContent>
             <p>Refresh</p>
           </TooltipContent>
-        </Tooltip>
+        </Tooltip> */}
 
         {/* Command Button */}
         <Tooltip>
