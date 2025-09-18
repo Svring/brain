@@ -8,9 +8,9 @@ interface UpdateDevboxToolMessageProps {
   result: ToolActionResult;
 }
 
-export const UpdateDevboxToolMessage: React.FC<UpdateDevboxToolMessageProps> = ({
-  result,
-}) => {
+export const UpdateDevboxToolMessage: React.FC<
+  UpdateDevboxToolMessageProps
+> = ({ result }) => {
   return (
     <div className="w-full">
       <div className="flex items-center justify-center p-2 border rounded-lg">

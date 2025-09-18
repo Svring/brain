@@ -52,9 +52,9 @@ export default function BaseNodeWrapper({
     selectedResource && target && _.isEqual(selectedResource, target);
 
   // Custom node click handler
-  const handleNodeClick = () => {
+  const handleNodeClick = async () => {
     // First call handleNodeSelect
-    handleNodeSelect();
+    await handleNodeSelect();
 
     // Then send message with context if we have a thread and messageType
     // if (messageType) {

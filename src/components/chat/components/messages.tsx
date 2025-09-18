@@ -116,24 +116,9 @@ export function AiMessages({
                   displayDataTypes={false}
                   displayObjectSize={false}
                   enableClipboard={false}
-                  onEdit={(edit) => {
-                    setInterruptData((prev: any) => ({
-                      ...prev,
-                      payload: edit.updated_src,
-                    }));
-                  }}
-                  onAdd={(add) => {
-                    setInterruptData((prev: any) => ({
-                      ...prev,
-                      payload: add.updated_src,
-                    }));
-                  }}
-                  onDelete={(del) => {
-                    setInterruptData((prev: any) => ({
-                      ...prev,
-                      payload: del.updated_src,
-                    }));
-                  }}
+                  onEdit={false}
+                  onAdd={false}
+                  onDelete={false}
                 />
               </div>
             </div>
@@ -144,7 +129,8 @@ export function AiMessages({
               size="sm"
               onClick={() => {
                 const responseData = {
-                  ...interruptData,
+                  action: interruptData.action,
+                  payload: interruptData.payload,
                   approve: true,
                 };
                 submitWithContext({
@@ -160,7 +146,8 @@ export function AiMessages({
               variant="outline"
               onClick={() => {
                 const responseData = {
-                  ...interruptData,
+                  action: interruptData.action,
+                  payload: interruptData.payload,
                   approve: false,
                 };
                 submitWithContext({
