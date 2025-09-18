@@ -45,7 +45,8 @@ export function FlowgraphActions({
   const { openSidebarChat } = useChatActions();
   const { sidebarChatOpen } = useChatState();
   const queryClient = useQueryClient();
-  const { project } = useTRPCClients();
+  const { project, devbox, cluster, launchpad, objectstorage } =
+    useTRPCClients();
   const { invalidateQueries } = useInvalidateQueries();
   const { zoomIn, zoomOut } = useReactFlow();
 
@@ -54,22 +55,22 @@ export function FlowgraphActions({
     onSearchChange?.(value);
   };
 
-  const handleScan = () => {
-    fitView();
-    onScan?.();
-  };
-
   const handleOpenSidebar = () => {
     openSidebarChat();
   };
 
   const handleRefresh = () => {
-    if (onRefresh) {
-      onRefresh();
-    } else {
-      // Default behavior: just refresh flowgraph
-      refresh();
-    }
+    // if (onRefresh) {
+    //   onRefresh();
+    // } else {
+    //   // Default behavior: just refresh flowgraph
+    //   refresh();
+    // }
+    invalidateQueries([
+      // devbox.list.queryKey(),
+      launchpad.get.queryKey(),
+      // objectstorage.list.queryKey(),
+    ]);
   };
 
   const handleOpenCommand = () => {

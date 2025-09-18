@@ -127,6 +127,8 @@ export const ToolResultRenderer = memo(function ToolResultRenderer({
     status,
   ]);
 
+  console.log("action", action);
+
   // Try to get the specific component for this action
   const Component = action ? get(ToolMessageType, action) : null;
 

@@ -25,6 +25,7 @@ import { useThreadStateAtCheckpoint } from "@/hooks/langgraph/use-thread-state-a
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useMount } from "@reactuses/core";
+import { SearchWebActionMessage } from "@/components/copilot/langgraph/search-web-action-message";
 
 export default function HomePage() {
   const {
@@ -38,6 +39,47 @@ export default function HomePage() {
     isStreaming,
     setIsStreaming,
   } = useThreads();
+
+  // Dummy web search data for testing
+  const dummyWebSearchData = {
+    query: "Next.js best practices 2024",
+    follow_up_questions: [
+      "What are the latest Next.js 14 features?",
+      "How to optimize Next.js performance?",
+      "Next.js vs React comparison",
+    ],
+    answer:
+      "Next.js 14 introduces improved performance with the App Router, enhanced TypeScript support, and better developer experience with features like Server Components and improved caching strategies.",
+    images: [],
+    results: [
+      {
+        url: "https://nextjs.org/docs",
+        title: "Next.js Documentation - The React Framework for Production",
+        content:
+          "Next.js gives you the best developer experience with all the features you need for production: hybrid static & server rendering, TypeScript support, smart bundling, route pre-fetching, and more. No config needed.",
+        score: 0.95,
+        raw_content: null,
+      },
+      {
+        url: "https://vercel.com/blog/nextjs-14",
+        title: "Next.js 14: Turbopack, Server Actions, and More",
+        content:
+          "Next.js 14 is here with major improvements including Turbopack for faster builds, Server Actions for better data mutations, and enhanced performance optimizations.",
+        score: 0.88,
+        raw_content: null,
+      },
+      {
+        url: "https://blog.logrocket.com/nextjs-best-practices/",
+        title: "Next.js Best Practices for 2024 - LogRocket Blog",
+        content:
+          "Learn the essential Next.js best practices including proper file structure, performance optimization, SEO techniques, and deployment strategies for production applications.",
+        score: 0.82,
+        raw_content: null,
+      },
+    ],
+    response_time: 1.2,
+    request_id: "test-request-123",
+  };
   const {
     filteredProjects,
     projects,
@@ -229,6 +271,29 @@ export default function HomePage() {
         {/* {!hasMessages && !showRecentProjects && !projectsLoading && (
           <Suggestions />
         )} */}
+        {/* <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{
+              delay: 0.8,
+              duration: 0.7,
+              ease: "easeOut",
+            }}
+            className="flex-shrink-0 px-4"
+          >
+            <div className="max-w-4xl mx-auto">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-center text-muted-foreground">
+                  Web Search Demo
+                </h3>
+                <p className="text-sm text-center text-muted-foreground mt-1">
+                  Example of how web search results are displayed
+                </p>
+              </div>
+              <SearchWebActionMessage result={dummyWebSearchData} />
+            </div>
+          </motion.div> */}
       </div>
     </div>
   );

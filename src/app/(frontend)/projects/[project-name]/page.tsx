@@ -254,8 +254,8 @@ export default function ProjectPage() {
           "h-full shrink-0 transition-all duration-300 ease-in-out",
           sidebarChatOpen
             ? sidebarChatMaximized
-              ? "w-[40%] p-2"
-              : "w-[35%] p-2 pl-0"
+              ? "w-[40%] p-2 min-w-md"
+              : "w-[35%] p-2 pl-0 min-w-md"
             : "w-0"
         )}
       >

@@ -10,8 +10,6 @@ import {
 import type { RunsInvokePayload } from "@langchain/langgraph-sdk";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useProjectState } from "@/contexts/project/project-context";
-import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
-import { useThreads } from "@/components/provider/thread-provider";
 import { SystemMessage } from "@/lib/copilot/message/message-utils";
 import {
   CustomResourceTarget,
@@ -34,15 +32,6 @@ export const useCreateNewChatSessionMutation = () => {
 
   return {
     mutationFn: async () => {
-      console.log(
-        "[useCreateNewChatSessionMutation] Creating new chat session with params:",
-        {
-          kubeconfig: !!auth?.kubeconfig,
-          projectName: selectedProject,
-          resourceTarget: selectedResource,
-        }
-      );
-
       const supersteps = [
         {
           updates: [

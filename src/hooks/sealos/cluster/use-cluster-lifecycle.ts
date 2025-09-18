@@ -29,8 +29,6 @@ export const useClusterLifecycle = (
   const { selectedProjectResources, selectedProject } = useProjectState();
   const { deleteProject } = useProjectLifecycle({ shouldRedirect: true });
 
-  console.log("selectedProjectResources", selectedProjectResources);
-
   const startMutation = useMutation({
     ...cluster.start.mutationOptions(),
     onSuccess: (_, target) => {

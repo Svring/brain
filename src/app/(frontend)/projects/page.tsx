@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { SearchIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,63 @@ import EmptyState from "@/components/project/empty-state";
 import useProjectSearch from "@/hooks/brain/use-projects-search";
 import { useProjectActions } from "@/contexts/project/project-context";
 import { ProjectObjectSchema } from "@/lib/brain/resources/project/project-schemas/project-object-schema";
+import { SearchAppStoreActionMessage } from "@/components/copilot/langgraph/search-app-store-action-message";
+
+// Example App Store data for demonstration
+const exampleAppStoreResults = [
+  {
+    name: "nginx",
+    gitRepo: "https://github.com/nginx/nginx",
+    description: "High performance web server and reverse proxy server",
+    inputs: {
+      port: {
+        description: "Port number for the web server",
+        type: "number",
+        default: "80",
+        required: false
+      },
+      workers: {
+        description: "Number of worker processes",
+        type: "number", 
+        default: "auto",
+        required: false
+      },
+      password: {
+        description: "Admin password for nginx",
+        type: "string",
+        default: "",
+        required: false
+      }
+    },
+    similarity_score: 0.95
+  },
+  {
+    name: "redis",
+    gitRepo: "https://github.com/redis/redis",
+    description: "In-memory data structure store used as database, cache, and message broker",
+    inputs: {
+      port: {
+        description: "Port number for Redis server",
+        type: "number",
+        default: "6379",
+        required: false
+      },
+      password: {
+        description: "Password for Redis authentication",
+        type: "string",
+        default: "",
+        required: true
+      },
+      workers: {
+        description: "Number of worker processes",
+        type: "number",
+        default: "1",
+        required: false
+      }
+    },
+    similarity_score: 0.88
+  }
+];
 
 export default function Page() {
   const { setAllProjects } = useProjectActions();
@@ -80,6 +137,14 @@ export default function Page() {
             )}
           </div>
         )}
+      </div>
+
+      {/* Example App Store Results */}
+      <div className="w-full max-w-4xl mt-12">
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold mb-2">Example App Store Results</h2>
+        </div>
+        <SearchAppStoreActionMessage result={exampleAppStoreResults} />
       </div>
     </div>
   );

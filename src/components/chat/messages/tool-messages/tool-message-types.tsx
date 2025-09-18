@@ -10,6 +10,9 @@ import { ClusterLifecycleActionMessage } from "@/components/copilot/sealos/clust
 import { LaunchpadCreateActionMessage } from "@/components/copilot/sealos/launchpad/launchpad-create-action-message";
 import { LaunchpadUpdateActionMessage } from "@/components/copilot/sealos/launchpad/launchpad-update-action-message";
 import { LaunchpadLifecycleActionMessage } from "@/components/copilot/sealos/launchpad/launchpad-lifecycle-action-message";
+import { SearchAppStoreActionMessage } from "@/components/copilot/langgraph/search-app-store-action-message";
+import { SearchDockerHubActionMessage } from "@/components/copilot/langgraph/search-docker-hub-action-message";
+import { SearchWebActionMessage } from "@/components/copilot/langgraph/search-web-action-message";
 
 export const ToolMessageType = {
   // Project Actions
@@ -237,17 +240,28 @@ export const ToolMessageType = {
     );
   },
 
-  getLaunchpadData: (payload: any) => {
-    return (
-      <div className="flex justify-start w-full">
-        <div className="bg-background-secondary border border-border-primary rounded-lg p-4 max-w-full">
-          <div className="text-sm text-foreground">
-            <pre className="whitespace-pre-wrap break-words">
-              {JSON.stringify(payload, null, 2)}
-            </pre>
-          </div>
-        </div>
-      </div>
-    );
+  // Search Actions
+  search_app_store: (
+    payload: any,
+    _result?: any,
+    _onSuccess?: (data: any) => void
+  ) => {
+    return <SearchAppStoreActionMessage result={payload} />;
+  },
+
+  search_docker_hub: (
+    payload: any,
+    _result?: any,
+    _onSuccess?: (data: any) => void
+  ) => {
+    return <SearchDockerHubActionMessage result={payload} />;
+  },
+
+  search_web: (
+    payload: any,
+    _result?: any,
+    _onSuccess?: (data: any) => void
+  ) => {
+    return <SearchWebActionMessage result={payload} />;
   },
 };

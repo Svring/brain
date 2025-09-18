@@ -28,12 +28,8 @@ export const useFlowgraphNodes = (targets: ResourceTarget[]) => {
 
   // Memoize the computation of nodes and edges
   const { nodes, edges } = useMemo(() => {
-    // Log the loading state and data presence
-    console.log("[useFlowgraphNodes] isLoading:", resourceObjectsQuery.isLoading, "data:", resourceObjectsQuery.data);
-
     // Return empty arrays if still loading or no data
     if (resourceObjectsQuery.isLoading || !resourceObjectsQuery.data) {
-      console.log("[useFlowgraphNodes] Returning empty nodes and edges due to loading or missing data");
       return {
         nodes: [],
         edges: [],
@@ -42,55 +38,36 @@ export const useFlowgraphNodes = (targets: ResourceTarget[]) => {
 
     // Extract resource objects from the query results
     const objects = resourceObjectsQuery.data;
-    console.log("[useFlowgraphNodes] Resource objects:", objects);
 
     // Pass objects to the utility functions
     const baseNodes = convertObjectsToNodes(objects);
-    console.log("[useFlowgraphNodes] baseNodes:", baseNodes);
 
     const reliances = inferObjectsReliances(objects);
-    console.log("[useFlowgraphNodes] reliances:", reliances);
 
     // Convert reliances to edges
     const baseEdges = convertReliancesToEdges(reliances);
-    console.log("[useFlowgraphNodes] baseEdges:", baseEdges);
 
     // Derive network nodes and edges from the base nodes
     const { nodes: networkNodes, edges: networkEdges } =
       deriveNetworkNodesAndEdges(objects);
-    console.log("[useFlowgraphNodes] networkNodes:", networkNodes, "networkEdges:", networkEdges);
 
     // Merge base nodes and network nodes
     const mergedNodes = [...baseNodes, ...networkNodes];
-    console.log("[useFlowgraphNodes] mergedNodes:", mergedNodes);
 
     // Apply devbox grouping to merged nodes
     const groupedNodes = createDevGroup(mergedNodes);
-    console.log("[useFlowgraphNodes] groupedNodes:", groupedNodes);
 
     // Combine all edges for layout calculation
     const allEdges = [...(baseEdges || []), ...(networkEdges || [])];
-    console.log("[useFlowgraphNodes] allEdges:", allEdges);
 
     // Apply layout to the grouped nodes
     const layoutedNodes = applyLayout(groupedNodes, allEdges);
-    console.log("[useFlowgraphNodes] layoutedNodes:", layoutedNodes);
 
     return {
       nodes: layoutedNodes,
       edges: allEdges,
     };
   }, [resourceObjectsQuery.data]);
-
-  // Log the final return values
-  console.log("[useFlowgraphNodes] Returning:", {
-    nodes,
-    edges,
-    isLoading: resourceObjectsQuery.isLoading,
-    isPending: resourceObjectsQuery.pending,
-    error: resourceObjectsQuery.error,
-    resourceObjectsQuery,
-  });
 
   return {
     nodes,
