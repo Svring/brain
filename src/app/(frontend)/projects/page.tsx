@@ -74,7 +74,7 @@ const exampleAppStoreResults = [
 
 // Example deployment data for demonstration
 const exampleTemplateDeployment = {
-  template_name: "affine",
+  template_name: "perplexica",
 };
 
 const exampleDevenvDeployment = {

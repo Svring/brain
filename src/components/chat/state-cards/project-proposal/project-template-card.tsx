@@ -12,12 +12,14 @@ interface ProjectTemplateCardProps {
   template: TemplateResource;
   onDeploy?: () => void;
   isDeploying?: boolean;
+  hasInputs?: boolean;
 }
 
 export function ProjectTemplateCard({
   template,
   onDeploy,
   isDeploying = false,
+  hasInputs = false,
 }: ProjectTemplateCardProps) {
   return (
     <div className="w-full space-y-4">
@@ -69,7 +71,7 @@ export function ProjectTemplateCard({
           ) : (
             <>
               <Rocket className="h-4 w-4 mr-2" />
-              Deploy
+              {hasInputs ? "Configure & Deploy" : "Deploy"}
             </>
           )}
         </Button>

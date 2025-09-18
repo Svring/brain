@@ -233,7 +233,7 @@ export function ProjectDevBoxCard({
           )}
         </div>
       </div>
-      <div className="text-sm pl-1 text-muted-foreground">
+      <div className="text-sm text-muted-foreground">
         Runtime: <span className="text-foreground">{resource.runtime}</span>
       </div>
 

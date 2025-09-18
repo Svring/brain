@@ -51,7 +51,7 @@ export function SimplePortList({
           <div className="flex flex-wrap gap-2">
             {ports.map((port) => (
               <div key={port} className="flex items-center gap-1">
-                <Badge variant="outline" className="font-mono">
+                <Badge variant="outline" className="font-mono" size={'small'}>
                   {port}
                 </Badge>
                 {allowEditing && (

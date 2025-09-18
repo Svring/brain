@@ -1,10 +1,14 @@
 "use client";
 
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { CircleCheckBigIcon } from "lucide-react";
 import { ProjectTemplateCard } from "@/components/chat/state-cards/project-proposal/project-template-card";
 import { useTemplates } from "@/hooks/template/use-templates";
-import { useTemplateApiContext } from "@/lib/auth/auth-utils";
+import { useTemplateApiContext, useSealosContext } from "@/lib/auth/auth-utils";
+import { useCreateInstanceMutation } from "@/lib/sealos/resources/template/template-method/template-mutation";
+import { TemplateInputDialog } from "@/components/project/create-project/template-input-dialog";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface ProposeTemplateDeploymentMessageProps {
   args: {
@@ -32,11 +36,14 @@ const TemplateDeploymentSuccessMessage = ({ args }: { args: any }) => {
 export const ProposeTemplateDeploymentMessage: React.FC<
   ProposeTemplateDeploymentMessageProps
 > = ({ args, result, onSuccess }) => {
-  const [isDeploying, setIsDeploying] = React.useState(false);
+  const [showInputDialog, setShowInputDialog] = useState(false);
+  const router = useRouter();
 
   // Get template API context and templates
   const templateApiContext = useTemplateApiContext();
   const { templates, isLoading, error } = useTemplates(templateApiContext);
+  const apiContext = useMemo(() => useSealosContext(), []);
+  const createInstanceMutation = useCreateInstanceMutation(apiContext);
 
   // Find the template by name
   const template = templates.find(
@@ -45,16 +52,51 @@ export const ProposeTemplateDeploymentMessage: React.FC<
       t.metadata.name.toLowerCase().includes(args.template_name.toLowerCase())
   );
 
-  const handleDeploy = async () => {
-    setIsDeploying(true);
-    try {
-      // Simulate deployment process
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      onSuccess?.(args.template_name);
-    } catch (error) {
-      console.error("Failed to deploy template:", error);
-    } finally {
-      setIsDeploying(false);
+  // Check if template has inputs
+  const hasInputs = Boolean(
+    template?.spec.inputs && Object.keys(template.spec.inputs).length > 0
+  );
+
+  const deployTemplate = (templateForm?: Record<string, string>) => {
+    if (!template) return;
+
+    createInstanceMutation.mutate(
+      {
+        templateName: template.metadata.name,
+        templateForm,
+      },
+      {
+        onSuccess: (data) => {
+          toast.success(
+            `${template.spec.title} has been deployed to your project.`
+          );
+          setShowInputDialog(false);
+          onSuccess?.(data);
+
+          const instanceResource = data.data?.find(
+            (resource: any) => resource.kind === "Instance"
+          );
+          if (instanceResource?.metadata?.name) {
+            const instanceName = instanceResource.metadata.name;
+            // Navigate to the instance details page
+            router.push(`/projects/${instanceName}`);
+          }
+        },
+        onError: (error: Error) => {
+          toast.error(
+            error.message || "Failed to deploy template. Please try again."
+          );
+          setShowInputDialog(false);
+        },
+      }
+    );
+  };
+
+  const handleDeploy = () => {
+    if (hasInputs) {
+      setShowInputDialog(true);
+    } else {
+      deployTemplate();
     }
   };
 
@@ -103,10 +145,24 @@ export const ProposeTemplateDeploymentMessage: React.FC<
   }
 
   return (
-    <ProjectTemplateCard
-      template={template}
-      onDeploy={handleDeploy}
-      isDeploying={isDeploying}
-    />
+    <>
+      <ProjectTemplateCard
+        template={template}
+        onDeploy={handleDeploy}
+        isDeploying={createInstanceMutation.isPending}
+        hasInputs={hasInputs}
+      />
+
+      {/* Template Input Dialog */}
+      {template && hasInputs && (
+        <TemplateInputDialog
+          template={template}
+          isOpen={showInputDialog}
+          onClose={() => setShowInputDialog(false)}
+          onSubmit={deployTemplate}
+          isLoading={createInstanceMutation.isPending}
+        />
+      )}
+    </>
   );
 };

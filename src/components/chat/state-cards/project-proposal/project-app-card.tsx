@@ -64,7 +64,9 @@ export function ProjectAppCard({ resource, onSave }: ProjectAppCardProps) {
         </div>
         {/* Image field first */}
         <div className="pl-1">
-          <div className="text-sm font-medium text-muted-foreground mb-2">Image:</div>
+          <div className="text-sm font-medium text-muted-foreground mb-2">
+            Image:
+          </div>
           <Input
             value={editData.image}
             onChange={(e) =>
@@ -78,12 +80,15 @@ export function ProjectAppCard({ resource, onSave }: ProjectAppCardProps) {
         {/* Ports Section */}
         <div className="mt-3">
           <SimplePortList
-            ports={(editData.ports || []).map(p => p.number)}
+            ports={(editData.ports || []).map((p) => p.number)}
             allowEditing={true}
-            onPortsChange={(portNumbers) => 
-              setEditData({ 
-                ...editData, 
-                ports: portNumbers.map(num => ({ number: num, publicAccess: true }))
+            onPortsChange={(portNumbers) =>
+              setEditData({
+                ...editData,
+                ports: portNumbers.map((num) => ({
+                  number: num,
+                  publicAccess: true,
+                })),
               })
             }
           />
@@ -128,15 +133,15 @@ export function ProjectAppCard({ resource, onSave }: ProjectAppCardProps) {
       </div>
 
       {/* Image field first */}
-      <div className="text-sm pl-1 text-muted-foreground">
+      <div className="text-sm text-muted-foreground">
         Image: <span className="text-foreground">{resource.image}</span>
       </div>
 
       {/* Ports Display */}
       <div className="mt-3">
-        <SimplePortList 
-          ports={(resource.ports || []).map(p => p.number)} 
-          allowEditing={false} 
+        <SimplePortList
+          ports={(resource.ports || []).map((p) => p.number)}
+          allowEditing={false}
         />
       </div>
     </div>
