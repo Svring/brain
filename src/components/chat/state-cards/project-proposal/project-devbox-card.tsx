@@ -15,7 +15,7 @@ import {
 import { Edit2, Save, X, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import type { DevBox } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
-import { ProjectPortTable } from "./components/project-port-table";
+import { SimplePortList } from "./components/simple-port-list";
 import { DEVBOX_RUNTIME_ICONS } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-icons";
 
 // Import devbox runtimes from sealos resources
@@ -116,7 +116,7 @@ export function ProjectDevBoxCard({
 
   if (isEditing) {
     return (
-      <div className="space-y-3 flex-col bg-background-secondary p-3 rounded-xl">
+      <div className="space-y-3 flex-col bg-background-secondary border p-3 rounded-xl">
         <div className="flex items-center gap-4">
           <div className="flex-shrink-0">
             <Image
@@ -181,10 +181,15 @@ export function ProjectDevBoxCard({
 
         {/* Ports Section */}
         <div className="mt-3">
-          <ProjectPortTable
-            ports={editData.ports || []}
+          <SimplePortList
+            ports={(editData.ports || []).map(p => p.number)}
             allowEditing={true}
-            onPortsChange={(ports) => setEditData({ ...editData, ports })}
+            onPortsChange={(portNumbers) => 
+              setEditData({ 
+                ...editData, 
+                ports: portNumbers.map(num => ({ number: num, publicAccess: true }))
+              })
+            }
           />
         </div>
       </div>
@@ -192,7 +197,7 @@ export function ProjectDevBoxCard({
   }
 
   return (
-    <div className="space-y-3 flex-col bg-background-secondary p-3 rounded-xl">
+    <div className="space-y-3 flex-col bg-background-secondary border p-3 rounded-xl">
       <div className="flex items-center gap-4">
         <div className="flex-shrink-0">
           <Image
@@ -233,12 +238,12 @@ export function ProjectDevBoxCard({
       </div>
 
       {/* Ports Display */}
-      {resource.ports && resource.ports.length > 0 && (
-        <div className="mt-3">
-          <div className="text-sm pl-1 text-muted-foreground mb-2">Ports:</div>
-          <ProjectPortTable ports={resource.ports} allowEditing={false} />
-        </div>
-      )}
+      <div className="mt-3">
+        <SimplePortList 
+          ports={(resource.ports || []).map(p => p.number)} 
+          allowEditing={false} 
+        />
+      </div>
     </div>
   );
 }

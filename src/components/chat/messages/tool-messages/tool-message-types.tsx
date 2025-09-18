@@ -13,6 +13,9 @@ import { LaunchpadLifecycleActionMessage } from "@/components/copilot/sealos/lau
 import { SearchAppStoreActionMessage } from "@/components/copilot/langgraph/search-app-store-action-message";
 import { SearchDockerHubActionMessage } from "@/components/copilot/langgraph/search-docker-hub-action-message";
 import { SearchWebActionMessage } from "@/components/copilot/langgraph/search-web-action-message";
+import { ProposeTemplateDeploymentMessage } from "@/components/copilot/langgraph/propose-template-deployment-message";
+import { ProposeDevenvDeploymentMessage } from "@/components/copilot/langgraph/propose-devenv-deployment-message";
+import { ProposeImageDeploymentMessage } from "@/components/copilot/langgraph/propose-image-deployment-message";
 
 export const ToolMessageType = {
   // Project Actions
@@ -263,5 +266,48 @@ export const ToolMessageType = {
     _onSuccess?: (data: any) => void
   ) => {
     return <SearchWebActionMessage result={payload} />;
+  },
+
+  // Deployment Proposal Actions
+  propose_template_deployment: (
+    payload: any,
+    result?: any,
+    onSuccess?: (data: any) => void
+  ) => {
+    return (
+      <ProposeTemplateDeploymentMessage
+        args={payload}
+        result={result}
+        onSuccess={onSuccess}
+      />
+    );
+  },
+
+  propose_devenv_deployment: (
+    payload: any,
+    result?: any,
+    onSuccess?: (data: any) => void
+  ) => {
+    return (
+      <ProposeDevenvDeploymentMessage
+        args={payload}
+        result={result}
+        onSuccess={onSuccess}
+      />
+    );
+  },
+
+  propose_image_deployment: (
+    payload: any,
+    result?: any,
+    onSuccess?: (data: any) => void
+  ) => {
+    return (
+      <ProposeImageDeploymentMessage
+        args={payload}
+        result={result}
+        onSuccess={onSuccess}
+      />
+    );
   },
 };

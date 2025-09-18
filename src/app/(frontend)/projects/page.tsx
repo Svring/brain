@@ -11,6 +11,9 @@ import useProjectSearch from "@/hooks/brain/use-projects-search";
 import { useProjectActions } from "@/contexts/project/project-context";
 import { ProjectObjectSchema } from "@/lib/brain/resources/project/project-schemas/project-object-schema";
 import { SearchAppStoreActionMessage } from "@/components/copilot/langgraph/search-app-store-action-message";
+import { ProposeTemplateDeploymentMessage } from "@/components/copilot/langgraph/propose-template-deployment-message";
+import { ProposeDevenvDeploymentMessage } from "@/components/copilot/langgraph/propose-devenv-deployment-message";
+import { ProposeImageDeploymentMessage } from "@/components/copilot/langgraph/propose-image-deployment-message";
 
 // Example App Store data for demonstration
 const exampleAppStoreResults = [
@@ -23,50 +26,77 @@ const exampleAppStoreResults = [
         description: "Port number for the web server",
         type: "number",
         default: "80",
-        required: false
+        required: false,
       },
       workers: {
         description: "Number of worker processes",
-        type: "number", 
+        type: "number",
         default: "auto",
-        required: false
+        required: false,
       },
       password: {
         description: "Admin password for nginx",
         type: "string",
         default: "",
-        required: false
-      }
+        required: false,
+      },
     },
-    similarity_score: 0.95
+    similarity_score: 0.95,
   },
   {
     name: "redis",
     gitRepo: "https://github.com/redis/redis",
-    description: "In-memory data structure store used as database, cache, and message broker",
+    description:
+      "In-memory data structure store used as database, cache, and message broker",
     inputs: {
       port: {
         description: "Port number for Redis server",
         type: "number",
         default: "6379",
-        required: false
+        required: false,
       },
       password: {
         description: "Password for Redis authentication",
         type: "string",
         default: "",
-        required: true
+        required: true,
       },
       workers: {
         description: "Number of worker processes",
         type: "number",
         default: "1",
-        required: false
-      }
+        required: false,
+      },
     },
-    similarity_score: 0.88
-  }
+    similarity_score: 0.88,
+  },
 ];
+
+// Example deployment data for demonstration
+const exampleTemplateDeployment = {
+  template_name: "affine",
+};
+
+const exampleDevenvDeployment = {
+  devbox: {
+    name: "my-devbox",
+    runtime: "node-18",
+    ports: [3000, 8080],
+  },
+  database: {
+    name: "postgres-db",
+    type: "postgresql",
+  },
+};
+
+const exampleImageDeployment = {
+  image_name: "nginx:latest",
+  ports: [80, 443],
+  database: {
+    name: "redis-cache",
+    type: "redis",
+  },
+};
 
 export default function Page() {
   const { setAllProjects } = useProjectActions();
@@ -142,9 +172,46 @@ export default function Page() {
       {/* Example App Store Results */}
       <div className="w-full max-w-4xl mt-12">
         <div className="mb-4">
-          <h2 className="text-lg font-semibold mb-2">Example App Store Results</h2>
+          <h2 className="text-lg font-semibold mb-2">
+            Example App Store Results
+          </h2>
         </div>
         <SearchAppStoreActionMessage result={exampleAppStoreResults} />
+      </div>
+
+      {/* Example Deployment Components */}
+      <div className="w-full max-w-4xl mt-12">
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold mb-4">
+            Example Deployment Components
+          </h2>
+        </div>
+
+        <div className="space-y-6">
+          {/* Template Deployment */}
+          <div>
+            <ProposeTemplateDeploymentMessage
+              args={exampleTemplateDeployment}
+              onSuccess={(data) => console.log("Template deployed:", data)}
+            />
+          </div>
+
+          {/* Development Environment Deployment */}
+          <div>
+            <ProposeDevenvDeploymentMessage
+              args={exampleDevenvDeployment}
+              onSuccess={(data) => console.log("DevEnv deployed:", data)}
+            />
+          </div>
+
+          {/* Docker Image Deployment */}
+          <div>
+            <ProposeImageDeploymentMessage
+              args={exampleImageDeployment}
+              onSuccess={(data) => console.log("Image deployed:", data)}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

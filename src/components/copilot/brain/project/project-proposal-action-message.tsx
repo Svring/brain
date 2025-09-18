@@ -109,10 +109,10 @@ export function ProjectProposalActionMessage({
     >
       {/* Content based on view mode */}
       {/* {viewMode === "list" ? ( */}
-        <ProjectProposalCard
-          proposal={internalProposal}
-          onProposalUpdate={setInternalProposal}
-        />
+      <ProjectProposalCard
+        proposal={internalProposal}
+        onProposalUpdate={setInternalProposal}
+      />
       {/* ) : (
         <ProjectProposalPreview
           proposal={internalProposal}

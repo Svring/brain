@@ -108,10 +108,6 @@ export function ProjectProposalCard({
           ({ title, key, resources, Component }) =>
             resources.length > 0 && (
               <div key={key} className="">
-                {/* <h4 className="text-md font-medium flex items-center gap-2">
-                  {title}
-                  <Badge variant="secondary">{resources.length}</Badge>
-                </h4> */}
                 <div className="">
                   {resources.map((resource, index) => (
                     <Component

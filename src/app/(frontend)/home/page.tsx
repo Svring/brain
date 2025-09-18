@@ -221,23 +221,6 @@ export default function HomePage() {
                         <p>Deploy from docker image</p>
                       </TooltipContent>
                     </Tooltip>
-
-                    {/* <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span tabIndex={0}>
-                          <Button
-                            variant="outline"
-                            disabled
-                            className="bg-background-secondary! border-border-primary!"
-                          >
-                            Start anew
-                          </Button>
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Allocate resources for a new project</p>
-                      </TooltipContent>
-                    </Tooltip> */}
                   </TooltipProvider>
                 </div>
               </>

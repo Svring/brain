@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Edit2, Save, X } from "lucide-react";
 import Image from "next/image";
 import type { App } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
-import { ProjectPortTable } from "./components/project-port-table";
+import { SimplePortList } from "./components/simple-port-list";
 
 interface ProjectAppCardProps {
   resource: App;
@@ -32,7 +32,7 @@ export function ProjectAppCard({ resource, onSave }: ProjectAppCardProps) {
 
   if (isEditing) {
     return (
-      <div className="space-y-3 flex-col bg-background-secondary p-3 rounded-xl">
+      <div className="space-y-3 flex-col bg-background-secondary border p-3 rounded-xl">
         <div className="flex items-center gap-4">
           <div className="flex-shrink-0">
             <Image
@@ -62,7 +62,9 @@ export function ProjectAppCard({ resource, onSave }: ProjectAppCardProps) {
             </Button>
           </div>
         </div>
+        {/* Image field first */}
         <div className="pl-1">
+          <div className="text-sm font-medium text-muted-foreground mb-2">Image:</div>
           <Input
             value={editData.image}
             onChange={(e) =>
@@ -75,10 +77,15 @@ export function ProjectAppCard({ resource, onSave }: ProjectAppCardProps) {
 
         {/* Ports Section */}
         <div className="mt-3">
-          <ProjectPortTable
-            ports={editData.ports || []}
+          <SimplePortList
+            ports={(editData.ports || []).map(p => p.number)}
             allowEditing={true}
-            onPortsChange={(ports) => setEditData({ ...editData, ports })}
+            onPortsChange={(portNumbers) => 
+              setEditData({ 
+                ...editData, 
+                ports: portNumbers.map(num => ({ number: num, publicAccess: true }))
+              })
+            }
           />
         </div>
       </div>
@@ -86,7 +93,7 @@ export function ProjectAppCard({ resource, onSave }: ProjectAppCardProps) {
   }
 
   return (
-    <div className="space-y-3 flex-col bg-background-secondary p-3 rounded-xl">
+    <div className="space-y-3 flex-col bg-background-secondary border p-3 rounded-xl">
       <div className="flex items-center gap-4">
         <div className="flex-shrink-0">
           <Image
@@ -120,17 +127,18 @@ export function ProjectAppCard({ resource, onSave }: ProjectAppCardProps) {
         </div>
       </div>
 
+      {/* Image field first */}
       <div className="text-sm pl-1 text-muted-foreground">
         Image: <span className="text-foreground">{resource.image}</span>
       </div>
 
       {/* Ports Display */}
-      {resource.ports && resource.ports.length > 0 && (
-        <div className="mt-3">
-          <div className="text-sm pl-1 text-muted-foreground mb-2">Ports:</div>
-          <ProjectPortTable ports={resource.ports} allowEditing={false} />
-        </div>
-      )}
+      <div className="mt-3">
+        <SimplePortList 
+          ports={(resource.ports || []).map(p => p.number)} 
+          allowEditing={false} 
+        />
+      </div>
     </div>
   );
 }

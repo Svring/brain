@@ -45,7 +45,7 @@ export function ProjectDatabaseCard({
 
   if (isEditing) {
     return (
-      <div className="space-y-3 flex-col bg-background-secondary p-3 rounded-xl">
+      <div className="space-y-3 flex-col bg-background-secondary border p-3 rounded-xl">
         <div className="flex items-center gap-4">
           <div className="flex-shrink-0">
             <Image
@@ -103,7 +103,7 @@ export function ProjectDatabaseCard({
   }
 
   return (
-    <div className="space-y-3 flex-col bg-background-secondary p-3 rounded-xl">
+    <div className="space-y-3 flex-col bg-background-secondary border p-3 rounded-xl">
       <div className="flex items-center gap-4">
         <div className="flex-shrink-0">
           <Image
