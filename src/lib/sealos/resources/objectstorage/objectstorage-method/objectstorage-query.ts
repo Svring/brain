@@ -65,7 +65,6 @@ export const listObjectStorageOptions = (context: K8sApiContext) =>
     queryKey: ["objectstoragebucket"],
     queryFn: async () => await listObjectStorage(context),
     enabled: !!context.namespace && !!context.kubeconfig,
-    staleTime: 1000 * 30,
   });
 
 /**
@@ -95,5 +94,5 @@ export const getObjectStorageStatusOptions = (
     queryFn: async () =>
       await runParallelAction(getObjectStorageStatus({ bucket }, context)),
     enabled: !!context.baseURL && !!context.authorization && !!bucket,
-    staleTime: 1000 * 30, // 30 seconds - status can change frequently
+    // 30 seconds - status can change frequently
   });

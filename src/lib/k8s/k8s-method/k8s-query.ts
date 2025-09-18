@@ -294,7 +294,6 @@ export const listAllResourcesOptions = (
       return result;
     },
     enabled: !!context.namespace && !!context.kubeconfig,
-    staleTime: 1000 * 30,
   });
 
 /**
@@ -351,5 +350,4 @@ export const listAnnotationBasedResourcesOptions = (
       !!context.kubeconfig &&
       !!annotation &&
       !!projectName,
-    staleTime: 1000 * 30,
   });

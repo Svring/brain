@@ -233,7 +233,6 @@ export const listClusterOptions = (context: K8sApiContext) =>
     queryKey: ["clusters"],
     queryFn: async () => await listCluster(context),
     enabled: !!context.namespace && !!context.kubeconfig,
-    staleTime: 1000 * 30,
   });
 
 /**
@@ -247,7 +246,6 @@ export const getClusterBackupListOptions = (
     queryKey: ["cluster", "backup", target.name],
     queryFn: async () => await getClusterBackupList(clusterContext, target),
     enabled: !!target.name && !!clusterContext.baseUrl,
-    staleTime: 1000 * 60, // 1 minute
   });
 
 /**
@@ -280,7 +278,6 @@ export const getClusterVersionsOptions = (context: SealosApiContext) =>
     queryKey: ["cluster", "version"],
     queryFn: async () => await fetchClusterVersions(context),
     enabled: !!context.baseUrl,
-    staleTime: 1000 * 60 * 60, // 1 hour - versions don't change frequently
   });
 
 // ============================================================================
@@ -370,7 +367,6 @@ export const getClusterInstantMonitorOptions = (
       !!context.namespace &&
       !!clusterName &&
       !!clusterType,
-    staleTime: 1000 * 30, // 30 seconds
   });
 };
 
@@ -465,6 +461,5 @@ export const getClusterRangedMonitorOptions = (
       !!context.namespace &&
       !!clusterName &&
       !!clusterType,
-    staleTime: 1000 * 30, // 30 seconds
   });
 };

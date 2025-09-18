@@ -119,5 +119,4 @@ export const listDeploymentOptions = (context: K8sApiContext) =>
     queryKey: ["deployments"],
     queryFn: async () => await listDeployment(context),
     enabled: !!context.namespace && !!context.kubeconfig,
-    staleTime: 1000 * 30,
   });

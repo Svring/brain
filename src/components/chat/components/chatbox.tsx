@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 
 export default function AiChatbox() {
   const { sidebarChatOpen } = useChatState();
-  const { messages, isLoading, stop } = useStreamContext();
+  const { isLoading } = useStreamContext();
 
   return (
     <div
@@ -23,7 +23,7 @@ export default function AiChatbox() {
       <AiChatHeader isLoading={isLoading} />
 
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
-        <AiMessages messages={messages} isLoading={isLoading} />
+        <AiMessages />
       </div>
 
       <div className="p-2 pt-0 shrink-0 relative z-[9999]">

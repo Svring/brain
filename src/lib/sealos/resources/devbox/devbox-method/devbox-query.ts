@@ -95,7 +95,6 @@ export const listDevboxOptions = (context: K8sApiContext) =>
     queryKey: ["devboxes"],
     queryFn: async () => await listDevbox(context),
     enabled: !!context.namespace && !!context.kubeconfig,
-    staleTime: 1000 * 30,
   });
 
 /**
@@ -109,7 +108,6 @@ export const getDevboxReleasesOptions = (
     queryKey: ["devbox", "release", devboxName],
     queryFn: async () => await getDevboxReleasesQuery(context, devboxName),
     enabled: !!devboxName && !!context.baseUrl,
-    staleTime: 1000 * 60,
   });
 
 /**
@@ -130,7 +128,7 @@ export const listDevboxFolderFilesOptions = (
     queryFn: async () =>
       await listDevboxFolderFilesQuery(sshConfig, relativePath),
     enabled: !!sshConfig.host && !!sshConfig.workingDir,
-    staleTime: 1000 * 30, // 30 seconds
+    // 30 seconds
   });
 
 // ============================================================================
@@ -195,7 +193,6 @@ export const getDevboxInstantMonitorOptions = (
       return { cpu: cpuValue, memory: memoryValue };
     },
     enabled: !!context.baseUrl && !!context.namespace && !!devboxName,
-    staleTime: 1000 * 30, // 30 seconds
   });
 };
 
@@ -267,6 +264,6 @@ export const getDevboxRangedMonitorOptions = (
       });
     },
     enabled: !!context.baseUrl && !!context.namespace && !!devboxName,
-    staleTime: 1000 * 30, // 30 seconds
+    // 30 seconds
   });
 };

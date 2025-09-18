@@ -76,7 +76,7 @@ export const getAllResourceObjectsOptions = (
       targets.every((target) => !!target.resourceType) &&
       !!context.namespace &&
       !!context.kubeconfig,
-    staleTime: 1000 * 30, // 30 seconds
+    // 30 seconds
   });
 
 /**

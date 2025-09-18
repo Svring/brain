@@ -167,8 +167,7 @@ function ProjectFlowWithLoading({
     isLoading: isLoadingFlowgraphNodes,
   } = useFlowgraphNodes(resourceTargets);
 
-  const shouldShowLoading =
-    isLoadingFlowgraphNodes;
+  const shouldShowLoading = isLoadingFlowgraphNodes;
 
   return (
     <>

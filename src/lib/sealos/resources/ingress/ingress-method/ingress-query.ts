@@ -67,5 +67,4 @@ export const listIngressOptions = (context: K8sApiContext) =>
     queryKey: buildQueryKey.listBuiltinResources(context.namespace, "ingress"),
     queryFn: async () => await listIngress(context),
     enabled: !!context.namespace && !!context.kubeconfig,
-    staleTime: 1000 * 30,
   });

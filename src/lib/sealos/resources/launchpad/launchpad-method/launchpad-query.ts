@@ -127,7 +127,6 @@ export const listLaunchpadOptions = (context: K8sApiContext) =>
     queryKey: buildQueryKey.listBuiltinResources(context.namespace, "app"),
     queryFn: async () => await listLaunchpads(context),
     enabled: !!context.namespace && !!context.kubeconfig,
-    staleTime: 1000 * 30,
   });
 
 /**
@@ -212,7 +211,7 @@ export const getLaunchpadInstantMonitorOptions = (
       });
     },
     enabled: !!context.baseUrl && !!context.namespace && !!launchpadName,
-    staleTime: 1000 * 30, // 30 seconds
+    // 30 seconds
   });
 };
 
@@ -284,6 +283,6 @@ export const getLaunchpadRangedMonitorOptions = (
       });
     },
     enabled: !!context.baseUrl && !!context.namespace && !!launchpadName,
-    staleTime: 1000 * 30, // 30 seconds
+    // 30 seconds
   });
 };

@@ -76,6 +76,5 @@ export const getProjectResourcesOptions = (
       );
     },
     enabled: !!context.namespace && !!name && !!context.kubeconfig,
-    staleTime: 60 * 1000, // 5 minutes
   });
 };

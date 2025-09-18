@@ -12,24 +12,29 @@ import { useThreads } from "@/components/provider/thread-provider";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { SystemMessageRenderer } from "./system-message-renderer";
 import { ToolResultRenderer } from "./tool-result-renderer";
+import { Interrupt } from "@langchain/langgraph-sdk";
+import { useStreamContext } from "@/components/provider/stream-provider";
 
 interface AiMessagesProps {
   scrollRef?: React.RefObject<HTMLDivElement | null>;
   className?: string;
-  messages: Message[];
-  isLoading: boolean;
+  // messages: Message[];
+  // isLoading: boolean;
+  // interrupt: Interrupt<unknown> | undefined;
 }
 
 export function AiMessages({
   scrollRef: externalScrollRef,
   className,
-  messages,
-  isLoading,
 }: AiMessagesProps) {
-  // const { isStreaming } = useThreads();
+  const { submitWithContext, interrupt, messages, isLoading } =
+    useStreamContext();
 
   const memoizedMessages = useMemo(() => {
-    console.log("[AiMessages] Rendering messages:", messages);
+    // Prevent error if messages is undefined or not an array
+    if (!messages || !Array.isArray(messages)) {
+      return [];
+    }
 
     const messageElements = messages.map((message, index) => {
       const isLastMessage = index === messages.length - 1;
@@ -68,10 +73,54 @@ export function AiMessages({
     //   );
     // }
 
+    // Add interrupt UI below all messages if it exists
+    if (interrupt) {
+      messageElements.push(
+        <div
+          key="interrupt-ui"
+          className="mt-4 p-4 border border-border-primary rounded-lg bg-background-secondary"
+        >
+          <p className="text-sm text-foreground mb-3">
+            Interrupted! {interrupt?.value as string}
+          </p>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              onClick={() => {
+                submitWithContext({
+                  messages: [],
+                  command: { resume: "true" },
+                });
+              }}
+            >
+              Confirm
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                submitWithContext({
+                  messages: [],
+                  command: { resume: "false" },
+                });
+              }}
+            >
+              Reject
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
     return messageElements;
-  }, [messages, isLoading]);
+  }, [messages, interrupt, submitWithContext]);
 
   const contentHash = useMemo(() => {
+    // Prevent error if messages is undefined or not an array
+    if (!messages || !Array.isArray(messages)) {
+      return "";
+    }
+
     const contentString = messages
       .map((msg) => `${msg.id}-${msg.type}-${msg.content || ""}`)
       .join("|");
@@ -92,14 +141,14 @@ export function AiMessages({
   const scrollRef = externalScrollRef || internalScrollRef;
 
   useEffect(() => {
-    if (messages.length > 0) {
+    if (messages && Array.isArray(messages) && messages.length > 0) {
       scrollToBottom();
     }
-  }, [contentHash]);
+  }, [contentHash, messages]);
 
   return (
     <>
-      {messages.length > 0 && (
+      {messages && Array.isArray(messages) && messages.length > 0 && (
         <div className={`w-full px-4 h-full relative ${className || ""}`}>
           <div className="max-w-3xl mx-auto h-full">
             {externalScrollRef ? (

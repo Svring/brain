@@ -1,15 +1,3 @@
-import { AddResourceToProjectActionMessage } from "@/components/copilot/brain/project/add-resource-to-project-action-message";
-import { ProjectProposalActionMessage } from "@/components/copilot/brain/project/project-proposal-action-message";
-import { ProjectLogsActionMessage } from "@/components/copilot/brain/project/project-logs-action-message";
-import { DevboxCreateActionMessage } from "@/components/copilot/sealos/devbox/devbox-create-action-message";
-import { DevboxUpdateActionMessage } from "@/components/copilot/sealos/devbox/devbox-update-action-message";
-import { DevboxLifecycleActionMessage } from "@/components/copilot/sealos/devbox/devbox-lifecycle-action-message";
-import { ClusterCreateActionMessage } from "@/components/copilot/sealos/cluster/cluster-create-action-message";
-import { ClusterUpdateActionMessage } from "@/components/copilot/sealos/cluster/cluster-update-action-message";
-import { ClusterLifecycleActionMessage } from "@/components/copilot/sealos/cluster/cluster-lifecycle-action-message";
-import { LaunchpadCreateActionMessage } from "@/components/copilot/sealos/launchpad/launchpad-create-action-message";
-import { LaunchpadUpdateActionMessage } from "@/components/copilot/sealos/launchpad/launchpad-update-action-message";
-import { LaunchpadLifecycleActionMessage } from "@/components/copilot/sealos/launchpad/launchpad-lifecycle-action-message";
 import { SearchAppStoreActionMessage } from "@/components/copilot/langgraph/search-app-store-action-message";
 import { SearchDockerHubActionMessage } from "@/components/copilot/langgraph/search-docker-hub-action-message";
 import { SearchWebActionMessage } from "@/components/copilot/langgraph/search-web-action-message";
@@ -17,230 +5,150 @@ import { ProposeTemplateDeploymentMessage } from "@/components/copilot/langgraph
 import { ProposeDevenvDeploymentMessage } from "@/components/copilot/langgraph/propose-devenv-deployment-message";
 import { ProposeImageDeploymentMessage } from "@/components/copilot/langgraph/propose-image-deployment-message";
 
+// Devbox Tool Messages
+import { UpdateDevboxToolMessage } from "@/components/copilot/sealos/devbox/updateDevboxToolMessage";
+import { StartDevboxToolMessage } from "@/components/copilot/sealos/devbox/startDevboxToolMessage";
+import { PauseDevboxToolMessage } from "@/components/copilot/sealos/devbox/pauseDevboxToolMessage";
+import { DeleteDevboxToolMessage } from "@/components/copilot/sealos/devbox/deleteDevboxToolMessage";
+
+// Cluster Tool Messages
+import { UpdateClusterToolMessage } from "@/components/copilot/sealos/cluster/updateClusterToolMessage";
+import { StartClusterToolMessage } from "@/components/copilot/sealos/cluster/startClusterToolMessage";
+import { PauseClusterToolMessage } from "@/components/copilot/sealos/cluster/pauseClusterToolMessage";
+import { DeleteClusterToolMessage } from "@/components/copilot/sealos/cluster/deleteClusterToolMessage";
+
+// Launchpad Tool Messages
+import { UpdateLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/updateLaunchpadToolMessage";
+import { StartLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/startLaunchpadToolMessage";
+import { PauseLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/pauseLaunchpadToolMessage";
+import { DeleteLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/deleteLaunchpadToolMessage";
+
+// Result schema for tool actions
+export interface ToolActionResult {
+  action: string;
+  payload: Record<string, any>;
+  success: boolean;
+  result: any;
+  message: string;
+}
+
+// Resource Types
+export type CPUAllocation = 1 | 2 | 4 | 8 | 16;
+export type MemoryAllocation = 1 | 2 | 4 | 8 | 16 | 32;
+export type ClusterCPUAllocation = 1 | 2 | 4 | 8;
+export type TerminationPolicy = "Delete" | "Retain";
+
+// Base Resource Interfaces
+export interface BaseResource {
+  cpu?: CPUAllocation;
+  memory?: MemoryAllocation;
+}
+
+export interface ClusterResource extends BaseResource {
+  cpu?: ClusterCPUAllocation;
+  replicas?: number; // 1-20
+  storage?: number; // 3-300 GB
+}
+
+export interface DevboxResource extends BaseResource {
+  // Devbox uses the base resource interface
+}
+
+export interface LaunchpadResource extends BaseResource {
+  replicas?: number; // 1-20
+}
+
+// Context Interfaces
+export interface BaseContext {
+  kubeconfig: string;
+  regionUrl: string;
+}
+
+// Payload Interfaces
+export interface BasePayload {
+  name: string; // DNS compliant: lowercase, numbers, hyphens, 1-63 chars
+}
+
+export interface DevboxUpdatePayload extends BasePayload {
+  resource: DevboxResource;
+}
+
+export interface DevboxStartPayload extends BasePayload {}
+
+export interface DevboxPausePayload extends BasePayload {}
+
+export interface DevboxDeletePayload extends BasePayload {}
+
+export interface ClusterUpdatePayload extends BasePayload {
+  resource: ClusterResource;
+}
+
+export interface ClusterStartPayload extends BasePayload {}
+
+export interface ClusterPausePayload extends BasePayload {}
+
+export interface ClusterDeletePayload extends BasePayload {}
+
+export interface LaunchpadUpdatePayload extends BasePayload {
+  resource: LaunchpadResource;
+}
+
+export interface LaunchpadStartPayload extends BasePayload {}
+
+export interface LaunchpadPausePayload extends BasePayload {}
+
+export interface LaunchpadDeletePayload extends BasePayload {}
+
 export const ToolMessageType = {
-  // Project Actions
-  propose_project: (
-    payload: any,
-    result?: any,
-    onSuccess?: (data: any) => void
-  ) => {
-    return (
-      <ProjectProposalActionMessage
-        args={payload}
-        result={result}
-        onSuccess={onSuccess}
-      />
-    );
-  },
-
-  add_resource_to_project: (payload: any) => {
-    return <AddResourceToProjectActionMessage resources={payload} />;
-  },
-
-  get_project_resources: (payload: any) => {
-    return (
-      <div className="flex justify-start w-full">
-        <div className="bg-background-secondary border border-border-primary rounded-lg p-4 max-w-full">
-          <div className="text-sm text-foreground">
-            <pre className="whitespace-pre-wrap break-words">
-              {JSON.stringify(payload, null, 2)}
-            </pre>
-          </div>
-        </div>
-      </div>
-    );
-  },
-
-  check_all_logs: (payload: any) => {
-    return <ProjectLogsActionMessage result={payload} />;
-  },
-
   // Devbox Actions
-  createDevbox: (
-    payload: any,
-    result?: any,
-    onSuccess?: (data: any) => void
-  ) => {
-    return (
-      <DevboxCreateActionMessage
-        args={payload}
-        result={result}
-        onSuccess={onSuccess}
-      />
-    );
+  update_devbox: (result: ToolActionResult) => {
+    return <UpdateDevboxToolMessage result={result} />;
   },
 
-  updateDevbox: (
-    payload: any,
-    result?: any,
-    onSuccess?: (data: any) => void
-  ) => {
-    return (
-      <DevboxUpdateActionMessage
-        args={payload}
-        result={result}
-        onSuccess={onSuccess}
-      />
-    );
+  start_devbox: (result: ToolActionResult) => {
+    return <StartDevboxToolMessage result={result} />;
   },
 
-  devboxLifecycle: (
-    payload: any,
-    result?: any,
-    onSuccess?: (data: any) => void
-  ) => {
-    return (
-      <DevboxLifecycleActionMessage
-        args={payload}
-        action={payload.action}
-        result={result}
-        onSuccess={onSuccess}
-      />
-    );
+  pause_devbox: (result: ToolActionResult) => {
+    return <PauseDevboxToolMessage result={result} />;
   },
 
-  getDevboxData: (payload: any) => {
-    return (
-      <div className="flex justify-start w-full">
-        <div className="bg-background-secondary border border-border-primary rounded-lg p-4 max-w-full">
-          <div className="text-sm text-foreground">
-            <pre className="whitespace-pre-wrap break-words">
-              {JSON.stringify(payload, null, 2)}
-            </pre>
-          </div>
-        </div>
-      </div>
-    );
-  },
-
-  releaseDevbox: (payload: any) => {
-    return (
-      <div className="flex justify-start w-full">
-        <div className="bg-background-secondary border border-border-primary rounded-lg p-4 max-w-full">
-          <div className="text-sm text-foreground">
-            <pre className="whitespace-pre-wrap break-words">
-              {JSON.stringify(payload, null, 2)}
-            </pre>
-          </div>
-        </div>
-      </div>
-    );
-  },
-
-  deployDevbox: (payload: any) => {
-    return (
-      <div className="flex justify-start w-full">
-        <div className="bg-background-secondary border border-border-primary rounded-lg p-4 max-w-full">
-          <div className="text-sm text-foreground">
-            <pre className="whitespace-pre-wrap break-words">
-              {JSON.stringify(payload, null, 2)}
-            </pre>
-          </div>
-        </div>
-      </div>
-    );
+  delete_devbox: (result: ToolActionResult) => {
+    return <DeleteDevboxToolMessage result={result} />;
   },
 
   // Cluster Actions
-  createCluster: (
-    payload: any,
-    result?: any,
-    onSuccess?: (data: any) => void
-  ) => {
-    return (
-      <ClusterCreateActionMessage
-        args={payload}
-        result={result}
-        onSuccess={onSuccess}
-      />
-    );
+  update_cluster: (result: ToolActionResult) => {
+    return <UpdateClusterToolMessage result={result} />;
   },
 
-  updateCluster: (
-    payload: any,
-    result?: any,
-    onSuccess?: (data: any) => void
-  ) => {
-    return (
-      <ClusterUpdateActionMessage
-        args={payload}
-        result={result}
-        onSuccess={onSuccess}
-      />
-    );
+  start_cluster: (result: ToolActionResult) => {
+    return <StartClusterToolMessage result={result} />;
   },
 
-  clusterLifecycle: (
-    payload: any,
-    result?: any,
-    onSuccess?: (data: any) => void
-  ) => {
-    return (
-      <ClusterLifecycleActionMessage
-        args={payload}
-        action={payload.action}
-        result={result}
-        onSuccess={onSuccess}
-      />
-    );
+  pause_cluster: (result: ToolActionResult) => {
+    return <PauseClusterToolMessage result={result} />;
   },
 
-  getClusterData: (payload: any) => {
-    return (
-      <div className="flex justify-start w-full">
-        <div className="bg-background-secondary border border-border-primary rounded-lg p-4 max-w-full">
-          <div className="text-sm text-foreground">
-            <pre className="whitespace-pre-wrap break-words">
-              {JSON.stringify(payload, null, 2)}
-            </pre>
-          </div>
-        </div>
-      </div>
-    );
+  delete_cluster: (result: ToolActionResult) => {
+    return <DeleteClusterToolMessage result={result} />;
   },
 
   // Launchpad Actions
-  createLaunchpad: (
-    payload: any,
-    result?: any,
-    onSuccess?: (data: any) => void
-  ) => {
-    return (
-      <LaunchpadCreateActionMessage
-        args={payload}
-        result={result}
-        onSuccess={onSuccess}
-      />
-    );
+  update_launchpad: (result: ToolActionResult) => {
+    return <UpdateLaunchpadToolMessage result={result} />;
   },
 
-  updateLaunchpad: (
-    payload: any,
-    result?: any,
-    onSuccess?: (data: any) => void
-  ) => {
-    return (
-      <LaunchpadUpdateActionMessage
-        args={payload}
-        result={result}
-        onSuccess={onSuccess}
-      />
-    );
+  start_launchpad: (result: ToolActionResult) => {
+    return <StartLaunchpadToolMessage result={result} />;
   },
 
-  launchpadLifecycle: (
-    payload: any,
-    result?: any,
-    onSuccess?: (data: any) => void
-  ) => {
-    return (
-      <LaunchpadLifecycleActionMessage
-        args={payload}
-        action={payload.action}
-        result={result}
-        onSuccess={onSuccess}
-      />
-    );
+  pause_launchpad: (result: ToolActionResult) => {
+    return <PauseLaunchpadToolMessage result={result} />;
+  },
+
+  delete_launchpad: (result: ToolActionResult) => {
+    return <DeleteLaunchpadToolMessage result={result} />;
   },
 
   // Search Actions

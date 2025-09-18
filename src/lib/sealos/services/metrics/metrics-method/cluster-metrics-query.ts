@@ -55,5 +55,5 @@ export const getClusterMetricsOptions = (
       !!request.namespace &&
       !!request.app &&
       (!!request.type || !!request.query), // Must have either type or query
-    staleTime: 1000 * 30, // 30 seconds
+    // 30 seconds
   });

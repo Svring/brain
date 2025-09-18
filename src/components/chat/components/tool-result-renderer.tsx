@@ -58,74 +58,9 @@ export const ToolResultRenderer = memo(function ToolResultRenderer({
     if (result) return undefined; // Don't provide onSuccess if result is already present
 
     return (successResult: any) => {
-      console.log("[ToolResultRenderer] onSuccess called with:", {
-        id,
-        action,
-        successResult,
-        tool_call_id,
-        status,
-      });
-
-      if (id) {
-        let updatedMessage: any = null;
-        setMessages((prevMessages) => {
-          // Remove the message with the same id from messages
-          const filteredMessages = prevMessages.filter(
-            (message) => message.id !== id
-          );
-
-          // Find and update the message to be updated
-          const originalMessage = prevMessages.find(
-            (message) => message.id === id
-          );
-          if (originalMessage) {
-            updatedMessage = {
-              ...originalMessage,
-              additional_kwargs: {
-                ...(originalMessage as any).additional_kwargs,
-                result: successResult,
-              },
-            };
-            console.log(
-              "[ToolResultRenderer] Updated message:",
-              updatedMessage
-            );
-          }
-
-          return filteredMessages;
-        });
-
-        sendMessage([
-          { type: "remove", id: id, content: "" },
-          updatedMessage,
-          {
-            type: "system",
-            role: "system",
-            content:
-              "tool executed successfully, go on to explain what happened and motivate the user to continue chatting",
-          },
-        ]);
-        // Check if this is a propose_project action and navigate to the project
-        if (action === "propose_project" && successResult) {
-          // successResult should be the project name
-          router.push(`/projects/${successResult}`);
-        }
-      } else {
-        console.warn(
-          "[ToolResultRenderer] No message ID provided for onSuccess"
-        );
-      }
+      // Empty body for now
     };
-  }, [
-    result,
-    id,
-    setMessages,
-    sendMessage,
-    action,
-    router,
-    tool_call_id,
-    status,
-  ]);
+  }, [result, action]);
 
   console.log("action", action);
 
@@ -133,7 +68,27 @@ export const ToolResultRenderer = memo(function ToolResultRenderer({
   const Component = action ? get(ToolMessageType, action) : null;
 
   if (Component) {
-    return Component(payload, result, onSuccess);
+    // Check if this is one of the new tool message types that only accepts result
+    const toolMessageActions = [
+      'update_devbox', 'start_devbox', 'pause_devbox', 'delete_devbox',
+      'update_cluster', 'start_cluster', 'pause_cluster', 'delete_cluster',
+      'update_launchpad', 'start_launchpad', 'pause_launchpad', 'delete_launchpad'
+    ];
+
+    if (toolMessageActions.includes(action)) {
+      // For tool message components, create a ToolActionResult object
+      const toolActionResult = {
+        action,
+        payload,
+        success: true,
+        result,
+        message: result?.message || `${action.replace('_', ' ')} completed successfully`
+      };
+      return Component(toolActionResult);
+    } else {
+      // For other components, use the old signature
+      return Component(payload, result, onSuccess);
+    }
   }
 
   // Fallback to plain text rendering

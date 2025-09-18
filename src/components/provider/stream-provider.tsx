@@ -18,7 +18,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getThreadState } from "@/lib/langgraph/langgraph-api/langgraph-api-service";
 
 type StreamContextType = ReturnType<typeof useStream> & {
-  submitWithContext: (data: { messages: Message[]; stage?: string }) => void;
+  submitWithContext: (data: {
+    messages: Message[];
+    stage?: string;
+    command?: any;
+  }) => void;
   streamThread: (messages: Message[]) => Promise<any>;
   sendMessage: (messages: Message[]) => Promise<void>;
   messages: Message[];
@@ -82,8 +86,12 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
   });
 
   // Create a wrapper that automatically includes BrainState context
-  const submitWithContext = (data: { messages: Message[]; stage?: string }) => {
-    const { stage: customStage, ...restData } = data;
+  const submitWithContext = (data: {
+    messages: Message[];
+    stage?: string;
+    command?: any;
+  }) => {
+    const { stage: customStage, messages, command } = data;
     const finalStage = customStage || stage;
 
     if (!baseUrl || !modelName || !finalStage) {
@@ -91,26 +99,29 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    return streamValue.submit({
-      ...restData,
-      api_key: apiKey,
-      base_url: baseUrl,
-      model_name: modelName,
-      context_window_usage: contextWindowUsage,
-      region_url: auth?.regionUrl,
-      kubeconfig: auth?.kubeconfig,
-      stage: finalStage,
-      project_context: {
-        selectedProject,
-        selectedProjectResources,
+    return streamValue.submit(
+      {
+        messages,
+        api_key: apiKey,
+        base_url: baseUrl,
+        model_name: modelName,
+        context_window_usage: contextWindowUsage,
+        region_url: auth?.regionUrl,
+        kubeconfig: auth?.kubeconfig,
+        stage: finalStage,
+        project_context: {
+          selectedProject,
+          selectedProjectResources,
+        },
+        resource_context: selectedResource
+          ? {
+              selectedResource,
+              selectedResourceContext,
+            }
+          : undefined,
       },
-      resource_context: selectedResource
-        ? {
-            selectedResource,
-            selectedResourceContext,
-          }
-        : undefined,
-    });
+      command ? { command } : undefined
+    );
   };
 
   // Stream thread function that uses the mutation

@@ -39,5 +39,5 @@ export const getTrafficOptions = (
     queryKey: ["hubble", "traffic", "pod", request.crNames],
     queryFn: () => getTraffic(context, request),
     enabled: !!context.baseURL && !!request.crNames?.length,
-    staleTime: 1000 * 30, // 30 seconds
+    // 30 seconds
   });

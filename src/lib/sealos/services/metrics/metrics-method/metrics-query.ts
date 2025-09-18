@@ -54,5 +54,5 @@ export const getLaunchPadMetricsOptions = (
       !!request.namespace &&
       !!request.launchPadName &&
       !!request.type,
-    staleTime: 1000 * 30, // 30 seconds
+    // 30 seconds
   });
