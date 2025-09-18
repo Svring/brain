@@ -20,12 +20,18 @@ interface AppStoreItem {
       default: string;
       required: boolean;
     }
-  >;
+  > | null;
   similarity_score: number;
 }
 
+interface AppStoreSearchResult {
+  query_keywords: string[];
+  total_templates: number;
+  relevant_templates: AppStoreItem[];
+}
+
 interface SearchAppStoreActionMessageProps {
-  result?: AppStoreItem[];
+  result?: AppStoreSearchResult;
 }
 
 // Function to get dot color for categories (copied from template-card.tsx)
@@ -146,9 +152,14 @@ export const SearchAppStoreActionMessage: React.FC<
 
   // Get full templates for the passed in app names
   const foundTemplates = useMemo(() => {
-    if (!result || result.length === 0) return [];
+    if (
+      !result ||
+      !result.relevant_templates ||
+      result.relevant_templates.length === 0
+    )
+      return [];
 
-    return result
+    return result.relevant_templates
       .map((item) => searchTemplate(item.name))
       .filter(
         (template): template is TemplateResource => template !== undefined
@@ -175,7 +186,11 @@ export const SearchAppStoreActionMessage: React.FC<
     );
   }
 
-  if (!result || result.length === 0) {
+  if (
+    !result ||
+    !result.relevant_templates ||
+    result.relevant_templates.length === 0
+  ) {
     return null;
   }
 
@@ -190,7 +205,7 @@ export const SearchAppStoreActionMessage: React.FC<
         <div className="text-xs text-muted-foreground">
           Found {foundTemplates.length} template
           {foundTemplates.length !== 1 ? "s" : ""} for "
-          {result.map((r) => r.name).join(", ")}"
+          {result.query_keywords.join(", ")}" ({result.total_templates} total)
         </div>
         {hasMoreThanThree && (
           <Button

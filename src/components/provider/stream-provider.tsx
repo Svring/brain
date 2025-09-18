@@ -18,7 +18,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getThreadState } from "@/lib/langgraph/langgraph-api/langgraph-api-service";
 
 type StreamContextType = ReturnType<typeof useStream> & {
-  submitWithContext: (data: { messages: Message[] }) => void;
+  submitWithContext: (data: { messages: Message[]; stage?: string }) => void;
   streamThread: (messages: Message[]) => Promise<any>;
   sendMessage: (messages: Message[]) => Promise<void>;
   messages: Message[];
@@ -62,9 +62,6 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
   const { LANGGRAPH_DEPLOYMENT_URL, LANGGRAPH_GRAPH_ID } = useEnv();
   const queryClient = useQueryClient();
 
-  // Create thread run stream mutation
-  const createThreadRunStreamMutation = useCreateThreadRunStreamMutation();
-
   const streamValue = useStream({
     apiUrl: LANGGRAPH_DEPLOYMENT_URL,
     assistantId: LANGGRAPH_GRAPH_ID,
@@ -75,7 +72,7 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
       if (auth?.kubeconfig) {
         try {
           await sleep();
-          const threads = await getThreads();
+          const threads = await getThreads(selectedProject, selectedResource);
           setThreads(threads);
         } catch (error) {
           console.error("Failed to refetch threads:", error);
@@ -85,19 +82,24 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
   });
 
   // Create a wrapper that automatically includes BrainState context
-  const submitWithContext = (data: { messages: Message[] }) => {
-    if (!baseUrl || !modelName || !stage) {
+  const submitWithContext = (data: { messages: Message[]; stage?: string }) => {
+    const { stage: customStage, ...restData } = data;
+    const finalStage = customStage || stage;
+
+    if (!baseUrl || !modelName || !finalStage) {
       console.warn("Missing required langgraph configuration");
       return;
     }
 
     return streamValue.submit({
-      ...data,
+      ...restData,
       api_key: apiKey,
       base_url: baseUrl,
       model_name: modelName,
       context_window_usage: contextWindowUsage,
-      stage,
+      region_url: auth?.regionUrl,
+      kubeconfig: auth?.kubeconfig,
+      stage: finalStage,
       project_context: {
         selectedProject,
         selectedProjectResources,
@@ -130,6 +132,7 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
         base_url: baseUrl,
         model_name: modelName,
         context_window_usage: contextWindowUsage,
+        region_url: auth?.regionUrl,
         kubeconfig: auth?.kubeconfig,
         stage,
         project_context: {

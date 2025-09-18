@@ -14,15 +14,15 @@ export function AiChatInput({
   className,
   exhibition = false,
 }: AiChatInputProps) {
-  const { sendMessage, stop } = useStreamContext();
-  const { isStreaming } = useThreads();
+  const { submitWithContext, stop, isLoading } = useStreamContext();
+  // const { isStreaming } = useThreads();
 
   const handleSendMessage = async (message: string) => {
     const userMessage: Message = {
       type: "human",
       content: message.trim(),
     };
-    await sendMessage([userMessage]);
+    submitWithContext({ messages: [userMessage] });
   };
 
   const handleStop = () => {
@@ -32,11 +32,11 @@ export function AiChatInput({
   return (
     <PromptInputBox
       className={className}
-      isLoading={isStreaming}
+      isLoading={isLoading}
       onSend={handleSendMessage}
       placeholder=""
       disableInput={false}
-      disableSend={isStreaming}
+      disableSend={isLoading}
       onStop={handleStop}
       exhibition={exhibition}
     />

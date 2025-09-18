@@ -26,29 +26,7 @@ export function AiMessages({
   messages,
   isLoading,
 }: AiMessagesProps) {
-  const { setSidebarResponding } = useChatActions();
-  const { threadsLoading } = useThreads();
-  const { isStreaming } = useThreads();
-  const [showLoadingScreen, setShowLoadingScreen] = useState(false);
-
-  useEffect(() => {
-    setSidebarResponding(isLoading);
-  }, [isLoading]);
-
-  // Log messages changes
-  useEffect(() => {
-    console.log("[AiMessages] Messages changed:", {
-      messageCount: messages.length,
-      isLoading,
-      isStreaming,
-      messages: messages.map((msg) => ({
-        id: msg.id,
-        type: msg.type,
-        contentLength: typeof msg.content === "string" ? msg.content.length : 0,
-        hasResult: !!(msg as any).additional_kwargs?.result,
-      })),
-    });
-  }, [messages, isLoading, isStreaming]);
+  // const { isStreaming } = useThreads();
 
   const memoizedMessages = useMemo(() => {
     console.log("[AiMessages] Rendering messages:", messages);
@@ -77,21 +55,21 @@ export function AiMessages({
     });
 
     // Add "Thinking..." indicator when streaming
-    if (isStreaming) {
-      messageElements.push(
-        <div key="thinking-indicator" className="mb-2">
-          <div className="flex justify-start">
-            <div className="flex items-center gap-2 text-xs opacity-70 px-1">
-              <Loader2 className="w-3 h-3 animate-spin" />
-              <span>Thinking...</span>
-            </div>
-          </div>
-        </div>
-      );
-    }
+    // if (isLoading) {
+    //   messageElements.push(
+    //     <div key="thinking-indicator" className="mb-2">
+    //       <div className="flex justify-start">
+    //         <div className="flex items-center gap-2 text-xs opacity-70 px-1">
+    //           <Loader2 className="w-3 h-3 animate-spin" />
+    //           <span>Thinking...</span>
+    //         </div>
+    //       </div>
+    //     </div>
+    //   );
+    // }
 
     return messageElements;
-  }, [messages, isLoading, isStreaming]);
+  }, [messages, isLoading]);
 
   const contentHash = useMemo(() => {
     const contentString = messages

@@ -16,61 +16,65 @@ import { ProposeDevenvDeploymentMessage } from "@/components/copilot/langgraph/p
 import { ProposeImageDeploymentMessage } from "@/components/copilot/langgraph/propose-image-deployment-message";
 
 // Example App Store data for demonstration
-const exampleAppStoreResults = [
-  {
-    name: "nginx",
-    gitRepo: "https://github.com/nginx/nginx",
-    description: "High performance web server and reverse proxy server",
-    inputs: {
-      port: {
-        description: "Port number for the web server",
-        type: "number",
-        default: "80",
-        required: false,
+const exampleAppStoreResults = {
+  query_keywords: ["nginx", "redis"],
+  total_templates: 150,
+  relevant_templates: [
+    {
+      name: "nginx",
+      gitRepo: "https://github.com/nginx/nginx",
+      description: "High performance web server and reverse proxy server",
+      inputs: {
+        port: {
+          description: "Port number for the web server",
+          type: "number",
+          default: "80",
+          required: false,
+        },
+        workers: {
+          description: "Number of worker processes",
+          type: "number",
+          default: "auto",
+          required: false,
+        },
+        password: {
+          description: "Admin password for nginx",
+          type: "string",
+          default: "",
+          required: false,
+        },
       },
-      workers: {
-        description: "Number of worker processes",
-        type: "number",
-        default: "auto",
-        required: false,
-      },
-      password: {
-        description: "Admin password for nginx",
-        type: "string",
-        default: "",
-        required: false,
-      },
+      similarity_score: 0.95,
     },
-    similarity_score: 0.95,
-  },
-  {
-    name: "redis",
-    gitRepo: "https://github.com/redis/redis",
-    description:
-      "In-memory data structure store used as database, cache, and message broker",
-    inputs: {
-      port: {
-        description: "Port number for Redis server",
-        type: "number",
-        default: "6379",
-        required: false,
+    {
+      name: "redis",
+      gitRepo: "https://github.com/redis/redis",
+      description:
+        "In-memory data structure store used as database, cache, and message broker",
+      inputs: {
+        port: {
+          description: "Port number for Redis server",
+          type: "number",
+          default: "6379",
+          required: false,
+        },
+        password: {
+          description: "Password for Redis authentication",
+          type: "string",
+          default: "",
+          required: true,
+        },
+        workers: {
+          description: "Number of worker processes",
+          type: "number",
+          default: "1",
+          required: false,
+        },
       },
-      password: {
-        description: "Password for Redis authentication",
-        type: "string",
-        default: "",
-        required: true,
-      },
-      workers: {
-        description: "Number of worker processes",
-        type: "number",
-        default: "1",
-        required: false,
-      },
+      similarity_score: 0.88,
     },
-    similarity_score: 0.88,
-  },
-];
+  ],
+};
 
 // Example deployment data for demonstration
 const exampleTemplateDeployment = {

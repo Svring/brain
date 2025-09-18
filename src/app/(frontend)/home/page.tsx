@@ -20,6 +20,7 @@ import { proposeProjectAction } from "@/lib/copilot/brain/project/copilot-projec
 import Suggestions from "@/components/chat/components/suggestions";
 import { useChatState } from "@/contexts/chat/chat-context";
 import { useThreads } from "@/components/provider/thread-provider";
+import { useStreamContext } from "@/components/provider/stream-provider";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { useThreadStateAtCheckpoint } from "@/hooks/langgraph/use-thread-state-at-checkpoint";
 import { useAuthState } from "@/contexts/auth/auth-context";
@@ -33,12 +34,14 @@ export default function HomePage() {
     getThreads,
     setThreads,
     selectThread,
-    messages,
     setMessages,
     selectedThreadId,
-    isStreaming,
-    setIsStreaming,
   } = useThreads();
+
+  const { messages, isLoading } = useStreamContext();
+
+  // console.log("messages", messages);
+  console.log("isLoading", isLoading);
 
   // Dummy web search data for testing
   const dummyWebSearchData = {
@@ -164,7 +167,7 @@ export default function HomePage() {
                 <AiMessages
                   scrollRef={messagesScrollRef}
                   messages={messages}
-                  isLoading={isStreaming}
+                  isLoading={isLoading}
                 />
               </div>
             </div>
