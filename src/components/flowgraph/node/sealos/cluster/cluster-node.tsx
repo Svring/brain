@@ -51,10 +51,14 @@ function ClusterNode({ data }: ClusterNodeProps) {
     clusterResource,
     k8sContext.regionUrl
   );
-  const { name = "", type = "", resource: clusterResourceData } = clusterResource;
+  const {
+    name = "",
+    type = "",
+    resource: clusterResourceData,
+  } = clusterResource;
 
   const mainCard = (
-    <BaseNode target={target} nodeId={nodeId}>
+    <BaseNode target={target} nodeId={nodeId} messageType="cluster.detail">
       <div className="flex h-full flex-col gap-4 justify-between">
         <div className="flex items-center justify-between">
           <ClusterNodeTitle name={name} type={type!} />
@@ -118,9 +122,7 @@ function ClusterNode({ data }: ClusterNodeProps) {
     </TooltipProvider>
   );
 
-  return (
-    <NodeHem mainCard={mainCard} hemComponent={hemComponent} />
-  );
+  return <NodeHem mainCard={mainCard} hemComponent={hemComponent} />;
 }
 
 export default ClusterNode;

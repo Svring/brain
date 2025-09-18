@@ -57,7 +57,11 @@ function ObjectStorageNode({
   );
 
   return (
-    <BaseNode target={target} nodeId={nodeId}>
+    <BaseNode
+      target={target}
+      nodeId={nodeId}
+      messageType="objectstorage.detail"
+    >
       <div className="flex h-full flex-col justify-between">
         <div className="flex items-center justify-between">
           <ObjectStorageNodeTitle name={name} />

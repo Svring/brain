@@ -14,6 +14,7 @@ import { SystemMessageRenderer } from "./system-message-renderer";
 import { ToolResultRenderer } from "./tool-result-renderer";
 import { Interrupt } from "@langchain/langgraph-sdk";
 import { useStreamContext } from "@/components/provider/stream-provider";
+import ReactJson from "react-json-view";
 
 interface AiMessagesProps {
   scrollRef?: React.RefObject<HTMLDivElement | null>;
@@ -29,6 +30,27 @@ export function AiMessages({
 }: AiMessagesProps) {
   const { submitWithContext, interrupt, messages, isLoading } =
     useStreamContext();
+
+  // State for interrupt data editing
+  const [interruptData, setInterruptData] = useState<any>(null);
+
+  // Parse interrupt value when it changes
+  useEffect(() => {
+    if (interrupt?.value) {
+      try {
+        const parsedValue =
+          typeof interrupt.value === "string"
+            ? JSON.parse(interrupt.value)
+            : interrupt.value;
+        setInterruptData(parsedValue);
+      } catch (error) {
+        console.error("Failed to parse interrupt value:", error);
+        setInterruptData(null);
+      }
+    } else {
+      setInterruptData(null);
+    }
+  }, [interrupt?.value]);
 
   const memoizedMessages = useMemo(() => {
     // Prevent error if messages is undefined or not an array
@@ -74,22 +96,62 @@ export function AiMessages({
     // }
 
     // Add interrupt UI below all messages if it exists
-    if (interrupt) {
+    if (interrupt && interruptData) {
       messageElements.push(
         <div
           key="interrupt-ui"
           className="mt-4 p-4 border border-border-primary rounded-lg bg-background-secondary"
         >
           <p className="text-sm text-foreground mb-3">
-            Interrupted! {interrupt?.value as string}
+            Interrupted! Action: {interruptData.action}
           </p>
+
+          {interruptData.payload && (
+            <div className="mb-4">
+              <p className="text-sm text-foreground mb-2">
+                Payload (editable):
+              </p>
+              <div className="border border-border-primary rounded p-2 bg-background">
+                <ReactJson
+                  src={interruptData.payload}
+                  theme="rjv-default"
+                  displayDataTypes={false}
+                  displayObjectSize={false}
+                  enableClipboard={false}
+                  onEdit={(edit) => {
+                    setInterruptData((prev: any) => ({
+                      ...prev,
+                      payload: edit.updated_src,
+                    }));
+                  }}
+                  onAdd={(add) => {
+                    setInterruptData((prev: any) => ({
+                      ...prev,
+                      payload: add.updated_src,
+                    }));
+                  }}
+                  onDelete={(del) => {
+                    setInterruptData((prev: any) => ({
+                      ...prev,
+                      payload: del.updated_src,
+                    }));
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
           <div className="flex gap-2">
             <Button
               size="sm"
               onClick={() => {
+                const responseData = {
+                  ...interruptData,
+                  approve: true,
+                };
                 submitWithContext({
                   messages: [],
-                  command: { resume: "true" },
+                  command: { resume: JSON.stringify(responseData) },
                 });
               }}
             >
@@ -99,9 +161,13 @@ export function AiMessages({
               size="sm"
               variant="outline"
               onClick={() => {
+                const responseData = {
+                  ...interruptData,
+                  approve: false,
+                };
                 submitWithContext({
                   messages: [],
-                  command: { resume: "false" },
+                  command: { resume: JSON.stringify(responseData) },
                 });
               }}
             >
@@ -113,7 +179,7 @@ export function AiMessages({
     }
 
     return messageElements;
-  }, [messages, interrupt, submitWithContext]);
+  }, [messages, interrupt, interruptData]);
 
   const contentHash = useMemo(() => {
     // Prevent error if messages is undefined or not an array

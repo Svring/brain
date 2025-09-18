@@ -119,6 +119,7 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
       <BaseNode
         target={target}
         nodeId={nodeId}
+        messageType="universal.network"
         className="h-14 p-2 bg-muted"
         width="auto"
       >
@@ -134,6 +135,7 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
       <BaseNode
         target={target}
         nodeId={nodeId}
+        messageType="universal.network"
         className="h-14 p-2 bg-status-error/20"
         width="auto"
       >

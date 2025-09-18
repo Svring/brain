@@ -32,40 +32,40 @@ function StatefulsetNode({ data }: { data: StatefulsetObject }) {
   };
 
   const mainCard = (
-    <NodeConnect onConnect={handleConnect} target={target}>
-      <BaseNode target={target} nodeId={nodeId}>
-        <div className="flex h-full flex-col gap-2 justify-between">
-          {/* Header with Name and Dropdown */}
-          <div className="flex items-center justify-between">
-            <StatefulsetNodeTitle name={statefulsetData.name} />
-            <StatefulsetNodeMenu object={statefulsetData} />
-          </div>
+    // <NodeConnect onConnect={handleConnect} target={target}>
+    <BaseNode target={target} nodeId={nodeId} messageType="launchpad.detail">
+      <div className="flex h-full flex-col gap-2 justify-between">
+        {/* Header with Name and Dropdown */}
+        <div className="flex items-center justify-between">
+          <StatefulsetNodeTitle name={statefulsetData.name} />
+          <StatefulsetNodeMenu object={statefulsetData} />
+        </div>
 
-          {/* Image with Package Icon */}
-          <div className="flex items-center gap-2 mt-2">
-            <Package className="h-4 w-4 text-muted-foreground" />
-            <div className="text-sm text-muted-foreground truncate flex-1">
-              Image:{" "}
-              {statefulsetData.image?.imageName
-                ? truncateImage(statefulsetData.image.imageName)
-                : "N/A"}
-            </div>
-          </div>
-
-          {/* Bottom section with status and icons */}
-          <div className="mt-auto flex justify-between items-center">
-            {/* Left: Status light */}
-            <NodeStatusLight status={status || "Pending"} />
-
-            {/* Right: Icon components */}
-            <div className="flex items-center gap-2">
-              <NodeLog target={target} />
-              <NodeMonitor target={target} />
-            </div>
+        {/* Image with Package Icon */}
+        <div className="flex items-center gap-2 mt-2">
+          <Package className="h-4 w-4 text-muted-foreground" />
+          <div className="text-sm text-muted-foreground truncate flex-1">
+            Image:{" "}
+            {statefulsetData.image?.imageName
+              ? truncateImage(statefulsetData.image.imageName)
+              : "N/A"}
           </div>
         </div>
-      </BaseNode>
-    </NodeConnect>
+
+        {/* Bottom section with status and icons */}
+        <div className="mt-auto flex justify-between items-center">
+          {/* Left: Status light */}
+          <NodeStatusLight status={status || "Pending"} />
+
+          {/* Right: Icon components */}
+          <div className="flex items-center gap-2">
+            <NodeLog target={target} />
+            <NodeMonitor target={target} />
+          </div>
+        </div>
+      </div>
+    </BaseNode>
+    // </NodeConnect>
   );
 
   // Hem component displaying storage information
@@ -87,9 +87,7 @@ function StatefulsetNode({ data }: { data: StatefulsetObject }) {
     </div>
   );
 
-  return (
-    <NodeHem mainCard={mainCard} hemComponent={hemComponent} />
-  );
+  return <NodeHem mainCard={mainCard} hemComponent={hemComponent} />;
 }
 
 // Export the main component as the default

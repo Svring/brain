@@ -99,6 +99,8 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
       return;
     }
 
+    console.log("submitWithContext", data);
+
     return streamValue.submit(
       {
         messages,

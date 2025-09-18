@@ -8,6 +8,8 @@ import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schema
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import { useResourceDelete } from "@/hooks/sealos/resource/use-resource-delete";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
+import { useStreamContext } from "@/components/provider/stream-provider";
+import { useThreads } from "@/components/provider/thread-provider";
 import _ from "lodash";
 
 interface BaseNodeProps {
@@ -28,6 +30,7 @@ export default function BaseNodeWrapper({
   width = "fixed",
 }: BaseNodeProps) {
   const { selectedResource } = useProjectState();
+  const { submitWithContext } = useStreamContext();
 
   // Use the new hook for node selection
   const { handleNodeSelect } = useNodeSelect({
@@ -47,6 +50,28 @@ export default function BaseNodeWrapper({
 
   const isSelected =
     selectedResource && target && _.isEqual(selectedResource, target);
+
+  // Custom node click handler
+  const handleNodeClick = () => {
+    // First call handleNodeSelect
+    handleNodeSelect();
+
+    // Then send message with context if we have a thread and messageType
+    // if (messageType) {
+    //   submitWithContext({
+    //     messages: [
+    //       {
+    //         type: "system",
+    //         content: JSON.stringify({
+    //           type: messageType,
+    //           target,
+    //         }),
+    //       },
+    //     ],
+    //     stage: "append",
+    //   });
+    // }
+  };
 
   // Determine the appropriate styling based on status
   const getNodeStyling = () => {
@@ -76,7 +101,7 @@ export default function BaseNodeWrapper({
       <ContextMenuTrigger>
         <BaseNode
           className={`${className ?? ""} ${getNodeStyling()}`}
-          onClick={() => handleNodeSelect()}
+          onClick={handleNodeClick}
         >
           <Handle position={Position.Top} type="source" />
           {children}

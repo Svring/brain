@@ -22,10 +22,6 @@ export const ToolResultRenderer = memo(function ToolResultRenderer({
   tool_call_id,
   status,
 }: ToolResultRendererProps) {
-  const { setMessages } = useThreads();
-  const { sendMessage } = useStreamContext();
-  const router = useRouter();
-
   const { action, payload } = useMemo(() => {
     try {
       // First try to parse the outer content
@@ -62,17 +58,24 @@ export const ToolResultRenderer = memo(function ToolResultRenderer({
     };
   }, [result, action]);
 
-  console.log("action", action);
-
   // Try to get the specific component for this action
   const Component = action ? get(ToolMessageType, action) : null;
 
   if (Component) {
     // Check if this is one of the new tool message types that only accepts result
     const toolMessageActions = [
-      'update_devbox', 'start_devbox', 'pause_devbox', 'delete_devbox',
-      'update_cluster', 'start_cluster', 'pause_cluster', 'delete_cluster',
-      'update_launchpad', 'start_launchpad', 'pause_launchpad', 'delete_launchpad'
+      "update_devbox",
+      "start_devbox",
+      "pause_devbox",
+      "delete_devbox",
+      "update_cluster",
+      "start_cluster",
+      "pause_cluster",
+      "delete_cluster",
+      "update_launchpad",
+      "start_launchpad",
+      "pause_launchpad",
+      "delete_launchpad",
     ];
 
     if (toolMessageActions.includes(action)) {
@@ -82,7 +85,9 @@ export const ToolResultRenderer = memo(function ToolResultRenderer({
         payload,
         success: true,
         result,
-        message: result?.message || `${action.replace('_', ' ')} completed successfully`
+        message:
+          result?.message ||
+          `${action.replace("_", " ")} completed successfully`,
       };
       return Component(toolActionResult);
     } else {

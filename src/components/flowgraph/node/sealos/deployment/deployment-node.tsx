@@ -36,40 +36,40 @@ function DeploymentNode({ data }: { data: DeploymentObject }) {
   };
 
   const mainCard = (
-    <NodeConnect onConnect={handleConnect} target={target}>
-      <BaseNode target={target} nodeId={nodeId}>
-        <div className="flex h-full flex-col gap-2 justify-between">
-          {/* Header with Name and Dropdown */}
-          <div className="flex items-center justify-between">
-            <DeploymentNodeTitle name={deploymentResource.name} />
-            <DeploymentNodeMenu object={deploymentResource} />
-          </div>
+    // <NodeConnect onConnect={handleConnect} target={target}>
+    <BaseNode target={target} nodeId={nodeId} messageType="launchpad.detail">
+      <div className="flex h-full flex-col gap-2 justify-between">
+        {/* Header with Name and Dropdown */}
+        <div className="flex items-center justify-between">
+          <DeploymentNodeTitle name={deploymentResource.name} />
+          <DeploymentNodeMenu object={deploymentResource} />
+        </div>
 
-          {/* Image with Package Icon */}
-          <div className="flex items-center gap-2 mt-2">
-            <Package className="h-4 w-4 text-muted-foreground" />
-            <div className="text-md text-muted-foreground truncate flex-1">
-              Image:{" "}
-              {deploymentResource.image?.imageName
-                ? truncateImage(deploymentResource.image.imageName)
-                : "N/A"}
-            </div>
-          </div>
-
-          {/* Bottom section with status and icons */}
-          <div className="mt-auto flex justify-between items-center">
-            {/* Left: Status light */}
-            <NodeStatusLight status={status || "Pending"} />
-
-            {/* Right: Icon components */}
-            <div className="flex items-center gap-2">
-              <NodeLog target={target} />
-              <NodeMonitor target={target} />
-            </div>
+        {/* Image with Package Icon */}
+        <div className="flex items-center gap-2 mt-2">
+          <Package className="h-4 w-4 text-muted-foreground" />
+          <div className="text-md text-muted-foreground truncate flex-1">
+            Image:{" "}
+            {deploymentResource.image?.imageName
+              ? truncateImage(deploymentResource.image.imageName)
+              : "N/A"}
           </div>
         </div>
-      </BaseNode>
-    </NodeConnect>
+
+        {/* Bottom section with status and icons */}
+        <div className="mt-auto flex justify-between items-center">
+          {/* Left: Status light */}
+          <NodeStatusLight status={status || "Pending"} />
+
+          {/* Right: Icon components */}
+          <div className="flex items-center gap-2">
+            <NodeLog target={target} />
+            <NodeMonitor target={target} />
+          </div>
+        </div>
+      </div>
+    </BaseNode>
+    // </NodeConnect>
   );
 
   // Create an array with length equal to deploymentResource.replicas for the stack

@@ -42,7 +42,6 @@ export const useNodeSelect = ({
     getThreads,
     setThreads,
     selectThread,
-    setMessages,
     createNewThread,
   } = useThreads();
   const { selectedResource, selectedProject } = useProjectState();
@@ -81,14 +80,6 @@ export const useNodeSelect = ({
         // Select the latest thread
         selectThread(latestThread.thread_id);
 
-        // Set messages from the latest thread
-        const threadMessages = (latestThread.values as any)?.messages;
-        if (Array.isArray(threadMessages)) {
-          setMessages(threadMessages);
-        } else {
-          setMessages([]);
-        }
-
         // Update threads list
         setThreads(threads);
       } else {
@@ -97,7 +88,6 @@ export const useNodeSelect = ({
           onSuccess: (data: any) => {
             if (data?.thread_id) {
               selectThread(data.thread_id);
-              setMessages([]); // Clear messages for new thread
               // Refresh threads list to include the new thread
               getThreads(selectedProject, target).then((updatedThreads) => {
                 setThreads(updatedThreads);
@@ -106,13 +96,11 @@ export const useNodeSelect = ({
           },
           onError: (error: any) => {
             console.error("Failed to create new thread:", error);
-            setMessages([]);
           },
         });
       }
     } catch (error) {
       console.error("Failed to fetch threads for node select:", error);
-      setMessages([]);
     }
 
     openSidebarChat();

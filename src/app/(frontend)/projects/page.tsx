@@ -173,17 +173,10 @@ export default function Page() {
         )}
       </div>
 
-      {/* Example App Store Results */}
-      <div className="w-full max-w-4xl mt-12">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold mb-2">
-            Example App Store Results
-          </h2>
-        </div>
+      {/* <div className="w-full max-w-4xl mt-12">
         <SearchAppStoreActionMessage result={exampleAppStoreResults} />
       </div>
 
-      {/* Example Deployment Components */}
       <div className="w-full max-w-4xl mt-12">
         <div className="mb-6">
           <h2 className="text-lg font-semibold mb-4">
@@ -192,7 +185,6 @@ export default function Page() {
         </div>
 
         <div className="space-y-6">
-          {/* Template Deployment */}
           <div>
             <ProposeTemplateDeploymentMessage
               args={exampleTemplateDeployment}
@@ -200,7 +192,6 @@ export default function Page() {
             />
           </div>
 
-          {/* Development Environment Deployment */}
           <div>
             <ProposeDevenvDeploymentMessage
               args={exampleDevenvDeployment}
@@ -208,7 +199,6 @@ export default function Page() {
             />
           </div>
 
-          {/* Docker Image Deployment */}
           <div>
             <ProposeImageDeploymentMessage
               args={exampleImageDeployment}
@@ -216,7 +206,7 @@ export default function Page() {
             />
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }
