@@ -14,6 +14,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { ProjectProposalCard } from "@/components/chat/state-cards/project-proposal/project-proposal-card";
 import type { ProjectProposal } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
+import { useProjectCreate } from "@/hooks/brain/use-project-create";
 
 interface DeployDevBox {
   name: string;
@@ -58,18 +59,33 @@ const DevenvDeploymentSuccessMessage = ({ args }: { args: any }) => {
 export const ProposeDevenvDeploymentMessage: React.FC<
   ProposeDevenvDeploymentMessageProps
 > = ({ args, result, onSuccess }) => {
-  const [isDeploying, setIsDeploying] = React.useState(false);
+  const { createProjectFromSimpleData, isCreating } = useProjectCreate();
 
   const handleDeploy = async () => {
-    setIsDeploying(true);
     try {
-      // Simulate deployment process
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      onSuccess?.("devenv deployed successfully");
+      const deploymentData = {
+        devbox: args.devbox
+          ? {
+              name: args.devbox.name,
+              runtime: args.devbox.runtime,
+              ports: args.devbox.ports || [],
+            }
+          : undefined,
+        database: args.database
+          ? {
+              name: args.database.name,
+              type: args.database.type,
+            }
+          : undefined,
+      };
+
+      const projectName = await createProjectFromSimpleData(
+        deploymentData,
+        "devenv-project"
+      );
+      onSuccess?.(projectName);
     } catch (error) {
       console.error("Failed to deploy development environment:", error);
-    } finally {
-      setIsDeploying(false);
     }
   };
 
@@ -102,8 +118,6 @@ export const ProposeDevenvDeploymentMessage: React.FC<
             },
           ]
         : [],
-      app: [],
-      bucket: [],
     },
   };
 
@@ -117,12 +131,11 @@ export const ProposeDevenvDeploymentMessage: React.FC<
       <div className="pt-2">
         <Button
           onClick={handleDeploy}
-          disabled={isDeploying}
+          disabled={isCreating}
           className="w-full"
           variant={"outline"}
-          // size="lg"
         >
-          {isDeploying ? (
+          {isCreating ? (
             <>
               <Spinner variant="circle" size={16} className="mr-2" />
               Deploying...

@@ -52,7 +52,7 @@ function ProjectFloatingUI({
   // const { nodes } = useFlowgraphState();
 
   // Don't show floating UI when loading or when nodes/edges are empty
-  const shouldShowLoading = isLoading || nodes.length === 0;
+  const shouldShowLoading = isLoading;
 
   if (shouldShowLoading) {
     return null;
@@ -105,7 +105,7 @@ function ProjectFlow({
   // useCopilotActions();
 
   // Show loading if either isLoading is true OR if nodes or edges length equals 0
-  const shouldShowLoading = isLoading || nodes.length === 0;
+  const shouldShowLoading = isLoading;
 
   if (shouldShowLoading) {
     return (
@@ -168,7 +168,7 @@ function ProjectFlowWithLoading({
   } = useFlowgraphNodes(resourceTargets);
 
   const shouldShowLoading =
-    isLoadingFlowgraphNodes || flowgraphNodes.length === 0;
+    isLoadingFlowgraphNodes;
 
   return (
     <>

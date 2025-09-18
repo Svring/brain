@@ -120,8 +120,9 @@ export async function createDevbox(
   request: DevboxCreateFormData
 ): Promise<any> {
   const api = createDevboxAxios(context);
+  console.log("request", request);
   const response = await api.post("/", request);
-  // console.log("response", response);
+  console.log("response", response);
   return response.data;
 }
 

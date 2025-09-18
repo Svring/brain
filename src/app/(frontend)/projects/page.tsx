@@ -80,7 +80,7 @@ const exampleTemplateDeployment = {
 const exampleDevenvDeployment = {
   devbox: {
     name: "my-devbox",
-    runtime: "node-18",
+    runtime: "next.js",
     ports: [3000, 8080],
   },
   database: {

@@ -8,6 +8,7 @@ import { Database, CircleCheckBigIcon, Rocket, Container } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { ProjectProposalCard } from "@/components/chat/state-cards/project-proposal/project-proposal-card";
 import type { ProjectProposal } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
+import { useProjectCreate } from "@/hooks/brain/use-project-create";
 
 interface DeployDatabase {
   name: string;
@@ -45,18 +46,28 @@ const ImageDeploymentSuccessMessage = ({ args }: { args: any }) => {
 export const ProposeImageDeploymentMessage: React.FC<
   ProposeImageDeploymentMessageProps
 > = ({ args, result, onSuccess }) => {
-  const [isDeploying, setIsDeploying] = React.useState(false);
+  const { createProjectFromSimpleData, isCreating } = useProjectCreate();
+
+  console.log("args", args);
 
   const handleDeploy = async () => {
-    setIsDeploying(true);
     try {
-      // Simulate deployment process
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      onSuccess?.("image deployed successfully");
+      const deploymentData = {
+        app: {
+          name: "docker-app",
+          image: args.image_name,
+          ports: args.ports || [],
+        },
+        database: args.database ? {
+          name: args.database.name,
+          type: args.database.type,
+        } : undefined,
+      };
+
+      const projectName = await createProjectFromSimpleData(deploymentData, "docker-image-project");
+      onSuccess?.(projectName);
     } catch (error) {
       console.error("Failed to deploy Docker image:", error);
-    } finally {
-      setIsDeploying(false);
     }
   };
 
@@ -87,8 +98,6 @@ export const ProposeImageDeploymentMessage: React.FC<
             },
           ]
         : [],
-      devbox: [],
-      bucket: [],
     },
   };
 
@@ -102,11 +111,11 @@ export const ProposeImageDeploymentMessage: React.FC<
       <div className="pt-2">
         <Button
           onClick={handleDeploy}
-          disabled={isDeploying}
+          disabled={isCreating}
           className="w-full"
           variant={"outline"}
         >
-          {isDeploying ? (
+          {isCreating ? (
             <>
               <Spinner variant="circle" size={16} className="mr-2" />
               Deploying...
