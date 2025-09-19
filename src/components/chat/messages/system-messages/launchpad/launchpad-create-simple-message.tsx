@@ -11,10 +11,12 @@ import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 interface LaunchpadCreateSimpleMessageProps {
   payload?: Partial<LaunchpadSimpleFormData>;
+  onSuccess?: () => void;
 }
 
 export const LaunchpadCreateSimpleMessage: React.FC<LaunchpadCreateSimpleMessageProps> = ({
   payload,
+  onSuccess,
 }) => {
   const { launchpad, project } = useTRPCClients();
   const { selectedProject } = useProjectState();
@@ -41,6 +43,9 @@ export const LaunchpadCreateSimpleMessage: React.FC<LaunchpadCreateSimpleMessage
       toast.success(
         "Launchpad application created and added to project successfully!"
       );
+      
+      // Call onSuccess callback if provided
+      onSuccess?.();
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to create launchpad application");

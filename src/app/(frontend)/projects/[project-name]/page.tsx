@@ -48,7 +48,7 @@ function ProjectFloatingUI({
   onRefresh: () => void;
   nodes: any[];
 }) {
-  const { isOpen, onOpenChange, onOpen } = useFlowgraphCommand();
+  const { isOpen, onOpenChange, onOpen, onClose } = useFlowgraphCommand();
   // const { nodes } = useFlowgraphState();
 
   // Don't show floating UI when loading or when nodes/edges are empty
@@ -73,7 +73,7 @@ function ProjectFloatingUI({
       <div className="absolute top-2 right-2 z-20 bg-background/30 backdrop-blur-lg rounded-lg p-2">
         <FlowgraphActions onOpenCommand={onOpen} onRefresh={onRefresh} />
       </div>
-      <FlowgraphCommandDialog isOpen={isOpen} onOpenChange={onOpenChange} />
+      <FlowgraphCommandDialog isOpen={isOpen} onOpenChange={onOpenChange} onClose={onClose} />
       <FlowgraphChatLoadingHint />
     </>
   );

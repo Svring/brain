@@ -5,8 +5,8 @@ export async function useObjectStorageContext(opts: { req: Request }) {
   const kubeconfig = opts.req.headers.get("kubeconfig");
 
   return {
-    authorization: kubeconfig as string,
-    baseURL: regionUrl as string,
+    authorization: decodeURIComponent(kubeconfig as string),
+    baseUrl: regionUrl as string,
     kubeconfig: decodeURIComponent(kubeconfig as string),
     namespace: namespace as string,
     regionUrl: regionUrl as string,

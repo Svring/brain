@@ -8,13 +8,15 @@ import { useDevboxCreate } from "@/hooks/sealos/devbox/use-devbox-create";
 interface DevboxCreateSimpleMessageProps {
   payload?: Partial<DevboxSimpleFormData>;
   addToProject?: boolean;
+  onSuccess?: () => void;
 }
 
 export const DevboxCreateSimpleMessage: React.FC<DevboxCreateSimpleMessageProps> = ({
   payload,
   addToProject = true,
+  onSuccess,
 }) => {
-  const { createDevbox, isLoading } = useDevboxCreate({ addToProject });
+  const { createDevbox, isLoading } = useDevboxCreate({ addToProject, onSuccess });
 
   return (
     <div className="space-y-3 flex-col p-3 rounded-xl">

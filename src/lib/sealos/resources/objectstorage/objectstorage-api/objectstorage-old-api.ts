@@ -42,14 +42,11 @@ import https from "https";
 function createObjectStorageApi(context: ObjectStorageApiContext) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
   return axios.create({
-    baseURL: `http://objectstorage.${context.baseURL}/api`,
+    baseURL: `http://objectstorage.${context.baseUrl}/api`,
     headers: {
       "Content-Type": "application/json",
       ...(context.authorization
         ? { Authorization: context.authorization }
-        : {}),
-      ...(context.authorizationBearer
-        ? { "app-token": `${context.authorizationBearer}` }
         : {}),
     },
     httpsAgent: isDevelopment

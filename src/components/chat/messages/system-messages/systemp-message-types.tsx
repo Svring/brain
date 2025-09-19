@@ -97,7 +97,7 @@ export const SystemMessageType = {
     detail: (target: CustomResourceTarget) => (
       <ObjectStorageMessage target={target} />
     ),
-    create: (payload?: any) => <ObjectStorageCreateMessage payload={payload} />,
+    create: () => <ObjectStorageCreateMessage />,
     update: (target: CustomResourceTarget) => (
       <ObjectStorageUpdateMessage target={target} />
     ),

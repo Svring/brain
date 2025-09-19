@@ -3,81 +3,23 @@
 import React from "react";
 import { ClusterCreateSimpleForm } from "@/components/forms/cluster/cluster-create-form-simple";
 import { ClusterSimpleFormData } from "@/components/forms/cluster/cluster-create-form-simple";
-import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { useProjectState } from "@/contexts/project/project-context";
-import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { useClusterCreate } from "@/hooks/sealos/cluster/use-cluster-create";
 
 interface ClusterCreateSimpleMessageProps {
   payload?: Partial<ClusterSimpleFormData>;
+  onSuccess?: () => void;
+  addToProject?: boolean;
 }
 
-export const ClusterCreateSimpleMessage: React.FC<ClusterCreateSimpleMessageProps> = ({
-  payload,
-}) => {
-  const { cluster, project } = useTRPCClients();
-  const { selectedProject } = useProjectState();
-
-  const addToProjectMutation = useMutation(
-    project.addResources.mutationOptions()
-  );
-
-  const createClusterMutation = useMutation({
-    ...cluster.create.mutationOptions(),
-    onSuccess: async (_, variables) => {
-      if (!selectedProject) {
-        toast.error("No project selected. Please select a project first.");
-        return;
-      }
-      const resourceTarget = convertResourceTypeToTarget(
-        "cluster",
-        variables.name
-      );
-      await addToProjectMutation.mutateAsync({
-        resources: [resourceTarget],
-        name: selectedProject,
-      });
-      toast.success("Cluster created and added to project successfully!");
-    },
-    onError: async (error: any, variables) => {
-      console.error("Cluster creation error:", error);
-
-      // Even if cluster creation failed or output validation failed,
-      // we still want to try adding it to the project by name
-      if (selectedProject && variables?.name) {
-        try {
-          console.log(
-            "⚠️ Cluster creation failed, but still adding to project by name:",
-            variables.name
-          );
-          const resourceTarget = convertResourceTypeToTarget(
-            "cluster",
-            variables.name
-          );
-          await addToProjectMutation.mutateAsync({
-            resources: [resourceTarget],
-            name: selectedProject,
-          });
-          toast.warning(
-            "Cluster creation had issues, but it was still added to the project"
-          );
-        } catch (addError) {
-          console.error("Failed to add cluster to project:", addError);
-          toast.error(
-            "Cluster creation failed and could not be added to project"
-          );
-        }
-      } else {
-        toast.error(error.message || "Failed to create cluster");
-      }
-    },
-  });
+export const ClusterCreateSimpleMessage: React.FC<
+  ClusterCreateSimpleMessageProps
+> = ({ payload, onSuccess, addToProject = true }) => {
+  const { createCluster, isLoading } = useClusterCreate({ addToProject });
 
   const handleSubmit = async (data: ClusterSimpleFormData) => {
     try {
-      // TODO: Implement cluster creation logic
-      await createClusterMutation.mutateAsync(data);
+      await createCluster(data);
+      onSuccess?.();
     } catch (error) {
       console.error("Error creating cluster:", error);
     }
@@ -88,7 +30,7 @@ export const ClusterCreateSimpleMessage: React.FC<ClusterCreateSimpleMessageProp
       <ClusterCreateSimpleForm
         defaultValues={payload}
         onSubmit={handleSubmit}
-        isLoading={createClusterMutation.isPending}
+        isLoading={isLoading}
       />
     </div>
   );

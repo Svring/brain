@@ -45,6 +45,7 @@ export const useNodeSelect = ({
     createNewThread,
   } = useThreads();
   const { selectedResource, selectedProject } = useProjectState();
+  const { submitWithContext } = useStreamContext();
 
   // Get resource status for the target
   const { resource: resource_context } = useResourceStatus(target);
@@ -104,18 +105,20 @@ export const useNodeSelect = ({
     //   messageType
     // );
     // if (messageType) {
-    //   submitWithContext({
-    //     messages: [
-    //       {
-    //         type: "system",
-    //         content: JSON.stringify({
-    //           type: messageType,
-    //           target,
-    //         }),
-    //       },
-    //     ],
-    //     stage: "append",
-    //   });
+    //   setTimeout(() => {
+    //     submitWithContext({
+    //       messages: [
+    //         {
+    //           type: "system",
+    //           content: JSON.stringify({
+    //             type: messageType,
+    //             target,
+    //           }),
+    //         },
+    //       ],
+    //       stage: "append",
+    //     });
+    //   }, 1000);
     // }
 
     openSidebarChat();

@@ -9,18 +9,13 @@ import { toast } from "sonner";
 import { useProjectState } from "@/contexts/project/project-context";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
-interface ObjectStorageCreatePayload {
-  name?: string;
-  policy?: "private" | "publicRead" | "publicReadWrite";
-}
-
 interface ObjectStorageCreateMessageProps {
-  payload: ObjectStorageCreatePayload;
+  onSuccess?: () => void;
 }
 
 export const ObjectStorageCreateMessage: React.FC<
   ObjectStorageCreateMessageProps
-> = ({ payload }) => {
+> = ({ onSuccess }) => {
   const { objectstorage, project } = useTRPCClients();
   const { selectedProject } = useProjectState();
 
@@ -43,7 +38,12 @@ export const ObjectStorageCreateMessage: React.FC<
         resources: [resourceTarget],
         name: selectedProject,
       });
-      toast.success("Object storage bucket created and added to project successfully!");
+      toast.success(
+        "Object storage bucket created and added to project successfully!"
+      );
+
+      // Call onSuccess callback if provided
+      onSuccess?.();
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to create object storage bucket");
@@ -65,7 +65,6 @@ export const ObjectStorageCreateMessage: React.FC<
   return (
     <div className="space-y-3 flex-col p-3 rounded-xl">
       <ObjectStorageCreateForm
-        defaultValues={payload}
         onSubmit={handleSubmit}
         isLoading={createObjectStorageMutation.isPending}
       />

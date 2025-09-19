@@ -17,11 +17,13 @@ import { useCommandActions } from "./command-actions";
 interface FlowgraphCommandDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  onClose?: () => void;
 }
 
 export function FlowgraphCommandDialog({
   isOpen,
   onOpenChange,
+  onClose,
 }: FlowgraphCommandDialogProps) {
   const [search, setSearch] = useState("");
   const [selectedCommand, setSelectedCommand] = useState<string | null>(null);
@@ -100,6 +102,7 @@ export function FlowgraphCommandDialog({
               <ResourceCreate
                 resourceId={selectedCommand}
                 onBack={() => setSelectedCommand(null)}
+                onSuccess={onClose}
               />
             ) : showManageResources ? (
               // Show manage resources dialog

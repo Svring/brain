@@ -10,10 +10,11 @@ import { DevboxCreateFormData } from "@/schemas/forms/devbox/devbox-create-form-
 
 interface UseDevboxCreateOptions {
   addToProject?: boolean;
+  onSuccess?: () => void;
 }
 
 export const useDevboxCreate = (options: UseDevboxCreateOptions = {}) => {
-  const { addToProject = true } = options;
+  const { addToProject = true, onSuccess } = options;
   const { devbox, project } = useTRPCClients();
   const { invalidateQueries } = useInvalidateQueries();
   const { selectedProject } = useProjectState();
@@ -46,6 +47,11 @@ export const useDevboxCreate = (options: UseDevboxCreateOptions = {}) => {
         [devbox.list.queryKey(), project.getResources.queryKey()],
         true
       );
+
+      console.log("[useDevboxCreate] Calling onSuccess callback!");
+
+      // Call onSuccess callback if provided
+      onSuccess?.();
     },
     onError: async (error: any) => {
       console.error("Devbox creation error:", error);

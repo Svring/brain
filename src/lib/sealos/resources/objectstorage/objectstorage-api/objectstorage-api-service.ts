@@ -101,7 +101,7 @@ export function convertToObjectStorageContext(
   context: SealosApiContext
 ): ObjectStorageApiContext {
   return {
-    baseURL: context.baseUrl,
+    baseUrl: context.baseUrl,
     authorization: context.authorization,
   };
 }
