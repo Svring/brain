@@ -107,7 +107,7 @@ export const objectStorageRouter = t.router({
     .mutation(async ({ ctx, input }) => {
       const sealosContext = {
         baseUrl: ctx.regionUrl,
-        authorization: ctx.kubeconfig,
+        authorization: ctx.authorization,
       };
       return await deleteObjectStorageBucketWithSealosContext(
         sealosContext,

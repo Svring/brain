@@ -41,12 +41,13 @@ import https from "https";
 
 function createObjectStorageApi(context: ObjectStorageApiContext) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
+  console.log("[createObjectStorageApi] context:", context);
   return axios.create({
     baseURL: `http://objectstorage.${context.baseUrl}/api`,
     headers: {
       "Content-Type": "application/json",
       ...(context.authorization
-        ? { Authorization: context.authorization }
+        ? { Authorization: encodeURIComponent(context.authorization) }
         : {}),
     },
     httpsAgent: isDevelopment
@@ -75,6 +76,7 @@ export const deleteObjectStorage = createParallelAction(
     const validatedRequest = ObjectStorageDeleteRequestSchema.parse(request);
     const api = createObjectStorageApi(context);
     const response = await api.post("/bucket/delete", validatedRequest);
+    console.log("response", response);
     return ObjectStorageDeleteResponseSchema.parse(response.data);
   }
 );

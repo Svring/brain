@@ -80,7 +80,7 @@ function ObjectStorageNode({
                 <MoreHorizontal className="h-4 w-4" />
               </button>
             </DropdownMenuTrigger>
-            <ObjectStorageDropdownMenu object={resource} />
+            <ObjectStorageDropdownMenu object={data} />
           </DropdownMenu>
         </div>
         <div className="flex justify-between items-center">

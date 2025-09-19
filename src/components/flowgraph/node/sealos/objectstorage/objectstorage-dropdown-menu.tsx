@@ -28,7 +28,7 @@ export default function ObjectStorageDropdownMenu({
   object,
   onDelete,
 }: ObjectStorageDropdownMenuProps) {
-  const { name: bucketName } = object;
+  const { name: bucketName, displayName } = object;
   const { executeAction, isPending } = useObjectStorageLifecycle();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -37,7 +37,7 @@ export default function ObjectStorageDropdownMenu({
   };
 
   const handleDeleteConfirm = () => {
-    executeAction("delete", bucketName);
+    executeAction("delete", displayName);
     onDelete?.(bucketName);
     setShowDeleteDialog(false);
   };
