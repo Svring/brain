@@ -95,25 +95,9 @@ export default function HomePage() {
 
   // const hasMessages = messages.length > 0;
   const showMessages = messages.length > 0;
-  
 
   // State for delayed message display
   // const [showMessages, setShowMessages] = useState(false);
-
-  // Add 1-second delay before showing messages
-  // useEffect(() => {
-  //   if (hasMessages) {
-  //     const timer = setTimeout(() => {
-  //       setShowMessages(true);
-  //     }, 2000);
-
-  //     return () => clearTimeout(timer);
-  //   } else {
-  //     setShowMessages(false);
-  //   }
-  // }, [hasMessages]);
-
-  // Create thread on mount for home page
   useMount(() => {
     // Create a new thread and select it
     console.log("[HomePage] Creating new thread on mount...");

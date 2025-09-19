@@ -58,13 +58,18 @@ export const ProposeImageDeploymentMessage: React.FC<
           image: args.image_name,
           ports: args.ports || [],
         },
-        database: args.database ? {
-          name: args.database.name,
-          type: args.database.type,
-        } : undefined,
+        database: args.database
+          ? {
+              name: args.database.name,
+              type: args.database.type,
+            }
+          : undefined,
       };
 
-      const projectName = await createProjectFromSimpleData(deploymentData, "docker-image-project");
+      const projectName = await createProjectFromSimpleData(
+        deploymentData,
+        "docker-image-project"
+      );
       onSuccess?.(projectName);
     } catch (error) {
       console.error("Failed to deploy Docker image:", error);
@@ -102,7 +107,7 @@ export const ProposeImageDeploymentMessage: React.FC<
   };
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full">
       <ProjectProposalCard
         proposal={projectProposal}
         onProposalUpdate={() => {}} // No updates allowed

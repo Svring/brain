@@ -122,13 +122,13 @@ export const ProposeDevenvDeploymentMessage: React.FC<
   };
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full">
       <ProjectProposalCard
         proposal={projectProposal}
         onProposalUpdate={() => {}} // No updates allowed
       />
 
-      <div className="pt-2">
+      <div className="">
         <Button
           onClick={handleDeploy}
           disabled={isCreating}

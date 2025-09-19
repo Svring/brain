@@ -14,7 +14,10 @@ export default function ClusterMessageMenu({
   target,
 }: ClusterMessageMenuProps) {
   // Extract name and status from the target using the hook
-  const { resource, status } = useResourceStatus(target);
+  const { resource, status } = useResourceStatus(target) as {
+    resource: ClusterObject;
+    status: string;
+  };
   const clusterName = resource?.name || target.name || "";
   const currentStatus = status || "Pending";
 
@@ -23,17 +26,10 @@ export default function ClusterMessageMenu({
     return null;
   }
 
-  // Create cluster object for the dropdown menu
-  const clusterObject: ClusterObject = {
-    name: clusterName,
-    status: currentStatus,
-    resource: resource,
-  };
-
   return (
     <div className="flex items-center gap-2">
       <ClusterIconButtons
-        object={clusterObject}
+        object={resource}
         onDelete={(clusterName) => {
           // Handle delete callback if needed
           console.log("Delete cluster:", clusterName);

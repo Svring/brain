@@ -22,7 +22,7 @@ export function ProjectTemplateCard({
   hasInputs = false,
 }: ProjectTemplateCardProps) {
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full">
       <div className="space-y-3 flex-col bg-background-secondary border p-3 rounded-xl">
         <div className="flex items-center gap-4">
           <div className="flex-shrink-0">
@@ -56,7 +56,7 @@ export function ProjectTemplateCard({
         </div>
       </div>
 
-      <div className="pt-2">
+      <div className="">
         <Button
           onClick={onDeploy}
           disabled={isDeploying}
