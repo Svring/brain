@@ -47,26 +47,25 @@ export default function HomePage() {
 
   // State for delayed message display
   // const [showMessages, setShowMessages] = useState(false);
-  useMount(() => {
-    // Create a new thread and select it
-    console.log("[HomePage] Creating new thread on mount...");
+  // useMount(() => {
+  //   // Create a new thread and select it
+  //   console.log("[HomePage] Creating new thread on mount...");
 
-    createNewThread.mutate(undefined, {
-      onSuccess: (data: any) => {
-        if (data?.thread_id) {
-          selectThread(data.thread_id);
-          // Refresh threads list
-          getThreads().then((threads) => {
-            setThreads(threads);
-          });
-        }
-      },
-      onError: (error: any) => {
-        console.error("[HomePage] Failed to create thread on mount:", error);
-      },
-    });
-  });
-
+  //   createNewThread.mutate(undefined, {
+  //     onSuccess: (data: any) => {
+  //       if (data?.thread_id) {
+  //         selectThread(data.thread_id);
+  //         // Refresh threads list
+  //         getThreads().then((threads) => {
+  //           setThreads(threads);
+  //         });
+  //       }
+  //     },
+  //     onError: (error: any) => {
+  //       console.error("[HomePage] Failed to create thread on mount:", error);
+  //     },
+  //   });
+  // });
 
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden">
@@ -170,10 +169,7 @@ export default function HomePage() {
         </motion.div>
 
         {/* Suggestions section - shown when no messages */}
-        {!showMessages && (
-          <Suggestions />
-        )}
-
+        {!showMessages && <Suggestions />}
       </div>
     </div>
   );

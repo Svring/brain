@@ -19,6 +19,7 @@ import {
   useLanggraphState,
 } from "@/contexts/langgraph/langgraph-context";
 import { useStreamContext } from "@/components/provider/stream-provider";
+import { Thread } from "@langchain/langgraph-sdk";
 
 interface UseNodeSelectParams {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -37,13 +38,8 @@ export const useNodeSelect = ({
   const { selectNode } = useFlowgraphActions();
   const { openSidebarChat } = useChatActions();
   const { updateResourceContext } = useLanggraphActions();
-  const {
-    updateThreadState,
-    getThreads,
-    setThreads,
-    selectThread,
-    createNewThread,
-  } = useThreads();
+  const { updateThreadState, threads, selectThread, createNewThread } =
+    useThreads();
   const { selectedResource, selectedProject } = useProjectState();
   const { submitWithContext } = useStreamContext();
 
@@ -62,38 +58,51 @@ export const useNodeSelect = ({
   }`;
 
   const handleNodeSelect = async () => {
+    console.log("[useNodeSelect] handleNodeSelect called with target:", target);
+
     if (target === selectedResource) {
+      console.log("[useNodeSelect] Target is already the selected resource. No action taken.");
       return;
     }
 
+    console.log("[useNodeSelect] Selecting resource:", target);
     selectResource(target);
+
+    console.log("[useNodeSelect] Selecting node with nodeId:", nodeId);
     selectNode(nodeId);
+
+    console.log("[useNodeSelect] Updating resource context with:", resource_context);
     updateResourceContext({
       selected_resource_context: resource_context,
     });
 
-    // Fetch threads based on project and target, then select the latest thread
-    const threads = await getThreads(selectedProject, target);
+    // Find thread with matching resourceTarget in metadata
+    const matchingThread = threads.find((thread) => {
+      const metadata = thread.metadata;
+      if (metadata?.resourceTarget) {
+        return metadata.resourceTarget === JSON.stringify(target);
+      }
+      return false;
+    });
 
-    if (threads && threads.length > 0) {
-      // Threads are already in desc order, so select the first one (latest)
-      const latestThread = threads[0];
-      selectThread(latestThread.thread_id);
-      setThreads(threads);
+    if (matchingThread) {
+      console.log("[useNodeSelect] Found matching thread:", matchingThread.thread_id, "Selecting thread.");
+      // Select the matching thread
+      selectThread(matchingThread.thread_id);
     } else {
-      // No threads found, create a new thread and select it
+      console.log("[useNodeSelect] No matching thread found. Creating a new thread.");
+      // No matching thread found, create a new thread and select it
       createNewThread.mutate(undefined, {
-        onSuccess: (data: any) => {
+        onSuccess: (data: Thread) => {
           if (data?.thread_id) {
+            console.log("[useNodeSelect] New thread created with thread_id:", data.thread_id, "Selecting thread.");
             selectThread(data.thread_id);
-            // Refresh threads list to include the new thread
-            getThreads(selectedProject, target).then((updatedThreads) => {
-              setThreads(updatedThreads);
-            });
+          } else {
+            console.warn("[useNodeSelect] New thread created but no thread_id found in data:", data);
           }
         },
         onError: (error: any) => {
-          console.error("Failed to create new thread:", error);
+          console.error("[useNodeSelect] Failed to create new thread:", error);
         },
       });
     }

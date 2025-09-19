@@ -47,13 +47,7 @@ async function checkGraphStatus(apiUrl: string): Promise<boolean> {
 const StreamSession = ({ children }: { children: ReactNode }) => {
   const { baseUrl, apiKey, modelName, contextWindowUsage, stage } =
     useLanggraphState();
-  const {
-    selectedThreadId,
-    getThreads,
-    setThreads,
-    isStreaming,
-    setIsStreaming,
-  } = useThreads();
+  const { selectedThreadId } = useThreads();
   const {
     selectedProject,
     selectedProjectResources,
@@ -64,6 +58,8 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
   const { LANGGRAPH_DEPLOYMENT_URL, LANGGRAPH_GRAPH_ID } = useEnv();
   const queryClient = useQueryClient();
 
+  console.log("selectedThreadId", selectedThreadId);
+
   const streamValue = useStream({
     apiUrl: LANGGRAPH_DEPLOYMENT_URL,
     assistantId: LANGGRAPH_GRAPH_ID,
@@ -71,15 +67,15 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
     // fetchStateHistory: true,
     onThreadId: async (id) => {
       // Refetch threads list when thread ID changes using searchThreads with proper parameters
-      if (auth?.kubeconfig) {
-        try {
-          await sleep();
-          const threads = await getThreads(selectedProject, selectedResource);
-          setThreads(threads);
-        } catch (error) {
-          console.error("Failed to refetch threads:", error);
-        }
-      }
+      // if (auth?.kubeconfig) {
+      //   try {
+      //     await sleep();
+      //     const threads = await getThreads(selectedProject);
+      //     setThreads(threads);
+      //   } catch (error) {
+      //     console.error("Failed to refetch threads:", error);
+      //   }
+      // }
     },
   });
 

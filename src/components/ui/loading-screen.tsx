@@ -4,14 +4,14 @@ import { Spinner } from "@/components/ui/spinner";
 import { TextShimmer } from "@/components/ui/text-shimmer";
 
 interface LoadingScreenProps {
-  text: string;
+  text?: string;
   variant?: "bars" | "dots" | "pulse";
   size?: number;
   className?: string;
 }
 
 export function LoadingScreen({
-  text,
+  text = "Loading...",
   size = 24,
   className = "",
 }: LoadingScreenProps) {

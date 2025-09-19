@@ -36,38 +36,26 @@ export const langgraphRouter = t.router({
   create: t.procedure
     .input(
       z.object({
-        kubeconfig: z.string(),
-        projectName: z.string().optional(),
-        resourceTarget: z.any().optional(),
         metadata: z.record(z.any()).optional(),
-        supersteps: z
-          .array(
-            z.object({
-              updates: z.array(
-                z.object({
-                  values: z.record(z.any()),
-                  as_node: z.string(),
-                })
-              ),
-            })
-          )
-          .optional(),
       })
     )
     .mutation(async ({ input }) => {
-      const { kubeconfig, projectName, resourceTarget, metadata, supersteps } =
-        input;
+      const { metadata } = input;
 
-      // Build the metadata object with full names
-      const threadMetadata: Record<string, any> = {
-        kubeconfig: kubeconfig,
-        projectName: projectName,
-        resourceTarget: resourceTarget,
-        ...metadata, // Merge any additional metadata
-      };
+      // Default supersteps
+      const supersteps = [
+        {
+          updates: [
+            {
+              values: {},
+              asNode: "__input__",
+            },
+          ],
+        },
+      ];
 
       return await createThread({
-        metadata: threadMetadata,
+        metadata: metadata || {},
         supersteps,
       });
     }),

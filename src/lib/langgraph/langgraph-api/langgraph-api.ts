@@ -24,7 +24,7 @@ export const createThread = async ({
   supersteps?: Array<{
     updates: Array<{
       values: Record<string, any>;
-      as_node: string;
+      asNode: string;
     }>;
   }>;
 }) => {

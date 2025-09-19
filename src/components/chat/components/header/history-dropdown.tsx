@@ -38,8 +38,6 @@ export function HistoryDropdown() {
     selectThread(threadId);
   };
 
-  console.log("threads", threads);
-
   const handleDeleteThread = (threadId: string, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent thread selection when clicking delete
     setThreadToDelete(threadId);

@@ -17,31 +17,29 @@ import {
   deleteThread,
 } from "@/lib/langgraph/langgraph-api/langgraph-api-service";
 import {
-  useCreateNewChatSessionMutation,
   useDeleteThreadMutation,
   useUpdateThreadStateMutation,
 } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import {
   getThreadStateOptions,
   getThreadStateAtCheckpointOptions,
 } from "@/lib/langgraph/langgraph-method/langgraph-query";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useQueryState } from "nuqs";
-import { Message } from "@langchain/langgraph-sdk";
+import { Message, Thread } from "@langchain/langgraph-sdk";
 
 interface ThreadContextType {
   // Thread management
-  getThreads: (
-    projectName?: string | null
-  ) => Promise<any[]>;
-  threads: any[];
+  getThreads: (projectName?: string | null) => Promise<any[]>;
+  threads: Thread[];
   setThreads: Dispatch<SetStateAction<any[]>>;
   threadsLoading: boolean;
   setThreadsLoading: Dispatch<SetStateAction<boolean>>;
 
   // Thread selection
   selectedThreadId: string | null;
-  selectedThread: any;
+  selectedThread: Thread | null;
   selectThread: (threadId: string | null) => void;
 
   // Messages
@@ -73,9 +71,10 @@ const ThreadContext = createContext<ThreadContextType | undefined>(undefined);
 export function ThreadProvider({ children }: { children: ReactNode }) {
   const { auth } = useAuthState();
   const { selectedProject, selectedResource } = useProjectState();
+  const { langgraph } = useTRPCClients();
 
   // State
-  const [threads, setThreads] = useState<any[]>([]);
+  const [threads, setThreads] = useState<Thread[]>([]);
   const [threadsLoading, setThreadsLoading] = useState(false);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   const [selectedCheckpointId, setSelectedCheckpointId] = useState<
@@ -91,9 +90,7 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
 
   // Get threads function
   const getThreads = useCallback(
-    async (
-      projectName?: string | null
-    ): Promise<any[]> => {
+    async (projectName?: string | null): Promise<Thread[]> => {
       if (!auth?.kubeconfig) return [];
 
       try {
@@ -128,10 +125,10 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
     ? threads.find((thread) => thread.thread_id === selectedThreadId) || null
     : null;
 
-  // Create new thread mutation
-  const createNewThreadMutation = useMutation({
-    ...useCreateNewChatSessionMutation(),
-  });
+  // Create new thread mutation using TRPC
+  const createNewThreadMutation = useMutation(
+    langgraph.create.mutationOptions()
+  );
 
   // Update thread state mutation
   const updateThreadStateMutation = useMutation({
