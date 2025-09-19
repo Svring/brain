@@ -82,9 +82,9 @@ export default function LaunchpadIconButtons({
                   <Power className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="bottom">
+              {/* <TooltipContent side="bottom">
                 <p>Start</p>
-              </TooltipContent>
+              </TooltipContent> */}
             </Tooltip>
           )}
 
@@ -104,9 +104,9 @@ export default function LaunchpadIconButtons({
                   <Pause className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="bottom">
+              {/* <TooltipContent side="bottom">
                 <p>Pause</p>
-              </TooltipContent>
+              </TooltipContent> */}
             </Tooltip>
           )}
 
@@ -123,15 +123,15 @@ export default function LaunchpadIconButtons({
                 <Trash2 className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">
+            {/* <TooltipContent side="bottom">
               <p>Delete</p>
-            </TooltipContent>
+            </TooltipContent> */}
           </Tooltip>
         </div>
       </TooltipProvider>
 
-      <AlertDialog 
-        open={showDeleteDialog} 
+      <AlertDialog
+        open={showDeleteDialog}
         onOpenChange={(open) => {
           // Prevent closing dialog while delete is in progress
           if (!open && isPending("delete")) {
@@ -144,11 +144,12 @@ export default function LaunchpadIconButtons({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Launchpad</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{name}"? This action cannot be undone.
+              Are you sure you want to delete "{name}"? This action cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel 
+            <AlertDialogCancel
               onClick={handleDeleteCancel}
               disabled={isPending("delete")}
             >

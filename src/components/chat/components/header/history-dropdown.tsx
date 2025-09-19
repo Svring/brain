@@ -30,7 +30,6 @@ export function HistoryDropdown() {
     deleteThread,
     getThreads,
     setThreads,
-    setMessages,
   } = useThreads();
   const { selectedProject, selectedResource } = useProjectState();
   const queryClient = useQueryClient();
@@ -41,27 +40,27 @@ export function HistoryDropdown() {
   const [loadingFilteredThreads, setLoadingFilteredThreads] = useState(false);
 
   // Fetch threads for current project and resource
-  useEffect(() => {
-    const fetchFilteredThreads = async () => {
-      if (!selectedProject && !selectedResource) {
-        setFilteredThreads([]);
-        return;
-      }
+  // useEffect(() => {
+  //   const fetchFilteredThreads = async () => {
+  //     if (!selectedProject && !selectedResource) {
+  //       setFilteredThreads([]);
+  //       return;
+  //     }
 
-      setLoadingFilteredThreads(true);
-      try {
-        const threads = await getThreads(selectedProject, selectedResource);
-        setFilteredThreads(threads);
-      } catch (error) {
-        console.error("Failed to fetch filtered threads:", error);
-        setFilteredThreads([]);
-      } finally {
-        setLoadingFilteredThreads(false);
-      }
-    };
+  //     setLoadingFilteredThreads(true);
+  //     try {
+  //       const threads = await getThreads(selectedProject, selectedResource);
+  //       setFilteredThreads(threads);
+  //     } catch (error) {
+  //       console.error("Failed to fetch filtered threads:", error);
+  //       setFilteredThreads([]);
+  //     } finally {
+  //       setLoadingFilteredThreads(false);
+  //     }
+  //   };
 
-    fetchFilteredThreads();
-  }, [selectedProject, selectedResource]);
+  //   fetchFilteredThreads();
+  // }, [selectedProject, selectedResource]);
 
   const handleHistoryDropdownHover = async () => {
     // Refetch threads for current project and resource when hovering
@@ -96,14 +95,11 @@ export function HistoryDropdown() {
         const threadMessages = (selectedThread.values as any)?.messages;
         if (Array.isArray(threadMessages)) {
           setThreads(threads); // Update threads list
-          setMessages(threadMessages); // Set the messages for the selected thread
         } else {
-          setMessages([]); // Clear messages if no messages found
         }
       }
     } catch (error) {
       console.error("Failed to fetch thread messages:", error);
-      setMessages([]); // Clear messages on error
     }
   };
 

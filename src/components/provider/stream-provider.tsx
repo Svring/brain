@@ -24,7 +24,7 @@ type StreamContextType = ReturnType<typeof useStream> & {
     command?: any;
   }) => void;
   streamThread: (messages: Message[]) => Promise<any>;
-  sendMessage: (messages: Message[]) => Promise<void>;
+  // sendMessage: (messages: Message[]) => Promise<void>;
   messages: Message[];
 };
 
@@ -51,8 +51,6 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
     selectedThreadId,
     getThreads,
     setThreads,
-    messages,
-    setMessages,
     isStreaming,
     setIsStreaming,
   } = useThreads();
@@ -175,149 +173,149 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
   };
 
   // Send message function that handles the entire flow
-  const sendMessage = async (messagesToSend: Message[]) => {
-    if (messagesToSend.length > 0 && !isStreaming) {
-      // Set streaming state to true
-      setIsStreaming(true);
+  // const sendMessage = async (messagesToSend: Message[]) => {
+  //   if (messagesToSend.length > 0 && !isStreaming) {
+  //     // Set streaming state to true
+  //     setIsStreaming(true);
 
-      // Add the messages to the messages list immediately
-      const updatedMessages = [...messages, ...messagesToSend];
-      setMessages(updatedMessages);
+  //     // Add the messages to the messages list immediately
+  //     const updatedMessages = [...messages, ...messagesToSend];
+  //     setMessages(updatedMessages);
 
-      const stream = await streamThread(messagesToSend);
+  //     const stream = await streamThread(messagesToSend);
 
-      if (!stream) {
-        setIsStreaming(false);
-        return;
-      }
+  //     if (!stream) {
+  //       setIsStreaming(false);
+  //       return;
+  //     }
 
-      try {
-        for await (const event of stream) {
-          console.log("event", event);
+  //     try {
+  //       for await (const event of stream) {
+  //         console.log("event", event);
 
-          // Handle the new "updates" event format
-          if (event.event === "updates" && event.data) {
-            const streamData = event.data;
+  //         // Handle the new "updates" event format
+  //         if (event.event === "updates" && event.data) {
+  //           const streamData = event.data;
 
-            // Extract messages from all nodes in the stream data
-            const newMessages: Message[] = [];
+  //           // Extract messages from all nodes in the stream data
+  //           const newMessages: Message[] = [];
 
-            // Iterate through all nodes in the data
-            for (const [nodeName, nodeData] of Object.entries(streamData)) {
-              if (nodeData && typeof nodeData === "object") {
-                // Check if this node has messages
-                if ("messages" in nodeData) {
-                  const nodeMessages = nodeData.messages;
+  //           // Iterate through all nodes in the data
+  //           for (const [nodeName, nodeData] of Object.entries(streamData)) {
+  //             if (nodeData && typeof nodeData === "object") {
+  //               // Check if this node has messages
+  //               if ("messages" in nodeData) {
+  //                 const nodeMessages = nodeData.messages;
 
-                  // Handle single message object
-                  if (
-                    nodeMessages &&
-                    typeof nodeMessages === "object" &&
-                    !Array.isArray(nodeMessages)
-                  ) {
-                    // Add required fields if missing
-                    const messageData = nodeMessages as any;
-                    const message: Message = {
-                      id: messageData.id || uuidv4(),
-                      type: messageData.type || "ai",
-                      content: messageData.content || "",
-                      ...messageData,
-                    };
-                    newMessages.push(message);
-                  }
-                  // Handle array of messages
-                  else if (Array.isArray(nodeMessages)) {
-                    nodeMessages.forEach((msg: any) => {
-                      if (msg && typeof msg === "object") {
-                        const message: Message = {
-                          id: msg.id || uuidv4(),
-                          type: msg.type || "tool",
-                          content: msg.content || "",
-                          ...msg,
-                        };
-                        newMessages.push(message);
-                      }
-                    });
-                  }
-                }
-              }
-            }
+  //                 // Handle single message object
+  //                 if (
+  //                   nodeMessages &&
+  //                   typeof nodeMessages === "object" &&
+  //                   !Array.isArray(nodeMessages)
+  //                 ) {
+  //                   // Add required fields if missing
+  //                   const messageData = nodeMessages as any;
+  //                   const message: Message = {
+  //                     id: messageData.id || uuidv4(),
+  //                     type: messageData.type || "ai",
+  //                     content: messageData.content || "",
+  //                     ...messageData,
+  //                   };
+  //                   newMessages.push(message);
+  //                 }
+  //                 // Handle array of messages
+  //                 else if (Array.isArray(nodeMessages)) {
+  //                   nodeMessages.forEach((msg: any) => {
+  //                     if (msg && typeof msg === "object") {
+  //                       const message: Message = {
+  //                         id: msg.id || uuidv4(),
+  //                         type: msg.type || "tool",
+  //                         content: msg.content || "",
+  //                         ...msg,
+  //                       };
+  //                       newMessages.push(message);
+  //                     }
+  //                   });
+  //                 }
+  //               }
+  //             }
+  //           }
 
-            // Update messages with new messages from stream
-            if (newMessages.length > 0) {
-              console.log("Adding new messages from stream:", newMessages);
-              setMessages((prevMessages) => {
-                // Remove any existing messages that might be duplicates
-                const existingIds = new Set(prevMessages.map((m) => m.id));
-                const uniqueNewMessages = newMessages.filter(
-                  (m) => !existingIds.has(m.id)
-                );
+  //           // Update messages with new messages from stream
+  //           if (newMessages.length > 0) {
+  //             console.log("Adding new messages from stream:", newMessages);
+  //             setMessages((prevMessages) => {
+  //               // Remove any existing messages that might be duplicates
+  //               const existingIds = new Set(prevMessages.map((m) => m.id));
+  //               const uniqueNewMessages = newMessages.filter(
+  //                 (m) => !existingIds.has(m.id)
+  //               );
 
-                return [...prevMessages, ...uniqueNewMessages];
-              });
-            }
-          }
-          // Keep backward compatibility with old format
-          else if (
-            (event as any).event === "messages/partial" &&
-            (event as any).data
-          ) {
-            const messageData = (event as any).data[0];
-            console.log("messageData", messageData);
-            setMessages((prevMessages) => {
-              const currentMessages = [...prevMessages];
-              const lastIndex = currentMessages.length - 1;
-              if (lastIndex >= 0) {
-                currentMessages[lastIndex] = messageData;
-              }
-              return currentMessages;
-            });
-          }
-        }
-      } finally {
-        // Set streaming state to false when streaming completes
-        setIsStreaming(false);
+  //               return [...prevMessages, ...uniqueNewMessages];
+  //             });
+  //           }
+  //         }
+  //         // Keep backward compatibility with old format
+  //         else if (
+  //           (event as any).event === "messages/partial" &&
+  //           (event as any).data
+  //         ) {
+  //           const messageData = (event as any).data[0];
+  //           console.log("messageData", messageData);
+  //           setMessages((prevMessages) => {
+  //             const currentMessages = [...prevMessages];
+  //             const lastIndex = currentMessages.length - 1;
+  //             if (lastIndex >= 0) {
+  //               currentMessages[lastIndex] = messageData;
+  //             }
+  //             return currentMessages;
+  //           });
+  //         }
+  //       }
+  //     } finally {
+  //       // Set streaming state to false when streaming completes
+  //       setIsStreaming(false);
 
-        // After streaming completes, fetch the current thread's messages and set them
-        if (selectedThreadId) {
-          console.log(
-            "[StreamProvider] Fetching thread state after streaming completion for thread:",
-            selectedThreadId
-          );
+  //       // After streaming completes, fetch the current thread's messages and set them
+  //       if (selectedThreadId) {
+  //         console.log(
+  //           "[StreamProvider] Fetching thread state after streaming completion for thread:",
+  //           selectedThreadId
+  //         );
 
-          try {
-            const threadState = await getThreadState(selectedThreadId);
-            console.log("[StreamProvider] Thread state fetched:", threadState);
+  //         try {
+  //           const threadState = await getThreadState(selectedThreadId);
+  //           console.log("[StreamProvider] Thread state fetched:", threadState);
 
-            // Extract messages from thread state
-            const threadMessages = (threadState.values as any)?.messages;
-            if (Array.isArray(threadMessages)) {
-              console.log(
-                "[StreamProvider] Setting messages from thread state:",
-                threadMessages
-              );
-              setMessages(threadMessages);
-            } else {
-              console.log(
-                "[StreamProvider] No messages found in thread state, keeping current messages"
-              );
-            }
-          } catch (error) {
-            console.error(
-              "[StreamProvider] Failed to fetch thread state:",
-              error
-            );
-            // Keep current messages on error
-          }
+  //           // Extract messages from thread state
+  //           const threadMessages = (threadState.values as any)?.messages;
+  //           if (Array.isArray(threadMessages)) {
+  //             console.log(
+  //               "[StreamProvider] Setting messages from thread state:",
+  //               threadMessages
+  //             );
+  //             setMessages(threadMessages);
+  //           } else {
+  //             console.log(
+  //               "[StreamProvider] No messages found in thread state, keeping current messages"
+  //             );
+  //           }
+  //         } catch (error) {
+  //           console.error(
+  //             "[StreamProvider] Failed to fetch thread state:",
+  //             error
+  //           );
+  //           // Keep current messages on error
+  //         }
 
-          // Also invalidate thread state query for other components
-          queryClient.invalidateQueries({
-            queryKey: ["threadState", selectedThreadId],
-          });
-        }
-      }
-    }
-  };
+  //         // Also invalidate thread state query for other components
+  //         queryClient.invalidateQueries({
+  //           queryKey: ["threadState", selectedThreadId],
+  //         });
+  //       }
+  //     }
+  //   }
+  // };
 
   useMount(() => {
     checkGraphStatus(LANGGRAPH_DEPLOYMENT_URL).then((ok) => {
@@ -334,7 +332,7 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
     ...streamValue,
     submitWithContext,
     streamThread,
-    sendMessage,
+    // sendMessage,
     // messages,
   };
 

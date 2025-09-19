@@ -50,6 +50,7 @@ export const useNodeSelect = ({
   const { resource: resource_context } = useResourceStatus(target);
 
   if (!target) {
+    console.log("[useNodeSelect] No target provided");
     return {
       handleNodeSelect: () => {},
     };
@@ -71,37 +72,51 @@ export const useNodeSelect = ({
     });
 
     // Fetch threads based on project and target, then select the latest thread
-    try {
-      const threads = await getThreads(selectedProject, target);
-      if (threads && threads.length > 0) {
-        // Threads are already in desc order, so select the first one (latest)
-        const latestThread = threads[0];
+    const threads = await getThreads(selectedProject, target);
 
-        // Select the latest thread
-        selectThread(latestThread.thread_id);
-
-        // Update threads list
-        setThreads(threads);
-      } else {
-        // No threads found, create a new thread and select it
-        createNewThread.mutate(undefined, {
-          onSuccess: (data: any) => {
-            if (data?.thread_id) {
-              selectThread(data.thread_id);
-              // Refresh threads list to include the new thread
-              getThreads(selectedProject, target).then((updatedThreads) => {
-                setThreads(updatedThreads);
-              });
-            }
-          },
-          onError: (error: any) => {
-            console.error("Failed to create new thread:", error);
-          },
-        });
-      }
-    } catch (error) {
-      console.error("Failed to fetch threads for node select:", error);
+    if (threads && threads.length > 0) {
+      // Threads are already in desc order, so select the first one (latest)
+      const latestThread = threads[0];
+      selectThread(latestThread.thread_id);
+      console.log("[useNodeSelect] Selected thread:", latestThread.thread_id);
+      setThreads(threads);
+      console.log("[useNodeSelect] Updated threads list:", threads);
+    } else {
+      // No threads found, create a new thread and select it
+      createNewThread.mutate(undefined, {
+        onSuccess: (data: any) => {
+          if (data?.thread_id) {
+            selectThread(data.thread_id);
+            // Refresh threads list to include the new thread
+            getThreads(selectedProject, target).then((updatedThreads) => {
+              setThreads(updatedThreads);
+            });
+          }
+        },
+        onError: (error: any) => {
+          console.error("Failed to create new thread:", error);
+        },
+      });
     }
+
+    // console.log(
+    //   "[useNodeSelect] Submitting message with context:",
+    //   messageType
+    // );
+    // if (messageType) {
+    //   submitWithContext({
+    //     messages: [
+    //       {
+    //         type: "system",
+    //         content: JSON.stringify({
+    //           type: messageType,
+    //           target,
+    //         }),
+    //       },
+    //     ],
+    //     stage: "append",
+    //   });
+    // }
 
     openSidebarChat();
     onSuccess?.();

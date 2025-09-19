@@ -53,24 +53,7 @@ export default function BaseNodeWrapper({
 
   // Custom node click handler
   const handleNodeClick = async () => {
-    // First call handleNodeSelect
     await handleNodeSelect();
-
-    // Then send message with context if we have a thread and messageType
-    // if (messageType) {
-    //   submitWithContext({
-    //     messages: [
-    //       {
-    //         type: "system",
-    //         content: JSON.stringify({
-    //           type: messageType,
-    //           target,
-    //         }),
-    //       },
-    //     ],
-    //     stage: "append",
-    //   });
-    // }
   };
 
   // Determine the appropriate styling based on status

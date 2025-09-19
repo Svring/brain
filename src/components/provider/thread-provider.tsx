@@ -46,8 +46,8 @@ interface ThreadContextType {
   selectThread: (threadId: string | null) => void;
 
   // Messages
-  messages: Message[];
-  setMessages: Dispatch<SetStateAction<Message[]>>;
+  // messages: Message[];
+  // setMessages: Dispatch<SetStateAction<Message[]>>;
 
   // Checkpoints
   selectedCheckpointId: string | null;
@@ -82,7 +82,7 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
   const [selectedCheckpointId, setSelectedCheckpointId] = useState<
     string | null
   >(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  // const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
 
   // URL state management for threadId
@@ -184,10 +184,6 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
     selectedThreadId,
     selectedThread,
     selectThread: enhancedSelectThread,
-
-    // Messages
-    messages,
-    setMessages,
 
     // Checkpoints
     selectedCheckpointId,

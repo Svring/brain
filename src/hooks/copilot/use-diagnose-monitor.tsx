@@ -68,7 +68,7 @@ export function useDiagnoseMonitor(
     },
   });
 
-  const diagnoseMonitor = useCallback(() => {
+  const diagnoseMonitor = useCallback(async () => {
     // Check if monitor data is null or empty
     if (
       !monitorData ||
@@ -80,7 +80,7 @@ export function useDiagnoseMonitor(
     }
 
     // Use node select to handle the selection and message appending
-    handleNodeSelect();
+    await handleNodeSelect();
 
     // Send message using submitWithContext
     if (selectedThreadId) {
