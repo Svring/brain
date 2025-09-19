@@ -24,6 +24,7 @@ type StreamContextType = ReturnType<typeof useStream> & {
     command?: any;
   }) => void;
   createThreadRun: (threadId: string, messages: Message[]) => Promise<any>;
+  waitForThreadReady: (threadId: string, timeoutMs?: number) => Promise<void>;
   // sendMessage: (messages: Message[]) => Promise<void>;
   messages: Message[];
 };
@@ -67,6 +68,38 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
     // fetchStateHistory: true,
     onThreadId: async (id) => {},
   });
+
+  // Ensure the stream has picked up the latest selectedThreadId before proceeding
+  const waitForThreadReady = async (
+    threadId: string,
+    timeoutMs: number = 10000
+  ): Promise<void> => {
+    const start = Date.now();
+    await new Promise<void>((resolve, reject) => {
+      const check = () => {
+        // Add logs for debugging
+        console.log(
+          `[waitForThreadReady] Checking thread status: selectedThreadId (${selectedThreadId}) === threadId (${threadId})`
+        );
+        if (selectedThreadId === threadId) {
+          console.log(
+            `[waitForThreadReady] Thread is ready: selectedThreadId (${selectedThreadId}) === threadId (${threadId})`
+          );
+          resolve();
+          return;
+        }
+        if (Date.now() - start >= timeoutMs) {
+          console.warn(
+            `[waitForThreadReady] Timeout: waited ${timeoutMs}ms for threadId (${threadId}), current selectedThreadId is (${selectedThreadId})`
+          );
+          reject(new Error("Timeout waiting for stream to bind threadId"));
+          return;
+        }
+        setTimeout(check, 50);
+      };
+      check();
+    });
+  };
 
   // Create a wrapper that automatically includes BrainState context
   const submitWithContext = (data: {
@@ -304,6 +337,7 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
     ...streamValue,
     submitWithContext,
     createThreadRun,
+    waitForThreadReady,
     // sendMessage,
     // messages,
   };

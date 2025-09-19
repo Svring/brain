@@ -40,7 +40,8 @@ export function useAnalyzeLogs(
 ) {
   const logsQuery = useResourceLogs(target);
   const { data: logsData, isLoading } = logsQuery;
-  const { createThreadRun, joinStream } = useStreamContext();
+  const { createThreadRun, joinStream, waitForThreadReady, submitWithContext } =
+    useStreamContext();
 
   // Use node select to handle the selection and message appending
   const { handleNodeSelect } = useNodeSelect({
@@ -62,26 +63,33 @@ export function useAnalyzeLogs(
     // Use node select to handle the selection and message appending
     const selectedThreadId = await handleNodeSelect();
 
-    console.log("selectedThreadId in analyze logs", selectedThreadId);
+    if (!selectedThreadId) {
+      toast.error("Failed to select a thread for analysis");
+      return;
+    }
 
-    const run = await createThreadRun(selectedThreadId!, [
-      {
-        type: "system",
-        content: JSON.stringify({
-          type: "universal.log",
-          target,
-        }),
-      },
-      {
-        type: "system",
-        content: analyzeLogsPrompt + "\n" + JSON.stringify(logsData),
-      },
-    ]);
-
-    console.log("run", run);
-
-    joinStream(run.run_id);
-  }, [logsData, createThreadRun]);
+    submitWithContext({
+      messages: [
+        {
+          type: "system",
+          content: JSON.stringify({
+            type: "universal.log",
+            target,
+          }),
+        },
+        {
+          type: "system",
+          content: analyzeLogsPrompt + "\n" + JSON.stringify(logsData),
+        },
+      ],
+    });
+  }, [
+    logsData,
+    createThreadRun,
+    waitForThreadReady,
+    submitWithContext,
+    target,
+  ]);
 
   // Check if logs are ready (not loading and has data)
   const isLogsReady =

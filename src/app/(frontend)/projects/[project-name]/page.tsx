@@ -73,7 +73,11 @@ function ProjectFloatingUI({
       <div className="absolute top-2 right-2 z-20 bg-background/30 backdrop-blur-lg rounded-lg p-2">
         <FlowgraphActions onOpenCommand={onOpen} onRefresh={onRefresh} />
       </div>
-      <FlowgraphCommandDialog isOpen={isOpen} onOpenChange={onOpenChange} onClose={onClose} />
+      <FlowgraphCommandDialog
+        isOpen={isOpen}
+        onOpenChange={onOpenChange}
+        onClose={onClose}
+      />
       <FlowgraphChatLoadingHint />
     </>
   );

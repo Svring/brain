@@ -43,10 +43,7 @@ export const useDevboxCreate = (options: UseDevboxCreateOptions = {}) => {
       }
 
       // Invalidate queries to refresh the data
-      invalidateQueries(
-        [devbox.list.queryKey(), project.getResources.queryKey()],
-        true
-      );
+      invalidateQueries([], true);
 
       console.log("[useDevboxCreate] Calling onSuccess callback!");
 
