@@ -98,7 +98,6 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
         const threads = await searchThreads({
           kubeconfig: auth.kubeconfig,
           projectName: projectName,
-          graph_id: process.env.NEXT_PUBLIC_LANGGRAPH_GRAPH_ID || "orca",
         });
         return threads;
       } catch (error) {

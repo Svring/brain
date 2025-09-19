@@ -14,29 +14,38 @@ import { useProjectState } from "@/contexts/project/project-context";
 import { useReactFlow } from "@xyflow/react";
 import { HistoryDropdown } from "./history-dropdown";
 import { useThreads } from "@/components/provider/thread-provider";
+import { useAuthState } from "@/contexts/auth/auth-context";
 
 export function HeaderActions() {
-  const { selectedResource } = useProjectState();
+  const { selectedResource, selectedProject } = useProjectState();
   const { sidebarChatMaximized } = useChatState();
   const { closeSidebarChat, maximizeSidebar, minimizeSidebar } =
     useChatActions();
   const { fitView } = useReactFlow();
-  const { createNewThread, selectThread, setMessages } = useThreads();
+  const { createNewThread, selectThread } = useThreads();
+  const { auth } = useAuthState();
 
   const handleNewChat = () => {
-    createNewThread.mutate(undefined, {
-      onSuccess: (data: any) => {
-        if (data?.thread_id) {
-          // Select the newly created thread
-          selectThread(data.thread_id);
-          // Clear messages for the new thread
-          setMessages([]);
-        }
+    createNewThread.mutate(
+      {
+        metadata: {
+          kubeconfig: auth?.kubeconfig,
+          projectName: selectedProject,
+          resourceTarget: selectedResource,
+        },
       },
-      onError: (error: any) => {
-        console.error("Failed to create new thread:", error);
-      },
-    });
+      {
+        onSuccess: (data: any) => {
+          if (data?.thread_id) {
+            // Select the newly created thread
+            selectThread(data.thread_id);
+          }
+        },
+        onError: (error: any) => {
+          console.error("Failed to create new thread:", error);
+        },
+      }
+    );
   };
 
   return (

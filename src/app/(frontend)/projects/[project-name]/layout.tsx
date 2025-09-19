@@ -22,50 +22,6 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
 
   console.log("projectName", projectName);
 
-  // useEffect(() => {
-  //   const createThread = async () => {
-  //     try {
-  //       setIsCreatingThread(true);
-
-  //       // Create a new thread with metadata indicating it's for this specific project
-  //       const thread = await createNewThread.mutateAsync({
-  //         metadata: {
-  //           page: "project",
-  //           project_name: projectName,
-  //         },
-  //       });
-
-  //       console.log(`Created new thread for project ${projectName}:`, thread);
-  //       selectThread(thread.thread_id);
-  //     } catch (error) {
-  //       console.error(
-  //         `Failed to create thread for project ${projectName}:`,
-  //         error
-  //       );
-  //     } finally {
-  //       setIsCreatingThread(false);
-  //     }
-  //   };
-
-  //   if (projectName) {
-  //     createThread();
-  //   } else {
-  //     setIsCreatingThread(false);
-  //   }
-  // }, [projectName]);
-
-  // Block rendering until thread creation is complete
-  // if (isCreatingThread) {
-  //   return (
-  //     <LoadingScreen
-  //       text={`Creating thread for project ${projectName}...`}
-  //       variant="bars"
-  //       size={24}
-  //       className="h-screen w-full"
-  //     />
-  //   );
-  // }
-
   const queryClient = new QueryClient();
 
   return (

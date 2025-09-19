@@ -45,28 +45,6 @@ export default function HomePage() {
   // const hasMessages = messages.length > 0;
   const showMessages = messages.length > 0;
 
-  // State for delayed message display
-  // const [showMessages, setShowMessages] = useState(false);
-  // useMount(() => {
-  //   // Create a new thread and select it
-  //   console.log("[HomePage] Creating new thread on mount...");
-
-  //   createNewThread.mutate(undefined, {
-  //     onSuccess: (data: any) => {
-  //       if (data?.thread_id) {
-  //         selectThread(data.thread_id);
-  //         // Refresh threads list
-  //         getThreads().then((threads) => {
-  //           setThreads(threads);
-  //         });
-  //       }
-  //     },
-  //     onError: (error: any) => {
-  //       console.error("[HomePage] Failed to create thread on mount:", error);
-  //     },
-  //   });
-  // });
-
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden">
       <CreateProjectDialog />

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useThreads } from "@/components/provider/thread-provider";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { useAuthState } from "@/contexts/auth/auth-context";
+import { useStreamContext } from "@/components/provider/stream-provider";
 
 interface ChatLayoutProps {
   children: ReactNode;
@@ -12,6 +13,7 @@ interface ChatLayoutProps {
 
 export default function ChatLayout({ children }: ChatLayoutProps) {
   const { createNewThread, selectThread } = useThreads();
+  const { messages } = useStreamContext();
   const [isCreatingThread, setIsCreatingThread] = useState(true);
   const [hasCreatedThread, setHasCreatedThread] = useState(false);
   const { auth } = useAuthState();
@@ -45,7 +47,7 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
   }, [auth?.kubeconfig, hasCreatedThread]);
 
   // Block rendering until thread creation is complete
-  if (isCreatingThread) {
+  if (isCreatingThread || messages.length !== 0) {
     return (
       <LoadingScreen variant="bars" size={24} className="h-screen w-full" />
     );

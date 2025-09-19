@@ -15,23 +15,33 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useThreads } from "@/components/provider/thread-provider";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DeleteThreadDialog } from "./delete-thread-dialog";
 import { Message, Thread } from "@langchain/langgraph-sdk";
 import { Spinner } from "@/components/ui/spinner";
 import { getResourceDefaultIcon } from "@/lib/sealos/sealos-utils";
+import { useInterval } from "@reactuses/core";
 
 export function HistoryDropdown() {
   const {
     selectedThreadId,
     selectThread,
     threads,
+    getThreads,
+    setThreads,
     deleteThread,
     threadsLoading,
   } = useThreads();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [threadToDelete, setThreadToDelete] = useState<string | null>(null);
+
+  // Fetch threads periodically
+  useInterval(async () => {
+    const threads = await getThreads();
+    setThreads(threads);
+    // setThreads(threads);
+  }, 10000);
 
   const handleThreadSelect = async (threadId: string): Promise<void> => {
     // Select the thread first

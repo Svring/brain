@@ -23,7 +23,7 @@ type StreamContextType = ReturnType<typeof useStream> & {
     stage?: string;
     command?: any;
   }) => void;
-  streamThread: (messages: Message[]) => Promise<any>;
+  createThreadRun: (threadId: string, messages: Message[]) => Promise<any>;
   // sendMessage: (messages: Message[]) => Promise<void>;
   messages: Message[];
 };
@@ -65,18 +65,7 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
     assistantId: LANGGRAPH_GRAPH_ID,
     threadId: selectedThreadId || null,
     // fetchStateHistory: true,
-    onThreadId: async (id) => {
-      // Refetch threads list when thread ID changes using searchThreads with proper parameters
-      // if (auth?.kubeconfig) {
-      //   try {
-      //     await sleep();
-      //     const threads = await getThreads(selectedProject);
-      //     setThreads(threads);
-      //   } catch (error) {
-      //     console.error("Failed to refetch threads:", error);
-      //   }
-      // }
-    },
+    onThreadId: async (id) => {},
   });
 
   // Create a wrapper that automatically includes BrainState context
@@ -121,17 +110,7 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
   };
 
   // Stream thread function that uses the mutation
-  const streamThread = async (messages: Message[]) => {
-    if (!selectedThreadId) {
-      console.warn("No thread selected for streaming");
-      return;
-    }
-
-    if (!baseUrl || !modelName || !stage) {
-      console.warn("Missing required langgraph configuration");
-      return;
-    }
-
+  const createThreadRun = async (threadId: string, messages: Message[]) => {
     const payload = {
       input: {
         messages: messages,
@@ -142,16 +121,6 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
         region_url: auth?.regionUrl,
         kubeconfig: auth?.kubeconfig,
         stage,
-        project_context: {
-          selectedProject,
-          selectedProjectResources,
-        },
-        resource_context: selectedResource
-          ? {
-              selectedResource,
-              selectedResourceContext,
-            }
-          : undefined,
       },
     };
 
@@ -160,12 +129,16 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
       apiUrl: LANGGRAPH_DEPLOYMENT_URL,
     });
 
-    const stream = client.runs.stream(selectedThreadId, LANGGRAPH_GRAPH_ID, {
+    const run = client.runs.create(threadId, LANGGRAPH_GRAPH_ID, {
       ...payload,
-      streamMode: "updates",
+      metadata: {
+        kubeconfig: auth?.kubeconfig,
+        projectName: selectedProject,
+        resourceTarget: selectedResource,
+      },
     });
 
-    return stream;
+    return run;
   };
 
   // Send message function that handles the entire flow
@@ -327,7 +300,7 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
   const contextValue = {
     ...streamValue,
     submitWithContext,
-    streamThread,
+    createThreadRun,
     // sendMessage,
     // messages,
   };

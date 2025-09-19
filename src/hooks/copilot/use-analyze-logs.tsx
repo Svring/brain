@@ -38,10 +38,9 @@ const analyzeLogsPrompt = `
 export function useAnalyzeLogs(
   target: CustomResourceTarget | BuiltinResourceTarget
 ) {
-  const { selectedThreadId } = useThreads();
   const logsQuery = useResourceLogs(target);
   const { data: logsData, isLoading } = logsQuery;
-  const { submitWithContext } = useStreamContext();
+  const { createThreadRun } = useStreamContext();
 
   // Use node select to handle the selection and message appending
   const { handleNodeSelect } = useNodeSelect({
@@ -53,7 +52,7 @@ export function useAnalyzeLogs(
     },
   });
 
-  const analyzeLogs = useCallback(() => {
+  const analyzeLogs = useCallback(async () => {
     // Check if logs data is null or empty
     if (!logsData || Object.keys(logsData).length === 0) {
       toast.error("No logs data available for analysis");
@@ -61,27 +60,25 @@ export function useAnalyzeLogs(
     }
 
     // Use node select to handle the selection and message appending
-    handleNodeSelect();
+    const selectedThreadId = await handleNodeSelect();
 
-    // Send message using submitWithContext
-    if (selectedThreadId) {
-      submitWithContext({
-        messages: [
-          {
-            type: "system",
-            content: JSON.stringify({
-              type: "universal.log",
-              target,
-            }),
-          },
-          {
-            type: "system",
-            content: analyzeLogsPrompt + "\n" + JSON.stringify(logsData),
-          },
-        ],
-      });
-    }
-  }, [logsData, selectedThreadId, submitWithContext, handleNodeSelect]);
+    console.log("threadId in analyze logs", selectedThreadId);
+
+    await createThreadRun(selectedThreadId!, [
+      {
+        type: "system",
+        content: JSON.stringify({
+          type: "universal.log",
+          target,
+        }),
+      },
+      {
+        type: "system",
+        content: analyzeLogsPrompt + "\n" + JSON.stringify(logsData),
+      },
+    ]);
+    console.log("run created");
+  }, [logsData, createThreadRun]);
 
   // Check if logs are ready (not loading and has data)
   const isLogsReady =

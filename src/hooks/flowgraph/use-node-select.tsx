@@ -20,6 +20,7 @@ import {
 } from "@/contexts/langgraph/langgraph-context";
 import { useStreamContext } from "@/components/provider/stream-provider";
 import { Thread } from "@langchain/langgraph-sdk";
+import { useAuthState } from "@/contexts/auth/auth-context";
 
 interface UseNodeSelectParams {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -41,13 +42,13 @@ export const useNodeSelect = ({
   const { updateThreadState, threads, selectThread, createNewThread } =
     useThreads();
   const { selectedResource, selectedProject } = useProjectState();
-  const { submitWithContext } = useStreamContext();
+  // const { submitWithContext } = useStreamContext();
+  const { auth } = useAuthState();
 
   // Get resource status for the target
   const { resource: resource_context } = useResourceStatus(target);
 
   if (!target) {
-    console.log("[useNodeSelect] No target provided");
     return {
       handleNodeSelect: () => {},
     };
@@ -57,21 +58,13 @@ export const useNodeSelect = ({
     target.name || ""
   }`;
 
-  const handleNodeSelect = async () => {
-    console.log("[useNodeSelect] handleNodeSelect called with target:", target);
-
+  const handleNodeSelect = async (): Promise<string | null> => {
     if (target === selectedResource) {
-      console.log("[useNodeSelect] Target is already the selected resource. No action taken.");
-      return;
+      return null;
     }
 
-    console.log("[useNodeSelect] Selecting resource:", target);
     selectResource(target);
-
-    console.log("[useNodeSelect] Selecting node with nodeId:", nodeId);
     selectNode(nodeId);
-
-    console.log("[useNodeSelect] Updating resource context with:", resource_context);
     updateResourceContext({
       selected_resource_context: resource_context,
     });
@@ -85,51 +78,47 @@ export const useNodeSelect = ({
       return false;
     });
 
+    let selectedThreadId: string | null = null;
+
     if (matchingThread) {
-      console.log("[useNodeSelect] Found matching thread:", matchingThread.thread_id, "Selecting thread.");
       // Select the matching thread
-      selectThread(matchingThread.thread_id);
+      selectedThreadId = matchingThread.thread_id;
+      selectThread(selectedThreadId);
     } else {
-      console.log("[useNodeSelect] No matching thread found. Creating a new thread.");
       // No matching thread found, create a new thread and select it
-      createNewThread.mutate(undefined, {
-        onSuccess: (data: Thread) => {
-          if (data?.thread_id) {
-            console.log("[useNodeSelect] New thread created with thread_id:", data.thread_id, "Selecting thread.");
-            selectThread(data.thread_id);
-          } else {
-            console.warn("[useNodeSelect] New thread created but no thread_id found in data:", data);
+      return new Promise((resolve, reject) => {
+        createNewThread.mutate(
+          {
+            metadata: {
+              kubeconfig: auth?.kubeconfig,
+              projectName: selectedProject,
+              resourceTarget: target,
+            },
+          },
+          {
+            onSuccess: (data: Thread) => {
+              selectedThreadId = data.thread_id;
+              selectThread(selectedThreadId);
+              openSidebarChat();
+              onSuccess?.();
+              resolve(selectedThreadId);
+            },
+            onError: (error: any) => {
+              console.error(
+                "[useNodeSelect] Failed to create new thread:",
+                error
+              );
+              reject(error);
+            },
           }
-        },
-        onError: (error: any) => {
-          console.error("[useNodeSelect] Failed to create new thread:", error);
-        },
+        );
       });
     }
 
-    // console.log(
-    //   "[useNodeSelect] Submitting message with context:",
-    //   messageType
-    // );
-    // if (messageType) {
-    //   setTimeout(() => {
-    //     submitWithContext({
-    //       messages: [
-    //         {
-    //           type: "system",
-    //           content: JSON.stringify({
-    //             type: messageType,
-    //             target,
-    //           }),
-    //         },
-    //       ],
-    //       stage: "append",
-    //     });
-    //   }, 1000);
-    // }
-
     openSidebarChat();
     onSuccess?.();
+
+    return selectedThreadId;
   };
 
   return {
