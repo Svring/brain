@@ -23,85 +23,21 @@ import { Spinner } from "@/components/ui/spinner";
 import { useProjectState } from "@/contexts/project/project-context";
 
 export function HistoryDropdown() {
-  const {
-    selectedThreadId,
-    selectThread,
-    threads,
-    deleteThread,
-    getThreads,
-    setThreads,
-  } = useThreads();
+  const { selectedThreadId, selectThread, threads, deleteThread } =
+    useThreads();
   const { selectedProject, selectedResource } = useProjectState();
-  const queryClient = useQueryClient();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [threadToDelete, setThreadToDelete] = useState<string | null>(null);
   const [filteredThreads, setFilteredThreads] = useState<any[]>([]);
   const [loadingFilteredThreads, setLoadingFilteredThreads] = useState(false);
 
-  // Fetch threads for current project and resource
-  // useEffect(() => {
-  //   const fetchFilteredThreads = async () => {
-  //     if (!selectedProject && !selectedResource) {
-  //       setFilteredThreads([]);
-  //       return;
-  //     }
-
-  //     setLoadingFilteredThreads(true);
-  //     try {
-  //       const threads = await getThreads(selectedProject, selectedResource);
-  //       setFilteredThreads(threads);
-  //     } catch (error) {
-  //       console.error("Failed to fetch filtered threads:", error);
-  //       setFilteredThreads([]);
-  //     } finally {
-  //       setLoadingFilteredThreads(false);
-  //     }
-  //   };
-
-  //   fetchFilteredThreads();
-  // }, [selectedProject, selectedResource]);
-
-  const handleHistoryDropdownHover = async () => {
-    // Refetch threads for current project and resource when hovering
-    if (selectedProject || selectedResource) {
-      setLoadingFilteredThreads(true);
-      try {
-        const threads = await getThreads(selectedProject, selectedResource);
-        setFilteredThreads(threads);
-      } catch (error) {
-        console.error("Failed to refetch filtered threads:", error);
-      } finally {
-        setLoadingFilteredThreads(false);
-      }
-    }
-  };
-
   const handleThreadSelect = async (threadId: string): Promise<void> => {
-    console.log("handleThreadSelect", threadId);
-
     // Select the thread first
     selectThread(threadId);
-
-    // Fetch and set messages for the selected thread
-    try {
-      const threads = await getThreads(selectedProject, selectedResource);
-      const selectedThread = threads.find(
-        (thread) => thread.thread_id === threadId
-      );
-
-      if (selectedThread) {
-        // Extract messages from the thread
-        const threadMessages = (selectedThread.values as any)?.messages;
-        if (Array.isArray(threadMessages)) {
-          setThreads(threads); // Update threads list
-        } else {
-        }
-      }
-    } catch (error) {
-      console.error("Failed to fetch thread messages:", error);
-    }
   };
+
+  console.log("threads", threads);
 
   const handleDeleteThread = (threadId: string, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent thread selection when clicking delete
@@ -157,12 +93,7 @@ export function HistoryDropdown() {
         <TooltipTrigger asChild>
           <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onMouseEnter={handleHistoryDropdownHover}
-              >
+              <Button variant="ghost" size="icon" className="h-8 w-8">
                 <History className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>

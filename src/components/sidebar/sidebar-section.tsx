@@ -80,7 +80,7 @@ export const MainSection: React.FC = () => {
                     }}
                     className={cn(
                       isActive
-                        ? "outline outline-border-primary bg-foreground/90! text-background!"
+                        ? "outline outline-border-primary bg-muted!"
                         : "",
                       "cursor-pointer"
                     )}

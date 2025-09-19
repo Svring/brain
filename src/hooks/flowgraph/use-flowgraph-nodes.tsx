@@ -5,10 +5,6 @@ import type { Node, Edge } from "@xyflow/react";
 import type { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useResourceObjects } from "@/hooks/sealos/resource/use-resource-objects";
 import {
-  convertResourceObjectsToNodes,
-  addDevboxToDevGroup,
-} from "@/lib/flowgraph/nodes/flowgraph-nodes-utils";
-import {
   convertObjectsToNodes,
   inferObjectsReliances,
   convertReliancesToEdges,
@@ -16,6 +12,7 @@ import {
   createDevGroup,
   applyLayout,
 } from "./flowgraph-utils";
+import { useProjectActions } from "@/contexts/project/project-context";
 
 /**
  * Hook to convert resource targets into flowgraph nodes
@@ -25,6 +22,7 @@ import {
 export const useFlowgraphNodes = (targets: ResourceTarget[]) => {
   // Fetch resource objects for the given targets
   const resourceObjectsQuery = useResourceObjects(targets);
+  const { setSelectedProjectResources } = useProjectActions();
 
   // Memoize the computation of nodes and edges
   const { nodes, edges } = useMemo(() => {
@@ -62,6 +60,13 @@ export const useFlowgraphNodes = (targets: ResourceTarget[]) => {
 
     // Apply layout to the grouped nodes
     const layoutedNodes = applyLayout(groupedNodes, allEdges);
+
+    setSelectedProjectResources(
+      objects.map((object) => ({
+        kind: object.kind.toLowerCase(),
+        name: object.name,
+      }))
+    );
 
     return {
       nodes: layoutedNodes,

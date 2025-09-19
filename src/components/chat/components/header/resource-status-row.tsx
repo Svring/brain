@@ -103,10 +103,7 @@ export function ResourceStatusRow({
   return (
     <div className="mt-2">
       {selectedResource ? (
-        <Popover
-          open={isExpanded}
-          onOpenChange={setIsExpanded}
-        >
+        <Popover open={isExpanded} onOpenChange={setIsExpanded}>
           <PopoverTrigger asChild>
             <div
               className={cn(
@@ -130,10 +127,9 @@ export function ResourceStatusRow({
               <span className="text-sm text-muted-foreground truncate">
                 {selectedResource?.name}
               </span>
-              <Link className="h-3 w-3 text-theme-blue" />
-              <span className="text-xs text-theme-blue ml-auto">
+              {/* <span className="text-xs text-theme-blue ml-auto">
                 {getStageDisplay()}
-              </span>
+              </span> */}
             </div>
           </PopoverTrigger>
           <PopoverContent

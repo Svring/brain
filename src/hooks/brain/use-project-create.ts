@@ -512,7 +512,7 @@ export function useProjectCreate(options?: CreateProjectOptions) {
       }
 
       // Navigate to the created project
-      // router.push(`/projects/${projectName}`);
+      router.push(`/projects/${projectName}`);
 
       // Call success callback if provided
       options?.onSuccess?.(projectName);

@@ -7,6 +7,7 @@ import React from "react";
 import { useDebounce } from "@reactuses/core";
 import { Typewriter } from "@/components/ui/typewriter-text";
 // import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
+import { Spinner } from "@/components/ui/spinner";
 
 // Utility function for className merging
 const cn = (...classes: (string | undefined | null | false)[]) =>
@@ -153,8 +154,9 @@ const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(
         >
           <div
             className={cn(
-              "rounded-xl border border-[#444444] bg-background-secondary p-2 shadow-[0_8px_30px_rgba(0,0,0,0.24)] transition-all duration-300 focus-within:border-gray-400 flex flex-col",
-              isLoading && "border border-gray-400 animate-shimmer-border",
+              "rounded-xl border border-[#444444] bg-background-secondary p-2 shadow-[0_8px_30px_rgba(0,0,0,0.24)] transition-all duration-300 focus-within:border-border-primary flex flex-col",
+              isLoading &&
+                "border border-border-primary animate-shimmer-border",
               className
             )}
             ref={ref}
@@ -506,7 +508,7 @@ export const PromptInputBox = React.forwardRef(
                       exit={{ scale: 0.8, opacity: 0 }}
                       transition={{ duration: 0.15 }}
                     >
-                      <Square className="h-4 w-4 animate-pulse fill-[#1F2023]" />
+                      <Spinner className="h-4 w-4" />
                     </motion.div>
                   ) : (
                     <motion.div

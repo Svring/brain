@@ -79,9 +79,7 @@ export const useNodeSelect = ({
       // Threads are already in desc order, so select the first one (latest)
       const latestThread = threads[0];
       selectThread(latestThread.thread_id);
-      console.log("[useNodeSelect] Selected thread:", latestThread.thread_id);
       setThreads(threads);
-      console.log("[useNodeSelect] Updated threads list:", threads);
     } else {
       // No threads found, create a new thread and select it
       createNewThread.mutate(undefined, {

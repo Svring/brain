@@ -1,10 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Database, CircleCheckBigIcon, Rocket, Container } from "lucide-react";
+import { Database, CircleCheckBigIcon, Rocket, Container, Hammer } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { ProjectProposalCard } from "@/components/chat/state-cards/project-proposal/project-proposal-card";
 import type { ProjectProposal } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
@@ -46,31 +46,40 @@ const ImageDeploymentSuccessMessage = ({ args }: { args: any }) => {
 export const ProposeImageDeploymentMessage: React.FC<
   ProposeImageDeploymentMessageProps
 > = ({ args, result, onSuccess }) => {
-  const { createProjectFromSimpleData, isCreating } = useProjectCreate();
+  const { createProject, isCreating } = useProjectCreate();
+  const [internalProposal, setInternalProposal] = useState<ProjectProposal>(() => {
+    // Create initial proposal from args
+    return {
+      name: "Docker Image Project",
+      resources: {
+        app: [
+          {
+            name: "docker-app",
+            image: args.image_name,
+            ports: (args.ports || []).map((port) => ({
+              number: port,
+              publicAccess: true,
+            })),
+          },
+        ],
+        database: args.database
+          ? [
+              {
+                name: args.database.name,
+                type: args.database.type as any,
+              },
+            ]
+          : [],
+      },
+    };
+  });
 
   console.log("args", args);
 
   const handleDeploy = async () => {
     try {
-      const deploymentData = {
-        app: {
-          name: "docker-app",
-          image: args.image_name,
-          ports: args.ports || [],
-        },
-        database: args.database
-          ? {
-              name: args.database.name,
-              type: args.database.type,
-            }
-          : undefined,
-      };
-
-      const projectName = await createProjectFromSimpleData(
-        deploymentData,
-        "docker-image-project"
-      );
-      onSuccess?.(projectName);
+      await createProject(internalProposal);
+      onSuccess?.(internalProposal.name);
     } catch (error) {
       console.error("Failed to deploy Docker image:", error);
     }
@@ -81,36 +90,19 @@ export const ProposeImageDeploymentMessage: React.FC<
     return <ImageDeploymentSuccessMessage args={args} />;
   }
 
-  // Create project proposal from args
-  const projectProposal: ProjectProposal = {
-    name: "Docker Image Project",
-    resources: {
-      app: [
-        {
-          name: "docker-app",
-          image: args.image_name,
-          ports: (args.ports || []).map((port) => ({
-            number: port,
-            publicAccess: true,
-          })),
-        },
-      ],
-      database: args.database
-        ? [
-            {
-              name: args.database.name,
-              type: args.database.type as any,
-            },
-          ]
-        : [],
-    },
-  };
-
   return (
-    <div className="w-full">
+    <div className="w-full border p-4 rounded-xl">
+      {/* Header with icon and text */}
+      <div className="flex items-center mb-3">
+        <div className="flex text-sm text-muted-foreground">
+          <Hammer size={20} className="mr-2" />
+          <span>Deploy Docker image: {args.image_name}</span>
+        </div>
+      </div>
+
       <ProjectProposalCard
-        proposal={projectProposal}
-        onProposalUpdate={() => {}} // No updates allowed
+        proposal={internalProposal}
+        onProposalUpdate={setInternalProposal}
       />
 
       <div className="pt-2">

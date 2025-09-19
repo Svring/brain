@@ -7,6 +7,7 @@ import {
   Download,
   ChevronDown,
   ChevronUp,
+  Package,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -122,11 +123,14 @@ export const SearchDockerHubActionMessage: React.FC<
     : result.repositories.slice(0, 3);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 border p-4 rounded-xl">
       <div className="flex items-center justify-between">
-        <div className="text-xs text-muted-foreground">
-          Found {result.total_results} image
-          {result.total_results !== 1 ? "s" : ""} for "{result.query}"
+        <div className="flex text-sm text-muted-foreground">
+          <Package size={20} className="mr-2" />
+          <span>
+            Found {result.total_results} image
+            {result.total_results !== 1 ? "s" : ""} for "{result.query}"
+          </span>
         </div>
         {hasMoreThanThree && (
           <Button

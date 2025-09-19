@@ -2,57 +2,62 @@
 
 import { motion } from "framer-motion";
 import { useStreamContext } from "@/components/provider/stream-provider";
+import { ChevronRight } from "lucide-react";
 
 interface SuggestionsProps {
   onSuggestionClick?: (suggestion: string) => void;
 }
 
 const suggestions = [
-  "Deploy an NGINX web server with optimized configuration",
-  "Configure a Next.js development environment with PostgreSQL and object storage",
+  "Deploy NGINX web server",
+  "Setup Next.js with PostgreSQL",
 ];
 
 // Reusable suggestion item component
 interface SuggestionItemProps {
   suggestion: string;
-  index: number;
   onSuggestionClick: (suggestion: string) => void;
 }
 
 function SuggestionItem({
   suggestion,
-  index,
   onSuggestionClick,
 }: SuggestionItemProps) {
   return (
-    <div className="flex items-center hover:bg-background-tertiary p-1 rounded-lg">
-      <span className="text-sm text-muted-foreground font-medium">
-        {index + 1}.
-      </span>
-      <span
-        onClick={() => onSuggestionClick(suggestion)}
-        className="text-left px-3 whitespace-normal flex-1 cursor-pointer transition-colors text-sm"
-      >
-        {suggestion}
-      </span>
-    </div>
+    <motion.div
+      className="relative flex w-full cursor-pointer rounded-lg border bg-background-secondary text-left shadow-sm h-10 items-center px-4"
+      whileHover={{ y: -5 }}
+      transition={{ duration: 0.15, ease: "easeInOut" }}
+      onClick={() => onSuggestionClick(suggestion)}
+    >
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center gap-1 flex-1 min-w-0">
+          <p className="text-foreground truncate text-sm">
+            {suggestion}
+          </p>
+        </div>
+        <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+      </div>
+    </motion.div>
   );
 }
 
 export default function Suggestions({ onSuggestionClick }: SuggestionsProps) {
-  const { sendMessage } = useStreamContext();
+  const { submitWithContext } = useStreamContext();
 
   const handleSuggestionClick = async (suggestion: string) => {
     // Call the optional callback first
     onSuggestionClick?.(suggestion);
 
     // Send the suggestion as a user message
-    await sendMessage([
-      {
-        type: "human",
-        content: suggestion,
-      },
-    ]);
+    await submitWithContext({
+      messages: [
+        {
+          type: "human",
+          content: suggestion,
+        },
+      ],
+    });
   };
 
   return (
@@ -67,13 +72,12 @@ export default function Suggestions({ onSuggestionClick }: SuggestionsProps) {
       className="flex-shrink-0"
     >
       <div className="w-full bg-background">
-        <div className="max-w-3xl mx-auto px-2">
-          <div className="flex flex-col gap-2">
+        <div className="max-w-3xl mx-auto py-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {suggestions.map((suggestion, index) => (
               <SuggestionItem
                 key={index}
                 suggestion={suggestion}
-                index={index}
                 onSuggestionClick={handleSuggestionClick}
               />
             ))}

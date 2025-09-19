@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import {
   CircleCheckBigIcon,
   Rocket,
   Server,
+  Hammer,
 } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { ProjectProposalCard } from "@/components/chat/state-cards/project-proposal/project-proposal-card";
@@ -59,31 +60,40 @@ const DevenvDeploymentSuccessMessage = ({ args }: { args: any }) => {
 export const ProposeDevenvDeploymentMessage: React.FC<
   ProposeDevenvDeploymentMessageProps
 > = ({ args, result, onSuccess }) => {
-  const { createProjectFromSimpleData, isCreating } = useProjectCreate();
+  const { createProject, isCreating } = useProjectCreate();
+  const [internalProposal, setInternalProposal] = useState<ProjectProposal>(() => {
+    // Create initial proposal from args
+    return {
+      name: "Development Environment Project",
+      resources: {
+        devbox: args.devbox
+          ? [
+              {
+                name: args.devbox.name,
+                runtime: args.devbox.runtime as any,
+                ports: (args.devbox.ports || []).map((port) => ({
+                  number: port,
+                  publicAccess: true,
+                })),
+              },
+            ]
+          : [],
+        database: args.database
+          ? [
+              {
+                name: args.database.name,
+                type: args.database.type as any,
+              },
+            ]
+          : [],
+      },
+    };
+  });
 
   const handleDeploy = async () => {
     try {
-      const deploymentData = {
-        devbox: args.devbox
-          ? {
-              name: args.devbox.name,
-              runtime: args.devbox.runtime,
-              ports: args.devbox.ports || [],
-            }
-          : undefined,
-        database: args.database
-          ? {
-              name: args.database.name,
-              type: args.database.type,
-            }
-          : undefined,
-      };
-
-      const projectName = await createProjectFromSimpleData(
-        deploymentData,
-        "devenv-project"
-      );
-      onSuccess?.(projectName);
+      await createProject(internalProposal);
+      onSuccess?.(internalProposal.name);
     } catch (error) {
       console.error("Failed to deploy development environment:", error);
     }
@@ -94,41 +104,22 @@ export const ProposeDevenvDeploymentMessage: React.FC<
     return <DevenvDeploymentSuccessMessage args={args} />;
   }
 
-  // Create project proposal from args
-  const projectProposal: ProjectProposal = {
-    name: "Development Environment Project",
-    resources: {
-      devbox: args.devbox
-        ? [
-            {
-              name: args.devbox.name,
-              runtime: args.devbox.runtime as any,
-              ports: (args.devbox.ports || []).map((port) => ({
-                number: port,
-                publicAccess: true,
-              })),
-            },
-          ]
-        : [],
-      database: args.database
-        ? [
-            {
-              name: args.database.name,
-              type: args.database.type as any,
-            },
-          ]
-        : [],
-    },
-  };
-
   return (
-    <div className="w-full">
+    <div className="w-full border p-4 rounded-xl">
+      {/* Header with icon and text */}
+      <div className="flex items-center mb-3">
+        <div className="flex text-sm text-muted-foreground">
+          <Hammer size={20} className="mr-2" />
+          <span>Deploy development environment</span>
+        </div>
+      </div>
+
       <ProjectProposalCard
-        proposal={projectProposal}
-        onProposalUpdate={() => {}} // No updates allowed
+        proposal={internalProposal}
+        onProposalUpdate={setInternalProposal}
       />
 
-      <div className="">
+      <div className="pt-2">
         <Button
           onClick={handleDeploy}
           disabled={isCreating}

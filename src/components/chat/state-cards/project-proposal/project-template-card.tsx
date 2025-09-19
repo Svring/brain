@@ -3,7 +3,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Package, Rocket } from "lucide-react";
+import { Package, Rocket, FileText, Hammer } from "lucide-react";
 import Image from "next/image";
 import type { TemplateResource } from "@/lib/sealos/resources/template/schemas/template-api-context-schemas";
 import { Spinner } from "@/components/ui/spinner";
@@ -22,41 +22,63 @@ export function ProjectTemplateCard({
   hasInputs = false,
 }: ProjectTemplateCardProps) {
   return (
-    <div className="w-full">
-      <div className="space-y-3 flex-col bg-background-secondary border p-3 rounded-xl">
-        <div className="flex items-center gap-4">
-          <div className="flex-shrink-0">
-            {template.spec.icon ? (
-              <Image
-                alt={`${template.spec.title} icon`}
-                className="size-9 rounded-lg p-1 bg-muted"
-                height={36}
-                src={template.spec.icon}
-                width={36}
-              />
-            ) : (
-              <div className="size-9 rounded-lg bg-gray-300 p-1" />
-            )}
-          </div>
-          <div className="flex flex-col min-w-0 flex-1">
-            <span className="text-xs text-muted-foreground leading-none">
-              Template
-            </span>
-            <span className="text-lg font-bold text-foreground leading-tight truncate">
-              {template.spec.title}
-            </span>
-          </div>
-        </div>
-
-        {/* Description */}
-        <div className="text-sm pl-1 text-muted-foreground">
-          {template.spec.i18n?.en?.description ||
-            template.spec.description ||
-            "No description available"}
+    <div className="w-full border p-4 rounded-xl">
+      {/* Header with icon and text */}
+      <div className="flex items-center mb-3">
+        <div className="flex text-sm text-muted-foreground">
+          <Hammer size={20} className="mr-2" />
+          <span>Deploy from template: {template.spec.title}</span>
         </div>
       </div>
 
-      <div className="">
+      <div className="group relative border p-2 rounded-xl text-left transition-all bg-background-secondary hover:shadow-md flex flex-col">
+        {/* Header with icon, title, and category */}
+        <div className="mb-3 flex items-start gap-4">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted p-2">
+            {template.spec.icon ? (
+              <Image
+                alt={`${template.spec.title} icon`}
+                className="size-6"
+                height={24}
+                src={template.spec.icon}
+                width={24}
+              />
+            ) : (
+              <div className="size-6 rounded bg-gray-300" />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between">
+              <div className="flex-1 min-w-0">
+                <h2 className="font-semibold text-base leading-tight truncate">
+                  {template.spec.title}
+                </h2>
+                {/* Category below name */}
+                {template.spec.categories &&
+                  template.spec.categories.length > 0 && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {template.spec.categories[0].toLowerCase() === "ai"
+                        ? "AI"
+                        : template.spec.categories[0].charAt(0).toUpperCase() +
+                          template.spec.categories[0].slice(1)}
+                    </p>
+                  )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Description aligned to the left */}
+        <div className="flex-1">
+          <p className="line-clamp-2 text-muted-foreground text-sm leading-relaxed">
+            {template.spec.i18n?.en?.description ||
+              template.spec.description ||
+              "No description available"}
+          </p>
+        </div>
+      </div>
+
+      <div className="pt-2">
         <Button
           onClick={onDeploy}
           disabled={isDeploying}

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
+import { ExternalLink, ChevronDown, ChevronUp, Hammer } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useTemplates } from "@/hooks/template/use-templates";
@@ -33,33 +33,6 @@ interface AppStoreSearchResult {
 interface SearchAppStoreActionMessageProps {
   result?: AppStoreSearchResult;
 }
-
-// Function to get dot color for categories (copied from template-card.tsx)
-const getDotColor = (category: string): string => {
-  const lowerCategory = category.toLowerCase();
-  if (
-    lowerCategory.includes("ai") ||
-    lowerCategory.includes("artificial intelligence")
-  ) {
-    return "bg-theme-blue";
-  }
-  if (
-    lowerCategory.includes("ml") ||
-    lowerCategory.includes("machine learning")
-  ) {
-    return "bg-theme-green";
-  }
-  if (lowerCategory.includes("data") || lowerCategory.includes("analytics")) {
-    return "bg-theme-purple";
-  }
-  if (lowerCategory.includes("web") || lowerCategory.includes("frontend")) {
-    return "bg-theme-yellow";
-  }
-  if (lowerCategory.includes("api") || lowerCategory.includes("backend")) {
-    return "bg-theme-red";
-  }
-  return "bg-theme-darkblue";
-};
 
 // Template card component styled like the original template card
 const TemplateCard: React.FC<{ template: TemplateResource }> = ({
@@ -200,12 +173,14 @@ export const SearchAppStoreActionMessage: React.FC<
     : foundTemplates.slice(0, 3);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 border p-4 rounded-xl">
       <div className="flex items-center justify-between">
-        <div className="text-xs text-muted-foreground">
-          Found {foundTemplates.length} template
-          {foundTemplates.length !== 1 ? "s" : ""} for "
-          {result.query_keywords.join(", ")}" ({result.total_templates} total)
+        <div className="flex text-sm text-muted-foreground">
+          <Hammer size={20} className="mr-2" />
+          <span>
+            Searched App Store: browsing through {result.total_templates}{" "}
+            templates...
+          </span>
         </div>
         {hasMoreThanThree && (
           <Button

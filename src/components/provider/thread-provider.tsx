@@ -32,8 +32,7 @@ import { Message } from "@langchain/langgraph-sdk";
 interface ThreadContextType {
   // Thread management
   getThreads: (
-    projectName?: string | null,
-    resourceTarget?: any
+    projectName?: string | null
   ) => Promise<any[]>;
   threads: any[];
   setThreads: Dispatch<SetStateAction<any[]>>;
@@ -93,8 +92,7 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
   // Get threads function
   const getThreads = useCallback(
     async (
-      projectName?: string | null,
-      resourceTarget?: any
+      projectName?: string | null
     ): Promise<any[]> => {
       if (!auth?.kubeconfig) return [];
 
@@ -103,7 +101,6 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
         const threads = await searchThreads({
           kubeconfig: auth.kubeconfig,
           projectName: projectName,
-          resourceTarget: resourceTarget,
           graph_id: process.env.NEXT_PUBLIC_LANGGRAPH_GRAPH_ID || "orca",
         });
         return threads;
