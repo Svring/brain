@@ -63,7 +63,7 @@ export function UserCard({
       // });
 
       // Reload the page to reflect logged-out state
-      window.location.reload();
+      
     } catch (error) {
       // toast({
       //   title: "Logout error",

@@ -47,7 +47,7 @@ export const useObjectStorageLifecycle = (
       // Normal resource deletion cleanup
       clearSelectedResource();
       closeSidebarChat();
-      // window.location.reload();
+      //
     },
     onError: (error: any) => {
       console.error("Object storage delete error:", error);

@@ -40,7 +40,7 @@ export function useAnalyzeLogs(
 ) {
   const logsQuery = useResourceLogs(target);
   const { data: logsData, isLoading } = logsQuery;
-  const { createThreadRun } = useStreamContext();
+  const { createThreadRun, joinStream } = useStreamContext();
 
   // Use node select to handle the selection and message appending
   const { handleNodeSelect } = useNodeSelect({
@@ -62,9 +62,9 @@ export function useAnalyzeLogs(
     // Use node select to handle the selection and message appending
     const selectedThreadId = await handleNodeSelect();
 
-    console.log("threadId in analyze logs", selectedThreadId);
+    console.log("selectedThreadId in analyze logs", selectedThreadId);
 
-    await createThreadRun(selectedThreadId!, [
+    const run = await createThreadRun(selectedThreadId!, [
       {
         type: "system",
         content: JSON.stringify({
@@ -77,7 +77,10 @@ export function useAnalyzeLogs(
         content: analyzeLogsPrompt + "\n" + JSON.stringify(logsData),
       },
     ]);
-    console.log("run created");
+
+    console.log("run", run);
+
+    joinStream(run.run_id);
   }, [logsData, createThreadRun]);
 
   // Check if logs are ready (not loading and has data)

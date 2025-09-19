@@ -39,8 +39,13 @@ export const useNodeSelect = ({
   const { selectNode } = useFlowgraphActions();
   const { openSidebarChat } = useChatActions();
   const { updateResourceContext } = useLanggraphActions();
-  const { updateThreadState, threads, selectThread, createNewThread } =
-    useThreads();
+  const {
+    updateThreadState,
+    threads,
+    selectThread,
+    createNewThread,
+    getThreads,
+  } = useThreads();
   const { selectedResource, selectedProject } = useProjectState();
   // const { submitWithContext } = useStreamContext();
   const { auth } = useAuthState();
@@ -69,8 +74,11 @@ export const useNodeSelect = ({
       selected_resource_context: resource_context,
     });
 
+    // Fetch latest threads
+    const latestThreads = await getThreads();
+
     // Find thread with matching resourceTarget in metadata
-    const matchingThread = threads.find((thread) => {
+    const matchingThread = latestThreads.find((thread) => {
       const metadata = thread.metadata;
       if (metadata?.resourceTarget) {
         return metadata.resourceTarget === JSON.stringify(target);

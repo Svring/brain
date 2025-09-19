@@ -124,6 +124,7 @@ export const searchThreads = async (metadata: Record<string, any>) => {
       metadata: searchMetadata,
       sortBy: "updated_at",
       sortOrder: "desc",
+      limit: 20,
     })
     .then((res) => {
       return res.filter((obj) => obj.values);

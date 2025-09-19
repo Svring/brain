@@ -115,8 +115,6 @@ export const SearchDockerHubActionMessage: React.FC<
     return null;
   }
 
-  console.log("result", result);
-
   const hasMoreThanThree = result.repositories.length > 3;
   const displayItems = showAll
     ? result.repositories
@@ -127,10 +125,7 @@ export const SearchDockerHubActionMessage: React.FC<
       <div className="flex items-center justify-between">
         <div className="flex text-sm text-muted-foreground">
           <Package size={20} className="mr-2" />
-          <span>
-            Found {result.total_results} image
-            {result.total_results !== 1 ? "s" : ""} for "{result.query}"
-          </span>
+          <span>Searched Docker Hub...</span>
         </div>
         {hasMoreThanThree && (
           <Button

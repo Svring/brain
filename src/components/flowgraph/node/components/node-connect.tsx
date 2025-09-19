@@ -207,7 +207,7 @@ function ResourceItem({
       });
 
       // Reload the page after successful update
-      window.location.reload();
+      
     } catch (error) {
       console.error("Failed to update launchpad:", error);
     } finally {

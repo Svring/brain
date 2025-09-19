@@ -18,6 +18,8 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
   const [hasCreatedThread, setHasCreatedThread] = useState(false);
   const { auth } = useAuthState();
 
+  console.log("messages", messages);
+
   useEffect(() => {
     const createThread = async () => {
       if (!auth?.kubeconfig || hasCreatedThread) {
@@ -47,7 +49,7 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
   }, [auth?.kubeconfig, hasCreatedThread]);
 
   // Block rendering until thread creation is complete
-  if (isCreatingThread || messages.length !== 0) {
+  if (isCreatingThread) {
     return (
       <LoadingScreen variant="bars" size={24} className="h-screen w-full" />
     );

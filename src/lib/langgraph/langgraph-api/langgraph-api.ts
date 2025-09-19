@@ -72,7 +72,7 @@ export const createThread = async ({
 
 export const listThreads = async () => {
   const client = createClient();
-  return await client.threads.search({ limit: 10 });
+  return await client.threads.search({ limit: 50 });
 };
 
 export const getThread = async (threadId: string) => {

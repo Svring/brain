@@ -83,7 +83,7 @@ export const useClusterLifecycle = (
       // Normal resource deletion cleanup
       clearSelectedResource();
       closeSidebarChat();
-      window.location.reload();
+      //
     },
     onError: (error: any) => {
       console.error("Cluster delete error:", error);

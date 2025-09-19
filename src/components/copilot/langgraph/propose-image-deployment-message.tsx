@@ -4,7 +4,13 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Database, CircleCheckBigIcon, Rocket, Container, Hammer } from "lucide-react";
+import {
+  Database,
+  CircleCheckBigIcon,
+  Rocket,
+  Container,
+  Hammer,
+} from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { ProjectProposalCard } from "@/components/chat/state-cards/project-proposal/project-proposal-card";
 import type { ProjectProposal } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
@@ -47,34 +53,34 @@ export const ProposeImageDeploymentMessage: React.FC<
   ProposeImageDeploymentMessageProps
 > = ({ args, result, onSuccess }) => {
   const { createProject, isCreating } = useProjectCreate();
-  const [internalProposal, setInternalProposal] = useState<ProjectProposal>(() => {
-    // Create initial proposal from args
-    return {
-      name: "Docker Image Project",
-      resources: {
-        app: [
-          {
-            name: "docker-app",
-            image: args.image_name,
-            ports: (args.ports || []).map((port) => ({
-              number: port,
-              publicAccess: true,
-            })),
-          },
-        ],
-        database: args.database
-          ? [
-              {
-                name: args.database.name,
-                type: args.database.type as any,
-              },
-            ]
-          : [],
-      },
-    };
-  });
-
-  console.log("args", args);
+  const [internalProposal, setInternalProposal] = useState<ProjectProposal>(
+    () => {
+      // Create initial proposal from args
+      return {
+        name: "Docker Image Project",
+        resources: {
+          app: [
+            {
+              name: "docker-app",
+              image: args.image_name,
+              ports: (args.ports || []).map((port) => ({
+                number: port,
+                publicAccess: true,
+              })),
+            },
+          ],
+          database: args.database
+            ? [
+                {
+                  name: args.database.name,
+                  type: args.database.type as any,
+                },
+              ]
+            : [],
+        },
+      };
+    }
+  );
 
   const handleDeploy = async () => {
     try {

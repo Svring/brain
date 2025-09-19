@@ -80,7 +80,7 @@ export const useLaunchpadLifecycle = (
       // Normal resource deletion cleanup
       clearSelectedResource();
       closeSidebarChat();
-      window.location.reload();
+      //
     },
     onError: (error: any) => {
       const message = error.message || "Failed to delete launchpad";

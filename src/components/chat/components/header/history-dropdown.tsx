@@ -15,8 +15,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useThreads } from "@/components/provider/thread-provider";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { DeleteThreadDialog } from "./delete-thread-dialog";
+import { useProjectState } from "@/contexts/project/project-context";
 import { Message, Thread } from "@langchain/langgraph-sdk";
 import { Spinner } from "@/components/ui/spinner";
 import { getResourceDefaultIcon } from "@/lib/sealos/sealos-utils";
@@ -32,6 +33,7 @@ export function HistoryDropdown() {
     deleteThread,
     threadsLoading,
   } = useThreads();
+  const { selectedResource, selectedProject } = useProjectState();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [threadToDelete, setThreadToDelete] = useState<string | null>(null);
@@ -40,8 +42,49 @@ export function HistoryDropdown() {
   useInterval(async () => {
     const threads = await getThreads();
     setThreads(threads);
-    // setThreads(threads);
   }, 10000);
+
+  // Filter and limit threads based on selectedResource and selectedProject
+  const filteredAndLimitedThreads = useMemo(() => {
+    if (!threads || threads.length === 0) return [];
+
+    let filteredThreads = threads;
+
+    // Filter by selectedResource
+    if (selectedResource) {
+      // If selectedResource exists, only show threads with matching resourceTarget
+      filteredThreads = threads.filter((thread) => {
+        const metadata = (thread as any)?.metadata;
+        if (metadata?.resourceTarget) {
+          try {
+            const resourceTarget = JSON.parse(metadata.resourceTarget);
+            return (
+              resourceTarget?.name === selectedResource.name &&
+              resourceTarget?.resourceType === selectedResource.resourceType
+            );
+          } catch (parseError) {
+            return false;
+          }
+        }
+        return false;
+      });
+    } else {
+      // If no selectedResource, only show threads with null resourceTarget
+      filteredThreads = threads.filter((thread) => {
+        const metadata = (thread as any)?.metadata;
+        return !metadata?.resourceTarget;
+      });
+    }
+
+    // Sort by updated_at (most recent first) and limit to 10
+    return filteredThreads
+      .sort((a, b) => {
+        const dateA = new Date(a.updated_at || 0).getTime();
+        const dateB = new Date(b.updated_at || 0).getTime();
+        return dateB - dateA;
+      })
+      .slice(0, 10);
+  }, [threads, selectedResource, selectedProject]);
 
   const handleThreadSelect = async (threadId: string): Promise<void> => {
     // Select the thread first
@@ -161,14 +204,15 @@ export function HistoryDropdown() {
                 <History className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="max-w-xs space-y-1">
+            <DropdownMenuContent align="end" className="max-w-xs">
               {threadsLoading ? (
                 <div className="p-2 text-sm text-muted-foreground text-center flex items-center justify-center">
                   <Spinner size={16} />
                   <span className="ml-2">Loading threads...</span>
                 </div>
-              ) : threads?.length ? (
-                threads.map((thread) => {
+              ) : filteredAndLimitedThreads?.length ? (
+                <div className="max-h-80 overflow-y-auto space-y-1">
+                  {filteredAndLimitedThreads.map((thread) => {
                   const resourceInfo = getThreadResourceInfo(thread);
                   const resourceIcon = resourceInfo
                     ? getResourceDefaultIcon(resourceInfo.type)
@@ -251,10 +295,14 @@ export function HistoryDropdown() {
                       </div>
                     </DropdownMenuItem>
                   );
-                })
+                })}
+                </div>
               ) : (
                 <div className="p-2 text-sm text-muted-foreground text-center">
-                  No chat history available
+                  {selectedResource 
+                    ? `No chat history for ${selectedResource.name}` 
+                    : "No general chat history available"
+                  }
                 </div>
               )}
             </DropdownMenuContent>

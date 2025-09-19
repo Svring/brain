@@ -20,7 +20,7 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
   const projectName = params["project-name"] as string;
   const [isCreatingThread, setIsCreatingThread] = useState(true);
 
-  console.log("projectName", projectName);
+  // console.log("projectName", projectName);
 
   const queryClient = new QueryClient();
 

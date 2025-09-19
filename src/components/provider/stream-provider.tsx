@@ -58,7 +58,7 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
   const { LANGGRAPH_DEPLOYMENT_URL, LANGGRAPH_GRAPH_ID } = useEnv();
   const queryClient = useQueryClient();
 
-  console.log("selectedThreadId", selectedThreadId);
+  // console.log("selectedThreadId", selectedThreadId);
 
   const streamValue = useStream({
     apiUrl: LANGGRAPH_DEPLOYMENT_URL,
@@ -82,7 +82,7 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    console.log("submitWithContext", data);
+    // console.log("submitWithContext", data);
 
     return streamValue.submit(
       {
@@ -105,7 +105,9 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
             }
           : undefined,
       },
-      command ? { command } : undefined
+      {
+        command,
+      }
     );
   };
 
@@ -129,13 +131,14 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
       apiUrl: LANGGRAPH_DEPLOYMENT_URL,
     });
 
-    const run = client.runs.create(threadId, LANGGRAPH_GRAPH_ID, {
+    const run = await client.runs.create(threadId, LANGGRAPH_GRAPH_ID, {
       ...payload,
       metadata: {
         kubeconfig: auth?.kubeconfig,
         projectName: selectedProject,
         resourceTarget: selectedResource,
       },
+      streamResumable: true,
     });
 
     return run;
