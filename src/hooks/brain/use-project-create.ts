@@ -11,6 +11,7 @@ import { launchpadCreateFormSchema } from "@/schemas/forms/launchpad/launchpad-c
 import { objectStorageCreateSchema } from "@/schemas/forms/objectstorage/objectstorage-create-form-schema";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import type { ProjectProposal } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
+import { CLUSTER_CONSTANT_TYPE_VERSION } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-versions";
 
 // Simplified deployment data format
 interface SimpleDeploymentData {
@@ -109,10 +110,16 @@ export function useProjectCreate(options?: CreateProjectOptions) {
       // Create Database if provided
       if (data.database) {
         const uniqueDatabaseName = `${data.database.name}-${nanoid()}`;
+        const databaseType = data.database
+          .type as keyof typeof CLUSTER_CONSTANT_TYPE_VERSION;
+        const version =
+          CLUSTER_CONSTANT_TYPE_VERSION[databaseType]?.[0] ||
+          "postgresql-14.8.0";
+
         const clusterData = clusterCreateFormSchema.parse({
           name: uniqueDatabaseName,
           type: data.database.type as any,
-          version: "postgresql-14.8.0", // Default version
+          version: version,
           resource: {
             replicas: 1,
             cpu: 2,
@@ -319,10 +326,16 @@ export function useProjectCreate(options?: CreateProjectOptions) {
       if (proposal.resources.database?.length) {
         for (const databaseProposal of proposal.resources.database) {
           const uniqueDatabaseName = `${databaseProposal.name}-${nanoid()}`;
+          const databaseType =
+            databaseProposal.type as keyof typeof CLUSTER_CONSTANT_TYPE_VERSION;
+          const version =
+            CLUSTER_CONSTANT_TYPE_VERSION[databaseType]?.[0] ||
+            "postgresql-14.8.0";
+
           const clusterData = clusterCreateFormSchema.parse({
             name: uniqueDatabaseName,
             type: databaseProposal.type as any,
-            version: "postgresql-14.8.0", // Default version
+            version: version,
             resource: {
               replicas: 1,
               cpu: 2,

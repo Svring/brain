@@ -61,37 +61,40 @@ export const ProposeDevenvDeploymentMessage: React.FC<
   ProposeDevenvDeploymentMessageProps
 > = ({ args, result, onSuccess }) => {
   const { createProject, isCreating } = useProjectCreate();
-  const [internalProposal, setInternalProposal] = useState<ProjectProposal>(() => {
-    // Create initial proposal from args
-    return {
-      name: "Development Environment Project",
-      resources: {
-        devbox: args.devbox
-          ? [
-              {
-                name: args.devbox.name,
-                runtime: args.devbox.runtime as any,
-                ports: (args.devbox.ports || []).map((port) => ({
-                  number: port,
-                  publicAccess: true,
-                })),
-              },
-            ]
-          : [],
-        database: args.database
-          ? [
-              {
-                name: args.database.name,
-                type: args.database.type as any,
-              },
-            ]
-          : [],
-      },
-    };
-  });
+  const [internalProposal, setInternalProposal] = useState<ProjectProposal>(
+    () => {
+      // Create initial proposal from args
+      return {
+        name: "Development Environment Project",
+        resources: {
+          devbox: args.devbox
+            ? [
+                {
+                  name: args.devbox.name,
+                  runtime: args.devbox.runtime as any,
+                  ports: (args.devbox.ports || []).map((port) => ({
+                    number: port,
+                    publicAccess: true,
+                  })),
+                },
+              ]
+            : [],
+          database: args.database
+            ? [
+                {
+                  name: args.database.name,
+                  type: args.database.type as any,
+                },
+              ]
+            : [],
+        },
+      };
+    }
+  );
 
   const handleDeploy = async () => {
     try {
+      // console.log("internalProposal", internalProposal);
       await createProject(internalProposal);
       onSuccess?.(internalProposal.name);
     } catch (error) {
