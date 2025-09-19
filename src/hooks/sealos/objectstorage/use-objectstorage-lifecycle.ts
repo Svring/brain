@@ -29,44 +29,6 @@ export const useObjectStorageLifecycle = (
   const { closeSidebarChat } = useChatActions();
   const { deleteProject } = useProjectLifecycle({ shouldRedirect: true });
 
-  const openHostMutation = useMutation({
-    ...objectstorage.openHost.mutationOptions(),
-    onSuccess: (_, variables) => {
-      const message = "Object storage host opened successfully";
-      toast.success(message);
-      onSuccess?.(message);
-      invalidateQueries([
-        objectstorage.list.queryKey(),
-        objectstorage.getStatus.queryKey(variables),
-      ]);
-    },
-    onError: (error: any) => {
-      console.error("Object storage open host error:", error);
-      const message = error.message || "Failed to open object storage host";
-      toast.error(message);
-      onError?.(message);
-    },
-  });
-
-  const closeHostMutation = useMutation({
-    ...objectstorage.closeHost.mutationOptions(),
-    onSuccess: (_, variables) => {
-      const message = "Object storage host closed successfully";
-      toast.success(message);
-      onSuccess?.(message);
-      invalidateQueries([
-        objectstorage.list.queryKey(),
-        objectstorage.getStatus.queryKey(variables),
-      ]);
-    },
-    onError: (error: any) => {
-      console.error("Object storage close host error:", error);
-      const message = error.message || "Failed to close object storage host";
-      toast.error(message);
-      onError?.(message);
-    },
-  });
-
   const deleteMutation = useMutation({
     ...objectstorage.delete.mutationOptions(),
     onSuccess: async (_, variables) => {
@@ -103,12 +65,6 @@ export const useObjectStorageLifecycle = (
       ) as CustomResourceTarget;
 
       switch (action) {
-        case "openHost":
-          await openHostMutation.mutateAsync({ bucket: bucketName });
-          break;
-        case "closeHost":
-          await closeHostMutation.mutateAsync({ bucket: bucketName });
-          break;
         case "delete":
           await deleteMutation.mutateAsync({ bucketName });
           break;
@@ -122,10 +78,6 @@ export const useObjectStorageLifecycle = (
 
   const getMutationForAction = (action: string) => {
     switch (action) {
-      case "openHost":
-        return openHostMutation;
-      case "closeHost":
-        return closeHostMutation;
       case "delete":
         return deleteMutation;
       default:

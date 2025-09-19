@@ -13,6 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import Image from "next/image";
+import { UserCard } from "./user-card";
 
 export default function AppSidebar() {
   const { mode } = useAuthState();
@@ -46,7 +47,15 @@ export default function AppSidebar() {
         <SidebarContent className={cn("bg-background-primary")}>
           <MainSection />
         </SidebarContent>
-        <SidebarFooter className={cn("bg-background-primary")}></SidebarFooter>
+        <SidebarFooter className={cn("bg-background-primary")}>
+          <UserCard
+            user={{
+              name: "John Doe",
+              email: "john.doe@example.com",
+              avatar: "https://github.com/shadcn.png",
+            }}
+          />
+        </SidebarFooter>
         {/* <SidebarRail /> */}
       </Sidebar>
     </>

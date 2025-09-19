@@ -1,12 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Globe, Copy } from "lucide-react";
+import { Globe, Copy, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import BaseNode from "../../base-node-wrapper";
 import ObjectStorageNodeTitle from "./objectstorage-node-title";
-import ObjectStorageNodeMenu from "./objectstorage-node-menu";
+import ObjectStorageDropdownMenu from "./objectstorage-dropdown-menu";
 import ObjectStoragePolicyBadge from "./objectstorage-policy-badge";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
@@ -65,7 +69,19 @@ function ObjectStorageNode({
       <div className="flex h-full flex-col justify-between">
         <div className="flex items-center justify-between">
           <ObjectStorageNodeTitle name={name} />
-          <ObjectStorageNodeMenu object={resource} />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+                className="p-1 hover:bg-muted rounded transition-colors"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <ObjectStorageDropdownMenu object={resource} />
+          </DropdownMenu>
         </div>
         <div className="flex justify-between items-center">
           <ObjectStoragePolicyBadge policy={policy} />
