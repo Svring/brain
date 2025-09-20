@@ -7,6 +7,7 @@ import { useStream } from "@langchain/langgraph-sdk/react";
 import {
   ChatSectionState,
   serializeResourceTarget,
+  PROJECT_CHAT_KEY,
 } from "@/contexts/chat/chat-machine";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useThreads } from "./thread-provider";
@@ -16,7 +17,7 @@ import { useAuthState } from "@/contexts/auth/auth-context";
 import { useEnv } from "./env-provider";
 
 interface ChatInstanceContextType {
-  resourceTarget: ResourceTarget;
+  resourceTarget: ResourceTarget | null; // null for project chat
   threadId: string | null;
   threads: Thread[];
   state: ChatSectionState;
@@ -38,7 +39,7 @@ const ChatInstanceContext = createContext<ChatInstanceContextType | undefined>(
 );
 
 interface ChatInstanceProviderProps {
-  resourceTarget: ResourceTarget;
+  resourceTarget: ResourceTarget | null; // null for project chat
   children: ReactNode;
 }
 
@@ -46,9 +47,16 @@ export function ChatInstanceProvider({
   resourceTarget,
   children,
 }: ChatInstanceProviderProps) {
-  const { getChatInstance, isResourceActive, focusedResourceTarget } =
+  const { getChatInstance, isResourceActive, focusedResourceTarget, getProjectChatInstance } =
     useChatState();
-  const { setChatThreadId, setChatThreads, setChatState } = useChatActions();
+  const { 
+    setChatThreadId, 
+    setChatThreads, 
+    setChatState,
+    setProjectChatThreadId,
+    setProjectChatThreads,
+    setProjectChatState 
+  } = useChatActions();
   const { getThreads } = useThreads();
   const { baseUrl, apiKey, modelName, contextWindowUsage, stage } =
     useLanggraphState();
@@ -57,10 +65,17 @@ export function ChatInstanceProvider({
   const { auth } = useAuthState();
   const { LANGGRAPH_DEPLOYMENT_URL, LANGGRAPH_GRAPH_ID } = useEnv();
 
-  const chatInstance = getChatInstance(resourceTarget);
-  const isActive = isResourceActive(resourceTarget);
-  const isFocused =
-    focusedResourceTarget === serializeResourceTarget(resourceTarget);
+  // Handle project chat vs resource chat
+  const isProjectChat = resourceTarget === null;
+  const chatInstance = isProjectChat 
+    ? getProjectChatInstance() 
+    : getChatInstance(resourceTarget);
+  const isActive = isProjectChat 
+    ? true // project chat is always "active"
+    : isResourceActive(resourceTarget);
+  const isFocused = isProjectChat
+    ? focusedResourceTarget === PROJECT_CHAT_KEY
+    : focusedResourceTarget === serializeResourceTarget(resourceTarget);
 
   // Log chat instance state changes
   useEffect(() => {
@@ -75,7 +90,13 @@ export function ChatInstanceProvider({
     //   state: chatInstance?.state,
     //   globalFocusedTarget: focusedResourceTarget
     // });
-  }, [resourceTarget, isActive, isFocused, chatInstance, focusedResourceTarget]);
+  }, [
+    resourceTarget,
+    isActive,
+    isFocused,
+    chatInstance,
+    focusedResourceTarget,
+  ]);
 
   // Use useStream for this chat instance
   const streamValue = useStream({
@@ -84,7 +105,11 @@ export function ChatInstanceProvider({
     threadId: chatInstance?.threadId || null,
     onThreadId: async (id: string) => {
       // Update the chat instance's threadId when a new one is created
-      setChatThreadId(resourceTarget, id);
+      if (isProjectChat) {
+        setProjectChatThreadId(id);
+      } else {
+        setChatThreadId(resourceTarget, id);
+      }
     },
   });
 
@@ -133,13 +158,18 @@ export function ChatInstanceProvider({
   useEffect(() => {
     const fetchThreads = async () => {
       try {
-        const threads = await getThreads(resourceTarget);
-        setChatThreads(resourceTarget, threads);
+        const threads = await getThreads(resourceTarget); // resourceTarget is null for project chat
+        if (isProjectChat) {
+          setProjectChatThreads(threads);
+        } else {
+          setChatThreads(resourceTarget, threads);
+        }
 
         // Log active target and threads for debugging
         console.log("ChatInstanceProvider - Active Target:", {
           resourceTarget,
-          resourceTargetKey: serializeResourceTarget(resourceTarget),
+          resourceTargetKey: resourceTarget ? serializeResourceTarget(resourceTarget) : PROJECT_CHAT_KEY,
+          isProjectChat,
           isActive,
           isFocused,
           threadCount: threads.length,
@@ -176,11 +206,17 @@ export function ChatInstanceProvider({
     isActive,
     isFocused,
     setChatThreadId: (threadId: string | null) =>
-      setChatThreadId(resourceTarget, threadId),
+      isProjectChat 
+        ? setProjectChatThreadId(threadId)
+        : setChatThreadId(resourceTarget, threadId),
     setChatThreads: (threads: Thread[]) =>
-      setChatThreads(resourceTarget, threads),
+      isProjectChat
+        ? setProjectChatThreads(threads)
+        : setChatThreads(resourceTarget, threads),
     setChatState: (state: Partial<ChatSectionState>) =>
-      setChatState(resourceTarget, state),
+      isProjectChat
+        ? setProjectChatState(state)
+        : setChatState(resourceTarget, state),
     submit,
   };
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { assign, createMachine } from "xstate";
-import { Thread } from "@langchain/langgraph-sdk";
+import { Thread, Message } from "@langchain/langgraph-sdk";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 export interface ChatSectionState {
@@ -15,13 +15,14 @@ export interface ChatInstance {
   threadId: string | null;
   threads: Thread[];
   state: ChatSectionState;
-  resourceTarget?: ResourceTarget;
+  resourceTarget?: ResourceTarget; // undefined for project chat
 }
 
 export interface ChatContextState {
   chatInstances: Map<string, ChatInstance>; // Map<resourceTarget, ChatInstance>
   activeResourceTargets: string[];
   focusedResourceTarget: string | null;
+  pendingMessages: Map<string, Message[]>; // Map<resourceTarget, Message[]> - stores pending messages for each target
 }
 
 export type ChatEvent =
@@ -29,7 +30,11 @@ export type ChatEvent =
   | { type: "OPEN_CHAT"; resourceTarget: ResourceTarget }
   | { type: "CLOSE_CHAT"; resourceTarget: ResourceTarget }
 
-  // Per-instance state management
+  // Project chat management
+  | { type: "OPEN_PROJECT_CHAT" }
+  | { type: "CLOSE_PROJECT_CHAT" }
+
+  // Per-instance state management (for resource chats)
   | {
       type: "SET_CHAT_THREAD_ID";
       resourceTarget: ResourceTarget;
@@ -44,6 +49,36 @@ export type ChatEvent =
       type: "SET_CHAT_STATE";
       resourceTarget: ResourceTarget;
       state: Partial<ChatSectionState>;
+    }
+
+  // Per-instance state management (for project chat)
+  | {
+      type: "SET_PROJECT_CHAT_THREAD_ID";
+      threadId: string | null;
+    }
+  | {
+      type: "SET_PROJECT_CHAT_THREADS";
+      threads: Thread[];
+    }
+  | {
+      type: "SET_PROJECT_CHAT_STATE";
+      state: Partial<ChatSectionState>;
+    }
+
+  // Pending message management
+  | {
+      type: "ADD_PENDING_MESSAGE";
+      resourceTarget: ResourceTarget | null; // null for project chat
+      message: Message;
+    }
+  | {
+      type: "REMOVE_PENDING_MESSAGE";
+      resourceTarget: ResourceTarget | null; // null for project chat
+      messageIndex: number;
+    }
+  | {
+      type: "CLEAR_PENDING_MESSAGES";
+      resourceTarget: ResourceTarget | null; // null for project chat
     };
 
 // Helper function to serialize resource target to string key
@@ -53,15 +88,44 @@ export function serializeResourceTarget(
   return JSON.stringify(resourceTarget);
 }
 
+// Special key for project chat instance
+export const PROJECT_CHAT_KEY = "__project__";
+
+// Helper function to serialize resource target or null to string key
+export function serializeTargetKey(
+  resourceTarget: ResourceTarget | null
+): string {
+  return resourceTarget
+    ? serializeResourceTarget(resourceTarget)
+    : PROJECT_CHAT_KEY;
+}
+
 export const chatMachine = createMachine({
   /** XState v5 generics */
   types: {} as { context: ChatContextState; events: ChatEvent },
   id: "chat",
   initial: "idle",
   context: {
-    chatInstances: new Map<string, ChatInstance>(),
+    chatInstances: new Map<string, ChatInstance>([
+      // Create project chat instance by default
+      [
+        PROJECT_CHAT_KEY,
+        {
+          threadId: null,
+          threads: [],
+          state: {
+            open: false,
+            responding: false,
+            maximized: false,
+            loading: false,
+          },
+          // resourceTarget is undefined for project chat
+        },
+      ],
+    ]),
     activeResourceTargets: [],
     focusedResourceTarget: null,
+    pendingMessages: new Map<string, Message[]>(),
   },
   states: {
     idle: {},
@@ -133,6 +197,41 @@ export const chatMachine = createMachine({
       }),
     },
 
+    // Project chat management
+    OPEN_PROJECT_CHAT: {
+      actions: assign({
+        chatInstances: ({ context }) => {
+          const newInstances = new Map(context.chatInstances);
+          const projectInstance = newInstances.get(PROJECT_CHAT_KEY);
+          if (projectInstance) {
+            projectInstance.state.open = true;
+            newInstances.set(PROJECT_CHAT_KEY, projectInstance);
+          }
+          return newInstances;
+        },
+        focusedResourceTarget: () => PROJECT_CHAT_KEY,
+      }),
+    },
+
+    CLOSE_PROJECT_CHAT: {
+      actions: assign({
+        chatInstances: ({ context }) => {
+          const newInstances = new Map(context.chatInstances);
+          const projectInstance = newInstances.get(PROJECT_CHAT_KEY);
+          if (projectInstance) {
+            projectInstance.state.open = false;
+            newInstances.set(PROJECT_CHAT_KEY, projectInstance);
+          }
+          return newInstances;
+        },
+        focusedResourceTarget: ({ context }) => {
+          return context.focusedResourceTarget === PROJECT_CHAT_KEY
+            ? null
+            : context.focusedResourceTarget;
+        },
+      }),
+    },
+
     SET_CHAT_THREAD_ID: {
       actions: assign({
         chatInstances: ({ context, event }) => {
@@ -174,6 +273,100 @@ export const chatMachine = createMachine({
             newInstances.set(resourceKey, instance);
           }
           return newInstances;
+        },
+      }),
+    },
+
+    // Project chat state management
+    SET_PROJECT_CHAT_THREAD_ID: {
+      actions: assign({
+        chatInstances: ({ context, event }) => {
+          const newInstances = new Map(context.chatInstances);
+          const projectInstance = newInstances.get(PROJECT_CHAT_KEY);
+          if (projectInstance) {
+            projectInstance.threadId = event.threadId;
+            newInstances.set(PROJECT_CHAT_KEY, projectInstance);
+          }
+          return newInstances;
+        },
+      }),
+    },
+
+    SET_PROJECT_CHAT_THREADS: {
+      actions: assign({
+        chatInstances: ({ context, event }) => {
+          const newInstances = new Map(context.chatInstances);
+          const projectInstance = newInstances.get(PROJECT_CHAT_KEY);
+          if (projectInstance) {
+            projectInstance.threads = event.threads;
+            newInstances.set(PROJECT_CHAT_KEY, projectInstance);
+          }
+          return newInstances;
+        },
+      }),
+    },
+
+    SET_PROJECT_CHAT_STATE: {
+      actions: assign({
+        chatInstances: ({ context, event }) => {
+          const newInstances = new Map(context.chatInstances);
+          const projectInstance = newInstances.get(PROJECT_CHAT_KEY);
+          if (projectInstance) {
+            projectInstance.state = {
+              ...projectInstance.state,
+              ...event.state,
+            };
+            newInstances.set(PROJECT_CHAT_KEY, projectInstance);
+          }
+          return newInstances;
+        },
+      }),
+    },
+
+    // Pending message management
+    ADD_PENDING_MESSAGE: {
+      actions: assign({
+        pendingMessages: ({ context, event }) => {
+          const newPendingMessages = new Map(context.pendingMessages);
+          const targetKey = serializeTargetKey(event.resourceTarget);
+          const existingMessages = newPendingMessages.get(targetKey) || [];
+          newPendingMessages.set(targetKey, [
+            ...existingMessages,
+            event.message,
+          ]);
+          return newPendingMessages;
+        },
+      }),
+    },
+
+    REMOVE_PENDING_MESSAGE: {
+      actions: assign({
+        pendingMessages: ({ context, event }) => {
+          const newPendingMessages = new Map(context.pendingMessages);
+          const targetKey = serializeTargetKey(event.resourceTarget);
+          const existingMessages = newPendingMessages.get(targetKey) || [];
+          const updatedMessages = existingMessages.filter(
+            (_, index) => index !== event.messageIndex
+          );
+
+          if (updatedMessages.length === 0) {
+            newPendingMessages.delete(targetKey);
+          } else {
+            newPendingMessages.set(targetKey, updatedMessages);
+          }
+
+          return newPendingMessages;
+        },
+      }),
+    },
+
+    CLEAR_PENDING_MESSAGES: {
+      actions: assign({
+        pendingMessages: ({ context, event }) => {
+          const newPendingMessages = new Map(context.pendingMessages);
+          const targetKey = serializeTargetKey(event.resourceTarget);
+          newPendingMessages.delete(targetKey);
+          return newPendingMessages;
         },
       }),
     },

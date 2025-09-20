@@ -1,16 +1,9 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  ReactNode,
-  useCallback,
-} from "react";
+import { createContext, useContext, ReactNode, useCallback } from "react";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useProjectState } from "@/contexts/project/project-context";
-import {
-  searchThreads,
-} from "@/lib/langgraph/langgraph-api/langgraph-api-service";
+import { searchThreads } from "@/lib/langgraph/langgraph-api/langgraph-api-service";
 import {
   useDeleteThreadMutation,
   useUpdateThreadStateMutation,
@@ -22,7 +15,7 @@ import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schema
 
 interface ThreadContextType {
   // Universal thread management methods
-  getThreads: (resourceTarget?: ResourceTarget) => Promise<any[]>;
+  getThreads: (resourceTarget: ResourceTarget | null) => Promise<any[]>;
   createNewThread: any;
   updateThreadState: any;
   deleteThread: any;
@@ -37,7 +30,7 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
 
   // Get threads function
   const getThreads = useCallback(
-    async (resourceTarget?: ResourceTarget): Promise<Thread[]> => {
+    async (resourceTarget: ResourceTarget | null): Promise<Thread[]> => {
       if (!auth?.kubeconfig) return [];
 
       try {

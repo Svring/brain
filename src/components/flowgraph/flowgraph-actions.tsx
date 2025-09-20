@@ -42,8 +42,8 @@ export function FlowgraphActions({
 }: FlowgraphActionsProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const { fitView, refresh } = useFlowgraphActions();
-  const { openSidebarChat } = useChatActions();
-  const { sidebarChatOpen } = useChatState();
+  const { openProjectChat } = useChatActions();
+  const { isProjectChatFocused } = useChatState();
   const queryClient = useQueryClient();
   const { project, devbox, cluster, launchpad, objectstorage } =
     useTRPCClients();
@@ -55,8 +55,8 @@ export function FlowgraphActions({
     onSearchChange?.(value);
   };
 
-  const handleOpenSidebar = () => {
-    openSidebarChat();
+  const handleOpenProjectChat = () => {
+    openProjectChat();
   };
 
   const handleRefresh = () => {
@@ -173,8 +173,8 @@ export function FlowgraphActions({
           </TooltipContent>
         </Tooltip>
 
-        {/* Open Sidebar Button */}
-        {!sidebarChatOpen && (
+        {/* Open Project Chat Button */}
+        {!isProjectChatFocused() && (
           <Tooltip>
             <TooltipTrigger asChild>
               <StarBorder
@@ -182,13 +182,13 @@ export function FlowgraphActions({
                 className={cn(
                   "h-10 w-10 cursor-pointer hover:scale-105 transition-transform"
                 )}
-                onClick={handleOpenSidebar}
+                onClick={handleOpenProjectChat}
               >
                 <MessageCircle className="h-4 w-4" />
               </StarBorder>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Open Chat</p>
+              <p>Open Project Chat</p>
             </TooltipContent>
           </Tooltip>
         )}

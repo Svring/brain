@@ -4,8 +4,8 @@ import { createBrowserInspector } from "@statelyai/inspect";
 import { useMachine } from "@xstate/react";
 import { createContext, type ReactNode, useContext, useEffect } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
-import type { Thread } from "@langchain/langgraph-sdk";
-import { chatMachine, type ChatSectionState, serializeResourceTarget } from "@/contexts/chat/chat-machine";
+import type { Thread, Message } from "@langchain/langgraph-sdk";
+import { chatMachine, type ChatSectionState, serializeResourceTarget, PROJECT_CHAT_KEY, serializeTargetKey } from "@/contexts/chat/chat-machine";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useProjectActions } from "../project/project-context";
 import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
@@ -56,15 +56,43 @@ export function useChatState() {
     return state.context.chatInstances.get(key);
   };
   
+  // Helper to get project chat instance
+  const getProjectChatInstance = () => {
+    return state.context.chatInstances.get(PROJECT_CHAT_KEY);
+  };
+  
+  // Helper to check if project chat is focused
+  const isProjectChatFocused = () => {
+    return state.context.focusedResourceTarget === PROJECT_CHAT_KEY;
+  };
+  
+  // Helper to get pending messages for a specific target
+  const getPendingMessages = (resourceTarget: ResourceTarget | null) => {
+    const key = serializeTargetKey(resourceTarget);
+    return state.context.pendingMessages.get(key) || [];
+  };
+  
+  // Helper to check if target has pending messages
+  const hasPendingMessages = (resourceTarget: ResourceTarget | null) => {
+    const key = serializeTargetKey(resourceTarget);
+    const messages = state.context.pendingMessages.get(key);
+    return messages && messages.length > 0;
+  };
+  
   return {
     // Multi-instance state
     chatInstances: state.context.chatInstances,
     activeResourceTargets: state.context.activeResourceTargets,
     focusedResourceTarget: state.context.focusedResourceTarget,
+    pendingMessages: state.context.pendingMessages,
     
     // Helper functions
     isResourceActive,
     getChatInstance,
+    getProjectChatInstance,
+    isProjectChatFocused,
+    getPendingMessages,
+    hasPendingMessages,
   };
 }
 
@@ -86,5 +114,24 @@ export function useChatActions() {
     setChatState: (resourceTarget: ResourceTarget, chatState: Partial<ChatSectionState>) =>
       send({ type: "SET_CHAT_STATE", resourceTarget, state: chatState }),
 
+    // Project chat management
+    openProjectChat: () => send({ type: "OPEN_PROJECT_CHAT" }),
+    closeProjectChat: () => send({ type: "CLOSE_PROJECT_CHAT" }),
+    
+    // Project chat state management
+    setProjectChatThreadId: (threadId: string | null) =>
+      send({ type: "SET_PROJECT_CHAT_THREAD_ID", threadId }),
+    setProjectChatThreads: (threads: Thread[]) =>
+      send({ type: "SET_PROJECT_CHAT_THREADS", threads }),
+    setProjectChatState: (chatState: Partial<ChatSectionState>) =>
+      send({ type: "SET_PROJECT_CHAT_STATE", state: chatState }),
+
+    // Pending message management
+    addPendingMessage: (resourceTarget: ResourceTarget | null, message: Message) =>
+      send({ type: "ADD_PENDING_MESSAGE", resourceTarget, message }),
+    removePendingMessage: (resourceTarget: ResourceTarget | null, messageIndex: number) =>
+      send({ type: "REMOVE_PENDING_MESSAGE", resourceTarget, messageIndex }),
+    clearPendingMessages: (resourceTarget: ResourceTarget | null) =>
+      send({ type: "CLEAR_PENDING_MESSAGES", resourceTarget }),
   };
 }

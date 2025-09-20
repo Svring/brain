@@ -10,7 +10,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useProjectState } from "@/contexts/project/project-context";
+import {
+  useProjectState,
+  useProjectActions,
+} from "@/contexts/project/project-context";
 import { useReactFlow } from "@xyflow/react";
 import { HistoryDropdown } from "./history-dropdown";
 import { useThreads } from "@/components/provider/thread-provider";
@@ -19,8 +22,16 @@ import { useChatInstance } from "@/components/provider/chat-instance-provider";
 
 export function HeaderActions() {
   const { selectedProject } = useProjectState();
+  const { clearSelectedResource } = useProjectActions();
   const { resourceTarget, state } = useChatInstance();
-  const { closeChat, setChatState, setChatThreadId } = useChatActions();
+  const {
+    closeChat,
+    setChatState,
+    setChatThreadId,
+    closeProjectChat,
+    setProjectChatThreadId,
+    setProjectChatState,
+  } = useChatActions();
   const { fitView } = useReactFlow();
   const { createNewThread } = useThreads();
   const { auth } = useAuthState();
@@ -38,7 +49,11 @@ export function HeaderActions() {
         onSuccess: (data: any) => {
           if (data?.thread_id) {
             // Set the newly created thread ID in the chat instance
-            setChatThreadId(resourceTarget, data.thread_id);
+            if (resourceTarget === null) {
+              setProjectChatThreadId(data.thread_id);
+            } else {
+              setChatThreadId(resourceTarget, data.thread_id);
+            }
           }
         },
         onError: (error: any) => {
@@ -71,11 +86,13 @@ export function HeaderActions() {
         <TooltipTrigger asChild>
           <Toggle
             pressed={state.maximized}
-            onPressedChange={(pressed) =>
-              resourceTarget
-                ? setChatState(resourceTarget, { maximized: pressed })
-                : fitView({ padding: 0.2, duration: 300, maxZoom: 1 })
-            }
+            onPressedChange={(pressed) => {
+              if (resourceTarget === null) {
+                setProjectChatState({ maximized: pressed });
+              } else {
+                setChatState(resourceTarget, { maximized: pressed });
+              }
+            }}
             size="sm"
             className={cn(
               "h-8 w-8 hover:text-theme-blue",
@@ -85,19 +102,20 @@ export function HeaderActions() {
             <Focus className="h-4 w-4" />
           </Toggle>
         </TooltipTrigger>
-        <TooltipContent>
-          {resourceTarget
-            ? state.maximized
-              ? "Unfocus"
-              : "Focus"
-            : "Fit View"}
-        </TooltipContent>
+        <TooltipContent>{state.maximized ? "Unfocus" : "Focus"}</TooltipContent>
       </Tooltip>
 
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            onClick={() => closeChat(resourceTarget)}
+            onClick={() => {
+              if (resourceTarget === null) {
+                closeProjectChat();
+              } else {
+                closeChat(resourceTarget);
+                clearSelectedResource(); // Clear selected resource when closing resource chat
+              }
+            }}
             size="icon"
             variant="ghost"
             className="h-8 w-8"
