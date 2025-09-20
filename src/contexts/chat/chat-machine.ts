@@ -16,6 +16,7 @@ export interface ChatInstance {
   threads: Thread[];
   state: ChatSectionState;
   resourceTarget?: ResourceTarget; // undefined for project chat
+  projectName?: string; // defined for project chat instances
 }
 
 export interface ChatContextState {
@@ -31,8 +32,8 @@ export type ChatEvent =
   | { type: "CLOSE_CHAT"; resourceTarget: ResourceTarget }
 
   // Project chat management
-  | { type: "OPEN_PROJECT_CHAT" }
-  | { type: "CLOSE_PROJECT_CHAT" }
+  | { type: "OPEN_PROJECT_CHAT"; projectName: string }
+  | { type: "CLOSE_PROJECT_CHAT"; projectName: string }
 
   // Per-instance state management (for resource chats)
   | {
@@ -54,14 +55,17 @@ export type ChatEvent =
   // Per-instance state management (for project chat)
   | {
       type: "SET_PROJECT_CHAT_THREAD_ID";
+      projectName: string;
       threadId: string | null;
     }
   | {
       type: "SET_PROJECT_CHAT_THREADS";
+      projectName: string;
       threads: Thread[];
     }
   | {
       type: "SET_PROJECT_CHAT_STATE";
+      projectName: string;
       state: Partial<ChatSectionState>;
     }
 
@@ -88,16 +92,25 @@ export function serializeResourceTarget(
   return JSON.stringify(resourceTarget);
 }
 
-// Special key for project chat instance
-export const PROJECT_CHAT_KEY = "__project__";
+// Helper function to create project chat key
+export function getProjectChatKey(projectName: string): string {
+  return `__project__${projectName}`;
+}
 
-// Helper function to serialize resource target or null to string key
+// Helper function to serialize resource target or project name to string key
 export function serializeTargetKey(
-  resourceTarget: ResourceTarget | null
+  resourceTarget: ResourceTarget | null,
+  projectName?: string
 ): string {
-  return resourceTarget
-    ? serializeResourceTarget(resourceTarget)
-    : PROJECT_CHAT_KEY;
+  if (resourceTarget) {
+    return serializeResourceTarget(resourceTarget);
+  }
+  // For project chat, use projectName if provided
+  if (projectName) {
+    return getProjectChatKey(projectName);
+  }
+  // Fallback for backward compatibility
+  return "__project__";
 }
 
 export const chatMachine = createMachine({
@@ -106,23 +119,7 @@ export const chatMachine = createMachine({
   id: "chat",
   initial: "idle",
   context: {
-    chatInstances: new Map<string, ChatInstance>([
-      // Create project chat instance by default
-      [
-        PROJECT_CHAT_KEY,
-        {
-          threadId: null,
-          threads: [],
-          state: {
-            open: false,
-            responding: false,
-            maximized: false,
-            loading: false,
-          },
-          // resourceTarget is undefined for project chat
-        },
-      ],
-    ]),
+    chatInstances: new Map<string, ChatInstance>(),
     activeResourceTargets: [],
     focusedResourceTarget: null,
     pendingMessages: new Map<string, Message[]>(),
@@ -200,32 +197,53 @@ export const chatMachine = createMachine({
     // Project chat management
     OPEN_PROJECT_CHAT: {
       actions: assign({
-        chatInstances: ({ context }) => {
+        chatInstances: ({ context, event }) => {
           const newInstances = new Map(context.chatInstances);
-          const projectInstance = newInstances.get(PROJECT_CHAT_KEY);
-          if (projectInstance) {
+          const projectChatKey = getProjectChatKey(event.projectName);
+
+          // Check if project chat already exists
+          let projectInstance = newInstances.get(projectChatKey);
+          if (!projectInstance) {
+            // Create new project chat instance
+            projectInstance = {
+              threadId: null,
+              threads: [],
+              state: {
+                open: true,
+                responding: false,
+                maximized: false,
+                loading: false,
+              },
+              projectName: event.projectName,
+            };
+          } else {
+            // Update existing instance to open
             projectInstance.state.open = true;
-            newInstances.set(PROJECT_CHAT_KEY, projectInstance);
           }
+
+          newInstances.set(projectChatKey, projectInstance);
           return newInstances;
         },
-        focusedResourceTarget: () => PROJECT_CHAT_KEY,
+        focusedResourceTarget: ({ event }) =>
+          getProjectChatKey(event.projectName),
       }),
     },
 
     CLOSE_PROJECT_CHAT: {
       actions: assign({
-        chatInstances: ({ context }) => {
+        chatInstances: ({ context, event }) => {
           const newInstances = new Map(context.chatInstances);
-          const projectInstance = newInstances.get(PROJECT_CHAT_KEY);
+          const projectChatKey = getProjectChatKey(event.projectName);
+          const projectInstance = newInstances.get(projectChatKey);
           if (projectInstance) {
             projectInstance.state.open = false;
-            newInstances.set(PROJECT_CHAT_KEY, projectInstance);
+            newInstances.set(projectChatKey, projectInstance);
           }
           return newInstances;
         },
-        focusedResourceTarget: ({ context }) => {
-          return context.focusedResourceTarget === PROJECT_CHAT_KEY
+        focusedResourceTarget: ({ context, event }) => {
+          const projectChatKey = getProjectChatKey(event.projectName);
+          return context.focusedResourceTarget === projectChatKey
             ? null
             : context.focusedResourceTarget;
         },
@@ -282,10 +300,11 @@ export const chatMachine = createMachine({
       actions: assign({
         chatInstances: ({ context, event }) => {
           const newInstances = new Map(context.chatInstances);
-          const projectInstance = newInstances.get(PROJECT_CHAT_KEY);
+          const projectChatKey = getProjectChatKey(event.projectName);
+          const projectInstance = newInstances.get(projectChatKey);
           if (projectInstance) {
             projectInstance.threadId = event.threadId;
-            newInstances.set(PROJECT_CHAT_KEY, projectInstance);
+            newInstances.set(projectChatKey, projectInstance);
           }
           return newInstances;
         },
@@ -296,10 +315,11 @@ export const chatMachine = createMachine({
       actions: assign({
         chatInstances: ({ context, event }) => {
           const newInstances = new Map(context.chatInstances);
-          const projectInstance = newInstances.get(PROJECT_CHAT_KEY);
+          const projectChatKey = getProjectChatKey(event.projectName);
+          const projectInstance = newInstances.get(projectChatKey);
           if (projectInstance) {
             projectInstance.threads = event.threads;
-            newInstances.set(PROJECT_CHAT_KEY, projectInstance);
+            newInstances.set(projectChatKey, projectInstance);
           }
           return newInstances;
         },
@@ -310,13 +330,14 @@ export const chatMachine = createMachine({
       actions: assign({
         chatInstances: ({ context, event }) => {
           const newInstances = new Map(context.chatInstances);
-          const projectInstance = newInstances.get(PROJECT_CHAT_KEY);
+          const projectChatKey = getProjectChatKey(event.projectName);
+          const projectInstance = newInstances.get(projectChatKey);
           if (projectInstance) {
             projectInstance.state = {
               ...projectInstance.state,
               ...event.state,
             };
-            newInstances.set(PROJECT_CHAT_KEY, projectInstance);
+            newInstances.set(projectChatKey, projectInstance);
           }
           return newInstances;
         },

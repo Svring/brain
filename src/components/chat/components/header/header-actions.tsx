@@ -44,7 +44,7 @@ export function HeaderActions() {
     try {
       const updatedThreads = await getThreads(resourceTarget);
       if (resourceTarget === null) {
-        setProjectChatThreads(updatedThreads);
+        setProjectChatThreads(selectedProject!, updatedThreads);
       } else {
         setChatThreads(resourceTarget, updatedThreads);
       }
@@ -67,7 +67,7 @@ export function HeaderActions() {
           if (data?.thread_id) {
             // Set the newly created thread ID in the chat instance
             if (resourceTarget === null) {
-              setProjectChatThreadId(data.thread_id);
+              setProjectChatThreadId(selectedProject!, data.thread_id);
             } else {
               setChatThreadId(resourceTarget, data.thread_id);
             }
@@ -109,7 +109,7 @@ export function HeaderActions() {
             pressed={state.maximized}
             onPressedChange={(pressed) => {
               if (resourceTarget === null) {
-                setProjectChatState({ maximized: pressed });
+                setProjectChatState(selectedProject!, { maximized: pressed });
               } else {
                 setChatState(resourceTarget, { maximized: pressed });
               }
@@ -131,7 +131,7 @@ export function HeaderActions() {
           <Button
             onClick={() => {
               if (resourceTarget === null) {
-                closeProjectChat();
+                closeProjectChat(selectedProject!);
               } else {
                 closeChat(resourceTarget);
                 clearSelectedResource(); // Clear selected resource when closing resource chat

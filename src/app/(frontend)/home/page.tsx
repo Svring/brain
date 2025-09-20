@@ -21,10 +21,7 @@ import { useStreamContext } from "@/components/provider/stream-provider";
 import { LayoutTemplate } from "lucide-react";
 
 export default function HomePage() {
-  const {
-    createNewThread,
-    getThreads,
-  } = useThreads();
+  const { createNewThread, getThreads } = useThreads();
 
   const { messages, submitWithContext, stop, isLoading } = useStreamContext();
 
@@ -73,7 +70,7 @@ export default function HomePage() {
               className="flex-1 overflow-y-auto py-8"
             >
               <div className="max-w-3xl mx-auto w-full">
-                <AiMessages 
+                <AiMessages
                   scrollRef={messagesScrollRef}
                   messages={messages}
                   isLoading={isLoading}

@@ -22,7 +22,7 @@ import { useThreads } from "@/components/provider/thread-provider";
 //   useFlowgraphState,
 // } from "@/contexts/flowgraph/flowgraph-context";
 import { useProjectActions } from "@/contexts/project/project-context";
-import { useChatState } from "@/contexts/chat/chat-context";
+import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
 import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
 import { cn } from "@/lib/utils";
 import { LoadingScreen } from "@/components/ui/loading-screen";
@@ -203,6 +203,7 @@ export default function ProjectPage() {
   const { selectProject, clearSelectedProject, clearSelectedProjectResources } =
     useProjectActions();
   const { activeResourceTargets, focusedResourceTarget } = useChatState();
+  const { closeChat, closeProjectChat } = useChatActions();
   const { refreshProject } = useProjectRefresh(projectName);
 
   // Fetch project resources
@@ -215,7 +216,20 @@ export default function ProjectPage() {
     // refresh();
     return () => {
       clearSelectedProject();
+      // Close all chats when exiting the project page
+      closeProjectChat(projectName);
+      // Close all resource chats
+      activeResourceTargets.forEach((targetKey) => {
+        // Parse the target key back to ResourceTarget
+        try {
+          const resourceTarget = JSON.parse(targetKey);
+          closeChat(resourceTarget);
+        } catch (error) {
+          console.warn("Failed to parse resource target:", targetKey);
+        }
+      });
     };
+    // NOTE: To Agent: this dependency only need a projectName, do not add functions here.
   }, [projectName]);
 
   // Show loading screen while resources are being fetched

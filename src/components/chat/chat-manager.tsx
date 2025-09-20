@@ -5,7 +5,6 @@ import { useChatState } from "@/contexts/chat/chat-context";
 import { ChatInstanceProvider } from "@/components/provider/chat-instance-provider";
 import AiChatbox from "./components/chatbox";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { PROJECT_CHAT_KEY } from "@/contexts/chat/chat-machine";
 
 export function ChatManager() {
   const { activeResourceTargets, chatInstances, focusedResourceTarget } =
@@ -21,28 +20,28 @@ export function ChatManager() {
     return null;
   }
 
-  // Handle project chat (no resourceTarget)
-  if (focusedResourceTarget === PROJECT_CHAT_KEY) {
+  // Handle project chat (has projectName)
+  if (focusedChatInstance.projectName) {
     return (
-      <ChatInstanceProvider key={PROJECT_CHAT_KEY} resourceTarget={null}>
+      <ChatInstanceProvider key={focusedResourceTarget} projectName={focusedChatInstance.projectName}>
         <AiChatbox />
       </ChatInstanceProvider>
     );
   }
 
   // Handle resource chat (has resourceTarget)
-  if (!focusedChatInstance.resourceTarget) {
-    return null;
+  if (focusedChatInstance.resourceTarget) {
+    return (
+      <ChatInstanceProvider
+        key={focusedResourceTarget}
+        resourceTarget={focusedChatInstance.resourceTarget}
+      >
+        <AiChatbox />
+      </ChatInstanceProvider>
+    );
   }
 
-  return (
-    <ChatInstanceProvider
-      key={focusedResourceTarget}
-      resourceTarget={focusedChatInstance.resourceTarget}
-    >
-      <AiChatbox />
-    </ChatInstanceProvider>
-  );
+  return null;
 }
 
 export default ChatManager;

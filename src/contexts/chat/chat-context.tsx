@@ -5,7 +5,7 @@ import { useMachine } from "@xstate/react";
 import { createContext, type ReactNode, useContext, useEffect } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import type { Thread, Message } from "@langchain/langgraph-sdk";
-import { chatMachine, type ChatSectionState, serializeResourceTarget, PROJECT_CHAT_KEY, serializeTargetKey } from "@/contexts/chat/chat-machine";
+import { chatMachine, type ChatSectionState, serializeResourceTarget, getProjectChatKey, serializeTargetKey } from "@/contexts/chat/chat-machine";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useProjectActions } from "../project/project-context";
 import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
@@ -57,13 +57,15 @@ export function useChatState() {
   };
   
   // Helper to get project chat instance
-  const getProjectChatInstance = () => {
-    return state.context.chatInstances.get(PROJECT_CHAT_KEY);
+  const getProjectChatInstance = (projectName: string) => {
+    const projectChatKey = getProjectChatKey(projectName);
+    return state.context.chatInstances.get(projectChatKey);
   };
   
   // Helper to check if project chat is focused
-  const isProjectChatFocused = () => {
-    return state.context.focusedResourceTarget === PROJECT_CHAT_KEY;
+  const isProjectChatFocused = (projectName: string) => {
+    const projectChatKey = getProjectChatKey(projectName);
+    return state.context.focusedResourceTarget === projectChatKey;
   };
   
   // Helper to get pending messages for a specific target
@@ -115,16 +117,16 @@ export function useChatActions() {
       send({ type: "SET_CHAT_STATE", resourceTarget, state: chatState }),
 
     // Project chat management
-    openProjectChat: () => send({ type: "OPEN_PROJECT_CHAT" }),
-    closeProjectChat: () => send({ type: "CLOSE_PROJECT_CHAT" }),
+    openProjectChat: (projectName: string) => send({ type: "OPEN_PROJECT_CHAT", projectName }),
+    closeProjectChat: (projectName: string) => send({ type: "CLOSE_PROJECT_CHAT", projectName }),
     
     // Project chat state management
-    setProjectChatThreadId: (threadId: string | null) =>
-      send({ type: "SET_PROJECT_CHAT_THREAD_ID", threadId }),
-    setProjectChatThreads: (threads: Thread[]) =>
-      send({ type: "SET_PROJECT_CHAT_THREADS", threads }),
-    setProjectChatState: (chatState: Partial<ChatSectionState>) =>
-      send({ type: "SET_PROJECT_CHAT_STATE", state: chatState }),
+    setProjectChatThreadId: (projectName: string, threadId: string | null) =>
+      send({ type: "SET_PROJECT_CHAT_THREAD_ID", projectName, threadId }),
+    setProjectChatThreads: (projectName: string, threads: Thread[]) =>
+      send({ type: "SET_PROJECT_CHAT_THREADS", projectName, threads }),
+    setProjectChatState: (projectName: string, chatState: Partial<ChatSectionState>) =>
+      send({ type: "SET_PROJECT_CHAT_STATE", projectName, state: chatState }),
 
     // Pending message management
     addPendingMessage: (resourceTarget: ResourceTarget | null, message: Message) =>

@@ -22,6 +22,7 @@ import { StarBorder } from "@/components/ui/star-border";
 import { cn } from "@/lib/utils";
 import { useFlowgraphActions } from "@/contexts/flowgraph/flowgraph-context";
 import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
+import { useProjectState } from "@/contexts/project/project-context";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
@@ -43,7 +44,8 @@ export function FlowgraphActions({
   const [searchTerm, setSearchTerm] = useState("");
   const { fitView, refresh } = useFlowgraphActions();
   const { openProjectChat } = useChatActions();
-  const { isProjectChatFocused, focusedResourceTarget } = useChatState();
+  const { focusedResourceTarget } = useChatState();
+  const { selectedProject } = useProjectState();
   const queryClient = useQueryClient();
   const { project, devbox, cluster, launchpad, objectstorage } =
     useTRPCClients();
@@ -56,7 +58,9 @@ export function FlowgraphActions({
   };
 
   const handleOpenProjectChat = () => {
-    openProjectChat();
+    if (selectedProject) {
+      openProjectChat(selectedProject);
+    }
   };
 
   const handleRefresh = () => {
