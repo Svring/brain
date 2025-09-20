@@ -7,14 +7,23 @@ import { AiMessages } from "./messages";
 import { cn } from "@/lib/utils";
 
 export default function AiChatbox() {
-  const { isActive, state, submit, stop, isLoading, messages, interrupt } =
-    useChatInstance();
+  const {
+    isActive,
+    isFocused,
+    state,
+    resourceTarget,
+    submit,
+    stop,
+    isLoading,
+    messages,
+    interrupt,
+  } = useChatInstance();
 
   return (
     <div
       className={cn(
         "h-full w-full flex flex-col gap-2 border rounded-xl bg-background mr-2 transition-all duration-100",
-        state.open && isActive
+        state.open
           ? "translate-x-0 opacity-100"
           : "translate-x-full opacity-0"
       )}

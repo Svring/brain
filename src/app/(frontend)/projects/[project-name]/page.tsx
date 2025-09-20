@@ -22,6 +22,7 @@ import { useThreads } from "@/components/provider/thread-provider";
 //   useFlowgraphState,
 // } from "@/contexts/flowgraph/flowgraph-context";
 import { useProjectActions } from "@/contexts/project/project-context";
+import { useChatState } from "@/contexts/chat/chat-context";
 import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
 import { cn } from "@/lib/utils";
 import { LoadingScreen } from "@/components/ui/loading-screen";
@@ -201,6 +202,7 @@ export default function ProjectPage() {
   const projectName = params["project-name"];
   const { selectProject, clearSelectedProject, clearSelectedProjectResources } =
     useProjectActions();
+  const { activeResourceTargets, focusedResourceTarget } = useChatState();
   const { refreshProject } = useProjectRefresh(projectName);
 
   // Fetch project resources
@@ -228,9 +230,16 @@ export default function ProjectPage() {
     );
   }
 
+  const hasFocusedChat = !!focusedResourceTarget;
+
   return (
     <div className="relative h-screen w-full flex overflow-hidden">
-      <div className="relative h-full w-full">
+      <div
+        className={cn(
+          "relative h-full transition-all duration-300 ease-in-out",
+          hasFocusedChat ? "w-[65%]" : "w-full"
+        )}
+      >
         <ProjectFlowWithLoading
           projectName={projectName}
           sidebarChatMaximized={false}
@@ -239,7 +248,12 @@ export default function ProjectPage() {
           onRefresh={refreshProject}
         />
       </div>
-      <div className="h-full w-0">
+      <div
+        className={cn(
+          "h-full shrink-0 transition-all duration-300 ease-in-out",
+          hasFocusedChat ? "w-[35%] p-2 pl-0 min-w-md" : "w-0"
+        )}
+      >
         <ChatManager />
       </div>
     </div>

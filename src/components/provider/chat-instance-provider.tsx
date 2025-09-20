@@ -64,17 +64,18 @@ export function ChatInstanceProvider({
 
   // Log chat instance state changes
   useEffect(() => {
-    console.log("ChatInstanceProvider - State Change:", {
-      resourceTarget,
-      resourceTargetKey: serializeResourceTarget(resourceTarget),
-      isActive,
-      isFocused,
-      hasChatInstance: !!chatInstance,
-      threadId: chatInstance?.threadId,
-      threadCount: chatInstance?.threads?.length || 0,
-      state: chatInstance?.state,
-    });
-  }, [resourceTarget, isActive, isFocused, chatInstance]);
+    // console.log("ChatInstanceProvider - State Change:", {
+    //   resourceTarget,
+    //   resourceTargetKey: serializeResourceTarget(resourceTarget),
+    //   isActive,
+    //   isFocused,
+    //   hasChatInstance: !!chatInstance,
+    //   threadId: chatInstance?.threadId,
+    //   threadCount: chatInstance?.threads?.length || 0,
+    //   state: chatInstance?.state,
+    //   globalFocusedTarget: focusedResourceTarget
+    // });
+  }, [resourceTarget, isActive, isFocused, chatInstance, focusedResourceTarget]);
 
   // Use useStream for this chat instance
   const streamValue = useStream({

@@ -7,21 +7,26 @@ import AiChatbox from "./components/chatbox";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 export function ChatManager() {
-  const { activeResourceTargets, chatInstances } = useChatState();
+  const { activeResourceTargets, chatInstances, focusedResourceTarget } =
+    useChatState();
+
+  // Only render the focused chat instance
+  if (!focusedResourceTarget) {
+    return null;
+  }
+
+  const focusedChatInstance = chatInstances.get(focusedResourceTarget);
+  if (!focusedChatInstance?.resourceTarget) {
+    return null;
+  }
 
   return (
-    <>
-      {activeResourceTargets.map((resourceTargetKey) => {
-        const chatInstance = chatInstances.get(resourceTargetKey);
-        if (!chatInstance?.resourceTarget) return null;
-        
-        return (
-          <ChatInstanceProvider key={resourceTargetKey} resourceTarget={chatInstance.resourceTarget}>
-            <AiChatbox />
-          </ChatInstanceProvider>
-        );
-      })}
-    </>
+    <ChatInstanceProvider
+      key={focusedResourceTarget}
+      resourceTarget={focusedChatInstance.resourceTarget}
+    >
+      <AiChatbox />
+    </ChatInstanceProvider>
   );
 }
 
