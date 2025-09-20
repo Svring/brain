@@ -28,7 +28,6 @@ export function AiMessages({
   isLoading,
   interrupt,
 }: AiMessagesProps) {
-
   // State for interrupt data editing
   const [interruptData, setInterruptData] = useState<any>(null);
 
@@ -80,18 +79,18 @@ export function AiMessages({
     });
 
     // Add "Thinking..." indicator when streaming
-    // if (isLoading) {
-    //   messageElements.push(
-    //     <div key="thinking-indicator" className="mb-2">
-    //       <div className="flex justify-start">
-    //         <div className="flex items-center gap-2 text-xs opacity-70 px-1">
-    //           <Loader2 className="w-3 h-3 animate-spin" />
-    //           <span>Thinking...</span>
-    //         </div>
-    //       </div>
-    //     </div>
-    //   );
-    // }
+    if (isLoading) {
+      messageElements.push(
+        <div key="thinking-indicator" className="mb-2">
+          <div className="flex justify-start">
+            <div className="flex items-center gap-2 text-xs opacity-70 px-1">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              <span>Thinking...</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     // Add interrupt UI below all messages if it exists
     // if (interruptData) {

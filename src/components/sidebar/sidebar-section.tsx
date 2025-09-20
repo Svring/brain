@@ -9,8 +9,6 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { useChatActions } from "@/contexts/chat/chat-context";
-import { useThreads } from "@/components/provider/thread-provider";
 
 // Types
 export interface NavigationItem {
@@ -46,19 +44,13 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
 export const MainSection: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const { closeSidebarChat } = useChatActions();
 
   const handleNavigation = (path: string) => {
     // If already on the target path, do nothing
     if (pathname === path) {
       return;
     }
-    if (path === "/home") {
-      closeSidebarChat();
-      router.push(path);
-    } else {
-      router.push(path);
-    }
+    router.push(path);
   };
 
   return (

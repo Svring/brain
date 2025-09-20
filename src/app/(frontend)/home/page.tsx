@@ -16,14 +16,11 @@ import {
 import { useRef, useState, useEffect } from "react";
 import { proposeProjectAction } from "@/lib/copilot/brain/project/copilot-project-actions";
 import Suggestions from "@/components/chat/components/suggestions";
-import { useThreads } from "@/components/provider/thread-provider";
-import { useStreamContext } from "@/components/provider/stream-provider";
+import { useHomeChat } from "@/components/provider/home-chat-provider";
 import { LayoutTemplate } from "lucide-react";
 
 export default function HomePage() {
-  const { createNewThread, getThreads } = useThreads();
-
-  const { messages, submitWithContext, stop, isLoading } = useStreamContext();
+  const { messages, submit, stop, isLoading } = useHomeChat();
 
   const { CreateProjectDialog, openDialog } = useProjectCreateDialog();
   const { LaunchpadCreateDialog, openDialog: openLaunchpadDialog } =
@@ -96,7 +93,7 @@ export default function HomePage() {
             <AiChatInput
               className={`max-w-3xl${!showMessages ? " min-h-[140px]" : ""}`}
               exhibition={!showMessages}
-              onSubmit={submitWithContext}
+              onSubmit={submit}
               onStop={stop}
               isLoading={isLoading}
             />
