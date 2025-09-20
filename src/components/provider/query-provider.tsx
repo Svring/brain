@@ -19,7 +19,7 @@ function makeQueryClient() {
         refetchOnMount: true,
         refetchOnWindowFocus: true,
         refetchOnReconnect: true,
-        refetchInterval: 10 * 1000, // Auto-refetch every 10 seconds
+        refetchInterval: 100000 * 1000, // Auto-refetch every 10 seconds
       },
     },
     mutationCache: new MutationCache({
@@ -57,7 +57,7 @@ export default function QueryProvider({
   return (
     <QueryClientProvider client={queryClient}>
       <TRPCProvider queryClient={queryClient}>{children}</TRPCProvider>
-      {/* <ReactQueryDevtools buttonPosition="bottom-left" initialIsOpen={false} /> */}
+      <ReactQueryDevtools buttonPosition="bottom-left" initialIsOpen={false} />
     </QueryClientProvider>
   );
 }

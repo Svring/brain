@@ -5,7 +5,7 @@ import { useProjectState } from "@/contexts/project/project-context";
 
 export const useInvalidateQueries = () => {
   const queryClient = useQueryClient();
-
+  const {project} = useTRPCClients();
   const invalidateQueries = (
     queryKeys: any[],
     invalidateProjectResources = false
@@ -13,6 +13,10 @@ export const useInvalidateQueries = () => {
     console.log("Invalidating queries:", queryKeys);
 
     const performInvalidation = async () => {
+      if(invalidateProjectResources) {
+        queryClient.invalidateQueries({ queryKey: project.getResources.queryKey()
+         });
+      }
       // Then invalidate the specific query keys
       const invalidationPromises = queryKeys.map(async (queryKey) => {
         return queryClient.invalidateQueries({ queryKey: queryKey });
