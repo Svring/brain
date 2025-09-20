@@ -90,7 +90,7 @@ export const launchpadRouter = t.router({
   update: t.procedure
     .input(launchpadUpdateFormSchema)
     .mutation(async ({ input, ctx }) => {
-      return await updateLaunchpadService(ctx, input.name!, input);
+      return await updateLaunchpadService(ctx, input);
     }),
 
   start: t.procedure

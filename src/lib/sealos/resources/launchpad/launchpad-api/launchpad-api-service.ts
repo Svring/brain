@@ -148,10 +148,11 @@ export async function createLaunchpadService(
 
 export async function updateLaunchpadService(
   context: SealosApiContext,
-  name: string,
   request: LaunchpadUpdateFormData
 ): Promise<any> {
-  return await runParallelAction(updateLaunchpad(context, name, request));
+  return await runParallelAction(
+    updateLaunchpad(context, request.name!, request)
+  );
 }
 
 export async function startLaunchpadService(

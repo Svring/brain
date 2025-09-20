@@ -91,6 +91,7 @@ function ProjectFlow({
   isLoading,
   nodes,
   edges,
+  onPaneClick,
 }: // onNodesChange,
 // onEdgesChange,
 {
@@ -101,6 +102,7 @@ function ProjectFlow({
   isLoading: boolean;
   nodes: any[];
   edges: any[];
+  onPaneClick: () => void;
   // onNodesChange: (changes: any) => void;
   // onEdgesChange: (changes: any) => void;
 }) {
@@ -145,6 +147,7 @@ function ProjectFlow({
       onEdgeClick={(event, edge) => {
         console.log("edge clicked", edge);
       }}
+      onPaneClick={onPaneClick}
     />
   );
 }
@@ -155,12 +158,14 @@ function ProjectFlowWithLoading({
   resourceTargets,
   isLoadingResources,
   onRefresh,
+  onPaneClick,
 }: {
   projectName: string;
   sidebarChatMaximized: boolean;
   resourceTargets: any[];
   isLoadingResources: boolean;
   onRefresh: () => void;
+  onPaneClick: () => void;
 }) {
   // console.log("resourceTargets", resourceTargets);
   // const { isLoading } = useFlowgraph(resourceTargets, isLoadingResources);
@@ -183,6 +188,7 @@ function ProjectFlowWithLoading({
         isLoading={isLoadingFlowgraphNodes}
         nodes={flowgraphNodes}
         edges={flowgraphEdges}
+        onPaneClick={onPaneClick}
         // onNodesChange={onNodesChange}
         // onEdgesChange={onEdgesChange}
       />
@@ -203,7 +209,7 @@ export default function ProjectPage() {
   const { selectProject, clearSelectedProject, clearSelectedProjectResources } =
     useProjectActions();
   const { activeResourceTargets, focusedResourceTarget } = useChatState();
-  const { closeChat, closeProjectChat } = useChatActions();
+  const { closeChat, closeProjectChat, openProjectChat } = useChatActions();
   const { refreshProject } = useProjectRefresh(projectName);
 
   // Fetch project resources
@@ -246,6 +252,34 @@ export default function ProjectPage() {
 
   const hasFocusedChat = !!focusedResourceTarget;
 
+  // Handle pane click to open/close project chat
+  const handlePaneClick = () => {
+    if (hasFocusedChat) {
+      // If any chat is open, close it
+      if (focusedResourceTarget) {
+        // Parse the focused target to determine if it's a project chat or resource chat
+        try {
+          // Check if it's a project chat key (starts with "__project__")
+          if (focusedResourceTarget.startsWith("__project__")) {
+            closeProjectChat(projectName);
+          } else {
+            // It's a resource chat, parse and close it
+            const resourceTarget = JSON.parse(focusedResourceTarget);
+            closeChat(resourceTarget);
+          }
+        } catch (error) {
+          console.warn(
+            "Failed to parse focused resource target:",
+            focusedResourceTarget
+          );
+        }
+      }
+    } else {
+      // No chat is open, open project chat
+      openProjectChat(projectName);
+    }
+  };
+
   return (
     <div className="relative h-screen w-full overflow-hidden">
       <div
@@ -260,6 +294,7 @@ export default function ProjectPage() {
           resourceTargets={targets}
           isLoadingResources={isLoadingResources}
           onRefresh={refreshProject}
+          onPaneClick={handlePaneClick}
         />
       </div>
       <div
