@@ -43,7 +43,7 @@ export function FlowgraphActions({
   const [searchTerm, setSearchTerm] = useState("");
   const { fitView, refresh } = useFlowgraphActions();
   const { openProjectChat } = useChatActions();
-  const { isProjectChatFocused } = useChatState();
+  const { isProjectChatFocused, focusedResourceTarget } = useChatState();
   const queryClient = useQueryClient();
   const { project, devbox, cluster, launchpad, objectstorage } =
     useTRPCClients();
@@ -174,7 +174,7 @@ export function FlowgraphActions({
         </Tooltip>
 
         {/* Open Project Chat Button */}
-        {!isProjectChatFocused() && (
+        {!focusedResourceTarget && (
           <Tooltip>
             <TooltipTrigger asChild>
               <StarBorder

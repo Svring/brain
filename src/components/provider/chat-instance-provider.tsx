@@ -47,17 +47,21 @@ export function ChatInstanceProvider({
   resourceTarget,
   children,
 }: ChatInstanceProviderProps) {
-  const { getChatInstance, isResourceActive, focusedResourceTarget, getProjectChatInstance } =
-    useChatState();
-  const { 
-    setChatThreadId, 
-    setChatThreads, 
+  const {
+    getChatInstance,
+    isResourceActive,
+    focusedResourceTarget,
+    getProjectChatInstance,
+  } = useChatState();
+  const {
+    setChatThreadId,
+    setChatThreads,
     setChatState,
     setProjectChatThreadId,
     setProjectChatThreads,
-    setProjectChatState 
+    setProjectChatState,
   } = useChatActions();
-  const { getThreads } = useThreads();
+  const { getThreads, createNewThread } = useThreads();
   const { baseUrl, apiKey, modelName, contextWindowUsage, stage } =
     useLanggraphState();
   const { selectedProject, selectedProjectResources, selectedResourceContext } =
@@ -67,36 +71,15 @@ export function ChatInstanceProvider({
 
   // Handle project chat vs resource chat
   const isProjectChat = resourceTarget === null;
-  const chatInstance = isProjectChat 
-    ? getProjectChatInstance() 
+  const chatInstance = isProjectChat
+    ? getProjectChatInstance()
     : getChatInstance(resourceTarget);
-  const isActive = isProjectChat 
+  const isActive = isProjectChat
     ? true // project chat is always "active"
     : isResourceActive(resourceTarget);
   const isFocused = isProjectChat
     ? focusedResourceTarget === PROJECT_CHAT_KEY
     : focusedResourceTarget === serializeResourceTarget(resourceTarget);
-
-  // Log chat instance state changes
-  useEffect(() => {
-    // console.log("ChatInstanceProvider - State Change:", {
-    //   resourceTarget,
-    //   resourceTargetKey: serializeResourceTarget(resourceTarget),
-    //   isActive,
-    //   isFocused,
-    //   hasChatInstance: !!chatInstance,
-    //   threadId: chatInstance?.threadId,
-    //   threadCount: chatInstance?.threads?.length || 0,
-    //   state: chatInstance?.state,
-    //   globalFocusedTarget: focusedResourceTarget
-    // });
-  }, [
-    resourceTarget,
-    isActive,
-    isFocused,
-    chatInstance,
-    focusedResourceTarget,
-  ]);
 
   // Use useStream for this chat instance
   const streamValue = useStream({
@@ -165,10 +148,65 @@ export function ChatInstanceProvider({
           setChatThreads(resourceTarget, threads);
         }
 
+        // Auto-select first thread if threads exist and no thread is currently selected
+        if (threads.length > 0 && !chatInstance?.threadId) {
+          const firstThread = threads[0];
+          console.log("ChatInstanceProvider - Auto-selecting first thread:", {
+            threadId: firstThread.thread_id,
+            isProjectChat,
+            resourceTarget,
+          });
+          
+          if (isProjectChat) {
+            setProjectChatThreadId(firstThread.thread_id);
+          } else {
+            setChatThreadId(resourceTarget, firstThread.thread_id);
+          }
+        }
+        // Create new thread if no threads exist
+        else if (threads.length === 0 && !chatInstance?.threadId) {
+          console.log("ChatInstanceProvider - No threads found, creating new thread:", {
+            isProjectChat,
+            resourceTarget,
+          });
+          
+          createNewThread.mutate(
+            {
+              metadata: {
+                kubeconfig: auth?.kubeconfig,
+                projectName: selectedProject,
+                resourceTarget: resourceTarget,
+              },
+            },
+            {
+              onSuccess: (data: any) => {
+                if (data?.thread_id) {
+                  console.log("ChatInstanceProvider - New thread created:", {
+                    threadId: data.thread_id,
+                    isProjectChat,
+                    resourceTarget,
+                  });
+                  
+                  if (isProjectChat) {
+                    setProjectChatThreadId(data.thread_id);
+                  } else {
+                    setChatThreadId(resourceTarget, data.thread_id);
+                  }
+                }
+              },
+              onError: (error: any) => {
+                console.error("Failed to create new thread:", error);
+              },
+            }
+          );
+        }
+
         // Log active target and threads for debugging
         console.log("ChatInstanceProvider - Active Target:", {
           resourceTarget,
-          resourceTargetKey: resourceTarget ? serializeResourceTarget(resourceTarget) : PROJECT_CHAT_KEY,
+          resourceTargetKey: resourceTarget
+            ? serializeResourceTarget(resourceTarget)
+            : PROJECT_CHAT_KEY,
           isProjectChat,
           isActive,
           isFocused,
@@ -206,7 +244,7 @@ export function ChatInstanceProvider({
     isActive,
     isFocused,
     setChatThreadId: (threadId: string | null) =>
-      isProjectChat 
+      isProjectChat
         ? setProjectChatThreadId(threadId)
         : setChatThreadId(resourceTarget, threadId),
     setChatThreads: (threads: Thread[]) =>
