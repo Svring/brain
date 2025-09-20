@@ -78,7 +78,6 @@ const analyzeNetworkPrompt = `
 export function useDiagnoseNetwork(
   target: CustomResourceTarget | BuiltinResourceTarget
 ) {
-  const { selectedThreadId } = useThreads();
   const { submitWithContext } = useStreamContext();
 
   // Get container ports data for network diagnosis
@@ -103,15 +102,6 @@ export function useDiagnoseNetwork(
   // Use node select to handle the selection and message appending
   const { handleNodeSelect } = useNodeSelect({
     target,
-    messageType: "universal.diagnoseNetwork",
-    payload: {
-      containerStatus,
-      containerPortsData,
-      originalResource,
-      isContainerLoading,
-      containerError,
-      prompt: analyzeNetworkPrompt,
-    },
   });
 
   const diagnoseNetwork = useCallback(
@@ -120,38 +110,37 @@ export function useDiagnoseNetwork(
       handleNodeSelect();
 
       // Send message using submitWithContext
-      if (selectedThreadId) {
-        const networkStatusData = {
-          containerStatus,
-          containerPortsData,
-          originalResource,
-          isContainerLoading,
-          containerError,
-        };
+      // if (selectedThreadId) {
+      //   const networkStatusData = {
+      //     containerStatus,
+      //     containerPortsData,
+      //     originalResource,
+      //     isContainerLoading,
+      //     containerError,
+      //   };
 
-        submitWithContext({
-          messages: [
-            {
-              type: "system",
-              content: JSON.stringify({
-                type: "universal.diagnoseNetwork",
-                target,
-              }),
-            },
-            {
-              type: "system",
-              content:
-                analyzeNetworkPrompt +
-                "\n\n" +
-                JSON.stringify(networkStatusData),
-            },
-          ],
-        });
-      }
+      //   submitWithContext({
+      //     messages: [
+      //       {
+      //         type: "system",
+      //         content: JSON.stringify({
+      //           type: "universal.diagnoseNetwork",
+      //           target,
+      //         }),
+      //       },
+      //       {
+      //         type: "system",
+      //         content:
+      //           analyzeNetworkPrompt +
+      //           "\n\n" +
+      //           JSON.stringify(networkStatusData),
+      //       },
+      //     ],
+      //   });
+      // }
     },
     [
       handleNodeSelect,
-      selectedThreadId,
       submitWithContext,
       containerStatus,
       containerPortsData,

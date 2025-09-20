@@ -36,7 +36,6 @@ export default function ClusterNodeBackup({
 
   const { handleNodeSelect } = useNodeSelect({
     target,
-    messageType: "cluster.backup",
   });
 
   const clusterName = clusterObject?.name || "Unknown Cluster";

@@ -6,51 +6,49 @@ import { Button } from "@/components/ui/button";
 import { ArrowDown, Loader2 } from "lucide-react";
 import React, { useMemo, useEffect, useState } from "react";
 import { createHash } from "crypto";
-import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
 import type { Message } from "@langchain/langgraph-sdk";
-import { useThreads } from "@/components/provider/thread-provider";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { SystemMessageRenderer } from "./system-message-renderer";
 import { ToolResultRenderer } from "./tool-result-renderer";
 import { Interrupt } from "@langchain/langgraph-sdk";
-import { useStreamContext } from "@/components/provider/stream-provider";
 import ReactJson from "react-json-view";
 
 interface AiMessagesProps {
   scrollRef?: React.RefObject<HTMLDivElement | null>;
   className?: string;
-  // messages: Message[];
-  // isLoading: boolean;
-  // interrupt: Interrupt<unknown> | undefined;
+  messages: Message[];
+  isLoading: boolean;
+  interrupt?: Interrupt<unknown>;
 }
 
 export function AiMessages({
   scrollRef: externalScrollRef,
   className,
+  messages,
+  isLoading,
+  interrupt,
 }: AiMessagesProps) {
-  const { submitWithContext, interrupt, messages, isLoading } =
-    useStreamContext();
 
   // State for interrupt data editing
   const [interruptData, setInterruptData] = useState<any>(null);
 
   // Parse interrupt value when it changes
-  useEffect(() => {
-    if (interrupt?.value) {
-      try {
-        const parsedValue =
-          typeof interrupt.value === "string"
-            ? JSON.parse(interrupt.value)
-            : interrupt.value;
-        setInterruptData(parsedValue);
-      } catch (error) {
-        console.error("Failed to parse interrupt value:", error);
-        setInterruptData(null);
-      }
-    } else {
-      setInterruptData(null);
-    }
-  }, [interrupt?.value]);
+  // useEffect(() => {
+  //   if (interrupt?.value) {
+  //     try {
+  //       const parsedValue =
+  //         typeof interrupt.value === "string"
+  //           ? JSON.parse(interrupt.value)
+  //           : interrupt.value;
+  //       setInterruptData(parsedValue);
+  //     } catch (error) {
+  //       console.error("Failed to parse interrupt value:", error);
+  //       setInterruptData(null);
+  //     }
+  //   } else {
+  //     setInterruptData(null);
+  //   }
+  // }, [interrupt?.value]);
 
   const memoizedMessages = useMemo(() => {
     // Prevent error if messages is undefined or not an array
@@ -96,75 +94,75 @@ export function AiMessages({
     // }
 
     // Add interrupt UI below all messages if it exists
-    if (interrupt && interruptData) {
-      messageElements.push(
-        <div
-          key="interrupt-ui"
-          className="mt-4 p-4 border border-border-primary rounded-lg bg-background-secondary"
-        >
-          <p className="text-sm text-foreground mb-3">
-            Action: {interruptData.action}
-          </p>
+    // if (interruptData) {
+    //   messageElements.push(
+    //     <div
+    //       key="interrupt-ui"
+    //       className="mt-4 p-4 border border-border-primary rounded-lg bg-background-secondary"
+    //     >
+    //       <p className="text-sm text-foreground mb-3">
+    //         Action: {interruptData.action}
+    //       </p>
 
-          {interruptData.payload && (
-            <div className="mb-4">
-              <p className="text-sm text-foreground mb-2">Payload:</p>
-              <div className="border border-border-primary rounded p-2 bg-background">
-                <ReactJson
-                  src={interruptData.payload}
-                  theme="pop"
-                  displayDataTypes={false}
-                  displayObjectSize={false}
-                  enableClipboard={false}
-                  onEdit={false}
-                  onAdd={false}
-                  onDelete={false}
-                />
-              </div>
-            </div>
-          )}
+    //       {interruptData.payload && (
+    //         <div className="mb-4">
+    //           <p className="text-sm text-foreground mb-2">Payload:</p>
+    //           <div className="border border-border-primary rounded p-2 bg-background">
+    //             <ReactJson
+    //               src={interruptData.payload}
+    //               theme="pop"
+    //               displayDataTypes={false}
+    //               displayObjectSize={false}
+    //               enableClipboard={false}
+    //               onEdit={false}
+    //               onAdd={false}
+    //               onDelete={false}
+    //             />
+    //           </div>
+    //         </div>
+    //       )}
 
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              onClick={() => {
-                const responseData = {
-                  action: interruptData.action,
-                  payload: interruptData.payload,
-                  approve: true,
-                };
-                submitWithContext({
-                  messages: [],
-                  command: { resume: JSON.stringify(responseData) },
-                });
-              }}
-            >
-              Confirm
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                const responseData = {
-                  action: interruptData.action,
-                  payload: interruptData.payload,
-                  approve: false,
-                };
-                submitWithContext({
-                  messages: [],
-                  command: { resume: JSON.stringify(responseData) },
-                });
-              }}
-            >
-              Reject
-            </Button>
-          </div>
-        </div>
-      );
-    }
+    //       <div className="flex gap-2">
+    //         <Button
+    //           size="sm"
+    //           onClick={() => {
+    //             const responseData = {
+    //               action: interruptData.action,
+    //               payload: interruptData.payload,
+    //               approve: true,
+    //             };
+    //             // submitWithContext({
+    //             //   messages: [],
+    //             //   command: { resume: JSON.stringify(responseData) },
+    //             // });
+    //           }}
+    //         >
+    //           Confirm
+    //         </Button>
+    //         <Button
+    //           size="sm"
+    //           variant="outline"
+    //           onClick={() => {
+    //             const responseData = {
+    //               action: interruptData.action,
+    //               payload: interruptData.payload,
+    //               approve: false,
+    //             };
+    //             // submitWithContext({
+    //             //   messages: [],
+    //             //   command: { resume: JSON.stringify(responseData) },
+    //             // });
+    //           }}
+    //         >
+    //           Reject
+    //         </Button>
+    //       </div>
+    //     </div>
+    //   );
+    // }
 
     return messageElements;
-  }, [messages, interrupt, interruptData]);
+  }, [messages]);
 
   const contentHash = useMemo(() => {
     // Prevent error if messages is undefined or not an array

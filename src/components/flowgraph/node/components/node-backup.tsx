@@ -21,7 +21,6 @@ interface NodeBackupProps {
 export default function NodeBackup({ target }: NodeBackupProps) {
   const { handleNodeSelect } = useNodeSelect({
     target,
-    messageType: "info.clusterBackup",
   });
 
   return (

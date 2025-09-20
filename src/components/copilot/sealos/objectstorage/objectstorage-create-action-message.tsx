@@ -14,7 +14,6 @@ const ObjectStorageCreationSuccessMessage = ({ args }: { args: any }) => {
   const target = convertResourceTypeToTarget("objectstoragebucket", args.name);
   const { handleNodeSelect } = useNodeSelect({
     target,
-    messageType: "objectstorage.detail",
   });
 
   return (

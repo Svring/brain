@@ -35,7 +35,6 @@ export default function BaseNodeWrapper({
   // Use the new hook for node selection
   const { handleNodeSelect } = useNodeSelect({
     target: target,
-    messageType,
   });
 
   // Get resource metrics status and delete status (only when target exists)

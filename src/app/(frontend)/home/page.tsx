@@ -16,26 +16,17 @@ import {
 import { useRef, useState, useEffect } from "react";
 import { proposeProjectAction } from "@/lib/copilot/brain/project/copilot-project-actions";
 import Suggestions from "@/components/chat/components/suggestions";
-import { useChatState } from "@/contexts/chat/chat-context";
 import { useThreads } from "@/components/provider/thread-provider";
 import { useStreamContext } from "@/components/provider/stream-provider";
-import { LoadingScreen } from "@/components/ui/loading-screen";
-import { useThreadStateAtCheckpoint } from "@/hooks/langgraph/use-thread-state-at-checkpoint";
-import { useAuthState } from "@/contexts/auth/auth-context";
-import { useProjectState } from "@/contexts/project/project-context";
-import { useMount } from "@reactuses/core";
 import { LayoutTemplate } from "lucide-react";
 
 export default function HomePage() {
   const {
     createNewThread,
     getThreads,
-    setThreads,
-    selectThread,
-    selectedThreadId,
   } = useThreads();
 
-  const { messages, isLoading } = useStreamContext();
+  const { messages, submitWithContext, stop, isLoading } = useStreamContext();
 
   const { CreateProjectDialog, openDialog } = useProjectCreateDialog();
   const { LaunchpadCreateDialog, openDialog: openLaunchpadDialog } =
@@ -82,7 +73,11 @@ export default function HomePage() {
               className="flex-1 overflow-y-auto py-8"
             >
               <div className="max-w-3xl mx-auto w-full">
-                <AiMessages scrollRef={messagesScrollRef} />
+                <AiMessages 
+                  scrollRef={messagesScrollRef}
+                  messages={messages}
+                  isLoading={isLoading}
+                />
               </div>
             </div>
           </motion.div>
@@ -104,6 +99,9 @@ export default function HomePage() {
             <AiChatInput
               className={`max-w-3xl${!showMessages ? " min-h-[140px]" : ""}`}
               exhibition={!showMessages}
+              onSubmit={submitWithContext}
+              onStop={stop}
+              isLoading={isLoading}
             />
             {!showMessages && (
               <>

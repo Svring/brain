@@ -22,73 +22,40 @@ import { Message, Thread } from "@langchain/langgraph-sdk";
 import { Spinner } from "@/components/ui/spinner";
 import { getResourceDefaultIcon } from "@/lib/sealos/sealos-utils";
 import { useInterval } from "@reactuses/core";
+import { useChatInstance } from "@/components/provider/chat-instance-provider";
+import { useChatActions } from "@/contexts/chat/chat-context";
 
 export function HistoryDropdown() {
-  const {
-    selectedThreadId,
-    selectThread,
-    threads,
-    getThreads,
-    setThreads,
-    deleteThread,
-    threadsLoading,
-  } = useThreads();
-  const { selectedResource, selectedProject } = useProjectState();
+  const { resourceTarget, threadId, threads, setChatThreadId, setChatThreads } = useChatInstance();
+  const { getThreads, deleteThread } = useThreads();
+  const { selectedProject } = useProjectState();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [threadToDelete, setThreadToDelete] = useState<string | null>(null);
 
   // Fetch threads periodically
   useInterval(async () => {
-    const threads = await getThreads();
-    setThreads(threads);
+    const threads = await getThreads(resourceTarget);
+    setChatThreads(threads);
   }, 10000);
 
-  // Filter and limit threads based on selectedResource and selectedProject
+  // Filter and limit threads based on resourceTarget
   const filteredAndLimitedThreads = useMemo(() => {
     if (!threads || threads.length === 0) return [];
 
-    let filteredThreads = threads;
-
-    // Filter by selectedResource
-    if (selectedResource) {
-      // If selectedResource exists, only show threads with matching resourceTarget
-      filteredThreads = threads.filter((thread) => {
-        const metadata = (thread as any)?.metadata;
-        if (metadata?.resourceTarget) {
-          try {
-            const resourceTarget = JSON.parse(metadata.resourceTarget);
-            return (
-              resourceTarget?.name === selectedResource.name &&
-              resourceTarget?.resourceType === selectedResource.resourceType
-            );
-          } catch (parseError) {
-            return false;
-          }
-        }
-        return false;
-      });
-    } else {
-      // If no selectedResource, only show threads with null resourceTarget
-      filteredThreads = threads.filter((thread) => {
-        const metadata = (thread as any)?.metadata;
-        return !metadata?.resourceTarget;
-      });
-    }
-
     // Sort by updated_at (most recent first) and limit to 10
-    return filteredThreads
+    return threads
       .sort((a, b) => {
         const dateA = new Date(a.updated_at || 0).getTime();
         const dateB = new Date(b.updated_at || 0).getTime();
         return dateB - dateA;
       })
       .slice(0, 10);
-  }, [threads, selectedResource, selectedProject]);
+  }, [threads]);
 
   const handleThreadSelect = async (threadId: string): Promise<void> => {
-    // Select the thread first
-    selectThread(threadId);
+    // Set the selected thread ID in the chat instance
+    setChatThreadId(threadId);
   };
 
   const handleDeleteThread = (threadId: string, event: React.MouseEvent) => {
@@ -205,12 +172,7 @@ export function HistoryDropdown() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="max-w-xs">
-              {threadsLoading ? (
-                <div className="p-2 text-sm text-muted-foreground text-center flex items-center justify-center">
-                  <Spinner size={16} />
-                  <span className="ml-2">Loading threads...</span>
-                </div>
-              ) : filteredAndLimitedThreads?.length ? (
+              {filteredAndLimitedThreads?.length ? (
                 <div className="max-h-80 overflow-y-auto space-y-1">
                   {filteredAndLimitedThreads.map((thread) => {
                   const resourceInfo = getThreadResourceInfo(thread);
@@ -224,7 +186,7 @@ export function HistoryDropdown() {
                       onClick={() => handleThreadSelect(thread.thread_id)}
                       className={cn(
                         "p-2 cursor-pointer",
-                        thread.thread_id === selectedThreadId &&
+                        thread.thread_id === threadId &&
                           "bg-muted/50 border border-theme-blue/30 rounded-md"
                       )}
                     >
@@ -299,8 +261,8 @@ export function HistoryDropdown() {
                 </div>
               ) : (
                 <div className="p-2 text-sm text-muted-foreground text-center">
-                  {selectedResource 
-                    ? `No chat history for ${selectedResource.name}` 
+                  {resourceTarget 
+                    ? `No chat history for ${resourceTarget.name}` 
                     : "No general chat history available"
                   }
                 </div>

@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { Background, ReactFlow, Controls } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
-import AiChatbox from "@/components/chat/components/chatbox";
+import ChatManager from "@/components/chat/chat-manager";
 import { FlowgraphBreadcrumb } from "@/components/flowgraph/flowgraph-breadcrumb";
 import { FlowgraphCommandHint } from "@/components/flowgraph/flowgraph-command-hint";
 import { FlowgraphFocusHint } from "@/components/flowgraph/flowgraph-focus-hint";
@@ -16,7 +16,6 @@ import FloatingConnectionLine from "@/components/flowgraph/edge/floating-connect
 
 // import useCopilotActions from "@/hooks/copilot/use-copilot-actions";
 import { useFlowgraphCommand } from "@/hooks/flowgraph/use-flowgraph-command";
-import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
 import { useThreads } from "@/components/provider/thread-provider";
 // import {
 //   useFlowgraphActions,
@@ -202,8 +201,6 @@ export default function ProjectPage() {
   const projectName = params["project-name"];
   const { selectProject, clearSelectedProject, clearSelectedProjectResources } =
     useProjectActions();
-  const { sidebarChatOpen, sidebarChatMaximized } = useChatState();
-  const { closeSidebarChat } = useChatActions();
   const { refreshProject } = useProjectRefresh(projectName);
 
   // Fetch project resources
@@ -216,7 +213,6 @@ export default function ProjectPage() {
     // refresh();
     return () => {
       clearSelectedProject();
-      closeSidebarChat();
     };
   }, [projectName]);
 
@@ -234,35 +230,17 @@ export default function ProjectPage() {
 
   return (
     <div className="relative h-screen w-full flex overflow-hidden">
-      <div
-        className={cn(
-          "relative h-full transition-all duration-300 ease-in-out",
-          sidebarChatOpen && !sidebarChatMaximized
-            ? "w-[65%]"
-            : sidebarChatMaximized
-            ? "w-[60%]"
-            : "w-full"
-        )}
-      >
+      <div className="relative h-full w-full">
         <ProjectFlowWithLoading
           projectName={projectName}
-          sidebarChatMaximized={sidebarChatMaximized}
+          sidebarChatMaximized={false}
           resourceTargets={targets}
           isLoadingResources={isLoadingResources}
           onRefresh={refreshProject}
         />
       </div>
-      <div
-        className={cn(
-          "h-full shrink-0 transition-all duration-300 ease-in-out",
-          sidebarChatOpen
-            ? sidebarChatMaximized
-              ? "w-[40%] p-2 min-w-md"
-              : "w-[35%] p-2 pl-0 min-w-md"
-            : "w-0"
-        )}
-      >
-        <AiChatbox />
+      <div className="h-full w-0">
+        <ChatManager />
       </div>
     </div>
   );

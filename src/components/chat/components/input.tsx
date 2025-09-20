@@ -1,32 +1,33 @@
 "use client";
 
 import { PromptInputBox } from "./prompt-box";
-import { useStreamContext } from "@/components/provider/stream-provider";
-import { useThreads } from "@/components/provider/thread-provider";
 import type { Message } from "@langchain/langgraph-sdk";
 
 interface AiChatInputProps {
   className?: string;
   exhibition?: boolean;
+  onSubmit: (data: { messages: Message[]; stage?: string; command?: any }) => any;
+  onStop: () => void;
+  isLoading: boolean;
 }
 
 export function AiChatInput({
   className,
   exhibition = false,
+  onSubmit,
+  onStop,
+  isLoading,
 }: AiChatInputProps) {
-  const { submitWithContext, stop, isLoading } = useStreamContext();
-  // const { isStreaming } = useThreads();
-
   const handleSendMessage = async (message: string) => {
     const userMessage: Message = {
       type: "human",
       content: message.trim(),
     };
-    submitWithContext({ messages: [userMessage] });
+    onSubmit({ messages: [userMessage] });
   };
 
   const handleStop = () => {
-    stop();
+    onStop();
   };
 
   return (

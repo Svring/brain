@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import { Plus, ChevronRight, Focus, History } from "lucide-react";
-import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
+import { useChatActions } from "@/contexts/chat/chat-context";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -15,14 +15,14 @@ import { useReactFlow } from "@xyflow/react";
 import { HistoryDropdown } from "./history-dropdown";
 import { useThreads } from "@/components/provider/thread-provider";
 import { useAuthState } from "@/contexts/auth/auth-context";
+import { useChatInstance } from "@/components/provider/chat-instance-provider";
 
 export function HeaderActions() {
-  const { selectedResource, selectedProject } = useProjectState();
-  const { sidebarChatMaximized } = useChatState();
-  const { closeSidebarChat, maximizeSidebar, minimizeSidebar } =
-    useChatActions();
+  const { selectedProject } = useProjectState();
+  const { resourceTarget, state } = useChatInstance();
+  const { closeChat, setChatState, setChatThreadId } = useChatActions();
   const { fitView } = useReactFlow();
-  const { createNewThread, selectThread } = useThreads();
+  const { createNewThread } = useThreads();
   const { auth } = useAuthState();
 
   const handleNewChat = () => {
@@ -31,14 +31,14 @@ export function HeaderActions() {
         metadata: {
           kubeconfig: auth?.kubeconfig,
           projectName: selectedProject,
-          resourceTarget: selectedResource,
+          resourceTarget: resourceTarget,
         },
       },
       {
         onSuccess: (data: any) => {
           if (data?.thread_id) {
-            // Select the newly created thread
-            selectThread(data.thread_id);
+            // Set the newly created thread ID in the chat instance
+            setChatThreadId(resourceTarget, data.thread_id);
           }
         },
         onError: (error: any) => {
@@ -70,26 +70,24 @@ export function HeaderActions() {
       <Tooltip>
         <TooltipTrigger asChild>
           <Toggle
-            pressed={sidebarChatMaximized}
+            pressed={state.maximized}
             onPressedChange={(pressed) =>
-              selectedResource
-                ? pressed
-                  ? maximizeSidebar()
-                  : minimizeSidebar()
+              resourceTarget
+                ? setChatState(resourceTarget, { maximized: pressed })
                 : fitView({ padding: 0.2, duration: 300, maxZoom: 1 })
             }
             size="sm"
             className={cn(
               "h-8 w-8 hover:text-theme-blue",
-              sidebarChatMaximized && "text-theme-blue"
+              state.maximized && "text-theme-blue"
             )}
           >
             <Focus className="h-4 w-4" />
           </Toggle>
         </TooltipTrigger>
         <TooltipContent>
-          {selectedResource
-            ? sidebarChatMaximized
+          {resourceTarget
+            ? state.maximized
               ? "Unfocus"
               : "Focus"
             : "Fit View"}
@@ -99,7 +97,7 @@ export function HeaderActions() {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            onClick={closeSidebarChat}
+            onClick={() => closeChat(resourceTarget)}
             size="icon"
             variant="ghost"
             className="h-8 w-8"

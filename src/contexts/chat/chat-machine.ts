@@ -2,6 +2,7 @@
 
 import { assign, createMachine } from "xstate";
 import { Thread } from "@langchain/langgraph-sdk";
+import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 export interface ChatSectionState {
   open: boolean;
@@ -10,37 +11,47 @@ export interface ChatSectionState {
   loading: boolean;
 }
 
-export interface PendingMessage {
-  timestamp: Date;
-  type: "append" | "send";
-  messageType: string;
-  target: any;
-  payload?: any;
+export interface ChatInstance {
+  threadId: string | null;
+  threads: Thread[];
+  state: ChatSectionState;
+  resourceTarget?: ResourceTarget;
 }
 
 export interface ChatContextState {
-  sidebarChat: ChatSectionState;
-  floatingChat: ChatSectionState;
-  selectedThreadId: string | null;
-  threads: Thread[];
-  pendingMessage: PendingMessage | null;
-  scrollTrigger: number;
+  chatInstances: Map<string, ChatInstance>; // Map<resourceTarget, ChatInstance>
+  activeResourceTargets: string[];
+  focusedResourceTarget: string | null;
 }
 
 export type ChatEvent =
-  | { type: "SET_SIDEBAR_CHAT_OPEN"; open: boolean }
-  | { type: "SET_FLOATING_CHAT_OPEN"; open: boolean }
-  | { type: "SET_SIDEBAR_RESPONDING"; responding: boolean }
-  | { type: "SET_FLOATING_RESPONDING"; responding: boolean }
-  | { type: "SET_SIDEBAR_MAXIMIZED"; maximized: boolean }
-  | { type: "SET_FLOATING_MAXIMIZED"; maximized: boolean }
-  | { type: "SET_SIDEBAR_LOADING"; loading: boolean }
-  | { type: "SET_FLOATING_LOADING"; loading: boolean }
-  | { type: "SELECT_THREAD"; threadId: string | null }
-  | { type: "SET_THREADS"; threads: Thread[] }
-  | { type: "SET_PENDING_MESSAGE"; message: PendingMessage | null }
-  | { type: "CLEAR_PENDING_MESSAGE" }
-  | { type: "TRIGGER_SCROLL_TO_BOTTOM" };
+  // Multi-instance chat management
+  | { type: "OPEN_CHAT"; resourceTarget: ResourceTarget }
+  | { type: "CLOSE_CHAT"; resourceTarget: ResourceTarget }
+
+  // Per-instance state management
+  | {
+      type: "SET_CHAT_THREAD_ID";
+      resourceTarget: ResourceTarget;
+      threadId: string | null;
+    }
+  | {
+      type: "SET_CHAT_THREADS";
+      resourceTarget: ResourceTarget;
+      threads: Thread[];
+    }
+  | {
+      type: "SET_CHAT_STATE";
+      resourceTarget: ResourceTarget;
+      state: Partial<ChatSectionState>;
+    };
+
+// Helper function to serialize resource target to string key
+export function serializeResourceTarget(
+  resourceTarget: ResourceTarget
+): string {
+  return JSON.stringify(resourceTarget);
+}
 
 export const chatMachine = createMachine({
   /** XState v5 generics */
@@ -48,116 +59,122 @@ export const chatMachine = createMachine({
   id: "chat",
   initial: "idle",
   context: {
-    sidebarChat: {
-      open: false,
-      responding: false,
-      maximized: false,
-      loading: false,
-    },
-    floatingChat: {
-      open: false,
-      responding: false,
-      maximized: false,
-      loading: false,
-    },
-    selectedThreadId: null,
-    threads: [],
-    pendingMessage: null,
-    scrollTrigger: 0,
+    chatInstances: new Map<string, ChatInstance>(),
+    activeResourceTargets: [],
+    focusedResourceTarget: null,
   },
   states: {
     idle: {},
   },
   on: {
-    SET_SIDEBAR_CHAT_OPEN: {
+    // Multi-instance chat management
+    OPEN_CHAT: {
       actions: assign({
-        sidebarChat: ({ context, event }) => ({
-          ...context.sidebarChat,
-          open: event.open,
-          // Reset maximized state when chat is closed
-          maximized: event.open ? context.sidebarChat.maximized : false,
-        }),
+        chatInstances: ({ context, event }) => {
+          const newInstances = new Map(context.chatInstances);
+          const resourceKey = serializeResourceTarget(event.resourceTarget);
+
+          // Check if chat already exists for this resource
+          if (newInstances.has(resourceKey)) {
+            // Chat already exists, just return existing instances
+            return newInstances;
+          }
+
+          // Create new chat instance
+          const newInstance: ChatInstance = {
+            threadId: null,
+            threads: [],
+            state: {
+              open: true,
+              responding: false,
+              maximized: false,
+              loading: false,
+            },
+            resourceTarget: event.resourceTarget,
+          };
+
+          newInstances.set(resourceKey, newInstance);
+          return newInstances;
+        },
+        activeResourceTargets: ({ context, event }) => {
+          const resourceKey = serializeResourceTarget(event.resourceTarget);
+
+          // Add to active list if not already there
+          return context.activeResourceTargets.includes(resourceKey)
+            ? context.activeResourceTargets
+            : [...context.activeResourceTargets, resourceKey];
+        },
+        focusedResourceTarget: ({ event }) => {
+          return serializeResourceTarget(event.resourceTarget);
+        },
       }),
     },
-    SET_FLOATING_CHAT_OPEN: {
+
+    CLOSE_CHAT: {
       actions: assign({
-        floatingChat: ({ context, event }) => ({
-          ...context.floatingChat,
-          open: event.open,
-        }),
+        chatInstances: ({ context, event }) => {
+          const newInstances = new Map(context.chatInstances);
+          const resourceKey = serializeResourceTarget(event.resourceTarget);
+          newInstances.delete(resourceKey);
+          return newInstances;
+        },
+        activeResourceTargets: ({ context, event }) => {
+          const resourceKey = serializeResourceTarget(event.resourceTarget);
+          return context.activeResourceTargets.filter(
+            (target) => target !== resourceKey
+          );
+        },
+        focusedResourceTarget: ({ context, event }) => {
+          const resourceKey = serializeResourceTarget(event.resourceTarget);
+          return context.focusedResourceTarget === resourceKey
+            ? null
+            : context.focusedResourceTarget;
+        },
       }),
     },
-    SET_SIDEBAR_RESPONDING: {
+
+    SET_CHAT_THREAD_ID: {
       actions: assign({
-        sidebarChat: ({ context, event }) => ({
-          ...context.sidebarChat,
-          responding: event.responding,
-        }),
+        chatInstances: ({ context, event }) => {
+          const newInstances = new Map(context.chatInstances);
+          const resourceKey = serializeResourceTarget(event.resourceTarget);
+          const instance = newInstances.get(resourceKey);
+          if (instance) {
+            instance.threadId = event.threadId;
+            newInstances.set(resourceKey, instance);
+          }
+          return newInstances;
+        },
       }),
     },
-    SET_FLOATING_RESPONDING: {
+
+    SET_CHAT_THREADS: {
       actions: assign({
-        floatingChat: ({ context, event }) => ({
-          ...context.floatingChat,
-          responding: event.responding,
-        }),
+        chatInstances: ({ context, event }) => {
+          const newInstances = new Map(context.chatInstances);
+          const resourceKey = serializeResourceTarget(event.resourceTarget);
+          const instance = newInstances.get(resourceKey);
+          if (instance) {
+            instance.threads = event.threads;
+            newInstances.set(resourceKey, instance);
+          }
+          return newInstances;
+        },
       }),
     },
-    SET_SIDEBAR_MAXIMIZED: {
+
+    SET_CHAT_STATE: {
       actions: assign({
-        sidebarChat: ({ context, event }) => ({
-          ...context.sidebarChat,
-          maximized: event.maximized,
-        }),
-      }),
-    },
-    SET_FLOATING_MAXIMIZED: {
-      actions: assign({
-        floatingChat: ({ context, event }) => ({
-          ...context.floatingChat,
-          maximized: event.maximized,
-        }),
-      }),
-    },
-    SET_SIDEBAR_LOADING: {
-      actions: assign({
-        sidebarChat: ({ context, event }) => ({
-          ...context.sidebarChat,
-          loading: event.loading,
-        }),
-      }),
-    },
-    SET_FLOATING_LOADING: {
-      actions: assign({
-        floatingChat: ({ context, event }) => ({
-          ...context.floatingChat,
-          loading: event.loading,
-        }),
-      }),
-    },
-    SELECT_THREAD: {
-      actions: assign({
-        selectedThreadId: ({ event }) => event.threadId as string | null,
-      }),
-    },
-    SET_THREADS: {
-      actions: assign({
-        threads: ({ event }) => event.threads,
-      }),
-    },
-    SET_PENDING_MESSAGE: {
-      actions: assign({
-        pendingMessage: ({ event }) => event.message,
-      }),
-    },
-    CLEAR_PENDING_MESSAGE: {
-      actions: assign({
-        pendingMessage: () => null,
-      }),
-    },
-    TRIGGER_SCROLL_TO_BOTTOM: {
-      actions: assign({
-        scrollTrigger: ({ context }) => context.scrollTrigger + 1,
+        chatInstances: ({ context, event }) => {
+          const newInstances = new Map(context.chatInstances);
+          const resourceKey = serializeResourceTarget(event.resourceTarget);
+          const instance = newInstances.get(resourceKey);
+          if (instance) {
+            instance.state = { ...instance.state, ...event.state };
+            newInstances.set(resourceKey, instance);
+          }
+          return newInstances;
+        },
       }),
     },
   },

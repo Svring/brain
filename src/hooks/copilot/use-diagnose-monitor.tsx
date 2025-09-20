@@ -52,7 +52,6 @@ const analyzeMonitorPrompt = `
 export function useDiagnoseMonitor(
   target: CustomResourceTarget | BuiltinResourceTarget
 ) {
-  const { selectedThreadId } = useThreads();
   const { color, monitorData, isLoading } = useResourceMetricsStatus({
     target,
   });
@@ -61,11 +60,6 @@ export function useDiagnoseMonitor(
   // Use node select to handle the selection and message appending
   const { handleNodeSelect } = useNodeSelect({
     target,
-    messageType: "universal.monitor",
-    payload: {
-      monitorData,
-      prompt: analyzeMonitorPrompt,
-    },
   });
 
   const diagnoseMonitor = useCallback(async () => {
@@ -83,25 +77,25 @@ export function useDiagnoseMonitor(
     await handleNodeSelect();
 
     // Send message using submitWithContext
-    if (selectedThreadId) {
-      submitWithContext({
-        messages: [
-          {
-            type: "system",
-            content: JSON.stringify({
-              type: "universal.monitor",
-              target,
-            }),
-          },
-          {
-            type: "system",
-            content:
-              analyzeMonitorPrompt + "\n\n" + JSON.stringify(monitorData),
-          },
-        ],
-      });
-    }
-  }, [monitorData, selectedThreadId, submitWithContext, handleNodeSelect]);
+    // if (selectedThreadId) {
+    //   submitWithContext({
+    //     messages: [
+    //       {
+    //         type: "system",
+    //         content: JSON.stringify({
+    //           type: "universal.monitor",
+    //           target,
+    //         }),
+    //       },
+    //       {
+    //         type: "system",
+    //         content:
+    //           analyzeMonitorPrompt + "\n\n" + JSON.stringify(monitorData),
+    //       },
+    //     ],
+    //   });
+    // }
+  }, [monitorData, submitWithContext, handleNodeSelect]);
 
   // Check if monitor data is ready (not loading and has data)
   const isMonitorReady =

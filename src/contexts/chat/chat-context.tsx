@@ -5,7 +5,8 @@ import { useMachine } from "@xstate/react";
 import { createContext, type ReactNode, useContext, useEffect } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import type { Thread } from "@langchain/langgraph-sdk";
-import { chatMachine, type PendingMessage } from "@/contexts/chat/chat-machine";
+import { chatMachine, type ChatSectionState, serializeResourceTarget } from "@/contexts/chat/chat-machine";
+import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useProjectActions } from "../project/project-context";
 import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useQueryState } from "nuqs";
@@ -42,107 +43,48 @@ export function useChatContext() {
 
 export function useChatState() {
   const { state } = useChatContext();
+  
+  // Helper to check if a resource target is active
+  const isResourceActive = (resourceTarget: ResourceTarget) => {
+    const key = serializeResourceTarget(resourceTarget);
+    return state.context.activeResourceTargets.includes(key);
+  };
+  
+  // Helper to get chat instance by resource target
+  const getChatInstance = (resourceTarget: ResourceTarget) => {
+    const key = serializeResourceTarget(resourceTarget);
+    return state.context.chatInstances.get(key);
+  };
+  
   return {
-    sidebarChatOpen: state.context.sidebarChat.open,
-    floatingChatOpen: state.context.floatingChat.open,
-    sidebarChatResponding: state.context.sidebarChat.responding,
-    floatingChatResponding: state.context.floatingChat.responding,
-    sidebarChatMaximized: state.context.sidebarChat.maximized,
-    floatingChatMaximized: state.context.floatingChat.maximized,
-    sidebarChatLoading: state.context.sidebarChat.loading,
-    floatingChatLoading: state.context.floatingChat.loading,
-    // selectedThreadId and threads are now managed by ThreadProvider
-    // selectedThreadId: state.context.selectedThreadId,
-    // threads: state.context.threads,
-    pendingMessage: state.context.pendingMessage,
-    hasPendingMessage: state.context.pendingMessage !== null,
-    scrollTrigger: state.context.scrollTrigger,
+    // Multi-instance state
+    chatInstances: state.context.chatInstances,
+    activeResourceTargets: state.context.activeResourceTargets,
+    focusedResourceTarget: state.context.focusedResourceTarget,
+    
+    // Helper functions
+    isResourceActive,
+    getChatInstance,
   };
 }
 
 export function useChatActions() {
   const { send, state } = useChatContext();
-  // Thread management is now handled by ThreadProvider
-  // const [threadId, setThreadId] = useQueryState("threadId", {
-  //   defaultValue: state.context.selectedThreadId || "",
-  // });
-
-  // Sync URL state with chat context - now handled by ThreadProvider
-  // useEffect(() => {
-  //   if (threadId && threadId !== state.context.selectedThreadId) {
-  //     send({ type: "SELECT_THREAD", threadId });
-  //   }
-  // }, [threadId, state.context.selectedThreadId]);
 
   return {
-    openSidebarChat: () => send({ type: "SET_SIDEBAR_CHAT_OPEN", open: true }),
-    closeSidebarChat: () => {
-      send({ type: "SET_SIDEBAR_CHAT_OPEN", open: false });
-    },
+    // Multi-instance chat management
+    openChat: (resourceTarget: ResourceTarget) =>
+      send({ type: "OPEN_CHAT", resourceTarget }),
+    closeChat: (resourceTarget: ResourceTarget) =>
+      send({ type: "CLOSE_CHAT", resourceTarget }),
 
-    openFloatingChat: () =>
-      send({ type: "SET_FLOATING_CHAT_OPEN", open: true }),
-    closeFloatingChat: () =>
-      send({ type: "SET_FLOATING_CHAT_OPEN", open: false }),
+    // Per-instance state management
+    setChatThreadId: (resourceTarget: ResourceTarget, threadId: string | null) =>
+      send({ type: "SET_CHAT_THREAD_ID", resourceTarget, threadId }),
+    setChatThreads: (resourceTarget: ResourceTarget, threads: Thread[]) =>
+      send({ type: "SET_CHAT_THREADS", resourceTarget, threads }),
+    setChatState: (resourceTarget: ResourceTarget, chatState: Partial<ChatSectionState>) =>
+      send({ type: "SET_CHAT_STATE", resourceTarget, state: chatState }),
 
-    setSidebarResponding: (responding: boolean) =>
-      send({ type: "SET_SIDEBAR_RESPONDING", responding }),
-    setFloatingResponding: (responding: boolean) =>
-      send({ type: "SET_FLOATING_RESPONDING", responding }),
-
-    enableSidebarResponding: () =>
-      send({ type: "SET_SIDEBAR_RESPONDING", responding: true }),
-    disableSidebarResponding: () =>
-      send({ type: "SET_SIDEBAR_RESPONDING", responding: false }),
-    enableFloatingResponding: () =>
-      send({ type: "SET_FLOATING_RESPONDING", responding: true }),
-    disableFloatingResponding: () =>
-      send({ type: "SET_FLOATING_RESPONDING", responding: false }),
-
-    setSidebarMaximized: (maximized: boolean) =>
-      send({ type: "SET_SIDEBAR_MAXIMIZED", maximized }),
-    setFloatingMaximized: (maximized: boolean) =>
-      send({ type: "SET_FLOATING_MAXIMIZED", maximized }),
-
-    maximizeSidebar: () =>
-      send({ type: "SET_SIDEBAR_MAXIMIZED", maximized: true }),
-    minimizeSidebar: () =>
-      send({ type: "SET_SIDEBAR_MAXIMIZED", maximized: false }),
-    maximizeFloating: () =>
-      send({ type: "SET_FLOATING_MAXIMIZED", maximized: true }),
-    minimizeFloating: () =>
-      send({ type: "SET_FLOATING_MAXIMIZED", maximized: false }),
-
-    setSidebarLoading: (loading: boolean) =>
-      send({ type: "SET_SIDEBAR_LOADING", loading }),
-    setFloatingLoading: (loading: boolean) =>
-      send({ type: "SET_FLOATING_LOADING", loading }),
-
-    enableSidebarLoading: () =>
-      send({ type: "SET_SIDEBAR_LOADING", loading: true }),
-    disableSidebarLoading: () =>
-      send({ type: "SET_SIDEBAR_LOADING", loading: false }),
-    enableFloatingLoading: () =>
-      send({ type: "SET_FLOATING_LOADING", loading: true }),
-    disableFloatingLoading: () =>
-      send({ type: "SET_FLOATING_LOADING", loading: false }),
-
-    // Thread management is now handled by ThreadProvider
-    // selectThread: (threadId: string | null) => {
-    //   send({ type: "SELECT_THREAD", threadId });
-    //   setThreadId(threadId || "");
-    // },
-    // setThreads: (threads: Thread[]) => send({ type: "SET_THREADS", threads }),
-
-    setPendingMessage: (message: PendingMessage | null) => {
-      send({ type: "SET_PENDING_MESSAGE", message });
-    },
-    clearPendingMessage: () => {
-      send({ type: "CLEAR_PENDING_MESSAGE" });
-    },
-
-    triggerScrollToBottom: () => {
-      send({ type: "TRIGGER_SCROLL_TO_BOTTOM" });
-    },
   };
 }

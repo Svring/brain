@@ -27,7 +27,6 @@ export default function NodePods({ target }: NodePodsProps) {
   const { resource } = useResourceStatus(target);
   const { handleNodeSelect } = useNodeSelect({
     target,
-    messageType: "universal.podOverview",
   });
 
 
