@@ -205,9 +205,6 @@ function ResourceItem({
         name: launchpadTarget.name,
         env: updatedEnv,
       });
-
-      // Reload the page after successful update
-      
     } catch (error) {
       console.error("Failed to update launchpad:", error);
     } finally {

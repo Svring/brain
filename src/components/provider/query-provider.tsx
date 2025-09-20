@@ -14,12 +14,12 @@ function makeQueryClient() {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 20 * 1000, // Shorter stale time - 2 seconds
+        staleTime: 20 * 1000, // Shorter stale time - 20 seconds
         gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
         refetchOnMount: true,
         refetchOnWindowFocus: true,
         refetchOnReconnect: true,
-        refetchInterval: 30 * 1000, // Auto-refetch every 10 seconds
+        refetchInterval: 30 * 1000, // Auto-refetch every 30 seconds
       },
     },
     mutationCache: new MutationCache({

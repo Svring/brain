@@ -9,8 +9,6 @@ export const useInvalidateQueries = () => {
     queryKeys: any[],
     invalidateProjectResources = false
   ) => {
-    console.log("Invalidating queries:", queryKeys);
-
     const performInvalidation = async () => {
       if (invalidateProjectResources) {
         queryClient.invalidateQueries({
@@ -27,6 +25,7 @@ export const useInvalidateQueries = () => {
 
     performInvalidation();
     setTimeout(performInvalidation, 2000);
+    setTimeout(performInvalidation, 4000);
   };
 
   return { invalidateQueries };

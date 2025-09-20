@@ -70,7 +70,8 @@ export const useClusterLifecycle = (
         "cluster",
         deleteRequest.name
       ) as CustomResourceTarget;
-      invalidateQueries([cluster.get.queryKey()], true); // Enable invalidateProjectResources flag
+
+      invalidateQueries([cluster.get.queryKey()], true);
 
       // Check if this was the last resource in the project
       if (selectedProjectResources?.length === 1 && selectedProject) {

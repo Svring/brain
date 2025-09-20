@@ -5,22 +5,8 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  MoreHorizontal,
-} from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { MoreHorizontal } from "lucide-react";
 import { DeploymentObject } from "@/lib/sealos/resources/deployment/deployment-object-schema";
-import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import LaunchpadDropdownMenu from "@/components/chat/messages/system-messages/launchpad/components/universal/launchpad-dropdown-menu";
 
 export default function DeploymentNodeMenu({
@@ -29,33 +15,8 @@ export default function DeploymentNodeMenu({
   object: DeploymentObject;
 }) {
   const [open, setOpen] = React.useState(false);
-  const [alertOpen, setAlertOpen] = React.useState(false);
 
-  const { launchpad, k8s } = useTRPCClients();
-  const queryClient = useQueryClient();
-
-  const deleteLaunchpad = useMutation(
-    launchpad.delete.mutationOptions()
-  );
-
-  // console.log("object", object);
-
-  const { name, resource, status } = object;
-  const isRunning = status === "Running";
-  const isPending = status === "Pending";
-
-  const handleDelete = () => {
-    deleteLaunchpad.mutate(
-      { name },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: k8s.list.queryKey(),
-          });
-        },
-      }
-    );
-  };
+  const { name } = object;
 
   // Don't render if we don't have a valid name
   if (!name) {
@@ -63,62 +24,29 @@ export default function DeploymentNodeMenu({
   }
 
   return (
-    <>
-      <DropdownMenu open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger asChild>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-            className="p-1 hover:bg-muted rounded transition-colors"
-          >
-            <MoreHorizontal className="h-4 w-4" />
-          </button>
-        </DropdownMenuTrigger>
-        <LaunchpadDropdownMenu
-          object={{
-            name: object.name,
-            status: object.status || "Pending",
-            resource: object.resource,
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
           }}
-          onDelete={(name) => {
-            setOpen(false);
-            setAlertOpen(true);
-          }}
-          showRestart={true}
-        />
-      </DropdownMenu>
-
-      <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Deployment</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{name}"? This action cannot be
-              undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-            >
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDelete();
-                setAlertOpen(false);
-              }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+          className="p-1 hover:bg-muted rounded transition-colors"
+        >
+          <MoreHorizontal className="h-4 w-4" />
+        </button>
+      </DropdownMenuTrigger>
+      <LaunchpadDropdownMenu
+        object={{
+          name: object.name,
+          status: object.status || "Pending",
+          resource: object.resource,
+        }}
+        onDelete={(name) => {
+          // 只关闭下拉菜单，LaunchpadDropdownMenu已经处理了删除确认
+          setOpen(false);
+        }}
+        showRestart={true}
+      />
+    </DropdownMenu>
   );
 }

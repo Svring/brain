@@ -108,7 +108,6 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
       {
         onSuccess: () => {
           toast.success("Token created successfully.");
-          
         },
         onError: () => {
           toast.error(

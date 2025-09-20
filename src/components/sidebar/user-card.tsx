@@ -8,7 +8,6 @@ import {
   LogOut,
   Sparkles,
 } from "lucide-react";
-import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -25,7 +24,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-// import { useToast } from "@/hooks/general/use-toast";
+import { toast } from "sonner";
 
 export function UserCard({
   user,
@@ -57,19 +56,9 @@ export function UserCard({
         throw new Error("Logout failed");
       }
 
-      // toast({
-      //   title: "Logged out",
-      //   description: "You have been logged out successfully.",
-      // });
-
-      // Reload the page to reflect logged-out state
-      
+      toast.success("Logged out successfully");
     } catch (error) {
-      // toast({
-      //   title: "Logout error",
-      //   description: error instanceof Error ? error.message : "Unknown error.",
-      //   variant: "destructive",
-      // });
+      toast.error("Logout failed");
     }
   };
 

@@ -34,6 +34,7 @@ export const useObjectStorageLifecycle = (
       const message = "Object storage bucket deleted successfully";
       toast.success(message);
       onSuccess?.(message);
+
       invalidateQueries([objectstorage.list.queryKey()], true);
 
       // Check if this was the last resource in the project
@@ -45,7 +46,6 @@ export const useObjectStorageLifecycle = (
 
       // Normal resource deletion cleanup
       clearSelectedResource();
-      //
     },
     onError: (error: any) => {
       console.error("Object storage delete error:", error);

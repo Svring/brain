@@ -112,14 +112,10 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
       const message = "Devbox deleted successfully";
       toast.success(message);
       onSuccess?.(message);
-      invalidateQueries(
-        [
-          devbox.list.queryKey(),
-          devbox.get.queryKey(target),
-          devbox.releases.queryKey(target.name),
-        ],
-        true
-      );
+
+      if (selectedProject) {
+        invalidateQueries([devbox.list.queryKey()], true);
+      }
 
       // Check if this was the last resource in the project
       if (selectedProjectResources?.length === 1 && selectedProject) {

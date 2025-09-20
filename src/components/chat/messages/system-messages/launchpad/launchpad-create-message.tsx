@@ -8,6 +8,7 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useProjectState } from "@/contexts/project/project-context";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 
 interface LaunchpadCreateMessageProps {
   payload?: Partial<LaunchpadCreateFormData>;
@@ -18,6 +19,7 @@ export const LaunchpadCreateMessage: React.FC<LaunchpadCreateMessageProps> = ({
 }) => {
   const { launchpad, project } = useTRPCClients();
   const { selectedProject } = useProjectState();
+  const { invalidateQueries } = useInvalidateQueries();
 
   const addToProjectMutation = useMutation(
     project.addResources.mutationOptions()
@@ -40,6 +42,10 @@ export const LaunchpadCreateMessage: React.FC<LaunchpadCreateMessageProps> = ({
       });
       toast.success(
         "Launchpad application created and added to project successfully!"
+      );
+      invalidateQueries(
+        [launchpad.list.queryKey(), project.getResources.queryKey()],
+        true
       );
     },
     onError: (error: any) => {

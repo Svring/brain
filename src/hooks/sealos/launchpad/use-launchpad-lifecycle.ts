@@ -64,10 +64,10 @@ export const useLaunchpadLifecycle = (
       const message = "Launchpad deleted successfully";
       toast.success(message);
       onSuccess?.(message);
-      invalidateQueries(
-        [launchpad.list.queryKey(), launchpad.get.queryKey()],
-        true
-      ); // Enable invalidateProjectResources flag
+
+      if (selectedProject) {
+        invalidateQueries([launchpad.list.queryKey()], true);
+      }
 
       // Check if this was the last resource in the project
       if (selectedProjectResources?.length === 1 && selectedProject) {
