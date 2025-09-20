@@ -24,6 +24,7 @@ export interface ChatContextState {
   activeResourceTargets: string[];
   focusedResourceTarget: string | null;
   pendingMessages: Map<string, Message[]>; // Map<resourceTarget, Message[]> - stores pending messages for each target
+  chatDisplayOrder: string[]; // Array of chat keys in display order (newest first)
 }
 
 export type ChatEvent =
@@ -123,6 +124,7 @@ export const chatMachine = createMachine({
     activeResourceTargets: [],
     focusedResourceTarget: null,
     pendingMessages: new Map<string, Message[]>(),
+    chatDisplayOrder: [],
   },
   states: {
     idle: {},
@@ -168,6 +170,20 @@ export const chatMachine = createMachine({
         focusedResourceTarget: ({ event }) => {
           return serializeResourceTarget(event.resourceTarget);
         },
+        chatDisplayOrder: ({ context, event }) => {
+          const resourceKey = serializeResourceTarget(event.resourceTarget);
+          const newOrder = [...context.chatDisplayOrder];
+
+          // Remove the key if it already exists
+          const existingIndex = newOrder.indexOf(resourceKey);
+          if (existingIndex > -1) {
+            newOrder.splice(existingIndex, 1);
+          }
+
+          // Add to the beginning (newest first)
+          newOrder.unshift(resourceKey);
+          return newOrder;
+        },
       }),
     },
 
@@ -190,6 +206,10 @@ export const chatMachine = createMachine({
           return context.focusedResourceTarget === resourceKey
             ? null
             : context.focusedResourceTarget;
+        },
+        chatDisplayOrder: ({ context, event }) => {
+          const resourceKey = serializeResourceTarget(event.resourceTarget);
+          return context.chatDisplayOrder.filter((key) => key !== resourceKey);
         },
       }),
     },
@@ -226,6 +246,20 @@ export const chatMachine = createMachine({
         },
         focusedResourceTarget: ({ event }) =>
           getProjectChatKey(event.projectName),
+        chatDisplayOrder: ({ context, event }) => {
+          const projectChatKey = getProjectChatKey(event.projectName);
+          const newOrder = [...context.chatDisplayOrder];
+
+          // Remove the key if it already exists
+          const existingIndex = newOrder.indexOf(projectChatKey);
+          if (existingIndex > -1) {
+            newOrder.splice(existingIndex, 1);
+          }
+
+          // Add to the beginning (newest first)
+          newOrder.unshift(projectChatKey);
+          return newOrder;
+        },
       }),
     },
 
@@ -246,6 +280,12 @@ export const chatMachine = createMachine({
           return context.focusedResourceTarget === projectChatKey
             ? null
             : context.focusedResourceTarget;
+        },
+        chatDisplayOrder: ({ context, event }) => {
+          const projectChatKey = getProjectChatKey(event.projectName);
+          return context.chatDisplayOrder.filter(
+            (key) => key !== projectChatKey
+          );
         },
       }),
     },

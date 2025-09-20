@@ -78,9 +78,11 @@ export function ChatInstanceProvider({
   // Determine if it's project chat or resource chat
   const isProjectChat = Boolean(projectName && !resourceTarget);
   const isResourceChat = Boolean(resourceTarget && !projectName);
-  
+
   if (!isProjectChat && !isResourceChat) {
-    throw new Error("ChatInstanceProvider must have either resourceTarget or projectName, but not both");
+    throw new Error(
+      "ChatInstanceProvider must have either resourceTarget or projectName, but not both"
+    );
   }
 
   const chatInstance = isProjectChat
@@ -152,7 +154,9 @@ export function ChatInstanceProvider({
   useEffect(() => {
     const fetchThreads = async () => {
       try {
-        const threads = await getThreads(isProjectChat ? null : resourceTarget!);
+        const threads = await getThreads(
+          isProjectChat ? null : resourceTarget!
+        );
         if (isProjectChat) {
           setProjectChatThreads(projectName!, threads);
         } else {

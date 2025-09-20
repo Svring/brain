@@ -70,6 +70,7 @@ export default function AiChatbox() {
           messages={messages}
           isLoading={isLoading}
           interrupt={interrupt}
+          submit={submit}
         />
       </div>
 

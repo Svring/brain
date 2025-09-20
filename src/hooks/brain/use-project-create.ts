@@ -43,7 +43,6 @@ export function useProjectCreate(options?: CreateProjectOptions) {
   const { devbox, cluster, launchpad, objectstorage, project } =
     useTRPCClients();
   const { selectedThreadId, updateThreadState } = useThreads();
-  const { openSidebarChat } = useChatActions();
   // Create mutations
   const createProjectMutation = useMutation(project.create.mutationOptions());
   const createDevboxMutation = useMutation(devbox.create.mutationOptions());

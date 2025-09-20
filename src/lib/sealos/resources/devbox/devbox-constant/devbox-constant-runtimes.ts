@@ -21,7 +21,7 @@ export const DEVBOX_RUNTIMES = [
   "express.js",
   "django",
   "next.js",
-  "sealaf",
+  // "sealaf",
   "go",
   "react",
   "php",

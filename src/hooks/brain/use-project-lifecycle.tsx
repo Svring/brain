@@ -21,7 +21,6 @@ export const useProjectLifecycle = (
   const { project } = useTRPCClients();
   const { invalidateQueries } = useInvalidateQueries();
   const { clearSelectedResource, clearSelectedProject } = useProjectActions();
-  const { closeSidebarChat } = useChatActions();
   const router = useRouter();
 
   const deleteMutation = useMutation({
@@ -31,15 +30,14 @@ export const useProjectLifecycle = (
       const message = `Project ${name} deleted successfully`;
       toast.success(message);
       onSuccess?.(message);
-      
+
       // Clear project state
       clearSelectedResource();
       clearSelectedProject();
-      closeSidebarChat();
-      
+
       // Only redirect if this deletion was triggered by 'one resource left' scenario
       if (shouldRedirect) {
-        router.push('/projects');
+        router.push("/projects");
       }
     },
     onError: (error: any) => {

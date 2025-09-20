@@ -24,7 +24,6 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
   const { invalidateQueries } = useInvalidateQueries();
   const { clearSelectedResource } = useProjectActions();
   const { selectedProjectResources, selectedProject } = useProjectState();
-  const { closeSidebarChat } = useChatActions();
   const { deleteProject } = useProjectLifecycle({ shouldRedirect: true });
 
   const startMutation = useMutation({
@@ -131,7 +130,6 @@ export const useDevboxLifecycle = (options: UseDevboxLifecycleOptions = {}) => {
 
       // Normal resource deletion cleanup
       clearSelectedResource();
-      closeSidebarChat();
       //
     },
     onError: (error: any) => {

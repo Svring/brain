@@ -26,7 +26,6 @@ export const useObjectStorageLifecycle = (
   const { invalidateQueries } = useInvalidateQueries();
   const { clearSelectedResource } = useProjectActions();
   const { selectedProjectResources, selectedProject } = useProjectState();
-  const { closeSidebarChat } = useChatActions();
   const { deleteProject } = useProjectLifecycle({ shouldRedirect: true });
 
   const deleteMutation = useMutation({
@@ -46,7 +45,6 @@ export const useObjectStorageLifecycle = (
 
       // Normal resource deletion cleanup
       clearSelectedResource();
-      closeSidebarChat();
       //
     },
     onError: (error: any) => {

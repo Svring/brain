@@ -87,6 +87,7 @@ export function useChatState() {
     activeResourceTargets: state.context.activeResourceTargets,
     focusedResourceTarget: state.context.focusedResourceTarget,
     pendingMessages: state.context.pendingMessages,
+    chatDisplayOrder: state.context.chatDisplayOrder,
     
     // Helper functions
     isResourceActive,

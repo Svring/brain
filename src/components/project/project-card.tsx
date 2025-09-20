@@ -116,9 +116,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             >
               <p
                 className={`text-foreground truncate transition-colors ${
-                  variant === "full"
-                    ? "cursor-pointer hover:text-foreground/80 group-hover:underline"
-                    : ""
+                  variant === "full" 
+                    ? "max-w-[200px] cursor-pointer hover:text-foreground/80 group-hover:underline"
+                    : "max-w-[150px]"
                 }`}
               >
                 {project.displayName}
@@ -209,11 +209,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           </Alert>
 
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="flex-1">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
               disabled={isDeleting}
-              className="bg-status-deleting/80 text-red-700! hover:bg-status-deleting! border border-status-error"
+              className="flex-1 bg-status-deleting/80 text-red-700! hover:bg-status-deleting! border border-status-error"
             >
               {isDeleting ? "Deleting..." : "Confirm"}
             </AlertDialogAction>

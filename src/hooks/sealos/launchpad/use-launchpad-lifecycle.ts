@@ -26,7 +26,6 @@ export const useLaunchpadLifecycle = (
   const { invalidateQueries } = useInvalidateQueries();
   const { clearSelectedResource } = useProjectActions();
   const { selectedProjectResources, selectedProject } = useProjectState();
-  const { closeSidebarChat } = useChatActions();
   const { deleteProject } = useProjectLifecycle({ shouldRedirect: true });
 
   const startMutation = useMutation({
@@ -79,7 +78,6 @@ export const useLaunchpadLifecycle = (
 
       // Normal resource deletion cleanup
       clearSelectedResource();
-      closeSidebarChat();
       //
     },
     onError: (error: any) => {

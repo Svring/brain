@@ -102,33 +102,7 @@ export function RenameProjectDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]" hideCloseButton>
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span>Rename Project</span>
-            <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 w-8"
-                onClick={handleCancel}
-                disabled={isPending}
-              >
-                <X />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 w-8"
-                onClick={handleSave}
-                disabled={isPending}
-              >
-                {isPending ? (
-                  <Spinner variant="bars" className="h-4 w-4" />
-                ) : (
-                  <Check />
-                )}
-              </Button>
-            </div>
-          </DialogTitle>
+          <DialogTitle>Rename Project</DialogTitle>
         </DialogHeader>
         <div className="grid gap-2 py-2">
           <div className="flex items-center gap-4">
@@ -141,6 +115,27 @@ export function RenameProjectDialog({
               autoFocus
             />
           </div>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleCancel}
+            disabled={isPending}
+            className="flex-1"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={isPending}
+            className="flex-1"
+          >
+            {isPending ? (
+              <Spinner variant="bars" className="h-4 w-4" />
+            ) : (
+              "Confirm"
+            )}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

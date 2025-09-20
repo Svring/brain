@@ -1,11 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useStreamContext } from "@/components/provider/stream-provider";
 import { ChevronRight } from "lucide-react";
+import { Message } from "@langchain/langgraph-sdk";
 
 interface SuggestionsProps {
   onSuggestionClick?: (suggestion: string) => void;
+  onSubmit: (...args: any[]) => any;
 }
 
 const suggestions = [
@@ -32,9 +33,7 @@ function SuggestionItem({
     >
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-1 flex-1 min-w-0">
-          <p className="text-foreground truncate text-sm">
-            {suggestion}
-          </p>
+          <p className="text-foreground truncate text-sm">{suggestion}</p>
         </div>
         <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
       </div>
@@ -42,22 +41,30 @@ function SuggestionItem({
   );
 }
 
-export default function Suggestions({ onSuggestionClick }: SuggestionsProps) {
-  const { submitWithContext } = useStreamContext();
-
+export default function Suggestions({
+  onSuggestionClick,
+  onSubmit,
+}: SuggestionsProps) {
   const handleSuggestionClick = async (suggestion: string) => {
     // Call the optional callback first
     onSuggestionClick?.(suggestion);
 
-    // Send the suggestion as a user message
-    await submitWithContext({
-      messages: [
-        {
-          type: "human",
-          content: suggestion,
+    // Send the suggestion as a user message using the passed onSubmit function
+    const userMessage: Message = {
+      type: "human",
+      content: suggestion.trim(),
+    };
+    
+    onSubmit(
+      { messages: [userMessage] },
+      {
+        optimisticValues(prev: any) {
+          const prevMessages = prev.messages ?? [];
+          const newMessages = [...prevMessages, userMessage];
+          return { ...prev, messages: newMessages };
         },
-      ],
-    });
+      }
+    );
   };
 
   return (

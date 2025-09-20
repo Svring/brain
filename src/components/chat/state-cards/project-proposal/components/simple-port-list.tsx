@@ -50,15 +50,13 @@ export function SimplePortList({
         {ports.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {ports.map((port) => (
-              <div key={port} className="flex items-center gap-1">
-                <Badge variant="outline" className="font-mono" size={'small'}>
-                  {port}
-                </Badge>
+              <div key={port} className="flex items-center bg-muted/20 rounded border px-2 py-1">
+                <span className="text-sm font-mono mr-2">{port}</span>
                 {allowEditing && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-5 w-5 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                    className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground ml-auto"
                     onClick={() => handleRemovePort(port)}
                   >
                     <Trash2 className="h-3 w-3" />
@@ -76,13 +74,14 @@ export function SimplePortList({
       {allowEditing && (
         <div className="flex items-center gap-2">
           <Input
-            type="number"
             value={newPortNumber}
-            onChange={(e) => setNewPortNumber(e.target.value)}
+            onChange={(e) => {
+              // Only allow numbers
+              const value = e.target.value.replace(/[^0-9]/g, '');
+              setNewPortNumber(value);
+            }}
             onKeyPress={handleKeyPress}
-            placeholder="Port number"
-            min="1"
-            max="65535"
+            placeholder="Number"
             className="w-24 h-8"
           />
           <Button

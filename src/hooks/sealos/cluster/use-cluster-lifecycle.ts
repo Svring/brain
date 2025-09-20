@@ -25,7 +25,6 @@ export const useClusterLifecycle = (
   const { cluster, project } = useTRPCClients();
   const { invalidateQueries } = useInvalidateQueries();
   const { clearSelectedResource } = useProjectActions();
-  const { closeSidebarChat } = useChatActions();
   const { selectedProjectResources, selectedProject } = useProjectState();
   const { deleteProject } = useProjectLifecycle({ shouldRedirect: true });
 
@@ -82,7 +81,6 @@ export const useClusterLifecycle = (
 
       // Normal resource deletion cleanup
       clearSelectedResource();
-      closeSidebarChat();
       //
     },
     onError: (error: any) => {

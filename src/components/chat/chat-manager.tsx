@@ -4,44 +4,61 @@ import React from "react";
 import { useChatState } from "@/contexts/chat/chat-context";
 import { ChatInstanceProvider } from "@/components/provider/chat-instance-provider";
 import AiChatbox from "./components/chatbox";
-import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 export function ChatManager() {
-  const { activeResourceTargets, chatInstances, focusedResourceTarget } =
-    useChatState();
+  const { chatInstances, chatDisplayOrder } = useChatState();
 
-  // Only render the focused chat instance
-  if (!focusedResourceTarget) {
+  // Don't render if no active chats
+  if (!chatDisplayOrder.length) {
     return null;
   }
 
-  const focusedChatInstance = chatInstances.get(focusedResourceTarget);
-  if (!focusedChatInstance) {
-    return null;
-  }
+  // Render all active chat instances - new ones slide in from right
+  return (
+    <div className="relative w-full h-full overflow-hidden">
+      {chatDisplayOrder.map((chatKey, index) => {
+        const chatInstance = chatInstances.get(chatKey);
+        if (!chatInstance) return null;
 
-  // Handle project chat (has projectName)
-  if (focusedChatInstance.projectName) {
-    return (
-      <ChatInstanceProvider key={focusedResourceTarget} projectName={focusedChatInstance.projectName}>
-        <AiChatbox />
-      </ChatInstanceProvider>
-    );
-  }
+        const isActive = index === 0; // Only the first one is active
+        // All chats stay at position 0, but only the active one is visible
+        const slidePosition = isActive ? 0 : 100; // Active at 0%, inactive slide out to right
 
-  // Handle resource chat (has resourceTarget)
-  if (focusedChatInstance.resourceTarget) {
-    return (
-      <ChatInstanceProvider
-        key={focusedResourceTarget}
-        resourceTarget={focusedChatInstance.resourceTarget}
-      >
-        <AiChatbox />
-      </ChatInstanceProvider>
-    );
-  }
-
-  return null;
+        return (
+          <div
+            key={chatKey}
+            className={`absolute w-full h-full transition-all duration-500 ease-in-out ${
+              isActive
+                ? "z-50 opacity-100 pointer-events-auto"
+                : "z-40 opacity-0 pointer-events-none"
+            }`}
+            style={{
+              transform: `translateX(${slidePosition}%)`,
+              borderRadius: "8px",
+              overflow: "hidden",
+            }}
+          >
+            {/* Chat content */}
+            {chatInstance.projectName ? (
+              <ChatInstanceProvider
+                key={chatKey}
+                projectName={chatInstance.projectName}
+              >
+                <AiChatbox />
+              </ChatInstanceProvider>
+            ) : chatInstance.resourceTarget ? (
+              <ChatInstanceProvider
+                key={chatKey}
+                resourceTarget={chatInstance.resourceTarget}
+              >
+                <AiChatbox />
+              </ChatInstanceProvider>
+            ) : null}
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 export default ChatManager;

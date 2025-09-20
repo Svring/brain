@@ -104,7 +104,7 @@ export const deleteCluster = createParallelAction(
       const response = await api.get("/delDBByName", {
         params: { name: validatedRequest.name },
       });
-      console.log("delete cluster response", response);
+      // console.log("delete cluster response", response);
       return ClusterDeleteResponseSchema.parse(response.data);
     } catch (error) {
       console.error("Failed to delete cluster:", JSON.stringify(error));

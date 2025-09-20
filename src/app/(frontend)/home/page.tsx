@@ -13,8 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useRef, useState, useEffect } from "react";
-import { proposeProjectAction } from "@/lib/copilot/brain/project/copilot-project-actions";
+import { useRef } from "react";
 import Suggestions from "@/components/chat/components/suggestions";
 import { useHomeChat } from "@/components/provider/home-chat-provider";
 import { LayoutTemplate } from "lucide-react";
@@ -23,8 +22,7 @@ export default function HomePage() {
   const { messages, submit, stop, isLoading } = useHomeChat();
 
   const { CreateProjectDialog, openDialog } = useProjectCreateDialog();
-  const { LaunchpadCreateDialog, openDialog: openLaunchpadDialog } =
-    useLaunchpadCreateDialog();
+  const { LaunchpadCreateDialog } = useLaunchpadCreateDialog();
   const messagesScrollRef = useRef<HTMLDivElement>(null);
 
   // const hasMessages = messages.length > 0;
@@ -116,21 +114,6 @@ export default function HomePage() {
                         <p>Deploy from app store templates</p>
                       </TooltipContent>
                     </Tooltip>
-
-                    {/* <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          onClick={openLaunchpadDialog}
-                          variant="outline"
-                          className="bg-background-tertiary! border-border-primary!"
-                        >
-                          From image
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Deploy from docker image</p>
-                      </TooltipContent>
-                    </Tooltip> */}
                   </TooltipProvider>
                 </div>
               </>
@@ -139,7 +122,7 @@ export default function HomePage() {
         </motion.div>
 
         {/* Suggestions section - shown when no messages */}
-        {!showMessages && <Suggestions />}
+        {!showMessages && <Suggestions onSubmit={submit} />}
       </div>
     </div>
   );

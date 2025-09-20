@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import { SearchIcon } from "lucide-react";
+import { SearchIcon, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import ProjectCard from "@/components/project/project-card";
 import EmptyState from "@/components/project/empty-state";
+import { CreateNewProject } from "@/components/project/create-new-project";
 import useProjectSearch from "@/hooks/brain/use-projects-search";
 import { useProjectActions } from "@/contexts/project/project-context";
 import { ProjectObjectSchema } from "@/lib/brain/resources/project/project-schemas/project-object-schema";
@@ -113,6 +115,8 @@ export default function Page() {
     searchTerm,
   } = useProjectSearch();
 
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
   useEffect(() => {
     if (!isLoading && !isError && projects) {
       setAllProjects(projects);
@@ -123,20 +127,35 @@ export default function Page() {
     setSearchTerm(e.target.value);
   };
 
+  const handleCreateProject = (projectName: string) => {
+    console.log("Creating project:", projectName);
+    // TODO: Implement actual project creation logic
+  };
+
   return (
     <div className="flex min-h-screen w-full flex-col items-center p-8">
       <div className="mb-6 w-full max-w-4xl flex items-center justify-between">
         <h1 className="text-lg font-semibold">Projects</h1>
-        <div className="relative">
-          <Input
-            className="h-8 w-36 pl-8"
-            placeholder="Search..."
-            onChange={handleSearchChange}
-          />
-          <SearchIcon
-            className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
-            size={16}
-          />
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Input
+              className="h-8 w-36 pl-8"
+              placeholder="Search..."
+              onChange={handleSearchChange}
+            />
+            <SearchIcon
+              className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+              size={16}
+            />
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setIsCreateDialogOpen(true)}
+            className="h-8 w-8 p-0"
+          >
+            <Plus size={16} />
+          </Button>
         </div>
       </div>
 
@@ -207,6 +226,12 @@ export default function Page() {
           </div>
         </div>
       </div> */}
+
+      <CreateNewProject
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onConfirm={handleCreateProject}
+      />
     </div>
   );
 }

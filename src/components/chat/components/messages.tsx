@@ -19,6 +19,10 @@ interface AiMessagesProps {
   messages: Message[];
   isLoading: boolean;
   interrupt?: Interrupt<unknown>;
+  submit?: (
+    data: { messages: Message[]; stage?: string; command?: any },
+    options?: { optimisticValues?: (prev: any) => any; command?: any }
+  ) => any;
 }
 
 export function AiMessages({
@@ -27,27 +31,28 @@ export function AiMessages({
   messages,
   isLoading,
   interrupt,
+  submit,
 }: AiMessagesProps) {
   // State for interrupt data editing
   const [interruptData, setInterruptData] = useState<any>(null);
 
   // Parse interrupt value when it changes
-  // useEffect(() => {
-  //   if (interrupt?.value) {
-  //     try {
-  //       const parsedValue =
-  //         typeof interrupt.value === "string"
-  //           ? JSON.parse(interrupt.value)
-  //           : interrupt.value;
-  //       setInterruptData(parsedValue);
-  //     } catch (error) {
-  //       console.error("Failed to parse interrupt value:", error);
-  //       setInterruptData(null);
-  //     }
-  //   } else {
-  //     setInterruptData(null);
-  //   }
-  // }, [interrupt?.value]);
+  useEffect(() => {
+    if (interrupt?.value) {
+      try {
+        const parsedValue =
+          typeof interrupt.value === "string"
+            ? JSON.parse(interrupt.value)
+            : interrupt.value;
+        setInterruptData(parsedValue);
+      } catch (error) {
+        console.error("Failed to parse interrupt value:", error);
+        setInterruptData(null);
+      }
+    } else {
+      setInterruptData(null);
+    }
+  }, [interrupt?.value]);
 
   const memoizedMessages = useMemo(() => {
     // Prevent error if messages is undefined or not an array
@@ -93,75 +98,79 @@ export function AiMessages({
     }
 
     // Add interrupt UI below all messages if it exists
-    // if (interruptData) {
-    //   messageElements.push(
-    //     <div
-    //       key="interrupt-ui"
-    //       className="mt-4 p-4 border border-border-primary rounded-lg bg-background-secondary"
-    //     >
-    //       <p className="text-sm text-foreground mb-3">
-    //         Action: {interruptData.action}
-    //       </p>
+    if (interruptData) {
+      messageElements.push(
+        <div
+          key="interrupt-ui"
+          className="mt-4 p-4 border border-border-primary rounded-lg bg-background-secondary"
+        >
+          <p className="text-sm text-foreground mb-3">
+            Action: {interruptData.action}
+          </p>
 
-    //       {interruptData.payload && (
-    //         <div className="mb-4">
-    //           <p className="text-sm text-foreground mb-2">Payload:</p>
-    //           <div className="border border-border-primary rounded p-2 bg-background">
-    //             <ReactJson
-    //               src={interruptData.payload}
-    //               theme="pop"
-    //               displayDataTypes={false}
-    //               displayObjectSize={false}
-    //               enableClipboard={false}
-    //               onEdit={false}
-    //               onAdd={false}
-    //               onDelete={false}
-    //             />
-    //           </div>
-    //         </div>
-    //       )}
+          {interruptData.payload && (
+            <div className="mb-4">
+              <p className="text-sm text-foreground mb-2">Payload:</p>
+              <div className="border border-border-primary rounded p-2 bg-background">
+                <ReactJson
+                  src={interruptData.payload}
+                  theme="pop"
+                  displayDataTypes={false}
+                  displayObjectSize={false}
+                  enableClipboard={false}
+                  onEdit={false}
+                  onAdd={false}
+                  onDelete={false}
+                />
+              </div>
+            </div>
+          )}
 
-    //       <div className="flex gap-2">
-    //         <Button
-    //           size="sm"
-    //           onClick={() => {
-    //             const responseData = {
-    //               action: interruptData.action,
-    //               payload: interruptData.payload,
-    //               approve: true,
-    //             };
-    //             // submitWithContext({
-    //             //   messages: [],
-    //             //   command: { resume: JSON.stringify(responseData) },
-    //             // });
-    //           }}
-    //         >
-    //           Confirm
-    //         </Button>
-    //         <Button
-    //           size="sm"
-    //           variant="outline"
-    //           onClick={() => {
-    //             const responseData = {
-    //               action: interruptData.action,
-    //               payload: interruptData.payload,
-    //               approve: false,
-    //             };
-    //             // submitWithContext({
-    //             //   messages: [],
-    //             //   command: { resume: JSON.stringify(responseData) },
-    //             // });
-    //           }}
-    //         >
-    //           Reject
-    //         </Button>
-    //       </div>
-    //     </div>
-    //   );
-    // }
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              onClick={() => {
+                const responseData = {
+                  action: interruptData.action,
+                  payload: interruptData.payload,
+                  approve: true,
+                };
+                if (submit) {
+                  submit(
+                    { messages: [] },
+                    { command: { resume: JSON.stringify(responseData) } }
+                  );
+                }
+              }}
+            >
+              Confirm
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const responseData = {
+                  action: interruptData.action,
+                  payload: interruptData.payload,
+                  approve: false,
+                };
+                if (submit) {
+                  submit(
+                    { messages: [] },
+                    { command: { resume: JSON.stringify(responseData) } }
+                  );
+                }
+              }}
+            >
+              Reject
+            </Button>
+          </div>
+        </div>
+      );
+    }
 
     return messageElements;
-  }, [messages]);
+  }, [messages, interruptData]);
 
   const contentHash = useMemo(() => {
     // Prevent error if messages is undefined or not an array
