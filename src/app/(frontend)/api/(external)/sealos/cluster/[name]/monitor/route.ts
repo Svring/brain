@@ -1,17 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCombinedMonitor } from "@/lib/sealos/resources/cluster/cluster-api/cluster-api-service";
+import {
+  getCombinedMonitor,
+  getCluster,
+} from "@/lib/sealos/resources/cluster/cluster-api/cluster-api-service";
 import { SealosApiContextSchema } from "@/lib/sealos/sealos-api-context-schema";
-import { getRegionUrlFromKubeconfig } from "@/lib/k8s/k8s-api/k8s-api-utils";
-import { z } from "zod";
-
-const MonitorQuerySchema = z.object({
-  dbType: z.string(),
-});
+import { K8sApiContextSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
+import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import {
+  getCurrentNamespace,
+  getRegionUrlFromKubeconfig,
+} from "@/lib/k8s/k8s-api/k8s-api-utils";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 // GET /api/sealos/cluster/[name]/monitor - Get cluster monitoring data
 export async function GET(
   request: NextRequest,
-  { params }: { params: { name: string } }
+  { params }: { params: Promise<{ name: string }> }
 ) {
   try {
     // Extract authorization from headers
@@ -24,9 +28,21 @@ export async function GET(
       );
     }
 
-    // Decode the kubeconfig to get region URL
+    // Decode the kubeconfig from authorization header
     const kubeconfig = decodeURIComponent(authorization);
-    const regionUrl = await getRegionUrlFromKubeconfig(kubeconfig);
+
+    // Extract namespace and region URL from kubeconfig
+    const [namespace, regionUrl] = await Promise.all([
+      getCurrentNamespace(kubeconfig),
+      getRegionUrlFromKubeconfig(kubeconfig),
+    ]);
+
+    // Create K8s context for getCluster
+    const k8sContext = K8sApiContextSchema.parse({
+      kubeconfig,
+      namespace,
+      regionUrl,
+    });
 
     // Create Sealos context
     const context = SealosApiContextSchema.parse({
@@ -34,12 +50,25 @@ export async function GET(
       authorization,
     });
 
-    const { searchParams } = new URL(request.url);
-    const query = MonitorQuerySchema.parse({
-      dbType: searchParams.get("dbType"),
-    });
+    const { name } = await params;
 
-    const result = await getCombinedMonitor(context, params.name, query.dbType);
+    // Get cluster object to extract dbType
+    const target = CustomResourceTargetSchema.parse(
+      convertResourceTypeToTarget("cluster", name)
+    );
+    const cluster = await getCluster(k8sContext, target);
+
+    // Extract dbType from cluster object
+    const dbType = cluster?.type;
+
+    if (!dbType) {
+      return NextResponse.json(
+        { error: "Could not determine database type from cluster" },
+        { status: 400 }
+      );
+    }
+
+    const result = await getCombinedMonitor(context, name, dbType);
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error getting cluster monitor data:", error);

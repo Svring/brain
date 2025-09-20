@@ -15,7 +15,7 @@ const LifecycleActionSchema = z.object({
 // POST /api/sealos/launchpad/lifecycle - Launchpad lifecycle operations
 export async function POST(
   request: NextRequest,
-  { params }: { params: { name: string } }
+  { params }: { params: Promise<{ name: string }> }
 ) {
   try {
     // Extract authorization from headers
@@ -40,17 +40,18 @@ export async function POST(
 
     const body = await request.json();
     const { action } = LifecycleActionSchema.parse(body);
+    const { name } = await params;
 
     let result;
     switch (action) {
       case "start":
-        result = await startLaunchpadService({ name: params.name }, context);
+        result = await startLaunchpadService({ name }, context);
         break;
       case "pause":
-        result = await pauseLaunchpadService({ name: params.name }, context);
+        result = await pauseLaunchpadService({ name }, context);
         break;
       case "delete":
-        result = await deleteLaunchpadService({ name: params.name }, context);
+        result = await deleteLaunchpadService({ name }, context);
         break;
       default:
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });

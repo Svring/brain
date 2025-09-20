@@ -6,7 +6,7 @@ import { getRegionUrlFromKubeconfig } from "@/lib/k8s/k8s-api/k8s-api-utils";
 // GET /api/sealos/devbox/[name]/network - Check devbox network status
 export async function GET(
   request: NextRequest,
-  { params }: { params: { name: string } }
+  { params }: { params: Promise<{ name: string }> }
 ) {
   try {
     // Extract authorization from headers
@@ -29,7 +29,8 @@ export async function GET(
       authorization,
     });
 
-    const result = await checkDevboxReady(context, params.name);
+    const { name } = await params;
+    const result = await checkDevboxReady(context, name);
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error checking devbox network status:", error);

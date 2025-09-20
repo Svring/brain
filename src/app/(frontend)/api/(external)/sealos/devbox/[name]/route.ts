@@ -16,7 +16,7 @@ import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 // GET /api/sealos/devbox/[name] - Get devbox information
 export async function GET(
   request: NextRequest,
-  { params }: { params: { name: string } }
+  { params }: { params: Promise<{ name: string }> }
 ) {
   try {
     // Extract authorization from headers
@@ -45,8 +45,9 @@ export async function GET(
       regionUrl,
     });
 
+    const { name } = await params;
     const target = CustomResourceTargetSchema.parse(
-      convertResourceTypeToTarget("devbox", params.name)
+      convertResourceTypeToTarget("devbox", name)
     );
 
     const result = await getDevbox(k8sContext, target);
@@ -63,7 +64,7 @@ export async function GET(
 // PATCH /api/sealos/devbox/[name] - Update devbox
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { name: string } }
+  { params }: { params: Promise<{ name: string }> }
 ) {
   try {
     // Extract authorization from headers
@@ -87,9 +88,25 @@ export async function PATCH(
     });
 
     const body = await request.json();
-    const updateData = devboxUpdateFormSchema.parse(body);
 
-    const result = await updateDevbox(sealosContext, params.name, updateData);
+    // Transform the data: move cpu and memory into resource field
+    const transformedBody = {
+      ...body,
+      resource: {
+        cpu: body.cpu,
+        memory: body.memory,
+        ...body.resource, // Preserve any existing resource fields
+      },
+    };
+
+    // Remove cpu and memory from top level since they're now in resource
+    delete transformedBody.cpu;
+    delete transformedBody.memory;
+
+    const updateData = devboxUpdateFormSchema.parse(transformedBody);
+
+    const { name } = await params;
+    const result = await updateDevbox(sealosContext, name, updateData);
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error updating devbox:", error);

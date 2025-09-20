@@ -31,7 +31,30 @@ export const launchpadRouter = t.router({
   get: t.procedure
     .input(BuiltinResourceTargetSchema)
     .query(async ({ ctx, input }) => {
-      return await getLaunchpad(ctx, input);
+      // Try both deployment and statefulset targets
+      const deploymentTarget = {
+        type: "builtin" as const,
+        resourceType: "deployment" as const,
+        name: input.name,
+      };
+
+      const statefulsetTarget = {
+        type: "builtin" as const,
+        resourceType: "statefulset" as const,
+        name: input.name,
+      };
+
+      // Try deployment first, then statefulset if deployment fails
+      try {
+        return await getLaunchpad(ctx, deploymentTarget);
+      } catch (deploymentError) {
+        try {
+          return await getLaunchpad(ctx, statefulsetTarget);
+        } catch (statefulsetError) {
+          // Both failed, throw the first error
+          throw deploymentError;
+        }
+      }
     }),
 
   list: t.procedure.query(async ({ ctx }) => {
@@ -41,7 +64,30 @@ export const launchpadRouter = t.router({
   logs: t.procedure
     .input(BuiltinResourceTargetSchema)
     .query(async ({ ctx, input }) => {
-      return await getLaunchpadLogs(ctx, ctx, input);
+      // Try both deployment and statefulset targets
+      const deploymentTarget = {
+        type: "builtin" as const,
+        resourceType: "deployment" as const,
+        name: input.name,
+      };
+
+      const statefulsetTarget = {
+        type: "builtin" as const,
+        resourceType: "statefulset" as const,
+        name: input.name,
+      };
+
+      // Try deployment first, then statefulset if deployment fails
+      try {
+        return await getLaunchpadLogs(ctx, ctx, deploymentTarget);
+      } catch (deploymentError) {
+        try {
+          return await getLaunchpadLogs(ctx, ctx, statefulsetTarget);
+        } catch (statefulsetError) {
+          // Both failed, throw the first error
+          throw deploymentError;
+        }
+      }
     }),
 
   networkStatus: t.procedure.input(z.string()).query(async ({ input, ctx }) => {

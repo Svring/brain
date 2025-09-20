@@ -12,7 +12,7 @@ import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 // GET /api/sealos/cluster/[name]/logs - Get cluster logs
 export async function GET(
   request: NextRequest,
-  { params }: { params: { name: string } }
+  { params }: { params: Promise<{ name: string }> }
 ) {
   try {
     // Extract authorization from headers
@@ -47,8 +47,9 @@ export async function GET(
       authorization,
     });
 
+    const { name } = await params;
     const target = CustomResourceTargetSchema.parse(
-      convertResourceTypeToTarget("cluster", params.name)
+      convertResourceTypeToTarget("cluster", name)
     );
 
     const result = await getClusterLogs(k8sContext, sealosContext, target);

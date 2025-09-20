@@ -15,7 +15,7 @@ import {
 // GET /api/sealos/launchpad/[name] - Get launchpad information
 export async function GET(
   request: NextRequest,
-  { params }: { params: { name: string } }
+  { params }: { params: Promise<{ name: string }> }
 ) {
   try {
     // Extract authorization from headers
@@ -44,14 +44,34 @@ export async function GET(
       regionUrl,
     });
 
-    const target = BuiltinResourceTargetSchema.parse({
+    const { name } = await params;
+
+    // Try both deployment and statefulset targets
+    const deploymentTarget = BuiltinResourceTargetSchema.parse({
       type: "builtin",
-      resourceType: "launchpad",
-      name: params.name,
+      resourceType: "deployment",
+      name,
     });
 
-    const result = await getLaunchpad(k8sContext, target);
-    return NextResponse.json(result);
+    const statefulsetTarget = BuiltinResourceTargetSchema.parse({
+      type: "builtin",
+      resourceType: "statefulset",
+      name,
+    });
+
+    // Try deployment first, then statefulset if deployment fails
+    try {
+      const result = await getLaunchpad(k8sContext, deploymentTarget);
+      return NextResponse.json(result);
+    } catch (deploymentError) {
+      try {
+        const result = await getLaunchpad(k8sContext, statefulsetTarget);
+        return NextResponse.json(result);
+      } catch (statefulsetError) {
+        // Both failed, throw the first error
+        throw deploymentError;
+      }
+    }
   } catch (error) {
     console.error("Error getting launchpad:", error);
     return NextResponse.json(
@@ -64,7 +84,7 @@ export async function GET(
 // PATCH /api/sealos/launchpad/[name] - Update launchpad
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { name: string } }
+  { params }: { params: Promise<{ name: string }> }
 ) {
   try {
     // Extract authorization from headers
@@ -88,7 +108,22 @@ export async function PATCH(
     });
 
     const body = await request.json();
-    const updateData = launchpadUpdateFormSchema.parse(body);
+
+    // Transform the data: move cpu and memory into resource field
+    const transformedBody = {
+      ...body,
+      resource: {
+        cpu: body.cpu,
+        memory: body.memory,
+        ...body.resource, // Preserve any existing resource fields
+      },
+    };
+
+    // Remove cpu and memory from top level since they're now in resource
+    delete transformedBody.cpu;
+    delete transformedBody.memory;
+
+    const updateData = launchpadUpdateFormSchema.parse(transformedBody);
 
     const result = await updateLaunchpadService(sealosContext, updateData);
     return NextResponse.json(result);

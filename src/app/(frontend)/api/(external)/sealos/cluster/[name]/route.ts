@@ -16,7 +16,7 @@ import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 // GET /api/sealos/cluster/[name] - Get cluster information
 export async function GET(
   request: NextRequest,
-  { params }: { params: { name: string } }
+  { params }: { params: Promise<{ name: string }> }
 ) {
   try {
     // Extract authorization from headers
@@ -45,8 +45,9 @@ export async function GET(
       regionUrl,
     });
 
+    const { name } = await params;
     const target = CustomResourceTargetSchema.parse(
-      convertResourceTypeToTarget("cluster", params.name)
+      convertResourceTypeToTarget("cluster", name)
     );
 
     const result = await getCluster(k8sContext, target);
@@ -63,7 +64,7 @@ export async function GET(
 // PATCH /api/sealos/cluster/[name] - Update cluster
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { name: string } }
+  { params }: { params: Promise<{ name: string }> }
 ) {
   try {
     // Extract authorization from headers
@@ -87,7 +88,24 @@ export async function PATCH(
     });
 
     const body = await request.json();
-    const updateData = clusterUpdateFormSchema.parse(body);
+
+    // Transform the data: move cpu, memory, and replicas into resource field
+    const transformedBody = {
+      ...body,
+      resource: {
+        cpu: body.cpu,
+        memory: body.memory,
+        replicas: body.replicas,
+        ...body.resource, // Preserve any existing resource fields
+      },
+    };
+
+    // Remove cpu, memory, and replicas from top level since they're now in resource
+    delete transformedBody.cpu;
+    delete transformedBody.memory;
+    delete transformedBody.replicas;
+
+    const updateData = clusterUpdateFormSchema.parse(transformedBody);
 
     const result = await updateClusterService(updateData, sealosContext);
     return NextResponse.json(result);

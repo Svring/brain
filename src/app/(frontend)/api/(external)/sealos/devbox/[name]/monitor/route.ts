@@ -11,7 +11,7 @@ const MonitorQuerySchema = z.object({
 // GET /api/sealos/devbox/[name]/monitor - Get devbox monitoring data
 export async function GET(
   request: NextRequest,
-  { params }: { params: { name: string } }
+  { params }: { params: Promise<{ name: string }> }
 ) {
   try {
     // Extract authorization from headers
@@ -39,11 +39,8 @@ export async function GET(
       step: searchParams.get("step") || "2m",
     });
 
-    const result = await getDevboxCombinedMonitor(
-      context,
-      params.name,
-      query.step
-    );
+    const { name } = await params;
+    const result = await getDevboxCombinedMonitor(context, name, query.step);
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error getting devbox monitor data:", error);

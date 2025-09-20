@@ -17,7 +17,7 @@ const LifecycleActionSchema = z.object({
 // POST /api/sealos/cluster/[name]/lifecycle - Cluster lifecycle operations
 export async function POST(
   request: NextRequest,
-  { params }: { params: { name: string } }
+  { params }: { params: Promise<{ name: string }> }
 ) {
   try {
     // Extract authorization from headers
@@ -44,8 +44,9 @@ export async function POST(
     const { action } = LifecycleActionSchema.parse(body);
 
     // Compose target from params using utility function
+    const { name } = await params;
     const target = CustomResourceTargetSchema.parse(
-      convertResourceTypeToTarget("cluster", params.name)
+      convertResourceTypeToTarget("cluster", name)
     );
 
     let result;

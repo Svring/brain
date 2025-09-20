@@ -6,7 +6,7 @@ import { getRegionUrlFromKubeconfig } from "@/lib/k8s/k8s-api/k8s-api-utils";
 // GET /api/sealos/launchpad/[name]/network - Check launchpad network status
 export async function GET(
   request: NextRequest,
-  { params }: { params: { name: string } }
+  { params }: { params: Promise<{ name: string }> }
 ) {
   try {
     // Extract authorization from headers
@@ -29,7 +29,8 @@ export async function GET(
       authorization,
     });
 
-    const result = await checkLaunchpadReady({ name: params.name }, context);
+    const { name } = await params;
+    const result = await checkLaunchpadReady({ name }, context);
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error checking launchpad network status:", error);

@@ -11,7 +11,7 @@ import {
 // GET /api/sealos/launchpad/[name]/logs - Get launchpad logs
 export async function GET(
   request: NextRequest,
-  { params }: { params: { name: string } }
+  { params }: { params: Promise<{ name: string }> }
 ) {
   try {
     // Extract authorization from headers
@@ -46,14 +46,42 @@ export async function GET(
       authorization,
     });
 
-    const target = BuiltinResourceTargetSchema.parse({
+    const { name } = await params;
+
+    // Try both deployment and statefulset targets
+    const deploymentTarget = BuiltinResourceTargetSchema.parse({
       type: "builtin",
-      resourceType: "launchpad",
-      name: params.name,
+      resourceType: "deployment",
+      name,
     });
 
-    const result = await getLaunchpadLogs(k8sContext, sealosContext, target);
-    return NextResponse.json(result);
+    const statefulsetTarget = BuiltinResourceTargetSchema.parse({
+      type: "builtin",
+      resourceType: "statefulset",
+      name,
+    });
+
+    // Try deployment first, then statefulset if deployment fails
+    try {
+      const result = await getLaunchpadLogs(
+        k8sContext,
+        sealosContext,
+        deploymentTarget
+      );
+      return NextResponse.json(result);
+    } catch (deploymentError) {
+      try {
+        const result = await getLaunchpadLogs(
+          k8sContext,
+          sealosContext,
+          statefulsetTarget
+        );
+        return NextResponse.json(result);
+      } catch (statefulsetError) {
+        // Both failed, throw the first error
+        throw deploymentError;
+      }
+    }
   } catch (error) {
     console.error("Error getting launchpad logs:", error);
     return NextResponse.json(
