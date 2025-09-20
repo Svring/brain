@@ -22,12 +22,26 @@ import { Spinner } from "@/components/ui/spinner";
 import { useChatInstance } from "@/components/provider/chat-instance-provider";
 
 export function HistoryDropdown() {
-  const { resourceTarget, threadId, threads, setChatThreadId } =
+  const { resourceTarget, threadId, threads, setChatThreadId, setChatThreads } =
     useChatInstance();
-  const { deleteThread } = useThreads();
+  const { deleteThread, getThreads } = useThreads();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [threadToDelete, setThreadToDelete] = useState<string | null>(null);
+
+  // Function to refetch and update threads
+  const refetchAndUpdateThreads = async () => {
+    try {
+      const updatedThreads = await getThreads(resourceTarget);
+      setChatThreads(updatedThreads);
+      console.log("HistoryDropdown - Refetched and updated threads:", {
+        resourceTarget,
+        threadCount: updatedThreads.length,
+      });
+    } catch (error) {
+      console.error("HistoryDropdown - Failed to refetch threads:", error);
+    }
+  };
 
   // Filter and limit threads based on resourceTarget
   const filteredAndLimitedThreads = useMemo(() => {
@@ -172,7 +186,15 @@ export function HistoryDropdown() {
         threadToDelete={threadToDelete}
         onConfirm={() => {
           if (threadToDelete) {
-            deleteThread.mutate(threadToDelete);
+            deleteThread.mutate(threadToDelete, {
+              onSuccess: () => {
+                // Refetch and update threads after successful deletion
+                refetchAndUpdateThreads();
+              },
+              onError: (error: any) => {
+                console.error("Failed to delete thread:", error);
+              },
+            });
             setDeleteDialogOpen(false);
             setThreadToDelete(null);
           }

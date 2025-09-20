@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useCopy } from "@/hooks/use-copy";
-import { useDiagnoseNetwork } from "@/hooks/copilot/use-diagnose-network";
+import { useDiagnoseNetwork } from "@/hooks/copilot/use-analyze-network";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,

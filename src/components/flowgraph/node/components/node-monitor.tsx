@@ -9,7 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import { useDiagnoseMonitor } from "@/hooks/copilot/use-diagnose-monitor";
+import { useDiagnoseMonitor } from "@/hooks/copilot/use-analyze-monitor";
 
 import {
   CustomResourceTarget,

@@ -28,13 +28,29 @@ export function HeaderActions() {
     closeChat,
     setChatState,
     setChatThreadId,
+    setChatThreads,
     closeProjectChat,
     setProjectChatThreadId,
     setProjectChatState,
+    setProjectChatThreads,
   } = useChatActions();
   const { fitView } = useReactFlow();
-  const { createNewThread } = useThreads();
+  const { createNewThread, getThreads } = useThreads();
   const { auth } = useAuthState();
+
+  // Function to refetch and update threads
+  const refetchAndUpdateThreads = async () => {
+    try {
+      const updatedThreads = await getThreads(resourceTarget);
+      if (resourceTarget === null) {
+        setProjectChatThreads(updatedThreads);
+      } else {
+        setChatThreads(resourceTarget, updatedThreads);
+      }
+    } catch (error) {
+      console.error("HeaderActions - Failed to refetch threads:", error);
+    }
+  };
 
   const handleNewChat = () => {
     createNewThread.mutate(
@@ -54,6 +70,9 @@ export function HeaderActions() {
             } else {
               setChatThreadId(resourceTarget, data.thread_id);
             }
+
+            // Refetch and update threads after successful creation
+            refetchAndUpdateThreads();
           }
         },
         onError: (error: any) => {

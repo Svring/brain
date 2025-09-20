@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import { useChatInstance } from "@/components/provider/chat-instance-provider";
+import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
 import { AiChatInput } from "./input";
 import { AiChatHeader } from "./header";
 import { AiMessages } from "./messages";
@@ -19,13 +21,40 @@ export default function AiChatbox() {
     interrupt,
   } = useChatInstance();
 
+  const { getPendingMessages } = useChatState();
+  const { clearPendingMessages } = useChatActions();
+
+  // Read and submit pending messages for this resource target
+  useEffect(() => {
+    const pendingMessages = getPendingMessages(resourceTarget);
+    if (pendingMessages.length > 0) {
+      console.log("AiChatbox - Pending messages for resource target:", {
+        resourceTarget,
+        pendingMessageCount: pendingMessages.length,
+        pendingMessages,
+      });
+
+      // Submit the pending messages
+      try {
+        submit({
+          messages: pendingMessages,
+        });
+        console.log("AiChatbox - Successfully submitted pending messages:", pendingMessages.length);
+        
+        // Clear the pending messages after successful submission
+        clearPendingMessages(resourceTarget);
+        console.log("AiChatbox - Cleared pending messages for resource target:", resourceTarget);
+      } catch (error) {
+        console.error("AiChatbox - Failed to submit pending messages:", error);
+      }
+    }
+  }, [resourceTarget, getPendingMessages]);
+
   return (
     <div
       className={cn(
         "h-full w-full flex flex-col gap-2 border rounded-xl bg-background mr-2 transition-all duration-100",
-        state.open
-          ? "translate-x-0 opacity-100"
-          : "translate-x-full opacity-0"
+        state.open ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
       )}
     >
       <AiChatHeader />

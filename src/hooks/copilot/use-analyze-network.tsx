@@ -6,6 +6,7 @@ import { useContainerStatus } from "@/hooks/sealos/network/use-container-status"
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 import { useStreamContext } from "@/components/provider/stream-provider";
 import { useThreads } from "@/components/provider/thread-provider";
+import { useChatActions } from "@/contexts/chat/chat-context";
 import {
   extractContainerPorts,
   ContainerPortsResult,
@@ -79,6 +80,7 @@ export function useDiagnoseNetwork(
   target: CustomResourceTarget | BuiltinResourceTarget
 ) {
   const { submitWithContext } = useStreamContext();
+  const { addPendingMessage } = useChatActions();
 
   // Get container ports data for network diagnosis
   const containerStatusResult = useResourceStatus<ContainerPortsResult>(
@@ -109,44 +111,48 @@ export function useDiagnoseNetwork(
       // Use node select to handle the selection and message appending
       handleNodeSelect();
 
-      // Send message using submitWithContext
-      // if (selectedThreadId) {
-      //   const networkStatusData = {
-      //     containerStatus,
-      //     containerPortsData,
-      //     originalResource,
-      //     isContainerLoading,
-      //     containerError,
-      //   };
+      // Prepare network status data
+      const networkStatusData = {
+        containerStatus,
+        containerPortsData,
+        originalResource,
+        isContainerLoading,
+        containerError,
+      };
 
-      //   submitWithContext({
-      //     messages: [
-      //       {
-      //         type: "system",
-      //         content: JSON.stringify({
-      //           type: "universal.diagnoseNetwork",
-      //           target,
-      //         }),
-      //       },
-      //       {
-      //         type: "system",
-      //         content:
-      //           analyzeNetworkPrompt +
-      //           "\n\n" +
-      //           JSON.stringify(networkStatusData),
-      //       },
-      //     ],
-      //   });
-      // }
+      // Add pending messages for this resource target
+      const systemMessage1 = {
+        id: `network-system-1-${Date.now()}`,
+        type: "system" as const,
+        content: JSON.stringify({
+          type: "universal.diagnoseNetwork",
+          target,
+        }),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      const systemMessage2 = {
+        id: `network-system-2-${Date.now()}`,
+        type: "system" as const,
+        content: analyzeNetworkPrompt + "\n\n" + JSON.stringify(networkStatusData),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      // Add pending messages for this resource target
+      addPendingMessage(target, systemMessage1);
+      addPendingMessage(target, systemMessage2);
     },
     [
       handleNodeSelect,
-      submitWithContext,
+      addPendingMessage,
       containerStatus,
       containerPortsData,
       originalResource,
       isContainerLoading,
       containerError,
+      target,
     ]
   );
 

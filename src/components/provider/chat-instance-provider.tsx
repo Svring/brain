@@ -26,7 +26,10 @@ interface ChatInstanceContextType {
   setChatThreadId: (threadId: string | null) => void;
   setChatThreads: (threads: Thread[]) => void;
   setChatState: (state: Partial<ChatSectionState>) => void;
-  submit: (data: { messages: Message[]; stage?: string; command?: any }) => any;
+  submit: (
+    data: { messages: Message[]; stage?: string; command?: any },
+    options?: { optimisticValues?: (prev: any) => any; command?: any }
+  ) => any;
   // Stream properties from useStream
   isLoading: boolean;
   stop: () => void;
@@ -97,29 +100,27 @@ export function ChatInstanceProvider({
   });
 
   // Submit function that uses the chat instance's threadId and resourceTarget
-  const submit = (data: {
-    messages: Message[];
-    stage?: string;
-    command?: any;
-  }) => {
-    const { stage: customStage, messages, command } = data;
-    const finalStage = customStage || stage;
-
-    if (!baseUrl || !modelName || !finalStage) {
+  const submit = (
+    data: {
+      messages: Message[];
+    },
+    options?: any
+  ) => {
+    if (!baseUrl || !modelName) {
       console.warn("Missing required langgraph configuration");
       return;
     }
 
     return streamValue.submit(
       {
-        messages,
+        // Default values
         api_key: apiKey,
         base_url: baseUrl,
         model_name: modelName,
         context_window_usage: contextWindowUsage,
         region_url: auth?.regionUrl,
         kubeconfig: auth?.kubeconfig,
-        stage: finalStage,
+        stage: stage,
         project_context: {
           selectedProject,
           selectedProjectResources,
@@ -130,9 +131,10 @@ export function ChatInstanceProvider({
               selectedResourceContext,
             }
           : undefined,
+        ...data,
       },
       {
-        command,
+        ...options,
       }
     );
   };
@@ -156,7 +158,7 @@ export function ChatInstanceProvider({
             isProjectChat,
             resourceTarget,
           });
-          
+
           if (isProjectChat) {
             setProjectChatThreadId(firstThread.thread_id);
           } else {
@@ -165,11 +167,14 @@ export function ChatInstanceProvider({
         }
         // Create new thread if no threads exist
         else if (threads.length === 0 && !chatInstance?.threadId) {
-          console.log("ChatInstanceProvider - No threads found, creating new thread:", {
-            isProjectChat,
-            resourceTarget,
-          });
-          
+          console.log(
+            "ChatInstanceProvider - No threads found, creating new thread:",
+            {
+              isProjectChat,
+              resourceTarget,
+            }
+          );
+
           createNewThread.mutate(
             {
               metadata: {
@@ -186,7 +191,7 @@ export function ChatInstanceProvider({
                     isProjectChat,
                     resourceTarget,
                   });
-                  
+
                   if (isProjectChat) {
                     setProjectChatThreadId(data.thread_id);
                   } else {
@@ -200,23 +205,6 @@ export function ChatInstanceProvider({
             }
           );
         }
-
-        // Log active target and threads for debugging
-        console.log("ChatInstanceProvider - Active Target:", {
-          resourceTarget,
-          resourceTargetKey: resourceTarget
-            ? serializeResourceTarget(resourceTarget)
-            : PROJECT_CHAT_KEY,
-          isProjectChat,
-          isActive,
-          isFocused,
-          threadCount: threads.length,
-          threads: threads.map((t) => ({
-            id: t.thread_id,
-            updated_at: t.updated_at,
-            metadata: t.metadata,
-          })),
-        });
       } catch (error) {
         console.error("Failed to fetch threads for resource target:", error);
       }
@@ -257,6 +245,15 @@ export function ChatInstanceProvider({
         : setChatState(resourceTarget, state),
     submit,
   };
+
+  // Block children from rendering until threadId is available
+  if (!chatInstance?.threadId) {
+    return (
+      <div className="flex items-center justify-center h-full w-full">
+        <div className="text-sm text-muted-foreground">Loading chat...</div>
+      </div>
+    );
+  }
 
   return (
     <ChatInstanceContext.Provider value={value}>

@@ -6,7 +6,7 @@ import type { Message } from "@langchain/langgraph-sdk";
 interface AiChatInputProps {
   className?: string;
   exhibition?: boolean;
-  onSubmit: (data: { messages: Message[]; stage?: string; command?: any }) => any;
+  onSubmit: (...args: any[]) => any;
   onStop: () => void;
   isLoading: boolean;
 }
@@ -23,7 +23,16 @@ export function AiChatInput({
       type: "human",
       content: message.trim(),
     };
-    onSubmit({ messages: [userMessage] });
+    onSubmit(
+      { messages: [userMessage] },
+      {
+        optimisticValues(prev: any) {
+          const prevMessages = prev.messages ?? [];
+          const newMessages = [...prevMessages, userMessage];
+          return { ...prev, messages: newMessages };
+        },
+      }
+    );
   };
 
   const handleStop = () => {

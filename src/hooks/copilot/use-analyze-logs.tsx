@@ -6,6 +6,7 @@ import { useResourceLogs } from "@/hooks/sealos/resource/use-resource-logs";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 import { useStreamContext } from "@/components/provider/stream-provider";
 import { useThreads } from "@/components/provider/thread-provider";
+import { useChatActions } from "@/contexts/chat/chat-context";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
@@ -40,6 +41,7 @@ export function useAnalyzeLogs(
 ) {
   const logsQuery = useResourceLogs(target);
   const { data: logsData, isLoading } = logsQuery;
+  const { addPendingMessage } = useChatActions();
 
   // Use node select to handle the selection and message appending
   const { handleNodeSelect } = useNodeSelect({
@@ -54,24 +56,32 @@ export function useAnalyzeLogs(
     }
 
     // Use node select to handle the selection and message appending
-    const selectedThreadId = await handleNodeSelect();
+    await handleNodeSelect();
 
-    // submitWithContext({
-    //   messages: [
-    //     {
-    //       type: "system",
-    //       content: JSON.stringify({
-    //         type: "universal.log",
-    //         target,
-    //       }),
-    //     },
-    //     {
-    //       type: "system",
-    //       content: analyzeLogsPrompt + "\n" + JSON.stringify(logsData),
-    //     },
-    //   ],
-    // });
-  }, [logsData, target]);
+    // Add pending messages for this resource target
+    const systemMessage1 = {
+      id: `logs-system-1-${Date.now()}`,
+      type: "system" as const,
+      content: JSON.stringify({
+        type: "universal.log",
+        target,
+      }),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const systemMessage2 = {
+      id: `logs-system-2-${Date.now()}`,
+      type: "system" as const,
+      content: analyzeLogsPrompt + "\n" + JSON.stringify(logsData),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    // Add pending messages for this resource target
+    addPendingMessage(target, systemMessage1);
+    addPendingMessage(target, systemMessage2);
+  }, [logsData, handleNodeSelect, addPendingMessage, target]);
 
   // Check if logs are ready (not loading and has data)
   const isLogsReady =

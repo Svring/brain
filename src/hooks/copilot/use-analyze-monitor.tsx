@@ -6,6 +6,7 @@ import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-m
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 import { useStreamContext } from "@/components/provider/stream-provider";
 import { useThreads } from "@/components/provider/thread-provider";
+import { useChatActions } from "@/contexts/chat/chat-context";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
@@ -55,7 +56,7 @@ export function useDiagnoseMonitor(
   const { color, monitorData, isLoading } = useResourceMetricsStatus({
     target,
   });
-  const { submitWithContext } = useStreamContext();
+  const { addPendingMessage } = useChatActions();
 
   // Use node select to handle the selection and message appending
   const { handleNodeSelect } = useNodeSelect({
@@ -76,26 +77,30 @@ export function useDiagnoseMonitor(
     // Use node select to handle the selection and message appending
     await handleNodeSelect();
 
-    // Send message using submitWithContext
-    // if (selectedThreadId) {
-    //   submitWithContext({
-    //     messages: [
-    //       {
-    //         type: "system",
-    //         content: JSON.stringify({
-    //           type: "universal.monitor",
-    //           target,
-    //         }),
-    //       },
-    //       {
-    //         type: "system",
-    //         content:
-    //           analyzeMonitorPrompt + "\n\n" + JSON.stringify(monitorData),
-    //       },
-    //     ],
-    //   });
-    // }
-  }, [monitorData, submitWithContext, handleNodeSelect]);
+    // Add pending messages for this resource target
+    const systemMessage1 = {
+      id: `monitor-system-1-${Date.now()}`,
+      type: "system" as const,
+      content: JSON.stringify({
+        type: "universal.monitor",
+        target,
+      }),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const systemMessage2 = {
+      id: `monitor-system-2-${Date.now()}`,
+      type: "system" as const,
+      content: analyzeMonitorPrompt + "\n\n" + JSON.stringify(monitorData),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    // Add pending messages for this resource target
+    addPendingMessage(target, systemMessage1);
+    addPendingMessage(target, systemMessage2);
+  }, [monitorData, handleNodeSelect, target]);
 
   // Check if monitor data is ready (not loading and has data)
   const isMonitorReady =

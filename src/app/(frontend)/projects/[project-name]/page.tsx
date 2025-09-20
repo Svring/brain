@@ -233,11 +233,11 @@ export default function ProjectPage() {
   const hasFocusedChat = !!focusedResourceTarget;
 
   return (
-    <div className="relative h-screen w-full flex overflow-hidden">
+    <div className="relative h-screen w-full overflow-hidden">
       <div
         className={cn(
-          "relative h-full transition-all duration-300 ease-in-out",
-          hasFocusedChat ? "w-[65%]" : "w-full"
+          "absolute inset-0 transition-all duration-300 ease-in-out",
+          hasFocusedChat ? "right-[35%]" : "right-0"
         )}
       >
         <ProjectFlowWithLoading
@@ -250,11 +250,13 @@ export default function ProjectPage() {
       </div>
       <div
         className={cn(
-          "h-full shrink-0 transition-all duration-300 ease-in-out",
-          hasFocusedChat ? "w-[35%] p-2 pl-0 min-w-md" : "w-0"
+          "absolute top-0 right-0 h-full w-[35%] min-w-md transition-all duration-300 ease-in-out",
+          hasFocusedChat ? "translate-x-0" : "translate-x-full"
         )}
       >
-        <ChatManager />
+        <div className="h-full p-2 pl-0">
+          <ChatManager />
+        </div>
       </div>
     </div>
   );
