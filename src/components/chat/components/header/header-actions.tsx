@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
@@ -83,7 +84,8 @@ export function HeaderActions() {
   };
 
   return (
-    <div className="flex items-center gap-1">
+    <TooltipProvider>
+      <div className="flex items-center gap-1">
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
@@ -144,6 +146,7 @@ export function HeaderActions() {
         </TooltipTrigger>
         <TooltipContent>Close</TooltipContent>
       </Tooltip>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }

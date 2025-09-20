@@ -15,6 +15,7 @@ import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useEnv } from "./env-provider";
+import AiChatboxLoading from "@/components/chat/components/chatbox-loading";
 
 interface ChatInstanceContextType {
   resourceTarget: ResourceTarget | null; // null for project chat
@@ -246,13 +247,9 @@ export function ChatInstanceProvider({
     submit,
   };
 
-  // Block children from rendering until threadId is available
+  // Show loading chatbox when threadId is not available
   if (!chatInstance?.threadId) {
-    return (
-      <div className="flex items-center justify-center h-full w-full">
-        <div className="text-sm text-muted-foreground">Loading chat...</div>
-      </div>
-    );
+    return <AiChatboxLoading />;
   }
 
   return (

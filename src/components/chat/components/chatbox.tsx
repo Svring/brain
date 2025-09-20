@@ -39,11 +39,17 @@ export default function AiChatbox() {
         submit({
           messages: pendingMessages,
         });
-        console.log("AiChatbox - Successfully submitted pending messages:", pendingMessages.length);
-        
+        console.log(
+          "AiChatbox - Successfully submitted pending messages:",
+          pendingMessages.length
+        );
+
         // Clear the pending messages after successful submission
         clearPendingMessages(resourceTarget);
-        console.log("AiChatbox - Cleared pending messages for resource target:", resourceTarget);
+        console.log(
+          "AiChatbox - Cleared pending messages for resource target:",
+          resourceTarget
+        );
       } catch (error) {
         console.error("AiChatbox - Failed to submit pending messages:", error);
       }
