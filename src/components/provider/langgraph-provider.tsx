@@ -25,8 +25,10 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
   const { auth } = useAuthState();
   const env = useEnv();
   const aiProxyContext = useAiProxyContext();
-  const { isLoading, isLoaded, isUnloaded } = useLanggraphState();
+  const { isLoading, isLoaded, isUnloaded, modelName } = useLanggraphState();
   const { setConfig, setConfigFailed } = useLanggraphActions();
+
+  console.log("modelName", modelName);
 
   const isProduction = env.MODE === "production";
 
@@ -90,11 +92,12 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
               {
                 onSuccess: () => {
                   // toast.success("Token created successfully.");
-                  // The query will refetch and we'll get the new token
+                  window.location.reload();
                 },
                 onError: () => {
                   // If automatic creation fails, show the manual UI
                   setConfigFailed();
+                  window.location.reload();
                 },
               }
             );
@@ -104,19 +107,7 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
         }
       }
     }
-  }, [
-    isLoading,
-    isProduction,
-    brainToken,
-    aiProxyContext.baseUrl,
-    auth?.apiKey,
-    auth?.baseUrl,
-    tokensLoading,
-    env.AGENT_API_KEY,
-    env.AGENT_BASE_URL,
-    env.AGENT_MODEL_NAME,
-    createTokenMutation,
-  ]);
+  }, [isLoading, isProduction, brainToken, aiProxyTokens]);
 
   // Handle token creation
   const handleCreateToken = () => {

@@ -263,7 +263,7 @@ export function createSealosApi(
     apiVersion ? `/${apiVersion}` : ""
   }`;
 
-  console.log("baseURL", baseURL);
+  // console.log("baseURL", baseURL);
 
   return axios.create({
     baseURL,

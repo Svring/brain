@@ -21,7 +21,8 @@ export function LoadingScreen({
     >
       <Spinner size={size} />
       <TextShimmer className="text-muted-foreground text-center">
-        {text}
+        {/* {text} */}
+        Loading...
       </TextShimmer>
     </div>
   );

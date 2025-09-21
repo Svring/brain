@@ -22,6 +22,13 @@ interface HomeChatContextType {
   interrupt: Interrupt | undefined;
   messages: Message[];
 
+  // Configuration properties
+  api_key: string | undefined;
+  base_url: string | undefined;
+  model_name: string | undefined;
+  region_url: string | undefined;
+  kubeconfig: string | undefined;
+
   // Submit function
   submit: (
     data: { stage?: string; command?: any },
@@ -37,7 +44,7 @@ export function HomeChatProvider({ children }: { children: ReactNode }) {
   const { selectedProject, selectedProjectResources } = useProjectState();
   const { auth } = useAuthState();
   const { LANGGRAPH_DEPLOYMENT_URL, LANGGRAPH_GRAPH_ID } = useEnv();
-  const { stage } = useLanggraphState();
+  const { baseUrl, apiKey, modelName, stage } = useLanggraphState();
   const { createNewThread } = useThreads();
   const [threadId, setThreadId] = useState<string | null>(null);
 
@@ -57,8 +64,19 @@ export function HomeChatProvider({ children }: { children: ReactNode }) {
     data: { stage?: string; command?: any },
     options?: { optimisticValues?: (prev: any) => any; command?: any }
   ) => {
+    if (!baseUrl || !modelName) {
+      console.warn("Missing required langgraph configuration");
+      return;
+    }
+
     return streamValue.submit(
       {
+        // Default values
+        api_key: apiKey,
+        base_url: baseUrl,
+        model_name: modelName,
+        region_url: auth?.regionUrl,
+        kubeconfig: auth?.kubeconfig,
         stage: "propose_project",
         ...data,
       },
@@ -95,6 +113,11 @@ export function HomeChatProvider({ children }: { children: ReactNode }) {
 
   const value: HomeChatContextType = {
     ...streamValue,
+    api_key: apiKey,
+    base_url: baseUrl,
+    model_name: modelName,
+    region_url: auth?.regionUrl,
+    kubeconfig: auth?.kubeconfig,
     submit,
   };
 
