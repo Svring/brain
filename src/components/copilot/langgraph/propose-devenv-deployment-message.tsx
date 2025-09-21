@@ -47,7 +47,7 @@ const DevenvDeploymentSuccessMessage = ({ args }: { args: any }) => {
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-center p-2 border rounded-lg">
+      <div className="flex items-center justify-center p-2 border rounded-lg bg-background-secondary">
         <div className="flex items-center gap-2">
           <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
           <p className="text-sm">
@@ -63,8 +63,8 @@ const DevenvDeploymentSuccessMessage = ({ args }: { args: any }) => {
 
 const DevenvDeploymentCard = ({ args, onSuccess }: { args: any; onSuccess?: (data: any) => void }) => {
   const { createProject, isCreating } = useProjectCreate();
-  const { submit, threadId } = useHomeChat();
-  const { patchThread } = useThreads();
+  const { submit, threadId, messages } = useHomeChat();
+  const { patchThread, updateThreadState } = useThreads();
   const router = useRouter();
   const { auth } = useAuthState();
   const [internalProposal, setInternalProposal] = useState<ProjectProposal>(
@@ -100,9 +100,6 @@ const DevenvDeploymentCard = ({ args, onSuccess }: { args: any; onSuccess?: (dat
 
   const handleDeploy = async () => {
     try {
-      console.log("Deploying with threadId:", threadId);
-      console.log("internalProposal", internalProposal);
-
       // Create the project
       const projectName = await createProject(internalProposal);
 
@@ -116,6 +113,66 @@ const DevenvDeploymentCard = ({ args, onSuccess }: { args: any; onSuccess?: (dat
             resourceTarget: null,
           },
         });
+
+        // Update tool messages with result field
+        if (messages && messages.length > 0) {
+          // Find all tool messages with the specified names
+          const toolMessageNames = [
+            "propose_image_deployment",
+            "propose_devenv_deployment",
+            "propose_template_deployment",
+          ];
+
+          // Create a copy of messages to modify
+          const updatedMessages = messages.map((message: any) => {
+            if (
+              message.type === "tool" &&
+              toolMessageNames.includes(message.name)
+            ) {
+              return {
+                ...message,
+                additional_kwargs: {
+                  ...message.additional_kwargs,
+                  result: "project proposal skipped",
+                },
+              };
+            }
+            return message;
+          });
+
+          // Find the last occurrence of these tool messages and mark it as successful
+          let lastToolMessageIndex = -1;
+          for (let i = updatedMessages.length - 1; i >= 0; i--) {
+            const message = updatedMessages[i];
+            if (
+              message.type === "tool" &&
+              toolMessageNames.includes(message.name)
+            ) {
+              lastToolMessageIndex = i;
+              break;
+            }
+          }
+
+          // Update the last tool message with success result
+          if (lastToolMessageIndex !== -1) {
+            updatedMessages[lastToolMessageIndex] = {
+              ...updatedMessages[lastToolMessageIndex],
+              additional_kwargs: {
+                ...updatedMessages[lastToolMessageIndex].additional_kwargs,
+                result: "project created successfully",
+              },
+            };
+          }
+
+          // Update thread state with modified messages
+          await updateThreadState.mutate({
+            threadId,
+            values: {
+              messages: updatedMessages,
+            },
+            asNode: "entry_node",
+          });
+        }
       }
 
       // Navigate to the created project

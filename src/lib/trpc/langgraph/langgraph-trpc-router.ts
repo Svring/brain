@@ -62,17 +62,18 @@ export const langgraphRouter = t.router({
     }),
 
   // Update thread state
-  // updateState: t.procedure
-  //   .input(
-  //     z.object({
-  //       threadId: z.string(),
-  //       state: z.any(),
-  //     })
-  //   )
-  //   .mutation(async ({ input }) => {
-  //     const { threadId, state } = input;
-  //     return await updateThreadState(threadId, state);
-  //   }),
+  updateState: t.procedure
+    .input(
+      z.object({
+        threadId: z.string(),
+        values: z.any(),
+        asNode: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { threadId, values, asNode } = input;
+      return await updateThreadState(threadId, values, asNode);
+    }),
 
   // Delete thread
   delete: t.procedure.input(z.string()).mutation(async ({ input }) => {

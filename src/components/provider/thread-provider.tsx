@@ -6,7 +6,6 @@ import { useProjectState } from "@/contexts/project/project-context";
 import { searchThreads } from "@/lib/langgraph/langgraph-api/langgraph-api-service";
 import {
   useDeleteThreadMutation,
-  useUpdateThreadStateMutation,
 } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation } from "@tanstack/react-query";
@@ -54,10 +53,10 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
     langgraph.create.mutationOptions()
   );
 
-  // Update thread state mutation
-  const updateThreadStateMutation = useMutation({
-    ...useUpdateThreadStateMutation(),
-  });
+  // Update thread state mutation using TRPC
+  const updateThreadStateMutation = useMutation(
+    langgraph.updateState.mutationOptions()
+  );
 
   // Delete thread mutation
   const deleteThreadMutation = useDeleteThreadMutation();

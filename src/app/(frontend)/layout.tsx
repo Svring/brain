@@ -92,16 +92,12 @@ export default async function RootLayout({
                       <LanggraphConfigWrapper>
                         <ReactFlowProvider>
                           <FlowgraphProvider>
-                            {/* <ThreadProvider> */}
-                            <HomeChatProvider>
-                              <OrchestratorProvider>
-                                <SidebarProvider defaultOpen={false}>
-                                  <AppSidebar />
-                                  {children}
-                                </SidebarProvider>
-                              </OrchestratorProvider>
-                            </HomeChatProvider>
-                            {/* </ThreadProvider> */}
+                            <OrchestratorProvider>
+                              <SidebarProvider defaultOpen={false}>
+                                <AppSidebar />
+                                {children}
+                              </SidebarProvider>
+                            </OrchestratorProvider>
                           </FlowgraphProvider>
                         </ReactFlowProvider>
                       </LanggraphConfigWrapper>

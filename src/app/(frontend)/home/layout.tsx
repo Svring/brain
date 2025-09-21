@@ -1,7 +1,6 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { ThreadProvider } from "@/components/provider/thread-provider";
 import { HomeChatProvider } from "@/components/provider/home-chat-provider";
 
 interface ChatLayoutProps {
@@ -9,5 +8,5 @@ interface ChatLayoutProps {
 }
 
 export default function ChatLayout({ children }: ChatLayoutProps) {
-  return { children };
+  return <HomeChatProvider>{children}</HomeChatProvider>;
 }

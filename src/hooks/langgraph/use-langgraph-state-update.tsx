@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
 import { useProjectState } from "@/contexts/project/project-context";
-import { useUpdateThreadStateMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useThreads } from "@/components/provider/thread-provider";
 
 interface UseLanggraphStateUpdateProps {
   threadId: string;
@@ -19,31 +19,29 @@ export function useLanggraphStateUpdate({
     selectedProjectResources,
     selectedResourceContext,
   } = useProjectState();
-  const { mutate: updateThreadState } = useUpdateThreadStateMutation();
+  const { updateThreadState } = useThreads();
 
   useEffect(() => {
     if (apiKey && baseUrl && modelName && stage) {
-      updateThreadState({
+      updateThreadState.mutate({
         threadId: threadId,
-        state: {
-          values: {
-            api_key: apiKey,
-            base_url: baseUrl,
-            model_name: modelName,
-            stage: stage,
-            project_context: {
-              selectedProject,
-              selectedProjectResources,
-            },
-            resource_context: selectedResource
-              ? {
-                  selectedResource,
-                  selectedResourceContext,
-                }
-              : undefined,
+        values: {
+          api_key: apiKey,
+          base_url: baseUrl,
+          model_name: modelName,
+          stage: stage,
+          project_context: {
+            selectedProject,
+            selectedProjectResources,
           },
-          as_node: "entry_node",
+          resource_context: selectedResource
+            ? {
+                selectedResource,
+                selectedResourceContext,
+              }
+            : undefined,
         },
+        asNode: "entry_node",
       });
     }
   }, [
