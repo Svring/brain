@@ -8,10 +8,16 @@ import {
   ChevronDown,
   ChevronUp,
   Package,
+  CircleCheckBigIcon,
 } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 interface DockerHubItem {
   name: string;
@@ -125,17 +131,30 @@ export const SearchDockerHubActionMessage: React.FC<
   return (
     <div className="w-full">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger asChild>
-          <div className="flex items-center justify-between p-2 border rounded-lg cursor-pointer hover:bg-muted/50">
-            <div className="flex items-center gap-2">
-              <Package className="h-4 w-4 text-blue-600" />
-              <p className="text-sm font-medium">Search Docker Hub</p>
+        <div className="border rounded-lg bg-background-secondary">
+          <CollapsibleTrigger asChild>
+            <div className="flex items-center justify-between p-2 cursor-pointer hover:bg-muted/50">
+              <div className="flex items-center gap-2">
+                <span className="flex items-center">
+                  <ChevronUp
+                    className={`h-4 w-4 text-muted-foreground transition-transform ${
+                      isOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </span>
+                <p className="text-sm text-foreground flex items-center m-0">
+                  <span className="text-muted-foreground">Action:</span>{" "}
+                  <span className="text-foreground ml-1">Search Docker Hub</span>
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />
+                <span className="text-sm text-theme-green">Completed</span>
+              </div>
             </div>
-            <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-          </div>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="space-y-3 mt-2">
-          <div className="p-4 border rounded-lg bg-muted/30">
+          </CollapsibleTrigger>
+          <CollapsibleContent className="border-t border-muted/20">
+            <div className="p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="flex text-sm text-muted-foreground">
                 <span>
@@ -169,8 +188,9 @@ export const SearchDockerHubActionMessage: React.FC<
                 <DockerHubItemCard key={`${item.name}-${index}`} item={item} />
               ))}
             </div>
-          </div>
-        </CollapsibleContent>
+            </div>
+          </CollapsibleContent>
+        </div>
       </Collapsible>
     </div>
   );

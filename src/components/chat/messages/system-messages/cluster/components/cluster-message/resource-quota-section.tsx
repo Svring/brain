@@ -81,6 +81,24 @@ export const ResourceQuotaPopoverContent: React.FC<{
     );
   };
 
+  // Helper function to calculate total resources (per instance * replicas)
+  const calculateTotalResources = (resourceData: any) => {
+    if (!resourceData) return { cpu: 0, memory: 0, storage: 0 };
+
+    const replicas = resourceData.replicas || 1;
+    const cpu = parseFloat(resourceData.cpu?.toString() || "0");
+    const memory = parseFloat(resourceData.memory?.toString() || "0");
+    const storage = parseFloat(resourceData.storage?.toString() || "0");
+
+    return {
+      cpu: cpu * replicas,
+      memory: memory * replicas,
+      storage: storage * replicas,
+    };
+  };
+
+  const totalResources = calculateTotalResources(resourceData);
+
   if (isEditing) {
     return (
       <div className="w-full rounded-lg space-y-3">
@@ -133,22 +151,35 @@ export const ResourceQuotaPopoverContent: React.FC<{
         <div className="flex items-center gap-2">
           <Cpu className="h-6 w-6" />
           <div className="flex flex-col">
-            <div className="text-xs text-muted-foreground">CPU</div>
-            <div className="text-sm font-medium">{resourceData?.cpu} Core</div>
+            <div className="text-xs text-muted-foreground">CPU (Total)</div>
+            <div className="text-sm font-medium">{totalResources.cpu} Core</div>
+            <div className="text-xs text-muted-foreground">
+              {resourceData?.cpu} × {resourceData?.replicas || 1}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <MemoryStick className="h-6 w-6" />
           <div className="flex flex-col">
-            <div className="text-xs text-muted-foreground">Memory</div>
-            <div className="text-sm font-medium">{resourceData?.memory} GB</div>
+            <div className="text-xs text-muted-foreground">Memory (Total)</div>
+            <div className="text-sm font-medium">
+              {totalResources.memory} GB
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {resourceData?.memory} × {resourceData?.replicas || 1}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <HardDrive className="h-6 w-6" />
           <div className="flex flex-col">
-            <div className="text-xs text-muted-foreground">Storage</div>
-            <div className="text-sm font-medium">{resourceData?.storage} GB</div>
+            <div className="text-xs text-muted-foreground">Storage (Total)</div>
+            <div className="text-sm font-medium">
+              {totalResources.storage} GB
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {resourceData?.storage} × {resourceData?.replicas || 1}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -195,6 +226,24 @@ export const ResourceQuotaSection: React.FC<ResourceQuotaSectionProps> = ({
       ? null
       : parsedClusterObject.resource;
 
+  // Helper function to calculate total resources
+  const calculateTotalResources = (resourceData: any) => {
+    if (!resourceData) return { cpu: 0, memory: 0, storage: 0 };
+
+    const replicas = resourceData.replicas || 1;
+    const cpu = parseFloat(resourceData.cpu?.toString() || "0");
+    const memory = parseFloat(resourceData.memory?.toString() || "0");
+    const storage = parseFloat(resourceData.storage?.toString() || "0");
+
+    return {
+      cpu: cpu * replicas,
+      memory: memory * replicas,
+      storage: storage * replicas,
+    };
+  };
+
+  const totalResources = calculateTotalResources(resourceData);
+
   return (
     <div
       className="p-2 border rounded-lg cursor-pointer hover:bg-background-tertiary transition-colors"
@@ -207,7 +256,7 @@ export const ResourceQuotaSection: React.FC<ResourceQuotaSectionProps> = ({
           <div className="flex flex-col">
             <span className="font-medium text-sm">CPU</span>
             <span className="text-xs text-muted-foreground">
-              {resourceData?.cpu}Core
+              {totalResources.cpu}Core
             </span>
           </div>
         </div>
@@ -218,7 +267,7 @@ export const ResourceQuotaSection: React.FC<ResourceQuotaSectionProps> = ({
           <div className="flex flex-col">
             <span className="font-medium text-sm">Memory</span>
             <span className="text-xs text-muted-foreground">
-              {resourceData?.memory}GB
+              {totalResources.memory}GB
             </span>
           </div>
         </div>
@@ -229,7 +278,7 @@ export const ResourceQuotaSection: React.FC<ResourceQuotaSectionProps> = ({
           <div className="flex flex-col">
             <span className="font-medium text-sm">Storage</span>
             <span className="text-xs text-muted-foreground">
-              {resourceData?.storage}GB
+              {totalResources.storage}GB
             </span>
           </div>
         </div>

@@ -171,7 +171,7 @@ const IndividualChart: React.FC<IndividualChartProps> = ({
 export const CombinedMetricsChart: React.FC<CombinedMetricsChartProps> = ({
   data,
   isLoading = false,
-  height = "h-40",
+  height = "h-32",
 }) => {
   // Transform data to format expected by Recharts
   const chartData = data.map((point) => ({

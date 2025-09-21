@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Clock, Search, ChevronDown } from "lucide-react";
+import { Clock, Search, ChevronDown, ChevronUp, CircleCheckBigIcon } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Sources,
   SourcesTrigger,
@@ -45,17 +46,26 @@ export const SearchWebActionMessage: React.FC<SearchWebActionMessageProps> = ({
   return (
     <div className="w-full">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger asChild>
-          <div className="flex items-center justify-between p-2 border rounded-lg cursor-pointer hover:bg-muted/50">
-            <div className="flex items-center gap-2">
-              <Search className="h-4 w-4 text-blue-600" />
-              <p className="text-sm font-medium">Search Web</p>
+        <div className="border rounded-lg bg-background-secondary">
+          <CollapsibleTrigger asChild>
+            <div className="flex items-center justify-between p-2 cursor-pointer hover:bg-muted/50">
+              <div className="flex items-center gap-2">
+                <span className="flex items-center">
+                  <ChevronUp className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                </span>
+                <p className="text-sm text-foreground flex items-center m-0">
+                  <span className="text-muted-foreground">Action:</span>{" "}
+                  <span className="text-foreground ml-1">Search Web</span>
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />
+                <span className="text-sm text-theme-green">Completed</span>
+              </div>
             </div>
-            <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-          </div>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="space-y-3 mt-2">
-          <div className="p-4 border rounded-lg bg-muted/30">
+          </CollapsibleTrigger>
+          <CollapsibleContent className="border-t border-muted/20">
+            <div className="p-4">
             {/* Search Query and Stats */}
             <div className="space-y-2 mb-4">
               <div className="text-sm text-muted-foreground">
@@ -93,8 +103,9 @@ export const SearchWebActionMessage: React.FC<SearchWebActionMessageProps> = ({
                 ))}
               </SourcesContent>
             </Sources>
-          </div>
-        </CollapsibleContent>
+            </div>
+          </CollapsibleContent>
+        </div>
       </Collapsible>
     </div>
   );

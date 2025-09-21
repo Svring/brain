@@ -108,7 +108,7 @@ export const ProposeDevenvDeploymentMessage: React.FC<
   }
 
   return (
-    <div className="w-full border p-4 rounded-xl">
+    <div className="w-full border p-2 rounded-xl">
       {/* Header with icon and text */}
       <div className="flex items-center mb-3">
         <div className="flex text-sm text-muted-foreground">
