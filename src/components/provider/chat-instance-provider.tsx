@@ -166,12 +166,12 @@ export function ChatInstanceProvider({
         // Auto-select first thread if threads exist and no thread is currently selected
         if (threads.length > 0 && !chatInstance?.threadId) {
           const firstThread = threads[0];
-          // console.log("ChatInstanceProvider - Auto-selecting first thread:", {
-          //   threadId: firstThread.thread_id,
-          //   isProjectChat,
-          //   resourceTarget: isResourceChat ? resourceTarget : null,
-          //   projectName: isProjectChat ? projectName : null,
-          // });
+          console.log("ChatInstanceProvider - Auto-selecting first thread:", {
+            threadId: firstThread.thread_id,
+            isProjectChat,
+            resourceTarget: isResourceChat ? resourceTarget : null,
+            projectName: isProjectChat ? projectName : null,
+          });
 
           if (isProjectChat) {
             setProjectChatThreadId(projectName!, firstThread.thread_id);

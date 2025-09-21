@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback } from "react";
+import React, { useCallback } from "react";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useContainerStatus } from "@/hooks/sealos/network/use-container-status";
+import { useNetworkStatus } from "@/hooks/sealos/network/use-network-status";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 import { useStreamContext } from "@/components/provider/stream-provider";
 import { useThreads } from "@/components/provider/thread-provider";
@@ -88,7 +89,6 @@ export function useDiagnoseNetwork(
     (resource) => extractContainerPorts(resource?.ports)
   );
   const containerPortsData = containerStatusResult.resource;
-  const originalResource = (containerStatusResult as any).originalResource;
 
   // Use container status hook for network diagnosis
   const {
@@ -101,23 +101,62 @@ export function useDiagnoseNetwork(
     2000 // 2 second timeout
   );
 
+  // Use network status hook for public network diagnosis
+  const { readyStatus: networkStatus } = useNetworkStatus(target);
+
+  // Get the original resource to access port information
+  const originalResource = (containerStatusResult as any).originalResource;
+
+  // Format data in the structure expected by DiagnoseNetworkMessage
+  const combinedStatusData = React.useMemo((): any[] => {
+    if (!originalResource?.ports || !Array.isArray(originalResource.ports)) {
+      return [];
+    }
+
+    return originalResource.ports.map((port: any): any => {
+      // Get container status for this port
+      const containerPortStatus = containerStatus?.find(
+        (status: any) => status.port === port.number
+      );
+      const containerAccess = containerPortStatus?.reachable ?? false;
+
+      // Get network status for this port
+      const networkPortStatus = Array.isArray(networkStatus)
+        ? networkStatus.find(
+            (status: any) =>
+              status.url === port.publicAddress ||
+              status.url === port.privateAddress
+          )
+        : undefined;
+      const publicAccessStatus = networkPortStatus?.ready ?? false;
+
+      return {
+        number: port.number,
+        containerAccess,
+        publicAccessStatus,
+        publicAddress: port.publicAddress || "N/A",
+        privateAddress: port.privateAddress || "N/A",
+      };
+    });
+  }, [originalResource?.ports, containerStatus, networkStatus]);
+
   // Use node select to handle the selection and message appending
   const { handleNodeSelect } = useNodeSelect({
     target,
   });
+
+  console.log("combinedStatusData", combinedStatusData);
 
   const diagnoseNetwork = useCallback(
     (readyStatus: any) => {
       // Use node select to handle the selection and message appending
       handleNodeSelect();
 
-      // Prepare network status data
+      // Prepare network status data in the expected format
       const networkStatusData = {
+        combinedStatusData,
         containerStatus,
-        containerPortsData,
-        originalResource,
-        isContainerLoading,
-        containerError,
+        networkStatus,
       };
 
       // Add event message before analysis
@@ -165,11 +204,9 @@ export function useDiagnoseNetwork(
     [
       handleNodeSelect,
       addPendingMessage,
+      combinedStatusData,
       containerStatus,
-      containerPortsData,
-      originalResource,
-      isContainerLoading,
-      containerError,
+      networkStatus,
       target,
     ]
   );
@@ -177,9 +214,9 @@ export function useDiagnoseNetwork(
   return {
     diagnoseNetwork,
     containerStatus,
+    networkStatus,
     isContainerLoading,
     containerError,
     containerPortsData,
-    originalResource,
   };
 }

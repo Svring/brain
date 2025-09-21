@@ -6,57 +6,47 @@ import { ChatInstanceProvider } from "@/components/provider/chat-instance-provid
 import AiChatbox from "./components/chatbox";
 
 export function ChatManager() {
-  const { chatInstances, chatDisplayOrder } = useChatState();
+  const { chatInstances, focusedResourceTarget } = useChatState();
 
-  // Don't render if no active chats
-  if (!chatDisplayOrder.length) {
+  // Don't render if no focused chat
+  if (!focusedResourceTarget) {
     return null;
   }
 
-  // Render all active chat instances - new ones slide in from right
+  // Get the focused chat instance
+  const chatInstance = chatInstances.get(focusedResourceTarget);
+  if (!chatInstance) {
+    return null;
+  }
+
+  // Render only the focused chat instance
   return (
     <div className="relative w-full h-full overflow-hidden">
-      {chatDisplayOrder.map((chatKey, index) => {
-        const chatInstance = chatInstances.get(chatKey);
-        if (!chatInstance) return null;
-
-        const isActive = index === 0; // Only the first one is active
-        // All chats stay at position 0, but only the active one is visible
-        const slidePosition = isActive ? 0 : 100; // Active at 0%, inactive slide out to right
-
-        return (
-          <div
-            key={chatKey}
-            className={`absolute w-full h-full transition-all duration-500 ease-in-out ${
-              isActive
-                ? "z-50 opacity-100 pointer-events-auto"
-                : "z-40 opacity-0 pointer-events-none"
-            }`}
-            style={{
-              transform: `translateX(${slidePosition}%)`,
-              borderRadius: "8px",
-              overflow: "hidden",
-            }}
+      <div
+        className="absolute w-full h-full transition-all duration-500 ease-in-out z-50 opacity-100 pointer-events-auto"
+        style={{
+          transform: "translateX(0%)",
+          borderRadius: "8px",
+          overflow: "hidden",
+        }}
+      >
+        {/* Chat content */}
+        {chatInstance.projectName ? (
+          <ChatInstanceProvider
+            key={focusedResourceTarget}
+            projectName={chatInstance.projectName}
           >
-            {/* Chat content */}
-            {chatInstance.projectName ? (
-              <ChatInstanceProvider
-                key={chatKey}
-                projectName={chatInstance.projectName}
-              >
-                <AiChatbox />
-              </ChatInstanceProvider>
-            ) : chatInstance.resourceTarget ? (
-              <ChatInstanceProvider
-                key={chatKey}
-                resourceTarget={chatInstance.resourceTarget}
-              >
-                <AiChatbox />
-              </ChatInstanceProvider>
-            ) : null}
-          </div>
-        );
-      })}
+            <AiChatbox />
+          </ChatInstanceProvider>
+        ) : chatInstance.resourceTarget ? (
+          <ChatInstanceProvider
+            key={focusedResourceTarget}
+            resourceTarget={chatInstance.resourceTarget}
+          >
+            <AiChatbox />
+          </ChatInstanceProvider>
+        ) : null}
+      </div>
     </div>
   );
 }
