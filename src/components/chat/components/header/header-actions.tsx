@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
-import { Plus, ChevronRight, Focus, History } from "lucide-react";
+import { Plus, ChevronRight, Focus, History, Loader2 } from "lucide-react";
 import { useChatActions } from "@/contexts/chat/chat-context";
 import { cn } from "@/lib/utils";
 import {
@@ -86,66 +86,74 @@ export function HeaderActions() {
   return (
     <TooltipProvider>
       <div className="flex items-center gap-1">
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            onClick={handleNewChat}
-            size="icon"
-            variant="ghost"
-            className="h-8 w-8"
-            disabled={createNewThread.isPending}
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>New Chat</TooltipContent>
-      </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={handleNewChat}
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8"
+              disabled={createNewThread.isPending}
+            >
+              {createNewThread.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="h-4 w-4" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {createNewThread.isPending ? "Creating..." : "New Chat"}
+          </TooltipContent>
+        </Tooltip>
 
-      <HistoryDropdown />
+        <HistoryDropdown />
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Toggle
-            pressed={state.maximized}
-            onPressedChange={(pressed) => {
-              if (resourceTarget === null) {
-                setProjectChatState(selectedProject!, { maximized: pressed });
-              } else {
-                setChatState(resourceTarget, { maximized: pressed });
-              }
-            }}
-            size="sm"
-            className={cn(
-              "h-8 w-8 hover:text-theme-blue",
-              state.maximized && "text-theme-blue"
-            )}
-          >
-            <Focus className="h-4 w-4" />
-          </Toggle>
-        </TooltipTrigger>
-        <TooltipContent>{state.maximized ? "Unfocus" : "Focus"}</TooltipContent>
-      </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Toggle
+              pressed={state.maximized}
+              onPressedChange={(pressed) => {
+                if (resourceTarget === null) {
+                  setProjectChatState(selectedProject!, { maximized: pressed });
+                } else {
+                  setChatState(resourceTarget, { maximized: pressed });
+                }
+              }}
+              size="sm"
+              className={cn(
+                "h-8 w-8 hover:text-theme-blue",
+                state.maximized && "text-theme-blue"
+              )}
+            >
+              <Focus className="h-4 w-4" />
+            </Toggle>
+          </TooltipTrigger>
+          <TooltipContent>
+            {state.maximized ? "Unfocus" : "Focus"}
+          </TooltipContent>
+        </Tooltip>
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            onClick={() => {
-              if (resourceTarget === null) {
-                closeProjectChat(selectedProject!);
-              } else {
-                closeChat(resourceTarget);
-                clearSelectedResource(); // Clear selected resource when closing resource chat
-              }
-            }}
-            size="icon"
-            variant="ghost"
-            className="h-8 w-8"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>Close</TooltipContent>
-      </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={() => {
+                if (resourceTarget === null) {
+                  closeProjectChat(selectedProject!);
+                } else {
+                  closeChat(resourceTarget);
+                  clearSelectedResource(); // Clear selected resource when closing resource chat
+                }
+              }}
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Close</TooltipContent>
+        </Tooltip>
       </div>
     </TooltipProvider>
   );

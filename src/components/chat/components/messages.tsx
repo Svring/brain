@@ -3,7 +3,13 @@
 import { RenderTextMessage } from "../messages/text-message";
 import { useAutoScroll } from "@/hooks/use-auto-scroll";
 import { Button } from "@/components/ui/button";
-import { ArrowDown, Loader2 } from "lucide-react";
+import {
+  ArrowDown,
+  Loader2,
+  ChevronRight,
+  ChevronDown,
+  Hammer,
+} from "lucide-react";
 import React, { useMemo, useEffect, useState } from "react";
 import { createHash } from "crypto";
 import type { Message } from "@langchain/langgraph-sdk";
@@ -35,6 +41,7 @@ export function AiMessages({
 }: AiMessagesProps) {
   // State for interrupt data editing
   const [interruptData, setInterruptData] = useState<any>(null);
+  const [isInterruptExpanded, setIsInterruptExpanded] = useState(false);
 
   // Parse interrupt value when it changes
   useEffect(() => {
@@ -102,16 +109,29 @@ export function AiMessages({
       messageElements.push(
         <div
           key="interrupt-ui"
-          className="mt-4 p-4 border border-border-primary rounded-lg bg-background-secondary"
+          className="mt-4 border border-border-primary rounded-lg bg-background-secondary"
         >
-          <p className="text-sm text-foreground mb-3">
-            Action: {interruptData.action}
-          </p>
+          <div
+            className="flex items-center p-2 cursor-pointer hover:bg-muted/20 transition-all"
+            onClick={() => setIsInterruptExpanded(!isInterruptExpanded)}
+          >
+            {isInterruptExpanded ? (
+              <ChevronDown className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+            ) : (
+              <ChevronRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+            )}
+            <div className="flex gap-2 ml-1 flex-1">
+              <Hammer className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+              <p className="text-sm text-foreground">
+                <span className="text-muted-foreground">Action:</span>{" "}
+                <span className="text-foreground">{interruptData.action}</span>
+              </p>
+            </div>
+          </div>
 
-          {interruptData.payload && (
-            <div className="mb-4">
-              <p className="text-sm text-foreground mb-2">Payload:</p>
-              <div className="border border-border-primary rounded p-2 bg-background">
+          {isInterruptExpanded && interruptData.payload && (
+            <div className="px-2 pb-2 border-t border-muted/20">
+              <div className="border border-border-primary rounded p-2 bg-background mb-4">
                 <ReactJson
                   src={interruptData.payload}
                   theme="pop"
@@ -123,54 +143,56 @@ export function AiMessages({
                   onDelete={false}
                 />
               </div>
+
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => {
+                    const responseData = {
+                      action: interruptData.action,
+                      payload: interruptData.payload,
+                      approve: true,
+                    };
+                    if (submit) {
+                      submit(
+                        { messages: [] },
+                        { command: { resume: JSON.stringify(responseData) } }
+                      );
+                    }
+                  }}
+                >
+                  Confirm
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    const responseData = {
+                      action: interruptData.action,
+                      payload: interruptData.payload,
+                      approve: false,
+                    };
+                    if (submit) {
+                      submit(
+                        { messages: [] },
+                        { command: { resume: JSON.stringify(responseData) } }
+                      );
+                    }
+                  }}
+                >
+                  Reject
+                </Button>
+              </div>
             </div>
           )}
-
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              onClick={() => {
-                const responseData = {
-                  action: interruptData.action,
-                  payload: interruptData.payload,
-                  approve: true,
-                };
-                if (submit) {
-                  submit(
-                    { messages: [] },
-                    { command: { resume: JSON.stringify(responseData) } }
-                  );
-                }
-              }}
-            >
-              Confirm
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                const responseData = {
-                  action: interruptData.action,
-                  payload: interruptData.payload,
-                  approve: false,
-                };
-                if (submit) {
-                  submit(
-                    { messages: [] },
-                    { command: { resume: JSON.stringify(responseData) } }
-                  );
-                }
-              }}
-            >
-              Reject
-            </Button>
-          </div>
         </div>
       );
     }
 
     return messageElements;
-  }, [messages, interruptData]);
+  }, [messages, interruptData, isInterruptExpanded]);
 
   const contentHash = useMemo(() => {
     // Prevent error if messages is undefined or not an array
@@ -181,8 +203,14 @@ export function AiMessages({
     const contentString = messages
       .map((msg) => `${msg.id}-${msg.type}-${msg.content || ""}`)
       .join("|");
-    return createHash("sha256").update(contentString).digest("hex");
-  }, [messages]);
+
+    // Include interrupt data in hash for auto-scroll
+    const interruptString = interruptData ? JSON.stringify(interruptData) : "";
+
+    return createHash("sha256")
+      .update(contentString + "|" + interruptString)
+      .digest("hex");
+  }, [messages, interruptData]);
 
   const {
     scrollRef: internalScrollRef,
