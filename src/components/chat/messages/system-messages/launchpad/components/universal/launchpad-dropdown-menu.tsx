@@ -15,6 +15,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircleIcon } from "lucide-react";
 import {
   Pause,
   RotateCcw,
@@ -147,18 +149,33 @@ export default function LaunchpadDropdownMenu({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Launchpad</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete "{name}"? This action cannot be undone
-            and will permanently remove the launchpad and all its data.
+            Are you sure you want to delete the launchpad{" "}
+            <span className="font-semibold text-foreground">
+              "{name}"
+            </span>
+            ?
           </AlertDialogDescription>
         </AlertDialogHeader>
+
+        <Alert
+          variant="destructive"
+          className="bg-status-deleting text-red-700 border-none"
+        >
+          <AlertCircleIcon />
+          <AlertDescription className="text-red-700!">
+            This action cannot be undone and will permanently remove the
+            launchpad and all its data.
+          </AlertDescription>
+        </Alert>
+
         <AlertDialogFooter>
           <AlertDialogCancel className="flex-1">Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDeleteConfirm}
-            className="flex-1 bg-destructive text-destructive-foreground hover:bg-destructive/90"
             disabled={isActionPending("delete")}
+            className="flex-1 bg-status-deleting/80 text-red-700! hover:bg-status-deleting! border border-status-error"
           >
-            {isActionPending("delete") ? "Deleting..." : "Delete"}
+            {isActionPending("delete") ? "Deleting..." : "Confirm"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

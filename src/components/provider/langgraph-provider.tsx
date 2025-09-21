@@ -83,8 +83,24 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
             model_name: config.modelName,
           });
         } else if (isProduction && !tokensLoading) {
-          // No brain token found in production
-          setConfigFailed();
+          // No brain token found in production - try to create one automatically
+          if (!brainToken) {
+            createTokenMutation.mutateAsync(
+              { name: "brain" },
+              {
+                onSuccess: () => {
+                  // toast.success("Token created successfully.");
+                  // The query will refetch and we'll get the new token
+                },
+                onError: () => {
+                  // If automatic creation fails, show the manual UI
+                  setConfigFailed();
+                },
+              }
+            );
+          } else {
+            setConfigFailed();
+          }
         }
       }
     }
@@ -99,6 +115,7 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
     env.AGENT_API_KEY,
     env.AGENT_BASE_URL,
     env.AGENT_MODEL_NAME,
+    createTokenMutation,
   ]);
 
   // Handle token creation
@@ -119,10 +136,20 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
   };
 
   // Show loading state
-  if (isLoading || (isProduction && tokensLoading)) {
+  if (
+    isLoading ||
+    (isProduction && tokensLoading) ||
+    (isProduction && !brainToken && createTokenMutation.isPending)
+  ) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
-        <LoadingScreen text="Checking token configuration..." />
+        <LoadingScreen
+          text={
+            createTokenMutation.isPending
+              ? "Creating token..."
+              : "Checking token configuration..."
+          }
+        />
       </div>
     );
   }

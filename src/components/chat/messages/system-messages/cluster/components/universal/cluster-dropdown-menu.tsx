@@ -15,6 +15,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircleIcon } from "lucide-react";
 import { Pause, Trash2, PencilLine, Power } from "lucide-react";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { useClusterLifecycle } from "@/hooks/sealos/cluster/use-cluster-lifecycle";
@@ -98,18 +100,33 @@ export default function ClusterDropdownMenu({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Cluster</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete "{clusterName}"? This action cannot be undone
-            and will permanently remove the cluster and all its data.
+            Are you sure you want to delete the cluster{" "}
+            <span className="font-semibold text-foreground">
+              "{clusterName}"
+            </span>
+            ?
           </AlertDialogDescription>
         </AlertDialogHeader>
+
+        <Alert
+          variant="destructive"
+          className="bg-status-deleting text-red-700 border-none"
+        >
+          <AlertCircleIcon />
+          <AlertDescription className="text-red-700!">
+            This action cannot be undone and will permanently remove the
+            cluster and all its data.
+          </AlertDescription>
+        </Alert>
+
         <AlertDialogFooter>
           <AlertDialogCancel className="flex-1">Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDeleteConfirm}
-            className="flex-1 bg-destructive text-destructive-foreground hover:bg-destructive/90"
             disabled={isActionPending("delete")}
+            className="flex-1 bg-status-deleting/80 text-red-700! hover:bg-status-deleting! border border-status-error"
           >
-            {isActionPending("delete") ? "Deleting..." : "Delete"}
+            {isActionPending("delete") ? "Deleting..." : "Confirm"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -15,6 +15,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircleIcon } from "lucide-react";
 import { Pause, RotateCcw, Trash2, Play } from "lucide-react";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import { useDevboxLifecycle } from "@/hooks/sealos/devbox/use-devbox-lifecycle";
@@ -92,18 +94,33 @@ export default function DevboxDropdownMenu({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Devbox</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{devboxName}"? This action cannot
-              be undone and will permanently remove the devbox and all its data.
+              Are you sure you want to delete the devbox{" "}
+              <span className="font-semibold text-foreground">
+                "{devboxName}"
+              </span>
+              ?
             </AlertDialogDescription>
           </AlertDialogHeader>
+
+          <Alert
+            variant="destructive"
+            className="bg-status-deleting text-red-700 border-none"
+          >
+            <AlertCircleIcon />
+            <AlertDescription className="text-red-700!">
+              This action cannot be undone and will permanently remove the
+              devbox and all its data.
+            </AlertDescription>
+          </Alert>
+
           <AlertDialogFooter>
             <AlertDialogCancel className="flex-1">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              className="flex-1 bg-destructive text-destructive-foreground hover:bg-destructive/90"
               disabled={isPending("delete")}
+              className="flex-1 bg-status-deleting/80 text-red-700! hover:bg-status-deleting! border border-status-error"
             >
-              {isPending("delete") ? "Deleting..." : "Delete"}
+              {isPending("delete") ? "Deleting..." : "Confirm"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
