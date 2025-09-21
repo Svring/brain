@@ -97,9 +97,21 @@ export async function PATCH(
       );
     }
 
-    // Decode the kubeconfig to get region URL
+    // Decode the kubeconfig from authorization header
     const kubeconfig = decodeURIComponent(authorization);
-    const regionUrl = await getRegionUrlFromKubeconfig(kubeconfig);
+
+    // Extract namespace and region URL from kubeconfig
+    const [namespace, regionUrl] = await Promise.all([
+      getCurrentNamespace(kubeconfig),
+      getRegionUrlFromKubeconfig(kubeconfig),
+    ]);
+
+    // Create K8s context for getting current launchpad
+    const k8sContext = K8sApiContextSchema.parse({
+      kubeconfig,
+      namespace,
+      regionUrl,
+    });
 
     // Create Sealos context for updateLaunchpadService
     const sealosContext = SealosApiContextSchema.parse({
@@ -108,24 +120,125 @@ export async function PATCH(
     });
 
     const body = await request.json();
+    const { name } = await params;
 
-    // Transform the data: move cpu and memory into resource field
-    const transformedBody = {
-      ...body,
-      resource: {
-        cpu: body.cpu,
-        memory: body.memory,
-        ...body.resource, // Preserve any existing resource fields
-      },
+    // Try both deployment and statefulset targets to get current launchpad
+    const deploymentTarget = BuiltinResourceTargetSchema.parse({
+      type: "builtin",
+      resourceType: "deployment",
+      name,
+    });
+
+    const statefulsetTarget = BuiltinResourceTargetSchema.parse({
+      type: "builtin",
+      resourceType: "statefulset",
+      name,
+    });
+
+    let currentLaunchpad;
+    try {
+      currentLaunchpad = await getLaunchpad(k8sContext, deploymentTarget);
+    } catch (deploymentError) {
+      try {
+        currentLaunchpad = await getLaunchpad(k8sContext, statefulsetTarget);
+      } catch (statefulsetError) {
+        throw deploymentError;
+      }
+    }
+
+    // Start with current launchpad data
+    const updateData: any = {
+      name: currentLaunchpad.name,
+      resource: currentLaunchpad.resource || { replicas: 1, cpu: 1, memory: 1 },
+      ports: currentLaunchpad.ports || [],
+      env: currentLaunchpad.env || [],
+      image: currentLaunchpad.image || { imageName: "" },
     };
 
-    // Remove cpu and memory from top level since they're now in resource
-    delete transformedBody.cpu;
-    delete transformedBody.memory;
+    // Update CPU and memory if provided
+    if (body.cpu !== undefined) {
+      updateData.resource = {
+        ...updateData.resource,
+        cpu: body.cpu,
+      };
+    }
+    if (body.memory !== undefined) {
+      updateData.resource = {
+        ...updateData.resource,
+        memory: body.memory,
+      };
+    }
 
-    const updateData = launchpadUpdateFormSchema.parse(transformedBody);
+    // Update image if provided
+    if (body.updateImage) {
+      updateData.image = { imageName: body.updateImage };
+    }
 
-    const result = await updateLaunchpadService(sealosContext, updateData);
+    // Handle port operations
+    let updatedPorts = [...(currentLaunchpad.ports || [])];
+
+    // Add new ports from createPorts
+    if (body.createPorts && Array.isArray(body.createPorts)) {
+      const newPorts = body.createPorts.map((portNumber: number) => ({
+        number: portNumber,
+        protocol: "HTTP",
+        exposesPublicDomain: true,
+      }));
+      updatedPorts = [...updatedPorts, ...newPorts];
+    }
+
+    // Remove ports from deletePorts
+    if (body.deletePorts && Array.isArray(body.deletePorts)) {
+      updatedPorts = updatedPorts.filter(
+        (port) => !body.deletePorts.includes(port.number)
+      );
+    }
+
+    updateData.ports = updatedPorts;
+
+    // Handle environment variable operations
+    let updatedEnv = [...(currentLaunchpad.env || [])];
+
+    // Add new environment variables from createEnv
+    if (body.createEnv && Array.isArray(body.createEnv)) {
+      const newEnvVars = body.createEnv.map(
+        ([name, value]: [string, string]) => ({
+          name,
+          value,
+        })
+      );
+      updatedEnv = [...updatedEnv, ...newEnvVars];
+    }
+
+    // Update existing environment variables from updateEnv
+    if (body.updateEnv && Array.isArray(body.updateEnv)) {
+      body.updateEnv.forEach(([name, value]: [string, string]) => {
+        const existingIndex = updatedEnv.findIndex((env) => env.name === name);
+        if (existingIndex !== -1) {
+          updatedEnv[existingIndex] = { name, value };
+        } else {
+          // If not found, add it
+          updatedEnv.push({ name, value });
+        }
+      });
+    }
+
+    // Remove environment variables from deleteEnv
+    if (body.deleteEnv && Array.isArray(body.deleteEnv)) {
+      updatedEnv = updatedEnv.filter(
+        (env) => !body.deleteEnv.includes(env.name)
+      );
+    }
+
+    updateData.env = updatedEnv;
+
+    // Validate the update data
+    const validatedUpdateData = launchpadUpdateFormSchema.parse(updateData);
+
+    const result = await updateLaunchpadService(
+      sealosContext,
+      validatedUpdateData
+    );
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error updating launchpad:", error);

@@ -6,18 +6,28 @@ import { ProposeDevenvDeploymentMessage } from "@/components/copilot/langgraph/p
 import { ProposeImageDeploymentMessage } from "@/components/copilot/langgraph/propose-image-deployment-message";
 
 // Devbox Tool Messages
+import { GetDevboxToolMessage } from "@/components/copilot/sealos/devbox/get-devbox-tool-message";
+import { GetDevboxMonitorToolMessage } from "@/components/copilot/sealos/devbox/get-devbox-monitor-tool-message";
+import { GetDevboxNetworkToolMessage } from "@/components/copilot/sealos/devbox/get-devbox-network-tool-message";
 import { UpdateDevboxToolMessage } from "@/components/copilot/sealos/devbox/updateDevboxToolMessage";
 import { StartDevboxToolMessage } from "@/components/copilot/sealos/devbox/startDevboxToolMessage";
 import { PauseDevboxToolMessage } from "@/components/copilot/sealos/devbox/pauseDevboxToolMessage";
 import { DeleteDevboxToolMessage } from "@/components/copilot/sealos/devbox/deleteDevboxToolMessage";
 
 // Cluster Tool Messages
+import { GetClusterToolMessage } from "@/components/copilot/sealos/cluster/get-cluster-tool-message";
+import { GetClusterLogsToolMessage } from "@/components/copilot/sealos/cluster/get-cluster-logs-tool-message";
+import { GetClusterMonitorToolMessage } from "@/components/copilot/sealos/cluster/get-cluster-monitor-tool-message";
 import { UpdateClusterToolMessage } from "@/components/copilot/sealos/cluster/updateClusterToolMessage";
 import { StartClusterToolMessage } from "@/components/copilot/sealos/cluster/startClusterToolMessage";
 import { PauseClusterToolMessage } from "@/components/copilot/sealos/cluster/pauseClusterToolMessage";
 import { DeleteClusterToolMessage } from "@/components/copilot/sealos/cluster/deleteClusterToolMessage";
 
 // Launchpad Tool Messages
+import { GetLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/get-launchpad-tool-message";
+import { GetLaunchpadLogsToolMessage } from "@/components/copilot/sealos/launchpad/get-launchpad-logs-tool-message";
+import { GetLaunchpadMonitorToolMessage } from "@/components/copilot/sealos/launchpad/get-launchpad-monitor-tool-message";
+import { GetLaunchpadNetworkToolMessage } from "@/components/copilot/sealos/launchpad/get-launchpad-network-tool-message";
 import { UpdateLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/updateLaunchpadToolMessage";
 import { StartLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/startLaunchpadToolMessage";
 import { PauseLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/pauseLaunchpadToolMessage";
@@ -32,75 +42,20 @@ export interface ToolActionResult {
   message: string;
 }
 
-// Resource Types
-export type CPUAllocation = 1 | 2 | 4 | 8 | 16;
-export type MemoryAllocation = 1 | 2 | 4 | 8 | 16 | 32;
-export type ClusterCPUAllocation = 1 | 2 | 4 | 8;
-export type TerminationPolicy = "Delete" | "Retain";
-
-// Base Resource Interfaces
-export interface BaseResource {
-  cpu?: CPUAllocation;
-  memory?: MemoryAllocation;
-}
-
-export interface ClusterResource extends BaseResource {
-  cpu?: ClusterCPUAllocation;
-  replicas?: number; // 1-20
-  storage?: number; // 3-300 GB
-}
-
-export interface DevboxResource extends BaseResource {
-  // Devbox uses the base resource interface
-}
-
-export interface LaunchpadResource extends BaseResource {
-  replicas?: number; // 1-20
-}
-
-// Context Interfaces
-export interface BaseContext {
-  kubeconfig: string;
-  regionUrl: string;
-}
-
-// Payload Interfaces
-export interface BasePayload {
-  name: string; // DNS compliant: lowercase, numbers, hyphens, 1-63 chars
-}
-
-export interface DevboxUpdatePayload extends BasePayload {
-  resource: DevboxResource;
-}
-
-export interface DevboxStartPayload extends BasePayload {}
-
-export interface DevboxPausePayload extends BasePayload {}
-
-export interface DevboxDeletePayload extends BasePayload {}
-
-export interface ClusterUpdatePayload extends BasePayload {
-  resource: ClusterResource;
-}
-
-export interface ClusterStartPayload extends BasePayload {}
-
-export interface ClusterPausePayload extends BasePayload {}
-
-export interface ClusterDeletePayload extends BasePayload {}
-
-export interface LaunchpadUpdatePayload extends BasePayload {
-  resource: LaunchpadResource;
-}
-
-export interface LaunchpadStartPayload extends BasePayload {}
-
-export interface LaunchpadPausePayload extends BasePayload {}
-
-export interface LaunchpadDeletePayload extends BasePayload {}
-
 export const ToolMessageType = {
   // Devbox Actions
+  get_devbox: (result: ToolActionResult) => {
+    return <GetDevboxToolMessage result={result} />;
+  },
+
+  get_devbox_monitor: (result: ToolActionResult) => {
+    return <GetDevboxMonitorToolMessage result={result} />;
+  },
+
+  get_devbox_network: (result: ToolActionResult) => {
+    return <GetDevboxNetworkToolMessage result={result} />;
+  },
+
   update_devbox: (result: ToolActionResult) => {
     return <UpdateDevboxToolMessage result={result} />;
   },
@@ -118,6 +73,18 @@ export const ToolMessageType = {
   },
 
   // Cluster Actions
+  get_cluster: (result: ToolActionResult) => {
+    return <GetClusterToolMessage result={result} />;
+  },
+
+  get_cluster_logs: (result: ToolActionResult) => {
+    return <GetClusterLogsToolMessage result={result} />;
+  },
+
+  get_cluster_monitor: (result: ToolActionResult) => {
+    return <GetClusterMonitorToolMessage result={result} />;
+  },
+
   update_cluster: (result: ToolActionResult) => {
     return <UpdateClusterToolMessage result={result} />;
   },
@@ -135,6 +102,22 @@ export const ToolMessageType = {
   },
 
   // Launchpad Actions
+  get_launchpad: (result: ToolActionResult) => {
+    return <GetLaunchpadToolMessage result={result} />;
+  },
+
+  get_launchpad_logs: (result: ToolActionResult) => {
+    return <GetLaunchpadLogsToolMessage result={result} />;
+  },
+
+  get_launchpad_monitor: (result: ToolActionResult) => {
+    return <GetLaunchpadMonitorToolMessage result={result} />;
+  },
+
+  get_launchpad_network: (result: ToolActionResult) => {
+    return <GetLaunchpadNetworkToolMessage result={result} />;
+  },
+
   update_launchpad: (result: ToolActionResult) => {
     return <UpdateLaunchpadToolMessage result={result} />;
   },

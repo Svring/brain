@@ -77,9 +77,21 @@ export async function PATCH(
       );
     }
 
-    // Decode the kubeconfig to get region URL
+    // Decode the kubeconfig from authorization header
     const kubeconfig = decodeURIComponent(authorization);
-    const regionUrl = await getRegionUrlFromKubeconfig(kubeconfig);
+
+    // Extract namespace and region URL from kubeconfig
+    const [namespace, regionUrl] = await Promise.all([
+      getCurrentNamespace(kubeconfig),
+      getRegionUrlFromKubeconfig(kubeconfig),
+    ]);
+
+    // Create K8s context for getting current devbox
+    const k8sContext = K8sApiContextSchema.parse({
+      kubeconfig,
+      namespace,
+      regionUrl,
+    });
 
     // Create Sealos context for updateDevbox
     const sealosContext = SealosApiContextSchema.parse({
@@ -88,25 +100,61 @@ export async function PATCH(
     });
 
     const body = await request.json();
+    const { name } = await params;
 
-    // Transform the data: move cpu and memory into resource field
-    const transformedBody = {
-      ...body,
-      resource: {
-        cpu: body.cpu,
-        memory: body.memory,
-        ...body.resource, // Preserve any existing resource fields
-      },
+    // Get current devbox to merge with updates
+    const target = CustomResourceTargetSchema.parse(
+      convertResourceTypeToTarget("devbox", name)
+    );
+    const currentDevbox = await getDevbox(k8sContext, target);
+
+    // Start with current devbox data
+    const updateData: any = {
+      name: currentDevbox.name,
+      resource: currentDevbox.resources,
+      ports: currentDevbox.ports || [],
     };
 
-    // Remove cpu and memory from top level since they're now in resource
-    delete transformedBody.cpu;
-    delete transformedBody.memory;
+    // Update CPU and memory if provided
+    if (body.cpu !== undefined) {
+      updateData.resource = {
+        ...updateData.resource,
+        cpu: body.cpu,
+      };
+    }
+    if (body.memory !== undefined) {
+      updateData.resource = {
+        ...updateData.resource,
+        memory: body.memory,
+      };
+    }
 
-    const updateData = devboxUpdateFormSchema.parse(transformedBody);
+    // Handle port operations
+    let updatedPorts = [...(currentDevbox.ports || [])];
 
-    const { name } = await params;
-    const result = await updateDevbox(sealosContext, name, updateData);
+    // Add new ports from createPorts
+    if (body.createPorts && Array.isArray(body.createPorts)) {
+      const newPorts = body.createPorts.map((portNumber: number) => ({
+        number: portNumber,
+        protocol: "HTTP",
+        exposesPublicDomain: true,
+      }));
+      updatedPorts = [...updatedPorts, ...newPorts];
+    }
+
+    // Remove ports from deletePorts
+    if (body.deletePorts && Array.isArray(body.deletePorts)) {
+      updatedPorts = updatedPorts.filter(
+        (port) => !body.deletePorts.includes(port.number)
+      );
+    }
+
+    updateData.ports = updatedPorts;
+
+    // Validate the update data
+    const validatedUpdateData = devboxUpdateFormSchema.parse(updateData);
+
+    const result = await updateDevbox(sealosContext, name, validatedUpdateData);
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error updating devbox:", error);
