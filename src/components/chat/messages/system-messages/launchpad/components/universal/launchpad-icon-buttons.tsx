@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -8,17 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Pause, Trash2, Power } from "lucide-react";
+import { Pause, Power } from "lucide-react";
 import { useLaunchpadLifecycle } from "@/hooks/sealos/launchpad/use-launchpad-lifecycle";
 
 interface LaunchpadObject {
@@ -29,38 +19,16 @@ interface LaunchpadObject {
 
 interface LaunchpadIconButtonsProps {
   object: LaunchpadObject;
-  onDelete?: (name: string) => void;
 }
 
 export default function LaunchpadIconButtons({
   object,
-  onDelete,
 }: LaunchpadIconButtonsProps) {
   const { name, status } = object;
   const { executeAction, isPending } = useLaunchpadLifecycle();
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const isRunning = status === "Running";
   const isResourcePending = status === "Pending";
-
-  const handleDeleteClick = () => {
-    setShowDeleteDialog(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    try {
-      await executeAction("delete", name);
-      onDelete?.(name);
-      setShowDeleteDialog(false);
-    } catch (error) {
-      // Error is already handled by the mutation, just keep dialog open
-      console.error("Delete failed:", error);
-    }
-  };
-
-  const handleDeleteCancel = () => {
-    setShowDeleteDialog(false);
-  };
 
   return (
     <>
@@ -110,61 +78,9 @@ export default function LaunchpadIconButtons({
             </Tooltip>
           )}
 
-          {/* Delete Button - Always show */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleDeleteClick}
-                disabled={isPending("delete")}
-                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            {/* <TooltipContent side="bottom">
-              <p>Delete</p>
-            </TooltipContent> */}
-          </Tooltip>
         </div>
       </TooltipProvider>
 
-      <AlertDialog
-        open={showDeleteDialog}
-        onOpenChange={(open) => {
-          // Prevent closing dialog while delete is in progress
-          if (!open && isPending("delete")) {
-            return;
-          }
-          setShowDeleteDialog(open);
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Launchpad</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{name}"? This action cannot be
-              undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              onClick={handleDeleteCancel}
-              disabled={isPending("delete")}
-            >
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={isPending("delete")}
-            >
-              {isPending("delete") ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }

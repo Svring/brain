@@ -25,8 +25,10 @@ export const useClusterLifecycle = (
   const { cluster, project } = useTRPCClients();
   const { invalidateQueries } = useInvalidateQueries();
   const { clearSelectedResource } = useProjectActions();
-  const { selectedProjectResources, selectedProject } = useProjectState();
+  const { selectedProjectResources, selectedProject, selectedResource } =
+    useProjectState();
   const { deleteProject } = useProjectLifecycle({ shouldRedirect: true });
+  const { closeChat } = useChatActions();
 
   const startMutation = useMutation({
     ...cluster.start.mutationOptions(),
@@ -78,6 +80,14 @@ export const useClusterLifecycle = (
         // Delete the entire project and redirect
         await deleteProject(selectedProject);
         return; // Early return, project deletion handles cleanup
+      }
+
+      // Close chat if the deleted resource is the selected resource
+      if (
+        selectedResource &&
+        JSON.stringify(selectedResource) === JSON.stringify(target)
+      ) {
+        closeChat(target);
       }
 
       // Normal resource deletion cleanup

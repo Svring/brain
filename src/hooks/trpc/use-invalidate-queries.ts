@@ -24,7 +24,7 @@ export const useInvalidateQueries = () => {
     };
 
     performInvalidation();
-    setTimeout(performInvalidation, 2000);
+    setTimeout(performInvalidation, 1000);
     setTimeout(performInvalidation, 4000);
   };
 

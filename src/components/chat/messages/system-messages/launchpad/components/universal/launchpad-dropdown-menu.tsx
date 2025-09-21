@@ -147,19 +147,15 @@ export default function LaunchpadDropdownMenu({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Launchpad</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete "{name}"? This action cannot be undone.
+            Are you sure you want to delete "{name}"? This action cannot be undone
+            and will permanently remove the launchpad and all its data.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel 
-            onClick={handleDeleteCancel}
-            disabled={isActionPending("delete")}
-          >
-            Cancel
-          </AlertDialogCancel>
+          <AlertDialogCancel className="flex-1">Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDeleteConfirm}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            className="flex-1 bg-destructive text-destructive-foreground hover:bg-destructive/90"
             disabled={isActionPending("delete")}
           >
             {isActionPending("delete") ? "Deleting..." : "Delete"}

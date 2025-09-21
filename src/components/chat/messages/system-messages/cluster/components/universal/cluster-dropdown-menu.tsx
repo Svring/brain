@@ -98,16 +98,15 @@ export default function ClusterDropdownMenu({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Cluster</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete "{clusterName}"? This action cannot be undone.
+            Are you sure you want to delete "{clusterName}"? This action cannot be undone
+            and will permanently remove the cluster and all its data.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={handleDeleteCancel}>
-            Cancel
-          </AlertDialogCancel>
+          <AlertDialogCancel className="flex-1">Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDeleteConfirm}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            className="flex-1 bg-destructive text-destructive-foreground hover:bg-destructive/90"
             disabled={isActionPending("delete")}
           >
             {isActionPending("delete") ? "Deleting..." : "Delete"}

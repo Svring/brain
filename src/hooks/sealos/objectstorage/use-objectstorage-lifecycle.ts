@@ -25,8 +25,10 @@ export const useObjectStorageLifecycle = (
   const { objectstorage, project } = useTRPCClients();
   const { invalidateQueries } = useInvalidateQueries();
   const { clearSelectedResource } = useProjectActions();
-  const { selectedProjectResources, selectedProject } = useProjectState();
+  const { selectedProjectResources, selectedProject, selectedResource } =
+    useProjectState();
   const { deleteProject } = useProjectLifecycle({ shouldRedirect: true });
+  const { closeChat } = useChatActions();
 
   const deleteMutation = useMutation({
     ...objectstorage.delete.mutationOptions(),
@@ -35,6 +37,11 @@ export const useObjectStorageLifecycle = (
       toast.success(message);
       onSuccess?.(message);
 
+      const target = convertResourceTypeToTarget(
+        "objectstoragebucket",
+        variables.bucketName
+      ) as CustomResourceTarget;
+
       invalidateQueries([objectstorage.list.queryKey()], true);
 
       // Check if this was the last resource in the project
@@ -42,6 +49,14 @@ export const useObjectStorageLifecycle = (
         // Delete the entire project and redirect
         await deleteProject(selectedProject);
         return; // Early return, project deletion handles cleanup
+      }
+
+      // Close chat if the deleted resource is the selected resource
+      if (
+        selectedResource &&
+        JSON.stringify(selectedResource) === JSON.stringify(target)
+      ) {
+        closeChat(target);
       }
 
       // Normal resource deletion cleanup
