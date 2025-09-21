@@ -1,6 +1,12 @@
 "use client";
 
-import { Trash2, AlertCircleIcon, Pencil, PencilLine } from "lucide-react";
+import {
+  Trash2,
+  AlertCircleIcon,
+  Pencil,
+  PencilLine,
+  Package,
+} from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import React from "react";
@@ -28,6 +34,9 @@ import { AvatarCircles } from "@/components/ui/avatar-circles";
 import { getResourceDefaultIcon } from "@/lib/sealos/sealos-utils";
 import { RenameProjectDialog } from "./rename-project-dialog";
 import { useProjectRename } from "@/hooks/brain/use-project-rename";
+import { useAuthState } from "@/contexts/auth/auth-context";
+import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
+import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
 
 interface ProjectCardProps {
   project: z.infer<typeof ProjectObjectSchema>;
@@ -41,7 +50,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const { project: projectClient } = useTRPCClients();
   const { invalidateQueries } = useInvalidateQueries();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
-  const { targets } = useProjectResources(project.name);
+  const { resources } = useProjectResources(project.name);
+  const { auth } = useAuthState();
   const {
     isRenameDialogOpen,
     handleRename,
@@ -53,25 +63,122 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   });
 
   const avatarData = React.useMemo(() => {
-    if (!targets?.length) return { avatarUrls: [], numPeople: 0 };
-    const avatarUrls = targets
-      .map((r) => getResourceDefaultIcon(r.resourceType))
+    if (!resources?.length) return { avatarUrls: [], numPeople: 0 };
+
+    // Group resources by type to prioritize showing different types
+    const resourcesByType = resources.reduce((acc, resource) => {
+      const kind = resource.kind?.toLowerCase();
+      if (!acc[kind]) acc[kind] = [];
+      acc[kind].push(resource);
+      return acc;
+    }, {} as Record<string, any[]>);
+
+    // Generate icons for each resource
+    const allIcons = resources
+      .map((resource) => {
+        const kind = resource.kind?.toLowerCase();
+
+        if (kind === "devbox") {
+          // Extract runtime from devbox image and generate icon URL
+          const image = resource.spec?.image;
+          if (image && auth?.regionUrl) {
+            const runtime = transformDevboxImage(image)
+              .split("-")
+              .slice(0, -1)
+              .join("-");
+            return `https://devbox.${auth.regionUrl}/images/runtime/${runtime}.svg`;
+          }
+        } else if (kind === "cluster") {
+          // Get cluster type and use cluster icon map
+          const type = resource.spec?.clusterDefinitionRef;
+          if (type) {
+            return (
+              CLUSTER_TYPE_ICON_MAP[type] ||
+              "https://dbprovider.bja.sealos.run/logo.svg"
+            );
+          }
+        } else if (kind === "deployment" || kind === "statefulset") {
+          // Use launchpad icon for deployment and statefulset resources
+          return "/app_launchpad_icon.svg";
+        } else if (kind === "objectstoragebucket") {
+          // Use package icon for objectstoragebucket resources
+          return "/package_icon.svg";
+        }
+
+        // Fallback to default resource icon
+        return getResourceDefaultIcon(kind);
+      })
       .filter(Boolean) as string[];
 
-    // Only show the '+X' indicator if there are 3 or more resources
-    if (avatarUrls.length < 3) {
+    // If we have 3 or more resources, try to show different types
+    if (allIcons.length >= 3) {
+      const maxDisplayed = 2;
+      const selectedIcons: string[] = [];
+      const resourceTypes = Object.keys(resourcesByType);
+
+      // First, try to pick one icon from each type
+      for (const type of resourceTypes) {
+        if (selectedIcons.length >= maxDisplayed) break;
+
+        const typeResources = resourcesByType[type];
+        if (typeResources.length > 0) {
+          const resource = typeResources[0];
+          const kind = resource.kind?.toLowerCase();
+
+          let iconUrl: string | null = null;
+          if (kind === "devbox") {
+            const image = resource.spec?.image;
+            if (image && auth?.regionUrl) {
+              const runtime = transformDevboxImage(image)
+                .split("-")
+                .slice(0, -1)
+                .join("-");
+              iconUrl = `https://devbox.${auth.regionUrl}/images/runtime/${runtime}.svg`;
+            }
+          } else if (kind === "cluster") {
+            const type = resource.spec?.clusterDefinitionRef;
+            if (type) {
+              iconUrl =
+                CLUSTER_TYPE_ICON_MAP[type] ||
+                "https://dbprovider.bja.sealos.run/logo.svg";
+            }
+          } else if (kind === "deployment" || kind === "statefulset") {
+            iconUrl = "/app_launchpad_icon.svg";
+          } else if (kind === "objectstoragebucket") {
+            // Use package icon for objectstoragebucket resources
+            iconUrl = "/package_icon.svg";
+          } else {
+            iconUrl = getResourceDefaultIcon(kind);
+          }
+
+          if (iconUrl) {
+            selectedIcons.push(iconUrl);
+          }
+        }
+      }
+
+      // If we still have space and more resources, fill with remaining icons
+      if (selectedIcons.length < maxDisplayed) {
+        const remainingIcons = allIcons.filter(
+          (icon) => !selectedIcons.includes(icon)
+        );
+        selectedIcons.push(
+          ...remainingIcons.slice(0, maxDisplayed - selectedIcons.length)
+        );
+      }
+
       return {
-        avatarUrls: avatarUrls,
-        numPeople: 0,
+        avatarUrls: selectedIcons,
+        numPeople: allIcons.length - selectedIcons.length,
       };
     }
 
-    const maxDisplayed = 2;
+    // For less than 3 resources, show all icons
     return {
-      avatarUrls: avatarUrls.slice(0, maxDisplayed),
-      numPeople: avatarUrls.length - maxDisplayed,
+      avatarUrls: allIcons,
+      numPeople: 0,
     };
-  }, [targets]);
+  }, [resources, auth?.regionUrl]);
 
   const { deleteProject, isDeleting } = useProjectLifecycle();
 
@@ -116,7 +223,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             >
               <p
                 className={`text-foreground truncate transition-colors ${
-                  variant === "full" 
+                  variant === "full"
                     ? "max-w-[200px] cursor-pointer hover:text-foreground/80 group-hover:underline"
                     : "max-w-[150px]"
                 }`}

@@ -22,15 +22,16 @@ const AvatarCircles = ({
       {avatarUrls.map((url, index) => (
         <img
           key={index}
-          className="h-10 w-10 rounded-lg border-2 border-white dark:border-gray-800"
+          className="h-10 w-10 rounded-lg border-2 border-white dark:border-gray-800 bg-background-tertiary p-1"
           src={url}
           width={40}
           height={40}
           alt={`Avatar ${index + 1}`}
         />
       ))}
-      {numPeople && numPeople > 0 && (
-        disableLink ? (
+      {numPeople &&
+        numPeople > 0 &&
+        (disableLink ? (
           <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-white bg-black text-center font-medium text-white hover:bg-gray-600 dark:border-gray-800 dark:bg-background-tertiary dark:text-foreground">
             +{numPeople}
           </div>
@@ -41,8 +42,7 @@ const AvatarCircles = ({
           >
             +{numPeople}
           </a>
-        )
-      )}
+        ))}
     </div>
   );
 };

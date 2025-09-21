@@ -292,7 +292,7 @@ export function CreateNewProject({
                       key={index}
                       className="flex items-center p-2 bg-muted/20 rounded border"
                     >
-                      <div className="w-5 h-5 flex items-center justify-center flex-shrink-0 bg-white/80 rounded">
+                      <div className="w-5 h-5 flex items-center justify-center flex-shrink-0 bg-background-tertiary rounded">
                         <Image
                           src={
                             DEVBOX_RUNTIME_ICONS[
@@ -347,7 +347,7 @@ export function CreateNewProject({
                       key={index}
                       className="flex items-center p-2 bg-muted/20 rounded border"
                     >
-                      <div className="w-5 h-5 flex items-center justify-center flex-shrink-0 bg-white/80 rounded">
+                      <div className="w-5 h-5 flex items-center justify-center flex-shrink-0 bg-background-tertiary rounded">
                         <Image
                           src={
                             CLUSTER_TYPE_ICON_MAP[
@@ -474,7 +474,7 @@ export function CreateNewProject({
                     }
                   `}
                   >
-                    <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 bg-white/80 rounded">
+                    <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 bg-background-tertiary rounded">
                       <Image
                         src={
                           DEVBOX_RUNTIME_ICONS[runtime] ||
@@ -568,7 +568,7 @@ export function CreateNewProject({
                     }
                   `}
                   >
-                    <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 bg-white/80 rounded">
+                    <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 bg-background-tertiary rounded">
                       <Image
                         src={
                           CLUSTER_TYPE_ICON_MAP[
