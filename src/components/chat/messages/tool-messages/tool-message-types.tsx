@@ -9,36 +9,36 @@ import { ProposeImageDeploymentMessage } from "@/components/copilot/langgraph/pr
 import { GetDevboxToolMessage } from "@/components/copilot/sealos/devbox/get-devbox-tool-message";
 import { GetDevboxMonitorToolMessage } from "@/components/copilot/sealos/devbox/get-devbox-monitor-tool-message";
 import { GetDevboxNetworkToolMessage } from "@/components/copilot/sealos/devbox/get-devbox-network-tool-message";
-import { UpdateDevboxToolMessage } from "@/components/copilot/sealos/devbox/updateDevboxToolMessage";
+import { UpdateDevboxToolMessage } from "@/components/copilot/sealos/devbox/update-devbox-tool-message";
 import { CreateDevboxPortsToolMessage } from "@/components/copilot/sealos/devbox/create-devbox-ports-tool-message";
 import { DeleteDevboxPortsToolMessage } from "@/components/copilot/sealos/devbox/delete-devbox-ports-tool-message";
-import { StartDevboxToolMessage } from "@/components/copilot/sealos/devbox/startDevboxToolMessage";
-import { PauseDevboxToolMessage } from "@/components/copilot/sealos/devbox/pauseDevboxToolMessage";
-import { DeleteDevboxToolMessage } from "@/components/copilot/sealos/devbox/deleteDevboxToolMessage";
+import { StartDevboxToolMessage } from "@/components/copilot/sealos/devbox/start-devbox-tool-message";
+import { PauseDevboxToolMessage } from "@/components/copilot/sealos/devbox/pause-devbox-tool-message";
+import { DeleteDevboxToolMessage } from "@/components/copilot/sealos/devbox/delete-devbox-tool-message";
 
 // Cluster Tool Messages
 import { GetClusterToolMessage } from "@/components/copilot/sealos/cluster/get-cluster-tool-message";
 import { GetClusterLogsToolMessage } from "@/components/copilot/sealos/cluster/get-cluster-logs-tool-message";
 import { GetClusterMonitorToolMessage } from "@/components/copilot/sealos/cluster/get-cluster-monitor-tool-message";
-import { UpdateClusterToolMessage } from "@/components/copilot/sealos/cluster/updateClusterToolMessage";
-import { StartClusterToolMessage } from "@/components/copilot/sealos/cluster/startClusterToolMessage";
-import { PauseClusterToolMessage } from "@/components/copilot/sealos/cluster/pauseClusterToolMessage";
-import { DeleteClusterToolMessage } from "@/components/copilot/sealos/cluster/deleteClusterToolMessage";
+import { UpdateClusterToolMessage } from "@/components/copilot/sealos/cluster/update-cluster-tool-message";
+import { StartClusterToolMessage } from "@/components/copilot/sealos/cluster/start-cluster-tool-message";
+import { PauseClusterToolMessage } from "@/components/copilot/sealos/cluster/pause-cluster-tool-message";
+import { DeleteClusterToolMessage } from "@/components/copilot/sealos/cluster/delete-cluster-tool-message";
 
 // Launchpad Tool Messages
 import { GetLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/get-launchpad-tool-message";
 import { GetLaunchpadLogsToolMessage } from "@/components/copilot/sealos/launchpad/get-launchpad-logs-tool-message";
 import { GetLaunchpadMonitorToolMessage } from "@/components/copilot/sealos/launchpad/get-launchpad-monitor-tool-message";
 import { GetLaunchpadNetworkToolMessage } from "@/components/copilot/sealos/launchpad/get-launchpad-network-tool-message";
-import { UpdateLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/updateLaunchpadToolMessage";
+import { UpdateLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/update-launchpad-tool-message";
 import { CreateLaunchpadPortsToolMessage } from "@/components/copilot/sealos/launchpad/create-launchpad-ports-tool-message";
 import { DeleteLaunchpadPortsToolMessage } from "@/components/copilot/sealos/launchpad/delete-launchpad-ports-tool-message";
 import { CreateLaunchpadEnvToolMessage } from "@/components/copilot/sealos/launchpad/create-launchpad-env-tool-message";
 import { DeleteLaunchpadEnvToolMessage } from "@/components/copilot/sealos/launchpad/delete-launchpad-env-tool-message";
 import { UpdateLaunchpadEnvToolMessage } from "@/components/copilot/sealos/launchpad/update-launchpad-env-tool-message";
 import { UpdateLaunchpadImageToolMessage } from "@/components/copilot/sealos/launchpad/update-launchpad-image-tool-message";
-import { StartLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/startLaunchpadToolMessage";
-import { PauseLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/pauseLaunchpadToolMessage";
+import { StartLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/start-launchpad-tool-message";
+import { PauseLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/pause-launchpad-tool-message";
 import { DeleteLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/deleteLaunchpadToolMessage";
 
 // Result schema for tool actions
@@ -48,6 +48,7 @@ export interface ToolActionResult {
   success: boolean;
   result: any;
   message: string;
+  approved: boolean;
 }
 
 export const ToolMessageType = {

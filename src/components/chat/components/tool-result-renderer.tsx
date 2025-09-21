@@ -22,7 +22,7 @@ export const ToolResultRenderer = memo(function ToolResultRenderer({
   tool_call_id,
   status,
 }: ToolResultRendererProps) {
-  const { action, payload } = useMemo(() => {
+  const { action, payload, approved, success } = useMemo(() => {
     // console.log("content", content);
     try {
       // First try to parse the outer content
@@ -32,6 +32,8 @@ export const ToolResultRenderer = memo(function ToolResultRenderer({
         return {
           action: outerParsed.action,
           payload: outerParsed.payload,
+          approved: outerParsed.approved,
+          success: outerParsed.success,
         };
       }
 
@@ -39,12 +41,16 @@ export const ToolResultRenderer = memo(function ToolResultRenderer({
       return {
         action: null,
         payload: { content: content },
+        approved: undefined,
+        success: undefined,
       };
     } catch {
       // If parsing fails, return the content as plain text
       return {
         action: null,
         payload: { content: content },
+        approved: undefined,
+        success: undefined,
       };
     }
   }, [content]);
@@ -101,11 +107,12 @@ export const ToolResultRenderer = memo(function ToolResultRenderer({
       const toolActionResult = {
         action,
         payload,
-        success: true,
+        success: success !== undefined ? success : true,
         result,
         message:
           result?.message ||
           `${action.replace("_", " ")} completed successfully`,
+        approved: approved !== undefined ? approved : true,
       };
       return Component(toolActionResult);
     } else {

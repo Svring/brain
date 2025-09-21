@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface DockerHubItem {
   name: string;
@@ -110,6 +111,7 @@ export const SearchDockerHubActionMessage: React.FC<
   SearchDockerHubActionMessageProps
 > = ({ result }) => {
   const [showAll, setShowAll] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   if (!result || !result.repositories || result.repositories.length === 0) {
     return null;
@@ -121,39 +123,55 @@ export const SearchDockerHubActionMessage: React.FC<
     : result.repositories.slice(0, 3);
 
   return (
-    <div className="space-y-3 border p-4 rounded-xl">
-      <div className="flex items-center justify-between">
-        <div className="flex text-sm text-muted-foreground">
-          <Package size={20} className="mr-2" />
-          <span>Searched Docker Hub...</span>
-        </div>
-        {hasMoreThanThree && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 text-xs text-muted-foreground hover:text-foreground"
-            onClick={() => setShowAll(!showAll)}
-          >
-            {showAll ? (
-              <>
-                <ChevronUp className="w-3 h-3 mr-1" />
-                Show Less
-              </>
-            ) : (
-              <>
-                <ChevronDown className="w-3 h-3 mr-1" />
-                Show More
-              </>
-            )}
-          </Button>
-        )}
-      </div>
+    <div className="w-full">
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger asChild>
+          <div className="flex items-center justify-between p-2 border rounded-lg cursor-pointer hover:bg-muted/50">
+            <div className="flex items-center gap-2">
+              <Package className="h-4 w-4 text-blue-600" />
+              <p className="text-sm font-medium">Search Docker Hub</p>
+            </div>
+            <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          </div>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-3 mt-2">
+          <div className="p-4 border rounded-lg bg-muted/30">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex text-sm text-muted-foreground">
+                <span>
+                  Found {result.total_results} repositories for "{result.query}"
+                </span>
+              </div>
+              {hasMoreThanThree && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-xs text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowAll(!showAll)}
+                >
+                  {showAll ? (
+                    <>
+                      <ChevronUp className="w-3 h-3 mr-1" />
+                      Show Less
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-3 h-3 mr-1" />
+                      Show More
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
 
-      <div className="grid grid-cols-3 gap-3">
-        {displayItems.map((item, index) => (
-          <DockerHubItemCard key={`${item.name}-${index}`} item={item} />
-        ))}
-      </div>
+            <div className="grid grid-cols-3 gap-3">
+              {displayItems.map((item, index) => (
+                <DockerHubItemCard key={`${item.name}-${index}`} item={item} />
+              ))}
+            </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   );
 };

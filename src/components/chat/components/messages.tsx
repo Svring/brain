@@ -18,6 +18,7 @@ import { SystemMessageRenderer } from "./system-message-renderer";
 import { ToolResultRenderer } from "./tool-result-renderer";
 import { Interrupt } from "@langchain/langgraph-sdk";
 import ReactJson from "react-json-view";
+import { Spinner } from "@/components/ui/spinner";
 
 interface AiMessagesProps {
   scrollRef?: React.RefObject<HTMLDivElement | null>;
@@ -41,7 +42,7 @@ export function AiMessages({
 }: AiMessagesProps) {
   // State for interrupt data editing
   const [interruptData, setInterruptData] = useState<any>(null);
-  const [isInterruptExpanded, setIsInterruptExpanded] = useState(false);
+  const [isInterruptExpanded, setIsInterruptExpanded] = useState(true);
 
   // Parse interrupt value when it changes
   useEffect(() => {
@@ -112,21 +113,28 @@ export function AiMessages({
           className="mt-4 border border-border-primary rounded-lg bg-background-secondary"
         >
           <div
-            className="flex items-center p-2 cursor-pointer hover:bg-muted/20 transition-all"
+            className="flex items-center p-2 cursor-pointer hover:bg-muted/20 transition-all gap-2"
             onClick={() => setIsInterruptExpanded(!isInterruptExpanded)}
           >
-            {isInterruptExpanded ? (
-              <ChevronDown className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-            ) : (
-              <ChevronRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-            )}
-            <div className="flex gap-2 ml-1 flex-1">
-              <Hammer className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-              <p className="text-sm text-foreground">
-                <span className="text-muted-foreground">Action:</span>{" "}
-                <span className="text-foreground">{interruptData.action}</span>
-              </p>
-            </div>
+            <span className="flex items-center">
+              {isInterruptExpanded ? (
+                <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              ) : (
+                <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              )}
+            </span>
+            <span className="flex items-center">
+              <Spinner
+                variant="circle"
+                className="h-4 w-4 text-muted-foreground flex-shrink-0"
+              />
+            </span>
+            <p className="text-sm text-foreground flex items-center m-0">
+              <span className="text-muted-foreground">Action:</span>{" "}
+              <span className="text-foreground ml-1">
+                {interruptData.action}
+              </span>
+            </p>
           </div>
 
           {isInterruptExpanded && interruptData.payload && (
@@ -141,29 +149,12 @@ export function AiMessages({
                   onEdit={false}
                   onAdd={false}
                   onDelete={false}
+                  collapsed={false}
+                  name={false}
                 />
               </div>
 
               <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => {
-                    const responseData = {
-                      action: interruptData.action,
-                      payload: interruptData.payload,
-                      approve: true,
-                    };
-                    if (submit) {
-                      submit(
-                        { messages: [] },
-                        { command: { resume: JSON.stringify(responseData) } }
-                      );
-                    }
-                  }}
-                >
-                  Confirm
-                </Button>
                 <Button
                   size="sm"
                   variant="outline"
@@ -183,6 +174,25 @@ export function AiMessages({
                   }}
                 >
                   Reject
+                </Button>
+                <Button
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => {
+                    const responseData = {
+                      action: interruptData.action,
+                      payload: interruptData.payload,
+                      approve: true,
+                    };
+                    if (submit) {
+                      submit(
+                        { messages: [] },
+                        { command: { resume: JSON.stringify(responseData) } }
+                      );
+                    }
+                  }}
+                >
+                  Approve
                 </Button>
               </div>
             </div>
@@ -204,13 +214,14 @@ export function AiMessages({
       .map((msg) => `${msg.id}-${msg.type}-${msg.content || ""}`)
       .join("|");
 
-    // Include interrupt data in hash for auto-scroll
+    // Include interrupt data and expanded state in hash for auto-scroll
     const interruptString = interruptData ? JSON.stringify(interruptData) : "";
+    const expandedString = isInterruptExpanded ? "expanded" : "collapsed";
 
     return createHash("sha256")
-      .update(contentString + "|" + interruptString)
+      .update(contentString + "|" + interruptString + "|" + expandedString)
       .digest("hex");
-  }, [messages, interruptData]);
+  }, [messages, interruptData, isInterruptExpanded]);
 
   const {
     scrollRef: internalScrollRef,

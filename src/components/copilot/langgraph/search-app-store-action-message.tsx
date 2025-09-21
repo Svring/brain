@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useTemplates } from "@/hooks/template/use-templates";
 import { useTemplateApiContext } from "@/lib/auth/auth-utils";
 import type { TemplateResource } from "@/lib/sealos/resources/template/schemas/template-api-context-schemas";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface AppStoreItem {
   name: string;
@@ -109,6 +110,7 @@ export const SearchAppStoreActionMessage: React.FC<
 > = ({ result }) => {
   console.log("result", result);
   const [showAll, setShowAll] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   // Get template API context and templates
   const templateApiContext = useTemplateApiContext();
@@ -141,9 +143,12 @@ export const SearchAppStoreActionMessage: React.FC<
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="text-sm text-muted-foreground">
-          Loading templates...
+      <div className="w-full">
+        <div className="flex items-center justify-center p-2 border rounded-lg">
+          <div className="flex items-center gap-2">
+            <Hammer className="h-4 w-4 text-blue-600" />
+            <p className="text-sm">Loading App Store templates...</p>
+          </div>
         </div>
       </div>
     );
@@ -151,9 +156,12 @@ export const SearchAppStoreActionMessage: React.FC<
 
   if (error) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="text-sm text-destructive">
-          Error loading templates: {error.message}
+      <div className="w-full">
+        <div className="flex items-center justify-center p-2 border rounded-lg">
+          <div className="flex items-center gap-2">
+            <Hammer className="h-4 w-4 text-red-600" />
+            <p className="text-sm">Error loading templates: {error.message}</p>
+          </div>
         </div>
       </div>
     );
@@ -173,45 +181,58 @@ export const SearchAppStoreActionMessage: React.FC<
     : foundTemplates.slice(0, 3);
 
   return (
-    <div className="space-y-3 border p-4 rounded-xl">
-      <div className="flex items-center justify-between">
-        <div className="flex text-sm text-muted-foreground">
-          <Hammer size={20} className="mr-2" />
-          <span>
-            Searched App Store: browsing through {result.total_templates}{" "}
-            templates...
-          </span>
-        </div>
-        {hasMoreThanThree && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 text-xs text-muted-foreground hover:text-foreground"
-            onClick={() => setShowAll(!showAll)}
-          >
-            {showAll ? (
-              <>
-                <ChevronUp className="w-3 h-3 mr-1" />
-                Show Less
-              </>
-            ) : (
-              <>
-                <ChevronDown className="w-3 h-3 mr-1" />
-                Show More
-              </>
-            )}
-          </Button>
-        )}
-      </div>
+    <div className="w-full">
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger asChild>
+          <div className="flex items-center justify-between p-2 border rounded-lg cursor-pointer hover:bg-muted/50">
+            <div className="flex items-center gap-2">
+              <Hammer className="h-4 w-4 text-blue-600" />
+              <p className="text-sm font-medium">Search App Store</p>
+            </div>
+            <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          </div>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-3 mt-2">
+          <div className="p-4 border rounded-lg bg-muted/30">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex text-sm text-muted-foreground">
+                <span>
+                  Browsed through {result.total_templates} templates and found {foundTemplates.length} relevant results
+                </span>
+              </div>
+              {hasMoreThanThree && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-xs text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowAll(!showAll)}
+                >
+                  {showAll ? (
+                    <>
+                      <ChevronUp className="w-3 h-3 mr-1" />
+                      Show Less
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-3 h-3 mr-1" />
+                      Show More
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
 
-      <div className="grid grid-cols-3 gap-3">
-        {displayTemplates.map((template, index) => (
-          <TemplateCard
-            key={`${template.metadata.name}-${index}`}
-            template={template}
-          />
-        ))}
-      </div>
+            <div className="grid grid-cols-3 gap-3">
+              {displayTemplates.map((template, index) => (
+                <TemplateCard
+                  key={`${template.metadata.name}-${index}`}
+                  template={template}
+                />
+              ))}
+            </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   );
 };

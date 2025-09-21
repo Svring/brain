@@ -23,7 +23,7 @@ export function CommandPanelMain({
           <Plus className="h-4 w-4" />
           <span>Add Resource</span>
         </CommandItem>
-        <CommandItem
+        {/* <CommandItem
           value="add-existing-resources"
           onSelect={onSelect}
         >
@@ -36,7 +36,7 @@ export function CommandPanelMain({
         >
           <Settings className="h-4 w-4" />
           <span>Manage Resources</span>
-        </CommandItem>
+        </CommandItem> */}
       </CommandGroup>
     </>
   );

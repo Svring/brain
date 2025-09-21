@@ -29,8 +29,8 @@ export function FlowgraphCommandDialog({
   const [search, setSearch] = useState("");
   const [selectedCommand, setSelectedCommand] = useState<string | null>(null);
   const [showResourceList, setShowResourceList] = useState(false);
-  const [showManageResources, setShowManageResources] = useState(false);
-  const [showExistingResources, setShowExistingResources] = useState(false);
+  // const [showManageResources, setShowManageResources] = useState(false);
+  // const [showExistingResources, setShowExistingResources] = useState(false);
   const [showAddResources, setShowAddResources] = useState(false);
 
   // Reset state when dialog is closed
@@ -39,8 +39,8 @@ export function FlowgraphCommandDialog({
       setSearch("");
       setSelectedCommand(null);
       setShowResourceList(false);
-      setShowManageResources(false);
-      setShowExistingResources(false);
+      // setShowManageResources(false);
+      // setShowExistingResources(false);
       setShowAddResources(false);
     }
     onOpenChange(open);
@@ -51,8 +51,8 @@ export function FlowgraphCommandDialog({
     setSearch,
     setSelectedCommand,
     setShowResourceList,
-    setShowManageResources,
-    setShowExistingResources,
+    // setShowManageResources,
+    // setShowExistingResources,
   });
 
   // Custom handler for add resources
@@ -74,11 +74,11 @@ export function FlowgraphCommandDialog({
         event.preventDefault();
         if (selectedCommand) {
           setSelectedCommand(null);
-        } else if (showManageResources) {
+        } /* else if (showManageResources) {
           setShowManageResources(false);
         } else if (showExistingResources) {
           setShowExistingResources(false);
-        } else if (showResourceList) {
+        } */ else if (showResourceList) {
           setShowResourceList(false);
         } else if (showAddResources) {
           setShowAddResources(false);
@@ -92,8 +92,8 @@ export function FlowgraphCommandDialog({
     isOpen,
     selectedCommand,
     showResourceList,
-    showManageResources,
-    showExistingResources,
+    // showManageResources,
+    // showExistingResources,
     showAddResources,
   ]);
 
@@ -119,8 +119,7 @@ export function FlowgraphCommandDialog({
                   resourceId={selectedCommand}
                   onBack={() => setSelectedCommand(null)}
                   onSuccess={onClose}
-                />
-              ) : showManageResources ? (
+                /> /* : showManageResources ? (
                 // Show manage resources dialog
                 <ManageResources onBack={() => setShowManageResources(false)} />
               ) : showExistingResources ? (
@@ -128,22 +127,23 @@ export function FlowgraphCommandDialog({
                 <ExistingResources
                   onBack={() => setShowExistingResources(false)}
                 />
-            ) : showAddResources ? (
-              // Show add new resources panel
-              <AddNewResources
-                onBack={() => setShowAddResources(false)}
-                onSuccess={onClose}
-              />
-            ) : showResourceList ? (
-              // Show resource list when "Add Resource" is selected
-              <CommandListAnimated>
-                <CommandEmpty>No resources found.</CommandEmpty>
-                <ResourceList
-                  onSelect={handleResourceSelect}
-                  onBack={() => setShowResourceList(false)}
+              ) */
+              ) : showAddResources ? (
+                // Show add new resources panel
+                <AddNewResources
+                  onBack={() => setShowAddResources(false)}
+                  onSuccess={onClose}
                 />
-              </CommandListAnimated>
-            ) : (
+              ) : showResourceList ? (
+                // Show resource list when "Add Resource" is selected
+                <CommandListAnimated>
+                  <CommandEmpty>No resources found.</CommandEmpty>
+                  <ResourceList
+                    onSelect={handleResourceSelect}
+                    onBack={() => setShowResourceList(false)}
+                  />
+                </CommandListAnimated>
+              ) : (
                 // Show main command list
                 <CommandListAnimated>
                   <CommandEmpty>No commands found.</CommandEmpty>
