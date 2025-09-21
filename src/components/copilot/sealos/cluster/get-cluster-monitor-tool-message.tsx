@@ -3,6 +3,9 @@
 import React from "react";
 import { ToolActionResult } from "@/components/chat/messages/tool-messages/tool-message-types";
 import { CircleCheckBigIcon, CircleSlash } from "lucide-react";
+import { useMount } from "@reactuses/core";
+import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 
 interface GetClusterMonitorToolMessageProps {
   result: ToolActionResult;
@@ -12,6 +15,12 @@ export const GetClusterMonitorToolMessage: React.FC<GetClusterMonitorToolMessage
   result,
 }) => {
   const isApproved = result.approved !== false;
+  const { invalidateQueries } = useInvalidateQueries();
+  const { cluster } = useTRPCClients();
+
+  useMount(() => {
+    invalidateQueries([cluster.monitor.queryKey()]);
+  });
 
   return (
     <div className="w-full">

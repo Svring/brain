@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import { ReactFlow } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -118,7 +118,24 @@ function ProjectFlowWithLoading({
   isLoadingResources: boolean;
   onPaneClick: () => void;
 }) {
-  const { nodes, edges, isLoading } = useFlowgraphNodes(resourceTargets);
+  // Ref to prevent isLoading from being set to true again after first false
+  const hasLoadedOnceRef = useRef(false);
+
+  const {
+    nodes,
+    edges,
+    isLoading: rawIsLoading,
+  } = useFlowgraphNodes(resourceTargets);
+
+  // Only show loading if it hasn't loaded once before
+  const isLoading = rawIsLoading && !hasLoadedOnceRef.current;
+
+  // Track when loading completes for the first time
+  useEffect(() => {
+    if (!rawIsLoading && !hasLoadedOnceRef.current) {
+      hasLoadedOnceRef.current = true;
+    }
+  }, [rawIsLoading]);
 
   return (
     <>

@@ -3,6 +3,9 @@
 import React from "react";
 import { ToolActionResult } from "@/components/chat/messages/tool-messages/tool-message-types";
 import { CircleCheckBigIcon, CircleSlash } from "lucide-react";
+import { useMount } from "@reactuses/core";
+import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 
 interface DeleteDevboxToolMessageProps {
   result: ToolActionResult;
@@ -12,6 +15,12 @@ export const DeleteDevboxToolMessage: React.FC<DeleteDevboxToolMessageProps> = (
   result,
 }) => {
   const isApproved = result.approved !== false;
+  const { invalidateQueries } = useInvalidateQueries();
+  const { devbox } = useTRPCClients();
+
+  useMount(() => {
+    invalidateQueries([devbox.list.queryKey()]);
+  });
 
   return (
     <div className="w-full">

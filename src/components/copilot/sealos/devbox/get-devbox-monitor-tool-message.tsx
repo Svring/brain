@@ -3,6 +3,9 @@
 import React from "react";
 import { ToolActionResult } from "@/components/chat/messages/tool-messages/tool-message-types";
 import { CircleCheckBigIcon, CircleSlash } from "lucide-react";
+import { useMount } from "@reactuses/core";
+import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 
 interface GetDevboxMonitorToolMessageProps {
   result: ToolActionResult;
@@ -12,6 +15,12 @@ export const GetDevboxMonitorToolMessage: React.FC<
   GetDevboxMonitorToolMessageProps
 > = ({ result }) => {
   const isApproved = result.approved !== false;
+  const { invalidateQueries } = useInvalidateQueries();
+  const { devbox } = useTRPCClients();
+
+  useMount(() => {
+    invalidateQueries([devbox.monitor.queryKey()]);
+  });
 
   console.log("result", result);
 
