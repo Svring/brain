@@ -102,6 +102,8 @@ export async function PATCH(
     const body = await request.json();
     const { name } = await params;
 
+    // console.log("body", body);
+
     // Get current devbox to merge with updates
     const target = CustomResourceTargetSchema.parse(
       convertResourceTypeToTarget("devbox", name)
@@ -153,6 +155,8 @@ export async function PATCH(
 
     // Validate the update data
     const validatedUpdateData = devboxUpdateFormSchema.parse(updateData);
+
+    // console.log("validatedUpdateData", validatedUpdateData);
 
     const result = await updateDevbox(sealosContext, name, validatedUpdateData);
     return NextResponse.json(result);
