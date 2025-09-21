@@ -28,7 +28,7 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
   const { isLoading, isLoaded, isUnloaded, modelName } = useLanggraphState();
   const { setConfig, setConfigFailed } = useLanggraphActions();
 
-  console.log("modelName", modelName);
+  // console.log("modelName", modelName);
 
   const isProduction = env.MODE === "production";
 

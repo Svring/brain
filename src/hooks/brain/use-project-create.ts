@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { nanoid } from "@/lib/utils";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
@@ -39,10 +38,9 @@ interface CreateProjectOptions {
 
 export function useProjectCreate(options?: CreateProjectOptions) {
   const [isCreating, setIsCreating] = useState(false);
-  const router = useRouter();
   const { devbox, cluster, launchpad, objectstorage, project } =
     useTRPCClients();
-  const { selectedThreadId, updateThreadState } = useThreads();
+  const { updateThreadState } = useThreads();
   // Create mutations
   const createProjectMutation = useMutation(project.create.mutationOptions());
   const createDevboxMutation = useMutation(devbox.create.mutationOptions());
@@ -250,8 +248,6 @@ export function useProjectCreate(options?: CreateProjectOptions) {
       toast.success(
         `Project "${finalProjectName}" created successfully with ${successfulResources.length} resource(s)`
       );
-
-      router.push(`/projects/${finalProjectName}`);
 
       // Call success callback if provided
       options?.onSuccess?.(finalProjectName);
@@ -500,31 +496,6 @@ export function useProjectCreate(options?: CreateProjectOptions) {
       toast.success(
         `Project "${projectName}" created successfully with ${successfulResources.length} resource(s)`
       );
-
-      // Update thread metadata with the created project name
-      if (selectedThreadId) {
-        try {
-          await updateThreadState.mutate({
-            threadId: selectedThreadId,
-            state: {
-              projectName: projectName,
-              createdResources: successfulResources.map((r) => ({
-                type: r.type,
-                name: r.target.name,
-                target: r.target,
-              })),
-            },
-          });
-        } catch (error) {
-          console.warn(
-            "Failed to update thread state with project name:",
-            error
-          );
-        }
-      }
-
-      // Navigate to the created project
-      router.push(`/projects/${projectName}`);
 
       // Call success callback if provided
       options?.onSuccess?.(projectName);

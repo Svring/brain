@@ -26,7 +26,7 @@ export function ProjectTemplateCard({
       {/* Header with icon and text */}
       <div className="flex items-center mb-3">
         <div className="flex text-sm text-muted-foreground">
-          <Hammer size={20} className="mr-2" />
+          {/* <Hammer size={20} className="mr-2" /> */}
           <span>Deploy from template: {template.spec.title}</span>
         </div>
       </div>

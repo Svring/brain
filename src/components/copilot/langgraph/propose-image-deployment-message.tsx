@@ -15,6 +15,10 @@ import { Spinner } from "@/components/ui/spinner";
 import { ProjectProposalCard } from "@/components/chat/state-cards/project-proposal/project-proposal-card";
 import type { ProjectProposal } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 import { useProjectCreate } from "@/hooks/brain/use-project-create";
+import { useHomeChat } from "@/components/provider/home-chat-provider";
+import { useThreads } from "@/components/provider/thread-provider";
+import { useRouter } from "next/navigation";
+import { useAuthState } from "@/contexts/auth/auth-context";
 
 interface DeployDatabase {
   name: string;
@@ -49,10 +53,19 @@ const ImageDeploymentSuccessMessage = ({ args }: { args: any }) => {
   );
 };
 
-export const ProposeImageDeploymentMessage: React.FC<
-  ProposeImageDeploymentMessageProps
-> = ({ args, result, onSuccess }) => {
+const ImageDeploymentCard = ({
+  args,
+  onSuccess,
+}: {
+  args: any;
+  onSuccess?: (data: any) => void;
+}) => {
   const { createProject, isCreating } = useProjectCreate();
+  const { submit, threadId } = useHomeChat();
+  console.log("[ProposeImageDeploymentMessage] threadId:", threadId);
+  const { patchThread } = useThreads();
+  const router = useRouter();
+  const { auth } = useAuthState();
   const [internalProposal, setInternalProposal] = useState<ProjectProposal>(
     () => {
       // Create initial proposal from args
@@ -63,7 +76,7 @@ export const ProposeImageDeploymentMessage: React.FC<
             {
               name: "docker-app",
               image: args.image_name,
-              ports: (args.ports || []).map((port) => ({
+              ports: (args.ports || []).map((port: number) => ({
                 number: port,
                 publicAccess: true,
               })),
@@ -84,24 +97,78 @@ export const ProposeImageDeploymentMessage: React.FC<
 
   const handleDeploy = async () => {
     try {
-      await createProject(internalProposal);
-      onSuccess?.(internalProposal.name);
+      console.log(
+        "[ProposeImageDeploymentMessage] Deploying with threadId:",
+        threadId
+      );
+      console.log(
+        "[ProposeImageDeploymentMessage] internalProposal:",
+        internalProposal
+      );
+
+      // Create the project
+      const projectName = await createProject(internalProposal);
+      console.log(
+        "[ProposeImageDeploymentMessage] Project created:",
+        projectName
+      );
+
+      // Update thread metadata with deployment information
+      if (threadId) {
+        console.log(
+          "[ProposeImageDeploymentMessage] Patching thread with metadata:",
+          {
+            threadId,
+            kubeconfig: auth?.kubeconfig,
+            projectName,
+          }
+        );
+        const patchedThread = await patchThread.mutate({
+          threadId,
+          metadata: {
+            kubeconfig: auth?.kubeconfig,
+            projectName: projectName,
+            resourceTarget: null,
+          },
+        });
+        console.log(
+          "[ProposeImageDeploymentMessage] Thread patched successfully:",
+          patchedThread
+        );
+      } else {
+        console.warn(
+          "[ProposeImageDeploymentMessage] No threadId available to patch thread metadata"
+        );
+      }
+
+      // Navigate to the created project
+      console.log(
+        "[ProposeImageDeploymentMessage] Navigating to project:",
+        `/projects/${projectName}`
+      );
+      router.push(`/projects/${projectName}`);
+
+      if (onSuccess) {
+        console.log(
+          "[ProposeImageDeploymentMessage] Calling onSuccess callback with projectName:",
+          projectName
+        );
+        onSuccess(projectName);
+      }
     } catch (error) {
-      console.error("Failed to deploy Docker image:", error);
+      console.error(
+        "[ProposeImageDeploymentMessage] Failed to deploy Docker image:",
+        error
+      );
     }
   };
-
-  // Show completion message when result is provided
-  if (result) {
-    return <ImageDeploymentSuccessMessage args={args} />;
-  }
 
   return (
     <div className="w-full border p-2 rounded-xl">
       {/* Header with icon and text */}
       <div className="flex items-center mb-3">
         <div className="flex text-sm text-muted-foreground">
-          <Hammer size={20} className="mr-2" />
+          {/* <Hammer size={20} className="mr-2" /> */}
           <span>Deploy Docker image: {args.image_name}</span>
         </div>
       </div>
@@ -133,4 +200,17 @@ export const ProposeImageDeploymentMessage: React.FC<
       </div>
     </div>
   );
+};
+
+export const ProposeImageDeploymentMessage: React.FC<
+  ProposeImageDeploymentMessageProps
+> = ({ args, result, onSuccess }) => {
+  console.log("[ProposeImageDeploymentMessage] result:", result);
+  // Check result first and return success state if it exists
+  if (result) {
+    return <ImageDeploymentSuccessMessage args={args} />;
+  }
+
+  // Return the card component with args and logic
+  return <ImageDeploymentCard args={args} onSuccess={onSuccess} />;
 };

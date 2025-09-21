@@ -16,6 +16,10 @@ import { Spinner } from "@/components/ui/spinner";
 import { ProjectProposalCard } from "@/components/chat/state-cards/project-proposal/project-proposal-card";
 import type { ProjectProposal } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 import { useProjectCreate } from "@/hooks/brain/use-project-create";
+import { useHomeChat } from "@/components/provider/home-chat-provider";
+import { useThreads } from "@/components/provider/thread-provider";
+import { useRouter } from "next/navigation";
+import { useAuthState } from "@/contexts/auth/auth-context";
 
 interface DeployDevBox {
   name: string;
@@ -57,10 +61,12 @@ const DevenvDeploymentSuccessMessage = ({ args }: { args: any }) => {
   );
 };
 
-export const ProposeDevenvDeploymentMessage: React.FC<
-  ProposeDevenvDeploymentMessageProps
-> = ({ args, result, onSuccess }) => {
+const DevenvDeploymentCard = ({ args, onSuccess }: { args: any; onSuccess?: (data: any) => void }) => {
   const { createProject, isCreating } = useProjectCreate();
+  const { submit, threadId } = useHomeChat();
+  const { patchThread } = useThreads();
+  const router = useRouter();
+  const { auth } = useAuthState();
   const [internalProposal, setInternalProposal] = useState<ProjectProposal>(
     () => {
       // Create initial proposal from args
@@ -72,7 +78,7 @@ export const ProposeDevenvDeploymentMessage: React.FC<
                 {
                   name: args.devbox.name,
                   runtime: args.devbox.runtime as any,
-                  ports: (args.devbox.ports || []).map((port) => ({
+                  ports: (args.devbox.ports || []).map((port: number) => ({
                     number: port,
                     publicAccess: true,
                   })),
@@ -94,25 +100,39 @@ export const ProposeDevenvDeploymentMessage: React.FC<
 
   const handleDeploy = async () => {
     try {
-      // console.log("internalProposal", internalProposal);
-      await createProject(internalProposal);
-      onSuccess?.(internalProposal.name);
+      console.log("Deploying with threadId:", threadId);
+      console.log("internalProposal", internalProposal);
+
+      // Create the project
+      const projectName = await createProject(internalProposal);
+
+      // Update thread metadata with deployment information
+      if (threadId) {
+        await patchThread.mutate({
+          threadId,
+          metadata: {
+            kubeconfig: auth?.kubeconfig,
+            projectName: projectName,
+            resourceTarget: null,
+          },
+        });
+      }
+
+      // Navigate to the created project
+      router.push(`/projects/${projectName}`);
+
+      onSuccess?.(projectName);
     } catch (error) {
       console.error("Failed to deploy development environment:", error);
     }
   };
-
-  // Show completion message when result is provided
-  if (result) {
-    return <DevenvDeploymentSuccessMessage args={args} />;
-  }
 
   return (
     <div className="w-full border p-2 rounded-xl">
       {/* Header with icon and text */}
       <div className="flex items-center mb-3">
         <div className="flex text-sm text-muted-foreground">
-          <Hammer size={20} className="mr-2" />
+          {/* <Hammer size={20} className="mr-2" /> */}
           <span>Deploy development environment</span>
         </div>
       </div>
@@ -144,4 +164,16 @@ export const ProposeDevenvDeploymentMessage: React.FC<
       </div>
     </div>
   );
+};
+
+export const ProposeDevenvDeploymentMessage: React.FC<
+  ProposeDevenvDeploymentMessageProps
+> = ({ args, result, onSuccess }) => {
+  // Check result first and return success state if it exists
+  if (result) {
+    return <DevenvDeploymentSuccessMessage args={args} />;
+  }
+
+  // Return the card component with args and logic
+  return <DevenvDeploymentCard args={args} onSuccess={onSuccess} />;
 };

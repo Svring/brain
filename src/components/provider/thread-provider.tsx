@@ -19,6 +19,7 @@ interface ThreadContextType {
   createNewThread: any;
   updateThreadState: any;
   deleteThread: any;
+  patchThread: any;
 }
 
 const ThreadContext = createContext<ThreadContextType | undefined>(undefined);
@@ -61,12 +62,18 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
   // Delete thread mutation
   const deleteThreadMutation = useDeleteThreadMutation();
 
+  // Patch thread mutation using TRPC
+  const patchThreadMutation = useMutation(
+    langgraph.patch.mutationOptions()
+  );
+
   const value = {
     // Universal thread management methods
     getThreads,
     createNewThread: createNewThreadMutation,
     updateThreadState: updateThreadStateMutation,
     deleteThread: deleteThreadMutation,
+    patchThread: patchThreadMutation,
   };
 
   return (

@@ -9,11 +9,5 @@ interface ChatLayoutProps {
 }
 
 export default function ChatLayout({ children }: ChatLayoutProps) {
-  return (
-    <ThreadProvider>
-      <HomeChatProvider>
-        {children}
-      </HomeChatProvider>
-    </ThreadProvider>
-  );
+  return { children };
 }

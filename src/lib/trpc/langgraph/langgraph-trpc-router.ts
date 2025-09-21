@@ -8,7 +8,8 @@ import {
   searchThreads,
   updateThreadState,
   deleteThread,
-} from "@/lib/langgraph/langgraph-api/langgraph-api";
+  patchThread,
+} from "@/lib/langgraph/langgraph-api/langgraph-api-service";
 
 const t = initTRPC.context<LanggraphContext>().create();
 
@@ -61,22 +62,35 @@ export const langgraphRouter = t.router({
     }),
 
   // Update thread state
-  updateState: t.procedure
-    .input(
-      z.object({
-        threadId: z.string(),
-        state: z.any(),
-      })
-    )
-    .mutation(async ({ input }) => {
-      const { threadId, state } = input;
-      return await updateThreadState(threadId, state);
-    }),
+  // updateState: t.procedure
+  //   .input(
+  //     z.object({
+  //       threadId: z.string(),
+  //       state: z.any(),
+  //     })
+  //   )
+  //   .mutation(async ({ input }) => {
+  //     const { threadId, state } = input;
+  //     return await updateThreadState(threadId, state);
+  //   }),
 
   // Delete thread
   delete: t.procedure.input(z.string()).mutation(async ({ input }) => {
     return await deleteThread(input);
   }),
+
+  // Patch thread metadata
+  patch: t.procedure
+    .input(
+      z.object({
+        threadId: z.string(),
+        metadata: z.record(z.any()),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { threadId, metadata } = input;
+      return await patchThread(threadId, metadata);
+    }),
 });
 
 export type LanggraphRouter = typeof langgraphRouter;

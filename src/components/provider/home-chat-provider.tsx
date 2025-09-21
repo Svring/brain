@@ -29,6 +29,9 @@ interface HomeChatContextType {
   region_url: string | undefined;
   kubeconfig: string | undefined;
 
+  // Thread information
+  threadId: string | null;
+
   // Submit function
   submit: (
     data: { stage?: string; command?: any },
@@ -41,7 +44,6 @@ const HomeChatContext = createContext<HomeChatContextType | undefined>(
 );
 
 export function HomeChatProvider({ children }: { children: ReactNode }) {
-  const { selectedProject, selectedProjectResources } = useProjectState();
   const { auth } = useAuthState();
   const { LANGGRAPH_DEPLOYMENT_URL, LANGGRAPH_GRAPH_ID } = useEnv();
   const { baseUrl, apiKey, modelName, stage } = useLanggraphState();
@@ -97,6 +99,7 @@ export function HomeChatProvider({ children }: { children: ReactNode }) {
           metadata: {
             kubeconfig: auth.kubeconfig,
             isHomePage: true, // Mark this as a home page thread
+            graph_id: LANGGRAPH_GRAPH_ID, // Add the graph ID
           },
         });
 
@@ -118,6 +121,7 @@ export function HomeChatProvider({ children }: { children: ReactNode }) {
     model_name: modelName,
     region_url: auth?.regionUrl,
     kubeconfig: auth?.kubeconfig,
+    threadId,
     submit,
   };
 

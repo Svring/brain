@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, ReactNode, useEffect } from "react";
+import React, { createContext, useContext, ReactNode, useEffect, useRef } from "react";
 import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
 import { Thread, type Message, type Interrupt } from "@langchain/langgraph-sdk";
 import { useStream } from "@langchain/langgraph-sdk/react";
@@ -74,6 +74,9 @@ export function ChatInstanceProvider({
     useProjectState();
   const { auth } = useAuthState();
   const { LANGGRAPH_DEPLOYMENT_URL, LANGGRAPH_GRAPH_ID } = useEnv();
+
+  // Ref to ensure useEffect only runs once
+  const hasRunRef = useRef(false);
 
   // Determine if it's project chat or resource chat
   const isProjectChat = Boolean(projectName && !resourceTarget);
@@ -152,6 +155,11 @@ export function ChatInstanceProvider({
 
   // Fetch threads for this chat instance
   useEffect(() => {
+    if (hasRunRef.current) {
+      return;
+    }
+    hasRunRef.current = true;
+
     const fetchThreads = async () => {
       try {
         const threads = await getThreads(
@@ -196,17 +204,18 @@ export function ChatInstanceProvider({
                 kubeconfig: auth?.kubeconfig,
                 projectName: selectedProject,
                 resourceTarget: isResourceChat ? resourceTarget : null,
+                graph_id: LANGGRAPH_GRAPH_ID,
               },
             },
             {
               onSuccess: (data: any) => {
                 if (data?.thread_id) {
-                  console.log("ChatInstanceProvider - New thread created:", {
-                    threadId: data.thread_id,
-                    isProjectChat,
-                    resourceTarget: isResourceChat ? resourceTarget : null,
-                    projectName: isProjectChat ? projectName : null,
-                  });
+                  // console.log("ChatInstanceProvider - New thread created:", {
+                  //   threadId: data.thread_id,
+                  //   isProjectChat,
+                  //   resourceTarget: isResourceChat ? resourceTarget : null,
+                  //   projectName: isProjectChat ? projectName : null,
+                  // });
 
                   if (isProjectChat) {
                     setProjectChatThreadId(projectName!, data.thread_id);
@@ -229,7 +238,7 @@ export function ChatInstanceProvider({
     if (isActive) {
       fetchThreads();
     }
-  }, [resourceTarget, projectName, isActive, getThreads, isFocused]);
+  }, []); // Empty dependency array to run only once
 
   // Default values if chat instance doesn't exist yet
   const defaultState: ChatSectionState = {

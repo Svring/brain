@@ -1,6 +1,6 @@
 "use server";
 
-import { Client } from "@langchain/langgraph-sdk";
+import { Client, Metadata } from "@langchain/langgraph-sdk";
 import type { RunsInvokePayload } from "@langchain/langgraph-sdk";
 import { createHash } from "crypto"; // Import the crypto module
 
@@ -86,6 +86,38 @@ export const updateThreadState = async (
 export const deleteThread = async (threadId: string) => {
   const client = createClient();
   return await client.threads.delete(threadId);
+};
+
+export const patchThread = async (threadId: string, metadata: Metadata) => {
+  const apiUrl = process.env["LANGGRAPH_DEPLOYMENT_URL"];
+  if (!apiUrl) {
+    throw new Error("LANGGRAPH_DEPLOYMENT_URL environment variable is not set");
+  }
+
+  console.log("[patchThread] Patching thread", { threadId, metadata });
+
+  try {
+    const response = await fetch(`${apiUrl}/threads/${threadId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        metadata: metadata,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log("[patchThread] Patch result", result);
+    return result;
+  } catch (error) {
+    console.error("[patchThread] Error patching thread", error);
+    throw error;
+  }
 };
 
 export const searchThreads = async (metadata: Record<string, any>) => {

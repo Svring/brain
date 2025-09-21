@@ -24,6 +24,7 @@ import type {
   App,
 } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 import { useProjectCreate } from "@/hooks/brain/use-project-create";
+import { useRouter } from "next/navigation";
 
 interface CreateNewProjectProps {
   open: boolean;
@@ -37,10 +38,13 @@ export function CreateNewProject({
   onConfirm,
 }: CreateNewProjectProps) {
   const [projectName, setProjectName] = useState(`project-${nanoid()}`);
+  const router = useRouter();
   const { createProjectFromSimpleData, isCreating } = useProjectCreate({
     onSuccess: (createdProjectName: string) => {
       onConfirm(createdProjectName);
       onOpenChange(false);
+      // Navigate to the created project
+      router.push(`/projects/${createdProjectName}`);
     },
     onError: (error: any) => {
       console.error("Project creation failed:", error);

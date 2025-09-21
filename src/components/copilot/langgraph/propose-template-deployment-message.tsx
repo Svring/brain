@@ -9,6 +9,9 @@ import { useCreateInstanceMutation } from "@/lib/sealos/resources/template/templ
 import { TemplateInputDialog } from "@/components/project/create-project/template-input-dialog";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useHomeChat } from "@/components/provider/home-chat-provider";
+import { useThreads } from "@/components/provider/thread-provider";
+import { useAuthState } from "@/contexts/auth/auth-context";
 
 interface ProposeTemplateDeploymentMessageProps {
   args: {
@@ -33,11 +36,12 @@ const TemplateDeploymentSuccessMessage = ({ args }: { args: any }) => {
   );
 };
 
-export const ProposeTemplateDeploymentMessage: React.FC<
-  ProposeTemplateDeploymentMessageProps
-> = ({ args, result, onSuccess }) => {
+const TemplateDeploymentCard = ({ args, onSuccess }: { args: any; onSuccess?: (data: any) => void }) => {
   const [showInputDialog, setShowInputDialog] = useState(false);
   const router = useRouter();
+  const { submit, threadId } = useHomeChat();
+  const { patchThread } = useThreads();
+  const { auth } = useAuthState();
 
   // Get template API context and templates
   const templateApiContext = useTemplateApiContext();
@@ -66,7 +70,7 @@ export const ProposeTemplateDeploymentMessage: React.FC<
         templateForm,
       },
       {
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
           toast.success(
             `${template.spec.title} has been deployed to your project.`
           );
@@ -78,6 +82,19 @@ export const ProposeTemplateDeploymentMessage: React.FC<
           );
           if (instanceResource?.metadata?.name) {
             const instanceName = instanceResource.metadata.name;
+
+            // Update thread metadata with deployment information
+            if (threadId) {
+              await patchThread.mutate({
+                threadId,
+                metadata: {
+                  kubeconfig: auth?.kubeconfig,
+                  projectName: instanceName,
+                  resourceTarget: null,
+                },
+              });
+            }
+
             // Navigate to the instance details page
             router.push(`/projects/${instanceName}`);
           }
@@ -99,11 +116,6 @@ export const ProposeTemplateDeploymentMessage: React.FC<
       deployTemplate();
     }
   };
-
-  // Show completion message when result is provided
-  if (result) {
-    return <TemplateDeploymentSuccessMessage args={args} />;
-  }
 
   // Show loading state
   if (isLoading) {
@@ -165,4 +177,16 @@ export const ProposeTemplateDeploymentMessage: React.FC<
       )}
     </>
   );
+};
+
+export const ProposeTemplateDeploymentMessage: React.FC<
+  ProposeTemplateDeploymentMessageProps
+> = ({ args, result, onSuccess }) => {
+  // Check result first and return success state if it exists
+  if (result) {
+    return <TemplateDeploymentSuccessMessage args={args} />;
+  }
+
+  // Return the card component with args and logic
+  return <TemplateDeploymentCard args={args} onSuccess={onSuccess} />;
 };

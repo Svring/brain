@@ -15,11 +15,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useThreads } from "@/components/provider/thread-provider";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { DeleteThreadDialog } from "./delete-thread-dialog";
 import { Message, Thread } from "@langchain/langgraph-sdk";
 import { Spinner } from "@/components/ui/spinner";
 import { useChatInstance } from "@/components/provider/chat-instance-provider";
+import { useProjectState } from "@/contexts/project/project-context";
 
 export function HistoryDropdown() {
   const { resourceTarget, threadId, threads, setChatThreadId, setChatThreads } =
@@ -28,20 +29,34 @@ export function HistoryDropdown() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [threadToDelete, setThreadToDelete] = useState<string | null>(null);
+  const { selectedProject, selectedResource } = useProjectState();
 
   // Function to refetch and update threads
   const refetchAndUpdateThreads = async () => {
     try {
       const updatedThreads = await getThreads(resourceTarget);
       setChatThreads(updatedThreads);
-      console.log("HistoryDropdown - Refetched and updated threads:", {
-        resourceTarget,
-        threadCount: updatedThreads.length,
-      });
+      // console.log("HistoryDropdown - Refetched and updated threads:", {
+      //   resourceTarget,
+      //   threadCount: updatedThreads.length,
+      // });
     } catch (error) {
       console.error("HistoryDropdown - Failed to refetch threads:", error);
     }
   };
+
+  // Refetch threads when selectedProject or selectedResource changes
+  useEffect(() => {
+    // console.log(
+    //   "HistoryDropdown - Project or resource changed, refetching threads:",
+    //   {
+    //     selectedProject,
+    //     selectedResource,
+    //     resourceTarget,
+    //   }
+    // );
+    refetchAndUpdateThreads();
+  }, [selectedProject, selectedResource]);
 
   // Filter and limit threads based on resourceTarget
   const filteredAndLimitedThreads = useMemo(() => {

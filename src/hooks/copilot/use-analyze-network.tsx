@@ -145,7 +145,7 @@ export function useDiagnoseNetwork(
     target,
   });
 
-  console.log("combinedStatusData", combinedStatusData);
+  // console.log("combinedStatusData", combinedStatusData);
 
   const diagnoseNetwork = useCallback(
     (readyStatus: any) => {

@@ -17,6 +17,7 @@ import { AuthProvider } from "@/contexts/auth/auth-context";
 import { getUser } from "@/payload/operations/users-operation";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { EnvProvider } from "@/components/provider/env-provider";
+import { HomeChatProvider } from "@/components/provider/home-chat-provider";
 
 import "@/styles/globals.css";
 import {
@@ -91,12 +92,16 @@ export default async function RootLayout({
                       <LanggraphConfigWrapper>
                         <ReactFlowProvider>
                           <FlowgraphProvider>
-                            <OrchestratorProvider>
-                              <SidebarProvider defaultOpen={false}>
-                                <AppSidebar />
-                                {children}
-                              </SidebarProvider>
-                            </OrchestratorProvider>
+                            {/* <ThreadProvider> */}
+                            <HomeChatProvider>
+                              <OrchestratorProvider>
+                                <SidebarProvider defaultOpen={false}>
+                                  <AppSidebar />
+                                  {children}
+                                </SidebarProvider>
+                              </OrchestratorProvider>
+                            </HomeChatProvider>
+                            {/* </ThreadProvider> */}
                           </FlowgraphProvider>
                         </ReactFlowProvider>
                       </LanggraphConfigWrapper>
