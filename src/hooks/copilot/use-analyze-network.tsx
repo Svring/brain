@@ -120,6 +120,22 @@ export function useDiagnoseNetwork(
         containerError,
       };
 
+      // Add event message before analysis
+      const eventMessage = {
+        id: `network-event-${Date.now()}`,
+        type: "system" as const,
+        content: JSON.stringify({
+          type: "universal.event",
+          target: target,
+          payload: {
+            message: "Starting network analysis...",
+            createdAt: new Date().toISOString(),
+          },
+        }),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
       // Add pending messages for this resource target
       const systemMessage1 = {
         id: `network-system-1-${Date.now()}`,
@@ -135,12 +151,14 @@ export function useDiagnoseNetwork(
       const systemMessage2 = {
         id: `network-system-2-${Date.now()}`,
         type: "system" as const,
-        content: analyzeNetworkPrompt + "\n\n" + JSON.stringify(networkStatusData),
+        content:
+          analyzeNetworkPrompt + "\n\n" + JSON.stringify(networkStatusData),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
 
       // Add pending messages for this resource target
+      addPendingMessage(target, eventMessage);
       addPendingMessage(target, systemMessage1);
       addPendingMessage(target, systemMessage2);
     },

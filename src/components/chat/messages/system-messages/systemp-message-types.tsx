@@ -36,6 +36,7 @@ import NetworkMessage from "./universal/network-message";
 import DiagnoseNetworkMessage from "./universal/diagnose-network-message";
 import CustomDomainMessage from "./universal/custom-domain-message";
 import DevboxNetworkMessage from "./devbox/devbox-network-message";
+import { EventMessage } from "./universal/event";
 
 export const SystemMessageType = {
   devbox: {
@@ -116,5 +117,6 @@ export const SystemMessageType = {
     // customDomain: (target: ResourceTarget) => (
     //   <CustomDomainMessage target={target} />
     // ),
+    event: (target: any, payload?: any) => <EventMessage target={target} payload={payload} />,
   },
 };

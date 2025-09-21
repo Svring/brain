@@ -11,13 +11,12 @@ import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 
 interface LaunchpadCreateSimpleMessageProps {
-  payload?: Partial<LaunchpadSimpleFormData>;
   onSuccess?: () => void;
 }
 
 export const LaunchpadCreateSimpleMessage: React.FC<
   LaunchpadCreateSimpleMessageProps
-> = ({ payload, onSuccess }) => {
+> = ({ onSuccess }) => {
   const { launchpad, project } = useTRPCClients();
   const { selectedProject } = useProjectState();
   const { invalidateQueries } = useInvalidateQueries();
@@ -68,7 +67,6 @@ export const LaunchpadCreateSimpleMessage: React.FC<
   return (
     <div className="space-y-3 flex-col p-3 rounded-xl">
       <LaunchpadCreateSimpleForm
-        defaultValues={payload}
         onSubmit={handleSubmit}
         isLoading={createLaunchpadMutation.isPending}
       />

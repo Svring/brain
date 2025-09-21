@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useChatInstance } from "@/components/provider/chat-instance-provider";
 import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
 import { AiChatInput } from "./input";
@@ -24,8 +24,15 @@ export default function AiChatbox() {
   const { getPendingMessages } = useChatState();
   const { clearPendingMessages } = useChatActions();
 
-  // Read and submit pending messages for this resource target
+  // Ref to ensure useEffect only runs once
+  const hasRunRef = useRef(false);
+
+  // Read and submit pending messages once on mount
   useEffect(() => {
+    if (hasRunRef.current) {
+      return;
+    }
+    hasRunRef.current = true;
     const pendingMessages = getPendingMessages(resourceTarget);
     if (pendingMessages.length > 0) {
       console.log("AiChatbox - Pending messages for resource target:", {
@@ -54,7 +61,7 @@ export default function AiChatbox() {
         console.error("AiChatbox - Failed to submit pending messages:", error);
       }
     }
-  }, [resourceTarget, getPendingMessages]);
+  }, []); // Empty dependency array to run only once
 
   return (
     <div

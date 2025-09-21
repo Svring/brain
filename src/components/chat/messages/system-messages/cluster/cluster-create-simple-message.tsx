@@ -6,15 +6,13 @@ import { ClusterSimpleFormData } from "@/components/forms/cluster/cluster-create
 import { useClusterCreate } from "@/hooks/sealos/cluster/use-cluster-create";
 
 interface ClusterCreateSimpleMessageProps {
-  payload?: Partial<ClusterSimpleFormData>;
   onSuccess?: () => void;
-  addToProject?: boolean;
 }
 
 export const ClusterCreateSimpleMessage: React.FC<
   ClusterCreateSimpleMessageProps
-> = ({ payload, onSuccess, addToProject = true }) => {
-  const { createCluster, isLoading } = useClusterCreate({ addToProject });
+> = ({ onSuccess }) => {
+  const { createCluster, isLoading } = useClusterCreate({ addToProject: true });
 
   const handleSubmit = async (data: ClusterSimpleFormData) => {
     try {
@@ -28,7 +26,6 @@ export const ClusterCreateSimpleMessage: React.FC<
   return (
     <div className="space-y-3 flex-col p-3 rounded-xl">
       <ClusterCreateSimpleForm
-        defaultValues={payload}
         onSubmit={handleSubmit}
         isLoading={isLoading}
       />

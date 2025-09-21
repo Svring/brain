@@ -5,9 +5,15 @@ import { useMachine } from "@xstate/react";
 import { createContext, type ReactNode, useContext, useEffect } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import type { Thread, Message } from "@langchain/langgraph-sdk";
-import { chatMachine, type ChatSectionState, serializeResourceTarget, getProjectChatKey, serializeTargetKey } from "@/contexts/chat/chat-machine";
+import {
+  chatMachine,
+  type ChatSectionState,
+  serializeResourceTarget,
+  getProjectChatKey,
+  serializeTargetKey,
+} from "@/contexts/chat/chat-machine";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { useProjectActions } from "../project/project-context";
+import { useProjectActions, useProjectState } from "../project/project-context";
 import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useQueryState } from "nuqs";
 
@@ -43,44 +49,44 @@ export function useChatContext() {
 
 export function useChatState() {
   const { state } = useChatContext();
-  
+
   // Helper to check if a resource target is active
   const isResourceActive = (resourceTarget: ResourceTarget) => {
     const key = serializeResourceTarget(resourceTarget);
     return state.context.activeResourceTargets.includes(key);
   };
-  
+
   // Helper to get chat instance by resource target
   const getChatInstance = (resourceTarget: ResourceTarget) => {
     const key = serializeResourceTarget(resourceTarget);
     return state.context.chatInstances.get(key);
   };
-  
+
   // Helper to get project chat instance
   const getProjectChatInstance = (projectName: string) => {
     const projectChatKey = getProjectChatKey(projectName);
     return state.context.chatInstances.get(projectChatKey);
   };
-  
+
   // Helper to check if project chat is focused
   const isProjectChatFocused = (projectName: string) => {
     const projectChatKey = getProjectChatKey(projectName);
     return state.context.focusedResourceTarget === projectChatKey;
   };
-  
+
   // Helper to get pending messages for a specific target
   const getPendingMessages = (resourceTarget: ResourceTarget | null) => {
     const key = serializeTargetKey(resourceTarget);
     return state.context.pendingMessages.get(key) || [];
   };
-  
+
   // Helper to check if target has pending messages
   const hasPendingMessages = (resourceTarget: ResourceTarget | null) => {
     const key = serializeTargetKey(resourceTarget);
     const messages = state.context.pendingMessages.get(key);
     return messages && messages.length > 0;
   };
-  
+
   return {
     // Multi-instance state
     chatInstances: state.context.chatInstances,
@@ -88,7 +94,7 @@ export function useChatState() {
     focusedResourceTarget: state.context.focusedResourceTarget,
     pendingMessages: state.context.pendingMessages,
     chatDisplayOrder: state.context.chatDisplayOrder,
-    
+
     // Helper functions
     isResourceActive,
     getChatInstance,
@@ -101,39 +107,67 @@ export function useChatState() {
 
 export function useChatActions() {
   const { send, state } = useChatContext();
+  const { clearSelectedResource } = useProjectActions();
+  const { selectedResource } = useProjectState();
 
   return {
     // Multi-instance chat management
     openChat: (resourceTarget: ResourceTarget) =>
       send({ type: "OPEN_CHAT", resourceTarget }),
-    closeChat: (resourceTarget: ResourceTarget) =>
-      send({ type: "CLOSE_CHAT", resourceTarget }),
+    closeChat: (resourceTarget: ResourceTarget) => {
+      // Clear selectedResource when closing a resource chat
+      send({ type: "CLOSE_CHAT", resourceTarget });
+      // Only clear selectedResource if this is the currently selected resource
+      if (
+        selectedResource &&
+        JSON.stringify(selectedResource) === JSON.stringify(resourceTarget)
+      ) {
+        clearSelectedResource();
+      }
+    },
 
     // Per-instance state management
-    setChatThreadId: (resourceTarget: ResourceTarget, threadId: string | null) =>
-      send({ type: "SET_CHAT_THREAD_ID", resourceTarget, threadId }),
+    setChatThreadId: (
+      resourceTarget: ResourceTarget,
+      threadId: string | null
+    ) => send({ type: "SET_CHAT_THREAD_ID", resourceTarget, threadId }),
     setChatThreads: (resourceTarget: ResourceTarget, threads: Thread[]) =>
       send({ type: "SET_CHAT_THREADS", resourceTarget, threads }),
-    setChatState: (resourceTarget: ResourceTarget, chatState: Partial<ChatSectionState>) =>
-      send({ type: "SET_CHAT_STATE", resourceTarget, state: chatState }),
+    setChatState: (
+      resourceTarget: ResourceTarget,
+      chatState: Partial<ChatSectionState>
+    ) => send({ type: "SET_CHAT_STATE", resourceTarget, state: chatState }),
 
     // Project chat management
-    openProjectChat: (projectName: string) => send({ type: "OPEN_PROJECT_CHAT", projectName }),
-    closeProjectChat: (projectName: string) => send({ type: "CLOSE_PROJECT_CHAT", projectName }),
-    
+    openProjectChat: (projectName: string) =>
+      send({ type: "OPEN_PROJECT_CHAT", projectName }),
+    closeProjectChat: (projectName: string) => {
+      // Clear selectedResource when closing a project chat
+      send({ type: "CLOSE_PROJECT_CHAT", projectName });
+      // Clear selectedResource when closing a project chat (always clear since project chat doesn't select a resource)
+      clearSelectedResource();
+    },
+
     // Project chat state management
     setProjectChatThreadId: (projectName: string, threadId: string | null) =>
       send({ type: "SET_PROJECT_CHAT_THREAD_ID", projectName, threadId }),
     setProjectChatThreads: (projectName: string, threads: Thread[]) =>
       send({ type: "SET_PROJECT_CHAT_THREADS", projectName, threads }),
-    setProjectChatState: (projectName: string, chatState: Partial<ChatSectionState>) =>
+    setProjectChatState: (
+      projectName: string,
+      chatState: Partial<ChatSectionState>
+    ) =>
       send({ type: "SET_PROJECT_CHAT_STATE", projectName, state: chatState }),
 
     // Pending message management
-    addPendingMessage: (resourceTarget: ResourceTarget | null, message: Message) =>
-      send({ type: "ADD_PENDING_MESSAGE", resourceTarget, message }),
-    removePendingMessage: (resourceTarget: ResourceTarget | null, messageIndex: number) =>
-      send({ type: "REMOVE_PENDING_MESSAGE", resourceTarget, messageIndex }),
+    addPendingMessage: (
+      resourceTarget: ResourceTarget | null,
+      message: Message
+    ) => send({ type: "ADD_PENDING_MESSAGE", resourceTarget, message }),
+    removePendingMessage: (
+      resourceTarget: ResourceTarget | null,
+      messageIndex: number
+    ) => send({ type: "REMOVE_PENDING_MESSAGE", resourceTarget, messageIndex }),
     clearPendingMessages: (resourceTarget: ResourceTarget | null) =>
       send({ type: "CLEAR_PENDING_MESSAGES", resourceTarget }),
   };

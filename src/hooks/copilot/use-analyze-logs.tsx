@@ -58,6 +58,22 @@ export function useAnalyzeLogs(
     // Use node select to handle the selection and message appending
     await handleNodeSelect();
 
+    // Add event message before analysis
+    const eventMessage = {
+      id: `logs-event-${Date.now()}`,
+      type: "system" as const,
+      content: JSON.stringify({
+        type: "universal.event",
+        target: target,
+        payload: {
+          message: "Starting logs analysis...",
+          createdAt: new Date().toISOString(),
+        },
+      }),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
     // Add pending messages for this resource target
     const systemMessage1 = {
       id: `logs-system-1-${Date.now()}`,
@@ -79,6 +95,7 @@ export function useAnalyzeLogs(
     };
 
     // Add pending messages for this resource target
+    addPendingMessage(target, eventMessage);
     addPendingMessage(target, systemMessage1);
     addPendingMessage(target, systemMessage2);
   }, [logsData, handleNodeSelect, addPendingMessage, target]);
