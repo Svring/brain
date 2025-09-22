@@ -23,7 +23,6 @@ export const CpuMemoryPopoverContent: React.FC<{
 }> = ({ target }) => {
   const [isEditing, setIsEditing] = useState(false);
   const { resource: devboxObject } = useResourceStatus(target);
-  const { triggerScrollToBottom } = useChatActions();
   const { latestData, isLoading: isMetricsLoading } = useResourceMetricsStatus({
     target,
   });

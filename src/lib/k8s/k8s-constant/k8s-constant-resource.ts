@@ -4,10 +4,10 @@
  */
 
 // Unified CPU options (in cores for launchpad, millicores for others)
-export const CPU_OPTIONS = [0.5, 1, 2, 4, 8] as const;
+export const CPU_OPTIONS = [0.1, 0.2, 0.5, 1, 2, 4, 8, 16] as const;
 
 // Unified memory options (in GB for launchpad, MB for others)
-export const MEMORY_OPTIONS = [0.5, 1, 2, 4, 8, 16] as const;
+export const MEMORY_OPTIONS = [0.1, 0.5, 1, 2, 4, 8, 16, 32] as const;
 
 // Unified replicas options
 export const REPLICAS_OPTIONS = [

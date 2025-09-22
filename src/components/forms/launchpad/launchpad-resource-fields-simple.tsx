@@ -61,19 +61,40 @@ export const LaunchpadResourceFieldsSimple = ({
     unit: string
   ) => {
     if (objectValue !== undefined && objectValue !== formValue) {
-      return (
-        <div className="flex items-center gap-2">
-          <span className="text-muted-foreground line-through">
-            {objectValue}
-            {unit}
-          </span>
-          <span className="text-muted-foreground">→</span>
-          <span className="font-medium">
-            {formValue}
-            {unit}
-          </span>
-        </div>
-      );
+
+      const isObjectValueInOptions = memoryOptions.includes(formValue);
+      
+      if (!isObjectValueInOptions) {
+      
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground line-through">
+              {formValue}
+              {unit}
+            </span>
+            <span className="text-muted-foreground">→</span>
+            <span className="font-medium">
+              {objectValue}
+              {unit}
+            </span>
+          </div>
+        );
+      } else {
+    
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground line-through">
+              {objectValue}
+              {unit}
+            </span>
+            <span className="text-muted-foreground">→</span>
+            <span className="font-medium">
+              {formValue}
+              {unit}
+            </span>
+          </div>
+        );
+      }
     }
     return (
       <span className="font-medium">
