@@ -5,18 +5,18 @@ import { useDisclosure } from "@reactuses/core";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import CreateProject from "@/components/project/create-project/create-project";
+import DeployTemplate from "@/components/project/create-project/deploy-template";
 
-export function useProjectCreateDialog() {
+export function useDeployTemplateDialog() {
   const { isOpen, onClose, onOpen, onOpenChange } = useDisclosure();
 
-  const CreateProjectDialog = () => (
+  const DeployTemplateDialog = () => (
     <Dialog onOpenChange={onOpenChange} open={isOpen}>
       <VisuallyHidden>
         <DialogTitle></DialogTitle>
       </VisuallyHidden>
       <DialogContent className="h-[90vh] max-h-none w-[90vw] max-w-none p-4 pt-0 rounded-xl!">
-        <CreateProject closeDialog={onClose} />
+        <DeployTemplate closeDialog={onClose} />
       </DialogContent>
     </Dialog>
   );
@@ -25,6 +25,6 @@ export function useProjectCreateDialog() {
     isOpen,
     openDialog: onOpen,
     closeDialog: onClose,
-    CreateProjectDialog,
+    DeployTemplateDialog,
   };
 }

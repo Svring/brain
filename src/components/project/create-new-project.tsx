@@ -88,27 +88,26 @@ export function CreateNewProject({
       const deploymentData = {
         devbox:
           createdDevboxes.length > 0
-            ? {
-                name: sanitizeName(createdDevboxes[0].name),
-                runtime: createdDevboxes[0].runtime,
-                ports:
-                  createdDevboxes[0].ports?.map((p: any) => p.number) || [],
-              }
+            ? createdDevboxes.map((devbox) => ({
+                name: sanitizeName(devbox.name),
+                runtime: devbox.runtime,
+                ports: devbox.ports?.map((p: any) => p.number) || [],
+              }))
             : undefined,
         database:
           createdDatabases.length > 0
-            ? {
-                name: sanitizeName(createdDatabases[0].name),
-                type: createdDatabases[0].type,
-              }
+            ? createdDatabases.map((db) => ({
+                name: sanitizeName(db.name),
+                type: db.type,
+              }))
             : undefined,
         app:
           createdApps.length > 0
-            ? {
-                name: sanitizeName(createdApps[0].name),
-                image: createdApps[0].image,
-                ports: createdApps[0].ports?.map((p: any) => p.number) || [],
-              }
+            ? createdApps.map((app) => ({
+                name: sanitizeName(app.name),
+                image: app.image,
+                ports: app.ports?.map((p: any) => p.number) || [],
+              }))
             : undefined,
       };
 

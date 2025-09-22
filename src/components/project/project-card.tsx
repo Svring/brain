@@ -208,7 +208,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         <motion.div
           className={`relative flex w-full cursor-pointer rounded-lg border bg-background-secondary text-left shadow-sm ${
             variant === "lite"
-              ? "h-10 items-center px-4"
+              ? "h-10 items-center px-3"
               : `min-h-[160px] flex-col p-4 py-3 ${
                   isDeleting ? "bg-status-deleting/50 border-theme-red" : ""
                 }`
@@ -216,10 +216,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           whileHover={{ y: -5 }}
           transition={{ duration: 0.15, ease: "easeInOut" }}
         >
-          <div className="flex items-center justify-between w-full gap-2">
+          <div className="flex items-center w-full gap-2">
             <div
-              className="flex items-center space-x-1 min-w-0 group"
-              style={{ maxWidth: "80%" }}
+              className="flex items-center space-x-1 min-w-0 group flex-1"
               onClick={variant === "full" ? handleRenameClick : undefined}
             >
               <p
@@ -255,19 +254,24 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                 <span className="sr-only">Delete project</span>
               </Button>
             )}
+            {avatarData.avatarUrls.length > 0 && variant === "lite" && (
+              <div className="scale-75 origin-right flex-shrink-0">
+                <AvatarCircles
+                  numPeople={
+                    avatarData.numPeople > 0 ? avatarData.numPeople : undefined
+                  }
+                  avatarUrls={avatarData.avatarUrls}
+                  disableLink
+                />
+              </div>
+            )}
           </div>
           {variant === "full" && project.displayName !== project.name && (
             <p className="text-xs text-muted-foreground mb-2">{project.name}</p>
           )}
 
-          {avatarData.avatarUrls.length > 0 && (
-            <div
-              className={`scale-75 origin-right ${
-                variant === "lite"
-                  ? "ml-auto flex-shrink-0"
-                  : "absolute bottom-4 right-4"
-              }`}
-            >
+          {avatarData.avatarUrls.length > 0 && variant === "full" && (
+            <div className="scale-75 origin-right absolute bottom-4 right-4">
               <AvatarCircles
                 numPeople={
                   avatarData.numPeople > 0 ? avatarData.numPeople : undefined

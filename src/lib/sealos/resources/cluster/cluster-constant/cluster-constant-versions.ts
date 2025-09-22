@@ -13,4 +13,5 @@ export const CLUSTER_CONSTANT_TYPE_VERSION = {
   weaviate: ["weaviate-1.18.0"],
   pulsar: ["pulsar-3.0.2", "pulsar-2.11.2"],
   clickhouse: ["clickhouse-22.9.4"],
+  milvus: ["milvus-2.4.5"],
 } as const;

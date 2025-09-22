@@ -14,20 +14,37 @@ import { CLUSTER_CONSTANT_TYPE_VERSION } from "@/lib/sealos/resources/cluster/cl
 
 // Simplified deployment data format
 interface SimpleDeploymentData {
-  devbox?: {
-    name: string;
-    runtime: string;
-    ports?: number[];
-  };
-  database?: {
-    name: string;
-    type: string;
-  };
-  app?: {
-    name: string;
-    image: string;
-    ports?: number[];
-  };
+  devbox?:
+    | {
+        name: string;
+        runtime: string;
+        ports?: number[];
+      }
+    | {
+        name: string;
+        runtime: string;
+        ports?: number[];
+      }[];
+  database?:
+    | {
+        name: string;
+        type: string;
+      }
+    | {
+        name: string;
+        type: string;
+      }[];
+  app?:
+    | {
+        name: string;
+        image: string;
+        ports?: number[];
+      }
+    | {
+        name: string;
+        image: string;
+        ports?: number[];
+      }[];
 }
 import { useChatActions } from "@/contexts/chat/chat-context";
 
@@ -76,115 +93,137 @@ export function useProjectCreate(options?: CreateProjectOptions) {
       // Create all resources in parallel first
       const resourcePromises: Promise<any>[] = [];
 
-      // Create DevBox if provided
+      // Create DevBox(es) if provided
       if (data.devbox) {
-        const uniqueDevboxName = `${data.devbox.name}-${nanoid()}`;
-        const devboxData = devboxCreateFormSchema.parse({
-          name: uniqueDevboxName,
-          runtime: data.devbox.runtime,
-          ports: (data.devbox.ports || []).map((port) => ({
-            number: port,
-            protocol: "HTTP" as const,
-            exposesPublicDomain: true,
-          })),
-        });
+        // Handle both single devbox and array of devboxes
+        const devboxes = Array.isArray(data.devbox)
+          ? data.devbox
+          : [data.devbox];
 
-        resourcePromises.push(
-          createDevboxMutation
-            .mutateAsync(devboxData)
-            .then((result) => ({
-              type: "devbox",
-              target: convertResourceTypeToTarget("devbox", uniqueDevboxName),
-              result,
-              success: true,
-            }))
-            .catch((error) => {
-              throw error;
-            })
-        );
+        devboxes.forEach((devbox) => {
+          const uniqueDevboxName = `${devbox.name}-${nanoid()}`;
+          const devboxData = devboxCreateFormSchema.parse({
+            name: uniqueDevboxName,
+            runtime: devbox.runtime,
+            ports: (devbox.ports || []).map((port) => ({
+              number: port,
+              protocol: "HTTP" as const,
+              exposesPublicDomain: true,
+            })),
+          });
+
+          resourcePromises.push(
+            createDevboxMutation
+              .mutateAsync(devboxData)
+              .then((result) => ({
+                type: "devbox",
+                target: convertResourceTypeToTarget("devbox", uniqueDevboxName),
+                result,
+                success: true,
+              }))
+              .catch((error) => {
+                throw error;
+              })
+          );
+        });
       }
 
-      // Create Database if provided
+      // Create Database(s) if provided
       if (data.database) {
-        const uniqueDatabaseName = `${data.database.name}-${nanoid()}`;
-        const databaseType = data.database
-          .type as keyof typeof CLUSTER_CONSTANT_TYPE_VERSION;
-        const version =
-          CLUSTER_CONSTANT_TYPE_VERSION[databaseType]?.[0] ||
-          "postgresql-14.8.0";
+        // Handle both single database and array of databases
+        const databases = Array.isArray(data.database)
+          ? data.database
+          : [data.database];
 
-        const clusterData = clusterCreateFormSchema.parse({
-          name: uniqueDatabaseName,
-          type: data.database.type as any,
-          version: version,
-          resource: {
-            replicas: 1,
-            cpu: 2,
-            memory: 2,
-            storage: 10,
-          },
-          terminationPolicy: "Delete" as const,
+        databases.forEach((database) => {
+          const uniqueDatabaseName = `${database.name}-${nanoid()}`;
+          const databaseType =
+            database.type as keyof typeof CLUSTER_CONSTANT_TYPE_VERSION;
+          const version =
+            CLUSTER_CONSTANT_TYPE_VERSION[databaseType]?.[0] ||
+            "postgresql-14.8.0";
+
+          const clusterData = clusterCreateFormSchema.parse({
+            name: uniqueDatabaseName,
+            type: database.type as any,
+            version: version,
+            resource: {
+              replicas: 1,
+              cpu: 2,
+              memory: 2,
+              storage: 10,
+            },
+            terminationPolicy: "Delete" as const,
+          });
+
+          resourcePromises.push(
+            createClusterMutation
+              .mutateAsync(clusterData)
+              .then((result) => ({
+                type: "cluster",
+                target: convertResourceTypeToTarget(
+                  "cluster",
+                  uniqueDatabaseName
+                ),
+                result,
+                success: true,
+              }))
+              .catch((error) => ({
+                type: "cluster",
+                target: convertResourceTypeToTarget(
+                  "cluster",
+                  uniqueDatabaseName
+                ),
+                result: null,
+                success: false,
+                error: error,
+              }))
+          );
         });
-
-        resourcePromises.push(
-          createClusterMutation
-            .mutateAsync(clusterData)
-            .then((result) => ({
-              type: "cluster",
-              target: convertResourceTypeToTarget(
-                "cluster",
-                uniqueDatabaseName
-              ),
-              result,
-              success: true,
-            }))
-            .catch((error) => ({
-              type: "cluster",
-              target: convertResourceTypeToTarget(
-                "cluster",
-                uniqueDatabaseName
-              ),
-              result: null,
-              success: false,
-              error: error,
-            }))
-        );
       }
 
-      // Create App if provided
+      // Create App(s) if provided
       if (data.app) {
-        const uniqueAppName = `${data.app.name}-${nanoid()}`;
-        const launchpadData = launchpadCreateFormSchema.parse({
-          name: uniqueAppName,
-          image: {
-            imageName: data.app.image,
-          },
-          ports: (data.app.ports || []).map((port) => ({
-            number: port,
-            protocol: "HTTP" as const,
-            exposesPublicDomain: true,
-          })),
-          env: [], // Default empty env
-          resource: {
-            replicas: 1,
-            cpu: 1,
-            memory: 1,
-          },
-        });
+        // Handle both single app and array of apps
+        const apps = Array.isArray(data.app) ? data.app : [data.app];
 
-        resourcePromises.push(
-          createLaunchpadMutation
-            .mutateAsync(launchpadData)
-            .then((result) => ({
-              type: "launchpad",
-              target: convertResourceTypeToTarget("deployment", uniqueAppName),
-              result,
-              success: true,
-            }))
-            .catch((error) => {
-              throw error;
-            })
-        );
+        apps.forEach((app) => {
+          const uniqueAppName = `${app.name}-${nanoid()}`;
+          const launchpadData = launchpadCreateFormSchema.parse({
+            name: uniqueAppName,
+            image: {
+              imageName: app.image,
+            },
+            ports: (app.ports || []).map((port) => ({
+              number: port,
+              protocol: "HTTP" as const,
+              exposesPublicDomain: true,
+            })),
+            env: [], // Default empty env
+            resource: {
+              replicas: 1,
+              cpu: 1,
+              memory: 1,
+            },
+          });
+
+          resourcePromises.push(
+            createLaunchpadMutation
+              .mutateAsync(launchpadData)
+              .then((result) => ({
+                type: "launchpad",
+                target: convertResourceTypeToTarget(
+                  "deployment",
+                  uniqueAppName
+                ),
+                result,
+                success: true,
+              }))
+              .catch((error) => {
+                throw error;
+              })
+          );
+        });
       }
 
       // Wait for all resources to be created

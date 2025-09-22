@@ -53,7 +53,7 @@ function ProjectFloatingUI({
       <div
         className={cn(
           "absolute top-2 z-40 bg-background/30 backdrop-blur-lg rounded-lg p-2 transition-all duration-300 ease-in-out",
-          hasFocusedChat 
+          hasFocusedChat
             ? "right-2" // Stay 2 units from the right edge of the flow container (which is already pushed left)
             : "right-2"
         )}

@@ -4,7 +4,7 @@ import { Hero } from "@/components/ui/hero";
 import { AiChatInput } from "@/components/chat/components/input";
 import { AiMessages } from "@/components/chat/components/messages";
 import { motion } from "framer-motion";
-import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
+import { useDeployTemplateDialog } from "@/hooks/brain/use-deploy-template-dialog";
 import { useLaunchpadCreateDialog } from "@/hooks/brain/use-launchpad-create-dialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,18 +15,22 @@ import {
 } from "@/components/ui/tooltip";
 import { useRef } from "react";
 import Suggestions from "@/components/chat/components/suggestions";
+import RecentProjects from "@/components/project/recent-projects";
 import { useHomeChat } from "@/components/provider/home-chat-provider";
+import useProjectSearch from "@/hooks/brain/use-projects-search";
 import { LayoutTemplate } from "lucide-react";
 
 export default function HomePage() {
   const { messages, submit, stop, isLoading } = useHomeChat();
+  const { projects, isLoading: isLoadingProjects, isError: isProjectsError } = useProjectSearch();
 
-  const { CreateProjectDialog, openDialog } = useProjectCreateDialog();
+  const { DeployTemplateDialog: CreateProjectDialog, openDialog } = useDeployTemplateDialog();
   const { LaunchpadCreateDialog } = useLaunchpadCreateDialog();
   const messagesScrollRef = useRef<HTMLDivElement>(null);
 
   // const hasMessages = messages.length > 0;
   const showMessages = messages.length > 0;
+  const hasProjects = projects && projects.length > 0;
 
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden">
@@ -121,8 +125,19 @@ export default function HomePage() {
           </div>
         </motion.div>
 
-        {/* Suggestions section - shown when no messages */}
-        {!showMessages && <Suggestions onSubmit={submit} />}
+        {/* Recent Projects or Suggestions section - shown when no messages */}
+        {!showMessages && (
+          hasProjects ? (
+            <RecentProjects
+              projects={projects}
+              isLoading={isLoadingProjects}
+              isError={isProjectsError}
+              displayProjects={projects || []}
+            />
+          ) : (
+            <Suggestions onSubmit={submit} />
+          )
+        )}
       </div>
     </div>
   );
