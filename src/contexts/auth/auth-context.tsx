@@ -11,6 +11,7 @@ import { authenticateDev, authenticateProd } from "@/lib/auth/auth-utils";
 import type { User } from "@/payload-types";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { useEnv } from "@/components/provider/env-provider";
+import Image from "next/image";
 
 // const inspector = createBrowserInspector();
 
@@ -50,6 +51,27 @@ export const AuthProvider = ({
 
   if (state.matches("authenticating")) {
     return null;
+  }
+
+  // Show UI when auth is null (unauthenticated)
+  if (!state.context.auth) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
+        <div className="flex flex-col items-center space-y-4">
+          <Image
+            src="/sealos-brain-icon-grayscale.svg"
+            alt="Sealos Brain"
+            width={64}
+            height={64}
+            className="mb-2 rounded-2xl"
+          />
+          <div className="text-muted-foreground text-center space-y-2">
+            <p>Sealos Brain requires Sealos Desktop to function.</p>
+            <p>Please open this page in Sealos Desktop.</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

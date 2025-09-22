@@ -112,7 +112,7 @@ export function PortDisplayTable({ ports }: PortDisplayTableProps) {
                           <Copy className="w-3 h-3" />
                         )}
                       </Button>
-                      <Button
+                      {/* <Button
                         size="sm"
                         variant="ghost"
                         className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
@@ -122,7 +122,7 @@ export function PortDisplayTable({ ports }: PortDisplayTableProps) {
                         }}
                       >
                         Custom
-                      </Button>
+                      </Button> */}
                     </>
                   ) : (
                     <>

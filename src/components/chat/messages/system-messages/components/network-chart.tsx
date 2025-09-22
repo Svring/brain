@@ -1,7 +1,5 @@
 import React from "react";
-import type {
-  DevboxObject,
-} from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
+import type { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,

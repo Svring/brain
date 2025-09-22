@@ -48,7 +48,7 @@ export function ProjectDatabaseCard({
       <div className="space-y-3 flex-col bg-background-secondary border p-3 rounded-xl">
         <div className="flex items-center gap-4">
           <div className="flex-shrink-0">
-            <Image
+            <img
               src={
                 CLUSTER_TYPE_ICON_MAP[
                   editData.type as keyof typeof CLUSTER_TYPE_ICON_MAP
@@ -58,7 +58,6 @@ export function ProjectDatabaseCard({
               width={36}
               height={36}
               className="rounded-lg h-9 w-9 flex-shrink-0"
-              priority
             />
           </div>
           <div className="flex items-center min-w-0 flex-1">

@@ -45,9 +45,7 @@ function RuntimeSelectionDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Select Runtime</DialogTitle>
@@ -60,14 +58,15 @@ function RuntimeSelectionDialog({
               className={`
                 flex flex-col items-center p-4 rounded-lg border-2 cursor-pointer transition-all
                 hover:bg-muted/50 hover:border-primary/50
-                ${currentRuntime === runtime 
-                  ? 'border-primary bg-primary/10' 
-                  : 'border-border hover:border-primary/30'
+                ${
+                  currentRuntime === runtime
+                    ? "border-primary bg-primary/10"
+                    : "border-border hover:border-primary/30"
                 }
               `}
             >
               <div className="w-12 h-12 mb-3 flex items-center justify-center">
-                <Image
+                <img
                   src={
                     DEVBOX_RUNTIME_ICONS[runtime] ||
                     "https://devbox.bja.sealos.run/logo.svg"
@@ -76,7 +75,6 @@ function RuntimeSelectionDialog({
                   width={48}
                   height={48}
                   className="rounded-lg"
-                  priority
                 />
               </div>
               <span className="text-sm font-medium text-center leading-tight">
@@ -156,10 +154,7 @@ export function ProjectDevBoxCard({
               setEditData({ ...editData, runtime: runtime as any })
             }
           >
-            <Button
-              variant="outline"
-              className="w-full justify-between"
-            >
+            <Button variant="outline" className="w-full justify-between">
               <div className="flex items-center gap-3">
                 <Image
                   src={
@@ -182,12 +177,15 @@ export function ProjectDevBoxCard({
         {/* Ports Section */}
         <div className="mt-3">
           <SimplePortList
-            ports={(editData.ports || []).map(p => p.number)}
+            ports={(editData.ports || []).map((p) => p.number)}
             allowEditing={true}
-            onPortsChange={(portNumbers) => 
-              setEditData({ 
-                ...editData, 
-                ports: portNumbers.map(num => ({ number: num, publicAccess: true }))
+            onPortsChange={(portNumbers) =>
+              setEditData({
+                ...editData,
+                ports: portNumbers.map((num) => ({
+                  number: num,
+                  publicAccess: true,
+                })),
               })
             }
           />
@@ -251,9 +249,9 @@ export function ProjectDevBoxCard({
 
       {/* Ports Display */}
       <div className="mt-3">
-        <SimplePortList 
-          ports={(resource.ports || []).map(p => p.number)} 
-          allowEditing={false} 
+        <SimplePortList
+          ports={(resource.ports || []).map((p) => p.number)}
+          allowEditing={false}
         />
       </div>
     </div>

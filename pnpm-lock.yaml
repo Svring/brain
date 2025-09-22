@@ -201,8 +201,8 @@ importers:
         specifier: ^12.8.2
         version: 12.8.2(@types/react@19.1.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@zjy365/sealos-desktop-sdk':
-        specifier: 0.1.19
-        version: 0.1.19(@kubernetes/client-node@1.3.0)
+        specifier: 0.1.20
+        version: 0.1.20(@kubernetes/client-node@1.3.0)
       ai:
         specifier: ^5.0.45
         version: 5.0.45(zod@3.25.76)
@@ -5234,8 +5234,8 @@ packages:
   '@xyflow/system@0.0.66':
     resolution: {integrity: sha512-TTxESDwPsATnuDMUeYYtKe4wt9v8bRO29dgYBhR8HyhSCzipnAdIL/1CDfFd+WqS1srVreo24u6zZeVIDk4r3Q==}
 
-  '@zjy365/sealos-desktop-sdk@0.1.19':
-    resolution: {integrity: sha512-UwsIS/5Ra65q6DYOJpBrabyRrO++4vQvOrvUtiW5vF4lldCGTgdZznKkGcinoOFmCbiOaPOO205cCDYclW4G9w==}
+  '@zjy365/sealos-desktop-sdk@0.1.20':
+    resolution: {integrity: sha512-zIOFAEbzKeuu1gcHdjrd6g9l/AXOQY9yhEqI4Vz1sU8YZUqeKci3WRdV2Q5n3SJXI4GBN5o3i1YhTuIjTAdgmQ==}
     peerDependencies:
       '@kubernetes/client-node': ^0.18.1
 
@@ -10997,7 +10997,7 @@ snapshots:
   '@babel/helper-module-imports@7.27.1':
     dependencies:
       '@babel/traverse': 7.28.0
-      '@babel/types': 7.28.2
+      '@babel/types': 7.28.4
     transitivePeerDependencies:
       - supports-color
 
@@ -11019,11 +11019,11 @@ snapshots:
   '@babel/helpers@7.28.2':
     dependencies:
       '@babel/template': 7.27.2
-      '@babel/types': 7.28.2
+      '@babel/types': 7.28.4
 
   '@babel/parser@7.28.0':
     dependencies:
-      '@babel/types': 7.28.2
+      '@babel/types': 7.28.4
 
   '@babel/parser@7.28.4':
     dependencies:
@@ -11034,17 +11034,17 @@ snapshots:
   '@babel/template@7.27.2':
     dependencies:
       '@babel/code-frame': 7.27.1
-      '@babel/parser': 7.28.0
-      '@babel/types': 7.28.2
+      '@babel/parser': 7.28.4
+      '@babel/types': 7.28.4
 
   '@babel/traverse@7.28.0':
     dependencies:
       '@babel/code-frame': 7.27.1
       '@babel/generator': 7.28.0
       '@babel/helper-globals': 7.28.0
-      '@babel/parser': 7.28.0
+      '@babel/parser': 7.28.4
       '@babel/template': 7.27.2
-      '@babel/types': 7.28.2
+      '@babel/types': 7.28.4
       debug: 4.4.1
     transitivePeerDependencies:
       - supports-color
@@ -15662,10 +15662,10 @@ snapshots:
       d3-selection: 3.0.0
       d3-zoom: 3.0.0
 
-  '@zjy365/sealos-desktop-sdk@0.1.19(@kubernetes/client-node@1.3.0)':
+  '@zjy365/sealos-desktop-sdk@0.1.20(@kubernetes/client-node@1.3.0)':
     dependencies:
       '@kubernetes/client-node': 1.3.0
-      axios: 1.11.0
+      axios: 1.12.2(debug@4.4.3)
       dayjs: 1.11.18
       js-cookie: 3.0.5
       js-yaml: 4.1.0

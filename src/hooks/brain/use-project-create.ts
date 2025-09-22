@@ -167,8 +167,8 @@ export function useProjectCreate(options?: CreateProjectOptions) {
           env: [], // Default empty env
           resource: {
             replicas: 1,
-            cpu: 0.5,
-            memory: 0.5,
+            cpu: 1,
+            memory: 1,
           },
         });
 

@@ -4,13 +4,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Database,
-  CircleCheckBigIcon,
-  Rocket,
-  Container,
-  Hammer,
-} from "lucide-react";
+import { CircleCheckBigIcon, Rocket, Container, Hammer } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { ProjectProposalCard } from "@/components/chat/state-cards/project-proposal/project-proposal-card";
 import type { ProjectProposal } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
@@ -21,24 +15,16 @@ import { useRouter } from "next/navigation";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { v4 as uuidv4 } from "uuid";
 
-interface DeployDatabase {
-  name: string;
-  type: string;
-}
-
 interface ProposeImageDeploymentMessageProps {
   args: {
     image_name: string;
     ports?: number[];
-    database?: DeployDatabase;
   };
   result?: any;
   onSuccess?: (data: any) => void;
 }
 
 const ImageDeploymentSuccessMessage = ({ args }: { args: any }) => {
-  const hasDatabase = args.database;
-
   return (
     <div className="w-full">
       <div className="flex items-center justify-center p-2 border rounded-lg bg-background-secondary">
@@ -46,7 +32,6 @@ const ImageDeploymentSuccessMessage = ({ args }: { args: any }) => {
           <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
           <p className="text-sm">
             Image "{args.image_name}" deployed successfully
-            {hasDatabase && ` with ${args.database.name} database`}
           </p>
         </div>
       </div>
@@ -82,14 +67,6 @@ const ImageDeploymentCard = ({
               })),
             },
           ],
-          database: args.database
-            ? [
-                {
-                  name: args.database.name,
-                  type: args.database.type as any,
-                },
-              ]
-            : [],
         },
       };
     }
