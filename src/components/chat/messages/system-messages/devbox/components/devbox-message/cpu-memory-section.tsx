@@ -23,7 +23,6 @@ export const CpuMemoryPopoverContent: React.FC<{
 }> = ({ target }) => {
   const [isEditing, setIsEditing] = useState(false);
   const { resource: devboxObject } = useResourceStatus(target);
-  const { triggerScrollToBottom } = useChatActions();
   const { latestData, isLoading: isMetricsLoading } = useResourceMetricsStatus({
     target,
   });
@@ -71,26 +70,26 @@ export const CpuMemoryPopoverContent: React.FC<{
           hideDefaultButton={true}
           hidePorts={true}
         />
-        
+
         {/* Cancel and Confirm Buttons */}
         <div className="flex gap-2">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="flex-1"
-          onClick={() => {
-            setIsEditing(false);
-            //triggerScrollToBottom();
-          }}
-          disabled={isUpdating}
-        >
-          Cancel
-        </Button>
-          <Button 
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            onClick={() => {
+              setIsEditing(false);
+              //triggerScrollToBottom();
+            }}
+            disabled={isUpdating}
+          >
+            Cancel
+          </Button>
+          <Button
             type="submit"
             form="devbox-update-form"
-            variant="default" 
-            size="sm" 
+            variant="default"
+            size="sm"
             className="flex-1"
             disabled={isUpdating}
           >
@@ -126,9 +125,9 @@ export const CpuMemoryPopoverContent: React.FC<{
 
       {/* Edit Button - Full Row */}
       <div className="w-full flex">
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           className="flex-1"
           onClick={() => {
             setIsEditing(true);

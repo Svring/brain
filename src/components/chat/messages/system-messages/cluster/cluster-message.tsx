@@ -29,7 +29,6 @@ export const ClusterMessage: React.FC<ClusterMessageProps> = ({ target }) => {
   const clusterTrpcClient = clusterClient.useTRPC();
   const appendSystemMessageMutation = useAppendSystemMessageMutation();
   const [activeSection, setActiveSection] = useState<ActiveSection>(null);
-  const { triggerScrollToBottom } = useChatActions();
 
   // Fetch the cluster data using the target
   const {

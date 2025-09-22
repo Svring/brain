@@ -93,6 +93,21 @@ export async function authenticateProd(send: (event: any) => void) {
   }
 }
 
+export const openCostCenterApp = () => {
+  createSealosApp();
+  sealosApp.runEvents("openDesktopApp", {
+    appKey: "system-costcenter",
+    pathname: "/",
+    query: {
+      mode: "upgrade",
+    },
+    messageData: {
+      type: "InternalAppCall",
+      mode: "upgrade",
+    },
+  });
+};
+
 export function createK8sContext(): K8sApiContext {
   const auth = useAuthState();
   const kubeconfig = auth.auth?.kubeconfig;

@@ -31,7 +31,6 @@ interface DevboxMessageProps {
 export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
   const appendSystemMessageMutation = useAppendSystemMessageMutation();
   const [activeSection, setActiveSection] = useState<ActiveSection>(null);
-  const { triggerScrollToBottom } = useChatActions();
 
   const devboxTrpcClient = devboxClient.useTRPC();
 
