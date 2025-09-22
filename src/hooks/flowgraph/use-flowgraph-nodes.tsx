@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import type { Node, Edge } from "@xyflow/react";
 import type { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useResourceObjects } from "@/hooks/sealos/resource/use-resource-objects";
@@ -13,6 +13,7 @@ import {
   applyLayout,
 } from "./flowgraph-utils";
 import { useProjectActions } from "@/contexts/project/project-context";
+import { useFlowgraphActions } from "@/contexts/flowgraph/flowgraph-context";
 
 /**
  * Hook to convert resource targets into flowgraph nodes
@@ -23,6 +24,7 @@ export const useFlowgraphNodes = (targets: ResourceTarget[]) => {
   // Fetch resource objects for the given targets
   const resourceObjectsQuery = useResourceObjects(targets);
   const { setSelectedProjectResources } = useProjectActions();
+  const { setNodes, setEdges } = useFlowgraphActions();
 
   // Memoize the computation of nodes and edges
   const { nodes, edges } = useMemo(() => {
@@ -73,6 +75,14 @@ export const useFlowgraphNodes = (targets: ResourceTarget[]) => {
       edges: allEdges,
     };
   }, [resourceObjectsQuery.data]);
+
+  // Set nodes and edges in flowgraph context after computation
+  useEffect(() => {
+    if (nodes.length > 0 || edges.length > 0) {
+      setNodes(nodes);
+      setEdges(edges);
+    }
+  }, [nodes, edges]);
 
   return {
     nodes,

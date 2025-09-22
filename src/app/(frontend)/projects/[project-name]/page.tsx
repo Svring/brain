@@ -17,6 +17,7 @@ import useProjectResources from "@/hooks/brain/use-project-resources";
 import { useFlowgraphNodes } from "@/hooks/flowgraph/use-flowgraph-nodes";
 import { useProjectActions } from "@/contexts/project/project-context";
 import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
+import { useFlowgraphState } from "@/contexts/flowgraph/flowgraph-context";
 import { cn } from "@/lib/utils";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { REACT_FLOW_CONFIG } from "@/lib/flowgraph/flowgraph-constant/flowgraph-constant-config";
@@ -135,11 +136,11 @@ function ProjectFlowWithLoading({
   // Ref to prevent isLoading from being set to true again after first false
   const hasLoadedOnceRef = useRef(false);
 
-  const {
-    nodes,
-    edges,
-    isLoading: rawIsLoading,
-  } = useFlowgraphNodes(resourceTargets);
+  // Get nodes and edges from flowgraph context
+  const { nodes, edges } = useFlowgraphState();
+
+  // Still use the hook for loading state and to trigger computation
+  const { isLoading: rawIsLoading } = useFlowgraphNodes(resourceTargets);
 
   // Only show loading if it hasn't loaded once before
   const isLoading = rawIsLoading && !hasLoadedOnceRef.current;
