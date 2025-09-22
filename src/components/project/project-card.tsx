@@ -216,23 +216,24 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           whileHover={{ y: -5 }}
           transition={{ duration: 0.15, ease: "easeInOut" }}
         >
-          <div className="flex items-center justify-between w-full">
+          <div className="flex items-center justify-between w-full gap-2">
             <div
-              className="flex items-center gap-1 flex-1 min-w-0 group"
+              className="flex items-center space-x-1 min-w-0 group"
+              style={{ maxWidth: "80%" }}
               onClick={variant === "full" ? handleRenameClick : undefined}
             >
               <p
                 className={`text-foreground truncate transition-colors ${
                   variant === "full"
-                    ? "max-w-[200px] cursor-pointer hover:text-foreground/80 group-hover:underline"
-                    : "max-w-[150px]"
+                    ? "cursor-pointer hover:text-foreground/80 group-hover:underline"
+                    : ""
                 }`}
               >
                 {project.displayName}
               </p>
               {variant === "full" && (
                 <Button
-                  className="h-4 w-4 p-0 opacity-40 transition-opacity"
+                  className="h-4 w-4 p-0 opacity-40 transition-opacity shrink-0"
                   size="sm"
                   variant="ghost"
                   onClick={handleRenameClick}
@@ -244,7 +245,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             </div>
             {variant === "full" && (
               <Button
-                className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors"
+                className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors shrink-0"
                 size="sm"
                 variant="ghost"
                 onClick={handleDelete}

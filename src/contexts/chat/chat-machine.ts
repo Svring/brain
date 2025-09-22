@@ -25,6 +25,7 @@ export interface ChatContextState {
   focusedResourceTarget: string | null;
   pendingMessages: Map<string, Message[]>; // Map<resourceTarget, Message[]> - stores pending messages for each target
   chatDisplayOrder: string[]; // Array of chat keys in display order (newest first)
+  triggerPendingMessages: Map<string, boolean>; // Map<resourceTarget, boolean> - triggers pending message submission
 }
 
 export type ChatEvent =
@@ -84,6 +85,15 @@ export type ChatEvent =
   | {
       type: "CLEAR_PENDING_MESSAGES";
       resourceTarget: ResourceTarget | null; // null for project chat
+    }
+  // Trigger pending message submission
+  | {
+      type: "TRIGGER_PENDING_MESSAGES";
+      resourceTarget: ResourceTarget | null; // null for project chat
+    }
+  | {
+      type: "CLEAR_TRIGGER_PENDING_MESSAGES";
+      resourceTarget: ResourceTarget | null; // null for project chat
     };
 
 // Helper function to serialize resource target to string key
@@ -125,6 +135,7 @@ export const chatMachine = createMachine({
     focusedResourceTarget: null,
     pendingMessages: new Map<string, Message[]>(),
     chatDisplayOrder: [],
+    triggerPendingMessages: new Map<string, boolean>(),
   },
   states: {
     idle: {},
@@ -428,6 +439,29 @@ export const chatMachine = createMachine({
           const targetKey = serializeTargetKey(event.resourceTarget);
           newPendingMessages.delete(targetKey);
           return newPendingMessages;
+        },
+      }),
+    },
+
+    // Trigger pending message submission
+    TRIGGER_PENDING_MESSAGES: {
+      actions: assign({
+        triggerPendingMessages: ({ context, event }) => {
+          const newTriggers = new Map(context.triggerPendingMessages);
+          const targetKey = serializeTargetKey(event.resourceTarget);
+          newTriggers.set(targetKey, true);
+          return newTriggers;
+        },
+      }),
+    },
+
+    CLEAR_TRIGGER_PENDING_MESSAGES: {
+      actions: assign({
+        triggerPendingMessages: ({ context, event }) => {
+          const newTriggers = new Map(context.triggerPendingMessages);
+          const targetKey = serializeTargetKey(event.resourceTarget);
+          newTriggers.delete(targetKey);
+          return newTriggers;
         },
       }),
     },

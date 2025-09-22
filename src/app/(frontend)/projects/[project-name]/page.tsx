@@ -27,10 +27,12 @@ function ProjectFloatingUI({
   projectName,
   isLoading,
   nodes,
+  hasFocusedChat,
 }: {
   projectName: string;
   isLoading: boolean;
   nodes: any[];
+  hasFocusedChat: boolean;
 }) {
   const { isOpen, onOpenChange, onOpen, onClose } = useFlowgraphCommand();
   // const { nodes } = useFlowgraphState();
@@ -44,8 +46,18 @@ function ProjectFloatingUI({
 
   return (
     <>
-      <FlowgraphBreadcrumb projectName={projectName} />
-      <div className="absolute top-2 right-2 z-20 bg-background/30 backdrop-blur-lg rounded-lg p-2">
+      <FlowgraphBreadcrumb
+        projectName={projectName}
+        hasFocusedChat={hasFocusedChat}
+      />
+      <div
+        className={cn(
+          "absolute top-2 z-40 bg-background/30 backdrop-blur-lg rounded-lg p-2 transition-all duration-300 ease-in-out",
+          hasFocusedChat 
+            ? "right-2" // Stay 2 units from the right edge of the flow container (which is already pushed left)
+            : "right-2"
+        )}
+      >
         <FlowgraphActions onOpenCommand={onOpen} />
       </div>
       <FlowgraphCommandDialog
@@ -112,11 +124,13 @@ function ProjectFlowWithLoading({
   resourceTargets,
   isLoadingResources,
   onPaneClick,
+  hasFocusedChat,
 }: {
   projectName: string;
   resourceTargets: any[];
   isLoadingResources: boolean;
   onPaneClick: () => void;
+  hasFocusedChat: boolean;
 }) {
   // Ref to prevent isLoading from being set to true again after first false
   const hasLoadedOnceRef = useRef(false);
@@ -151,6 +165,7 @@ function ProjectFlowWithLoading({
         projectName={projectName}
         isLoading={isLoading}
         nodes={nodes}
+        hasFocusedChat={hasFocusedChat}
       />
     </>
   );
@@ -171,6 +186,19 @@ export default function ProjectPage() {
   useEffect(() => {
     selectProject(projectName);
     clearSelectedProjectResources();
+
+    // Clear any focused chat when entering a new project
+    if (focusedResourceTarget) {
+      // Check if it's a project chat key (starts with "__project__")
+      if (focusedResourceTarget.startsWith("__project__")) {
+        closeProjectChat(projectName);
+      } else {
+        // It's a resource chat, parse and close it
+        const resourceTarget = JSON.parse(focusedResourceTarget);
+        closeChat(resourceTarget);
+      }
+    }
+
     return () => {
       clearSelectedProject();
       // Close all chats when exiting the project page
@@ -212,7 +240,8 @@ export default function ProjectPage() {
       <div
         className={cn(
           "absolute inset-0 transition-all duration-300 ease-in-out",
-          hasFocusedChat ? "right-[35%]" : "right-0"
+          // Use max(35%, 28rem) so when the screen is narrow, we still reserve at least 28rem for chat
+          hasFocusedChat ? "right-[max(35%,28rem)]" : "right-0"
         )}
       >
         <ProjectFlowWithLoading
@@ -220,15 +249,17 @@ export default function ProjectPage() {
           resourceTargets={targets}
           isLoadingResources={isLoadingResources}
           onPaneClick={handlePaneClick}
+          hasFocusedChat={hasFocusedChat}
         />
       </div>
       <div
         className={cn(
-          "absolute top-0 right-0 h-full w-[35%] min-w-md transition-all duration-300 ease-in-out",
+          // Match width with the reserved right inset above. 28rem equals Tailwind's md (min-w-md ~ 28rem)
+          "absolute top-0 right-0 h-full w-[max(35%,28rem)] min-w-[28rem] transition-all duration-300 ease-in-out z-30",
           hasFocusedChat ? "translate-x-0" : "translate-x-full"
         )}
       >
-        <div className="h-full p-2 pl-0">
+        <div className="h-full p-2 pl-0 relative">
           <ChatManager />
         </div>
       </div>

@@ -31,9 +31,10 @@ import useProjectSearch from "@/hooks/brain/use-projects-search";
 
 interface FlowgraphHeaderProps {
   projectName: string;
+  hasFocusedChat?: boolean;
 }
 
-export function FlowgraphBreadcrumb({ projectName }: FlowgraphHeaderProps) {
+export function FlowgraphBreadcrumb({ projectName, hasFocusedChat = false }: FlowgraphHeaderProps) {
   const router = useRouter();
   const { project } = useTRPCClients();
   const { projects } = useProjectSearch();

@@ -51,26 +51,30 @@ export default function AppSidebar() {
         </SidebarContent>
         <SidebarFooter className={cn("bg-background-primary")}>
           <div className="flex flex-col gap-2">
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={openCostCenterApp}
-                  tooltip={{
-                    children: "Cost Center",
-                  }}
-                  className="cursor-pointer"
-                >
-                  <CreditCard className="h-4 w-4" />
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-            <UserCard
-              user={{
-                name: "John Doe",
-                email: "john.doe@example.com",
-                avatar: "https://github.com/shadcn.png",
-              }}
-            />
+            {mode !== "development" && (
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={openCostCenterApp}
+                    tooltip={{
+                      children: "Cost Center",
+                    }}
+                    className="cursor-pointer"
+                  >
+                    <CreditCard className="h-4 w-4" />
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            )}
+            {mode === "development" && (
+              <UserCard
+                user={{
+                  name: "John Doe",
+                  email: "john.doe@example.com",
+                  avatar: "https://github.com/shadcn.png",
+                }}
+              />
+            )}
           </div>
         </SidebarFooter>
         {/* <SidebarRail /> */}

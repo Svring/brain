@@ -41,7 +41,7 @@ export function useAnalyzeLogs(
 ) {
   const logsQuery = useResourceLogs(target);
   const { data: logsData, isLoading } = logsQuery;
-  const { addPendingMessage } = useChatActions();
+  const { addPendingMessage, triggerPendingMessages } = useChatActions();
 
   // Use node select to handle the selection and message appending
   const { handleNodeSelect } = useNodeSelect({
@@ -98,7 +98,16 @@ export function useAnalyzeLogs(
     addPendingMessage(target, eventMessage);
     addPendingMessage(target, systemMessage1);
     addPendingMessage(target, systemMessage2);
-  }, [logsData, handleNodeSelect, addPendingMessage, target]);
+
+    // Trigger pending message submission
+    triggerPendingMessages(target);
+  }, [
+    logsData,
+    handleNodeSelect,
+    addPendingMessage,
+    triggerPendingMessages,
+    target,
+  ]);
 
   // Check if logs are ready (not loading and has data)
   const isLogsReady =

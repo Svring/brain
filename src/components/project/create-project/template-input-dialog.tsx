@@ -306,11 +306,11 @@ export const TemplateInputDialog = memo(function TemplateInputDialog({
                 })}
             </div>
 
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
+            <DialogFooter className="flex gap-2">
+              <Button type="button" variant="outline" onClick={onClose} className="flex-1">
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading} className="flex-1">
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

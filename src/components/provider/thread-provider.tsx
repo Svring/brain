@@ -4,9 +4,7 @@ import { createContext, useContext, ReactNode, useCallback } from "react";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useProjectState } from "@/contexts/project/project-context";
 import { searchThreads } from "@/lib/langgraph/langgraph-api/langgraph-api-service";
-import {
-  useDeleteThreadMutation,
-} from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useDeleteThreadMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation } from "@tanstack/react-query";
 import { Thread } from "@langchain/langgraph-sdk";
@@ -62,9 +60,7 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
   const deleteThreadMutation = useDeleteThreadMutation();
 
   // Patch thread mutation using TRPC
-  const patchThreadMutation = useMutation(
-    langgraph.patch.mutationOptions()
-  );
+  const patchThreadMutation = useMutation(langgraph.patch.mutationOptions());
 
   const value = {
     // Universal thread management methods

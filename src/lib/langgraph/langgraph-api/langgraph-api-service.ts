@@ -52,13 +52,15 @@ export const createThread = async ({
 
   const createOptions: any = {
     metadata,
-    graphId: metadata.graph_id,
+    graphId: process.env.LANGGRAPH_GRAPH_ID,
   };
 
   // Add supersteps if provided
   if (supersteps) {
     createOptions.supersteps = supersteps;
   }
+
+  const result = await client.threads.create(createOptions);
 
   return await client.threads.create(createOptions);
 };
@@ -79,7 +81,6 @@ export const updateThreadState = async (
   asNode: string
 ) => {
   const client = createClient();
-  console.log("values", values);
   return await client.threads.updateState(threadId, { values });
 };
 

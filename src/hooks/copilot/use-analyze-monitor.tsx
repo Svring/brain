@@ -56,7 +56,7 @@ export function useDiagnoseMonitor(
   const { color, monitorData, isLoading } = useResourceMetricsStatus({
     target,
   });
-  const { addPendingMessage } = useChatActions();
+  const { addPendingMessage, triggerPendingMessages } = useChatActions();
 
   // Use node select to handle the selection and message appending
   const { handleNodeSelect } = useNodeSelect({
@@ -117,7 +117,10 @@ export function useDiagnoseMonitor(
     addPendingMessage(target, eventMessage);
     addPendingMessage(target, systemMessage1);
     addPendingMessage(target, systemMessage2);
-  }, [monitorData, handleNodeSelect, target]);
+
+    // Trigger pending message submission
+    triggerPendingMessages(target);
+  }, [monitorData, handleNodeSelect, addPendingMessage, triggerPendingMessages, target]);
 
   // Check if monitor data is ready (not loading and has data)
   const isMonitorReady =

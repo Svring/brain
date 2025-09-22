@@ -94,26 +94,26 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
   return (
     <div className="px-4 pt-2 shrink-0">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h2 className="font-semibold text-foreground text-lg">{title}</h2>
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <h2 className="font-semibold text-foreground text-lg shrink-0">{title}</h2>
 
           <Separator
             orientation="vertical"
-            className="h-4! w-px! bg-border-primary!"
+            className="h-4! w-px! bg-border-primary! shrink-0"
           />
 
           {/* Resource Status Row - merged inline */}
           {(selectedResource || selectedProject) && (
-            <div className="flex items-center">
+            <div className="flex items-center min-w-0 flex-1">
               {selectedResource ? (
                 <Popover open={isExpanded} onOpenChange={setIsExpanded}>
                   <PopoverTrigger asChild>
                     <div
                       className={cn(
-                        "flex items-center gap-2 px-2 py-1 rounded-md cursor-pointer hover:bg-muted/50 transition-colors select-none"
+                        "flex items-center gap-2 px-2 py-1 rounded-md cursor-pointer hover:bg-muted/50 transition-colors select-none min-w-0 flex-1"
                       )}
                     >
-                      <div className="flex items-center">
+                      <div className="flex items-center shrink-0">
                         {isExpanded ? (
                           <ChevronDown className="h-3 w-3 text-muted-foreground" />
                         ) : (
@@ -125,9 +125,9 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
                         alt={selectedResource?.resourceType || "Sealos Brain"}
                         width={16}
                         height={16}
-                        className="rounded-sm"
+                        className="rounded-sm shrink-0"
                       />
-                      <span className="text-muted-foreground truncate">
+                      <span className="text-muted-foreground truncate min-w-0">
                         {selectedResource?.name}
                       </span>
                     </div>
@@ -146,7 +146,7 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
                   </PopoverContent>
                 </Popover>
               ) : (
-                <div className="flex items-center gap-2 py-1.5">
+                <div className="flex items-center gap-2 py-1.5 min-w-0 flex-1">
                   {/* <Image
                     src={getIconUrl()}
                     alt="Sealos Brain"
@@ -154,7 +154,7 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
                     height={16}
                     className="grayscale rounded-sm"
                   /> */}
-                  <span className="text-sm text-muted-foreground truncate">
+                  <span className="text-sm text-muted-foreground truncate min-w-0">
                     {selectedProject}
                   </span>
                 </div>
@@ -163,7 +163,9 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
           )}
         </div>
 
-        <HeaderActions />
+        <div className="shrink-0">
+          <HeaderActions />
+        </div>
       </div>
     </div>
   );

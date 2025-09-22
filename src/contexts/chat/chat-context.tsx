@@ -87,6 +87,12 @@ export function useChatState() {
     return messages && messages.length > 0;
   };
 
+  // Helper to check if trigger is set for pending messages
+  const shouldTriggerPendingMessages = (resourceTarget: ResourceTarget | null) => {
+    const key = serializeTargetKey(resourceTarget);
+    return state.context.triggerPendingMessages.get(key) || false;
+  };
+
   return {
     // Multi-instance state
     chatInstances: state.context.chatInstances,
@@ -94,6 +100,7 @@ export function useChatState() {
     focusedResourceTarget: state.context.focusedResourceTarget,
     pendingMessages: state.context.pendingMessages,
     chatDisplayOrder: state.context.chatDisplayOrder,
+    triggerPendingMessages: state.context.triggerPendingMessages,
 
     // Helper functions
     isResourceActive,
@@ -102,6 +109,7 @@ export function useChatState() {
     isProjectChatFocused,
     getPendingMessages,
     hasPendingMessages,
+    shouldTriggerPendingMessages,
   };
 }
 
@@ -170,5 +178,11 @@ export function useChatActions() {
     ) => send({ type: "REMOVE_PENDING_MESSAGE", resourceTarget, messageIndex }),
     clearPendingMessages: (resourceTarget: ResourceTarget | null) =>
       send({ type: "CLEAR_PENDING_MESSAGES", resourceTarget }),
+
+    // Trigger pending message submission
+    triggerPendingMessages: (resourceTarget: ResourceTarget | null) =>
+      send({ type: "TRIGGER_PENDING_MESSAGES", resourceTarget }),
+    clearTriggerPendingMessages: (resourceTarget: ResourceTarget | null) =>
+      send({ type: "CLEAR_TRIGGER_PENDING_MESSAGES", resourceTarget }),
   };
 }

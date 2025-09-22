@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useChatInstance } from "@/components/provider/chat-instance-provider";
 import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
 import { AiChatInput } from "./input";
@@ -21,47 +21,54 @@ export default function AiChatbox() {
     interrupt,
   } = useChatInstance();
 
-  const { getPendingMessages } = useChatState();
-  const { clearPendingMessages } = useChatActions();
+  const { getPendingMessages, shouldTriggerPendingMessages } = useChatState();
+  const { clearPendingMessages, clearTriggerPendingMessages } =
+    useChatActions();
 
-  // Ref to ensure useEffect only runs once
-  const hasRunRef = useRef(false);
-
-  // Read and submit pending messages once on mount
+  // Check if we should trigger pending messages and submit them
   useEffect(() => {
-    if (hasRunRef.current) {
-      return;
-    }
-    hasRunRef.current = true;
-    const pendingMessages = getPendingMessages(resourceTarget);
-    if (pendingMessages.length > 0) {
-      console.log("AiChatbox - Pending messages for resource target:", {
-        resourceTarget,
-        pendingMessageCount: pendingMessages.length,
-        pendingMessages,
-      });
-
-      // Submit the pending messages
-      try {
-        submit({
-          messages: pendingMessages,
+    const shouldTrigger = shouldTriggerPendingMessages(resourceTarget);
+    if (shouldTrigger) {
+      const pendingMessages = getPendingMessages(resourceTarget);
+      if (pendingMessages.length > 0) {
+        console.log("AiChatbox - Pending messages for resource target:", {
+          resourceTarget,
+          pendingMessageCount: pendingMessages.length,
+          pendingMessages,
         });
-        console.log(
-          "AiChatbox - Successfully submitted pending messages:",
-          pendingMessages.length
-        );
 
-        // Clear the pending messages after successful submission
-        clearPendingMessages(resourceTarget);
-        console.log(
-          "AiChatbox - Cleared pending messages for resource target:",
-          resourceTarget
-        );
-      } catch (error) {
-        console.error("AiChatbox - Failed to submit pending messages:", error);
+        // Submit the pending messages
+        try {
+          submit({
+            messages: pendingMessages,
+          });
+          console.log(
+            "AiChatbox - Successfully submitted pending messages:",
+            pendingMessages.length
+          );
+
+          // Clear the pending messages after successful submission
+          clearPendingMessages(resourceTarget);
+          console.log(
+            "AiChatbox - Cleared pending messages for resource target:",
+            resourceTarget
+          );
+        } catch (error) {
+          console.error(
+            "AiChatbox - Failed to submit pending messages:",
+            error
+          );
+        }
       }
+
+      // Clear the trigger after processing
+      clearTriggerPendingMessages(resourceTarget);
+      console.log(
+        "AiChatbox - Cleared trigger for resource target:",
+        resourceTarget
+      );
     }
-  }, []); // Empty dependency array to run only once
+  }, [shouldTriggerPendingMessages]);
 
   return (
     <div

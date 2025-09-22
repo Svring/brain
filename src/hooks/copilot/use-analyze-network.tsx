@@ -81,7 +81,7 @@ export function useDiagnoseNetwork(
   target: CustomResourceTarget | BuiltinResourceTarget
 ) {
   const { submitWithContext } = useStreamContext();
-  const { addPendingMessage } = useChatActions();
+  const { addPendingMessage, triggerPendingMessages } = useChatActions();
 
   // Get container ports data for network diagnosis
   const containerStatusResult = useResourceStatus<ContainerPortsResult>(
@@ -200,10 +200,14 @@ export function useDiagnoseNetwork(
       addPendingMessage(target, eventMessage);
       addPendingMessage(target, systemMessage1);
       addPendingMessage(target, systemMessage2);
+
+      // Trigger pending message submission
+      triggerPendingMessages(target);
     },
     [
       handleNodeSelect,
       addPendingMessage,
+      triggerPendingMessages,
       combinedStatusData,
       containerStatus,
       networkStatus,

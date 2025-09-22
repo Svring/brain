@@ -4,7 +4,6 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Package, Rocket, FileText, Hammer } from "lucide-react";
-import Image from "next/image";
 import type { TemplateResource } from "@/lib/sealos/resources/template/schemas/template-api-context-schemas";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -36,7 +35,7 @@ export function ProjectTemplateCard({
         <div className="mb-3 flex items-start gap-4">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted p-2">
             {template.spec.icon ? (
-              <Image
+              <img
                 alt={`${template.spec.title} icon`}
                 className="size-6"
                 height={24}

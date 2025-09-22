@@ -201,8 +201,8 @@ importers:
         specifier: ^12.8.2
         version: 12.8.2(@types/react@19.1.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@zjy365/sealos-desktop-sdk':
-        specifier: 0.1.16
-        version: 0.1.16(@kubernetes/client-node@1.3.0)
+        specifier: 0.1.19
+        version: 0.1.19(@kubernetes/client-node@1.3.0)
       ai:
         specifier: ^5.0.45
         version: 5.0.45(zod@3.25.76)
@@ -4946,8 +4946,8 @@ packages:
   '@types/node@18.19.122':
     resolution: {integrity: sha512-yzegtT82dwTNEe/9y+CM8cgb42WrUfMMCg2QqSddzO1J6uPmBD7qKCZ7dOHZP2Yrpm/kb0eqdNMn2MUyEiqBmA==}
 
-  '@types/node@18.19.124':
-    resolution: {integrity: sha512-hY4YWZFLs3ku6D2Gqo3RchTd9VRCcrjqp/I0mmohYeUVA5Y8eCXKJEasHxLAJVZRJuQogfd1GiJ9lgogBgKeuQ==}
+  '@types/node@18.19.127':
+    resolution: {integrity: sha512-gSjxjrnKXML/yo0BO099uPixMqfpJU0TKYjpfLU7TrtA2WWDki412Np/RSTPRil1saKBhvVVKzVx/p/6p94nVA==}
 
   '@types/node@20.19.10':
     resolution: {integrity: sha512-iAFpG6DokED3roLSP0K+ybeDdIX6Bc0Vd3mLW5uDqThPWtNos3E+EqOM11mPQHKzfWHqEBuLjIlsBQQ8CsISmQ==}
@@ -5234,8 +5234,8 @@ packages:
   '@xyflow/system@0.0.66':
     resolution: {integrity: sha512-TTxESDwPsATnuDMUeYYtKe4wt9v8bRO29dgYBhR8HyhSCzipnAdIL/1CDfFd+WqS1srVreo24u6zZeVIDk4r3Q==}
 
-  '@zjy365/sealos-desktop-sdk@0.1.16':
-    resolution: {integrity: sha512-qYgHp52tGxMn2AA2eI3Z28p1nt0y/HHWl7risI8H0nheCaZY+z3rtgcn5FVdk0xdN795fo4S42lQGOBT4NYQzA==}
+  '@zjy365/sealos-desktop-sdk@0.1.19':
+    resolution: {integrity: sha512-UwsIS/5Ra65q6DYOJpBrabyRrO++4vQvOrvUtiW5vF4lldCGTgdZznKkGcinoOFmCbiOaPOO205cCDYclW4G9w==}
     peerDependencies:
       '@kubernetes/client-node': ^0.18.1
 
@@ -6007,8 +6007,8 @@ packages:
   dateformat@4.6.3:
     resolution: {integrity: sha512-2P0p0pFGzHS5EMnhdxQi7aJN+iMheud0UhG4dlE1DLAlvL8JHjJJTX/CSm4JXwV0Ka5nGk3zC5mcb5bUQUxxMA==}
 
-  dayjs@1.11.13:
-    resolution: {integrity: sha512-oaMBel6gjolK862uaPQOVTA7q3TZhuSvuMQAAglQDOWYO9A91IrAOUJEyKVlqJlHE0vq5p5UXxzdPfMH/x6xNg==}
+  dayjs@1.11.18:
+    resolution: {integrity: sha512-zFBQ7WFRvVRhKcWoUh+ZA1g2HVgUbsZm9sbddh8EC5iv93sui8DVVz1Npvz+r6meo9VKfa8NyLWBsQK1VvIKPA==}
 
   debug@2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
@@ -6246,8 +6246,8 @@ packages:
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  effect@3.17.13:
-    resolution: {integrity: sha512-JMz5oBxs/6mu4FP9Csjub4jYMUwMLrp+IzUmSDVIzn2NoeoyOXMl7x1lghfr3dLKWffWrdnv/d8nFFdgrHXPqw==}
+  effect@3.17.14:
+    resolution: {integrity: sha512-VpIZz72+cg3357vLkNHN8CG+Uq2X0QHNv3qkyGInvG3lG5K7Ala1JliGIAdgNvwzaN37J27FuzVD8m0kEiv2Ig==}
 
   electron-to-chromium@1.5.199:
     resolution: {integrity: sha512-3gl0S7zQd88kCAZRO/DnxtBKuhMO4h0EaQIN3YgZfV6+pW+5+bf2AdQeHNESCoaQqo/gjGVYEf2YM4O5HJQqpQ==}
@@ -10173,7 +10173,7 @@ snapshots:
 
   '@anthropic-ai/sdk@0.27.3':
     dependencies:
-      '@types/node': 18.19.124
+      '@types/node': 18.19.127
       '@types/node-fetch': 2.6.13
       abort-controller: 3.0.0
       agentkeepalive: 4.6.0
@@ -10997,7 +10997,7 @@ snapshots:
   '@babel/helper-module-imports@7.27.1':
     dependencies:
       '@babel/traverse': 7.28.0
-      '@babel/types': 7.28.4
+      '@babel/types': 7.28.2
     transitivePeerDependencies:
       - supports-color
 
@@ -11019,11 +11019,11 @@ snapshots:
   '@babel/helpers@7.28.2':
     dependencies:
       '@babel/template': 7.27.2
-      '@babel/types': 7.28.4
+      '@babel/types': 7.28.2
 
   '@babel/parser@7.28.0':
     dependencies:
-      '@babel/types': 7.28.4
+      '@babel/types': 7.28.2
 
   '@babel/parser@7.28.4':
     dependencies:
@@ -11034,17 +11034,17 @@ snapshots:
   '@babel/template@7.27.2':
     dependencies:
       '@babel/code-frame': 7.27.1
-      '@babel/parser': 7.28.4
-      '@babel/types': 7.28.4
+      '@babel/parser': 7.28.0
+      '@babel/types': 7.28.2
 
   '@babel/traverse@7.28.0':
     dependencies:
       '@babel/code-frame': 7.27.1
       '@babel/generator': 7.28.0
       '@babel/helper-globals': 7.28.0
-      '@babel/parser': 7.28.4
+      '@babel/parser': 7.28.0
       '@babel/template': 7.27.2
-      '@babel/types': 7.28.4
+      '@babel/types': 7.28.2
       debug: 4.4.1
     transitivePeerDependencies:
       - supports-color
@@ -11068,7 +11068,7 @@ snapshots:
 
   '@browserbasehq/sdk@2.6.0':
     dependencies:
-      '@types/node': 18.19.124
+      '@types/node': 18.19.127
       '@types/node-fetch': 2.6.13
       abort-controller: 3.0.0
       agentkeepalive: 4.6.0
@@ -12080,7 +12080,7 @@ snapshots:
 
   '@ibm-cloud/watsonx-ai@1.6.10':
     dependencies:
-      '@types/node': 18.19.124
+      '@types/node': 18.19.127
       extend: 3.0.2
       ibm-cloud-sdk-core: 5.4.2
     transitivePeerDependencies:
@@ -12595,7 +12595,7 @@ snapshots:
       ast-types: 0.14.2
       cli-high: 0.4.3
       diff: 5.2.0
-      effect: 3.17.13
+      effect: 3.17.14
       nanoid: 5.1.5
       recast: 0.23.11
       xycolors: 0.1.2
@@ -15360,7 +15360,7 @@ snapshots:
     dependencies:
       undici-types: 5.26.5
 
-  '@types/node@18.19.124':
+  '@types/node@18.19.127':
     dependencies:
       undici-types: 5.26.5
 
@@ -15662,11 +15662,11 @@ snapshots:
       d3-selection: 3.0.0
       d3-zoom: 3.0.0
 
-  '@zjy365/sealos-desktop-sdk@0.1.16(@kubernetes/client-node@1.3.0)':
+  '@zjy365/sealos-desktop-sdk@0.1.19(@kubernetes/client-node@1.3.0)':
     dependencies:
       '@kubernetes/client-node': 1.3.0
       axios: 1.11.0
-      dayjs: 1.11.13
+      dayjs: 1.11.18
       js-cookie: 3.0.5
       js-yaml: 4.1.0
       uuid: 9.0.1
@@ -16525,7 +16525,7 @@ snapshots:
 
   dateformat@4.6.3: {}
 
-  dayjs@1.11.13: {}
+  dayjs@1.11.18: {}
 
   debug@2.6.9:
     dependencies:
@@ -16647,7 +16647,7 @@ snapshots:
 
   ee-first@1.1.1: {}
 
-  effect@3.17.13:
+  effect@3.17.14:
     dependencies:
       '@standard-schema/spec': 1.0.0
       fast-check: 3.23.2
@@ -17834,7 +17834,7 @@ snapshots:
   ibm-cloud-sdk-core@5.4.2:
     dependencies:
       '@types/debug': 4.1.12
-      '@types/node': 18.19.124
+      '@types/node': 18.19.127
       '@types/tough-cookie': 4.0.5
       axios: 1.12.2(debug@4.4.3)
       camelcase: 6.3.0
@@ -18724,7 +18724,7 @@ snapshots:
       d3: 7.9.0
       d3-sankey: 0.12.3
       dagre-d3-es: 7.0.11
-      dayjs: 1.11.13
+      dayjs: 1.11.18
       dompurify: 3.2.6
       katex: 0.16.22
       khroma: 2.1.0

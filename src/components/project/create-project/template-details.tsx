@@ -66,8 +66,6 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
   const [readmeContent, setReadmeContent] = useState<string>("");
   const [isLoadingReadme, setIsLoadingReadme] = useState(false);
 
-  const { openSidebarChat } = useChatActions();
-  const { mutate: sendMessage } = useSendMessageMutation();
   const apiContext = useMemo(() => useSealosContext(), []);
   const createInstanceMutation = useCreateInstanceMutation(apiContext);
 

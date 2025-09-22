@@ -30,7 +30,7 @@ interface WebSearchData {
 }
 
 interface SearchWebActionMessageProps {
-  result?: WebSearchData;
+  result?: WebSearchData | { results: WebSearchData };
 }
 
 
@@ -39,7 +39,17 @@ export const SearchWebActionMessage: React.FC<SearchWebActionMessageProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  if (!result || !result.results || result.results.length === 0) {
+  console.log("result", result);
+
+  // Handle nested structure where results might be in result.results.results
+  const searchData: WebSearchData = 'results' in (result || {}) ? (result as any).results : (result as WebSearchData);
+  const results: WebSearchResult[] = searchData?.results || [];
+  const query = searchData?.query || "your search";
+  const responseTime = searchData?.response_time || 0;
+  const answer = searchData?.answer;
+  const followUpQuestions = searchData?.follow_up_questions;
+
+  if (!searchData || !results || results.length === 0) {
     return null;
   }
 
@@ -69,32 +79,32 @@ export const SearchWebActionMessage: React.FC<SearchWebActionMessageProps> = ({
             {/* Search Query and Stats */}
             <div className="space-y-2 mb-4">
               <div className="text-sm text-muted-foreground">
-                Query: "{result.query || "your search"}"
+                Query: "{query}"
               </div>
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <Clock className="w-3 h-3" />
-                  <span>{result.response_time}s</span>
+                  <span>{responseTime}s</span>
                 </div>
                 <span>
-                  {result.results.length} result
-                  {result.results.length !== 1 ? "s" : ""} found
+                  {results.length} result
+                  {results.length !== 1 ? "s" : ""} found
                 </span>
               </div>
             </div>
 
             {/* Answer (if available) */}
-            {result.answer && (
+            {answer && (
               <div className="mb-4">
-                <p className="text-sm text-muted-foreground">{result.answer}</p>
+                <p className="text-sm text-muted-foreground">{answer}</p>
               </div>
             )}
 
             {/* Sources */}
             <Sources>
-              <SourcesTrigger count={result.results.length} />
+              <SourcesTrigger count={results.length} />
               <SourcesContent>
-                {result.results.map((searchResult, index) => (
+                {results.map((searchResult: WebSearchResult, index: number) => (
                   <Source
                     key={`${searchResult.url}-${index}`}
                     href={searchResult.url}
