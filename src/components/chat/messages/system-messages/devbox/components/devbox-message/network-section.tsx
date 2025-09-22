@@ -22,7 +22,6 @@ export const NetworkPopoverContent: React.FC<{
 }> = ({ target }) => {
   const [isEditing, setIsEditing] = useState(false);
   const { resource: devboxObject } = useResourceStatus(target);
-  const { triggerScrollToBottom } = useChatActions();
 
   // Update devbox using the custom hook
   const { updateDevbox, isLoading: isUpdating } = useDevboxUpdate({

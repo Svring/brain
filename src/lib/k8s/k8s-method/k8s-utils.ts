@@ -698,7 +698,7 @@ export function convertK8sResourceToNumeric(resource: {
         memoryValue = parseFloat(resource.memory.slice(0, -2)) / (1024 * 1024);
       } else {
         // Assume bytes and convert to GB
-        memoryValue = parseFloat(resource.memory) / (1024 * 1024 * 1024);
+        memoryValue = parseFloat(resource.memory) / (1024 * 1024 * 1024 * 1000);
       }
     } else {
       memoryValue = Number(resource.memory);

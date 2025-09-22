@@ -113,7 +113,7 @@ export const patchThread = async (threadId: string, metadata: Metadata) => {
     }
 
     const result = await response.json();
-    console.log("[patchThread] Patch result", result);
+    // console.log("[patchThread] Patch result", result);
     return result;
   } catch (error) {
     console.error("[patchThread] Error patching thread", error);

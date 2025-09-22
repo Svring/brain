@@ -61,19 +61,37 @@ export const LaunchpadResourceFieldsSimple = ({
     unit: string
   ) => {
     if (objectValue !== undefined && objectValue !== formValue) {
-      return (
-        <div className="flex items-center gap-2">
-          <span className="text-muted-foreground line-through">
-            {objectValue}
-            {unit}
-          </span>
-          <span className="text-muted-foreground">→</span>
-          <span className="font-medium">
-            {formValue}
-            {unit}
-          </span>
-        </div>
-      );
+      const isObjectValueInOptions = memoryOptions.includes(formValue);
+
+      if (!isObjectValueInOptions) {
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground line-through">
+              {formValue}
+              {unit}
+            </span>
+            <span className="text-muted-foreground">→</span>
+            <span className="font-medium">
+              {objectValue}
+              {unit}
+            </span>
+          </div>
+        );
+      } else {
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground line-through">
+              {objectValue}
+              {unit}
+            </span>
+            <span className="text-muted-foreground">→</span>
+            <span className="font-medium">
+              {formValue}
+              {unit}
+            </span>
+          </div>
+        );
+      }
     }
     return (
       <span className="font-medium">
@@ -98,12 +116,14 @@ export const LaunchpadResourceFieldsSimple = ({
 
   // Get rounded values for comparison (rounded to nearest available options)
   const roundedObjectValues = {
-    cpu: objectNumeric.cpu.nearest !== undefined 
-      ? findNearestOption(objectNumeric.cpu.nearest, cpuOptions)
-      : undefined,
-    memory: objectNumeric.memory.nearest !== undefined 
-      ? findNearestOption(objectNumeric.memory.nearest, memoryOptions)
-      : undefined,
+    cpu:
+      objectNumeric.cpu.nearest !== undefined
+        ? findNearestOption(objectNumeric.cpu.nearest, cpuOptions)
+        : undefined,
+    memory:
+      objectNumeric.memory.nearest !== undefined
+        ? findNearestOption(objectNumeric.memory.nearest, memoryOptions)
+        : undefined,
   };
 
   // Initialize form values with object values when resource values are null
@@ -123,7 +143,14 @@ export const LaunchpadResourceFieldsSimple = ({
       // Use the rounded value as the initial form value
       form.setValue("resource.memory", roundedObjectValues.memory!);
     }
-  }, [objectNumeric, resourceValues, cpuOptions, memoryOptions, form, roundedObjectValues]);
+  }, [
+    objectNumeric,
+    resourceValues,
+    cpuOptions,
+    memoryOptions,
+    form,
+    roundedObjectValues,
+  ]);
 
   return (
     <div className="space-y-2 px-2">

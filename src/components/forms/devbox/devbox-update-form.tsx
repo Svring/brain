@@ -48,7 +48,7 @@ export const DevboxUpdateForm = ({
 
   // Only show fields that have values in defaultValues
   const hasResource = defaultValues?.resource !== undefined;
-  const hasPorts = defaultValues?.ports !== undefined && defaultValues.ports.length > 0;
+  const hasPorts = defaultValues?.ports !== undefined;
 
   // console.log("DevboxUpdateForm - defaultValues:", defaultValues);
   // console.log("DevboxUpdateForm - hasResource:", hasResource);

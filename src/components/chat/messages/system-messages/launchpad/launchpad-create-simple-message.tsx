@@ -57,7 +57,7 @@ export const LaunchpadCreateSimpleMessage: React.FC<
 
   const handleSubmit = async (data: LaunchpadSimpleFormData) => {
     try {
-      console.log("data", data);
+      // console.log("data", data);
       await createLaunchpadMutation.mutateAsync(data);
     } catch (error) {
       console.error("Error creating launchpad:", error);
