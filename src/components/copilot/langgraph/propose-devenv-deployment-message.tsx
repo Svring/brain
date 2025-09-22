@@ -20,6 +20,7 @@ import { useHomeChat } from "@/components/provider/home-chat-provider";
 import { useThreads } from "@/components/provider/thread-provider";
 import { useRouter } from "next/navigation";
 import { useAuthState } from "@/contexts/auth/auth-context";
+import { v4 as uuidv4 } from "uuid";
 
 interface DeployDevBox {
   name: string;
@@ -61,7 +62,13 @@ const DevenvDeploymentSuccessMessage = ({ args }: { args: any }) => {
   );
 };
 
-const DevenvDeploymentCard = ({ args, onSuccess }: { args: any; onSuccess?: (data: any) => void }) => {
+const DevenvDeploymentCard = ({
+  args,
+  onSuccess,
+}: {
+  args: any;
+  onSuccess?: (data: any) => void;
+}) => {
   const { createProject, isCreating } = useProjectCreate();
   const { submit, threadId, messages } = useHomeChat();
   const { patchThread, updateThreadState } = useThreads();
@@ -163,6 +170,27 @@ const DevenvDeploymentCard = ({ args, onSuccess }: { args: any; onSuccess?: (dat
               },
             };
           }
+
+          // Add success system message to updatedMessages
+          const successMessage = {
+            id: uuidv4(),
+            type: "system" as const,
+            content: JSON.stringify({
+              type: "universal.event",
+              target: null,
+              payload: {
+                message: "project created successfully",
+                instruction:
+                  "The project has been successfully created and deployed. You can now explore your project by navigating to the project details, checking resource status, monitoring performance, or making further configurations. Feel free to ask me about any aspect of your project or if you need help with additional setup.",
+                createdAt: new Date().toISOString(),
+              },
+            }),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+
+          // Add success message to the updated messages array
+          updatedMessages.push(successMessage);
 
           // Update thread state with modified messages
           await updateThreadState.mutate({

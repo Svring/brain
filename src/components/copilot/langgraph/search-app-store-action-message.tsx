@@ -119,7 +119,7 @@ const TemplateCard: React.FC<{ template: TemplateResource }> = ({
 export const SearchAppStoreActionMessage: React.FC<
   SearchAppStoreActionMessageProps
 > = ({ result }) => {
-  console.log("result", result);
+  // console.log("result", result);
   const [showAll, setShowAll] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
