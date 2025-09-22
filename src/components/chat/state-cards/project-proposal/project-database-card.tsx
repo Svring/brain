@@ -57,7 +57,7 @@ export function ProjectDatabaseCard({
               alt={`${editData.type} Icon`}
               width={36}
               height={36}
-              className="rounded-lg h-9 w-9 flex-shrink-0"
+              className="rounded-lg h-9 w-9 flex-shrink-0 p-1 bg-muted"
             />
           </div>
           <div className="flex items-center min-w-0 flex-1">
@@ -78,7 +78,7 @@ export function ProjectDatabaseCard({
             </Button>
           </div>
         </div>
-        <div className="pl-1">
+        <div className="">
           <Select
             value={editData.type}
             onValueChange={(value) =>

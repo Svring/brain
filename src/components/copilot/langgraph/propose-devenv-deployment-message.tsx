@@ -81,24 +81,38 @@ const DevenvDeploymentCard = ({
         name: "Development Environment Project",
         resources: {
           devbox: args.devbox
-            ? [
-                {
-                  name: args.devbox.name,
-                  runtime: args.devbox.runtime as any,
-                  ports: (args.devbox.ports || []).map((port: number) => ({
+            ? Array.isArray(args.devbox)
+              ? args.devbox.map((devbox: any) => ({
+                  name: devbox.name,
+                  runtime: devbox.runtime as any,
+                  ports: (devbox.ports || []).map((port: number) => ({
                     number: port,
                     publicAccess: true,
                   })),
-                },
-              ]
+                }))
+              : [
+                  {
+                    name: args.devbox.name,
+                    runtime: args.devbox.runtime as any,
+                    ports: (args.devbox.ports || []).map((port: number) => ({
+                      number: port,
+                      publicAccess: true,
+                    })),
+                  },
+                ]
             : [],
           database: args.database
-            ? [
-                {
-                  name: args.database.name,
-                  type: args.database.type as any,
-                },
-              ]
+            ? Array.isArray(args.database)
+              ? args.database.map((db: any) => ({
+                  name: db.name,
+                  type: db.type as any,
+                }))
+              : [
+                  {
+                    name: args.database.name,
+                    type: args.database.type as any,
+                  },
+                ]
             : [],
         },
       };
@@ -232,7 +246,7 @@ const DevenvDeploymentCard = ({
           onClick={handleDeploy}
           disabled={isCreating}
           className="w-full"
-          variant={"outline"}
+          // variant={"outline"}
         >
           {isCreating ? (
             <>
@@ -258,6 +272,8 @@ export const ProposeDevenvDeploymentMessage: React.FC<
   if (result) {
     return <DevenvDeploymentSuccessMessage args={args} />;
   }
+
+  console.log("args", args);
 
   // Return the card component with args and logic
   return <DevenvDeploymentCard args={args} onSuccess={onSuccess} />;

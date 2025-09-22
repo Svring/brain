@@ -75,17 +75,43 @@ function ProjectFlow({
   projectName,
   isLoadingResources,
   isLoading,
-  nodes,
-  edges,
-  onPaneClick,
 }: {
   projectName: string;
   isLoadingResources: boolean;
   isLoading: boolean;
-  nodes: any[];
-  edges: any[];
-  onPaneClick: () => void;
 }) {
+  const { focusedResourceTarget } = useChatState();
+  const { closeChat, closeProjectChat, openProjectChat } = useChatActions();
+  const { nodes, edges } = useFlowgraphState();
+
+  // Handle pane click to open/close project chat
+  const handlePaneClick = () => {
+    const hasFocusedChat = !!focusedResourceTarget;
+    
+    if (hasFocusedChat) {
+      // If any chat is open, close it
+      if (focusedResourceTarget) {
+        // Check if it's a project chat key (starts with "__project__")
+        if (focusedResourceTarget.startsWith("__project__")) {
+          closeProjectChat(projectName);
+        } else {
+          // It's a resource chat, parse and close it
+          const resourceTarget = JSON.parse(focusedResourceTarget);
+          closeChat(resourceTarget);
+        }
+      }
+    } else {
+      // No chat is open, open project chat
+      openProjectChat(projectName);
+    }
+  };
+
+  // Handle edge click (placeholder for now)
+  const handleEdgeClick = () => {
+    // Add edge click logic here if needed
+    console.log("Edge clicked");
+  };
+
   if (isLoadingResources || isLoading) {
     return (
       <LoadingScreen
@@ -115,7 +141,8 @@ function ProjectFlow({
       snapGrid={REACT_FLOW_CONFIG.snapGrid}
       connectionLineComponent={FloatingConnectionLine}
       proOptions={REACT_FLOW_CONFIG.proOptions}
-      onPaneClick={onPaneClick}
+      onPaneClick={handlePaneClick}
+      onEdgeClick={handleEdgeClick}
     />
   );
 }
@@ -124,13 +151,11 @@ function ProjectFlowWithLoading({
   projectName,
   resourceTargets,
   isLoadingResources,
-  onPaneClick,
   hasFocusedChat,
 }: {
   projectName: string;
   resourceTargets: any[];
   isLoadingResources: boolean;
-  onPaneClick: () => void;
   hasFocusedChat: boolean;
 }) {
   // Ref to prevent isLoading from being set to true again after first false
@@ -138,7 +163,7 @@ function ProjectFlowWithLoading({
 
   // Get nodes and edges from flowgraph context
   const { nodes, edges } = useFlowgraphState();
-
+  
   // Still use the hook for loading state and to trigger computation
   const { isLoading: rawIsLoading } = useFlowgraphNodes(resourceTargets);
 
@@ -158,9 +183,6 @@ function ProjectFlowWithLoading({
         projectName={projectName}
         isLoadingResources={isLoadingResources}
         isLoading={isLoading}
-        nodes={nodes}
-        edges={edges}
-        onPaneClick={onPaneClick}
       />
       <ProjectFloatingUI
         projectName={projectName}
@@ -216,26 +238,6 @@ export default function ProjectPage() {
 
   const hasFocusedChat = !!focusedResourceTarget;
 
-  // Handle pane click to open/close project chat
-  const handlePaneClick = () => {
-    if (hasFocusedChat) {
-      // If any chat is open, close it
-      if (focusedResourceTarget) {
-        // Check if it's a project chat key (starts with "__project__")
-        if (focusedResourceTarget.startsWith("__project__")) {
-          closeProjectChat(projectName);
-        } else {
-          // It's a resource chat, parse and close it
-          const resourceTarget = JSON.parse(focusedResourceTarget);
-          closeChat(resourceTarget);
-        }
-      }
-    } else {
-      // No chat is open, open project chat
-      openProjectChat(projectName);
-    }
-  };
-
   return (
     <div className="relative h-screen w-full overflow-hidden">
       <div
@@ -249,7 +251,6 @@ export default function ProjectPage() {
           projectName={projectName}
           resourceTargets={targets}
           isLoadingResources={isLoadingResources}
-          onPaneClick={handlePaneClick}
           hasFocusedChat={hasFocusedChat}
         />
       </div>

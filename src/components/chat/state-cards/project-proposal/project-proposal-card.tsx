@@ -104,21 +104,20 @@ export function ProjectProposalCard({
   return (
     <div className="space-y-2">
       {hasResources ? (
+        // Always use vertical layout (each resource in its own row)
         resourceSections.map(
           ({ title, key, resources, Component }) =>
             resources.length > 0 && (
-              <div key={key} className="">
-                <div className="">
-                  {resources.map((resource, index) => (
-                    <Component
-                      key={`${key}-${index}`}
-                      resource={resource}
-                      onSave={(updatedResource: any) =>
-                        updateResource(key, index, updatedResource)
-                      }
-                    />
-                  ))}
-                </div>
+              <div key={key} className="space-y-2">
+                {resources.map((resource, index) => (
+                  <Component
+                    key={`${key}-${index}`}
+                    resource={resource}
+                    onSave={(updatedResource: any) =>
+                      updateResource(key, index, updatedResource)
+                    }
+                  />
+                ))}
               </div>
             )
         )

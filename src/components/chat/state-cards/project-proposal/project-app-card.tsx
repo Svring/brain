@@ -40,7 +40,7 @@ export function ProjectAppCard({ resource, onSave }: ProjectAppCardProps) {
               alt="App Icon"
               width={36}
               height={36}
-              className="rounded-lg h-9 w-9 flex-shrink-0"
+              className="rounded-lg h-9 w-9 flex-shrink-0 p-1 bg-muted"
             />
           </div>
           <div className="flex items-center min-w-0 flex-1">
@@ -62,7 +62,7 @@ export function ProjectAppCard({ resource, onSave }: ProjectAppCardProps) {
           </div>
         </div>
         {/* Image field first */}
-        <div className="pl-1">
+        <div className="">
           <div className="text-sm font-medium text-muted-foreground mb-2">
             Image:
           </div>
@@ -105,7 +105,7 @@ export function ProjectAppCard({ resource, onSave }: ProjectAppCardProps) {
             alt="App Icon"
             width={36}
             height={36}
-            className="rounded-lg h-9 w-9 flex-shrink-0"
+            className="rounded-lg h-9 w-9 flex-shrink-0 p-1 bg-muted"
             priority
           />
         </div>

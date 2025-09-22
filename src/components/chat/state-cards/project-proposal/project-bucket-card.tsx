@@ -48,7 +48,7 @@ export function ProjectBucketCard({
 
   if (isEditing) {
     return (
-      <div className="space-y-3 flex-col bg-background-secondary p-3 rounded-xl">
+      <div className="space-y-3 flex-col bg-background-secondary border p-3 rounded-xl">
         <div className="flex items-center gap-4">
           <div className="flex-shrink-0">
             <img
@@ -56,7 +56,7 @@ export function ProjectBucketCard({
               alt="Object Storage Icon"
               width={36}
               height={36}
-              className="rounded-lg border border-muted h-9 w-9 flex-shrink-0"
+              className="rounded-lg border border-muted h-9 w-9 flex-shrink-0 p-1 bg-muted"
             />
           </div>
           <div className="flex items-center min-w-0 flex-1">
@@ -109,7 +109,7 @@ export function ProjectBucketCard({
             alt="Object Storage Icon"
             width={36}
             height={36}
-            className="rounded-lg border border-muted h-9 w-9 flex-shrink-0"
+            className="rounded-lg border border-muted h-9 w-9 flex-shrink-0 p-1 bg-muted"
             priority
           />
         </div>

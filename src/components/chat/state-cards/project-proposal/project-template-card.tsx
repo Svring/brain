@@ -82,7 +82,7 @@ export function ProjectTemplateCard({
           onClick={onDeploy}
           disabled={isDeploying}
           className="w-full"
-          variant={"outline"}
+          // variant={"outline"}
         >
           {isDeploying ? (
             <>

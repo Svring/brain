@@ -95,7 +95,13 @@ function ClusterNode({ data }: ClusterNodeProps) {
         <TooltipTrigger asChild>
           <div className="relative bg-node-background w-full h-10 flex items-center rounded-b-xl text-xs text-muted-foreground overflow-hidden px-2 cursor-pointer hover:brightness-120">
             <div
-              className="absolute inset-y-0 left-0 bg-muted"
+              className={`absolute inset-y-0 left-0 ${
+                storagePercent > 90
+                  ? "bg-status-error/20"
+                  : storagePercent > 75
+                  ? "bg-theme-yellow/30"
+                  : "bg-muted"
+              }`}
               style={{ width: `${storagePercent}%` }}
             />
             <div className="relative z-10 flex items-center justify-between w-full">

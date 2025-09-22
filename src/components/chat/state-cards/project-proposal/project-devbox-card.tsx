@@ -50,13 +50,13 @@ function RuntimeSelectionDialog({
         <DialogHeader>
           <DialogTitle>Select Runtime</DialogTitle>
         </DialogHeader>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+        <div className="grid grid-cols-5 gap-2 mt-4">
           {DEVBOX_RUNTIMES.map((runtime) => (
             <div
               key={runtime}
               onClick={() => handleRuntimeSelect(runtime)}
               className={`
-                flex flex-col items-center p-4 rounded-lg border-2 cursor-pointer transition-all
+                flex items-center gap-2 p-2 rounded-lg border-2 cursor-pointer transition-all
                 hover:bg-muted/50 hover:border-primary/50
                 ${
                   currentRuntime === runtime
@@ -65,19 +65,20 @@ function RuntimeSelectionDialog({
                 }
               `}
             >
-              <div className="w-12 h-12 mb-3 flex items-center justify-center">
-                <img
+              <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 bg-background-tertiary rounded">
+                <Image
                   src={
                     DEVBOX_RUNTIME_ICONS[runtime] ||
                     "https://devbox.bja.sealos.run/logo.svg"
                   }
                   alt={`${runtime} Icon`}
-                  width={48}
-                  height={48}
-                  className="rounded-lg"
+                  width={24}
+                  height={24}
+                  className="rounded"
+                  priority
                 />
               </div>
-              <span className="text-sm font-medium text-center leading-tight">
+              <span className="text-sm font-medium leading-tight truncate">
                 {runtime}
               </span>
             </div>
@@ -125,7 +126,7 @@ export function ProjectDevBoxCard({
               alt={`${editData.runtime} Icon`}
               width={36}
               height={36}
-              className="rounded-lg h-9 w-9 flex-shrink-0"
+              className="rounded-lg h-9 w-9 flex-shrink-0 p-1 bg-muted"
               priority
             />
           </div>
@@ -147,7 +148,7 @@ export function ProjectDevBoxCard({
             </Button>
           </div>
         </div>
-        <div className="pl-1">
+        <div className="">
           <RuntimeSelectionDialog
             currentRuntime={editData.runtime}
             onRuntimeSelect={(runtime) =>

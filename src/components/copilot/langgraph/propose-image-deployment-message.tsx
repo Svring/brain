@@ -204,7 +204,7 @@ const ImageDeploymentCard = ({
           onClick={handleDeploy}
           disabled={isCreating}
           className="w-full"
-          variant={"outline"}
+          // variant={"outline"}
         >
           {isCreating ? (
             <>
