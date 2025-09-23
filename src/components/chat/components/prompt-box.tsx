@@ -301,7 +301,7 @@ const PromptInputAction: React.FC<PromptInputActionProps> = ({
   tooltip,
   children,
   className,
-  side = "top",
+  side = "bottom",
   ...props
 }) => {
   const { disabled } = usePromptInput();
@@ -491,10 +491,10 @@ export const PromptInputBox = React.forwardRef(
                 className={cn(
                   "h-9 w-9 rounded-lg transition-all duration-100",
                   isLoading || hasContent
-                    ? "bg-foreground! text-background-secondary hover:bg-foreground/80"
+                    ? "bg-foreground! text-background-secondary hover:bg-foreground/80 cursor-pointer"
                     : "bg-transparent cursor-not-allowed text-foreground"
                 )}
-                disabled={isLoading ? false : disableSend || !hasContent}
+                disabled={disableSend || (!isLoading && !hasContent)}
                 onClick={isLoading ? onStop : handleSubmit}
                 size="icon"
                 variant="outline"

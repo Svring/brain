@@ -273,8 +273,6 @@ export const ProposeDevenvDeploymentMessage: React.FC<
     return <DevenvDeploymentSuccessMessage args={args} />;
   }
 
-  console.log("args", args);
-
   // Return the card component with args and logic
   return <DevenvDeploymentCard args={args} onSuccess={onSuccess} />;
 };

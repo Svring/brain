@@ -22,9 +22,14 @@ import { LayoutTemplate } from "lucide-react";
 
 export default function HomePage() {
   const { messages, submit, stop, isLoading } = useHomeChat();
-  const { projects, isLoading: isLoadingProjects, isError: isProjectsError } = useProjectSearch();
+  const {
+    projects,
+    isLoading: isLoadingProjects,
+    isError: isProjectsError,
+  } = useProjectSearch();
 
-  const { DeployTemplateDialog: CreateProjectDialog, openDialog } = useDeployTemplateDialog();
+  const { DeployTemplateDialog: CreateProjectDialog, openDialog } =
+    useDeployTemplateDialog();
   const { LaunchpadCreateDialog } = useLaunchpadCreateDialog();
   const messagesScrollRef = useRef<HTMLDivElement>(null);
 
@@ -101,14 +106,14 @@ export default function HomePage() {
             />
             {!showMessages && (
               <>
-                <div className="absolute bottom-2 left-2 right-2 flex gap-2">
+                <div className="absolute bottom-2 left-2 right-2 flex gap-2 pointer-events-none">
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
                           onClick={openDialog}
                           variant="outline"
-                          className="bg-background-tertiary! border-border-primary!"
+                          className="bg-background-tertiary! border-border-primary! pointer-events-auto"
                         >
                           <LayoutTemplate />
                           From Template
@@ -126,8 +131,8 @@ export default function HomePage() {
         </motion.div>
 
         {/* Recent Projects or Suggestions section - shown when no messages */}
-        {!showMessages && (
-          hasProjects ? (
+        {!showMessages &&
+          (hasProjects ? (
             <RecentProjects
               projects={projects}
               isLoading={isLoadingProjects}
@@ -136,8 +141,7 @@ export default function HomePage() {
             />
           ) : (
             <Suggestions onSubmit={submit} />
-          )
-        )}
+          ))}
       </div>
     </div>
   );

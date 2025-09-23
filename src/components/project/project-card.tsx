@@ -270,6 +270,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             <p className="text-xs text-muted-foreground mb-2">{project.name}</p>
           )}
 
+          {variant === "full" && (
+            <div className="absolute bottom-5 left-4 text-xs text-muted-foreground">
+              {new Date(project.createdAt).toLocaleDateString()}
+            </div>
+          )}
+
           {avatarData.avatarUrls.length > 0 && variant === "full" && (
             <div className="scale-75 origin-right absolute bottom-4 right-4">
               <AvatarCircles

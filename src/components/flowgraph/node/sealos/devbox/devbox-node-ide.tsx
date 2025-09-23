@@ -16,13 +16,17 @@ import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbo
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { createK8sContext, useDevboxContext } from "@/lib/auth/auth-utils";
+import { useLocalStorage } from "@reactuses/core";
 
 interface DevboxNodeIdeProps {
   object: DevboxObject;
 }
 
 export default function DevboxNodeIde({ object }: DevboxNodeIdeProps) {
-  const [selectedIde, setSelectedIde] = useState<string>("vscode");
+  const [selectedIde, setSelectedIde] = useLocalStorage<string>(
+    "devbox-ide-selection",
+    "vscode"
+  );
   const context = createK8sContext();
   const devboxContext = useDevboxContext();
 
@@ -44,7 +48,7 @@ export default function DevboxNodeIde({ object }: DevboxNodeIdeProps) {
 
             if (object.ssh) {
               const sshUri = composeSshConnectionUri(
-                selectedIde,
+                selectedIde || "vscode",
                 context,
                 object.ssh,
                 object.name,
