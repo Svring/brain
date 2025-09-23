@@ -37,6 +37,10 @@ interface HomeChatContextType {
     data: { stage?: string; command?: any },
     options?: { optimisticValues?: (prev: any) => any; command?: any }
   ) => any;
+
+  // Create new chat function
+  createNewChat: () => void;
+  isCreatingNewChat: boolean;
 }
 
 const HomeChatContext = createContext<HomeChatContextType | undefined>(
@@ -88,6 +92,35 @@ export function HomeChatProvider({ children }: { children: ReactNode }) {
     );
   };
 
+  // Create new chat function
+  const createNewChat = () => {
+    if (!auth?.kubeconfig) {
+      console.warn("Cannot create new chat: missing kubeconfig");
+      return;
+    }
+
+    createNewThread.mutate(
+      {
+        metadata: {
+          kubeconfig: auth.kubeconfig,
+          isHomePage: true, // Mark this as a home page thread
+          graph_id: LANGGRAPH_GRAPH_ID, // Add the graph ID
+        },
+      },
+      {
+        onSuccess: (data: any) => {
+          if (data?.thread_id) {
+            console.log("New home chat thread created:", data.thread_id);
+            setThreadId(data.thread_id);
+          }
+        },
+        onError: (error: any) => {
+          console.error("Failed to create new home chat thread:", error);
+        },
+      }
+    );
+  };
+
   // Create a new thread when the component mounts
   useEffect(() => {
     const createHomeThread = async () => {
@@ -123,6 +156,8 @@ export function HomeChatProvider({ children }: { children: ReactNode }) {
     kubeconfig: auth?.kubeconfig,
     threadId,
     submit,
+    createNewChat,
+    isCreatingNewChat: createNewThread.isPending,
   };
 
   return (

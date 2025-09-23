@@ -18,10 +18,18 @@ import Suggestions from "@/components/chat/components/suggestions";
 import RecentProjects from "@/components/project/recent-projects";
 import { useHomeChat } from "@/components/provider/home-chat-provider";
 import useProjectSearch from "@/hooks/brain/use-projects-search";
-import { LayoutTemplate } from "lucide-react";
+import { LayoutTemplate, Plus, Loader2 } from "lucide-react";
 
 export default function HomePage() {
-  const { messages, submit, stop, isLoading } = useHomeChat();
+  const {
+    messages,
+    submit,
+    stop,
+    isLoading,
+    threadId,
+    createNewChat,
+    isCreatingNewChat,
+  } = useHomeChat();
   const {
     projects,
     isLoading: isLoadingProjects,
@@ -59,6 +67,31 @@ export default function HomePage() {
               actionsClassName="mt-2"
             />
           </motion.div>
+        )}
+
+        {/* Create New Chat Button - Absolute Top Left */}
+        {showMessages && (
+          <div className="absolute top-4 left-16 z-10">
+            <Button
+              onClick={createNewChat}
+              variant="outline"
+              size="sm"
+              className="border-none bg-background! hover:bg-muted"
+              disabled={isCreatingNewChat}
+            >
+              {isCreatingNewChat ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Chat
+                </>
+              )}
+            </Button>
+          </div>
         )}
 
         {/* Messages area - only visible when there are messages */}

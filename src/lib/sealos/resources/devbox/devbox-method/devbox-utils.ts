@@ -83,6 +83,20 @@ export const transformDevboxImage = (imageUrl: string): string => {
 };
 
 /**
+ * Converts camelCase IDE names to kebab-case format
+ * @param ide - The IDE identifier in camelCase
+ * @returns The IDE identifier in kebab-case format
+ */
+const convertIdeToKebabCase = (ide: string): string => {
+  // Handle specific mappings
+  if (ide === "traeCN") return "trae-cn";
+  if (ide === "vscodeInsiders") return "vscode-insiders";
+
+  // Convert camelCase to kebab-case for other cases
+  return ide.replace(/([A-Z])/g, "-$1").toLowerCase();
+};
+
+/**
  * Composes an SSH connection URI for devbox IDE integration
  * @param ide - The IDE identifier
  * @param context - The K8s API context containing region and namespace info
@@ -98,6 +112,7 @@ export const composeSshConnectionUri = (
   devboxName: string,
   token: string
 ): string => {
+  const kebabCaseIde = convertIdeToKebabCase(ide);
   const userName = encodeURIComponent(ssh.user);
   const regionUrl = encodeURIComponent(context.regionUrl);
   const sshPort = encodeURIComponent(ssh.port);
@@ -107,7 +122,7 @@ export const composeSshConnectionUri = (
   const namespace = encodeURIComponent(context.namespace);
   const workingDir = encodeURIComponent(ssh.workingDir);
 
-  return `${ide}://labring.devbox-aio?sshDomain=${`${userName}@${regionUrl}`}&sshPort=${sshPort}&base64PrivateKey=${base64PrivateKey}&sshHostLabel=${`${regionUrl}_${namespace}_${devboxName}`}&workingDir=${workingDir}&token=${token}`;
+  return `${kebabCaseIde}://labring.devbox-aio?sshDomain=${`${userName}@${regionUrl}`}&sshPort=${sshPort}&base64PrivateKey=${base64PrivateKey}&sshHostLabel=${`${regionUrl}_${namespace}_${devboxName}`}&workingDir=${workingDir}&token=${token}`;
 };
 
 /**
@@ -156,75 +171,75 @@ export const mapRuntimeToEnum = (runtime: string): string => {
   // Map the runtime to supported API runtime names
   const runtimeMap: Record<string, string> = {
     // Direct matches with new API names
-    "nuxt3": "nuxt3",
-    "angular": "angular",
-    "quarkus": "quarkus",
-    "ubuntu": "ubuntu",
-    "flask": "flask",
-    "java": "java",
-    "chi": "chi",
-    "net": "net",
-    "iris": "iris",
-    "hexo": "hexo",
-    "python": "python",
-    "docusaurus": "docusaurus",
-    "vitepress": "vitepress",
-    "cpp": "cpp",
-    "vue": "vue",
-    "nginx": "nginx",
-    "rocket": "rocket",
+    nuxt3: "nuxt3",
+    angular: "angular",
+    quarkus: "quarkus",
+    ubuntu: "ubuntu",
+    flask: "flask",
+    java: "java",
+    chi: "chi",
+    net: "net",
+    iris: "iris",
+    hexo: "hexo",
+    python: "python",
+    docusaurus: "docusaurus",
+    vitepress: "vitepress",
+    cpp: "cpp",
+    vue: "vue",
+    nginx: "nginx",
+    rocket: "rocket",
     "debian-ssh": "debian-ssh",
     "vert.x": "vert.x",
     "express.js": "express.js",
-    "django": "django",
+    django: "django",
     "next.js": "next.js",
-    "sealaf": "sealaf",
-    "go": "go",
-    "react": "react",
-    "php": "php",
-    "svelte": "svelte",
-    "c": "c",
-    "astro": "astro",
-    "umi": "umi",
-    "gin": "gin",
-    "echo": "echo",
-    "rust": "rust",
+    sealaf: "sealaf",
+    go: "go",
+    react: "react",
+    php: "php",
+    svelte: "svelte",
+    c: "c",
+    astro: "astro",
+    umi: "umi",
+    gin: "gin",
+    echo: "echo",
+    rust: "rust",
     // Legacy mappings for backward compatibility
     "Node.js": "next.js",
-    "Python": "python",
-    "Java": "java",
-    "Go": "go",
-    "Rust": "rust",
-    "PHP": "php",
-    "Debian": "debian-ssh",
+    Python: "python",
+    Java: "java",
+    Go: "go",
+    Rust: "rust",
+    PHP: "php",
+    Debian: "debian-ssh",
     "C++": "cpp",
     ".Net": "net",
-    "C": "c",
+    C: "c",
     "Spring Boot": "java",
-    "Django": "django",
+    Django: "django",
     "Express.js": "express.js",
     "Next.js": "next.js",
-    "Nuxt3": "nuxt3",
+    Nuxt3: "nuxt3",
     "Vue.js": "vue",
-    "React": "react",
-    "Angular": "angular",
-    "Svelte": "svelte",
-    "VitePress": "vitepress",
-    "Docusaurus": "docusaurus",
-    "Hexo": "hexo",
-    "Astro": "astro",
-    "UmiJS": "umi",
-    "Echo": "echo",
-    "Gin": "gin",
-    "Iris": "iris",
-    "Chi": "chi",
-    "Rocket": "rocket",
-    "Quarkus": "quarkus",
+    React: "react",
+    Angular: "angular",
+    Svelte: "svelte",
+    VitePress: "vitepress",
+    Docusaurus: "docusaurus",
+    Hexo: "hexo",
+    Astro: "astro",
+    UmiJS: "umi",
+    Echo: "echo",
+    Gin: "gin",
+    Iris: "iris",
+    Chi: "chi",
+    Rocket: "rocket",
+    Quarkus: "quarkus",
     "Vert.x": "vert.x",
-    "Hugo": "go",
-    "Nginx": "nginx",
-    "MCP": "python",
-    "Ubuntu": "ubuntu",
+    Hugo: "go",
+    Nginx: "nginx",
+    MCP: "python",
+    Ubuntu: "ubuntu",
   };
   return runtimeMap[runtime] || "python";
 };

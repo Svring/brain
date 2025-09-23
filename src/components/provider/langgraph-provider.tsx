@@ -84,25 +84,28 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
             model_name: config.modelName,
           });
         } else if (isProduction && !tokensLoading) {
-          // No brain token found in production - try to create one automatically
-          if (!brainToken) {
-            createTokenMutation.mutateAsync(
-              { name: "brain" },
-              {
-                onSuccess: () => {
-                  // toast.success("Token created successfully.");
-                  window.location.reload();
-                },
-                onError: () => {
-                  // If automatic creation fails, show the manual UI
-                  setConfigFailed();
-                  window.location.reload();
-                },
-              }
-            );
-          } else {
-            setConfigFailed();
-          }
+          // No brain token found in production - show UI for asking permission
+          setConfigFailed();
+
+          // Automatic token creation disabled - user must explicitly create token via UI
+          // if (!brainToken) {
+          //   createTokenMutation.mutateAsync(
+          //     { name: "brain" },
+          //     {
+          //       onSuccess: () => {
+          //         // toast.success("Token created successfully.");
+          //         window.location.reload();
+          //       },
+          //       onError: () => {
+          //         // If automatic creation fails, show the manual UI
+          //         setConfigFailed();
+          //         window.location.reload();
+          //       },
+          //     }
+          //   );
+          // } else {
+          //   setConfigFailed();
+          // }
         }
       }
     }
@@ -157,25 +160,37 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
             className="mb-2 rounded-2xl"
           />
           <div className="text-muted-foreground text-center space-y-2">
-            <p>To activate Sealos Brain agent features, generate an API KEY.</p>
-            <p>Click the button below to create one in the AI Proxy.</p>
+            <p>Sealos Brain requires an API KEY to function.</p>
+            <p>Please click the button below to create one in AI Proxy.</p>
           </div>
         </div>
         <Button
           onClick={handleCreateToken}
           disabled={createTokenMutation.isPending}
-          className="max-w-xs"
+          className="min-w-40"
           size="sm"
         >
           {createTokenMutation.isPending ? (
             <>
               <Spinner className="mr-2 h-4 w-4" />
-              Generating...
+              Processing...
             </>
           ) : (
-            "Generate API KEY"
+            "Create"
           )}
         </Button>
+        <p className="text-muted-foreground text-center text-sm">
+          Proceeding means you accept{" "}
+          <a
+            href="https://sealos.io/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            Our Terms of Service
+          </a>
+          .
+        </p>
       </div>
     );
   }
