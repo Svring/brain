@@ -39,10 +39,6 @@ export function HistoryDropdown() {
     try {
       const updatedThreads = await getThreads(resourceTarget);
       setChatThreads(updatedThreads);
-      // console.log("HistoryDropdown - Refetched and updated threads:", {
-      //   resourceTarget,
-      //   threadCount: updatedThreads.length,
-      // });
     } catch (error) {
       console.error("HistoryDropdown - Failed to refetch threads:", error);
     }
@@ -50,14 +46,6 @@ export function HistoryDropdown() {
 
   // Refetch threads when selectedProject or selectedResource changes
   useEffect(() => {
-    // console.log(
-    //   "HistoryDropdown - Project or resource changed, refetching threads:",
-    //   {
-    //     selectedProject,
-    //     selectedResource,
-    //     resourceTarget,
-    //   }
-    // );
     refetchAndUpdateThreads();
   }, [selectedProject, selectedResource]);
 

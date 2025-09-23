@@ -75,6 +75,7 @@ export const DevboxObjectQuerySchema = z.object({
       })
     )
     .transform((image) => {
+      console.log("image", image);
       // Transform the image similar to how devbox node title processes it
       // First extract the image name (remove registry and tag)
       const imageName = image.split(":")[0].split("/").pop() || "";

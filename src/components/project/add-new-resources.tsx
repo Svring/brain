@@ -422,11 +422,7 @@ export function AddNewResources({ onBack, onSuccess }: AddNewResourcesProps) {
                   <Plus size={12} />
                 </Button>
               </div>
-              {resourcesToCreate.devboxes.length === 0 ? (
-                <div className="text-sm text-muted-foreground py-2">
-                  No resources yet
-                </div>
-              ) : (
+              {resourcesToCreate.devboxes.length > 0 && (
                 <div className="grid grid-cols-3 gap-2">
                   {resourcesToCreate.devboxes.map((devbox, index) => (
                     <div
@@ -478,11 +474,7 @@ export function AddNewResources({ onBack, onSuccess }: AddNewResourcesProps) {
                   <Plus size={12} />
                 </Button>
               </div>
-              {resourcesToCreate.databases.length === 0 ? (
-                <div className="text-sm text-muted-foreground py-2">
-                  No resources yet
-                </div>
-              ) : (
+              {resourcesToCreate.databases.length > 0 && (
                 <div className="grid grid-cols-3 gap-2">
                   {resourcesToCreate.databases.map((database, index) => (
                     <div
@@ -534,11 +526,7 @@ export function AddNewResources({ onBack, onSuccess }: AddNewResourcesProps) {
                   <Plus size={12} />
                 </Button>
               </div>
-              {resourcesToCreate.apps.length === 0 ? (
-                <div className="text-sm text-muted-foreground py-2">
-                  No resources yet
-                </div>
-              ) : (
+              {resourcesToCreate.apps.length > 0 && (
                 <div className="grid grid-cols-3 gap-2">
                   {resourcesToCreate.apps.map((app, index) => (
                     <div

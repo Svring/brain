@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import BaseNode from "../../base-node-wrapper";
 import NodeStack from "../../components/node-stack";
 import { cn } from "@/lib/utils";
@@ -113,6 +114,37 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
     e.preventDefault();
     copyToClipboard(url, nodeId);
   };
+
+  // Listen for custom event to trigger network analysis from edge clicks
+  useEffect(() => {
+    const handleNetworkAnalysisEvent = (event: CustomEvent) => {
+      const { target: eventTarget, nodeId: eventNodeId } = event.detail;
+
+      // Check if this event is for this specific network node
+      if (
+        eventNodeId === nodeId &&
+        eventTarget &&
+        JSON.stringify(eventTarget) === JSON.stringify(target)
+      ) {
+        // Trigger network analysis if there are network issues
+        if (notReadyCount > 0) {
+          diagnoseNetwork(readyStatus);
+        }
+      }
+    };
+
+    window.addEventListener(
+      "triggerNetworkAnalysis",
+      handleNetworkAnalysisEvent as EventListener
+    );
+
+    return () => {
+      window.removeEventListener(
+        "triggerNetworkAnalysis",
+        handleNetworkAnalysisEvent as EventListener
+      );
+    };
+  }, [nodeId, target, notReadyCount, readyStatus]);
 
   if (isLoading) {
     return (

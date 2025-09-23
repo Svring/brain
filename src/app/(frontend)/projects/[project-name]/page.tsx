@@ -87,7 +87,7 @@ function ProjectFlow({
   // Handle pane click to open/close project chat
   const handlePaneClick = () => {
     const hasFocusedChat = !!focusedResourceTarget;
-    
+
     if (hasFocusedChat) {
       // If any chat is open, close it
       if (focusedResourceTarget) {
@@ -106,10 +106,28 @@ function ProjectFlow({
     }
   };
 
-  // Handle edge click (placeholder for now)
-  const handleEdgeClick = () => {
-    // Add edge click logic here if needed
-    console.log("Edge clicked");
+  // Handle edge click
+  const handleEdgeClick = (event: React.MouseEvent, edge: any) => {
+    // Check if this is a floating error edge (network-related)
+    if (
+      edge.type === "floatingError" &&
+      edge.target &&
+      edge.target.startsWith("network-")
+    ) {
+      // Extract the target node from the edge
+      const targetNodeId = edge.target;
+      const targetNode = nodes.find((node) => node.id === targetNodeId);
+
+      if (targetNode && targetNode.data?.target) {
+        const networkAnalysisEvent = new CustomEvent("triggerNetworkAnalysis", {
+          detail: {
+            target: targetNode.data.target,
+            nodeId: targetNodeId,
+          },
+        });
+        window.dispatchEvent(networkAnalysisEvent);
+      }
+    }
   };
 
   if (isLoadingResources || isLoading) {
@@ -163,7 +181,7 @@ function ProjectFlowWithLoading({
 
   // Get nodes and edges from flowgraph context
   const { nodes, edges } = useFlowgraphState();
-  
+
   // Still use the hook for loading state and to trigger computation
   const { isLoading: rawIsLoading } = useFlowgraphNodes(resourceTargets);
 
