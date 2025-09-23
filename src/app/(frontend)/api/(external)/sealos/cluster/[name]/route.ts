@@ -89,21 +89,21 @@ export async function PATCH(
 
     const body = await request.json();
 
-    // Transform the data: move cpu, memory, and replicas into resource field
+    // Transform the data: move cpu and memory into resource field
     const transformedBody = {
       ...body,
       resource: {
         cpu: body.cpu,
         memory: body.memory,
-        replicas: body.replicas,
         ...body.resource, // Preserve any existing resource fields
       },
     };
 
-    // Remove cpu, memory, and replicas from top level since they're now in resource
+    // Remove cpu and memory from top level since they're now in resource
     delete transformedBody.cpu;
     delete transformedBody.memory;
-    delete transformedBody.replicas;
+
+    delete transformedBody.storage;
 
     const updateData = clusterUpdateFormSchema.parse(transformedBody);
 

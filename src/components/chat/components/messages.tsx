@@ -16,8 +16,8 @@ import type { Message } from "@langchain/langgraph-sdk";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { SystemMessageRenderer } from "./system-message-renderer";
 import { ToolResultRenderer } from "./tool-result-renderer";
+import { ToolCallRenderer } from "./tool-call-renderer";
 import { Interrupt } from "@langchain/langgraph-sdk";
-import ReactJson from "react-json-view";
 import { Spinner } from "@/components/ui/spinner";
 
 interface AiMessagesProps {
@@ -87,6 +87,15 @@ export function AiMessages({
               status={(message as any).status}
             />
           )}
+          {/* {(message as any).type === "tool_call" && typeof (message as any).content === "string" && (
+            <ToolCallRenderer
+              content={(message as any).content}
+              result={(message as any).additional_kwargs?.result}
+              id={message.id}
+              tool_call_id={(message as any).tool_call_id}
+              status={(message as any).status}
+            />
+          )} */}
         </div>
       );
     });
@@ -139,18 +148,12 @@ export function AiMessages({
 
           {isInterruptExpanded && interruptData.payload && (
             <div className="px-2 pb-2 border-t border-muted/20">
-              <div className="border border-border-primary rounded p-2 bg-background mb-4">
-                <ReactJson
-                  src={interruptData.payload}
-                  theme="pop"
-                  displayDataTypes={false}
-                  displayObjectSize={false}
-                  enableClipboard={false}
-                  onEdit={false}
-                  onAdd={false}
-                  onDelete={false}
-                  collapsed={false}
-                  name={false}
+              <div className="mb-4">
+                <ToolCallRenderer
+                  content={JSON.stringify({
+                    action: interruptData.action,
+                    payload: interruptData.payload,
+                  })}
                 />
               </div>
 

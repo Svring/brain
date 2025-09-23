@@ -356,9 +356,9 @@ export const PromptInputBox = React.forwardRef(
 
     // Exhibition texts for typewriter effect
     const exhibitionTexts = [
-      "Create a workspace for a travel blog.",
-      "Start a project for an online bookstore.",
-      "Set up a site for sharing cooking recipes.",
+      "Deploy affine from app store.",
+      "Set up a development environment for a next.js project.",
+      "Deploy nginx from dockerhub.",
     ];
 
     // Focus when loading finishes

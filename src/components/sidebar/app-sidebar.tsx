@@ -15,7 +15,15 @@ import { useAuthState } from "@/contexts/auth/auth-context";
 import Image from "next/image";
 import { UserCard } from "./user-card";
 import { openCostCenterApp } from "@/lib/auth/auth-utils";
-import { CreditCard } from "lucide-react";
+import { CreditCard, Sparkles } from "lucide-react";
+import { ProgressCircle } from "@/components/ui/circle-progress";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export default function AppSidebar() {
   const { mode } = useAuthState();
@@ -51,21 +59,54 @@ export default function AppSidebar() {
         </SidebarContent>
         <SidebarFooter className={cn("bg-background-primary")}>
           <div className="flex flex-col gap-2">
-            {mode !== "development" && (
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    onClick={openCostCenterApp}
-                    tooltip={{
-                      children: "Cost Center",
-                    }}
-                    className="cursor-pointer"
+            {/* <Popover>
+              <PopoverTrigger asChild>
+                <div className="cursor-pointer">
+                  <ProgressCircle
+                    value={75}
+                    size={32}
+                    strokeWidth={2}
+                    indicatorClassName="text-primary"
+                    trackClassName=""
                   >
-                    <CreditCard className="h-4 w-4" />
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            )}
+                    <Sparkles className="h-4 w-4" />
+                  </ProgressCircle>
+                </div>
+              </PopoverTrigger>
+              <PopoverContent
+                align="end"
+                side="right"
+                sideOffset={16}
+                className="rounded-lg bg-background-tertiary border border-border-primary"
+              >
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      Your current subscription plan is{" "}
+                      <span className="font-semibold text-foreground">Pro</span>
+                      , with an upper limit request counts{" "}
+                      <span className="font-semibold text-foreground">
+                        1000
+                      </span>
+                    </p>
+                    <Progress value={75} className="h-2" />
+                    <p className="text-sm text-muted-foreground">
+                      You've used{" "}
+                      <span className="font-semibold text-foreground">750</span>{" "}
+                      of your quota, click button below to upgrade.
+                    </p>
+                  </div>
+                  <Button
+                    className="w-full"
+                    size="sm"
+                    onClick={openCostCenterApp}
+                  >
+                    Upgrade
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover> */}
+            {/* )} */}
             {mode === "development" && (
               <UserCard
                 user={{

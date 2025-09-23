@@ -12,7 +12,8 @@ export const ClusterResourceSchema = ResourceSchema.extend({
     .number()
     .min(1, "Storage must be at least 0.1 GB")
     .max(300, "Storage must be at most 300 GB")
-    .default(10),
+    .optional(),
+  // .default(10),
 });
 
 export type ClusterResource = z.infer<typeof ClusterResourceSchema>;

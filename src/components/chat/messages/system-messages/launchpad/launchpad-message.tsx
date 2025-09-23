@@ -65,8 +65,6 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
     setActiveSection(newSection);
   }, [view]);
 
-  const { triggerScrollToBottom } = useChatActions();
-
   // Fetch launchpad data using the target
   const {
     data: launchpadObjectData,

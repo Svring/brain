@@ -42,12 +42,25 @@ export const getStatefulSetObject = async (
 
   // Add all service ports to the map
   servicePorts.forEach((servicePort) => {
+    // Use http protocol for TCP ports when constructing private address
+    const protocolForAddress =
+      servicePort.protocol?.toLowerCase() === "tcp"
+        ? "http"
+        : servicePort.protocol;
+    const privateAddress =
+      servicePort.serviceName && servicePort.privateAddress
+        ? servicePort.privateAddress.replace(
+            /^[^:]+:\/\//,
+            `${protocolForAddress}://`
+          )
+        : servicePort.privateAddress;
+
     portMap.set(servicePort.number, {
       number: servicePort.number,
       portName: servicePort.name,
       protocol: servicePort.protocol || "TCP",
       serviceName: servicePort.serviceName,
-      privateAddress: servicePort.privateAddress,
+      privateAddress: privateAddress,
       privateHost: servicePort.privateHost,
       nodePort: servicePort.nodePort,
     });

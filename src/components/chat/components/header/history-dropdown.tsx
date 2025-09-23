@@ -67,7 +67,7 @@ export function HistoryDropdown() {
         return dateB - dateA;
       })
       .slice(0, 10);
-  }, [threads]);
+  }, [threads, threadId, isLoading]);
 
   const handleThreadSelect = async (threadId: string): Promise<void> => {
     // Set the selected thread ID in the chat instance
