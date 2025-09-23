@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, X } from "lucide-react";
-import Image from "next/image";
 import { nanoid } from "@/lib/utils";
 import { SimplePortList } from "@/components/chat/state-cards/project-proposal/components/simple-port-list";
 import { DEVBOX_RUNTIME_ICONS } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-icons";
@@ -296,7 +295,7 @@ export function CreateNewProject({
                       className="flex items-center p-2 bg-muted/20 rounded border"
                     >
                       <div className="w-5 h-5 flex items-center justify-center flex-shrink-0 bg-background-tertiary rounded">
-                        <Image
+                        <img
                           src={
                             DEVBOX_RUNTIME_ICONS[
                               devbox.runtime as keyof typeof DEVBOX_RUNTIME_ICONS
@@ -306,7 +305,6 @@ export function CreateNewProject({
                           width={20}
                           height={20}
                           className="rounded"
-                          priority
                         />
                       </div>
                       <span className="text-sm font-medium ml-2 truncate flex-1">
@@ -351,7 +349,7 @@ export function CreateNewProject({
                       className="flex items-center p-2 bg-muted/20 rounded border"
                     >
                       <div className="w-5 h-5 flex items-center justify-center flex-shrink-0 bg-background-tertiary rounded">
-                        <Image
+                        <img
                           src={
                             CLUSTER_TYPE_ICON_MAP[
                               database.type as keyof typeof CLUSTER_TYPE_ICON_MAP
@@ -361,7 +359,6 @@ export function CreateNewProject({
                           width={20}
                           height={20}
                           className="rounded"
-                          priority
                         />
                       </div>
                       <span className="text-sm font-medium ml-2 truncate flex-1">
@@ -478,7 +475,7 @@ export function CreateNewProject({
                   `}
                   >
                     <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 bg-background-tertiary rounded">
-                      <Image
+                      <img
                         src={
                           DEVBOX_RUNTIME_ICONS[runtime] ||
                           "https://devbox.bja.sealos.run/logo.svg"
@@ -487,7 +484,6 @@ export function CreateNewProject({
                         width={24}
                         height={24}
                         className="rounded"
-                        priority
                       />
                     </div>
                     <span className="text-sm font-medium leading-tight truncate">
@@ -572,7 +568,7 @@ export function CreateNewProject({
                   `}
                   >
                     <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 bg-background-tertiary rounded">
-                      <Image
+                      <img
                         src={
                           CLUSTER_TYPE_ICON_MAP[
                             type as keyof typeof CLUSTER_TYPE_ICON_MAP
@@ -582,7 +578,6 @@ export function CreateNewProject({
                         width={24}
                         height={24}
                         className="rounded"
-                        priority
                       />
                     </div>
                     <span className="text-sm font-medium leading-tight truncate">

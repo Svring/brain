@@ -16,7 +16,6 @@ import {
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useEnv } from "@/components/provider/env-provider";
 import { toast } from "sonner";
-import Image from "next/image";
 import { ThreadProvider } from "./thread-provider";
 import { StreamProvider } from "./stream-provider";
 
@@ -150,7 +149,7 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
         <div className="flex flex-col items-center space-y-4">
-          <Image
+          <img
             src="/sealos-brain-icon-grayscale.svg"
             alt="Sealos Brain"
             width={64}

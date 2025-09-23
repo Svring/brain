@@ -17,13 +17,15 @@ interface ImageConfigFieldsProps {
   hidePrivateRegistry?: boolean;
 }
 
-export const ImageConfigFields = ({ hidePrivateRegistry = false }: ImageConfigFieldsProps) => {
+export const ImageConfigFields = ({
+  hidePrivateRegistry = false,
+}: ImageConfigFieldsProps) => {
   const form = useFormContext<{ image: Image }>();
 
   // Watch for changes in image registry fields and clean up when empty
   const imageRegistry = form.watch("image.imageRegistry");
   const isPrivateRegistry = !!imageRegistry;
-  
+
   useEffect(() => {
     if (imageRegistry) {
       const { username, password, serverAddress } = imageRegistry;
@@ -51,7 +53,11 @@ export const ImageConfigFields = ({ hidePrivateRegistry = false }: ImageConfigFi
   };
 
   return (
-    <div className={`${hidePrivateRegistry ? '' : 'border border-dashed rounded-lg p-4'} space-y-4`}>
+    <div
+      className={`${
+        hidePrivateRegistry ? "" : "border border-dashed rounded-lg p-4"
+      } space-y-4`}
+    >
       <FormField
         control={form.control}
         name="image.imageName"
@@ -97,9 +103,9 @@ export const ImageConfigFields = ({ hidePrivateRegistry = false }: ImageConfigFi
               <FormItem>
                 <FormLabel>Registry Username</FormLabel>
                 <FormControl>
-                  <Input 
-                    placeholder="username" 
-                    value={field.value || ""} 
+                  <Input
+                    placeholder="username"
+                    value={field.value || ""}
                     onChange={field.onChange}
                   />
                 </FormControl>
@@ -115,10 +121,10 @@ export const ImageConfigFields = ({ hidePrivateRegistry = false }: ImageConfigFi
               <FormItem>
                 <FormLabel>Registry Password</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="password" 
-                    placeholder="password" 
-                    value={field.value || ""} 
+                  <Input
+                    type="password"
+                    placeholder="password"
+                    value={field.value || ""}
                     onChange={field.onChange}
                   />
                 </FormControl>
@@ -134,9 +140,9 @@ export const ImageConfigFields = ({ hidePrivateRegistry = false }: ImageConfigFi
               <FormItem>
                 <FormLabel>Server Address</FormLabel>
                 <FormControl>
-                  <Input 
-                    placeholder="registry.example.com" 
-                    value={field.value || ""} 
+                  <Input
+                    placeholder="registry.example.com"
+                    value={field.value || ""}
                     onChange={field.onChange}
                   />
                 </FormControl>

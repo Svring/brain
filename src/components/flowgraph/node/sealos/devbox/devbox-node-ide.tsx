@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -114,7 +113,7 @@ export default function DevboxNodeIde({ object }: DevboxNodeIdeProps) {
               }}
               className={selectedIde === ide ? "bg-muted" : ""}
             >
-              <Image
+              <img
                 src={`https://devbox.${context.regionUrl}/images/ide/${ide}.svg`}
                 alt={`${ide} icon`}
                 width={16}

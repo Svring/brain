@@ -13,7 +13,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Edit2, Save, X, ChevronDown } from "lucide-react";
-import Image from "next/image";
 import type { DevBox } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 import { SimplePortList } from "./components/simple-port-list";
 import { DEVBOX_RUNTIME_ICONS } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-icons";
@@ -66,7 +65,7 @@ function RuntimeSelectionDialog({
               `}
             >
               <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 bg-background-tertiary rounded">
-                <Image
+                <img
                   src={
                     DEVBOX_RUNTIME_ICONS[runtime] ||
                     "https://devbox.bja.sealos.run/logo.svg"
@@ -75,7 +74,6 @@ function RuntimeSelectionDialog({
                   width={24}
                   height={24}
                   className="rounded"
-                  priority
                 />
               </div>
               <span className="text-sm font-medium leading-tight truncate">
@@ -118,7 +116,7 @@ export function ProjectDevBoxCard({
       <div className="space-y-3 flex-col bg-background-secondary border p-3 rounded-xl">
         <div className="flex items-center gap-4">
           <div className="flex-shrink-0">
-            <Image
+            <img
               src={
                 DEVBOX_RUNTIME_ICONS[editData.runtime] ||
                 "https://devbox.bja.sealos.run/logo.svg"
@@ -127,7 +125,6 @@ export function ProjectDevBoxCard({
               width={36}
               height={36}
               className="rounded-lg h-9 w-9 flex-shrink-0 p-1 bg-muted"
-              priority
             />
           </div>
           <div className="flex items-center min-w-0 flex-1">
@@ -157,7 +154,7 @@ export function ProjectDevBoxCard({
           >
             <Button variant="outline" className="w-full justify-between">
               <div className="flex items-center gap-3">
-                <Image
+                <img
                   src={
                     DEVBOX_RUNTIME_ICONS[editData.runtime] ||
                     "https://devbox.bja.sealos.run/logo.svg"
@@ -166,7 +163,6 @@ export function ProjectDevBoxCard({
                   width={20}
                   height={20}
                   className="rounded"
-                  priority
                 />
                 <span>{editData.runtime}</span>
               </div>
@@ -199,7 +195,7 @@ export function ProjectDevBoxCard({
     <div className="space-y-3 flex-col bg-background-secondary border p-3 rounded-xl">
       <div className="flex items-center gap-4">
         <div className="flex-shrink-0">
-          <Image
+          <img
             src={
               DEVBOX_RUNTIME_ICONS[resource.runtime] ||
               "https://devbox.bja.sealos.run/logo.svg"
@@ -208,7 +204,6 @@ export function ProjectDevBoxCard({
             width={36}
             height={36}
             className="rounded-lg h-9 w-9 flex-shrink-0 p-1 bg-muted"
-            priority
           />
         </div>
         <div className="flex flex-col min-w-0 flex-1">

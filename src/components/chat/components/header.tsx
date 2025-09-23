@@ -7,7 +7,6 @@ import {
   ChevronRight as ChevronRightIcon,
   MousePointerClick,
 } from "lucide-react";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 import {
   Popover,
@@ -143,7 +142,7 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
                           )}
                         />
                       </div>
-                      <Image
+                      <img
                         src={getIconUrl()}
                         alt={selectedResource?.resourceType || "Sealos Brain"}
                         width={16}
@@ -174,13 +173,6 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
                 </Popover>
               ) : (
                 <div className="flex items-center gap-2 py-1.5 min-w-0 flex-1">
-                  {/* <Image
-                    src={getIconUrl()}
-                    alt="Sealos Brain"
-                    width={16}
-                    height={16}
-                    className="grayscale rounded-sm"
-                  /> */}
                   <span className="text-sm text-muted-foreground truncate min-w-0">
                     {selectedProject}
                   </span>

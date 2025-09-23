@@ -6,7 +6,6 @@ import {
   ChevronDown,
   ChevronRight as ChevronRightIcon,
 } from "lucide-react";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 import {
   Popover,
@@ -117,7 +116,7 @@ export function ResourceStatusRow({
                   <ChevronRightIcon className="h-3 w-3 text-muted-foreground" />
                 )}
               </div>
-              <Image
+              <img
                 src={getIconUrl()}
                 alt={selectedResource?.resourceType || "Sealos Brain"}
                 width={16}
@@ -146,7 +145,7 @@ export function ResourceStatusRow({
         </Popover>
       ) : (
         <div className="flex items-center gap-2 px-3 py-2 border border-border rounded-md bg-muted/30">
-          <Image
+          <img
             src={getIconUrl()}
             alt="Sealos Brain"
             width={16}

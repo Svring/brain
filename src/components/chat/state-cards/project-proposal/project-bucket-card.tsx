@@ -12,7 +12,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Edit2, Save, X } from "lucide-react";
-import Image from "next/image";
 import type { ObjectStorageBucket } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 
 // Policy options matching the ObjectStorageBucket schema
@@ -104,13 +103,12 @@ export function ProjectBucketCard({
     <div className="space-y-3 flex-col bg-background-secondary p-3 rounded-xl">
       <div className="flex items-center gap-4">
         <div className="flex-shrink-0">
-          <Image
+          <img
             src="https://objectstorageapi.hzh.sealos.run/cyhipdvv-logos/objectstorage.svg"
             alt="Object Storage Icon"
             width={36}
             height={36}
             className="rounded-lg border border-muted h-9 w-9 flex-shrink-0 p-1 bg-muted"
-            priority
           />
         </div>
         <div className="flex flex-col min-w-0 flex-1">

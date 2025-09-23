@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
@@ -71,7 +70,7 @@ export default function BaseResourceIcon({
   };
 
   return (
-    <Image
+    <img
       src={getIconUrl()}
       alt={`${target.resourceType} Icon`}
       width={size}

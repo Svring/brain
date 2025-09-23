@@ -11,7 +11,6 @@ import { authenticateDev, authenticateProd } from "@/lib/auth/auth-utils";
 import type { User } from "@/payload-types";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { useEnv } from "@/components/provider/env-provider";
-import Image from "next/image";
 
 // const inspector = createBrowserInspector();
 
@@ -58,7 +57,7 @@ export const AuthProvider = ({
     return (
       <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
         <div className="flex flex-col items-center space-y-4">
-          <Image
+          <img
             src="/sealos-brain-icon-grayscale.svg"
             alt="Sealos Brain"
             width={64}

@@ -1,7 +1,6 @@
 "use client";
 
 import { ArrowLeft } from "lucide-react";
-import Image from "next/image";
 import { useState, useMemo, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -165,7 +164,7 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
           <div className="flex items-start gap-4">
             <div className="flex size-16 items-center justify-center rounded-lg bg-muted p-3">
               {template.spec.icon ? (
-                <Image
+                <img
                   alt={`${template.spec.title} icon`}
                   className="size-10"
                   height={40}

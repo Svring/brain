@@ -3,7 +3,6 @@
 import { CommandGroup, CommandItem } from "@/components/ui/command";
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import DevboxCreateSimpleMessage from "@/components/chat/messages/system-messages/devbox/devbox-create-simple-message";
 import LaunchpadCreateSimpleMessage from "@/components/chat/messages/system-messages/launchpad/launchpad-create-simple-message";
@@ -74,7 +73,7 @@ export function ResourceList({ onSelect, onBack }: ResourceListProps) {
           value={resource.id}
           onSelect={() => onSelect(resource.id)}
         >
-          <Image
+          <img
             src={resource.iconUrl}
             alt={`${resource.resourceType} Icon`}
             width={32}

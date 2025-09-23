@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { useAuthState } from "@/contexts/auth/auth-context";
-import Image from "next/image";
 import { UserCard } from "./user-card";
 import { openCostCenterApp } from "@/lib/auth/auth-utils";
 import { CreditCard, Sparkles } from "lucide-react";
@@ -41,7 +40,7 @@ export default function AppSidebar() {
                 }}
               >
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg grayscale">
-                  <Image
+                  <img
                     src="/sealos-brain-icon-grayscale.svg"
                     className="grayscale"
                     alt="Sealos Brain"
