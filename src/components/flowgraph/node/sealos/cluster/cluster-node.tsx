@@ -38,15 +38,12 @@ function ClusterNode({ data }: ClusterNodeProps) {
   const { resource: clusterData, status } = useResourceStatus(target);
   const clusterResource = clusterData || resource;
   const { latestData } = useResourceMetricsStatus({ target });
+  // console.log("latestData", latestData);
   const storagePercent = Math.min(
     100,
-    Math.max(
-      0,
-      Number(latestData?.storage) <= 1
-        ? Number(latestData?.storage) * 100
-        : Number(latestData?.storage) || 0
-    )
+    Math.max(0, Number(latestData?.storage) || 0)
   );
+  // console.log("storagePercent", storagePercent);
   const connectionString = composeClusterPublicConnectionString(
     clusterResource,
     k8sContext.regionUrl

@@ -160,8 +160,13 @@ export const clusterRouter = t.router({
     .input(RestoreBackupRequestSchema)
     // .output(RestoreBackupResponseSchema)
     .mutation(async ({ input, ctx }) => {
-      const { databaseName, backupName } = input;
-      return await restoreClusterBackup(ctx, databaseName, backupName);
+      const { databaseName, backupName, newDbName } = input;
+      return await restoreClusterBackup(
+        ctx,
+        databaseName,
+        backupName,
+        newDbName
+      );
     }),
 
   // Public Access Management

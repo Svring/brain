@@ -50,7 +50,7 @@ export default function DevboxNodeIde({ object }: DevboxNodeIdeProps) {
                 object.name,
                 token
               );
-              window.open(sshUri, "_blank");
+              window.location.href = sshUri;
             }
           } catch (error) {
             console.error("Failed to get SSH info:", error);
@@ -102,7 +102,7 @@ export default function DevboxNodeIde({ object }: DevboxNodeIdeProps) {
                       object.name,
                       token
                     );
-                    window.open(sshUri, "_blank");
+                    window.location.href = sshUri;
                   }
                 } catch (error) {
                   console.error("Failed to get SSH info:", error);

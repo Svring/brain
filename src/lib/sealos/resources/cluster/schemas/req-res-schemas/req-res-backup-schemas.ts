@@ -39,6 +39,7 @@ export const DeleteBackupResponseSchema = z.object({
 export const RestoreBackupRequestSchema = z.object({
   databaseName: z.string().min(1, "Database name is required"),
   backupName: z.string().min(1, "Backup name is required"),
+  newDbName: z.string().min(1, "New database name is required"),
 });
 
 // Restore Backup Response Schema

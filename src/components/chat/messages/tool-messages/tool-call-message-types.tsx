@@ -37,171 +37,253 @@ import { DeleteLaunchpadToolCallMessage } from "./tool-call-messages/launchpad/d
 export const ToolCallMessageType = {
   // Devbox Tool Calls
   get_devbox: (parameters: Record<string, any>) => {
-    return <GetDevboxToolCallMessage devbox_name={parameters.devbox_name || ""} />;
+    return (
+      <GetDevboxToolCallMessage devbox_name={parameters.devbox_name || ""} />
+    );
   },
 
   get_devbox_monitor: (parameters: Record<string, any>) => {
-    return <GetDevboxMonitorToolCallMessage 
-      devbox_name={parameters.devbox_name || ""} 
-      step={parameters.step || "2m"} 
-    />;
+    return (
+      <GetDevboxMonitorToolCallMessage
+        devbox_name={parameters.devbox_name || ""}
+        step={parameters.step || "2m"}
+      />
+    );
   },
 
   get_devbox_network: (parameters: Record<string, any>) => {
-    return <GetDevboxNetworkToolCallMessage devbox_name={parameters.devbox_name || ""} />;
+    return (
+      <GetDevboxNetworkToolCallMessage
+        devbox_name={parameters.devbox_name || ""}
+      />
+    );
   },
 
   update_devbox: (parameters: Record<string, any>) => {
-    return <UpdateDevboxToolCallMessage 
-      devbox_name={parameters.devbox_name || ""} 
-      cpu={parameters.cpu}
-      memory={parameters.memory}
-    />;
+    return (
+      <UpdateDevboxToolCallMessage
+        devbox_name={parameters.devbox_name || ""}
+        cpu={parameters.cpu}
+        memory={parameters.memory}
+      />
+    );
   },
 
   create_devbox_ports: (parameters: Record<string, any>) => {
-    return <CreateDevboxPortsToolCallMessage 
-      devbox_name={parameters.devbox_name || ""} 
-      ports={parameters.ports || []} 
-    />;
+    return (
+      <CreateDevboxPortsToolCallMessage
+        devbox_name={parameters.devbox_name || ""}
+        ports={parameters.ports || []}
+      />
+    );
   },
 
   delete_devbox_ports: (parameters: Record<string, any>) => {
-    return <DeleteDevboxPortsToolCallMessage 
-      devbox_name={parameters.devbox_name || ""} 
-      ports={parameters.ports || []} 
-    />;
+    return (
+      <DeleteDevboxPortsToolCallMessage
+        devbox_name={parameters.devbox_name || ""}
+        ports={parameters.ports || []}
+      />
+    );
   },
 
   start_devbox: (parameters: Record<string, any>) => {
-    return <StartDevboxToolCallMessage devbox_name={parameters.devbox_name || ""} />;
+    return (
+      <StartDevboxToolCallMessage devbox_name={parameters.devbox_name || ""} />
+    );
   },
 
   pause_devbox: (parameters: Record<string, any>) => {
-    return <PauseDevboxToolCallMessage devbox_name={parameters.devbox_name || ""} />;
+    return (
+      <PauseDevboxToolCallMessage devbox_name={parameters.devbox_name || ""} />
+    );
   },
 
   delete_devbox: (parameters: Record<string, any>) => {
-    return <DeleteDevboxToolCallMessage devbox_name={parameters.devbox_name || ""} />;
+    return (
+      <DeleteDevboxToolCallMessage devbox_name={parameters.devbox_name || ""} />
+    );
   },
 
   // Cluster Tool Calls
   get_cluster: (parameters: Record<string, any>) => {
-    return <GetClusterToolCallMessage cluster_name={parameters.cluster_name || ""} />;
+    return (
+      <GetClusterToolCallMessage cluster_name={parameters.cluster_name || ""} />
+    );
   },
 
   get_cluster_logs: (parameters: Record<string, any>) => {
-    return <GetClusterLogsToolCallMessage cluster_name={parameters.cluster_name || ""} />;
+    return (
+      <GetClusterLogsToolCallMessage
+        cluster_name={parameters.cluster_name || ""}
+      />
+    );
   },
 
   get_cluster_monitor: (parameters: Record<string, any>) => {
-    return <GetClusterMonitorToolCallMessage 
-      cluster_name={parameters.cluster_name || ""} 
-      db_type={parameters.db_type || ""} 
-    />;
+    return (
+      <GetClusterMonitorToolCallMessage
+        cluster_name={parameters.cluster_name || ""}
+        db_type={parameters.db_type || ""}
+      />
+    );
   },
 
   update_cluster: (parameters: Record<string, any>) => {
-    return <UpdateClusterToolCallMessage 
-      cluster_name={parameters.cluster_name || ""} 
-      cpu={parameters.cpu}
-      memory={parameters.memory}
-      replicas={parameters.replicas}
-      storage={parameters.storage}
-    />;
+    return (
+      <UpdateClusterToolCallMessage
+        cluster_name={parameters.cluster_name || ""}
+        cpu={parameters.cpu}
+        memory={parameters.memory}
+        // replicas={parameters.replicas}
+        // storage={parameters.storage}
+      />
+    );
   },
 
   start_cluster: (parameters: Record<string, any>) => {
-    return <StartClusterToolCallMessage cluster_name={parameters.cluster_name || ""} />;
+    return (
+      <StartClusterToolCallMessage
+        cluster_name={parameters.cluster_name || ""}
+      />
+    );
   },
 
   pause_cluster: (parameters: Record<string, any>) => {
-    return <PauseClusterToolCallMessage cluster_name={parameters.cluster_name || ""} />;
+    return (
+      <PauseClusterToolCallMessage
+        cluster_name={parameters.cluster_name || ""}
+      />
+    );
   },
 
   delete_cluster: (parameters: Record<string, any>) => {
-    return <DeleteClusterToolCallMessage cluster_name={parameters.cluster_name || ""} />;
+    return (
+      <DeleteClusterToolCallMessage
+        cluster_name={parameters.cluster_name || ""}
+      />
+    );
   },
 
   // Launchpad Tool Calls
   get_launchpad: (parameters: Record<string, any>) => {
-    return <GetLaunchpadToolCallMessage launchpad_name={parameters.launchpad_name || ""} />;
+    return (
+      <GetLaunchpadToolCallMessage
+        launchpad_name={parameters.launchpad_name || ""}
+      />
+    );
   },
 
   get_launchpad_logs: (parameters: Record<string, any>) => {
-    return <GetLaunchpadLogsToolCallMessage launchpad_name={parameters.launchpad_name || ""} />;
+    return (
+      <GetLaunchpadLogsToolCallMessage
+        launchpad_name={parameters.launchpad_name || ""}
+      />
+    );
   },
 
   get_launchpad_monitor: (parameters: Record<string, any>) => {
-    return <GetLaunchpadMonitorToolCallMessage 
-      launchpad_name={parameters.launchpad_name || ""} 
-      step={parameters.step || "2m"} 
-    />;
+    return (
+      <GetLaunchpadMonitorToolCallMessage
+        launchpad_name={parameters.launchpad_name || ""}
+        step={parameters.step || "2m"}
+      />
+    );
   },
 
   get_launchpad_network: (parameters: Record<string, any>) => {
-    return <GetLaunchpadNetworkToolCallMessage launchpad_name={parameters.launchpad_name || ""} />;
+    return (
+      <GetLaunchpadNetworkToolCallMessage
+        launchpad_name={parameters.launchpad_name || ""}
+      />
+    );
   },
 
   update_launchpad: (parameters: Record<string, any>) => {
-    return <UpdateLaunchpadToolCallMessage 
-      launchpad_name={parameters.launchpad_name || ""} 
-      cpu={parameters.cpu}
-      memory={parameters.memory}
-    />;
+    return (
+      <UpdateLaunchpadToolCallMessage
+        launchpad_name={parameters.launchpad_name || ""}
+        cpu={parameters.cpu}
+        memory={parameters.memory}
+      />
+    );
   },
 
   create_launchpad_ports: (parameters: Record<string, any>) => {
-    return <CreateLaunchpadPortsToolCallMessage 
-      launchpad_name={parameters.launchpad_name || ""} 
-      ports={parameters.ports || []} 
-    />;
+    return (
+      <CreateLaunchpadPortsToolCallMessage
+        launchpad_name={parameters.launchpad_name || ""}
+        ports={parameters.ports || []}
+      />
+    );
   },
 
   delete_launchpad_ports: (parameters: Record<string, any>) => {
-    return <DeleteLaunchpadPortsToolCallMessage 
-      launchpad_name={parameters.launchpad_name || ""} 
-      ports={parameters.ports || []} 
-    />;
+    return (
+      <DeleteLaunchpadPortsToolCallMessage
+        launchpad_name={parameters.launchpad_name || ""}
+        ports={parameters.ports || []}
+      />
+    );
   },
 
   create_launchpad_env: (parameters: Record<string, any>) => {
-    return <CreateLaunchpadEnvToolCallMessage 
-      launchpad_name={parameters.launchpad_name || ""} 
-      env_vars={parameters.env_vars || []} 
-    />;
+    return (
+      <CreateLaunchpadEnvToolCallMessage
+        launchpad_name={parameters.launchpad_name || ""}
+        env_vars={parameters.env_vars || []}
+      />
+    );
   },
 
   delete_launchpad_env: (parameters: Record<string, any>) => {
-    return <DeleteLaunchpadEnvToolCallMessage 
-      launchpad_name={parameters.launchpad_name || ""} 
-      env_names={parameters.env_names || []} 
-    />;
+    return (
+      <DeleteLaunchpadEnvToolCallMessage
+        launchpad_name={parameters.launchpad_name || ""}
+        env_names={parameters.env_names || []}
+      />
+    );
   },
 
   update_launchpad_env: (parameters: Record<string, any>) => {
-    return <UpdateLaunchpadEnvToolCallMessage 
-      launchpad_name={parameters.launchpad_name || ""} 
-      env_vars={parameters.env_vars || []} 
-    />;
+    return (
+      <UpdateLaunchpadEnvToolCallMessage
+        launchpad_name={parameters.launchpad_name || ""}
+        env_vars={parameters.env_vars || []}
+      />
+    );
   },
 
   update_launchpad_image: (parameters: Record<string, any>) => {
-    return <UpdateLaunchpadImageToolCallMessage 
-      launchpad_name={parameters.launchpad_name || ""} 
-      image={parameters.image || ""} 
-    />;
+    return (
+      <UpdateLaunchpadImageToolCallMessage
+        launchpad_name={parameters.launchpad_name || ""}
+        image={parameters.image || ""}
+      />
+    );
   },
 
   start_launchpad: (parameters: Record<string, any>) => {
-    return <StartLaunchpadToolCallMessage launchpad_name={parameters.launchpad_name || ""} />;
+    return (
+      <StartLaunchpadToolCallMessage
+        launchpad_name={parameters.launchpad_name || ""}
+      />
+    );
   },
 
   pause_launchpad: (parameters: Record<string, any>) => {
-    return <PauseLaunchpadToolCallMessage launchpad_name={parameters.launchpad_name || ""} />;
+    return (
+      <PauseLaunchpadToolCallMessage
+        launchpad_name={parameters.launchpad_name || ""}
+      />
+    );
   },
 
   delete_launchpad: (parameters: Record<string, any>) => {
-    return <DeleteLaunchpadToolCallMessage launchpad_name={parameters.launchpad_name || ""} />;
+    return (
+      <DeleteLaunchpadToolCallMessage
+        launchpad_name={parameters.launchpad_name || ""}
+      />
+    );
   },
 };
