@@ -23,7 +23,7 @@ export const useOrchestratorFitView = () => {
 
       return () => clearTimeout(timer);
     }
-  }, [sidebarChatMaximized]);
+  }, [sidebarChatMaximized, selectedNode]);
 
   // Handle fitView when chat is minimized
   useEffect(() => {

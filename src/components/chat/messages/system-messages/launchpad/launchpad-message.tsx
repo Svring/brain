@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { BaseResourceMessage } from "@/components/chat/messages/system-messages/components/base-resource-message";
@@ -29,6 +29,7 @@ import {
   NetworkPopoverContent,
   AdvancedConfigPopoverContent,
 } from "./components/launchpad-message";
+import { LaunchpadView } from "@/contexts/navigation/navigation-machine";
 
 type ActiveSection =
   | "basic-info"
@@ -40,14 +41,30 @@ type ActiveSection =
 
 interface LaunchpadInfoMessageProps {
   target: BuiltinResourceTarget;
+  view?: LaunchpadView;
 }
 
 export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
   target,
+  view,
 }) => {
   const { launchpad } = useTRPCClients();
   const appendSystemMessageMutation = useAppendSystemMessageMutation();
-  const [activeSection, setActiveSection] = useState<ActiveSection>(null);
+  
+  // Initialize activeSection based on the view parameter
+  const getInitialSection = (): ActiveSection => {
+    if (!view || view === "main") return null;
+    return view as ActiveSection;
+  };
+  
+  const [activeSection, setActiveSection] = useState<ActiveSection>(getInitialSection());
+  
+  // Update activeSection when view prop changes
+  useEffect(() => {
+    const newSection = getInitialSection();
+    setActiveSection(newSection);
+  }, [view]);
+
   const { triggerScrollToBottom } = useChatActions();
 
   // Fetch launchpad data using the target

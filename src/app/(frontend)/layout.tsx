@@ -14,6 +14,7 @@ import { ReactFlowProvider } from "@xyflow/react";
 import { ReactScan } from "@/components/provider/react-scan-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/auth/auth-context";
+import { NavigationProvider } from "@/contexts/navigation/navigation-context";
 import { getUser } from "@/payload/operations/users-operation";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { EnvProvider } from "@/components/provider/env-provider";
@@ -86,24 +87,26 @@ export default async function RootLayout({
           <NuqsAdapter>
             <EnvProvider env={env}>
               <AuthProvider payloadUser={payloadUser}>
-                <QueryProvider>
-                  <ChatProvider>
-                    <ProjectProvider>
-                      <LanggraphConfigWrapper>
-                        <ReactFlowProvider>
-                          <FlowgraphProvider>
-                            <OrchestratorProvider>
-                              <SidebarProvider defaultOpen={false}>
-                                <AppSidebar />
-                                {children}
-                              </SidebarProvider>
-                            </OrchestratorProvider>
-                          </FlowgraphProvider>
-                        </ReactFlowProvider>
-                      </LanggraphConfigWrapper>
-                    </ProjectProvider>
-                  </ChatProvider>
-                </QueryProvider>
+                <NavigationProvider>
+                  <QueryProvider>
+                    <ChatProvider>
+                      <ProjectProvider>
+                        <LanggraphConfigWrapper>
+                          <ReactFlowProvider>
+                            <FlowgraphProvider>
+                              <OrchestratorProvider>
+                                <SidebarProvider defaultOpen={false}>
+                                  <AppSidebar />
+                                  {children}
+                                </SidebarProvider>
+                              </OrchestratorProvider>
+                            </FlowgraphProvider>
+                          </ReactFlowProvider>
+                        </LanggraphConfigWrapper>
+                      </ProjectProvider>
+                    </ChatProvider>
+                  </QueryProvider>
+                </NavigationProvider>
               </AuthProvider>
             </EnvProvider>
           </NuqsAdapter>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useQuery } from "@tanstack/react-query";
 import { devboxClient } from "@/components/provider/trpc-provider";
@@ -21,16 +21,35 @@ import {
   NetworkPopoverContent,
   ReleasePopoverContent,
 } from "./components/devbox-message";
+import { DevboxView } from "@/contexts/navigation/navigation-machine";
 
 type ActiveSection = "resource" | "network" | "ssh" | "release" | null;
 
 interface DevboxMessageProps {
   target: CustomResourceTarget;
+  view?: DevboxView;
 }
 
-export const DevboxMessage: React.FC<DevboxMessageProps> = ({ target }) => {
+export const DevboxMessage: React.FC<DevboxMessageProps> = ({
+  target,
+  view,
+}) => {
   const appendSystemMessageMutation = useAppendSystemMessageMutation();
-  const [activeSection, setActiveSection] = useState<ActiveSection>(null);
+  // Initialize activeSection based on the view parameter
+  const getInitialSection = (): ActiveSection => {
+    if (!view || view === "main") return null;
+    return view as ActiveSection;
+  };
+
+  const [activeSection, setActiveSection] = useState<ActiveSection>(
+    getInitialSection()
+  );
+
+  // Update activeSection when view prop changes
+  useEffect(() => {
+    const newSection = getInitialSection();
+    setActiveSection(newSection);
+  }, [view]);
 
   const devboxTrpcClient = devboxClient.useTRPC();
 

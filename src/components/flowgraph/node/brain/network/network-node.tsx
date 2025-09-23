@@ -122,6 +122,7 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
         messageType="universal.network"
         className="h-14 p-2 bg-muted"
         width="auto"
+        view="network"
       >
         <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
           Loading...
@@ -138,6 +139,7 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
         messageType="universal.network"
         className="h-14 p-2 bg-status-error/20"
         width="auto"
+        view="network"
       >
         <div className="flex items-center justify-center h-full text-sm text-theme-red">
           Error loading resource
@@ -161,6 +163,7 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
       nodeId={nodeId}
       messageType={messageType}
       className={cn("h-14 p-2", getBackgroundColor())}
+      view="network"
       // width="auto"
     >
       <div className="flex items-center justify-center h-full">

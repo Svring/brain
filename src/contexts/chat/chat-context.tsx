@@ -93,6 +93,15 @@ export function useChatState() {
     return state.context.triggerPendingMessages.get(key) || false;
   };
 
+  // Helper to get the maximized state of the focused chat
+  const getSidebarChatMaximized = () => {
+    const focusedTarget = state.context.focusedResourceTarget;
+    if (!focusedTarget) return false;
+    
+    const instance = state.context.chatInstances.get(focusedTarget);
+    return instance?.state?.maximized || false;
+  };
+
   return {
     // Multi-instance state
     chatInstances: state.context.chatInstances,
@@ -101,6 +110,9 @@ export function useChatState() {
     pendingMessages: state.context.pendingMessages,
     chatDisplayOrder: state.context.chatDisplayOrder,
     triggerPendingMessages: state.context.triggerPendingMessages,
+
+    // Computed properties
+    sidebarChatMaximized: getSidebarChatMaximized(),
 
     // Helper functions
     isResourceActive,

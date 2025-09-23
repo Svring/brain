@@ -10,6 +10,8 @@ import { useResourceDelete } from "@/hooks/sealos/resource/use-resource-delete";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 import { useStreamContext } from "@/components/provider/stream-provider";
 import { useThreads } from "@/components/provider/thread-provider";
+import { ResourceView } from "@/contexts/navigation/navigation-machine";
+import { useNavigationActions } from "@/contexts/navigation/navigation-context";
 import _ from "lodash";
 
 interface BaseNodeProps {
@@ -19,6 +21,7 @@ interface BaseNodeProps {
   className?: string;
   messageType?: string;
   width?: "auto" | "fixed";
+  view?: ResourceView;
 }
 
 export default function BaseNodeWrapper({
@@ -28,9 +31,10 @@ export default function BaseNodeWrapper({
   className,
   messageType,
   width = "fixed",
+  view,
 }: BaseNodeProps) {
   const { selectedResource } = useProjectState();
-  const { submitWithContext } = useStreamContext();
+  const { changeView } = useNavigationActions();
 
   // Use the new hook for node selection
   const { handleNodeSelect } = useNodeSelect({
@@ -53,6 +57,11 @@ export default function BaseNodeWrapper({
   // Custom node click handler
   const handleNodeClick = async () => {
     await handleNodeSelect();
+
+    // Set the view in navigation machine if view is provided
+    if (view) {
+      changeView(view);
+    }
   };
 
   // Determine the appropriate styling based on status
@@ -84,6 +93,7 @@ export default function BaseNodeWrapper({
         <BaseNode
           className={`${className ?? ""} ${getNodeStyling()}`}
           onClick={handleNodeClick}
+          data-view={view}
         >
           <Handle position={Position.Top} type="source" />
           {children}

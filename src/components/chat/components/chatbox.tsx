@@ -6,7 +6,9 @@ import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
 import { AiChatInput } from "./input";
 import { AiChatHeader } from "./header";
 import { AiMessages } from "./messages";
+import SidebarSuggestions from "./sidebar-suggestions";
 import { cn } from "@/lib/utils";
+import type { Message } from "@langchain/langgraph-sdk";
 
 export default function AiChatbox() {
   const {
@@ -87,6 +89,34 @@ export default function AiChatbox() {
           submit={submit}
         />
       </div>
+
+      {/* Show suggestions when there are no messages */}
+      {messages && messages.length === 0 && (
+        <div className="p-2 pb-0 shrink-0">
+          <div className="max-w-3xl mx-auto">
+            <SidebarSuggestions
+              onSuggestionClick={(suggestion) => {
+                // Handle suggestion click by submitting the message
+                const userMessage: Message = {
+                  type: "human",
+                  content: suggestion.trim(),
+                };
+                submit(
+                  { messages: [userMessage] },
+                  {
+                    optimisticValues(prev: any) {
+                      const prevMessages = prev.messages ?? [];
+                      const newMessages = [...prevMessages, userMessage];
+                      return { ...prev, messages: newMessages };
+                    },
+                  }
+                );
+              }}
+              showResourceSuggestions={!!resourceTarget}
+            />
+          </div>
+        </div>
+      )}
 
       <div className="p-2 pt-0 shrink-0 relative z-[9999]">
         <div className="max-w-3xl mx-auto">

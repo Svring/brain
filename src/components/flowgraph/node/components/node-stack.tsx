@@ -3,6 +3,7 @@
 import { ReactNode, useState } from "react";
 import BaseNode from "../base-node-wrapper";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { ResourceView } from "@/contexts/navigation/navigation-machine";
 
 interface NodeStackProps {
   mainCard: ReactNode;
@@ -17,6 +18,7 @@ interface NodeStackProps {
   messageType?: string;
   nodeId: any; // Added nodeId to the interface
   width?: "auto" | "fixed"; // Width setting for adaptive sizing
+  view?: ResourceView; // View parameter for background cards
 }
 
 export default function NodeStack({
@@ -31,6 +33,7 @@ export default function NodeStack({
   messageType,
   nodeId,
   width = "fixed",
+  view,
 }: NodeStackProps) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -76,6 +79,7 @@ export default function NodeStack({
               cardBackgroundColor || ""
             }`}
             width={width}
+            view={view}
           >
             {/* Empty content for background cards */}
             <div className="w-full h-full" />

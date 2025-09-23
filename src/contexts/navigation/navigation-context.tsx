@@ -2,9 +2,14 @@
 
 import { createBrowserInspector } from "@statelyai/inspect";
 import { useMachine } from "@xstate/react";
-import { createContext, type ReactNode, useContext } from "react";
+import { createContext, type ReactNode, useContext, useEffect } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
-import { navigationMachine } from "@/contexts/navigation/navigation-machine";
+import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import {
+  navigationMachine,
+  type ResourceView,
+  getAvailableViewsForResourceType,
+} from "@/contexts/navigation/navigation-machine";
 
 // const inspector = createBrowserInspector();
 
@@ -14,17 +19,29 @@ interface NavigationContextValue {
   actorRef: ActorRefFrom<typeof navigationMachine>;
 }
 
-export const NavigationContext =
-  createContext<NavigationContextValue | undefined>(undefined);
+export const NavigationContext = createContext<
+  NavigationContextValue | undefined
+>(undefined);
 
-export const NavigationProvider = ({
-  children,
-}: {
-  children: ReactNode;
-}) => {
+export const NavigationProvider = ({ children }: { children: ReactNode }) => {
   const [state, send, actorRef] = useMachine(navigationMachine, {
     // inspect: inspector.inspect,
   });
+
+  // Log navigation state changes directly in the provider
+  // useEffect(() => {
+  //   console.log("NavigationProvider - State changed:", {
+  //     currentPage: state.context.currentPage,
+  //     selectedProject: state.context.selectedProject,
+  //     selectedResource: state.context.selectedResource,
+  //     activeView: state.context.activeView,
+  //   });
+  // }, [
+  //   state.context.currentPage,
+  //   state.context.selectedProject,
+  //   state.context.selectedResource,
+  //   state.context.activeView,
+  // ]);
 
   return (
     <NavigationContext.Provider value={{ state, send, actorRef }}>
@@ -44,10 +61,36 @@ export function useNavigationContext() {
 
 export function useNavigationState() {
   const { state } = useNavigationContext();
+
+  // Helper to check if a resource is selected
+  const isResourceSelected = (resourceTarget: ResourceTarget): boolean => {
+    const selectedResource = state.context.selectedResource;
+    if (!selectedResource) return false;
+    return JSON.stringify(selectedResource) === JSON.stringify(resourceTarget);
+  };
+
+  // Helper to get available views for the selected resource
+  const getAvailableViews = (): ResourceView[] => {
+    const selectedResource = state.context.selectedResource;
+    if (!selectedResource) return [];
+    return getAvailableViewsForResourceType(selectedResource.resourceType);
+  };
+
   return {
+    // Page state
     currentPage: state.context.currentPage,
-    isChat: state.matches("chat"),
-    isProject: state.matches("project"),
+    selectedProject: state.context.selectedProject,
+    selectedResource: state.context.selectedResource,
+    activeView: state.context.activeView,
+
+    // Page matchers
+    isHome: state.matches("home"),
+    isProjectOverview: state.matches("project-overview"),
+    isProjectDetail: state.matches("project-detail"),
+
+    // Helper functions
+    isResourceSelected,
+    getAvailableViews,
   };
 }
 
@@ -55,9 +98,23 @@ export function useNavigationActions() {
   const { send } = useNavigationContext();
 
   return {
-    goChat: () => send({ type: "GO_CHAT" }),
-    goProject: () => send({ type: "GO_PROJECT" }),
+    // Page navigation
+    goHome: () => send({ type: "GO_HOME" }),
+    goProjectOverview: () => send({ type: "GO_PROJECT_OVERVIEW" }),
+    goProjectDetail: (projectName: string) =>
+      send({ type: "GO_PROJECT_DETAIL", projectName }),
+
+    // Resource navigation
+    selectResource: (resourceTarget: ResourceTarget) => {
+      send({ type: "SELECT_RESOURCE", resourceTarget });
+    },
+    changeView: (view: ResourceView) => {
+      send({ type: "CHANGE_VIEW", view });
+    },
+    closeResource: () => send({ type: "CLOSE_RESOURCE" }),
+
+    // Project selection
+    setSelectedProject: (projectName: string | null) =>
+      send({ type: "SET_SELECTED_PROJECT", projectName }),
   };
 }
-
-

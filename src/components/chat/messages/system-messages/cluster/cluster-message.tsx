@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useQuery } from "@tanstack/react-query";
 import { clusterClient } from "@/components/provider/trpc-provider";
@@ -18,17 +18,32 @@ import {
   ConnectPopoverContent,
   BackupPopoverContent,
 } from "./components/cluster-message";
+import { ClusterView } from "@/contexts/navigation/navigation-machine";
 
 type ActiveSection = "resource" | "connect" | "backup" | null;
 
 interface ClusterMessageProps {
   target: CustomResourceTarget;
+  view?: ClusterView;
 }
 
-export const ClusterMessage: React.FC<ClusterMessageProps> = ({ target }) => {
+export const ClusterMessage: React.FC<ClusterMessageProps> = ({ target, view }) => {
   const clusterTrpcClient = clusterClient.useTRPC();
   const appendSystemMessageMutation = useAppendSystemMessageMutation();
-  const [activeSection, setActiveSection] = useState<ActiveSection>(null);
+  
+  // Initialize activeSection based on the view parameter
+  const getInitialSection = (): ActiveSection => {
+    if (!view || view === "main") return null;
+    return view as ActiveSection;
+  };
+  
+  const [activeSection, setActiveSection] = useState<ActiveSection>(getInitialSection());
+
+  // Update activeSection when view prop changes
+  useEffect(() => {
+    const newSection = getInitialSection();
+    setActiveSection(newSection);
+  }, [view]);
 
   // Fetch the cluster data using the target
   const {

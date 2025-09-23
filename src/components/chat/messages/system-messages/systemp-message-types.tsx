@@ -3,6 +3,7 @@ import {
   BuiltinResourceTarget,
   ResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { DevboxView, ClusterView, LaunchpadView } from "@/contexts/navigation/navigation-machine";
 
 import DevboxMessage from "./devbox/devbox-message";
 import DevboxDeployedMessage from "./devbox/devbox-deployment-message";
@@ -40,7 +41,7 @@ import { EventMessage } from "./universal/event";
 
 export const SystemMessageType = {
   devbox: {
-    detail: (target: CustomResourceTarget) => <DevboxMessage target={target} />,
+    detail: (target: CustomResourceTarget, view?: DevboxView) => <DevboxMessage target={target} view={view} />,
     deployment: (target: CustomResourceTarget, payload: { tag: string }) => (
       <DevboxDeployedMessage target={target} payload={payload} />
     ),
@@ -56,8 +57,8 @@ export const SystemMessageType = {
     ),
   },
   cluster: {
-    detail: (target: CustomResourceTarget) => (
-      <ClusterMessage target={target} />
+    detail: (target: CustomResourceTarget, view?: ClusterView) => (
+      <ClusterMessage target={target} view={view} />
     ),
     backup: (target: CustomResourceTarget) => (
       <ClusterBackupMessage target={target} />
@@ -74,8 +75,8 @@ export const SystemMessageType = {
     ),
   },
   launchpad: {
-    detail: (target: BuiltinResourceTarget) => (
-      <LaunchpadMessage target={target} />
+    detail: (target: BuiltinResourceTarget, view?: LaunchpadView) => (
+      <LaunchpadMessage target={target} view={view} />
     ),
     create: (payload?: any) => <LaunchpadCreateMessage payload={payload} />,
     network: (target: BuiltinResourceTarget) => (

@@ -58,7 +58,7 @@ function ClusterNode({ data }: ClusterNodeProps) {
   } = clusterResource;
 
   const mainCard = (
-    <BaseNode target={target} nodeId={nodeId} messageType="cluster.detail">
+    <BaseNode target={target} nodeId={nodeId} messageType="cluster.detail" view="main">
       <div className="flex h-full flex-col gap-4 justify-between">
         <div className="flex items-center justify-between">
           <ClusterNodeTitle name={name} type={type!} />

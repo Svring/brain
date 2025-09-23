@@ -10,14 +10,14 @@ interface SidebarSuggestionsProps {
 
 // Resource-specific suggestions
 const resourceSuggestions = [
-  "Upgrade resource quota of this resource",
+  // "Upgrade resource quota of this resource",
   "What's the status of this resource?",
 ];
 
 // Project-level suggestions
 const projectSuggestions = [
   "What resources are in the project?",
-  "Add a postgresql database to the project",
+  // "Add a postgresql database to the project",
 ];
 
 // Reusable suggestion item component
@@ -27,7 +27,11 @@ interface SuggestionItemProps {
   onSuggestionClick: (suggestion: string) => void;
 }
 
-function SuggestionItem({ suggestion, index, onSuggestionClick }: SuggestionItemProps) {
+function SuggestionItem({
+  suggestion,
+  index,
+  onSuggestionClick,
+}: SuggestionItemProps) {
   return (
     <div className="flex items-center hover:bg-background-tertiary p-1 rounded-lg">
       <span className="text-sm text-muted-foreground font-medium">

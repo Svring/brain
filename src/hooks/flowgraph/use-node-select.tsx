@@ -10,6 +10,7 @@ import {
 import { useChatActions } from "@/contexts/chat/chat-context";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
+import { useNavigationActions } from "@/contexts/navigation/navigation-context";
 
 interface UseNodeSelectParams {
   target: CustomResourceTarget | BuiltinResourceTarget;
@@ -21,6 +22,7 @@ export const useNodeSelect = ({ target }: UseNodeSelectParams) => {
   const { openChat } = useChatActions();
   const { updateResourceContext } = useLanggraphActions();
   const { selectedResource } = useProjectState();
+  const { selectResource: selectNavigationResource } = useNavigationActions();
 
   // Get resource status for the target
   const { resource: resource_context } = useResourceStatus(target);
@@ -37,6 +39,8 @@ export const useNodeSelect = ({ target }: UseNodeSelectParams) => {
     updateResourceContext({
       selected_resource_context: resource_context,
     });
+
+    selectNavigationResource(target);
 
     // Open chat for this resource target
     openChat(target);

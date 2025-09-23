@@ -50,7 +50,7 @@ const analyzeMonitorPrompt = `
 不要向用户重复原始监控数据，仅总结您的解读。
 `;
 
-export function useDiagnoseMonitor(
+export function useAnalyzeMonitor(
   target: CustomResourceTarget | BuiltinResourceTarget
 ) {
   const { color, monitorData, isLoading } = useResourceMetricsStatus({
@@ -120,7 +120,13 @@ export function useDiagnoseMonitor(
 
     // Trigger pending message submission
     triggerPendingMessages(target);
-  }, [monitorData, handleNodeSelect, addPendingMessage, triggerPendingMessages, target]);
+  }, [
+    monitorData,
+    handleNodeSelect,
+    addPendingMessage,
+    triggerPendingMessages,
+    target,
+  ]);
 
   // Check if monitor data is ready (not loading and has data)
   const isMonitorReady =

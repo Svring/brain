@@ -63,13 +63,6 @@ export const useFlowgraphNodes = (targets: ResourceTarget[]) => {
     // Apply layout to the grouped nodes
     const layoutedNodes = applyLayout(groupedNodes, allEdges);
 
-    setSelectedProjectResources(
-      objects.map((object) => ({
-        kind: object.kind.toLowerCase(),
-        name: object.name,
-      }))
-    );
-
     return {
       nodes: layoutedNodes,
       edges: allEdges,
@@ -83,6 +76,18 @@ export const useFlowgraphNodes = (targets: ResourceTarget[]) => {
       setEdges(edges);
     }
   }, [nodes, edges]);
+
+  // Set selected project resources when data is available
+  useEffect(() => {
+    if (resourceObjectsQuery.data && !resourceObjectsQuery.isLoading) {
+      setSelectedProjectResources(
+        resourceObjectsQuery.data.map((object) => ({
+          kind: object.kind.toLowerCase(),
+          name: object.name,
+        }))
+      );
+    }
+  }, [resourceObjectsQuery.data, resourceObjectsQuery.isLoading]);
 
   return {
     nodes,

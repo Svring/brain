@@ -9,7 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import { useDiagnoseMonitor } from "@/hooks/copilot/use-analyze-monitor";
+import { useAnalyzeMonitor } from "@/hooks/copilot/use-analyze-monitor";
 
 import {
   CustomResourceTarget,
@@ -21,7 +21,7 @@ interface NodeMonitorProps {
 }
 
 export default function NodeMonitor({ target }: NodeMonitorProps) {
-  const { diagnoseMonitor, color, isMonitorReady } = useDiagnoseMonitor(target);
+  const { diagnoseMonitor, color, isMonitorReady } = useAnalyzeMonitor(target);
 
   return (
     <TooltipProvider delayDuration={0}>

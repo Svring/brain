@@ -39,7 +39,7 @@ function DevboxNode({ data }: { data: DevboxObject }) {
   );
 
   const mainCard = (
-    <BaseNode target={target} nodeId={nodeId} messageType="devbox.detail">
+    <BaseNode target={target} nodeId={nodeId} messageType="devbox.detail" view="main">
       <div className="flex h-full flex-col gap-2 justify-between">
         {/* Header with Name and Dropdown */}
         <div className="flex items-center justify-between">
@@ -83,6 +83,7 @@ function DevboxNode({ data }: { data: DevboxObject }) {
       data={Array.isArray(releasesData) ? releasesData : []}
       target={target}
       nodeId={nodeId}
+      view="release"
     />
   );
 }
