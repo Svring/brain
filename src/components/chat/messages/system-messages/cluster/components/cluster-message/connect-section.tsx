@@ -28,7 +28,8 @@ export const ConnectPopoverContent: React.FC<{
   const { auth } = useAuthState();
   const { copyToClipboard, isCopied } = useCopy();
   const { resource: clusterResource } = useResourceStatus(target);
-  const { enablePublic, disablePublic, isPending } = useClusterPublicAccess(target);
+  const { enablePublic, disablePublic, isPending } =
+    useClusterPublicAccess(target);
 
   const namespace = auth?.namespace;
   const regionUrl = auth?.regionUrl;
@@ -58,8 +59,9 @@ export const ConnectPopoverContent: React.FC<{
 
   // Check if public access is available
   const publicConnection = parsedClusterObject.connection?.publicConnection;
-  const hasPublicAccess = publicConnection && 
-    !Array.isArray(publicConnection) && 
+  const hasPublicAccess =
+    publicConnection &&
+    !Array.isArray(publicConnection) &&
     publicConnection.port != null;
 
   const handlePublicAccessToggle = async (enabled: boolean) => {
@@ -79,9 +81,9 @@ export const ConnectPopoverContent: React.FC<{
           <h4 className="text-sm font-medium">Private Connection</h4>
         </div>
         <div className="flex items-center justify-between min-w-0 w-full rounded-lg p-1 px-2 bg-background-tertiary border border-border-primary">
-            <span className="text-sm font-mono text-foreground flex-1 truncate mr-2">
-              {privateConnectionString || "No private connection available"}
-            </span>
+          <span className="text-sm font-mono text-foreground flex-1 truncate mr-2">
+            {privateConnectionString || "No private connection available"}
+          </span>
           <Button
             variant="ghost"
             size="sm"
@@ -104,19 +106,18 @@ export const ConnectPopoverContent: React.FC<{
       {/* Public Connection - Conditional display */}
       {hasPublicAccess ? (
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Globe className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-medium">Public Connection</h4>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Enabled</span>
-              <Checkbox
-                checked={true}
-                onCheckedChange={(checked) => handlePublicAccessToggle(checked === true)}
-                disabled={isPending}
-              />
-            </div>
+          <div className="flex items-center gap-2">
+            <Globe className="h-4 w-4 text-muted-foreground" />
+            <h4 className="text-sm font-medium">Public Connection</h4>
+            <Checkbox
+              checked={true}
+              onCheckedChange={(checked) =>
+                handlePublicAccessToggle(checked === true)
+              }
+              disabled={isPending}
+              className="cursor-pointer"
+            />
+            <span className="text-xs text-muted-foreground">Enabled</span>
           </div>
           <div className="flex items-center justify-between min-w-0 w-full rounded-lg p-1 px-2 bg-background-tertiary border border-border-primary">
             <span className="text-sm font-mono text-foreground flex-1 truncate mr-2">
@@ -142,19 +143,18 @@ export const ConnectPopoverContent: React.FC<{
         </div>
       ) : (
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Globe className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-medium">Public Connection</h4>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Disabled</span>
-              <Checkbox
-                checked={false}
-                onCheckedChange={(checked) => handlePublicAccessToggle(checked === true)}
-                disabled={isPending}
-              />
-            </div>
+          <div className="flex items-center gap-2">
+            <Globe className="h-4 w-4 text-muted-foreground" />
+            <h4 className="text-sm font-medium">Public Connection</h4>
+            <Checkbox
+              checked={false}
+              onCheckedChange={(checked) =>
+                handlePublicAccessToggle(checked === true)
+              }
+              disabled={isPending}
+              className="cursor-pointer"
+            />
+            <span className="text-xs text-muted-foreground">Disabled</span>
           </div>
           <div className="flex items-center justify-center min-w-0 w-full rounded-lg p-3 bg-background-tertiary border border-dashed border-border-primary">
             <span className="text-xs text-muted-foreground">

@@ -318,6 +318,6 @@ export async function disableClusterPublicAccess(
   databaseName: string
 ): Promise<any> {
   const api = createClusterApi(context);
-  const response = await api.post(`/${databaseName}/disablePublic`);
+  const response = await api.delete(`/${databaseName}/disablePublic`);
   return response.data;
 }

@@ -1,11 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { Message } from "@langchain/langgraph-sdk";
 
 interface SidebarSuggestionsProps {
   onSuggestionClick?: (suggestion: string) => void;
   showResourceSuggestions?: boolean;
+  submit: (data: { messages: Message[] }, options?: any) => any;
 }
 
 // Resource-specific suggestions
@@ -50,18 +51,31 @@ function SuggestionItem({
 export default function SidebarSuggestions({
   onSuggestionClick,
   showResourceSuggestions = false,
+  submit,
 }: SidebarSuggestionsProps) {
-  const { mutate: sendMessage } = useSendMessageMutation();
-
   const handleSuggestionClick = (suggestion: string) => {
     // Call the optional callback first
     onSuggestionClick?.(suggestion);
 
-    // Send the suggestion as a user message
-    sendMessage({
-      role: "user",
+    // Create the user message
+    const userMessage: Message = {
+      type: "human",
       content: suggestion,
-    });
+    };
+
+    // Send the suggestion as a user message with optimistic updates
+    submit(
+      {
+        messages: [userMessage],
+      },
+      {
+        optimisticValues(prev: any) {
+          const prevMessages = prev.messages ?? [];
+          const newMessages = [...prevMessages, userMessage];
+          return { ...prev, messages: newMessages };
+        },
+      }
+    );
   };
 
   return (
