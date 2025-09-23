@@ -63,11 +63,11 @@ export function formatUnixTimeToReadable(
 }
 
 /**
- * Format ISO date string to readable format (YYYY-MM-DD HH:mm)
+ * Format ISO date string to readable format with proper timezone conversion
  * @param isoDateString - ISO date string (e.g., "2025-08-15T15:46:32Z")
  * @param formatString - Date format string (default: 'yyyy-MM-dd HH:mm')
  * @param locale - Locale for formatting (default: zhCN)
- * @returns Formatted date string
+ * @returns Formatted date string in system's local timezone
  */
 export function formatIsoDateToReadable(
   isoDateString: string,
@@ -75,7 +75,31 @@ export function formatIsoDateToReadable(
   locale: Locale = zhCN
 ): string {
   const date = new Date(isoDateString);
-  return format(date, formatString, { locale });
+  
+  const systemTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  
+  const formattedDate = format(date, formatString, { locale });
+  
+  console.log(`[Date Utils] Formatting time:`, {
+    input: isoDateString,
+    output: formattedDate,
+    systemTimezone: systemTimezone,
+    utcTime: date.toISOString(),
+    localTime: date.toString(),
+    currentTime: new Date().toLocaleString('en-US', {
+      timeZone: systemTimezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }),
+    timezoneOffset: new Date().getTimezoneOffset()
+  });
+  
+  return formattedDate;
 }
 
 /**
