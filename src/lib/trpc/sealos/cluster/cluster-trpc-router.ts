@@ -167,7 +167,7 @@ export const clusterRouter = t.router({
   // Public Access Management
   enablePublic: t.procedure
     .input(EnablePublicAccessRequestSchema)
-    .output(EnablePublicAccessResponseSchema)
+    // .output(EnablePublicAccessResponseSchema)
     .mutation(async ({ input, ctx }) => {
       const { databaseName } = input;
       return await enableClusterPublicAccess(ctx, databaseName);
@@ -175,7 +175,7 @@ export const clusterRouter = t.router({
 
   disablePublic: t.procedure
     .input(DisablePublicAccessRequestSchema)
-    .output(DisablePublicAccessResponseSchema)
+    // .output(DisablePublicAccessResponseSchema)
     .mutation(async ({ input, ctx }) => {
       const { databaseName } = input;
       return await disableClusterPublicAccess(ctx, databaseName);
