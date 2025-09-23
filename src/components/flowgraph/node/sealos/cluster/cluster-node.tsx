@@ -58,7 +58,12 @@ function ClusterNode({ data }: ClusterNodeProps) {
   } = clusterResource;
 
   const mainCard = (
-    <BaseNode target={target} nodeId={nodeId} messageType="cluster.detail" view="main">
+    <BaseNode
+      target={target}
+      nodeId={nodeId}
+      messageType="cluster.detail"
+      view="main"
+    >
       <div className="flex h-full flex-col gap-4 justify-between">
         <div className="flex items-center justify-between">
           <ClusterNodeTitle name={name} type={type!} />
@@ -99,7 +104,7 @@ function ClusterNode({ data }: ClusterNodeProps) {
                 storagePercent > 90
                   ? "bg-status-error/20"
                   : storagePercent > 75
-                  ? "bg-theme-yellow/30"
+                  ? "bg-theme-yellow/10"
                   : "bg-muted"
               }`}
               style={{ width: `${storagePercent}%` }}

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ToolActionResult } from "@/components/chat/messages/tool-messages/tool-message-types";
+import { ToolActionResult } from "@/components/chat/messages/tool-messages/tool-result-message-types";
 import { CircleCheckBigIcon, CircleSlash } from "lucide-react";
 import { useMount } from "@reactuses/core";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";

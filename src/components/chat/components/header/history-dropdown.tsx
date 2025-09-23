@@ -24,8 +24,14 @@ import { useProjectState } from "@/contexts/project/project-context";
 import { useChatActions } from "@/contexts/chat/chat-context";
 
 export function HistoryDropdown() {
-  const { resourceTarget, threadId, threads, setChatThreadId, setChatThreads } =
-    useChatInstance();
+  const {
+    resourceTarget,
+    threadId,
+    threads,
+    setChatThreadId,
+    setChatThreads,
+    isLoading,
+  } = useChatInstance();
   const { deleteThread, getThreads } = useThreads();
   const { closeChat, openChat, closeProjectChat, openProjectChat } =
     useChatActions();
@@ -47,7 +53,7 @@ export function HistoryDropdown() {
   // Refetch threads when selectedProject or selectedResource changes
   useEffect(() => {
     refetchAndUpdateThreads();
-  }, [selectedProject, selectedResource]);
+  }, [selectedProject, selectedResource, isLoading]);
 
   // Filter and limit threads based on resourceTarget
   const filteredAndLimitedThreads = useMemo(() => {

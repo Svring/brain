@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, ReactNode, useEffect, useRef } from "react";
+import React, {
+  createContext,
+  useContext,
+  ReactNode,
+  useEffect,
+  useRef,
+} from "react";
 import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
 import { Thread, type Message, type Interrupt } from "@langchain/langgraph-sdk";
 import { useStream } from "@langchain/langgraph-sdk/react";
@@ -189,14 +195,14 @@ export function ChatInstanceProvider({
         }
         // Create new thread if no threads exist
         else if (threads.length === 0 && !chatInstance?.threadId) {
-          console.log(
-            "ChatInstanceProvider - No threads found, creating new thread:",
-            {
-              isProjectChat,
-              resourceTarget: isResourceChat ? resourceTarget : null,
-              projectName: isProjectChat ? projectName : null,
-            }
-          );
+          // console.log(
+          //   "ChatInstanceProvider - No threads found, creating new thread:",
+          //   {
+          //     isProjectChat,
+          //     resourceTarget: isResourceChat ? resourceTarget : null,
+          //     projectName: isProjectChat ? projectName : null,
+          //   }
+          // );
 
           createNewThread.mutate(
             {

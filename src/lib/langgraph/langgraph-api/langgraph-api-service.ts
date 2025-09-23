@@ -60,8 +60,6 @@ export const createThread = async ({
     createOptions.supersteps = supersteps;
   }
 
-  const result = await client.threads.create(createOptions);
-
   return await client.threads.create(createOptions);
 };
 

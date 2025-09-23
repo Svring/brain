@@ -3,7 +3,7 @@
 import { memo, useMemo } from "react";
 import { get } from "lodash";
 import { useRouter } from "next/navigation";
-import { ToolMessageType } from "../messages/tool-messages/tool-message-types";
+import { ToolMessageType } from "../messages/tool-messages/tool-result-message-types";
 import { useThreads } from "@/components/provider/thread-provider";
 import { useStreamContext } from "@/components/provider/stream-provider";
 

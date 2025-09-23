@@ -78,7 +78,7 @@ const DevenvDeploymentCard = ({
     () => {
       // Create initial proposal from args
       return {
-        name: "Development Environment Project",
+        name: "Dev",
         resources: {
           devbox: args.devbox
             ? Array.isArray(args.devbox)

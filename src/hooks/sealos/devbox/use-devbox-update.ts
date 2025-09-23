@@ -26,8 +26,7 @@ export const useDevboxUpdate = ({
       onSuccess?.(data);
       const target = convertResourceTypeToTarget("devbox", data.name);
       invalidateQueries([
-        devbox.list.queryKey(),
-        // devbox.get.queryKey(target),
+        devbox.get.queryKey(),
         devbox.releases.queryKey(data.name),
       ]);
     },
