@@ -21,11 +21,14 @@ import { Message, Thread } from "@langchain/langgraph-sdk";
 import { Spinner } from "@/components/ui/spinner";
 import { useChatInstance } from "@/components/provider/chat-instance-provider";
 import { useProjectState } from "@/contexts/project/project-context";
+import { useChatActions } from "@/contexts/chat/chat-context";
 
 export function HistoryDropdown() {
   const { resourceTarget, threadId, threads, setChatThreadId, setChatThreads } =
     useChatInstance();
   const { deleteThread, getThreads } = useThreads();
+  const { closeChat, openChat, closeProjectChat, openProjectChat } =
+    useChatActions();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [threadToDelete, setThreadToDelete] = useState<string | null>(null);
@@ -201,10 +204,30 @@ export function HistoryDropdown() {
         threadToDelete={threadToDelete}
         onConfirm={() => {
           if (threadToDelete) {
+            const isCurrentThread = threadToDelete === threadId;
+
             deleteThread.mutate(threadToDelete, {
               onSuccess: () => {
                 // Refetch and update threads after successful deletion
                 refetchAndUpdateThreads();
+
+                // If the current thread was deleted, close and reopen the chat
+                if (isCurrentThread) {
+                  if (resourceTarget) {
+                    // For resource chat, close and reopen
+                    closeChat(resourceTarget);
+                    // Use setTimeout to ensure the close operation completes before reopening
+                    setTimeout(() => {
+                      openChat(resourceTarget);
+                    }, 100);
+                  } else if (selectedProject) {
+                    // For project chat, close and reopen
+                    closeProjectChat(selectedProject);
+                    setTimeout(() => {
+                      openProjectChat(selectedProject);
+                    }, 100);
+                  }
+                }
               },
               onError: (error: any) => {
                 console.error("Failed to delete thread:", error);

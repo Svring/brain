@@ -19,6 +19,7 @@ import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
 import { SystemMessageType } from "@/components/chat/messages/system-messages/systemp-message-types";
 import { Separator } from "@/components/ui/separator";
 import { useNavigationState } from "@/contexts/navigation/navigation-context";
+import { useChatInstance } from "@/components/provider/chat-instance-provider";
 
 interface AiChatHeaderProps {
   title?: string;
@@ -32,6 +33,7 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
     selectedResource: navSelectedResource,
     activeView,
   } = useNavigationState();
+  const { isLoading } = useChatInstance();
   const [isExpanded, setIsExpanded] = useState(true);
 
   // Auto-open popover when activeView changes or new resource is selected
@@ -40,6 +42,13 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
       setIsExpanded(true);
     }
   }, [activeView, selectedResource]);
+
+  // Close detail when chat instance is loading
+  useEffect(() => {
+    if (isLoading) {
+      setIsExpanded(false);
+    }
+  }, [isLoading]);
 
   // Debug: Log navigation state in header
   // console.log("Header - Navigation State:", {
