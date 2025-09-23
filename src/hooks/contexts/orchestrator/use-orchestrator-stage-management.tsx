@@ -25,7 +25,6 @@ export const useOrchestratorStageManagement = () => {
     setSelectedResourceContext,
   } = useProjectActions();
   const { state: langgraphState } = useLanggraphContext();
-  const { sidebarChatOpen } = useChatState();
   const { setStage, setProjectContext, updateResourceContext } =
     useLanggraphActions();
 
@@ -69,7 +68,6 @@ export const useOrchestratorStageManagement = () => {
     selectedProject,
     selectedProjectResources,
     selectedResourceContext,
-    sidebarChatOpen,
     langgraphState.context.stage,
   ]);
 };

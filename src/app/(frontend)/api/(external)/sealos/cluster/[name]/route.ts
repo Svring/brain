@@ -105,6 +105,8 @@ export async function PATCH(
 
     delete transformedBody.storage;
 
+    // console.log("transformedBody", transformedBody);
+
     const updateData = clusterUpdateFormSchema.parse(transformedBody);
 
     const result = await updateClusterService(updateData, sealosContext);
