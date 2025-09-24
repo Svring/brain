@@ -2,12 +2,21 @@
 
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useQuery } from "@tanstack/react-query";
 
 interface ExistingResourcesProps {
   onBack: () => void;
 }
 
 export function ExistingResources({ onBack }: ExistingResourcesProps) {
+  const { devbox, cluster, launchpad } = useTRPCClients();
+
+  // Simply call the three list queries
+  const { data: devboxes } = useQuery(devbox.list.queryOptions());
+  const { data: clusters } = useQuery(cluster.list.queryOptions());
+  const { data: launchpads } = useQuery(launchpad.list.queryOptions());
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -20,7 +29,7 @@ export function ExistingResources({ onBack }: ExistingResourcesProps) {
             <div>
               <h2 className="font-semibold">Add Existing Resources</h2>
               <p className="text-sm text-muted-foreground">
-                Coming soon...
+                Queries called successfully
               </p>
             </div>
           </div>
@@ -28,14 +37,11 @@ export function ExistingResources({ onBack }: ExistingResourcesProps) {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="flex flex-col items-center justify-center h-full text-center p-4">
-          <div className="text-muted-foreground">
-            <p className="text-lg font-medium">Feature Coming Soon</p>
-            <p className="text-sm">
-              This feature will allow you to add existing resources to your project.
-            </p>
-          </div>
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="text-sm text-muted-foreground">
+          <p>Devboxes: {devboxes?.length || 0}</p>
+          <p>Clusters: {clusters?.length || 0}</p>
+          <p>Launchpads: {launchpads?.length || 0}</p>
         </div>
       </div>
     </div>
