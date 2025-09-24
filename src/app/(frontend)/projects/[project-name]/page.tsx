@@ -186,7 +186,8 @@ function ProjectFlowWithLoading({
   const { isLoading: rawIsLoading } = useFlowgraphNodes(resourceTargets);
 
   // Show loading if it hasn't loaded once before OR if there are no nodes
-  const isLoading = (rawIsLoading && !hasLoadedOnceRef.current) || nodes.length < 1;
+  const isLoading =
+    (rawIsLoading && !hasLoadedOnceRef.current) || nodes.length < 1;
 
   // Track when loading completes for the first time
   useEffect(() => {

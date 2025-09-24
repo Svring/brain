@@ -30,7 +30,7 @@ export function FlowgraphCommandDialog({
   const [selectedCommand, setSelectedCommand] = useState<string | null>(null);
   const [showResourceList, setShowResourceList] = useState(false);
   // const [showManageResources, setShowManageResources] = useState(false);
-  // const [showExistingResources, setShowExistingResources] = useState(false);
+  const [showExistingResources, setShowExistingResources] = useState(false);
   const [showAddResources, setShowAddResources] = useState(false);
 
   // Reset state when dialog is closed
@@ -40,7 +40,7 @@ export function FlowgraphCommandDialog({
       setSelectedCommand(null);
       setShowResourceList(false);
       // setShowManageResources(false);
-      // setShowExistingResources(false);
+      setShowExistingResources(false);
       setShowAddResources(false);
     }
     onOpenChange(open);
@@ -52,7 +52,10 @@ export function FlowgraphCommandDialog({
     setSelectedCommand,
     setShowResourceList,
     // setShowManageResources,
-    // setShowExistingResources,
+    setShowExistingResources,
+    selectedCommand,
+    showResourceList,
+    showExistingResources,
   });
 
   // Custom handler for add resources
@@ -76,9 +79,9 @@ export function FlowgraphCommandDialog({
           setSelectedCommand(null);
         } /* else if (showManageResources) {
           setShowManageResources(false);
-        } else if (showExistingResources) {
+        } */ else if (showExistingResources) {
           setShowExistingResources(false);
-        } */ else if (showResourceList) {
+        } else if (showResourceList) {
           setShowResourceList(false);
         } else if (showAddResources) {
           setShowAddResources(false);
@@ -93,7 +96,7 @@ export function FlowgraphCommandDialog({
     selectedCommand,
     showResourceList,
     // showManageResources,
-    // showExistingResources,
+    showExistingResources,
     showAddResources,
   ]);
 
@@ -119,15 +122,12 @@ export function FlowgraphCommandDialog({
                   resourceId={selectedCommand}
                   onBack={() => setSelectedCommand(null)}
                   onSuccess={onClose}
-                /> /* : showManageResources ? (
-                // Show manage resources dialog
-                <ManageResources onBack={() => setShowManageResources(false)} />
+                />
               ) : showExistingResources ? (
                 // Show existing resources dialog
                 <ExistingResources
                   onBack={() => setShowExistingResources(false)}
                 />
-              ) */
               ) : showAddResources ? (
                 // Show add new resources panel
                 <AddNewResources

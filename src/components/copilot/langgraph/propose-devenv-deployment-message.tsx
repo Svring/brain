@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,8 @@ import { useThreads } from "@/components/provider/thread-provider";
 import { useRouter } from "next/navigation";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { v4 as uuidv4 } from "uuid";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useQuery } from "@tanstack/react-query";
 
 interface DeployDevBox {
   name: string;
@@ -31,6 +33,26 @@ interface DeployDevBox {
 interface DeployDatabase {
   name: string;
   type: string;
+}
+
+interface DevboxTemplate {
+  runtime: string;
+  config: {
+    appPorts: Array<{
+      name: string;
+      port: number;
+      protocol: string;
+    }>;
+    ports: Array<{
+      containerPort: number;
+      name: string;
+      protocol: string;
+    }>;
+    releaseArgs: string[];
+    releaseCommand: string[];
+    user: string;
+    workingDir: string;
+  };
 }
 
 interface ProposeDevenvDeploymentMessageProps {
@@ -74,6 +96,13 @@ const DevenvDeploymentCard = ({
   const { patchThread, updateThreadState } = useThreads();
   const router = useRouter();
   const { auth } = useAuthState();
+  const { devbox } = useTRPCClients();
+
+  // Fetch devbox templates
+  const { data: templates, isLoading: isLoadingTemplates } = useQuery(
+    devbox.templates.queryOptions()
+  );
+
   const [internalProposal, setInternalProposal] = useState<ProjectProposal>(
     () => {
       // Create initial proposal from args
@@ -118,6 +147,59 @@ const DevenvDeploymentCard = ({
       };
     }
   );
+
+  // Update proposal with template-based ports when templates are loaded
+  useEffect(() => {
+    if (
+      templates &&
+      Array.isArray(templates) &&
+      args.devbox &&
+      !isLoadingTemplates
+    ) {
+      // Handle both single devbox and array of devboxes
+      const devboxes = Array.isArray(args.devbox) ? args.devbox : [args.devbox];
+
+      const updatedDevboxes = devboxes.map((devbox: DeployDevBox) => {
+        const devboxRuntime = devbox.runtime;
+        const template = templates.find(
+          (t: DevboxTemplate) => t.runtime === devboxRuntime
+        );
+
+        if (template && template.config.appPorts) {
+          const templatePorts = template.config.appPorts.map(
+            (appPort: { port: number }) => ({
+              number: appPort.port,
+              publicAccess: true,
+            })
+          );
+
+          return {
+            name: devbox.name,
+            runtime: devbox.runtime as any,
+            ports: templatePorts,
+          };
+        } else {
+          // Fallback to original ports if no template found
+          return {
+            name: devbox.name,
+            runtime: devbox.runtime as any,
+            ports: (devbox.ports || []).map((port: number) => ({
+              number: port,
+              publicAccess: true,
+            })),
+          };
+        }
+      });
+
+      setInternalProposal((prev) => ({
+        ...prev,
+        resources: {
+          ...prev.resources,
+          devbox: updatedDevboxes,
+        },
+      }));
+    }
+  }, [templates, args.devbox, isLoadingTemplates]);
 
   const handleDeploy = async () => {
     try {

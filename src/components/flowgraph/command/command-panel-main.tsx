@@ -21,16 +21,16 @@ export function CommandPanelMain({
           onSelect={onSelect}
         >
           <Plus className="h-4 w-4" />
-          <span>Add Resource</span>
+          <span>Add New Resource</span>
         </CommandItem>
-        {/* <CommandItem
+        <CommandItem
           value="add-existing-resources"
           onSelect={onSelect}
         >
           <FolderOpen className="h-4 w-4" />
           <span>Add Existing Resources</span>
         </CommandItem>
-        <CommandItem
+        {/* <CommandItem
           value="manage-resources"
           onSelect={onSelect}
         >

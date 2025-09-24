@@ -22,6 +22,7 @@ import {
   getDevboxCombinedMonitor,
   checkDevboxReady,
   authCname,
+  getDevboxTemplates,
 } from "@/lib/sealos/resources/devbox/devbox-api/devbox-api-service";
 
 const t = initTRPC.context<DevboxContext>().create();
@@ -30,11 +31,9 @@ export const devboxRouter = t.router({
   // ===== QUERY PROCEDURES =====
 
   // DevBox Listing & Information
-  list: t.procedure
-    .input(z.object({ type: z.string().default("devbox") }))
-    .query(async ({ ctx, input }) => {
-      return await listDevboxes(ctx);
-    }),
+  list: t.procedure.query(async ({ ctx }) => {
+    return await listDevboxes(ctx);
+  }),
 
   get: t.procedure
     .input(CustomResourceTargetSchema)
@@ -60,6 +59,11 @@ export const devboxRouter = t.router({
   // Release Information
   releases: t.procedure.input(z.string()).query(async ({ ctx, input }) => {
     return await getDevboxReleases(ctx, input);
+  }),
+
+  // Templates
+  templates: t.procedure.query(async ({ ctx }) => {
+    return await getDevboxTemplates(ctx);
   }),
 
   // Domain Authentication

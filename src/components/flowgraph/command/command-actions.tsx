@@ -6,7 +6,10 @@ interface CommandActionsProps {
   setSelectedCommand: (command: string | null) => void;
   setShowResourceList: (show: boolean) => void;
   // setShowManageResources: (show: boolean) => void;
-  // setShowExistingResources: (show: boolean) => void;
+  setShowExistingResources: (show: boolean) => void;
+  selectedCommand: string | null;
+  showResourceList: boolean;
+  showExistingResources: boolean;
 }
 
 export function useCommandActions({
@@ -15,7 +18,10 @@ export function useCommandActions({
   setSelectedCommand,
   setShowResourceList,
   // setShowManageResources,
-  // setShowExistingResources,
+  setShowExistingResources,
+  selectedCommand,
+  showResourceList,
+  showExistingResources,
 }: CommandActionsProps) {
   const resetAndClose = () => {
     onOpenChange(false);
@@ -23,15 +29,15 @@ export function useCommandActions({
     setSelectedCommand(null);
     setShowResourceList(false);
     // setShowManageResources(false);
-    // setShowExistingResources(false);
+    setShowExistingResources(false);
   };
 
   const handleSelect = (value: string) => {
     if (value === "add-resource") {
       setShowResourceList(true);
-    } /* else if (value === "add-existing-resources") {
+    } else if (value === "add-existing-resources") {
       setShowExistingResources(true);
-    } else if (value === "manage-resources") {
+    } /* else if (value === "manage-resources") {
       setShowManageResources(true);
     } */
   };
@@ -41,13 +47,13 @@ export function useCommandActions({
   };
 
   const handleBack = () => {
-    if (setSelectedCommand) {
+    if (selectedCommand) {
       setSelectedCommand(null);
-    } /* else if (setShowManageResources) {
+    } /* else if (showManageResources) {
       setShowManageResources(false);
-    } else if (setShowExistingResources) {
+    } */ else if (showExistingResources) {
       setShowExistingResources(false);
-    } */ else {
+    } else {
       setShowResourceList(false);
     }
   };

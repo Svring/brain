@@ -59,11 +59,9 @@ export const clusterRouter = t.router({
       return await getCluster(ctx, input);
     }),
 
-  list: t.procedure
-    .input(z.object({ type: z.string().default("cluster") }))
-    .query(async ({ ctx, input }) => {
-      return await listClusters(ctx);
-    }),
+  list: t.procedure.query(async ({ ctx }) => {
+    return await listClusters(ctx);
+  }),
 
   backups: t.procedure
     .input(CustomResourceTargetSchema)

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,28 @@ import type {
 } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 import { useProjectCreate } from "@/hooks/brain/use-project-create";
 import { useRouter } from "next/navigation";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useQuery } from "@tanstack/react-query";
+
+interface DevboxTemplate {
+  runtime: string;
+  config: {
+    appPorts: Array<{
+      name: string;
+      port: number;
+      protocol: string;
+    }>;
+    ports: Array<{
+      containerPort: number;
+      name: string;
+      protocol: string;
+    }>;
+    releaseArgs: string[];
+    releaseCommand: string[];
+    user: string;
+    workingDir: string;
+  };
+}
 
 interface CreateNewProjectProps {
   open: boolean;
@@ -38,6 +60,13 @@ export function CreateNewProject({
 }: CreateNewProjectProps) {
   const [projectName, setProjectName] = useState(`project-${nanoid()}`);
   const router = useRouter();
+  const { devbox } = useTRPCClients();
+  
+  // Fetch devbox templates
+  const { data: templates } = useQuery(devbox.templates.queryOptions());
+  
+  console.log("templates in create-new-project:", templates);
+  
   const { createProjectFromSimpleData, isCreating } = useProjectCreate({
     onSuccess: (createdProjectName: string) => {
       onConfirm(createdProjectName);
@@ -138,6 +167,48 @@ export function CreateNewProject({
       handleCancel();
     }
   };
+
+  // Update ports when runtime changes or when templates load
+  useEffect(() => {
+    if (templates && Array.isArray(templates) && devboxData.runtime) {
+      const template = templates.find((t: DevboxTemplate) => t.runtime === devboxData.runtime);
+      
+      if (template && template.config.appPorts) {
+        const templatePorts = template.config.appPorts.map((appPort: { port: number }) => ({
+          number: appPort.port,
+          publicAccess: true,
+        }));
+
+        console.log("Setting template ports:", templatePorts);
+
+        setDevboxData(prev => ({
+          ...prev,
+          ports: templatePorts,
+        }));
+      }
+    }
+  }, [devboxData.runtime, templates]);
+
+  // Update ports when dialog opens and templates are available
+  useEffect(() => {
+    if (devboxDialogOpen && templates && Array.isArray(templates) && devboxData.runtime) {
+      const template = templates.find((t: DevboxTemplate) => t.runtime === devboxData.runtime);
+      
+      if (template && template.config.appPorts) {
+        const templatePorts = template.config.appPorts.map((appPort: { port: number }) => ({
+          number: appPort.port,
+          publicAccess: true,
+        }));
+
+        console.log("Setting template ports on dialog open:", templatePorts);
+
+        setDevboxData(prev => ({
+          ...prev,
+          ports: templatePorts,
+        }));
+      }
+    }
+  }, [devboxDialogOpen, templates, devboxData.runtime]);
 
   // Resource creation handlers
   const handleAddDevbox = () => {

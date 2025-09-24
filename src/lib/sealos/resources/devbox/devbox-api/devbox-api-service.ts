@@ -113,6 +113,15 @@ export async function getDevboxReleases(
   return response.data.data;
 }
 
+// Templates
+export async function getDevboxTemplates(
+  context: SealosApiContext
+): Promise<any> {
+  const api = createDevboxAxios(context);
+  const response = await api.get("/templates");
+  return response.data.data;
+}
+
 // ===== MUTATION OPERATIONS =====
 
 // DevBox Lifecycle Management
@@ -121,9 +130,7 @@ export async function createDevbox(
   request: DevboxCreateFormData
 ): Promise<any> {
   const api = createDevboxAxios(context);
-  console.log("request", request);
   const response = await api.post("/", request);
-  console.log("response", response);
   return response.data;
 }
 
