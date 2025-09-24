@@ -3,11 +3,22 @@ import { K8sResource } from "@/lib/k8s/k8s-api/k8s-api-schemas/resource-schemas/
 /**
  * Converts a statefulset resource to a simplified list item with only essential fields
  * @param statefulsetResource - The full statefulset K8s resource object
- * @returns A simplified statefulset list item with name, kind, image, status, and inProject
+ * @returns A simplified statefulset list item with name, kind, image, status, and inProject, or null if filtered out
  */
 export const convertStatefulsetToSimplifiedList = (
   statefulsetResource: any
 ) => {
+  const labels = statefulsetResource.metadata?.labels || {};
+
+  // Filter out StatefulSets that don't have the required labels
+  const hasAppDeployManager = labels["cloud.sealos.io/app-deploy-manager"];
+  const hasDeployOnSealos = labels["cloud.sealos.io/deploy-on-sealos"];
+
+  // If neither label exists, exclude this StatefulSet
+  if (!hasAppDeployManager && !hasDeployOnSealos) {
+    return null;
+  }
+
   const containers = statefulsetResource.spec?.template?.spec?.containers;
   const image =
     Array.isArray(containers) && containers.length > 0
@@ -22,20 +33,19 @@ export const convertStatefulsetToSimplifiedList = (
       replicas: statefulsetResource.status?.replicas,
       readyReplicas: statefulsetResource.status?.readyReplicas,
     },
-    inProject:
-      statefulsetResource.metadata?.labels?.[
-        "cloud.sealos.io/deploy-on-sealos"
-      ],
+    inProject: hasDeployOnSealos,
   };
 };
 
 /**
  * Converts an array of statefulset resources to a simplified list
  * @param statefulsetResources - Array of full statefulset K8s resource objects
- * @returns Array of simplified statefulset list items
+ * @returns Array of simplified statefulset list items (filtered to exclude null values)
  */
 export const convertStatefulsetListToSimplified = (
   statefulsetResources: any[]
 ) => {
-  return statefulsetResources.map(convertStatefulsetToSimplifiedList);
+  return statefulsetResources
+    .map(convertStatefulsetToSimplifiedList)
+    .filter((item): item is NonNullable<typeof item> => item !== null);
 };

@@ -128,14 +128,27 @@ export const composeSshConnectionUri = (
 /**
  * Converts a devbox resource to a simplified list item with only essential fields
  * @param devboxResource - The full devbox K8s resource object
- * @returns A simplified devbox list item with name, kind, status, image, and inProject
+ * @returns A simplified devbox list item with name, kind, status, image, runtime, and inProject
  */
 export const convertDevboxToSimplifiedList = (devboxResource: K8sResource) => {
+  // Process runtime similar to devbox object query schema
+  const image = devboxResource.spec?.image;
+  let runtime = "";
+
+  if (image && typeof image === "string") {
+    // Transform the image similar to how devbox node title processes it
+    // First extract the image name (remove registry and tag)
+    const imageName = image.split(":")[0].split("/").pop() || "";
+    // Then apply the same processing as devbox node title: split by "-", remove last part, join back
+    runtime = imageName.split("-").slice(0, 1).join("-");
+  }
+
   return {
     name: devboxResource.metadata?.name,
     kind: devboxResource.kind,
     status: devboxResource.status?.phase,
-    image: devboxResource.spec?.image,
+    image: image,
+    runtime: runtime,
     inProject:
       devboxResource.metadata?.labels?.["cloud.sealos.io/deploy-on-sealos"],
   };
@@ -160,6 +173,24 @@ export const convertDevboxListToSimplified = (
 export const generateDevboxName = (prefix: string = "devbox"): string => {
   const randomString = generateRandomString(5);
   return `${prefix}-${randomString}`;
+};
+
+/**
+ * Generates the devbox runtime icon URL
+ * @param image - The devbox image string
+ * @param regionUrl - The region URL for the icon endpoint
+ * @returns The complete icon URL for the devbox runtime
+ */
+export const getDevboxRuntimeIconUrl = (
+  image: string,
+  regionUrl: string
+): string => {
+  const runtime = transformDevboxImage(image)
+    .split("-")
+    .slice(0, 1) // Take only the first part
+    .join("-");
+
+  return `https://devbox.${regionUrl}/images/runtime/${runtime}.svg`;
 };
 
 /**

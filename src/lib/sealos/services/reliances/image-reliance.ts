@@ -63,9 +63,12 @@ export function inferRelianceFromImage(
         // Extract devbox image name (should be string)
         const devboxImageName = getImageName(devbox.image);
 
-        // Check if the processed workload image contains the devbox name
-        // This handles cases where devbox name is part of the workload image name
-        if (processedImage.includes(devboxName)) {
+        // Check if the processed workload image contains the devbox name as a complete word
+        // This prevents false matches where devbox name is a substring of another name
+        const devboxNameRegex = new RegExp(
+          `\\b${devboxName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`
+        );
+        if (devboxNameRegex.test(processedImage)) {
           // Add the devbox as a dependency if not already added
           if (
             !result[workloadKind][workloadName].some(

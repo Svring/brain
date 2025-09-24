@@ -31,9 +31,11 @@ export const devboxRouter = t.router({
   // ===== QUERY PROCEDURES =====
 
   // DevBox Listing & Information
-  list: t.procedure.query(async ({ ctx }) => {
-    return await listDevboxes(ctx);
-  }),
+  list: t.procedure
+    .input(z.string().optional().default("devbox"))
+    .query(async ({ ctx, input }) => {
+      return await listDevboxes(ctx);
+    }),
 
   get: t.procedure
     .input(CustomResourceTargetSchema)

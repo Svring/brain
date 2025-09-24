@@ -85,16 +85,11 @@ export function DevboxResource({
     if (templates && Array.isArray(templates) && devboxData.runtime) {
       const template = templates.find((t: DevboxTemplate) => t.runtime === devboxData.runtime);
       
-      console.log("Runtime changed to:", devboxData.runtime);
-      console.log("Found template:", template);
-      
       if (template && template.config.appPorts) {
         const templatePorts = template.config.appPorts.map((appPort: { port: number }) => ({
           number: appPort.port,
           publicAccess: true,
         }));
-
-        console.log("Setting template ports:", templatePorts);
 
         setDevboxData(prev => ({
           ...prev,
@@ -114,8 +109,6 @@ export function DevboxResource({
           number: appPort.port,
           publicAccess: true,
         }));
-
-        console.log("Setting template ports on dialog open:", templatePorts);
 
         setDevboxData(prev => ({
           ...prev,

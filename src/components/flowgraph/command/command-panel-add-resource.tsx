@@ -92,7 +92,11 @@ export function ResourceList({ onSelect, onBack }: ResourceListProps) {
 }
 
 // Component that shows the create form for a specific resource
-export function ResourceCreate({ resourceId, onBack, onSuccess }: ResourceCreateProps) {
+export function ResourceCreate({
+  resourceId,
+  onBack,
+  onSuccess,
+}: ResourceCreateProps) {
   const resourceTypes = useMemo(
     () => [
       {
@@ -147,10 +151,18 @@ export function ResourceCreate({ resourceId, onBack, onSuccess }: ResourceCreate
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
-        {resourceId === "add-devbox" && <DevboxCreateSimpleMessage onSuccess={onSuccess} />}
-        {resourceId === "add-database" && <ClusterCreateSimpleMessage onSuccess={onSuccess} />}
-        {resourceId === "add-app-launchpad" && <LaunchpadCreateSimpleMessage onSuccess={onSuccess} />}
-        {resourceId === "add-object-storage" && <ObjectStorageCreateMessage onSuccess={onSuccess} />}
+        {resourceId === "add-devbox" && (
+          <DevboxCreateSimpleMessage onSuccess={onSuccess} />
+        )}
+        {resourceId === "add-database" && (
+          <ClusterCreateSimpleMessage onSuccess={onSuccess} />
+        )}
+        {resourceId === "add-app-launchpad" && (
+          <LaunchpadCreateSimpleMessage onSuccess={onSuccess} />
+        )}
+        {resourceId === "add-object-storage" && (
+          <ObjectStorageCreateMessage onSuccess={onSuccess} />
+        )}
       </div>
     </div>
   );

@@ -263,11 +263,44 @@ export function alignNetworkNodesWithParents(
   nodes: Node[],
   edges: Edge[]
 ): Node[] {
-  // Create a map to find network nodes and their parent relationships
+  // Separate nodes into dev group children and outside nodes
+  const devGroupChildren = nodes.filter(
+    (n) => (n as any).parentId === "devbox-group"
+  );
+  const outsideNodes = nodes.filter(
+    (n) => (n as any).parentId !== "devbox-group"
+  );
+  const devGroupNode = nodes.find((n) => n.id === "devbox-group");
+
+  // Apply alignment separately for each group to maintain isolation
+  const alignedDevGroupChildren =
+    devGroupChildren.length > 0
+      ? alignNodesInGroup(devGroupChildren, edges, "devbox-group")
+      : [];
+
+  const alignedOutsideNodes =
+    outsideNodes.length > 0 ? alignNodesInGroup(outsideNodes, edges, null) : [];
+
+  // Combine results, preserving the dev group node if it exists
+  const result = [...alignedOutsideNodes];
+  if (devGroupNode) {
+    result.push(devGroupNode);
+  }
+  result.push(...alignedDevGroupChildren);
+
+  return result;
+}
+
+function alignNodesInGroup(
+  nodes: Node[],
+  edges: Edge[],
+  groupId: string | null
+): Node[] {
+  // Create a map to find network nodes and their parent relationships within this group
   const networkToParentMap = new Map<string, string>();
   const parentToNetworkMap = new Map<string, string>();
 
-  // Build parent-child relationships from edges
+  // Build parent-child relationships from edges (only within this group)
   for (const edge of edges) {
     const sourceNode = nodes.find((n) => n.id === edge.source);
     const targetNode = nodes.find((n) => n.id === edge.target);

@@ -35,7 +35,7 @@ import { getResourceDefaultIcon } from "@/lib/sealos/sealos-utils";
 import { RenameProjectDialog } from "./rename-project-dialog";
 import { useProjectRename } from "@/hooks/brain/use-project-rename";
 import { useAuthState } from "@/contexts/auth/auth-context";
-import { transformDevboxImage } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
+import { getDevboxRuntimeIconUrl } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
 
 interface ProjectCardProps {
@@ -82,11 +82,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           // Extract runtime from devbox image and generate icon URL
           const image = resource.spec?.image;
           if (image && auth?.regionUrl) {
-            const runtime = transformDevboxImage(image)
-              .split("-")
-              .slice(0, -1)
-              .join("-");
-            return `https://devbox.${auth.regionUrl}/images/runtime/${runtime}.svg`;
+            return getDevboxRuntimeIconUrl(image, auth.regionUrl);
           }
         } else if (kind === "cluster") {
           // Get cluster type and use cluster icon map
@@ -129,11 +125,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           if (kind === "devbox") {
             const image = resource.spec?.image;
             if (image && auth?.regionUrl) {
-              const runtime = transformDevboxImage(image)
-                .split("-")
-                .slice(0, -1)
-                .join("-");
-              iconUrl = `https://devbox.${auth.regionUrl}/images/runtime/${runtime}.svg`;
+              iconUrl = getDevboxRuntimeIconUrl(image, auth.regionUrl);
             }
           } else if (kind === "cluster") {
             const type = resource.spec?.clusterDefinitionRef;

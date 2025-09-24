@@ -57,7 +57,6 @@ export function useProjectCreate(options?: CreateProjectOptions) {
   const [isCreating, setIsCreating] = useState(false);
   const { devbox, cluster, launchpad, objectstorage, project } =
     useTRPCClients();
-  const { updateThreadState } = useThreads();
   // Create mutations
   const createProjectMutation = useMutation(project.create.mutationOptions());
   const createDevboxMutation = useMutation(devbox.create.mutationOptions());

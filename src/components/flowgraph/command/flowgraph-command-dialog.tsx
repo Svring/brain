@@ -127,6 +127,7 @@ export function FlowgraphCommandDialog({
                 // Show existing resources dialog
                 <ExistingResources
                   onBack={() => setShowExistingResources(false)}
+                  onClose={onClose}
                 />
               ) : showAddResources ? (
                 // Show add new resources panel
