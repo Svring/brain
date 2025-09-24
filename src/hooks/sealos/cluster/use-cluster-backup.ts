@@ -76,7 +76,7 @@ export const useClusterBackup = (target: CustomResourceTarget) => {
       await restoreBackupMutation.mutateAsync({
         databaseName: target.name!,
         backupName,
-        newDbName,
+        //newDbName,
       });
 
       // Refetch the backup list after restore

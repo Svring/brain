@@ -167,12 +167,12 @@ export const clusterRouter = t.router({
     .input(RestoreBackupRequestSchema)
     // .output(RestoreBackupResponseSchema)
     .mutation(async ({ input, ctx }) => {
-      const { databaseName, backupName, newDbName } = input;
+      const { databaseName, backupName, } = input;
       return await restoreClusterBackup(
         ctx,
         databaseName,
         backupName,
-        newDbName
+        //newDbName
       );
     }),
 
