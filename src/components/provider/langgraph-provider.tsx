@@ -18,6 +18,7 @@ import { useEnv } from "@/components/provider/env-provider";
 import { toast } from "sonner";
 import { ThreadProvider } from "./thread-provider";
 import { StreamProvider } from "./stream-provider";
+import { useLocalStorage } from "@reactuses/core";
 
 // Inner component that uses langgraph state and actions
 function LanggraphConfigInner({ children }: { children: ReactNode }) {
@@ -30,6 +31,12 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
   // console.log("modelName", modelName);
 
   const isProduction = env.MODE === "production";
+
+  // Track if user has previously clicked the Create button
+  const [hasClickedCreate, setHasClickedCreate] = useLocalStorage(
+    "sealos-brain-create-clicked",
+    false
+  );
 
   // Query AI proxy tokens in production - only when not loaded
   const { data: aiProxyTokens, isLoading: tokensLoading } = useQuery({
@@ -84,28 +91,31 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
             model_name: config.modelName,
           });
         } else if (isProduction && !tokensLoading) {
-          // No brain token found in production - show UI for asking permission
-          setConfigFailed();
-
-          // Automatic token creation disabled - user must explicitly create token via UI
-          // if (!brainToken) {
-          //   createTokenMutation.mutateAsync(
-          //     { name: "brain" },
-          //     {
-          //       onSuccess: () => {
-          //         // toast.success("Token created successfully.");
-          //         window.location.reload();
-          //       },
-          //       onError: () => {
-          //         // If automatic creation fails, show the manual UI
-          //         setConfigFailed();
-          //         window.location.reload();
-          //       },
-          //     }
-          //   );
-          // } else {
-          //   setConfigFailed();
-          // }
+          // No brain token found in production
+          if (!brainToken) {
+            // If user has previously clicked Create, automatically create token
+            if (hasClickedCreate) {
+              createTokenMutation.mutateAsync(
+                { name: "brain" },
+                {
+                  onSuccess: () => {
+                    toast.success("Token created successfully.");
+                    window.location.reload();
+                  },
+                  onError: () => {
+                    // If automatic creation fails, show the manual UI
+                    setConfigFailed();
+                    window.location.reload();
+                  },
+                }
+              );
+            } else {
+              // Show UI for asking permission
+              setConfigFailed();
+            }
+          } else {
+            setConfigFailed();
+          }
         }
       }
     }
@@ -113,6 +123,9 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
 
   // Handle token creation
   const handleCreateToken = () => {
+    // Store that user has clicked the Create button
+    setHasClickedCreate(true);
+
     createTokenMutation.mutateAsync(
       { name: "brain" },
       {
@@ -133,7 +146,11 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
   if (
     isLoading ||
     (isProduction && tokensLoading) ||
-    (isProduction && !brainToken && createTokenMutation.isPending)
+    (isProduction && !brainToken && createTokenMutation.isPending) ||
+    (isProduction &&
+      !brainToken &&
+      hasClickedCreate &&
+      createTokenMutation.isPending)
   ) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen space-y-4">

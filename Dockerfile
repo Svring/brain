@@ -2,7 +2,7 @@
 # Build for AMD64
 # docker build --platform linux/amd64 -t orca-app .
 # docker build --platform linux/amd64 -t sealos-brain-frontend:v0.2 .
-# docker tag sha256:8a9475d710b173be87e566d8bd2b1a5c1ac9c044231a3404f2342037e3d336ff puddlecat/sealos-brain-frontend:v0.11
+# docker tag sha256:8fbc754ff92fa5af4a17948f4f8eeaa0a06aee2efef34d70153ed7ba87e26993 puddlecat/sealos-brain-frontend:v0.13.3
 # docker tag sha256:7d41dd40fec5db13aad90c61955a3a8074c14ede6d8cb0f1ef17348d2e4b164d crpi-xgxlm7ulopyatpv5.cn-shanghai.personal.cr.aliyuncs.com/hydrangeas/sealos-brain-frontend:v0.3
 # docker push crpi-xgxlm7ulopyatpv5.cn-shanghai.personal.cr.aliyuncs.com/hydrangeas/sealos-brain-frontend:v0.3
 
