@@ -27,17 +27,22 @@ interface ClusterMessageProps {
   view?: ClusterView;
 }
 
-export const ClusterMessage: React.FC<ClusterMessageProps> = ({ target, view }) => {
+export const ClusterMessage: React.FC<ClusterMessageProps> = ({
+  target,
+  view,
+}) => {
   const clusterTrpcClient = clusterClient.useTRPC();
   const appendSystemMessageMutation = useAppendSystemMessageMutation();
-  
+
   // Initialize activeSection based on the view parameter
   const getInitialSection = (): ActiveSection => {
     if (!view || view === "main") return null;
     return view as ActiveSection;
   };
-  
-  const [activeSection, setActiveSection] = useState<ActiveSection>(getInitialSection());
+
+  const [activeSection, setActiveSection] = useState<ActiveSection>(
+    getInitialSection()
+  );
 
   // Update activeSection when view prop changes
   useEffect(() => {

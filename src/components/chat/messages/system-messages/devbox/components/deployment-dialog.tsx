@@ -16,6 +16,10 @@ export const DeploymentDialog: React.FC<DeploymentDialogProps> = ({
   target,
   releaseTag,
 }) => {
+  const handleClose = () => {
+    onOpenChange(false);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl">
@@ -23,7 +27,11 @@ export const DeploymentDialog: React.FC<DeploymentDialogProps> = ({
           <DialogTitle>Deploy {releaseTag} to...</DialogTitle>
         </DialogHeader>
         <div className="mt-4">
-          <DeploymentChart target={target} payload={{ tag: releaseTag }} />
+          <DeploymentChart 
+            target={target} 
+            payload={{ tag: releaseTag }} 
+            onClose={handleClose}
+          />
         </div>
       </DialogContent>
     </Dialog>

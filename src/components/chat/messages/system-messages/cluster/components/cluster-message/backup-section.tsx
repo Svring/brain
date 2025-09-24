@@ -33,24 +33,19 @@ export const BackupPopoverContent: React.FC<{
 }> = ({ target }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newBackupNotes, setNewBackupNotes] = useState("");
+  const [restoringBackup, setRestoringBackup] = useState<string | null>(null);
 
   const {
     backups,
-    isLoading,
     isCreatingBackup,
-    backupConfig,
-    openDeletePopovers,
     deleteBackupMutation,
-    createBackupMutation,
     restoreBackupMutation,
     handleCreateBackup,
     handleDeleteBackup,
     handleRestoreBackup,
-    setDeletePopoverOpen,
-    setIsCreatingBackup,
-    setBackupConfig,
-    resetBackupConfig,
   } = useClusterBackup(target);
+
+  console.log("backups", backups);
 
   const formatShortDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -86,9 +81,14 @@ export const BackupPopoverContent: React.FC<{
 
   const handleRestoreBackupClick = async (backupName: string) => {
     try {
-      await handleRestoreBackup(backupName);
+      setRestoringBackup(backupName);
+      // Generate a default name for the restored database
+      const newDbName = `${target.name}-restored-${Date.now()}`;
+      await handleRestoreBackup(backupName, newDbName);
+      setRestoringBackup(null);
       toast.success("Backup restored successfully");
     } catch (error) {
+      setRestoringBackup(null);
       toast.error("Failed to restore backup");
     }
   };
@@ -112,62 +112,70 @@ export const BackupPopoverContent: React.FC<{
             backups.length > 3 ? "max-h-48 overflow-y-auto" : ""
           }`}
         >
-          {backups.map((backup: any, index: number) => {
-            const backupTime =
-              backup.time && typeof backup.time === "string"
-                ? new Date(backup.time)
-                : null;
-            const isValidTime = backupTime && !isNaN(backupTime.getTime());
+          {Array.isArray(backups) &&
+            backups.map((backup: any, index: number) => {
+              const backupTime =
+                backup.createdAt && typeof backup.createdAt === "string"
+                  ? new Date(backup.createdAt)
+                  : null;
+              const isValidTime = backupTime && !isNaN(backupTime.getTime());
 
-            return (
-              <div
-                key={backup.name || index}
-                className="border rounded-lg p-2 transition-colors"
-              >
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <div className="flex items-center gap-2">
-                    <Database className="h-3 w-3 text-muted-foreground" />
-                    <div className="flex flex-col">
-                      <span className="text-xs font-medium truncate">
-                        {backup.name}
-                      </span>
-                      {isValidTime && (
-                        <span className="text-xs text-muted-foreground">
-                          {formatShortDate(backup.time as string)}
+              return (
+                <div
+                  key={backup.name || index}
+                  className="border rounded-lg p-2 transition-colors"
+                >
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-2">
+                      <Database className="h-3 w-3 text-muted-foreground" />
+                      <div className="flex flex-col">
+                        <span className="text-xs font-medium truncate">
+                          {backup.name}
                         </span>
-                      )}
+                        {isValidTime && (
+                          <span className="text-xs text-muted-foreground">
+                            {formatShortDate(backup.createdAt as string)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="p-0 border border-border-primary bg-background-tertiary hover:brightness-150"
+                        onClick={() => handleRestoreBackupClick(backup.name)}
+                        disabled={
+                          restoreBackupMutation.isPending ||
+                          restoringBackup === backup.name
+                        }
+                        title="Restore backup"
+                      >
+                        {restoringBackup === backup.name ? (
+                          <Spinner className="h-4 w-4" />
+                        ) : (
+                          <RotateCcw className="h-4 w-4" />
+                        )}
+                        Restore
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        className="p-0 h-8 w-8 hover:text-destructive"
+                        onClick={() => handleDeleteBackupClick(backup.name)}
+                        disabled={deleteBackupMutation.isPending}
+                        title="Delete backup"
+                      >
+                        {deleteBackupMutation.isPending ? (
+                          <Spinner className="h-3 w-3" />
+                        ) : (
+                          <Trash2 className="h-3 w-3" />
+                        )}
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="p-0 border border-border-primary bg-background-tertiary hover:brightness-150"
-                      onClick={() => handleRestoreBackupClick(backup.name)}
-                      disabled={restoreBackupMutation.isPending}
-                      title="Restore backup"
-                    >
-                      <RotateCcw className="h-4 w-4" />
-                      Restore
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      className="p-0 h-8 w-8 hover:text-destructive"
-                      onClick={() => handleDeleteBackupClick(backup.name)}
-                      disabled={deleteBackupMutation.isPending}
-                      title="Delete backup"
-                    >
-                      {deleteBackupMutation.isPending ? (
-                        <Spinner className="h-3 w-3" />
-                      ) : (
-                        <Trash2 className="h-3 w-3" />
-                      )}
-                    </Button>
-                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       )}
 

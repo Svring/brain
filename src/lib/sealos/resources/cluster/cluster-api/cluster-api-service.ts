@@ -107,10 +107,14 @@ export async function getClusterBackupList(
   const backupListResponse = await runParallelAction(
     getBackupList({ dbName: target.name! }, clusterContext)
   );
-  return backupListResponse.data.map((item) => {
+  // console.log("backupListResponse", backupListResponse);
+
+  // The response is an array of backup objects, not wrapped in a data property
+  return backupListResponse.map((item: any) => {
     return {
       name: item.metadata.name,
-      time: item.status?.completionTimestamp,
+      createdAt:
+        item.status?.completionTimestamp || item.metadata.creationTimestamp,
     };
   });
 }

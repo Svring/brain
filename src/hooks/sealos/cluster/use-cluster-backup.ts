@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface BackupConfig {
@@ -10,6 +11,7 @@ interface BackupConfig {
 
 export const useClusterBackup = (target: CustomResourceTarget) => {
   const { cluster } = useTRPCClients();
+  const { invalidateQueries } = useInvalidateQueries();
 
   const [backupConfig, setBackupConfig] = useState<BackupConfig>({
     name: "",
@@ -47,8 +49,12 @@ export const useClusterBackup = (target: CustomResourceTarget) => {
       setIsCreatingBackup(false);
       setBackupConfig({ name: "", notes: "" });
 
-      // Refetch the backup list after creation
-      refetch();
+      // Invalidate queries to refresh the backup list
+      invalidateQueries([
+        cluster.backups.queryKey(target),
+        cluster.get.queryKey(target),
+        cluster.list.queryKey(),
+      ]);
     } catch (error) {
       console.error("Create backup failed:", error);
       throw error;
@@ -63,8 +69,12 @@ export const useClusterBackup = (target: CustomResourceTarget) => {
       });
       setDeletePopoverOpen(backupName, false);
 
-      // Refetch the backup list after deletion
-      refetch();
+      // Invalidate queries to refresh the backup list
+      invalidateQueries([
+        cluster.backups.queryKey(target),
+        cluster.get.queryKey(target),
+        cluster.list.queryKey(),
+      ]);
     } catch (error) {
       console.error("Delete backup failed:", error);
       throw error;
@@ -79,8 +89,15 @@ export const useClusterBackup = (target: CustomResourceTarget) => {
         newDbName,
       });
 
-      // Refetch the backup list after restore
-      refetch();
+      // Invalidate queries to refresh the backup list and cluster list
+      invalidateQueries(
+        [
+          cluster.backups.queryKey(target),
+          cluster.get.queryKey(target),
+          cluster.list.queryKey(),
+        ],
+        true
+      );
     } catch (error) {
       console.error("Restore backup failed:", error);
       throw error;

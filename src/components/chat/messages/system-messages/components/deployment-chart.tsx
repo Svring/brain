@@ -17,6 +17,7 @@ import { useDevboxDeploy } from "@/hooks/sealos/devbox/use-devbox-deploy";
 interface DeploymentChartProps {
   target: CustomResourceTarget;
   payload?: { tag: string };
+  onClose?: () => void;
 }
 
 const DeploymentItem: React.FC<{
@@ -84,34 +85,37 @@ const DeploymentItem: React.FC<{
         </div>
         <div className="flex items-center gap-1">
           {/* Update button */}
-          {/* <Button
+          <Button
+            className="h-8 px-2 hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors shrink-0"
             size="sm"
             variant="ghost"
-            className="p-0 border border-border-primary bg-background-tertiary hover:brightness-150"
             onClick={handleUpdate}
             disabled={isUpdating}
             title="Update"
           >
             {isUpdating ? (
-              <Spinner className="h-3 w-3" />
+              <Spinner className="h-3 w-3 mr-1" />
             ) : (
-              <ArrowBigUpDash className="h-3 w-3" />
+              <ArrowBigUpDash className="h-3 w-3 mr-1" />
             )}
-            Update
-          </Button> */}
+            <span className="text-xs">Update</span>
+            <span className="sr-only">Update deployment</span>
+          </Button>
           {/* Delete button */}
           <Button
-            variant="destructive"
-            className="p-0 h-8 w-8 hover:text-destructive"
+            className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors shrink-0"
+            size="sm"
+            variant="ghost"
             onClick={handleDelete}
             disabled={isDeleting}
             title="Delete"
           >
             {isDeleting ? (
-              <Spinner className="h-3 w-3" />
+              <Spinner className="h-4 w-4" />
             ) : (
-              <Trash2 className="h-3 w-3" />
+              <Trash2 className="h-4 w-4" />
             )}
+            <span className="sr-only">Delete deployment</span>
           </Button>
         </div>
       </div>
@@ -122,10 +126,10 @@ const DeploymentItem: React.FC<{
 export const DeploymentChart: React.FC<DeploymentChartProps> = ({
   target,
   payload,
+  onClose,
 }) => {
   const { k8s } = useTRPCClients();
   const queryClient = useQueryClient();
-  const appendSystemMessageMutation = useAppendSystemMessageMutation();
   const { resource } = useResourceStatus(target);
   const devboxObject = DevboxObjectSchema.parse(resource);
   const [deletingDeploymentId, setDeletingDeploymentId] = useState<
@@ -160,6 +164,11 @@ export const DeploymentChart: React.FC<DeploymentChartProps> = ({
         queryKey: k8s.list.pathKey(),
       });
 
+      // Close the dialog after successful deployment
+      if (onClose) {
+        onClose();
+      }
+
       // Note: The system message will be handled by the hook's success callback
       // which adds the deployment to the project and triggers the message
     } catch (error) {
@@ -182,6 +191,11 @@ export const DeploymentChart: React.FC<DeploymentChartProps> = ({
       queryClient.invalidateQueries({
         queryKey: k8s.list.pathKey(),
       });
+
+      // Close the dialog after successful update
+      if (onClose) {
+        onClose();
+      }
 
       setUpdatingDeploymentId(null);
     } catch (error) {

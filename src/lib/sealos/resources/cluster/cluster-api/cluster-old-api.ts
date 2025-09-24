@@ -142,13 +142,13 @@ export const getBackupList = createParallelAction(
   async (
     request: ClusterBackupListRequest,
     context: SealosApiContext
-  ): Promise<ClusterBackupListResponse> => {
+  ): Promise<any> => {
     const validatedRequest = ClusterBackupListRequestSchema.parse(request);
     const api = createClusterApi(context);
     const response = await api.get("/backup/getBackupList", {
       params: { dbName: validatedRequest.dbName },
     });
-    return ClusterBackupListResponseSchema.parse(response.data);
+    return response.data.data;
   }
 );
 
