@@ -10,6 +10,7 @@ import {
   enableClusterPublicAccess,
   disableClusterPublicAccess,
   getCluster,
+  listClusters,
   getClusterBackupList,
   getClusterLogs,
   fetchClusterVersions,
@@ -56,6 +57,12 @@ export const clusterRouter = t.router({
     .input(CustomResourceTargetSchema)
     .query(async ({ input, ctx }) => {
       return await getCluster(ctx, input);
+    }),
+
+  list: t.procedure
+    .input(z.object({ type: z.string().default("cluster") }))
+    .query(async ({ ctx, input }) => {
+      return await listClusters(ctx);
     }),
 
   backups: t.procedure

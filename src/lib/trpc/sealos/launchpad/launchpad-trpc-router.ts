@@ -57,9 +57,11 @@ export const launchpadRouter = t.router({
       }
     }),
 
-  list: t.procedure.query(async ({ ctx }) => {
-    return await listLaunchpads(ctx);
-  }),
+  list: t.procedure
+    .input(z.object({ type: z.string().default("launchpad") }))
+    .query(async ({ ctx, input }) => {
+      return await listLaunchpads(ctx);
+    }),
 
   logs: t.procedure
     .input(BuiltinResourceTargetSchema)

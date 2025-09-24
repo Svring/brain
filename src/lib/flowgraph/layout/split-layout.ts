@@ -1,5 +1,6 @@
 import type { Edge, Node, SplitLayoutOptions } from "./types";
 import { applyLayout } from "./normal-layout";
+import { alignNetworkNodesWithParents } from "./helpers";
 
 function computeBoundingBox(
   nodes: Node[],
@@ -197,5 +198,13 @@ export function applySplitLayout(
     },
   }));
 
-  return [positionedGroupNode, ...positionedChildren, ...positionedOutside];
+  // Apply network node alignment after positioning
+  const finalNodes = [
+    positionedGroupNode,
+    ...positionedChildren,
+    ...positionedOutside,
+  ];
+  const alignedNodes = alignNetworkNodesWithParents(finalNodes, edges);
+
+  return alignedNodes;
 }

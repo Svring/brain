@@ -62,71 +62,51 @@ export function calculateNodeRanks(
   edges: Edge[]
 ): Map<string, number> {
   const ranks = new Map<string, number>();
-  const processed = new Set<string>();
 
-  // Prioritize network and ingress nodes (including preview variants) - they should be at the top in BT direction
-  const priorityNodes = nodes.filter(
+  // Hierarchical ranking for split layout:
+  // Rank 0 (bottom): cluster and objectstoragebucket nodes
+  // Rank 1 (middle): deployment and statefulset nodes
+  // Rank 2 (top): network nodes (including preview variants)
+
+  const bottomNodes = nodes.filter(
+    (node) => node.type === "cluster" || node.type === "objectstoragebucket"
+  );
+  const middleNodes = nodes.filter(
+    (node) => node.type === "deployment" || node.type === "statefulset"
+  );
+  const networkNodes = nodes.filter(
     (node) =>
       node.type === "network" ||
       node.type === "ingress" ||
       node.type === "network-preview"
   );
-  const nonPriorityNodes = nodes.filter(
+  const otherNodes = nodes.filter(
     (node) =>
+      node.type !== "cluster" &&
+      node.type !== "objectstoragebucket" &&
+      node.type !== "deployment" &&
+      node.type !== "statefulset" &&
       node.type !== "network" &&
       node.type !== "ingress" &&
       node.type !== "network-preview"
   );
 
-  // Find roots among non-priority nodes (nodes with no incoming edges)
-  const roots = nonPriorityNodes.filter(
-    (node) => (incomingEdges.get(node.id) || []).length === 0
-  );
-
-  // If no roots found among non-priority nodes, distribute them evenly starting from rank 0
-  if (roots.length === 0 && nonPriorityNodes.length > 0) {
-    for (let i = 0; i < nonPriorityNodes.length; i++) {
-      ranks.set(nonPriorityNodes[i].id, i % 3);
-    }
-    // Assign priority nodes to the highest rank + 1
-    const maxRank = Math.max(...Array.from(ranks.values()));
-    for (const priorityNode of priorityNodes) {
-      ranks.set(priorityNode.id, maxRank + 1);
-      processed.add(priorityNode.id);
-    }
-    return ranks;
+  // Assign ranks based on hierarchy
+  for (const node of bottomNodes) {
+    ranks.set(node.id, 0); // Bottom row
   }
 
-  // Process root nodes starting from rank 0
-  const queue: Array<{ id: string; rank: number }> = roots.map((node) => ({
-    id: node.id,
-    rank: 0,
-  }));
-
-  while (queue.length > 0) {
-    const current = queue.shift();
-    if (!current || processed.has(current.id)) continue;
-    processed.add(current.id);
-    ranks.set(current.id, current.rank);
-    const children = nonPriorityNodes.filter((node) =>
-      (incomingEdges.get(node.id) || []).includes(current.id)
-    );
-    for (const child of children) {
-      if (!processed.has(child.id))
-        queue.push({ id: child.id, rank: current.rank + 1 });
-    }
+  for (const node of middleNodes) {
+    ranks.set(node.id, 1); // Middle row
   }
 
-  // Handle any remaining unprocessed non-priority nodes
-  for (const node of nonPriorityNodes) {
-    if (!processed.has(node.id)) ranks.set(node.id, 0);
+  for (const node of networkNodes) {
+    ranks.set(node.id, 2); // Top row
   }
 
-  // Find the maximum rank among non-priority nodes and assign priority nodes to max rank + 1
-  const maxRank = ranks.size > 0 ? Math.max(...Array.from(ranks.values())) : -1;
-  for (const priorityNode of priorityNodes) {
-    ranks.set(priorityNode.id, maxRank + 1);
-    processed.add(priorityNode.id);
+  // Other nodes go to middle row by default
+  for (const node of otherNodes) {
+    ranks.set(node.id, 1);
   }
 
   // Split ranks that have more than 4 nodes
@@ -140,7 +120,7 @@ export function splitOvercrowdedRanks(
   nodes: Node[],
   edges: Edge[]
 ): Map<string, number> {
-  const maxNodesPerRank = 4;
+  const maxNodesPerRank = 6;
   const adjustedRanks = new Map<string, number>();
 
   // Create a map to look up node types by ID
@@ -273,4 +253,169 @@ export function splitOvercrowdedRanks(
   }
 
   return adjustedRanks;
+}
+
+export function alignNetworkNodesWithParents(
+  nodes: Node[],
+  edges: Edge[]
+): Node[] {
+  // Create a map to find network nodes and their parent relationships
+  const networkToParentMap = new Map<string, string>();
+  const parentToNetworkMap = new Map<string, string>();
+
+  // Build parent-child relationships from edges
+  for (const edge of edges) {
+    const sourceNode = nodes.find((n) => n.id === edge.source);
+    const targetNode = nodes.find((n) => n.id === edge.target);
+
+    // If target is a network node and source is deployment/statefulset, establish relationship
+    if (
+      targetNode?.type === "network" &&
+      (sourceNode?.type === "deployment" || sourceNode?.type === "statefulset")
+    ) {
+      networkToParentMap.set(targetNode.id, sourceNode.id);
+      parentToNetworkMap.set(sourceNode.id, targetNode.id);
+    }
+  }
+
+  // Group nodes by their ranks (assuming BT direction where higher rank = higher position)
+  const nodesByRank = new Map<number, Node[]>();
+  const nodeRanks = new Map<string, number>();
+
+  // Determine ranks based on node types (matching our new hierarchy)
+  for (const node of nodes) {
+    let rank = 1; // default middle rank
+    if (node.type === "cluster" || node.type === "objectstoragebucket")
+      rank = 0; // bottom
+    else if (node.type === "deployment" || node.type === "statefulset")
+      rank = 1; // middle
+    else if (
+      node.type === "network" ||
+      node.type === "ingress" ||
+      node.type === "network-preview"
+    )
+      rank = 2; // top
+
+    nodeRanks.set(node.id, rank);
+    if (!nodesByRank.has(rank)) {
+      nodesByRank.set(rank, []);
+    }
+    nodesByRank.get(rank)!.push(node);
+  }
+
+  // Sort middle rank nodes (deployment/statefulset) by x position
+  const middleRankNodes = nodesByRank.get(1) || [];
+  const sortedMiddleNodes = middleRankNodes
+    .filter((n) => n.type === "deployment" || n.type === "statefulset")
+    .sort((a, b) => a.position.x - b.position.x);
+
+  // Sort network nodes to align with their parents
+  const networkNodes = nodesByRank.get(2) || [];
+
+  // Track occupied X ranges to prevent overlapping (considering node width)
+  const occupiedRanges: Array<{ start: number; end: number }> = [];
+  const alignedNetworkNodes: Node[] = [];
+  const usedNetworkIds = new Set<string>();
+  const nodeWidth = 280; // Standard node width from flowgraph utils
+  const minSpacing = 20; // Minimum spacing between nodes
+
+  // Helper function to check if a position conflicts with existing nodes
+  const isPositionAvailable = (x: number): boolean => {
+    const nodeStart = x;
+    const nodeEnd = x + nodeWidth;
+
+    return !occupiedRanges.some(
+      (range) => nodeStart < range.end && nodeEnd > range.start // Overlap check
+    );
+  };
+
+  // Helper function to find the nearest available position
+  const findAvailablePosition = (preferredX: number): number => {
+    if (isPositionAvailable(preferredX)) {
+      return preferredX;
+    }
+
+    // Try positions to the right and left alternately
+    let offset = nodeWidth + minSpacing;
+
+    for (let attempt = 1; attempt <= 20; attempt++) {
+      // Try right side
+      const rightX = preferredX + offset * attempt;
+      if (isPositionAvailable(rightX)) {
+        return rightX;
+      }
+
+      // Try left side
+      const leftX = preferredX - offset * attempt;
+      if (isPositionAvailable(leftX)) {
+        return leftX;
+      }
+    }
+
+    // Fallback: find the rightmost position and place after it
+    const rightmostEnd = Math.max(0, ...occupiedRanges.map((r) => r.end));
+    return rightmostEnd + minSpacing;
+  };
+
+  // First pass: align network nodes with their parents
+  for (let i = 0; i < sortedMiddleNodes.length; i++) {
+    const parentNode = sortedMiddleNodes[i];
+    const networkNodeId = parentToNetworkMap.get(parentNode.id);
+
+    if (networkNodeId && !usedNetworkIds.has(networkNodeId)) {
+      const networkNode = networkNodes.find((n) => n.id === networkNodeId);
+      if (networkNode) {
+        const targetX = findAvailablePosition(parentNode.position.x);
+
+        // Mark this position as occupied
+        occupiedRanges.push({
+          start: targetX,
+          end: targetX + nodeWidth,
+        });
+
+        alignedNetworkNodes.push({
+          ...networkNode,
+          position: {
+            ...networkNode.position,
+            x: targetX,
+          },
+        });
+        usedNetworkIds.add(networkNodeId);
+      }
+    }
+  }
+
+  // Second pass: position remaining network nodes that don't have parent relationships
+  for (const networkNode of networkNodes) {
+    if (!usedNetworkIds.has(networkNode.id)) {
+      const targetX = findAvailablePosition(networkNode.position.x);
+
+      // Mark this position as occupied
+      occupiedRanges.push({
+        start: targetX,
+        end: targetX + nodeWidth,
+      });
+
+      alignedNetworkNodes.push({
+        ...networkNode,
+        position: {
+          ...networkNode.position,
+          x: targetX,
+        },
+      });
+    }
+  }
+
+  // Rebuild the nodes array with aligned network nodes
+  return nodes.map((node) => {
+    if (
+      node.type === "network" ||
+      node.type === "ingress" ||
+      node.type === "network-preview"
+    ) {
+      const alignedNode = alignedNetworkNodes.find((n) => n.id === node.id);
+      return alignedNode || node;
+    }
+    return node;
+  });
 }

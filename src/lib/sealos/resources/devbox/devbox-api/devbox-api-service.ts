@@ -36,6 +36,7 @@ export async function listDevboxes(context: K8sApiContext) {
   const devboxResourceList = await runParallelAction(
     listCustomResources(context, target)
   );
+  console.log("devboxResourceList", devboxResourceList);
   return convertDevboxListToSimplified(devboxResourceList.items);
 }
 

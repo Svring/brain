@@ -39,7 +39,7 @@ export const useFlowgraphNodes = (targets: ResourceTarget[]) => {
     // Extract resource objects from the query results
     const objects = resourceObjectsQuery.data;
 
-    console.log("objects", objects);
+    // console.log("objects", objects);
 
     // Pass objects to the utility functions
     const baseNodes = convertObjectsToNodes(objects);

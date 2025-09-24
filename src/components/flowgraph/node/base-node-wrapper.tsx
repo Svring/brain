@@ -22,6 +22,7 @@ interface BaseNodeProps {
   messageType?: string;
   width?: "auto" | "fixed";
   view?: ResourceView;
+  disableClick?: boolean;
 }
 
 export default function BaseNodeWrapper({
@@ -32,6 +33,7 @@ export default function BaseNodeWrapper({
   messageType,
   width = "fixed",
   view,
+  disableClick = false,
 }: BaseNodeProps) {
   const { selectedResource } = useProjectState();
   const { changeView } = useNavigationActions();
@@ -56,6 +58,8 @@ export default function BaseNodeWrapper({
 
   // Custom node click handler
   const handleNodeClick = async () => {
+    if (disableClick) return;
+    
     await handleNodeSelect();
 
     // Set the view in navigation machine if view is provided

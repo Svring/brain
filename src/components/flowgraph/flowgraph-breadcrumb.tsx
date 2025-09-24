@@ -1,12 +1,13 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Trash2, AlertCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { Button } from "@/components/ui/button";
 import { RenameProjectDialog } from "@/components/project/rename-project-dialog";
 import { useProjectRename } from "@/hooks/brain/use-project-rename";
+import { useProjectLifecycle } from "@/hooks/brain/use-project-lifecycle";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -27,7 +28,19 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import useProjectSearch from "@/hooks/brain/use-projects-search";
+import React from "react";
 
 interface FlowgraphHeaderProps {
   projectName: string;
@@ -38,6 +51,7 @@ export function FlowgraphBreadcrumb({ projectName, hasFocusedChat = false }: Flo
   const router = useRouter();
   const { project } = useTRPCClients();
   const { projects } = useProjectSearch();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
 
   const { data: projectData } = useQuery(project.get.queryOptions(projectName));
 
@@ -51,6 +65,10 @@ export function FlowgraphBreadcrumb({ projectName, hasFocusedChat = false }: Flo
     currentDisplayName: projectData?.displayName || projectName,
   });
 
+  const { deleteProject, isDeleting } = useProjectLifecycle({
+    shouldRedirect: true, // This will redirect to /projects after deletion
+  });
+
   if (!projectData) {
     return null;
   }
@@ -59,6 +77,17 @@ export function FlowgraphBreadcrumb({ projectName, hasFocusedChat = false }: Flo
 
   const handleProjectSelect = (selectedProjectName: string) => {
     router.push(`/projects/${selectedProjectName}`);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    deleteProject(projectName);
+    setIsDeleteDialogOpen(false);
   };
 
   return (
@@ -98,6 +127,23 @@ export function FlowgraphBreadcrumb({ projectName, hasFocusedChat = false }: Flo
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Rename</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors"
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                        <span className="sr-only">Delete project</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Delete project</p>
                     </TooltipContent>
                   </Tooltip>
                   {projects &&
@@ -140,6 +186,46 @@ export function FlowgraphBreadcrumb({ projectName, hasFocusedChat = false }: Flo
           onConfirm={handleRenameConfirm}
           onCancel={handleRenameCancel}
         />
+
+        <AlertDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Project</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete the project{" "}
+                <span className="font-semibold text-foreground">
+                  "{projectDisplayName}"
+                </span>
+                ?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+
+            <Alert
+              variant="destructive"
+              className="bg-status-deleting text-red-700 border-none"
+            >
+              <AlertCircleIcon />
+              <AlertDescription className="text-red-700!">
+                This action cannot be undone and will permanently remove the
+                project and all its resources.
+              </AlertDescription>
+            </Alert>
+
+            <AlertDialogFooter>
+              <AlertDialogCancel className="flex-1">Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting}
+                className="flex-1 bg-status-deleting/80 text-red-700! hover:bg-status-deleting! border border-status-error"
+              >
+                {isDeleting ? "Deleting..." : "Confirm"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </TooltipProvider>
   );

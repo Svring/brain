@@ -44,6 +44,8 @@ export function AiMessages({
   const [interruptData, setInterruptData] = useState<any>(null);
   const [isInterruptExpanded, setIsInterruptExpanded] = useState(true);
 
+  console.log("messages", messages);
+
   // Parse interrupt value when it changes
   useEffect(() => {
     if (interrupt?.value) {

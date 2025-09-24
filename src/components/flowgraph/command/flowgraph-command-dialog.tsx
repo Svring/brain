@@ -13,7 +13,7 @@ import { ResourceList, ResourceCreate } from "./command-panel-add-resource";
 import { ManageResources } from "./command-panel-manage-resources";
 import { ExistingResources } from "./command-panel-existing-resources";
 import { useCommandActions } from "./command-actions";
-import { AddNewResources } from "@/components/project/add-new-resources";
+import { AddNewResources } from "@/components/project/add-resources";
 
 interface FlowgraphCommandDialogProps {
   isOpen: boolean;

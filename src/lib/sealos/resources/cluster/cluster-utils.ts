@@ -100,7 +100,7 @@ export function transformComponentSpecsToResources(componentSpecs: any[]): {
   storage: string;
   replicas: number;
 } {
-  console.log("componentSpecs", JSON.stringify(componentSpecs));
+  // console.log("componentSpecs", JSON.stringify(componentSpecs));
   if (!Array.isArray(componentSpecs) || componentSpecs.length === 0) {
     return {
       cpu: "0",

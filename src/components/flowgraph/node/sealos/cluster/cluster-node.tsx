@@ -29,6 +29,7 @@ interface ClusterNodeProps {
 
 function ClusterNode({ data }: ClusterNodeProps) {
   // Construct node ID following the same pattern as other nodes
+  // console.log("data", data);
   const nodeId = `${data.kind?.toLowerCase() || "cluster"}-${data.name || ""}`;
   const resource = data;
   const k8sContext = createK8sContext();
@@ -60,6 +61,7 @@ function ClusterNode({ data }: ClusterNodeProps) {
       nodeId={nodeId}
       messageType="cluster.detail"
       view="main"
+      disableClick={type === "weaviate"}
     >
       <div className="flex h-full flex-col gap-4 justify-between">
         <div className="flex items-center justify-between">
@@ -82,10 +84,12 @@ function ClusterNode({ data }: ClusterNodeProps) {
         </div>
         <div className="mt-auto flex justify-between items-center">
           <NodeStatusLight status={status || "Pending"} />
-          <div className="flex items-center gap-2">
-            <NodeLog target={target} />
-            <NodeMonitor target={target} />
-          </div>
+          {type !== "weaviate" && (
+            <div className="flex items-center gap-2">
+              <NodeLog target={target} />
+              <NodeMonitor target={target} />
+            </div>
+          )}
         </div>
       </div>
     </BaseNode>

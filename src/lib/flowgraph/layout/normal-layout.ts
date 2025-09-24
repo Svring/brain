@@ -6,6 +6,7 @@ import {
   computeIncoming,
   computeOutgoing,
   groupByRank,
+  alignNetworkNodesWithParents,
 } from "./helpers";
 
 export function applyLayout(
@@ -167,8 +168,11 @@ export function applyLayout(
     }
   }
 
-  return nodes.map((node) => ({
+  const positionedNodes = nodes.map((node) => ({
     ...node,
     position: positionedById.get(node.id) || node.position || { x: 0, y: 0 },
   }));
+
+  // Apply network node alignment for consistent positioning
+  return alignNetworkNodesWithParents(positionedNodes, edges);
 }
