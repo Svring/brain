@@ -12,6 +12,8 @@ export default function useProjectResources(projectName: string) {
     ...project.getResources.queryOptions(projectName),
   });
 
+  console.log("result", result);
+
   return {
     targets: result?.targets || [],
     resources: result?.resources || [],

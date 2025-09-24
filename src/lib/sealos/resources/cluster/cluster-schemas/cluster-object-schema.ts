@@ -66,6 +66,7 @@ export const ClusterObjectSchema = z.object({
       "apecloud-mysql",
       "kafka",
       "milvus",
+      "weaviate",
     ])
     .nullable()
     .optional(),

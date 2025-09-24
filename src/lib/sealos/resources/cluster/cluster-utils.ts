@@ -100,6 +100,7 @@ export function transformComponentSpecsToResources(componentSpecs: any[]): {
   storage: string;
   replicas: number;
 } {
+  console.log("componentSpecs", JSON.stringify(componentSpecs));
   if (!Array.isArray(componentSpecs) || componentSpecs.length === 0) {
     return {
       cpu: "0",
@@ -114,12 +115,13 @@ export function transformComponentSpecsToResources(componentSpecs: any[]): {
   let maxStorage = 0;
   let maxReplicas = 0;
 
-  // Helper function to parse CPU values (handles 'm' suffix)
-  const parseCpu = (cpu: string): number => {
-    if (cpu.endsWith("m")) {
-      return parseInt(cpu.slice(0, -1));
+  // Helper function to parse CPU values (handles 'm' suffix, coerces numbers to strings)
+  const parseCpu = (cpu: any): number => {
+    const cpuStr = typeof cpu === "number" ? cpu.toString() : cpu;
+    if (cpuStr.endsWith("m")) {
+      return parseInt(cpuStr.slice(0, -1));
     }
-    return parseInt(cpu) * 1000; // Convert cores to millicores
+    return parseInt(cpuStr) * 1000; // Convert cores to millicores
   };
 
   // Helper function to parse memory values (handles Mi, Gi suffixes)

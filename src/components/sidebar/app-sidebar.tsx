@@ -35,9 +35,9 @@ export default function AppSidebar() {
               <SidebarMenuButton
                 className="group-data-[collapsible=icon]:justify-center p-0 border-border-primary hover:bg-transparent!"
                 size="lg"
-                tooltip={{
-                  children: "Sealos Brain",
-                }}
+                // tooltip={{
+                //   children: "Sealos Brain",
+                // }}
               >
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg grayscale">
                   <img
