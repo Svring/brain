@@ -298,13 +298,10 @@ export async function createClusterBackup(
 export async function restoreClusterBackup(
   context: SealosApiContext,
   databaseName: string,
-  backupName: string,
-  newDbName: string
+  backupName: string
 ): Promise<any> {
   const api = createClusterApi(context);
-  const response = await api.post(`/${databaseName}/backup/${backupName}`, {
-    newDbName,
-  });
+  const response = await api.post(`/${databaseName}/backup/${backupName}`);
   return response.data;
 }
 

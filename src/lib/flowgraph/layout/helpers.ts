@@ -65,14 +65,17 @@ export function calculateNodeRanks(
 
   // Hierarchical ranking for split layout:
   // Rank 0 (bottom): cluster and objectstoragebucket nodes
-  // Rank 1 (middle): deployment and statefulset nodes
+  // Rank 1 (middle): deployment, statefulset, and devbox nodes
   // Rank 2 (top): network nodes (including preview variants)
 
   const bottomNodes = nodes.filter(
     (node) => node.type === "cluster" || node.type === "objectstoragebucket"
   );
   const middleNodes = nodes.filter(
-    (node) => node.type === "deployment" || node.type === "statefulset"
+    (node) =>
+      node.type === "deployment" ||
+      node.type === "statefulset" ||
+      node.type === "devbox"
   );
   const networkNodes = nodes.filter(
     (node) =>
@@ -86,6 +89,7 @@ export function calculateNodeRanks(
       node.type !== "objectstoragebucket" &&
       node.type !== "deployment" &&
       node.type !== "statefulset" &&
+      node.type !== "devbox" &&
       node.type !== "network" &&
       node.type !== "ingress" &&
       node.type !== "network-preview"
@@ -268,10 +272,12 @@ export function alignNetworkNodesWithParents(
     const sourceNode = nodes.find((n) => n.id === edge.source);
     const targetNode = nodes.find((n) => n.id === edge.target);
 
-    // If target is a network node and source is deployment/statefulset, establish relationship
+    // If target is a network node and source is deployment/statefulset/devbox, establish relationship
     if (
       targetNode?.type === "network" &&
-      (sourceNode?.type === "deployment" || sourceNode?.type === "statefulset")
+      (sourceNode?.type === "deployment" ||
+        sourceNode?.type === "statefulset" ||
+        sourceNode?.type === "devbox")
     ) {
       networkToParentMap.set(targetNode.id, sourceNode.id);
       parentToNetworkMap.set(sourceNode.id, targetNode.id);
@@ -287,7 +293,11 @@ export function alignNetworkNodesWithParents(
     let rank = 1; // default middle rank
     if (node.type === "cluster" || node.type === "objectstoragebucket")
       rank = 0; // bottom
-    else if (node.type === "deployment" || node.type === "statefulset")
+    else if (
+      node.type === "deployment" ||
+      node.type === "statefulset" ||
+      node.type === "devbox"
+    )
       rank = 1; // middle
     else if (
       node.type === "network" ||
@@ -303,10 +313,15 @@ export function alignNetworkNodesWithParents(
     nodesByRank.get(rank)!.push(node);
   }
 
-  // Sort middle rank nodes (deployment/statefulset) by x position
+  // Sort middle rank nodes (deployment/statefulset/devbox) by x position
   const middleRankNodes = nodesByRank.get(1) || [];
   const sortedMiddleNodes = middleRankNodes
-    .filter((n) => n.type === "deployment" || n.type === "statefulset")
+    .filter(
+      (n) =>
+        n.type === "deployment" ||
+        n.type === "statefulset" ||
+        n.type === "devbox"
+    )
     .sort((a, b) => a.position.x - b.position.x);
 
   // Sort network nodes to align with their parents

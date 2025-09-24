@@ -82,9 +82,7 @@ export const BackupPopoverContent: React.FC<{
   const handleRestoreBackupClick = async (backupName: string) => {
     try {
       setRestoringBackup(backupName);
-      // Generate a default name for the restored database
-      const newDbName = `${target.name}-restored-${Date.now()}`;
-      await handleRestoreBackup(backupName, newDbName);
+      await handleRestoreBackup(backupName);
       setRestoringBackup(null);
       toast.success("Backup restored successfully");
     } catch (error) {
