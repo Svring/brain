@@ -86,7 +86,7 @@ export const useClusterBackup = (target: CustomResourceTarget) => {
       await restoreBackupMutation.mutateAsync({
         databaseName: target.name!,
         backupName,
-        newDbName,
+        //newDbName,
       });
 
       // Invalidate queries to refresh the backup list and cluster list
