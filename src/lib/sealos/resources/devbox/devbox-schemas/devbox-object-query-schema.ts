@@ -75,12 +75,12 @@ export const DevboxObjectQuerySchema = z.object({
       })
     )
     .transform((image) => {
-      console.log("image", image);
+      // console.log("image", image);
       // Transform the image similar to how devbox node title processes it
       // First extract the image name (remove registry and tag)
       const imageName = image.split(":")[0].split("/").pop() || "";
       // Then apply the same processing as devbox node title: split by "-", remove last part, join back
-      return imageName.split("-").slice(0, -1).join("-");
+      return imageName.split("-").slice(0, 1).join("-");
     }),
   image: z.any().describe(
     JSON.stringify({
@@ -156,7 +156,7 @@ export const DevboxObjectQuerySchema = z.object({
       })
     )
     .transform((envVars) => {
-      console.log("envVars", envVars);
+      // console.log("envVars", envVars);
       if (!envVars || !Array.isArray(envVars)) {
         return [];
       }

@@ -105,13 +105,16 @@ export const deriveNetworkNodesAndEdges = (
   return { nodes, edges };
 };
 
-export const createDevGroup = (nodes: Node[]): Node[] => {
+export const createDevGroup = (nodes: Node[], edges: Edge[] = []): Node[] => {
   const devboxNodes = _.filter(nodes, { type: "devbox" });
   if (_.isEmpty(devboxNodes)) return nodes;
 
   const devboxNames = new Set(
     _.map(devboxNodes, (node) => node.data?.name as string)
   );
+  const devboxNodeIds = new Set(_.map(devboxNodes, "id"));
+
+  // Find devbox network nodes
   const devboxNetworkNodes = _.filter(
     nodes,
     (node) =>
@@ -119,6 +122,24 @@ export const createDevGroup = (nodes: Node[]): Node[] => {
       node.id.startsWith("network-") &&
       devboxNames.has(node.id.replace("network-", ""))
   );
+
+  // Find cluster nodes that have edges connected to devbox nodes
+  const clusterNodesConnectedToDevbox = _.filter(nodes, (node) => {
+    if (node.type !== "cluster") return false;
+
+    // Check if this cluster node has any edge connecting to a devbox node
+    return _.some(edges, (edge) => {
+      const isSourceCluster = edge.source === node.id;
+      const isTargetDevbox = devboxNodeIds.has(edge.target);
+      const isTargetCluster = edge.target === node.id;
+      const isSourceDevbox = devboxNodeIds.has(edge.source);
+
+      return (
+        (isSourceCluster && isTargetDevbox) ||
+        (isTargetCluster && isSourceDevbox)
+      );
+    });
+  });
 
   const groupNode: Node = {
     id: "devbox-group",
@@ -128,7 +149,7 @@ export const createDevGroup = (nodes: Node[]): Node[] => {
   };
 
   const groupedNodes = _.map(
-    [...devboxNodes, ...devboxNetworkNodes],
+    [...devboxNodes, ...devboxNetworkNodes, ...clusterNodesConnectedToDevbox],
     (node) => ({
       ...node,
       parentId: "devbox-group",

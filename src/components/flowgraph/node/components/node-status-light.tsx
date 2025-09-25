@@ -24,7 +24,7 @@ NodeStatusLightProps) {
             ? "fill-theme-gray text-theme-gray"
             : status === "Shutdown"
             ? "fill-theme-purple text-theme-purple"
-            : status === "Error"
+            : status === "Error" || status === "Abnormal"
             ? "fill-theme-red text-theme-red"
             : status === "Deleting"
             ? "fill-theme-yellow text-theme-yellow"
