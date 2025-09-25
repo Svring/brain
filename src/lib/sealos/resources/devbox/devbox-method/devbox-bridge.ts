@@ -80,6 +80,7 @@ export const getDevboxObject = async (
         protocol: ingressPort.protocol || existingPort.protocol,
         host: ingressPort.host,
         publicAddress: ingressPort.publicAddress,
+        customDomain: (ingressPort as any).customDomain || existingPort.customDomain,
       });
     } else {
       // Create new port entry for ingress-only ports
@@ -89,6 +90,7 @@ export const getDevboxObject = async (
         protocol: ingressPort.protocol,
         host: ingressPort.host,
         publicAddress: ingressPort.publicAddress,
+        customDomain: (ingressPort as any).customDomain,
       } as DevboxPort);
     }
   });

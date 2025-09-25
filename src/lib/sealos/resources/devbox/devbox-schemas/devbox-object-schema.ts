@@ -23,6 +23,7 @@ export const DevboxPortSchema = z.object({
   networkName: z.string().optional(),
   host: z.string().optional(),
   publicAddress: z.string().optional(),
+  customDomain: z.string().optional(),
 });
 
 const PodSchema = z.object({

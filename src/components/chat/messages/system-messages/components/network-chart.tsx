@@ -21,7 +21,7 @@ export const NetworkChart: React.FC<NetworkChartProps> = ({ target }) => {
 
   return (
     <div className="space-y-3">
-      <PortDisplayTable ports={ports} />
+      <PortDisplayTable ports={ports} target={target} />
     </div>
   );
 };
