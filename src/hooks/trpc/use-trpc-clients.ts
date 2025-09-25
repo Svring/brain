@@ -6,6 +6,7 @@ import {
   projectClient,
   k8sClient,
   langgraphClient,
+  costCenterClient,
 } from "@/components/provider/trpc-provider";
 
 export const useTRPCClients = () => {
@@ -16,6 +17,7 @@ export const useTRPCClients = () => {
   const projectTrpcClient = projectClient.useTRPC();
   const k8sTrpcClient = k8sClient.useTRPC();
   const langgraphTrpcClient = langgraphClient.useTRPC();
+  const costCenterTrpcClient = costCenterClient.useTRPC();
 
   return {
     devbox: devboxTrpcClient,
@@ -25,5 +27,6 @@ export const useTRPCClients = () => {
     project: projectTrpcClient,
     k8s: k8sTrpcClient,
     langgraph: langgraphTrpcClient,
+    costCenter: costCenterTrpcClient,
   };
 };

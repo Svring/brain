@@ -9,6 +9,7 @@ import type { ObjectStorageRouter } from "@/lib/trpc/sealos/objectstorage/object
 import type { ProjectRouter } from "@/lib/trpc/brain/project/project-trpc-router";
 import type { K8sRouter } from "@/lib/trpc/k8s/k8s-trpc-router";
 import type { LanggraphRouter } from "@/lib/trpc/langgraph/langgraph-trpc-router";
+import type { CostCenterRouter } from "@/lib/trpc/sealos/cost-center/cost-center-trpc-router";
 import { useState } from "react";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { QueryClient } from "@tanstack/react-query";
@@ -20,6 +21,7 @@ export const objectStorageClient = createTRPCContext<ObjectStorageRouter>();
 export const projectClient = createTRPCContext<ProjectRouter>();
 export const k8sClient = createTRPCContext<K8sRouter>();
 export const langgraphClient = createTRPCContext<LanggraphRouter>();
+export const costCenterClient = createTRPCContext<CostCenterRouter>();
 
 // Raw TRPC clients for direct API calls
 export const createRawDevboxClient = (auth: any) =>
@@ -158,6 +160,28 @@ export default function TRPCProvider({
     })
   );
 
+  const [costCenterTrpcClient] = useState(() =>
+    createTRPCClient<CostCenterRouter>({
+      links: [
+        httpBatchLink({
+          url: "/api/trpc/cost-center",
+          maxURLLength: 6000,
+          headers: () => {
+            console.log("=== tRPC Provider Headers Debug ===");
+            console.log("Auth kubeconfig:", auth.kubeconfig ? `${auth.kubeconfig.substring(0, 50)}...` : 'undefined');
+            console.log("Auth appToken:", auth.appToken || 'undefined');
+            console.log("=== End tRPC Provider Headers Debug ===");
+            
+            return {
+              authorization: auth.kubeconfig,
+              "x-app-token": auth.appToken,
+            };
+          },
+        }),
+      ],
+    })
+  );
+
   return (
     <devboxClient.TRPCProvider
       trpcClient={devboxTrpcClient}
@@ -187,7 +211,12 @@ export default function TRPCProvider({
                   trpcClient={langgraphTrpcClient}
                   queryClient={queryClient}
                 >
-                  {children}
+                  <costCenterClient.TRPCProvider
+                    trpcClient={costCenterTrpcClient}
+                    queryClient={queryClient}
+                  >
+                    {children}
+                  </costCenterClient.TRPCProvider>
                 </langgraphClient.TRPCProvider>
               </k8sClient.TRPCProvider>
             </projectClient.TRPCProvider>
