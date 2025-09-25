@@ -4,22 +4,32 @@ import React from "react";
 import { ToolActionResult } from "@/components/chat/messages/tool-messages/tool-result-message-types";
 import { CircleCheckBigIcon, CircleSlash } from "lucide-react";
 import { useMount } from "@reactuses/core";
-import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
-import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useProjectAddResource } from "@/hooks/brain/use-project-add-resource";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { useProjectState } from "@/contexts/project/project-context";
 
 interface CreateClusterToolMessageProps {
-  result: ToolActionResult;
+  result: any;
 }
 
 export const CreateClusterToolMessage: React.FC<
   CreateClusterToolMessageProps
 > = ({ result }) => {
   const isApproved = result.approved !== false;
-  const { invalidateQueries } = useInvalidateQueries();
-  const { cluster } = useTRPCClients();
+  const { addResourcesToProject } = useProjectAddResource();
+  const { selectedProject } = useProjectState();
 
   useMount(() => {
-    invalidateQueries([cluster.get.queryKey(), cluster.list.queryKey()], true);
+    // Add resources to project if creation was approved and result contains resource info
+    if (isApproved && result.name) {
+      try {
+        const resourceName = result.name;
+        const target = convertResourceTypeToTarget("cluster", resourceName);
+        addResourcesToProject(selectedProject!, [target]);
+      } catch (error) {
+        console.warn("Failed to add cluster resource to project:", error);
+      }
+    }
   });
 
   return (

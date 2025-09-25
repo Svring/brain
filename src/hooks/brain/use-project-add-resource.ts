@@ -12,7 +12,7 @@ interface AddResourceToProjectOptions {
 
 export function useProjectAddResource(options?: AddResourceToProjectOptions) {
   const [isAdding, setIsAdding] = useState(false);
-  const { project } = useTRPCClients();
+  const { project, devbox, cluster, launchpad } = useTRPCClients();
   const { invalidateQueries } = useInvalidateQueries();
   // Only handle adding resources to project
   const addToProjectMutation = useMutation(
@@ -38,7 +38,14 @@ export function useProjectAddResource(options?: AddResourceToProjectOptions) {
         `Added ${targets.length} resource(s) to project "${projectName}"`
       );
 
-      invalidateQueries([], true);
+      invalidateQueries(
+        [
+          devbox.list.queryKey(),
+          cluster.list.queryKey(),
+          launchpad.list.queryKey(),
+        ],
+        true
+      );
 
       // Call success callback if provided
       options?.onSuccess?.(projectName, targets);

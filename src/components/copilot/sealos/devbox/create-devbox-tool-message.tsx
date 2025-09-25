@@ -6,20 +6,33 @@ import { CircleCheckBigIcon, CircleSlash } from "lucide-react";
 import { useMount } from "@reactuses/core";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useProjectAddResource } from "@/hooks/brain/use-project-add-resource";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { useProjectState } from "@/contexts/project/project-context";
 
 interface CreateDevboxToolMessageProps {
-  result: ToolActionResult;
+  result: any;
 }
 
 export const CreateDevboxToolMessage: React.FC<
   CreateDevboxToolMessageProps
 > = ({ result }) => {
   const isApproved = result.approved !== false;
-  const { invalidateQueries } = useInvalidateQueries();
-  const { devbox } = useTRPCClients();
+  const { addResourcesToProject } = useProjectAddResource();
+  const { selectedProject } = useProjectState();
 
   useMount(() => {
-    invalidateQueries([devbox.get.queryKey(), devbox.list.queryKey()], true);
+    // Add resources to project if creation was approved and result contains resource info
+    if (isApproved && result.name) {
+      try {
+        const resourceName = result.name;
+        const target = convertResourceTypeToTarget("devbox", resourceName);
+        addResourcesToProject(selectedProject!, [target]);
+      } catch (error) {
+        console.warn("Failed to add devbox resource to project:", error);
+      }
+    } else {
+    }
   });
 
   return (

@@ -6,20 +6,32 @@ import { CircleCheckBigIcon, CircleSlash } from "lucide-react";
 import { useMount } from "@reactuses/core";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useProjectAddResource } from "@/hooks/brain/use-project-add-resource";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { useProjectState } from "@/contexts/project/project-context";
 
 interface CreateLaunchpadToolMessageProps {
-  result: ToolActionResult;
+  result: any;
 }
 
 export const CreateLaunchpadToolMessage: React.FC<
   CreateLaunchpadToolMessageProps
 > = ({ result }) => {
   const isApproved = result.approved !== false;
-  const { invalidateQueries } = useInvalidateQueries();
-  const { launchpad } = useTRPCClients();
+  const { addResourcesToProject } = useProjectAddResource();
+  const { selectedProject } = useProjectState();
 
   useMount(() => {
-    invalidateQueries([launchpad.get.queryKey(), launchpad.list.queryKey()], true);
+    // Add resources to project if creation was approved and result contains resource info
+    if (isApproved && result.name) {
+      try {
+        const resourceName = result.name;
+        const target = convertResourceTypeToTarget("deployment", resourceName);
+        addResourcesToProject(selectedProject!, [target]);
+      } catch (error) {
+        console.warn("Failed to add launchpad resource to project:", error);
+      }
+    }
   });
 
   return (
