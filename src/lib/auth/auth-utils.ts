@@ -1,5 +1,4 @@
 import {
-  SessionV1,
   createSealosApp,
   sealosApp,
 } from "@zjy365/sealos-desktop-sdk/app";
@@ -36,10 +35,10 @@ import {
 } from "../sealos/services/traffic/traffic-constant/traffic-constant-url";
 
 export async function extractAuthFromSession(
-  session: SessionV1
+  session: any // 暂时使用 any 类型，因为我们不依赖 session.token
 ): Promise<Auth | null> {
   // Validate session properties
-  if (!session?.kubeconfig || !session?.token) {
+  if (!session?.kubeconfig) { // 暂时只检查 kubeconfig，不检查 token
     return null;
   }
   // Fetch namespace and regionUrl concurrently
@@ -57,7 +56,7 @@ export async function extractAuthFromSession(
     namespace,
     kubeconfig: encodeURIComponent(session.kubeconfig),
     regionUrl,
-    appToken: session.token,
+    appToken: session.token, // 使用动态获取的token
   };
 }
 
@@ -74,6 +73,7 @@ export async function authenticateProd(send: (event: any) => void) {
   try {
     createSealosApp();
     const sessionData = await sealosApp.getSession();
+    
     if (!sessionData) {
       send({ type: "FAIL", error: "No session data available" });
       return;
@@ -93,20 +93,6 @@ export async function authenticateProd(send: (event: any) => void) {
   }
 }
 
-export const openCostCenterApp = () => {
-  createSealosApp();
-  sealosApp.runEvents("openDesktopApp", {
-    appKey: "system-costcenter",
-    pathname: "/",
-    query: {
-      mode: "upgrade",
-    },
-    messageData: {
-      type: "InternalAppCall",
-      mode: "upgrade",
-    },
-  });
-};
 
 export function createK8sContext(): K8sApiContext {
   const auth = useAuthState();
@@ -270,6 +256,39 @@ export function useMetricsContext(
     namespace: auth.namespace,
   });
 }
+
+export function useCostCenterContext() {
+  const { auth } = useAuthState();
+  if (!auth) {
+    throw new Error("User not found");
+  }
+  
+  // Extract region domain from regionUrl
+  const regionDomain = auth.regionUrl.replace(/^https?:\/\//, '').replace(/:\d+$/, '');
+  
+  return {
+    baseUrl: auth.regionUrl,
+    authorization: auth.appToken,
+    workspace: auth.namespace,
+    regionDomain: regionDomain,
+    internalToken: auth.appToken,
+  };
+}
+
+export const openCostCenterApp = () => {
+  createSealosApp();
+  sealosApp.runEvents("openDesktopApp", {
+    appKey: "system-costcenter",
+    pathname: "/",
+    query: {
+      mode: "upgrade",
+    },
+    messageData: {
+      type: "InternalAppCall",
+      mode: "upgrade",
+    },
+  });
+};
 
 export function activateContextCookies() {
   createK8sContext();

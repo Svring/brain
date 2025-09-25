@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { UserCard } from "./user-card";
 import { openCostCenterApp } from "@/lib/auth/auth-utils";
-import { CreditCard, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { ProgressCircle } from "@/components/ui/circle-progress";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -23,9 +23,44 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useAccountBalance } from "@/hooks/sealos/cost-center/use-account-balance";
+import { usePlanTransaction } from "@/hooks/sealos/cost-center/use-plan-transaction";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AppSidebar() {
   const { mode } = useAuthState();
+  const { data: accountBalance, isLoading: balanceLoading, refetch: refetchBalance } = useAccountBalance();
+  const { data: planTransaction, isLoading: planLoading, refetch: refetchPlan } = usePlanTransaction();
+
+  const isLoading = balanceLoading || planLoading;
+
+  const transaction = (planTransaction as any)?.transaction;
+  const currentPlan = transaction?.NewPlanName || transaction?.OldPlanName;
+  const planStatus = transaction?.Status;
+  const payStatus = transaction?.PayStatus;
+
+  const isProPlan = currentPlan === "Pro";
+  const totalQuota = isProPlan ? 1000 : 100;
+  const balance = (accountBalance as any)?.balance || 0;
+  const usedQuota = Math.max(0, totalQuota - Math.floor(balance / 1000000));
+  const usagePercentage = totalQuota > 0 ? (usedQuota / totalQuota) * 100 : 0;
+
+  const hasValidPlan = currentPlan && currentPlan !== "00000000-0000-0000-0000-000000000000";
+  const displayPlan = hasValidPlan ? currentPlan : "Free";
+
+  const handleUpgrade = () => {
+    openCostCenterApp();
+    setTimeout(() => {
+      refetchBalance();
+      refetchPlan();
+    }, 5000);
+  };
+
+  const handleRetry = () => {
+    refetchBalance();
+    refetchPlan();
+  };
+
   return (
     <>
       <Sidebar className="" collapsible="icon">
@@ -58,11 +93,11 @@ export default function AppSidebar() {
         </SidebarContent>
         <SidebarFooter className={cn("bg-background-primary")}>
           <div className="flex flex-col gap-2">
-            {/* <Popover>
+            <Popover>
               <PopoverTrigger asChild>
                 <div className="cursor-pointer">
                   <ProgressCircle
-                    value={75}
+                    value={isLoading ? 0 : usagePercentage}
                     size={32}
                     strokeWidth={2}
                     indicatorClassName="text-primary"
@@ -79,33 +114,57 @@ export default function AppSidebar() {
                 className="rounded-lg bg-background-tertiary border border-border-primary"
               >
                 <div className="space-y-4">
-                  <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground">
-                      Your current subscription plan is{" "}
-                      <span className="font-semibold text-foreground">Pro</span>
-                      , with an upper limit request counts{" "}
-                      <span className="font-semibold text-foreground">
-                        1000
-                      </span>
-                    </p>
-                    <Progress value={75} className="h-2" />
-                    <p className="text-sm text-muted-foreground">
-                      You've used{" "}
-                      <span className="font-semibold text-foreground">750</span>{" "}
-                      of your quota, click button below to upgrade.
-                    </p>
-                  </div>
+                  {isLoading ? (
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-2 w-full" />
+                      <Skeleton className="h-4 w-3/4" />
+                    </div>
+                  ) : !accountBalance ? (
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">
+                        Unable to load subscription information. Please try again later.
+                      </p>
+                      <Button variant="outline" size="sm" onClick={handleRetry} className="w-full">
+                        Retry
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">
+                        Your current subscription plan is{" "}
+                        <span className="font-semibold text-foreground">{displayPlan}</span>
+                        , with an upper limit request counts{" "}
+                        <span className="font-semibold text-foreground">{totalQuota}</span>
+                      </p>
+                      <Progress value={usagePercentage} className="h-2" />
+                      <p className="text-sm text-muted-foreground">
+                        You've used{" "}
+                        <span className="font-semibold text-foreground">{usedQuota}</span>{" "}
+                        of your quota, click button below to upgrade.
+                      </p>
+                      <div className="text-xs text-muted-foreground space-y-1">
+                        <div>Balance: {(balance / 1000000).toFixed(2)} credits</div>
+                        {planStatus && planStatus !== "00000000-0000-0000-0000-000000000000" && (
+                          <div>Plan Status: {planStatus}</div>
+                        )}
+                        {payStatus && payStatus !== "00000000-0000-0000-0000-000000000000" && (
+                          <div>Payment Status: {payStatus}</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   <Button
                     className="w-full"
                     size="sm"
-                    onClick={openCostCenterApp}
+                    onClick={handleUpgrade}
+                    disabled={isLoading}
                   >
-                    Upgrade
+                    {isProPlan ? "Manage Plan" : "Upgrade"}
                   </Button>
                 </div>
               </PopoverContent>
-            </Popover> */}
-            {/* )} */}
+            </Popover>
             {mode === "development" && (
               <UserCard
                 user={{
@@ -117,7 +176,6 @@ export default function AppSidebar() {
             )}
           </div>
         </SidebarFooter>
-        {/* <SidebarRail /> */}
       </Sidebar>
     </>
   );
