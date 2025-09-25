@@ -16,6 +16,7 @@ import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { createK8sContext, useDevboxContext } from "@/lib/auth/auth-utils";
 import { useLocalStorage } from "@reactuses/core";
+import { toast } from "sonner";
 
 interface DevboxNodeIdeProps {
   object: DevboxObject;
@@ -41,6 +42,7 @@ export default function DevboxNodeIde({ object }: DevboxNodeIdeProps) {
       <button
         onClick={async (e) => {
           e.stopPropagation();
+          toast.info("Opening IDE...");
           try {
             // Fetch SSH info dynamically
             const token = await getDevboxSshInfo(devboxContext, target);
@@ -56,7 +58,8 @@ export default function DevboxNodeIde({ object }: DevboxNodeIdeProps) {
               window.location.href = sshUri;
             }
           } catch (error) {
-            console.error("Failed to get SSH info:", error);
+            // console.error("Failed to get SSH info:", error);
+            toast.error("Failed to open IDE");
           }
         }}
         className="p-1.5 hover:bg-muted transition-colors flex items-center gap-2"
@@ -92,6 +95,7 @@ export default function DevboxNodeIde({ object }: DevboxNodeIdeProps) {
               onClick={async (e) => {
                 e.stopPropagation();
                 setSelectedIde(ide);
+                toast.info("Opening IDE...");
 
                 // Directly trigger connection when IDE is selected
                 try {
@@ -109,6 +113,7 @@ export default function DevboxNodeIde({ object }: DevboxNodeIdeProps) {
                   }
                 } catch (error) {
                   console.error("Failed to get SSH info:", error);
+                  toast.error("Failed to open IDE");
                 }
               }}
               className={selectedIde === ide ? "bg-muted" : ""}

@@ -12,6 +12,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import CustomPortDialog from "./custom-port-dialog";
+import type {
+  CustomResourceTarget,
+  BuiltinResourceTarget,
+} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface Port {
   number: number;
@@ -21,13 +25,22 @@ interface Port {
   name?: string;
   serviceName?: string;
   host?: string;
+  customDomain?: string;
 }
 
 interface PortDisplayTableProps {
   ports: Port[];
+  devboxTarget?: CustomResourceTarget;
+  target?: CustomResourceTarget | BuiltinResourceTarget;
+  onCustomDomainUpdated?: () => void;
 }
 
-export function PortDisplayTable({ ports }: PortDisplayTableProps) {
+export function PortDisplayTable({
+  ports,
+  devboxTarget,
+  target,
+  onCustomDomainUpdated,
+}: PortDisplayTableProps) {
   const { copyToClipboard, isCopied } = useCopy();
   const [isCustomDialogOpen, setIsCustomDialogOpen] = useState(false);
   const [selectedPort, setSelectedPort] = useState<Port | null>(null);
@@ -42,95 +55,165 @@ export function PortDisplayTable({ ports }: PortDisplayTableProps) {
         <TableHeader>
           <TableRow>
             <TableHead className="w-[10%]">Port</TableHead>
-            <TableHead className="w-[30%]">Private Address</TableHead>
-            <TableHead className="w-[60%]">Public Address</TableHead>
+            <TableHead className="w-[90%]">Address</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {ports.map((port: Port, index: number) => (
             <TableRow key={index}>
-              <TableCell className="font-mono">{port.number}</TableCell>
+              <TableCell className="font-mono pr-13">{port.number}</TableCell>
               <TableCell className="max-w-0">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={cn(
-                      "truncate cursor-pointer hover:text-foreground/80 hover:underline",
-                      port.privateAddress
-                        ? "text-foreground"
-                        : "text-muted-foreground"
-                    )}
-                    title={port.privateAddress || "-"}
-                    onClick={() => {
-                      if (port.privateAddress) {
-                        copyToClipboard(
-                          port.privateAddress,
-                          `private-${port.number}`
-                        );
-                      }
-                    }}
-                  >
-                    {port.privateAddress || "-"}
-                  </span>
-                  {port.privateAddress &&
-                    isCopied(`private-${port.number}`) && (
-                      <Check className="w-3 h-3 text-theme-green flex-shrink-0" />
-                    )}
-                </div>
-              </TableCell>
-              <TableCell className="max-w-0">
-                <div className="flex items-center gap-2">
-                  {port.publicAddress ? (
-                    <>
+                <div className="space-y-2">
+                  {/* Private Address */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground px-2 py-1 rounded-full w-12 text-center">
+                      private
+                    </span>
+                    <div className="flex items-center gap-2 flex-1">
                       <span
                         className={cn(
                           "truncate cursor-pointer hover:text-foreground/80 hover:underline",
-                          "text-foreground"
+                          port.privateAddress
+                            ? "text-foreground"
+                            : "text-muted-foreground"
                         )}
-                        title={port.publicAddress}
+                        title={port.privateAddress || "-"}
                         onClick={() => {
-                          if (port.publicAddress?.startsWith("http")) {
-                            window.open(port.publicAddress, "_blank");
+                          if (port.privateAddress) {
+                            copyToClipboard(
+                              port.privateAddress,
+                              `private-${port.number}`
+                            );
                           }
                         }}
                       >
-                        {port.publicAddress}
+                        {port.privateAddress || "-"}
                       </span>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 w-6 p-0 flex-shrink-0"
-                        onClick={() =>
-                          copyToClipboard(
-                            port.publicAddress!,
-                            `public-${port.number}`
-                          )
-                        }
-                      >
-                        {isCopied(`public-${port.number}`) ? (
-                          <Check className="w-3 h-3 text-theme-green" />
-                        ) : (
-                          <Copy className="w-3 h-3" />
-                        )}
-                      </Button>
-                      {/* <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
-                        onClick={() => {
-                          setSelectedPort(port);
-                          setIsCustomDialogOpen(true);
-                        }}
-                      >
-                        Custom
-                      </Button> */}
-                    </>
-                  ) : (
-                    <>
-                      <HelpCircle className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                      <span className="text-muted-foreground">
-                        No public access
+                      {port.privateAddress && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 w-6 p-0 flex-shrink-0"
+                          onClick={() =>
+                            copyToClipboard(
+                              port.privateAddress!,
+                              `private-${port.number}`
+                            )
+                          }
+                        >
+                          {isCopied(`private-${port.number}`) ? (
+                            <Check className="w-3 h-3 text-theme-green" />
+                          ) : (
+                            <Copy className="w-3 h-3" />
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Public Address */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground px-2 py-1 rounded-full w-12 text-center">
+                      public
+                    </span>
+                    <div className="flex items-center gap-2 flex-1">
+                      {port.publicAddress ? (
+                        <>
+                          <span
+                            className={cn(
+                              "truncate cursor-pointer hover:text-foreground/80 hover:underline",
+                              "text-foreground"
+                            )}
+                            title={port.publicAddress}
+                            onClick={() => {
+                              if (port.publicAddress?.startsWith("http")) {
+                                window.open(port.publicAddress, "_blank");
+                              }
+                            }}
+                          >
+                            {port.publicAddress}
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 w-6 p-0 flex-shrink-0"
+                            onClick={() =>
+                              copyToClipboard(
+                                port.publicAddress!,
+                                `public-${port.number}`
+                              )
+                            }
+                          >
+                            {isCopied(`public-${port.number}`) ? (
+                              <Check className="w-3 h-3 text-theme-green" />
+                            ) : (
+                              <Copy className="w-3 h-3" />
+                            )}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+                            onClick={() => {
+                              setSelectedPort(port);
+                              setIsCustomDialogOpen(true);
+                            }}
+                          >
+                            {port.customDomain ? "Edit" : "Custom"}
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <HelpCircle className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                          <span className="text-muted-foreground">
+                            No public access
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Custom Domain */}
+                  {port.customDomain && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground px-2 py-1 rounded-full w-12 text-center">
+                        custom
                       </span>
-                    </>
+                      <div className="flex items-center gap-2 flex-1">
+                        <span
+                          className={cn(
+                            "truncate cursor-pointer hover:text-foreground/80 hover:underline",
+                            "text-foreground"
+                          )}
+                          title={port.customDomain}
+                          onClick={() => {
+                            window.open(
+                              `https://${port.customDomain}`,
+                              "_blank"
+                            );
+                          }}
+                        >
+                          {port.customDomain}
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 w-6 p-0 flex-shrink-0"
+                          onClick={() =>
+                            copyToClipboard(
+                              port.customDomain!,
+                              `custom-${port.number}`
+                            )
+                          }
+                        >
+                          {isCopied(`custom-${port.number}`) ? (
+                            <Check className="w-3 h-3 text-theme-green" />
+                          ) : (
+                            <Copy className="w-3 h-3" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
                   )}
                 </div>
               </TableCell>
@@ -138,13 +221,16 @@ export function PortDisplayTable({ ports }: PortDisplayTableProps) {
           ))}
         </TableBody>
       </Table>
-      
+
       {/* Custom Port Dialog */}
-      <CustomPortDialog
-        open={isCustomDialogOpen}
-        onOpenChange={setIsCustomDialogOpen}
-        selectedPort={selectedPort}
-      />
+      {target && (
+        <CustomPortDialog
+          open={isCustomDialogOpen}
+          onOpenChange={setIsCustomDialogOpen}
+          selectedPort={selectedPort}
+          target={target}
+        />
+      )}
     </div>
   );
 }

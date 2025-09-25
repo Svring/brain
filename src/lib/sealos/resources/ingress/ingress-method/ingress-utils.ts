@@ -43,6 +43,7 @@ export interface TransformedIngress {
   port: number;
   protocol?: string;
   host: string;
+  customDomain?: string;
 }
 
 // Import the unified interface from service utils
@@ -86,6 +87,10 @@ export const transformIngressResources = (
         "nginx.ingress.kubernetes.io/backend-protocol"
       ];
 
+    // Get the fixed domain from labels (cloud.sealos.io/app-deploy-manager-domain)
+    const fixedDomain =
+      resource.metadata.labels?.["cloud.sealos.io/app-deploy-manager-domain"];
+
     // Add null checks for spec.rules and nested properties
     if (resource.spec?.rules && Array.isArray(resource.spec.rules)) {
       resource.spec.rules.forEach((rule) => {
@@ -95,12 +100,17 @@ export const transformIngressResources = (
           rule.http.paths.forEach((path) => {
             if (path.backend?.service?.port?.number) {
               const port = path.backend.service.port.number;
+              console.log("host2112", host);
+
+              const customDomain =
+                host && host !== fixedDomain ? host : fixedDomain;
 
               result.push({
                 networkName,
                 port,
                 protocol,
                 host,
+                customDomain,
               });
             }
           });
@@ -128,8 +138,10 @@ export const composeAddressFromIngress = (
       ? `${protocol}://${serviceName}.${context.namespace}:${port.number}`
       : undefined;
 
-    // Compose public address: protocols://host (add 's' for secure)
-    const publicAddress = port.host ? `${protocol}s://${port.host}` : undefined;
+    const domainForPublicAddress = port.customDomain || port.host;
+    const publicAddress = domainForPublicAddress
+      ? `${protocol}s://${domainForPublicAddress}`
+      : undefined;
 
     const enrichedPort = { ...port };
 
@@ -171,6 +183,7 @@ export function enrichPortsWithIngress(
         networkName: ingress.networkName,
         protocol: ingress.protocol,
         host: ingress.host,
+        customDomain: ingress.customDomain,
       };
       enrichedPorts.push(enrichedPort);
     }

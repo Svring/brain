@@ -233,8 +233,9 @@ export async function authCname(
   customDomain: string
 ): Promise<any> {
   const api = createOldDevboxAxios(context);
+  const cleanPublicDomain = publicDomain?.replace(/^https?:\/\//, "") || "";
   const response = await api.post("/platform/authCname", {
-    publicDomain,
+    publicDomain: cleanPublicDomain,
     customDomain,
   });
   return response.data;

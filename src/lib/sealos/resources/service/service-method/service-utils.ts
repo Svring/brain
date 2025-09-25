@@ -35,6 +35,7 @@ export interface UnifiedPort {
   networkName?: string;
   host?: string;
   privateHost?: string;
+  customDomain?: string;
 }
 
 // Keep CompletedPort for backward compatibility
