@@ -32,6 +32,10 @@ export const DEVBOX_RUNTIMES = [
   "gin",
   "echo",
   "rust",
+  "mcp",
+  "hugo",
+  "spring-boot",
+  "node.js",
 ] as const;
 
 export type DevboxRuntime = (typeof DEVBOX_RUNTIMES)[number];

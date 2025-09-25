@@ -36,7 +36,7 @@ import { RenameProjectDialog } from "./rename-project-dialog";
 import { useProjectRename } from "@/hooks/brain/use-project-rename";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { getDevboxRuntimeIconUrl } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
-import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
+import { getClusterIconUrl } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
 
 interface ProjectCardProps {
   project: z.infer<typeof ProjectObjectSchema>;
@@ -85,13 +85,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             return getDevboxRuntimeIconUrl(image, auth.regionUrl);
           }
         } else if (kind === "cluster") {
-          // Get cluster type and use cluster icon map
+          // Get cluster type and use cluster icon function
           const type = resource.spec?.clusterDefinitionRef;
           if (type) {
-            return (
-              CLUSTER_TYPE_ICON_MAP[type] ||
-              "https://dbprovider.bja.sealos.run/logo.svg"
-            );
+            return getClusterIconUrl(type);
           }
         } else if (kind === "deployment" || kind === "statefulset") {
           // Use launchpad icon for deployment and statefulset resources
@@ -130,9 +127,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           } else if (kind === "cluster") {
             const type = resource.spec?.clusterDefinitionRef;
             if (type) {
-              iconUrl =
-                CLUSTER_TYPE_ICON_MAP[type] ||
-                "https://dbprovider.bja.sealos.run/logo.svg";
+              iconUrl = getClusterIconUrl(type);
             }
           } else if (kind === "deployment" || kind === "statefulset") {
             iconUrl = "/app_launchpad_icon.svg";

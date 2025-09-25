@@ -5,7 +5,7 @@ import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
+import { getClusterIconUrl } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
 import { DEVBOX_RUNTIME_ICONS } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-icons";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useCopy } from "@/hooks/use-copy";
@@ -42,21 +42,12 @@ export default function BaseResourceMessageHeader({
         return "https://devbox.bja.sealos.run/logo.svg";
 
       case "cluster":
-        // Use type from resource data to match against CLUSTER_TYPE_ICON_MAP
-        if (
-          resource &&
-          "type" in resource &&
-          resource.type &&
-          CLUSTER_TYPE_ICON_MAP[resource.type]
-        ) {
-          return CLUSTER_TYPE_ICON_MAP[resource.type];
-        }
-        // Fallback to name-based lookup if type is not available
-        return (
-          CLUSTER_TYPE_ICON_MAP[
-            target.name as keyof typeof CLUSTER_TYPE_ICON_MAP
-          ] || "https://dbprovider.bja.sealos.run/logo.svg"
-        );
+        // Use type from resource data or fallback to name
+        const clusterType =
+          resource && "type" in resource && resource.type
+            ? resource.type
+            : target.name;
+        return getClusterIconUrl(clusterType);
 
       case "deployment":
       case "statefulset":

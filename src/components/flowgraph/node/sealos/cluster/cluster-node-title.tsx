@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
+import { getClusterIconUrl } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
 
 interface ClusterNodeTitleProps {
   name: string;
@@ -12,15 +12,14 @@ export default function ClusterNodeTitle({
   name,
   type,
 }: ClusterNodeTitleProps) {
-  const iconUrl =
-    CLUSTER_TYPE_ICON_MAP[type as keyof typeof CLUSTER_TYPE_ICON_MAP];
+  const iconUrl = getClusterIconUrl(type);
 
   return (
     <div className="flex items-center gap-2 truncate font-medium flex-1 min-w-0">
       <div className="flex flex-col items-start">
         <span className="flex items-center gap-4">
           <img
-            src={iconUrl || "https://dbprovider.bja.sealos.run/logo.svg"}
+            src={iconUrl}
             alt={`${type} Icon`}
             width={24}
             height={24}

@@ -16,7 +16,7 @@ import { SimplePortList } from "@/components/chat/state-cards/project-proposal/c
 import { DEVBOX_RUNTIME_ICONS } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-icons";
 import { DEVBOX_RUNTIMES } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-runtimes";
 import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
-import { CLUSTER_TYPES } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-types";
+import { AVAILABLE_CLUSTER_TYPES } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-types";
 import type {
   DevBox,
   Database,
@@ -61,12 +61,12 @@ export function CreateNewProject({
   const [projectName, setProjectName] = useState(`project-${nanoid()}`);
   const router = useRouter();
   const { devbox } = useTRPCClients();
-  
+
   // Fetch devbox templates
   const { data: templates } = useQuery(devbox.templates.queryOptions());
-  
+
   console.log("templates in create-new-project:", templates);
-  
+
   const { createProjectFromSimpleData, isCreating } = useProjectCreate({
     onSuccess: (createdProjectName: string) => {
       onConfirm(createdProjectName);
@@ -171,17 +171,21 @@ export function CreateNewProject({
   // Update ports when runtime changes or when templates load
   useEffect(() => {
     if (templates && Array.isArray(templates) && devboxData.runtime) {
-      const template = templates.find((t: DevboxTemplate) => t.runtime === devboxData.runtime);
-      
+      const template = templates.find(
+        (t: DevboxTemplate) => t.runtime === devboxData.runtime
+      );
+
       if (template && template.config.appPorts) {
-        const templatePorts = template.config.appPorts.map((appPort: { port: number }) => ({
-          number: appPort.port,
-          publicAccess: true,
-        }));
+        const templatePorts = template.config.appPorts.map(
+          (appPort: { port: number }) => ({
+            number: appPort.port,
+            publicAccess: true,
+          })
+        );
 
         console.log("Setting template ports:", templatePorts);
 
-        setDevboxData(prev => ({
+        setDevboxData((prev) => ({
           ...prev,
           ports: templatePorts,
         }));
@@ -191,18 +195,27 @@ export function CreateNewProject({
 
   // Update ports when dialog opens and templates are available
   useEffect(() => {
-    if (devboxDialogOpen && templates && Array.isArray(templates) && devboxData.runtime) {
-      const template = templates.find((t: DevboxTemplate) => t.runtime === devboxData.runtime);
-      
+    if (
+      devboxDialogOpen &&
+      templates &&
+      Array.isArray(templates) &&
+      devboxData.runtime
+    ) {
+      const template = templates.find(
+        (t: DevboxTemplate) => t.runtime === devboxData.runtime
+      );
+
       if (template && template.config.appPorts) {
-        const templatePorts = template.config.appPorts.map((appPort: { port: number }) => ({
-          number: appPort.port,
-          publicAccess: true,
-        }));
+        const templatePorts = template.config.appPorts.map(
+          (appPort: { port: number }) => ({
+            number: appPort.port,
+            publicAccess: true,
+          })
+        );
 
         console.log("Setting template ports on dialog open:", templatePorts);
 
-        setDevboxData(prev => ({
+        setDevboxData((prev) => ({
           ...prev,
           ports: templatePorts,
         }));
@@ -354,11 +367,7 @@ export function CreateNewProject({
                   <Plus size={12} />
                 </Button>
               </div>
-              {createdDevboxes.length === 0 ? (
-                <div className="text-sm text-muted-foreground py-2">
-                  No resources yet
-                </div>
-              ) : (
+              {createdDevboxes.length > 0 && (
                 <div className="grid grid-cols-3 gap-2">
                   {createdDevboxes.map((devbox, index) => (
                     <div
@@ -408,11 +417,7 @@ export function CreateNewProject({
                   <Plus size={12} />
                 </Button>
               </div>
-              {createdDatabases.length === 0 ? (
-                <div className="text-sm text-muted-foreground py-2">
-                  No resources yet
-                </div>
-              ) : (
+              {createdDatabases.length > 0 && (
                 <div className="grid grid-cols-3 gap-2">
                   {createdDatabases.map((database, index) => (
                     <div
@@ -462,11 +467,7 @@ export function CreateNewProject({
                   <Plus size={12} />
                 </Button>
               </div>
-              {createdApps.length === 0 ? (
-                <div className="text-sm text-muted-foreground py-2">
-                  No resources yet
-                </div>
-              ) : (
+              {createdApps.length > 0 && (
                 <div className="grid grid-cols-3 gap-2">
                   {createdApps.map((app, index) => (
                     <div
@@ -622,7 +623,7 @@ export function CreateNewProject({
             <div>
               <Label className="text-sm font-medium mb-2 block">Type</Label>
               <div className="grid grid-cols-3 gap-2">
-                {CLUSTER_TYPES.map((type) => (
+                {AVAILABLE_CLUSTER_TYPES.map((type) => (
                   <div
                     key={type}
                     onClick={() =>

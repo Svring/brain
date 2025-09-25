@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, X } from "lucide-react";
 import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
-import { CLUSTER_TYPES } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-types";
+import { AVAILABLE_CLUSTER_TYPES } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-types";
 import type { Database } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 import { generateDefaultName } from "./resource-utils";
 
@@ -130,7 +130,7 @@ export function DatabaseResource({
             <div>
               <Label className="text-sm font-medium mb-2 block">Type</Label>
               <div className="grid grid-cols-3 gap-2">
-                {CLUSTER_TYPES.map((type) => (
+                {AVAILABLE_CLUSTER_TYPES.map((type) => (
                   <div
                     key={type}
                     onClick={() =>
