@@ -31,6 +31,23 @@ const PodSchema = z.object({
   status: z.string(),
 });
 
+const EnvVarSchema = z
+  .object({
+    name: z.string(),
+    value: z.string().optional(),
+    valueFrom: z
+      .object({
+        secretKeyRef: z.object({
+          name: z.string(),
+          key: z.string(),
+        }),
+      })
+      .optional(),
+  })
+  .refine((data) => data.value || data.valueFrom, {
+    message: "Either 'value' or 'valueFrom' must be provided",
+  });
+
 export const DevboxObjectSchema = z.object({
   name: z.string(),
   id: z.string(),
@@ -40,7 +57,7 @@ export const DevboxObjectSchema = z.object({
   status: z.string(),
   resources: DevboxResourceSchema,
   ssh: DevboxSshSchema,
-  env: z.any().optional(),
+  env: z.array(EnvVarSchema).optional(),
   ports: z.array(DevboxPortSchema),
   pods: z.array(PodSchema).optional(),
   operationalStatus: z.any().optional(),
@@ -49,4 +66,5 @@ export const DevboxObjectSchema = z.object({
 export type DevboxResource = z.infer<typeof DevboxResourceSchema>;
 export type DevboxSsh = z.infer<typeof DevboxSshSchema>;
 export type DevboxPort = z.infer<typeof DevboxPortSchema>;
+export type EnvVar = z.infer<typeof EnvVarSchema>;
 export type DevboxObject = z.infer<typeof DevboxObjectSchema>;

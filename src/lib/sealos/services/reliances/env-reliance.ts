@@ -20,6 +20,8 @@ export function inferRelianceFromEnv(
       resource.kind.toLowerCase() === "devbox"
   );
 
+  // console.log("ownerResources", ownerResources);
+
   // All resources can be dependencies (including other deployments/statefulsets/devboxes)
   const dependencyResources = resourceObjects;
 

@@ -15,6 +15,7 @@ import { useProjectCreate } from "@/hooks/brain/use-project-create";
 import BaseActionMessage from "@/components/chat/messages/system-messages/components/base-action-message";
 import type { ProjectProposal } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 import { useChatActions } from "@/contexts/chat/chat-context";
+import { nanoid } from "@/lib/utils";
 
 // Component that handles the success message and system message appending
 const ProjectCreationSuccessMessage = ({ args }: { args: any }) => {
@@ -46,9 +47,10 @@ export function ProjectProposalActionMessage({
   onSuccess,
 }: ProjectProposalActionMessageProps) {
   const [viewMode, setViewMode] = useState<"list" | "graph">("list");
-  const [internalProposal, setInternalProposal] = useState<ProjectProposal>(
-    args.project_proposal
-  );
+  const [internalProposal, setInternalProposal] = useState<ProjectProposal>(() => ({
+    ...args.project_proposal,
+    name: args.project_proposal.name || `project-${nanoid()}`,
+  }));
 
   const { createProject, isCreating } = useProjectCreate();
   const { openSidebarChat } = useChatActions();

@@ -21,6 +21,7 @@ import type {
   DevBox,
   Database,
   App,
+  ProjectProposal,
 } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 import { useProjectCreate } from "@/hooks/brain/use-project-create";
 import { useRouter } from "next/navigation";
@@ -65,9 +66,7 @@ export function CreateNewProject({
   // Fetch devbox templates
   const { data: templates } = useQuery(devbox.templates.queryOptions());
 
-  console.log("templates in create-new-project:", templates);
-
-  const { createProjectFromSimpleData, isCreating } = useProjectCreate({
+  const { createProject, isCreating } = useProjectCreate({
     onSuccess: (createdProjectName: string) => {
       onConfirm(createdProjectName);
       onOpenChange(false);
@@ -109,38 +108,48 @@ export function CreateNewProject({
     if (isCreating) return;
 
     try {
-      // Use project name from input (already has default value)
+      // Use project name from input (already has default value) and add nanoid
       const sanitizedProjectName = sanitizeName(projectName.trim());
+      const uniqueProjectName = `${sanitizedProjectName}-${nanoid()}`;
 
-      // Prepare the simple deployment data with sanitized names
-      const deploymentData = {
-        devbox:
-          createdDevboxes.length > 0
-            ? createdDevboxes.map((devbox) => ({
-                name: sanitizeName(devbox.name),
-                runtime: devbox.runtime,
-                ports: devbox.ports?.map((p: any) => p.number) || [],
-              }))
-            : undefined,
-        database:
-          createdDatabases.length > 0
-            ? createdDatabases.map((db) => ({
-                name: sanitizeName(db.name),
-                type: db.type,
-              }))
-            : undefined,
-        app:
-          createdApps.length > 0
-            ? createdApps.map((app) => ({
-                name: sanitizeName(app.name),
-                image: app.image,
-                ports: app.ports?.map((p: any) => p.number) || [],
-              }))
-            : undefined,
+      // Create ProjectProposal object with sanitized names and nanoid
+      const projectProposal: ProjectProposal = {
+        name: uniqueProjectName,
+        resources: {
+          devbox:
+            createdDevboxes.length > 0
+              ? createdDevboxes.map((devbox) => ({
+                  name: `${sanitizeName(devbox.name)}-${nanoid()}`,
+                  runtime: devbox.runtime,
+                  ports: devbox.ports?.map((p: any) => ({
+                    number: p.number,
+                    publicAccess: p.publicAccess || true,
+                  })) || [],
+                }))
+              : undefined,
+          database:
+            createdDatabases.length > 0
+              ? createdDatabases.map((db) => ({
+                  name: `${sanitizeName(db.name)}-${nanoid()}`,
+                  type: db.type,
+                }))
+              : undefined,
+          app:
+            createdApps.length > 0
+              ? createdApps.map((app) => ({
+                  name: `${sanitizeName(app.name)}-${nanoid()}`,
+                  image: app.image,
+                  ports: app.ports?.map((p: any) => ({
+                    number: p.number,
+                    publicAccess: p.publicAccess || true,
+                  })) || [],
+                }))
+              : undefined,
+        },
       };
 
       // Create the project with resources
-      await createProjectFromSimpleData(deploymentData, sanitizedProjectName);
+      await createProject(projectProposal);
 
       // Reset form
       setProjectName(`project-${nanoid()}`);

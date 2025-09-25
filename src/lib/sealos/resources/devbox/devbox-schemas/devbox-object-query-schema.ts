@@ -146,6 +146,47 @@ export const DevboxObjectQuerySchema = z.object({
       };
     }),
   ssh: SSHConfigSchema,
+  env: z
+    .any()
+    .optional()
+    .describe(
+      JSON.stringify({
+        resourceType: "devbox",
+        path: ["spec.config.env"],
+      })
+    )
+    .transform((envVars) => {
+      console.log("envVars", envVars);
+      if (!envVars || !Array.isArray(envVars)) {
+        return [];
+      }
+      return envVars.map((envVar: any) => {
+        if (envVar.value) {
+          // Direct value environment variable
+          return {
+            name: envVar.name,
+            value: envVar.value,
+          };
+        } else if (envVar.valueFrom?.secretKeyRef) {
+          // Secret reference environment variable
+          return {
+            name: envVar.name,
+            valueFrom: {
+              secretKeyRef: {
+                name: envVar.valueFrom.secretKeyRef.name,
+                key: envVar.valueFrom.secretKeyRef.key,
+              },
+            },
+          };
+        } else {
+          // Unknown type, return as value with placeholder
+          return {
+            name: envVar.name,
+            value: `[UNKNOWN_ENV_TYPE: ${JSON.stringify(envVar)}]`,
+          };
+        }
+      });
+    }),
   ports: z.any().optional(),
   pods: z
     .any()
