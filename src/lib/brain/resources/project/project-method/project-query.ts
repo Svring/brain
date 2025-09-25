@@ -23,7 +23,7 @@ export const listProjects = async (context: K8sApiContext) => {
   const instanceResourceList = await runParallelAction(
     listCustomResources(context, target)
   );
-
+  // console.log("instanceResourceList", instanceResourceList);
   // Filter out unwanted instances before converting to project list
   const filteredInstanceResourceList =
     filterUnwantedInstances(instanceResourceList);

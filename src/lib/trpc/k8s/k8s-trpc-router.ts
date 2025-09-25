@@ -8,6 +8,7 @@ import {
   getResource,
   listAnnotationBasedResources,
 } from "@/lib/k8s/k8s-method/k8s-query";
+import { getResourceQuota } from "@/lib/sealos/resources/resource-quota/resource-quota-api/resource-quota-api-service";
 import {
   patchCustomResourceMetadata,
   patchBuiltinResourceMetadata,
@@ -70,6 +71,11 @@ export const k8sRouter = t.router({
       const { annotation, projectName } = input;
       return await listAnnotationBasedResources(ctx, annotation, projectName);
     }),
+
+  // Resource Quota Management
+  resourceQuota: t.procedure.query(async ({ ctx }) => {
+    return await getResourceQuota(ctx);
+  }),
 
   // ===== MUTATION PROCEDURES =====
 

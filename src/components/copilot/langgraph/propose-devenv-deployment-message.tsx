@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,17 +23,34 @@ import { useAuthState } from "@/contexts/auth/auth-context";
 import { v4 as uuidv4 } from "uuid";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useQuery } from "@tanstack/react-query";
+import type { DevboxRuntime } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-runtimes";
+import { nanoid } from "@/lib/utils";
+import { z } from "zod";
+import { DEVBOX_RUNTIMES } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-runtimes";
+import { CLUSTER_TYPES } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-types";
+import { deriveClusterEnvVariable } from "@/lib/sealos/services/env/cluster/cluster-env-utils";
 
-interface DeployDevBox {
-  name: string;
-  runtime: string;
-  ports?: number[];
-}
+// Zod schemas for DevenvDeploymentCard args
+export const DeployDevBoxSchema = z.object({
+  name: z.string().min(1, "DevBox name is required"),
+  runtime: z.enum(DEVBOX_RUNTIMES),
+  ports: z.array(z.number().int().min(1).max(65535)).optional(),
+  reliance: z.array(z.string()).optional(),
+});
 
-interface DeployDatabase {
-  name: string;
-  type: string;
-}
+export const DeployDatabaseSchema = z.object({
+  name: z.string().min(1, "Database name is required"),
+  type: z.enum([...CLUSTER_TYPES] as [string, ...string[]]),
+});
+
+export const DevenvDeploymentArgsSchema = z.object({
+  devbox: z.array(DeployDevBoxSchema).optional(),
+  database: z.array(DeployDatabaseSchema).optional(),
+});
+
+export type DeployDevBox = z.infer<typeof DeployDevBoxSchema>;
+export type DeployDatabase = z.infer<typeof DeployDatabaseSchema>;
+export type DevenvDeploymentArgs = z.infer<typeof DevenvDeploymentArgsSchema>;
 
 interface DevboxTemplate {
   runtime: string;
@@ -56,17 +73,18 @@ interface DevboxTemplate {
 }
 
 interface ProposeDevenvDeploymentMessageProps {
-  args: {
-    devbox?: DeployDevBox;
-    database?: DeployDatabase;
-  };
+  args: DevenvDeploymentArgs;
   result?: any;
   onSuccess?: (data: any) => void;
 }
 
-const DevenvDeploymentSuccessMessage = ({ args }: { args: any }) => {
-  const hasDevbox = args.devbox;
-  const hasDatabase = args.database;
+const DevenvDeploymentSuccessMessage = ({
+  args,
+}: {
+  args: DevenvDeploymentArgs;
+}) => {
+  const hasDevbox = args.devbox && args.devbox.length > 0;
+  const hasDatabase = args.database && args.database.length > 0;
 
   return (
     <div className="w-full">
@@ -75,8 +93,8 @@ const DevenvDeploymentSuccessMessage = ({ args }: { args: any }) => {
           <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
           <p className="text-sm">
             Development environment deployed successfully
-            {hasDevbox && ` (${args.devbox.name})`}
-            {hasDatabase && ` with ${args.database.name} database`}
+            {hasDevbox && ` (${args.devbox?.[0]?.name})`}
+            {hasDatabase && ` with ${args.database?.[0]?.name} database`}
           </p>
         </div>
       </div>
@@ -88,11 +106,11 @@ const DevenvDeploymentCard = ({
   args,
   onSuccess,
 }: {
-  args: any;
+  args: DevenvDeploymentArgs;
   onSuccess?: (data: any) => void;
 }) => {
   const { createProject, isCreating } = useProjectCreate();
-  const { submit, threadId, messages } = useHomeChat();
+  const { threadId, messages } = useHomeChat();
   const { patchThread, updateThreadState } = useThreads();
   const router = useRouter();
   const { auth } = useAuthState();
@@ -103,50 +121,106 @@ const DevenvDeploymentCard = ({
     devbox.templates.queryOptions()
   );
 
-  const [internalProposal, setInternalProposal] = useState<ProjectProposal>(
-    () => {
-      // Create initial proposal from args
+  // Process args with nanoid once and memoize the result
+  const processedArgs = useMemo(() => {
+    // First, process databases and create a mapping for reliance name updates
+    const processedDatabases =
+      args.database?.map((db) => {
+        const newName = `${db.name}-${nanoid()}`;
+        return {
+          originalName: db.name,
+          newName,
+          type: db.type as any,
+        };
+      }) || [];
+
+    // Create a mapping from original database names to new names
+    const databaseNameMap = new Map(
+      processedDatabases.map((db) => [db.originalName, db.newName])
+    );
+
+    const processedDevboxes =
+      args.devbox?.map((devbox) => {
+        // Update reliance names to match new database names
+        const updatedReliances =
+          devbox.reliance?.map((relianceName) => {
+            return databaseNameMap.get(relianceName) || relianceName;
+          }) || [];
+
+        return {
+          ...devbox,
+          name: `${devbox.name}-${nanoid()}`,
+          reliance: updatedReliances,
+        };
+      }) || [];
+
+    return {
+      processedDevboxes,
+      processedDatabases: processedDatabases.map((db) => ({
+        name: db.newName,
+        type: db.type,
+      })),
+      databaseNameMap,
+    };
+  }, [args.devbox, args.database]);
+
+  // Create initial proposal using memoized processed args
+  const initialProposal = useMemo(() => {
+    const { processedDevboxes, processedDatabases } = processedArgs;
+
+    const devboxes = processedDevboxes.map((devbox) => {
+      // Generate env variables from updated reliances
+      const envVars =
+        devbox.reliance?.flatMap((relianceName) =>
+          deriveClusterEnvVariable(relianceName)
+        ) || [];
+
       return {
-        name: "Dev",
-        resources: {
-          devbox: args.devbox
-            ? Array.isArray(args.devbox)
-              ? args.devbox.map((devbox: any) => ({
-                  name: devbox.name,
-                  runtime: devbox.runtime as any,
-                  ports: (devbox.ports || []).map((port: number) => ({
-                    number: port,
-                    publicAccess: true,
-                  })),
-                }))
-              : [
-                  {
-                    name: args.devbox.name,
-                    runtime: args.devbox.runtime as any,
-                    ports: (args.devbox.ports || []).map((port: number) => ({
-                      number: port,
-                      publicAccess: true,
-                    })),
-                  },
-                ]
-            : [],
-          database: args.database
-            ? Array.isArray(args.database)
-              ? args.database.map((db: any) => ({
-                  name: db.name,
-                  type: db.type as any,
-                }))
-              : [
-                  {
-                    name: args.database.name,
-                    type: args.database.type as any,
-                  },
-                ]
-            : [],
-        },
+        name: devbox.name,
+        runtime: devbox.runtime as any,
+        ports: (devbox.ports || []).map((port: number) => ({
+          number: port,
+          publicAccess: true,
+        })),
+        env: envVars.map((envVar) => {
+          if (envVar.valueFrom?.secretKeyRef) {
+            return {
+              name: envVar.name,
+              valueFrom: {
+                secretKeyRef: {
+                  name: envVar.valueFrom.secretKeyRef.name,
+                  key: envVar.valueFrom.secretKeyRef.key,
+                },
+              },
+            };
+          } else {
+            return {
+              name: envVar.name,
+              value: envVar.value || "",
+            };
+          }
+        }),
       };
-    }
-  );
+    });
+
+    const databases = processedDatabases;
+
+    return {
+      name: `dev-${nanoid()}`,
+      resources: {
+        devbox: devboxes,
+        database: databases,
+      },
+    };
+  }, [processedArgs]);
+
+  const [internalProposal, setInternalProposal] =
+    useState<ProjectProposal>(initialProposal);
+
+  // Update internal proposal when initial proposal changes
+  useEffect(() => {
+    setInternalProposal(initialProposal);
+  }, [initialProposal]);
 
   // Update proposal with template-based ports when templates are loaded
   useEffect(() => {
@@ -154,16 +228,22 @@ const DevenvDeploymentCard = ({
       templates &&
       Array.isArray(templates) &&
       args.devbox &&
+      args.devbox.length > 0 &&
       !isLoadingTemplates
     ) {
-      // Handle both single devbox and array of devboxes
-      const devboxes = Array.isArray(args.devbox) ? args.devbox : [args.devbox];
+      const { processedDevboxes } = processedArgs;
 
-      const updatedDevboxes = devboxes.map((devbox: DeployDevBox) => {
+      const updatedDevboxes = processedDevboxes.map((devbox: DeployDevBox) => {
         const devboxRuntime = devbox.runtime;
         const template = templates.find(
           (t: DevboxTemplate) => t.runtime === devboxRuntime
         );
+
+        // Generate env variables from updated reliances
+        const envVars =
+          devbox.reliance?.flatMap((relianceName) =>
+            deriveClusterEnvVariable(relianceName)
+          ) || [];
 
         if (template && template.config.appPorts) {
           const templatePorts = template.config.appPorts.map(
@@ -177,6 +257,24 @@ const DevenvDeploymentCard = ({
             name: devbox.name,
             runtime: devbox.runtime as any,
             ports: templatePorts,
+            env: envVars.map((envVar) => {
+              if (envVar.valueFrom?.secretKeyRef) {
+                return {
+                  name: envVar.name,
+                  valueFrom: {
+                    secretKeyRef: {
+                      name: envVar.valueFrom.secretKeyRef.name,
+                      key: envVar.valueFrom.secretKeyRef.key,
+                    },
+                  },
+                };
+              } else {
+                return {
+                  name: envVar.name,
+                  value: envVar.value || "",
+                };
+              }
+            }),
           };
         } else {
           // Fallback to original ports if no template found
@@ -187,6 +285,24 @@ const DevenvDeploymentCard = ({
               number: port,
               publicAccess: true,
             })),
+            env: envVars.map((envVar) => {
+              if (envVar.valueFrom?.secretKeyRef) {
+                return {
+                  name: envVar.name,
+                  valueFrom: {
+                    secretKeyRef: {
+                      name: envVar.valueFrom.secretKeyRef.name,
+                      key: envVar.valueFrom.secretKeyRef.key,
+                    },
+                  },
+                };
+              } else {
+                return {
+                  name: envVar.name,
+                  value: envVar.value || "",
+                };
+              }
+            }),
           };
         }
       });
@@ -199,10 +315,11 @@ const DevenvDeploymentCard = ({
         },
       }));
     }
-  }, [templates, args.devbox, isLoadingTemplates]);
+  }, [templates, processedArgs, isLoadingTemplates]);
 
   const handleDeploy = async () => {
     try {
+      console.log("internalProposal", internalProposal);
       // Create the project
       const projectName = await createProject(internalProposal);
 
@@ -277,7 +394,7 @@ const DevenvDeploymentCard = ({
               payload: {
                 message: "project created successfully",
                 instruction:
-                  "The project has been successfully created and deployed. You can now explore your project by navigating to the project details, checking resource status, monitoring performance, or making further configurations. Feel free to ask me about any aspect of your project or if you need help with additional setup.",
+                  "The project has been successfully created and deployed. Encourage the user to explore their new project—suggest they check the project details, review resource status, monitor performance, or make further configurations. Invite them to ask for help with any aspect of their project or additional setup.",
                 createdAt: new Date().toISOString(),
               },
             }),

@@ -189,6 +189,13 @@ export const ResourceFields = ({
             const currentIndex =
               storageOptions.findIndex((option) => option === field.value) || 0;
 
+            // Find the minimum allowed index based on current storage value
+            const currentStorageValue = object.storage || 0;
+            const minAllowedIndex = storageOptions.findIndex(
+              (option) => option >= currentStorageValue
+            );
+            const minIndex = minAllowedIndex >= 0 ? minAllowedIndex : 0;
+
             return (
               <FormItem>
                 <div className="flex items-center gap-2">
@@ -201,11 +208,15 @@ export const ResourceFields = ({
                 </div>
                 <div className="space-y-2">
                   <Slider
-                    value={[currentIndex]}
-                    onValueChange={(value) =>
-                      field.onChange(storageOptions[value[0]])
-                    }
-                    min={0}
+                    value={[Math.max(currentIndex, minIndex)]}
+                    onValueChange={(value) => {
+                      const selectedValue = storageOptions[value[0]];
+                      // Only allow values greater than or equal to current storage
+                      if (selectedValue >= currentStorageValue) {
+                        field.onChange(selectedValue);
+                      }
+                    }}
+                    min={minIndex}
                     max={storageOptions.length - 1}
                     step={1}
                     className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
@@ -213,7 +224,7 @@ export const ResourceFields = ({
                   />
                   <div className="flex justify-between">
                     <span className="text-xs text-muted-foreground">
-                      {storageOptions[0]}G
+                      {currentStorageValue}G
                     </span>
                     <span className="text-xs text-muted-foreground">
                       {storageOptions[storageOptions.length - 1]}G

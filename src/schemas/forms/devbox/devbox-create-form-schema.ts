@@ -2,6 +2,8 @@ import { z } from "zod";
 import { DevboxRuntimeSchema } from "./components/devbox-runtime-schema";
 import { DevboxResourceSchema } from "./components/devbox-resource-schema";
 import { DevboxPortCreateSchema } from "./components/devbox-port-schema";
+import { DevboxEnvSchema } from "./components/devbox-env-schema";
+import { nanoid } from "@/lib/utils";
 
 // Main devbox create form schema
 export const devboxCreateFormSchema = z.object({
@@ -13,7 +15,7 @@ export const devboxCreateFormSchema = z.object({
       /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/,
       "Devbox name must be DNS compliant: lowercase, numbers, hyphens only"
     )
-    .default("my-devbox"),
+    .default(() => `devbox-${nanoid()}`),
   runtime: DevboxRuntimeSchema.default("python"),
   resource: DevboxResourceSchema.default({
     cpu: 2,
@@ -26,6 +28,8 @@ export const devboxCreateFormSchema = z.object({
       exposesPublicDomain: true,
     },
   ]),
+  env: z.array(DevboxEnvSchema).default([]),
+  autostart: z.boolean().default(true),
 });
 
 // Export types

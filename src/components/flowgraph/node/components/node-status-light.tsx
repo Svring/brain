@@ -8,8 +8,8 @@ interface NodeStatusLightProps {
 
 export default function NodeStatusLight({
   status = "Pending",
-  // className = "",
-}: NodeStatusLightProps) {
+}: // className = "",
+NodeStatusLightProps) {
   return (
     <div className={`flex items-center justify-center gap-2`}>
       <Square
@@ -18,18 +18,22 @@ export default function NodeStatusLight({
             ? "fill-theme-green text-theme-green"
             : status === "Stopped"
             ? "fill-theme-purple text-theme-purple"
+            : status === "Stopping"
+            ? "fill-theme-purple text-theme-purple"
             : status === "Pending"
             ? "fill-theme-gray text-theme-gray"
             : status === "Shutdown"
             ? "fill-theme-purple text-theme-purple"
-            : status === "Error"
+            : status === "Error" || status === "Abnormal"
             ? "fill-theme-red text-theme-red"
             : status === "Deleting"
             ? "fill-theme-yellow text-theme-yellow"
             : "fill-theme-gray text-theme-gray"
         }`}
       />
-      <span className="text-sm text-center">{status}</span>
+      <span className="text-sm text-center">
+        {status === "Stopping" ? "Pausing" : status}
+      </span>
     </div>
   );
 }

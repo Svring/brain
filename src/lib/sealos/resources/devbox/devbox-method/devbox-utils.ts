@@ -5,6 +5,10 @@ import {
   EnvVarValue,
 } from "@/lib/sealos/services/env/devbox/devbox-env-utils";
 import { SSHConfig } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-query-schema";
+import {
+  DEVBOX_RUNTIME_ICONS,
+  DEVBOX_DEFAULT_ICON,
+} from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-icons";
 
 /**
  * Generates a random string of lowercase alphabets
@@ -178,8 +182,8 @@ export const generateDevboxName = (prefix: string = "devbox"): string => {
 /**
  * Generates the devbox runtime icon URL
  * @param image - The devbox image string
- * @param regionUrl - The region URL for the icon endpoint
- * @returns The complete icon URL for the devbox runtime
+ * @param regionUrl - The region URL for the icon endpoint (unused, kept for backward compatibility)
+ * @returns The complete icon URL for the devbox runtime from constants
  */
 export const getDevboxRuntimeIconUrl = (
   image: string,
@@ -190,7 +194,14 @@ export const getDevboxRuntimeIconUrl = (
     .slice(0, 1) // Take only the first part
     .join("-");
 
-  return `https://devbox.${regionUrl}/images/runtime/${runtime}.svg`;
+  // Map the runtime to the supported enum name
+  const mappedRuntime = mapRuntimeToEnum(runtime);
+
+  // Return the icon URL from constants, or default if not found
+  return (
+    DEVBOX_RUNTIME_ICONS[mappedRuntime as keyof typeof DEVBOX_RUNTIME_ICONS] ||
+    DEVBOX_DEFAULT_ICON
+  );
 };
 
 /**
@@ -235,6 +246,10 @@ export const mapRuntimeToEnum = (runtime: string): string => {
     gin: "gin",
     echo: "echo",
     rust: "rust",
+    mcp: "mcp",
+    hugo: "hugo",
+    "spring-boot": "spring-boot",
+    "node.js": "node.js",
     // Legacy mappings for backward compatibility
     "Node.js": "next.js",
     Python: "python",

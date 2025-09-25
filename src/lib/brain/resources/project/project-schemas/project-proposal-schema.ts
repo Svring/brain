@@ -15,6 +15,23 @@ export const ReliancesSchema = z.object({
   bucket: z.array(z.string()).optional().nullable(),
 });
 
+export const AppEnvSchema = z
+  .object({
+    name: z.string().min(1, "Environment variable name is required"),
+    value: z.string().optional(),
+    valueFrom: z
+      .object({
+        secretKeyRef: z.object({
+          name: z.string().min(1, "Secret name is required"),
+          key: z.string().min(1, "Secret key is required"),
+        }),
+      })
+      .optional(),
+  })
+  .refine((data) => data.value || data.valueFrom, {
+    message: "Either 'value' or 'valueFrom' must be provided",
+  });
+
 export const DevBoxSchema = z.object({
   name: z
     .string()
@@ -27,6 +44,7 @@ export const DevBoxSchema = z.object({
   runtime: z.enum(DEVBOX_RUNTIMES),
   ports: z.array(PortSchema).optional().nullable(),
   reliances: ReliancesSchema.optional().nullable(),
+  env: z.array(AppEnvSchema).optional().nullable(),
 });
 
 export const DatabaseSchema = z.object({
@@ -51,11 +69,6 @@ export const ObjectStorageBucketSchema = z.object({
       "Name must contain only lowercase letters, numbers, underscores, and hyphens"
     ),
   policy: z.enum(["private", "publicRead", "publicReadWrite"]),
-});
-
-export const AppEnvSchema = z.object({
-  name: z.string().min(1, "Environment variable name is required"),
-  value: z.string().min(1, "Environment variable value is required"),
 });
 
 export const AppSchema = z.object({

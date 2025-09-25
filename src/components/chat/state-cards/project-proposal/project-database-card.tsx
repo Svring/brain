@@ -120,7 +120,7 @@ export function ProjectDatabaseCard({
           <span className="text-xs text-muted-foreground leading-none">
             Database
           </span>
-          <span className="text-lg font-bold text-foreground leading-tight truncate">
+          <span className="text-lg text-foreground leading-tight truncate">
             {resource.name}
           </span>
         </div>

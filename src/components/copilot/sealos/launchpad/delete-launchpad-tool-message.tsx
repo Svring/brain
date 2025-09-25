@@ -11,15 +11,15 @@ interface DeleteLaunchpadToolMessageProps {
   result: ToolActionResult;
 }
 
-export const DeleteLaunchpadToolMessage: React.FC<DeleteLaunchpadToolMessageProps> = ({
-  result,
-}) => {
+export const DeleteLaunchpadToolMessage: React.FC<
+  DeleteLaunchpadToolMessageProps
+> = ({ result }) => {
   const isApproved = result.approved !== false;
   const { invalidateQueries } = useInvalidateQueries();
   const { launchpad } = useTRPCClients();
 
   useMount(() => {
-    invalidateQueries([launchpad.list.queryKey()]);
+    invalidateQueries([launchpad.get.queryKey(), launchpad.list.queryKey()], true);
   });
 
   return (

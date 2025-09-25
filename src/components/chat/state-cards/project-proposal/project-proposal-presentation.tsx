@@ -9,6 +9,7 @@ import { useProjectCreate } from "@/hooks/brain/use-project-create";
 import BaseActionMessage from "@/components/chat/messages/system-messages/components/base-action-message";
 import type { ProjectProposal } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 import { useChatActions } from "@/contexts/chat/chat-context";
+import { nanoid } from "@/lib/utils";
 
 interface ProjectProposalPresentationProps {
   proposal: ProjectProposal;
@@ -18,8 +19,10 @@ export function ProjectProposalPresentation({
   proposal,
 }: ProjectProposalPresentationProps) {
   const [viewMode, setViewMode] = useState<"list" | "graph">("list");
-  const [internalProposal, setInternalProposal] =
-    useState<ProjectProposal>(proposal);
+  const [internalProposal, setInternalProposal] = useState<ProjectProposal>(() => ({
+    ...proposal,
+    name: proposal.name || `project-${nanoid()}`,
+  }));
 
   const { createProject, isCreating } = useProjectCreate();
 

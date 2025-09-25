@@ -12,6 +12,7 @@ import { useStreamContext } from "@/components/provider/stream-provider";
 import { useThreads } from "@/components/provider/thread-provider";
 import { ResourceView } from "@/contexts/navigation/navigation-machine";
 import { useNavigationActions } from "@/contexts/navigation/navigation-context";
+import { toast } from "sonner";
 import _ from "lodash";
 
 interface BaseNodeProps {
@@ -58,8 +59,14 @@ export default function BaseNodeWrapper({
 
   // Custom node click handler
   const handleNodeClick = async () => {
-    if (disableClick) return;
-    
+    if (disableClick) {
+      toast.info("This node is view-only and cannot be interacted with", {
+        description:
+          "Some resources are read-only and don't support detailed views or interactions.",
+      });
+      return;
+    }
+
     await handleNodeSelect();
 
     // Set the view in navigation machine if view is provided

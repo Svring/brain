@@ -10,10 +10,11 @@ import {
 import { EnvSchema } from "../universal/env-schema";
 import { StorageSchema } from "../universal/storage-schema";
 import { ConfigMapSchema } from "../universal/config-map-schema";
+import { nanoid } from "@/lib/utils";
 
 // Main launchpad create form schema
 export const launchpadCreateFormSchema = z.object({
-  name: NameSchema.default("hello-world"),
+  name: NameSchema.default(() => `launchpad-${nanoid()}`),
   image: ImageSchema.default({
     imageName: "nginx",
   }),

@@ -56,11 +56,11 @@ export const useFlowgraphNodes = (targets: ResourceTarget[]) => {
     // Merge base nodes and network nodes
     const mergedNodes = [...baseNodes, ...networkNodes];
 
-    // Apply devbox grouping to merged nodes
-    const groupedNodes = createDevGroup(mergedNodes);
-
     // Combine all edges for layout calculation
     const allEdges = [...(baseEdges || []), ...(networkEdges || [])];
+
+    // Apply devbox grouping to merged nodes with edges
+    const groupedNodes = createDevGroup(mergedNodes, allEdges);
 
     // Apply layout to the grouped nodes
     const layoutedNodes = applyLayout(groupedNodes, allEdges);

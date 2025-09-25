@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getDevbox,
   updateDevbox,
+  deleteDevbox,
 } from "@/lib/sealos/resources/devbox/devbox-api/devbox-api-service";
 import { devboxUpdateFormSchema } from "@/schemas/forms/devbox/devbox-update-form-schema";
 import { SealosApiContextSchema } from "@/lib/sealos/sealos-api-context-schema";
@@ -56,6 +57,47 @@ export async function GET(
     console.error("Error getting devbox:", error);
     return NextResponse.json(
       { error: "Failed to get devbox" },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/sealos/devbox/[name] - Delete devbox
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ name: string }> }
+) {
+  try {
+    // Extract authorization from headers
+    const authorization = request.headers.get("authorization");
+
+    if (!authorization) {
+      return NextResponse.json(
+        { error: "Missing authorization header" },
+        { status: 400 }
+      );
+    }
+
+    // Decode the kubeconfig from authorization header
+    const kubeconfig = decodeURIComponent(authorization);
+
+    // Extract region URL from kubeconfig
+    const regionUrl = await getRegionUrlFromKubeconfig(kubeconfig);
+
+    // Create Sealos context for deleteDevbox
+    const sealosContext = SealosApiContextSchema.parse({
+      baseUrl: regionUrl,
+      authorization,
+    });
+
+    const { name } = await params;
+
+    const result = await deleteDevbox(sealosContext, name);
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error("Error deleting devbox:", error);
+    return NextResponse.json(
+      { error: "Failed to delete devbox" },
       { status: 500 }
     );
   }

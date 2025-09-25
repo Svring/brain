@@ -28,6 +28,8 @@ function DevboxNode({ data }: { data: DevboxObject }) {
 
   const { resource: object, status } = useResourceStatus(target);
 
+  // console.log("object", object);
+
   const { name, image } = object || resource;
 
   const context = createK8sContext();

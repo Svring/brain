@@ -14,6 +14,7 @@ import { useThreads } from "@/components/provider/thread-provider";
 import { useRouter } from "next/navigation";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { v4 as uuidv4 } from "uuid";
+import { nanoid } from "@/lib/utils";
 
 interface ProposeImageDeploymentMessageProps {
   args: {
@@ -55,7 +56,7 @@ const ImageDeploymentCard = ({
     () => {
       // Create initial proposal from args
       return {
-        name: "Docker Image Project",
+        name: `docker-${nanoid()}`,
         resources: {
           app: [
             {

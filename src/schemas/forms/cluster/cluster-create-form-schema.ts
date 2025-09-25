@@ -4,10 +4,11 @@ import { ClusterTypeSchema } from "./components/cluster-type-schema";
 import { ClusterVersionSchema } from "./components/cluster-version-schema";
 import { ClusterResourceSchema } from "./components/cluster-resource-schema";
 import { ClusterTerminationPolicySchema } from "./components/cluster-termination-policy-schema";
+import { nanoid } from "@/lib/utils";
 
 // Main cluster create form schema
 export const clusterCreateFormSchema = z.object({
-  name: NameSchema.default("my-cluster"),
+  name: NameSchema.default(() => `cluster-${nanoid()}`),
   type: ClusterTypeSchema.default("postgresql"),
   version: ClusterVersionSchema.default("postgresql-14.8.0"),
   resource: ClusterResourceSchema.default({

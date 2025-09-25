@@ -11,15 +11,15 @@ interface DeleteDevboxToolMessageProps {
   result: ToolActionResult;
 }
 
-export const DeleteDevboxToolMessage: React.FC<DeleteDevboxToolMessageProps> = ({
-  result,
-}) => {
+export const DeleteDevboxToolMessage: React.FC<
+  DeleteDevboxToolMessageProps
+> = ({ result }) => {
   const isApproved = result.approved !== false;
   const { invalidateQueries } = useInvalidateQueries();
   const { devbox } = useTRPCClients();
 
   useMount(() => {
-    invalidateQueries([devbox.list.queryKey()]);
+    invalidateQueries([devbox.get.queryKey(), devbox.list.queryKey()], true);
   });
 
   return (

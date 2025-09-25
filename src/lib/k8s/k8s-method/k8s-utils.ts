@@ -789,3 +789,167 @@ export function convertNumericToK8sResource(resource: {
 
   return result;
 }
+
+/**
+ * Simple function to convert Kubernetes resource string to number
+ * @param value - Kubernetes resource string (e.g., "32", "20200m", "25828Mi", "96Gi")
+ * @returns Converted numeric value
+ */
+export function convertK8sStringToNumber(value: string): number {
+  if (!value || typeof value !== "string") {
+    return 0;
+  }
+
+  // Handle CPU resources (millicores to cores)
+  if (value.endsWith("m")) {
+    return parseFloat(value.slice(0, -1)) / 1000;
+  }
+
+  // Handle memory/storage resources (GiB to GB)
+  if (value.endsWith("Gi")) {
+    return parseFloat(value.slice(0, -2));
+  }
+
+  // Handle memory/storage resources (MiB to GB)
+  if (value.endsWith("Mi")) {
+    return parseFloat(value.slice(0, -2)) / 1024;
+  }
+
+  // Handle memory/storage resources (KiB to GB)
+  if (value.endsWith("Ki")) {
+    return parseFloat(value.slice(0, -2)) / (1024 * 1024);
+  }
+
+  // Handle decimal GB
+  if (value.endsWith("G")) {
+    return parseFloat(value.slice(0, -1));
+  }
+
+  // Handle decimal MB
+  if (value.endsWith("M")) {
+    return parseFloat(value.slice(0, -1)) / 1000;
+  }
+
+  // Handle decimal KB
+  if (value.endsWith("K")) {
+    return parseFloat(value.slice(0, -1)) / (1000 * 1000);
+  }
+
+  // Handle plain numbers
+  return parseFloat(value) || 0;
+}
+
+/**
+ * Convert Kubernetes resource quantity string to universal units
+ * @param quantity - Kubernetes resource quantity string (e.g., "64", "20200m", "96Gi", "25828Mi")
+ * @param resourceType - Type of resource ("cpu", "memory", "storage", or "other")
+ * @returns Converted numeric value in universal units (cores for CPU, GB for memory/storage, raw number for others)
+ */
+export function convertK8sQuantityToUniversalUnit(
+  quantity: string,
+  resourceType: "cpu" | "memory" | "storage" | "other" = "other"
+): number {
+  if (!quantity || typeof quantity !== "string") {
+    return 0;
+  }
+
+  // Handle CPU resources
+  if (resourceType === "cpu") {
+    if (quantity.endsWith("m")) {
+      // Convert millicores to cores (e.g., "20200m" -> 20.2)
+      return parseFloat(quantity.slice(0, -1)) / 1000;
+    } else {
+      // Direct cores (e.g., "64" -> 64)
+      return parseFloat(quantity);
+    }
+  }
+
+  // Handle memory and storage resources
+  if (resourceType === "memory" || resourceType === "storage") {
+    if (quantity.endsWith("Gi")) {
+      // Convert GiB to GB (e.g., "96Gi" -> 96)
+      return parseFloat(quantity.slice(0, -2));
+    } else if (quantity.endsWith("Mi")) {
+      // Convert MiB to GB (e.g., "25828Mi" -> 25.828)
+      return parseFloat(quantity.slice(0, -2)) / 1024;
+    } else if (quantity.endsWith("Ki")) {
+      // Convert KiB to GB (e.g., "1048576Ki" -> 1)
+      return parseFloat(quantity.slice(0, -2)) / (1024 * 1024);
+    } else if (quantity.endsWith("G")) {
+      // Direct GB (e.g., "100G" -> 100)
+      return parseFloat(quantity.slice(0, -1));
+    } else if (quantity.endsWith("M")) {
+      // Convert MB to GB (e.g., "1000M" -> 1)
+      return parseFloat(quantity.slice(0, -1)) / 1000;
+    } else if (quantity.endsWith("K")) {
+      // Convert KB to GB (e.g., "1000000K" -> 0.001)
+      return parseFloat(quantity.slice(0, -1)) / (1000 * 1000);
+    } else {
+      // Assume bytes and convert to GB
+      return parseFloat(quantity) / (1024 * 1024 * 1024);
+    }
+  }
+
+  // Handle other resources (counts, custom resources, etc.)
+  return parseFloat(quantity) || 0;
+}
+
+/**
+ * Convert all Kubernetes resource annotations to universal units
+ * @param annotations - Object containing Kubernetes resource annotations
+ * @returns Object with converted values in universal units (cores for CPU, GB for memory/storage)
+ */
+export function convertK8sAnnotationsToUniversalUnits(
+  annotations: Record<string, string>
+): Record<string, number> {
+  const result: Record<string, number> = {};
+
+  for (const [key, value] of Object.entries(annotations)) {
+    // Determine resource type based on key patterns
+    let resourceType: "cpu" | "memory" | "storage" | "other" = "other";
+
+    if (key.includes("cpu")) {
+      resourceType = "cpu";
+    } else if (key.includes("memory") || key.includes("ephemeral-storage")) {
+      resourceType = "memory";
+    } else if (key.includes("storage") || key.includes("objectstorage/size")) {
+      resourceType = "storage";
+    }
+
+    result[key] = convertK8sQuantityToUniversalUnit(value, resourceType);
+  }
+
+  return result;
+}
+
+/**
+ * Convert ResourceQuota spec.hard and status.used to universal units
+ * @param resourceQuota - ResourceQuota object with spec.hard and status.used
+ * @returns Object with converted values in universal units
+ */
+export function convertResourceQuotaToUniversalUnits(resourceQuota: {
+  spec?: { hard?: Record<string, string> };
+  status?: { used?: Record<string, string> };
+}): {
+  spec: Record<string, number>;
+  status: Record<string, number>;
+} {
+  const result = {
+    spec: {} as Record<string, number>,
+    status: {} as Record<string, number>,
+  };
+
+  if (resourceQuota.spec?.hard) {
+    result.spec = convertK8sAnnotationsToUniversalUnits(
+      resourceQuota.spec.hard
+    );
+  }
+
+  if (resourceQuota.status?.used) {
+    result.status = convertK8sAnnotationsToUniversalUnits(
+      resourceQuota.status.used
+    );
+  }
+
+  return result;
+}

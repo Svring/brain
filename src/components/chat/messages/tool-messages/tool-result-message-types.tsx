@@ -14,6 +14,7 @@ import { CreateDevboxPortsToolMessage } from "@/components/copilot/sealos/devbox
 import { DeleteDevboxPortsToolMessage } from "@/components/copilot/sealos/devbox/delete-devbox-ports-tool-message";
 import { StartDevboxToolMessage } from "@/components/copilot/sealos/devbox/start-devbox-tool-message";
 import { PauseDevboxToolMessage } from "@/components/copilot/sealos/devbox/pause-devbox-tool-message";
+import { CreateDevboxToolMessage } from "@/components/copilot/sealos/devbox/create-devbox-tool-message";
 import { DeleteDevboxToolMessage } from "@/components/copilot/sealos/devbox/delete-devbox-tool-message";
 
 // Cluster Tool Messages
@@ -23,6 +24,7 @@ import { GetClusterMonitorToolMessage } from "@/components/copilot/sealos/cluste
 import { UpdateClusterToolMessage } from "@/components/copilot/sealos/cluster/update-cluster-tool-message";
 import { StartClusterToolMessage } from "@/components/copilot/sealos/cluster/start-cluster-tool-message";
 import { PauseClusterToolMessage } from "@/components/copilot/sealos/cluster/pause-cluster-tool-message";
+import { CreateClusterToolMessage } from "@/components/copilot/sealos/cluster/create-cluster-tool-message";
 import { DeleteClusterToolMessage } from "@/components/copilot/sealos/cluster/delete-cluster-tool-message";
 
 // Launchpad Tool Messages
@@ -39,7 +41,8 @@ import { UpdateLaunchpadEnvToolMessage } from "@/components/copilot/sealos/launc
 import { UpdateLaunchpadImageToolMessage } from "@/components/copilot/sealos/launchpad/update-launchpad-image-tool-message";
 import { StartLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/start-launchpad-tool-message";
 import { PauseLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/pause-launchpad-tool-message";
-import { DeleteLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/deleteLaunchpadToolMessage";
+import { CreateLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/create-launchpad-tool-message";
+import { DeleteLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/delete-launchpad-tool-message";
 
 // Result schema for tool actions
 export interface ToolActionResult {
@@ -85,6 +88,10 @@ export const ToolMessageType = {
     return <PauseDevboxToolMessage result={result} />;
   },
 
+  create_devbox: (result: ToolActionResult) => {
+    return <CreateDevboxToolMessage result={result} />;
+  },
+
   delete_devbox: (result: ToolActionResult) => {
     return <DeleteDevboxToolMessage result={result} />;
   },
@@ -112,6 +119,10 @@ export const ToolMessageType = {
 
   pause_cluster: (result: ToolActionResult) => {
     return <PauseClusterToolMessage result={result} />;
+  },
+
+  create_cluster: (result: ToolActionResult) => {
+    return <CreateClusterToolMessage result={result} />;
   },
 
   delete_cluster: (result: ToolActionResult) => {
@@ -169,6 +180,10 @@ export const ToolMessageType = {
 
   pause_launchpad: (result: ToolActionResult) => {
     return <PauseLaunchpadToolMessage result={result} />;
+  },
+
+  create_launchpad: (result: ToolActionResult) => {
+    return <CreateLaunchpadToolMessage result={result} />;
   },
 
   delete_launchpad: (result: ToolActionResult) => {

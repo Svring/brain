@@ -93,7 +93,7 @@ export const patchThread = async (threadId: string, metadata: Metadata) => {
     throw new Error("LANGGRAPH_DEPLOYMENT_URL environment variable is not set");
   }
 
-  console.log("[patchThread] Patching thread", { threadId, metadata });
+  // console.log("[patchThread] Patching thread", { threadId, metadata });
 
   try {
     const response = await fetch(`${apiUrl}/threads/${threadId}`, {

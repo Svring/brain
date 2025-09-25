@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getCluster,
   updateClusterService,
+  deleteClusterService,
 } from "@/lib/sealos/resources/cluster/cluster-api/cluster-api-service";
 import { SealosApiContextSchema } from "@/lib/sealos/sealos-api-context-schema";
 import { K8sApiContextSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
@@ -56,6 +57,60 @@ export async function GET(
     console.error("Error getting cluster:", error);
     return NextResponse.json(
       { error: "Failed to get cluster" },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/sealos/cluster/[name] - Delete cluster
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ name: string }> }
+) {
+  try {
+    // Extract authorization from headers
+    const authorization = request.headers.get("authorization");
+
+    if (!authorization) {
+      return NextResponse.json(
+        { error: "Missing authorization header" },
+        { status: 400 }
+      );
+    }
+
+    // Decode the kubeconfig from authorization header
+    const kubeconfig = decodeURIComponent(authorization);
+
+    // Extract namespace and region URL from kubeconfig
+    const [namespace, regionUrl] = await Promise.all([
+      getCurrentNamespace(kubeconfig),
+      getRegionUrlFromKubeconfig(kubeconfig),
+    ]);
+
+    // Create K8s context for getting cluster target
+    const k8sContext = K8sApiContextSchema.parse({
+      kubeconfig,
+      namespace,
+      regionUrl,
+    });
+
+    // Create Sealos context for deleteClusterService
+    const sealosContext = SealosApiContextSchema.parse({
+      baseUrl: regionUrl,
+      authorization,
+    });
+
+    const { name } = await params;
+    const target = CustomResourceTargetSchema.parse(
+      convertResourceTypeToTarget("cluster", name)
+    );
+
+    const result = await deleteClusterService(target, sealosContext);
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error("Error deleting cluster:", error);
+    return NextResponse.json(
+      { error: "Failed to delete cluster" },
       { status: 500 }
     );
   }

@@ -34,9 +34,14 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({ payload }) => {
 
   const { type, error } = payload;
 
+  // Check if error string contains 'group_balance_not_enough'
+  const isBalanceError =
+    type === "group_balance_not_enough" ||
+    (error && error.includes("group_balance_not_enough"));
+
   // Handle specific error types with custom messages
   const getDisplayError = (errorType: string, errorStr: string) => {
-    if (errorType === "group_balance_not_enough") {
+    if (isBalanceError) {
       return "Please top up your balance before proceeding.";
     }
 
@@ -63,16 +68,15 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({ payload }) => {
   };
 
   const displayError = getDisplayError(type, error);
-  const displayType =
-    type === "group_balance_not_enough" ? "Balance run up" : `Error (${type})`;
-  const showCostCenterButton = type === "group_balance_not_enough";
+  const displayType = isBalanceError ? "Balance run up" : `Error (${type})`;
+  const showCostCenterButton = isBalanceError;
 
   return (
     <div className="w-full">
       <div className="bg-destructive rounded-lg p-0.5">
         <div className="bg-background-secondary rounded-lg p-2 shadow-sm">
           <div className="flex items-center gap-2">
-            {type === "group_balance_not_enough" && (
+            {isBalanceError && (
               <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0" />
             )}
             <p className="text-destructive font-medium">{displayType}</p>

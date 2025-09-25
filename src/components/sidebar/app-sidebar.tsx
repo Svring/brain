@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { MainSection } from "./sidebar-section";
 import {
   Sidebar,
@@ -26,13 +27,23 @@ import {
 import { useAccountBalance } from "@/hooks/sealos/cost-center/use-account-balance";
 import { usePlanTransaction } from "@/hooks/sealos/cost-center/use-plan-transaction";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from "@tanstack/react-query";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 
 export default function AppSidebar() {
   const { mode } = useAuthState();
+  const { k8s } = useTRPCClients();
+
+  // Fetch account balance and plan transaction data
   const { data: accountBalance, isLoading: balanceLoading, refetch: refetchBalance } = useAccountBalance();
   const { data: planTransaction, isLoading: planLoading, refetch: refetchPlan } = usePlanTransaction();
+  
+  // Fetch resource quota data
+  const { data: resourceQuota, isLoading: isResourceQuotaLoading } = useQuery(
+    k8s.resourceQuota.queryOptions()
+  );
 
-  const isLoading = balanceLoading || planLoading;
+  const isLoading = balanceLoading || planLoading || isResourceQuotaLoading;
 
   const transaction = (planTransaction as any)?.transaction;
   const currentPlan = transaction?.NewPlanName || transaction?.OldPlanName;
@@ -165,15 +176,6 @@ export default function AppSidebar() {
                 </div>
               </PopoverContent>
             </Popover>
-            {mode === "development" && (
-              <UserCard
-                user={{
-                  name: "John Doe",
-                  email: "john.doe@example.com",
-                  avatar: "https://github.com/shadcn.png",
-                }}
-              />
-            )}
           </div>
         </SidebarFooter>
       </Sidebar>

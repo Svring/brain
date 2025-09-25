@@ -1,4 +1,8 @@
 import { convertToDbconnUrl } from "@/lib/sealos/sealos-utils";
+import {
+  CLUSTER_TYPE_ICON_MAP,
+  CLUSTER_DEFAULT_ICON,
+} from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
 
 /**
  * Generates a random string of lowercase alphabets
@@ -22,6 +26,19 @@ function generateRandomString(length: number = 5): string {
 export const generateClusterName = (prefix: string = "cluster"): string => {
   const randomString = generateRandomString(5);
   return `${prefix}-${randomString}`;
+};
+
+/**
+ * Generates the cluster icon URL
+ * @param clusterType - The cluster type (e.g., 'postgresql', 'mongodb', etc.)
+ * @returns The complete icon URL for the cluster type from constants
+ */
+export const getClusterIconUrl = (clusterType: string): string => {
+  // Map the cluster type to the supported enum name
+  const mappedType = mapDatabaseTypeToEnum(clusterType);
+
+  // Return the icon URL from constants, or default if not found
+  return CLUSTER_TYPE_ICON_MAP[mappedType] || CLUSTER_DEFAULT_ICON;
 };
 
 /**

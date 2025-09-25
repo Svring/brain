@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getLaunchpad,
   updateLaunchpadService,
+  deleteLaunchpadService,
 } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-api-service";
 import { SealosApiContextSchema } from "@/lib/sealos/sealos-api-context-schema";
 import { K8sApiContextSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
@@ -81,6 +82,47 @@ export async function GET(
   }
 }
 
+// DELETE /api/sealos/launchpad/[name] - Delete launchpad
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ name: string }> }
+) {
+  try {
+    // Extract authorization from headers
+    const authorization = request.headers.get("authorization");
+
+    if (!authorization) {
+      return NextResponse.json(
+        { error: "Missing authorization header" },
+        { status: 400 }
+      );
+    }
+
+    // Decode the kubeconfig from authorization header
+    const kubeconfig = decodeURIComponent(authorization);
+
+    // Extract region URL from kubeconfig
+    const regionUrl = await getRegionUrlFromKubeconfig(kubeconfig);
+
+    // Create Sealos context for deleteLaunchpadService
+    const sealosContext = SealosApiContextSchema.parse({
+      baseUrl: regionUrl,
+      authorization,
+    });
+
+    const { name } = await params;
+
+    const result = await deleteLaunchpadService({ name }, sealosContext);
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error("Error deleting launchpad:", error);
+    return NextResponse.json(
+      { error: "Failed to delete launchpad" },
+      { status: 500 }
+    );
+  }
+}
+
 // PATCH /api/sealos/launchpad/[name] - Update launchpad
 export async function PATCH(
   request: NextRequest,
@@ -146,91 +188,102 @@ export async function PATCH(
       }
     }
 
-    // Start with current launchpad data
+    // Start with minimal update data - only include what we're actually updating
     const updateData: any = {
       name: currentLaunchpad.name,
-      resource: currentLaunchpad.resource || { replicas: 1, cpu: 1, memory: 1 },
-      ports: currentLaunchpad.ports || [],
-      env: currentLaunchpad.env || [],
-      image: currentLaunchpad.image || { imageName: "" },
     };
 
-    // Update CPU and memory if provided
-    if (body.cpu !== undefined) {
+    // Only include resource data if we're updating CPU or memory
+    if (body.cpu !== undefined || body.memory !== undefined) {
       updateData.resource = {
-        ...updateData.resource,
-        cpu: body.cpu,
+        ...(currentLaunchpad.resource || { replicas: 1, cpu: 1, memory: 1 }),
       };
-    }
-    if (body.memory !== undefined) {
-      updateData.resource = {
-        ...updateData.resource,
-        memory: body.memory,
-      };
+
+      if (body.cpu !== undefined) {
+        updateData.resource.cpu = body.cpu;
+      }
+      if (body.memory !== undefined) {
+        updateData.resource.memory = body.memory;
+      }
     }
 
-    // Update image if provided
+    // Only include image data if we're updating the image
     if (body.updateImage) {
       updateData.image = { imageName: body.updateImage };
     }
 
-    // Handle port operations
-    let updatedPorts = [...(currentLaunchpad.ports || [])];
+    // Only include port data if we're doing port operations
+    const hasPortOperations =
+      (body.createPorts && Array.isArray(body.createPorts)) ||
+      (body.deletePorts && Array.isArray(body.deletePorts));
 
-    // Add new ports from createPorts
-    if (body.createPorts && Array.isArray(body.createPorts)) {
-      const newPorts = body.createPorts.map((portNumber: number) => ({
-        number: portNumber,
-        protocol: "HTTP",
-        exposesPublicDomain: true,
-      }));
-      updatedPorts = [...updatedPorts, ...newPorts];
+    if (hasPortOperations) {
+      let updatedPorts = [...(currentLaunchpad.ports || [])];
+
+      // Add new ports from createPorts
+      if (body.createPorts && Array.isArray(body.createPorts)) {
+        const newPorts = body.createPorts.map((portNumber: number) => ({
+          number: portNumber,
+          protocol: "HTTP",
+          exposesPublicDomain: true,
+        }));
+        updatedPorts = [...updatedPorts, ...newPorts];
+      }
+
+      // Remove ports from deletePorts
+      if (body.deletePorts && Array.isArray(body.deletePorts)) {
+        updatedPorts = updatedPorts.filter(
+          (port) => !body.deletePorts.includes(port.number)
+        );
+      }
+
+      updateData.ports = updatedPorts;
     }
 
-    // Remove ports from deletePorts
-    if (body.deletePorts && Array.isArray(body.deletePorts)) {
-      updatedPorts = updatedPorts.filter(
-        (port) => !body.deletePorts.includes(port.number)
-      );
+    // Only include environment data if we're doing env operations
+    const hasEnvOperations =
+      (body.createEnv && Array.isArray(body.createEnv)) ||
+      (body.updateEnv && Array.isArray(body.updateEnv)) ||
+      (body.deleteEnv && Array.isArray(body.deleteEnv));
+
+    if (hasEnvOperations) {
+      let updatedEnv = [...(currentLaunchpad.env || [])];
+
+      // Add new environment variables from createEnv
+      if (body.createEnv && Array.isArray(body.createEnv)) {
+        const newEnvVars = body.createEnv.map(
+          ([name, value]: [string, string]) => ({
+            name,
+            value,
+          })
+        );
+        updatedEnv = [...updatedEnv, ...newEnvVars];
+      }
+
+      // Update existing environment variables from updateEnv
+      if (body.updateEnv && Array.isArray(body.updateEnv)) {
+        body.updateEnv.forEach(([name, value]: [string, string]) => {
+          const existingIndex = updatedEnv.findIndex(
+            (env) => env.name === name
+          );
+          if (existingIndex !== -1) {
+            updatedEnv[existingIndex] = { name, value };
+          } else {
+            // If not found, add it
+            updatedEnv.push({ name, value });
+          }
+        });
+      }
+
+      // Remove environment variables from deleteEnv
+      if (body.deleteEnv && Array.isArray(body.deleteEnv)) {
+        updatedEnv = updatedEnv.filter(
+          (env) => !body.deleteEnv.includes(env.name)
+        );
+      }
+
+      updateData.env = updatedEnv;
     }
-
-    updateData.ports = updatedPorts;
-
-    // Handle environment variable operations
-    let updatedEnv = [...(currentLaunchpad.env || [])];
-
-    // Add new environment variables from createEnv
-    if (body.createEnv && Array.isArray(body.createEnv)) {
-      const newEnvVars = body.createEnv.map(
-        ([name, value]: [string, string]) => ({
-          name,
-          value,
-        })
-      );
-      updatedEnv = [...updatedEnv, ...newEnvVars];
-    }
-
-    // Update existing environment variables from updateEnv
-    if (body.updateEnv && Array.isArray(body.updateEnv)) {
-      body.updateEnv.forEach(([name, value]: [string, string]) => {
-        const existingIndex = updatedEnv.findIndex((env) => env.name === name);
-        if (existingIndex !== -1) {
-          updatedEnv[existingIndex] = { name, value };
-        } else {
-          // If not found, add it
-          updatedEnv.push({ name, value });
-        }
-      });
-    }
-
-    // Remove environment variables from deleteEnv
-    if (body.deleteEnv && Array.isArray(body.deleteEnv)) {
-      updatedEnv = updatedEnv.filter(
-        (env) => !body.deleteEnv.includes(env.name)
-      );
-    }
-
-    updateData.env = updatedEnv;
 
     // Validate the update data
     const validatedUpdateData = launchpadUpdateFormSchema.parse(updateData);
