@@ -29,7 +29,7 @@ export const devboxCreateFormSchema = z.object({
     },
   ]),
   env: z.array(DevboxEnvSchema).default([]),
-  autostart: z.boolean().default(false),
+  autostart: z.boolean().default(true),
 });
 
 // Export types

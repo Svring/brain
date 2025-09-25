@@ -15,7 +15,8 @@ export interface BuiltinResourceConfig {
     | "rolebinding"
     | "serviceaccount"
     | "job"
-    | "cronjob";
+    | "cronjob"
+    | "resourcequota";
   apiVersion: string;
   kind: string;
   listMethod: string;
@@ -226,5 +227,19 @@ export const BUILTIN_RESOURCES: Record<string, BuiltinResourceConfig> = {
     patchMethod: "patchNamespacedCronJob",
     replaceMethod: "replaceNamespacedCronJob",
     apiClient: "batchApi",
+  },
+  resourcequota: {
+    type: "builtin",
+    resourceType: "resourcequota",
+    apiVersion: "v1",
+    kind: "ResourceQuota",
+    listMethod: "listNamespacedResourceQuota",
+    getMethod: "readNamespacedResourceQuota",
+    createMethod: "createNamespacedResourceQuota",
+    deleteMethod: "deleteNamespacedResourceQuota",
+    patchMethod: "patchNamespacedResourceQuota",
+    replaceMethod: "replaceNamespacedResourceQuota",
+    deleteCollectionMethod: "deleteCollectionNamespacedResourceQuota",
+    apiClient: "coreApi",
   },
 };

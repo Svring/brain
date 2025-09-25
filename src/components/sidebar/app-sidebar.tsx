@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { MainSection } from "./sidebar-section";
 import {
   Sidebar,
@@ -23,9 +24,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useQuery } from "@tanstack/react-query";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 
 export default function AppSidebar() {
   const { mode } = useAuthState();
+  const { k8s } = useTRPCClients();
+
+  // Fetch resource quota data
+  const { data: resourceQuota, isLoading: isResourceQuotaLoading } = useQuery(
+    k8s.resourceQuota.queryOptions()
+  );
+
   return (
     <>
       <Sidebar className="" collapsible="icon">
@@ -106,7 +116,7 @@ export default function AppSidebar() {
               </PopoverContent>
             </Popover>
             {/* )} */}
-            {mode === "development" && (
+            {/* {mode === "development" && (
               <UserCard
                 user={{
                   name: "John Doe",
@@ -114,7 +124,7 @@ export default function AppSidebar() {
                   avatar: "https://github.com/shadcn.png",
                 }}
               />
-            )}
+            )} */}
           </div>
         </SidebarFooter>
         {/* <SidebarRail /> */}
