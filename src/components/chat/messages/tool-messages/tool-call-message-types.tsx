@@ -7,6 +7,7 @@ import { CreateDevboxPortsToolCallMessage } from "./tool-call-messages/devbox/cr
 import { DeleteDevboxPortsToolCallMessage } from "./tool-call-messages/devbox/delete-devbox-ports-tool-call-message";
 import { StartDevboxToolCallMessage } from "./tool-call-messages/devbox/start-devbox-tool-call-message";
 import { PauseDevboxToolCallMessage } from "./tool-call-messages/devbox/pause-devbox-tool-call-message";
+import { CreateDevboxToolCallMessage } from "./tool-call-messages/devbox/create-devbox-tool-call-message";
 import { DeleteDevboxToolCallMessage } from "./tool-call-messages/devbox/delete-devbox-tool-call-message";
 
 // Cluster Tool Call Messages
@@ -16,6 +17,7 @@ import { GetClusterMonitorToolCallMessage } from "./tool-call-messages/cluster/g
 import { UpdateClusterToolCallMessage } from "./tool-call-messages/cluster/update-cluster-tool-call-message";
 import { StartClusterToolCallMessage } from "./tool-call-messages/cluster/start-cluster-tool-call-message";
 import { PauseClusterToolCallMessage } from "./tool-call-messages/cluster/pause-cluster-tool-call-message";
+import { CreateClusterToolCallMessage } from "./tool-call-messages/cluster/create-cluster-tool-call-message";
 import { DeleteClusterToolCallMessage } from "./tool-call-messages/cluster/delete-cluster-tool-call-message";
 
 // Launchpad Tool Call Messages
@@ -32,6 +34,7 @@ import { UpdateLaunchpadEnvToolCallMessage } from "./tool-call-messages/launchpa
 import { UpdateLaunchpadImageToolCallMessage } from "./tool-call-messages/launchpad/update-launchpad-image-tool-call-message";
 import { StartLaunchpadToolCallMessage } from "./tool-call-messages/launchpad/start-launchpad-tool-call-message";
 import { PauseLaunchpadToolCallMessage } from "./tool-call-messages/launchpad/pause-launchpad-tool-call-message";
+import { CreateLaunchpadToolCallMessage } from "./tool-call-messages/launchpad/create-launchpad-tool-call-message";
 import { DeleteLaunchpadToolCallMessage } from "./tool-call-messages/launchpad/delete-launchpad-tool-call-message";
 
 export const ToolCallMessageType = {
@@ -99,6 +102,18 @@ export const ToolCallMessageType = {
     );
   },
 
+  create_devbox: (parameters: Record<string, any>) => {
+    return (
+      <CreateDevboxToolCallMessage
+        name={parameters.name || ""}
+        runtime={parameters.runtime || ""}
+        cpu={parameters.cpu}
+        memory={parameters.memory}
+        ports={parameters.ports || []}
+      />
+    );
+  },
+
   delete_devbox: (parameters: Record<string, any>) => {
     return (
       <DeleteDevboxToolCallMessage devbox_name={parameters.devbox_name || ""} />
@@ -153,6 +168,19 @@ export const ToolCallMessageType = {
     return (
       <PauseClusterToolCallMessage
         cluster_name={parameters.cluster_name || ""}
+      />
+    );
+  },
+
+  create_cluster: (parameters: Record<string, any>) => {
+    return (
+      <CreateClusterToolCallMessage
+        name={parameters.name || ""}
+        type={parameters.type || ""}
+        cpu={parameters.cpu}
+        memory={parameters.memory}
+        storage={parameters.storage}
+        replicas={parameters.replicas}
       />
     );
   },
@@ -275,6 +303,20 @@ export const ToolCallMessageType = {
     return (
       <PauseLaunchpadToolCallMessage
         launchpad_name={parameters.launchpad_name || ""}
+      />
+    );
+  },
+
+  create_launchpad: (parameters: Record<string, any>) => {
+    return (
+      <CreateLaunchpadToolCallMessage
+        name={parameters.name || ""}
+        image={parameters.image || ""}
+        cpu={parameters.cpu}
+        memory={parameters.memory}
+        replicas={parameters.replicas}
+        ports={parameters.ports || []}
+        env={parameters.env || []}
       />
     );
   },
