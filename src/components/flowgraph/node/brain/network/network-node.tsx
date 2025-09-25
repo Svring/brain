@@ -32,9 +32,6 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
   const { copyToClipboard, isCopied } = useCopy();
   const { diagnoseNetwork } = useDiagnoseNetwork(target);
 
-  // console.log("readyStatus", readyStatus);
-  // console.log("color", getBackgroundColor());
-
   // Extract ports from resource
   const ports = (resource as any)?.ports;
 
@@ -101,10 +98,15 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
     }
   };
 
-  const handleAddressClick = (e: React.MouseEvent, address: string) => {
+  const handleAddressClick = (
+    e: React.MouseEvent,
+    address: string,
+    addressType: "public" | "private"
+  ) => {
     e.stopPropagation();
     e.preventDefault();
-    if (address.startsWith("http")) {
+    // Only allow opening public addresses
+    if (addressType === "public" && address.startsWith("http")) {
       window.open(address, "_blank");
     }
   };
@@ -244,7 +246,9 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
                 frontCardType === "public" &&
                   "cursor-pointer hover:text-foreground/80"
               )}
-              onClick={(e) => handleAddressClick(e, frontCardUrl)}
+              onClick={(e) =>
+                handleAddressClick(e, frontCardUrl, frontCardType || "private")
+              }
             >
               {frontCardUrl}
             </span>

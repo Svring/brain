@@ -48,7 +48,12 @@ export const LaunchpadUpdateForm = ({
       if (value !== undefined && value !== null) {
         // For arrays, only include if they have items
         if (Array.isArray(value)) {
-          if (value.length > 0) {
+          // Special handling for ports array - always include even if empty
+          if (key === "ports") {
+            (acc as any)[key] = value;
+          }
+          // For other arrays, only include if they have items
+          else if (value.length > 0) {
             // Special handling for env array - filter out items with empty names
             if (key === "env") {
               const validEnvVars = value.filter(
