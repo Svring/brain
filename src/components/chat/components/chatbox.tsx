@@ -11,8 +11,6 @@ import { cn } from "@/lib/utils";
 
 export default function AiChatbox() {
   const {
-    isActive,
-    isFocused,
     state,
     resourceTarget,
     submit,
@@ -32,28 +30,18 @@ export default function AiChatbox() {
     if (shouldTrigger) {
       const pendingMessages = getPendingMessages(resourceTarget);
       if (pendingMessages.length > 0) {
-        console.log("AiChatbox - Pending messages for resource target:", {
-          resourceTarget,
-          pendingMessageCount: pendingMessages.length,
-          pendingMessages,
-        });
+        // console.log("AiChatbox - Pending messages for resource target:", {
+        //   resourceTarget,
+        //   pendingMessageCount: pendingMessages.length,
+        //   pendingMessages,
+        // });
 
         // Submit the pending messages
         try {
           submit({
             messages: pendingMessages,
           });
-          console.log(
-            "AiChatbox - Successfully submitted pending messages:",
-            pendingMessages.length
-          );
-
-          // Clear the pending messages after successful submission
           clearPendingMessages(resourceTarget);
-          console.log(
-            "AiChatbox - Cleared pending messages for resource target:",
-            resourceTarget
-          );
         } catch (error) {
           console.error(
             "AiChatbox - Failed to submit pending messages:",
@@ -61,13 +49,7 @@ export default function AiChatbox() {
           );
         }
       }
-
-      // Clear the trigger after processing
       clearTriggerPendingMessages(resourceTarget);
-      console.log(
-        "AiChatbox - Cleared trigger for resource target:",
-        resourceTarget
-      );
     }
   }, [shouldTriggerPendingMessages]);
 

@@ -7,19 +7,19 @@ import { useMount } from "@reactuses/core";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 
-interface DeleteDevboxToolMessageProps {
+interface CreateLaunchpadToolMessageProps {
   result: ToolActionResult;
 }
 
-export const DeleteDevboxToolMessage: React.FC<
-  DeleteDevboxToolMessageProps
+export const CreateLaunchpadToolMessage: React.FC<
+  CreateLaunchpadToolMessageProps
 > = ({ result }) => {
   const isApproved = result.approved !== false;
   const { invalidateQueries } = useInvalidateQueries();
-  const { devbox } = useTRPCClients();
+  const { launchpad } = useTRPCClients();
 
   useMount(() => {
-    invalidateQueries([devbox.get.queryKey(), devbox.list.queryKey()], true);
+    invalidateQueries([launchpad.get.queryKey(), launchpad.list.queryKey()], true);
   });
 
   return (
@@ -33,8 +33,8 @@ export const DeleteDevboxToolMessage: React.FC<
           )}
           <p className="text-sm">
             {isApproved
-              ? "Devbox deleted successfully"
-              : "Devbox deletion rejected"}
+              ? "Launchpad created successfully"
+              : "Launchpad creation rejected"}
           </p>
         </div>
       </div>

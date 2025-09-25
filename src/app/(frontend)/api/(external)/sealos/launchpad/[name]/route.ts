@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getLaunchpad,
   updateLaunchpadService,
+  deleteLaunchpadService,
 } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-api-service";
 import { SealosApiContextSchema } from "@/lib/sealos/sealos-api-context-schema";
 import { K8sApiContextSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
@@ -76,6 +77,47 @@ export async function GET(
     console.error("Error getting launchpad:", error);
     return NextResponse.json(
       { error: "Failed to get launchpad" },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/sealos/launchpad/[name] - Delete launchpad
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ name: string }> }
+) {
+  try {
+    // Extract authorization from headers
+    const authorization = request.headers.get("authorization");
+
+    if (!authorization) {
+      return NextResponse.json(
+        { error: "Missing authorization header" },
+        { status: 400 }
+      );
+    }
+
+    // Decode the kubeconfig from authorization header
+    const kubeconfig = decodeURIComponent(authorization);
+
+    // Extract region URL from kubeconfig
+    const regionUrl = await getRegionUrlFromKubeconfig(kubeconfig);
+
+    // Create Sealos context for deleteLaunchpadService
+    const sealosContext = SealosApiContextSchema.parse({
+      baseUrl: regionUrl,
+      authorization,
+    });
+
+    const { name } = await params;
+
+    const result = await deleteLaunchpadService({ name }, sealosContext);
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error("Error deleting launchpad:", error);
+    return NextResponse.json(
+      { error: "Failed to delete launchpad" },
       { status: 500 }
     );
   }

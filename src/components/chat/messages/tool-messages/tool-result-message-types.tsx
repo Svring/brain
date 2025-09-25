@@ -39,7 +39,7 @@ import { UpdateLaunchpadEnvToolMessage } from "@/components/copilot/sealos/launc
 import { UpdateLaunchpadImageToolMessage } from "@/components/copilot/sealos/launchpad/update-launchpad-image-tool-message";
 import { StartLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/start-launchpad-tool-message";
 import { PauseLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/pause-launchpad-tool-message";
-import { DeleteLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/deleteLaunchpadToolMessage";
+import { DeleteLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/delete-launchpad-tool-message";
 
 // Result schema for tool actions
 export interface ToolActionResult {

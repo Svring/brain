@@ -7,12 +7,12 @@ import { useMount } from "@reactuses/core";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 
-interface DeleteDevboxToolMessageProps {
+interface CreateDevboxToolMessageProps {
   result: ToolActionResult;
 }
 
-export const DeleteDevboxToolMessage: React.FC<
-  DeleteDevboxToolMessageProps
+export const CreateDevboxToolMessage: React.FC<
+  CreateDevboxToolMessageProps
 > = ({ result }) => {
   const isApproved = result.approved !== false;
   const { invalidateQueries } = useInvalidateQueries();
@@ -33,8 +33,8 @@ export const DeleteDevboxToolMessage: React.FC<
           )}
           <p className="text-sm">
             {isApproved
-              ? "Devbox deleted successfully"
-              : "Devbox deletion rejected"}
+              ? "Devbox created successfully"
+              : "Devbox creation rejected"}
           </p>
         </div>
       </div>

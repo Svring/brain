@@ -11,15 +11,15 @@ interface DeleteClusterToolMessageProps {
   result: ToolActionResult;
 }
 
-export const DeleteClusterToolMessage: React.FC<DeleteClusterToolMessageProps> = ({
-  result,
-}) => {
+export const DeleteClusterToolMessage: React.FC<
+  DeleteClusterToolMessageProps
+> = ({ result }) => {
   const isApproved = result.approved !== false;
   const { invalidateQueries } = useInvalidateQueries();
   const { cluster } = useTRPCClients();
 
   useMount(() => {
-    invalidateQueries([cluster.get.queryKey()]);
+    invalidateQueries([cluster.get.queryKey(), cluster.list.queryKey()], true);
   });
 
   return (

@@ -7,19 +7,19 @@ import { useMount } from "@reactuses/core";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 
-interface DeleteLaunchpadToolMessageProps {
+interface CreateClusterToolMessageProps {
   result: ToolActionResult;
 }
 
-export const DeleteLaunchpadToolMessage: React.FC<DeleteLaunchpadToolMessageProps> = ({
-  result,
-}) => {
+export const CreateClusterToolMessage: React.FC<
+  CreateClusterToolMessageProps
+> = ({ result }) => {
   const isApproved = result.approved !== false;
   const { invalidateQueries } = useInvalidateQueries();
-  const { launchpad } = useTRPCClients();
+  const { cluster } = useTRPCClients();
 
   useMount(() => {
-    invalidateQueries([launchpad.list.queryKey()]);
+    invalidateQueries([cluster.get.queryKey(), cluster.list.queryKey()], true);
   });
 
   return (
@@ -33,8 +33,8 @@ export const DeleteLaunchpadToolMessage: React.FC<DeleteLaunchpadToolMessageProp
           )}
           <p className="text-sm">
             {isApproved
-              ? "Launchpad deleted successfully"
-              : "Launchpad deletion rejected"}
+              ? "Cluster created successfully"
+              : "Cluster creation rejected"}
           </p>
         </div>
       </div>
