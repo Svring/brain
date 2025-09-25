@@ -58,7 +58,7 @@ export default function AppSidebar() {
         </SidebarContent>
         <SidebarFooter className={cn("bg-background-primary")}>
           <div className="flex flex-col gap-2">
-            {/* <Popover>
+            <Popover>
               <PopoverTrigger asChild>
                 <div className="cursor-pointer">
                   <ProgressCircle
@@ -104,7 +104,7 @@ export default function AppSidebar() {
                   </Button>
                 </div>
               </PopoverContent>
-            </Popover> */}
+            </Popover>
             {/* )} */}
             {mode === "development" && (
               <UserCard

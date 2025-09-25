@@ -18,7 +18,6 @@ import { NavigationProvider } from "@/contexts/navigation/navigation-context";
 import { getUser } from "@/payload/operations/users-operation";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { EnvProvider } from "@/components/provider/env-provider";
-import { HomeChatProvider } from "@/components/provider/home-chat-provider";
 
 import "@/styles/globals.css";
 import {
