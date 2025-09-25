@@ -1,5 +1,3 @@
-"use server";
-
 import axios from "axios";
 import https from "https";
 import type { CostCenterApiContext } from "../cost-center-schemas/cost-center-api-context-schema";
@@ -18,16 +16,23 @@ import {
 
 function createCostCenterApi(context: CostCenterApiContext) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
-  
-  const regionDomain = context.regionDomain || 
-    (context.baseUrl ? context.baseUrl.replace(/^https?:\/\//, '').replace(/:\d+$/, '') : (() => { throw new Error("regionDomain is required"); })());
-  
+
+  const regionDomain =
+    context.regionDomain ||
+    (context.baseUrl
+      ? context.baseUrl.replace(/^https?:\/\//, "").replace(/:\d+$/, "")
+      : (() => {
+          throw new Error("regionDomain is required");
+        })());
+
   return axios.create({
     baseURL: `https://costcenter.${regionDomain}`,
     headers: {
       "Content-Type": "application/json",
       // 使用 kubeconfig 作为 Authorization header，不是 Bearer token
-      ...(context.authorization ? { Authorization: context.authorization } : {}),
+      ...(context.authorization
+        ? { Authorization: context.authorization }
+        : {}),
     },
     httpsAgent: isDevelopment
       ? new https.Agent({ rejectUnauthorized: false })
@@ -37,15 +42,20 @@ function createCostCenterApi(context: CostCenterApiContext) {
 
 function createAccountApi(context: CostCenterApiContext) {
   const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
-  
-  const regionDomain = context.regionDomain || 
-    (context.baseUrl ? context.baseUrl.replace(/^https?:\/\//, '').replace(/:\d+$/, '') : (() => { throw new Error("regionDomain is required"); })());
-  
+
+  const regionDomain =
+    context.regionDomain ||
+    (context.baseUrl
+      ? context.baseUrl.replace(/^https?:\/\//, "").replace(/:\d+$/, "")
+      : (() => {
+          throw new Error("regionDomain is required");
+        })());
+
   // 修复：Account API 应该使用 costcenter 子域名
   const baseURL = `https://costcenter.${regionDomain}`;
-  
+
   return axios.create({
-    baseURL: baseURL, 
+    baseURL: baseURL,
     headers: {
       "Content-Type": "application/json",
       // Account API 使用 kubeconfig 作为 Authorization
@@ -57,84 +67,86 @@ function createAccountApi(context: CostCenterApiContext) {
   });
 }
 
+export async function getAccountBalance(
+  context: CostCenterApiContext
+): Promise<AccountBalanceResponse> {
+  const regionDomain =
+    context.regionDomain ||
+    (context.baseUrl
+      ? context.baseUrl.replace(/^https?:\/\//, "").replace(/:\d+$/, "")
+      : (() => {
+          throw new Error("regionDomain is required");
+        })());
 
-export async function getAccountBalance(context: CostCenterApiContext): Promise<AccountBalanceResponse> {
-  const regionDomain = context.regionDomain || 
-    (context.baseUrl ? context.baseUrl.replace(/^https?:\/\//, '').replace(/:\d+$/, '') : (() => { throw new Error("regionDomain is required"); })());
-  
   // 修复：Account API 应该使用 costcenter 子域名
   const requestUrl = `https://costcenter.${regionDomain}/api/account/getAmount`;
-  
+
   if (!context.kubeconfig) {
     throw new Error("Kubeconfig is required for account balance API");
   }
-  
+
   const api = createAccountApi(context);
-  
+
   // Create request body similar to plan transaction
   const requestData: AccountBalanceRequest = {
-    workspace: context.workspace || context.namespace || (() => { throw new Error("workspace/namespace is required"); })(),
+    workspace:
+      context.workspace ||
+      context.namespace ||
+      (() => {
+        throw new Error("workspace/namespace is required");
+      })(),
     regionDomain: regionDomain,
     internalToken: context.internalToken || context.kubeconfig, // 使用 internalToken，fallback 到 kubeconfig
   };
-  
+
   // Validate request data
   AccountBalanceRequestSchema.parse(requestData);
-  
+
   try {
-    console.log("[CostCenter][AccountBalance][Request]", {
-      url: requestUrl,
-      headers: {
-        Authorization: context.kubeconfig ? `${String(context.kubeconfig).slice(0, 32)}...` : undefined,
-        'Content-Type': 'application/json',
-      },
-      body: {
-        ...requestData,
-        internalToken: context.internalToken ? `${String(context.internalToken).slice(0, 32)}...` : undefined,
-      },
-      fullInternalToken: context.internalToken,
-    });
     const response = await api.post("/api/account/getAmount", requestData);
-    console.log("[CostCenter][AccountBalance][Response]", {
-      status: response.status,
-      statusText: response.statusText,
-      headers: response.headers,
-      data: response.data,
-    });
     const validatedResponse = AccountBalanceResponseSchema.parse(response.data);
-    
+
     // 直接返回响应，让上层处理业务错误码
     // if (validatedResponse.code !== 200) {
     //   throw new Error(`Account API error: ${validatedResponse.message}`);
     // }
-    
+
     // if (!validatedResponse.data) {
     //   throw new Error("Account balance data is null");
     // }
-    
+
     return validatedResponse;
   } catch (error: any) {
-    console.error("[CostCenter][AccountBalance][Error]", {
-      message: error?.message,
-      responseStatus: error?.response?.status,
-      responseData: error?.response?.data,
-    });
     throw error;
   }
 }
 
+export async function getPlanTransaction(
+  context: CostCenterApiContext
+): Promise<PlanTransactionResponse> {
+  const regionDomain =
+    context.regionDomain ||
+    (context.baseUrl
+      ? context.baseUrl.replace(/^https?:\/\//, "").replace(/:\d+$/, "")
+      : (() => {
+          throw new Error("regionDomain is required");
+        })());
 
-export async function getPlanTransaction(context: CostCenterApiContext): Promise<PlanTransactionResponse> {
-  const regionDomain = context.regionDomain || 
-    (context.baseUrl ? context.baseUrl.replace(/^https?:\/\//, '').replace(/:\d+$/, '') : (() => { throw new Error("regionDomain is required"); })());
-  
-  const workspace = context.workspace || context.namespace || (() => { throw new Error("workspace/namespace is required"); })();
-  const internalToken = context.internalToken || context.kubeconfig || context.authorization; // Use internalToken as primary
-  
+  const workspace =
+    context.workspace ||
+    context.namespace ||
+    (() => {
+      throw new Error("workspace/namespace is required");
+    })();
+  const internalToken =
+    context.internalToken || context.kubeconfig || context.authorization; // Use internalToken as primary
+
   if (!workspace || !regionDomain || !internalToken) {
-    throw new Error("Missing required context: workspace, regionDomain, or internalToken");
+    throw new Error(
+      "Missing required context: workspace, regionDomain, or internalToken"
+    );
   }
-  
+
   const requestData: PlanTransactionRequest = {
     workspace: workspace,
     regionDomain: regionDomain,
@@ -145,39 +157,17 @@ export async function getPlanTransaction(context: CostCenterApiContext): Promise
 
   const api = createCostCenterApi({
     ...context,
-    authorization: context.kubeconfig, 
+    authorization: context.kubeconfig,
   });
-  
-  try {
-    console.log("[CostCenter][PlanTransaction][Request]", {
-      url: `https://costcenter.${regionDomain}/api/plan/transaction`,
-      headers: {
-        Authorization: context.kubeconfig ? `${String(context.kubeconfig).slice(0, 32)}...` : undefined,
-        'Content-Type': 'application/json',
-      },
-      body: {
-        ...requestData,
-        internalToken: context.internalToken ? `${String(context.internalToken).slice(0, 32)}...` : undefined,
-      },
-      fullInternalToken: context.internalToken,
-    });
-    const response = await api.post("/api/plan/transaction", requestData);
-    console.log("[CostCenter][PlanTransaction][Response]", {
-      status: response.status,
-      statusText: response.statusText,
-      headers: response.headers,
-      data: response.data,
-    });
-    const validatedResponse = PlanTransactionResponseSchema.parse(response.data);
 
-    
+  try {
+    const response = await api.post("/api/plan/transaction", requestData);
+    const validatedResponse = PlanTransactionResponseSchema.parse(
+      response.data
+    );
+
     return validatedResponse;
   } catch (error: any) {
-    console.error("[CostCenter][PlanTransaction][Error]", {
-      message: error?.message,
-      responseStatus: error?.response?.status,
-      responseData: error?.response?.data,
-    });
     throw error;
   }
 }

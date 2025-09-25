@@ -35,9 +35,17 @@ export default function AppSidebar() {
   const { k8s } = useTRPCClients();
 
   // Fetch account balance and plan transaction data
-  const { data: accountBalance, isLoading: balanceLoading, refetch: refetchBalance } = useAccountBalance();
-  const { data: planTransaction, isLoading: planLoading, refetch: refetchPlan } = usePlanTransaction();
-  
+  const {
+    data: accountBalance,
+    isLoading: balanceLoading,
+    refetch: refetchBalance,
+  } = useAccountBalance();
+  const {
+    data: planTransaction,
+    isLoading: planLoading,
+    refetch: refetchPlan,
+  } = usePlanTransaction();
+
   // Fetch resource quota data
   const { data: resourceQuota, isLoading: isResourceQuotaLoading } = useQuery(
     k8s.resourceQuota.queryOptions()
@@ -56,7 +64,8 @@ export default function AppSidebar() {
   const usedQuota = Math.max(0, totalQuota - Math.floor(balance / 1000000));
   const usagePercentage = totalQuota > 0 ? (usedQuota / totalQuota) * 100 : 0;
 
-  const hasValidPlan = currentPlan && currentPlan !== "00000000-0000-0000-0000-000000000000";
+  const hasValidPlan =
+    currentPlan && currentPlan !== "00000000-0000-0000-0000-000000000000";
   const displayPlan = hasValidPlan ? currentPlan : "Free";
 
   const handleUpgrade = () => {
@@ -134,9 +143,15 @@ export default function AppSidebar() {
                   ) : !accountBalance ? (
                     <div className="space-y-2">
                       <p className="text-sm text-muted-foreground">
-                        Unable to load subscription information. Please try again later.
+                        Unable to load subscription information. Please try
+                        again later.
                       </p>
-                      <Button variant="outline" size="sm" onClick={handleRetry} className="w-full">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRetry}
+                        className="w-full"
+                      >
                         Retry
                       </Button>
                     </div>
@@ -144,24 +159,36 @@ export default function AppSidebar() {
                     <div className="space-y-2">
                       <p className="text-sm text-muted-foreground">
                         Your current subscription plan is{" "}
-                        <span className="font-semibold text-foreground">{displayPlan}</span>
+                        <span className="font-semibold text-foreground">
+                          {displayPlan}
+                        </span>
                         , with an upper limit request counts{" "}
-                        <span className="font-semibold text-foreground">{totalQuota}</span>
+                        <span className="font-semibold text-foreground">
+                          {totalQuota}
+                        </span>
                       </p>
                       <Progress value={usagePercentage} className="h-2" />
                       <p className="text-sm text-muted-foreground">
                         You've used{" "}
-                        <span className="font-semibold text-foreground">{usedQuota}</span>{" "}
+                        <span className="font-semibold text-foreground">
+                          {usedQuota}
+                        </span>{" "}
                         of your quota, click button below to upgrade.
                       </p>
                       <div className="text-xs text-muted-foreground space-y-1">
-                        <div>Balance: {(balance / 1000000).toFixed(2)} credits</div>
-                        {planStatus && planStatus !== "00000000-0000-0000-0000-000000000000" && (
-                          <div>Plan Status: {planStatus}</div>
-                        )}
-                        {payStatus && payStatus !== "00000000-0000-0000-0000-000000000000" && (
-                          <div>Payment Status: {payStatus}</div>
-                        )}
+                        <div>
+                          Balance: {(balance / 1000000).toFixed(2)} credits
+                        </div>
+                        {planStatus &&
+                          planStatus !==
+                            "00000000-0000-0000-0000-000000000000" && (
+                            <div>Plan Status: {planStatus}</div>
+                          )}
+                        {payStatus &&
+                          payStatus !==
+                            "00000000-0000-0000-0000-000000000000" && (
+                            <div>Payment Status: {payStatus}</div>
+                          )}
                       </div>
                     </div>
                   )}
