@@ -11,6 +11,7 @@ import type { ProjectProposal } from "@/lib/brain/resources/project/project-sche
 import { useProjectCreate } from "@/hooks/brain/use-project-create";
 import { useHomeChat } from "@/components/provider/home-chat-provider";
 import { useThreads } from "@/components/provider/thread-provider";
+import { useChatActions } from "@/contexts/chat/chat-context";
 import { useRouter } from "next/navigation";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { v4 as uuidv4 } from "uuid";
@@ -50,6 +51,7 @@ const ImageDeploymentCard = ({
   const { createProject, isCreating } = useProjectCreate();
   const { submit, threadId, messages } = useHomeChat();
   const { patchThread, updateThreadState } = useThreads();
+  const { openProjectChat } = useChatActions();
   const router = useRouter();
   const { auth } = useAuthState();
   const [internalProposal, setInternalProposal] = useState<ProjectProposal>(
@@ -199,6 +201,9 @@ const ImageDeploymentCard = ({
           });
         }
       }
+
+      // Open project chat
+      openProjectChat(projectName as string);
 
       // Navigate to the created project
       router.push(`/projects/${projectName}`);

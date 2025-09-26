@@ -78,8 +78,6 @@ export function ProjectChatInstanceProvider({
   const isActive = true; // project chat is always "active"
   const isFocused = focusedResourceTarget === getProjectChatKey(projectName);
 
-  console.log("chatInstance", chatInstance);
-
   // Immediate validation: if threadId exists but is not in threads array, fix it immediately
   // But add a delay to avoid interfering with new thread creation
   useEffect(() => {
@@ -93,16 +91,6 @@ export function ProjectChatInstanceProvider({
       );
 
       if (!currentThreadExists) {
-        console.log(
-          "ProjectChatInstanceProvider - DETECTED: Current threadId not in threads array:",
-          {
-            projectName,
-            invalidThreadId: chatInstance.threadId,
-            availableThreads: chatInstance.threads.map((t) => t.thread_id),
-            willFixIn: "2 seconds (to allow new thread creation)",
-          }
-        );
-
         // Add a delay to allow new thread creation process to complete
         const timeoutId = setTimeout(() => {
           // Re-check if the thread still doesn't exist after the delay
@@ -117,33 +105,13 @@ export function ProjectChatInstanceProvider({
             );
 
             if (stillDoesntExist) {
-              console.log(
-                "ProjectChatInstanceProvider - DELAYED FIX: Current threadId still not in threads array:",
-                {
-                  projectName,
-                  invalidThreadId: currentInstance.threadId,
-                  availableThreads: currentInstance.threads.map(
-                    (t) => t.thread_id
-                  ),
-                  fixingTo: currentInstance.threads[0].thread_id,
-                }
-              );
-
               setProjectChatThreadId(
                 projectName,
                 currentInstance.threads[0].thread_id
               );
-            } else {
-              console.log(
-                "ProjectChatInstanceProvider - NO FIX NEEDED: Thread was found after delay (likely new thread creation completed):",
-                {
-                  projectName,
-                  threadId: currentInstance.threadId,
-                }
-              );
             }
           }
-        }, 2000); // 2 second delay
+        }, 1000); // 2 second delay
 
         return () => clearTimeout(timeoutId);
       }
@@ -166,14 +134,6 @@ export function ProjectChatInstanceProvider({
       (t) => t.thread_id === chatInstance.threadId
     );
     if (!threadExists) {
-      console.log(
-        "ProjectChatInstanceProvider - useStream: Invalid threadId detected, using null:",
-        {
-          projectName,
-          invalidThreadId: chatInstance.threadId,
-          availableThreads: chatInstance.threads.map((t) => t.thread_id),
-        }
-      );
       return null; // Force useStream to not use invalid threadId
     }
 
@@ -226,25 +186,8 @@ export function ProjectChatInstanceProvider({
   // Fetch threads for project chat
   useEffect(() => {
     const fetchThreads = async () => {
-      console.log(
-        "ProjectChatInstanceProvider - Initial thread fetch started:",
-        {
-          projectName,
-          isActive,
-          currentThreadId: chatInstance?.threadId,
-        }
-      );
-
       try {
         const threads = await getThreads(null);
-        console.log("ProjectChatInstanceProvider - Threads fetched:", {
-          projectName,
-          threadCount: threads.length,
-          threads: threads.map((t) => ({
-            id: t.thread_id,
-            created_at: t.created_at,
-          })),
-        });
 
         setProjectChatThreads(projectName, threads);
 
@@ -258,33 +201,10 @@ export function ProjectChatInstanceProvider({
           (!chatInstance?.threadId || !currentThreadExists)
         ) {
           const firstThread = threads[0];
-          console.log(
-            "ProjectChatInstanceProvider - Auto-selecting first thread:",
-            {
-              threadId: firstThread.thread_id,
-              projectName,
-              threadCreatedAt: firstThread.created_at,
-              reason: !chatInstance?.threadId
-                ? "no thread selected"
-                : "current thread not in list",
-              currentThreadId: chatInstance?.threadId,
-              availableThreads: threads.map((t) => t.thread_id),
-            }
-          );
-
           setProjectChatThreadId(projectName, firstThread.thread_id);
         }
         // Create new thread if no threads exist
         else if (threads.length === 0 && !chatInstance?.threadId) {
-          console.log(
-            "ProjectChatInstanceProvider - No threads exist, creating new thread:",
-            {
-              projectName,
-              selectedProject,
-              graphId: LANGGRAPH_GRAPH_ID,
-            }
-          );
-
           createNewThread.mutate(
             {
               metadata: {
@@ -296,51 +216,18 @@ export function ProjectChatInstanceProvider({
             },
             {
               onSuccess: (data: any) => {
-                console.log(
-                  "ProjectChatInstanceProvider - New thread created successfully:",
-                  {
-                    projectName,
-                    threadId: data?.thread_id,
-                  }
-                );
                 if (data?.thread_id) {
                   setProjectChatThreadId(projectName, data.thread_id);
                 }
               },
               onError: (error: any) => {
-                console.error(
-                  "ProjectChatInstanceProvider - Failed to create new thread:",
-                  {
-                    projectName,
-                    error,
-                  }
-                );
+                console.error("Failed to create new thread:", error);
               },
-            }
-          );
-        } else {
-          console.log(
-            "ProjectChatInstanceProvider - No action needed for thread selection:",
-            {
-              projectName,
-              threadCount: threads.length,
-              currentThreadId: chatInstance?.threadId,
-              currentThreadExists,
-              reason:
-                threads.length === 0
-                  ? "no threads available"
-                  : "valid thread already selected",
             }
           );
         }
       } catch (error) {
-        console.error(
-          "ProjectChatInstanceProvider - Failed to fetch threads for project:",
-          {
-            projectName,
-            error,
-          }
-        );
+        console.error("Failed to fetch threads for project:", error);
       }
     };
 
@@ -354,49 +241,12 @@ export function ProjectChatInstanceProvider({
     const handleThreadSelectionEvent = (event: CustomEvent) => {
       const { projectName: eventProjectName } = event.detail;
 
-      console.log(
-        "ProjectChatInstanceProvider - Received triggerProjectThreadSelection event:",
-        {
-          eventProjectName,
-          currentProjectName: projectName,
-          isActive,
-          currentThreadId: chatInstance?.threadId,
-        }
-      );
-
       // Check if this event is for this specific project
       if (eventProjectName === projectName && isActive) {
-        console.log(
-          "ProjectChatInstanceProvider - Event matches current project, triggering thread selection:",
-          {
-            projectName,
-            isActive,
-          }
-        );
-
         // Re-trigger thread selection logic
         const fetchThreads = async () => {
-          console.log(
-            "ProjectChatInstanceProvider - Event-triggered thread fetch started:",
-            {
-              projectName,
-              currentThreadId: chatInstance?.threadId,
-            }
-          );
-
           try {
             const threads = await getThreads(null);
-            console.log(
-              "ProjectChatInstanceProvider - Event-triggered threads fetched:",
-              {
-                projectName,
-                threadCount: threads.length,
-                threads: threads.map((t) => ({
-                  id: t.thread_id,
-                  created_at: t.created_at,
-                })),
-              }
-            );
 
             setProjectChatThreads(projectName, threads);
 
@@ -410,33 +260,10 @@ export function ProjectChatInstanceProvider({
               (!chatInstance?.threadId || !currentThreadExists)
             ) {
               const firstThread = threads[0];
-              console.log(
-                "ProjectChatInstanceProvider - Event-triggered auto-selecting first thread:",
-                {
-                  threadId: firstThread.thread_id,
-                  projectName,
-                  threadCreatedAt: firstThread.created_at,
-                  reason: !chatInstance?.threadId
-                    ? "no thread selected"
-                    : "current thread not in list",
-                  currentThreadId: chatInstance?.threadId,
-                  availableThreads: threads.map((t) => t.thread_id),
-                }
-              );
-
               setProjectChatThreadId(projectName, firstThread.thread_id);
             }
             // Create new thread if no threads exist
             else if (threads.length === 0 && !chatInstance?.threadId) {
-              console.log(
-                "ProjectChatInstanceProvider - Event-triggered no threads exist, creating new thread:",
-                {
-                  projectName,
-                  selectedProject,
-                  graphId: LANGGRAPH_GRAPH_ID,
-                }
-              );
-
               createNewThread.mutate(
                 {
                   metadata: {
@@ -448,65 +275,22 @@ export function ProjectChatInstanceProvider({
                 },
                 {
                   onSuccess: (data: any) => {
-                    console.log(
-                      "ProjectChatInstanceProvider - Event-triggered new thread created successfully:",
-                      {
-                        projectName,
-                        threadId: data?.thread_id,
-                      }
-                    );
                     if (data?.thread_id) {
                       setProjectChatThreadId(projectName, data.thread_id);
                     }
                   },
                   onError: (error: any) => {
-                    console.error(
-                      "ProjectChatInstanceProvider - Event-triggered failed to create new thread:",
-                      {
-                        projectName,
-                        error,
-                      }
-                    );
+                    console.error("Failed to create new thread:", error);
                   },
-                }
-              );
-            } else {
-              console.log(
-                "ProjectChatInstanceProvider - Event-triggered no action needed for thread selection:",
-                {
-                  projectName,
-                  threadCount: threads.length,
-                  currentThreadId: chatInstance?.threadId,
-                  currentThreadExists,
-                  reason:
-                    threads.length === 0
-                      ? "no threads available"
-                      : "valid thread already selected",
                 }
               );
             }
           } catch (error) {
-            console.error(
-              "ProjectChatInstanceProvider - Event-triggered failed to fetch threads for project:",
-              {
-                projectName,
-                error,
-              }
-            );
+            console.error("Failed to fetch threads for project:", error);
           }
         };
 
         fetchThreads();
-      } else {
-        console.log("ProjectChatInstanceProvider - Event ignored:", {
-          reason:
-            eventProjectName !== projectName
-              ? "different project"
-              : "not active",
-          eventProjectName,
-          currentProjectName: projectName,
-          isActive,
-        });
       }
     };
 
@@ -604,16 +388,6 @@ export function ResourceChatInstanceProvider({
       );
 
       if (!currentThreadExists) {
-        console.log(
-          "ResourceChatInstanceProvider - DETECTED: Current threadId not in threads array:",
-          {
-            resourceTarget,
-            invalidThreadId: chatInstance.threadId,
-            availableThreads: chatInstance.threads.map((t) => t.thread_id),
-            willFixIn: "2 seconds (to allow new thread creation)",
-          }
-        );
-
         // Add a delay to allow new thread creation process to complete
         const timeoutId = setTimeout(() => {
           // Re-check if the thread still doesn't exist after the delay
@@ -628,33 +402,13 @@ export function ResourceChatInstanceProvider({
             );
 
             if (stillDoesntExist) {
-              console.log(
-                "ResourceChatInstanceProvider - DELAYED FIX: Current threadId still not in threads array:",
-                {
-                  resourceTarget,
-                  invalidThreadId: currentInstance.threadId,
-                  availableThreads: currentInstance.threads.map(
-                    (t) => t.thread_id
-                  ),
-                  fixingTo: currentInstance.threads[0].thread_id,
-                }
-              );
-
               setChatThreadId(
                 resourceTarget,
                 currentInstance.threads[0].thread_id
               );
-            } else {
-              console.log(
-                "ResourceChatInstanceProvider - NO FIX NEEDED: Thread was found after delay (likely new thread creation completed):",
-                {
-                  resourceTarget,
-                  threadId: currentInstance.threadId,
-                }
-              );
             }
           }
-        }, 2000); // 2 second delay
+        }, 500); // 2 second delay
 
         return () => clearTimeout(timeoutId);
       }
@@ -677,14 +431,6 @@ export function ResourceChatInstanceProvider({
       (t) => t.thread_id === chatInstance.threadId
     );
     if (!threadExists) {
-      console.log(
-        "ResourceChatInstanceProvider - useStream: Invalid threadId detected, using null:",
-        {
-          resourceTarget,
-          invalidThreadId: chatInstance.threadId,
-          availableThreads: chatInstance.threads.map((t) => t.thread_id),
-        }
-      );
       return null; // Force useStream to not use invalid threadId
     }
 
@@ -748,14 +494,6 @@ export function ResourceChatInstanceProvider({
         // Auto-select first thread if threads exist and no thread is currently selected
         if (threads.length > 0 && !chatInstance?.threadId) {
           const firstThread = threads[0];
-          console.log(
-            "ResourceChatInstanceProvider - Auto-selecting first thread:",
-            {
-              threadId: firstThread.thread_id,
-              resourceTarget,
-            }
-          );
-
           setChatThreadId(resourceTarget, firstThread.thread_id);
         }
         // Create new thread if no threads exist

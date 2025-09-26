@@ -2,7 +2,7 @@
 # Build for AMD64
 # docker build --platform linux/amd64 -t orca-app .
 # docker build --platform linux/amd64 -t sealos-brain-frontend:v0.2 .
-# docker tag sha256:087e8fe54f8d23d9e85677df7e1e9177c9d73e6da2f7d4dfdb22ab2275322d61 puddlecat/sealos-brain-frontend:v0.13.6
+# docker tag sha256:8f8d285441ca3f4c2abfb925378bf6359ab4c3cd53d30c47594ba3dae2c34383 puddlecat/sealos-brain-frontend:v0.14.2
 # docker tag sha256:7d41dd40fec5db13aad90c61955a3a8074c14ede6d8cb0f1ef17348d2e4b164d crpi-xgxlm7ulopyatpv5.cn-shanghai.personal.cr.aliyuncs.com/hydrangeas/sealos-brain-frontend:v0.3
 # docker push crpi-xgxlm7ulopyatpv5.cn-shanghai.personal.cr.aliyuncs.com/hydrangeas/sealos-brain-frontend:v0.3
 
@@ -26,7 +26,7 @@ RUN pnpm install --frozen-lockfile
 # Copy the rest of the project files
 COPY . .
 # Build the Next.js app (skip linting for Docker build)
-RUN pnpm build
+RUN pnpm build --turbopack
 
 # Stage 2: Run the Next.js app
 FROM node:22-alpine

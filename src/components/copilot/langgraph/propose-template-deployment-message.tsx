@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useHomeChat } from "@/components/provider/home-chat-provider";
 import { useThreads } from "@/components/provider/thread-provider";
+import { useChatActions } from "@/contexts/chat/chat-context";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { v4 as uuidv4 } from "uuid";
 
@@ -48,6 +49,7 @@ const TemplateDeploymentCard = ({
   const router = useRouter();
   const { submit, threadId, messages } = useHomeChat();
   const { patchThread, updateThreadState } = useThreads();
+  const { openProjectChat } = useChatActions();
   const { auth } = useAuthState();
 
   // Get template API context and templates
@@ -212,6 +214,9 @@ const TemplateDeploymentCard = ({
                 });
               }
             }
+
+            // Open project chat
+            openProjectChat(instanceName as string);
 
             // Navigate to the instance details page
             router.push(`/projects/${instanceName}`);

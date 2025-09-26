@@ -19,7 +19,9 @@ export const CreateDevboxToolMessage: React.FC<
 > = ({ result }) => {
   const isApproved = result.approved !== false;
   const { addResourcesToProject } = useProjectAddResource();
-  const { selectedProject } = useProjectState();
+  const { selectedProject, selectedProjectResources } = useProjectState();
+
+  console.log("selectedProjectResources", selectedProjectResources);
 
   useMount(() => {
     // Add resources to project if creation was approved and result contains resource info
