@@ -7,20 +7,20 @@ import { useMount } from "@reactuses/core";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 
-interface DeleteClusterToolMessageProps {
+interface AutostartDevboxToolMessageProps {
   result: ToolActionResult;
 }
 
-export const DeleteClusterToolMessage: React.FC<
-  DeleteClusterToolMessageProps
-> = ({ result }) => {
+export const AutostartDevboxToolMessage: React.FC<AutostartDevboxToolMessageProps> = ({
+  result,
+}) => {
   const isApproved = result.approved !== false;
   const isSuccess = result.success !== false;
   const { invalidateQueries } = useInvalidateQueries();
-  const { cluster } = useTRPCClients();
+  const { devbox } = useTRPCClients();
 
   useMount(() => {
-    invalidateQueries([cluster.get.queryKey(), cluster.list.queryKey()], true);
+    invalidateQueries([devbox.get.queryKey(), devbox.list.queryKey()]);
   });
 
   // Determine icon and text based on approved and success status
@@ -28,20 +28,20 @@ export const DeleteClusterToolMessage: React.FC<
     if (!isApproved) {
       return {
         icon: <CircleSlash className="h-4 w-4 text-theme-yellow" />,
-        text: "Cluster deletion rejected"
+        text: "Devbox autostart rejected"
       };
     }
     
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Cluster deletion failed"
+        text: result.message || "Devbox autostart failed"
       };
     }
     
     return {
       icon: <CircleCheckBigIcon className="h-4 w-4 text-green-600" />,
-      text: "Cluster deleted successfully"
+      text: "Devbox autostart enabled successfully"
     };
   };
 

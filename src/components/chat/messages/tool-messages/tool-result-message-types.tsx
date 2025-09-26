@@ -54,6 +54,7 @@ export interface ToolActionResult {
   result: any;
   message: string;
   approved: boolean;
+  error?: string;
 }
 
 export const ToolMessageType = {

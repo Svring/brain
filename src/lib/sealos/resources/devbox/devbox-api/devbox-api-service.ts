@@ -179,6 +179,15 @@ export async function restartDevbox(
   return response.data;
 }
 
+export async function autostartDevbox(
+  context: SealosApiContext,
+  name: string
+): Promise<any> {
+  const api = createDevboxAxios(context);
+  const response = await api.post(`/${name}/autostart`, {});
+  return response.data;
+}
+
 export async function deleteDevbox(
   context: SealosApiContext,
   name: string

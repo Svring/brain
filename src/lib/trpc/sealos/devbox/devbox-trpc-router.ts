@@ -12,6 +12,7 @@ import {
   pauseDevbox,
   shutdownDevbox,
   restartDevbox,
+  autostartDevbox,
   deleteDevbox,
   releaseDevbox,
   getDevboxReleases,
@@ -117,6 +118,12 @@ export const devboxRouter = t.router({
     .input(CustomResourceTargetSchema)
     .mutation(async ({ ctx, input }) => {
       return await restartDevbox(ctx, input.name!);
+    }),
+
+  autostart: t.procedure
+    .input(CustomResourceTargetSchema)
+    .mutation(async ({ ctx, input }) => {
+      return await autostartDevbox(ctx, input.name!);
     }),
 
   delete: t.procedure
