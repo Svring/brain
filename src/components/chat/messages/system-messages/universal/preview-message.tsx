@@ -121,9 +121,13 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = ({ target }) => {
   };
 
   // Check URL status every 2 seconds
-  useInterval(() => {
-    checkUrlStatus();
-  }, 5000);
+  useInterval(
+    () => {
+      checkUrlStatus();
+    },
+    3000,
+    { immediate: true }
+  );
 
   // If no addresses available
   if (websiteUrls.length === 0) {
@@ -214,12 +218,7 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = ({ target }) => {
           />
         ) : (
           <div className="w-full h-full rounded-lg bg-muted/20 flex items-center justify-center">
-            <TextShimmer
-              as="div"
-              className="text-lg font-medium text-muted-foreground"
-              duration={1.5}
-              spread={1.5}
-            >
+            <TextShimmer as="div" className="" duration={1.5} spread={1.5}>
               Initiating
             </TextShimmer>
           </div>

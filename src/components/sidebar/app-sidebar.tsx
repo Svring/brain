@@ -57,6 +57,48 @@ export default function AppSidebar() {
 
   const isLoading = balanceLoading || isResourceQuotaLoading;
 
+  // Calculate overall resource usage percentage and status
+  const { overallUsagePercentage, statusColor } = React.useMemo(() => {
+    if (!resourceQuota)
+      return { overallUsagePercentage: 0, statusColor: "text-primary" };
+
+    const cpuUsage = (resourceQuota.cpu.used / resourceQuota.cpu.limit) * 100;
+    const memoryUsage =
+      (resourceQuota.memory.used / resourceQuota.memory.limit) * 100;
+    const storageUsage =
+      (resourceQuota.storage.used / resourceQuota.storage.limit) * 100;
+    const portsUsage =
+      (resourceQuota.ports.used / resourceQuota.ports.limit) * 100;
+
+    // Check if any resource is at 100% (red)
+    const isAtLimit =
+      cpuUsage >= 100 ||
+      memoryUsage >= 100 ||
+      storageUsage >= 100 ||
+      portsUsage >= 100;
+
+    // Check if any resource is at 80% or above (yellow)
+    const isAtWarning =
+      cpuUsage >= 80 ||
+      memoryUsage >= 80 ||
+      storageUsage >= 80 ||
+      portsUsage >= 80;
+
+    // Determine status color
+    let statusColor = "text-primary"; // default blue
+    if (isAtLimit) {
+      statusColor = "text-theme-red"; // red for 100% usage
+    } else if (isAtWarning) {
+      statusColor = "text-theme-yellow"; // yellow for 80%+ usage
+    }
+
+    // Calculate average usage across all resources
+    const overallUsagePercentage =
+      (cpuUsage + memoryUsage + storageUsage + portsUsage) / 4;
+
+    return { overallUsagePercentage, statusColor };
+  }, [resourceQuota]);
+
   // const transaction = (planTransaction as any)?.transaction;
   // const currentPlan = transaction?.NewPlanName || transaction?.OldPlanName;
   // const planStatus = transaction?.Status;
@@ -121,10 +163,10 @@ export default function AppSidebar() {
               <PopoverTrigger asChild>
                 <div className="cursor-pointer">
                   <ProgressCircle
-                    value={isLoading ? 0 : 0}
+                    value={isLoading ? 0 : overallUsagePercentage}
                     size={32}
                     strokeWidth={2}
-                    indicatorClassName="text-primary"
+                    indicatorClassName={statusColor}
                     trackClassName=""
                   >
                     <Sparkles className="h-4 w-4" />
@@ -169,28 +211,28 @@ export default function AppSidebar() {
                       <div className="grid grid-cols-2 gap-3">
                         <div className="flex justify-between text-xs">
                           <span className="text-muted-foreground">CPU</span>
-                          <span className="text-foreground">
+                          <span className={statusColor}>
                             {resourceQuota.cpu.used.toFixed(1)}/
                             {resourceQuota.cpu.limit}
                           </span>
                         </div>
                         <div className="flex justify-between text-xs">
                           <span className="text-muted-foreground">Memory</span>
-                          <span className="text-foreground">
+                          <span className={statusColor}>
                             {resourceQuota.memory.used.toFixed(1)}/
                             {resourceQuota.memory.limit}
                           </span>
                         </div>
                         <div className="flex justify-between text-xs">
                           <span className="text-muted-foreground">Storage</span>
-                          <span className="text-foreground">
+                          <span className={statusColor}>
                             {resourceQuota.storage.used}/
                             {resourceQuota.storage.limit}
                           </span>
                         </div>
                         <div className="flex justify-between text-xs">
                           <span className="text-muted-foreground">Ports</span>
-                          <span className="text-foreground">
+                          <span className={statusColor}>
                             {resourceQuota.ports.used}/
                             {resourceQuota.ports.limit}
                           </span>

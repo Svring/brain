@@ -240,7 +240,27 @@ export default function ProjectPage() {
         } else {
           // If it's the current project's chat, ensure it's properly opened
           // This will trigger the ProjectChatInstanceProvider's auto-select logic
+          console.log("ProjectPage - Opening project chat and triggering thread selection:", {
+            projectName,
+            focusedResourceTarget,
+            currentProjectChatKey: `__project__${projectName}`,
+          });
+          
           openProjectChat(projectName);
+          
+          // Emit event to trigger thread selection in ProjectChatInstanceProvider
+          const triggerThreadSelectionEvent = new CustomEvent("triggerProjectThreadSelection", {
+            detail: {
+              projectName,
+            },
+          });
+          
+          console.log("ProjectPage - Dispatching triggerProjectThreadSelection event:", {
+            projectName,
+            eventType: "triggerProjectThreadSelection",
+          });
+          
+          window.dispatchEvent(triggerThreadSelectionEvent);
         }
       } else {
         // It's a resource chat, parse and close it
