@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  createContext,
-  useContext,
-  ReactNode,
-  useEffect,
-  useRef,
-} from "react";
+import React, { createContext, useContext, ReactNode, useEffect } from "react";
 import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
 import { Thread, type Message, type Interrupt } from "@langchain/langgraph-sdk";
 import { useStream } from "@langchain/langgraph-sdk/react";
@@ -74,9 +68,6 @@ export function ProjectChatInstanceProvider({
   const { auth } = useAuthState();
   const { LANGGRAPH_DEPLOYMENT_URL, LANGGRAPH_GRAPH_ID } = useEnv();
 
-  // Ref to ensure useEffect only runs once
-  const hasRunRef = useRef(false);
-
   const chatInstance = getProjectChatInstance(projectName);
   const isActive = true; // project chat is always "active"
   const isFocused = focusedResourceTarget === getProjectChatKey(projectName);
@@ -126,11 +117,6 @@ export function ProjectChatInstanceProvider({
 
   // Fetch threads for project chat
   useEffect(() => {
-    if (hasRunRef.current) {
-      return;
-    }
-    hasRunRef.current = true;
-
     const fetchThreads = async () => {
       try {
         const threads = await getThreads(null);
@@ -238,9 +224,6 @@ export function ResourceChatInstanceProvider({
   const { resource: selectedResourceContext } =
     useResourceStatus(resourceTarget);
 
-  // Ref to ensure useEffect only runs once
-  const hasRunRef = useRef(false);
-
   const chatInstance = getChatInstance(resourceTarget);
   const isActive = isResourceActive(resourceTarget);
   const isFocused =
@@ -295,11 +278,6 @@ export function ResourceChatInstanceProvider({
 
   // Fetch threads for resource chat
   useEffect(() => {
-    if (hasRunRef.current) {
-      return;
-    }
-    hasRunRef.current = true;
-
     const fetchThreads = async () => {
       try {
         const threads = await getThreads(resourceTarget);

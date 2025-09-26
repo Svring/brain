@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { TextShimmer } from "@/components/ui/text-shimmer";
 import { useCopy } from "@/hooks/use-copy";
 import { useFlowgraphState } from "@/contexts/flowgraph/flowgraph-context";
 import { useResourceObjects } from "@/hooks/sealos/resource/use-resource-objects";
@@ -15,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { useInterval } from "@reactuses/core";
 
 interface PreviewMessageProps {
   target?: CustomResourceTarget | BuiltinResourceTarget;
@@ -64,7 +66,6 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = ({ target }) => {
   // console.log("Extracted public domains:", websiteUrls);
 
   const { copyToClipboard, isCopied } = useCopy();
-  const [isLoading, setIsLoading] = useState(true);
   const [isSuccess, setIsSuccess] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -75,12 +76,10 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = ({ target }) => {
   };
 
   const handleIframeLoad = () => {
-    setIsLoading(false);
     setIsSuccess(true);
   };
 
   const handleIframeError = () => {
-    setIsLoading(false);
     setIsSuccess(false);
   };
 
@@ -90,53 +89,41 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = ({ target }) => {
 
   const handlePrevious = () => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : websiteUrls.length - 1));
-    setIsLoading(true);
     setIsSuccess(false);
   };
 
   const handleNext = () => {
     setCurrentIndex((prev) => (prev < websiteUrls.length - 1 ? prev + 1 : 0));
-    setIsLoading(true);
     setIsSuccess(false);
   };
 
   const checkUrlStatus = async () => {
     try {
-      const response = await fetch(websiteUrl, {
-        method: "HEAD",
-        mode: "cors", // Use cors to access status code
-      });
-      console.log("Response:", response);
-      // Check if the response is successful (2xx status codes)
-      if (response.ok) {
-        setIsLoading(false);
+      const response = await fetch(
+        `/api/check-url?url=${encodeURIComponent(websiteUrl)}`
+      );
+      const data = await response.json();
+
+      // console.log("URL check response:", data);
+
+      if (data.ok) {
         setIsSuccess(true);
       } else {
-        // Handle non-2xx status codes (like 503)
         console.log(
-          `URL returned status ${response.status}: ${response.statusText}`
+          `URL returned status ${data.status}: ${data.statusText || data.error}`
         );
-        setIsLoading(false);
         setIsSuccess(false);
       }
     } catch (error) {
-      // Handle network errors or CORS issues
       console.log("URL check failed, will retry...", error);
-      setIsLoading(false);
       setIsSuccess(false);
     }
   };
 
   // Check URL status every 2 seconds
-  useEffect(() => {
-    if (!isLoading) return;
-
-    const interval = setInterval(() => {
-      checkUrlStatus();
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [isLoading]);
+  useInterval(() => {
+    checkUrlStatus();
+  }, 5000);
 
   // If no addresses available
   if (websiteUrls.length === 0) {
@@ -167,12 +154,10 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = ({ target }) => {
 
         <div className="flex items-center gap-2 flex-1 justify-center">
           <div className="flex items-center gap-1">
-            {isLoading && <Spinner variant="ring" size={16} />}
-            {!isLoading && isSuccess && (
+            {isSuccess ? (
               <CircleCheckBig className="h-4 w-4 text-theme-green" />
-            )}
-            {!isLoading && !isSuccess && (
-              <div className="h-4 w-4 rounded-full bg-theme-yellow" />
+            ) : (
+              <Spinner variant="ring" size={16} className="text-theme-yellow" />
             )}
           </div>
 
@@ -218,14 +203,27 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = ({ target }) => {
         style={{ aspectRatio: "16/9" }}
         onClick={handleIframeClick}
       >
-        <iframe
-          src={websiteUrl}
-          className="w-full h-full rounded-lg pointer-events-none"
-          title="Resource Preview"
-          allowFullScreen
-          onLoad={handleIframeLoad}
-          onError={handleIframeError}
-        />
+        {isSuccess ? (
+          <iframe
+            src={websiteUrl}
+            className="w-full h-full rounded-lg pointer-events-none"
+            title="Resource Preview"
+            allowFullScreen
+            onLoad={handleIframeLoad}
+            onError={handleIframeError}
+          />
+        ) : (
+          <div className="w-full h-full rounded-lg bg-muted/20 flex items-center justify-center">
+            <TextShimmer
+              as="div"
+              className="text-lg font-medium text-muted-foreground"
+              duration={1.5}
+              spread={1.5}
+            >
+              Initiating
+            </TextShimmer>
+          </div>
+        )}
       </div>
     </div>
   );

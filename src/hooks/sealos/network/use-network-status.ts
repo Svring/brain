@@ -30,6 +30,7 @@ export const useNetworkStatus = (target: ResourceTarget) => {
       ? devbox.networkStatus.queryOptions(resource?.name)
       : launchpad.networkStatus.queryOptions(resource?.name)),
     enabled: !!(resource?.name || target.name),
+    refetchInterval: 3000,
   });
 
   const statusKey = useMemo(() => {

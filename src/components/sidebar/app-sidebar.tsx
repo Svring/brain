@@ -24,7 +24,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-// import { useAccountBalance } from "@/hooks/sealos/cost-center/use-account-balance";
+import { useAccountBalance } from "@/hooks/sealos/cost-center/use-account-balance";
 // import { usePlanTransaction } from "@/hooks/sealos/cost-center/use-plan-transaction";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
@@ -35,24 +35,27 @@ export default function AppSidebar() {
   const { k8s } = useTRPCClients();
 
   // Fetch account balance and plan transaction data
-  // const {
-  //   data: accountBalance,
-  //   isLoading: balanceLoading,
-  //   refetch: refetchBalance,
-  // } = useAccountBalance();
+  const {
+    data: accountBalance,
+    isLoading: balanceLoading,
+    refetch: refetchBalance,
+  } = useAccountBalance();
   // const {
   //   data: planTransaction,
   //   isLoading: planLoading,
   //   refetch: refetchPlan,
   // } = usePlanTransaction();
 
+  // console.log("accountBalance", accountBalance);
+
   // Fetch resource quota data
   const { data: resourceQuota, isLoading: isResourceQuotaLoading } = useQuery(
     k8s.resourceQuota.queryOptions()
   );
 
-  // const isLoading = balanceLoading || planLoading || isResourceQuotaLoading;
-  const isLoading = isResourceQuotaLoading;
+  // console.log("resourceQuota", resourceQuota);
+
+  const isLoading = balanceLoading || isResourceQuotaLoading;
 
   // const transaction = (planTransaction as any)?.transaction;
   // const currentPlan = transaction?.NewPlanName || transaction?.OldPlanName;
@@ -132,7 +135,7 @@ export default function AppSidebar() {
                 align="end"
                 side="right"
                 sideOffset={16}
-                className="rounded-lg bg-background-tertiary border border-border-primary"
+                className="rounded-lg bg-background-tertiary border border-border-primary w-80"
               >
                 <div className="space-y-4">
                   {isLoading ? (
@@ -141,10 +144,63 @@ export default function AppSidebar() {
                       <Skeleton className="h-2 w-full" />
                       <Skeleton className="h-4 w-3/4" />
                     </div>
+                  ) : resourceQuota ? (
+                    <div className="space-y-4">
+                      {/* Account Balance - Show remaining balance */}
+                      {accountBalance && (
+                        <div className="space-y-2 rounded-lg">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground">
+                              Account Balance
+                            </span>
+                            <span className="text-foreground font-medium">
+                              {(
+                                (accountBalance.balance -
+                                  accountBalance.deductionBalance) /
+                                1000000
+                              ).toFixed(2)}{" "}
+                              USD
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Resource Quotas - 2x2 Grid */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground">CPU</span>
+                          <span className="text-foreground">
+                            {resourceQuota.cpu.used.toFixed(1)}/
+                            {resourceQuota.cpu.limit}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground">Memory</span>
+                          <span className="text-foreground">
+                            {resourceQuota.memory.used.toFixed(1)}/
+                            {resourceQuota.memory.limit}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground">Storage</span>
+                          <span className="text-foreground">
+                            {resourceQuota.storage.used}/
+                            {resourceQuota.storage.limit}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground">Ports</span>
+                          <span className="text-foreground">
+                            {resourceQuota.ports.used}/
+                            {resourceQuota.ports.limit}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   ) : (
                     <div className="space-y-2">
                       <p className="text-sm text-muted-foreground">
-                        Subscription information is temporarily unavailable.
+                        Resource information is temporarily unavailable.
                       </p>
                     </div>
                   )}

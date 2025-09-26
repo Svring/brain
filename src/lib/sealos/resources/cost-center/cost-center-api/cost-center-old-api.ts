@@ -105,16 +105,6 @@ export async function getAccountBalance(
   try {
     const response = await api.post("/api/account/getAmount", requestData);
     const validatedResponse = AccountBalanceResponseSchema.parse(response.data);
-
-    // 直接返回响应，让上层处理业务错误码
-    // if (validatedResponse.code !== 200) {
-    //   throw new Error(`Account API error: ${validatedResponse.message}`);
-    // }
-
-    // if (!validatedResponse.data) {
-    //   throw new Error("Account balance data is null");
-    // }
-
     return validatedResponse;
   } catch (error: any) {
     throw error;
