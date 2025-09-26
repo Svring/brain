@@ -23,12 +23,11 @@ export function ProjectTemplateCard({
   return (
     <div className="w-full border p-2 rounded-xl">
       {/* Header with icon and text */}
-      <div className="flex items-center mb-3">
+      {/* <div className="flex items-center mb-3">
         <div className="flex text-sm text-muted-foreground">
-          {/* <Hammer size={20} className="mr-2" /> */}
           <span>Deploy from template: {template.spec.title}</span>
         </div>
-      </div>
+      </div> */}
 
       <div className="group relative border p-2 rounded-xl text-left transition-all bg-background-secondary hover:shadow-md flex flex-col">
         {/* Header with icon, title, and category */}

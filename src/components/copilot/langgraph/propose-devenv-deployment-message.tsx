@@ -463,12 +463,12 @@ const DevenvDeploymentCard = ({
   return (
     <div className="w-full border p-2 rounded-xl">
       {/* Header with icon and text */}
-      <div className="flex items-center mb-3">
+      {/* <div className="flex items-center mb-3">
         <div className="flex text-sm text-muted-foreground">
-          {/* <Hammer size={20} className="mr-2" /> */}
+          <Hammer size={20} className="mr-2" />
           <span>Deploy development environment</span>
         </div>
-      </div>
+      </div> */}
 
       <ProjectProposalCard
         proposal={internalProposal}

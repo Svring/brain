@@ -61,8 +61,8 @@ const TemplateDeploymentCard = ({
   // Find the template by name
   const template = templates.find(
     (t) =>
-      t.spec.title.toLowerCase().includes(args.template_name.toLowerCase()) ||
-      t.metadata.name.toLowerCase().includes(args.template_name.toLowerCase())
+      t.spec.title.toLowerCase() === args.template_name.toLowerCase() ||
+      t.metadata.name.toLowerCase() === args.template_name.toLowerCase()
   );
 
   // Check if template has inputs
