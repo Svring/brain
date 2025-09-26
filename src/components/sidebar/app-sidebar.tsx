@@ -49,9 +49,10 @@ export default function AppSidebar() {
   // console.log("accountBalance", accountBalance);
 
   // Fetch resource quota data
-  const { data: resourceQuota, isLoading: isResourceQuotaLoading } = useQuery(
-    k8s.resourceQuota.queryOptions()
-  );
+  const { data: resourceQuota, isLoading: isResourceQuotaLoading } = useQuery({
+    ...k8s.resourceQuota.queryOptions(),
+    staleTime: 5 * 1000,
+  });
 
   // console.log("resourceQuota", resourceQuota);
 

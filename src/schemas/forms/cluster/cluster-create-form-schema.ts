@@ -13,8 +13,8 @@ export const clusterCreateFormSchema = z.object({
   version: ClusterVersionSchema.default("postgresql-14.8.0"),
   resource: ClusterResourceSchema.default({
     replicas: 1,
-    cpu: 1,
-    memory: 1,
+    cpu: 0.5,
+    memory: 0.5,
     storage: 1,
   }),
   terminationPolicy: ClusterTerminationPolicySchema.default("Delete"),
