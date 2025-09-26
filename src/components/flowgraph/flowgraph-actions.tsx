@@ -177,10 +177,10 @@ export function FlowgraphActions({
           <TooltipTrigger asChild>
             <Button
               variant="outline"
-              className="h-8 px-3 rounded-full border border-gray-300 bg-white hover:bg-gray-50 flex items-center gap-1.5"
+              className="h-7 px-1 rounded-full border border-gray-300 bg-white hover:bg-gray-50 flex items-center gap-1"
               onClick={handleOpenCommand}
             >
-              <Command className="h-3.5 w-3.5" />
+              <Command className="h-3 w-3" />
               <span className="text-sm font-medium">+ K</span>
             </Button>
           </TooltipTrigger>

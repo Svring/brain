@@ -13,6 +13,7 @@ import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { DevboxObjectSchema } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
 import { flattenListAllResourcesResponse } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useDevboxDeploy } from "@/hooks/sealos/devbox/use-devbox-deploy";
+import { useDevboxRelease } from "@/hooks/sealos/devbox/use-devbox-release";
 
 interface DeploymentChartProps {
   target: CustomResourceTarget;
@@ -27,6 +28,7 @@ const DeploymentItem: React.FC<{
   onClick?: (deploymentName: string) => void;
   onUpdate?: (deploymentName: string) => void;
   isUpdating?: boolean;
+  releaseImage?: string;
 }> = ({
   deployment,
   onDelete,
@@ -34,6 +36,7 @@ const DeploymentItem: React.FC<{
   onClick,
   onUpdate,
   isUpdating = false,
+  releaseImage,
 }) => {
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -52,6 +55,11 @@ const DeploymentItem: React.FC<{
       onClick(deployment.metadata?.name);
     }
   };
+
+  // Check if deployment's image matches the release image
+  const deploymentImage =
+    deployment.spec?.template?.spec?.containers?.[0]?.image;
+  const isDeployed = Boolean(releaseImage && deploymentImage === releaseImage);
 
   const formatDate = (dateString: string) => {
     try {
@@ -88,18 +96,22 @@ const DeploymentItem: React.FC<{
           <Button
             className="h-8 px-2 hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors shrink-0"
             size="sm"
-            variant="ghost"
+            variant="outline"
             onClick={handleUpdate}
-            disabled={isUpdating}
-            title="Update"
+            disabled={isUpdating || isDeployed}
+            title={isDeployed ? "Current release" : "Update"}
           >
             {isUpdating ? (
               <Spinner className="h-3 w-3 mr-1" />
             ) : (
               <ArrowBigUpDash className="h-3 w-3 mr-1" />
             )}
-            <span className="text-xs">Update</span>
-            <span className="sr-only">Update deployment</span>
+            <span className="text-xs">
+              {isDeployed ? "Deployed" : "Update"}
+            </span>
+            <span className="sr-only">
+              {isDeployed ? "Current release" : "Update deployment"}
+            </span>
           </Button>
           {/* Delete button */}
           <Button
@@ -150,9 +162,13 @@ export const DeploymentChart: React.FC<DeploymentChartProps> = ({
   });
 
   // Use the devbox deploy hook
-  const { handleDeploy, deployDevbox } = useDevboxDeploy(
+  const { handleDeploy, handleUpdateDeploy, deployDevbox } = useDevboxDeploy(
     devboxObject.name || ""
   );
+
+  // Use the devbox release hook to get release information
+  const { releases: releasesData, isLoading: isLoadingReleases } =
+    useDevboxRelease(devboxObject.name || "");
 
   // Enhanced handleDeploy that also appends system message
   const handleDeployWithMessage = async (releaseTag: string) => {
@@ -185,7 +201,18 @@ export const DeploymentChart: React.FC<DeploymentChartProps> = ({
 
     try {
       setUpdatingDeploymentId(deploymentName);
-      await handleDeploy(payload.tag);
+
+      // Find the release data for the specified tag
+      const releases = Array.isArray(releasesData) ? releasesData : [];
+      const release = releases.find((r: any) => r.tag === payload.tag);
+
+      if (release && release.image) {
+        // Use the image from the release data to update the deployment
+        await handleUpdateDeploy(deploymentName, release.image);
+      } else {
+        // Fallback to deploying the release if no image found
+        await handleDeploy(payload.tag);
+      }
 
       // Invalidate and refetch deployments
       queryClient.invalidateQueries({
@@ -255,6 +282,48 @@ export const DeploymentChart: React.FC<DeploymentChartProps> = ({
       resource.kind === "Deployment" || resource.kind === "StatefulSet"
   );
 
+  console.log("releasesData", releasesData);
+
+  // Check if the passed tag exists in releases
+  const releases = Array.isArray(releasesData) ? releasesData : [];
+  const tagExists = payload?.tag
+    ? releases.some((release: any) => release.tag === payload.tag)
+    : true;
+  const isTagLoading = isLoadingReleases && payload?.tag;
+
+  // Get the release image for the specified tag
+  const releaseImage = payload?.tag
+    ? releases.find((r: any) => r.tag === payload.tag)?.image
+    : undefined;
+
+  // Show loading state for tag validation
+  if (isTagLoading) {
+    return (
+      <div className="flex items-center justify-center h-20">
+        <div className="text-xs text-muted-foreground">
+          Loading release information...
+        </div>
+      </div>
+    );
+  }
+
+  // Show empty state if tag doesn't exist
+  if (payload?.tag && !tagExists) {
+    return (
+      <div className="flex flex-col items-center justify-center h-20 text-center">
+        <Server className="h-6 w-6 text-muted-foreground mb-2" />
+        <div className="text-xs text-muted-foreground">
+          Release "{payload.tag}" not found
+        </div>
+        <div className="text-xs text-muted-foreground mt-1">
+          No deployments available for this release
+        </div>
+      </div>
+    );
+  }
+
+  console.log("deployments", deployments);
+
   return (
     <div className="space-y-3">
       {deployments.length === 0 ? (
@@ -281,6 +350,7 @@ export const DeploymentChart: React.FC<DeploymentChartProps> = ({
               }
               onUpdate={handleUpdateDeployment}
               isUpdating={updatingDeploymentId === deployment.metadata?.name}
+              releaseImage={releaseImage}
               // onClick={(deploymentName) => {
               //   // Find the deployment object to get its kind
               //   const deploymentObj = deployments.find(

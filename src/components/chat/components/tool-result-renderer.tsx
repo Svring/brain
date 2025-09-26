@@ -79,6 +79,8 @@ export const ToolResultRenderer = memo(function ToolResultRenderer({
       "start_devbox",
       "pause_devbox",
       "delete_devbox",
+      "get_devbox_release",
+      "deploy_devbox_release",
       "get_cluster",
       "get_cluster_logs",
       "get_cluster_monitor",

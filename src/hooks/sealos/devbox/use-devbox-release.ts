@@ -6,6 +6,7 @@ import { useDevboxContext } from "@/lib/auth/auth-utils";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import type { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { toast } from "sonner";
 
 interface ReleaseConfig {
   tag: string;
@@ -34,9 +35,10 @@ export const useDevboxRelease = (devboxName: string) => {
   const shutdownDevboxMutation = useMutation(devbox.shutdown.mutationOptions());
 
   // Fetch devbox releases
-  const { data: releases, isLoading } = useQuery(
-    devbox.releases.queryOptions(devboxName)
-  );
+  const { data: releases, isLoading } = useQuery({
+    ...devbox.releases.queryOptions(devboxName),
+    refetchInterval: 5000,
+  });
 
   // Use the deploy hook for deploy-related functionality
   const deployHook = useDevboxDeploy(devboxName);
@@ -68,6 +70,9 @@ export const useDevboxRelease = (devboxName: string) => {
         devbox.list.queryKey(),
       ]);
 
+      // Show success toast
+      toast.success(`Release "${config.tag}" created successfully`);
+
       setIsReleasePopoverOpen(false);
       setReleaseConfig({ tag: "", releaseDes: "" });
     } catch (error) {
@@ -87,6 +92,9 @@ export const useDevboxRelease = (devboxName: string) => {
         devbox.get.queryKey(),
         devbox.list.queryKey(),
       ]);
+
+      // Show success toast
+      toast.success(`Release "${releaseTag}" deleted successfully`);
 
       setDeletePopoverOpen(releaseTag, false);
     } catch (error) {

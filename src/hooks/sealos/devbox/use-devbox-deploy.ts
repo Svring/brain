@@ -5,6 +5,8 @@ import { useProjectState } from "@/contexts/project/project-context";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation } from "@tanstack/react-query";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
+import { toast } from "sonner";
+import { useLaunchpadUpdate } from "@/hooks/sealos/launchpad/use-launchpad-update";
 
 export const useDevboxDeploy = (devboxName: string) => {
   const { selectedProject } = useProjectState();
@@ -15,6 +17,10 @@ export const useDevboxDeploy = (devboxName: string) => {
 
   const deployDevbox = useMutation(devbox.deploy.mutationOptions());
   const addToProject = useMutation(project.addResources.mutationOptions());
+
+  // Use launchpad update hook for updating deployments
+  const { updateLaunchpad, isLoading: isUpdatingLaunchpad } =
+    useLaunchpadUpdate();
 
   const handleDeploy = async (releaseTag: string) => {
     try {
@@ -44,6 +50,9 @@ export const useDevboxDeploy = (devboxName: string) => {
         true
       );
 
+      // Show success toast
+      toast.success(`Release "${releaseTag}" deployed successfully`);
+
       setOpenPopovers((prev) => ({ ...prev, [releaseTag]: false }));
     } catch (error) {
       console.error("Deploy failed:", error);
@@ -53,6 +62,23 @@ export const useDevboxDeploy = (devboxName: string) => {
 
   const setPopoverOpen = (releaseTag: string, open: boolean) => {
     setOpenPopovers((prev) => ({ ...prev, [releaseTag]: open }));
+  };
+
+  const handleUpdateDeploy = async (
+    deploymentName: string,
+    imageName: string
+  ) => {
+    try {
+      await updateLaunchpad({
+        name: deploymentName,
+        image: {
+          imageName: imageName,
+        },
+      });
+    } catch (error) {
+      console.error("Update deploy failed:", error);
+      throw error;
+    }
   };
 
   return {
@@ -65,6 +91,10 @@ export const useDevboxDeploy = (devboxName: string) => {
 
     // Actions
     handleDeploy,
+    handleUpdateDeploy,
     setPopoverOpen,
+
+    // Loading states
+    isUpdatingLaunchpad,
   };
 };

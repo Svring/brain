@@ -16,6 +16,8 @@ import { StartDevboxToolMessage } from "@/components/copilot/sealos/devbox/start
 import { PauseDevboxToolMessage } from "@/components/copilot/sealos/devbox/pause-devbox-tool-message";
 import { CreateDevboxToolMessage } from "@/components/copilot/sealos/devbox/create-devbox-tool-message";
 import { DeleteDevboxToolMessage } from "@/components/copilot/sealos/devbox/delete-devbox-tool-message";
+import { GetDevboxReleaseToolMessage } from "@/components/copilot/sealos/devbox/get-devbox-release-tool-message";
+import { DeployDevboxReleaseToolMessage } from "@/components/copilot/sealos/devbox/deploy-devbox-release-tool-message";
 
 // Cluster Tool Messages
 import { GetClusterToolMessage } from "@/components/copilot/sealos/cluster/get-cluster-tool-message";
@@ -94,6 +96,14 @@ export const ToolMessageType = {
 
   delete_devbox: (result: ToolActionResult) => {
     return <DeleteDevboxToolMessage result={result} />;
+  },
+
+  get_devbox_release: (result: ToolActionResult) => {
+    return <GetDevboxReleaseToolMessage result={result} />;
+  },
+
+  deploy_devbox_release: (result: ToolActionResult) => {
+    return <DeployDevboxReleaseToolMessage result={result} />;
   },
 
   // Cluster Actions
