@@ -8,6 +8,9 @@ import { useProjectState } from "@/contexts/project/project-context";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { CLUSTER_CONSTANT_TYPE_VERSION } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-versions";
+import { devboxCreateFormSchema } from "@/schemas/forms/devbox/devbox-create-form-schema";
+import { clusterCreateFormSchema } from "@/schemas/forms/cluster/cluster-create-form-schema";
+import { launchpadCreateFormSchema } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
 import type {
   DevBox,
   Database,
@@ -63,7 +66,7 @@ export function useResourceCreator({
 
       // Create DevBoxes
       for (const devbox of resourcesToCreate.devboxes) {
-        const devboxDataParsed = {
+        const devboxData = devboxCreateFormSchema.parse({
           name: devbox.name,
           runtime: devbox.runtime,
           ports:
@@ -72,19 +75,17 @@ export function useResourceCreator({
               protocol: "HTTP" as const,
               exposesPublicDomain: true,
             })) || [],
-          resource: {
-            cpu: 1,
-            memory: 1,
-          },
-        };
+          env: devbox.env || [],
+          autostart: true,
+        });
 
         resourcePromises.push(
           createDevboxMutation
-            .mutateAsync(devboxDataParsed)
+            .mutateAsync(devboxData)
             .then((result) => {
               const target = convertResourceTypeToTarget(
                 "devbox",
-                devboxDataParsed.name
+                devboxData.name
               );
               resourceTargets.push(target);
               return { type: "devbox", result, success: true };
@@ -103,18 +104,12 @@ export function useResourceCreator({
           CLUSTER_CONSTANT_TYPE_VERSION[databaseType]?.[0] ||
           "postgresql-14.8.0";
 
-        const clusterData = {
+        const clusterData = clusterCreateFormSchema.parse({
           name: database.name,
           type: database.type,
           version: version,
           terminationPolicy: "Delete" as const,
-          resource: {
-            storage: 10,
-            cpu: 1,
-            memory: 1,
-            replicas: 1,
-          },
-        };
+        });
 
         resourcePromises.push(
           createClusterMutation
@@ -135,7 +130,7 @@ export function useResourceCreator({
 
       // Create Apps
       for (const app of resourcesToCreate.apps) {
-        const launchpadData = {
+        const launchpadData = launchpadCreateFormSchema.parse({
           name: app.name,
           image: { imageName: app.image },
           ports:
@@ -144,13 +139,8 @@ export function useResourceCreator({
               protocol: "HTTP" as const,
               exposesPublicDomain: true,
             })) || [],
-          env: [],
-          resource: {
-            replicas: 1,
-            cpu: 1,
-            memory: 1,
-          },
-        };
+          env: app.env || [],
+        });
 
         resourcePromises.push(
           createLaunchpadMutation

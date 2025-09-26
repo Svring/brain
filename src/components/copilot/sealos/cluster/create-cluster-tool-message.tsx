@@ -16,7 +16,7 @@ export const CreateClusterToolMessage: React.FC<
   CreateClusterToolMessageProps
 > = ({ result }) => {
   const isApproved = result.approved !== false;
-  const { addResourcesToProject } = useProjectAddResource();
+  const { addResourcesToProject } = useProjectAddResource({ disableToast: true });
   const { selectedProject, selectedProjectResources } = useProjectState();
 
   useMount(() => {

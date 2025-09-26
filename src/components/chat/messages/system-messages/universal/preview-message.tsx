@@ -67,6 +67,7 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = ({ target }) => {
 
   const { copyToClipboard, isCopied } = useCopy();
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isCorsRestricted, setIsCorsRestricted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const websiteUrl = websiteUrls[currentIndex];
@@ -90,11 +91,13 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = ({ target }) => {
   const handlePrevious = () => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : websiteUrls.length - 1));
     setIsSuccess(false);
+    setIsCorsRestricted(false);
   };
 
   const handleNext = () => {
     setCurrentIndex((prev) => (prev < websiteUrls.length - 1 ? prev + 1 : 0));
     setIsSuccess(false);
+    setIsCorsRestricted(false);
   };
 
   const checkUrlStatus = async () => {
@@ -104,19 +107,22 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = ({ target }) => {
       );
       const data = await response.json();
 
-      // console.log("URL check response:", data);
+      console.log("URL check response:", data);
 
       if (data.ok) {
         setIsSuccess(true);
+        setIsCorsRestricted(data.corsRestricted || false);
       } else {
         console.log(
           `URL returned status ${data.status}: ${data.statusText || data.error}`
         );
         setIsSuccess(false);
+        setIsCorsRestricted(false);
       }
     } catch (error) {
       console.log("URL check failed, will retry...", error);
       setIsSuccess(false);
+      setIsCorsRestricted(false);
     }
   };
 
@@ -204,10 +210,22 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = ({ target }) => {
 
       <div
         className="relative w-full cursor-pointer hover:opacity-90 transition-opacity"
-        style={{ aspectRatio: "16/9" }}
+        style={{
+          aspectRatio: isSuccess && !isCorsRestricted ? "16/9" : undefined,
+          height: isSuccess && !isCorsRestricted ? undefined : "100px",
+        }}
         onClick={handleIframeClick}
       >
-        {isSuccess ? (
+        {isSuccess && isCorsRestricted ? (
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-lg bg-muted/20 px-4">
+            <span className="text-center text-sm text-muted-foreground">
+              Application ready, preview blocked by CORS policy
+            </span>
+            <span className="text-center text-xs text-muted-foreground/70">
+              Click to open the application
+            </span>
+          </div>
+        ) : isSuccess ? (
           <iframe
             src={websiteUrl}
             className="w-full h-full rounded-lg pointer-events-none"

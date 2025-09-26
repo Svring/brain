@@ -121,10 +121,11 @@ export function CreateNewProject({
               ? createdDevboxes.map((devbox) => ({
                   name: `${sanitizeName(devbox.name)}-${nanoid()}`,
                   runtime: devbox.runtime,
-                  ports: devbox.ports?.map((p: any) => ({
-                    number: p.number,
-                    publicAccess: p.publicAccess || true,
-                  })) || [],
+                  ports:
+                    devbox.ports?.map((p: any) => ({
+                      number: p.number,
+                      publicAccess: p.publicAccess || true,
+                    })) || [],
                 }))
               : undefined,
           database:
@@ -139,10 +140,11 @@ export function CreateNewProject({
               ? createdApps.map((app) => ({
                   name: `${sanitizeName(app.name)}-${nanoid()}`,
                   image: app.image,
-                  ports: app.ports?.map((p: any) => ({
-                    number: p.number,
-                    publicAccess: p.publicAccess || true,
-                  })) || [],
+                  ports:
+                    app.ports?.map((p: any) => ({
+                      number: p.number,
+                      publicAccess: p.publicAccess || true,
+                    })) || [],
                 }))
               : undefined,
         },

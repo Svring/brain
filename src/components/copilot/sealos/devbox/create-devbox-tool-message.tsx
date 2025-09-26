@@ -18,7 +18,9 @@ export const CreateDevboxToolMessage: React.FC<
   CreateDevboxToolMessageProps
 > = ({ result }) => {
   const isApproved = result.approved !== false;
-  const { addResourcesToProject } = useProjectAddResource();
+  const { addResourcesToProject } = useProjectAddResource({
+    disableToast: true,
+  });
   const { selectedProject, selectedProjectResources } = useProjectState();
 
   // console.log("selectedProjectResources", selectedProjectResources);

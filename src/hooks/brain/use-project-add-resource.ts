@@ -8,6 +8,7 @@ import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 interface AddResourceToProjectOptions {
   onSuccess?: (projectName: string, addedResources: ResourceTarget[]) => void;
   onError?: (error: any) => void;
+  disableToast?: boolean;
 }
 
 export function useProjectAddResource(options?: AddResourceToProjectOptions) {
@@ -34,9 +35,12 @@ export function useProjectAddResource(options?: AddResourceToProjectOptions) {
         name: projectName,
       });
 
-      toast.success(
-        `Added ${targets.length} resource(s) to project "${projectName}"`
-      );
+      // Only show toast if not disabled
+      if (!options?.disableToast) {
+        toast.success(
+          `Added ${targets.length} resource(s) to project "${projectName}"`
+        );
+      }
 
       invalidateQueries(
         [
@@ -52,9 +56,13 @@ export function useProjectAddResource(options?: AddResourceToProjectOptions) {
 
       return { projectName, addedResources: targets };
     } catch (error: any) {
-      toast.error(
-        error.message || "Failed to add resources to project. Please try again."
-      );
+      // Only show error toast if not disabled
+      if (!options?.disableToast) {
+        toast.error(
+          error.message ||
+            "Failed to add resources to project. Please try again."
+        );
+      }
       options?.onError?.(error);
       throw error;
     } finally {
