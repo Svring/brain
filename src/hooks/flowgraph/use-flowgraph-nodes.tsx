@@ -51,7 +51,7 @@ export const useFlowgraphNodes = (targets: ResourceTarget[]) => {
     const reliances = inferObjectsReliances(objects);
 
     // Convert reliances to edges
-    const baseEdges = convertReliancesToEdges(reliances);
+    const baseEdges = convertReliancesToEdges(reliances, objects);
 
     // Derive network nodes and edges from the base nodes
     const { nodes: networkNodes, edges: networkEdges } =

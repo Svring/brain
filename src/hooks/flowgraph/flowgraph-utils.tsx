@@ -49,18 +49,64 @@ export const inferObjectsReliances = (
   );
 };
 
-export const convertReliancesToEdges = (reliances: ResourceReliances): Edge[] =>
+export const convertReliancesToEdges = (
+  reliances: ResourceReliances,
+  resourceObjects?: any[]
+): Edge[] =>
   _.flatMap(Object.entries(reliances), ([ownerKind, ownerResources]) =>
     _.flatMap(Object.entries(ownerResources), ([ownerName, dependencies]) => {
       const target = `${ownerKind.toLowerCase()}-${ownerName}`;
-      return _.map(dependencies, (dependency) => ({
-        id: `${dependency.kind.toLowerCase()}-${dependency.name}-${target}`,
-        source: `${dependency.kind.toLowerCase()}-${dependency.name}`,
-        target,
-        type: "floating",
-        markerEnd: { type: MarkerType.Arrow, width: 30, height: 30 },
-        animated: true,
-      }));
+      return _.map(dependencies, (dependency) => {
+        const isDevboxToLaunchpad =
+          dependency.kind.toLowerCase() === "devbox" &&
+          (ownerKind.toLowerCase() === "deployment" ||
+            ownerKind.toLowerCase() === "statefulset");
+
+        let devboxVersion = null;
+        if (isDevboxToLaunchpad && resourceObjects) {
+          const launchpadResource = resourceObjects.find(
+            (resource) =>
+              (resource.kind?.toLowerCase() === "deployment" ||
+                resource.kind?.toLowerCase() === "statefulset") &&
+              resource.name === ownerName
+          );
+
+          let imageUrl = null;
+          if (launchpadResource?.image?.imageName) {
+            imageUrl = launchpadResource.image.imageName;
+          } else if (launchpadResource?.image) {
+            imageUrl = launchpadResource.image;
+          } else if (
+            launchpadResource?.spec?.template?.spec?.containers?.[0]?.image
+          ) {
+            imageUrl = launchpadResource.spec.template.spec.containers[0].image;
+          }
+
+          if (imageUrl) {
+            // Extract version from launchpad's image URL (e.g., "hub.usw.sealos.io/ns-czonr3p6/devbox-vfvscq21:v1.1.0" -> "v1.1.0")
+            const versionMatch = imageUrl.match(/:([^:]+)$/);
+            if (versionMatch) {
+              devboxVersion = versionMatch[1];
+            } else {
+              // If no version found, use "latest"
+              devboxVersion = "latest";
+            }
+          }
+        }
+
+        const edgeData =
+          isDevboxToLaunchpad && devboxVersion ? { devboxVersion } : undefined;
+
+        return {
+          id: `${dependency.kind.toLowerCase()}-${dependency.name}-${target}`,
+          source: `${dependency.kind.toLowerCase()}-${dependency.name}`,
+          target,
+          type: "floating",
+          markerEnd: { type: MarkerType.Arrow, width: 30, height: 30 },
+          animated: true,
+          data: edgeData,
+        };
+      });
     })
   );
 
