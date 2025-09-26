@@ -8,6 +8,7 @@ import {
   Command,
   ZoomIn,
   ZoomOut,
+  Focus,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -27,18 +28,17 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { useReactFlow } from "@xyflow/react";
+import { toast } from "sonner";
 
 interface FlowgraphActionsProps {
   onSearchChange?: (searchTerm: string) => void;
   onScan?: () => void;
-  onRefresh?: () => void;
   onOpenCommand?: () => void;
 }
 
 export function FlowgraphActions({
   onSearchChange,
   onScan,
-  onRefresh,
   onOpenCommand,
 }: FlowgraphActionsProps) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -64,17 +64,8 @@ export function FlowgraphActions({
   };
 
   const handleRefresh = () => {
-    // if (onRefresh) {
-    //   onRefresh();
-    // } else {
-    //   // Default behavior: just refresh flowgraph
-    //   refresh();
-    // }
-    invalidateQueries([
-      // devbox.list.queryKey(),
-      launchpad.get.queryKey(),
-      // objectstorage.list.queryKey(),
-    ]);
+    toast.info("Refreshing...");
+    invalidateQueries([], true);
   };
 
   const handleOpenCommand = () => {
@@ -87,6 +78,10 @@ export function FlowgraphActions({
 
   const handleZoomOut = () => {
     zoomOut({ duration: 300 });
+  };
+
+  const handleFocus = () => {
+    fitView();
   };
 
   return (
@@ -126,6 +121,23 @@ export function FlowgraphActions({
           </TooltipContent>
         </Tooltip>
 
+        {/* Focus Button */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={handleFocus}
+            >
+              <Focus className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Focus</p>
+          </TooltipContent>
+        </Tooltip>
+
         {/* Scan Button */}
         {/* <Tooltip>
           <TooltipTrigger asChild>
@@ -144,7 +156,7 @@ export function FlowgraphActions({
         </Tooltip> */}
 
         {/* Refresh Button */}
-        {/* <Tooltip>
+        <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
@@ -158,7 +170,7 @@ export function FlowgraphActions({
           <TooltipContent>
             <p>Refresh</p>
           </TooltipContent>
-        </Tooltip> */}
+        </Tooltip>
 
         {/* Command Button */}
         <Tooltip>

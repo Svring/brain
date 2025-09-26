@@ -15,6 +15,7 @@ import { FlowgraphChatLoadingHint } from "@/components/flowgraph/flowgraph-chat-
 import { useFlowgraphCommand } from "@/hooks/flowgraph/use-flowgraph-command";
 import useProjectResources from "@/hooks/brain/use-project-resources";
 import { useFlowgraphNodes } from "@/hooks/flowgraph/use-flowgraph-nodes";
+import { useFlowgraphFitView } from "@/hooks/flowgraph/use-flowgraph-fitview";
 import { useProjectActions } from "@/contexts/project/project-context";
 import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
 import { useFlowgraphState } from "@/contexts/flowgraph/flowgraph-context";
@@ -83,6 +84,9 @@ function ProjectFlow({
   const { focusedResourceTarget } = useChatState();
   const { closeChat, closeProjectChat, openProjectChat } = useChatActions();
   const { nodes, edges } = useFlowgraphState();
+  
+  // Use the fit view hook to handle fitViewTrigger
+  useFlowgraphFitView();
 
   // Handle pane click to open/close project chat
   const handlePaneClick = () => {
