@@ -123,23 +123,8 @@ export const createDevGroup = (nodes: Node[], edges: Edge[] = []): Node[] => {
       devboxNames.has(node.id.replace("network-", ""))
   );
 
-  // Find cluster nodes that have edges connected to devbox nodes
-  const clusterNodesConnectedToDevbox = _.filter(nodes, (node) => {
-    if (node.type !== "cluster") return false;
-
-    // Check if this cluster node has any edge connecting to a devbox node
-    return _.some(edges, (edge) => {
-      const isSourceCluster = edge.source === node.id;
-      const isTargetDevbox = devboxNodeIds.has(edge.target);
-      const isTargetCluster = edge.target === node.id;
-      const isSourceDevbox = devboxNodeIds.has(edge.source);
-
-      return (
-        (isSourceCluster && isTargetDevbox) ||
-        (isTargetCluster && isSourceDevbox)
-      );
-    });
-  });
+  // Note: Database (cluster) nodes connected to devbox are no longer added to dev group
+  const clusterNodesConnectedToDevbox: Node[] = [];
 
   const groupNode: Node = {
     id: "devbox-group",

@@ -103,8 +103,39 @@ export function applySplitLayout(
     (e) => childIds.has(e.source) && childIds.has(e.target)
   );
 
+  // Find devbox node IDs within the group
+  const devboxNodeIds = new Set(
+    children.filter((node) => node.type === "devbox").map((node) => node.id)
+  );
+
+  // Find cluster nodes connected to devbox nodes (to position below dev group)
+  const clustersConnectedToDevbox = nodes.filter((node) => {
+    if (node.type !== "cluster" || (node as any).parentId === groupId)
+      return false;
+
+    // Check if this cluster node has any edge connecting to a devbox node
+    return edges.some((edge) => {
+      const isSourceCluster = edge.source === node.id;
+      const isTargetDevbox = devboxNodeIds.has(edge.target);
+      const isTargetCluster = edge.target === node.id;
+      const isSourceDevbox = devboxNodeIds.has(edge.source);
+
+      return (
+        (isSourceCluster && isTargetDevbox) ||
+        (isTargetCluster && isSourceDevbox)
+      );
+    });
+  });
+
+  const clustersConnectedToDevboxIds = new Set(
+    clustersConnectedToDevbox.map((node) => node.id)
+  );
+
   const outsideNodes = nodes.filter(
-    (n) => n.id !== groupId && (n as any).parentId !== groupId
+    (n) =>
+      n.id !== groupId &&
+      (n as any).parentId !== groupId &&
+      !clustersConnectedToDevboxIds.has(n.id)
   );
   const outsideEdges = edges.filter(
     (e) => !childIds.has(e.source) || !childIds.has(e.target)
@@ -198,11 +229,56 @@ export function applySplitLayout(
     },
   }));
 
+  // Layout cluster nodes connected to devbox below the dev group
+  const laidOutConnectedClusters = applyLayout(
+    clustersConnectedToDevbox.map((n) => ({ ...n, position: { x: 0, y: 0 } })),
+    [], // No internal edges for these clusters
+    { ...outsideLayoutOptions, getNodeSize: getOutsideNodeSize }
+  );
+
+  // Position connected clusters below the dev group
+  const belowGroupGap = 100; // Gap between dev group and connected clusters
+  const groupBottom = groupTop + groupHeight;
+  const connectedClustersOffsetY = groupBottom + belowGroupGap;
+
+  // Center the connected clusters horizontally with the dev group
+  const connectedClustersBBox = computeBoundingBox(
+    laidOutConnectedClusters,
+    outsideLayoutOptions.nodeWidth ?? 250,
+    outsideLayoutOptions.nodeHeight ?? 200
+  );
+
+  if (getOutsideNodeSize && laidOutConnectedClusters.length > 0) {
+    const customConnectedClustersBBox = computeBoundingBoxForNodes(
+      laidOutConnectedClusters,
+      getOutsideNodeSize
+    );
+    (connectedClustersBBox as any).minX = customConnectedClustersBBox.minX;
+    (connectedClustersBBox as any).minY = customConnectedClustersBBox.minY;
+    (connectedClustersBBox as any).maxX = customConnectedClustersBBox.maxX;
+    (connectedClustersBBox as any).maxY = customConnectedClustersBBox.maxY;
+    (connectedClustersBBox as any).width = customConnectedClustersBBox.width;
+    (connectedClustersBBox as any).height = customConnectedClustersBBox.height;
+  }
+
+  const groupCenterX = groupLeft + groupWidth / 2;
+  const connectedClustersOffsetX =
+    groupCenterX - connectedClustersBBox.width / 2 - connectedClustersBBox.minX;
+
+  const positionedConnectedClusters = laidOutConnectedClusters.map((n) => ({
+    ...n,
+    position: {
+      x: n.position.x + connectedClustersOffsetX,
+      y: n.position.y + connectedClustersOffsetY,
+    },
+  }));
+
   // Apply network node alignment after positioning
   const finalNodes = [
     positionedGroupNode,
     ...positionedChildren,
     ...positionedOutside,
+    ...positionedConnectedClusters,
   ];
   const alignedNodes = alignNetworkNodesWithParents(finalNodes, edges);
 

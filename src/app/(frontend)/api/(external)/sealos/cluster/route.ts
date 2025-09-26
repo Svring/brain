@@ -3,6 +3,16 @@ import { createClusterService } from "@/lib/sealos/resources/cluster/cluster-api
 import { clusterCreateFormSchema } from "@/schemas/forms/cluster/cluster-create-form-schema";
 import { SealosApiContextSchema } from "@/lib/sealos/sealos-api-context-schema";
 import { getRegionUrlFromKubeconfig } from "@/lib/k8s/k8s-api/k8s-api-utils";
+import { CLUSTER_CONSTANT_TYPE_VERSION } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-versions";
+
+// Helper function to get the default version for a cluster type
+const getDefaultClusterVersion = (type: string): string => {
+  const versions =
+    CLUSTER_CONSTANT_TYPE_VERSION[
+      type as keyof typeof CLUSTER_CONSTANT_TYPE_VERSION
+    ];
+  return versions?.[0] || "postgresql-14.8.0"; // fallback to postgresql default
+};
 
 // POST /api/sealos/cluster - Create new cluster
 export async function POST(request: NextRequest) {
@@ -43,6 +53,7 @@ export async function POST(request: NextRequest) {
     const clusterData: any = {
       name,
       type,
+      version: getDefaultClusterVersion(type),
     };
 
     // Add resource configuration if provided
