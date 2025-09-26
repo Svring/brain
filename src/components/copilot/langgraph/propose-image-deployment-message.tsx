@@ -41,6 +41,7 @@ const ImageDeploymentSuccessMessage = ({ args }: { args: any }) => {
   );
 };
 
+// args.project_name
 const ImageDeploymentCard = ({
   args,
   onSuccess,
@@ -58,7 +59,7 @@ const ImageDeploymentCard = ({
     () => {
       // Create initial proposal from args
       return {
-        name: `docker-${nanoid()}`,
+        name: args.project_name || `docker-${nanoid()}`,
         resources: {
           app: [
             {
