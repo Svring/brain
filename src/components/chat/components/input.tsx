@@ -2,6 +2,7 @@
 
 import { PromptInputBox } from "./prompt-box";
 import type { Message } from "@langchain/langgraph-sdk";
+import { Interrupt } from "@langchain/langgraph-sdk";
 
 interface AiChatInputProps {
   className?: string;
@@ -9,6 +10,11 @@ interface AiChatInputProps {
   onSubmit: (...args: any[]) => any;
   onStop: () => void;
   isLoading: boolean;
+  interrupt?: Interrupt<unknown>;
+  submit?: (
+    data: { messages: Message[]; stage?: string; command?: any },
+    options?: { optimisticValues?: (prev: any) => any; command?: any }
+  ) => any;
 }
 
 export function AiChatInput({
@@ -17,6 +23,8 @@ export function AiChatInput({
   onSubmit,
   onStop,
   isLoading,
+  interrupt,
+  submit,
 }: AiChatInputProps) {
   const handleSendMessage = async (message: string) => {
     const userMessage: Message = {
@@ -36,8 +44,37 @@ export function AiChatInput({
   };
 
   const handleStop = () => {
-    onStop();
+    // If interrupt is active, behave like Reject button
+    if (interrupt?.value) {
+      try {
+        const parsedValue =
+          typeof interrupt.value === "string"
+            ? JSON.parse(interrupt.value)
+            : interrupt.value;
+
+        const responseData = {
+          action: parsedValue.action,
+          payload: parsedValue.payload,
+          approve: false,
+        };
+
+        if (submit) {
+          submit(
+            { messages: [] },
+            { command: { resume: JSON.stringify(responseData) } }
+          );
+        }
+      } catch (error) {
+        console.error("Failed to parse interrupt value:", error);
+        onStop();
+      }
+    } else {
+      onStop();
+    }
   };
+
+  // Check if interrupt is active
+  const isInterruptActive = !!interrupt?.value;
 
   return (
     <PromptInputBox
@@ -45,8 +82,8 @@ export function AiChatInput({
       isLoading={isLoading}
       onSend={handleSendMessage}
       placeholder=""
-      disableInput={false}
-      disableSend={isLoading}
+      disableInput={isInterruptActive}
+      disableSend={isLoading || isInterruptActive}
       onStop={handleStop}
       exhibition={exhibition}
     />

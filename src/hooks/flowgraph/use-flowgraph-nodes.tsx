@@ -84,22 +84,22 @@ export const useFlowgraphNodes = (targets: ResourceTarget[]) => {
   }, [nodes, edges]);
 
   // Set selected project resources when data is available
-  // useEffect(() => {
-  //   if (resourceObjectsQuery.data && !resourceObjectsQuery.isLoading) {
-  //     setSelectedProjectResources(
-  //       resourceObjectsQuery.data.map((object) => ({
-  //         kind: object.kind.toLowerCase(),
-  //         name: object.name,
-  //       }))
-  //     );
-  //     // Fit view to show all resources when project resources are set
-  //     fitView();
-  //   }
-  // }, [
-  //   resourceObjectsQuery.data,
-  //   // resourceObjectsQuery.isLoading,
-  //   selectedProject,
-  // ]);
+  useEffect(() => {
+    if (resourceObjectsQuery.data && !resourceObjectsQuery.isLoading) {
+      setSelectedProjectResources(
+        resourceObjectsQuery.data.map((object) => ({
+          kind: object.kind.toLowerCase(),
+          name: object.name,
+        }))
+      );
+      // Fit view to show all resources when project resources are set
+      fitView();
+    }
+  }, [
+    resourceObjectsQuery.data?.length,
+    // resourceObjectsQuery.isLoading,
+    selectedProject,
+  ]);
 
   return {
     nodes,

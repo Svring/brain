@@ -85,7 +85,13 @@ export default function AiChatbox() {
 
       <div className="p-2 pt-0 shrink-0 relative z-[9999]">
         <div className="max-w-3xl mx-auto">
-          <AiChatInput onSubmit={submit} onStop={stop} isLoading={isLoading} />
+          <AiChatInput 
+            onSubmit={submit} 
+            onStop={stop} 
+            isLoading={isLoading}
+            interrupt={interrupt}
+            submit={submit}
+          />
         </div>
       </div>
     </div>
