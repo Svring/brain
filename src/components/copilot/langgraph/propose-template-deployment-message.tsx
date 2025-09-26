@@ -173,6 +173,35 @@ const TemplateDeploymentCard = ({
                 // Add success message to the updated messages array
                 updatedMessages.push(successMessage);
 
+                // Add AI message
+                const aiMessage = {
+                  id: uuidv4(),
+                  type: "ai" as const,
+                  content:
+                    "Project is successfully deployed and all resources will launch automatically, it may take some time before all public domains are accessible.",
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                };
+
+                // Add AI message to the updated messages array
+                updatedMessages.push(aiMessage);
+
+                // Add preview system message
+                const previewMessage = {
+                  id: uuidv4(),
+                  type: "system" as const,
+                  content: JSON.stringify({
+                    type: "universal.preview",
+                    target: null,
+                    payload: null,
+                  }),
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                };
+
+                // Add preview message to the updated messages array
+                updatedMessages.push(previewMessage);
+
                 // Update thread state with modified messages
                 await updateThreadState.mutate({
                   threadId,

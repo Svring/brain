@@ -166,17 +166,10 @@ export default function TRPCProvider({
         httpBatchLink({
           url: "/api/trpc/cost-center",
           maxURLLength: 6000,
-          headers: () => {
-            console.log("=== tRPC Provider Headers Debug ===");
-            console.log("Auth kubeconfig:", auth.kubeconfig ? `${auth.kubeconfig.substring(0, 50)}...` : 'undefined');
-            console.log("Auth appToken:", auth.appToken || 'undefined');
-            console.log("=== End tRPC Provider Headers Debug ===");
-            
-            return {
-              authorization: auth.kubeconfig,
-              "x-app-token": auth.appToken,
-            };
-          },
+          headers: () => ({
+            authorization: auth.kubeconfig,
+            "x-app-token": auth.appToken,
+          }),
         }),
       ],
     })

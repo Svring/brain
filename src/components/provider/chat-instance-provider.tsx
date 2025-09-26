@@ -139,13 +139,13 @@ export function ProjectChatInstanceProvider({
         // Auto-select first thread if threads exist and no thread is currently selected
         if (threads.length > 0 && !chatInstance?.threadId) {
           const firstThread = threads[0];
-          console.log(
-            "ProjectChatInstanceProvider - Auto-selecting first thread:",
-            {
-              threadId: firstThread.thread_id,
-              projectName,
-            }
-          );
+          // console.log(
+          //   "ProjectChatInstanceProvider - Auto-selecting first thread:",
+          //   {
+          //     threadId: firstThread.thread_id,
+          //     projectName,
+          //   }
+          // );
 
           setProjectChatThreadId(projectName, firstThread.thread_id);
         }

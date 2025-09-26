@@ -192,8 +192,6 @@ export function CreateNewProject({
           })
         );
 
-        console.log("Setting template ports:", templatePorts);
-
         setDevboxData((prev) => ({
           ...prev,
           ports: templatePorts,

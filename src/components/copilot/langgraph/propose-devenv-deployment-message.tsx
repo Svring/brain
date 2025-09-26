@@ -18,6 +18,7 @@ import type { ProjectProposal } from "@/lib/brain/resources/project/project-sche
 import { useProjectCreate } from "@/hooks/brain/use-project-create";
 import { useHomeChat } from "@/components/provider/home-chat-provider";
 import { useThreads } from "@/components/provider/thread-provider";
+import { useChatActions } from "@/contexts/chat/chat-context";
 import { useRouter } from "next/navigation";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { v4 as uuidv4 } from "uuid";
@@ -112,6 +113,7 @@ const DevenvDeploymentCard = ({
   const { createProject, isCreating } = useProjectCreate();
   const { threadId, messages } = useHomeChat();
   const { patchThread, updateThreadState } = useThreads();
+  const { openProjectChat } = useChatActions();
   const router = useRouter();
   const { auth } = useAuthState();
   const { devbox } = useTRPCClients();
@@ -392,7 +394,7 @@ const DevenvDeploymentCard = ({
               type: "universal.event",
               target: null,
               payload: {
-                message: "project created successfully",
+                message: "project created successfully.",
                 instruction:
                   "The project has been successfully created and deployed. Encourage the user to explore their new project—suggest they check the project details, review resource status, monitor performance, or make further configurations. Invite them to ask for help with any aspect of their project or additional setup.",
                 createdAt: new Date().toISOString(),
@@ -405,6 +407,35 @@ const DevenvDeploymentCard = ({
           // Add success message to the updated messages array
           updatedMessages.push(successMessage);
 
+          // Add AI message
+          const aiMessage = {
+            id: uuidv4(),
+            type: "ai" as const,
+            content:
+              "Project is successfully deployed and all resources will launch automatically, it may take some time before all public domains are accessible.",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+
+          // Add AI message to the updated messages array
+          updatedMessages.push(aiMessage);
+
+          // Add preview system message
+          const previewMessage = {
+            id: uuidv4(),
+            type: "system" as const,
+            content: JSON.stringify({
+              type: "universal.preview",
+              target: null,
+              payload: null,
+            }),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+
+          // Add preview message to the updated messages array
+          updatedMessages.push(previewMessage);
+
           // Update thread state with modified messages
           await updateThreadState.mutate({
             threadId,
@@ -415,6 +446,9 @@ const DevenvDeploymentCard = ({
           });
         }
       }
+
+      // Open project chat
+      openProjectChat(projectName as string);
 
       // Navigate to the created project
       router.push(`/projects/${projectName}`);

@@ -229,11 +229,19 @@ export default function ProjectPage() {
     selectProject(projectName);
     clearSelectedProjectResources();
 
-    // Clear any focused chat when entering a new project
+    // Clear any focused chat when entering a new project, but only if it's not the current project's chat
     if (focusedResourceTarget) {
       // Check if it's a project chat key (starts with "__project__")
       if (focusedResourceTarget.startsWith("__project__")) {
-        closeProjectChat(projectName);
+        // Only close if it's not the current project's chat
+        const currentProjectChatKey = `__project__${projectName}`;
+        if (focusedResourceTarget !== currentProjectChatKey) {
+          closeProjectChat(projectName);
+        } else {
+          // If it's the current project's chat, ensure it's properly opened
+          // This will trigger the ProjectChatInstanceProvider's auto-select logic
+          openProjectChat(projectName);
+        }
       } else {
         // It's a resource chat, parse and close it
         const resourceTarget = JSON.parse(focusedResourceTarget);
