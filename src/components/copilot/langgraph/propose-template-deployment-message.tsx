@@ -26,7 +26,7 @@ interface ProposeTemplateDeploymentMessageProps {
 const TemplateDeploymentSuccessMessage = ({ args }: { args: any }) => {
   return (
     <div className="w-full">
-      <div className="flex items-center justify-center p-2 border rounded-lg bg-background-secondary">
+      <div className="flex items-center justify-center p-2 border rounded-lg">
         <div className="flex items-center gap-2">
           <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
           <p className="text-sm">

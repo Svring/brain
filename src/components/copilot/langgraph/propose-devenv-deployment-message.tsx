@@ -45,6 +45,7 @@ export const DeployDatabaseSchema = z.object({
 });
 
 export const DevenvDeploymentArgsSchema = z.object({
+  project_name: z.string().min(1, "Project name is required"),
   devbox: z.array(DeployDevBoxSchema).optional(),
   database: z.array(DeployDatabaseSchema).optional(),
 });
@@ -208,7 +209,7 @@ const DevenvDeploymentCard = ({
     const databases = processedDatabases;
 
     return {
-      name: `dev-${nanoid()}`,
+      name: `${args.project_name}-${nanoid()}`,
       resources: {
         devbox: devboxes,
         database: databases,

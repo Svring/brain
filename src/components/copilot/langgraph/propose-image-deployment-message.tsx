@@ -20,6 +20,8 @@ import { nanoid } from "@/lib/utils";
 interface ProposeImageDeploymentMessageProps {
   args: {
     image_name: string;
+    project_name: string;
+    name: string;
     ports?: number[];
   };
   result?: any;
@@ -29,7 +31,7 @@ interface ProposeImageDeploymentMessageProps {
 const ImageDeploymentSuccessMessage = ({ args }: { args: any }) => {
   return (
     <div className="w-full">
-      <div className="flex items-center justify-center p-2 border rounded-lg bg-background-secondary">
+      <div className="flex items-center justify-center p-2 border rounded-lg">
         <div className="flex items-center gap-2">
           <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
           <p className="text-sm">
@@ -57,12 +59,15 @@ const ImageDeploymentCard = ({
   const [internalProposal, setInternalProposal] = useState<ProjectProposal>(
     () => {
       // Create initial proposal from args
+      const projectName = `${args.project_name}-${nanoid()}`;
+      const containerName = `${args.name}-${nanoid()}`;
+
       return {
-        name: `docker-${nanoid()}`,
+        name: projectName,
         resources: {
           app: [
             {
-              name: "docker-app",
+              name: containerName,
               image: args.image_name,
               ports: (args.ports || []).map((port: number) => ({
                 number: port,
@@ -225,7 +230,9 @@ const ImageDeploymentCard = ({
       <div className="flex items-center mb-3">
         <div className="flex text-sm text-muted-foreground">
           {/* <Hammer size={20} className="mr-2" /> */}
-          <span>Deploy Docker image: {args.image_name}</span>
+          <span>
+            Deploy {args.name} ({args.image_name})
+          </span>
         </div>
       </div>
 

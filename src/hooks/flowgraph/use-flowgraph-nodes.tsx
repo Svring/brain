@@ -12,7 +12,10 @@ import {
   createDevGroup,
   applyLayout,
 } from "./flowgraph-utils";
-import { useProjectActions } from "@/contexts/project/project-context";
+import {
+  useProjectActions,
+  useProjectState,
+} from "@/contexts/project/project-context";
 import { useFlowgraphActions } from "@/contexts/flowgraph/flowgraph-context";
 
 /**
@@ -24,7 +27,8 @@ export const useFlowgraphNodes = (targets: ResourceTarget[]) => {
   // Fetch resource objects for the given targets
   const resourceObjectsQuery = useResourceObjects(targets);
   const { setSelectedProjectResources } = useProjectActions();
-  const { setNodes, setEdges } = useFlowgraphActions();
+  const { selectedProject } = useProjectState();
+  const { setNodes, setEdges, fitView } = useFlowgraphActions();
 
   // Memoize the computation of nodes and edges
   const { nodes, edges } = useMemo(() => {
@@ -88,8 +92,14 @@ export const useFlowgraphNodes = (targets: ResourceTarget[]) => {
           name: object.name,
         }))
       );
+      // Fit view to show all resources when project resources are set
+      fitView();
     }
-  }, [resourceObjectsQuery.data, resourceObjectsQuery.isLoading]);
+  }, [
+    resourceObjectsQuery.data,
+    resourceObjectsQuery.isLoading,
+    selectedProject,
+  ]);
 
   return {
     nodes,

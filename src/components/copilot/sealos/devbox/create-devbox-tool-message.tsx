@@ -21,15 +21,28 @@ export const CreateDevboxToolMessage: React.FC<
   const { addResourcesToProject } = useProjectAddResource();
   const { selectedProject, selectedProjectResources } = useProjectState();
 
-  console.log("selectedProjectResources", selectedProjectResources);
+  // console.log("selectedProjectResources", selectedProjectResources);
 
   useMount(() => {
     // Add resources to project if creation was approved and result contains resource info
     if (isApproved && result.name) {
       try {
         const resourceName = result.name;
-        const target = convertResourceTypeToTarget("devbox", resourceName);
-        addResourcesToProject(selectedProject!, [target]);
+
+        // Check if resource already exists in selectedProjectResources
+        const resourceExists = selectedProjectResources?.some(
+          (resource) =>
+            resource.kind === "devbox" && resource.name === resourceName
+        );
+
+        if (!resourceExists) {
+          const target = convertResourceTypeToTarget("devbox", resourceName);
+          addResourcesToProject(selectedProject!, [target]);
+        } else {
+          console.log(
+            "Devbox resource already exists in project, skipping add to project"
+          );
+        }
       } catch (error) {
         console.warn("Failed to add devbox resource to project:", error);
       }

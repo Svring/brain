@@ -65,6 +65,7 @@ export const useClusterLifecycle = (
   const deleteMutation = useMutation({
     ...cluster.delete.mutationOptions(),
     onSuccess: async (_, deleteRequest) => {
+      toast.info("Cluster is deleting, it may take some time");
       const message = "Cluster deleted successfully";
       toast.success(message);
       onSuccess?.(message);

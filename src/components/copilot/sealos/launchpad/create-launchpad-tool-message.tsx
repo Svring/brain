@@ -19,15 +19,25 @@ export const CreateLaunchpadToolMessage: React.FC<
 > = ({ result }) => {
   const isApproved = result.approved !== false;
   const { addResourcesToProject } = useProjectAddResource();
-  const { selectedProject } = useProjectState();
+  const { selectedProject, selectedProjectResources } = useProjectState();
 
   useMount(() => {
     // Add resources to project if creation was approved and result contains resource info
     if (isApproved && result.name) {
       try {
         const resourceName = result.name;
-        const target = convertResourceTypeToTarget("deployment", resourceName);
-        addResourcesToProject(selectedProject!, [target]);
+        
+        // Check if resource already exists in selectedProjectResources
+        const resourceExists = selectedProjectResources?.some(
+          (resource) => resource.kind === "deployment" && resource.name === resourceName
+        );
+        
+        if (!resourceExists) {
+          const target = convertResourceTypeToTarget("deployment", resourceName);
+          addResourcesToProject(selectedProject!, [target]);
+        } else {
+          console.log("Launchpad resource already exists in project, skipping add to project");
+        }
       } catch (error) {
         console.warn("Failed to add launchpad resource to project:", error);
       }
