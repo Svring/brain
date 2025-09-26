@@ -101,6 +101,8 @@ export const useFlowgraphNodes = (targets: ResourceTarget[]) => {
     selectedProject,
   ]);
 
+  console.log("resourceObjectsQuery.data", resourceObjectsQuery.data);
+
   return {
     nodes,
     edges,

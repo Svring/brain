@@ -1,13 +1,16 @@
-interface UpdateLaunchpadCommandToolCallMessageProps {
-  launchpad_name: string;
+interface LaunchCommand {
   command: string;
   args: string;
 }
 
+interface UpdateLaunchpadCommandToolCallMessageProps {
+  launchpad_name: string;
+  launch_command: LaunchCommand;
+}
+
 export function UpdateLaunchpadCommandToolCallMessage({ 
   launchpad_name, 
-  command, 
-  args 
+  launch_command 
 }: UpdateLaunchpadCommandToolCallMessageProps) {
   return (
     <div className="w-full max-w-2xl">
@@ -18,11 +21,11 @@ export function UpdateLaunchpadCommandToolCallMessage({
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-muted-foreground">Command:</span>
-          <span className="text-sm text-foreground font-mono">{command}</span>
+          <span className="text-sm text-foreground font-mono">{launch_command.command}</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-muted-foreground">Args:</span>
-          <span className="text-sm text-foreground font-mono">{args}</span>
+          <span className="text-sm text-foreground font-mono">{launch_command.args}</span>
         </div>
       </div>
     </div>

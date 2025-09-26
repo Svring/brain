@@ -296,8 +296,7 @@ export const ToolCallMessageType = {
     return (
       <UpdateLaunchpadCommandToolCallMessage
         launchpad_name={parameters.launchpad_name || ""}
-        command={parameters.command || ""}
-        args={parameters.args || ""}
+        launch_command={parameters.launch_command || { command: "", args: "" }}
       />
     );
   },

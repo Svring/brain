@@ -64,7 +64,7 @@ export function FlowgraphActions({
   };
 
   const handleRefreshAndFocus = () => {
-    toast.info("Refreshing...");
+    // toast.info("Refreshing...");
     invalidateQueries([], true);
     fitView();
   };
