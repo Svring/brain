@@ -3,7 +3,11 @@ import {
   BuiltinResourceTarget,
   ResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { DevboxView, ClusterView, LaunchpadView } from "@/contexts/navigation/navigation-machine";
+import {
+  DevboxView,
+  ClusterView,
+  LaunchpadView,
+} from "@/contexts/navigation/navigation-machine";
 
 import DevboxMessage from "./devbox/devbox-message";
 import DevboxDeployedMessage from "./devbox/devbox-deployment-message";
@@ -39,10 +43,13 @@ import CustomDomainMessage from "./universal/custom-domain-message";
 import DevboxNetworkMessage from "./devbox/devbox-network-message";
 import { EventMessage } from "./universal/event";
 import { ErrorMessage } from "./universal/error-message";
+import PreviewMessage from "./universal/preview-message";
 
 export const SystemMessageType = {
   devbox: {
-    detail: (target: CustomResourceTarget, view?: DevboxView) => <DevboxMessage target={target} view={view} />,
+    detail: (target: CustomResourceTarget, view?: DevboxView) => (
+      <DevboxMessage target={target} view={view} />
+    ),
     deployment: (target: CustomResourceTarget, payload: { tag: string }) => (
       <DevboxDeployedMessage target={target} payload={payload} />
     ),
@@ -119,7 +126,12 @@ export const SystemMessageType = {
     // customDomain: (target: ResourceTarget) => (
     //   <CustomDomainMessage target={target} />
     // ),
-    event: (target: any, payload?: any) => <EventMessage target={target} payload={payload} />,
-    error: (target: any, payload?: { type: string; error: string }) => <ErrorMessage payload={payload} />,
+    event: (target: any, payload?: any) => (
+      <EventMessage target={target} payload={payload} />
+    ),
+    error: (target: any, payload?: { type: string; error: string }) => (
+      <ErrorMessage payload={payload} />
+    ),
+    preview: (target?: ResourceTarget) => <PreviewMessage target={target} />,
   },
 };

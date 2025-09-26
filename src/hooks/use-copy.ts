@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface UseCopyOptions {
   timeout?: number;
@@ -10,6 +11,9 @@ export const useCopy = (options: UseCopyOptions = {}) => {
 
   const copyToClipboard = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
+
+    // Show toast notification
+    toast.success("Copied to clipboard");
 
     // Set the copy state to true (show check icon)
     setCopyStates((prev) => ({ ...prev, [key]: true }));

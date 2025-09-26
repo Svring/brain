@@ -12,6 +12,7 @@ import { CreateNewProject } from "@/components/project/create-new-project";
 import useProjectSearch from "@/hooks/brain/use-projects-search";
 import { useProjectActions } from "@/contexts/project/project-context";
 import { ProjectObjectSchema } from "@/lib/brain/resources/project/project-schemas/project-object-schema";
+import PreviewMessage from "@/components/chat/messages/system-messages/universal/preview-message";
 
 export default function Page() {
   const { setAllProjects } = useProjectActions();
@@ -96,6 +97,9 @@ export default function Page() {
             )}
           </div>
         )}
+
+        {/* Preview Message Demo */}
+        <PreviewMessage />
       </div>
 
       <CreateNewProject
