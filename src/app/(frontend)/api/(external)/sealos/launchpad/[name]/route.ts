@@ -212,6 +212,20 @@ export async function PATCH(
       updateData.image = { imageName: body.updateImage };
     }
 
+    // Only include launch command data if we're updating the command
+    if (body.updateCommand !== undefined) {
+      if (
+        Array.isArray(body.updateCommand) &&
+        body.updateCommand.length === 2
+      ) {
+        const [command, args] = body.updateCommand;
+        updateData.launchCommand = {
+          command: command,
+          args: args,
+        };
+      }
+    }
+
     // Only include port data if we're doing port operations
     const hasPortOperations =
       (body.createPorts && Array.isArray(body.createPorts)) ||

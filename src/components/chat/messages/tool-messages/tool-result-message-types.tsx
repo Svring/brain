@@ -41,6 +41,7 @@ import { CreateLaunchpadEnvToolMessage } from "@/components/copilot/sealos/launc
 import { DeleteLaunchpadEnvToolMessage } from "@/components/copilot/sealos/launchpad/delete-launchpad-env-tool-message";
 import { UpdateLaunchpadEnvToolMessage } from "@/components/copilot/sealos/launchpad/update-launchpad-env-tool-message";
 import { UpdateLaunchpadImageToolMessage } from "@/components/copilot/sealos/launchpad/update-launchpad-image-tool-message";
+import { UpdateLaunchpadCommandToolMessage } from "@/components/copilot/sealos/launchpad/update-launchpad-command-tool-message";
 import { StartLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/start-launchpad-tool-message";
 import { PauseLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/pause-launchpad-tool-message";
 import { CreateLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/create-launchpad-tool-message";
@@ -183,6 +184,10 @@ export const ToolMessageType = {
 
   update_launchpad_image: (result: ToolActionResult) => {
     return <UpdateLaunchpadImageToolMessage result={result} />;
+  },
+
+  update_launchpad_command: (result: ToolActionResult) => {
+    return <UpdateLaunchpadCommandToolMessage result={result} />;
   },
 
   start_launchpad: (result: ToolActionResult) => {

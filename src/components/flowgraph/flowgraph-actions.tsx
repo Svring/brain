@@ -63,9 +63,10 @@ export function FlowgraphActions({
     }
   };
 
-  const handleRefresh = () => {
+  const handleRefreshAndFocus = () => {
     toast.info("Refreshing...");
     invalidateQueries([], true);
+    fitView();
   };
 
   const handleOpenCommand = () => {
@@ -78,10 +79,6 @@ export function FlowgraphActions({
 
   const handleZoomOut = () => {
     zoomOut({ duration: 300 });
-  };
-
-  const handleFocus = () => {
-    fitView();
   };
 
   return (
@@ -121,54 +118,20 @@ export function FlowgraphActions({
           </TooltipContent>
         </Tooltip>
 
-        {/* Focus Button */}
+        {/* Refresh and Focus Button */}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              onClick={handleFocus}
-            >
-              <Focus className="h-4 w-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Focus</p>
-          </TooltipContent>
-        </Tooltip>
-
-        {/* Scan Button */}
-        {/* <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={handleScan}
+              onClick={handleRefreshAndFocus}
             >
               <Scan className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Fit Viewport</p>
-          </TooltipContent>
-        </Tooltip> */}
-
-        {/* Refresh Button */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={handleRefresh}
-            >
-              <RefreshCcw className="h-4 w-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Refresh</p>
+            <p>Refresh & Focus</p>
           </TooltipContent>
         </Tooltip>
 

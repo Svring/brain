@@ -32,6 +32,7 @@ import { CreateLaunchpadEnvToolCallMessage } from "./tool-call-messages/launchpa
 import { DeleteLaunchpadEnvToolCallMessage } from "./tool-call-messages/launchpad/delete-launchpad-env-tool-call-message";
 import { UpdateLaunchpadEnvToolCallMessage } from "./tool-call-messages/launchpad/update-launchpad-env-tool-call-message";
 import { UpdateLaunchpadImageToolCallMessage } from "./tool-call-messages/launchpad/update-launchpad-image-tool-call-message";
+import { UpdateLaunchpadCommandToolCallMessage } from "./tool-call-messages/launchpad/update-launchpad-command-tool-call-message";
 import { StartLaunchpadToolCallMessage } from "./tool-call-messages/launchpad/start-launchpad-tool-call-message";
 import { PauseLaunchpadToolCallMessage } from "./tool-call-messages/launchpad/pause-launchpad-tool-call-message";
 import { CreateLaunchpadToolCallMessage } from "./tool-call-messages/launchpad/create-launchpad-tool-call-message";
@@ -287,6 +288,16 @@ export const ToolCallMessageType = {
       <UpdateLaunchpadImageToolCallMessage
         launchpad_name={parameters.launchpad_name || ""}
         image={parameters.image || ""}
+      />
+    );
+  },
+
+  update_launchpad_command: (parameters: Record<string, any>) => {
+    return (
+      <UpdateLaunchpadCommandToolCallMessage
+        launchpad_name={parameters.launchpad_name || ""}
+        command={parameters.command || ""}
+        args={parameters.args || ""}
       />
     );
   },
