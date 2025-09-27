@@ -142,7 +142,7 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({
       {/* Two-column layout for other sections */}
       <div className="flex gap-2">
         {/* Left Half - CPU/Memory and SSH */}
-        <div className="w-1/2 space-y-2">
+        <div className="w-1/2 min-w-0 max-w-full space-y-2">
           <CpuMemorySection
             target={target}
             onSectionClick={() => handleSectionClick("resource")}
@@ -154,7 +154,7 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({
         </div>
 
         {/* Right Half - Network and Release */}
-        <div className="w-1/2 space-y-2">
+        <div className="w-1/2 min-w-0 max-w-full space-y-2">
           <NetworkSection
             target={target}
             onSectionClick={() => handleSectionClick("network")}

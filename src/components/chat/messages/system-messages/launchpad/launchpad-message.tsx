@@ -163,13 +163,13 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
 
       {/* Resource and Deployment in one row */}
       <div className="flex gap-2">
-        <div className="flex-1">
+        <div className="flex-1 min-w-0 max-w-full">
           <ResourceSection
             target={target}
             onSectionClick={() => handleSectionClick("resource")}
           />
         </div>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0 max-w-full">
           <DeploymentSection
             target={target}
             onSectionClick={() => handleSectionClick("deployment")}
@@ -179,13 +179,13 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
 
       {/* Network and Advanced Config in one row */}
       <div className="flex gap-2">
-        <div className="flex-1">
+        <div className="flex-1 min-w-0 max-w-full">
           <NetworkSection
             target={target}
             onSectionClick={() => handleSectionClick("network")}
           />
         </div>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0 max-w-full">
           <AdvancedConfigSection
             target={target}
             onSectionClick={() => handleSectionClick("advanced-config")}

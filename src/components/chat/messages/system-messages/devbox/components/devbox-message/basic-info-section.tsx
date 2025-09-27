@@ -31,8 +31,8 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   };
 
   return (
-    <div className="p-2 border rounded-lg">
-      <div className="flex gap-4">
+    <div className="p-2 border rounded-lg w-full min-w-0">
+      <div className="flex gap-4 min-w-0">
         {/* Runtime */}
         <div className="flex-1 flex flex-col">
           <span className="font-medium text-sm">Runtime</span>

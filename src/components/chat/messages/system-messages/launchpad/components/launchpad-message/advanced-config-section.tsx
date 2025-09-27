@@ -86,17 +86,19 @@ export const AdvancedConfigSection: React.FC<AdvancedConfigSectionProps> = ({
   const argsCount = parsedLaunchpadObject?.launchCommand?.args?.length || 0;
   const envCount = parsedLaunchpadObject?.env?.length || 0;
   const configMapCount = parsedLaunchpadObject?.configMap?.length || 0;
-  const storageCount = parsedLaunchpadObject?.localStorage?.length || 0;
+  const storageCount = parsedLaunchpadObject?.kind === "StatefulSet" 
+    ? (parsedLaunchpadObject as any)?.localStorage?.length || 0 
+    : 0;
 
   const totalConfigItems =
     commandCount + argsCount + envCount + configMapCount + storageCount;
 
   return (
     <div
-      className="p-2 border rounded-lg cursor-pointer hover:bg-background-tertiary transition-colors"
+      className="p-2 border rounded-lg cursor-pointer hover:bg-background-tertiary transition-colors w-full min-w-0"
       onClick={onSectionClick}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 min-w-0">
         <Settings className="h-5 w-5 text-primary" />
         <div className="flex flex-col">
           <span className="font-medium text-sm">Advanced</span>

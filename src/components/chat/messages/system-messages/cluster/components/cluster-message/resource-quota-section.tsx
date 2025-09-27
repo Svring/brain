@@ -246,17 +246,17 @@ export const ResourceQuotaSection: React.FC<ResourceQuotaSectionProps> = ({
 
   return (
     <div
-      className="p-2 border rounded-lg cursor-pointer hover:bg-background-tertiary transition-colors"
+      className="p-2 border rounded-lg cursor-pointer hover:bg-background-tertiary transition-colors w-full min-w-0"
       onClick={onSectionClick}
     >
-      <div className="flex gap-2">
+      <div className="flex gap-2 min-w-0">
         {/* CPU */}
         <div className="flex-1 flex items-center gap-2">
           <Cpu className="h-5 w-5" />
           <div className="flex flex-col">
             <span className="font-medium text-sm">CPU</span>
-            <span className="text-xs text-muted-foreground">
-              {totalResources.cpu}Core
+            <span className="text-xs font-mono font-semibold">
+              {totalResources.cpu} Core
             </span>
           </div>
         </div>
@@ -266,8 +266,8 @@ export const ResourceQuotaSection: React.FC<ResourceQuotaSectionProps> = ({
           <MemoryStick className="h-5 w-5" />
           <div className="flex flex-col">
             <span className="font-medium text-sm">Memory</span>
-            <span className="text-xs text-muted-foreground">
-              {totalResources.memory}GB
+            <span className="text-xs font-mono font-semibold">
+              {totalResources.memory} GB
             </span>
           </div>
         </div>
@@ -277,8 +277,8 @@ export const ResourceQuotaSection: React.FC<ResourceQuotaSectionProps> = ({
           <HardDrive className="h-5 w-5" />
           <div className="flex flex-col">
             <span className="font-medium text-sm">Storage</span>
-            <span className="text-xs text-muted-foreground">
-              {totalResources.storage}GB
+            <span className="text-xs font-mono font-semibold">
+              {totalResources.storage} GB
             </span>
           </div>
         </div>
@@ -288,7 +288,7 @@ export const ResourceQuotaSection: React.FC<ResourceQuotaSectionProps> = ({
           <Layers className="h-5 w-5" />
           <div className="flex flex-col">
             <span className="font-medium text-sm">Replicas</span>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs font-mono font-semibold">
               {resourceData?.replicas || 1}
             </span>
           </div>

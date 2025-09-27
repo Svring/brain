@@ -6,11 +6,14 @@ import {
   Pencil,
   PencilLine,
   Package,
+  X,
+  Check,
 } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,7 +35,6 @@ import { z } from "zod";
 import useProjectResources from "@/hooks/brain/use-project-resources";
 import { AvatarCircles } from "@/components/ui/avatar-circles";
 import { getResourceDefaultIcon } from "@/lib/sealos/sealos-utils";
-import { RenameProjectDialog } from "./rename-project-dialog";
 import { useProjectRename } from "@/hooks/brain/use-project-rename";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { getDevboxRuntimeIconUrl } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
@@ -50,14 +52,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const { project: projectClient } = useTRPCClients();
   const { invalidateQueries } = useInvalidateQueries();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [editValue, setEditValue] = React.useState("");
   const { resources } = useProjectResources(project.name);
   const { auth } = useAuthState();
-  const {
-    isRenameDialogOpen,
-    handleRename,
-    handleRenameConfirm,
-    handleRenameCancel,
-  } = useProjectRename({
+  const { handleRenameConfirm } = useProjectRename({
     projectName: project.name,
     currentDisplayName: project.displayName,
   });
@@ -169,9 +168,71 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 
   const { deleteProject, isDeleting } = useProjectLifecycle();
 
-  const handleRenameClick = (e: React.MouseEvent) => {
+  // Validation function based on devbox naming schema
+  const validateProjectName = (
+    name: string
+  ): { isValid: boolean; error?: string } => {
+    const trimmedName = name.trim();
+
+    // Check if empty
+    if (!trimmedName) {
+      return { isValid: false, error: "Project name is required" };
+    }
+
+    // Check length (max 63 characters)
+    if (trimmedName.length > 63) {
+      return {
+        isValid: false,
+        error: "Project name must be 63 characters or less",
+      };
+    }
+
+    // Check DNS compliance regex: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+    const dnsRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/;
+    if (!dnsRegex.test(trimmedName)) {
+      return {
+        isValid: false,
+        error:
+          "Project name must be DNS compliant: lowercase, numbers, hyphens only",
+      };
+    }
+
+    return { isValid: true };
+  };
+
+  const handleStartEdit = (e: React.MouseEvent) => {
     e.preventDefault();
-    handleRename();
+    e.stopPropagation();
+    setIsEditing(true);
+    setEditValue(project.displayName);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditValue("");
+  };
+
+  const handleConfirmEdit = () => {
+    const validation = validateProjectName(editValue);
+
+    if (!validation.isValid) {
+      toast.error(validation.error!);
+      return; // Don't exit editing mode, let user fix the input
+    }
+
+    if (editValue.trim() !== project.displayName) {
+      handleRenameConfirm(editValue.trim());
+    }
+    setIsEditing(false);
+    setEditValue("");
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleConfirmEdit();
+    } else if (e.key === "Escape") {
+      handleCancelEdit();
+    }
   };
 
   const handleDelete = (e: React.MouseEvent) => {
@@ -204,32 +265,72 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           transition={{ duration: 0.15, ease: "easeInOut" }}
         >
           <div className="flex items-center w-full gap-2">
-            <div
-              className="flex items-center space-x-1 min-w-0 group flex-1"
-              onClick={variant === "full" ? handleRenameClick : undefined}
-            >
-              <p
-                className={`text-foreground truncate transition-colors ${
-                  variant === "full"
-                    ? "cursor-pointer hover:text-foreground/80 group-hover:underline"
-                    : ""
-                }`}
-              >
-                {project.displayName}
-              </p>
-              {variant === "full" && (
-                <Button
-                  className="h-4 w-4 p-0 opacity-40 transition-opacity shrink-0"
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleRenameClick}
-                >
-                  <PencilLine className="h-3 w-3" />
-                  <span className="sr-only">Rename project</span>
-                </Button>
+            <div className="flex items-center space-x-1 min-w-0 group flex-1">
+              {isEditing ? (
+                <div className="flex items-center gap-1 flex-1">
+                  <Input
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    className="h-6 px-2 text-sm font-medium min-w-0 max-w-48"
+                    autoFocus
+                    onBlur={() => {
+                      // Small delay to allow button clicks to register before validation
+                      setTimeout(handleConfirmEdit, 100);
+                    }}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 hover:bg-green-100 hover:text-green-600 text-muted-foreground transition-colors"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleConfirmEdit();
+                    }}
+                  >
+                    <Check className="h-3 w-3" />
+                    <span className="sr-only">Confirm rename</span>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 hover:bg-red-100 hover:text-red-600 text-muted-foreground transition-colors"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleCancelEdit();
+                    }}
+                  >
+                    <X className="h-3 w-3" />
+                    <span className="sr-only">Cancel rename</span>
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <p
+                    className={`text-foreground truncate transition-colors ${
+                      variant === "full"
+                        ? "cursor-pointer hover:text-foreground/80 group-hover:underline"
+                        : ""
+                    }`}
+                    onClick={variant === "full" ? handleStartEdit : undefined}
+                  >
+                    {project.displayName}
+                  </p>
+                  {variant === "full" && (
+                    <Button
+                      className="h-4 w-4 p-0 opacity-40 transition-opacity shrink-0"
+                      size="sm"
+                      variant="ghost"
+                      onClick={handleStartEdit}
+                    >
+                      <PencilLine className="h-3 w-3" />
+                      <span className="sr-only">Rename project</span>
+                    </Button>
+                  )}
+                </>
               )}
             </div>
-            {variant === "full" && (
+            {variant === "full" && !isEditing && (
               <Button
                 className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors shrink-0"
                 size="sm"
@@ -253,9 +354,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               </div>
             )}
           </div>
-          {variant === "full" && project.displayName !== project.name && (
-            <p className="text-xs text-muted-foreground mb-2">{project.name}</p>
-          )}
+          {variant === "full" &&
+            project.displayName !== project.name &&
+            !isEditing && (
+              <p className="text-xs text-muted-foreground mb-2">
+                {project.name}
+              </p>
+            )}
 
           {variant === "full" && (
             <div className="absolute bottom-5 left-4 text-xs text-muted-foreground">
@@ -276,14 +381,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           )}
         </motion.div>
       </Link>
-      <RenameProjectDialog
-        isOpen={isRenameDialogOpen}
-        onClose={handleRenameCancel}
-        projectName={project.name}
-        currentDisplayName={project.displayName}
-        onConfirm={handleRenameConfirm}
-        onCancel={handleRenameCancel}
-      />
 
       <AlertDialog
         open={isDeleteDialogOpen}

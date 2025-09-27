@@ -35,12 +35,14 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
   const { isLoading } = useChatInstance();
   const [isExpanded, setIsExpanded] = useState(true);
 
-  // Auto-open popover when activeView changes or new resource is selected
+  // Auto-open popover when selectedResource changes
   useEffect(() => {
     if (selectedResource) {
       setIsExpanded(true);
+    } else {
+      setIsExpanded(false);
     }
-  }, [activeView, selectedResource]);
+  }, [selectedResource]);
 
   // Close detail when chat instance is loading
   useEffect(() => {
@@ -127,18 +129,19 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
           {(selectedResource || selectedProject) && (
             <div className="flex items-center min-w-0 flex-1">
               {selectedResource ? (
-                <Popover open={isExpanded} onOpenChange={setIsExpanded}>
+                <Popover open={isExpanded} onOpenChange={() => {}}>
                   <PopoverTrigger asChild>
                     <div
                       className={cn(
                         "flex items-center gap-2 px-2 py-1 rounded-md cursor-pointer hover:bg-muted/50 transition-colors select-none min-w-0 flex-1 border"
                       )}
+                      onClick={() => setIsExpanded(!isExpanded)}
                     >
                       <div className="flex items-center shrink-0">
                         <ChevronRightIcon
                           className={cn(
                             "h-3 w-3 text-muted-foreground transition-transform duration-200 ease-in-out",
-                            isExpanded ? "rotate-90" : "rotate-0"
+                            isExpanded ? "rotate-180" : "rotate-0"
                           )}
                         />
                       </div>
@@ -159,14 +162,10 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
                     </div>
                   </PopoverTrigger>
                   <PopoverContent
-                    className="p-0 rounded-xl mr-3 min-w-[27rem] "
+                    className="p-0 rounded-xl mr-[max(35vw,29rem)] w-[26rem]"
                     align="start"
                     side="bottom"
                     sideOffset={5}
-                    style={{
-                      width: "calc(35vw - 2rem)",
-                      // minWidth: "400px",
-                    }}
                   >
                     {renderDetailCard()}
                   </PopoverContent>

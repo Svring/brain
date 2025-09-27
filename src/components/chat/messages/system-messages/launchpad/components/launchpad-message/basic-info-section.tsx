@@ -201,14 +201,14 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
 
   return (
     <div
-      className={`p-2 border rounded-lg ${
+      className={`p-2 border rounded-lg w-full min-w-0 ${
         onSectionClick
           ? "cursor-pointer hover:bg-background-tertiary transition-colors"
           : ""
       }`}
       onClick={onSectionClick}
     >
-      <div className="flex gap-4">
+      <div className="flex gap-4 min-w-0">
         {/* Image */}
         <div className="flex-1 flex items-center gap-2">
           <Image className="h-5 w-5 text-primary" />

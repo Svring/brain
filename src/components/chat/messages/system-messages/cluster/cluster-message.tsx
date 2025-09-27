@@ -152,7 +152,7 @@ export const ClusterMessage: React.FC<ClusterMessageProps> = ({
       {/* Two-column layout for other sections */}
       <div className="flex gap-2">
         {/* Left Half - Connect */}
-        <div className="w-1/2 space-y-2">
+        <div className="w-1/2 min-w-0 max-w-full space-y-2">
           <ConnectSection
             target={target}
             onSectionClick={() => handleSectionClick("connect")}
@@ -160,7 +160,7 @@ export const ClusterMessage: React.FC<ClusterMessageProps> = ({
         </div>
 
         {/* Right Half - Backup */}
-        <div className="w-1/2 space-y-2">
+        <div className="w-1/2 min-w-0 max-w-full space-y-2">
           <BackupSection
             target={target}
             onSectionClick={() => handleSectionClick("backup")}

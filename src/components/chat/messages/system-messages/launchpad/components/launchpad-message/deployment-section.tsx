@@ -206,10 +206,10 @@ export const DeploymentSection: React.FC<DeploymentSectionProps> = ({
 
   return (
     <div
-      className="p-2 border rounded-lg cursor-pointer hover:bg-background-tertiary transition-colors"
+      className="p-2 border rounded-lg cursor-pointer hover:bg-background-tertiary transition-colors w-full min-w-0"
       onClick={onSectionClick}
     >
-      <div className="flex gap-2">
+      <div className="flex gap-2 min-w-0">
         {/* Mode */}
         <div className="flex-1 flex items-center gap-2">
           <TrendingUp className="h-5 w-5" />

@@ -22,7 +22,7 @@ import { useAuthState } from "@/contexts/auth/auth-context";
 import { useChatInstance } from "@/components/provider/chat-instance-provider";
 
 export function HeaderActions() {
-  const { selectedProject } = useProjectState();
+  const { selectedProject, selectedResource } = useProjectState();
   const { clearSelectedResource } = useProjectActions();
   const { resourceTarget, state } = useChatInstance();
   const {
@@ -109,30 +109,33 @@ export function HeaderActions() {
 
         <HistoryDropdown />
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Toggle
-              pressed={state.maximized}
-              onPressedChange={(pressed) => {
-                if (resourceTarget === null) {
-                  setProjectChatState(selectedProject!, { maximized: pressed });
-                } else {
-                  setChatState(resourceTarget, { maximized: pressed });
-                }
-              }}
-              size="sm"
-              className={cn(
-                "h-8 w-8 hover:text-theme-blue",
-                state.maximized && "text-theme-blue"
-              )}
-            >
-              <Focus className="h-4 w-4" />
-            </Toggle>
-          </TooltipTrigger>
-          <TooltipContent>
-            {state.maximized ? "Unfocus" : "Focus"}
-          </TooltipContent>
-        </Tooltip>
+        {/* Only show focus button when there's a selected resource */}
+        {selectedResource && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Toggle
+                pressed={state.maximized}
+                onPressedChange={(pressed) => {
+                  if (resourceTarget === null) {
+                    setProjectChatState(selectedProject!, { maximized: pressed });
+                  } else {
+                    setChatState(resourceTarget, { maximized: pressed });
+                  }
+                }}
+                size="sm"
+                className={cn(
+                  "h-8 w-8 hover:text-theme-blue",
+                  state.maximized && "text-theme-blue"
+                )}
+              >
+                <Focus className="h-4 w-4" />
+              </Toggle>
+            </TooltipTrigger>
+            <TooltipContent>
+              {state.maximized ? "Unfocus" : "Focus"}
+            </TooltipContent>
+          </Tooltip>
+        )}
 
         <Tooltip>
           <TooltipTrigger asChild>

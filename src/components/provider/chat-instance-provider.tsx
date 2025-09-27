@@ -111,7 +111,7 @@ export function ProjectChatInstanceProvider({
               );
             }
           }
-        }, 1000); // 2 second delay
+        }, 1500); // 2 second delay
 
         return () => clearTimeout(timeoutId);
       }

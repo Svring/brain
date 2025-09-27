@@ -168,10 +168,10 @@ export const NetworkSection: React.FC<NetworkSectionProps> = ({
 
   return (
     <div
-      className="p-2 border rounded-lg cursor-pointer hover:bg-background-tertiary transition-colors"
+      className="p-2 border rounded-lg cursor-pointer hover:bg-background-tertiary transition-colors w-full min-w-0"
       onClick={onSectionClick}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 min-w-0">
         <Network className="h-5 w-5 text-primary" />
         <div className="flex flex-col">
           <span className="font-medium text-sm">Network</span>
