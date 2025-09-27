@@ -147,7 +147,6 @@ export default function NodeStatus({ target }: NodeStatusLightProps) {
   };
 
   const getUptimeDisplay = (uptime: string, isReady: boolean) => {
-    if (!isReady) return "❓";
     return uptime;
   };
 
