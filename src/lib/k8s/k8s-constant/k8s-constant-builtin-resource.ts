@@ -16,7 +16,8 @@ export interface BuiltinResourceConfig {
     | "serviceaccount"
     | "job"
     | "cronjob"
-    | "resourcequota";
+    | "resourcequota"
+    | "event";
   apiVersion: string;
   kind: string;
   listMethod: string;
@@ -240,6 +241,20 @@ export const BUILTIN_RESOURCES: Record<string, BuiltinResourceConfig> = {
     patchMethod: "patchNamespacedResourceQuota",
     replaceMethod: "replaceNamespacedResourceQuota",
     deleteCollectionMethod: "deleteCollectionNamespacedResourceQuota",
+    apiClient: "coreApi",
+  },
+  event: {
+    type: "builtin",
+    resourceType: "event",
+    apiVersion: "v1",
+    kind: "Event",
+    listMethod: "listNamespacedEvent",
+    getMethod: "readNamespacedEvent",
+    createMethod: "createNamespacedEvent",
+    deleteMethod: "deleteNamespacedEvent",
+    patchMethod: "patchNamespacedEvent",
+    replaceMethod: "replaceNamespacedEvent",
+    deleteCollectionMethod: "deleteCollectionNamespacedEvent",
     apiClient: "coreApi",
   },
 };

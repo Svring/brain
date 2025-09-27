@@ -1,12 +1,18 @@
 import { initTRPC } from "@trpc/server";
 import { z } from "zod";
 import type { K8sContext } from "./k8s-trpc-context";
-import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { BuiltinResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import {
+  CustomResourceTargetSchema,
+  BuiltinResourceTargetSchema,
+  BuiltinResourceTarget,
+} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import {
   listAllResources,
   getResource,
   listAnnotationBasedResources,
+  listEventsQuery,
+  getEventsByPodQuery,
+  getPodLogsQuery,
 } from "@/lib/k8s/k8s-method/k8s-query";
 import { getResourceQuota } from "@/lib/sealos/resources/resource-quota/resource-quota-api/resource-quota-api-service";
 import {
@@ -25,6 +31,54 @@ import {
 } from "@/lib/k8s/k8s-api/k8s-api-mutation";
 import { runParallelAction } from "next-server-actions-parallel";
 import { Operation } from "fast-json-patch";
+
+// Type definitions
+export type PodEventsResult = {
+  podName: string | undefined;
+  podTarget: BuiltinResourceTarget;
+  events: any[];
+  success: boolean;
+  error?: string;
+};
+
+export type PodEventsRecord = Record<
+  string,
+  {
+    events: any[];
+    success: boolean;
+    error?: string;
+  }
+>;
+
+// Example of PodEventsRecord structure:
+// {
+//   "pod-1": { events: [...], success: true },
+//   "pod-2": { events: [...], success: true },
+//   "pod-3": { events: [], success: false, error: "Pod not found" }
+// }
+
+export type PodLogsResult = {
+  podName: string;
+  logs: string;
+  success: boolean;
+  error?: string;
+};
+
+export type PodLogsRecord = Record<
+  string,
+  {
+    logs: string;
+    success: boolean;
+    error?: string;
+  }
+>;
+
+// Example of PodLogsRecord structure:
+// {
+//   "pod-1": { logs: "...", success: true },
+//   "pod-2": { logs: "...", success: true },
+//   "pod-3": { logs: "", success: false, error: "Pod not found" }
+// }
 
 const t = initTRPC.context<K8sContext>().create();
 
@@ -76,6 +130,156 @@ export const k8sRouter = t.router({
   resourceQuota: t.procedure.query(async ({ ctx }) => {
     return await getResourceQuota(ctx);
   }),
+
+  // Pod Events Management
+  /**
+   * Get events for multiple pods in parallel.
+   * Returns data in record format where key is pod name and value is events list.
+   *
+   * @example
+   * ```typescript
+   * const podEvents = await trpc.k8s.podEvents.query({
+   *   podTargets: [
+   *     { type: "builtin", resourceType: "pod", name: "pod-1" },
+   *     { type: "builtin", resourceType: "pod", name: "pod-2" }
+   *   ]
+   * });
+   * // Returns: { "pod-1": { events: [...], success: true }, "pod-2": { events: [...], success: true } }
+   * ```
+   */
+  podEvents: t.procedure
+    .input(
+      z.object({
+        podTargets: z.array(BuiltinResourceTargetSchema),
+      })
+    )
+    .query(async ({ ctx, input }): Promise<PodEventsRecord> => {
+      const { podTargets } = input;
+
+      // Filter to only include pod resource types
+      const podTargetsFiltered = podTargets.filter(
+        (target) => target.resourceType === "pod"
+      );
+
+      if (podTargetsFiltered.length === 0) {
+        return {};
+      }
+
+      // Get events for each pod in parallel
+      const eventsPromises = podTargetsFiltered.map(async (podTarget) => {
+        try {
+          const events = await getEventsByPodQuery(ctx, podTarget.name!);
+          return {
+            podName: podTarget.name!,
+            events: events.items,
+            success: true,
+          };
+        } catch (error) {
+          console.warn(
+            `Failed to fetch events for pod ${podTarget.name}:`,
+            error
+          );
+          return {
+            podName: podTarget.name!,
+            events: [],
+            success: false,
+            error: error instanceof Error ? error.message : "Unknown error",
+          };
+        }
+      });
+
+      const results = await Promise.all(eventsPromises);
+
+      // Convert array to record format
+      const eventsRecord: PodEventsRecord = {};
+      results.forEach((result) => {
+        if (result.podName) {
+          eventsRecord[result.podName] = {
+            events: result.events,
+            success: result.success,
+            error: result.error,
+          };
+        }
+      });
+
+      return eventsRecord;
+    }),
+
+  // Pod Logs Management
+  /**
+   * Get logs for multiple pods in parallel.
+   * Returns data in record format where key is pod name and value is logs data.
+   *
+   * @example
+   * ```typescript
+   * const podLogs = await trpc.k8s.podLogs.query({
+   *   podNames: ["pod-1", "pod-2"],
+   *   options: {
+   *     container: "main",
+   *     tailLines: 100,
+   *     timestamps: true
+   *   }
+   * });
+   * // Returns: { "pod-1": { logs: "...", success: true }, "pod-2": { logs: "...", success: true } }
+   * ```
+   */
+  podLogs: t.procedure
+    .input(
+      z.object({
+        podNames: z.array(z.string()),
+        options: z
+          .object({
+            container: z.string().optional(),
+            tailLines: z.number().optional(),
+            follow: z.boolean().optional(),
+            previous: z.boolean().optional(),
+            sinceSeconds: z.number().optional(),
+            timestamps: z.boolean().optional(),
+          })
+          .optional(),
+      })
+    )
+    .query(async ({ ctx, input }): Promise<PodLogsRecord> => {
+      const { podNames, options = {} } = input;
+
+      if (podNames.length === 0) {
+        return {};
+      }
+
+      // Get logs for each pod in parallel
+      const logsPromises = podNames.map(async (podName) => {
+        try {
+          const logs = await getPodLogsQuery(ctx, podName, options);
+          return {
+            podName,
+            logs,
+            success: true,
+          };
+        } catch (error) {
+          console.warn(`Failed to fetch logs for pod ${podName}:`, error);
+          return {
+            podName,
+            logs: "",
+            success: false,
+            error: error instanceof Error ? error.message : "Unknown error",
+          };
+        }
+      });
+
+      const results = await Promise.all(logsPromises);
+
+      // Convert array to record format
+      const logsRecord: PodLogsRecord = {};
+      results.forEach((result) => {
+        logsRecord[result.podName] = {
+          logs: result.logs,
+          success: result.success,
+          error: result.error,
+        };
+      });
+
+      return logsRecord;
+    }),
 
   // ===== MUTATION PROCEDURES =====
 

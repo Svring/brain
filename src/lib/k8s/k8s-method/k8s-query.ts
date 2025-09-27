@@ -11,11 +11,17 @@ import {
   getCustomResource,
   listBuiltinResources,
   listCustomResources,
+  listEvents,
+  getEventsByPod,
+  getPodLogs,
   // Direct server-side helpers to avoid spawning multiple Server Action POSTs
   listBuiltinResourcesDirect,
   listCustomResourcesDirect,
   getBuiltinResourceDirect,
   getCustomResourceDirect,
+  listEventsDirect,
+  getEventsByPodDirect,
+  getPodLogsDirect,
 } from "../k8s-api/k8s-api-query";
 
 // Kubernetes API schemas
@@ -114,6 +120,44 @@ export const getResource = async (
     return await getCustomResourceDirect(context, target);
   }
   return await getBuiltinResourceDirect(context, target);
+};
+
+/**
+ * List events in Kubernetes namespace
+ */
+export const listEventsQuery = async (
+  context: K8sApiContext,
+  target: BuiltinResourceTarget
+) => {
+  return await listEventsDirect(context, target);
+};
+
+/**
+ * Get events for a specific pod
+ */
+export const getEventsByPodQuery = async (
+  context: K8sApiContext,
+  podName: string
+) => {
+  return await getEventsByPodDirect(context, podName);
+};
+
+/**
+ * Get logs for a specific pod
+ */
+export const getPodLogsQuery = async (
+  context: K8sApiContext,
+  podName: string,
+  options: {
+    container?: string;
+    tailLines?: number;
+    follow?: boolean;
+    previous?: boolean;
+    sinceSeconds?: number;
+    timestamps?: boolean;
+  } = {}
+) => {
+  return await getPodLogsDirect(context, podName, options);
 };
 
 /**

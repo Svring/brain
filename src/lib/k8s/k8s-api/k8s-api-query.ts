@@ -179,6 +179,114 @@ export const getResourceByOwnerDirect = async (
 };
 
 /**
+ * List events in Kubernetes (direct version for server-side use).
+ * Use this from server-only contexts (e.g., tRPC) to avoid spawning
+ * multiple Server Action HTTP requests.
+ *
+ * @example
+ * ```typescript
+ * const events = await listEventsDirect(context, {
+ *   type: "builtin",
+ *   resourceType: "event",
+ *   labelSelector: "app=my-app"
+ * });
+ * ```
+ */
+export const listEventsDirect = async (
+  context: K8sApiContext,
+  target: BuiltinResourceTarget
+) => {
+  return listBuiltinResourcesDirect(context, target);
+};
+
+/**
+ * Get events for a specific pod (direct version for server-side use).
+ * Use this from server-only contexts (e.g., tRPC) to avoid spawning
+ * multiple Server Action HTTP requests.
+ *
+ * @example
+ * ```typescript
+ * const podEvents = await getEventsByPodDirect(context, "my-pod-name");
+ * ```
+ */
+export const getEventsByPodDirect = async (
+  context: K8sApiContext,
+  podName: string
+) => {
+  const { client, resourceConfig } = await getBuiltinApiClient(
+    context.kubeconfig,
+    "event"
+  );
+
+  const eventListResponse = await invokeApiMethod<BuiltinResourceListResponse>(
+    client,
+    resourceConfig.listMethod,
+    {
+      namespace: context.namespace,
+      fieldSelector: `involvedObject.name=${podName}`,
+    }
+  );
+
+  return BuiltinResourceListResponseSchema.parse(
+    JSON.parse(
+      JSON.stringify(
+        await addMissingFields(
+          eventListResponse.items,
+          resourceConfig.apiVersion,
+          resourceConfig.kind
+        )
+      )
+    )
+  );
+};
+
+/**
+ * Get logs for a specific pod (direct version for server-side use).
+ * Use this from server-only contexts (e.g., tRPC) to avoid spawning
+ * multiple Server Action HTTP requests.
+ *
+ * @example
+ * ```typescript
+ * const podLogs = await getPodLogsDirect(context, "my-pod-name", {
+ *   container: "main",
+ *   tailLines: 100,
+ *   follow: false
+ * });
+ * ```
+ */
+export const getPodLogsDirect = async (
+  context: K8sApiContext,
+  podName: string,
+  options: {
+    container?: string;
+    tailLines?: number;
+    follow?: boolean;
+    previous?: boolean;
+    sinceSeconds?: number;
+    timestamps?: boolean;
+  } = {}
+) => {
+  const { clients } = await getApiClients(context.kubeconfig);
+
+  const logResponse = await invokeApiMethod<string>(
+    clients.coreApi,
+    "readNamespacedPodLog",
+    {
+      namespace: context.namespace,
+      name: podName,
+      container: options.container,
+      tailLines: options.tailLines,
+      follow: options.follow || false,
+      previous: options.previous || false,
+      sinceSeconds: options.sinceSeconds,
+      timestamps: options.timestamps || false,
+    }
+  );
+
+  return logResponse;
+};
+
+/**
  * List custom resources in Kubernetes.
  */
 export const listCustomResources = createParallelAction(
@@ -336,5 +444,108 @@ export const getResourceByOwner = createParallelAction(
         )
       )
     );
+  }
+);
+
+/**
+ * List events in Kubernetes.
+ *
+ * @example
+ * ```typescript
+ * const events = await listEvents(context, {
+ *   type: "builtin",
+ *   resourceType: "event",
+ *   labelSelector: "app=my-app"
+ * });
+ * ```
+ */
+export const listEvents = createParallelAction(
+  async (context: K8sApiContext, target: BuiltinResourceTarget) => {
+    return listBuiltinResources(context, target);
+  }
+);
+
+/**
+ * Get events for a specific pod.
+ *
+ * @example
+ * ```typescript
+ * const podEvents = await getEventsByPod(context, "my-pod-name");
+ * ```
+ */
+export const getEventsByPod = createParallelAction(
+  async (context: K8sApiContext, podName: string) => {
+    const { client, resourceConfig } = await getBuiltinApiClient(
+      context.kubeconfig,
+      "event"
+    );
+
+    const eventListResponse =
+      await invokeApiMethod<BuiltinResourceListResponse>(
+        client,
+        resourceConfig.listMethod,
+        {
+          namespace: context.namespace,
+          fieldSelector: `involvedObject.name=${podName}`,
+        }
+      );
+
+    return BuiltinResourceListResponseSchema.parse(
+      JSON.parse(
+        JSON.stringify(
+          await addMissingFields(
+            eventListResponse.items,
+            resourceConfig.apiVersion,
+            resourceConfig.kind
+          )
+        )
+      )
+    );
+  }
+);
+
+/**
+ * Get logs for a specific pod.
+ *
+ * @example
+ * ```typescript
+ * const podLogs = await getPodLogs(context, "my-pod-name", {
+ *   container: "main",
+ *   tailLines: 100,
+ *   follow: false
+ * });
+ * ```
+ */
+export const getPodLogs = createParallelAction(
+  async (
+    context: K8sApiContext,
+    podName: string,
+    options: {
+      container?: string;
+      tailLines?: number;
+      follow?: boolean;
+      previous?: boolean;
+      sinceSeconds?: number;
+      timestamps?: boolean;
+    } = {}
+  ) => {
+    const { clients } = await getApiClients(context.kubeconfig);
+
+    const logResponse = await invokeApiMethod<string>(
+      clients.coreApi,
+      "readNamespacedPodLog",
+      {
+        namespace: context.namespace,
+        name: podName,
+        container: options.container,
+        tailLines: options.tailLines,
+        follow: options.follow || false,
+        previous: options.previous || false,
+        sinceSeconds: options.sinceSeconds,
+        timestamps: options.timestamps || false,
+      }
+    );
+
+    return logResponse;
   }
 );
