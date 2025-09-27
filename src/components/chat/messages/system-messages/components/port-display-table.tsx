@@ -50,29 +50,29 @@ export function PortDisplayTable({
   }
 
   return (
-    <div className="w-full overflow-hidden">
+    <div className="w-full overflow-hidden min-w-0">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[10%]">Port</TableHead>
-            <TableHead className="w-[90%]">Address</TableHead>
+            <TableHead className="w-[12%] min-w-[60px]">Port</TableHead>
+            <TableHead className="w-[88%] min-w-0">Address</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {ports.map((port: Port, index: number) => (
             <TableRow key={index}>
-              <TableCell className="font-mono pr-13">{port.number}</TableCell>
-              <TableCell className="max-w-0">
-                <div className="space-y-2">
+              <TableCell className="font-mono pr-2 min-w-0">{port.number}</TableCell>
+              <TableCell className="min-w-0 w-full">
+                <div className="space-y-2 min-w-0">
                   {/* Private Address */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground px-2 py-1 rounded-full w-12 text-center">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-xs text-muted-foreground px-2 py-1 rounded-full w-12 text-center flex-shrink-0">
                       private
                     </span>
-                    <div className="flex items-center gap-2 flex-1">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
                       <span
                         className={cn(
-                          "truncate cursor-pointer hover:text-foreground/80 hover:underline",
+                          "truncate cursor-pointer hover:text-foreground/80 hover:underline flex-1 min-w-0",
                           port.privateAddress
                             ? "text-foreground"
                             : "text-muted-foreground"
@@ -112,16 +112,16 @@ export function PortDisplayTable({
                   </div>
 
                   {/* Public Address */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground px-2 py-1 rounded-full w-12 text-center">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-xs text-muted-foreground px-2 py-1 rounded-full w-12 text-center flex-shrink-0">
                       public
                     </span>
-                    <div className="flex items-center gap-2 flex-1">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
                       {port.publicAddress ? (
                         <>
                           <span
                             className={cn(
-                              "truncate cursor-pointer hover:text-foreground/80 hover:underline",
+                              "truncate cursor-pointer hover:text-foreground/80 hover:underline flex-1 min-w-0",
                               "text-foreground"
                             )}
                             title={port.publicAddress}
@@ -153,7 +153,7 @@ export function PortDisplayTable({
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+                            className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground flex-shrink-0"
                             onClick={() => {
                               setSelectedPort(port);
                               setIsCustomDialogOpen(true);
@@ -165,7 +165,7 @@ export function PortDisplayTable({
                       ) : (
                         <>
                           <HelpCircle className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                          <span className="text-muted-foreground">
+                          <span className="text-muted-foreground truncate flex-1 min-w-0">
                             No public access
                           </span>
                         </>
@@ -175,14 +175,14 @@ export function PortDisplayTable({
 
                   {/* Custom Domain */}
                   {port.customDomain && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground px-2 py-1 rounded-full w-12 text-center">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-xs text-muted-foreground px-2 py-1 rounded-full w-12 text-center flex-shrink-0">
                         custom
                       </span>
-                      <div className="flex items-center gap-2 flex-1">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
                         <span
                           className={cn(
-                            "truncate cursor-pointer hover:text-foreground/80 hover:underline",
+                            "truncate cursor-pointer hover:text-foreground/80 hover:underline flex-1 min-w-0",
                             "text-foreground"
                           )}
                           title={port.customDomain}

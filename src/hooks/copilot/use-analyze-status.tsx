@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import { toast } from "sonner";
 import { usePodEvents } from "@/hooks/sealos/pod/use-pod-events";
 import { usePods } from "@/hooks/sealos/pod/use-pods";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 import { useChatActions } from "@/contexts/chat/chat-context";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
@@ -19,9 +20,17 @@ You are the Sealos Brain agent on the Sealos platform, assisting users in managi
 
 **Resource Status and Event Data**
 Each analysis includes:
+- **Resource Data**: Complete resource object with configuration, status, and metadata
 - **Pod Status**: The current status of each Pod (Running, Waiting, Terminated, etc.) and container status information.
 - **Pod Events**: Kubernetes events related to the Pod, including errors, warnings, and status changes.
-- **Resource Metadata**: Basic information about the resource (name, creation time, ports, etc.).
+
+**Resource Data Analysis**
+When analyzing resource data, pay special attention to:
+- **Resource Type and Version**: Check if the version is valid for the resource type
+- **Status Field**: Look for null, unknown, or error statuses
+- **Configuration Issues**: Invalid values, missing required fields, or misconfigurations
+- **Connection Issues**: Null or invalid connection parameters
+- **Component Status**: Check individual component statuses within the resource
 
 **Pod Status Analysis**
 - **Running**: The Pod is operating normally, with all containers ready.
@@ -34,45 +43,95 @@ Each analysis includes:
 - **Error Events**: Indicate serious issues that require immediate attention.
 - **Normal Events**: Indicate normal operations.
 
+**Special Cases**
+
+1. **No Pods Available**
+   - When pods array is empty, focus on resource-level configuration issues
+   - Check for invalid version labels, missing configurations, or connection problems
+   - Look for status: null or unknown as indicators of issues
+
+2. **Resource Configuration Issues**
+   - Invalid version labels (e.g., "mongo" instead of proper version like "7.0.0")
+   - Missing or null connection parameters
+   - Invalid resource specifications
+   - Component status showing "unknown" or null
+
+**Example Analysis**
+
+For a resource with no pods and status issues:
+\`\`\`json
+{
+  "pods": [],
+  "events": {},
+  "resource": {
+    "name": "datauzo",
+    "kind": "Cluster",
+    "type": "mongodb",
+    "version": "mongo",
+    "status": null,
+    "components": [{"name": "mongodb", "status": "unknown"}]
+  }
+}
+\`\`\`
+
+**Issues Identified:**
+- No pods available for this resource
+- Status is null, indicating the resource failed to initialize
+- Version "mongo" is not a valid version label (should be a specific version like "7.0.0")
+- Component status is "unknown", suggesting configuration problems
+- This is likely a configuration error preventing proper resource deployment
+
 **Instruction**
 
 You are in **StatusAnalysisMode**. Respond only to requests related to this mode, using the provided data.
 
 ### Status Analysis Mode
 
-Your role is to analyze the given Pod status and event data and provide a clear assessment of the resource status.
+Your role is to analyze the given resource data, Pod status, and event data to provide a clear assessment of the resource status.
 
 **Analysis Rules**
 
 1. **Normal Status**
-   - All Pods are in the Running state with no Warning or Error events.
+   - Resource has valid configuration and all Pods are in the Running state with no Warning or Error events.
    - Action: Report the status as normal in a concise statement.
 
-2. **Warning Status**
+2. **Configuration Issues**
+   - Invalid version labels, missing required fields, or misconfigurations in resource data.
+   - Action: Identify the specific configuration problem and recommend fixes.
+
+3. **No Pods Status**
+   - Empty pods array with resource configuration issues.
+   - Action: Focus on resource-level problems preventing pod creation.
+
+4. **Warning Status**
    - Pods are in the Waiting state or there are Warning events.
    - Action: Identify the issue and recommend monitoring or investigation.
 
-3. **Error Status**
+5. **Error Status**
    - Pods are in the Terminated state or there are Error events.
    - Action: Identify the issue and recommend immediate action.
 
-4. **Mixed Status**
+6. **Mixed Status**
    - Some Pods are normal, while others have issues.
-   - Action: Analyze each Pod’s status individually.
+   - Action: Analyze each Pod's status individually.
 
 **Guiding Principles**
-- Provide a concise response when the status is normal.
-- If issues exist, clearly specify which Pods have problems and the type of issue.
-- Analyze event patterns to identify recurring issues.
-- Always explain how you interpreted the data (e.g., "pod-1 is in Waiting state, with an event indicating container startup failure").
-- Do not repeat the original data to the user; only summarize findings and recommendations.
-- If multiple issues exist, report all of them.
+- Always check resource configuration first, especially when no pods are available
+- Look for invalid version labels, null statuses, and configuration mismatches
+- Provide a concise response when the status is normal
+- If issues exist, clearly specify the problems and their likely causes
+- Analyze event patterns to identify recurring issues
+- Always explain how you interpreted the data
+- Do not repeat the original data to the user; only summarize findings and recommendations
+- If multiple issues exist, report all of them
+- For configuration issues, provide specific guidance on how to fix them
 `;
 
 export function useAnalyzeStatus(
   target: CustomResourceTarget | BuiltinResourceTarget
 ) {
   const { pods } = usePods({ target });
+  const { resource } = useResourceStatus(target);
   const podTargets = pods
     .map((pod) => convertResourceTypeToTarget("pod", pod.name))
     .filter(
@@ -100,10 +159,10 @@ export function useAnalyzeStatus(
 
   const analyzeStatus = useCallback(async () => {
     // Check if we have pods and events data
-    if (!pods || pods.length === 0) {
-      toast.error("No pods available for status analysis");
-      return;
-    }
+    // if (!pods || pods.length === 0) {
+    //   toast.error("No pods available for status analysis");
+    //   return;
+    // }
 
     if (isEventsLoading) {
       toast.error("Events data is still loading, please wait");
@@ -125,7 +184,7 @@ export function useAnalyzeStatus(
         resources: pod.resources,
       })),
       events: eventsRecord,
-      resourceTarget: target,
+      resource: resource,
     };
 
     // Add event message before analysis
@@ -136,7 +195,7 @@ export function useAnalyzeStatus(
         type: "universal.event",
         target: target,
         payload: {
-          message: "Starting Pods status analysis...",
+          message: "Starting status analysis...",
           createdAt: new Date().toISOString(),
         },
       }),
@@ -159,8 +218,15 @@ export function useAnalyzeStatus(
     const systemMessage2 = {
       id: `status-system-2-${Date.now()}`,
       type: "system" as const,
-      content:
-        analyzeStatusPrompt + "\n\n" + JSON.stringify(statusAnalysisData),
+      content: analyzeStatusPrompt,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const systemMessage3 = {
+      id: `status-system-3-${Date.now()}`,
+      type: "system" as const,
+      content: `Below is all the data needed to be analyzed, you need to identify any problem and report back to the user and advice fix.\n\n${JSON.stringify(statusAnalysisData)}`,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -169,11 +235,13 @@ export function useAnalyzeStatus(
     addPendingMessage(target, eventMessage);
     addPendingMessage(target, systemMessage1);
     addPendingMessage(target, systemMessage2);
+    addPendingMessage(target, systemMessage3);
 
     // Trigger pending message submission
     triggerPendingMessages(target);
   }, [
     pods,
+    resource,
     eventsRecord,
     isEventsLoading,
     handleNodeSelect,
@@ -182,8 +250,8 @@ export function useAnalyzeStatus(
     target,
   ]);
 
-  // Check if status analysis is ready (not loading and has data)
-  const isStatusReady = !isEventsLoading && pods && pods.length > 0;
+  // Check if status analysis is ready (not loading, pods can be empty)
+  const isStatusReady = !isEventsLoading;
 
   return {
     analyzeStatus,

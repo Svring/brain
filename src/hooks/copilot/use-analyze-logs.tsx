@@ -96,7 +96,15 @@ export function useAnalyzeLogs(
     const systemMessage2 = {
       id: `logs-system-2-${Date.now()}`,
       type: "system" as const,
-      content: analyzeLogsPrompt + "\n" + JSON.stringify(logsData),
+      content: analyzeLogsPrompt,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const systemMessage3 = {
+      id: `logs-system-3-${Date.now()}`,
+      type: "system" as const,
+      content: `Below is all the data needed to be analyzed, you need to identify any problem and report back to the user and advice fix.\n\n${JSON.stringify(logsData)}`,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -105,6 +113,7 @@ export function useAnalyzeLogs(
     addPendingMessage(target, eventMessage);
     addPendingMessage(target, systemMessage1);
     addPendingMessage(target, systemMessage2);
+    addPendingMessage(target, systemMessage3);
 
     // Trigger pending message submission
     triggerPendingMessages(target);

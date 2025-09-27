@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch";
 
 // Custom Hooks and Types
 import { useCopy } from "@/hooks/use-copy";
+import { cn } from "@/lib/utils";
 import type { Port } from "@/lib/sealos/resources/deployment/deployment-object-schema";
 
 // Component Props
@@ -120,8 +121,8 @@ export function PortsTable({
 
     return (
       <TableRow key={`${port.number}-${index}`}>
-        <TableCell className="font-medium">
-          <div className="flex items-center gap-2">
+        <TableCell className="font-medium min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
             {allowEditing ? (
               <Input
                 type="number"
@@ -145,17 +146,17 @@ export function PortsTable({
                 placeholder="Port number"
                 min="1"
                 max="65535"
-                className="w-20 h-8"
+                className="w-20 h-8 min-w-0"
               />
             ) : (
-              <span>{port.number}</span>
+              <span className="truncate">{port.number}</span>
             )}
           </div>
         </TableCell>
-        <TableCell>
-          <div className="flex items-center gap-2">
+        <TableCell className="min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
             {allowEditing ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <Switch
                   checked={isEditing ? newPort.publicAccess : !!port.publicAddress}
                   onCheckedChange={(checked) => {
@@ -172,15 +173,16 @@ export function PortsTable({
                     }
                   }}
                 />
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-muted-foreground truncate">
                   {(isEditing ? newPort.publicAccess : !!port.publicAddress) ? "Yes" : "No"}
                 </span>
               </div>
             ) : (
               <span
-                className={
+                className={cn(
+                  "truncate",
                   port.publicAddress ? "text-green-600" : "text-muted-foreground"
-                }
+                )}
               >
                 {port.publicAddress ? "Yes" : "No"}
               </span>
@@ -188,8 +190,8 @@ export function PortsTable({
           </div>
         </TableCell>
         {allowEditing && (
-          <TableCell>
-            <div className="flex gap-1">
+          <TableCell className="min-w-0">
+            <div className="flex gap-1 min-w-0">
               {isEditing ? (
                 <>
                   <Button
@@ -197,10 +199,16 @@ export function PortsTable({
                     size="sm"
                     onClick={() => handleSave(index)}
                     disabled={!newPort.number}
+                    className="h-8 w-8 p-0 flex-shrink-0"
                   >
                     <Check className="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={handleCancel}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleCancel}
+                    className="h-8 w-8 p-0 flex-shrink-0"
+                  >
                     <X className="w-3 h-3" />
                   </Button>
                 </>
@@ -209,6 +217,7 @@ export function PortsTable({
                   variant="ghost"
                   size="sm"
                   onClick={() => handleDelete(index)}
+                  className="h-8 w-8 p-0 flex-shrink-0"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -239,13 +248,13 @@ export function PortsTable({
 
   // Main Render
   return (
-    <div className="w-full space-y-2">
+    <div className="w-full space-y-2 min-w-0">
       <Table className="w-full">
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[30%]">Port Number</TableHead>
-            <TableHead className="w-[40%]">Public Access</TableHead>
-            {allowEditing && <TableHead className="w-[30%]">Actions</TableHead>}
+            <TableHead className="w-[30%] min-w-[100px]">Port Number</TableHead>
+            <TableHead className="w-[40%] min-w-0">Public Access</TableHead>
+            {allowEditing && <TableHead className="w-[30%] min-w-[120px]">Actions</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>

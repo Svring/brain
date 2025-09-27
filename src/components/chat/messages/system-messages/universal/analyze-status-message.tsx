@@ -1,9 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import { ChevronDown, ChevronRight, Copy, Check } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Copy,
+  Check,
+  Database,
+  AlertCircle,
+} from "lucide-react";
 import { usePodEvents } from "@/hooks/sealos/pod/use-pod-events";
 import { usePods } from "@/hooks/sealos/pod/use-pods";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { useCopy } from "@/hooks/use-copy";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
@@ -19,6 +27,7 @@ export default function AnalyzeStatusMessage({
   const { copyToClipboard, isCopied } = useCopy();
 
   const { pods } = usePods({ target });
+  const { resource, status } = useResourceStatus(target);
   const podTargets = pods
     .map((pod) => convertResourceTypeToTarget("pod", pod.name))
     .filter(
@@ -36,10 +45,6 @@ export default function AnalyzeStatusMessage({
     podTargets,
     enabled: podTargets.length > 0,
   });
-
-  console.log("AnalyzeStatusMessage - pods:", pods);
-  console.log("AnalyzeStatusMessage - eventsRecord:", eventsRecord);
-  console.log("AnalyzeStatusMessage - isEventsLoading:", isEventsLoading);
 
   const formatTimestamp = (timestamp: string) => {
     return new Date(timestamp).toLocaleString();
@@ -75,85 +80,113 @@ export default function AnalyzeStatusMessage({
 
   return (
     <div className="p-2 space-y-2 border rounded-lg">
-      {pods.map((pod, podIndex) => {
-        const podEvents = eventsRecord[pod.name] || [];
-        const isExpanded = expandedPods.has(podIndex);
-        const hasEvents = podEvents.length > 0;
+      {/* Resource Data Analysis Section */}
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium">Resource Status Analysis</span>
+        <span className="text-xs text-muted-foreground">
+          (Status: {status || "Unknown"})
+        </span>
+      </div>
 
-        return (
-          <div key={podIndex} className="space-y-1">
-            <button
-              onClick={() => togglePodExpansion(podIndex)}
-              disabled={!hasEvents}
-              className={`flex items-center gap-2 w-full text-left ${
-                hasEvents ? "cursor-pointer" : "cursor-not-allowed opacity-50"
-              }`}
-            >
-              {hasEvents ? (
-                isExpanded ? (
-                  <ChevronDown className="h-3 w-3" />
-                ) : (
-                  <ChevronRight className="h-3 w-3" />
-                )
-              ) : (
-                <ChevronRight className="h-3 w-3 opacity-50" />
-              )}
-              <span className="font-mono text-sm font-medium">
-                pod-{podIndex + 1}:
-              </span>
-              <span className="text-sm truncate max-w-64" title={pod.name}>
-                {pod.name}
-              </span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  copyToClipboard(pod.name, `pod-${podIndex}`);
-                }}
-                className="p-1 rounded cursor-pointer"
-                title="Copy pod name"
-              >
-                {isCopied(`pod-${podIndex}`) ? (
-                  <Check className="h-3 w-3 text-theme-green" />
-                ) : (
-                  <Copy className="h-3 w-3" />
-                )}
-              </button>
-              {hasEvents && (
-                <span className="text-sm text-theme-gray">
-                  ({podEvents.length} events)
-                </span>
-              )}
-            </button>
+      {/* Pods Section */}
+      <div className="space-y-1">
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          <span>Pods Analysis</span>
+          <span className="text-xs">({pods.length} pods)</span>
+        </div>
 
-            {isExpanded && hasEvents && (
-              <div className="ml-4 ">
-                {podEvents.map((event, eventIndex) => (
-                  <div key={eventIndex} className="p-2 space-y-1 border-b border-dashed">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`text-xs font-mono ${getReasonColor(
-                          event.type
-                        )}`}
-                      >
-                        {event.reason}
-                      </span>
-                      <span className="text-xs text-muted-foreground font-mono">
-                        (count: {event.count})
-                      </span>
-                    </div>
-
-                    <div className="text-xs text-muted-foreground">
-                      {formatTimestamp(event.lastTimestamp)}
-                    </div>
-
-                    <div className="text-sm">{event.message}</div>
-                  </div>
-                ))}
-              </div>
-            )}
+        {pods.length === 0 ? (
+          <div className="flex items-center gap-2 p-3 text-center text-muted-foreground border border-dashed rounded">
+            <AlertCircle className="h-4 w-4" />
+            <span className="text-sm">No pods found for this resource</span>
           </div>
-        );
-      })}
+        ) : (
+          pods.map((pod, podIndex) => {
+            const podEvents = eventsRecord[pod.name] || [];
+            const isExpanded = expandedPods.has(podIndex);
+            const hasEvents = podEvents.length > 0;
+
+            return (
+              <div key={podIndex} className="space-y-1">
+                <button
+                  onClick={() => togglePodExpansion(podIndex)}
+                  disabled={!hasEvents}
+                  className={`flex items-center gap-2 w-full text-left ${
+                    hasEvents
+                      ? "cursor-pointer"
+                      : "cursor-not-allowed opacity-50"
+                  }`}
+                >
+                  {hasEvents ? (
+                    isExpanded ? (
+                      <ChevronDown className="h-3 w-3" />
+                    ) : (
+                      <ChevronRight className="h-3 w-3" />
+                    )
+                  ) : (
+                    <ChevronRight className="h-3 w-3 opacity-50" />
+                  )}
+                  <span className="font-mono text-sm font-medium">
+                    pod-{podIndex + 1}:
+                  </span>
+                  <span className="text-sm truncate max-w-64" title={pod.name}>
+                    {pod.name}
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      copyToClipboard(pod.name, `pod-${podIndex}`);
+                    }}
+                    className="p-1 rounded cursor-pointer"
+                    title="Copy pod name"
+                  >
+                    {isCopied(`pod-${podIndex}`) ? (
+                      <Check className="h-3 w-3 text-theme-green" />
+                    ) : (
+                      <Copy className="h-3 w-3" />
+                    )}
+                  </button>
+                  {hasEvents && (
+                    <span className="text-sm text-theme-gray">
+                      ({podEvents.length} events)
+                    </span>
+                  )}
+                </button>
+
+                {isExpanded && hasEvents && (
+                  <div className="ml-4 ">
+                    {podEvents.map((event, eventIndex) => (
+                      <div
+                        key={eventIndex}
+                        className="p-2 space-y-1 border-b border-dashed"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`text-xs font-mono ${getReasonColor(
+                              event.type
+                            )}`}
+                          >
+                            {event.reason}
+                          </span>
+                          <span className="text-xs text-muted-foreground font-mono">
+                            (count: {event.count})
+                          </span>
+                        </div>
+
+                        <div className="text-xs text-muted-foreground">
+                          {formatTimestamp(event.lastTimestamp)}
+                        </div>
+
+                        <div className="text-sm">{event.message}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 }

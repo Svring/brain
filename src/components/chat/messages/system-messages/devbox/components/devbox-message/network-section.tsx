@@ -67,15 +67,15 @@ export const NetworkPopoverContent: React.FC<{
 
   if (isEditing) {
     return (
-      <div className="w-full rounded-lg">
-        <div className="space-y-3">{formContent}</div>
+      <div className="w-full rounded-lg min-w-0">
+        <div className="space-y-3 min-w-0">{formContent}</div>
 
         {/* Cancel and Confirm Buttons - Fixed at bottom */}
-        <div className="flex gap-2 mt-3 pt-3 border-t">
+        <div className="flex gap-2 pt-3">
           <Button
             variant="outline"
             size="sm"
-            className="flex-1"
+            className="flex-1 min-w-0"
             onClick={() => {
               setIsEditing(false);
               //triggerScrollToBottom();
@@ -89,7 +89,7 @@ export const NetworkPopoverContent: React.FC<{
             form="devbox-update-form"
             variant="default"
             size="sm"
-            className="flex-1"
+            className="flex-1 min-w-0"
             disabled={isUpdating}
           >
             {isUpdating ? "Updating..." : "Confirm"}
@@ -100,15 +100,17 @@ export const NetworkPopoverContent: React.FC<{
   }
 
   return (
-    <div className="w-full rounded-lg space-y-3">
-      <NetworkChart target={target} />
+    <div className="w-full rounded-lg space-y-3 min-w-0">
+      <div className="min-w-0">
+        <NetworkChart target={target} />
+      </div>
 
       {/* Edit Button - Full Row */}
       <div className="w-full flex">
         <Button
           variant="outline"
           size="sm"
-          className="flex-1"
+          className="flex-1 min-w-0"
           onClick={() => {
             setIsEditing(true);
             //triggerScrollToBottom();
@@ -130,15 +132,15 @@ export const NetworkSection: React.FC<NetworkSectionProps> = ({
 
   return (
     <div
-      className="p-2 border rounded-lg cursor-pointer hover:bg-background-tertiary transition-colors w-full min-w-0"
+      className="p-2 border rounded-lg cursor-pointer hover:bg-background-tertiary transition-colors w-full min-w-0 flex-shrink-0"
       onClick={onSectionClick}
     >
-      <div className="flex items-center gap-2 min-w-0">
-        <Network className="h-5 w-5 text-primary" />
-        <div className="flex flex-col">
-          <span className="font-medium text-sm">Network</span>
-          <span className="text-xs text-muted-foreground">
-            {portsCount} ports
+      <div className="flex items-center gap-2 min-w-0 w-full">
+        <Network className="h-5 w-5 text-primary flex-shrink-0" />
+        <div className="flex flex-col min-w-0 flex-1">
+          <span className="font-medium text-sm truncate">Network</span>
+          <span className="text-xs text-muted-foreground truncate">
+            {portsCount} port{portsCount !== 1 ? "s" : ""}
           </span>
         </div>
       </div>

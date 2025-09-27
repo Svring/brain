@@ -18,7 +18,7 @@ interface NodeStatusLightProps {
 
 export default function NodeStatus({ target }: NodeStatusLightProps) {
   // Fetch resource status and pods
-  const { status = "Pending" } = useResourceStatus(target);
+  const { status = "Pending", resource } = useResourceStatus(target);
   const { pods } = usePods({ target });
   const podTargets = pods
     .map((pod) => convertResourceTypeToTarget("pod", pod.name))
@@ -33,8 +33,8 @@ export default function NodeStatus({ target }: NodeStatusLightProps) {
       } => t.type === "builtin"
     );
 
-  // console.log("pods", pods);
-
+  // console.log("status", status);
+  // console.log("resource", resource);
   // Fetch pod events
   const { eventsRecord } = usePodEvents({
     podTargets,
@@ -48,6 +48,9 @@ export default function NodeStatus({ target }: NodeStatusLightProps) {
 
   // Determine enhanced status
   const getEnhancedStatus = () => {
+    // If status is null, return 'Pending'
+    if (!status) return "Pending";
+
     if (!podTargets.length) return status;
 
     for (const { name } of podTargets) {
@@ -55,11 +58,12 @@ export default function NodeStatus({ target }: NodeStatusLightProps) {
       if (!podEvents?.length) continue;
 
       const hasError = podEvents.some(
-        (event) => event.type === "Warning" || /Error|Failed/.test(event.reason)
+        (event: any) =>
+          event.type === "Warning" || /Error|Failed/.test(event.reason)
       );
       if (hasError) return "Error";
 
-      const hasRestart = podEvents.some((event) =>
+      const hasRestart = podEvents.some((event: any) =>
         /Started|Created/.test(event.reason)
       );
       if (hasRestart && status === "Running") return "Restarting";
@@ -69,7 +73,6 @@ export default function NodeStatus({ target }: NodeStatusLightProps) {
   };
 
   const enhancedStatus = getEnhancedStatus();
-
 
   // Map status to colors
   const statusColors: { [key: string]: string } = {
@@ -90,6 +93,7 @@ export default function NodeStatus({ target }: NodeStatusLightProps) {
     enhancedStatus === "Stopping" ? "Pausing" : enhancedStatus;
 
   const isRunning = enhancedStatus === "Running";
+  const isPending = enhancedStatus === "Pending";
 
   if (isRunning) {
     return (
@@ -103,7 +107,7 @@ export default function NodeStatus({ target }: NodeStatusLightProps) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div 
+        <div
           className="flex items-center gap-2 border border-dashed border-transparent hover:border-muted-foreground/50 rounded px-1 py-0.5 transition-colors cursor-pointer"
           onClick={(e) => {
             e.preventDefault();
@@ -118,7 +122,11 @@ export default function NodeStatus({ target }: NodeStatusLightProps) {
         </div>
       </TooltipTrigger>
       <TooltipContent>
-        <p className="text-sm">Click to analyze status</p>
+        <p className="text-sm">
+          {isPending
+            ? "Click to analyze pending status"
+            : "Click to analyze status"}
+        </p>
       </TooltipContent>
     </Tooltip>
   );

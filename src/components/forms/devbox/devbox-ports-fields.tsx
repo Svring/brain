@@ -54,17 +54,17 @@ export const DevboxPortsFields = ({ fieldArray }: DevboxPortsFieldsProps) => {
   };
 
   return (
-    <div className="space-y-2 border border-border rounded-lg p-4">
+    <div className="space-y-2 rounded-lg p-2 min-w-0">
       {/* Table Header */}
-      <div className="grid grid-cols-4 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
-        <div>Number</div>
-        <div>Public</div>
-        <div>Protocol</div>
-        <div>Action</div>
+      <div className="grid grid-cols-4 gap-2 sm:gap-4 text-sm font-medium text-muted-foreground border-b pb-2 min-w-0">
+        <div className="min-w-0">Number</div>
+        <div className="min-w-0">Public</div>
+        <div className="min-w-0">Protocol</div>
+        <div className="min-w-0">Action</div>
       </div>
 
       {/* Table Rows */}
-      <div className="space-y-0 py-0">
+      <div className="space-y-0 py-0 min-w-0">
         {fieldArray.fields.map((field: any, index: number) => {
           const portData = ports?.[index];
           const portValue = portData?.number;
@@ -72,9 +72,9 @@ export const DevboxPortsFields = ({ fieldArray }: DevboxPortsFieldsProps) => {
           const protocol = portData?.protocol;
 
           return (
-            <div key={field.id} className="grid grid-cols-4 gap-4 items-center">
+            <div key={field.id} className="grid grid-cols-4 gap-2 sm:gap-4 items-center min-w-0">
               {/* Number Column */}
-              <div>
+              <div className="min-w-0">
                 <Input
                   {...form.register(`ports.${index}.number` as const, {
                     setValueAs: (value) => {
@@ -102,13 +102,13 @@ export const DevboxPortsFields = ({ fieldArray }: DevboxPortsFieldsProps) => {
                   })}
                   type="text"
                   placeholder="8080"
-                  className="w-full border-none shadow-none focus-visible:ring-0 bg-transparent! pl-0"
+                  className="w-full border-none shadow-none focus-visible:ring-0 bg-transparent! pl-0 min-w-0"
                   defaultValue={portValue || 8080}
                 />
               </div>
 
               {/* Public Column */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2 min-w-0">
                 <Checkbox
                   checked={exposesPublicDomain || false}
                   onCheckedChange={(checked) => {
@@ -128,11 +128,11 @@ export const DevboxPortsFields = ({ fieldArray }: DevboxPortsFieldsProps) => {
                     }
                   }}
                 />
-                <span className="text-sm text-muted-foreground">Public</span>
+                <span className="text-sm text-muted-foreground truncate">Public</span>
               </div>
 
               {/* Protocol Column */}
-              <div>
+              <div className="min-w-0">
                 {exposesPublicDomain ? (
                   <Select
                     value={protocol || "HTTP"}
@@ -143,7 +143,7 @@ export const DevboxPortsFields = ({ fieldArray }: DevboxPortsFieldsProps) => {
                       );
                     }}
                   >
-                    <SelectTrigger className="w-full border-none shadow-none focus:ring-0 bg-transparent! pl-0">
+                    <SelectTrigger className="w-full border-none shadow-none focus:ring-0 bg-transparent! pl-0 min-w-0">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-background-secondary">
@@ -153,18 +153,18 @@ export const DevboxPortsFields = ({ fieldArray }: DevboxPortsFieldsProps) => {
                     </SelectContent>
                   </Select>
                 ) : (
-                  <span className="text-sm text-muted-foreground">-</span>
+                  <span className="text-sm text-muted-foreground truncate">-</span>
                 )}
               </div>
 
               {/* Action Column */}
-              <div>
+              <div className="min-w-0 flex justify-center">
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   onClick={() => removePort(index)}
-                  className="text-destructive hover:text-destructive border-none bg-transparent shadow-none hover:bg-transparent"
+                  className="text-destructive hover:text-destructive border-none bg-transparent shadow-none hover:bg-transparent h-8 w-8 p-0"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -179,11 +179,11 @@ export const DevboxPortsFields = ({ fieldArray }: DevboxPortsFieldsProps) => {
         type="button"
         variant="outline"
         onClick={addPort}
-        className="w-full"
+        className="w-full min-w-0"
         size="sm"
       >
-        <Plus className="h-4 w-4 mr-2" />
-        Add Port
+        <Plus className="h-4 w-4 mr-2 flex-shrink-0" />
+        <span className="truncate">Add Port</span>
       </Button>
     </div>
   );

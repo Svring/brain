@@ -102,7 +102,15 @@ export function useAnalyzeMonitor(
     const systemMessage2 = {
       id: `monitor-system-2-${Date.now()}`,
       type: "system" as const,
-      content: analyzeMonitorPrompt + "\n\n" + JSON.stringify(monitorData),
+      content: analyzeMonitorPrompt,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const systemMessage3 = {
+      id: `monitor-system-3-${Date.now()}`,
+      type: "system" as const,
+      content: `Below is all the data needed to be analyzed, you need to identify any problem and report back to the user and advice fix.\n\n${JSON.stringify(monitorData)}`,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -111,6 +119,7 @@ export function useAnalyzeMonitor(
     addPendingMessage(target, eventMessage);
     addPendingMessage(target, systemMessage1);
     addPendingMessage(target, systemMessage2);
+    addPendingMessage(target, systemMessage3);
 
     // Trigger pending message submission
     triggerPendingMessages(target);

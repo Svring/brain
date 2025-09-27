@@ -52,14 +52,14 @@ export function LaunchpadPortDisplayTable({ ports }: LaunchpadPortDisplayTablePr
   }
 
   return (
-    <div className="w-full overflow-hidden">
+    <div className="w-full overflow-hidden min-w-0">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[15%]">Port</TableHead>
-            <TableHead className="w-[20%]">Protocol</TableHead>
-            <TableHead className="w-[30%]">Private Address</TableHead>
-            <TableHead className="w-[35%]">Public Address</TableHead>
+            <TableHead className="w-[15%] min-w-[60px]">Port</TableHead>
+            <TableHead className="w-[20%] min-w-[80px]">Protocol</TableHead>
+            <TableHead className="w-[30%] min-w-0">Private Address</TableHead>
+            <TableHead className="w-[35%] min-w-0">Public Address</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -67,31 +67,31 @@ export function LaunchpadPortDisplayTable({ ports }: LaunchpadPortDisplayTablePr
             const portNumber = port.port || port.number || 0;
             return (
             <TableRow key={index}>
-              <TableCell className="font-mono">
-                <div className="flex flex-col">
-                  <span>{portNumber}</span>
+              <TableCell className="font-mono min-w-0">
+                <div className="flex flex-col min-w-0">
+                  <span className="truncate">{portNumber}</span>
                   {port.nodePort && port.nodePort !== portNumber && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground truncate">
                       Node: {port.nodePort}
                     </span>
                   )}
                 </div>
               </TableCell>
-              <TableCell>
-                <div className="flex flex-col">
-                  <span className="text-sm">{port.protocol || "TCP"}</span>
+              <TableCell className="min-w-0">
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm truncate">{port.protocol || "TCP"}</span>
                   {port.appProtocol && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground truncate">
                       {port.appProtocol}
                     </span>
                   )}
                 </div>
               </TableCell>
-              <TableCell className="max-w-0">
-                <div className="flex items-center gap-2">
+              <TableCell className="min-w-0 w-full">
+                <div className="flex items-center gap-2 min-w-0">
                   <span
                     className={cn(
-                      "truncate cursor-pointer hover:text-foreground/80 hover:underline",
+                      "truncate cursor-pointer hover:text-foreground/80 hover:underline flex-1 min-w-0",
                       port.privateAddress || port.privateHost || port.serviceName
                         ? "text-foreground"
                         : "text-muted-foreground"
@@ -115,8 +115,8 @@ export function LaunchpadPortDisplayTable({ ports }: LaunchpadPortDisplayTablePr
                     )}
                 </div>
               </TableCell>
-              <TableCell className="max-w-0">
-                <div className="flex items-center gap-2">
+              <TableCell className="min-w-0 w-full">
+                <div className="flex items-center gap-2 min-w-0">
                   {port.publicAddress || port.publicDomain || port.customDomain || port.domain ? (
                     <>
                       <Globe
@@ -129,7 +129,7 @@ export function LaunchpadPortDisplayTable({ ports }: LaunchpadPortDisplayTablePr
                       />
                       <span
                         className={cn(
-                          "truncate",
+                          "truncate flex-1 min-w-0",
                           (port.publicAddress || port.publicDomain || port.customDomain || port.domain)?.startsWith("http")
                             ? "text-foreground cursor-pointer hover:text-foreground/80"
                             : "text-foreground"
@@ -165,7 +165,7 @@ export function LaunchpadPortDisplayTable({ ports }: LaunchpadPortDisplayTablePr
                   ) : (
                     <>
                       <HelpCircle className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                      <span className="text-muted-foreground">
+                      <span className="text-muted-foreground truncate flex-1 min-w-0">
                         {port.exposesPublicDomain ? "Configuring..." : "No public access"}
                       </span>
                     </>
