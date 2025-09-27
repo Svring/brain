@@ -56,7 +56,7 @@ export default function NodeMonitor({ target }: NodeMonitorProps) {
           </div>
         </TooltipTrigger>
         {hasMonitorData && (
-          <TooltipContent side="bottom" className="max-w-md p-2">
+          <TooltipContent side="bottom" className="max-w-md p-2" onClick={(e) => e.stopPropagation()}>
             <div className="p-3">
               <div className="">
                 <CombinedMetricsChart

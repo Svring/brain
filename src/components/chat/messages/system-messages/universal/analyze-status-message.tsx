@@ -131,13 +131,13 @@ export default function AnalyzeStatusMessage({
                   <div key={eventIndex} className="p-2 space-y-1 border-b border-dashed">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`text-sm font-mono ${getReasonColor(
+                        className={`text-xs font-mono ${getReasonColor(
                           event.type
                         )}`}
                       >
                         {event.reason}
                       </span>
-                      <span className="text-sm text-muted-foreground font-mono">
+                      <span className="text-xs text-muted-foreground font-mono">
                         (count: {event.count})
                       </span>
                     </div>

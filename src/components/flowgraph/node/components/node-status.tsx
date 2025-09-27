@@ -133,16 +133,16 @@ export default function NodeStatus({ target }: NodeStatusLightProps) {
   };
 
   const getStatusColor = (status: string, isReady: boolean) => {
-    if (!isReady) return "text-red-400";
+    if (!isReady) return "text-theme-red";
     switch (status) {
       case "Running":
-        return "text-green-400";
+        return "text-theme-green";
       case "Waiting":
-        return "text-yellow-400";
+        return "text-theme-yellow";
       case "Terminated":
-        return "text-gray-400";
+        return "text-theme-gray";
       default:
-        return "text-gray-400";
+        return "text-theme-gray";
     }
   };
 

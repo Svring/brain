@@ -208,7 +208,7 @@ export default function NetworkNode({ data }: NetworkNodeProps) {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <HelpCircle
-                      className="h-4 w-4 flex-shrink-0 cursor-help text-yellow-500"
+                      className="h-4 w-4 cursor-help text-theme-yellow"
                       onClick={handleIconClick}
                     />
                   </TooltipTrigger>

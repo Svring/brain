@@ -175,7 +175,7 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = ({ target }) => {
             className={`cursor-pointer hover:underline transition-all font-mono text-sm ${
               isSuccess ? "text-foreground" : "text-muted-foreground"
             }`}
-            onClick={handleCopyUrl}
+            onClick={handleIframeClick}
           >
             {websiteUrl}
           </span>
