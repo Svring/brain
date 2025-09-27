@@ -39,6 +39,7 @@ import NetworkMessage from "./universal/network-message";
 // import PodOverviewMessage from "./universal/pod-overview-message";
 // import PodDetailMessage from "./universal/pod-detail-message";
 import DiagnoseNetworkMessage from "./universal/diagnose-network-message";
+import AnalyzeStatusMessage from "./universal/analyze-status-message";
 import CustomDomainMessage from "./universal/custom-domain-message";
 import DevboxNetworkMessage from "./devbox/devbox-network-message";
 import { EventMessage } from "./universal/event";
@@ -122,6 +123,9 @@ export const SystemMessageType = {
     // podDetail: (target: ResourceTarget) => <PodDetailMessage target={target} />,
     diagnoseNetwork: (target: ResourceTarget) => (
       <DiagnoseNetworkMessage target={target} />
+    ),
+    analyzeStatus: (target: ResourceTarget) => (
+      <AnalyzeStatusMessage target={target} />
     ),
     // customDomain: (target: ResourceTarget) => (
     //   <CustomDomainMessage target={target} />

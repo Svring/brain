@@ -4,7 +4,7 @@ import React from "react";
 import { Package } from "lucide-react";
 import BaseNode from "../../base-node-wrapper";
 import { createK8sContext } from "@/lib/auth/auth-utils";
-import NodeStatusLight from "../../components/node-status-light";
+import NodeStatus from "../../components/node-status";
 import DevboxNodeTitle from "./devbox-node-title";
 import DevboxNodeMenu from "./devbox-node-menu";
 import NodeMonitor from "../../components/node-monitor";
@@ -68,7 +68,7 @@ function DevboxNode({ data }: { data: DevboxObject }) {
         {/* Bottom section with status and icons */}
         <div className="mt-auto flex justify-between items-center">
           {/* Left: Status light */}
-          <NodeStatusLight status={status || "Pending"} />
+          <NodeStatus target={target} />
 
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">

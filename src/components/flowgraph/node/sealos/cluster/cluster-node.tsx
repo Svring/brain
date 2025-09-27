@@ -1,7 +1,7 @@
 "use client";
 
 import BaseNode from "../../base-node-wrapper";
-import NodeStatusLight from "../../components/node-status-light";
+import NodeStatus from "../../components/node-status";
 import NodeLog from "../../components/node-log";
 import NodeMonitor from "../../components/node-monitor";
 import NodeHem from "../../components/node-hem";
@@ -83,7 +83,7 @@ function ClusterNode({ data }: ClusterNodeProps) {
           </span>
         </div>
         <div className="mt-auto flex justify-between items-center">
-          <NodeStatusLight status={status || "Pending"} />
+          <NodeStatus target={target} />
           {type !== "weaviate" && (
             <div className="flex items-center gap-2">
               <NodeLog target={target} />

@@ -14,6 +14,7 @@ import {
   getEventsByPodQuery,
   getPodLogsQuery,
 } from "@/lib/k8s/k8s-method/k8s-query";
+import { listBuiltinResourcesDirect } from "@/lib/k8s/k8s-api/k8s-api-query";
 import { getResourceQuota } from "@/lib/sealos/resources/resource-quota/resource-quota-api/resource-quota-api-service";
 import {
   patchCustomResourceMetadata,
@@ -203,6 +204,89 @@ export const k8sRouter = t.router({
       });
 
       return eventsRecord;
+    }),
+
+  // Pod Management
+  /**
+   * Get all pods for a specific resource target.
+   * Uses appropriate label selectors based on resource type.
+   *
+   * @example
+   * ```typescript
+   * const pods = await trpc.k8s.pods.query({
+   *   target: { type: "custom", resourceType: "devbox", group: "devbox.sealos.io", version: "v1", plural: "devboxes", name: "my-devbox" }
+   * });
+   * // Returns: { pods: [{ name: "pod-1", status: "Running" }], success: true }
+   * ```
+   */
+  pods: t.procedure
+    .input(
+      z.object({
+        target: z.union([
+          CustomResourceTargetSchema,
+          BuiltinResourceTargetSchema,
+        ]),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { target } = input;
+
+      try {
+        // Get the resource object first to determine the resource type
+        const resource = await getResource(ctx, target);
+
+        // Determine the appropriate label selector based on resource type
+        let labelSelector: string;
+
+        if (target.type === "custom") {
+          switch (target.resourceType) {
+            case "devbox":
+              labelSelector = `app.kubernetes.io/name=${target.name}`;
+              break;
+            case "cluster":
+              labelSelector = `app.kubernetes.io/instance=${target.name}`;
+              break;
+            default:
+              // Generic fallback for unknown custom resources
+              labelSelector = `app=${target.name}`;
+          }
+        } else {
+          // Builtin resources (deployment, statefulset, etc.)
+          switch (target.resourceType) {
+            case "deployment":
+            case "statefulset":
+              labelSelector = `app=${target.name}`;
+              break;
+            default:
+              // Generic fallback for unknown builtin resources
+              labelSelector = `app=${target.name}`;
+          }
+        }
+
+        // Get pods using the label selector
+        const podTarget = {
+          type: "builtin" as const,
+          resourceType: "pod" as const,
+          labelSelector,
+        };
+
+        const podList = await listBuiltinResourcesDirect(ctx, podTarget);
+
+        return {
+          pods: podList.items || [],
+          success: true,
+        };
+      } catch (error) {
+        console.warn(
+          `Failed to fetch pods for resource ${target.name}:`,
+          error
+        );
+        return {
+          pods: [],
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error",
+        };
+      }
     }),
 
   // Pod Logs Management

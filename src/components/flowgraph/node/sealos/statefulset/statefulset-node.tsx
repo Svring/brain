@@ -2,7 +2,7 @@
 
 import BaseNode from "../../base-node-wrapper";
 import { Package, HardDrive } from "lucide-react";
-import NodeStatusLight from "../../components/node-status-light";
+import NodeStatus from "../../components/node-status";
 import NodePods from "../../components/node-pods";
 import NodeMonitor from "../../components/node-monitor";
 import NodeHem from "../../components/node-hem";
@@ -55,7 +55,7 @@ function StatefulsetNode({ data }: { data: StatefulsetObject }) {
         {/* Bottom section with status and icons */}
         <div className="mt-auto flex justify-between items-center">
           {/* Left: Status light */}
-          <NodeStatusLight status={status || "Pending"} />
+          <NodeStatus target={target} />
 
           {/* Right: Icon components */}
           <div className="flex items-center gap-2">

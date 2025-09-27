@@ -136,7 +136,7 @@ export const SearchAppStoreActionMessage: React.FC<
     );
   };
 
-  console.log("result", result);
+  // console.log("result", result);
 
   // Get full templates for the passed in app names
   const foundTemplates = useMemo(() => {

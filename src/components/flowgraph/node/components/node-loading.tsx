@@ -2,7 +2,7 @@
 
 import React from "react";
 import BaseNode from "../base-node-wrapper";
-import NodeStatusLight from "./node-status-light";
+import NodeStatus from "./node-status";
 import { Package, Database, Server, HardDrive } from "lucide-react";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
@@ -61,7 +61,7 @@ export default function NodeLoading({
 
         {/* Bottom section with status */}
         <div className="mt-auto flex justify-between items-center">
-          <NodeStatusLight status={status} />
+          <NodeStatus status={status} />
         </div>
       </div>
     </BaseNode>

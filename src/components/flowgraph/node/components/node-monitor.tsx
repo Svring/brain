@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/tooltip";
 
 import { useAnalyzeMonitor } from "@/hooks/copilot/use-analyze-monitor";
+import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
+import { CombinedMetricsChart } from "@/components/chat/messages/system-messages/components/combined-metrics-chart";
 
 import {
   CustomResourceTarget,
@@ -22,6 +24,10 @@ interface NodeMonitorProps {
 
 export default function NodeMonitor({ target }: NodeMonitorProps) {
   const { diagnoseMonitor, color, isMonitorReady } = useAnalyzeMonitor(target);
+  const { monitorData, isLoading } = useResourceMetricsStatus({ target });
+
+  const hasMonitorData =
+    isMonitorReady && monitorData && monitorData.length > 0;
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -49,11 +55,19 @@ export default function NodeMonitor({ target }: NodeMonitorProps) {
             />
           </div>
         </TooltipTrigger>
-        <TooltipContent side="bottom">
-          <p className="font-medium">
-            {isMonitorReady ? "Check Usage" : "No monitor data available"}
-          </p>
-        </TooltipContent>
+        {hasMonitorData && (
+          <TooltipContent side="bottom" className="max-w-md p-2">
+            <div className="p-3">
+              <div className="">
+                <CombinedMetricsChart
+                  data={monitorData}
+                  isLoading={isLoading}
+                  height="h-30"
+                />
+              </div>
+            </div>
+          </TooltipContent>
+        )}
       </Tooltip>
     </TooltipProvider>
   );

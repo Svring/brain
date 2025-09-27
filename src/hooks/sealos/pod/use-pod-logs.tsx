@@ -18,7 +18,11 @@ interface UsePodLogsOptions {
   enabled?: boolean;
 }
 
-export const usePodLogs = ({ podNames, options = {}, enabled = true }: UsePodLogsOptions) => {
+export const usePodLogs = ({
+  podNames,
+  options = {},
+  enabled = true,
+}: UsePodLogsOptions) => {
   const { k8s } = useTRPCClients();
 
   const {
@@ -37,6 +41,7 @@ export const usePodLogs = ({ podNames, options = {}, enabled = true }: UsePodLog
     error,
     refetch,
     // Helper to get logs for a specific pod
-    getPodLogs: (podName: string) => logsRecord?.[podName] || { logs: "", success: false },
+    getPodLogs: (podName: string) =>
+      logsRecord?.[podName] || { logs: "", success: false },
   };
 };

@@ -7,7 +7,7 @@ import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useLaunchpadLifecycle } from "@/hooks/sealos/launchpad/use-launchpad-lifecycle";
 import { Play, Pause, Trash2, CircleCheckBigIcon } from "lucide-react";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
-import NodeStatusLight from "@/components/flowgraph/node/components/node-status-light";
+import NodeStatus from "@/components/flowgraph/node/components/node-status";
 
 interface LaunchpadLifecycleActionMessageProps {
   args: {
@@ -113,7 +113,7 @@ export const LaunchpadLifecycleActionMessage: React.FC<
           <div className="flex-1">
             <span className="text-lg font-medium">{args.launchpadName}</span>
           </div>
-          <NodeStatusLight status={resource?.status || "Pending"} />
+          <NodeStatus status={resource?.status || "Pending"} />
         </div>
       </div>
     </BaseActionMessage>

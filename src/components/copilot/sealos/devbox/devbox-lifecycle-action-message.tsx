@@ -14,7 +14,7 @@ import {
   CircleCheckBigIcon,
 } from "lucide-react";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
-import NodeStatusLight from "@/components/flowgraph/node/components/node-status-light";
+import NodeStatus from "@/components/flowgraph/node/components/node-status";
 
 interface DevboxLifecycleActionMessageProps {
   args: {
@@ -138,7 +138,7 @@ export const DevboxLifecycleActionMessage: React.FC<
           <div className="flex-1">
             <span className="text-lg font-medium">{args.devboxName}</span>
           </div>
-          <NodeStatusLight status={resource?.status || "Pending"} />
+          <NodeStatus status={resource?.status || "Pending"} />
         </div>
       </div>
     </BaseActionMessage>

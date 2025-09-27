@@ -25,13 +25,30 @@ export const usePodEvents = ({
     enabled: enabled && podTargets.length > 0,
   });
 
+  // Process events to retain only the required fields and simplify structure
+  const processedEventsRecord = eventsRecord
+    ? Object.fromEntries(
+        Object.entries(eventsRecord).map(([podName, podData]) => [
+          podName,
+          podData.events?.map((event: any) => ({
+            name: event.metadata?.name || "unknown",
+            reason: event.reason || "",
+            type: event.type || "",
+            message: event.message || "",
+            firstTimestamp: event.firstTimestamp || "",
+            lastTimestamp: event.lastTimestamp || "",
+            count: event.count || 0,
+          })) || [],
+        ])
+      )
+    : {};
+
   return {
-    eventsRecord: eventsRecord || {},
+    eventsRecord: processedEventsRecord,
     isLoading,
     error,
     refetch,
     // Helper to get events for a specific pod
-    getPodEvents: (podName: string) =>
-      eventsRecord?.[podName] || { events: [], success: false },
+    getPodEvents: (podName: string) => processedEventsRecord?.[podName] || [],
   };
 };
