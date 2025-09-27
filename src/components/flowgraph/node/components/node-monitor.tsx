@@ -5,13 +5,10 @@ import { Activity } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
 import { useAnalyzeMonitor } from "@/hooks/copilot/use-analyze-monitor";
-import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
-import { CombinedMetricsChart } from "@/components/chat/messages/system-messages/components/combined-metrics-chart";
 
 import {
   CustomResourceTarget,
@@ -24,51 +21,31 @@ interface NodeMonitorProps {
 
 export default function NodeMonitor({ target }: NodeMonitorProps) {
   const { diagnoseMonitor, color, isMonitorReady } = useAnalyzeMonitor(target);
-  const { monitorData, isLoading } = useResourceMetricsStatus({ target });
 
-  const hasMonitorData =
-    isMonitorReady && monitorData && monitorData.length > 0;
+  if (!isMonitorReady) {
+    return (
+      <div className="p-1 border-2 border-muted-foreground/20 rounded-full cursor-not-allowed opacity-50">
+        <Activity className="h-4 w-4 text-theme-gray" />
+      </div>
+    );
+  }
 
   return (
-    <TooltipProvider delayDuration={0}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div
-            className={`p-1 border-2 border-muted-foreground/20 rounded-full transition-colors ${
-              isMonitorReady
-                ? "cursor-pointer hover:border-muted-foreground/40"
-                : "cursor-not-allowed opacity-50"
-            }`}
-            onClick={(e) => {
-              if (!isMonitorReady) {
-                e.stopPropagation();
-                return;
-              }
-              e.stopPropagation();
-              diagnoseMonitor();
-            }}
-          >
-            <Activity
-              className={`h-4 w-4 ${
-                isMonitorReady ? color : "text-theme-gray"
-              }`}
-            />
-          </div>
-        </TooltipTrigger>
-        {hasMonitorData && (
-          <TooltipContent side="bottom" className="max-w-md p-2" onClick={(e) => e.stopPropagation()}>
-            <div className="p-3">
-              <div className="">
-                <CombinedMetricsChart
-                  data={monitorData}
-                  isLoading={isLoading}
-                  height="h-30"
-                />
-              </div>
-            </div>
-          </TooltipContent>
-        )}
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          className="p-1 border-2 border-muted-foreground/20 rounded-full transition-colors cursor-pointer hover:border-muted-foreground/40"
+          onClick={(e) => {
+            e.stopPropagation();
+            diagnoseMonitor();
+          }}
+        >
+          <Activity className={`h-4 w-4 ${color}`} />
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p className="text-sm">Click to check usage</p>
+      </TooltipContent>
+    </Tooltip>
   );
 }
