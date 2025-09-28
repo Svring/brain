@@ -17,6 +17,7 @@ import {
   createClusterService,
   startClusterService,
   pauseClusterService,
+  restartClusterService,
   updateClusterService,
   deleteClusterService,
 } from "@/lib/sealos/resources/cluster/cluster-api/cluster-api-service";
@@ -126,6 +127,12 @@ export const clusterRouter = t.router({
     .input(CustomResourceTargetSchema)
     .mutation(async ({ input, ctx }) => {
       return await pauseClusterService(input, ctx);
+    }),
+
+  restart: t.procedure
+    .input(CustomResourceTargetSchema)
+    .mutation(async ({ input, ctx }) => {
+      return await restartClusterService(input, ctx);
     }),
 
   update: t.procedure

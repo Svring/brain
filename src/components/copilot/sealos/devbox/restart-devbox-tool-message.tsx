@@ -11,12 +11,12 @@ import {
   DEVBOX_DEFAULT_ICON,
 } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-icons";
 
-interface AutostartDevboxToolMessageProps {
+interface RestartDevboxToolMessageProps {
   result: ToolActionResult;
 }
 
-export const AutostartDevboxToolMessage: React.FC<
-  AutostartDevboxToolMessageProps
+export const RestartDevboxToolMessage: React.FC<
+  RestartDevboxToolMessageProps
 > = ({ result }) => {
   const isApproved = result.approved !== false;
   const isSuccess = result.success !== false;
@@ -27,10 +27,10 @@ export const AutostartDevboxToolMessage: React.FC<
     invalidateQueries([devbox.get.queryKey(), devbox.list.queryKey()]);
   });
 
-  // Get icon URL directly from runtime mapping
+  // Get icon URL directly from type mapping
   const iconUrl =
     DEVBOX_RUNTIME_ICONS[
-      result.payload?.runtime as keyof typeof DEVBOX_RUNTIME_ICONS
+      result.payload?.type as keyof typeof DEVBOX_RUNTIME_ICONS
     ] || DEVBOX_DEFAULT_ICON;
 
   // Determine status display
@@ -51,7 +51,7 @@ export const AutostartDevboxToolMessage: React.FC<
 
     return {
       icon: <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />,
-      text: "Autostart Enabled",
+      text: "Restarted",
     };
   };
 

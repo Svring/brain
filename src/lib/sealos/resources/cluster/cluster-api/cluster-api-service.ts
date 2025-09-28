@@ -253,6 +253,16 @@ export async function pauseClusterService(
   return await pauseCluster(input.name!, context);
 }
 
+export async function restartClusterService(
+  input: CustomResourceTarget,
+  context: SealosApiContext
+) {
+  // For cluster restart, we'll pause first then start
+  // This is a common pattern for database services
+  await pauseCluster(input.name!, context);
+  return await startCluster(input.name!, context);
+}
+
 export async function updateClusterService(
   input: ClusterUpdateFormData,
   context: SealosApiContext

@@ -14,6 +14,7 @@ import {
   getLaunchpadLogs,
   startLaunchpadService,
   pauseLaunchpadService,
+  restartLaunchpadService,
   deleteLaunchpadService,
   checkReadyLaunchpadService,
 } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-api-service";
@@ -151,6 +152,12 @@ export const launchpadRouter = t.router({
     .input(BuiltinResourceTargetSchema)
     .mutation(async ({ input, ctx }) => {
       return await pauseLaunchpadService({ name: input.name! }, ctx);
+    }),
+
+  restart: t.procedure
+    .input(BuiltinResourceTargetSchema)
+    .mutation(async ({ input, ctx }) => {
+      return await restartLaunchpadService({ name: input.name! }, ctx);
     }),
 
   delete: t.procedure

@@ -169,6 +169,16 @@ export async function pauseLaunchpadService(
   return await runParallelAction(pauseLaunchpad(request, context));
 }
 
+export async function restartLaunchpadService(
+  request: LaunchpadStartRequest,
+  context: SealosApiContext
+): Promise<any> {
+  // For launchpad restart, we'll pause first then start
+  // This ensures a clean restart of the application
+  await runParallelAction(pauseLaunchpad(request, context));
+  return await runParallelAction(startLaunchpad(request, context));
+}
+
 export async function deleteLaunchpadService(
   request: LaunchpadDeleteRequest,
   context: SealosApiContext

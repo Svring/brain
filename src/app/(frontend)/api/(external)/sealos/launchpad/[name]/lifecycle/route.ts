@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   startLaunchpadService,
   pauseLaunchpadService,
+  restartLaunchpadService,
   deleteLaunchpadService,
 } from "@/lib/sealos/resources/launchpad/launchpad-api/launchpad-api-service";
 import { SealosApiContextSchema } from "@/lib/sealos/sealos-api-context-schema";
@@ -9,7 +10,7 @@ import { getRegionUrlFromKubeconfig } from "@/lib/k8s/k8s-api/k8s-api-utils";
 import { z } from "zod";
 
 const LifecycleActionSchema = z.object({
-  action: z.enum(["start", "pause", "delete"]),
+  action: z.enum(["start", "pause", "restart", "delete"]),
 });
 
 // POST /api/sealos/launchpad/lifecycle - Launchpad lifecycle operations
@@ -49,6 +50,9 @@ export async function POST(
         break;
       case "pause":
         result = await pauseLaunchpadService({ name }, context);
+        break;
+      case "restart":
+        result = await restartLaunchpadService({ name }, context);
         break;
       case "delete":
         result = await deleteLaunchpadService({ name }, context);

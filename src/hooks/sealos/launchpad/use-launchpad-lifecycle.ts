@@ -60,6 +60,22 @@ export const useLaunchpadLifecycle = (
     },
   });
 
+  const restartMutation = useMutation({
+    ...launchpad.restart.mutationOptions(),
+    onSuccess: (_, target) => {
+      const message = "Launchpad restarted successfully";
+      toast.success(message);
+      onSuccess?.(message);
+      invalidateQueries([launchpad.list.queryKey(), launchpad.get.queryKey()]);
+    },
+    onError: (error: any) => {
+      console.error("Launchpad restart error:", error);
+      const message = error.message || "Failed to restart launchpad";
+      toast.error(message);
+      onError?.(message);
+    },
+  });
+
   const deleteMutation = useMutation({
     ...launchpad.delete.mutationOptions(),
     onSuccess: async (_, target) => {
@@ -111,6 +127,9 @@ export const useLaunchpadLifecycle = (
         case "pause":
           await pauseMutation.mutateAsync(target);
           break;
+        case "restart":
+          await restartMutation.mutateAsync(target);
+          break;
         case "delete":
           await deleteMutation.mutateAsync(target);
           break;
@@ -128,6 +147,8 @@ export const useLaunchpadLifecycle = (
         return startMutation;
       case "pause":
         return pauseMutation;
+      case "restart":
+        return restartMutation;
       case "delete":
         return deleteMutation;
       default:

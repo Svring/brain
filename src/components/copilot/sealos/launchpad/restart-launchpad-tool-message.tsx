@@ -7,31 +7,31 @@ import { useMount } from "@reactuses/core";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import {
-  DEVBOX_RUNTIME_ICONS,
-  DEVBOX_DEFAULT_ICON,
-} from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-icons";
+  LAUNCHPAD_TYPE_ICONS,
+  LAUNCHPAD_DEFAULT_ICON,
+} from "@/lib/sealos/resources/launchpad/launchpad-constant/launchpad-constant-icons";
 
-interface AutostartDevboxToolMessageProps {
+interface RestartLaunchpadToolMessageProps {
   result: ToolActionResult;
 }
 
-export const AutostartDevboxToolMessage: React.FC<
-  AutostartDevboxToolMessageProps
+export const RestartLaunchpadToolMessage: React.FC<
+  RestartLaunchpadToolMessageProps
 > = ({ result }) => {
   const isApproved = result.approved !== false;
   const isSuccess = result.success !== false;
   const { invalidateQueries } = useInvalidateQueries();
-  const { devbox } = useTRPCClients();
+  const { launchpad } = useTRPCClients();
 
   useMount(() => {
-    invalidateQueries([devbox.get.queryKey(), devbox.list.queryKey()]);
+    invalidateQueries([launchpad.get.queryKey(), launchpad.list.queryKey()]);
   });
 
-  // Get icon URL directly from runtime mapping
+  // Get icon URL directly from type mapping
   const iconUrl =
-    DEVBOX_RUNTIME_ICONS[
-      result.payload?.runtime as keyof typeof DEVBOX_RUNTIME_ICONS
-    ] || DEVBOX_DEFAULT_ICON;
+    LAUNCHPAD_TYPE_ICONS[
+      result.payload?.type as keyof typeof LAUNCHPAD_TYPE_ICONS
+    ] || LAUNCHPAD_DEFAULT_ICON;
 
   // Determine status display
   const getStatusDisplay = () => {
@@ -51,7 +51,7 @@ export const AutostartDevboxToolMessage: React.FC<
 
     return {
       icon: <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />,
-      text: "Autostart Enabled",
+      text: "Restarted",
     };
   };
 

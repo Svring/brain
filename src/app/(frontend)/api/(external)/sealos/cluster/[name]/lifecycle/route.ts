@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   startClusterService,
   pauseClusterService,
+  restartClusterService,
   deleteClusterService,
 } from "@/lib/sealos/resources/cluster/cluster-api/cluster-api-service";
 import { SealosApiContextSchema } from "@/lib/sealos/sealos-api-context-schema";
@@ -11,7 +12,7 @@ import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { z } from "zod";
 
 const LifecycleActionSchema = z.object({
-  action: z.enum(["start", "pause", "delete"]),
+  action: z.enum(["start", "pause", "restart", "delete"]),
 });
 
 // POST /api/sealos/cluster/[name]/lifecycle - Cluster lifecycle operations
@@ -56,6 +57,9 @@ export async function POST(
         break;
       case "pause":
         result = await pauseClusterService(target, context);
+        break;
+      case "restart":
+        result = await restartClusterService(target, context);
         break;
       case "delete":
         result = await deleteClusterService(target, context);

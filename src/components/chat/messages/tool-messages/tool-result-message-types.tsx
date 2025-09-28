@@ -13,6 +13,8 @@ import { UpdateDevboxToolMessage } from "@/components/copilot/sealos/devbox/upda
 import { CreateDevboxPortsToolMessage } from "@/components/copilot/sealos/devbox/create-devbox-ports-tool-message";
 import { DeleteDevboxPortsToolMessage } from "@/components/copilot/sealos/devbox/delete-devbox-ports-tool-message";
 import { StartDevboxToolMessage } from "@/components/copilot/sealos/devbox/start-devbox-tool-message";
+import { RestartDevboxToolMessage } from "@/components/copilot/sealos/devbox/restart-devbox-tool-message";
+import { AutostartDevboxToolMessage } from "@/components/copilot/sealos/devbox/autostart-devbox-tool-message";
 import { PauseDevboxToolMessage } from "@/components/copilot/sealos/devbox/pause-devbox-tool-message";
 import { CreateDevboxToolMessage } from "@/components/copilot/sealos/devbox/create-devbox-tool-message";
 import { DeleteDevboxToolMessage } from "@/components/copilot/sealos/devbox/delete-devbox-tool-message";
@@ -25,6 +27,7 @@ import { GetClusterLogsToolMessage } from "@/components/copilot/sealos/cluster/g
 import { GetClusterMonitorToolMessage } from "@/components/copilot/sealos/cluster/get-cluster-monitor-tool-message";
 import { UpdateClusterToolMessage } from "@/components/copilot/sealos/cluster/update-cluster-tool-message";
 import { StartClusterToolMessage } from "@/components/copilot/sealos/cluster/start-cluster-tool-message";
+import { RestartClusterToolMessage } from "@/components/copilot/sealos/cluster/restart-cluster-tool-message";
 import { PauseClusterToolMessage } from "@/components/copilot/sealos/cluster/pause-cluster-tool-message";
 import { CreateClusterToolMessage } from "@/components/copilot/sealos/cluster/create-cluster-tool-message";
 import { DeleteClusterToolMessage } from "@/components/copilot/sealos/cluster/delete-cluster-tool-message";
@@ -43,6 +46,7 @@ import { UpdateLaunchpadEnvToolMessage } from "@/components/copilot/sealos/launc
 import { UpdateLaunchpadImageToolMessage } from "@/components/copilot/sealos/launchpad/update-launchpad-image-tool-message";
 import { UpdateLaunchpadCommandToolMessage } from "@/components/copilot/sealos/launchpad/update-launchpad-command-tool-message";
 import { StartLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/start-launchpad-tool-message";
+import { RestartLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/restart-launchpad-tool-message";
 import { PauseLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/pause-launchpad-tool-message";
 import { CreateLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/create-launchpad-tool-message";
 import { DeleteLaunchpadToolMessage } from "@/components/copilot/sealos/launchpad/delete-launchpad-tool-message";
@@ -88,8 +92,16 @@ export const ToolMessageType = {
     return <StartDevboxToolMessage result={result} />;
   },
 
+  restart_devbox: (result: ToolActionResult) => {
+    return <RestartDevboxToolMessage result={result} />;
+  },
+
   pause_devbox: (result: ToolActionResult) => {
     return <PauseDevboxToolMessage result={result} />;
+  },
+
+  autostart_devbox: (result: ToolActionResult) => {
+    return <AutostartDevboxToolMessage result={result} />;
   },
 
   create_devbox: (result: ToolActionResult) => {
@@ -127,6 +139,10 @@ export const ToolMessageType = {
 
   start_cluster: (result: ToolActionResult) => {
     return <StartClusterToolMessage result={result} />;
+  },
+
+  restart_cluster: (result: ToolActionResult) => {
+    return <RestartClusterToolMessage result={result} />;
   },
 
   pause_cluster: (result: ToolActionResult) => {
@@ -192,6 +208,10 @@ export const ToolMessageType = {
 
   start_launchpad: (result: ToolActionResult) => {
     return <StartLaunchpadToolMessage result={result} />;
+  },
+
+  restart_launchpad: (result: ToolActionResult) => {
+    return <RestartLaunchpadToolMessage result={result} />;
   },
 
   pause_launchpad: (result: ToolActionResult) => {

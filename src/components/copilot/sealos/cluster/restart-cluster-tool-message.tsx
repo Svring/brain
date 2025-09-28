@@ -7,31 +7,31 @@ import { useMount } from "@reactuses/core";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import {
-  DEVBOX_RUNTIME_ICONS,
-  DEVBOX_DEFAULT_ICON,
-} from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-icons";
+  CLUSTER_TYPE_ICONS,
+  CLUSTER_DEFAULT_ICON,
+} from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
 
-interface AutostartDevboxToolMessageProps {
+interface RestartClusterToolMessageProps {
   result: ToolActionResult;
 }
 
-export const AutostartDevboxToolMessage: React.FC<
-  AutostartDevboxToolMessageProps
+export const RestartClusterToolMessage: React.FC<
+  RestartClusterToolMessageProps
 > = ({ result }) => {
   const isApproved = result.approved !== false;
   const isSuccess = result.success !== false;
   const { invalidateQueries } = useInvalidateQueries();
-  const { devbox } = useTRPCClients();
+  const { cluster } = useTRPCClients();
 
   useMount(() => {
-    invalidateQueries([devbox.get.queryKey(), devbox.list.queryKey()]);
+    invalidateQueries([cluster.get.queryKey(), cluster.list.queryKey()]);
   });
 
-  // Get icon URL directly from runtime mapping
+  // Get icon URL directly from type mapping
   const iconUrl =
-    DEVBOX_RUNTIME_ICONS[
-      result.payload?.runtime as keyof typeof DEVBOX_RUNTIME_ICONS
-    ] || DEVBOX_DEFAULT_ICON;
+    CLUSTER_TYPE_ICONS[
+      result.payload?.type as keyof typeof CLUSTER_TYPE_ICONS
+    ] || CLUSTER_DEFAULT_ICON;
 
   // Determine status display
   const getStatusDisplay = () => {
@@ -51,7 +51,7 @@ export const AutostartDevboxToolMessage: React.FC<
 
     return {
       icon: <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />,
-      text: "Autostart Enabled",
+      text: "Restarted",
     };
   };
 

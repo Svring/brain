@@ -6,6 +6,8 @@ import { UpdateDevboxToolCallMessage } from "./tool-call-messages/devbox/update-
 import { CreateDevboxPortsToolCallMessage } from "./tool-call-messages/devbox/create-devbox-ports-tool-call-message";
 import { DeleteDevboxPortsToolCallMessage } from "./tool-call-messages/devbox/delete-devbox-ports-tool-call-message";
 import { StartDevboxToolCallMessage } from "./tool-call-messages/devbox/start-devbox-tool-call-message";
+import { RestartDevboxToolCallMessage } from "./tool-call-messages/devbox/restart-devbox-tool-call-message";
+import { AutostartDevboxToolCallMessage } from "./tool-call-messages/devbox/autostart-devbox-tool-call-message";
 import { PauseDevboxToolCallMessage } from "./tool-call-messages/devbox/pause-devbox-tool-call-message";
 import { CreateDevboxToolCallMessage } from "./tool-call-messages/devbox/create-devbox-tool-call-message";
 import { DeleteDevboxToolCallMessage } from "./tool-call-messages/devbox/delete-devbox-tool-call-message";
@@ -16,6 +18,7 @@ import { GetClusterLogsToolCallMessage } from "./tool-call-messages/cluster/get-
 import { GetClusterMonitorToolCallMessage } from "./tool-call-messages/cluster/get-cluster-monitor-tool-call-message";
 import { UpdateClusterToolCallMessage } from "./tool-call-messages/cluster/update-cluster-tool-call-message";
 import { StartClusterToolCallMessage } from "./tool-call-messages/cluster/start-cluster-tool-call-message";
+import { RestartClusterToolCallMessage } from "./tool-call-messages/cluster/restart-cluster-tool-call-message";
 import { PauseClusterToolCallMessage } from "./tool-call-messages/cluster/pause-cluster-tool-call-message";
 import { CreateClusterToolCallMessage } from "./tool-call-messages/cluster/create-cluster-tool-call-message";
 import { DeleteClusterToolCallMessage } from "./tool-call-messages/cluster/delete-cluster-tool-call-message";
@@ -34,6 +37,7 @@ import { UpdateLaunchpadEnvToolCallMessage } from "./tool-call-messages/launchpa
 import { UpdateLaunchpadImageToolCallMessage } from "./tool-call-messages/launchpad/update-launchpad-image-tool-call-message";
 import { UpdateLaunchpadCommandToolCallMessage } from "./tool-call-messages/launchpad/update-launchpad-command-tool-call-message";
 import { StartLaunchpadToolCallMessage } from "./tool-call-messages/launchpad/start-launchpad-tool-call-message";
+import { RestartLaunchpadToolCallMessage } from "./tool-call-messages/launchpad/restart-launchpad-tool-call-message";
 import { PauseLaunchpadToolCallMessage } from "./tool-call-messages/launchpad/pause-launchpad-tool-call-message";
 import { CreateLaunchpadToolCallMessage } from "./tool-call-messages/launchpad/create-launchpad-tool-call-message";
 import { DeleteLaunchpadToolCallMessage } from "./tool-call-messages/launchpad/delete-launchpad-tool-call-message";
@@ -97,9 +101,28 @@ export const ToolCallMessageType = {
     );
   },
 
+  restart_devbox: (parameters: Record<string, any>) => {
+    return (
+      <RestartDevboxToolCallMessage 
+        devbox_name={parameters.devbox_name || ""} 
+        runtime={parameters.runtime}
+        type={parameters.type}
+      />
+    );
+  },
+
   pause_devbox: (parameters: Record<string, any>) => {
     return (
       <PauseDevboxToolCallMessage devbox_name={parameters.devbox_name || ""} />
+    );
+  },
+
+  autostart_devbox: (parameters: Record<string, any>) => {
+    return (
+      <AutostartDevboxToolCallMessage 
+        devbox_name={parameters.devbox_name || ""} 
+        runtime={parameters.runtime}
+      />
     );
   },
 
@@ -161,6 +184,15 @@ export const ToolCallMessageType = {
     return (
       <StartClusterToolCallMessage
         cluster_name={parameters.cluster_name || ""}
+      />
+    );
+  },
+
+  restart_cluster: (parameters: Record<string, any>) => {
+    return (
+      <RestartClusterToolCallMessage
+        cluster_name={parameters.cluster_name || ""}
+        type={parameters.type}
       />
     );
   },
@@ -305,6 +337,15 @@ export const ToolCallMessageType = {
     return (
       <StartLaunchpadToolCallMessage
         launchpad_name={parameters.launchpad_name || ""}
+      />
+    );
+  },
+
+  restart_launchpad: (parameters: Record<string, any>) => {
+    return (
+      <RestartLaunchpadToolCallMessage
+        launchpad_name={parameters.launchpad_name || ""}
+        type={parameters.type}
       />
     );
   },

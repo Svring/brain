@@ -62,6 +62,22 @@ export const useClusterLifecycle = (
     },
   });
 
+  const restartMutation = useMutation({
+    ...cluster.restart.mutationOptions(),
+    onSuccess: (_, target) => {
+      const message = "Cluster restarted successfully";
+      toast.success(message);
+      onSuccess?.(message);
+      invalidateQueries([cluster.get.queryKey()]);
+    },
+    onError: (error: any) => {
+      console.error("Cluster restart error:", error);
+      const message = error.message || "Failed to restart cluster";
+      toast.error(message);
+      onError?.(message);
+    },
+  });
+
   const deleteMutation = useMutation({
     ...cluster.delete.mutationOptions(),
     onSuccess: async (_, deleteRequest) => {
@@ -117,6 +133,9 @@ export const useClusterLifecycle = (
         case "pause":
           await pauseMutation.mutateAsync(target);
           break;
+        case "restart":
+          await restartMutation.mutateAsync(target);
+          break;
         case "delete":
           await deleteMutation.mutateAsync({ ...target, name: clusterName });
           break;
@@ -134,6 +153,8 @@ export const useClusterLifecycle = (
         return startMutation;
       case "pause":
         return pauseMutation;
+      case "restart":
+        return restartMutation;
       case "delete":
         return deleteMutation;
       default:

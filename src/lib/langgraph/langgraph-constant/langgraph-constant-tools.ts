@@ -29,9 +29,11 @@ export const MANAGE_DEVBOX_TOOLS = [
   "create_devbox_ports",
   "delete_devbox_ports",
   "start_devbox",
+  "restart_devbox",
   "pause_devbox",
   "get_devbox_release",
   "deploy_devbox_release",
+  "autostart_devbox",
 ];
 
 // Cluster management tools (excluding create/delete)
@@ -41,6 +43,7 @@ export const MANAGE_CLUSTER_TOOLS = [
   "get_cluster_monitor",
   "update_cluster",
   "start_cluster",
+  "restart_cluster",
   "pause_cluster",
 ];
 
@@ -59,6 +62,7 @@ export const MANAGE_LAUNCHPAD_TOOLS = [
   "update_launchpad_image",
   "update_launchpad_command",
   "start_launchpad",
+  "restart_launchpad",
   "pause_launchpad",
 ];
 
