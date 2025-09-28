@@ -88,7 +88,7 @@ export default function DevboxNodeIde({ object }: DevboxNodeIdeProps) {
             <ChevronDown className="h-5 w-3" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="rounded-xl bg-background-tertiary border border-border-primary">
+        <DropdownMenuContent align="end" className="rounded-xl bg-background-tertiary border border-border-primary">
           {DEVBOX_IDE.map((ide) => (
             <DropdownMenuItem
               key={ide}

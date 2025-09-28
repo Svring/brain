@@ -2,12 +2,16 @@
 
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUp, SendHorizonal, Square } from "lucide-react";
+import { ArrowUp, SendHorizonal, Square, Hammer } from "lucide-react";
 import React from "react";
 import { useDebounce } from "@reactuses/core";
 import { Typewriter } from "@/components/ui/typewriter-text";
 // import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  TOOL_CATEGORY_MAP,
+  type ToolCategoryKey,
+} from "@/lib/langgraph/langgraph-constant/langgraph-constant-tools";
 
 // Utility function for className merging
 const cn = (...classes: (string | undefined | null | false)[]) =>
@@ -329,6 +333,7 @@ interface PromptInputBoxProps {
   disableInput?: boolean;
   disableSend?: boolean;
   exhibition?: boolean;
+  toolCategory?: ToolCategoryKey;
 }
 export const PromptInputBox = React.forwardRef(
   (props: PromptInputBoxProps, ref: React.Ref<HTMLDivElement>) => {
@@ -343,6 +348,7 @@ export const PromptInputBox = React.forwardRef(
       disableInput = false,
       disableSend = false,
       exhibition = false,
+      toolCategory,
     } = props;
 
     // const { openDialog, CreateProjectDialog } = useProjectCreateDialog();
@@ -434,6 +440,9 @@ export const PromptInputBox = React.forwardRef(
 
     const hasContent = input.trim() !== "";
 
+    // Get tools for the specified category
+    const tools = toolCategory ? TOOL_CATEGORY_MAP[toolCategory] : [];
+
     return (
       <>
         <PromptInput
@@ -477,53 +486,79 @@ export const PromptInputBox = React.forwardRef(
             )}
           </div>
 
-          <PromptInputActions className="flex items-end justify-end gap-2 p-0 mt-auto">
-            <PromptInputAction
-              tooltip={
-                isLoading
-                  ? "Stop generation"
-                  : hasContent
-                  ? "Send message"
-                  : "Type a message to send"
-              }
-            >
-              <Button
-                className={cn(
-                  "h-9 w-9 rounded-lg transition-all duration-100",
-                  isLoading || hasContent
-                    ? "bg-foreground! text-background-secondary hover:bg-foreground/80 cursor-pointer"
-                    : "bg-transparent cursor-not-allowed text-foreground"
-                )}
-                disabled={disableSend || (!isLoading && !hasContent)}
-                onClick={isLoading ? onStop : handleSubmit}
-                size="icon"
-                variant="outline"
+          <PromptInputActions className="flex items-end justify-between gap-2 p-0 mt-auto">
+            {/* Tool category indicator */}
+            {toolCategory && (
+              <div className="flex items-center">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-xs text-muted-foreground bg-background-secondary px-2 py-1 rounded flex items-center gap-1">
+                      <Hammer className="h-3 w-3" />
+                      {tools.length} tools loaded
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" align="start" className="max-w-xs">
+                    <div className="space-y-1">
+                      <div className="text-xs space-y-1">
+                        {tools.map((tool, index) => (
+                          <div key={index} className="font-mono">
+                            {tool}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <PromptInputAction
+                tooltip={
+                  isLoading
+                    ? "Stop generation"
+                    : hasContent
+                    ? "Send message"
+                    : "Type a message to send"
+                }
               >
-                <AnimatePresence mode="wait">
-                  {isLoading ? (
-                    <motion.div
-                      key="stop"
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.8, opacity: 0 }}
-                      transition={{ duration: 0.15 }}
-                    >
-                      <Spinner className="h-4 w-4" />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="send"
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.8, opacity: 0 }}
-                      transition={{ duration: 0.15 }}
-                    >
-                      <SendHorizonal className="h-4 w-4" />
-                    </motion.div>
+                <Button
+                  className={cn(
+                    "h-9 w-9 rounded-lg transition-all duration-100",
+                    isLoading || hasContent
+                      ? "bg-foreground! text-background-secondary hover:bg-foreground/80 cursor-pointer"
+                      : "bg-transparent cursor-not-allowed text-foreground"
                   )}
-                </AnimatePresence>
-              </Button>
-            </PromptInputAction>
+                  disabled={disableSend || (!isLoading && !hasContent)}
+                  onClick={isLoading ? onStop : handleSubmit}
+                  size="icon"
+                  variant="outline"
+                >
+                  <AnimatePresence mode="wait">
+                    {isLoading ? (
+                      <motion.div
+                        key="stop"
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.8, opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                      >
+                        <Spinner className="h-4 w-4" />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="send"
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.8, opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                      >
+                        <SendHorizonal className="h-4 w-4" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </Button>
+              </PromptInputAction>
+            </div>
           </PromptInputActions>
         </PromptInput>
 

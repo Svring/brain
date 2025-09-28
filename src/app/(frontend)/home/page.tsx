@@ -136,6 +136,7 @@ export default function HomePage() {
               onSubmit={submit}
               onStop={stop}
               isLoading={isLoading}
+              disableTools={true}
             />
             {!showMessages && (
               <>

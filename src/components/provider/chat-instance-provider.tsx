@@ -459,6 +459,17 @@ export function ResourceChatInstanceProvider({
       return;
     }
 
+    // Add system message with resource context to messages
+    const messagesWithResourceContext = [
+      ...data.messages,
+      {
+        type: "system" as const,
+        content: `Below is the latest resource status\n\n${JSON.stringify(
+          selectedResourceContext
+        )}`,
+      },
+    ];
+
     return streamValue.submit(
       {
         api_key: apiKey,
@@ -477,6 +488,7 @@ export function ResourceChatInstanceProvider({
           selectedResourceContext,
         },
         ...data,
+        messages: messagesWithResourceContext,
       },
       {
         ...options,

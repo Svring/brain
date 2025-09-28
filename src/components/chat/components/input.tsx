@@ -3,6 +3,8 @@
 import { PromptInputBox } from "./prompt-box";
 import type { Message } from "@langchain/langgraph-sdk";
 import { Interrupt } from "@langchain/langgraph-sdk";
+import type { ToolCategoryKey } from "@/lib/langgraph/langgraph-constant/langgraph-constant-tools";
+import { useProjectState } from "@/contexts/project/project-context";
 
 interface AiChatInputProps {
   className?: string;
@@ -15,6 +17,8 @@ interface AiChatInputProps {
     data: { messages: Message[]; stage?: string; command?: any },
     options?: { optimisticValues?: (prev: any) => any; command?: any }
   ) => any;
+  toolCategory?: ToolCategoryKey;
+  disableTools?: boolean;
 }
 
 export function AiChatInput({
@@ -25,7 +29,43 @@ export function AiChatInput({
   isLoading,
   interrupt,
   submit,
+  toolCategory: propToolCategory,
+  disableTools = false,
 }: AiChatInputProps) {
+  const { selectedResource, selectedProject } = useProjectState();
+
+  // Determine tool category based on s·elected resource or project
+  const getToolCategory = (): ToolCategoryKey | undefined => {
+    // If toolCategory is explicitly provided, use it
+    if (propToolCategory) {
+      return propToolCategory;
+    }
+
+    // If a resource is selected, determine category based on resource type
+    if (selectedResource) {
+      const resourceKind = selectedResource.resourceType?.toLowerCase();
+      if (resourceKind === "devbox") {
+        return "manage_devbox";
+      } else if (resourceKind === "cluster") {
+        return "manage_cluster";
+      } else if (
+        resourceKind === "statefulset" ||
+        resourceKind === "deployment"
+      ) {
+        return "manage_launchpad";
+      }
+    }
+
+    // If a project is selected but no specific resource, show project management tools
+    if (selectedProject) {
+      return "manage_project";
+    }
+
+    // Default to deploy project tools if nothing is selected
+    return "deploy_project";
+  };
+
+  const toolCategory = disableTools ? undefined : getToolCategory();
   const handleSendMessage = async (message: string) => {
     const userMessage: Message = {
       type: "human",
@@ -86,6 +126,7 @@ export function AiChatInput({
       disableSend={isLoading || isInterruptActive}
       onStop={handleStop}
       exhibition={exhibition}
+      toolCategory={toolCategory}
     />
   );
 }
