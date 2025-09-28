@@ -488,8 +488,8 @@ export const PromptInputBox = React.forwardRef(
 
           <PromptInputActions className="flex items-end justify-between gap-2 p-0 mt-auto">
             {/* Tool category indicator */}
-            {toolCategory && (
-              <div className="flex items-center">
+            <div className="flex items-center">
+              {toolCategory && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="text-xs text-muted-foreground bg-background-secondary px-2 py-1 rounded flex items-center gap-1">
@@ -509,8 +509,8 @@ export const PromptInputBox = React.forwardRef(
                     </div>
                   </TooltipContent>
                 </Tooltip>
-              </div>
-            )}
+              )}
+            </div>
             <div className="flex items-center gap-2">
               <PromptInputAction
                 tooltip={

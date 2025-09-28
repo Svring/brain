@@ -170,7 +170,7 @@ export const CpuMemorySection: React.FC<CpuMemorySectionProps> = ({
           <div className="flex flex-col">
             <span className="font-medium text-sm">CPU</span>
             <span className="text-xs font-mono font-semibold">
-              {cpuLimit} Core
+              {cpuLimit}Core
             </span>
           </div>
         </div>
@@ -181,7 +181,7 @@ export const CpuMemorySection: React.FC<CpuMemorySectionProps> = ({
           <div className="flex flex-col">
             <span className="font-medium text-sm">Memory</span>
             <span className="text-xs font-mono font-semibold">
-              {memoryLimit} GB
+              {memoryLimit}GB
             </span>
           </div>
         </div>

@@ -131,8 +131,8 @@ export const SearchAppStoreActionMessage: React.FC<
   const searchTemplate = (name: string): TemplateResource | undefined => {
     return templates.find(
       (template) =>
-        template.spec.title.toLowerCase().includes(name.toLowerCase()) ||
-        template.metadata.name.toLowerCase().includes(name.toLowerCase())
+        template.spec.title.toLowerCase() === name.toLowerCase() ||
+        template.metadata.name.toLowerCase() === name.toLowerCase()
     );
   };
 
@@ -218,6 +218,8 @@ export const SearchAppStoreActionMessage: React.FC<
   const displayTemplates = showAll
     ? foundTemplates
     : foundTemplates.slice(0, 3);
+
+  // console.log("displayTemplates", displayTemplates);
 
   return (
     <div className="w-full">

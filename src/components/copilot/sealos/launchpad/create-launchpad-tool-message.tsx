@@ -91,8 +91,8 @@ export const CreateLaunchpadToolMessage: React.FC<
                 Launchpad
               </span>
               <span className="text-lg font-bold text-foreground leading-tight">
-                {payload.name && payload.name.length > 15
-                  ? `${payload.name.slice(0, 15)}...`
+                {payload.name && payload.name.length > 28
+                  ? `${payload.name.slice(0, 28)}...`
                   : payload.name}
               </span>
             </div>
@@ -106,8 +106,8 @@ export const CreateLaunchpadToolMessage: React.FC<
           <span className="text-sm text-muted-foreground">
             Image:{" "}
             <span className="font-mono text-foreground">
-              {payload.image && payload.image.length > 20
-                ? `${payload.image.slice(0, 20)}...`
+              {payload.image && payload.image.length > 28
+                ? `${payload.image.slice(0, 28)}...`
                 : payload.image}
             </span>
           </span>

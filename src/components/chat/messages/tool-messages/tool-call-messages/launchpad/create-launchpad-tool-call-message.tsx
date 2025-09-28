@@ -36,7 +36,7 @@ export function CreateLaunchpadToolCallMessage({
                 Launchpad
               </span>
               <span className="text-lg font-bold text-foreground leading-tight">
-                {name.length > 15 ? `${name.slice(0, 15)}...` : name}
+                {name.length > 28 ? `${name.slice(0, 28)}...` : name}
               </span>
             </div>
           </div>
@@ -45,7 +45,7 @@ export function CreateLaunchpadToolCallMessage({
           <span className="text-sm text-muted-foreground">
             Image:{" "}
             <span className="font-mono text-foreground">
-              {image.length > 20 ? `${image.slice(0, 20)}...` : image}
+              {image.length > 28 ? `${image.slice(0, 28)}...` : image}
             </span>
           </span>
           {cpu !== undefined && (

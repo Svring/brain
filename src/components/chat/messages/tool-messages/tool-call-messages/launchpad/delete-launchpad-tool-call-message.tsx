@@ -3,9 +3,9 @@ interface DeleteLaunchpadToolCallMessageProps {
   image?: string;
 }
 
-export function DeleteLaunchpadToolCallMessage({ 
-  launchpad_name, 
-  image 
+export function DeleteLaunchpadToolCallMessage({
+  launchpad_name,
+  image,
 }: DeleteLaunchpadToolCallMessageProps) {
   const iconUrl = "https://applaunchpad.bja.sealos.run/logo.svg";
 
@@ -26,7 +26,9 @@ export function DeleteLaunchpadToolCallMessage({
                 Launchpad
               </span>
               <span className="text-lg font-bold text-foreground leading-tight">
-                {launchpad_name.length > 15 ? `${launchpad_name.slice(0, 15)}...` : launchpad_name}
+                {launchpad_name.length > 28
+                  ? `${launchpad_name.slice(0, 28)}...`
+                  : launchpad_name}
               </span>
             </div>
           </div>
@@ -36,7 +38,7 @@ export function DeleteLaunchpadToolCallMessage({
             <span className="text-sm text-muted-foreground">
               Image:{" "}
               <span className="font-mono text-foreground">
-                {image.length > 20 ? `${image.slice(0, 20)}...` : image}
+                {image.length > 28 ? `${image.slice(0, 28)}...` : image}
               </span>
             </span>
           </div>

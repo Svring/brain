@@ -31,9 +31,9 @@ interface NetworkChartProps {
   isLoading?: boolean;
 }
 
-export const NetworkChart: React.FC<NetworkChartProps> = ({ 
-  networkData, 
-  isLoading = false 
+export const NetworkChart: React.FC<NetworkChartProps> = ({
+  networkData,
+  isLoading = false,
 }) => {
   const combinedStatusData = networkData?.combinedStatusData || [];
 
@@ -60,133 +60,131 @@ export const NetworkChart: React.FC<NetworkChartProps> = ({
   return (
     <div className="w-full overflow-hidden min-w-0">
       <TooltipProvider>
-          <Table>
-            <TableHeader>
-              <TableRow className="h-8">
-                <TableHead className="w-[12%] min-w-[60px] py-1 text-sm">
-                  Port
-                </TableHead>
-                <TableHead className="w-[88%] min-w-0 py-1 text-sm">
-                  Address
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {combinedStatusData.map(
-                (statusItem: CombinedStatusItem, index: number) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-mono pr-2 min-w-0">
-                      {statusItem.number}
-                    </TableCell>
-                    <TableCell className="min-w-0 w-full">
-                      <div className="space-y-2 min-w-0">
-                        {/* Private Address */}
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-xs text-muted-foreground px-2 py-1 rounded-full w-12 text-center flex-shrink-0">
-                            private
-                          </span>
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                {statusItem.containerAccess ? (
-                                  <CheckCircle className="h-4 w-4 text-theme-green flex-shrink-0" />
-                                ) : (
-                                  <HelpCircle className="h-4 w-4 text-theme-yellow flex-shrink-0" />
-                                )}
-                              </TooltipTrigger>
-                              <TooltipContent
-                                side="bottom"
-                                align="start"
-                                className="bg-background-tertiary border border-border-primary"
-                              >
-                                <p>
-                                  {statusItem.containerAccess
-                                    ? "Available"
-                                    : "Unavailable"}
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                            <span
-                              className={cn(
-                                "truncate flex-1 min-w-0 text-sm",
-                                statusItem.privateAddress
-                                  ? "text-foreground"
-                                  : "text-muted-foreground"
+        <Table>
+          <TableHeader>
+            <TableRow className="h-8">
+              <TableHead className="w-[12%] min-w-[60px] py-1 text-sm">
+                Port
+              </TableHead>
+              <TableHead className="w-[88%] min-w-0 py-1 text-sm">
+                Address
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {combinedStatusData.map(
+              (statusItem: CombinedStatusItem, index: number) => (
+                <TableRow key={index}>
+                  <TableCell className="font-mono pr-2 min-w-0">
+                    {statusItem.number}
+                  </TableCell>
+                  <TableCell className="min-w-0 w-full">
+                    <div className="space-y-2 min-w-0">
+                      {/* Private Address */}
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-xs text-muted-foreground px-2 py-1 rounded-full w-12 text-center flex-shrink-0">
+                          private
+                        </span>
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              {statusItem.containerAccess ? (
+                                <CheckCircle className="h-4 w-4 text-theme-green flex-shrink-0" />
+                              ) : (
+                                <HelpCircle className="h-4 w-4 text-theme-yellow flex-shrink-0" />
                               )}
-                              title={statusItem.privateAddress || "-"}
+                            </TooltipTrigger>
+                            <TooltipContent
+                              side="bottom"
+                              align="start"
+                              className="bg-background-tertiary border border-border-primary"
                             >
-                              {statusItem.privateAddress || "-"}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Public Address */}
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-xs text-muted-foreground px-2 py-1 rounded-full w-12 text-center flex-shrink-0">
-                            public
-                          </span>
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
-                            {statusItem.publicAddress &&
-                              statusItem.publicAddress !== "N/A" && (
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    {statusItem.publicAccessStatus ? (
-                                      <CheckCircle className="h-4 w-4 text-theme-green flex-shrink-0" />
-                                    ) : (
-                                      <HelpCircle className="h-4 w-4 text-theme-yellow flex-shrink-0" />
-                                    )}
-                                  </TooltipTrigger>
-                                  <TooltipContent
-                                    side="bottom"
-                                    align="start"
-                                    className="bg-background-tertiary border border-border-primary"
-                                  >
-                                    <p>
-                                      {statusItem.publicAccessStatus
-                                        ? "Available"
-                                        : "Unavailable"}
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              )}
-                            {statusItem.publicAddress &&
-                            statusItem.publicAddress !== "N/A" ? (
-                              <span
-                                className={cn(
-                                  "truncate cursor-pointer hover:text-foreground/80 hover:underline flex-1 min-w-0 text-sm",
-                                  "text-foreground"
-                                )}
-                                title={statusItem.publicAddress}
-                                onClick={() => {
-                                  if (
-                                    statusItem.publicAddress?.startsWith(
-                                      "http"
-                                    )
-                                  ) {
-                                    window.open(
-                                      statusItem.publicAddress,
-                                      "_blank"
-                                    );
-                                  }
-                                }}
-                              >
-                                {statusItem.publicAddress}
-                              </span>
-                            ) : (
-                              <span className="text-muted-foreground truncate flex-1 min-w-0 text-sm">
-                                No public access
-                              </span>
+                              <p>
+                                {statusItem.containerAccess
+                                  ? "Available"
+                                  : "Unavailable"}
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <span
+                            className={cn(
+                              "truncate flex-1 min-w-0 text-sm",
+                              statusItem.privateAddress
+                                ? "text-foreground"
+                                : "text-muted-foreground"
                             )}
-                          </div>
+                            title={statusItem.privateAddress || "-"}
+                          >
+                            {statusItem.privateAddress || "-"}
+                          </span>
                         </div>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                )
-              )}
-            </TableBody>
-          </Table>
-        </TooltipProvider>
+
+                      {/* Public Address */}
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-xs text-muted-foreground px-2 py-1 rounded-full w-12 text-center flex-shrink-0">
+                          public
+                        </span>
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          {statusItem.publicAddress &&
+                            statusItem.publicAddress !== "N/A" && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  {statusItem.publicAccessStatus ? (
+                                    <CheckCircle className="h-4 w-4 text-theme-green flex-shrink-0" />
+                                  ) : (
+                                    <HelpCircle className="h-4 w-4 text-theme-yellow flex-shrink-0" />
+                                  )}
+                                </TooltipTrigger>
+                                <TooltipContent
+                                  side="bottom"
+                                  align="start"
+                                  className="bg-background-tertiary border border-border-primary"
+                                >
+                                  <p>
+                                    {statusItem.publicAccessStatus
+                                      ? "Available"
+                                      : "Unavailable"}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                          {statusItem.publicAddress &&
+                          statusItem.publicAddress !== "N/A" ? (
+                            <span
+                              className={cn(
+                                "truncate cursor-pointer hover:text-foreground/80 hover:underline flex-1 min-w-0 text-sm",
+                                "text-foreground"
+                              )}
+                              title={statusItem.publicAddress}
+                              onClick={() => {
+                                if (
+                                  statusItem.publicAddress?.startsWith("http")
+                                ) {
+                                  window.open(
+                                    statusItem.publicAddress,
+                                    "_blank"
+                                  );
+                                }
+                              }}
+                            >
+                              {statusItem.publicAddress}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground truncate flex-1 min-w-0 text-sm">
+                              No public access
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )
+            )}
+          </TableBody>
+        </Table>
+      </TooltipProvider>
     </div>
   );
 };

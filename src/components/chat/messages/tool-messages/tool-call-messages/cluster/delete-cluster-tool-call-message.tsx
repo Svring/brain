@@ -1,15 +1,13 @@
-import { getClusterIconUrl } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
+import { CLUSTER_DEFAULT_ICON } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
 
 interface DeleteClusterToolCallMessageProps {
   cluster_name: string;
-  type?: string;
 }
 
 export function DeleteClusterToolCallMessage({ 
-  cluster_name, 
-  type = "postgresql" 
+  cluster_name
 }: DeleteClusterToolCallMessageProps) {
-  const iconUrl = getClusterIconUrl(type);
+  const iconUrl = CLUSTER_DEFAULT_ICON;
 
   return (
     <div className="w-full max-w-2xl">
@@ -17,7 +15,7 @@ export function DeleteClusterToolCallMessage({
         <div className="flex items-center gap-2">
           <img
             src={iconUrl}
-            alt={`${type} Icon`}
+            alt="Cluster Icon"
             width={32}
             height={32}
             className="rounded-lg h-8 w-8 flex-shrink-0 p-1 bg-muted"
@@ -32,14 +30,6 @@ export function DeleteClusterToolCallMessage({
               </span>
             </div>
           </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-muted-foreground">
-            Type:{" "}
-            <span className="font-mono text-foreground">
-              {type.charAt(0).toUpperCase() + type.slice(1)}
-            </span>
-          </span>
         </div>
       </div>
     </div>

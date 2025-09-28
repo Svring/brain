@@ -45,6 +45,8 @@ export function PortDisplayTable({
   const [isCustomDialogOpen, setIsCustomDialogOpen] = useState(false);
   const [selectedPort, setSelectedPort] = useState<Port | null>(null);
 
+  // console.log("ports", ports);
+
   if (!ports || ports.length === 0) {
     return null;
   }

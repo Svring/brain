@@ -47,7 +47,7 @@ function StatefulsetNode({ data }: { data: StatefulsetObject }) {
           <div className="text-sm text-muted-foreground truncate flex-1">
             Image:{" "}
             {statefulsetData.image?.imageName
-              ? truncateImage(statefulsetData.image.imageName)
+              ? statefulsetData.image.imageName
               : "N/A"}
           </div>
         </div>

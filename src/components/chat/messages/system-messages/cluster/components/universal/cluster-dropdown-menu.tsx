@@ -18,7 +18,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { AlertCircleIcon } from "lucide-react";
-import { Pause, Trash2, Power } from "lucide-react";
+import { Pause, Trash2, Power, RotateCcw } from "lucide-react";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 import { useClusterLifecycle } from "@/hooks/sealos/cluster/use-cluster-lifecycle";
 
@@ -87,6 +87,14 @@ export default function ClusterDropdownMenu({
             Pause
           </DropdownMenuItem>
         )}
+        <DropdownMenuItem
+          onClick={() => executeAction("restart", clusterName)}
+          disabled={isPending || isActionPending("restart")}
+          className={isPending ? "opacity-50" : ""}
+        >
+          <RotateCcw className="mr-2 h-4 w-4" />
+          Restart
+        </DropdownMenuItem>
         <DropdownMenuItem
           onClick={handleDeleteClick}
           className="text-destructive"

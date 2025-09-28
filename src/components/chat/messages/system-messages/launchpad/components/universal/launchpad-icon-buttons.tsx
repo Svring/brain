@@ -8,7 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Pause, Power } from "lucide-react";
+import { Pause, Power, RotateCcw } from "lucide-react";
 import { useLaunchpadLifecycle } from "@/hooks/sealos/launchpad/use-launchpad-lifecycle";
 
 interface LaunchpadObject {
@@ -77,6 +77,26 @@ export default function LaunchpadIconButtons({
               </TooltipContent> */}
             </Tooltip>
           )}
+
+          {/* Restart Button - Always show */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => executeAction("restart", name)}
+                disabled={isResourcePending || isPending("restart")}
+                className={`h-8 w-8 p-0 ${
+                  isResourcePending ? "opacity-50" : ""
+                }`}
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            {/* <TooltipContent side="bottom">
+              <p>Restart</p>
+            </TooltipContent> */}
+          </Tooltip>
 
         </div>
       </TooltipProvider>

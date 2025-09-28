@@ -4,7 +4,7 @@ import React, { useState, useMemo } from "react";
 import { Network } from "lucide-react";
 import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
-import { NetworkChart } from "../../../components/network-chart";
+import { PortDisplayTable } from "../../../components/port-display-table";
 import { Button } from "@/components/ui/button";
 import { DevboxUpdateForm } from "@/components/forms/devbox/devbox-update-form";
 import { DevboxUpdateFormData } from "@/schemas/forms/devbox/devbox-update-form-schema";
@@ -40,6 +40,23 @@ export const NetworkPopoverContent: React.FC<{
       console.error("Error updating devbox ports:", error);
     }
   };
+
+  // Transform devbox ports to PortDisplayTable format
+  const transformedPorts =
+    devboxObject?.ports?.map((port: any) => ({
+      number: port.number || 0,
+      privateAddress:
+        port.privateAddress || port.privateHost || port.serviceName,
+      publicAddress:
+        port.publicAddress ||
+        port.publicDomain ||
+        port.customDomain ||
+        port.domain,
+      protocol: port.protocol,
+      name: port.portName,
+      serviceName: port.serviceName,
+      host: port.host,
+    })) || [];
 
   // Memoize the form content to prevent unnecessary re-renders
   const formContent = useMemo(
@@ -102,7 +119,7 @@ export const NetworkPopoverContent: React.FC<{
   return (
     <div className="w-full rounded-lg space-y-3 min-w-0">
       <div className="min-w-0">
-        <NetworkChart target={target} />
+        <PortDisplayTable ports={transformedPorts} />
       </div>
 
       {/* Edit Button - Full Row */}

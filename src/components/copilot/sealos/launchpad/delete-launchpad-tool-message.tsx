@@ -66,8 +66,8 @@ export const DeleteLaunchpadToolMessage: React.FC<
                 Launchpad
               </span>
               <span className={`text-lg font-bold leading-tight ${isSuccess ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-                {result.payload?.launchpad_name && result.payload.launchpad_name.length > 15
-                  ? `${result.payload.launchpad_name.slice(0, 15)}...`
+                {result.payload?.launchpad_name && result.payload.launchpad_name.length > 28
+                  ? `${result.payload.launchpad_name.slice(0, 28)}...`
                   : result.payload?.launchpad_name}
               </span>
             </div>
@@ -82,8 +82,8 @@ export const DeleteLaunchpadToolMessage: React.FC<
             <span className="text-sm text-muted-foreground">
               Image:{" "}
               <span className={`font-mono text-foreground ${isSuccess ? 'line-through' : ''}`}>
-                {result.payload.image.length > 20
-                  ? `${result.payload.image.slice(0, 20)}...`
+                {result.payload.image.length > 28
+                  ? `${result.payload.image.slice(0, 28)}...`
                   : result.payload.image}
               </span>
             </span>

@@ -124,10 +124,8 @@ export default function LaunchpadDropdownMenu({
       )}
       {showRestart && (
         <DropdownMenuItem
-          onClick={() => {
-            // Restart functionality
-          }}
-          disabled={isPending}
+          onClick={() => executeAction("restart", name)}
+          disabled={isPending || isActionPending("restart")}
           className={isPending ? "opacity-50" : ""}
         >
           <RotateCcw className="mr-2 h-4 w-4" />

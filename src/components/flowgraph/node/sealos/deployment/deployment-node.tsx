@@ -51,7 +51,7 @@ function DeploymentNode({ data }: { data: DeploymentObject }) {
           <div className="text-md text-muted-foreground truncate flex-1">
             Image:{" "}
             {deploymentResource.image?.imageName
-              ? truncateImage(deploymentResource.image.imageName)
+              ? deploymentResource.image.imageName
               : "N/A"}
           </div>
         </div>

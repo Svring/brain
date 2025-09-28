@@ -60,7 +60,15 @@ export function useDeleteProjectDialog({
   };
 
   const DeleteProjectDialog = () => (
-    <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+    <AlertDialog 
+      open={isDeleteDialogOpen} 
+      onOpenChange={(open) => {
+        // Only allow closing the dialog, not opening it through onOpenChange
+        if (!open) {
+          setIsDeleteDialogOpen(false);
+        }
+      }}
+    >
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Project</AlertDialogTitle>

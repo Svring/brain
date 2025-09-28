@@ -6,7 +6,7 @@ import { CircleCheckBigIcon, CircleSlash, Ban } from "lucide-react";
 import { useMount } from "@reactuses/core";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
-import { getClusterIconUrl } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
+import { CLUSTER_DEFAULT_ICON } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
 
 interface DeleteClusterToolMessageProps {
   result: ToolActionResult;
@@ -24,8 +24,8 @@ export const DeleteClusterToolMessage: React.FC<
     invalidateQueries([cluster.get.queryKey(), cluster.list.queryKey()], true);
   });
 
-  // Get icon URL directly from type
-  const iconUrl = getClusterIconUrl(result.payload?.type);
+  // Use default cluster icon
+  const iconUrl = CLUSTER_DEFAULT_ICON;
 
   // Determine status display
   const getStatusDisplay = () => {
@@ -57,18 +57,29 @@ export const DeleteClusterToolMessage: React.FC<
         <div className="flex items-center gap-2">
           <img
             src={iconUrl}
-            alt={`${result.type} Icon`}
+            alt="Cluster Icon"
             width={32}
             height={32}
             className="rounded-lg h-8 w-8 flex-shrink-0 p-1 bg-muted"
           />
           <div className="flex flex-col min-w-0 flex-1">
             <div className="flex flex-col">
-              <span className={`text-xs text-muted-foreground leading-none ${isSuccess ? 'line-through' : ''}`}>
+              <span
+                className={`text-xs text-muted-foreground leading-none ${
+                  isSuccess ? "line-through" : ""
+                }`}
+              >
                 Cluster
               </span>
-              <span className={`text-lg font-bold leading-tight ${isSuccess ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-                {result.payload?.cluster_name && result.payload.cluster_name.length > 15
+              <span
+                className={`text-lg font-bold leading-tight ${
+                  isSuccess
+                    ? "line-through text-muted-foreground"
+                    : "text-foreground"
+                }`}
+              >
+                {result.payload?.cluster_name &&
+                result.payload.cluster_name.length > 15
                   ? `${result.payload.cluster_name.slice(0, 15)}...`
                   : result.payload?.cluster_name}
               </span>
@@ -78,15 +89,6 @@ export const DeleteClusterToolMessage: React.FC<
             {icon}
             <span className="text-sm text-muted-foreground">{text}</span>
           </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-muted-foreground">
-            Type:{" "}
-            <span className={`font-mono text-foreground ${isSuccess ? 'line-through' : ''}`}>
-              {result.payload?.type &&
-                result.payload.type.charAt(0).toUpperCase() + result.payload.type.slice(1)}
-            </span>
-          </span>
         </div>
       </div>
     </div>

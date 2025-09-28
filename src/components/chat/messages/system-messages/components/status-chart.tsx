@@ -74,8 +74,8 @@ export const StatusChart: React.FC<StatusChartProps> = ({
 
   if (!statusData) {
     return (
-      <div className="border rounded-lg p-4">
-        <div className="text-center py-4 text-muted-foreground">
+      <div className="border rounded-lg">
+        <div className="text-center p-2 text-muted-foreground">
           No status data available
         </div>
       </div>

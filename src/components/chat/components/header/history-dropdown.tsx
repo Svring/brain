@@ -143,7 +143,7 @@ export function HistoryDropdown() {
                         className={cn(
                           "p-2 cursor-pointer",
                           thread.thread_id === threadId &&
-                            "bg-muted/50 border border-theme-blue/30 rounded-md"
+                            "bg-muted/50 border rounded-md"
                         )}
                       >
                         <div className="flex items-center justify-between w-full gap-2">
