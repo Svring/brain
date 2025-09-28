@@ -55,7 +55,8 @@ export default function DevboxDropdownMenu({
     setDeleteConfirmationValue("");
   };
 
-  const isDeleteConfirmationValid = deleteConfirmationValue.trim() === devboxName;
+  const isDeleteConfirmationValid =
+    deleteConfirmationValue.trim() === devboxName;
 
   return (
     <>
@@ -117,7 +118,11 @@ export default function DevboxDropdownMenu({
 
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">
-              Type the devbox name <span className="font-semibold text-foreground">"{devboxName}"</span> to confirm:
+              Type the devbox name{" "}
+              <span className="font-semibold text-foreground">
+                "{devboxName}"
+              </span>{" "}
+              to confirm:
             </p>
             <Input
               value={deleteConfirmationValue}
@@ -128,7 +133,8 @@ export default function DevboxDropdownMenu({
             />
             {deleteConfirmationValue && !isDeleteConfirmationValid && (
               <p className="text-sm text-destructive">
-                Devbox name does not match. Please type "{devboxName}" to confirm.
+                Devbox name does not match. Please type "{devboxName}" to
+                confirm.
               </p>
             )}
           </div>

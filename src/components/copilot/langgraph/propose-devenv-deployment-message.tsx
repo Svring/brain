@@ -129,46 +129,26 @@ const DevenvDeploymentCard = ({
     devbox.templates.queryOptions()
   );
 
-  // Process args with nanoid once and memoize the result
+  // Process args without nanoid suffixes
   const processedArgs = useMemo(() => {
-    // First, process databases and create a mapping for reliance name updates
+    // Process databases without nanoid
     const processedDatabases =
-      args.database?.map((db) => {
-        const newName = `${db.name}-${nanoid()}`;
-        return {
-          originalName: db.name,
-          newName,
-          type: db.type as any,
-        };
-      }) || [];
-
-    // Create a mapping from original database names to new names
-    const databaseNameMap = new Map(
-      processedDatabases.map((db) => [db.originalName, db.newName])
-    );
+      args.database?.map((db) => ({
+        name: db.name,
+        type: db.type as any,
+      })) || [];
 
     const processedDevboxes =
-      args.devbox?.map((devbox) => {
-        // Update reliance names to match new database names
-        const updatedReliances =
-          devbox.reliance?.map((relianceName) => {
-            return databaseNameMap.get(relianceName) || relianceName;
-          }) || [];
-
-        return {
-          ...devbox,
-          name: `${devbox.name}-${nanoid()}`,
-          reliance: updatedReliances,
-        };
-      }) || [];
+      args.devbox?.map((devbox) => ({
+        ...devbox,
+        name: devbox.name,
+        // Reliance names remain the same since database names are unchanged
+        reliance: devbox.reliance || [],
+      })) || [];
 
     return {
       processedDevboxes,
-      processedDatabases: processedDatabases.map((db) => ({
-        name: db.newName,
-        type: db.type,
-      })),
-      databaseNameMap,
+      processedDatabases,
     };
   }, [args.devbox, args.database]);
 
@@ -214,7 +194,7 @@ const DevenvDeploymentCard = ({
     const databases = processedDatabases;
 
     return {
-      name: `${args.project_name}-${nanoid()}`,
+      name: args.project_name,
       resources: {
         devbox: devboxes,
         database: databases,
@@ -239,9 +219,7 @@ const DevenvDeploymentCard = ({
       args.devbox.length > 0 &&
       !isLoadingTemplates
     ) {
-      const { processedDevboxes } = processedArgs;
-
-      const updatedDevboxes = processedDevboxes.map((devbox: DeployDevBox) => {
+      const updatedDevboxes = args.devbox.map((devbox: DeployDevBox) => {
         const devboxRuntime = devbox.runtime;
         const template = templates.find(
           (t: DevboxTemplate) => t.runtime === devboxRuntime
@@ -323,12 +301,12 @@ const DevenvDeploymentCard = ({
         },
       }));
     }
-  }, [templates, processedArgs, isLoadingTemplates]);
+  }, [templates, args.devbox, isLoadingTemplates]);
 
   const handleDeploy = async () => {
     try {
       console.log("internalProposal", internalProposal);
-      
+
       // 计算项目总资源需求
       let totalCpu = 0;
       let totalMemory = 0;
@@ -374,9 +352,9 @@ const DevenvDeploymentCard = ({
         storage: totalStorage,
         ports: totalPorts,
       });
-      
+
       if (!quotaCheckPassed) {
-        return; 
+        return;
       }
       // Create the project
       const projectName = await createProject(internalProposal);

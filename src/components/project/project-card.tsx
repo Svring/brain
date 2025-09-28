@@ -14,6 +14,16 @@ import Link from "next/link";
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation } from "@tanstack/react-query";
@@ -27,7 +37,7 @@ import { useProjectRename } from "@/hooks/brain/use-project-rename";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { getDevboxRuntimeIconUrl } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 import { getClusterIconUrl } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
-import { useDeleteProjectDialog } from "@/hooks/brain/use-delete-project-dialog";
+import { useProjectLifecycle } from "@/hooks/brain/use-project-lifecycle";
 
 interface ProjectCardProps {
   project: z.infer<typeof ProjectObjectSchema>;
@@ -49,11 +59,28 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     currentDisplayName: project.displayName,
   });
 
-  const { handleDelete, isDeleting, DeleteProjectDialog } = useDeleteProjectDialog({
-    projectName: project.name,
-    projectDisplayName: project.displayName,
-    shouldRedirect: false,
-  });
+  const { deleteProject, isDeleting } = useProjectLifecycle({ shouldRedirect: false });
+  const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
+  const [deleteConfirmationValue, setDeleteConfirmationValue] = React.useState("");
+  const isDeleteConfirmationValid =
+    deleteConfirmationValue.trim() === project.displayName;
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDeleteConfirmationValue("");
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!isDeleteConfirmationValid) return;
+    try {
+      await deleteProject(project.name);
+    } finally {
+      setShowDeleteDialog(false);
+      setDeleteConfirmationValue("");
+    }
+  };
 
   const avatarData = React.useMemo(() => {
     if (!resources?.length) return { avatarUrls: [], numPeople: 0 };
@@ -318,7 +345,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                 className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors shrink-0"
                 size="sm"
                 variant="ghost"
-                onClick={handleDelete}
+                onClick={handleDeleteClick}
                 disabled={isDeleting}
               >
                 <Trash2 className="h-4 w-4" />
@@ -365,7 +392,53 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         </motion.div>
       </Link>
 
-      <DeleteProjectDialog />
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Project</AlertDialogTitle>
+          </AlertDialogHeader>
+
+          <Alert
+            variant="destructive"
+            className="bg-status-deleting text-red-700 border-none"
+          >
+            <AlertCircleIcon />
+            <AlertDescription className="text-red-700!">
+              This action cannot be undone and will permanently remove the
+              project and all its resources.
+            </AlertDescription>
+          </Alert>
+
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Type the project name <span className="font-semibold text-foreground">"{project.displayName}"</span> to confirm:
+            </p>
+            <Input
+              value={deleteConfirmationValue}
+              onChange={(e) => setDeleteConfirmationValue(e.target.value)}
+              placeholder={project.displayName}
+              className="w-full"
+              autoFocus
+            />
+            {deleteConfirmationValue && !isDeleteConfirmationValid && (
+              <p className="text-sm text-destructive">
+                Project name does not match. Please type "{project.displayName}" to confirm.
+              </p>
+            )}
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel className="flex-1">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting || !isDeleteConfirmationValid}
+              className="flex-1 bg-status-deleting/80 text-red-700! hover:bg-status-deleting! border border-status-error disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isDeleting ? "Deleting..." : "Confirm"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

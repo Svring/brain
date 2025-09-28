@@ -63,7 +63,8 @@ export function useDeleteProjectDialog({
     <AlertDialog 
       open={isDeleteDialogOpen} 
       onOpenChange={(open) => {
-        // Only allow closing the dialog, not opening it through onOpenChange
+        // Only close the dialog when explicitly setting it to false
+        // This prevents the dialog from closing when input changes
         if (!open) {
           setIsDeleteDialogOpen(false);
         }

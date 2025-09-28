@@ -8,7 +8,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RenameProjectDialog } from "@/components/project/rename-project-dialog";
 import { useProjectRename } from "@/hooks/brain/use-project-rename";
-import { useDeleteProjectDialog } from "@/hooks/brain/use-delete-project-dialog";
+import { useProjectLifecycle } from "@/hooks/brain/use-project-lifecycle";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircleIcon } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -60,11 +71,28 @@ export function FlowgraphBreadcrumb({
     currentDisplayName: projectData?.displayName || projectName,
   });
 
-  const { handleDelete, isDeleting, DeleteProjectDialog } = useDeleteProjectDialog({
-    projectName,
-    projectDisplayName: projectData?.displayName || projectName,
-    shouldRedirect: true, // This will redirect to /projects after deletion
-  });
+  const { deleteProject, isDeleting } = useProjectLifecycle({ shouldRedirect: true });
+  const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
+  const [deleteConfirmationValue, setDeleteConfirmationValue] = React.useState("");
+  const isDeleteConfirmationValid =
+    deleteConfirmationValue.trim() === (projectData?.displayName || projectName);
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDeleteConfirmationValue("");
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!isDeleteConfirmationValid) return;
+    try {
+      await deleteProject(projectName);
+    } finally {
+      setShowDeleteDialog(false);
+      setDeleteConfirmationValue("");
+    }
+  };
 
   if (!projectData) {
     return null;
@@ -235,7 +263,7 @@ export function FlowgraphBreadcrumb({
                             variant="ghost"
                             size="sm"
                             className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors"
-                            onClick={handleDelete}
+                            onClick={handleDeleteClick}
                             disabled={isDeleting}
                           >
                             <Trash2 className="h-3 w-3" />
@@ -289,7 +317,53 @@ export function FlowgraphBreadcrumb({
           onCancel={handleRenameCancel}
         />
 
-        <DeleteProjectDialog />
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Project</AlertDialogTitle>
+            </AlertDialogHeader>
+
+            <Alert
+              variant="destructive"
+              className="bg-status-deleting text-red-700 border-none"
+            >
+              <AlertCircleIcon />
+              <AlertDescription className="text-red-700!">
+                This action cannot be undone and will permanently remove the
+                project and all its resources.
+              </AlertDescription>
+            </Alert>
+
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Type the project name <span className="font-semibold text-foreground">"{projectDisplayName}"</span> to confirm:
+              </p>
+              <Input
+                value={deleteConfirmationValue}
+                onChange={(e) => setDeleteConfirmationValue(e.target.value)}
+                placeholder={projectDisplayName}
+                className="w-full"
+                autoFocus
+              />
+              {deleteConfirmationValue && !isDeleteConfirmationValid && (
+                <p className="text-sm text-destructive">
+                  Project name does not match. Please type "{projectDisplayName}" to confirm.
+                </p>
+              )}
+            </div>
+
+            <AlertDialogFooter>
+              <AlertDialogCancel className="flex-1">Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting || !isDeleteConfirmationValid}
+                className="flex-1 bg-status-deleting/80 text-red-700! hover:bg-status-deleting! border border-status-error disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isDeleting ? "Deleting..." : "Confirm"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </TooltipProvider>
   );

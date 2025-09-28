@@ -62,8 +62,8 @@ const ImageDeploymentCard = ({
   const [internalProposal, setInternalProposal] = useState<ProjectProposal>(
     () => {
       // Create initial proposal from args
-      const projectName = `${args.project_name}-${nanoid()}`;
-      const containerName = `${args.name}-${nanoid()}`;
+      const projectName = args.project_name;
+      const containerName = args.name;
 
       return {
         name: projectName,
