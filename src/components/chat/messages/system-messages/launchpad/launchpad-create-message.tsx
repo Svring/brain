@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useProjectState } from "@/contexts/project/project-context";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
+import { useResourceQuotaChecker } from "@/lib/validation/resource-quota-checker";
 
 interface LaunchpadCreateMessageProps {
   payload?: Partial<LaunchpadCreateFormData>;
@@ -20,6 +21,7 @@ export const LaunchpadCreateMessage: React.FC<LaunchpadCreateMessageProps> = ({
   const { launchpad, project } = useTRPCClients();
   const { selectedProject } = useProjectState();
   const { invalidateQueries } = useInvalidateQueries();
+  const { checkAndShowQuotaError } = useResourceQuotaChecker();
 
   const addToProjectMutation = useMutation(
     project.addResources.mutationOptions()
@@ -54,8 +56,17 @@ export const LaunchpadCreateMessage: React.FC<LaunchpadCreateMessageProps> = ({
   });
 
   const handleSubmit = async (data: LaunchpadCreateFormData) => {
+    const quotaCheckPassed = checkAndShowQuotaError({
+      cpu: data.resource?.cpu || 0.5, 
+      memory: data.resource?.memory || 0.5, 
+      ports: data.ports?.length || 0, 
+    });
+    
+    if (!quotaCheckPassed) {
+      return; 
+    }
+
     try {
-      // console.log("data", data);
       await createLaunchpadMutation.mutateAsync(data);
     } catch (error) {
       console.error("Error creating launchpad:", error);
