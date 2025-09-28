@@ -16,10 +16,10 @@ import { useEffect, useState } from "react";
 import { convertK8sResourceToNumeric } from "@/lib/k8s/k8s-method/k8s-utils";
 
 // CPU options from devbox resource schema
-const DEVBOX_CPU_OPTIONS = [0.1, 0.2, 0.5, 1, 2, 4, 8, 16] as const;
+const DEVBOX_CPU_OPTIONS = [0.5, 1, 2, 4, 8, 16] as const;
 
 // Memory options from devbox resource schema
-const DEVBOX_MEMORY_OPTIONS = [0.1, 0.5, 1, 2, 4, 8, 16, 32] as const;
+const DEVBOX_MEMORY_OPTIONS = [0.5, 1, 2, 4, 8, 16, 32] as const;
 
 interface DevboxResourceFieldsProps {
   cpuOptions?: readonly number[];
