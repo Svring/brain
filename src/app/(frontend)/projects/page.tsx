@@ -9,6 +9,8 @@ import { Spinner } from "@/components/ui/spinner";
 import ProjectCard from "@/components/project/project-card";
 import EmptyState from "@/components/project/empty-state";
 import { CreateNewProject } from "@/components/project/create-new-project";
+import { QuotaStatusCard, dummyQuotaData } from "@/components/project/quota-status-card";
+import { useResourceQuotaChecker } from "@/lib/validation/resource-quota-checker";
 import useProjectSearch from "@/hooks/brain/use-projects-search";
 import { useProjectActions } from "@/contexts/project/project-context";
 import { ProjectObjectSchema } from "@/lib/brain/resources/project/project-schemas/project-object-schema";
@@ -23,6 +25,7 @@ export default function Page() {
     isError,
     searchTerm,
   } = useProjectSearch();
+  const { checkAndShowQuotaError } = useResourceQuotaChecker();
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
@@ -37,6 +40,16 @@ export default function Page() {
   };
 
   const handleCreateProject = (projectName: string) => {};
+
+  const handleTestQuotaError = () => {
+    const dummyRequirements = {
+      cpu: 200,
+      memory: 4.0,
+      storage: 10.0,
+      ports: 3,
+    };
+    checkAndShowQuotaError(dummyRequirements);
+  };
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center p-8">
@@ -57,12 +70,25 @@ export default function Page() {
           <Button
             size="sm"
             variant="outline"
+            onClick={handleTestQuotaError}
+            className="h-8 px-3 text-xs"
+          >
+            Test Quota
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
             onClick={() => setIsCreateDialogOpen(true)}
             className="h-8 w-8 p-0"
           >
             <Plus size={16} />
           </Button>
         </div>
+      </div>
+
+      {/* Quota Status Card */}
+      <div className="mb-6 w-full max-w-4xl">
+        <QuotaStatusCard exceededResources={dummyQuotaData} />
       </div>
 
       <div className="w-full max-w-4xl">

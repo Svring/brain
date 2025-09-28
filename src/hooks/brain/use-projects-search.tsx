@@ -26,7 +26,7 @@ export default function useProjectSearch() {
     if (!projects?.length) return [];
 
     return projects.filter((project) =>
-      project.name.toLowerCase().includes(lowerSearchTerm)
+      project.displayName.toLowerCase().includes(lowerSearchTerm)
     );
   }, [projects, lowerSearchTerm]);
 
