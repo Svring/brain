@@ -94,6 +94,7 @@ export function useAnalyzeMonitor(
       content: JSON.stringify({
         type: "universal.monitor",
         target,
+        payload: monitorData,
       }),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -110,7 +111,9 @@ export function useAnalyzeMonitor(
     const systemMessage3 = {
       id: `monitor-system-3-${Date.now()}`,
       type: "system" as const,
-      content: `Below is all the data needed to be analyzed, you need to identify any problem and report back to the user and advice fix.\n\n${JSON.stringify(monitorData)}`,
+      content: `Below is all the data needed to be analyzed, you need to identify any problem and report back to the user and advice fix.\n\n${JSON.stringify(
+        monitorData
+      )}`,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };

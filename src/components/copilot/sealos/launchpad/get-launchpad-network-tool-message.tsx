@@ -6,6 +6,7 @@ import { CircleCheckBigIcon, CircleSlash, Ban } from "lucide-react";
 import { useMount } from "@reactuses/core";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { NetworkChart } from "@/components/chat/messages/system-messages/components/network-chart";
 
 interface GetLaunchpadNetworkToolMessageProps {
   result: ToolActionResult;
@@ -18,6 +19,8 @@ export const GetLaunchpadNetworkToolMessage: React.FC<GetLaunchpadNetworkToolMes
   const isSuccess = result.success !== false;
   const { invalidateQueries } = useInvalidateQueries();
   const { launchpad } = useTRPCClients();
+
+  // console.log("result of network", result);
 
   useMount(() => {
     invalidateQueries([launchpad.networkStatus.queryKey()]);
@@ -47,14 +50,32 @@ export const GetLaunchpadNetworkToolMessage: React.FC<GetLaunchpadNetworkToolMes
 
   const { icon, text } = getStatusDisplay();
 
+  // Check if we should render the NetworkChart
+  const shouldRenderChart = isApproved &&
+    isSuccess &&
+    result.result &&
+    result.result.combinedStatusData &&
+    Array.isArray(result.result.combinedStatusData) &&
+    result.result.combinedStatusData.length > 0;
+
   return (
     <div className="w-full">
-      <div className="flex items-center justify-center p-2 border rounded-lg">
-        <div className="flex items-center gap-2">
-          {icon}
-          <p className="text-sm">{text}</p>
+      {/* Only show status message if chart is not rendered */}
+      {!shouldRenderChart && (
+        <div className="flex items-center justify-center p-2 border rounded-lg">
+          <div className="flex items-center gap-2">
+            {icon}
+            <p className="text-sm">{text}</p>
+          </div>
         </div>
-      </div>
+      )}
+      
+      {/* Render NetworkChart if successful and has data */}
+      {shouldRenderChart && (
+        <div className="border rounded-lg p-2">
+          <NetworkChart networkData={result.result} isLoading={false} />
+        </div>
+      )}
     </div>
   );
 };

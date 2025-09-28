@@ -210,6 +210,7 @@ export function useAnalyzeStatus(
       content: JSON.stringify({
         type: "universal.analyzeStatus",
         target,
+        payload: statusAnalysisData,
       }),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),

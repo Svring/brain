@@ -8,16 +8,24 @@ import {
 
 interface MonitorChartProps {
   target: CustomResourceTarget | BuiltinResourceTarget;
+  payload?: any;
 }
 
-export const MonitorChart: React.FC<MonitorChartProps> = ({ target }) => {
+export const MonitorChart: React.FC<MonitorChartProps> = ({ target, payload }) => {
+  // Use payload data if available, otherwise fetch data
+  const shouldFetchData = !payload;
+  
   const { monitorData, isLoading } = useResourceMetricsStatus({
     target,
   });
 
+  // Use payload data if available, otherwise use fetched data
+  const chartData = payload || monitorData || [];
+  const chartLoading = shouldFetchData ? isLoading : false;
+
   return (
     <div className="border rounded-lg p-4">
-      <CombinedMetricsChart data={monitorData || []} isLoading={isLoading} />
+      <CombinedMetricsChart data={chartData} isLoading={chartLoading} />
     </div>
   );
 };

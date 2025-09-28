@@ -6,6 +6,7 @@ import { CircleCheckBigIcon, CircleSlash, Ban } from "lucide-react";
 import { useMount } from "@reactuses/core";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { CombinedMetricsChart } from "@/components/chat/messages/system-messages/components/combined-metrics-chart";
 
 interface GetLaunchpadMonitorToolMessageProps {
   result: ToolActionResult;
@@ -47,14 +48,31 @@ export const GetLaunchpadMonitorToolMessage: React.FC<GetLaunchpadMonitorToolMes
 
   const { icon, text } = getStatusDisplay();
 
+  // Check if we should render the CombinedMetricsChart
+  const shouldRenderChart = isApproved &&
+    isSuccess &&
+    result.result &&
+    Array.isArray(result.result) &&
+    result.result.length > 0;
+
   return (
     <div className="w-full">
-      <div className="flex items-center justify-center p-2 border rounded-lg">
-        <div className="flex items-center gap-2">
-          {icon}
-          <p className="text-sm">{text}</p>
+      {/* Only show status message if chart is not rendered */}
+      {!shouldRenderChart && (
+        <div className="flex items-center justify-center p-2 border rounded-lg">
+          <div className="flex items-center gap-2">
+            {icon}
+            <p className="text-sm">{text}</p>
+          </div>
         </div>
-      </div>
+      )}
+      
+      {/* Render CombinedMetricsChart if successful and has data */}
+      {shouldRenderChart && (
+        <div className="border rounded-lg p-4">
+          <CombinedMetricsChart data={result.result} isLoading={false} />
+        </div>
+      )}
     </div>
   );
 };

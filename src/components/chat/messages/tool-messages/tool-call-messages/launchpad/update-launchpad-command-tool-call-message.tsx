@@ -21,11 +21,15 @@ export function UpdateLaunchpadCommandToolCallMessage({
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-muted-foreground">Command:</span>
-          <span className="text-sm text-foreground font-mono">{launch_command.command}</span>
+          <span className="text-sm text-foreground font-mono">
+            {launch_command.command || 'set to empty'}
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-muted-foreground">Args:</span>
-          <span className="text-sm text-foreground font-mono">{launch_command.args}</span>
+          <span className="text-sm text-foreground font-mono">
+            {launch_command.args || 'set to empty'}
+          </span>
         </div>
       </div>
     </div>

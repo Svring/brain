@@ -88,6 +88,7 @@ export function useAnalyzeLogs(
       content: JSON.stringify({
         type: "universal.log",
         target,
+        payload: logsData,
       }),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),

@@ -173,6 +173,7 @@ export function useDiagnoseNetwork(
         content: JSON.stringify({
           type: "universal.diagnoseNetwork",
           target,
+          payload: networkStatusData,
         }),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),

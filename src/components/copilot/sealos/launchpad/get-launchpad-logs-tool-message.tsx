@@ -6,6 +6,7 @@ import { CircleCheckBigIcon, CircleSlash, Ban } from "lucide-react";
 import { useMount } from "@reactuses/core";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { LogChart } from "@/components/chat/messages/system-messages/components/log-chart";
 
 interface GetLaunchpadLogsToolMessageProps {
   result: ToolActionResult;
@@ -47,14 +48,31 @@ export const GetLaunchpadLogsToolMessage: React.FC<GetLaunchpadLogsToolMessagePr
 
   const { icon, text } = getStatusDisplay();
 
+  // Check if we should render the LogChart
+  const shouldRenderChart = isApproved &&
+    isSuccess &&
+    result.result &&
+    result.result.logs &&
+    Object.keys(result.result.logs).length > 0;
+
   return (
     <div className="w-full">
-      <div className="flex items-center justify-center p-2 border rounded-lg">
-        <div className="flex items-center gap-2">
-          {icon}
-          <p className="text-sm">{text}</p>
+      {/* Only show status message if chart is not rendered */}
+      {!shouldRenderChart && (
+        <div className="flex items-center justify-center p-2 border rounded-lg">
+          <div className="flex items-center gap-2">
+            {icon}
+            <p className="text-sm">{text}</p>
+          </div>
         </div>
-      </div>
+      )}
+      
+      {/* Render LogChart if successful and has data */}
+      {shouldRenderChart && (
+        <div className="border rounded-lg p-2">
+          <LogChart logsData={result.result.logs} isLoading={false} />
+        </div>
+      )}
     </div>
   );
 };
