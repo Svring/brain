@@ -23,25 +23,27 @@ export const PauseLaunchpadToolMessage: React.FC<PauseLaunchpadToolMessageProps>
     invalidateQueries([launchpad.get.queryKey(), launchpad.list.queryKey()]);
   });
 
-  // Determine icon and text based on approved and success status
+  const iconUrl = "https://applaunchpad.bja.sealos.run/logo.svg";
+
+  // Determine status display
   const getStatusDisplay = () => {
     if (!isApproved) {
       return {
         icon: <CircleSlash className="h-4 w-4 text-theme-yellow" />,
-        text: "Launchpad pause action rejected"
+        text: "Rejected",
       };
     }
-    
+
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Launchpad pause failed"
+        text: "Failed",
       };
     }
-    
+
     return {
-      icon: <CircleCheckBigIcon className="h-4 w-4 text-green-600" />,
-      text: "Launchpad paused successfully"
+      icon: <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />,
+      text: "Paused",
     };
   };
 

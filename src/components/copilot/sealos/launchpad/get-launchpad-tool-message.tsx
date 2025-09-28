@@ -23,37 +23,73 @@ export const GetLaunchpadToolMessage: React.FC<GetLaunchpadToolMessageProps> = (
     invalidateQueries([launchpad.get.queryKey()]);
   });
 
-  // Determine icon and text based on approved and success status
+  const iconUrl = "https://applaunchpad.bja.sealos.run/logo.svg";
+
+  // Determine status display
   const getStatusDisplay = () => {
     if (!isApproved) {
       return {
         icon: <CircleSlash className="h-4 w-4 text-theme-yellow" />,
-        text: "Launchpad details retrieval rejected"
+        text: "Rejected",
       };
     }
-    
+
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Launchpad details retrieval failed"
+        text: "Failed",
       };
     }
-    
+
     return {
-      icon: <CircleCheckBigIcon className="h-4 w-4 text-green-600" />,
-      text: "Launchpad details retrieved successfully"
+      icon: <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />,
+      text: "Retrieved",
     };
   };
 
   const { icon, text } = getStatusDisplay();
 
   return (
-    <div className="w-full">
-      <div className="flex items-center justify-center p-2 border rounded-lg">
+    <div className="w-full max-w-2xl">
+      <div className="flex flex-col gap-2 p-4 rounded-xl border bg-background-secondary">
         <div className="flex items-center gap-2">
-          {icon}
-          <p className="text-sm">{text}</p>
+          <img
+            src={iconUrl}
+            alt="Launchpad Icon"
+            width={32}
+            height={32}
+            className="rounded-lg h-8 w-8 flex-shrink-0 p-1 bg-muted"
+          />
+          <div className="flex flex-col min-w-0 flex-1">
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground leading-none">
+                Launchpad Details
+              </span>
+              <span className="text-lg font-bold text-foreground leading-tight">
+                {result.payload?.launchpad_name &&
+                result.payload.launchpad_name.length > 15
+                  ? `${result.payload.launchpad_name.slice(0, 15)}...`
+                  : result.payload?.launchpad_name || "Launchpad"}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {icon}
+            <span className="text-sm text-muted-foreground">{text}</span>
+          </div>
         </div>
+        {result.payload?.image && (
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground">
+              Image:{" "}
+              <span className="font-mono text-foreground">
+                {result.payload.image.length > 20
+                  ? `${result.payload.image.slice(0, 20)}...`
+                  : result.payload.image}
+              </span>
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

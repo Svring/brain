@@ -84,47 +84,24 @@ export const UpdateDevboxToolMessage: React.FC<
   const resourceChanges = getResourceChanges();
 
   return (
-    <div className="w-full max-w-2xl">
-      <div className="flex flex-col gap-2 p-4 rounded-xl border bg-background-secondary">
+    <div className="w-full">
+      <div className="flex items-center justify-center p-2 border rounded-lg">
         <div className="flex items-center gap-2">
-          <img
-            src={iconUrl}
-            alt="Devbox Icon"
-            width={32}
-            height={32}
-            className="rounded-lg h-8 w-8 flex-shrink-0 p-1 bg-muted"
-          />
-          <div className="flex flex-col min-w-0 flex-1">
-            <div className="flex flex-col">
-              <span className="text-xs text-muted-foreground leading-none">
-                Devbox
+          {icon}
+          <p className="text-sm">
+            {text}
+            {resourceChanges.length > 0 && (
+              <span className="ml-2">
+                - Updated to {resourceChanges.map((change, index) => (
+                  <span key={index}>
+                    {change}
+                    {index < resourceChanges.length - 1 && " and "}
+                  </span>
+                ))}
               </span>
-              <span className="text-lg font-bold text-foreground leading-tight">
-                {result.payload?.devbox_name &&
-                result.payload.devbox_name.length > 15
-                  ? `${result.payload.devbox_name.slice(0, 15)}...`
-                  : result.payload?.devbox_name}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {icon}
-            <span className="text-sm text-muted-foreground">{text}</span>
-          </div>
+            )}
+          </p>
         </div>
-        {resourceChanges.length > 0 && (
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">
-              Updated to {resourceChanges.length === 1 ? "" : ""}{" "}
-              {resourceChanges.map((change, index) => (
-                <span key={index}>
-                  {change}
-                  {index < resourceChanges.length - 1 && " and "}
-                </span>
-              ))}
-            </span>
-          </div>
-        )}
       </div>
     </div>
   );

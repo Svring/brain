@@ -23,36 +23,54 @@ export const GetDevboxToolMessage: React.FC<GetDevboxToolMessageProps> = ({
     invalidateQueries([devbox.get.queryKey()]);
   });
 
-  // Determine icon and text based on approved and success status
+  // Determine status display
   const getStatusDisplay = () => {
     if (!isApproved) {
       return {
         icon: <CircleSlash className="h-4 w-4 text-theme-yellow" />,
-        text: "Devbox details retrieval rejected"
+        text: "Rejected",
       };
     }
-    
+
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Devbox details retrieval failed"
+        text: "Failed",
       };
     }
-    
+
     return {
-      icon: <CircleCheckBigIcon className="h-4 w-4 text-green-600" />,
-      text: "Devbox details retrieved successfully"
+      icon: <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />,
+      text: "Retrieved",
     };
   };
 
   const { icon, text } = getStatusDisplay();
 
   return (
-    <div className="w-full">
-      <div className="flex items-center justify-center p-2 border rounded-lg">
+    <div className="w-full max-w-2xl">
+      <div className="flex flex-col gap-2 p-4 rounded-xl border bg-background-secondary">
         <div className="flex items-center gap-2">
-          {icon}
-          <p className="text-sm">{text}</p>
+          <div className="rounded-lg h-8 w-8 flex-shrink-0 p-1 bg-muted flex items-center justify-center">
+            <CircleCheckBigIcon className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <div className="flex flex-col min-w-0 flex-1">
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground leading-none">
+                Devbox Details
+              </span>
+              <span className="text-lg font-bold text-foreground leading-tight">
+                {result.payload?.devbox_name &&
+                result.payload.devbox_name.length > 15
+                  ? `${result.payload.devbox_name.slice(0, 15)}...`
+                  : result.payload?.devbox_name || "Devbox"}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {icon}
+            <span className="text-sm text-muted-foreground">{text}</span>
+          </div>
         </div>
       </div>
     </div>

@@ -1,20 +1,66 @@
+import {
+  DEVBOX_RUNTIME_ICONS,
+  DEVBOX_DEFAULT_ICON,
+} from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-icons";
+
 interface DeleteDevboxPortsToolCallMessageProps {
   devbox_name: string;
   ports: number[];
+  runtime?: string;
 }
 
-export function DeleteDevboxPortsToolCallMessage({ devbox_name, ports }: DeleteDevboxPortsToolCallMessageProps) {
+export function DeleteDevboxPortsToolCallMessage({ 
+  devbox_name, 
+  ports, 
+  runtime = "default" 
+}: DeleteDevboxPortsToolCallMessageProps) {
+  const iconUrl =
+    DEVBOX_RUNTIME_ICONS[runtime as keyof typeof DEVBOX_RUNTIME_ICONS] ||
+    DEVBOX_DEFAULT_ICON;
+
   return (
     <div className="w-full max-w-2xl">
-      <div className="space-y-2">
+      <div className="flex flex-col gap-2 p-4 rounded-xl border bg-background-secondary">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground">Devbox:</span>
-          <span className="text-sm text-foreground font-mono">{devbox_name}</span>
+          <img
+            src={iconUrl}
+            alt="Devbox Icon"
+            width={32}
+            height={32}
+            className="rounded-lg h-8 w-8 flex-shrink-0 p-1 bg-muted"
+          />
+          <div className="flex flex-col min-w-0 flex-1">
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground leading-none">
+                Devbox
+              </span>
+              <span className="text-lg font-bold text-foreground leading-tight">
+                {devbox_name.length > 15 ? `${devbox_name.slice(0, 15)}...` : devbox_name}
+              </span>
+            </div>
+          </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground">Ports:</span>
-          <span className="text-sm text-foreground font-mono">[{ports.join(", ")}]</span>
+          <span className="text-sm text-muted-foreground">Ports:</span>
+          <div className="flex items-center gap-1">
+            {ports.map((port, index) => (
+              <span key={index} className="font-mono text-sm text-foreground">
+                {port}
+                {index < ports.length - 1 && ","}
+              </span>
+            ))}
+          </div>
         </div>
+        {runtime && runtime !== "default" && (
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground">
+              Runtime:{" "}
+              <span className="font-mono text-foreground">
+                {runtime.charAt(0).toUpperCase() + runtime.slice(1)}
+              </span>
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

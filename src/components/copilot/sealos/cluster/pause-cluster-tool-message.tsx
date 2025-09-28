@@ -6,6 +6,7 @@ import { CircleCheckBigIcon, CircleSlash, Ban } from "lucide-react";
 import { useMount } from "@reactuses/core";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { getClusterIconUrl } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
 
 interface PauseClusterToolMessageProps {
   result: ToolActionResult;
@@ -23,25 +24,28 @@ export const PauseClusterToolMessage: React.FC<PauseClusterToolMessageProps> = (
     invalidateQueries([cluster.get.queryKey()]);
   });
 
-  // Determine icon and text based on approved and success status
+  // Get icon URL directly from type
+  const iconUrl = getClusterIconUrl(result.payload?.type);
+
+  // Determine status display
   const getStatusDisplay = () => {
     if (!isApproved) {
       return {
         icon: <CircleSlash className="h-4 w-4 text-theme-yellow" />,
-        text: "Cluster pause action rejected"
+        text: "Rejected",
       };
     }
-    
+
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Cluster pause failed"
+        text: "Failed",
       };
     }
-    
+
     return {
-      icon: <CircleCheckBigIcon className="h-4 w-4 text-green-600" />,
-      text: "Cluster paused successfully"
+      icon: <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />,
+      text: "Paused",
     };
   };
 

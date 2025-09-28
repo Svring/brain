@@ -170,7 +170,7 @@ export const DevboxMessage: React.FC<DevboxMessageProps> = ({
 
   // Section view with header and back button
   const sectionContent = (
-    <div className="space-y-3">
+    <div className="space-y-1">
       {/* Header with title and back button */}
       <div className="flex items-center gap-2">
         <Button

@@ -54,19 +54,19 @@ export function PortDisplayTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[12%] min-w-[60px]">Port</TableHead>
-            <TableHead className="w-[88%] min-w-0">Address</TableHead>
+            <TableHead className="w-[10%] min-w-[50px]">Port</TableHead>
+            <TableHead className="w-[90%] min-w-0">Address</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {ports.map((port: Port, index: number) => (
             <TableRow key={index}>
-              <TableCell className="font-mono pr-2 min-w-0">{port.number}</TableCell>
+              <TableCell className="font-mono min-w-0">{port.number}</TableCell>
               <TableCell className="min-w-0 w-full">
-                <div className="space-y-2 min-w-0">
+                <div className="space-y-1">
                   {/* Private Address */}
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-xs text-muted-foreground px-2 py-1 rounded-full w-12 text-center flex-shrink-0">
+                    <span className="text-xs text-theme-blue rounded-full text-center flex-shrink-0">
                       private
                     </span>
                     <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -113,7 +113,14 @@ export function PortDisplayTable({
 
                   {/* Public Address */}
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-xs text-muted-foreground px-2 py-1 rounded-full w-12 text-center flex-shrink-0">
+                    <span
+                      className={cn(
+                        "text-xs rounded-full text-center w-8 flex-shrink-0",
+                        port.publicAddress
+                          ? "text-theme-green"
+                          : "text-theme-gray"
+                      )}
+                    >
                       public
                     </span>
                     <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -153,7 +160,7 @@ export function PortDisplayTable({
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground flex-shrink-0"
+                            className="h-6 text-xs text-muted-foreground hover:text-foreground flex-shrink-0"
                             onClick={() => {
                               setSelectedPort(port);
                               setIsCustomDialogOpen(true);
@@ -163,12 +170,9 @@ export function PortDisplayTable({
                           </Button>
                         </>
                       ) : (
-                        <>
-                          <HelpCircle className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                          <span className="text-muted-foreground truncate flex-1 min-w-0">
-                            No public access
-                          </span>
-                        </>
+                        <span className="text-muted-foreground truncate flex-1 min-w-0">
+                          No public access
+                        </span>
                       )}
                     </div>
                   </div>

@@ -27,6 +27,8 @@ export default function DeployTemplate({ closeDialog }: DeployTemplateProps) {
     handleBackToList,
   } = useTemplates(templateApiContext);
 
+  console.log("templates", templates);
+
   const {
     searchTerm,
     setSearchTerm,

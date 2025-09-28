@@ -6,6 +6,7 @@ import { CircleCheckBigIcon, CircleSlash, Ban } from "lucide-react";
 import { useMount } from "@reactuses/core";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { getClusterIconUrl } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
 
 interface GetClusterToolMessageProps {
   result: ToolActionResult;
@@ -23,37 +24,73 @@ export const GetClusterToolMessage: React.FC<GetClusterToolMessageProps> = ({
     invalidateQueries([cluster.get.queryKey()]);
   });
 
-  // Determine icon and text based on approved and success status
+  // Get icon URL directly from type
+  const iconUrl = getClusterIconUrl(result.payload?.type);
+
+  // Determine status display
   const getStatusDisplay = () => {
     if (!isApproved) {
       return {
         icon: <CircleSlash className="h-4 w-4 text-theme-yellow" />,
-        text: "Cluster details retrieval rejected"
+        text: "Rejected",
       };
     }
-    
+
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Cluster details retrieval failed"
+        text: "Failed",
       };
     }
-    
+
     return {
-      icon: <CircleCheckBigIcon className="h-4 w-4 text-green-600" />,
-      text: "Cluster details retrieved successfully"
+      icon: <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />,
+      text: "Retrieved",
     };
   };
 
   const { icon, text } = getStatusDisplay();
 
   return (
-    <div className="w-full">
-      <div className="flex items-center justify-center p-2 border rounded-lg">
+    <div className="w-full max-w-2xl">
+      <div className="flex flex-col gap-2 p-4 rounded-xl border bg-background-secondary">
         <div className="flex items-center gap-2">
-          {icon}
-          <p className="text-sm">{text}</p>
+          <img
+            src={iconUrl}
+            alt={`${result.payload?.type} Icon`}
+            width={32}
+            height={32}
+            className="rounded-lg h-8 w-8 flex-shrink-0 p-1 bg-muted"
+          />
+          <div className="flex flex-col min-w-0 flex-1">
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground leading-none">
+                Cluster Details
+              </span>
+              <span className="text-lg font-bold text-foreground leading-tight">
+                {result.payload?.cluster_name &&
+                result.payload.cluster_name.length > 15
+                  ? `${result.payload.cluster_name.slice(0, 15)}...`
+                  : result.payload?.cluster_name || "Cluster"}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {icon}
+            <span className="text-sm text-muted-foreground">{text}</span>
+          </div>
         </div>
+        {result.payload?.type && (
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground">
+              Type:{" "}
+              <span className="font-mono text-foreground">
+                {result.payload.type.charAt(0).toUpperCase() +
+                  result.payload.type.slice(1)}
+              </span>
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
