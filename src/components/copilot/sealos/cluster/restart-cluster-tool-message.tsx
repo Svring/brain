@@ -7,7 +7,7 @@ import { useMount } from "@reactuses/core";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import {
-  CLUSTER_TYPE_ICONS,
+  CLUSTER_TYPE_ICON_MAP,
   CLUSTER_DEFAULT_ICON,
 } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
 
@@ -29,8 +29,8 @@ export const RestartClusterToolMessage: React.FC<
 
   // Get icon URL directly from type mapping
   const iconUrl =
-    CLUSTER_TYPE_ICONS[
-      result.payload?.type as keyof typeof CLUSTER_TYPE_ICONS
+    CLUSTER_TYPE_ICON_MAP[
+      result.payload?.type as keyof typeof CLUSTER_TYPE_ICON_MAP
     ] || CLUSTER_DEFAULT_ICON;
 
   // Determine status display

@@ -6,10 +6,7 @@ import { CircleCheckBigIcon, CircleSlash, Ban } from "lucide-react";
 import { useMount } from "@reactuses/core";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
-import {
-  LAUNCHPAD_TYPE_ICONS,
-  LAUNCHPAD_DEFAULT_ICON,
-} from "@/lib/sealos/resources/launchpad/launchpad-constant/launchpad-constant-icons";
+import { LAUNCHPAD_DEFAULT_ICON } from "@/lib/sealos/resources/launchpad/launchpad-constant/launchpad-constant-icons";
 
 interface RestartLaunchpadToolMessageProps {
   result: ToolActionResult;
@@ -28,10 +25,7 @@ export const RestartLaunchpadToolMessage: React.FC<
   });
 
   // Get icon URL directly from type mapping
-  const iconUrl =
-    LAUNCHPAD_TYPE_ICONS[
-      result.payload?.type as keyof typeof LAUNCHPAD_TYPE_ICONS
-    ] || LAUNCHPAD_DEFAULT_ICON;
+  const iconUrl = LAUNCHPAD_DEFAULT_ICON;
 
   // Determine status display
   const getStatusDisplay = () => {

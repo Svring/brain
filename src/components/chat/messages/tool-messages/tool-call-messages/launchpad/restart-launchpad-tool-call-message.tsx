@@ -1,20 +1,15 @@
-import {
-  LAUNCHPAD_TYPE_ICONS,
-  LAUNCHPAD_DEFAULT_ICON,
-} from "@/lib/sealos/resources/launchpad/launchpad-constant/launchpad-constant-icons";
+import { LAUNCHPAD_DEFAULT_ICON } from "@/lib/sealos/resources/launchpad/launchpad-constant/launchpad-constant-icons";
 
 interface RestartLaunchpadToolCallMessageProps {
   launchpad_name: string;
   type?: string;
 }
 
-export function RestartLaunchpadToolCallMessage({ 
-  launchpad_name, 
-  type = "default" 
+export function RestartLaunchpadToolCallMessage({
+  launchpad_name,
+  type = "default",
 }: RestartLaunchpadToolCallMessageProps) {
-  const iconUrl =
-    LAUNCHPAD_TYPE_ICONS[type as keyof typeof LAUNCHPAD_TYPE_ICONS] ||
-    LAUNCHPAD_DEFAULT_ICON;
+  const iconUrl = LAUNCHPAD_DEFAULT_ICON;
 
   return (
     <div className="w-full max-w-2xl">
@@ -33,7 +28,9 @@ export function RestartLaunchpadToolCallMessage({
                 Launchpad
               </span>
               <span className="text-lg font-bold text-foreground leading-tight">
-                {launchpad_name.length > 15 ? `${launchpad_name.slice(0, 15)}...` : launchpad_name}
+                {launchpad_name.length > 15
+                  ? `${launchpad_name.slice(0, 15)}...`
+                  : launchpad_name}
               </span>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import {
-  CLUSTER_TYPE_ICONS,
+  CLUSTER_TYPE_ICON_MAP,
   CLUSTER_DEFAULT_ICON,
 } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
 
@@ -8,12 +8,12 @@ interface RestartClusterToolCallMessageProps {
   type?: string;
 }
 
-export function RestartClusterToolCallMessage({ 
-  cluster_name, 
-  type = "default" 
+export function RestartClusterToolCallMessage({
+  cluster_name,
+  type = "default",
 }: RestartClusterToolCallMessageProps) {
   const iconUrl =
-    CLUSTER_TYPE_ICONS[type as keyof typeof CLUSTER_TYPE_ICONS] ||
+    CLUSTER_TYPE_ICON_MAP[type as keyof typeof CLUSTER_TYPE_ICON_MAP] ||
     CLUSTER_DEFAULT_ICON;
 
   return (
@@ -33,7 +33,9 @@ export function RestartClusterToolCallMessage({
                 Cluster
               </span>
               <span className="text-lg font-bold text-foreground leading-tight">
-                {cluster_name.length > 15 ? `${cluster_name.slice(0, 15)}...` : cluster_name}
+                {cluster_name.length > 15
+                  ? `${cluster_name.slice(0, 15)}...`
+                  : cluster_name}
               </span>
             </div>
           </div>
