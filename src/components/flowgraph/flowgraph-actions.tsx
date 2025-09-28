@@ -131,7 +131,7 @@ export function FlowgraphActions({
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Refresh & Focus</p>
+            <p>Reset</p>
           </TooltipContent>
         </Tooltip>
 

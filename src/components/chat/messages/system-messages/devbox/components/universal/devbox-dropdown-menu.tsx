@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
 import { AlertCircleIcon } from "lucide-react";
 import { Pause, RotateCcw, Trash2, Play } from "lucide-react";
 import { DevboxObject } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-schema";
@@ -33,20 +34,28 @@ export default function DevboxDropdownMenu({
   const { name: devboxName, status } = object;
   const { executeAction, isPending } = useDevboxLifecycle();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteConfirmationValue, setDeleteConfirmationValue] = useState("");
 
   const handleDeleteClick = () => {
+    setDeleteConfirmationValue("");
     setShowDeleteDialog(true);
   };
 
   const handleDeleteConfirm = () => {
-    executeAction("delete", devboxName);
-    onDelete?.(devboxName);
-    setShowDeleteDialog(false);
+    if (deleteConfirmationValue.trim() === devboxName) {
+      executeAction("delete", devboxName);
+      onDelete?.(devboxName);
+      setShowDeleteDialog(false);
+      setDeleteConfirmationValue("");
+    }
   };
 
   const handleDeleteCancel = () => {
     setShowDeleteDialog(false);
+    setDeleteConfirmationValue("");
   };
+
+  const isDeleteConfirmationValid = deleteConfirmationValue.trim() === devboxName;
 
   return (
     <>
@@ -93,13 +102,6 @@ export default function DevboxDropdownMenu({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Devbox</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete the devbox{" "}
-              <span className="font-semibold text-foreground">
-                "{devboxName}"
-              </span>
-              ?
-            </AlertDialogDescription>
           </AlertDialogHeader>
 
           <Alert
@@ -113,12 +115,30 @@ export default function DevboxDropdownMenu({
             </AlertDescription>
           </Alert>
 
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Type the devbox name <span className="font-semibold text-foreground">"{devboxName}"</span> to confirm:
+            </p>
+            <Input
+              value={deleteConfirmationValue}
+              onChange={(e) => setDeleteConfirmationValue(e.target.value)}
+              placeholder={devboxName}
+              className="w-full"
+              autoFocus
+            />
+            {deleteConfirmationValue && !isDeleteConfirmationValid && (
+              <p className="text-sm text-destructive">
+                Devbox name does not match. Please type "{devboxName}" to confirm.
+              </p>
+            )}
+          </div>
+
           <AlertDialogFooter>
             <AlertDialogCancel className="flex-1">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              disabled={isPending("delete")}
-              className="flex-1 bg-status-deleting/80 text-red-700! hover:bg-status-deleting! border border-status-error"
+              disabled={isPending("delete") || !isDeleteConfirmationValid}
+              className="flex-1 bg-status-deleting/80 text-red-700! hover:bg-status-deleting! border border-status-error disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isPending("delete") ? "Deleting..." : "Confirm"}
             </AlertDialogAction>

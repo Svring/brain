@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
 import { AlertCircleIcon } from "lucide-react";
 import {
   Pause,
@@ -47,25 +48,33 @@ export default function LaunchpadDropdownMenu({
   const isPending = status === "Pending";
   const { executeAction, isPending: isActionPending } = useLaunchpadLifecycle();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteConfirmationValue, setDeleteConfirmationValue] = useState("");
 
   const handleDeleteClick = () => {
+    setDeleteConfirmationValue("");
     setShowDeleteDialog(true);
   };
 
   const handleDeleteConfirm = async () => {
-    try {
-      await executeAction("delete", name);
-      onDelete?.(name);
-      setShowDeleteDialog(false);
-    } catch (error) {
-      // Error is already handled by the mutation, just keep dialog open
-      console.error("Delete failed:", error);
+    if (deleteConfirmationValue.trim() === name) {
+      try {
+        await executeAction("delete", name);
+        onDelete?.(name);
+        setShowDeleteDialog(false);
+        setDeleteConfirmationValue("");
+      } catch (error) {
+        // Error is already handled by the mutation, just keep dialog open
+        console.error("Delete failed:", error);
+      }
     }
   };
 
   const handleDeleteCancel = () => {
     setShowDeleteDialog(false);
+    setDeleteConfirmationValue("");
   };
+
+  const isDeleteConfirmationValid = deleteConfirmationValue.trim() === name;
 
   return (
     <>
@@ -148,13 +157,6 @@ export default function LaunchpadDropdownMenu({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Launchpad</AlertDialogTitle>
-          <AlertDialogDescription>
-            Are you sure you want to delete the launchpad{" "}
-            <span className="font-semibold text-foreground">
-              "{name}"
-            </span>
-            ?
-          </AlertDialogDescription>
         </AlertDialogHeader>
 
         <Alert
@@ -168,12 +170,30 @@ export default function LaunchpadDropdownMenu({
           </AlertDescription>
         </Alert>
 
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">
+            Type the launchpad name <span className="font-semibold text-foreground">"{name}"</span> to confirm:
+          </p>
+          <Input
+            value={deleteConfirmationValue}
+            onChange={(e) => setDeleteConfirmationValue(e.target.value)}
+            placeholder={name}
+            className="w-full"
+            autoFocus
+          />
+          {deleteConfirmationValue && !isDeleteConfirmationValid && (
+            <p className="text-sm text-destructive">
+              Launchpad name does not match. Please type "{name}" to confirm.
+            </p>
+          )}
+        </div>
+
         <AlertDialogFooter>
           <AlertDialogCancel className="flex-1">Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDeleteConfirm}
-            disabled={isActionPending("delete")}
-            className="flex-1 bg-status-deleting/80 text-red-700! hover:bg-status-deleting! border border-status-error"
+            disabled={isActionPending("delete") || !isDeleteConfirmationValid}
+            className="flex-1 bg-status-deleting/80 text-red-700! hover:bg-status-deleting! border border-status-error disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isActionPending("delete") ? "Deleting..." : "Confirm"}
           </AlertDialogAction>

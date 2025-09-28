@@ -322,7 +322,7 @@ const DevenvDeploymentCard = ({
 
   const handleDeploy = async () => {
     try {
-      // console.log("internalProposal", internalProposal);
+      console.log("internalProposal", internalProposal);
       // Create the project
       const projectName = await createProject(internalProposal);
 

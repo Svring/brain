@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
 import { AlertCircleIcon } from "lucide-react";
 import { Pause, Trash2, Power } from "lucide-react";
 import { ClusterObject } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
@@ -33,24 +34,32 @@ export default function ClusterDropdownMenu({
   const { name: clusterName, status } = object;
   const { executeAction, isPending: isActionPending } = useClusterLifecycle();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteConfirmationValue, setDeleteConfirmationValue] = useState("");
 
   const isCreating = status === "Creating";
   const isUpdating = status === "Updating";
   const isPending = isCreating || isUpdating;
 
   const handleDeleteClick = () => {
+    setDeleteConfirmationValue("");
     setShowDeleteDialog(true);
   };
 
   const handleDeleteConfirm = () => {
-    executeAction("delete", clusterName);
-    onDelete?.(clusterName);
-    setShowDeleteDialog(false);
+    if (deleteConfirmationValue.trim() === clusterName) {
+      executeAction("delete", clusterName);
+      onDelete?.(clusterName);
+      setShowDeleteDialog(false);
+      setDeleteConfirmationValue("");
+    }
   };
 
   const handleDeleteCancel = () => {
     setShowDeleteDialog(false);
+    setDeleteConfirmationValue("");
   };
+
+  const isDeleteConfirmationValid = deleteConfirmationValue.trim() === clusterName;
 
   return (
     <>
@@ -92,13 +101,6 @@ export default function ClusterDropdownMenu({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Cluster</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete the cluster{" "}
-              <span className="font-semibold text-foreground">
-                "{clusterName}"
-              </span>
-              ?
-            </AlertDialogDescription>
           </AlertDialogHeader>
 
           <Alert
@@ -112,12 +114,30 @@ export default function ClusterDropdownMenu({
             </AlertDescription>
           </Alert>
 
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Type the cluster name <span className="font-semibold text-foreground">"{clusterName}"</span> to confirm:
+            </p>
+            <Input
+              value={deleteConfirmationValue}
+              onChange={(e) => setDeleteConfirmationValue(e.target.value)}
+              placeholder={clusterName}
+              className="w-full"
+              autoFocus
+            />
+            {deleteConfirmationValue && !isDeleteConfirmationValid && (
+              <p className="text-sm text-destructive">
+                Cluster name does not match. Please type "{clusterName}" to confirm.
+              </p>
+            )}
+          </div>
+
           <AlertDialogFooter>
             <AlertDialogCancel className="flex-1">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              disabled={isActionPending("delete")}
-              className="flex-1 bg-status-deleting/80 text-red-700! hover:bg-status-deleting! border border-status-error"
+              disabled={isActionPending("delete") || !isDeleteConfirmationValid}
+              className="flex-1 bg-status-deleting/80 text-red-700! hover:bg-status-deleting! border border-status-error disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isActionPending("delete") ? "Deleting..." : "Confirm"}
             </AlertDialogAction>

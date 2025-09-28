@@ -356,7 +356,7 @@ export const PromptInputBox = React.forwardRef(
 
     // Exhibition texts for typewriter effect
     const exhibitionTexts = [
-      "Deploy affine from app store.",
+      "Deploy n8n from app store.",
       "Set up a development environment for a next.js project.",
       "Deploy nginx from dockerhub.",
     ];

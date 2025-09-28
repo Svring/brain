@@ -14,20 +14,8 @@ import Link from "next/link";
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
-import { useProjectLifecycle } from "@/hooks/brain/use-project-lifecycle";
 import { useMutation } from "@tanstack/react-query";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { ProjectObjectSchema } from "@/lib/brain/resources/project/project-schemas/project-object-schema";
@@ -39,6 +27,7 @@ import { useProjectRename } from "@/hooks/brain/use-project-rename";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { getDevboxRuntimeIconUrl } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 import { getClusterIconUrl } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
+import { useDeleteProjectDialog } from "@/hooks/brain/use-delete-project-dialog";
 
 interface ProjectCardProps {
   project: z.infer<typeof ProjectObjectSchema>;
@@ -51,7 +40,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 }) => {
   const { project: projectClient } = useTRPCClients();
   const { invalidateQueries } = useInvalidateQueries();
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
   const [editValue, setEditValue] = React.useState("");
   const { resources } = useProjectResources(project.name);
@@ -59,6 +47,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const { handleRenameConfirm } = useProjectRename({
     projectName: project.name,
     currentDisplayName: project.displayName,
+  });
+
+  const { handleDelete, isDeleting, DeleteProjectDialog } = useDeleteProjectDialog({
+    projectName: project.name,
+    projectDisplayName: project.displayName,
+    shouldRedirect: false,
   });
 
   const avatarData = React.useMemo(() => {
@@ -166,8 +160,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     };
   }, [resources, auth?.regionUrl]);
 
-  const { deleteProject, isDeleting } = useProjectLifecycle();
-
   // Validation function based on devbox naming schema
   const validateProjectName = (
     name: string
@@ -235,15 +227,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     }
   };
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleDeleteConfirm = () => {
-    deleteProject(project.name);
-    setIsDeleteDialogOpen(false);
-  };
 
   const commonLinkProps = {
     href: `/projects/${encodeURIComponent(project.name)}`,
@@ -382,46 +365,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         </motion.div>
       </Link>
 
-      <AlertDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Project</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete the project{" "}
-              <span className="font-semibold text-foreground">
-                "{project.displayName}"
-              </span>
-              ?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          <Alert
-            variant="destructive"
-            className="bg-status-deleting text-red-700 border-none"
-          >
-            <AlertCircleIcon />
-            {/* <AlertTitle>Warning</AlertTitle> */}
-            <AlertDescription className="text-red-700!">
-              This action cannot be undone and will permanently remove the
-              project and all its resources.
-            </AlertDescription>
-          </Alert>
-
-          <AlertDialogFooter>
-            <AlertDialogCancel className="flex-1">Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              disabled={isDeleting}
-              className="flex-1 bg-status-deleting/80 text-red-700! hover:bg-status-deleting! border border-status-error"
-            >
-              {isDeleting ? "Deleting..." : "Confirm"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteProjectDialog />
     </>
   );
 };
