@@ -24,6 +24,10 @@ import type {
   ProjectProposal,
 } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 import { useProjectCreate } from "@/hooks/brain/use-project-create";
+import { useResourceQuotaChecker } from "@/lib/validation/resource-quota-checker";
+import { devboxCreateFormSchema } from "@/schemas/forms/devbox/devbox-create-form-schema";
+import { clusterCreateFormSchema } from "@/schemas/forms/cluster/cluster-create-form-schema";
+import { launchpadCreateFormSchema } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
 import { useRouter } from "next/navigation";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useQuery } from "@tanstack/react-query";
@@ -77,6 +81,8 @@ export function CreateNewProject({
       console.error("Project creation failed:", error);
     },
   });
+
+  const { checkAndShowQuotaError } = useResourceQuotaChecker();
 
   // Resource dialog states
   const [devboxDialogOpen, setDevboxDialogOpen] = useState(false);
@@ -149,6 +155,55 @@ export function CreateNewProject({
               : undefined,
         },
       };
+
+      // 计算项目总资源需求
+      let totalCpu = 0;
+      let totalMemory = 0;
+      let totalStorage = 0;
+      let totalPorts = 0;
+
+      // 获取schema默认值
+      const devboxDefaults = devboxCreateFormSchema.parse({});
+      const clusterDefaults = clusterCreateFormSchema.parse({});
+      const launchpadDefaults = launchpadCreateFormSchema.parse({});
+
+      // 计算DevBox资源
+      if (createdDevboxes.length > 0) {
+        createdDevboxes.forEach((devbox) => {
+          totalCpu += devboxDefaults.resource.cpu;
+          totalMemory += devboxDefaults.resource.memory;
+          totalPorts += devbox.ports?.length || 0;
+        });
+      }
+
+      // 计算Database资源
+      if (createdDatabases.length > 0) {
+        createdDatabases.forEach((database) => {
+          totalCpu += clusterDefaults.resource.cpu;
+          totalMemory += clusterDefaults.resource.memory;
+          totalStorage += clusterDefaults.resource.storage || 0;
+        });
+      }
+
+      // 计算App资源
+      if (createdApps.length > 0) {
+        createdApps.forEach((app) => {
+          totalCpu += launchpadDefaults.resource.cpu;
+          totalMemory += launchpadDefaults.resource.memory;
+          totalPorts += app.ports?.length || 0;
+        });
+      }
+
+      const quotaCheckPassed = checkAndShowQuotaError({
+        cpu: totalCpu,
+        memory: totalMemory,
+        storage: totalStorage,
+        ports: totalPorts,
+      });
+      
+      if (!quotaCheckPassed) {
+        return;
+      }
 
       // Create the project with resources
       await createProject(projectProposal);

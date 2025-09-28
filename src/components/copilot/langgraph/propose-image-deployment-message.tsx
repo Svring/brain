@@ -9,6 +9,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { ProjectProposalCard } from "@/components/chat/state-cards/project-proposal/project-proposal-card";
 import type { ProjectProposal } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 import { useProjectCreate } from "@/hooks/brain/use-project-create";
+import { useResourceQuotaChecker } from "@/lib/validation/resource-quota-checker";
+import { launchpadCreateFormSchema } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
 import { useHomeChat } from "@/components/provider/home-chat-provider";
 import { useThreads } from "@/components/provider/thread-provider";
 import { useChatActions } from "@/contexts/chat/chat-context";
@@ -51,6 +53,7 @@ const ImageDeploymentCard = ({
   onSuccess?: (data: any) => void;
 }) => {
   const { createProject, isCreating } = useProjectCreate();
+  const { checkAndShowQuotaError } = useResourceQuotaChecker();
   const { submit, threadId, messages } = useHomeChat();
   const { patchThread, updateThreadState } = useThreads();
   const { openProjectChat } = useChatActions();
@@ -82,6 +85,32 @@ const ImageDeploymentCard = ({
 
   const handleDeploy = async () => {
     try {
+      let totalCpu = 0;
+      let totalMemory = 0;
+      let totalStorage = 0;
+      let totalPorts = 0;
+
+      const launchpadDefaults = launchpadCreateFormSchema.parse({});
+
+      if (internalProposal.resources.app?.length) {
+        internalProposal.resources.app.forEach((app) => {
+          totalCpu += launchpadDefaults.resource.cpu;
+          totalMemory += launchpadDefaults.resource.memory;
+          totalPorts += app.ports?.length || 0;
+        });
+      }
+
+      const quotaCheckPassed = checkAndShowQuotaError({
+        cpu: totalCpu,
+        memory: totalMemory,
+        storage: totalStorage,
+        ports: totalPorts,
+      });
+      
+      if (!quotaCheckPassed) {
+        return;
+      }
+
       // Create the project
       const projectName = await createProject(internalProposal);
 

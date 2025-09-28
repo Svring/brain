@@ -14,16 +14,47 @@ import { useDevboxCreate } from "@/hooks/sealos/devbox/use-devbox-create";
 import { useClusterCreate } from "@/hooks/sealos/cluster/use-cluster-create";
 import { useLaunchpadCreate } from "@/hooks/sealos/launchpad/use-launchpad-create";
 import { useProjectAddResource } from "@/hooks/brain/use-project-add-resource";
+import { useResourceQuotaChecker } from "@/lib/validation/resource-quota-checker";
 
 import { useChatActions } from "@/contexts/chat/chat-context";
 
-// Helper function to get the default version for a cluster type
+
 const getDefaultClusterVersion = (type: string): string => {
   const versions =
     CLUSTER_CONSTANT_TYPE_VERSION[
       type as keyof typeof CLUSTER_CONSTANT_TYPE_VERSION
     ];
-  return versions?.[0] || "postgresql-14.8.0"; // fallback to postgresql default
+  return versions?.[0] || "postgresql-14.8.0"; 
+};
+
+const calculateProjectRequirements = (proposal: ProjectProposal) => {
+  let totalCpu = 0;
+  let totalMemory = 0;
+  let totalStorage = 0;
+  let totalPorts = 0;
+  if (proposal.resources.devbox?.length) {
+    proposal.resources.devbox.forEach((devbox) => {
+      totalPorts += devbox.ports?.length || 1; 
+    });
+  }
+
+   
+  if (proposal.resources.database?.length) {
+    totalStorage += proposal.resources.database.length;
+  }
+
+  if (proposal.resources.app?.length) {
+    proposal.resources.app.forEach((app) => {
+      totalPorts += app.ports?.length || 1; 
+    });
+  }
+
+  return {
+    cpu: totalCpu,
+    memory: totalMemory,
+    storage: totalStorage,
+    ports: totalPorts,
+  };
 };
 
 interface CreateProjectOptions {
@@ -34,8 +65,9 @@ interface CreateProjectOptions {
 export function useProjectCreate(options?: CreateProjectOptions) {
   const [isCreating, setIsCreating] = useState(false);
   const { project } = useTRPCClients();
+  const { checkAndShowQuotaError } = useResourceQuotaChecker();
 
-  // Use individual create hooks
+  
   const { createDevbox } = useDevboxCreate({ addToProject: false });
   const { createCluster } = useClusterCreate({ addToProject: false });
   const { createLaunchpad } = useLaunchpadCreate({ addToProject: false });
@@ -46,6 +78,13 @@ export function useProjectCreate(options?: CreateProjectOptions) {
 
   const createProject = async (proposal: ProjectProposal) => {
     if (isCreating) return;
+
+    const totalRequirements = calculateProjectRequirements(proposal);
+    const quotaCheckPassed = checkAndShowQuotaError(totalRequirements);
+
+    if (!quotaCheckPassed) {
+      return;
+    }
 
     try {
       setIsCreating(true);

@@ -7,6 +7,7 @@ import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
 import { useProjectState } from "@/contexts/project/project-context";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
+import { useResourceQuotaChecker } from "@/lib/validation/resource-quota-checker";
 
 interface UseLaunchpadCreateOptions {
   addToProject?: boolean;
@@ -17,6 +18,7 @@ export const useLaunchpadCreate = (options: UseLaunchpadCreateOptions = {}) => {
   const { launchpad, project } = useTRPCClients();
   const { invalidateQueries } = useInvalidateQueries();
   const { selectedProject } = useProjectState();
+  const { checkAndShowQuotaError } = useResourceQuotaChecker();
 
   const addToProjectMutation = useMutation(
     project.addResources.mutationOptions()
@@ -56,6 +58,16 @@ export const useLaunchpadCreate = (options: UseLaunchpadCreateOptions = {}) => {
   });
 
   const createLaunchpad = async (data: LaunchpadCreateFormData) => {
+    const quotaCheckPassed = checkAndShowQuotaError({
+      cpu: data.resource?.cpu || 0.5,
+      memory: data.resource?.memory || 0.5, 
+      ports: data.ports?.length || 0, 
+    });
+
+    if (!quotaCheckPassed) {
+      return; 
+    }
+
     try {
       await createLaunchpadMutation.mutateAsync(data);
     } catch (error) {

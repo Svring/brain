@@ -16,6 +16,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { ProjectProposalCard } from "@/components/chat/state-cards/project-proposal/project-proposal-card";
 import type { ProjectProposal } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 import { useProjectCreate } from "@/hooks/brain/use-project-create";
+import { useResourceQuotaChecker } from "@/lib/validation/resource-quota-checker";
 import { useHomeChat } from "@/components/provider/home-chat-provider";
 import { useThreads } from "@/components/provider/thread-provider";
 import { useChatActions } from "@/contexts/chat/chat-context";
@@ -30,6 +31,9 @@ import { z } from "zod";
 import { DEVBOX_RUNTIMES } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-runtimes";
 import { CLUSTER_TYPES } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-types";
 import { deriveClusterEnvVariable } from "@/lib/sealos/services/env/cluster/cluster-env-utils";
+import { devboxCreateFormSchema } from "@/schemas/forms/devbox/devbox-create-form-schema";
+import { clusterCreateFormSchema } from "@/schemas/forms/cluster/cluster-create-form-schema";
+import { launchpadCreateFormSchema } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
 
 // Zod schemas for DevenvDeploymentCard args
 export const DeployDevBoxSchema = z.object({
@@ -112,6 +116,7 @@ const DevenvDeploymentCard = ({
   onSuccess?: (data: any) => void;
 }) => {
   const { createProject, isCreating } = useProjectCreate();
+  const { checkAndShowQuotaError } = useResourceQuotaChecker();
   const { threadId, messages } = useHomeChat();
   const { patchThread, updateThreadState } = useThreads();
   const { openProjectChat } = useChatActions();
@@ -323,6 +328,56 @@ const DevenvDeploymentCard = ({
   const handleDeploy = async () => {
     try {
       console.log("internalProposal", internalProposal);
+      
+      // 计算项目总资源需求
+      let totalCpu = 0;
+      let totalMemory = 0;
+      let totalStorage = 0;
+      let totalPorts = 0;
+
+      // 获取schema默认值
+      const devboxDefaults = devboxCreateFormSchema.parse({});
+      const clusterDefaults = clusterCreateFormSchema.parse({});
+      const launchpadDefaults = launchpadCreateFormSchema.parse({});
+
+      // 计算DevBox资源
+      if (internalProposal.resources.devbox?.length) {
+        internalProposal.resources.devbox.forEach((devbox) => {
+          totalCpu += devboxDefaults.resource.cpu;
+          totalMemory += devboxDefaults.resource.memory;
+          totalPorts += devbox.ports?.length || 0;
+        });
+      }
+
+      // 计算Database资源
+      if (internalProposal.resources.database?.length) {
+        internalProposal.resources.database.forEach((database) => {
+          totalCpu += clusterDefaults.resource.cpu;
+          totalMemory += clusterDefaults.resource.memory;
+          totalStorage += clusterDefaults.resource.storage || 0;
+        });
+      }
+
+      // 计算App资源
+      if (internalProposal.resources.app?.length) {
+        internalProposal.resources.app.forEach((app) => {
+          totalCpu += launchpadDefaults.resource.cpu;
+          totalMemory += launchpadDefaults.resource.memory;
+          totalPorts += app.ports?.length || 0;
+        });
+      }
+
+      // 检查资源配额
+      const quotaCheckPassed = checkAndShowQuotaError({
+        cpu: totalCpu,
+        memory: totalMemory,
+        storage: totalStorage,
+        ports: totalPorts,
+      });
+      
+      if (!quotaCheckPassed) {
+        return; 
+      }
       // Create the project
       const projectName = await createProject(internalProposal);
 

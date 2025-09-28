@@ -4,6 +4,7 @@ import React from "react";
 import { DevboxCreateForm } from "@/components/forms/devbox/devbox-create-form";
 import { DevboxCreateFormData } from "@/schemas/forms/devbox/devbox-create-form-schema";
 import { useDevboxCreate } from "@/hooks/sealos/devbox/use-devbox-create";
+import { useResourceQuotaChecker } from "@/lib/validation/resource-quota-checker";
 import BaseActionMessage from "@/components/chat/messages/system-messages/components/base-action-message";
 import { Code, CircleCheckBigIcon } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
@@ -33,8 +34,15 @@ export const DevboxCreateActionMessage: React.FC<
   DevboxCreateActionMessageProps
 > = ({ args, respond, result, onSuccess }) => {
   const { createDevbox, isLoading } = useDevboxCreate({ addToProject: true });
+  const { checkAndShowQuotaError } = useResourceQuotaChecker();
 
   const handleSubmit = async (data: DevboxCreateFormData) => {
+    
+    const quotaCheckPassed = checkAndShowQuotaError({
+      cpu: data.resource?.cpu || 2, 
+      memory: data.resource?.memory || 4, 
+      ports: data.ports?.length || 0, 
+    });
     try {
       const result = await createDevbox(data);
       respond?.(`Devbox "${data.name}" created successfully`);

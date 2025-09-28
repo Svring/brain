@@ -7,6 +7,7 @@ import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useProjectState } from "@/contexts/project/project-context";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
+import { useResourceQuotaChecker } from "@/lib/validation/resource-quota-checker";
 import { CLUSTER_CONSTANT_TYPE_VERSION } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-versions";
 import { devboxCreateFormSchema } from "@/schemas/forms/devbox/devbox-create-form-schema";
 import { clusterCreateFormSchema } from "@/schemas/forms/cluster/cluster-create-form-schema";
@@ -38,6 +39,7 @@ export function useResourceCreator({
   const { devbox, cluster, launchpad, project } = useTRPCClients();
   const { selectedProject } = useProjectState();
   const { invalidateQueries } = useInvalidateQueries();
+  const { checkAndShowQuotaError } = useResourceQuotaChecker();
 
   // Create mutations
   const createDevboxMutation = useMutation(devbox.create.mutationOptions());
@@ -57,6 +59,48 @@ export function useResourceCreator({
 
       if (!selectedProject) {
         toast.error("No project selected. Please select a project first.");
+        return;
+      }
+
+      
+      let totalCpu = 0;
+      let totalMemory = 0;
+      let totalStorage = 0;
+      let totalPorts = 0;
+
+      
+      const devboxDefaults = devboxCreateFormSchema.parse({});
+      const clusterDefaults = clusterCreateFormSchema.parse({});
+      const launchpadDefaults = launchpadCreateFormSchema.parse({});
+
+      
+      resourcesToCreate.devboxes.forEach((devbox) => {
+        totalCpu += devboxDefaults.resource.cpu;
+        totalMemory += devboxDefaults.resource.memory;
+        totalPorts += devbox.ports?.length || 0;
+      });
+
+      
+      resourcesToCreate.databases.forEach((database) => {
+        totalCpu += clusterDefaults.resource.cpu;
+        totalMemory += clusterDefaults.resource.memory;
+        totalStorage += clusterDefaults.resource.storage || 0;
+      });
+
+      resourcesToCreate.apps.forEach((app) => {
+        totalCpu += launchpadDefaults.resource.cpu;
+        totalMemory += launchpadDefaults.resource.memory;
+        totalPorts += app.ports?.length || 0;
+      });
+
+      const quotaCheckPassed = checkAndShowQuotaError({
+        cpu: totalCpu,
+        memory: totalMemory,
+        storage: totalStorage,
+        ports: totalPorts,
+      });
+      
+      if (!quotaCheckPassed) {
         return;
       }
 
