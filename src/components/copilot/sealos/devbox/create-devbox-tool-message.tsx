@@ -28,15 +28,14 @@ export const CreateDevboxToolMessage: React.FC<
   });
   const { selectedProject, selectedProjectResources } = useProjectState();
 
-  console.log("result", result);
-
-  // console.log("selectedProjectResources", selectedProjectResources);
+  // Extract payload from result.payload
+  const payload = result.payload || {};
 
   useMount(() => {
     // Add resources to project if creation was approved and result contains resource info
-    if (isApproved && isSuccess && result.name) {
+    if (isApproved && isSuccess && payload.name) {
       try {
-        const resourceName = result.name;
+        const resourceName = payload.name;
 
         // Check if resource already exists in selectedProjectResources
         const resourceExists = selectedProjectResources?.some(
@@ -60,8 +59,9 @@ export const CreateDevboxToolMessage: React.FC<
 
   // Get icon URL directly from runtime mapping
   const iconUrl =
-    DEVBOX_RUNTIME_ICONS[result.runtime as keyof typeof DEVBOX_RUNTIME_ICONS] ||
-    DEVBOX_DEFAULT_ICON;
+    DEVBOX_RUNTIME_ICONS[
+      payload.runtime as keyof typeof DEVBOX_RUNTIME_ICONS
+    ] || DEVBOX_DEFAULT_ICON;
 
   // Determine status display
   const getStatusDisplay = () => {
@@ -104,9 +104,9 @@ export const CreateDevboxToolMessage: React.FC<
                 Devbox
               </span>
               <span className="text-lg font-bold text-foreground leading-tight">
-                {result.name && result.name.length > 15
-                  ? `${result.name.slice(0, 15)}...`
-                  : result.name}
+                {payload.name && payload.name.length > 15
+                  ? `${payload.name.slice(0, 15)}...`
+                  : payload.name}
               </span>
             </div>
           </div>
@@ -119,36 +119,36 @@ export const CreateDevboxToolMessage: React.FC<
           <span className="text-sm text-muted-foreground">
             Runtime:{" "}
             <span className="font-mono text-foreground">
-              {result.runtime &&
-                result.runtime.charAt(0).toUpperCase() +
-                  result.runtime.slice(1)}
+              {payload.runtime &&
+                payload.runtime.charAt(0).toUpperCase() +
+                  payload.runtime.slice(1)}
             </span>
           </span>
-          {result.cpu && (
+          {payload.cpu && (
             <span className="text-sm text-muted-foreground">
               CPU:{" "}
               <span className="font-mono text-foreground">
-                {result.cpu}Core
+                {payload.cpu}Core
               </span>
             </span>
           )}
-          {result.memory && (
+          {payload.memory && (
             <span className="text-sm text-muted-foreground">
               Memory:{" "}
               <span className="font-mono text-foreground">
-                {result.memory}GB
+                {payload.memory}GB
               </span>
             </span>
           )}
         </div>
-        {result.ports && result.ports.length > 0 && (
+        {payload.ports && payload.ports.length > 0 && (
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Ports:</span>
             <div className="flex items-center gap-1">
-              {result.ports.map((port: number, index: number) => (
+              {payload.ports.map((port: any, index: number) => (
                 <span key={index} className="font-mono text-sm text-foreground">
-                  {port}
-                  {index < result.ports.length - 1 && ","}
+                  {port.number || port}
+                  {index < payload.ports.length - 1 && ","}
                 </span>
               ))}
             </div>

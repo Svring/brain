@@ -21,11 +21,14 @@ export const CreateClusterToolMessage: React.FC<
   const { addResourcesToProject } = useProjectAddResource({ disableToast: true });
   const { selectedProject, selectedProjectResources } = useProjectState();
 
+  // Extract payload from result.payload
+  const payload = result.payload || {};
+
   useMount(() => {
     // Add resources to project if creation was approved and result contains resource info
-    if (isApproved && isSuccess && result.name) {
+    if (isApproved && isSuccess && payload.name) {
       try {
-        const resourceName = result.name;
+        const resourceName = payload.name;
 
         // Check if resource already exists in selectedProjectResources
         const resourceExists = selectedProjectResources?.some(
@@ -48,7 +51,7 @@ export const CreateClusterToolMessage: React.FC<
   });
 
   // Get icon URL directly from type
-  const iconUrl = getClusterIconUrl(result.type);
+  const iconUrl = getClusterIconUrl(payload.type);
 
   // Determine status display
   const getStatusDisplay = () => {
@@ -80,7 +83,7 @@ export const CreateClusterToolMessage: React.FC<
         <div className="flex items-center gap-2">
           <img
             src={iconUrl}
-            alt={`${result.type} Icon`}
+            alt={`${payload.type} Icon`}
             width={32}
             height={32}
             className="rounded-lg h-8 w-8 flex-shrink-0 p-1 bg-muted"
@@ -91,9 +94,9 @@ export const CreateClusterToolMessage: React.FC<
                 Cluster
               </span>
               <span className="text-lg font-bold text-foreground leading-tight">
-                {result.name && result.name.length > 15
-                  ? `${result.name.slice(0, 15)}...`
-                  : result.name}
+                {payload.name && payload.name.length > 15
+                  ? `${payload.name.slice(0, 15)}...`
+                  : payload.name}
               </span>
             </div>
           </div>
@@ -106,42 +109,42 @@ export const CreateClusterToolMessage: React.FC<
           <span className="text-sm text-muted-foreground">
             Type:{" "}
             <span className="font-mono text-foreground">
-              {result.type &&
-                result.type.charAt(0).toUpperCase() + result.type.slice(1)}
+              {payload.type &&
+                payload.type.charAt(0).toUpperCase() + payload.type.slice(1)}
             </span>
           </span>
-          {result.cpu !== undefined && (
+          {payload.cpu !== undefined && (
             <span className="text-sm text-muted-foreground">
               CPU:{" "}
               <span className="font-mono text-foreground">
-                {result.cpu}Core
+                {payload.cpu}Core
               </span>
             </span>
           )}
-          {result.memory !== undefined && (
+          {payload.memory !== undefined && (
             <span className="text-sm text-muted-foreground">
               Memory:{" "}
               <span className="font-mono text-foreground">
-                {result.memory}GB
+                {payload.memory}GB
               </span>
             </span>
           )}
         </div>
-        {(result.storage !== undefined || result.replicas !== undefined) && (
+        {(payload.storage !== undefined || payload.replicas !== undefined) && (
           <div className="flex items-center gap-4">
-            {result.storage !== undefined && (
+            {payload.storage !== undefined && (
               <span className="text-sm text-muted-foreground">
                 Storage:{" "}
                 <span className="font-mono text-foreground">
-                  {result.storage}GB
+                  {payload.storage}GB
                 </span>
               </span>
             )}
-            {result.replicas !== undefined && (
+            {payload.replicas !== undefined && (
               <span className="text-sm text-muted-foreground">
                 Replicas:{" "}
                 <span className="font-mono text-foreground">
-                  {result.replicas}
+                  {payload.replicas}
                 </span>
               </span>
             )}

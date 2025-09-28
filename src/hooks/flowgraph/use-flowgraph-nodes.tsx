@@ -92,14 +92,19 @@ export const useFlowgraphNodes = (targets: ResourceTarget[]) => {
           name: object.name,
         }))
       );
-      // Fit view to show all resources when project resources are set
-      fitView();
     }
   }, [
-    resourceObjectsQuery.data?.length,
-    // resourceObjectsQuery.isLoading,
+    resourceObjectsQuery.data,
+    resourceObjectsQuery.isLoading,
     selectedProject,
   ]);
+
+  // Fit view to show all resources when project resources change
+  useEffect(() => {
+    if (resourceObjectsQuery.data && resourceObjectsQuery.data.length > 0) {
+      fitView();
+    }
+  }, [resourceObjectsQuery.data?.length]);
 
   // console.log("resourceObjectsQuery.data", resourceObjectsQuery.data);
 

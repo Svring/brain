@@ -22,11 +22,14 @@ export const CreateLaunchpadToolMessage: React.FC<
   const { addResourcesToProject } = useProjectAddResource({ disableToast: true });
   const { selectedProject, selectedProjectResources } = useProjectState();
 
+  // Extract payload from result.payload
+  const payload = result.payload || {};
+
   useMount(() => {
     // Add resources to project if creation was approved and result contains resource info
-    if (isApproved && isSuccess && result.name) {
+    if (isApproved && isSuccess && payload.name) {
       try {
-        const resourceName = result.name;
+        const resourceName = payload.name;
         
         // Check if resource already exists in selectedProjectResources
         const resourceExists = selectedProjectResources?.some(
@@ -88,9 +91,9 @@ export const CreateLaunchpadToolMessage: React.FC<
                 Launchpad
               </span>
               <span className="text-lg font-bold text-foreground leading-tight">
-                {result.name && result.name.length > 15
-                  ? `${result.name.slice(0, 15)}...`
-                  : result.name}
+                {payload.name && payload.name.length > 15
+                  ? `${payload.name.slice(0, 15)}...`
+                  : payload.name}
               </span>
             </div>
           </div>
@@ -103,46 +106,46 @@ export const CreateLaunchpadToolMessage: React.FC<
           <span className="text-sm text-muted-foreground">
             Image:{" "}
             <span className="font-mono text-foreground">
-              {result.image && result.image.length > 20
-                ? `${result.image.slice(0, 20)}...`
-                : result.image}
+              {payload.image && payload.image.length > 20
+                ? `${payload.image.slice(0, 20)}...`
+                : payload.image}
             </span>
           </span>
-          {result.cpu !== undefined && (
+          {payload.cpu !== undefined && (
             <span className="text-sm text-muted-foreground">
               CPU:{" "}
               <span className="font-mono text-foreground">
-                {result.cpu}Core
+                {payload.cpu}Core
               </span>
             </span>
           )}
-          {result.memory !== undefined && (
+          {payload.memory !== undefined && (
             <span className="text-sm text-muted-foreground">
               Memory:{" "}
               <span className="font-mono text-foreground">
-                {result.memory}GB
+                {payload.memory}GB
               </span>
             </span>
           )}
         </div>
-        {(result.replicas !== undefined || (result.ports && result.ports.length > 0)) && (
+        {(payload.replicas !== undefined || (payload.ports && payload.ports.length > 0)) && (
           <div className="flex items-center gap-4">
-            {result.replicas !== undefined && (
+            {payload.replicas !== undefined && (
               <span className="text-sm text-muted-foreground">
                 Replicas:{" "}
                 <span className="font-mono text-foreground">
-                  {result.replicas}
+                  {payload.replicas}
                 </span>
               </span>
             )}
-            {result.ports && result.ports.length > 0 && (
+            {payload.ports && payload.ports.length > 0 && (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">Ports:</span>
                 <div className="flex items-center gap-1">
-                  {result.ports.map((port: number, index: number) => (
+                  {payload.ports.map((port: any, index: number) => (
                     <span key={index} className="font-mono text-sm text-foreground">
-                      {port}
-                      {index < result.ports.length - 1 && ","}
+                      {port.number || port}
+                      {index < payload.ports.length - 1 && ","}
                     </span>
                   ))}
                 </div>
@@ -150,12 +153,12 @@ export const CreateLaunchpadToolMessage: React.FC<
             )}
           </div>
         )}
-        {result.env && result.env.length > 0 && (
+        {payload.env && payload.env.length > 0 && (
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
               Environment:{" "}
               <span className="font-mono text-foreground">
-                {result.env.length} variables
+                {payload.env.length} variables
               </span>
             </span>
           </div>
