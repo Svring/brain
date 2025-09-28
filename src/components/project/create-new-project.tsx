@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Minus, Check } from "lucide-react";
 import { nanoid } from "@/lib/utils";
 import { SimplePortList } from "@/components/chat/state-cards/project-proposal/components/simple-port-list";
 import { DEVBOX_RUNTIME_ICONS } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-icons";
@@ -84,31 +84,26 @@ export function CreateNewProject({
 
   const { checkAndShowQuotaError } = useResourceQuotaChecker();
 
-  // Resource dialog states
-  const [devboxDialogOpen, setDevboxDialogOpen] = useState(false);
-  const [databaseDialogOpen, setDatabaseDialogOpen] = useState(false);
-  const [appDialogOpen, setAppDialogOpen] = useState(false);
-
-  // Resource form data
-  const [devboxData, setDevboxData] = useState<Partial<DevBox>>({
-    name: "",
-    runtime: "next.js",
-    ports: [],
-  });
-  const [databaseData, setDatabaseData] = useState<Partial<Database>>({
-    name: "",
-    type: "postgresql",
-  });
-  const [appData, setAppData] = useState<Partial<App>>({
-    name: "",
-    image: "",
-    ports: [],
-  });
+  // Runtime selection state
+  const [editingDevbox, setEditingDevbox] = useState<number | null>(null);
+  const [runtimeDialogOpen, setRuntimeDialogOpen] = useState(false);
+  const [selectedRuntime, setSelectedRuntime] = useState<string>("");
 
   // State for created resources
   const [createdDevboxes, setCreatedDevboxes] = useState<DevBox[]>([]);
-  const [createdDatabases, setCreatedDatabases] = useState<Database[]>([]);
   const [createdApps, setCreatedApps] = useState<App[]>([]);
+
+  // State for database counters per type
+  const [databaseCounters, setDatabaseCounters] = useState<
+    Record<string, number>
+  >({
+    postgresql: 0,
+    mongodb: 0,
+    "apecloud-mysql": 0,
+    redis: 0,
+    kafka: 0,
+    milvus: 0,
+  });
 
   const handleConfirm = async () => {
     if (isCreating) return;
@@ -117,6 +112,17 @@ export function CreateNewProject({
       // Use project name from input (already has default value) and add nanoid
       const sanitizedProjectName = sanitizeName(projectName.trim());
       const uniqueProjectName = `${sanitizedProjectName}-${nanoid()}`;
+
+      // Generate database resources from counters
+      const databaseResources: Database[] = [];
+      Object.entries(databaseCounters).forEach(([type, count]) => {
+        for (let i = 0; i < count; i++) {
+          databaseResources.push({
+            name: `${sanitizeName(type)}-${nanoid()}`,
+            type: type as any,
+          });
+        }
+      });
 
       // Create ProjectProposal object with sanitized names and nanoid
       const projectProposal: ProjectProposal = {
@@ -135,23 +141,20 @@ export function CreateNewProject({
                 }))
               : undefined,
           database:
-            createdDatabases.length > 0
-              ? createdDatabases.map((db) => ({
-                  name: `${sanitizeName(db.name)}-${nanoid()}`,
-                  type: db.type,
-                }))
-              : undefined,
+            databaseResources.length > 0 ? databaseResources : undefined,
           app:
             createdApps.length > 0
-              ? createdApps.map((app) => ({
-                  name: `${sanitizeName(app.name)}-${nanoid()}`,
-                  image: app.image,
-                  ports:
-                    app.ports?.map((p: any) => ({
-                      number: p.number,
-                      publicAccess: p.publicAccess || true,
-                    })) || [],
-                }))
+              ? createdApps
+                  .filter((app) => app.image && app.image.trim() !== "")
+                  .map((app) => ({
+                    name: `${sanitizeName(app.name)}-${nanoid()}`,
+                    image: app.image,
+                    ports:
+                      app.ports?.map((p: any) => ({
+                        number: p.number,
+                        publicAccess: p.publicAccess || true,
+                      })) || [],
+                  }))
               : undefined,
         },
       };
@@ -177,21 +180,23 @@ export function CreateNewProject({
       }
 
       // 计算Database资源
-      if (createdDatabases.length > 0) {
-        createdDatabases.forEach((database) => {
-          totalCpu += clusterDefaults.resource.cpu;
-          totalMemory += clusterDefaults.resource.memory;
-          totalStorage += clusterDefaults.resource.storage || 0;
-        });
-      }
+      Object.values(databaseCounters).forEach((count) => {
+        if (count > 0) {
+          totalCpu += clusterDefaults.resource.cpu * count;
+          totalMemory += clusterDefaults.resource.memory * count;
+          totalStorage += (clusterDefaults.resource.storage || 0) * count;
+        }
+      });
 
       // 计算App资源
       if (createdApps.length > 0) {
-        createdApps.forEach((app) => {
-          totalCpu += launchpadDefaults.resource.cpu;
-          totalMemory += launchpadDefaults.resource.memory;
-          totalPorts += app.ports?.length || 0;
-        });
+        createdApps
+          .filter((app) => app.image && app.image.trim() !== "")
+          .forEach((app) => {
+            totalCpu += launchpadDefaults.resource.cpu;
+            totalMemory += launchpadDefaults.resource.memory;
+            totalPorts += app.ports?.length || 0;
+          });
       }
 
       const quotaCheckPassed = checkAndShowQuotaError({
@@ -200,7 +205,7 @@ export function CreateNewProject({
         storage: totalStorage,
         ports: totalPorts,
       });
-      
+
       if (!quotaCheckPassed) {
         return;
       }
@@ -211,8 +216,15 @@ export function CreateNewProject({
       // Reset form
       setProjectName(`project-${nanoid()}`);
       setCreatedDevboxes([]);
-      setCreatedDatabases([]);
       setCreatedApps([]);
+      setDatabaseCounters({
+        postgresql: 0,
+        mongodb: 0,
+        "apecloud-mysql": 0,
+        redis: 0,
+        kafka: 0,
+        milvus: 0,
+      });
     } catch (error) {
       console.error("Failed to create project:", error);
     }
@@ -221,8 +233,15 @@ export function CreateNewProject({
   const handleCancel = () => {
     setProjectName(`project-${nanoid()}`);
     setCreatedDevboxes([]);
-    setCreatedDatabases([]);
     setCreatedApps([]);
+    setDatabaseCounters({
+      postgresql: 0,
+      mongodb: 0,
+      "apecloud-mysql": 0,
+      redis: 0,
+      kafka: 0,
+      milvus: 0,
+    });
     onOpenChange(false);
   };
 
@@ -236,9 +255,56 @@ export function CreateNewProject({
 
   // Update ports when runtime changes or when templates load
   useEffect(() => {
-    if (templates && Array.isArray(templates) && devboxData.runtime) {
+    if (templates && Array.isArray(templates) && editingDevbox !== null) {
+      const devbox = createdDevboxes[editingDevbox];
+      if (devbox && devbox.runtime) {
+        const template = templates.find(
+          (t: DevboxTemplate) => t.runtime === devbox.runtime
+        );
+
+        if (template && template.config.appPorts) {
+          const templatePorts = template.config.appPorts.map(
+            (appPort: { port: number }) => ({
+              number: appPort.port,
+              publicAccess: true,
+            })
+          );
+
+          const updatedDevboxes = [...createdDevboxes];
+          updatedDevboxes[editingDevbox].ports = templatePorts;
+          setCreatedDevboxes(updatedDevboxes);
+        }
+      }
+    }
+  }, [editingDevbox]);
+
+  // Database counter handlers
+  const handleIncrementDatabase = (type: string) => {
+    setDatabaseCounters((prev) => ({
+      ...prev,
+      [type]: prev[type] + 1,
+    }));
+  };
+
+  const handleDecrementDatabase = (type: string) => {
+    setDatabaseCounters((prev) => ({
+      ...prev,
+      [type]: Math.max(0, prev[type] - 1),
+    }));
+  };
+
+  // Inline editing handlers
+  const handleAddDevboxInline = () => {
+    const newDevbox: DevBox = {
+      name: generateDefaultName("devbox"),
+      runtime: "next.js",
+      ports: [],
+    };
+
+    // Add template ports if available
+    if (templates && Array.isArray(templates)) {
       const template = templates.find(
-        (t: DevboxTemplate) => t.runtime === devboxData.runtime
+        (t: DevboxTemplate) => t.runtime === "next.js"
       );
 
       if (template && template.config.appPorts) {
@@ -248,81 +314,48 @@ export function CreateNewProject({
             publicAccess: true,
           })
         );
-
-        setDevboxData((prev) => ({
-          ...prev,
-          ports: templatePorts,
-        }));
+        newDevbox.ports = templatePorts;
       }
     }
-  }, [devboxData.runtime, templates]);
 
-  // Update ports when dialog opens and templates are available
-  useEffect(() => {
-    if (
-      devboxDialogOpen &&
-      templates &&
-      Array.isArray(templates) &&
-      devboxData.runtime
-    ) {
-      const template = templates.find(
-        (t: DevboxTemplate) => t.runtime === devboxData.runtime
-      );
+    setCreatedDevboxes([...createdDevboxes, newDevbox]);
+  };
 
-      if (template && template.config.appPorts) {
-        const templatePorts = template.config.appPorts.map(
-          (appPort: { port: number }) => ({
-            number: appPort.port,
-            publicAccess: true,
-          })
+  const handleAddAppInline = () => {
+    const newApp: App = {
+      name: generateDefaultName("app"),
+      image: "nginx:latest",
+      ports: [],
+    };
+    setCreatedApps([...createdApps, newApp]);
+  };
+
+  const handleSelectRuntime = (runtime: string) => {
+    setSelectedRuntime(runtime);
+    setRuntimeDialogOpen(false);
+    if (editingDevbox !== null) {
+      const updatedDevboxes = [...createdDevboxes];
+      updatedDevboxes[editingDevbox].runtime = runtime as any;
+
+      // Update ports from template if available
+      if (templates && Array.isArray(templates)) {
+        const template = templates.find(
+          (t: DevboxTemplate) => t.runtime === runtime
         );
 
-        console.log("Setting template ports on dialog open:", templatePorts);
-
-        setDevboxData((prev) => ({
-          ...prev,
-          ports: templatePorts,
-        }));
+        if (template && template.config.appPorts) {
+          const templatePorts = template.config.appPorts.map(
+            (appPort: { port: number }) => ({
+              number: appPort.port,
+              publicAccess: true,
+            })
+          );
+          updatedDevboxes[editingDevbox].ports = templatePorts;
+        }
       }
-    }
-  }, [devboxDialogOpen, templates, devboxData.runtime]);
 
-  // Resource creation handlers
-  const handleAddDevbox = () => {
-    if (devboxData.name?.trim()) {
-      const newDevbox: DevBox = {
-        name: devboxData.name.trim(),
-        runtime: devboxData.runtime || "next.js",
-        ports: devboxData.ports || [],
-      };
-      setCreatedDevboxes([...createdDevboxes, newDevbox]);
-      setDevboxDialogOpen(false);
-      setDevboxData({ name: "", runtime: "next.js", ports: [] });
-    }
-  };
-
-  const handleAddDatabase = () => {
-    if (databaseData.name?.trim()) {
-      const newDatabase: Database = {
-        name: databaseData.name.trim(),
-        type: databaseData.type || "postgresql",
-      };
-      setCreatedDatabases([...createdDatabases, newDatabase]);
-      setDatabaseDialogOpen(false);
-      setDatabaseData({ name: "", type: "postgresql" });
-    }
-  };
-
-  const handleAddApp = () => {
-    if (appData.name?.trim() && appData.image?.trim()) {
-      const newApp: App = {
-        name: appData.name.trim(),
-        image: appData.image.trim(),
-        ports: appData.ports || [],
-      };
-      setCreatedApps([...createdApps, newApp]);
-      setAppDialogOpen(false);
-      setAppData({ name: "", image: "", ports: [] });
+      setCreatedDevboxes(updatedDevboxes);
+      setEditingDevbox(null);
     }
   };
 
@@ -352,39 +385,8 @@ export function CreateNewProject({
     setCreatedDevboxes(createdDevboxes.filter((_, i) => i !== index));
   };
 
-  const handleDeleteDatabase = (index: number) => {
-    setCreatedDatabases(createdDatabases.filter((_, i) => i !== index));
-  };
-
   const handleDeleteApp = (index: number) => {
     setCreatedApps(createdApps.filter((_, i) => i !== index));
-  };
-
-  // Dialog open handlers with default names
-  const handleOpenDevboxDialog = () => {
-    setDevboxData({
-      name: generateDefaultName("devbox"),
-      runtime: "next.js",
-      ports: [],
-    });
-    setDevboxDialogOpen(true);
-  };
-
-  const handleOpenDatabaseDialog = () => {
-    setDatabaseData({
-      name: generateDefaultName("database"),
-      type: "postgresql",
-    });
-    setDatabaseDialogOpen(true);
-  };
-
-  const handleOpenAppDialog = () => {
-    setAppData({
-      name: generateDefaultName("app"),
-      image: "",
-      ports: [],
-    });
-    setAppDialogOpen(true);
   };
 
   return (
@@ -420,44 +422,65 @@ export function CreateNewProject({
           <div className="space-y-2">
             {/* Devbox Section */}
             <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Label className="text-sm font-medium">Devbox</Label>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-6 w-6 p-0"
-                  onClick={handleOpenDevboxDialog}
-                >
-                  <Plus size={12} />
-                </Button>
-              </div>
+              <Label className="text-sm font-medium">Devbox</Label>
+
+              {/* Existing devboxes */}
               {createdDevboxes.length > 0 && (
-                <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-2">
                   {createdDevboxes.map((devbox, index) => (
                     <div
                       key={index}
-                      className="flex items-center p-2 bg-muted/20 rounded border"
+                      className="flex items-center p-2 py-1 bg-muted/20 rounded border"
                     >
-                      <div className="w-5 h-5 flex items-center justify-center flex-shrink-0 bg-background-tertiary rounded">
-                        <img
-                          src={
-                            DEVBOX_RUNTIME_ICONS[
-                              devbox.runtime as keyof typeof DEVBOX_RUNTIME_ICONS
-                            ] || "https://devbox.bja.sealos.run/logo.svg"
-                          }
-                          alt={`${devbox.runtime} Icon`}
-                          width={20}
-                          height={20}
-                          className="rounded"
+                      {/* Runtime button on the left */}
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <div className="w-5 h-5 flex items-center justify-center bg-background-tertiary rounded">
+                          <img
+                            src={
+                              DEVBOX_RUNTIME_ICONS[
+                                devbox.runtime as keyof typeof DEVBOX_RUNTIME_ICONS
+                              ] || "https://devbox.bja.sealos.run/logo.svg"
+                            }
+                            alt={`${devbox.runtime} Icon`}
+                            width={20}
+                            height={20}
+                            className="rounded"
+                          />
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="px-2 text-sm"
+                          onClick={() => {
+                            setEditingDevbox(index);
+                            setRuntimeDialogOpen(true);
+                          }}
+                        >
+                          {devbox.runtime}
+                        </Button>
+                      </div>
+
+                      {/* Ports in the middle */}
+                      <div className="flex-1 mx-2">
+                        <SimplePortList
+                          ports={devbox.ports?.map((p: any) => p.number) || []}
+                          allowEditing={true}
+                          onPortsChange={(portNumbers) => {
+                            const updated = [...createdDevboxes];
+                            updated[index].ports = portNumbers.map((num) => ({
+                              number: num,
+                              publicAccess: true,
+                            }));
+                            setCreatedDevboxes(updated);
+                          }}
                         />
                       </div>
-                      <span className="text-sm font-medium ml-2 truncate flex-1">
-                        {devbox.runtime}
-                      </span>
+
+                      {/* Delete button on the right */}
                       <Button
-                        variant="ghost"
                         size="sm"
-                        className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground ml-1"
+                        variant="ghost"
+                        className="h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
                         onClick={() => handleDeleteDevbox(index)}
                       >
                         <X className="h-3 w-3" />
@@ -466,85 +489,123 @@ export function CreateNewProject({
                   ))}
                 </div>
               )}
+
+              {/* Add new devbox */}
+              <div
+                className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-2 hover:border-muted-foreground/50 hover:bg-muted/20 transition-colors cursor-pointer"
+                onClick={handleAddDevboxInline}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Plus className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">
+                    Add new devbox
+                  </span>
+                </div>
+              </div>
             </div>
 
             {/* Database Section */}
             <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Label className="text-sm font-medium">Database</Label>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-6 w-6 p-0"
-                  onClick={handleOpenDatabaseDialog}
-                >
-                  <Plus size={12} />
-                </Button>
-              </div>
-              {createdDatabases.length > 0 && (
-                <div className="grid grid-cols-3 gap-2">
-                  {createdDatabases.map((database, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center p-2 bg-muted/20 rounded border"
-                    >
-                      <div className="w-5 h-5 flex items-center justify-center flex-shrink-0 bg-background-tertiary rounded">
-                        <img
-                          src={
-                            CLUSTER_TYPE_ICON_MAP[
-                              database.type as keyof typeof CLUSTER_TYPE_ICON_MAP
-                            ] || "https://dbprovider.bja.sealos.run/logo.svg"
-                          }
-                          alt={`${database.type} Icon`}
-                          width={20}
-                          height={20}
-                          className="rounded"
-                        />
-                      </div>
-                      <span className="text-sm font-medium ml-2 truncate flex-1">
-                        {database.type}
+              <Label className="text-sm font-medium">Database</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {AVAILABLE_CLUSTER_TYPES.map((type) => (
+                  <div
+                    key={type}
+                    className="flex items-center p-2 bg-muted/20 rounded border"
+                  >
+                    <div className="w-5 h-5 flex items-center justify-center flex-shrink-0 bg-background-tertiary rounded">
+                      <img
+                        src={
+                          CLUSTER_TYPE_ICON_MAP[
+                            type as keyof typeof CLUSTER_TYPE_ICON_MAP
+                          ] || "https://dbprovider.bja.sealos.run/logo.svg"
+                        }
+                        alt={`${type} Icon`}
+                        width={20}
+                        height={20}
+                        className="rounded"
+                      />
+                    </div>
+                    <span className="text-sm font-medium ml-2 truncate flex-1">
+                      {type}
+                    </span>
+                    <div className="flex items-center gap-1 ml-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                        onClick={() => handleDecrementDatabase(type)}
+                        disabled={databaseCounters[type] === 0}
+                      >
+                        <Minus className="h-3 w-3" />
+                      </Button>
+                      <span className="text-sm font-medium min-w-[20px] text-center">
+                        {databaseCounters[type]}
                       </span>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground ml-1"
-                        onClick={() => handleDeleteDatabase(index)}
+                        className="h-4 w-4 p-0 hover:bg-primary hover:text-primary-foreground"
+                        onClick={() => handleIncrementDatabase(type)}
                       >
-                        <X className="h-3 w-3" />
+                        <Plus className="h-3 w-3" />
                       </Button>
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* App Launchpad Section */}
             <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Label className="text-sm font-medium">App Launchpad</Label>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-6 w-6 p-0"
-                  onClick={handleOpenAppDialog}
-                >
-                  <Plus size={12} />
-                </Button>
-              </div>
+              <Label className="text-sm font-medium">App Launchpad</Label>
+
+              {/* Existing apps */}
               {createdApps.length > 0 && (
-                <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-2">
                   {createdApps.map((app, index) => (
                     <div
                       key={index}
-                      className="flex items-center p-2 bg-muted/20 rounded border"
+                      className="flex items-center p-2 py-1 bg-muted/20 rounded border"
                     >
-                      <span className="text-sm font-medium ml-2 truncate flex-1">
-                        {app.image}
-                      </span>
+                      {/* App image input on the left */}
+                      <div className="flex-shrink-0 min-w-32">
+                        <Input
+                          value={app.image}
+                          onChange={(e) => {
+                            const updated = [...createdApps];
+                            updated[index].image = e.target.value;
+                            setCreatedApps(updated);
+                          }}
+                          className="w-auto min-w-32 border-none shadow-none focus-visible:ring-0 bg-transparent! pl-0 text-sm"
+                          placeholder="Image (e.g., nginx:latest)"
+                          style={{
+                            width: `${Math.max(app.image.length * 8, 96)}px`,
+                          }}
+                        />
+                      </div>
+
+                      {/* Ports in the middle */}
+                      <div className="flex-1 mx-2">
+                        <SimplePortList
+                          ports={app.ports?.map((p: any) => p.number) || []}
+                          allowEditing={true}
+                          onPortsChange={(portNumbers) => {
+                            const updated = [...createdApps];
+                            updated[index].ports = portNumbers.map((num) => ({
+                              number: num,
+                              publicAccess: true,
+                            }));
+                            setCreatedApps(updated);
+                          }}
+                        />
+                      </div>
+
+                      {/* Delete button on the right */}
                       <Button
-                        variant="ghost"
                         size="sm"
-                        className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground ml-1"
+                        variant="ghost"
+                        className="h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
                         onClick={() => handleDeleteApp(index)}
                       >
                         <X className="h-3 w-3" />
@@ -553,6 +614,19 @@ export function CreateNewProject({
                   ))}
                 </div>
               )}
+
+              {/* Add new app */}
+              <div
+                className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-2 hover:border-muted-foreground/50 hover:bg-muted/20 transition-colors cursor-pointer"
+                onClick={handleAddAppInline}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Plus className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">
+                    Add new app
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -572,239 +646,46 @@ export function CreateNewProject({
         </DialogContent>
       </Dialog>
 
-      {/* Devbox Configuration Dialog */}
-      <Dialog open={devboxDialogOpen} onOpenChange={setDevboxDialogOpen}>
+      {/* Runtime Selection Dialog */}
+      <Dialog open={runtimeDialogOpen} onOpenChange={setRuntimeDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Add Devbox</DialogTitle>
+            <DialogTitle>Select Runtime</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Name</Label>
-              <Input
-                value={devboxData.name || ""}
-                onChange={(e) =>
-                  setDevboxData({ ...devboxData, name: e.target.value })
-                }
-                placeholder="Devbox name"
-                className="w-full"
-              />
-            </div>
-
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Runtime</Label>
-              <div className="grid grid-cols-5 gap-2">
-                {DEVBOX_RUNTIMES.map((runtime) => (
-                  <div
-                    key={runtime}
-                    onClick={() =>
-                      setDevboxData({ ...devboxData, runtime: runtime as any })
-                    }
-                    className={`
+            <div className="grid grid-cols-5 gap-2">
+              {DEVBOX_RUNTIMES.map((runtime) => (
+                <div
+                  key={runtime}
+                  onClick={() => handleSelectRuntime(runtime)}
+                  className={`
                     flex items-center gap-2 p-2 rounded-lg border-2 cursor-pointer transition-all
                     hover:bg-muted/50 hover:border-primary/50
                     ${
-                      (devboxData.runtime || "next.js") === runtime
+                      selectedRuntime === runtime
                         ? "border-primary bg-primary/10"
                         : "border-border hover:border-primary/30"
                     }
                   `}
-                  >
-                    <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 bg-background-tertiary rounded">
-                      <img
-                        src={
-                          DEVBOX_RUNTIME_ICONS[runtime] ||
-                          "https://devbox.bja.sealos.run/logo.svg"
-                        }
-                        alt={`${runtime} Icon`}
-                        width={24}
-                        height={24}
-                        className="rounded"
-                      />
-                    </div>
-                    <span className="text-sm font-medium leading-tight truncate">
-                      {runtime}
-                    </span>
+                >
+                  <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 bg-background-tertiary rounded">
+                    <img
+                      src={
+                        DEVBOX_RUNTIME_ICONS[runtime] ||
+                        "https://devbox.bja.sealos.run/logo.svg"
+                      }
+                      alt={`${runtime} Icon`}
+                      width={24}
+                      height={24}
+                      className="rounded"
+                    />
                   </div>
-                ))}
-              </div>
+                  <span className="text-sm font-medium leading-tight truncate">
+                    {runtime}
+                  </span>
+                </div>
+              ))}
             </div>
-
-            <div>
-              <SimplePortList
-                ports={(devboxData.ports || []).map((p: any) => p.number)}
-                allowEditing={true}
-                onPortsChange={(portNumbers) =>
-                  setDevboxData({
-                    ...devboxData,
-                    ports: portNumbers.map((num) => ({
-                      number: num,
-                      publicAccess: true,
-                    })),
-                  })
-                }
-              />
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setDevboxDialogOpen(false)}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleAddDevbox}
-              disabled={!devboxData.name?.trim()}
-              className="flex-1"
-            >
-              Add
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Database Configuration Dialog */}
-      <Dialog open={databaseDialogOpen} onOpenChange={setDatabaseDialogOpen}>
-        <DialogContent className="sm:max-w-[400px]">
-          <DialogHeader>
-            <DialogTitle>Add Database</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Name</Label>
-              <Input
-                value={databaseData.name || ""}
-                onChange={(e) =>
-                  setDatabaseData({ ...databaseData, name: e.target.value })
-                }
-                placeholder="Database name"
-                className="w-full"
-              />
-            </div>
-
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Type</Label>
-              <div className="grid grid-cols-3 gap-2">
-                {AVAILABLE_CLUSTER_TYPES.map((type) => (
-                  <div
-                    key={type}
-                    onClick={() =>
-                      setDatabaseData({ ...databaseData, type: type as any })
-                    }
-                    className={`
-                    flex items-center gap-2 p-2 rounded-lg border-2 cursor-pointer transition-all
-                    hover:bg-muted/50 hover:border-primary/50
-                    ${
-                      databaseData.type === type
-                        ? "border-primary bg-primary/10"
-                        : "border-border hover:border-primary/30"
-                    }
-                  `}
-                  >
-                    <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 bg-background-tertiary rounded">
-                      <img
-                        src={
-                          CLUSTER_TYPE_ICON_MAP[
-                            type as keyof typeof CLUSTER_TYPE_ICON_MAP
-                          ] || "https://dbprovider.bja.sealos.run/logo.svg"
-                        }
-                        alt={`${type} Icon`}
-                        width={24}
-                        height={24}
-                        className="rounded"
-                      />
-                    </div>
-                    <span className="text-sm font-medium leading-tight truncate">
-                      {type}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setDatabaseDialogOpen(false)}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleAddDatabase}
-              disabled={!databaseData.name?.trim()}
-              className="flex-1"
-            >
-              Add
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* App Configuration Dialog */}
-      <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Add App</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Name</Label>
-              <Input
-                value={appData.name || ""}
-                onChange={(e) =>
-                  setAppData({ ...appData, name: e.target.value })
-                }
-                placeholder="App name"
-                className="w-full"
-              />
-            </div>
-
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Image</Label>
-              <Input
-                value={appData.image || ""}
-                onChange={(e) =>
-                  setAppData({ ...appData, image: e.target.value })
-                }
-                placeholder="Enter image URL (e.g., nginx:latest)"
-                className="w-full"
-              />
-            </div>
-
-            <div>
-              <SimplePortList
-                ports={(appData.ports || []).map((p: any) => p.number)}
-                allowEditing={true}
-                onPortsChange={(portNumbers) =>
-                  setAppData({
-                    ...appData,
-                    ports: portNumbers.map((num) => ({
-                      number: num,
-                      publicAccess: true,
-                    })),
-                  })
-                }
-              />
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setAppDialogOpen(false)}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleAddApp}
-              disabled={!appData.name?.trim() || !appData.image?.trim()}
-              className="flex-1"
-            >
-              Add
-            </Button>
           </div>
         </DialogContent>
       </Dialog>

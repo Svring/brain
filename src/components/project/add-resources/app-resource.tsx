@@ -28,66 +28,75 @@ export function AppResource({
   onDeleteApp,
   isCreating,
 }: AppResourceProps) {
-  const [appDialogOpen, setAppDialogOpen] = useState(false);
-  const [appData, setAppData] = useState<Partial<App>>({
-    name: "",
-    image: "",
-    ports: [],
-  });
-
-
-  const handleAddApp = () => {
-    if (appData.name?.trim() && appData.image?.trim()) {
-      const newApp: App = {
-        name: appData.name.trim(),
-        image: appData.image.trim(),
-        ports: appData.ports || [],
-      };
-      onAddApp(newApp);
-      setAppDialogOpen(false);
-      setAppData({ name: "", image: "", ports: [] });
-    }
-  };
-
-  const handleOpenAppDialog = () => {
-    setAppData({
+  // Inline editing handlers
+  const handleAddAppInline = () => {
+    const newApp: App = {
       name: generateDefaultName("app"),
-      image: "",
+      image: "nginx:latest",
       ports: [],
-    });
-    setAppDialogOpen(true);
+    };
+    onAddApp(newApp);
   };
+
+
 
   return (
     <>
       <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Label className="text-sm font-medium">App Launchpad</Label>
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-6 w-6 p-0"
-            onClick={handleOpenAppDialog}
-            disabled={isCreating}
-          >
-            <Plus size={12} />
-          </Button>
-        </div>
+        <Label className="text-sm font-medium">App Launchpad</Label>
+        
+        {/* Existing apps */}
         {apps.length > 0 && (
-          <div className="grid grid-cols-3 gap-2">
+          <div className="space-y-2">
             {apps.map((app, index) => (
               <div
                 key={index}
-                className="flex items-center p-2 bg-muted/20 rounded border"
+                className="flex items-center p-2 py-1 bg-muted/20 rounded border"
               >
-                <span className="text-sm font-medium ml-2 truncate flex-1">
-                  {app.image}
-                </span>
+                {/* App image input on the left */}
+                <div className="flex-shrink-0 min-w-32">
+                  <Input
+                    value={app.image}
+                    onChange={(e) => {
+                      const updatedApp = { ...app, image: e.target.value };
+                      onDeleteApp(index);
+                      onAddApp(updatedApp);
+                    }}
+                    className="w-auto min-w-32 border-none shadow-none focus-visible:ring-0 bg-transparent! pl-0 text-sm"
+                    placeholder="Image (e.g., nginx:latest)"
+                    style={{
+                      width: `${Math.max(app.image.length * 8, 96)}px`,
+                    }}
+                    disabled={isCreating}
+                  />
+                </div>
+
+                {/* Ports in the middle */}
+                <div className="flex-1 mx-2">
+                  <SimplePortList
+                    ports={app.ports?.map((p: any) => p.number) || []}
+                    allowEditing={true}
+                    onPortsChange={(portNumbers) => {
+                      const updatedApp = {
+                        ...app,
+                        ports: portNumbers.map((num) => ({
+                          number: num,
+                          publicAccess: true,
+                        })),
+                      };
+                      onDeleteApp(index);
+                      onAddApp(updatedApp);
+                    }}
+                  />
+                </div>
+                
+                {/* Delete button on the right */}
                 <Button
-                  variant="ghost"
                   size="sm"
-                  className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground ml-1"
+                  variant="ghost"
+                  className="h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
                   onClick={() => onDeleteApp(index)}
+                  disabled={isCreating}
                 >
                   <X className="h-3 w-3" />
                 </Button>
@@ -95,73 +104,21 @@ export function AppResource({
             ))}
           </div>
         )}
+
+        {/* Add new app */}
+        <div
+          className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-2 hover:border-muted-foreground/50 hover:bg-muted/20 transition-colors cursor-pointer"
+          onClick={handleAddAppInline}
+        >
+          <div className="flex items-center justify-center gap-2">
+            <Plus className="h-4 w-4 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">
+              Add new app
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* App Configuration Dialog */}
-      <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Add App</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Name</Label>
-              <Input
-                value={appData.name || ""}
-                onChange={(e) =>
-                  setAppData({ ...appData, name: e.target.value })
-                }
-                placeholder="App name"
-                className="w-full"
-              />
-            </div>
-
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Image</Label>
-              <Input
-                value={appData.image || ""}
-                onChange={(e) =>
-                  setAppData({ ...appData, image: e.target.value })
-                }
-                placeholder="Enter image URL (e.g., nginx:latest)"
-                className="w-full"
-              />
-            </div>
-
-            <div>
-              <SimplePortList
-                ports={(appData.ports || []).map((p: any) => p.number)}
-                allowEditing={true}
-                onPortsChange={(portNumbers) =>
-                  setAppData({
-                    ...appData,
-                    ports: portNumbers.map((num) => ({
-                      number: num,
-                      publicAccess: true,
-                    })),
-                  })
-                }
-              />
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setAppDialogOpen(false)}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleAddApp}
-              disabled={!appData.name?.trim() || !appData.image?.trim()}
-              className="flex-1"
-            >
-              Add
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

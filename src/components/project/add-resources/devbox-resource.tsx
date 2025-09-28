@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Check } from "lucide-react";
 import { SimplePortList } from "@/components/chat/state-cards/project-proposal/components/simple-port-list";
 import { DEVBOX_RUNTIME_ICONS } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-icons";
 import { DEVBOX_RUNTIMES } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-runtimes";
@@ -57,120 +57,140 @@ export function DevboxResource({
   // Fetch devbox templates
   const { data: templates } = useQuery(devbox.templates.queryOptions());
 
-  console.log("templates", templates);
-  
-  const [devboxDialogOpen, setDevboxDialogOpen] = useState(false);
-  const [devboxData, setDevboxData] = useState<Partial<DevBox>>({
-    name: "",
-    runtime: "next.js",
-    ports: [],
-  });
+  // Runtime selection state
+  const [editingDevbox, setEditingDevbox] = useState<number | null>(null);
+  const [runtimeDialogOpen, setRuntimeDialogOpen] = useState(false);
+  const [selectedRuntime, setSelectedRuntime] = useState<string>("");
 
 
-  const handleAddDevbox = () => {
-    if (devboxData.name?.trim()) {
-      const newDevbox: DevBox = {
-        name: devboxData.name.trim(),
-        runtime: devboxData.runtime || "next.js",
-        ports: devboxData.ports || [],
-      };
-      onAddDevbox(newDevbox);
-      setDevboxDialogOpen(false);
-      setDevboxData({ name: "", runtime: "next.js", ports: [] });
-    }
-  };
-
-  // Update ports when runtime changes or when templates load
-  useEffect(() => {
-    if (templates && Array.isArray(templates) && devboxData.runtime) {
-      const template = templates.find((t: DevboxTemplate) => t.runtime === devboxData.runtime);
-      
-      if (template && template.config.appPorts) {
-        const templatePorts = template.config.appPorts.map((appPort: { port: number }) => ({
-          number: appPort.port,
-          publicAccess: true,
-        }));
-
-        setDevboxData(prev => ({
-          ...prev,
-          ports: templatePorts,
-        }));
-      }
-    }
-  }, [devboxData.runtime, templates]);
-
-  // Update ports when dialog opens and templates are available
-  useEffect(() => {
-    if (devboxDialogOpen && templates && Array.isArray(templates) && devboxData.runtime) {
-      const template = templates.find((t: DevboxTemplate) => t.runtime === devboxData.runtime);
-      
-      if (template && template.config.appPorts) {
-        const templatePorts = template.config.appPorts.map((appPort: { port: number }) => ({
-          number: appPort.port,
-          publicAccess: true,
-        }));
-
-        setDevboxData(prev => ({
-          ...prev,
-          ports: templatePorts,
-        }));
-      }
-    }
-  }, [devboxDialogOpen, templates, devboxData.runtime]);
-
-  const handleOpenDevboxDialog = () => {
-    const defaultRuntime = "next.js";
-    setDevboxData({
+  // Inline editing handlers
+  const handleAddDevboxInline = () => {
+    const newDevbox: DevBox = {
       name: generateDefaultName("devbox"),
-      runtime: defaultRuntime,
+      runtime: "next.js",
       ports: [],
-    });
-    setDevboxDialogOpen(true);
+    };
+    
+    // Add template ports if available
+    if (templates && Array.isArray(templates)) {
+      const template = templates.find(
+        (t: DevboxTemplate) => t.runtime === "next.js"
+      );
+
+      if (template && template.config.appPorts) {
+        const templatePorts = template.config.appPorts.map(
+          (appPort: { port: number }) => ({
+            number: appPort.port,
+            publicAccess: true,
+          })
+        );
+        newDevbox.ports = templatePorts;
+      }
+    }
+    
+    onAddDevbox(newDevbox);
   };
+
+  const handleSelectRuntime = (runtime: string) => {
+    setSelectedRuntime(runtime);
+    setRuntimeDialogOpen(false);
+    if (editingDevbox !== null) {
+      const updatedDevboxes = [...devboxes];
+      updatedDevboxes[editingDevbox].runtime = runtime as any;
+      
+      // Update ports from template if available
+      if (templates && Array.isArray(templates)) {
+        const template = templates.find(
+          (t: DevboxTemplate) => t.runtime === runtime
+        );
+
+        if (template && template.config.appPorts) {
+          const templatePorts = template.config.appPorts.map(
+            (appPort: { port: number }) => ({
+              number: appPort.port,
+              publicAccess: true,
+            })
+          );
+          updatedDevboxes[editingDevbox].ports = templatePorts;
+        }
+      }
+      
+      // Update the devbox in parent component
+      onDeleteDevbox(editingDevbox);
+      onAddDevbox(updatedDevboxes[editingDevbox]);
+      setEditingDevbox(null);
+    }
+  };
+
 
   return (
     <>
       <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Label className="text-sm font-medium">Devbox</Label>
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-6 w-6 p-0"
-            onClick={handleOpenDevboxDialog}
-            disabled={isCreating}
-          >
-            <Plus size={12} />
-          </Button>
-        </div>
+        <Label className="text-sm font-medium">Devbox</Label>
+        
+        {/* Existing devboxes */}
         {devboxes.length > 0 && (
-          <div className="grid grid-cols-3 gap-2">
+          <div className="space-y-2">
             {devboxes.map((devbox, index) => (
               <div
                 key={index}
-                className="flex items-center p-2 bg-muted/20 rounded border"
+                className="flex items-center p-2 py-1 bg-muted/20 rounded border"
               >
-                <div className="w-5 h-5 flex items-center justify-center flex-shrink-0 bg-background-tertiary rounded">
-                  <img
-                    src={
-                      DEVBOX_RUNTIME_ICONS[
-                        devbox.runtime as keyof typeof DEVBOX_RUNTIME_ICONS
-                      ] || "https://devbox.bja.sealos.run/logo.svg"
-                    }
-                    alt={`${devbox.runtime} Icon`}
-                    width={20}
-                    height={20}
-                    className="rounded"
+                {/* Runtime button on the left */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="w-5 h-5 flex items-center justify-center bg-background-tertiary rounded">
+                    <img
+                      src={
+                        DEVBOX_RUNTIME_ICONS[
+                          devbox.runtime as keyof typeof DEVBOX_RUNTIME_ICONS
+                        ] || "https://devbox.bja.sealos.run/logo.svg"
+                      }
+                      alt={`${devbox.runtime} Icon`}
+                      width={20}
+                      height={20}
+                      className="rounded"
+                    />
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="px-2 text-sm"
+                    onClick={() => {
+                      setEditingDevbox(index);
+                      setRuntimeDialogOpen(true);
+                    }}
+                    disabled={isCreating}
+                  >
+                    {devbox.runtime}
+                  </Button>
+                </div>
+                
+                {/* Ports in the middle */}
+                <div className="flex-1 mx-2">
+                  <SimplePortList
+                    ports={devbox.ports?.map((p: any) => p.number) || []}
+                    allowEditing={true}
+                    onPortsChange={(portNumbers) => {
+                      const updatedDevbox = {
+                        ...devbox,
+                        ports: portNumbers.map((num) => ({
+                          number: num,
+                          publicAccess: true,
+                        })),
+                      };
+                      onDeleteDevbox(index);
+                      onAddDevbox(updatedDevbox);
+                    }}
                   />
                 </div>
-                <span className="text-sm font-medium ml-2 truncate flex-1">
-                  {devbox.runtime}
-                </span>
+                
+                {/* Delete button on the right */}
                 <Button
-                  variant="ghost"
                   size="sm"
-                  className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground ml-1"
+                  variant="ghost"
+                  className="h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
                   onClick={() => onDeleteDevbox(index)}
+                  disabled={isCreating}
                 >
                   <X className="h-3 w-3" />
                 </Button>
@@ -178,97 +198,61 @@ export function DevboxResource({
             ))}
           </div>
         )}
+
+        {/* Add new devbox */}
+        <div
+          className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-2 hover:border-muted-foreground/50 hover:bg-muted/20 transition-colors cursor-pointer"
+          onClick={handleAddDevboxInline}
+        >
+          <div className="flex items-center justify-center gap-2">
+            <Plus className="h-4 w-4 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">
+              Add new devbox
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* Devbox Configuration Dialog */}
-      <Dialog open={devboxDialogOpen} onOpenChange={setDevboxDialogOpen}>
+      {/* Runtime Selection Dialog */}
+      <Dialog open={runtimeDialogOpen} onOpenChange={setRuntimeDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Add Devbox</DialogTitle>
+            <DialogTitle>Select Runtime</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Name</Label>
-              <Input
-                value={devboxData.name || ""}
-                onChange={(e) =>
-                  setDevboxData({ ...devboxData, name: e.target.value })
-                }
-                placeholder="Devbox name"
-                className="w-full"
-              />
-            </div>
-
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Runtime</Label>
-              <div className="grid grid-cols-5 gap-2">
-                {DEVBOX_RUNTIMES.map((runtime) => (
-                  <div
-                    key={runtime}
-                    onClick={() =>
-                      setDevboxData({ ...devboxData, runtime: runtime as any })
-                    }
-                    className={`
+            <div className="grid grid-cols-5 gap-2">
+              {DEVBOX_RUNTIMES.map((runtime) => (
+                <div
+                  key={runtime}
+                  onClick={() => handleSelectRuntime(runtime)}
+                  className={`
                     flex items-center gap-2 p-2 rounded-lg border-2 cursor-pointer transition-all
                     hover:bg-muted/50 hover:border-primary/50
                     ${
-                      (devboxData.runtime || "next.js") === runtime
+                      selectedRuntime === runtime
                         ? "border-primary bg-primary/10"
                         : "border-border hover:border-primary/30"
                     }
                   `}
-                  >
-                    <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 bg-background-tertiary rounded">
-                      <img
-                        src={
-                          DEVBOX_RUNTIME_ICONS[runtime] ||
-                          "https://devbox.bja.sealos.run/logo.svg"
-                        }
-                        alt={`${runtime} Icon`}
-                        width={24}
-                        height={24}
-                        className="rounded"
-                      />
-                    </div>
-                    <span className="text-sm font-medium leading-tight truncate">
-                      {runtime}
-                    </span>
+                >
+                  <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 bg-background-tertiary rounded">
+                    <img
+                      src={
+                        DEVBOX_RUNTIME_ICONS[runtime] ||
+                        "https://devbox.bja.sealos.run/logo.svg"
+                      }
+                      alt={`${runtime} Icon`}
+                      width={24}
+                      height={24}
+                      className="rounded"
+                    />
                   </div>
-                ))}
-              </div>
+                  <span className="text-sm font-medium leading-tight truncate">
+                    {runtime}
+                  </span>
+                </div>
+              ))}
             </div>
-
-            <div>
-              <SimplePortList
-                ports={(devboxData.ports || []).map((p: any) => p.number)}
-                allowEditing={true}
-                onPortsChange={(portNumbers) =>
-                  setDevboxData({
-                    ...devboxData,
-                    ports: portNumbers.map((num) => ({
-                      number: num,
-                      publicAccess: true,
-                    })),
-                  })
-                }
-              />
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setDevboxDialogOpen(false)}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleAddDevbox}
-              disabled={!devboxData.name?.trim()}
-              className="flex-1"
-            >
-              Add
-            </Button>
           </div>
         </DialogContent>
       </Dialog>
