@@ -1,17 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, memo } from "react";
 import {
   BaseEdge,
   EdgeProps,
   getBezierPath,
-  MarkerType,
   useInternalNode,
   EdgeLabelRenderer,
 } from "@xyflow/react";
 
 import { getEdgeParams } from "@/lib/flowgraph/edges/flowgraph-edges-utils";
-import { useProjectActions } from "@/contexts/project/project-context";
-import { useDiagnoseNetwork } from "@/hooks/copilot/use-analyze-network";
-import { useNetworkStatus } from "@/hooks/sealos/network/use-network-status";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
@@ -29,43 +25,47 @@ function FloatingErrorEdge(props: EdgeProps) {
     | BuiltinResourceTarget
     | undefined;
 
-  const { selectResource } = useProjectActions();
+
+  const { edgePath, labelX, labelY } = useMemo(() => {
+    if (!sourceNode || !targetNode) {
+      return { edgePath: '', labelX: 0, labelY: 0 };
+    }
+
+    const { sx, sy, tx, ty, sourcePos, targetPos } = getEdgeParams(
+      sourceNode,
+      targetNode
+    );
+
+    const [path, lx, ly] = getBezierPath({
+      sourceX: sx,
+      sourceY: sy,
+      sourcePosition: sourcePos,
+      targetPosition: targetPos,
+      targetX: tx,
+      targetY: ty,
+    });
+
+    return { edgePath: path, labelX: lx, labelY: ly };
+  }, [
+    sourceNode?.internals.positionAbsolute?.x,
+    sourceNode?.internals.positionAbsolute?.y,
+    targetNode?.internals.positionAbsolute?.x,
+    targetNode?.internals.positionAbsolute?.y
+  ]);
 
   if (!sourceNode || !targetNode || !resourceTarget) {
     return null;
   }
-
-  const { sx, sy, tx, ty, sourcePos, targetPos } = getEdgeParams(
-    sourceNode,
-    targetNode
-  );
-
-  const [edgePath, labelX, labelY] = getBezierPath({
-    sourceX: sx,
-    sourceY: sy,
-    sourcePosition: sourcePos,
-    targetPosition: targetPos,
-    targetX: tx,
-    targetY: ty,
-  });
 
   const errorColor = "#9F833B";
 
   const edgeStyle = {
     stroke: errorColor,
     strokeWidth: isHovered ? 2 : 1.5,
-    strokeDasharray: "5,5", // Dashed line to indicate error state
+    strokeDasharray: "5,5",
     transition: "all 0.2s ease-in-out",
   };
 
-  const handleButtonClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-
-    if (resourceTarget) {
-      selectResource(resourceTarget);
-    }
-  };
 
   return (
     <g
@@ -83,4 +83,4 @@ function FloatingErrorEdge(props: EdgeProps) {
   );
 }
 
-export default FloatingErrorEdge;
+export default memo(FloatingErrorEdge);

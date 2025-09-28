@@ -310,7 +310,7 @@ export const patchCustomResourceMetadata = createParallelAction(
     const patchBody = currentResource.metadata?.[metadataType]
       ? [
           {
-            op: "add",
+            op: "replace",
             path: `/metadata/${metadataType}/${await escapeSlash(key)}`,
             value,
           },
@@ -434,7 +434,7 @@ export const patchBuiltinResourceMetadata = createParallelAction(
     const patchBody = currentResource.metadata?.[metadataType]
       ? [
           {
-            op: "add",
+            op: "replace",
             path: `/metadata/${metadataType}/${await escapeSlash(key)}`,
             value,
           },

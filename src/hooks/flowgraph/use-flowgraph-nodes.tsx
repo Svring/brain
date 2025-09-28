@@ -1,22 +1,22 @@
 "use client";
 
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useRef } from "react";
 import type { Node, Edge } from "@xyflow/react";
 import type { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useResourceObjects } from "@/hooks/sealos/resource/use-resource-objects";
+import { useProjectNodePositions } from "@/hooks/brain/use-project-node-positions";
 import {
   convertObjectsToNodes,
   inferObjectsReliances,
   convertReliancesToEdges,
   deriveNetworkNodesAndEdges,
-  createDevGroup,
   applyLayout,
 } from "./flowgraph-utils";
 import {
   useProjectActions,
   useProjectState,
 } from "@/contexts/project/project-context";
-import { useFlowgraphActions } from "@/contexts/flowgraph/flowgraph-context";
+import { useFlowgraphActions, useFlowgraphState } from "@/contexts/flowgraph/flowgraph-context";
 
 /**
  * Hook to convert resource targets into flowgraph nodes
@@ -28,86 +28,133 @@ export const useFlowgraphNodes = (targets: ResourceTarget[]) => {
   const resourceObjectsQuery = useResourceObjects(targets);
   const { setSelectedProjectResources } = useProjectActions();
   const { selectedProject } = useProjectState();
-  const { setNodes, setEdges, fitView } = useFlowgraphActions();
+  const { setNodes, setEdges, fitView, setHasUserPositions } = useFlowgraphActions();
+  
+  const {
+    savedPositions,
+    isLoading: isLoadingPositions,
+    applySavedPositions,
+    hasSavedPositions,
+    savePositions,
+    hasCheckedPositions,
+  } = useProjectNodePositions(selectedProject || "");
 
-  // Memoize the computation of nodes and edges
+  const hasInitializedNodesRef = useRef(false);
+  const hasSetProjectResourcesRef = useRef(false);
+  const lastDataLengthRef = useRef(0);
+  const lastPositionStateRef = useRef<{ hasPositions: boolean; count: number }>({
+    hasPositions: false,
+    count: 0
+  });
+
   const { nodes, edges } = useMemo(() => {
-    // Return empty arrays if still loading or no data
     if (resourceObjectsQuery.isLoading || !resourceObjectsQuery.data) {
-      return {
-        nodes: [],
-        edges: [],
-      };
+      return { nodes: [], edges: [] };
     }
 
-    // Extract resource objects from the query results
+    if (!hasCheckedPositions) {
+      return { nodes: [], edges: [] };
+    }
+
     const objects = resourceObjectsQuery.data;
-
-    // console.log("objects", objects);
-
-    // Pass objects to the utility functions
     const baseNodes = convertObjectsToNodes(objects);
-
     const reliances = inferObjectsReliances(objects);
-
-    // Convert reliances to edges
     const baseEdges = convertReliancesToEdges(reliances, objects);
-
-    // Derive network nodes and edges from the base nodes
     const { nodes: networkNodes, edges: networkEdges } =
       deriveNetworkNodesAndEdges(objects);
-
-    // Merge base nodes and network nodes
     const mergedNodes = [...baseNodes, ...networkNodes];
-
-    // Combine all edges for layout calculation
     const allEdges = [...(baseEdges || []), ...(networkEdges || [])];
 
-    // Apply devbox grouping to merged nodes with edges
-    const groupedNodes = createDevGroup(mergedNodes, allEdges);
-
-    // Apply layout to the grouped nodes
-    const layoutedNodes = applyLayout(groupedNodes, allEdges);
+    let finalNodes: Node[];
+    
+    if (savedPositions && savedPositions.size > 0) {
+      finalNodes = applySavedPositions(mergedNodes);
+    } else {
+      finalNodes = applyLayout(mergedNodes, allEdges);
+    }
 
     return {
-      nodes: layoutedNodes,
+      nodes: finalNodes,
       edges: allEdges,
     };
-  }, [resourceObjectsQuery.data]);
+  }, [
+    resourceObjectsQuery.data, 
+    resourceObjectsQuery.isLoading,
+    hasCheckedPositions,
+    savedPositions,
+    applySavedPositions,
+  ]);
 
-  // Set nodes and edges in flowgraph context after computation
   useEffect(() => {
-    if (nodes.length > 0 || edges.length > 0) {
-      setNodes(nodes);
-      setEdges(edges);
+    const currentPositionState = {
+      hasPositions: hasSavedPositions,
+      count: savedPositions.size
+    };
+    
+    const positionStateChanged = 
+      lastPositionStateRef.current.hasPositions !== currentPositionState.hasPositions ||
+      lastPositionStateRef.current.count !== currentPositionState.count;
+
+    if (nodes.length > 0 && hasCheckedPositions) {
+      if (!hasInitializedNodesRef.current || positionStateChanged) {
+        setHasUserPositions(hasSavedPositions);
+        setNodes(nodes, hasSavedPositions);
+        setEdges(edges);
+        hasInitializedNodesRef.current = true;
+        lastPositionStateRef.current = currentPositionState;
+        
+        setTimeout(() => fitView(), 100);
+      }
     }
-  }, [nodes, edges]);
+  }, [
+    nodes, 
+    edges, 
+    hasCheckedPositions, 
+    hasSavedPositions, 
+    savedPositions.size,
+    setHasUserPositions, 
+    setNodes, 
+    setEdges, 
+    fitView
+  ]);
 
-  // Set selected project resources when data is available
   useEffect(() => {
-    if (resourceObjectsQuery.data && !resourceObjectsQuery.isLoading) {
+    if (resourceObjectsQuery.data) {
+      const currentLength = resourceObjectsQuery.data.length;
+      if (currentLength !== lastDataLengthRef.current) {
+        hasInitializedNodesRef.current = false;
+        lastDataLengthRef.current = currentLength;
+      }
+    }
+  }, [resourceObjectsQuery.data?.length]);
+
+  useEffect(() => {
+    if (
+      resourceObjectsQuery.data && 
+      !resourceObjectsQuery.isLoading && 
+      !hasSetProjectResourcesRef.current
+    ) {
       setSelectedProjectResources(
         resourceObjectsQuery.data.map((object) => ({
           kind: object.kind.toLowerCase(),
           name: object.name,
         }))
       );
-      // Fit view to show all resources when project resources are set
-      fitView();
+      hasSetProjectResourcesRef.current = true;
     }
   }, [
-    resourceObjectsQuery.data?.length,
-    // resourceObjectsQuery.isLoading,
-    selectedProject,
+    resourceObjectsQuery.data,
+    resourceObjectsQuery.isLoading,
+    setSelectedProjectResources
   ]);
 
   return {
     nodes,
     edges,
-    isLoading: resourceObjectsQuery.isLoading,
+    isLoading: resourceObjectsQuery.isLoading || isLoadingPositions || !hasCheckedPositions,
     isPending: resourceObjectsQuery.pending,
     error: resourceObjectsQuery.error,
-    // Expose the raw resource objects query for additional data if needed
     resourceObjectsQuery,
+    savePositions,
   };
 };

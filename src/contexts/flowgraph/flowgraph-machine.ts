@@ -2,49 +2,22 @@
 
 import { assign, createMachine } from "xstate";
 import type { Edge, Node } from "@xyflow/react";
-import { applySplitLayout } from "@/lib/flowgraph/layout";
+import { applyLayout } from "@/lib/flowgraph/layout/normal-layout";
 
-const LAYOUT_OPTIONS = { direction: "BT", rankSep: 150, nodeSep: 150 } as const;
-const SPLIT_OPTIONS = {
-  groupId: "devbox-group",
-  groupPadding: 20,
-  gapBetweenGroupAndRest: 200,
-  groupPosition: { x: -700, y: 0 },
-  childNodeWidth: 280,
-  childNodeHeight: 200,
-  // Account for smaller network nodes inside the group
-  // StatefulSet nodes are taller due to hem component
-  getChildNodeSize: (node: Node) => {
+const LAYOUT_OPTIONS = { 
+  direction: "BT" as const, 
+  rankSep: 150, 
+  nodeSep: 150,
+  getNodeSize: (node: Node) => {
     if (node.type === "network") {
       return { width: 280, height: 56 };
     }
     if (node.type === "statefulset") {
-      return { width: 280, height: 240 }; // h-60 in Tailwind = 240px (hem component height)
+      return { width: 280, height: 240 };
     }
     return { width: 280, height: 200 };
   },
-  // Treat network nodes as shorter than default nodes during outside layout
-  // StatefulSet nodes are taller due to hem component
-  getOutsideNodeSize: (node: Node) => {
-    if (node.type === "network") {
-      return { width: 280, height: 56 }; // h-14 in Tailwind = 56px
-    }
-    if (node.type === "statefulset") {
-      return { width: 280, height: 240 }; // h-60 in Tailwind = 240px (hem component height)
-    }
-    return { width: 280, height: 200 };
-  },
-  groupLayoutOptions: {
-    ...LAYOUT_OPTIONS,
-    edgeAware: true,
-    barycentricIterations: 3,
-  },
-  outsideLayoutOptions: {
-    ...LAYOUT_OPTIONS,
-    edgeAware: true,
-    barycentricIterations: 3,
-  },
-} as const;
+};
 
 export interface FlowgraphContext {
   nodes: Node[];
@@ -53,14 +26,17 @@ export interface FlowgraphContext {
   selectedEdge: string | null;
   fitViewTrigger: number;
   refreshTrigger: number;
+  isDragging: boolean;
+  hasUserPositions: boolean;
 }
 
 export type FlowgraphEvent =
-  | { type: "SET_NODES"; nodes: Node[] }
+  | { type: "SET_NODES"; nodes: Node[]; skipLayout?: boolean }
   | { type: "SET_EDGES"; edges: Edge[] }
   | { type: "ADD_NODE"; node: Node }
   | { type: "ADD_EDGE"; edge: Edge }
   | { type: "UPDATE_NODE"; node: Node }
+  | { type: "UPDATE_NODE_POSITION"; id: string; position: { x: number; y: number } }
   | { type: "UPDATE_EDGE"; edge: Edge }
   | { type: "REMOVE_NODE"; id: string }
   | { type: "REMOVE_EDGE"; id: string }
@@ -70,10 +46,12 @@ export type FlowgraphEvent =
   | { type: "CLEAR_SELECTED_EDGE" }
   | { type: "CLEAR_ALL_STATE" }
   | { type: "FIT_VIEW" }
-  | { type: "REFRESH" };
+  | { type: "REFRESH" }
+  | { type: "START_DRAGGING" }
+  | { type: "STOP_DRAGGING" }
+  | { type: "SET_HAS_USER_POSITIONS"; value: boolean };
 
 export const flowgraphMachine = createMachine({
-  /** XState v5 generics */
   types: {} as { context: FlowgraphContext; events: FlowgraphEvent },
   id: "flowgraph",
   initial: "idle",
@@ -84,6 +62,8 @@ export const flowgraphMachine = createMachine({
     selectedEdge: "",
     fitViewTrigger: 0,
     refreshTrigger: 0,
+    isDragging: false,
+    hasUserPositions: false,
   },
   states: {
     idle: {},
@@ -91,31 +71,41 @@ export const flowgraphMachine = createMachine({
   on: {
     SET_NODES: {
       actions: assign({
-        nodes: ({ context, event }) =>
-          applySplitLayout(event.nodes, context.edges, SPLIT_OPTIONS),
+        nodes: ({ context, event }) => {
+          if (event.skipLayout || context.hasUserPositions) {
+            return event.nodes;
+          }
+          return applyLayout(event.nodes, context.edges, LAYOUT_OPTIONS);
+        },
       }),
     },
     SET_EDGES: {
       actions: assign({
         edges: ({ event }) => event.edges,
-        nodes: ({ context, event }) =>
-          applySplitLayout(context.nodes, event.edges, SPLIT_OPTIONS),
+        nodes: ({ context, event }) => {
+          if (context.hasUserPositions) {
+            return context.nodes;
+          }
+          return applyLayout(context.nodes, event.edges, LAYOUT_OPTIONS);
+        },
       }),
     },
     ADD_NODE: {
       actions: assign({
         nodes: ({ context, event }) => {
-          // Check if node already exists
           const existingNode = context.nodes.find(
             (n) => n.id === event.node.id
           );
           if (existingNode) {
-            return context.nodes; // Don't add duplicate
+            return context.nodes;
           }
-          return applySplitLayout(
+          if (context.hasUserPositions) {
+            return [...context.nodes, event.node];
+          }
+          return applyLayout(
             [...context.nodes, event.node],
             context.edges,
-            SPLIT_OPTIONS
+            LAYOUT_OPTIONS
           );
         },
       }),
@@ -123,41 +113,51 @@ export const flowgraphMachine = createMachine({
     ADD_EDGE: {
       actions: assign({
         edges: ({ context, event }) => {
-          // Check if edge already exists
           const existingEdge = context.edges.find(
             (e) => e.id === event.edge.id
           );
           if (existingEdge) {
-            return context.edges; // Don't add duplicate
+            return context.edges;
           }
           return [...context.edges, event.edge];
         },
         nodes: ({ context, event }) => {
-          // Only re-layout if edge was actually added
           const existingEdge = context.edges.find(
             (e) => e.id === event.edge.id
           );
-          if (existingEdge) {
-            return context.nodes; // Don't re-layout for duplicates
+          if (existingEdge || context.hasUserPositions) {
+            return context.nodes;
           }
-          return applySplitLayout(
+          return applyLayout(
             context.nodes,
             [...context.edges, event.edge],
-            SPLIT_OPTIONS
+            LAYOUT_OPTIONS
           );
         },
       }),
     },
     UPDATE_NODE: {
       actions: assign({
+        nodes: ({ context, event }) => {
+          const updatedNodes = context.nodes.map((n) =>
+            n.id === event.node.id ? { ...n, ...event.node } : n
+          );
+          if (context.hasUserPositions) {
+            return updatedNodes;
+          }
+          return applyLayout(updatedNodes, context.edges, LAYOUT_OPTIONS);
+        },
+      }),
+    },
+    UPDATE_NODE_POSITION: {
+      actions: assign({
         nodes: ({ context, event }) =>
-          applySplitLayout(
-            context.nodes.map((n) =>
-              n.id === event.node.id ? { ...n, ...event.node } : n
-            ),
-            context.edges,
-            SPLIT_OPTIONS
+          context.nodes.map((n) =>
+            n.id === event.id
+              ? { ...n, position: event.position }
+              : n
           ),
+        hasUserPositions: () => true,
       }),
     },
     UPDATE_EDGE: {
@@ -166,65 +166,65 @@ export const flowgraphMachine = createMachine({
           context.edges.map((e) =>
             e.id === event.edge.id ? { ...e, ...event.edge } : e
           ),
-        nodes: ({ context, event }) =>
-          applySplitLayout(
+        nodes: ({ context, event }) => {
+          if (context.hasUserPositions) {
+            return context.nodes;
+          }
+          return applyLayout(
             context.nodes,
             context.edges.map((e) =>
               e.id === event.edge.id ? { ...e, ...event.edge } : e
             ),
-            SPLIT_OPTIONS
-          ),
+            LAYOUT_OPTIONS
+          );
+        },
       }),
     },
     REMOVE_NODE: {
       actions: assign({
-        nodes: ({ context, event }) =>
-          applySplitLayout(
-            context.nodes.filter((n) => n.id !== event.id),
-            context.edges,
-            SPLIT_OPTIONS
-          ),
+        nodes: ({ context, event }) => {
+          const filteredNodes = context.nodes.filter((n) => n.id !== event.id);
+          if (context.hasUserPositions) {
+            return filteredNodes;
+          }
+          return applyLayout(filteredNodes, context.edges, LAYOUT_OPTIONS);
+        },
       }),
     },
     REMOVE_EDGE: {
       actions: assign({
         edges: ({ context, event }) =>
           context.edges.filter((e) => e.id !== event.id),
-        nodes: ({ context, event }) =>
-          applySplitLayout(
+        nodes: ({ context, event }) => {
+          if (context.hasUserPositions) {
+            return context.nodes;
+          }
+          return applyLayout(
             context.nodes,
             context.edges.filter((e) => e.id !== event.id),
-            SPLIT_OPTIONS
-          ),
+            LAYOUT_OPTIONS
+          );
+        },
       }),
     },
     SELECT_NODE: {
       actions: assign({
         selectedNode: ({ event }) => event.id,
-        // nodes: ({ context }) =>
-        //   // applySplitLayout(context.nodes, context.edges, SPLIT_OPTIONS),
-        //   context.nodes,
       }),
     },
     SELECT_EDGE: {
       actions: assign({
         selectedEdge: ({ event }) => event.id,
-        // nodes: ({ context }) =>
-        //   applySplitLayout(context.nodes, context.edges, SPLIT_OPTIONS),
       }),
     },
     CLEAR_SELECTED_NODE: {
       actions: assign({
         selectedNode: () => null,
-        // nodes: ({ context }) =>
-        //   applySplitLayout(context.nodes, context.edges, SPLIT_OPTIONS),
       }),
     },
     CLEAR_SELECTED_EDGE: {
       actions: assign({
         selectedEdge: () => null,
-        // nodes: ({ context }) =>
-        //   applySplitLayout(context.nodes, context.edges, SPLIT_OPTIONS),
       }),
     },
     CLEAR_ALL_STATE: {
@@ -235,6 +235,8 @@ export const flowgraphMachine = createMachine({
         selectedEdge: () => null,
         fitViewTrigger: () => 0,
         refreshTrigger: () => 0,
+        isDragging: () => false,
+        hasUserPositions: () => false,
       }),
     },
     FIT_VIEW: {
@@ -245,6 +247,21 @@ export const flowgraphMachine = createMachine({
     REFRESH: {
       actions: assign({
         refreshTrigger: ({ context }) => context.refreshTrigger + 1,
+      }),
+    },
+    START_DRAGGING: {
+      actions: assign({
+        isDragging: () => true,
+      }),
+    },
+    STOP_DRAGGING: {
+      actions: assign({
+        isDragging: () => false,
+      }),
+    },
+    SET_HAS_USER_POSITIONS: {
+      actions: assign({
+        hasUserPositions: ({ event }) => event.value,
       }),
     },
   },

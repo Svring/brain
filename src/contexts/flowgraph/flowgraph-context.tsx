@@ -1,18 +1,10 @@
 "use client";
 
-import { createBrowserInspector } from "@statelyai/inspect";
 import { useMachine } from "@xstate/react";
 import { createContext, type ReactNode, useContext } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import { flowgraphMachine } from "@/contexts/flowgraph/flowgraph-machine";
-import type { Edge, Node, EdgeChange, NodeChange } from "@xyflow/react";
-import {
-  applyEdgeChanges,
-  applyNodeChanges,
-  useReactFlow,
-} from "@xyflow/react";
-
-// const inspector = createBrowserInspector();
+import type { Edge, Node } from "@xyflow/react";
 
 interface FlowgraphContextValue {
   state: StateFrom<typeof flowgraphMachine>;
@@ -54,18 +46,29 @@ export function useFlowgraphState() {
     selectedEdge: state.context.selectedEdge,
     fitViewTrigger: state.context.fitViewTrigger,
     refreshTrigger: state.context.refreshTrigger,
+    hasUserPositions: state.context.hasUserPositions,
   };
 }
 
-export function useFlowgraphActions() {
-  const { state, send } = useFlowgraphContext();
+export const useFlowgraphActions = () => {
+  const context = useContext(FlowgraphContext);
+  if (!context) {
+    throw new Error(
+      "useFlowgraphActions must be used within a FlowgraphProvider"
+    );
+  }
+
+  const { send } = context;
 
   return {
-    setNodes: (nodes: Node[]) => send({ type: "SET_NODES", nodes }),
+    setNodes: (nodes: Node[], skipLayout?: boolean) =>
+      send({ type: "SET_NODES", nodes, skipLayout }),
     setEdges: (edges: Edge[]) => send({ type: "SET_EDGES", edges }),
     addNode: (node: Node) => send({ type: "ADD_NODE", node }),
     addEdge: (edge: Edge) => send({ type: "ADD_EDGE", edge }),
     updateNode: (node: Node) => send({ type: "UPDATE_NODE", node }),
+    updateNodePosition: (id: string, position: { x: number; y: number }) =>
+      send({ type: "UPDATE_NODE_POSITION", id, position }),
     updateEdge: (edge: Edge) => send({ type: "UPDATE_EDGE", edge }),
     removeNode: (id: string) => send({ type: "REMOVE_NODE", id }),
     removeEdge: (id: string) => send({ type: "REMOVE_EDGE", id }),
@@ -74,24 +77,12 @@ export function useFlowgraphActions() {
     clearSelectedNode: () => send({ type: "CLEAR_SELECTED_NODE" }),
     clearSelectedEdge: () => send({ type: "CLEAR_SELECTED_EDGE" }),
     clearAllState: () => send({ type: "CLEAR_ALL_STATE" }),
-    focusNode: (nodeId: string) => {
-      const node = state.context.nodes.find((n) => n.id === nodeId);
-      if (node) {
-        send({ type: "SELECT_NODE", id: nodeId });
-      }
-    },
-    onNodesChange: (changes: NodeChange[]) =>
-      send({
-        type: "SET_NODES",
-        nodes: applyNodeChanges(changes, state.context.nodes),
-      }),
-    onEdgesChange: (changes: EdgeChange[]) =>
-      send({
-        type: "SET_EDGES",
-        edges: applyEdgeChanges(changes, state.context.edges),
-      }),
     fitView: () => send({ type: "FIT_VIEW" }),
     refresh: () => send({ type: "REFRESH" }),
+    startDragging: () => send({ type: "START_DRAGGING" }),
+    stopDragging: () => send({ type: "STOP_DRAGGING" }),
+    setHasUserPositions: (value: boolean) =>
+      send({ type: "SET_HAS_USER_POSITIONS", value }),
   };
-}
+};
 

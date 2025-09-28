@@ -1,24 +1,22 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { useParams } from "next/navigation";
-import { ReactFlow } from "@xyflow/react";
+import { ReactFlow, useNodesState, useEdgesState, NodeChange, EdgeChange, Node, Edge } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-
 import ChatManager from "@/components/chat/chat-manager";
 import { FlowgraphBreadcrumb } from "@/components/flowgraph/flowgraph-breadcrumb";
 import { FlowgraphCommandDialog } from "@/components/flowgraph/command/flowgraph-command-dialog";
 import { FlowgraphActions } from "@/components/flowgraph/flowgraph-actions";
 import FloatingConnectionLine from "@/components/flowgraph/edge/floating-connection-line";
 import { FlowgraphChatLoadingHint } from "@/components/flowgraph/flowgraph-chat-loading-hint";
-
 import { useFlowgraphCommand } from "@/hooks/flowgraph/use-flowgraph-command";
 import useProjectResources from "@/hooks/brain/use-project-resources";
 import { useFlowgraphNodes } from "@/hooks/flowgraph/use-flowgraph-nodes";
 import { useFlowgraphFitView } from "@/hooks/flowgraph/use-flowgraph-fitview";
 import { useProjectActions } from "@/contexts/project/project-context";
 import { useChatState, useChatActions } from "@/contexts/chat/chat-context";
-import { useFlowgraphState } from "@/contexts/flowgraph/flowgraph-context";
+import { useFlowgraphState, useFlowgraphActions } from "@/contexts/flowgraph/flowgraph-context";
 import { cn } from "@/lib/utils";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { REACT_FLOW_CONFIG } from "@/lib/flowgraph/flowgraph-constant/flowgraph-constant-config";
@@ -37,9 +35,7 @@ function ProjectFloatingUI({
   hasFocusedChat: boolean;
 }) {
   const { isOpen, onOpenChange, onOpen, onClose } = useFlowgraphCommand();
-  // const { nodes } = useFlowgraphState();
 
-  // Don't show floating UI when loading or when nodes/edges are empty
   const shouldShowLoading = isLoading;
 
   if (shouldShowLoading) {
@@ -55,9 +51,7 @@ function ProjectFloatingUI({
       <div
         className={cn(
           "absolute top-2 z-40 bg-background/30 backdrop-blur-lg rounded-lg p-2 transition-all duration-300 ease-in-out",
-          hasFocusedChat
-            ? "right-2" // Stay 2 units from the right edge of the flow container (which is already pushed left)
-            : "right-2"
+          hasFocusedChat ? "right-2" : "right-2"
         )}
       >
         <FlowgraphActions onOpenCommand={onOpen} />
@@ -76,49 +70,119 @@ function ProjectFlow({
   projectName,
   isLoadingResources,
   isLoading,
+  savePositions,
 }: {
   projectName: string;
   isLoadingResources: boolean;
   isLoading: boolean;
+  savePositions: (nodes: any[]) => void;
 }) {
   const { focusedResourceTarget } = useChatState();
   const { closeChat, closeProjectChat, openProjectChat } = useChatActions();
-  const { nodes, edges } = useFlowgraphState();
+
+  const { nodes: contextNodes, edges: contextEdges } = useFlowgraphState();
+  const { updateNodePosition, startDragging, stopDragging } = useFlowgraphActions();
   
-  // Use the fit view hook to handle fitViewTrigger
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  
+  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const hasInitializedRef = useRef(false);
+  const isDraggingRef = useRef(false);
+  
+  useEffect(() => {
+    if (!isDraggingRef.current && contextNodes.length > 0) {
+      if (!hasInitializedRef.current || nodes.length !== contextNodes.length) {
+        setNodes(contextNodes);
+        hasInitializedRef.current = true;
+      }
+    }
+  }, [contextNodes.length]);
+  
+  useEffect(() => {
+    setEdges(contextEdges);
+  }, [contextEdges, setEdges]);
+  
   useFlowgraphFitView();
 
-  // Handle pane click to open/close project chat
+  const handleNodesChange = useCallback(
+    (changes: NodeChange[]) => {
+      onNodesChange(changes);
+      
+      for (const change of changes) {
+        if (change.type === 'position') {
+          if (change.dragging === true) {
+            if (!isDraggingRef.current) {
+              isDraggingRef.current = true;
+              setIsDragging(true);
+              startDragging();
+            }
+          } else if (change.dragging === false && isDraggingRef.current) {
+            isDraggingRef.current = false;
+            setIsDragging(false);
+            stopDragging();
+            
+            if (saveTimerRef.current) {
+              clearTimeout(saveTimerRef.current);
+            }
+            
+            saveTimerRef.current = setTimeout(() => {
+              setNodes((currentNodes) => {
+                requestAnimationFrame(() => {
+                  currentNodes.forEach((node) => {
+                    updateNodePosition(node.id, node.position);
+                  });
+                  savePositions(currentNodes);
+                });
+                return currentNodes;
+              });
+            }, 1500);
+          }
+        }
+      }
+    },
+    [onNodesChange, startDragging, stopDragging, updateNodePosition, savePositions, setNodes]
+  );
+
+  const handleEdgesChange = useCallback(
+    (changes: EdgeChange[]) => {
+      onEdgesChange(changes);
+    },
+    [onEdgesChange]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+      }
+    };
+  }, []);
+
   const handlePaneClick = () => {
     const hasFocusedChat = !!focusedResourceTarget;
 
     if (hasFocusedChat) {
-      // If any chat is open, close it
       if (focusedResourceTarget) {
-        // Check if it's a project chat key (starts with "__project__")
         if (focusedResourceTarget.startsWith("__project__")) {
           closeProjectChat(projectName);
         } else {
-          // It's a resource chat, parse and close it
           const resourceTarget = JSON.parse(focusedResourceTarget);
           closeChat(resourceTarget);
         }
       }
     } else {
-      // No chat is open, open project chat
       openProjectChat(projectName);
     }
   };
 
-  // Handle edge click
   const handleEdgeClick = (event: React.MouseEvent, edge: any) => {
-    // Check if this is a floating error edge (network-related)
     if (
       edge.type === "floatingError" &&
       edge.target &&
       edge.target.startsWith("network-")
     ) {
-      // Extract the target node from the edge
       const targetNodeId = edge.target;
       const targetNode = nodes.find((node) => node.id === targetNodeId);
 
@@ -155,8 +219,13 @@ function ProjectFlow({
       fitViewOptions={REACT_FLOW_CONFIG.fitViewOptions}
       nodes={nodes}
       nodeTypes={nodeTypes}
+      nodesDraggable={true}
+      nodesConnectable={false}
+      elementsSelectable={false}
+      onNodesChange={handleNodesChange}
+      onEdgesChange={handleEdgesChange}
       panOnScroll
-      panOnDrag
+      panOnDrag={true}
       zoomOnScroll
       zoomOnPinch
       snapToGrid
@@ -165,6 +234,14 @@ function ProjectFlow({
       proOptions={REACT_FLOW_CONFIG.proOptions}
       onPaneClick={handlePaneClick}
       onEdgeClick={handleEdgeClick}
+      deleteKeyCode={null}
+      multiSelectionKeyCode={null}
+      minZoom={0.2}
+      maxZoom={2}
+      elevateNodesOnSelect={false}
+      selectNodesOnDrag={false}
+      attributionPosition="bottom-left"
+      preventScrolling={false}
     />
   );
 }
@@ -180,20 +257,13 @@ function ProjectFlowWithLoading({
   isLoadingResources: boolean;
   hasFocusedChat: boolean;
 }) {
-  // Ref to prevent isLoading from being set to true again after first false
   const hasLoadedOnceRef = useRef(false);
+  const { nodes } = useFlowgraphState();
+  const { isLoading: rawIsLoading, savePositions } = useFlowgraphNodes(resourceTargets);
 
-  // Get nodes and edges from flowgraph context
-  const { nodes, edges } = useFlowgraphState();
-
-  // Still use the hook for loading state and to trigger computation
-  const { isLoading: rawIsLoading } = useFlowgraphNodes(resourceTargets);
-
-  // Show loading if it hasn't loaded once before OR if there are no nodes
   const isLoading =
     (rawIsLoading && !hasLoadedOnceRef.current) || nodes.length < 1;
 
-  // Track when loading completes for the first time
   useEffect(() => {
     if (!rawIsLoading && !hasLoadedOnceRef.current) {
       hasLoadedOnceRef.current = true;
@@ -206,6 +276,7 @@ function ProjectFlowWithLoading({
         projectName={projectName}
         isLoadingResources={isLoadingResources}
         isLoading={isLoading}
+        savePositions={savePositions}
       />
       <ProjectFloatingUI
         projectName={projectName}
@@ -225,7 +296,6 @@ export default function ProjectPage() {
   const { activeResourceTargets, focusedResourceTarget } = useChatState();
   const { closeChat, closeProjectChat, openProjectChat } = useChatActions();
 
-  // Fetch project resources
   const { targets, isLoading: isLoadingResources } =
     useProjectResources(projectName);
 
@@ -233,41 +303,23 @@ export default function ProjectPage() {
     selectProject(projectName);
     clearSelectedProjectResources();
 
-    // Clear any focused chat when entering a new project, but only if it's not the current project's chat
     if (focusedResourceTarget) {
-      // Check if it's a project chat key (starts with "__project__")
       if (focusedResourceTarget.startsWith("__project__")) {
-        // Only close if it's not the current project's chat
         const currentProjectChatKey = `__project__${projectName}`;
         if (focusedResourceTarget !== currentProjectChatKey) {
           closeProjectChat(projectName);
         } else {
-          // If it's the current project's chat, ensure it's properly opened
-          // This will trigger the ProjectChatInstanceProvider's auto-select logic
-          console.log("ProjectPage - Opening project chat and triggering thread selection:", {
-            projectName,
-            focusedResourceTarget,
-            currentProjectChatKey: `__project__${projectName}`,
-          });
-          
           openProjectChat(projectName);
           
-          // Emit event to trigger thread selection in ProjectChatInstanceProvider
           const triggerThreadSelectionEvent = new CustomEvent("triggerProjectThreadSelection", {
             detail: {
               projectName,
             },
           });
           
-          console.log("ProjectPage - Dispatching triggerProjectThreadSelection event:", {
-            projectName,
-            eventType: "triggerProjectThreadSelection",
-          });
-          
           window.dispatchEvent(triggerThreadSelectionEvent);
         }
       } else {
-        // It's a resource chat, parse and close it
         const resourceTarget = JSON.parse(focusedResourceTarget);
         closeChat(resourceTarget);
       }
@@ -275,16 +327,12 @@ export default function ProjectPage() {
 
     return () => {
       clearSelectedProject();
-      // Close all chats when exiting the project page
       closeProjectChat(projectName);
-      // Close all resource chats
       activeResourceTargets.forEach((targetKey) => {
-        // Parse the target key back to ResourceTarget
         const resourceTarget = JSON.parse(targetKey);
         closeChat(resourceTarget);
       });
     };
-    // NOTE: To Agent: this dependency only need a projectName, do not add functions here.
   }, [projectName]);
 
   const hasFocusedChat = !!focusedResourceTarget;
@@ -294,7 +342,6 @@ export default function ProjectPage() {
       <div
         className={cn(
           "absolute inset-0 transition-all duration-300 ease-in-out",
-          // Use max(35%, 28rem) so when the screen is narrow, we still reserve at least 28rem for chat
           hasFocusedChat ? "right-[max(35%,28rem)]" : "right-0"
         )}
       >
@@ -307,7 +354,6 @@ export default function ProjectPage() {
       </div>
       <div
         className={cn(
-          // Match width with the reserved right inset above. 28rem equals Tailwind's md (min-w-md ~ 28rem)
           "absolute top-0 right-0 h-full w-[max(35%,28rem)] min-w-[28rem] transition-all duration-300 ease-in-out z-30",
           hasFocusedChat ? "translate-x-0" : "translate-x-full"
         )}

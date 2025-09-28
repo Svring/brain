@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, memo } from "react";
 import {
   BaseEdge,
   EdgeProps,
   getBezierPath,
-  MarkerType,
   useInternalNode,
   EdgeLabelRenderer,
 } from "@xyflow/react";
@@ -17,23 +16,36 @@ function FloatingEdge(props: EdgeProps) {
   const sourceNode = useInternalNode(source);
   const targetNode = useInternalNode(target);
 
+  const { edgePath, labelX, labelY, tx, ty } = useMemo(() => {
+    if (!sourceNode || !targetNode) {
+      return { edgePath: '', labelX: 0, labelY: 0, tx: 0, ty: 0 };
+    }
+
+    const { sx, sy, tx, ty, sourcePos, targetPos } = getEdgeParams(
+      sourceNode,
+      targetNode
+    );
+
+    const [path, lx, ly] = getBezierPath({
+      sourceX: sx,
+      sourceY: sy,
+      sourcePosition: sourcePos,
+      targetPosition: targetPos,
+      targetX: tx,
+      targetY: ty,
+    });
+
+    return { edgePath: path, labelX: lx, labelY: ly, tx, ty };
+  }, [
+    sourceNode?.internals.positionAbsolute?.x,
+    sourceNode?.internals.positionAbsolute?.y,
+    targetNode?.internals.positionAbsolute?.x,
+    targetNode?.internals.positionAbsolute?.y
+  ]);
+
   if (!sourceNode || !targetNode) {
     return null;
   }
-
-  const { sx, sy, tx, ty, sourcePos, targetPos } = getEdgeParams(
-    sourceNode,
-    targetNode
-  );
-
-  const [edgePath, labelX, labelY] = getBezierPath({
-    sourceX: sx,
-    sourceY: sy,
-    sourcePosition: sourcePos,
-    targetPosition: targetPos,
-    targetX: tx,
-    targetY: ty,
-  });
 
   const edgeStyle = {
     stroke: isHovered ? "var(--color-theme-blue)" : "hsl(var(--primary))",
@@ -42,7 +54,6 @@ function FloatingEdge(props: EdgeProps) {
     ...style,
   };
 
-  // Check if this is a devbox to launchpad connection
   const isDevboxToLaunchpad =
     sourceNode.type === "devbox" &&
     (targetNode.type === "deployment" || targetNode.type === "statefulset") &&
@@ -96,4 +107,4 @@ function FloatingEdge(props: EdgeProps) {
   );
 }
 
-export default FloatingEdge;
+export default memo(FloatingEdge);
