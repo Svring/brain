@@ -28,20 +28,20 @@ export const GetDevboxToolMessage: React.FC<GetDevboxToolMessageProps> = ({
     if (!isApproved) {
       return {
         icon: <CircleSlash className="h-4 w-4 text-theme-yellow" />,
-        text: "Rejected",
+        text: "Devbox details retrieval rejected",
       };
     }
 
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: "Failed",
+        text: "Devbox details retrieval failed",
       };
     }
 
     return {
       icon: <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />,
-      text: "Retrieved",
+      text: "Devbox details retrieved successfully",
     };
   };
 

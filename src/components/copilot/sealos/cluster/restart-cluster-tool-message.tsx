@@ -38,20 +38,20 @@ export const RestartClusterToolMessage: React.FC<
     if (!isApproved) {
       return {
         icon: <CircleSlash className="h-4 w-4 text-theme-yellow" />,
-        text: "Rejected",
+        text: "Cluster restart rejected",
       };
     }
 
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: "Failed",
+        text: "Cluster restart failed",
       };
     }
 
     return {
       icon: <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />,
-      text: "Restarted",
+      text: "Cluster restarted successfully",
     };
   };
 

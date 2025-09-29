@@ -32,20 +32,20 @@ export const UpdateClusterToolMessage: React.FC<UpdateClusterToolMessageProps> =
     if (!isApproved) {
       return {
         icon: <CircleSlash className="h-4 w-4 text-theme-yellow" />,
-        text: "Rejected",
+        text: "Cluster update rejected",
       };
     }
 
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: "Failed",
+        text: "Cluster update failed",
       };
     }
 
     return {
       icon: <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />,
-      text: "Update succeeded:",
+      text: "Cluster updated successfully:",
     };
   };
 

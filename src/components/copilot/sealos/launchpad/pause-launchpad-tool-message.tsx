@@ -30,20 +30,20 @@ export const PauseLaunchpadToolMessage: React.FC<PauseLaunchpadToolMessageProps>
     if (!isApproved) {
       return {
         icon: <CircleSlash className="h-4 w-4 text-theme-yellow" />,
-        text: "Rejected",
+        text: "Launchpad pause rejected",
       };
     }
 
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: "Failed",
+        text: "Launchpad pause failed",
       };
     }
 
     return {
       icon: <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />,
-      text: "Paused",
+      text: "Launchpad paused successfully",
     };
   };
 

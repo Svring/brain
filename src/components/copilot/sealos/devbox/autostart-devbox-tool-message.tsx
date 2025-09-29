@@ -38,7 +38,7 @@ export const AutostartDevboxToolMessage: React.FC<
     if (!isApproved) {
       return {
         icon: <CircleSlash className="h-4 w-4 text-theme-yellow" />,
-        text: "Devbox autostart action rejected",
+        text: "Devbox autostart rejected",
       };
     }
 
@@ -51,7 +51,7 @@ export const AutostartDevboxToolMessage: React.FC<
 
     return {
       icon: <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />,
-      text: "Devbox has been autostarted",
+      text: "Devbox autostarted successfully",
     };
   };
 

@@ -68,9 +68,7 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
         const config = isProduction
           ? {
               apiKey: brainToken ? `sk-${brainToken.key}` : undefined,
-              baseUrl: aiProxyContext.baseUrl
-                ? `http://aiproxy.${aiProxyContext.baseUrl}/v1`
-                : undefined,
+              baseUrl: `http://aiproxy-free.aiproxy-system.svc/v1`,
               modelName:
                 aiProxyContext.baseUrl?.endsWith("io") &&
                 !aiProxyContext.baseUrl?.endsWith("nip.io")
@@ -79,7 +77,9 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
             }
           : {
               apiKey: auth?.apiKey,
-              baseUrl: auth?.baseUrl,
+              baseUrl: aiProxyContext.baseUrl
+                ? `http://aiproxy.${aiProxyContext.baseUrl}/v1`
+                : auth?.baseUrl,
               modelName: "gpt-4.1",
             };
 

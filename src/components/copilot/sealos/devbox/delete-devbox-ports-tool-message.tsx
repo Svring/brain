@@ -28,20 +28,20 @@ export const DeleteDevboxPortsToolMessage: React.FC<DeleteDevboxPortsToolMessage
     if (!isApproved) {
       return {
         icon: <CircleSlash className="h-4 w-4 text-theme-yellow" />,
-        text: "Devbox ports deletion rejected"
+        text: "Devbox ports deletion rejected",
       };
     }
-    
+
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Devbox ports deletion failed"
+        text: result.message || "Devbox ports deletion failed",
       };
     }
-    
+
     return {
       icon: <CircleCheckBigIcon className="h-4 w-4 text-green-600" />,
-      text: "Devbox ports deleted successfully"
+      text: "Devbox ports deleted successfully",
     };
   };
 

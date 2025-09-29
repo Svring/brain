@@ -32,20 +32,20 @@ export const GetClusterToolMessage: React.FC<GetClusterToolMessageProps> = ({
     if (!isApproved) {
       return {
         icon: <CircleSlash className="h-4 w-4 text-theme-yellow" />,
-        text: "Rejected",
+        text: "Cluster details retrieval rejected",
       };
     }
 
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: "Failed",
+        text: "Cluster details retrieval failed",
       };
     }
 
     return {
       icon: <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />,
-      text: "Retrieved",
+      text: "Cluster details retrieved successfully",
     };
   };
 

@@ -29,9 +29,10 @@ import { useAccountBalance } from "@/hooks/sealos/cost-center/use-account-balanc
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import { useEffect } from "react";
 
 export default function AppSidebar() {
-  const { mode } = useAuthState();
+  const { mode, auth } = useAuthState();
   const { k8s } = useTRPCClients();
 
   // Fetch account balance and plan transaction data
@@ -56,7 +57,46 @@ export default function AppSidebar() {
 
   // console.log("resourceQuota", resourceQuota);
 
-  const isLoading = balanceLoading || isResourceQuotaLoading;
+  // Fetch AI proxy usage data - only in production mode
+  const { data: aiProxyUsage, isLoading: isAiProxyLoading } = useQuery({
+    queryKey: ["ai-proxy-usage"],
+    queryFn: async () => {
+      if (!auth?.kubeconfig) {
+        throw new Error("No kubeconfig available");
+      }
+
+      const response = await fetch("/api/ai-proxy", {
+        method: "GET",
+        headers: {
+          Authorization: auth.kubeconfig,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`AI proxy request failed: ${response.status}`);
+      }
+
+      return response.json();
+    },
+    enabled: mode === "production" && !!auth?.kubeconfig,
+    refetchInterval: 10 * 1000, // Refetch every 10 seconds
+  });
+
+  console.log("aiProxyUsage", aiProxyUsage);
+
+  // Log remaining_today data when available
+  useEffect(() => {
+    if (aiProxyUsage?.data?.remaining_today !== undefined) {
+      console.log(
+        "AI Proxy remaining_today:",
+        aiProxyUsage.data.remaining_today
+      );
+    }
+  }, [aiProxyUsage]);
+
+  const isLoading =
+    balanceLoading || isResourceQuotaLoading || isAiProxyLoading;
 
   // Calculate overall resource usage percentage and status
   const { overallUsagePercentage, statusColor } = React.useMemo(() => {

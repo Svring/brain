@@ -30,20 +30,20 @@ export const GetLaunchpadToolMessage: React.FC<GetLaunchpadToolMessageProps> = (
     if (!isApproved) {
       return {
         icon: <CircleSlash className="h-4 w-4 text-theme-yellow" />,
-        text: "Rejected",
+        text: "Launchpad details retrieval rejected",
       };
     }
 
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: "Failed",
+        text: "Launchpad details retrieval failed",
       };
     }
 
     return {
       icon: <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />,
-      text: "Retrieved",
+      text: "Launchpad details retrieved successfully",
     };
   };
 
