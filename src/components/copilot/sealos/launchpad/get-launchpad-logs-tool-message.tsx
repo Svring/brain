@@ -12,9 +12,9 @@ interface GetLaunchpadLogsToolMessageProps {
   result: ToolActionResult;
 }
 
-export const GetLaunchpadLogsToolMessage: React.FC<GetLaunchpadLogsToolMessageProps> = ({
-  result,
-}) => {
+export const GetLaunchpadLogsToolMessage: React.FC<
+  GetLaunchpadLogsToolMessageProps
+> = ({ result }) => {
   const isApproved = result.approved !== false;
   const isSuccess = result.success !== false;
   const { invalidateQueries } = useInvalidateQueries();
@@ -29,31 +29,27 @@ export const GetLaunchpadLogsToolMessage: React.FC<GetLaunchpadLogsToolMessagePr
     if (!isApproved) {
       return {
         icon: <CircleSlash className="h-4 w-4 text-theme-yellow" />,
-        text: "Launchpad logs retrieval rejected"
+        text: "Launchpad logs retrieval rejected",
       };
     }
-    
+
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Launchpad logs retrieval failed"
+        text: result.message || "Launchpad logs retrieval failed",
       };
     }
-    
+
     return {
       icon: <CircleCheckBigIcon className="h-4 w-4 text-green-600" />,
-      text: "Launchpad logs retrieved successfully"
+      text: "Launchpad logs retrieved successfully",
     };
   };
 
   const { icon, text } = getStatusDisplay();
 
   // Check if we should render the LogChart
-  const shouldRenderChart = isApproved &&
-    isSuccess &&
-    result.result &&
-    result.result.logs &&
-    Object.keys(result.result.logs).length > 0;
+  const shouldRenderChart = isApproved && isSuccess && result.result;
 
   return (
     <div className="w-full">
@@ -66,12 +62,10 @@ export const GetLaunchpadLogsToolMessage: React.FC<GetLaunchpadLogsToolMessagePr
           </div>
         </div>
       )}
-      
+
       {/* Render LogChart if successful and has data */}
       {shouldRenderChart && (
-        <div className="border rounded-lg p-2">
-          <LogChart logsData={result.result.logs} isLoading={false} />
-        </div>
+        <LogChart logsData={result.result} isLoading={false} />
       )}
     </div>
   );

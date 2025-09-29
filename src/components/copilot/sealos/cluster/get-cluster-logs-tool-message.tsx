@@ -48,12 +48,10 @@ export const GetClusterLogsToolMessage: React.FC<
 
   const { icon, text } = getStatusDisplay();
 
+  console.log("result.result.logs", result);
+
   // Check if we should render the LogChart
-  const shouldRenderChart = isApproved &&
-    isSuccess &&
-    result.result &&
-    result.result.logs &&
-    Object.keys(result.result.logs).length > 0;
+  const shouldRenderChart = isApproved && isSuccess && result.result;
 
   return (
     <div className="w-full">
@@ -66,12 +64,10 @@ export const GetClusterLogsToolMessage: React.FC<
           </div>
         </div>
       )}
-      
+
       {/* Render LogChart if successful and has data */}
       {shouldRenderChart && (
-        <div className="border rounded-lg p-2">
-          <LogChart logsData={result.result.logs} isLoading={false} />
-        </div>
+        <LogChart logsData={result.result} isLoading={false} />
       )}
     </div>
   );
