@@ -33,19 +33,8 @@ export default function NodeStatus({ target }: NodeStatusLightProps) {
       } => t.type === "builtin"
     );
 
-  // console.log("pods", pods);
-  // console.log("status", status);
-  // console.log("resource", resource);
-  // Fetch pod events
-  const { eventsRecord } = usePodEvents({
-    podTargets,
-    enabled: podTargets.length > 0,
-  });
-
   // Get status analysis hook
   const { analyzeStatus, isStatusReady } = useAnalyzeStatus(target);
-
-  // console.log("eventsRecord", eventsRecord);
 
   // Map status to colors
   const statusColors: { [key: string]: string } = {
@@ -68,15 +57,6 @@ export default function NodeStatus({ target }: NodeStatusLightProps) {
   const isRunning = (status || "Pending") === "Running";
   const isPending = (status || "Pending") === "Pending";
 
-  if (isRunning) {
-    return (
-      <div className="flex items-center gap-2">
-        <Square className={`h-3 w-3 ${colorClass}`} />
-        <span className="text-sm">{displayStatus}</span>
-      </div>
-    );
-  }
-
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -95,11 +75,7 @@ export default function NodeStatus({ target }: NodeStatusLightProps) {
         </div>
       </TooltipTrigger>
       <TooltipContent>
-        <p className="text-sm">
-          {isPending
-            ? "Click to analyze pending status"
-            : "Click to analyze status"}
-        </p>
+        <p className="text-sm">Click to analyze status</p>
       </TooltipContent>
     </Tooltip>
   );

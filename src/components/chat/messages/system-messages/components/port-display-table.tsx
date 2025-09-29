@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, HelpCircle } from "lucide-react";
+import { Copy, Check, HelpCircle, Globe } from "lucide-react";
 import { useCopy } from "@/hooks/use-copy";
 import { cn } from "@/lib/utils";
 import {
@@ -53,24 +53,22 @@ export function PortDisplayTable({
 
   return (
     <div className="w-full overflow-hidden min-w-0">
-      <Table>
+      <Table className="table-fixed w-full">
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[10%] min-w-[50px]">Port</TableHead>
-            <TableHead className="w-[90%] min-w-0">Address</TableHead>
+            <TableHead className="w-16 min-w-[50px]">Port</TableHead>
+            <TableHead className="min-w-0">Address</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {ports.map((port: Port, index: number) => (
             <TableRow key={index}>
               <TableCell className="font-mono min-w-0">{port.number}</TableCell>
-              <TableCell className="min-w-0 w-full">
-                <div className="space-y-1">
+              <TableCell className="min-w-0">
+                <div className="space-y-1 min-w-0">
                   {/* Private Address */}
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-xs text-theme-blue rounded-full text-center flex-shrink-0">
-                      private
-                    </span>
+                    <Globe className="w-3 h-3 text-theme-blue flex-shrink-0" />
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                       <span
                         className={cn(
@@ -91,40 +89,19 @@ export function PortDisplayTable({
                       >
                         {port.privateAddress || "-"}
                       </span>
-                      {port.privateAddress && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 w-6 p-0 flex-shrink-0"
-                          onClick={() =>
-                            copyToClipboard(
-                              port.privateAddress!,
-                              `private-${port.number}`
-                            )
-                          }
-                        >
-                          {isCopied(`private-${port.number}`) ? (
-                            <Check className="w-3 h-3 text-theme-green" />
-                          ) : (
-                            <Copy className="w-3 h-3" />
-                          )}
-                        </Button>
-                      )}
                     </div>
                   </div>
 
                   {/* Public Address */}
                   <div className="flex items-center gap-2 min-w-0">
-                    <span
+                    <Globe
                       className={cn(
-                        "text-xs rounded-full text-center w-8 flex-shrink-0",
+                        "w-3 h-3 flex-shrink-0",
                         port.publicAddress
                           ? "text-theme-green"
                           : "text-theme-gray"
                       )}
-                    >
-                      public
-                    </span>
+                    />
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                       {port.publicAddress ? (
                         <>
@@ -145,7 +122,18 @@ export function PortDisplayTable({
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-6 w-6 p-0 flex-shrink-0"
+                            className="h-5 text-xs p-0 text-theme-blue hover:text-foreground flex-shrink-0"
+                            onClick={() => {
+                              setSelectedPort(port);
+                              setIsCustomDialogOpen(true);
+                            }}
+                          >
+                            {port.customDomain ? "Edit" : "Custom"}
+                          </Button>
+                          <Button
+                            // size="sm"
+                            variant="ghost"
+                            className="h-4 w-4 p-0 flex-shrink-0"
                             onClick={() =>
                               copyToClipboard(
                                 port.publicAddress!,
@@ -158,17 +146,6 @@ export function PortDisplayTable({
                             ) : (
                               <Copy className="w-3 h-3" />
                             )}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-6 text-xs text-muted-foreground hover:text-foreground flex-shrink-0"
-                            onClick={() => {
-                              setSelectedPort(port);
-                              setIsCustomDialogOpen(true);
-                            }}
-                          >
-                            {port.customDomain ? "Edit" : "Custom"}
                           </Button>
                         </>
                       ) : (
@@ -204,7 +181,7 @@ export function PortDisplayTable({
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-6 w-6 p-0 flex-shrink-0"
+                          className="h-5 w-5 p-0 flex-shrink-0"
                           onClick={() =>
                             copyToClipboard(
                               port.customDomain!,

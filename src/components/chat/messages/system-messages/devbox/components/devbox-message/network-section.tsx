@@ -117,13 +117,16 @@ export const NetworkPopoverContent: React.FC<{
   }
 
   return (
-    <div className="w-full rounded-lg space-y-3 min-w-0">
-      <div className="min-w-0">
-        <PortDisplayTable ports={transformedPorts} target={target} />
+    <div className="w-full rounded-lg min-w-0 max-h-[250px] flex flex-col">
+      {/* Scrollable Table Content */}
+      <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="min-w-0">
+          <PortDisplayTable ports={transformedPorts} target={target} />
+        </div>
       </div>
 
-      {/* Edit Button - Full Row */}
-      <div className="w-full flex">
+      {/* Fixed Edit Button at Bottom */}
+      <div className="w-full flex pt-3 border-t">
         <Button
           variant="outline"
           size="sm"

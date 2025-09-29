@@ -19,6 +19,8 @@ export const UpdateLaunchpadImageToolMessage: React.FC<
   const { invalidateQueries } = useInvalidateQueries();
   const { launchpad } = useTRPCClients();
 
+  console.log("result of image", result);
+
   useMount(() => {
     invalidateQueries([launchpad.get.queryKey(), launchpad.list.queryKey()]);
   });
@@ -35,13 +37,14 @@ export const UpdateLaunchpadImageToolMessage: React.FC<
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Launchpad image update failed",
+        text: "Launchpad image update failed",
       };
     }
 
+    const imageName = result.payload?.image || "Unknown";
     return {
       icon: <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />,
-      text: "Launchpad image updated successfully",
+      text: `Updated to "${imageName}" successfully`,
     };
   };
 

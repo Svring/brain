@@ -36,23 +36,18 @@ export function UpdateLaunchpadImageToolCallMessage({
 
   return (
     <div className="w-full max-w-2xl">
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground">Launchpad:</span>
-          <span className="text-sm text-foreground font-mono">{launchpad_name}</span>
-        </div>
-
-        <div className="space-y-2">
-          <span className="text-sm font-medium text-muted-foreground">Image:</span>
-          <input
-            type="text"
-            value={currentImage}
-            onChange={(e) => handleImageChange(e.target.value)}
-            className="w-full px-3 py-2 text-sm font-mono bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-50"
-            placeholder="Enter image name..."
-            disabled={!setInterruptData}
-          />
-        </div>
+      <div className="space-y-2">
+        <span className="text-sm font-medium text-muted-foreground">
+          Image:
+        </span>
+        <input
+          type="text"
+          value={currentImage}
+          onChange={(e) => handleImageChange(e.target.value)}
+          className="w-full px-3 py-2 text-sm font-mono bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-50"
+          placeholder="Enter image name..."
+          disabled={!setInterruptData}
+        />
       </div>
     </div>
   );

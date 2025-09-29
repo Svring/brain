@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Server, Users, TrendingUp } from "lucide-react";
+import { Server, Layers, TrendingUp } from "lucide-react";
 import { BuiltinResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { LaunchpadObjectSchema } from "@/lib/sealos/resources/launchpad/launchpad-object-schema";
@@ -223,7 +223,7 @@ export const DeploymentSection: React.FC<DeploymentSectionProps> = ({
 
         {/* Replicas */}
         <div className="flex-1 flex items-center gap-2">
-          <Users className="h-5 w-5" />
+          <Layers className="h-5 w-5" />
           <div className="flex flex-col">
             <span className="font-medium text-sm">Replicas</span>
             <span className="text-xs text-muted-foreground">

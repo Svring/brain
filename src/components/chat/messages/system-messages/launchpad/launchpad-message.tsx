@@ -50,15 +50,17 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
 }) => {
   const { launchpad } = useTRPCClients();
   const appendSystemMessageMutation = useAppendSystemMessageMutation();
-  
+
   // Initialize activeSection based on the view parameter
   const getInitialSection = (): ActiveSection => {
     if (!view || view === "main") return null;
     return view as ActiveSection;
   };
-  
-  const [activeSection, setActiveSection] = useState<ActiveSection>(getInitialSection());
-  
+
+  const [activeSection, setActiveSection] = useState<ActiveSection>(
+    getInitialSection()
+  );
+
   // Update activeSection when view prop changes
   useEffect(() => {
     const newSection = getInitialSection();
@@ -94,11 +96,11 @@ export const LaunchpadInfoMessageCard: React.FC<LaunchpadInfoMessageProps> = ({
       case "basic-info":
         return "Basic Information";
       case "resource":
-        return "Resource Metrics";
+        return "Resource";
       case "deployment":
-        return "Deployment Configuration";
+        return "Deployment";
       case "network":
-        return "Network Ports";
+        return "Network";
       case "advanced-config":
         return "Advanced Configuration";
       default:

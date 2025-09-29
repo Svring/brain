@@ -188,7 +188,7 @@ export function AiMessages({
           </div>
 
           {isInterruptExpanded && interruptData.payload && (
-            <div className="px-2 pb-2 border-t border-muted/20">
+            <div className="p-2 border-t border-muted/20">
               <div className="mb-4">
                 <ToolCallRenderer
                   content={JSON.stringify({

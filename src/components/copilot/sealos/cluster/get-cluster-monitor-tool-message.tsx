@@ -12,9 +12,9 @@ interface GetClusterMonitorToolMessageProps {
   result: ToolActionResult;
 }
 
-export const GetClusterMonitorToolMessage: React.FC<GetClusterMonitorToolMessageProps> = ({
-  result,
-}) => {
+export const GetClusterMonitorToolMessage: React.FC<
+  GetClusterMonitorToolMessageProps
+> = ({ result }) => {
   const isApproved = result.approved !== false;
   const isSuccess = result.success !== false;
   const { invalidateQueries } = useInvalidateQueries();
@@ -29,27 +29,28 @@ export const GetClusterMonitorToolMessage: React.FC<GetClusterMonitorToolMessage
     if (!isApproved) {
       return {
         icon: <CircleSlash className="h-4 w-4 text-theme-yellow" />,
-        text: "Cluster monitoring data retrieval rejected"
+        text: "Cluster monitoring data retrieval rejected",
       };
     }
-    
+
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Cluster monitoring data retrieval failed"
+        text: result.message || "Cluster monitoring data retrieval failed",
       };
     }
-    
+
     return {
-      icon: <CircleCheckBigIcon className="h-4 w-4 text-green-600" />,
-      text: "Cluster monitoring data retrieved successfully"
+      icon: <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />,
+      text: "Cluster monitoring data retrieved successfully",
     };
   };
 
   const { icon, text } = getStatusDisplay();
 
   // Check if we should render the CombinedMetricsChart
-  const shouldRenderChart = isApproved &&
+  const shouldRenderChart =
+    isApproved &&
     isSuccess &&
     result.result &&
     Array.isArray(result.result) &&
@@ -66,7 +67,7 @@ export const GetClusterMonitorToolMessage: React.FC<GetClusterMonitorToolMessage
           </div>
         </div>
       )}
-      
+
       {/* Render CombinedMetricsChart if successful and has data */}
       {shouldRenderChart && (
         <div className="border rounded-lg p-4">

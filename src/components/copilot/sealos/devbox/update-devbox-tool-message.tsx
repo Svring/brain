@@ -23,7 +23,7 @@ export const UpdateDevboxToolMessage: React.FC<
   const { invalidateQueries } = useInvalidateQueries();
   const { devbox } = useTRPCClients();
 
-  // console.log("result", result);
+  console.log("result", result);
 
   useMount(() => {
     invalidateQueries([devbox.get.queryKey(), devbox.releases.queryKey()]);
@@ -53,32 +53,63 @@ export const UpdateDevboxToolMessage: React.FC<
 
     return {
       icon: <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />,
-      text: "Updated",
+      text: "Update succeeded:",
     };
   };
 
   const { icon, text } = getStatusDisplay();
 
-  // Build resource change description
+  // Build resource change description with before/after comparison
   const getResourceChanges = () => {
     const changes = [];
+    const beforeUpdate = result.payload?.before_update;
+    const hasChanges = [];
+
     if (result.payload?.cpu !== undefined) {
-      changes.push(
-        <span key="cpu">
-          <span className="font-mono font-bold text-foreground">{result.payload.cpu}Core</span>{" "}
-          CPU
-        </span>
-      );
+      const oldCpu = beforeUpdate?.resources?.cpu;
+      const newCpu = result.payload.cpu;
+
+      if (oldCpu !== newCpu) {
+        hasChanges.push(
+          <span key="cpu" className="text-sm">
+            CPU:{" "}
+            <span className="line-through text-muted-foreground">{oldCpu}</span>{" "}
+            → <span className="font-bold">{newCpu}</span> Core
+          </span>
+        );
+      } else {
+        hasChanges.push(
+          <span key="cpu" className="text-sm">
+            CPU <span className="font-bold">{newCpu}</span> Core
+          </span>
+        );
+      }
     }
+
     if (result.payload?.memory !== undefined) {
-      changes.push(
-        <span key="memory">
-          <span className="font-mono font-bold text-foreground">{result.payload.memory}G</span>{" "}
-          Memory
-        </span>
-      );
+      const oldMemory = beforeUpdate?.resources?.memory;
+      const newMemory = result.payload.memory;
+
+      if (oldMemory !== newMemory) {
+        hasChanges.push(
+          <span key="memory" className="mx-1 text-sm">
+            Memory{" "}
+            <span className="line-through text-muted-foreground">
+              {oldMemory}
+            </span>{" "}
+            → <span className="font-bold">{newMemory}</span>G
+          </span>
+        );
+      } else {
+        hasChanges.push(
+          <span key="memory" className="mx-1 text-sm">
+            Memory <span className="font-bold">{newMemory}</span>G
+          </span>
+        );
+      }
     }
-    return changes;
+
+    return hasChanges;
   };
 
   const resourceChanges = getResourceChanges();
@@ -92,10 +123,10 @@ export const UpdateDevboxToolMessage: React.FC<
             {text}
             {resourceChanges.length > 0 && (
               <span className="ml-2">
-                - Updated to {resourceChanges.map((change, index) => (
+                {resourceChanges.map((change, index) => (
                   <span key={index}>
                     {change}
-                    {index < resourceChanges.length - 1 && " and "}
+                    {index < resourceChanges.length - 1 && ", "}
                   </span>
                 ))}
               </span>

@@ -43,31 +43,59 @@ export const UpdateLaunchpadToolMessage: React.FC<
 
     return {
       icon: <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />,
-      text: "Updated",
+      text: "Update succeeded:",
     };
   };
 
   const { icon, text } = getStatusDisplay();
 
-  // Build resource change description
+  // Build resource change description with before/after comparison
   const getResourceChanges = () => {
     const changes = [];
+    const beforeUpdate = result.payload?.before_update;
+
     if (result.payload?.cpu !== undefined) {
-      changes.push(
-        <span key="cpu">
-          <span className="font-mono font-bold text-foreground">{result.payload.cpu}Core</span>{" "}
-          CPU
-        </span>
-      );
+      const oldCpu = beforeUpdate?.resource?.cpu;
+      const newCpu = result.payload.cpu;
+
+      if (oldCpu !== newCpu) {
+        changes.push(
+          <span key="cpu" className="text-sm">
+            CPU:{" "}
+            <span className="line-through text-muted-foreground">{oldCpu}</span>{" "}
+            → <span className="font-bold">{newCpu}</span> Core
+          </span>
+        );
+      } else {
+        changes.push(
+          <span key="cpu" className="text-sm">
+            CPU <span className="font-bold">{newCpu}</span> Core
+          </span>
+        );
+      }
     }
+
     if (result.payload?.memory !== undefined) {
-      changes.push(
-        <span key="memory">
-          <span className="font-mono font-bold text-foreground">{result.payload.memory}G</span>{" "}
-          Memory
-        </span>
-      );
+      const oldMemory = beforeUpdate?.resource?.memory;
+      const newMemory = result.payload.memory;
+
+      if (oldMemory !== newMemory) {
+        changes.push(
+          <span key="memory" className="text-sm">
+            Memory:{" "}
+            <span className="line-through text-muted-foreground">{oldMemory}</span>{" "}
+            → <span className="font-bold">{newMemory}</span>G
+          </span>
+        );
+      } else {
+        changes.push(
+          <span key="memory" className="text-sm">
+            Memory <span className="font-bold">{newMemory}</span>G
+          </span>
+        );
+      }
     }
+
     return changes;
   };
 
@@ -82,10 +110,10 @@ export const UpdateLaunchpadToolMessage: React.FC<
             {text}
             {resourceChanges.length > 0 && (
               <span className="ml-2">
-                - Updated to {resourceChanges.map((change, index) => (
+                {resourceChanges.map((change, index) => (
                   <span key={index}>
                     {change}
-                    {index < resourceChanges.length - 1 && " and "}
+                    {index < resourceChanges.length - 1 && ", "}
                   </span>
                 ))}
               </span>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Plus, Trash2 } from "lucide-react";
 
 interface EnvVar {
   name: string;
@@ -78,56 +79,73 @@ export function CreateLaunchpadEnvToolCallMessage({
 
   return (
     <div className="w-full max-w-2xl">
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground">Launchpad:</span>
-          <span className="text-sm text-foreground font-mono">{launchpad_name}</span>
-        </div>
+      <div className="space-y-2 border border-border rounded-lg p-4">
+        {/* Table Header - only show when there are items */}
+        {currentEnvVars.length > 0 && (
+          <div className="grid grid-cols-3 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
+            <div>Name</div>
+            <div>Value</div>
+            <div>Action</div>
+          </div>
+        )}
 
-        <div className="space-y-3">
-          <span className="text-sm font-medium text-muted-foreground">Environment Variables:</span>
-
+        {/* Table Rows */}
+        <div className="space-y-0 py-0">
           {currentEnvVars.map((envVar, index) => (
-            <div key={index} className="flex items-center gap-2 p-2 border border-border rounded-md">
-              <div className="flex-1 flex items-center gap-2">
+            <div key={index} className="grid grid-cols-3 gap-4 items-center">
+              {/* Name Column */}
+              <div>
                 <input
                   type="text"
                   value={envVar.name}
                   onChange={(e) => handleEnvVarChange(index, 'name', e.target.value)}
-                  placeholder="Name"
-                  className="flex-1 px-2 py-1 text-sm bg-background border border-border rounded focus:outline-none focus:ring-1 focus:ring-primary/20 focus:border-primary disabled:opacity-50"
+                  placeholder="Variable name"
+                  className="w-full border-none shadow-none focus-visible:ring-0 focus:outline-none bg-transparent pl-0 text-sm"
                   disabled={!setInterruptData}
                 />
-                <span className="text-sm text-muted-foreground">=</span>
+              </div>
+
+              {/* Value Column */}
+              <div>
                 <input
                   type="text"
                   value={envVar.value}
                   onChange={(e) => handleEnvVarChange(index, 'value', e.target.value)}
                   placeholder="Value"
-                  className="flex-1 px-2 py-1 text-sm bg-background border border-border rounded focus:outline-none focus:ring-1 focus:ring-primary/20 focus:border-primary disabled:opacity-50"
+                  className="w-full border-none shadow-none focus-visible:ring-0 focus:outline-none bg-transparent pl-0 text-sm"
                   disabled={!setInterruptData}
                 />
               </div>
-              {setInterruptData && currentEnvVars.length > 0 && (
-                <button
-                  onClick={() => handleRemoveEnvVar(index)}
-                  className="px-2 py-1 text-xs text-destructive hover:bg-destructive/10 rounded transition-colors"
-                >
-                  Remove
-                </button>
-              )}
+
+              {/* Action Column */}
+              <div>
+                {setInterruptData && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveEnvVar(index)}
+                    className="text-destructive hover:text-destructive border-none bg-transparent shadow-none hover:bg-transparent p-1"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
             </div>
           ))}
-
-          {setInterruptData && (
-            <button
-              onClick={handleAddEnvVar}
-              className="px-3 py-1 text-sm text-primary hover:bg-primary/10 border border-primary/20 rounded transition-colors"
-            >
-              + Add Environment Variable
-            </button>
-          )}
         </div>
+
+        {/* Add Environment Variable Button */}
+        {setInterruptData && (
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleAddEnvVar}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm border border-border rounded hover:bg-accent transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              Add Variable
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
