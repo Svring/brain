@@ -27,45 +27,41 @@ function StatefulsetNode({ data }: { data: StatefulsetObject }) {
   const { resource: resourceData, status } = useResourceStatus(target);
   const statefulsetData = resourceData || resource;
 
-  const handleConnect = () => {
-    console.log("Connect clicked");
-  };
-
   const mainCard = (
-    // <NodeConnect onConnect={handleConnect} target={target}>
-    <BaseNode target={target} nodeId={nodeId} messageType="launchpad.detail">
-      <div className="flex h-full flex-col gap-2 justify-between">
-        {/* Header with Name and Dropdown */}
-        <div className="flex items-center justify-between">
-          <StatefulsetNodeTitle name={statefulsetData.name} />
-          <StatefulsetNodeMenu object={statefulsetData} />
-        </div>
+    <NodeConnect target={target}>
+      <BaseNode target={target} nodeId={nodeId} messageType="launchpad.detail">
+        <div className="flex h-full flex-col gap-2 justify-between">
+          {/* Header with Name and Dropdown */}
+          <div className="flex items-center justify-between">
+            <StatefulsetNodeTitle name={statefulsetData.name} />
+            <StatefulsetNodeMenu object={statefulsetData} />
+          </div>
 
-        {/* Image with Package Icon */}
-        <div className="flex items-center gap-2 mt-2">
-          <Package className="h-4 w-4 text-muted-foreground" />
-          <div className="text-sm text-muted-foreground truncate flex-1">
-            Image:{" "}
-            {statefulsetData.image?.imageName
-              ? statefulsetData.image.imageName
-              : "N/A"}
+          {/* Image with Package Icon */}
+          <div className="flex items-center gap-2 mt-2">
+            <Package className="h-4 w-4 text-muted-foreground" />
+            <div className="text-sm text-muted-foreground truncate flex-1">
+              Image:{" "}
+              {statefulsetData.image?.imageName
+                ? statefulsetData.image.imageName
+                : "N/A"}
+            </div>
+          </div>
+
+          {/* Bottom section with status and icons */}
+          <div className="mt-auto flex justify-between items-center">
+            {/* Left: Status light */}
+            <NodeStatus target={target} />
+
+            {/* Right: Icon components */}
+            <div className="flex items-center gap-2">
+              <NodeLog target={target} />
+              <NodeMonitor target={target} />
+            </div>
           </div>
         </div>
-
-        {/* Bottom section with status and icons */}
-        <div className="mt-auto flex justify-between items-center">
-          {/* Left: Status light */}
-          <NodeStatus target={target} />
-
-          {/* Right: Icon components */}
-          <div className="flex items-center gap-2">
-            <NodeLog target={target} />
-            <NodeMonitor target={target} />
-          </div>
-        </div>
-      </div>
-    </BaseNode>
-    // </NodeConnect>
+      </BaseNode>
+    </NodeConnect>
   );
 
   // Hem component displaying storage information

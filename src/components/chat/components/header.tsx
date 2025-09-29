@@ -32,7 +32,7 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
     selectedResource: navSelectedResource,
     activeView,
   } = useNavigationState();
-  const { isLoading } = useChatInstance();
+  const { isLoading, resourceTarget } = useChatInstance();
   const [isExpanded, setIsExpanded] = useState(true);
 
   // Auto-open popover when selectedResource changes
@@ -113,7 +113,7 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
   };
 
   return (
-    <div className="px-4 pt-2 shrink-0">
+    <div className="px-4 pt-2 shrink-0 bg-transparent">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <h2 className="font-semibold text-foreground text-lg shrink-0">
@@ -128,7 +128,7 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
           {/* Resource Status Row - merged inline */}
           {(selectedResource || selectedProject) && (
             <div className="flex items-center min-w-0 flex-1">
-              {selectedResource ? (
+              {selectedResource && resourceTarget ? (
                 <Popover open={isExpanded} onOpenChange={() => {}}>
                   <PopoverTrigger asChild>
                     <div
@@ -162,7 +162,7 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
                     </div>
                   </PopoverTrigger>
                   <PopoverContent
-                    className="p-0 rounded-xl mr-[max(35vw,29rem)] w-[26rem]"
+                    className="p-0 rounded-2xl mr-[max(35vw,29rem)] w-[26rem]"
                     align="start"
                     side="bottom"
                     sideOffset={5}

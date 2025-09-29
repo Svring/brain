@@ -6,91 +6,85 @@ import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useFlowgraphResources } from "@/hooks/flowgraph/use-flowgraph-resources";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { convertResourceObjectToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useMutation } from "@tanstack/react-query";
 import { useHover } from "@reactuses/core";
-import { Env } from "@/schemas/forms/universal/env-schema";
 import { deriveClusterEnvVariable } from "@/lib/sealos/services/env/cluster/cluster-env-utils";
-import { deriveObjectStorageEnvVariable } from "@/lib/sealos/services/env/objectstorage/objectstorage-env-utils";
 import { Spinner } from "@/components/ui/spinner";
 import { useFlowgraphState } from "@/contexts/flowgraph/flowgraph-context";
+import { useProjectState } from "@/contexts/project/project-context";
+import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
+import { useResourceObjects } from "@/hooks/sealos/resource/use-resource-objects";
+import {
+  CLUSTER_TYPE_ICON_MAP,
+  CLUSTER_DEFAULT_ICON,
+} from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
+import { toast } from "sonner";
 
 interface NodeConnectProps {
   children: React.ReactNode;
   className?: string;
-  onConnect?: () => void;
   target?: any;
 }
 
-// Simplified resource item component
 function ResourceItem({
   resource,
-  launchpadTarget,
+  target,
+  clusterObject,
 }: {
   resource: any;
-  launchpadTarget?: any;
+  target?: any;
+  clusterObject?: any;
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const { edges } = useFlowgraphState();
-  const target = convertResourceObjectToTarget({
+  const { invalidateQueries } = useInvalidateQueries();
+  const resourceTarget = convertResourceObjectToTarget({
     kind: resource.kind,
     name: resource.name,
   });
-  const { resource: fullResource } = useResourceStatus(target);
-  const { resource: launchpadResource } = useResourceStatus(
-    launchpadTarget || {}
-  ) as { resource: any };
+  const { resource: fullResource } = useResourceStatus(resourceTarget);
+  const { resource: targetResource } = useResourceStatus(target || {});
   const { launchpad } = useTRPCClients();
-  const updateLaunchpadMutation = useMutation(
-    launchpad.update.mutationOptions()
-  );
+  const updateLaunchpad = useMutation({
+    ...launchpad.update.mutationOptions(),
+    onSuccess: () => {
+      invalidateQueries([launchpad.get.queryKey()], true);
+      toast.success("Successfully connected!");
+    },
+  });
 
-  // Check if the resource is already connected to the launchpad target
+  const getClusterIcon = () => {
+    if (!clusterObject?.type) return CLUSTER_DEFAULT_ICON;
+    return CLUSTER_TYPE_ICON_MAP[clusterObject.type] || CLUSTER_DEFAULT_ICON;
+  };
+
   const isConnected = () => {
-    if (!launchpadTarget) return false;
-
-    // Generate node IDs using the same pattern as flowgraph-nodes-utils
-    const resourceNodeId = `${resource.kind?.toLowerCase() || "unknown"}-${
-      resource.name || ""
-    }`;
-    const launchpadNodeId = `${
-      launchpadTarget.resourceType?.toLowerCase() || "unknown"
-    }-${launchpadTarget.name || ""}`;
-
-    // Check if there's an edge connecting the resource to the launchpad target
+    if (!target) return false;
+    const resourceId = `${resource.kind.toLowerCase()}-${resource.name}`;
+    const targetId = `${target.resourceType.toLowerCase()}-${target.name}`;
     return edges.some(
       (edge) =>
-        (edge.source === resourceNodeId && edge.target === launchpadNodeId) ||
-        (edge.source === launchpadNodeId && edge.target === resourceNodeId)
+        (edge.source === resourceId && edge.target === targetId) ||
+        (edge.source === targetId && edge.target === resourceId)
     );
   };
 
-  const getEnvVarsToAdd = () => {
-    if (!fullResource) return {};
+  const getEnvVars = () => {
+    if (!fullResource?.connection) return {};
     const envVars: Record<string, any> = {};
 
-    if (resource.kind.toLowerCase() === "cluster" && fullResource.connection) {
-      // Use cluster name to derive environment variables
-      const clusterEnvVars = deriveClusterEnvVariable(resource.name);
-      clusterEnvVars.forEach((envVar) => {
+    if (resource.kind.toLowerCase() === "cluster") {
+      deriveClusterEnvVariable(resource.name).forEach((envVar) => {
         envVars[envVar.name] = envVar;
       });
 
-      // Add public connection variables if available
       const { publicConnection } = fullResource.connection;
       if (publicConnection) {
         const name = resource.name.toUpperCase();
@@ -100,110 +94,38 @@ function ResourceItem({
             publicConnection.connectionString,
         };
         Object.entries(publicVars).forEach(([key, value]) => {
-          if (value) {
-            envVars[key] = { name: key, value: value as string };
-          }
+          if (value) envVars[key] = { name: key, value };
         });
       }
     }
-
-    if (
-      resource.kind.toLowerCase() === "objectstoragebucket" &&
-      fullResource.access
-    ) {
-      // Use object storage displayName to derive environment variables
-      const objectStorageEnvVars = deriveObjectStorageEnvVariable(
-        fullResource.displayName
-      );
-      console.log("objectStorageEnvVars", objectStorageEnvVars);
-      objectStorageEnvVars.forEach((envVar) => {
-        envVars[envVar.name] = envVar;
-      });
-    }
-
     return envVars;
   };
 
-  const getTooltipContent = () => {
-    if (!fullResource) return "Loading...";
-    const envVars = getEnvVarsToAdd();
-    const keys = Object.keys(envVars);
-
-    if (keys.length === 0) {
-      return (
-        <div className="text-xs text-muted-foreground">
-          No connection/access information available
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-1 text-xs">
-        {keys.map((key) => {
-          const envVar = envVars[key];
-          const isSecret =
-            key.includes("PASSWORD") || key.includes("SECRET_KEY");
-
-          // Handle both value and valueFrom cases
-          let displayValue: string;
-          if (envVar.value) {
-            // Direct value (for public connection variables)
-            displayValue = isSecret ? "***" : envVar.value;
-          } else if (envVar.valueFrom?.secretKeyRef) {
-            // Secret reference (for utility function generated variables)
-            displayValue = isSecret
-              ? "***"
-              : `from secret: ${envVar.valueFrom.secretKeyRef.name}`;
-          } else {
-            displayValue = "N/A";
-          }
-
-          return (
-            <div key={key} className="break-words">
-              <strong>{key}:</strong> {displayValue}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  const handleResourceClick = async () => {
+  const handleClick = async () => {
     if (
-      !launchpadTarget ||
+      !target ||
       !fullResource ||
-      !launchpadResource ||
+      !targetResource ||
       isLoading ||
       isConnected()
     )
       return;
 
-    const envVarsToAdd = getEnvVarsToAdd();
-    if (Object.keys(envVarsToAdd).length === 0) return;
+    const envVars = getEnvVars();
+    if (!Object.keys(envVars).length) return;
 
     setIsLoading(true);
-
     try {
-      const currentEnv = (launchpadResource.env || []).reduce(
+      const currentEnv = (targetResource.env || []).reduce(
         (acc: Record<string, any>, envVar: any) => {
-          if (envVar.name) {
-            acc[envVar.name] = {
-              name: envVar.name,
-              value: envVar.value,
-              valueFrom: envVar.valueFrom,
-            };
-          }
+          if (envVar.name) acc[envVar.name] = envVar;
           return acc;
         },
         {}
       );
-
-      const mergedEnv = { ...currentEnv, ...envVarsToAdd };
-      const updatedEnv = Object.values(mergedEnv) as Env[];
-
-      await updateLaunchpadMutation.mutateAsync({
-        name: launchpadTarget.name,
-        env: updatedEnv,
+      await updateLaunchpad.mutateAsync({
+        name: target.name,
+        env: Object.values({ ...currentEnv, ...envVars }),
       });
     } catch (error) {
       console.error("Failed to update launchpad:", error);
@@ -213,53 +135,53 @@ function ResourceItem({
   };
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div
-            className={cn(
-              "flex items-center justify-between p-2 border rounded-md",
-              isConnected()
-                ? "opacity-50 cursor-not-allowed bg-muted/30"
-                : isLoading
-                ? "opacity-50 cursor-not-allowed"
-                : "cursor-pointer hover:bg-muted/50"
-            )}
-            onClick={handleResourceClick}
-          >
-            <div>
-              <span className="text-sm font-medium">{resource.name}</span>
-              <span className="text-xs text-muted-foreground ml-2">
-                ({resource.kind})
-              </span>
-            </div>
-            {isConnected() ? (
-              <span className="text-xs text-green-600 font-medium">
-                Connected
-              </span>
-            ) : isLoading ? (
-              <Spinner
-                variant="bars"
-                size={16}
-                className="text-muted-foreground"
-              />
-            ) : (
-              <Plus className="w-4 h-4 text-muted-foreground" />
-            )}
-          </div>
-        </TooltipTrigger>
-        <TooltipContent side="right" className="max-w-xs">
-          {getTooltipContent()}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <div
+      className={cn(
+        "flex items-center justify-between p-2 border rounded-md",
+        isConnected()
+          ? "opacity-50 cursor-not-allowed bg-muted/30"
+          : isLoading
+          ? "opacity-50 cursor-not-allowed"
+          : "cursor-pointer hover:bg-muted/50"
+      )}
+      onClick={handleClick}
+    >
+      <div className="flex items-center gap-2">
+        {resource.kind?.toLowerCase() === "cluster" && (
+          <img
+            src={getClusterIcon()}
+            alt={clusterObject?.type || "cluster"}
+            className="w-4 h-4 rounded-sm"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = CLUSTER_DEFAULT_ICON;
+            }}
+          />
+        )}
+        <div>
+          <span className="text-sm font-medium">{resource.name}</span>
+          <span className="text-xs text-muted-foreground ml-2">
+            (
+            {resource.kind?.toLowerCase() === "cluster"
+              ? clusterObject?.type || "database"
+              : resource.kind}
+            )
+          </span>
+        </div>
+      </div>
+      {isConnected() ? (
+        <span className="text-xs text-theme-blue font-medium">Connected</span>
+      ) : isLoading ? (
+        <Spinner size={16} className="text-muted-foreground" />
+      ) : (
+        <Plus className="w-4 h-4 text-muted-foreground" />
+      )}
+    </div>
   );
 }
 
 export default function NodeConnect({
   children,
   className,
-  onConnect,
   target,
 }: NodeConnectProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -268,29 +190,34 @@ export default function NodeConnect({
   const isPlusHovering = useHover(plusRef);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showIcon, setShowIcon] = useState(false);
-  const { clusterResources, objectStorageBucketResources } =
-    useFlowgraphResources();
+  const { selectedProjectResources } = useProjectState();
 
-  const handlePlusClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsDialogOpen(true);
-  };
+  // Filter cluster resources and convert to targets
+  const clusterResources =
+    selectedProjectResources?.filter(
+      (resource: any) => resource.kind?.toLowerCase() === "cluster"
+    ) || [];
 
-  // Show plus icon when hovering over the container OR the plus icon itself
-  const shouldShowPlus = isHovering || isPlusHovering || isDialogOpen;
+  const clusterTargets = clusterResources.map((resource: any) =>
+    convertResourceObjectToTarget({
+      kind: resource.kind,
+      name: resource.name,
+    })
+  );
 
-  // Add delay when hiding the icon
+  // Get complete cluster objects using useResourceObjects
+  const { data: clusterObjects, isLoading: isClusterLoading } =
+    useResourceObjects(clusterTargets);
+
   useEffect(() => {
-    if (shouldShowPlus) {
+    const shouldShow = isHovering || isPlusHovering || isDialogOpen;
+    if (shouldShow) {
       setShowIcon(true);
     } else {
-      const timer = setTimeout(() => {
-        setShowIcon(false);
-      }, 300); // 300ms delay before hiding
-
+      const timer = setTimeout(() => setShowIcon(false), 300);
       return () => clearTimeout(timer);
     }
-  }, [shouldShowPlus]);
+  }, [isHovering, isPlusHovering, isDialogOpen]);
 
   return (
     <div ref={ref} className={cn("relative", className)}>
@@ -300,10 +227,10 @@ export default function NodeConnect({
           <DialogTrigger asChild>
             <div
               ref={plusRef}
-              className="absolute -top-5 -left-5 z-50 pointer-events-auto"
-              onClick={handlePlusClick}
+              className="absolute -top-5 -left-5 z-50 cursor-pointer"
+              onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-center rounded-full shadow-lg transition-all duration-200 cursor-pointer hover:scale-115">
+              <div className="flex items-center justify-center rounded-full shadow-lg hover:scale-115 transition-all">
                 <Spline className="w-8 h-8" />
               </div>
             </div>
@@ -311,51 +238,36 @@ export default function NodeConnect({
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Connect Node</DialogTitle>
-              <DialogDescription>
-                Choose how you want to connect this node to other resources.
-              </DialogDescription>
             </DialogHeader>
-            <div className="py-4 space-y-4">
-              {clusterResources.length > 0 && (
+            <div className="space-y-4">
+              {isClusterLoading ? (
+                <div className="text-center py-8">
+                  <Spinner size={16} className="text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Loading cluster resources...
+                  </p>
+                </div>
+              ) : clusterObjects && clusterObjects.length > 0 ? (
                 <div>
-                  <h3 className="text-sm font-medium mb-2">
-                    Cluster Resources
-                  </h3>
                   <div className="space-y-2">
-                    {clusterResources.map((resource, index) => (
-                      <ResourceItem
-                        key={`${resource.name}-${index}`}
-                        resource={resource}
-                        launchpadTarget={target}
-                      />
-                    ))}
+                    {clusterResources.map((resource, index) => {
+                      const clusterObject = clusterObjects[index];
+                      return (
+                        <ResourceItem
+                          key={`${resource.name}-${index}`}
+                          resource={resource}
+                          target={target}
+                          clusterObject={clusterObject}
+                        />
+                      );
+                    })}
                   </div>
                 </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  No available resources to connect to.
+                </p>
               )}
-              {objectStorageBucketResources.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-medium mb-2">
-                    Object Storage Buckets
-                  </h3>
-                  <div className="space-y-2">
-                    {objectStorageBucketResources.map((resource, index) => (
-                      <ResourceItem
-                        key={`${resource.name}-${index}`}
-                        resource={resource}
-                        launchpadTarget={target}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-              {clusterResources.length === 0 &&
-                objectStorageBucketResources.length === 0 && (
-                  <div className="text-center py-8">
-                    <p className="text-sm text-muted-foreground">
-                      No available resources to connect to.
-                    </p>
-                  </div>
-                )}
             </div>
           </DialogContent>
         </Dialog>
