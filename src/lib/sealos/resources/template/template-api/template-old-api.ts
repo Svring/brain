@@ -52,7 +52,12 @@ export const getTemplateSource = createParallelAction(
     const response = await api.get(
       `/getTemplateSource?templateName=${templateName}`
     );
-    return TemplateSourceResponseSchema.parse(response.data);
+    try {
+      return TemplateSourceResponseSchema.parse(response.data);
+    } catch (error) {
+      console.error("Schema validation failed:", error);
+      return response.data as TemplateSourceResponse;
+    }
   }
 );
 
