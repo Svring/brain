@@ -7,8 +7,13 @@ interface UpdateClusterToolCallMessageProps {
   type?: string;
   cpu?: 1 | 2 | 4 | 8;
   memory?: 1 | 2 | 4 | 8 | 16 | 32;
+  storage?: number;
+  replicas?: number;
   setInterruptData?: (data: any) => void;
 }
+
+// Import storage and replicas options
+import { STORAGE_OPTIONS, REPLICAS_OPTIONS } from "@/lib/k8s/k8s-constant/k8s-constant-resource";
 
 // CPU options for cluster
 const CLUSTER_CPU_OPTIONS = [1, 2, 4, 8] as const;
@@ -21,6 +26,8 @@ export function UpdateClusterToolCallMessage({
   type = "postgresql",
   cpu,
   memory,
+  storage,
+  replicas,
   setInterruptData,
 }: UpdateClusterToolCallMessageProps) {
   const iconUrl = getClusterIconUrl(type);
@@ -28,6 +35,8 @@ export function UpdateClusterToolCallMessage({
   // State to track current values for interactive sliders
   const [currentCpu, setCurrentCpu] = useState(cpu);
   const [currentMemory, setCurrentMemory] = useState(memory);
+  const [currentStorage, setCurrentStorage] = useState(storage);
+  const [currentReplicas, setCurrentReplicas] = useState(replicas);
 
   // Update state when props change
   useEffect(() => {
@@ -38,6 +47,14 @@ export function UpdateClusterToolCallMessage({
     setCurrentMemory(memory);
   }, [memory]);
 
+  useEffect(() => {
+    setCurrentStorage(storage);
+  }, [storage]);
+
+  useEffect(() => {
+    setCurrentReplicas(replicas);
+  }, [replicas]);
+
   // Get current indices for sliders
   const cpuIndex =
     currentCpu !== undefined
@@ -46,6 +63,14 @@ export function UpdateClusterToolCallMessage({
   const memoryIndex =
     currentMemory !== undefined
       ? CLUSTER_MEMORY_OPTIONS.findIndex((option) => option === currentMemory)
+      : -1;
+  const storageIndex =
+    currentStorage !== undefined
+      ? STORAGE_OPTIONS.findIndex((option) => option === currentStorage)
+      : -1;
+  const replicasIndex =
+    currentReplicas !== undefined
+      ? REPLICAS_OPTIONS.findIndex((option) => option === currentReplicas)
       : -1;
 
   // Handle slider changes to update interrupt data
@@ -79,10 +104,40 @@ export function UpdateClusterToolCallMessage({
     }
   };
 
+  const handleStorageChange = (newStorageIndex: number) => {
+    const newStorage = STORAGE_OPTIONS[newStorageIndex];
+    setCurrentStorage(newStorage);
+
+    if (setInterruptData) {
+      setInterruptData((prevData: any) => ({
+        ...prevData,
+        payload: {
+          ...prevData.payload,
+          storage: newStorage,
+        },
+      }));
+    }
+  };
+
+  const handleReplicasChange = (newReplicasIndex: number) => {
+    const newReplicas = REPLICAS_OPTIONS[newReplicasIndex];
+    setCurrentReplicas(newReplicas);
+
+    if (setInterruptData) {
+      setInterruptData((prevData: any) => ({
+        ...prevData,
+        payload: {
+          ...prevData.payload,
+          replicas: newReplicas,
+        },
+      }));
+    }
+  };
+
   return (
     <div className="w-full max-w-2xl">
       <div className="flex flex-col gap-2 p-4 rounded-xl border bg-background-secondary">
-        {(cpu !== undefined || memory !== undefined) && (
+        {(cpu !== undefined || memory !== undefined || storage !== undefined || replicas !== undefined) && (
           <div className="space-y-3">
             {cpu !== undefined && (
               <div className="space-y-1">
@@ -148,6 +203,70 @@ export function UpdateClusterToolCallMessage({
                         ]
                       }
                       G
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+            {storage !== undefined && (
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Storage:
+                  </span>
+                  <span className="text-sm text-foreground font-mono">
+                    {currentStorage}GB
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  <Slider
+                    value={[storageIndex]}
+                    min={0}
+                    max={STORAGE_OPTIONS.length - 1}
+                    step={1}
+                    onValueChange={(value) => handleStorageChange(value[0])}
+                    className="[&>:last-child>span]:h-4 [&>:last-child>span]:w-2 [&>:last-child>span]:border-[2px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
+                    aria-label="Storage slider"
+                    disabled={!setInterruptData}
+                  />
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">
+                      {STORAGE_OPTIONS[0]}GB
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      {STORAGE_OPTIONS[STORAGE_OPTIONS.length - 1]}GB
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+            {replicas !== undefined && (
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Replicas:
+                  </span>
+                  <span className="text-sm text-foreground font-mono">
+                    {currentReplicas}
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  <Slider
+                    value={[replicasIndex]}
+                    min={0}
+                    max={REPLICAS_OPTIONS.length - 1}
+                    step={1}
+                    onValueChange={(value) => handleReplicasChange(value[0])}
+                    className="[&>:last-child>span]:h-4 [&>:last-child>span]:w-2 [&>:last-child>span]:border-[2px] [&>:last-child>span]:border-background [&>:last-child>span]:bg-primary [&>:last-child>span]:ring-offset-0"
+                    aria-label="Replicas slider"
+                    disabled={!setInterruptData}
+                  />
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">
+                      {REPLICAS_OPTIONS[0]}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      {REPLICAS_OPTIONS[REPLICAS_OPTIONS.length - 1]}
                     </span>
                   </div>
                 </div>

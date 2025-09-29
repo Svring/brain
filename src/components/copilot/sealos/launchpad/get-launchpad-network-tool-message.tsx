@@ -38,7 +38,7 @@ export const GetLaunchpadNetworkToolMessage: React.FC<GetLaunchpadNetworkToolMes
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Launchpad network information retrieval failed"
+        text: "Launchpad network information retrieval failed"
       };
     }
     

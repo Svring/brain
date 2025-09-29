@@ -36,7 +36,7 @@ export const GetLaunchpadMonitorToolMessage: React.FC<GetLaunchpadMonitorToolMes
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Launchpad monitoring data retrieval failed"
+        text: "Launchpad monitoring data retrieval failed"
       };
     }
     

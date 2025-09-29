@@ -109,8 +109,6 @@ export const ToolCallMessageType = {
     return (
       <RestartDevboxToolCallMessage
         devbox_name={parameters.devbox_name || ""}
-        runtime={parameters.runtime}
-        type={parameters.type}
       />
     );
   },
@@ -186,8 +184,8 @@ export const ToolCallMessageType = {
         cpu={parameters.cpu}
         memory={parameters.memory}
         setInterruptData={setInterruptData}
-        // replicas={parameters.replicas}
-        // storage={parameters.storage}
+        replicas={parameters.replicas}
+        storage={parameters.storage}
       />
     );
   },
@@ -204,7 +202,6 @@ export const ToolCallMessageType = {
     return (
       <RestartClusterToolCallMessage
         cluster_name={parameters.cluster_name || ""}
-        type={parameters.type}
       />
     );
   },
@@ -385,7 +382,6 @@ export const ToolCallMessageType = {
     return (
       <RestartLaunchpadToolCallMessage
         launchpad_name={parameters.launchpad_name || ""}
-        type={parameters.type}
       />
     );
   },

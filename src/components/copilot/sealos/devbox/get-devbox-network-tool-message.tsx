@@ -36,7 +36,7 @@ export const GetDevboxNetworkToolMessage: React.FC<
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Devbox network information retrieval failed",
+        text: "Devbox network information retrieval failed",
       };
     }
 

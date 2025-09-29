@@ -11,13 +11,15 @@ interface DeleteDevboxPortsToolMessageProps {
   result: ToolActionResult;
 }
 
-export const DeleteDevboxPortsToolMessage: React.FC<DeleteDevboxPortsToolMessageProps> = ({
-  result,
-}) => {
+export const DeleteDevboxPortsToolMessage: React.FC<
+  DeleteDevboxPortsToolMessageProps
+> = ({ result }) => {
   const isApproved = result.approved !== false;
   const isSuccess = result.success !== false;
   const { invalidateQueries } = useInvalidateQueries();
   const { devbox } = useTRPCClients();
+
+  console.log("result", result);
 
   useMount(() => {
     invalidateQueries([devbox.get.queryKey(), devbox.list.queryKey()]);
@@ -35,13 +37,18 @@ export const DeleteDevboxPortsToolMessage: React.FC<DeleteDevboxPortsToolMessage
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Devbox ports deletion failed",
+        text: "Devbox ports deletion failed",
       };
     }
 
+    const deletedPorts = result.payload?.ports || [];
+    const portsText = deletedPorts.length > 0
+      ? `Ports ${deletedPorts.join(', ')} deleted successfully`
+      : "Devbox ports deleted successfully";
+
     return {
       icon: <CircleCheckBigIcon className="h-4 w-4 text-green-600" />,
-      text: "Devbox ports deleted successfully",
+      text: portsText,
     };
   };
 

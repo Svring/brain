@@ -36,7 +36,7 @@ export const GetLaunchpadLogsToolMessage: React.FC<
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Launchpad logs retrieval failed",
+        text: "Launchpad logs retrieval failed",
       };
     }
 

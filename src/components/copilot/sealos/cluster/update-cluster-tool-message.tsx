@@ -98,6 +98,48 @@ export const UpdateClusterToolMessage: React.FC<UpdateClusterToolMessageProps> =
       }
     }
 
+    if (result.payload?.storage !== undefined) {
+      const oldStorage = beforeUpdate?.resource?.storage;
+      const newStorage = result.payload.storage;
+
+      if (oldStorage !== newStorage) {
+        changes.push(
+          <span key="storage" className="text-sm">
+            Storage:{" "}
+            <span className="line-through text-muted-foreground">{oldStorage}</span>{" "}
+            → <span className="font-bold">{newStorage}</span>GB
+          </span>
+        );
+      } else {
+        changes.push(
+          <span key="storage" className="text-sm">
+            Storage <span className="font-bold">{newStorage}</span>GB
+          </span>
+        );
+      }
+    }
+
+    if (result.payload?.replicas !== undefined) {
+      const oldReplicas = beforeUpdate?.resource?.replicas;
+      const newReplicas = result.payload.replicas;
+
+      if (oldReplicas !== newReplicas) {
+        changes.push(
+          <span key="replicas" className="text-sm">
+            Replicas:{" "}
+            <span className="line-through text-muted-foreground">{oldReplicas}</span>{" "}
+            → <span className="font-bold">{newReplicas}</span>
+          </span>
+        );
+      } else {
+        changes.push(
+          <span key="replicas" className="text-sm">
+            Replicas <span className="font-bold">{newReplicas}</span>
+          </span>
+        );
+      }
+    }
+
     return changes;
   };
 

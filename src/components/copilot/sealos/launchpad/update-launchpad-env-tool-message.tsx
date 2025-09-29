@@ -35,7 +35,7 @@ export const UpdateLaunchpadEnvToolMessage: React.FC<
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Launchpad environment variable update failed"
+        text: "Launchpad environment variable update failed"
       };
     }
     

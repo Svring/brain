@@ -35,7 +35,7 @@ export const StartLaunchpadToolMessage: React.FC<StartLaunchpadToolMessageProps>
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Launchpad start failed"
+        text: "Launchpad start failed"
       };
     }
     

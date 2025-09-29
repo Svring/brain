@@ -258,7 +258,7 @@ export async function restartClusterService(
   input: CustomResourceTarget,
   context: SealosApiContext
 ) {
-  return await restartCluster(input.name!, context);
+  return await runParallelAction(restartCluster(input.name!, context));
 }
 
 export async function updateClusterService(

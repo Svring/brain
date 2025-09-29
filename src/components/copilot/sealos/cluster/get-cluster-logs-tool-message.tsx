@@ -36,7 +36,7 @@ export const GetClusterLogsToolMessage: React.FC<
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Cluster logs retrieval failed",
+        text: "Cluster logs retrieval failed",
       };
     }
 

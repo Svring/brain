@@ -41,7 +41,7 @@ function createCostCenterApi(context: CostCenterApiContext) {
 }
 
 function createAccountApi(context: CostCenterApiContext) {
-  const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
+  const isDevelopment = process.env.MODE === "development";
 
   const regionDomain =
     context.regionDomain ||
@@ -99,11 +99,14 @@ export async function getAccountBalance(
     internalToken: context.internalToken || context.kubeconfig, // 使用 internalToken，fallback 到 kubeconfig
   };
 
+  // console.log("requestData", requestData);
+
   // Validate request data
   AccountBalanceRequestSchema.parse(requestData);
 
   try {
     const response = await api.post("/api/account/getAmount", requestData);
+    // console.log("response", response.data);
     const validatedResponse = AccountBalanceResponseSchema.parse(response.data);
     return validatedResponse;
   } catch (error: any) {

@@ -35,7 +35,7 @@ export const CreateLaunchpadPortsToolMessage: React.FC<CreateLaunchpadPortsToolM
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Launchpad ports creation failed"
+        text: "Launchpad ports creation failed"
       };
     }
     

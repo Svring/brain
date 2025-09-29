@@ -11,13 +11,15 @@ interface CreateDevboxPortsToolMessageProps {
   result: ToolActionResult;
 }
 
-export const CreateDevboxPortsToolMessage: React.FC<CreateDevboxPortsToolMessageProps> = ({
-  result,
-}) => {
+export const CreateDevboxPortsToolMessage: React.FC<
+  CreateDevboxPortsToolMessageProps
+> = ({ result }) => {
   const isApproved = result.approved !== false;
   const isSuccess = result.success !== false;
   const { invalidateQueries } = useInvalidateQueries();
   const { devbox } = useTRPCClients();
+
+  console.log("result", result);
 
   useMount(() => {
     invalidateQueries([devbox.get.queryKey(), devbox.list.queryKey()]);
@@ -35,13 +37,19 @@ export const CreateDevboxPortsToolMessage: React.FC<CreateDevboxPortsToolMessage
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Devbox ports creation failed",
+        text: "Devbox ports creation failed",
       };
     }
 
+    const createdPorts = result.payload?.ports || [];
+    const portsText =
+      createdPorts.length > 0
+        ? `Ports ${createdPorts.join(", ")} created successfully`
+        : "Devbox ports created successfully";
+
     return {
       icon: <CircleCheckBigIcon className="h-4 w-4 text-green-600" />,
-      text: "Devbox ports created successfully",
+      text: portsText,
     };
   };
 

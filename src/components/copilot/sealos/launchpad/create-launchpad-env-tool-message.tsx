@@ -35,7 +35,7 @@ export const CreateLaunchpadEnvToolMessage: React.FC<CreateLaunchpadEnvToolMessa
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Launchpad environment variable creation failed"
+        text: "Launchpad environment variable creation failed"
       };
     }
     

@@ -35,7 +35,7 @@ export const DeleteLaunchpadEnvToolMessage: React.FC<DeleteLaunchpadEnvToolMessa
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Launchpad environment variable deletion failed"
+        text: "Launchpad environment variable deletion failed"
       };
     }
     

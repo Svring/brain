@@ -35,7 +35,7 @@ export const StartClusterToolMessage: React.FC<StartClusterToolMessageProps> = (
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Cluster start failed",
+        text: "Cluster start failed",
       };
     }
 

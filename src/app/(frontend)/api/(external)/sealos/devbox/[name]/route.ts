@@ -150,6 +150,8 @@ export async function PATCH(
     const body = await request.json();
     const { name } = await params;
 
+    console.log("body", body);
+
     // Get current devbox to merge with updates
     const target = CustomResourceTargetSchema.parse(
       convertResourceTypeToTarget("devbox", name)
@@ -159,37 +161,60 @@ export async function PATCH(
     // Start with current devbox data
     const updateData: any = {
       name: currentDevbox.name,
-      resource: currentDevbox.resources,
     };
 
-    // Update CPU and memory if provided
-    if (body.cpu !== undefined) {
+    // Only include resource if it was actually provided in the request
+    if (body.cpu !== undefined || body.memory !== undefined) {
       updateData.resource = {
-        ...updateData.resource,
-        cpu: body.cpu,
+        ...currentDevbox.resources,
       };
-    }
-    if (body.memory !== undefined) {
-      updateData.resource = {
-        ...updateData.resource,
-        memory: body.memory,
-      };
+
+      // Update CPU and memory if provided
+      if (body.cpu !== undefined) {
+        updateData.resource.cpu = body.cpu;
+      }
+      if (body.memory !== undefined) {
+        updateData.resource.memory = body.memory;
+      }
     }
 
     // Handle port operations only if specified
     let shouldUpdatePorts = false;
 
+    // Transform current ports from object schema to form schema format
+    let updatedPorts = (currentDevbox.ports || []).map((port: any) => ({
+      number: port.number,
+      portName: port.portName,
+    }));
+
     // If deletePorts are specified, filter out deleted ports from existing ports
     if (body.deletePorts && Array.isArray(body.deletePorts)) {
-      const updatedPorts = (currentDevbox.ports || []).filter(
+      updatedPorts = updatedPorts.filter(
         (port) => !body.deletePorts.includes(port.number)
       );
-      updateData.ports = updatedPorts;
       shouldUpdatePorts = true;
+    }
+
+    // If createPorts are specified, add new ports
+    if (body.createPorts && Array.isArray(body.createPorts)) {
+      const newPorts = body.createPorts.map((portNumber: number) => ({
+        number: portNumber,
+        protocol: "HTTP",
+        exposesPublicDomain: true,
+      }));
+      updatedPorts = [...updatedPorts, ...newPorts];
+      shouldUpdatePorts = true;
+    }
+
+    // Update ports if any changes were made
+    if (shouldUpdatePorts) {
+      updateData.ports = updatedPorts;
     }
 
     // Validate the update data
     const validatedUpdateData = devboxUpdateFormSchema.parse(updateData);
+
+    console.log("validatedUpdateData", validatedUpdateData);
 
     const result = await updateDevbox(sealosContext, name, validatedUpdateData);
 

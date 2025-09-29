@@ -52,7 +52,6 @@ export default function AppSidebar() {
   // Fetch resource quota data
   const { data: resourceQuota, isLoading: isResourceQuotaLoading } = useQuery({
     ...k8s.resourceQuota.queryOptions(),
-    staleTime: 5 * 1000,
   });
 
   // console.log("resourceQuota", resourceQuota);
@@ -82,8 +81,6 @@ export default function AppSidebar() {
     enabled: mode === "production" && !!auth?.kubeconfig,
     refetchInterval: 10 * 1000, // Refetch every 10 seconds
   });
-
-  console.log("aiProxyUsage", aiProxyUsage);
 
   // Log remaining_today data when available
   useEffect(() => {

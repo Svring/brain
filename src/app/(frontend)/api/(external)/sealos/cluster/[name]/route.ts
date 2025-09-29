@@ -150,21 +150,33 @@ export async function PATCH(
 
     const body = await request.json();
 
-    // Transform the data: move cpu and memory into resource field
+    // console.log("body", body);
+
+    // Transform the data: move cpu, memory, storage, and replicas into resource field
     const transformedBody = {
       ...body,
       resource: {
-        cpu: body.cpu,
-        memory: body.memory,
-        ...body.resource, // Preserve any existing resource fields
+        ...(body.resource || {}), // Preserve any existing resource fields
       },
     };
 
-    // Remove cpu and memory from top level since they're now in resource
-    delete transformedBody.cpu;
-    delete transformedBody.memory;
-
-    delete transformedBody.storage;
+    // Move top-level fields into resource object if they exist
+    if (body.cpu !== undefined) {
+      transformedBody.resource.cpu = body.cpu;
+      delete transformedBody.cpu;
+    }
+    if (body.memory !== undefined) {
+      transformedBody.resource.memory = body.memory;
+      delete transformedBody.memory;
+    }
+    if (body.storage !== undefined) {
+      transformedBody.resource.storage = body.storage;
+      delete transformedBody.storage;
+    }
+    if (body.replicas !== undefined) {
+      transformedBody.resource.replicas = body.replicas;
+      delete transformedBody.replicas;
+    }
 
     // console.log("transformedBody", transformedBody);
 

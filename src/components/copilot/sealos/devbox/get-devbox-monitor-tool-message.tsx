@@ -36,7 +36,7 @@ export const GetDevboxMonitorToolMessage: React.FC<
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Devbox monitoring data retrieval failed",
+        text: "Devbox monitoring data retrieval failed",
       };
     }
 
