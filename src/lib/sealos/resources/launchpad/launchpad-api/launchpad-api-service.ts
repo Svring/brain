@@ -15,6 +15,7 @@ import {
   updateApplication as updateLaunchpad,
   getApplicationPods,
   getPodsMetrics,
+  restartApplication,
 } from "./launchpad-open-api";
 import type { LaunchpadPodsMetricsRequest } from "./launchpad-open-api-schemas/launchpad-create-schema";
 import type { LaunchpadCreateFormData } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
@@ -173,10 +174,7 @@ export async function restartLaunchpadService(
   request: LaunchpadStartRequest,
   context: SealosApiContext
 ): Promise<any> {
-  // For launchpad restart, we'll pause first then start
-  // This ensures a clean restart of the application
-  await runParallelAction(pauseLaunchpad(request, context));
-  return await runParallelAction(startLaunchpad(request, context));
+  return await runParallelAction(restartApplication(context, request.name!));
 }
 
 export async function deleteLaunchpadService(

@@ -26,6 +26,7 @@ import {
   updateCluster,
   startCluster,
   pauseCluster,
+  restartCluster,
 } from "./cluster-open-api";
 import type { ClusterCreateFormData } from "@/schemas/forms/cluster/cluster-create-form-schema";
 import type { ClusterUpdateFormData } from "@/schemas/forms/cluster/cluster-update-form-schema";
@@ -257,10 +258,7 @@ export async function restartClusterService(
   input: CustomResourceTarget,
   context: SealosApiContext
 ) {
-  // For cluster restart, we'll pause first then start
-  // This is a common pattern for database services
-  await pauseCluster(input.name!, context);
-  return await startCluster(input.name!, context);
+  return await restartCluster(input.name!, context);
 }
 
 export async function updateClusterService(

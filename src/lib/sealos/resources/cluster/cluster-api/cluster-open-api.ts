@@ -12,6 +12,7 @@ import type {
   DeleteClusterResponse,
   StartClusterResponse,
   PauseClusterResponse,
+  RestartClusterResponse,
   GetLogsDataResponse,
   GetLogsFilesResponse,
   LogClusterType,
@@ -28,6 +29,7 @@ import {
   DeleteClusterResponseSchema,
   StartClusterResponseSchema,
   PauseClusterResponseSchema,
+  RestartClusterResponseSchema,
   GetLogsDataResponseSchema,
   GetLogsFilesResponseSchema,
 } from "./cluster-open-api-schemas";
@@ -292,6 +294,43 @@ export const pauseCluster = createParallelAction(
   }
 );
 
+/**
+ * Restart a cluster
+ *
+ * @example
+ * ```typescript
+ * // Restart a cluster
+ * const result = await restartCluster("my-postgres", context);
+ *
+ * // Wait for cluster to be running after restart
+ * let cluster = await getCluster("my-postgres", context);
+ * while (cluster.data.status !== "Running") {
+ *   await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+ *   cluster = await getCluster("my-postgres", context);
+ * }
+ * ```
+ */
+export const restartCluster = createParallelAction(
+  async (
+    clusterName: string,
+    context: ClusterApiContext
+  ): Promise<RestartClusterResponse> => {
+    const api = createClusterApi(context);
+    const response = await api.post(`/database/${clusterName}/restart`);
+
+    // Check if response code is not 200-299 range
+    if (response.data.code < 200 || response.data.code >= 300) {
+      throw new Error(
+        `Failed to restart cluster: ${
+          response.data.message || `HTTP ${response.data.code}`
+        }`
+      );
+    }
+
+    return RestartClusterResponseSchema.parse(response.data);
+  }
+);
+
 // Log Management Functions
 
 /**
@@ -409,6 +448,7 @@ export const getClusterVersions = createParallelAction(
 // - getClusterBackups
 // - createClusterBackup
 // - deleteClusterBackup
+// - restartCluster (implemented)
 
 // Example of additional functions that could be implemented:
 /*

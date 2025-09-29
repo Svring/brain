@@ -117,6 +117,30 @@ export const pauseApplication = createParallelAction(
   }
 );
 
+/**
+ * Restart an application
+ *
+ * @example
+ * ```typescript
+ * // Restart a launchpad application
+ * const result = await restartApplication(context, "my-app");
+ *
+ * // Check if restart was successful
+ * if (result.message) {
+ *   console.log("Application restarted successfully");
+ * }
+ * ```
+ */
+export const restartApplication = createParallelAction(
+  async (context: SealosApiContext, name: string) => {
+    const api = createLaunchpadApi(context);
+    const response = await api.post<AppControlSuccessResponse>(
+      `/app/${name}/restart`
+    );
+    return response.data;
+  }
+);
+
 // ============= CONFIGMAP MANAGEMENT =============
 
 // PATCH /api/v1/app/{name}/configmap - Update application ConfigMap

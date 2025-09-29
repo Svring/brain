@@ -155,6 +155,12 @@ export const PauseClusterResponseSchema = z.object({
   message: z.string(),
 });
 
+// Restart cluster response schema
+export const RestartClusterResponseSchema = z.object({
+  code: z.number(),
+  message: z.string(),
+});
+
 // Log entry schema
 export const LogEntrySchema = z.object({
   timestamp: z.string(),
@@ -238,6 +244,9 @@ export type UpdateClusterResponse = z.infer<typeof UpdateClusterResponseSchema>;
 export type DeleteClusterResponse = z.infer<typeof DeleteClusterResponseSchema>;
 export type StartClusterResponse = z.infer<typeof StartClusterResponseSchema>;
 export type PauseClusterResponse = z.infer<typeof PauseClusterResponseSchema>;
+export type RestartClusterResponse = z.infer<
+  typeof RestartClusterResponseSchema
+>;
 export type LogEntry = z.infer<typeof LogEntrySchema>;
 export type LogMetadata = z.infer<typeof LogMetadataSchema>;
 export type GetLogsDataResponse = z.infer<typeof GetLogsDataResponseSchema>;
