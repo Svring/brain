@@ -78,6 +78,12 @@ export async function POST(request: NextRequest) {
       validatedCreateData,
       sealosContext
     );
+
+    // Check if the result indicates an error
+    if (result.code && result.code >= 400) {
+      return NextResponse.json(result, { status: result.code });
+    }
+
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error creating cluster:", error);

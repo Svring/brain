@@ -28,20 +28,20 @@ export const UpdateLaunchpadCommandToolMessage: React.FC<
     if (!isApproved) {
       return {
         icon: <CircleSlash className="h-4 w-4 text-theme-yellow" />,
-        text: "Launchpad command update rejected"
+        text: "Launchpad command update rejected",
       };
     }
-    
+
     if (!isSuccess) {
       return {
         icon: <Ban className="h-4 w-4 text-theme-red" />,
-        text: result.message || "Launchpad command update failed"
+        text: "Launchpad command update failed",
       };
     }
-    
+
     return {
       icon: <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />,
-      text: "Launchpad command updated successfully"
+      text: "Launchpad command updated successfully",
     };
   };
 

@@ -59,6 +59,23 @@ Your role is to analyze the given network status data and provide a clear assess
 4. **Error Status**
    - If container access fails, highlight internal connection issues requiring immediate attention.
 
+**Special Case: Devbox Container Not Listening on Port**
+
+When analyzing **devbox resources** (not launchpad resources like 'deployment' or 'statefulset'), pay special attention to this scenario:
+
+- **Container Status**: 'running' (container is active)
+- **Container Port**: Unreachable (no process listening on the specified port)
+- **Root Cause**: The devbox container is running but the entrypoint.sh script has not been executed, meaning the development/production server (Next.js, Python, or other runtime template) is not launched and not listening on the expected port.
+
+**Solution for Devbox Resources:**
+- Use the 'autostart_devbox' tool to execute the entrypoint.sh script and launch the process within the devbox container.
+- Explain that the launch process may take some time to take effect (typically 30-60 seconds for most applications).
+- Only mention the 'autostart_devbox' tool for devbox resources, never for launchpad resources (deployment/statefulset).
+
+**Resource Type Identification:**
+- **Devbox**: Custom resource type 'devbox' - can use autostart_devbox tool
+- **Launchpad**: Builtin resource types 'deployment' or 'statefulset' - do NOT mention autostart_devbox tool
+
 **Guiding Principles**
 - Provide a concise response when the network connection is normal.
 - If issues exist, clearly specify which layer has failed.
@@ -66,6 +83,8 @@ Your role is to analyze the given network status data and provide a clear assess
 - Always explain how you interpreted the report (e.g., "Container port 8080 is unreachable, public URL returns 503").
 - Do not repeat the original JSON report to the user; only summarize findings and recommendations.
 - If multiple issues exist, report all of them.
+- For devbox resources with unreachable container ports, automatically attempt to use the autostart_devbox tool.
+- For launchpad resources, do not mention the autostart_devbox tool as it's not applicable.
 `;
 
 export function useDiagnoseNetwork(

@@ -113,6 +113,12 @@ export async function DELETE(
     const { name } = await params;
 
     const result = await deleteLaunchpadService({ name }, sealosContext);
+
+    // Check if the result indicates an error
+    if (result.code && result.code >= 400) {
+      return NextResponse.json(result, { status: result.code });
+    }
+
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error deleting launchpad:", error);
@@ -299,6 +305,8 @@ export async function PATCH(
       updateData.env = updatedEnv;
     }
 
+    console.log("updateData", updateData);
+
     // Validate the update data
     const validatedUpdateData = launchpadUpdateFormSchema.parse(updateData);
 
@@ -306,6 +314,12 @@ export async function PATCH(
       sealosContext,
       validatedUpdateData
     );
+
+    // Check if the result indicates an error
+    if (result.code && result.code >= 400) {
+      return NextResponse.json(result, { status: result.code });
+    }
+
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error updating launchpad:", error);

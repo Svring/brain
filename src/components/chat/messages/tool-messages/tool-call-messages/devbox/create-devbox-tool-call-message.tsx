@@ -10,6 +10,7 @@ interface CreateDevboxToolCallMessageProps {
   cpu?: number;
   memory?: number;
   ports?: number[];
+  setInterruptData?: (data: any) => void;
 }
 
 export function CreateDevboxToolCallMessage({
@@ -18,6 +19,7 @@ export function CreateDevboxToolCallMessage({
   cpu,
   memory,
   ports,
+  setInterruptData,
 }: CreateDevboxToolCallMessageProps) {
   // Get icon URL directly from runtime mapping
   const iconUrl =

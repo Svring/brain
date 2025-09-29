@@ -106,6 +106,12 @@ export async function DELETE(
     );
 
     const result = await deleteClusterService(target, sealosContext);
+
+    // Check if the result indicates an error
+    if (result.code && result.code >= 400) {
+      return NextResponse.json(result, { status: result.code });
+    }
+
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error deleting cluster:", error);
@@ -165,6 +171,12 @@ export async function PATCH(
     const updateData = clusterUpdateFormSchema.parse(transformedBody);
 
     const result = await updateClusterService(updateData, sealosContext);
+
+    // Check if the result indicates an error
+    if (result.code && result.code >= 400) {
+      return NextResponse.json(result, { status: result.code });
+    }
+
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error updating cluster:", error);

@@ -185,6 +185,7 @@ export async function autostartDevbox(
 ): Promise<any> {
   const api = createDevboxAxios(context);
   const response = await api.post(`/${name}/autostart`, {});
+  console.log("response", response);
   return response.data;
 }
 

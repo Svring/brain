@@ -14,6 +14,7 @@ interface ToolCallRendererProps {
   id?: string;
   tool_call_id?: string;
   status?: string;
+  setInterruptData?: (data: any) => void;
 }
 
 export const ToolCallRenderer = memo(function ToolCallRenderer({
@@ -22,6 +23,7 @@ export const ToolCallRenderer = memo(function ToolCallRenderer({
   id,
   tool_call_id,
   status,
+  setInterruptData,
 }: ToolCallRendererProps) {
   const { action, payload, approved, success } = useMemo(() => {
     // console.log("content", content);
@@ -75,7 +77,7 @@ export const ToolCallRenderer = memo(function ToolCallRenderer({
     if (ToolCallComponent) {
       // Filter out state parameter from payload for tool calls
       const { state, ...toolCallParameters } = payload || {};
-      return ToolCallComponent(toolCallParameters);
+      return ToolCallComponent(toolCallParameters, setInterruptData);
     }
   } else {
     // Handle tool result messages

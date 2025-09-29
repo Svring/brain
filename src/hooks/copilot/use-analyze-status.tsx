@@ -150,7 +150,7 @@ export function useAnalyzeStatus(
     enabled: podTargets.length > 0,
   });
 
-  console.log("eventsRecord", eventsRecord);
+  // console.log("eventsRecord", eventsRecord);
 
   const { addPendingMessage, triggerPendingMessages } = useChatActions();
 

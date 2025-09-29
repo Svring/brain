@@ -6,6 +6,7 @@ interface CreateLaunchpadToolCallMessageProps {
   replicas?: number;
   ports?: number[];
   env?: Array<[string, string]>;
+  setInterruptData?: (data: any) => void;
 }
 
 export function CreateLaunchpadToolCallMessage({ 
@@ -15,7 +16,8 @@ export function CreateLaunchpadToolCallMessage({
   memory, 
   replicas, 
   ports, 
-  env 
+  env,
+  setInterruptData
 }: CreateLaunchpadToolCallMessageProps) {
   const iconUrl = "https://applaunchpad.bja.sealos.run/logo.svg";
 

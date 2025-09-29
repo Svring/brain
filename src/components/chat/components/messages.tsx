@@ -195,6 +195,7 @@ export function AiMessages({
                     action: interruptData.action,
                     payload: interruptData.payload,
                   })}
+                  setInterruptData={setInterruptData}
                 />
               </div>
 

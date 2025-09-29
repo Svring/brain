@@ -7,6 +7,7 @@ interface CreateClusterToolCallMessageProps {
   memory?: number;
   storage?: number;
   replicas?: number;
+  setInterruptData?: (data: any) => void;
 }
 
 export function CreateClusterToolCallMessage({
@@ -16,6 +17,7 @@ export function CreateClusterToolCallMessage({
   memory,
   storage,
   replicas,
+  setInterruptData,
 }: CreateClusterToolCallMessageProps) {
   const iconUrl = getClusterIconUrl(type);
 

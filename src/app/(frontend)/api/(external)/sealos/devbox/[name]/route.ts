@@ -93,6 +93,12 @@ export async function DELETE(
     const { name } = await params;
 
     const result = await deleteDevbox(sealosContext, name);
+
+    // Check if the result indicates an error
+    if (result.code && result.code >= 400) {
+      return NextResponse.json(result, { status: result.code });
+    }
+
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error deleting devbox:", error);
@@ -144,8 +150,6 @@ export async function PATCH(
     const body = await request.json();
     const { name } = await params;
 
-    // console.log("body", body);
-
     // Get current devbox to merge with updates
     const target = CustomResourceTargetSchema.parse(
       convertResourceTypeToTarget("devbox", name)
@@ -156,7 +160,6 @@ export async function PATCH(
     const updateData: any = {
       name: currentDevbox.name,
       resource: currentDevbox.resources,
-      ports: currentDevbox.ports || [],
     };
 
     // Update CPU and memory if provided
@@ -173,34 +176,28 @@ export async function PATCH(
       };
     }
 
-    // Handle port operations
-    let updatedPorts = [...(currentDevbox.ports || [])];
+    // Handle port operations only if specified
+    let shouldUpdatePorts = false;
 
-    // Add new ports from createPorts
-    if (body.createPorts && Array.isArray(body.createPorts)) {
-      const newPorts = body.createPorts.map((portNumber: number) => ({
-        number: portNumber,
-        protocol: "HTTP",
-        exposesPublicDomain: true,
-      }));
-      updatedPorts = [...updatedPorts, ...newPorts];
-    }
-
-    // Remove ports from deletePorts
+    // If deletePorts are specified, filter out deleted ports from existing ports
     if (body.deletePorts && Array.isArray(body.deletePorts)) {
-      updatedPorts = updatedPorts.filter(
+      const updatedPorts = (currentDevbox.ports || []).filter(
         (port) => !body.deletePorts.includes(port.number)
       );
+      updateData.ports = updatedPorts;
+      shouldUpdatePorts = true;
     }
-
-    updateData.ports = updatedPorts;
 
     // Validate the update data
     const validatedUpdateData = devboxUpdateFormSchema.parse(updateData);
 
-    // console.log("validatedUpdateData", validatedUpdateData);
-
     const result = await updateDevbox(sealosContext, name, validatedUpdateData);
+
+    // Check if the result indicates an error
+    if (result.code && result.code >= 400) {
+      return NextResponse.json(result, { status: result.code });
+    }
+
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error updating devbox:", error);

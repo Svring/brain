@@ -67,12 +67,16 @@ export const ToolCallMessageType = {
     );
   },
 
-  update_devbox: (parameters: Record<string, any>) => {
+  update_devbox: (
+    parameters: Record<string, any>,
+    setInterruptData?: (data: any) => void
+  ) => {
     return (
       <UpdateDevboxToolCallMessage
         devbox_name={parameters.devbox_name || ""}
         cpu={parameters.cpu}
         memory={parameters.memory}
+        setInterruptData={setInterruptData}
       />
     );
   },
@@ -103,8 +107,8 @@ export const ToolCallMessageType = {
 
   restart_devbox: (parameters: Record<string, any>) => {
     return (
-      <RestartDevboxToolCallMessage 
-        devbox_name={parameters.devbox_name || ""} 
+      <RestartDevboxToolCallMessage
+        devbox_name={parameters.devbox_name || ""}
         runtime={parameters.runtime}
         type={parameters.type}
       />
@@ -119,14 +123,17 @@ export const ToolCallMessageType = {
 
   autostart_devbox: (parameters: Record<string, any>) => {
     return (
-      <AutostartDevboxToolCallMessage 
-        devbox_name={parameters.devbox_name || ""} 
+      <AutostartDevboxToolCallMessage
+        devbox_name={parameters.devbox_name || ""}
         runtime={parameters.runtime}
       />
     );
   },
 
-  create_devbox: (parameters: Record<string, any>) => {
+  create_devbox: (
+    parameters: Record<string, any>,
+    setInterruptData?: (data: any) => void
+  ) => {
     return (
       <CreateDevboxToolCallMessage
         name={parameters.name || ""}
@@ -134,6 +141,7 @@ export const ToolCallMessageType = {
         cpu={parameters.cpu}
         memory={parameters.memory}
         ports={parameters.ports || []}
+        setInterruptData={setInterruptData}
       />
     );
   },
@@ -168,12 +176,16 @@ export const ToolCallMessageType = {
     );
   },
 
-  update_cluster: (parameters: Record<string, any>) => {
+  update_cluster: (
+    parameters: Record<string, any>,
+    setInterruptData?: (data: any) => void
+  ) => {
     return (
       <UpdateClusterToolCallMessage
         cluster_name={parameters.cluster_name || ""}
         cpu={parameters.cpu}
         memory={parameters.memory}
+        setInterruptData={setInterruptData}
         // replicas={parameters.replicas}
         // storage={parameters.storage}
       />
@@ -205,7 +217,10 @@ export const ToolCallMessageType = {
     );
   },
 
-  create_cluster: (parameters: Record<string, any>) => {
+  create_cluster: (
+    parameters: Record<string, any>,
+    setInterruptData?: (data: any) => void
+  ) => {
     return (
       <CreateClusterToolCallMessage
         name={parameters.name || ""}
@@ -214,6 +229,7 @@ export const ToolCallMessageType = {
         memory={parameters.memory}
         storage={parameters.storage}
         replicas={parameters.replicas}
+        setInterruptData={setInterruptData}
       />
     );
   },
@@ -260,21 +276,29 @@ export const ToolCallMessageType = {
     );
   },
 
-  update_launchpad: (parameters: Record<string, any>) => {
+  update_launchpad: (
+    parameters: Record<string, any>,
+    setInterruptData?: (data: any) => void
+  ) => {
     return (
       <UpdateLaunchpadToolCallMessage
         launchpad_name={parameters.launchpad_name || ""}
         cpu={parameters.cpu}
         memory={parameters.memory}
+        setInterruptData={setInterruptData}
       />
     );
   },
 
-  create_launchpad_ports: (parameters: Record<string, any>) => {
+  create_launchpad_ports: (
+    parameters: Record<string, any>,
+    setInterruptData?: (data: any) => void
+  ) => {
     return (
       <CreateLaunchpadPortsToolCallMessage
         launchpad_name={parameters.launchpad_name || ""}
         ports={parameters.ports || []}
+        setInterruptData={setInterruptData}
       />
     );
   },
@@ -288,11 +312,15 @@ export const ToolCallMessageType = {
     );
   },
 
-  create_launchpad_env: (parameters: Record<string, any>) => {
+  create_launchpad_env: (
+    parameters: Record<string, any>,
+    setInterruptData?: (data: any) => void
+  ) => {
     return (
       <CreateLaunchpadEnvToolCallMessage
         launchpad_name={parameters.launchpad_name || ""}
         env_vars={parameters.env_vars || []}
+        setInterruptData={setInterruptData}
       />
     );
   },
@@ -306,29 +334,41 @@ export const ToolCallMessageType = {
     );
   },
 
-  update_launchpad_env: (parameters: Record<string, any>) => {
+  update_launchpad_env: (
+    parameters: Record<string, any>,
+    setInterruptData?: (data: any) => void
+  ) => {
     return (
       <UpdateLaunchpadEnvToolCallMessage
         launchpad_name={parameters.launchpad_name || ""}
         env_vars={parameters.env_vars || []}
+        setInterruptData={setInterruptData}
       />
     );
   },
 
-  update_launchpad_image: (parameters: Record<string, any>) => {
+  update_launchpad_image: (
+    parameters: Record<string, any>,
+    setInterruptData?: (data: any) => void
+  ) => {
     return (
       <UpdateLaunchpadImageToolCallMessage
         launchpad_name={parameters.launchpad_name || ""}
         image={parameters.image || ""}
+        setInterruptData={setInterruptData}
       />
     );
   },
 
-  update_launchpad_command: (parameters: Record<string, any>) => {
+  update_launchpad_command: (
+    parameters: Record<string, any>,
+    setInterruptData?: (data: any) => void
+  ) => {
     return (
       <UpdateLaunchpadCommandToolCallMessage
         launchpad_name={parameters.launchpad_name || ""}
         launch_command={parameters.launch_command || { command: "", args: "" }}
+        setInterruptData={setInterruptData}
       />
     );
   },
@@ -358,7 +398,10 @@ export const ToolCallMessageType = {
     );
   },
 
-  create_launchpad: (parameters: Record<string, any>) => {
+  create_launchpad: (
+    parameters: Record<string, any>,
+    setInterruptData?: (data: any) => void
+  ) => {
     return (
       <CreateLaunchpadToolCallMessage
         name={parameters.name || ""}
@@ -368,6 +411,7 @@ export const ToolCallMessageType = {
         replicas={parameters.replicas}
         ports={parameters.ports || []}
         env={parameters.env || []}
+        setInterruptData={setInterruptData}
       />
     );
   },

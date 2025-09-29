@@ -34,6 +34,13 @@ export async function POST(
     // Enable autostart for the devbox
     const result = await autostartDevbox(context, name);
 
+    console.log("result", result);
+
+    // Check if the result indicates an error
+    if (result.code && result.code >= 400) {
+      return NextResponse.json(result, { status: result.code });
+    }
+
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error enabling devbox autostart:", error);

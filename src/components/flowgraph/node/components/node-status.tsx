@@ -33,6 +33,7 @@ export default function NodeStatus({ target }: NodeStatusLightProps) {
       } => t.type === "builtin"
     );
 
+  // console.log("pods", pods);
   // console.log("status", status);
   // console.log("resource", resource);
   // Fetch pod events
@@ -45,34 +46,6 @@ export default function NodeStatus({ target }: NodeStatusLightProps) {
   const { analyzeStatus, isStatusReady } = useAnalyzeStatus(target);
 
   // console.log("eventsRecord", eventsRecord);
-
-  // Determine enhanced status
-  const getEnhancedStatus = () => {
-    // If status is null, return 'Pending'
-    if (!status) return "Pending";
-
-    if (!podTargets.length) return status;
-
-    for (const { name } of podTargets) {
-      const podEvents = eventsRecord[name!];
-      if (!podEvents?.length) continue;
-
-      const hasError = podEvents.some(
-        (event: any) =>
-          event.type === "Warning" || /Error|Failed/.test(event.reason)
-      );
-      if (hasError) return "Error";
-
-      const hasRestart = podEvents.some((event: any) =>
-        /Started|Created/.test(event.reason)
-      );
-      if (hasRestart && status === "Running") return "Restarting";
-    }
-
-    return status;
-  };
-
-  const enhancedStatus = getEnhancedStatus();
 
   // Map status to colors
   const statusColors: { [key: string]: string } = {
@@ -88,12 +61,12 @@ export default function NodeStatus({ target }: NodeStatusLightProps) {
   };
 
   const colorClass =
-    statusColors[enhancedStatus] || "fill-theme-gray text-theme-gray";
+    statusColors[status || "Pending"] || "fill-theme-gray text-theme-gray";
   const displayStatus =
-    enhancedStatus === "Stopping" ? "Pausing" : enhancedStatus;
+    (status || "Pending") === "Stopping" ? "Pausing" : status || "Pending";
 
-  const isRunning = enhancedStatus === "Running";
-  const isPending = enhancedStatus === "Pending";
+  const isRunning = (status || "Pending") === "Running";
+  const isPending = (status || "Pending") === "Pending";
 
   if (isRunning) {
     return (
