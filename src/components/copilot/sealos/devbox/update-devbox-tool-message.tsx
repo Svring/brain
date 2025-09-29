@@ -121,7 +121,7 @@ export const UpdateDevboxToolMessage: React.FC<
           {icon}
           <p className="text-sm">
             {text}
-            {resourceChanges.length > 0 && (
+            {isSuccess && resourceChanges.length > 0 && (
               <span className="ml-2">
                 {resourceChanges.map((change, index) => (
                   <span key={index}>

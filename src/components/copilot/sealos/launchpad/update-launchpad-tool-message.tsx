@@ -62,7 +62,9 @@ export const UpdateLaunchpadToolMessage: React.FC<
         changes.push(
           <span key="cpu" className="text-sm">
             CPU:{" "}
-            <span className="line-through text-muted-foreground">{oldCpu}</span>{" "}
+            <span className="line-through text-muted-foreground">
+              {oldCpu}
+            </span>{" "}
             → <span className="font-bold">{newCpu}</span> Core
           </span>
         );
@@ -83,7 +85,9 @@ export const UpdateLaunchpadToolMessage: React.FC<
         changes.push(
           <span key="memory" className="text-sm">
             Memory:{" "}
-            <span className="line-through text-muted-foreground">{oldMemory}</span>{" "}
+            <span className="line-through text-muted-foreground">
+              {oldMemory}
+            </span>{" "}
             → <span className="font-bold">{newMemory}</span>G
           </span>
         );
@@ -108,7 +112,7 @@ export const UpdateLaunchpadToolMessage: React.FC<
           {icon}
           <p className="text-sm">
             {text}
-            {resourceChanges.length > 0 && (
+            {isSuccess && resourceChanges.length > 0 && (
               <span className="ml-2">
                 {resourceChanges.map((change, index) => (
                   <span key={index}>

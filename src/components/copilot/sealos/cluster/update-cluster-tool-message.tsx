@@ -12,9 +12,9 @@ interface UpdateClusterToolMessageProps {
   result: ToolActionResult;
 }
 
-export const UpdateClusterToolMessage: React.FC<UpdateClusterToolMessageProps> = ({
-  result,
-}) => {
+export const UpdateClusterToolMessage: React.FC<
+  UpdateClusterToolMessageProps
+> = ({ result }) => {
   const isApproved = result.approved !== false;
   const isSuccess = result.success !== false;
   const { invalidateQueries } = useInvalidateQueries();
@@ -85,7 +85,9 @@ export const UpdateClusterToolMessage: React.FC<UpdateClusterToolMessageProps> =
         changes.push(
           <span key="memory" className="text-sm">
             Memory:{" "}
-            <span className="line-through text-muted-foreground">{oldMemory}</span>{" "}
+            <span className="line-through text-muted-foreground">
+              {oldMemory}
+            </span>{" "}
             → <span className="font-bold">{newMemory}</span>G
           </span>
         );
@@ -106,7 +108,9 @@ export const UpdateClusterToolMessage: React.FC<UpdateClusterToolMessageProps> =
         changes.push(
           <span key="storage" className="text-sm">
             Storage:{" "}
-            <span className="line-through text-muted-foreground">{oldStorage}</span>{" "}
+            <span className="line-through text-muted-foreground">
+              {oldStorage}
+            </span>{" "}
             → <span className="font-bold">{newStorage}</span>GB
           </span>
         );
@@ -127,7 +131,9 @@ export const UpdateClusterToolMessage: React.FC<UpdateClusterToolMessageProps> =
         changes.push(
           <span key="replicas" className="text-sm">
             Replicas:{" "}
-            <span className="line-through text-muted-foreground">{oldReplicas}</span>{" "}
+            <span className="line-through text-muted-foreground">
+              {oldReplicas}
+            </span>{" "}
             → <span className="font-bold">{newReplicas}</span>
           </span>
         );
@@ -152,7 +158,7 @@ export const UpdateClusterToolMessage: React.FC<UpdateClusterToolMessageProps> =
           {icon}
           <p className="text-sm">
             {text}
-            {resourceChanges.length > 0 && (
+            {isSuccess && resourceChanges.length > 0 && (
               <span className="ml-2">
                 {resourceChanges.map((change, index) => (
                   <span key={index}>
