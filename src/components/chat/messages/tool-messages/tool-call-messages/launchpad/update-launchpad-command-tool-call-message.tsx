@@ -28,7 +28,7 @@ export function UpdateLaunchpadCommandToolCallMessage({
             Command:
           </span>
           <span className="text-sm text-foreground font-mono">
-            {launch_command.command || "set to empty"}
+            {launch_command.command || "empty"}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -36,7 +36,7 @@ export function UpdateLaunchpadCommandToolCallMessage({
             Args:
           </span>
           <span className="text-sm text-foreground font-mono">
-            {launch_command.args || "set to empty"}
+            {launch_command.args || "empty"}
           </span>
         </div>
       </div>

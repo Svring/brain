@@ -227,16 +227,12 @@ export const getEventsByPodDirect = async (
     }
   );
 
-  return BuiltinResourceListResponseSchema.parse(
-    JSON.parse(
-      JSON.stringify(
-        await addMissingFields(
-          eventListResponse.items,
-          resourceConfig.apiVersion,
-          resourceConfig.kind
-        )
-      )
-    )
+  // console.log("eventListResponse", eventListResponse);
+
+  return await addMissingFields(
+    eventListResponse.items,
+    resourceConfig.apiVersion,
+    resourceConfig.kind
   );
 };
 

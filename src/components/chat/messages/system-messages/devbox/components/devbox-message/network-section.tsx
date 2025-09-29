@@ -119,7 +119,7 @@ export const NetworkPopoverContent: React.FC<{
   return (
     <div className="w-full rounded-lg space-y-3 min-w-0">
       <div className="min-w-0">
-        <PortDisplayTable ports={transformedPorts} />
+        <PortDisplayTable ports={transformedPorts} target={target} />
       </div>
 
       {/* Edit Button - Full Row */}

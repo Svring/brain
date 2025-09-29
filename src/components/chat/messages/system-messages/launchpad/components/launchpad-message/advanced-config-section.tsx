@@ -80,18 +80,6 @@ export const AdvancedConfigSection: React.FC<AdvancedConfigSectionProps> = ({
     ? LaunchpadObjectSchema.parse(launchpadResource)
     : null;
 
-  // Count configuration items
-  const commandCount =
-    parsedLaunchpadObject?.launchCommand?.command?.length || 0;
-  const argsCount = parsedLaunchpadObject?.launchCommand?.args?.length || 0;
-  const envCount = parsedLaunchpadObject?.env?.length || 0;
-  const configMapCount = parsedLaunchpadObject?.configMap?.length || 0;
-  const storageCount = parsedLaunchpadObject?.kind === "StatefulSet" 
-    ? (parsedLaunchpadObject as any)?.localStorage?.length || 0 
-    : 0;
-
-  const totalConfigItems =
-    commandCount + argsCount + envCount + configMapCount + storageCount;
 
   return (
     <div
@@ -103,7 +91,7 @@ export const AdvancedConfigSection: React.FC<AdvancedConfigSectionProps> = ({
         <div className="flex flex-col">
           <span className="font-medium text-sm">Advanced</span>
           <span className="text-xs text-muted-foreground">
-            {totalConfigItems} item{totalConfigItems !== 1 ? "s" : ""}
+            configuration
           </span>
         </div>
       </div>

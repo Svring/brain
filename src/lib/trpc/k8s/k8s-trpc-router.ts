@@ -191,6 +191,8 @@ export const k8sRouter = t.router({
 
       const results = await Promise.all(eventsPromises);
 
+      // console.log("results", results);
+
       // Convert array to record format
       const eventsRecord: PodEventsRecord = {};
       results.forEach((result) => {

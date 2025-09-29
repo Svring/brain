@@ -33,6 +33,33 @@ export const StatusChart: React.FC<StatusChartProps> = ({
     return new Date(timestamp).toLocaleString();
   };
 
+  const sortEventsByTimestamp = (events: any[]) => {
+    return events.sort((a, b) => {
+      const timestampA = a.lastTimestamp || a.firstTimestamp;
+      const timestampB = b.lastTimestamp || b.firstTimestamp;
+      
+      // If both timestamps are invalid, maintain original order
+      if (!timestampA && !timestampB) return 0;
+      
+      // If only A is invalid, put it last
+      if (!timestampA) return 1;
+      
+      // If only B is invalid, put it last
+      if (!timestampB) return -1;
+      
+      // Both timestamps are valid, sort by date (newest first)
+      const dateA = new Date(timestampA);
+      const dateB = new Date(timestampB);
+      
+      // Check if dates are valid
+      if (isNaN(dateA.getTime()) && isNaN(dateB.getTime())) return 0;
+      if (isNaN(dateA.getTime())) return 1;
+      if (isNaN(dateB.getTime())) return -1;
+      
+      return dateB.getTime() - dateA.getTime();
+    });
+  };
+
   const getReasonColor = (type: string) => {
     switch (type) {
       case "Warning":
@@ -159,8 +186,8 @@ export const StatusChart: React.FC<StatusChartProps> = ({
                 </button>
 
                 {isExpanded && hasEvents && (
-                  <div className="ml-4">
-                    {podEvents.map((event: any, eventIndex: number) => (
+                  <div className="ml-4 max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                    {sortEventsByTimestamp(podEvents).map((event: any, eventIndex: number) => (
                       <div
                         key={eventIndex}
                         className="p-2 space-y-1 border-b border-dashed"

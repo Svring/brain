@@ -150,6 +150,8 @@ export function useAnalyzeStatus(
     enabled: podTargets.length > 0,
   });
 
+  console.log("eventsRecord", eventsRecord);
+
   const { addPendingMessage, triggerPendingMessages } = useChatActions();
 
   // Use node select to handle the selection and message appending
