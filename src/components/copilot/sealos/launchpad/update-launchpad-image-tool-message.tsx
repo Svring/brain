@@ -40,7 +40,7 @@ export const UpdateLaunchpadImageToolMessage: React.FC<
     }
 
     return {
-      icon: <CircleCheckBigIcon className="h-4 w-4 text-green-600" />,
+      icon: <CircleCheckBigIcon className="h-4 w-4 text-theme-green" />,
       text: "Launchpad image updated successfully",
     };
   };

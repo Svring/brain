@@ -67,11 +67,11 @@ export const ToolCallRenderer = memo(function ToolCallRenderer({
 
   // Check if this is a tool call (no result present) or tool result (result present)
   const isToolCall = !result;
-  
+
   if (isToolCall) {
     // Handle tool call messages
     const ToolCallComponent = action ? get(ToolCallMessageType, action) : null;
-    
+
     if (ToolCallComponent) {
       // Filter out state parameter from payload for tool calls
       const { state, ...toolCallParameters } = payload || {};

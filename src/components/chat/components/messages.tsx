@@ -19,6 +19,10 @@ import { ToolResultRenderer } from "./tool-result-renderer";
 import { ToolCallRenderer } from "./tool-call-renderer";
 import { Interrupt } from "@langchain/langgraph-sdk";
 import { Spinner } from "@/components/ui/spinner";
+import { useResourceQuotaChecker } from "@/lib/validation/resource-quota-checker";
+import { devboxCreateFormSchema } from "@/schemas/forms/devbox/devbox-create-form-schema";
+import { clusterCreateFormSchema } from "@/schemas/forms/cluster/cluster-create-form-schema";
+import { launchpadCreateFormSchema } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
 
 interface AiMessagesProps {
   scrollRef?: React.RefObject<HTMLDivElement | null>;
@@ -43,6 +47,41 @@ export function AiMessages({
   // State for interrupt data editing
   const [interruptData, setInterruptData] = useState<any>(null);
   const [isInterruptExpanded, setIsInterruptExpanded] = useState(true);
+
+  // Resource quota checker
+  const { checkAndShowQuotaError } = useResourceQuotaChecker();
+
+  // Function to calculate resource requirements for create/update actions
+  const calculateResourceRequirements = (action: string, payload: any) => {
+    let totalCpu = 0;
+    let totalMemory = 0;
+    let totalStorage = 0;
+    let totalPorts = 0;
+
+    // Get default resource values from schemas
+    const devboxDefaults = devboxCreateFormSchema.parse({});
+    const clusterDefaults = clusterCreateFormSchema.parse({});
+    const launchpadDefaults = launchpadCreateFormSchema.parse({});
+
+    if (action === "create_devbox") {
+      // Devbox resource calculation
+      totalCpu += payload.cpu || devboxDefaults.resource.cpu;
+      totalMemory += payload.memory || devboxDefaults.resource.memory;
+      totalPorts += payload.ports?.length || 0;
+    } else if (action === "create_cluster") {
+      // Cluster resource calculation
+      totalCpu += payload.cpu || clusterDefaults.resource.cpu;
+      totalMemory += payload.memory || clusterDefaults.resource.memory;
+      totalStorage += payload.storage || clusterDefaults.resource.storage || 0;
+    } else if (action === "create_launchpad") {
+      // Launchpad resource calculation
+      totalCpu += payload.cpu || launchpadDefaults.resource.cpu;
+      totalMemory += payload.memory || launchpadDefaults.resource.memory;
+      totalPorts += payload.ports?.length || 0;
+    }
+
+    return { totalCpu, totalMemory, totalStorage, totalPorts };
+  };
 
   // console.log("messages", messages);
 
@@ -184,6 +223,23 @@ export function AiMessages({
                   size="sm"
                   className="flex-1"
                   onClick={() => {
+                    // Check resource quota before approving
+                    const resourceRequirements = calculateResourceRequirements(
+                      interruptData.action,
+                      interruptData.payload
+                    );
+
+                    const quotaCheckPassed = checkAndShowQuotaError({
+                      cpu: resourceRequirements.totalCpu,
+                      memory: resourceRequirements.totalMemory,
+                      storage: resourceRequirements.totalStorage,
+                      ports: resourceRequirements.totalPorts,
+                    });
+
+                    if (!quotaCheckPassed) {
+                      return; // Don't proceed if quota check fails
+                    }
+
                     const responseData = {
                       action: interruptData.action,
                       payload: interruptData.payload,
