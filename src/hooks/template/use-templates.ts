@@ -8,7 +8,7 @@ import type {
   TemplateApiContext,
   TemplateSourceResponse,
 } from "@/lib/sealos/resources/template/schemas/template-api-context-schemas";
-import { 
+import {
   listTemplatesOptions,
   getTemplateSourceOptions,
 } from "@/lib/sealos/resources/template/template-method/template-query";
@@ -16,15 +16,15 @@ import {
 export function useTemplates(context: TemplateApiContext) {
   const [selectedTemplate, setSelectedTemplate] =
     useState<TemplateResource | null>(null);
-  const [selectedTemplateName, setSelectedTemplateName] = useState<string | null>(null);
-
+  const [selectedTemplateName, setSelectedTemplateName] = useState<
+    string | null
+  >(null);
 
   const {
     data: templatesResponse,
     isLoading,
     error,
   } = useQuery(listTemplatesOptions(context));
-
 
   const templates = useMemo(
     () => (templatesResponse as ListTemplateResponse)?.data?.templates ?? [],
@@ -39,6 +39,8 @@ export function useTemplates(context: TemplateApiContext) {
     ...getTemplateSourceOptions(context, selectedTemplateName || ""),
     enabled: !!selectedTemplateName && !!context.baseUrl,
   });
+
+  console.log("templateSourceResponse", templateSourceResponse);
 
   const templateSource = useMemo(
     () => templateSourceResponse as TemplateSourceResponse | undefined,

@@ -65,6 +65,13 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
     isTemplateSourceLoading,
     templateSourceError,
   } = useTemplates(apiContext);
+
+  // Automatically fetch template source when component mounts
+  useEffect(() => {
+    if (template.metadata.name) {
+      getTemplateSource(template.metadata.name);
+    }
+  }, [template.metadata.name, getTemplateSource]);
   const { checkAndShowQuotaError, quota } = useResourceQuotaChecker();
   const hasInputs =
     template.spec.inputs && Object.keys(template.spec.inputs).length > 0;
@@ -93,8 +100,6 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
 
   // Function to handle the deploy button click - determines whether to open input dialog or deploy directly
   const handleDeployClick = async () => {
-    await getTemplateSource(template.metadata.name);
-
     if (hasInputs) {
       setShowInputDialog(true);
     } else {
@@ -111,7 +116,10 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
         memory: (requirementsData.memory?.max || 0) / 1024,
         storage: (requirementsData.storage?.max || 0) / 1024,
         ports: requirementsData.nodeport || 0,
+        // ports: 20
       };
+
+      console.log("maxRequirements", maxRequirements);
 
       const quotaCheckPassed = checkAndShowQuotaError(maxRequirements);
       if (!quotaCheckPassed) {
@@ -217,7 +225,7 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
                   {createInstanceMutation.isPending
                     ? "Deploying..."
                     : isTemplateSourceLoading
-                    ? "Loading template source..."
+                    ? "Loading..."
                     : hasInputs
                     ? "Configure & Deploy"
                     : "Deploy"}

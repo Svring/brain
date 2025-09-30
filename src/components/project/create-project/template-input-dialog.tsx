@@ -148,7 +148,7 @@ export const TemplateInputDialog = memo(function TemplateInputDialog({
       }
     });
     onSubmit(templateForm);
-    onClose(); // Close the dialog immediately when submit is clicked
+    // Keep dialog open to show deploying state
   };
 
   const renderFormField = (key: string, input: any) => {
@@ -283,7 +283,7 @@ export const TemplateInputDialog = memo(function TemplateInputDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={isLoading ? undefined : onClose}>
       <DialogContent className="max-w-md max-h-[60vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Configure {template.spec.title}</DialogTitle>
@@ -307,7 +307,13 @@ export const TemplateInputDialog = memo(function TemplateInputDialog({
             </div>
 
             <DialogFooter className="flex gap-2">
-              <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={isLoading}
+                className="flex-1"
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={isLoading} className="flex-1">
