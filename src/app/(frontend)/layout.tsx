@@ -18,6 +18,7 @@ import { NavigationProvider } from "@/contexts/navigation/navigation-context";
 import { getUser } from "@/payload/operations/users-operation";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { EnvProvider } from "@/components/provider/env-provider";
+import { QuotaProvider } from "@/components/provider/quota-provider";
 
 import "@/styles/globals.css";
 import {
@@ -88,22 +89,24 @@ export default async function RootLayout({
               <AuthProvider payloadUser={payloadUser}>
                 <NavigationProvider>
                   <QueryProvider>
-                    <ChatProvider>
-                      <ProjectProvider>
-                        <LanggraphConfigWrapper>
-                          <ReactFlowProvider>
-                            <FlowgraphProvider>
-                              <OrchestratorProvider>
-                                <SidebarProvider defaultOpen={false}>
-                                  <AppSidebar />
-                                  {children}
-                                </SidebarProvider>
-                              </OrchestratorProvider>
-                            </FlowgraphProvider>
-                          </ReactFlowProvider>
-                        </LanggraphConfigWrapper>
-                      </ProjectProvider>
-                    </ChatProvider>
+                    <QuotaProvider>
+                      <ChatProvider>
+                        <ProjectProvider>
+                          <LanggraphConfigWrapper>
+                            <ReactFlowProvider>
+                              <FlowgraphProvider>
+                                <OrchestratorProvider>
+                                  <SidebarProvider defaultOpen={false}>
+                                    <AppSidebar />
+                                    {children}
+                                  </SidebarProvider>
+                                </OrchestratorProvider>
+                              </FlowgraphProvider>
+                            </ReactFlowProvider>
+                          </LanggraphConfigWrapper>
+                        </ProjectProvider>
+                      </ChatProvider>
+                    </QuotaProvider>
                   </QueryProvider>
                 </NavigationProvider>
               </AuthProvider>

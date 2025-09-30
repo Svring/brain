@@ -5,6 +5,7 @@ import {
   ExternalLink,
   ChevronDown,
   ChevronUp,
+  ChevronRight,
   Hammer,
   CircleCheckBigIcon,
 } from "lucide-react";
@@ -161,7 +162,7 @@ export const SearchAppStoreActionMessage: React.FC<
           <div className="flex items-center justify-between p-2">
             <div className="flex items-center gap-2">
               <span className="flex items-center">
-                <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                <ChevronRight className="h-3 w-3 text-muted-foreground" />
               </span>
               <p className="text-sm text-foreground flex items-center m-0">
                 <span className="text-muted-foreground">Action:</span>{" "}
@@ -188,7 +189,7 @@ export const SearchAppStoreActionMessage: React.FC<
           <div className="flex items-center justify-between p-2">
             <div className="flex items-center gap-2">
               <span className="flex items-center">
-                <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                <ChevronRight className="h-3 w-3 text-muted-foreground" />
               </span>
               <p className="text-sm text-foreground flex items-center m-0">
                 <span className="text-muted-foreground">Action:</span>{" "}
@@ -229,9 +230,9 @@ export const SearchAppStoreActionMessage: React.FC<
             <div className="flex items-center justify-between p-2 cursor-pointer hover:bg-muted/50">
               <div className="flex items-center gap-2">
                 <span className="flex items-center">
-                  <ChevronUp
-                    className={`h-4 w-4 text-muted-foreground transition-transform ${
-                      isOpen ? "rotate-180" : ""
+                  <ChevronRight 
+                    className={`h-3 w-3 text-muted-foreground transition-transform duration-200 ${
+                      isOpen ? "rotate-90" : "rotate-0"
                     }`}
                   />
                 </span>

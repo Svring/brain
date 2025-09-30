@@ -12,158 +12,43 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { useAuthState } from "@/contexts/auth/auth-context";
 import { UserCard } from "./user-card";
 import { openCostCenterApp } from "@/lib/auth/auth-utils";
 import { Sparkles } from "lucide-react";
 import { ProgressCircle } from "@/components/ui/circle-progress";
-import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useAccountBalance } from "@/hooks/sealos/cost-center/use-account-balance";
-// import { usePlanTransaction } from "@/hooks/sealos/cost-center/use-plan-transaction";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useQuery } from "@tanstack/react-query";
-import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
-import { useEffect } from "react";
+import { Progress } from "@/components/ui/progress";
+import { useQuota } from "@/components/provider/quota-provider";
+import { useSidebar } from "@/components/ui/sidebar";
 
 export default function AppSidebar() {
-  const { mode, auth } = useAuthState();
-  const { k8s } = useTRPCClients();
+  // Use quota provider for all quota-related data and logic
+  const { cpu, memory, storage, ports, balance, aiProxy, isLoading } =
+    useQuota();
 
-  // Fetch account balance and plan transaction data
-  const {
-    data: accountBalance,
-    isLoading: balanceLoading,
-    refetch: refetchBalance,
-  } = useAccountBalance();
-  // const {
-  //   data: planTransaction,
-  //   isLoading: planLoading,
-  //   refetch: refetchPlan,
-  // } = usePlanTransaction();
+  // Get sidebar state for tooltip visibility
+  const { state, isMobile } = useSidebar();
 
-  // console.log("accountBalance", accountBalance);
-
-  // Fetch resource quota data
-  const { data: resourceQuota, isLoading: isResourceQuotaLoading } = useQuery({
-    ...k8s.resourceQuota.queryOptions(),
-  });
-
-  // console.log("resourceQuota", resourceQuota);
-
-  // Fetch AI proxy usage data - only in production mode
-  const { data: aiProxyUsage, isLoading: isAiProxyLoading } = useQuery({
-    queryKey: ["ai-proxy-usage"],
-    queryFn: async () => {
-      if (!auth?.kubeconfig) {
-        throw new Error("No kubeconfig available");
-      }
-
-      const response = await fetch("/api/ai-proxy", {
-        method: "GET",
-        headers: {
-          Authorization: auth.kubeconfig,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`AI proxy request failed: ${response.status}`);
-      }
-
-      return response.json();
-    },
-    enabled: mode === "production" && !!auth?.kubeconfig,
-    refetchInterval: 10 * 1000, // Refetch every 10 seconds
-  });
-
-  // Log remaining_today data when available
-  useEffect(() => {
-    if (aiProxyUsage?.data?.remaining_today !== undefined) {
-      console.log(
-        "AI Proxy remaining_today:",
-        aiProxyUsage.data.remaining_today
-      );
-    }
-  }, [aiProxyUsage]);
-
-  const isLoading =
-    balanceLoading || isResourceQuotaLoading || isAiProxyLoading;
-
-  // Calculate overall resource usage percentage and status
-  const { overallUsagePercentage, statusColor } = React.useMemo(() => {
-    if (!resourceQuota)
-      return { overallUsagePercentage: 0, statusColor: "text-primary" };
-
-    const cpuUsage = (resourceQuota.cpu.used / resourceQuota.cpu.limit) * 100;
-    const memoryUsage =
-      (resourceQuota.memory.used / resourceQuota.memory.limit) * 100;
-    const storageUsage =
-      (resourceQuota.storage.used / resourceQuota.storage.limit) * 100;
-    const portsUsage =
-      (resourceQuota.ports.used / resourceQuota.ports.limit) * 100;
-
-    // Check if any resource is at 100% (red)
-    const isAtLimit =
-      cpuUsage >= 100 ||
-      memoryUsage >= 100 ||
-      storageUsage >= 100 ||
-      portsUsage >= 100;
-
-    // Check if any resource is at 80% or above (yellow)
-    const isAtWarning =
-      cpuUsage >= 80 ||
-      memoryUsage >= 80 ||
-      storageUsage >= 80 ||
-      portsUsage >= 80;
-
-    // Determine status color
-    let statusColor = "text-primary"; // default blue
-    if (isAtLimit) {
-      statusColor = "text-theme-red"; // red for 100% usage
-    } else if (isAtWarning) {
-      statusColor = "text-theme-yellow"; // yellow for 80%+ usage
+  // Calculate AI proxy usage percentage only
+  const aiProxyUsagePercentage = React.useMemo(() => {
+    if (!aiProxy) {
+      return 0;
     }
 
-    // Calculate average usage across all resources
-    const overallUsagePercentage =
-      (cpuUsage + memoryUsage + storageUsage + portsUsage) / 4;
+    return (aiProxy.used / aiProxy.limit) * 100;
+  }, [aiProxy]);
 
-    return { overallUsagePercentage, statusColor };
-  }, [resourceQuota]);
-
-  // const transaction = (planTransaction as any)?.transaction;
-  // const currentPlan = transaction?.NewPlanName || transaction?.OldPlanName;
-  // const planStatus = transaction?.Status;
-  // const payStatus = transaction?.PayStatus;
-
-  // const isProPlan = currentPlan === "Pro";
-  // const totalQuota = isProPlan ? 1000 : 100;
-  // const balance = (accountBalance as any)?.balance || 0;
-  // const usedQuota = Math.max(0, totalQuota - Math.floor(balance / 1000000));
-  // const usagePercentage = totalQuota > 0 ? (usedQuota / totalQuota) * 100 : 0;
-
-  // const hasValidPlan =
-  //   currentPlan && currentPlan !== "00000000-0000-0000-0000-000000000000";
-  // const displayPlan = hasValidPlan ? currentPlan : "Free";
-
-  // const handleUpgrade = () => {
-  //   openCostCenterApp();
-  //   setTimeout(() => {
-  //     refetchBalance();
-  //     refetchPlan();
-  //   }, 5000);
-  // };
-
-  // const handleRetry = () => {
-  //   refetchBalance();
-  //   refetchPlan();
-  // };
 
   return (
     <>
@@ -200,22 +85,47 @@ export default function AppSidebar() {
             <Popover>
               <PopoverTrigger asChild>
                 <div className="cursor-pointer">
-                  <ProgressCircle
-                    value={isLoading ? 0 : overallUsagePercentage}
-                    size={32}
-                    strokeWidth={2}
-                    indicatorClassName={statusColor}
-                    trackClassName=""
-                  >
-                    <Sparkles className="h-4 w-4" />
-                  </ProgressCircle>
+                  {state === "collapsed" && !isMobile ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div>
+                          <ProgressCircle
+                            value={isLoading ? 0 : aiProxyUsagePercentage}
+                            size={32}
+                            strokeWidth={2}
+                            indicatorClassName="text-primary"
+                            trackClassName=""
+                          >
+                            <Sparkles className="h-4 w-4" />
+                          </ProgressCircle>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent
+                        align="center"
+                        side="right"
+                        sideOffset={16}
+                      >
+                        Quota
+                      </TooltipContent>
+                    </Tooltip>
+                  ) : (
+                    <ProgressCircle
+                      value={isLoading ? 0 : aiProxyUsagePercentage}
+                      size={32}
+                      strokeWidth={2}
+                      indicatorClassName="text-primary"
+                      trackClassName=""
+                    >
+                      <Sparkles className="h-4 w-4" />
+                    </ProgressCircle>
+                  )}
                 </div>
               </PopoverTrigger>
               <PopoverContent
                 align="end"
                 side="right"
                 sideOffset={16}
-                className="rounded-lg bg-background-tertiary border border-border-primary w-80"
+                className="rounded-lg bg-background-secondary border border-border-primary w-80"
               >
                 <div className="space-y-4">
                   {isLoading ? (
@@ -224,22 +134,45 @@ export default function AppSidebar() {
                       <Skeleton className="h-2 w-full" />
                       <Skeleton className="h-4 w-3/4" />
                     </div>
-                  ) : resourceQuota ? (
+                  ) : cpu ? (
                     <div className="space-y-4">
+                      {/* Free Quota Usage - Show at the top */}
+                      {aiProxy && (
+                        <div className="space-y-3 rounded-lg p-4 bg-background-tertiary">
+                          <div className="flex justify-between items-center">
+                            <div className="flex flex-col">
+                              <span className="text-sm font-medium text-foreground">
+                                Daily Free Usage
+                              </span>
+                              <span className="text-xs text-muted-foreground mt-0.5">
+                                request counts
+                              </span>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-lg font-semibold text-foreground">
+                                {aiProxy.used.toFixed(0)}<span className="text-sm text-muted-foreground">/{aiProxy.limit}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <Progress
+                            value={aiProxyUsagePercentage}
+                            className="h-2"
+                          />
+                          <div className="text-xs text-muted-foreground text-center font-medium">
+                            Resets every 24 hours
+                          </div>
+                        </div>
+                      )}
+
                       {/* Account Balance - Show remaining balance */}
-                      {accountBalance && (
+                      {balance && (
                         <div className="space-y-2 rounded-lg">
                           <div className="flex justify-between text-xs">
                             <span className="text-muted-foreground">
                               Account Balance
                             </span>
                             <span className="text-foreground font-medium">
-                              {(
-                                (accountBalance.balance -
-                                  accountBalance.deductionBalance) /
-                                1000000
-                              ).toFixed(2)}{" "}
-                              USD
+                              {(balance.used / 1000000).toFixed(2)} USD
                             </span>
                           </div>
                         </div>
@@ -249,30 +182,26 @@ export default function AppSidebar() {
                       <div className="grid grid-cols-2 gap-3">
                         <div className="flex justify-between text-xs">
                           <span className="text-muted-foreground">CPU</span>
-                          <span className={statusColor}>
-                            {resourceQuota.cpu.used.toFixed(1)}/
-                            {resourceQuota.cpu.limit}
+                          <span className="text-primary">
+                            {cpu?.used.toFixed(1)}/{cpu?.limit}
                           </span>
                         </div>
                         <div className="flex justify-between text-xs">
                           <span className="text-muted-foreground">Memory</span>
-                          <span className={statusColor}>
-                            {resourceQuota.memory.used.toFixed(1)}/
-                            {resourceQuota.memory.limit}
+                          <span className="text-primary">
+                            {memory?.used.toFixed(1)}/{memory?.limit}
                           </span>
                         </div>
                         <div className="flex justify-between text-xs">
                           <span className="text-muted-foreground">Storage</span>
-                          <span className={statusColor}>
-                            {resourceQuota.storage.used}/
-                            {resourceQuota.storage.limit}
+                          <span className="text-primary">
+                            {storage?.used}/{storage?.limit}
                           </span>
                         </div>
                         <div className="flex justify-between text-xs">
                           <span className="text-muted-foreground">Ports</span>
-                          <span className={statusColor}>
-                            {resourceQuota.ports.used}/
-                            {resourceQuota.ports.limit}
+                          <span className="text-primary">
+                            {ports?.used}/{ports?.limit}
                           </span>
                         </div>
                       </div>

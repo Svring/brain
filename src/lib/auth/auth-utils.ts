@@ -1,7 +1,4 @@
-import {
-  createSealosApp,
-  sealosApp,
-} from "@zjy365/sealos-desktop-sdk/app";
+import { createSealosApp, sealosApp } from "@zjy365/sealos-desktop-sdk/app";
 import { setCookie } from "nookies";
 import {
   getRegionUrlFromKubeconfig,
@@ -35,10 +32,11 @@ import {
 } from "../sealos/services/traffic/traffic-constant/traffic-constant-url";
 
 export async function extractAuthFromSession(
-  session: any // 暂时使用 any 类型，因为我们不依赖 session.token
+  session: any
 ): Promise<Auth | null> {
   // Validate session properties
-  if (!session?.kubeconfig) { // 暂时只检查 kubeconfig，不检查 token
+  if (!session?.kubeconfig) {
+    // 暂时只检查 kubeconfig，不检查 token
     return null;
   }
   // Fetch namespace and regionUrl concurrently
@@ -73,7 +71,7 @@ export async function authenticateProd(send: (event: any) => void) {
   try {
     createSealosApp();
     const sessionData = await sealosApp.getSession();
-    
+
     if (!sessionData) {
       send({ type: "FAIL", error: "No session data available" });
       return;
@@ -92,7 +90,6 @@ export async function authenticateProd(send: (event: any) => void) {
     });
   }
 }
-
 
 export function createK8sContext(): K8sApiContext {
   const auth = useAuthState();
@@ -262,10 +259,12 @@ export function useCostCenterContext() {
   if (!auth) {
     throw new Error("User not found");
   }
-  
+
   // Extract region domain from regionUrl
-  const regionDomain = auth.regionUrl.replace(/^https?:\/\//, '').replace(/:\d+$/, '');
-  
+  const regionDomain = auth.regionUrl
+    .replace(/^https?:\/\//, "")
+    .replace(/:\d+$/, "");
+
   return {
     baseUrl: auth.regionUrl,
     authorization: auth.appToken,

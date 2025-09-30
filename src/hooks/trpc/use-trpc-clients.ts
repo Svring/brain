@@ -7,6 +7,7 @@ import {
   k8sClient,
   langgraphClient,
   costCenterClient,
+  aiProxyClient,
 } from "@/components/provider/trpc-provider";
 
 export const useTRPCClients = () => {
@@ -18,6 +19,7 @@ export const useTRPCClients = () => {
   const k8sTrpcClient = k8sClient.useTRPC();
   const langgraphTrpcClient = langgraphClient.useTRPC();
   const costCenterTrpcClient = costCenterClient.useTRPC();
+  const aiProxyTrpcClient = aiProxyClient.useTRPC();
 
   return {
     devbox: devboxTrpcClient,
@@ -28,5 +30,6 @@ export const useTRPCClients = () => {
     k8s: k8sTrpcClient,
     langgraph: langgraphTrpcClient,
     costCenter: costCenterTrpcClient,
+    aiProxy: aiProxyTrpcClient,
   };
 };

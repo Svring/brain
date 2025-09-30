@@ -59,9 +59,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     currentDisplayName: project.displayName,
   });
 
-  const { deleteProject, isDeleting } = useProjectLifecycle({ shouldRedirect: false });
+  const { deleteProject, isDeleting } = useProjectLifecycle({
+    shouldRedirect: false,
+  });
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
-  const [deleteConfirmationValue, setDeleteConfirmationValue] = React.useState("");
+  const [deleteConfirmationValue, setDeleteConfirmationValue] =
+    React.useState("");
   const isDeleteConfirmationValid =
     deleteConfirmationValue.trim() === project.displayName;
 
@@ -254,7 +257,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     }
   };
 
-
   const commonLinkProps = {
     href: `/projects/${encodeURIComponent(project.name)}`,
     className: "block h-full w-full",
@@ -411,7 +413,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">
-              Type the project name <span className="font-semibold text-foreground">"{project.displayName}"</span> to confirm:
+              Type the project name{" "}
+              <span className="font-semibold text-foreground">
+                "{project.displayName}"
+              </span>{" "}
+              to confirm:
             </p>
             <Input
               value={deleteConfirmationValue}
@@ -422,7 +428,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             />
             {deleteConfirmationValue && !isDeleteConfirmationValid && (
               <p className="text-sm text-destructive">
-                Project name does not match. Please type "{project.displayName}" to confirm.
+                Project name does not match. Please type "{project.displayName}"
+                to confirm.
               </p>
             )}
           </div>

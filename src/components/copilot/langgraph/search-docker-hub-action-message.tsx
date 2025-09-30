@@ -7,6 +7,7 @@ import {
   Download,
   ChevronDown,
   ChevronUp,
+  ChevronRight,
   Package,
   CircleCheckBigIcon,
 } from "lucide-react";
@@ -136,15 +137,17 @@ export const SearchDockerHubActionMessage: React.FC<
             <div className="flex items-center justify-between p-2 cursor-pointer hover:bg-muted/50">
               <div className="flex items-center gap-2">
                 <span className="flex items-center">
-                  <ChevronUp
-                    className={`h-4 w-4 text-muted-foreground transition-transform ${
-                      isOpen ? "rotate-180" : ""
+                  <ChevronRight 
+                    className={`h-3 w-3 text-muted-foreground transition-transform duration-200 ${
+                      isOpen ? "rotate-90" : "rotate-0"
                     }`}
                   />
                 </span>
                 <p className="text-sm text-foreground flex items-center m-0">
                   <span className="text-muted-foreground">Action:</span>{" "}
-                  <span className="text-foreground ml-1">Search Docker Hub</span>
+                  <span className="text-foreground ml-1">
+                    Search Docker Hub
+                  </span>
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -155,39 +158,43 @@ export const SearchDockerHubActionMessage: React.FC<
           </CollapsibleTrigger>
           <CollapsibleContent className="border-t border-muted/20">
             <div className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex text-sm text-muted-foreground">
-                <span>
-                  Found {result.total_results} repositories for "{result.query}"
-                </span>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex text-sm text-muted-foreground">
+                  <span>
+                    Found {result.total_results} repositories for "
+                    {result.query}"
+                  </span>
+                </div>
+                {hasMoreThanThree && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-xs text-muted-foreground hover:text-foreground"
+                    onClick={() => setShowAll(!showAll)}
+                  >
+                    {showAll ? (
+                      <>
+                        <ChevronUp className="w-3 h-3 mr-1" />
+                        Show Less
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="w-3 h-3 mr-1" />
+                        Show More
+                      </>
+                    )}
+                  </Button>
+                )}
               </div>
-              {hasMoreThanThree && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 text-xs text-muted-foreground hover:text-foreground"
-                  onClick={() => setShowAll(!showAll)}
-                >
-                  {showAll ? (
-                    <>
-                      <ChevronUp className="w-3 h-3 mr-1" />
-                      Show Less
-                    </>
-                  ) : (
-                    <>
-                      <ChevronDown className="w-3 h-3 mr-1" />
-                      Show More
-                    </>
-                  )}
-                </Button>
-              )}
-            </div>
 
-            <div className="grid grid-cols-3 gap-3">
-              {displayItems.map((item, index) => (
-                <DockerHubItemCard key={`${item.name}-${index}`} item={item} />
-              ))}
-            </div>
+              <div className="grid grid-cols-3 gap-3">
+                {displayItems.map((item, index) => (
+                  <DockerHubItemCard
+                    key={`${item.name}-${index}`}
+                    item={item}
+                  />
+                ))}
+              </div>
             </div>
           </CollapsibleContent>
         </div>

@@ -31,3 +31,14 @@ export const AiProxyTokenListResponseSchema = z.object({
 export type AiProxyTokenListResponse = z.infer<
   typeof AiProxyTokenListResponseSchema
 >;
+
+export const AiProxyFreeUsageResponseSchema = z.object({
+  total_limit: z.number(),
+  used_today: z.number(),
+  remaining_today: z.number(),
+  next_reset_time: z.number(),
+});
+
+export type AiProxyFreeUsageResponse = z.infer<
+  typeof AiProxyFreeUsageResponseSchema
+>;

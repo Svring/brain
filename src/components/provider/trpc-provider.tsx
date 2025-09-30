@@ -10,6 +10,7 @@ import type { ProjectRouter } from "@/lib/trpc/brain/project/project-trpc-router
 import type { K8sRouter } from "@/lib/trpc/k8s/k8s-trpc-router";
 import type { LanggraphRouter } from "@/lib/trpc/langgraph/langgraph-trpc-router";
 import type { CostCenterRouter } from "@/lib/trpc/sealos/cost-center/cost-center-trpc-router";
+import type { AiProxyRouter } from "@/lib/trpc/sealos/ai-proxy/ai-proxy-trpc-router";
 import { useState } from "react";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { QueryClient } from "@tanstack/react-query";
@@ -22,6 +23,7 @@ export const projectClient = createTRPCContext<ProjectRouter>();
 export const k8sClient = createTRPCContext<K8sRouter>();
 export const langgraphClient = createTRPCContext<LanggraphRouter>();
 export const costCenterClient = createTRPCContext<CostCenterRouter>();
+export const aiProxyClient = createTRPCContext<AiProxyRouter>();
 
 // Raw TRPC clients for direct API calls
 export const createRawDevboxClient = (auth: any) =>
@@ -34,6 +36,20 @@ export const createRawDevboxClient = (auth: any) =>
           namespace: auth.namespace,
           kubeconfig: auth.kubeconfig,
           regionUrl: auth.regionUrl,
+        }),
+      }),
+    ],
+  });
+
+export const createRawAiProxyClient = (auth: any) =>
+  createTRPCClient<AiProxyRouter>({
+    links: [
+      httpBatchLink({
+        url: "/api/trpc/ai-proxy",
+        maxURLLength: 4000,
+        headers: () => ({
+          regionUrl: auth.regionUrl,
+          appToken: auth.appToken,
         }),
       }),
     ],
@@ -175,6 +191,21 @@ export default function TRPCProvider({
     })
   );
 
+  const [aiProxyTrpcClient] = useState(() =>
+    createTRPCClient<AiProxyRouter>({
+      links: [
+        httpBatchLink({
+          url: "/api/trpc/ai-proxy",
+          maxURLLength: 4000,
+          headers: () => ({
+            regionUrl: auth.regionUrl,
+            appToken: auth.appToken,
+          }),
+        }),
+      ],
+    })
+  );
+
   return (
     <devboxClient.TRPCProvider
       trpcClient={devboxTrpcClient}
@@ -208,7 +239,12 @@ export default function TRPCProvider({
                     trpcClient={costCenterTrpcClient}
                     queryClient={queryClient}
                   >
-                    {children}
+                    <aiProxyClient.TRPCProvider
+                      trpcClient={aiProxyTrpcClient}
+                      queryClient={queryClient}
+                    >
+                      {children}
+                    </aiProxyClient.TRPCProvider>
                   </costCenterClient.TRPCProvider>
                 </langgraphClient.TRPCProvider>
               </k8sClient.TRPCProvider>
