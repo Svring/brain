@@ -106,59 +106,44 @@ export function useResourceQuotaChecker() {
     const result = checkResourceQuota(requirements);
 
     if (!result.passed) {
-      toast("", {
-        description: React.createElement(
-          "div",
-          {
-            className: "flex flex-col space-y-2 w-full min-w-max",
-          },
-          React.createElement(
-            "p",
-            {
-              className: "text-md font-semibold text-theme-red",
-            },
-            "Insufficient Quotas"
-          ),
-          React.createElement(
-            "div",
-            {
-              className: "text-sm space-y-1",
-            },
-            result.exceededResources.map((e, index) =>
-              React.createElement(
-                "div",
-                {
-                  key: index,
-                  className: "flex items-center gap-2 whitespace-nowrap",
-                },
-                React.createElement("span", {
-                  dangerouslySetInnerHTML: {
+      toast(
+        <div className="flex flex-col space-y-2 w-full min-w-max">
+          <p className="text-md font-semibold text-theme-red">
+            Insufficient Quotas
+          </p>
+          <div className="text-sm space-y-1">
+            {result.exceededResources.map((e, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-2 whitespace-nowrap"
+              >
+                <span
+                  dangerouslySetInnerHTML={{
                     __html: e.message.replace(
                       /(\d+(?:\.\d+)?)/g,
                       '<span class="text-foreground font-semibold">$1</span>'
                     ),
-                  },
-                })
-              )
-            )
-          ),
-          React.createElement(
-            "button",
-            {
-              onClick: openCostCenterApp,
-              className:
-                "w-full py-1.5 bg-foreground text-sm text-background rounded-md hover:opacity-90 transition-opacity whitespace-nowrap",
-              variant: "outline",
-            },
-            "Open Cost Center"
-          )
-        ),
-        duration: 8000,
-        style: {
-          width: "auto",
-          minWidth: "max-content",
-        },
-      });
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={openCostCenterApp}
+            className="w-full py-1.5 bg-foreground text-sm text-background rounded-md hover:opacity-90 transition-opacity whitespace-nowrap"
+          >
+            Open Cost Center
+          </button>
+        </div>,
+        {
+          duration: 5000,
+          style: {
+            width: "auto",
+            minWidth: "max-content",
+            zIndex: 9999,
+          },
+        }
+      );
       return false;
     }
 

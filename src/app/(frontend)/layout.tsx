@@ -128,6 +128,7 @@ export default async function RootLayout({
             toastOptions={{
               duration: 3000,
               className: "bg-background-tertiary! border-border-primary! p-3!",
+              style: { zIndex: 9999 },
             }}
           />
         </ThemeProvider>

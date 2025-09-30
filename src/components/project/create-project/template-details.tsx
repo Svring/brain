@@ -1,9 +1,15 @@
 "use client";
 
 import { ArrowLeft } from "lucide-react";
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import type { TemplateResource } from "@/lib/sealos/resources/template/schemas/template-api-context-schemas";
 import { useCreateInstanceMutation } from "@/lib/sealos/resources/template/template-method/template-mutation";
@@ -72,9 +78,28 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
       getTemplateSource(template.metadata.name);
     }
   }, [template.metadata.name, getTemplateSource]);
-  const { checkAndShowQuotaError, quota } = useResourceQuotaChecker();
+  const { checkAndShowQuotaError, checkResourceQuota, quota } =
+    useResourceQuotaChecker();
   const hasInputs =
     template.spec.inputs && Object.keys(template.spec.inputs).length > 0;
+
+  // Check if quota requirements are met
+  const quotaCheckPassed = React.useMemo(() => {
+    if (!templateSource?.data?.requirements) {
+      return true; // No requirements means no quota check needed
+    }
+
+    const requirementsData = templateSource.data.requirements;
+    const maxRequirements = {
+      cpu: (requirementsData.cpu?.max || 0) / 1000,
+      memory: (requirementsData.memory?.max || 0) / 1024,
+      storage: (requirementsData.storage?.max || 0) / 1024,
+      ports: requirementsData.nodeport || 0,
+    };
+
+    const result = checkResourceQuota(maxRequirements);
+    return result.passed;
+  }, [templateSource, checkResourceQuota]);
 
   useEffect(() => {
     if (template.spec.readme && template.spec.readme.startsWith("http")) {
@@ -107,26 +132,9 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
     }
   };
 
-  // Function to execute the actual deployment with quota check
+  // Function to execute the actual deployment
   const handleDeploy = (templateForm?: Record<string, string>) => {
-    if (templateSource?.data?.requirements) {
-      const requirementsData = templateSource.data.requirements;
-      const maxRequirements = {
-        cpu: (requirementsData.cpu?.max || 0) / 1000,
-        memory: (requirementsData.memory?.max || 0) / 1024,
-        storage: (requirementsData.storage?.max || 0) / 1024,
-        ports: requirementsData.nodeport || 0,
-        // ports: 20
-      };
-
-      console.log("maxRequirements", maxRequirements);
-
-      const quotaCheckPassed = checkAndShowQuotaError(maxRequirements);
-      if (!quotaCheckPassed) {
-        return;
-      }
-    }
-
+    // Quota check is already done upfront, so we can proceed directly
     createInstanceMutation.mutate(
       {
         templateName: template.metadata.name,
@@ -159,7 +167,7 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
   return (
     <div className="flex h-full max-h-full flex-col overflow-y-auto relative">
       {createInstanceMutation.isPending && (
-        <div className="absolute inset-0 z-40 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+        <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-4">
             <Spinner variant="bars" className="size-8" />
             <p className="text-sm text-muted-foreground">
@@ -215,21 +223,60 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
                       </div>
                     )}
                 </div>
-                <Button
-                  onClick={handleDeployClick}
-                  variant="outline"
-                  disabled={
-                    createInstanceMutation.isPending || isTemplateSourceLoading
-                  }
-                >
-                  {createInstanceMutation.isPending
-                    ? "Deploying..."
-                    : isTemplateSourceLoading
-                    ? "Loading..."
-                    : hasInputs
-                    ? "Configure & Deploy"
-                    : "Deploy"}
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={handleDeployClick}
+                        variant="outline"
+                        disabled={
+                          createInstanceMutation.isPending ||
+                          isTemplateSourceLoading ||
+                          !quotaCheckPassed
+                        }
+                      >
+                        {createInstanceMutation.isPending
+                          ? "Deploying..."
+                          : isTemplateSourceLoading
+                          ? "Loading..."
+                          : !quotaCheckPassed
+                          ? "Insufficient Quota"
+                          : hasInputs
+                          ? "Configure & Deploy"
+                          : "Deploy"}
+                      </Button>
+                    </TooltipTrigger>
+                    {!quotaCheckPassed &&
+                      templateSource?.data?.requirements && (
+                        <TooltipContent>
+                          <p className="text-sm">
+                            Insufficient resources. Click to open Cost Center to
+                            upgrade your quota.
+                          </p>
+                          <button
+                            onClick={() => {
+                              if (templateSource?.data?.requirements) {
+                                const requirementsData =
+                                  templateSource.data.requirements;
+                                const maxRequirements = {
+                                  cpu: requirementsData.cpu?.max || 0,
+                                  memory:
+                                    (requirementsData.memory?.max || 0) / 1024,
+                                  storage:
+                                    (requirementsData.storage?.max || 0) / 1024,
+                                  ports: requirementsData.nodeport || 0,
+                                };
+                                checkAndShowQuotaError(maxRequirements);
+                              }
+                            }}
+                            className="mt-2 text-xs underline text-blue-400 hover:text-blue-300"
+                          >
+                            View Details
+                          </button>
+                        </TooltipContent>
+                      )}
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
           </div>
