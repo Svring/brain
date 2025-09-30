@@ -19,12 +19,11 @@ interface UseNodeSelectParams {
 export const useNodeSelect = ({ target }: UseNodeSelectParams) => {
   const { selectResource } = useProjectActions();
   const { selectNode } = useFlowgraphActions();
-  const { openChat } = useChatActions();
+  const { openChat, openProjectChat, setTopLayerType } = useChatActions();
   const { updateResourceContext } = useLanggraphActions();
-  const { selectedResource } = useProjectState();
+  const { selectedResource, selectedProject } = useProjectState();
   const { selectResource: selectNavigationResource } = useNavigationActions();
 
-  // Get resource status for the target
   const { resource: resource_context } = useResourceStatus(target);
 
   const nodeId = `${target.resourceType.toLowerCase()}-${target.name}`;
@@ -33,17 +32,19 @@ export const useNodeSelect = ({ target }: UseNodeSelectParams) => {
     if (target === selectedResource) {
       return;
     }
-
     selectResource(target);
     selectNode(nodeId);
     updateResourceContext({
       selected_resource_context: resource_context,
     });
-
     selectNavigationResource(target);
-
-    // Open chat for this resource target
+    
+    if (selectedProject) {
+      openProjectChat(selectedProject);
+    }
     openChat(target);
+    
+    setTopLayerType('resource');
   };
 
   return {
