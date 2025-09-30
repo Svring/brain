@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Trash2,
-  AlertCircleIcon,
-  Pencil,
-  PencilLine,
-  Package,
-  X,
-  Check,
-} from "lucide-react";
+import { Trash2, AlertCircleIcon, PencilLine, Package } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import React from "react";
@@ -23,6 +15,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
@@ -50,8 +50,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 }) => {
   const { project: projectClient } = useTRPCClients();
   const { invalidateQueries } = useInvalidateQueries();
-  const [isEditing, setIsEditing] = React.useState(false);
-  const [editValue, setEditValue] = React.useState("");
+  const [showRenameDialog, setShowRenameDialog] = React.useState(false);
+  const [renameValue, setRenameValue] = React.useState("");
   const { resources } = useProjectResources(project.name);
   const { auth } = useAuthState();
   const { handleRenameConfirm } = useProjectRename({
@@ -222,38 +222,38 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     return { isValid: true };
   };
 
-  const handleStartEdit = (e: React.MouseEvent) => {
+  const handleRenameClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsEditing(true);
-    setEditValue(project.displayName);
+    setRenameValue(project.displayName);
+    setShowRenameDialog(true);
   };
 
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-    setEditValue("");
+  const handleRenameCancel = () => {
+    setShowRenameDialog(false);
+    setRenameValue("");
   };
 
-  const handleConfirmEdit = () => {
-    const validation = validateProjectName(editValue);
+  const handleRenameDialogConfirm = () => {
+    const validation = validateProjectName(renameValue);
 
     if (!validation.isValid) {
       toast.error(validation.error!);
-      return; // Don't exit editing mode, let user fix the input
+      return;
     }
 
-    if (editValue.trim() !== project.displayName) {
-      handleRenameConfirm(editValue.trim());
+    if (renameValue.trim() !== project.displayName) {
+      handleRenameConfirm(renameValue.trim());
     }
-    setIsEditing(false);
-    setEditValue("");
+    setShowRenameDialog(false);
+    setRenameValue("");
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleRenameKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      handleConfirmEdit();
+      handleRenameDialogConfirm();
     } else if (e.key === "Escape") {
-      handleCancelEdit();
+      handleRenameCancel();
     }
   };
 
@@ -278,71 +278,29 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         >
           <div className="flex items-center w-full gap-2">
             <div className="flex items-center space-x-1 min-w-0 group flex-1">
-              {isEditing ? (
-                <div className="flex items-center gap-1 flex-1">
-                  <Input
-                    value={editValue}
-                    onChange={(e) => setEditValue(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    className="h-6 px-2 text-sm font-medium min-w-0 max-w-48"
-                    autoFocus
-                    onBlur={() => {
-                      // Small delay to allow button clicks to register before validation
-                      setTimeout(handleConfirmEdit, 100);
-                    }}
-                  />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0 hover:bg-green-100 hover:text-green-600 text-muted-foreground transition-colors"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      handleConfirmEdit();
-                    }}
-                  >
-                    <Check className="h-3 w-3" />
-                    <span className="sr-only">Confirm rename</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0 hover:bg-red-100 hover:text-red-600 text-muted-foreground transition-colors"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      handleCancelEdit();
-                    }}
-                  >
-                    <X className="h-3 w-3" />
-                    <span className="sr-only">Cancel rename</span>
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  <p
-                    className={`text-foreground truncate transition-colors ${
-                      variant === "full"
-                        ? "cursor-pointer hover:text-foreground/80 group-hover:underline"
-                        : ""
-                    }`}
-                    onClick={variant === "full" ? handleStartEdit : undefined}
-                  >
-                    {project.displayName}
-                  </p>
-                  {variant === "full" && (
-                    <Button
-                      className="h-4 w-4 p-0 opacity-40 transition-opacity shrink-0"
-                      size="sm"
-                      variant="ghost"
-                      onClick={handleStartEdit}
-                    >
-                      <PencilLine className="h-3 w-3" />
-                      <span className="sr-only">Rename project</span>
-                    </Button>
-                  )}
-                </>
+              <p
+                className={`text-foreground truncate transition-colors ${
+                  variant === "full"
+                    ? "cursor-pointer hover:text-foreground/80 group-hover:underline"
+                    : ""
+                }`}
+                onClick={variant === "full" ? handleRenameClick : undefined}
+              >
+                {project.displayName}
+              </p>
+              {variant === "full" && (
+                <Button
+                  className="h-4 w-4 p-0 opacity-40 transition-opacity shrink-0"
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleRenameClick}
+                >
+                  <PencilLine className="h-3 w-3" />
+                  <span className="sr-only">Rename project</span>
+                </Button>
               )}
             </div>
-            {variant === "full" && !isEditing && (
+            {variant === "full" && (
               <Button
                 className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors shrink-0"
                 size="sm"
@@ -366,13 +324,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               </div>
             )}
           </div>
-          {variant === "full" &&
-            project.displayName !== project.name &&
-            !isEditing && (
-              <p className="text-xs text-muted-foreground mb-2">
-                {project.name}
-              </p>
-            )}
+          {variant === "full" && project.displayName !== project.name && (
+            <p className="text-xs text-muted-foreground mb-2">{project.name}</p>
+          )}
 
           {variant === "full" && (
             <div className="absolute bottom-5 left-4 text-xs text-muted-foreground">
@@ -446,6 +400,51 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Rename</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <div className="flex items-center gap-4">
+              {/* <label htmlFor="project-name" className="text-sm font-medium">
+                Name
+              </label> */}
+              <Input
+                id="project-name"
+                value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)}
+                onKeyDown={handleRenameKeyDown}
+                className="flex-1"
+                placeholder="Enter project name"
+                autoFocus
+              />
+            </div>
+            {renameValue && !validateProjectName(renameValue).isValid && (
+              <p className="text-sm text-destructive mt-2">
+                {validateProjectName(renameValue).error}
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={handleRenameCancel}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRenameDialogConfirm}
+              disabled={!validateProjectName(renameValue).isValid}
+              className="flex-1"
+            >
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

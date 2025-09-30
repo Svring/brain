@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import isPortReachable from "is-port-reachable";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -9,45 +10,29 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Use GET method directly
-    const response = await fetch(url, {
-      method: "GET",
-      signal: AbortSignal.timeout(5000),
-    });
+    // Parse the URL to extract host and port
+    const parsedUrl = new URL(url);
+    const host = parsedUrl.hostname;
+    const port = parsedUrl.port
+      ? parseInt(parsedUrl.port)
+      : parsedUrl.protocol === "https:"
+      ? 443
+      : 80;
 
-    // console.log("URL check response data:", response);
-
-    // Check for CORS-related headers that might prevent iframe embedding
-    const corsOpenerPolicy = response.headers.get("cross-origin-opener-policy");
-    const corsResourcePolicy = response.headers.get(
-      "cross-origin-resource-policy"
-    );
-    const xFrameOptions = response.headers.get("x-frame-options");
-
-    // Determine if CORS policies are restrictive
-    const isCorsRestricted =
-      (corsOpenerPolicy && corsOpenerPolicy !== "unsafe-none") ||
-      (corsResourcePolicy && corsResourcePolicy !== "cross-origin") ||
-      (xFrameOptions &&
-        (xFrameOptions.toLowerCase() === "deny" ||
-          xFrameOptions.toLowerCase() === "sameorigin"));
+    // Check TCP connectivity
+    const isReachable = await isPortReachable(port, { host, timeout: 5000 });
 
     return NextResponse.json({
-      ok: response.ok,
-      status: response.status,
-      statusText: response.statusText,
-      corsRestricted: isCorsRestricted,
-      corsHeaders: {
-        openerPolicy: corsOpenerPolicy,
-        resourcePolicy: corsResourcePolicy,
-        frameOptions: xFrameOptions,
-      },
+      ok: isReachable,
+      status: isReachable ? 200 : 503,
+      statusText: isReachable ? "Reachable" : "Service Unavailable",
     });
   } catch (error) {
     console.error("URL check failed:", error);
     return NextResponse.json({
       ok: false,
-      corsRestricted: false,
+      status: 503,
+      statusText: "Service Unavailable",
       error: error instanceof Error ? error.message : "Failed to check URL",
     });
   }

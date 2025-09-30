@@ -5,7 +5,6 @@ import {
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { TextShimmer } from "@/components/ui/text-shimmer";
 import { useCopy } from "@/hooks/use-copy";
 import { useFlowgraphState } from "@/contexts/flowgraph/flowgraph-context";
 import { useResourceObjects } from "@/hooks/sealos/resource/use-resource-objects";
@@ -13,10 +12,11 @@ import {
   Copy,
   Check,
   CircleCheckBig,
-  ChevronLeft,
-  ChevronRight,
+  ExternalLink,
+  AlertCircle,
 } from "lucide-react";
 import { useInterval } from "@reactuses/core";
+import { HoverPeek } from "@/components/ui/link-preview";
 
 interface PreviewMessageProps {
   target?: CustomResourceTarget | BuiltinResourceTarget;
@@ -26,9 +26,6 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = ({ target }) => {
   // Get all nodes from flowgraph state
   const { nodes } = useFlowgraphState();
 
-  // Log all nodes
-  // console.log("All nodes in preview:", nodes);
-
   // Extract targets from network type nodes
   const networkTargets = nodes
     .filter((node) => node.type === "network" && node.data?.target)
@@ -36,10 +33,6 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = ({ target }) => {
 
   // Use resource objects hook with network targets
   const resourceObjects = useResourceObjects(networkTargets as any);
-
-  // Log the resource objects result
-  // console.log("Network targets:", networkTargets);
-  // console.log("Resource objects result:", resourceObjects.data);
 
   // Extract public domains from ports of resource objects
   const websiteUrls = React.useMemo(() => {
@@ -62,185 +55,143 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = ({ target }) => {
     return publicDomains;
   }, [resourceObjects.data]);
 
-  // Log extracted public domains
-  // console.log("Extracted public domains:", websiteUrls);
-
   const { copyToClipboard, isCopied } = useCopy();
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [isCorsRestricted, setIsCorsRestricted] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [urlStatuses, setUrlStatuses] = useState<
+    Record<string, { isSuccess: boolean }>
+  >({});
 
-  const websiteUrl = websiteUrls[currentIndex];
-
-  const handleCopyUrl = () => {
-    copyToClipboard(websiteUrl, "preview-url");
-  };
-
-  const handleIframeLoad = () => {
-    setIsSuccess(true);
-  };
-
-  const handleIframeError = () => {
-    setIsSuccess(false);
-  };
-
-  const handleIframeClick = () => {
-    window.open(websiteUrl, "_blank");
-  };
-
-  const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : websiteUrls.length - 1));
-    setIsSuccess(false);
-    setIsCorsRestricted(false);
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev < websiteUrls.length - 1 ? prev + 1 : 0));
-    setIsSuccess(false);
-    setIsCorsRestricted(false);
-  };
-
-  const checkUrlStatus = async () => {
+  const checkUrlStatus = async (url: string) => {
     try {
       const response = await fetch(
-        `/api/check-url?url=${encodeURIComponent(websiteUrl)}`
+        `/api/check-url?url=${encodeURIComponent(url)}`
       );
       const data = await response.json();
 
-      console.log("URL check response:", data);
-
-      if (data.ok) {
-        setIsSuccess(true);
-        setIsCorsRestricted(data.corsRestricted || false);
-      } else {
-        console.log(
-          `URL returned status ${data.status}: ${data.statusText || data.error}`
-        );
-        setIsSuccess(false);
-        setIsCorsRestricted(false);
-      }
+      setUrlStatuses((prev) => ({
+        ...prev,
+        [url]: {
+          isSuccess: data.ok,
+        },
+      }));
     } catch (error) {
-      console.log("URL check failed, will retry...", error);
-      setIsSuccess(false);
-      setIsCorsRestricted(false);
+      console.log(`URL check failed for ${url}, will retry...`, error);
+      setUrlStatuses((prev) => ({
+        ...prev,
+        [url]: {
+          isSuccess: false,
+        },
+      }));
     }
   };
 
-  // Check URL status every 2 seconds
+  // Check all URL statuses every 3 seconds
   useInterval(
     () => {
-      checkUrlStatus();
+      websiteUrls.forEach((url) => {
+        checkUrlStatus(url);
+      });
     },
     3000,
     { immediate: true }
   );
 
+  const handleCopyUrl = (url: string) => {
+    copyToClipboard(url, `preview-url-${url}`);
+  };
+
+  const handleUrlClick = (url: string) => {
+    window.open(url, "_blank");
+  };
+
   // If no addresses available
   if (websiteUrls.length === 0) {
     return (
-      <div className="w-full border rounded-lg p-1">
-        <div className="flex items-center justify-center">
-          <span className="text-muted-foreground">
-            No public domain available
-          </span>
-        </div>
+      <div className="w-full border rounded-lg p-4">
+        <span className="text-muted-foreground">
+          No public domain available
+        </span>
       </div>
     );
   }
 
+  // Calculate loading status
+  const totalUrls = websiteUrls.length;
+  const loadedUrls = Object.values(urlStatuses).filter(
+    (status) => status.isSuccess
+  ).length;
+  const allLoaded = totalUrls > 0 && loadedUrls === totalUrls;
+  const someLoaded = loadedUrls > 0;
+
   return (
-    <div className="w-full border rounded-lg p-1 bg-background-secondary">
-      <div className="flex items-center justify-between gap-2 pb-1">
-        {websiteUrls.length > 1 && (
-          <Button
-            onClick={handlePrevious}
-            variant="ghost"
-            size="sm"
-            className="w-8 h-8 p-0"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-        )}
-
-        <div className="flex items-center gap-2 flex-1 justify-center">
-          <div className="flex items-center gap-1">
-            {isSuccess ? (
-              <CircleCheckBig className="h-4 w-4 text-theme-green" />
-            ) : (
-              <Spinner variant="ring" size={16} className="text-theme-yellow" />
-            )}
-          </div>
-
-          <span
-            className={`cursor-pointer hover:underline transition-all font-mono text-sm ${
-              isSuccess ? "text-foreground" : "text-muted-foreground"
-            }`}
-            onClick={handleIframeClick}
-          >
-            {websiteUrl}
-          </span>
-
-          <button
-            onClick={handleCopyUrl}
-            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-          >
-            {isCopied("preview-url") ? (
-              <>
-                <Check className="h-4 w-4 text-theme-green" />
-              </>
-            ) : (
-              <>
-                <Copy className="h-4 w-4" />
-              </>
-            )}
-          </button>
-        </div>
-
-        {websiteUrls.length > 1 && (
-          <Button
-            onClick={handleNext}
-            variant="ghost"
-            size="sm"
-            className="w-8 h-8 p-0"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        )}
+    <div className="w-full border rounded-lg p-2">
+      {/* Status hint */}
+      <div className="mb-3">
+        <p className="text-sm text-muted-foreground">
+          {allLoaded
+            ? "All previews ready"
+            : someLoaded
+            ? `Previews are loading, please wait (${loadedUrls}/${totalUrls})`
+            : "Previews are loading, please wait"}
+        </p>
       </div>
 
-      <div
-        className="relative w-full cursor-pointer hover:opacity-90 transition-opacity"
-        style={{
-          aspectRatio: isSuccess && !isCorsRestricted ? "16/9" : undefined,
-          height: isSuccess && !isCorsRestricted ? undefined : "100px",
-        }}
-        onClick={handleIframeClick}
-      >
-        {isSuccess && isCorsRestricted ? (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-lg bg-muted/20 px-4">
-            <span className="text-center text-sm text-muted-foreground">
-              Application ready, preview blocked by CORS policy
-            </span>
-            <span className="text-center text-xs text-muted-foreground/70">
-              Click to open the application
-            </span>
-          </div>
-        ) : isSuccess ? (
-          <iframe
-            src={websiteUrl}
-            className="w-full h-full rounded-lg pointer-events-none"
-            title="Resource Preview"
-            allowFullScreen
-            onLoad={handleIframeLoad}
-            onError={handleIframeError}
-          />
-        ) : (
-          <div className="w-full h-full rounded-lg bg-muted/20 flex items-center justify-center">
-            <TextShimmer as="div" className="" duration={1.5} spread={1.5}>
-              Initiating
-            </TextShimmer>
-          </div>
-        )}
+      <div className="">
+        {websiteUrls.map((url, index) => {
+          const status = urlStatuses[url] || {
+            isSuccess: false,
+          };
+
+          return (
+            <div key={url} className="flex items-center gap-3 py-2">
+              {/* Status Icon */}
+              <div className="flex-shrink-0">
+                {status.isSuccess ? (
+                  <CircleCheckBig className="h-4 w-4 text-theme-green" />
+                ) : (
+                  <Spinner
+                    variant="ring"
+                    size={16}
+                    className="text-theme-yellow"
+                  />
+                )}
+              </div>
+
+              {/* URL with HoverPeek */}
+              <div className="flex-1 min-w-0">
+                <HoverPeek
+                  url={url}
+                  peekWidth={300}
+                  peekHeight={200}
+                  enableLensEffect={true}
+                  enableMouseFollow={true}
+                >
+                  <button
+                    onClick={() => handleUrlClick(url)}
+                    className="text-left w-full"
+                  >
+                    <span className="font-mono text-sm text-foreground hover:text-blue-600 hover:underline transition-colors break-all">
+                      {url}
+                    </span>
+                  </button>
+                </HoverPeek>
+              </div>
+
+              {/* Copy Button */}
+              <div className="flex-shrink-0">
+                <button
+                  onClick={() => handleCopyUrl(url)}
+                  className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors cursor-pointer p-1"
+                >
+                  {isCopied(`preview-url-${url}`) ? (
+                    <Check className="h-4 w-4 text-theme-green" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -58,12 +58,16 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
 
   const apiContext = useMemo(() => useSealosContext(), []);
   const createInstanceMutation = useCreateInstanceMutation(apiContext);
-  
-  const { getTemplateSource, templateSource, isTemplateSourceLoading, templateSourceError } = useTemplates(apiContext);
+
+  const {
+    getTemplateSource,
+    templateSource,
+    isTemplateSourceLoading,
+    templateSourceError,
+  } = useTemplates(apiContext);
   const { checkAndShowQuotaError, quota } = useResourceQuotaChecker();
   const hasInputs =
     template.spec.inputs && Object.keys(template.spec.inputs).length > 0;
-
 
   useEffect(() => {
     if (template.spec.readme && template.spec.readme.startsWith("http")) {
@@ -87,37 +91,34 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
     }
   }, [template.spec.readme]);
 
-  useEffect(() => {
-    if (templateSource) {
-      if (templateSource.data && templateSource.data.requirements) {
-        const requirementsData = templateSource.data.requirements;
-        const maxRequirements = {
-          cpu: (requirementsData.cpu?.max || 0) / 1000,
-          memory: (requirementsData.memory?.max || 0) / 1024,
-          storage: (requirementsData.storage?.max || 0) / 1024,
-          ports: requirementsData.nodeport || 0,
-        };
-        
-        const quotaCheckPassed = checkAndShowQuotaError(maxRequirements);
-        
-        if (quotaCheckPassed) {
-          if (hasInputs) {
-            setShowInputDialog(true);
-          } else {
-            deployTemplate();
-          }
-        }
+  // Function to handle the deploy button click - determines whether to open input dialog or deploy directly
+  const handleDeployClick = async () => {
+    await getTemplateSource(template.metadata.name);
+
+    if (hasInputs) {
+      setShowInputDialog(true);
+    } else {
+      handleDeploy();
+    }
+  };
+
+  // Function to execute the actual deployment with quota check
+  const handleDeploy = (templateForm?: Record<string, string>) => {
+    if (templateSource?.data?.requirements) {
+      const requirementsData = templateSource.data.requirements;
+      const maxRequirements = {
+        cpu: (requirementsData.cpu?.max || 0) / 1000,
+        memory: (requirementsData.memory?.max || 0) / 1024,
+        storage: (requirementsData.storage?.max || 0) / 1024,
+        ports: requirementsData.nodeport || 0,
+      };
+
+      const quotaCheckPassed = checkAndShowQuotaError(maxRequirements);
+      if (!quotaCheckPassed) {
+        return;
       }
     }
-  }, [templateSource]);
 
-  useEffect(() => {
-    if (templateSourceError) {
-      toast.error("Failed to fetch template source data");
-    }
-  }, [templateSourceError]);
-
-  const deployTemplate = (templateForm?: Record<string, string>) => {
     createInstanceMutation.mutate(
       {
         templateName: template.metadata.name,
@@ -145,10 +146,6 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
         },
       }
     );
-  };
-
-  const handleDeploy = () => {
-    getTemplateSource(template.metadata.name);
   };
 
   return (
@@ -211,9 +208,11 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
                     )}
                 </div>
                 <Button
-                  onClick={handleDeploy}
+                  onClick={handleDeployClick}
                   variant="outline"
-                  disabled={createInstanceMutation.isPending || isTemplateSourceLoading}
+                  disabled={
+                    createInstanceMutation.isPending || isTemplateSourceLoading
+                  }
                 >
                   {createInstanceMutation.isPending
                     ? "Deploying..."
@@ -235,8 +234,6 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
                 </p>
               </div>
             )}
-
-
 
             {template.spec.readme && (
               <div>
@@ -276,7 +273,7 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
           template={template}
           isOpen={showInputDialog}
           onClose={() => setShowInputDialog(false)}
-          onSubmit={deployTemplate}
+          onSubmit={handleDeploy}
           isLoading={createInstanceMutation.isPending}
         />
       )}
