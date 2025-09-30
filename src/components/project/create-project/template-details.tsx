@@ -4,30 +4,21 @@ import { ArrowLeft } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { useAuthState } from "@/contexts/auth/auth-context";
 import { toast } from "sonner";
 import type { TemplateResource } from "@/lib/sealos/resources/template/schemas/template-api-context-schemas";
 import { useCreateInstanceMutation } from "@/lib/sealos/resources/template/template-method/template-mutation";
 import { TemplateInputDialog } from "./template-input-dialog";
 import { useSealosContext } from "@/lib/auth/auth-utils";
+import { useTemplates } from "@/hooks/template/use-templates";
+import { useResourceQuotaChecker } from "@/lib/validation/resource-quota-checker";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { useRouter } from "next/navigation";
-import { useChatActions } from "@/contexts/chat/chat-context";
-import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { Spinner } from "@/components/ui/spinner";
 
 import "@/styles/github-markdown-dark.css";
 
-// Function to get dot color for categories
 const getDotColor = (category: string): string => {
   const lowerCategory = category.toLowerCase();
   if (
@@ -67,12 +58,13 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
 
   const apiContext = useMemo(() => useSealosContext(), []);
   const createInstanceMutation = useCreateInstanceMutation(apiContext);
-
-  // Check if template has inputs
+  
+  const { getTemplateSource, templateSource, isTemplateSourceLoading, templateSourceError } = useTemplates(apiContext);
+  const { checkAndShowQuotaError, quota } = useResourceQuotaChecker();
   const hasInputs =
     template.spec.inputs && Object.keys(template.spec.inputs).length > 0;
 
-  // Fetch README content
+
   useEffect(() => {
     if (template.spec.readme && template.spec.readme.startsWith("http")) {
       setIsLoadingReadme(true);
@@ -87,7 +79,6 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
           setReadmeContent(content);
         })
         .catch((error) => {
-          console.error("Error fetching README:", error);
           toast.error("Failed to load documentation");
         })
         .finally(() => {
@@ -95,6 +86,36 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
         });
     }
   }, [template.spec.readme]);
+
+  useEffect(() => {
+    if (templateSource) {
+      if (templateSource.data && templateSource.data.requirements) {
+        const requirementsData = templateSource.data.requirements;
+        const maxRequirements = {
+          cpu: (requirementsData.cpu?.max || 0) / 1000,
+          memory: (requirementsData.memory?.max || 0) / 1024,
+          storage: (requirementsData.storage?.max || 0) / 1024,
+          ports: requirementsData.nodeport || 0,
+        };
+        
+        const quotaCheckPassed = checkAndShowQuotaError(maxRequirements);
+        
+        if (quotaCheckPassed) {
+          if (hasInputs) {
+            setShowInputDialog(true);
+          } else {
+            deployTemplate();
+          }
+        }
+      }
+    }
+  }, [templateSource]);
+
+  useEffect(() => {
+    if (templateSourceError) {
+      toast.error("Failed to fetch template source data");
+    }
+  }, [templateSourceError]);
 
   const deployTemplate = (templateForm?: Record<string, string>) => {
     createInstanceMutation.mutate(
@@ -113,7 +134,6 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
           );
           if (instanceResource?.metadata?.name) {
             const instanceName = instanceResource.metadata.name;
-            // Navigate to the instance details page
             router.push(`/projects/${instanceName}`);
           }
         },
@@ -128,18 +148,13 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
   };
 
   const handleDeploy = () => {
-    if (hasInputs) {
-      setShowInputDialog(true);
-    } else {
-      deployTemplate();
-    }
+    getTemplateSource(template.metadata.name);
   };
 
   return (
-    <div className="flex h-full max-h-full flex-col overflow-hidden relative">
-      {/* Deployment Overlay */}
+    <div className="flex h-full max-h-full flex-col overflow-y-auto relative">
       {createInstanceMutation.isPending && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-background/80 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-4">
             <Spinner variant="bars" className="size-8" />
             <p className="text-sm text-muted-foreground">
@@ -149,7 +164,6 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
         </div>
       )}
 
-      {/* Header */}
       <div className="flex shrink-0 items-center gap-4 p-6 pb-4">
         <Button onClick={onBack} size="sm" variant="ghost">
           <ArrowLeft className="mr-2 size-4" />
@@ -157,10 +171,8 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
         </Button>
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto px-6 pb-6">
         <div className="mx-auto max-w-4xl space-y-6">
-          {/* Template Header */}
           <div className="flex items-start gap-4">
             <div className="flex size-16 items-center justify-center rounded-lg bg-muted p-3">
               {template.spec.icon ? (
@@ -181,7 +193,6 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
                   <h1 className="text-2xl font-semibold">
                     {template.spec.title}
                   </h1>
-                  {/* Categories */}
                   {template.spec.categories &&
                     template.spec.categories.length > 0 && (
                       <div className="flex flex-wrap gap-2">
@@ -202,10 +213,12 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
                 <Button
                   onClick={handleDeploy}
                   variant="outline"
-                  disabled={createInstanceMutation.isPending}
+                  disabled={createInstanceMutation.isPending || isTemplateSourceLoading}
                 >
                   {createInstanceMutation.isPending
                     ? "Deploying..."
+                    : isTemplateSourceLoading
+                    ? "Loading template source..."
                     : hasInputs
                     ? "Configure & Deploy"
                     : "Deploy"}
@@ -214,114 +227,17 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
             </div>
           </div>
 
-          {/* Template Details */}
           <div className="space-y-6">
-            {/* Description Section */}
             {template.spec.description && (
               <div>
-                {/* <h3 className="font-semibold text-lg mb-3">Description</h3> */}
                 <p className="text-muted-foreground leading-relaxed">
                   {template.spec.description}
                 </p>
               </div>
             )}
 
-            {/* Template Information Section */}
-            {/* <div>
-              <h3 className="font-semibold text-lg mb-3">
-                Template Information
-              </h3>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {template.spec.templateType && (
-                  <div>
-                    <h4 className="font-medium text-sm">Template Type</h4>
-                    <p className="text-muted-foreground text-sm">
-                      {template.spec.templateType}
-                    </p>
-                  </div>
-                )}
 
-                {template.spec.deployCount !== undefined && (
-                  <div>
-                    <h4 className="font-medium text-sm">Deploy Count</h4>
-                    <p className="text-muted-foreground text-sm">
-                      {template.spec.deployCount}
-                    </p>
-                  </div>
-                )}
 
-                {template.spec.url && (
-                  <div>
-                    <h4 className="font-medium text-sm">Homepage</h4>
-                    <a
-                      className="text-blue-600 text-sm hover:underline"
-                      href={template.spec.url}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      {template.spec.url}
-                    </a>
-                  </div>
-                )}
-
-                {template.spec.gitRepo && (
-                  <div>
-                    <h4 className="font-medium text-sm">Repository</h4>
-                    <a
-                      className="text-blue-600 text-sm hover:underline"
-                      href={template.spec.gitRepo}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      {template.spec.gitRepo}
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div> */}
-
-            {/* Configuration Parameters Section */}
-            {/* {template.spec.inputs &&
-              Object.keys(template.spec.inputs).length > 0 && (
-                <div>
-                  <h3 className="font-semibold text-lg mb-3">
-                    Configuration Parameters
-                  </h3>
-                  <p className="text-muted-foreground text-sm mb-4">
-                    This template accepts the following configuration parameters
-                  </p>
-                  <div className="space-y-4">
-                    {Object.entries(template.spec.inputs).map(
-                      ([key, input]) => (
-                        <div
-                          className="border-border border-l-2 pl-4"
-                          key={key}
-                        >
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-medium text-sm">{key}</h4>
-                            {input?.required && (
-                              <Badge variant="destructive">Required</Badge>
-                            )}
-                          </div>
-                          {input?.description && (
-                            <p className="text-muted-foreground text-sm">
-                              {input.description}
-                            </p>
-                          )}
-                          <div className="mt-1 text-muted-foreground text-xs">
-                            Type: {input?.type || "string"}
-                            {input?.default !== undefined && (
-                              <span> • Default: {String(input.default)}</span>
-                            )}
-                          </div>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              )} */}
-
-            {/* Documentation Section */}
             {template.spec.readme && (
               <div>
                 <h3 className="font-semibold text-lg mb-3">Documentation</h3>
@@ -355,7 +271,6 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
         </div>
       </div>
 
-      {/* Template Input Dialog */}
       {hasInputs && (
         <TemplateInputDialog
           template={template}

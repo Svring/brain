@@ -172,6 +172,22 @@ const SourceSchema = z.object({
   CURRENCY_SYMBOL: z.enum(["shellCoin", "cny", "usd"]),
 });
 
+const RequirementsSchema = z.object({
+  cpu: z.object({
+    min: z.number(),
+    max: z.number(),
+  }),
+  memory: z.object({
+    min: z.number(),
+    max: z.number(),
+  }),
+  storage: z.object({
+    min: z.number(),
+    max: z.number(),
+  }),
+  nodeport: z.number(),
+});
+
 // Template source data schema (the actual response data structure)
 const TemplateSourceDataSchema = z.object({
   source: SourceSchema,
@@ -179,6 +195,7 @@ const TemplateSourceDataSchema = z.object({
   templateYaml: TemplateYamlSchema,
   readmeContent: z.string().optional(),
   readUrl: z.string().optional(),
+  requirements: RequirementsSchema.optional(),
 });
 
 // Template source response schema
@@ -198,6 +215,7 @@ export type TemplateSourceDefault = z.infer<typeof TemplateSourceDefaultSchema>;
 export type EnvResponse = z.infer<typeof EnvResponseSchema>;
 export type TemplateYaml = z.infer<typeof TemplateYamlSchema>;
 export type Source = z.infer<typeof SourceSchema>;
+export type Requirements = z.infer<typeof RequirementsSchema>;
 export type TemplateSourceData = z.infer<typeof TemplateSourceDataSchema>;
 export type TemplateSourceResponse = z.infer<
   typeof TemplateSourceResponseSchema
