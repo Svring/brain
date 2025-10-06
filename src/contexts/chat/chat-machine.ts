@@ -9,35 +9,40 @@ export interface ChatSectionState {
   responding: boolean;
   maximized: boolean;
   loading: boolean;
+  zIndex: number; 
 }
 
 export interface ChatInstance {
   threadId: string | null;
   threads: Thread[];
   state: ChatSectionState;
-  resourceTarget?: ResourceTarget; // undefined for project chat
-  projectName?: string; // defined for project chat instances
+  resourceTarget?: ResourceTarget;
+  projectName?: string;
 }
 
 export interface ChatContextState {
-  chatInstances: Map<string, ChatInstance>; // Map<resourceTarget, ChatInstance>
+  chatInstances: Map<string, ChatInstance>;
   activeResourceTargets: string[];
   focusedResourceTarget: string | null;
-  pendingMessages: Map<string, Message[]>; // Map<resourceTarget, Message[]> - stores pending messages for each target
-  chatDisplayOrder: string[]; // Array of chat keys in display order (newest first)
-  triggerPendingMessages: Map<string, boolean>; // Map<resourceTarget, boolean> - triggers pending message submission
+  pendingMessages: Map<string, Message[]>;
+  chatDisplayOrder: string[];
+  triggerPendingMessages: Map<string, boolean>;
+  stackedChats: string[]; 
+  activeChatIndex: number; 
+  topLayerType: 'resource' | 'project'; 
 }
 
 export type ChatEvent =
-  // Multi-instance chat management
   | { type: "OPEN_CHAT"; resourceTarget: ResourceTarget }
   | { type: "CLOSE_CHAT"; resourceTarget: ResourceTarget }
-
-  // Project chat management
   | { type: "OPEN_PROJECT_CHAT"; projectName: string }
   | { type: "CLOSE_PROJECT_CHAT"; projectName: string }
-
-  // Per-instance state management (for resource chats)
+  | { type: "FOCUS_CHAT"; chatKey: string }
+  | { type: "STACK_CHAT"; chatKey: string }
+  | { type: "UNSTACK_CHAT"; chatKey: string }
+  | { type: "SWITCH_TO_NEXT_CHAT" }
+  | { type: "SWITCH_TO_PREV_CHAT" }
+  | { type: "SET_TOP_LAYER_TYPE"; layerType: 'resource' | 'project' }
   | {
       type: "SET_CHAT_THREAD_ID";
       resourceTarget: ResourceTarget;
@@ -53,8 +58,6 @@ export type ChatEvent =
       resourceTarget: ResourceTarget;
       state: Partial<ChatSectionState>;
     }
-
-  // Per-instance state management (for project chat)
   | {
       type: "SET_PROJECT_CHAT_THREAD_ID";
       projectName: string;
@@ -70,45 +73,39 @@ export type ChatEvent =
       projectName: string;
       state: Partial<ChatSectionState>;
     }
-
-  // Pending message management
   | {
       type: "ADD_PENDING_MESSAGE";
-      resourceTarget: ResourceTarget | null; // null for project chat
+      resourceTarget: ResourceTarget | null;
       message: Message;
     }
   | {
       type: "REMOVE_PENDING_MESSAGE";
-      resourceTarget: ResourceTarget | null; // null for project chat
+      resourceTarget: ResourceTarget | null;
       messageIndex: number;
     }
   | {
       type: "CLEAR_PENDING_MESSAGES";
-      resourceTarget: ResourceTarget | null; // null for project chat
+      resourceTarget: ResourceTarget | null;
     }
-  // Trigger pending message submission
   | {
       type: "TRIGGER_PENDING_MESSAGES";
-      resourceTarget: ResourceTarget | null; // null for project chat
+      resourceTarget: ResourceTarget | null;
     }
   | {
       type: "CLEAR_TRIGGER_PENDING_MESSAGES";
-      resourceTarget: ResourceTarget | null; // null for project chat
+      resourceTarget: ResourceTarget | null;
     };
 
-// Helper function to serialize resource target to string key
 export function serializeResourceTarget(
   resourceTarget: ResourceTarget
 ): string {
   return JSON.stringify(resourceTarget);
 }
 
-// Helper function to create project chat key
 export function getProjectChatKey(projectName: string): string {
   return `__project__${projectName}`;
 }
 
-// Helper function to serialize resource target or project name to string key
 export function serializeTargetKey(
   resourceTarget: ResourceTarget | null,
   projectName?: string
@@ -116,16 +113,19 @@ export function serializeTargetKey(
   if (resourceTarget) {
     return serializeResourceTarget(resourceTarget);
   }
-  // For project chat, use projectName if provided
   if (projectName) {
     return getProjectChatKey(projectName);
   }
-  // Fallback for backward compatibility
   return "__project__";
 }
 
+function calculateZIndex(stackedChats: string[], chatKey: string): number {
+  const baseZIndex = 10;
+  const index = stackedChats.indexOf(chatKey);
+  return index >= 0 ? baseZIndex + index : baseZIndex;
+}
+
 export const chatMachine = createMachine({
-  /** XState v5 generics */
   types: {} as { context: ChatContextState; events: ChatEvent },
   id: "chat",
   initial: "idle",
@@ -136,66 +136,102 @@ export const chatMachine = createMachine({
     pendingMessages: new Map<string, Message[]>(),
     chatDisplayOrder: [],
     triggerPendingMessages: new Map<string, boolean>(),
+    stackedChats: [], 
+    activeChatIndex: 0, 
+    topLayerType: 'resource', 
   },
   states: {
     idle: {},
   },
   on: {
-    // Multi-instance chat management
     OPEN_CHAT: {
-      actions: assign({
-        chatInstances: ({ context, event }) => {
-          const newInstances = new Map(context.chatInstances);
-          const resourceKey = serializeResourceTarget(event.resourceTarget);
+      actions: [
+        assign({
+          chatInstances: ({ context, event }) => {
+            const newInstances = new Map(context.chatInstances);
+            const resourceKey = serializeResourceTarget(event.resourceTarget);
 
-          // Check if chat already exists for this resource
-          if (newInstances.has(resourceKey)) {
-            // Chat already exists, just return existing instances
+            if (newInstances.has(resourceKey)) {
+              return newInstances;
+            }
+
+            const filteredTargets = context.activeResourceTargets.filter(
+              (target) => target.startsWith("__project__")
+            );
+
+            const newInstance: ChatInstance = {
+              threadId: null,
+              threads: [],
+              state: {
+                open: true,
+                responding: false,
+                maximized: false,
+                loading: false,
+                zIndex: calculateZIndex([...context.stackedChats, resourceKey], resourceKey) + 10,
+              },
+              resourceTarget: event.resourceTarget,
+            };
+
+            newInstances.set(resourceKey, newInstance);
             return newInstances;
-          }
-
-          // Create new chat instance
-          const newInstance: ChatInstance = {
-            threadId: null,
-            threads: [],
-            state: {
-              open: true,
-              responding: false,
-              maximized: false,
-              loading: false,
-            },
-            resourceTarget: event.resourceTarget,
-          };
-
-          newInstances.set(resourceKey, newInstance);
-          return newInstances;
-        },
-        activeResourceTargets: ({ context, event }) => {
+          },
+          activeResourceTargets: ({ context, event }) => {
+            const resourceKey = serializeResourceTarget(event.resourceTarget);
+            const filteredTargets = context.activeResourceTargets.filter(
+              (target) => target.startsWith("__project__")
+            );
+            return [...filteredTargets, resourceKey];
+          },
+          focusedResourceTarget: ({ event }) => {
+            return serializeResourceTarget(event.resourceTarget);
+          },
+          chatDisplayOrder: ({ context, event }) => {
+            const resourceKey = serializeResourceTarget(event.resourceTarget);
+            const newOrder = [...context.chatDisplayOrder];
+            const existingIndex = newOrder.indexOf(resourceKey);
+            if (existingIndex > -1) {
+              newOrder.splice(existingIndex, 1);
+            }
+            newOrder.unshift(resourceKey);
+            return newOrder;
+          },
+          stackedChats: ({ context, event }) => {
+            const resourceKey = serializeResourceTarget(event.resourceTarget);
+            const filteredStacked = context.stackedChats.filter(
+              (key) => key.startsWith("__project__")
+            );
+            return [...filteredStacked, resourceKey];
+          },
+          activeChatIndex: ({ context, event }) => {
+            const resourceKey = serializeResourceTarget(event.resourceTarget);
+            const filteredStacked = context.stackedChats.filter(
+              (key) => key.startsWith("__project__")
+            );
+            const newStackedChats = [...filteredStacked, resourceKey];
+            return Math.max(0, newStackedChats.length - 1);
+          },
+        }),
+        ({ context, event }) => {
           const resourceKey = serializeResourceTarget(event.resourceTarget);
-
-          // Add to active list if not already there
-          return context.activeResourceTargets.includes(resourceKey)
-            ? context.activeResourceTargets
-            : [...context.activeResourceTargets, resourceKey];
-        },
-        focusedResourceTarget: ({ event }) => {
-          return serializeResourceTarget(event.resourceTarget);
-        },
-        chatDisplayOrder: ({ context, event }) => {
-          const resourceKey = serializeResourceTarget(event.resourceTarget);
-          const newOrder = [...context.chatDisplayOrder];
-
-          // Remove the key if it already exists
-          const existingIndex = newOrder.indexOf(resourceKey);
-          if (existingIndex > -1) {
-            newOrder.splice(existingIndex, 1);
+          const oldResourceChats: string[] = [];
+          
+          for (const [key, instance] of context.chatInstances.entries()) {
+            if (!key.startsWith("__project__") && 
+                instance.resourceTarget && 
+                key !== resourceKey) {
+              oldResourceChats.push(key);
+            }
           }
-
-          // Add to the beginning (newest first)
-          newOrder.unshift(resourceKey);
-          return newOrder;
+          
+          oldResourceChats.forEach((key) => {
+            context.chatInstances.delete(key);
+          });
+          
+          if (oldResourceChats.length > 0) {
+            // Cleaned up old resource chat instances
+          }
         },
-      }),
+      ],
     },
 
     CLOSE_CHAT: {
@@ -214,28 +250,40 @@ export const chatMachine = createMachine({
         },
         focusedResourceTarget: ({ context, event }) => {
           const resourceKey = serializeResourceTarget(event.resourceTarget);
-          return context.focusedResourceTarget === resourceKey
-            ? null
-            : context.focusedResourceTarget;
+          if (context.focusedResourceTarget === resourceKey) {
+            const remainingStackedChats = context.stackedChats.filter(key => key !== resourceKey);
+            if (remainingStackedChats.length > 0) {
+              return remainingStackedChats[0];
+            }
+            return null;
+          }
+          return context.focusedResourceTarget;
         },
         chatDisplayOrder: ({ context, event }) => {
           const resourceKey = serializeResourceTarget(event.resourceTarget);
           return context.chatDisplayOrder.filter((key) => key !== resourceKey);
         },
+        stackedChats: ({ context, event }) => {
+          const resourceKey = serializeResourceTarget(event.resourceTarget);
+          return context.stackedChats.filter(key => key !== resourceKey);
+        },
+        activeChatIndex: ({ context, event }) => {
+          const resourceKey = serializeResourceTarget(event.resourceTarget);
+          const newStackedChats = context.stackedChats.filter(key => key !== resourceKey);
+          const currentIndex = context.activeChatIndex;
+          return Math.min(currentIndex, Math.max(0, newStackedChats.length - 1));
+        },
       }),
     },
 
-    // Project chat management
     OPEN_PROJECT_CHAT: {
       actions: assign({
         chatInstances: ({ context, event }) => {
           const newInstances = new Map(context.chatInstances);
           const projectChatKey = getProjectChatKey(event.projectName);
 
-          // Check if project chat already exists
           let projectInstance = newInstances.get(projectChatKey);
           if (!projectInstance) {
-            // Create new project chat instance
             projectInstance = {
               threadId: null,
               threads: [],
@@ -244,12 +292,13 @@ export const chatMachine = createMachine({
                 responding: false,
                 maximized: false,
                 loading: false,
+                zIndex: calculateZIndex([...context.stackedChats, projectChatKey], projectChatKey),
               },
               projectName: event.projectName,
             };
           } else {
-            // Update existing instance to open
             projectInstance.state.open = true;
+            projectInstance.state.zIndex = calculateZIndex([...context.stackedChats, projectChatKey], projectChatKey);
           }
 
           newInstances.set(projectChatKey, projectInstance);
@@ -260,16 +309,26 @@ export const chatMachine = createMachine({
         chatDisplayOrder: ({ context, event }) => {
           const projectChatKey = getProjectChatKey(event.projectName);
           const newOrder = [...context.chatDisplayOrder];
-
-          // Remove the key if it already exists
           const existingIndex = newOrder.indexOf(projectChatKey);
           if (existingIndex > -1) {
             newOrder.splice(existingIndex, 1);
           }
-
-          // Add to the beginning (newest first)
           newOrder.unshift(projectChatKey);
           return newOrder;
+        },
+        stackedChats: ({ context, event }) => {
+          const projectChatKey = getProjectChatKey(event.projectName);
+          if (!context.stackedChats.includes(projectChatKey)) {
+            return [...context.stackedChats, projectChatKey];
+          }
+          return context.stackedChats;
+        },
+        activeChatIndex: ({ context, event }) => {
+          const projectChatKey = getProjectChatKey(event.projectName);
+          const newStackedChats = context.stackedChats.includes(projectChatKey) 
+            ? context.stackedChats 
+            : [...context.stackedChats, projectChatKey];
+          return Math.max(0, newStackedChats.length - 1);
         },
       }),
     },
@@ -279,24 +338,111 @@ export const chatMachine = createMachine({
         chatInstances: ({ context, event }) => {
           const newInstances = new Map(context.chatInstances);
           const projectChatKey = getProjectChatKey(event.projectName);
-          const projectInstance = newInstances.get(projectChatKey);
-          if (projectInstance) {
-            projectInstance.state.open = false;
-            newInstances.set(projectChatKey, projectInstance);
-          }
+          newInstances.delete(projectChatKey);
           return newInstances;
         },
         focusedResourceTarget: ({ context, event }) => {
           const projectChatKey = getProjectChatKey(event.projectName);
-          return context.focusedResourceTarget === projectChatKey
-            ? null
-            : context.focusedResourceTarget;
+          if (context.focusedResourceTarget === projectChatKey) {
+            const remainingStackedChats = context.stackedChats.filter(key => key !== projectChatKey);
+            if (remainingStackedChats.length > 0) {
+              return remainingStackedChats[0];
+            }
+            return null;
+          }
+          return context.focusedResourceTarget;
         },
         chatDisplayOrder: ({ context, event }) => {
           const projectChatKey = getProjectChatKey(event.projectName);
           return context.chatDisplayOrder.filter(
             (key) => key !== projectChatKey
           );
+        },
+        stackedChats: ({ context, event }) => {
+          const projectChatKey = getProjectChatKey(event.projectName);
+          return context.stackedChats.filter(key => key !== projectChatKey);
+        },
+        activeChatIndex: ({ context, event }) => {
+          const projectChatKey = getProjectChatKey(event.projectName);
+          const newStackedChats = context.stackedChats.filter(key => key !== projectChatKey);
+          const currentIndex = context.activeChatIndex;
+          return Math.min(currentIndex, Math.max(0, newStackedChats.length - 1));
+        },
+      }),
+    },
+
+    SET_TOP_LAYER_TYPE: {
+      actions: assign({
+        topLayerType: ({ event }) => event.layerType,
+      }),
+    },
+
+    FOCUS_CHAT: {
+      actions: assign({
+        activeChatIndex: ({ context, event }) => {
+          const chatIndex = context.stackedChats.indexOf(event.chatKey);
+          return chatIndex >= 0 ? chatIndex : context.activeChatIndex;
+        },
+        focusedResourceTarget: ({ event }) => event.chatKey,
+        chatInstances: ({ context, event }) => {
+          const newInstances = new Map(context.chatInstances);
+          const targetIndex = context.stackedChats.indexOf(event.chatKey);
+          
+          if (targetIndex >= 0) {
+            const reorderedChats = [...context.stackedChats];
+            const [targetChat] = reorderedChats.splice(targetIndex, 1);
+            reorderedChats.push(targetChat);
+            
+            reorderedChats.forEach((chatKey, index) => {
+              const instance = newInstances.get(chatKey);
+              if (instance) {
+                instance.state.zIndex = 10 + index;
+                newInstances.set(chatKey, instance);
+              }
+            });
+          }
+          
+          return newInstances;
+        },
+        stackedChats: ({ context, event }) => {
+          const targetIndex = context.stackedChats.indexOf(event.chatKey);
+          if (targetIndex >= 0 && targetIndex < context.stackedChats.length - 1) {
+            const reorderedChats = [...context.stackedChats];
+            const [targetChat] = reorderedChats.splice(targetIndex, 1);
+            reorderedChats.push(targetChat);
+            return reorderedChats;
+          }
+          return context.stackedChats;
+        },
+      }),
+    },
+
+    SWITCH_TO_NEXT_CHAT: {
+      actions: assign({
+        activeChatIndex: ({ context }) => {
+          const nextIndex = (context.activeChatIndex + 1) % Math.max(1, context.stackedChats.length);
+          return nextIndex;
+        },
+        focusedResourceTarget: ({ context }) => {
+          const nextIndex = (context.activeChatIndex + 1) % Math.max(1, context.stackedChats.length);
+          return context.stackedChats[nextIndex] || null;
+        },
+      }),
+    },
+
+    SWITCH_TO_PREV_CHAT: {
+      actions: assign({
+        activeChatIndex: ({ context }) => {
+          const prevIndex = context.activeChatIndex <= 0 
+            ? Math.max(0, context.stackedChats.length - 1)
+            : context.activeChatIndex - 1;
+          return prevIndex;
+        },
+        focusedResourceTarget: ({ context }) => {
+          const prevIndex = context.activeChatIndex <= 0 
+            ? Math.max(0, context.stackedChats.length - 1)
+            : context.activeChatIndex - 1;
+          return context.stackedChats[prevIndex] || null;
         },
       }),
     },
@@ -346,7 +492,6 @@ export const chatMachine = createMachine({
       }),
     },
 
-    // Project chat state management
     SET_PROJECT_CHAT_THREAD_ID: {
       actions: assign({
         chatInstances: ({ context, event }) => {
@@ -395,7 +540,6 @@ export const chatMachine = createMachine({
       }),
     },
 
-    // Pending message management
     ADD_PENDING_MESSAGE: {
       actions: assign({
         pendingMessages: ({ context, event }) => {
@@ -443,7 +587,6 @@ export const chatMachine = createMachine({
       }),
     },
 
-    // Trigger pending message submission
     TRIGGER_PENDING_MESSAGES: {
       actions: assign({
         triggerPendingMessages: ({ context, event }) => {

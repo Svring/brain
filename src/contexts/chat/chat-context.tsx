@@ -17,7 +17,6 @@ import { useProjectActions, useProjectState } from "../project/project-context";
 import { useSendMessageMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useQueryState } from "nuqs";
 
-// const inspector = createBrowserInspector();
 
 interface ChatContextValue {
   state: StateFrom<typeof chatMachine>;
@@ -31,7 +30,6 @@ export const ChatContext = createContext<ChatContextValue | undefined>(
 
 export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [state, send, actorRef] = useMachine(chatMachine, {
-    // inspect: inspector.inspect,
   });
 
   return (
@@ -50,50 +48,42 @@ export function useChatContext() {
 export function useChatState() {
   const { state } = useChatContext();
 
-  // Helper to check if a resource target is active
   const isResourceActive = (resourceTarget: ResourceTarget) => {
     const key = serializeResourceTarget(resourceTarget);
     return state.context.activeResourceTargets.includes(key);
   };
 
-  // Helper to get chat instance by resource target
   const getChatInstance = (resourceTarget: ResourceTarget) => {
     const key = serializeResourceTarget(resourceTarget);
     return state.context.chatInstances.get(key);
   };
 
-  // Helper to get project chat instance
   const getProjectChatInstance = (projectName: string) => {
     const projectChatKey = getProjectChatKey(projectName);
     return state.context.chatInstances.get(projectChatKey);
   };
 
-  // Helper to check if project chat is focused
   const isProjectChatFocused = (projectName: string) => {
     const projectChatKey = getProjectChatKey(projectName);
     return state.context.focusedResourceTarget === projectChatKey;
   };
 
-  // Helper to get pending messages for a specific target
   const getPendingMessages = (resourceTarget: ResourceTarget | null) => {
     const key = serializeTargetKey(resourceTarget);
     return state.context.pendingMessages.get(key) || [];
   };
 
-  // Helper to check if target has pending messages
   const hasPendingMessages = (resourceTarget: ResourceTarget | null) => {
     const key = serializeTargetKey(resourceTarget);
     const messages = state.context.pendingMessages.get(key);
     return messages && messages.length > 0;
   };
 
-  // Helper to check if trigger is set for pending messages
   const shouldTriggerPendingMessages = (resourceTarget: ResourceTarget | null) => {
     const key = serializeTargetKey(resourceTarget);
     return state.context.triggerPendingMessages.get(key) || false;
   };
 
-  // Helper to get the maximized state of the focused chat
   const getSidebarChatMaximized = () => {
     const focusedTarget = state.context.focusedResourceTarget;
     if (!focusedTarget) return false;
@@ -102,8 +92,41 @@ export function useChatState() {
     return instance?.state?.maximized || false;
   };
 
+  const getStackedChats = () => {
+    return state.context.stackedChats;
+  };
+
+  const getActiveChatIndex = () => {
+    return state.context.activeChatIndex;
+  };
+
+  const getActiveChatKey = () => {
+    return state.context.stackedChats[state.context.activeChatIndex] || null;
+  };
+
+  const getChatZIndex = (chatKey: string) => {
+    const instance = state.context.chatInstances.get(chatKey);
+    return instance?.state?.zIndex || 10;
+  };
+
+  const isStackedChat = (chatKey: string) => {
+    return state.context.stackedChats.includes(chatKey);
+  };
+
+  const getStackedChatInstances = () => {
+    return state.context.stackedChats
+      .map(chatKey => ({
+        key: chatKey,
+        instance: state.context.chatInstances.get(chatKey),
+      }))
+      .filter(item => item.instance);
+  };
+
+  const hasMultipleStackedChats = () => {
+    return state.context.stackedChats.length > 1;
+  };
+
   return {
-    // Multi-instance state
     chatInstances: state.context.chatInstances,
     activeResourceTargets: state.context.activeResourceTargets,
     focusedResourceTarget: state.context.focusedResourceTarget,
@@ -111,10 +134,12 @@ export function useChatState() {
     chatDisplayOrder: state.context.chatDisplayOrder,
     triggerPendingMessages: state.context.triggerPendingMessages,
 
-    // Computed properties
+    stackedChats: state.context.stackedChats,
+    activeChatIndex: state.context.activeChatIndex,
+    topLayerType: state.context.topLayerType,
+
     sidebarChatMaximized: getSidebarChatMaximized(),
 
-    // Helper functions
     isResourceActive,
     getChatInstance,
     getProjectChatInstance,
@@ -122,6 +147,14 @@ export function useChatState() {
     getPendingMessages,
     hasPendingMessages,
     shouldTriggerPendingMessages,
+
+    getStackedChats,
+    getActiveChatIndex,
+    getActiveChatKey,
+    getChatZIndex,
+    isStackedChat,
+    getStackedChatInstances,
+    hasMultipleStackedChats,
   };
 }
 
@@ -131,13 +164,10 @@ export function useChatActions() {
   const { selectedResource } = useProjectState();
 
   return {
-    // Multi-instance chat management
     openChat: (resourceTarget: ResourceTarget) =>
       send({ type: "OPEN_CHAT", resourceTarget }),
     closeChat: (resourceTarget: ResourceTarget) => {
-      // Clear selectedResource when closing a resource chat
       send({ type: "CLOSE_CHAT", resourceTarget });
-      // Only clear selectedResource if this is the currently selected resource
       if (
         selectedResource &&
         JSON.stringify(selectedResource) === JSON.stringify(resourceTarget)
@@ -146,7 +176,6 @@ export function useChatActions() {
       }
     },
 
-    // Per-instance state management
     setChatThreadId: (
       resourceTarget: ResourceTarget,
       threadId: string | null
@@ -158,17 +187,13 @@ export function useChatActions() {
       chatState: Partial<ChatSectionState>
     ) => send({ type: "SET_CHAT_STATE", resourceTarget, state: chatState }),
 
-    // Project chat management
     openProjectChat: (projectName: string) =>
       send({ type: "OPEN_PROJECT_CHAT", projectName }),
     closeProjectChat: (projectName: string) => {
-      // Clear selectedResource when closing a project chat
       send({ type: "CLOSE_PROJECT_CHAT", projectName });
-      // Clear selectedResource when closing a project chat (always clear since project chat doesn't select a resource)
       clearSelectedResource();
     },
 
-    // Project chat state management
     setProjectChatThreadId: (projectName: string, threadId: string | null) =>
       send({ type: "SET_PROJECT_CHAT_THREAD_ID", projectName, threadId }),
     setProjectChatThreads: (projectName: string, threads: Thread[]) =>
@@ -179,7 +204,10 @@ export function useChatActions() {
     ) =>
       send({ type: "SET_PROJECT_CHAT_STATE", projectName, state: chatState }),
 
-    // Pending message management
+    focusChat: (chatKey: string) => send({ type: "FOCUS_CHAT", chatKey }),
+    switchToNextChat: () => send({ type: "SWITCH_TO_NEXT_CHAT" }),
+    switchToPrevChat: () => send({ type: "SWITCH_TO_PREV_CHAT" }),
+
     addPendingMessage: (
       resourceTarget: ResourceTarget | null,
       message: Message
@@ -191,10 +219,12 @@ export function useChatActions() {
     clearPendingMessages: (resourceTarget: ResourceTarget | null) =>
       send({ type: "CLEAR_PENDING_MESSAGES", resourceTarget }),
 
-    // Trigger pending message submission
     triggerPendingMessages: (resourceTarget: ResourceTarget | null) =>
       send({ type: "TRIGGER_PENDING_MESSAGES", resourceTarget }),
     clearTriggerPendingMessages: (resourceTarget: ResourceTarget | null) =>
       send({ type: "CLEAR_TRIGGER_PENDING_MESSAGES", resourceTarget }),
+
+    setTopLayerType: (layerType: 'resource' | 'project') =>
+      send({ type: "SET_TOP_LAYER_TYPE", layerType }),
   };
 }

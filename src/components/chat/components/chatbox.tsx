@@ -9,7 +9,11 @@ import { AiMessages } from "./messages";
 import SidebarSuggestions from "./sidebar-suggestions";
 import { cn } from "@/lib/utils";
 
-export default function AiChatbox() {
+interface AiChatboxProps {
+  showResourceDetails?: boolean;
+}
+
+export default function AiChatbox({ showResourceDetails = false }: AiChatboxProps) {
   const {
     state,
     resourceTarget,
@@ -24,43 +28,27 @@ export default function AiChatbox() {
   const { clearPendingMessages, clearTriggerPendingMessages } =
     useChatActions();
 
-  // Check if we should trigger pending messages and submit them
   useEffect(() => {
     const shouldTrigger = shouldTriggerPendingMessages(resourceTarget);
     if (shouldTrigger) {
       const pendingMessages = getPendingMessages(resourceTarget);
       if (pendingMessages.length > 0) {
-        // console.log("AiChatbox - Pending messages for resource target:", {
-        //   resourceTarget,
-        //   pendingMessageCount: pendingMessages.length,
-        //   pendingMessages,
-        // });
-
-        // Submit the pending messages
         try {
           submit({
             messages: pendingMessages,
           });
           clearPendingMessages(resourceTarget);
         } catch (error) {
-          console.error(
-            "AiChatbox - Failed to submit pending messages:",
-            error
-          );
+          // Failed to submit pending messages
         }
       }
       clearTriggerPendingMessages(resourceTarget);
     }
-  }, [shouldTriggerPendingMessages]);
+  }, [shouldTriggerPendingMessages, resourceTarget]);
 
   return (
-    <div
-      className={cn(
-        "h-full w-full flex flex-col gap-2 border rounded-xl bg-background mr-2 transition-all duration-100",
-        state.open ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
-      )}
-    >
-      <AiChatHeader />
+    <div className="h-full w-full flex flex-col bg-transparent">
+      <AiChatHeader showResourceDetails={showResourceDetails} />
 
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
         <AiMessages
@@ -71,7 +59,6 @@ export default function AiChatbox() {
         />
       </div>
 
-      {/* Show suggestions when there are no messages */}
       {messages && messages.length === 0 && (
         <div className="p-2 pb-0 shrink-0">
           <div className="max-w-3xl mx-auto">
