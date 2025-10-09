@@ -44,9 +44,20 @@ export function QuotaProvider({ children }: QuotaProviderProps) {
   const { k8s, aiProxy, costCenter } = useTRPCClients();
   const { MODE } = useEnv();
 
-  // Fetch account balance using tRPC
-  const { data: accountBalance, isLoading: balanceLoading } = useQuery({
-    ...costCenter.accountBalance.queryOptions(),
+  const { data: aiProxyTokens } = useQuery({
+    ...aiProxy.list.queryOptions(),
+    enabled: !!auth?.appToken,
+  });
+
+  const brainToken = aiProxyTokens?.tokens?.find(
+    (token: any) => token.name === "brain"
+  );
+
+  const apiKey = brainToken ? `sk-${brainToken.key}` : undefined;
+
+  const { data: billingQuota, isLoading: balanceLoading } = useQuery({
+    ...aiProxy.billingQuota.queryOptions({ apiToken: apiKey! }),
+    enabled: !!apiKey,
   });
 
   // Fetch resource quota data
@@ -97,10 +108,10 @@ export function QuotaProvider({ children }: QuotaProviderProps) {
       }
     : null;
 
-  const balance = accountBalance
+  const balance = billingQuota
     ? {
-        used: accountBalance.balance - accountBalance.deductionBalance,
-        limit: accountBalance.balance,
+        used: billingQuota.remain,
+        limit: billingQuota.total,
       }
     : null;
 
