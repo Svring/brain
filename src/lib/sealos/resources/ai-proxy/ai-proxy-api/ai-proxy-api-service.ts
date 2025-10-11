@@ -56,6 +56,12 @@ const AiProxyFreeUsageResponseSchema = z.object({
   next_reset_time: z.number(),
 });
 
+// Billing Quota Schemas
+const AiProxyBillingQuotaResponseSchema = z.object({
+  total: z.number(),
+  remain: z.number(),
+});
+
 // Delete Token Schemas
 const AiProxyDeleteTokenRequestSchema = z.object({
   id: z.number(),
@@ -80,6 +86,9 @@ export type AiProxyTokenListResponse = z.infer<
 export type AiProxyFreeUsageResponse = z.infer<
   typeof AiProxyFreeUsageResponseSchema
 >;
+export type AiProxyBillingQuotaResponse = z.infer<
+  typeof AiProxyBillingQuotaResponseSchema
+>;
 export type AiProxyDeleteTokenRequest = z.infer<
   typeof AiProxyDeleteTokenRequestSchema
 >;
@@ -100,6 +109,24 @@ export async function createAiProxyApi(
       ...(context?.authorization
         ? { Authorization: context.authorization }
         : {}),
+    },
+    httpsAgent: isDevelopment
+      ? new https.Agent({ rejectUnauthorized: false })
+      : undefined,
+  });
+}
+
+async function createAiProxyBillingApi(
+  context: AiProxyApiContext & { apiToken?: string }
+): Promise<AxiosInstance> {
+  const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
+  const authToken = context.apiToken || context.authorization;
+  
+  return axios.create({
+    baseURL: `http://aiproxy.${context.baseUrl}/v1`,
+    headers: {
+      "Content-Type": "application/json",
+      ...(authToken ? { Authorization: authToken } : {}),
     },
     httpsAgent: isDevelopment
       ? new https.Agent({ rejectUnauthorized: false })
@@ -194,4 +221,18 @@ export async function getAiProxyFreeUsageService(
 
   const data = await response.json();
   return AiProxyFreeUsageResponseSchema.parse(data);
+}
+
+export async function getAiProxyBillingQuotaService(
+  context: AiProxyApiContext & { apiToken?: string }
+): Promise<AiProxyBillingQuotaResponse> {
+  const authToken = context.apiToken || context.authorization;
+  
+  if (!authToken) {
+    throw new Error("API token is required for billing quota");
+  }
+
+  const api = await createAiProxyBillingApi(context);
+  const response = await api.get("/dashboard/billing/quota");
+  return AiProxyBillingQuotaResponseSchema.parse(response.data);
 }

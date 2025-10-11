@@ -7,6 +7,7 @@ import {
   deleteAiProxyTokenService,
   getAiProxyTokensService,
   getAiProxyFreeUsageService,
+  getAiProxyBillingQuotaService,
 } from "@/lib/sealos/resources/ai-proxy/ai-proxy-api/ai-proxy-api-service";
 
 // ===== SCHEMAS =====
@@ -43,6 +44,25 @@ export const aiProxyRouter = t.router({
     )
     .query(async ({ ctx }) => {
       return await getAiProxyFreeUsageService(ctx);
+    }),
+
+  billingQuota: t.procedure
+    .input(
+      z.object({
+        apiToken: z.string(),
+      })
+    )
+    .output(
+      z.object({
+        total: z.number(),
+        remain: z.number(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      return await getAiProxyBillingQuotaService({
+        ...ctx,
+        apiToken: input.apiToken,
+      });
     }),
 
   // ===== MUTATION PROCEDURES =====
