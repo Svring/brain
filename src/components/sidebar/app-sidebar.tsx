@@ -166,7 +166,7 @@ export default function AppSidebar() {
 												</div>
 											)}
 
-											{/* Account Balance - Show remaining balance */}
+											{/* Account Balance - Show remaining balance / total balance */}
 											{balance && (
 												<div className="space-y-2 rounded-lg">
 													<div className="flex justify-between text-xs">
@@ -174,7 +174,7 @@ export default function AppSidebar() {
 															Account Balance
 														</span>
 														<span className="text-foreground font-medium">
-															{(balance.used / 1000000).toFixed(2)} USD
+															{balance.used.toFixed(2)} / {balance.limit.toFixed(2)} USD
 														</span>
 													</div>
 												</div>
