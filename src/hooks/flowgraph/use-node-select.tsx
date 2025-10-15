@@ -1,54 +1,53 @@
-import { useFlowgraphActions } from "@/contexts/flowgraph/flowgraph-context";
-import {
-  useProjectActions,
-  useProjectState,
-} from "@/contexts/project/project-context";
-import {
-  CustomResourceTarget,
-  BuiltinResourceTarget,
-} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { useChatActions } from "@/contexts/chat/chat-context";
-import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useFlowgraphActions } from "@/contexts/flowgraph/flowgraph-context";
 import { useLanggraphActions } from "@/contexts/langgraph/langgraph-context";
 import { useNavigationActions } from "@/contexts/navigation/navigation-context";
+import {
+	useProjectActions,
+	useProjectState,
+} from "@/contexts/project/project-context";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import type {
+	BuiltinResourceTarget,
+	CustomResourceTarget,
+} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface UseNodeSelectParams {
-  target: CustomResourceTarget | BuiltinResourceTarget;
+	target: CustomResourceTarget | BuiltinResourceTarget;
 }
 
 export const useNodeSelect = ({ target }: UseNodeSelectParams) => {
-  const { selectResource } = useProjectActions();
-  const { selectNode } = useFlowgraphActions();
-  const { openChat, openProjectChat, setTopLayerType } = useChatActions();
-  const { updateResourceContext } = useLanggraphActions();
-  const { selectedResource, selectedProject } = useProjectState();
-  const { selectResource: selectNavigationResource } = useNavigationActions();
+	const { selectResource } = useProjectActions();
+	const { selectNode } = useFlowgraphActions();
+	const { openChat } = useChatActions();
+	const { updateResourceContext } = useLanggraphActions();
+	const { selectedResource } = useProjectState();
+	const { selectResource: selectNavigationResource } = useNavigationActions();
 
-  const { resource: resource_context } = useResourceStatus(target);
+	// Get resource status for the target
+	const { resource: resource_context } = useResourceStatus(target);
 
-  const nodeId = `${target.resourceType.toLowerCase()}-${target.name}`;
+	const nodeId = `${target.resourceType.toLowerCase()}-${target.name}`;
 
-  const handleNodeSelect = (): void => {
-    if (target === selectedResource) {
-      return;
-    }
-    selectResource(target);
-    selectNode(nodeId);
-    updateResourceContext({
-      selected_resource_context: resource_context,
-    });
-    selectNavigationResource(target);
-    
-    if (selectedProject) {
-      openProjectChat(selectedProject);
-    }
-    openChat(target);
-    
-    setTopLayerType('resource');
-  };
+	const handleNodeSelect = (): void => {
+		if (target === selectedResource) {
+			return;
+		}
 
-  return {
-    nodeId,
-    handleNodeSelect,
-  };
+		selectResource(target);
+		selectNode(nodeId);
+		updateResourceContext({
+			selected_resource_context: resource_context,
+		});
+
+		selectNavigationResource(target);
+
+		// Open chat for this resource target
+		openChat(target);
+	};
+
+	return {
+		nodeId,
+		handleNodeSelect,
+	};
 };

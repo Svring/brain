@@ -1,16 +1,13 @@
 "use client";
 
 import { Sparkles } from "lucide-react";
-import React from "react";
 import { useQuota } from "@/components/provider/quota-provider";
 import { Button } from "@/components/ui/button";
-import { ProgressCircle } from "@/components/ui/circle-progress";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-import { Progress } from "@/components/ui/progress";
 import {
 	Sidebar,
 	SidebarContent,
@@ -30,24 +27,14 @@ import {
 import { openCostCenterApp } from "@/lib/auth/auth-utils";
 import { cn } from "@/lib/utils";
 import { MainSection } from "./sidebar-section";
-import { UserCard } from "./user-card";
 
 export default function AppSidebar() {
 	// Use quota provider for all quota-related data and logic
-	const { cpu, memory, storage, ports, balance, aiProxy, isLoading } =
+	const { cpu, memory, storage, ports, balance, isLoading } =
 		useQuota();
 
 	// Get sidebar state for tooltip visibility
 	const { state, isMobile } = useSidebar();
-
-	// Calculate AI proxy usage percentage only
-	const aiProxyUsagePercentage = React.useMemo(() => {
-		if (!aiProxy) {
-			return 0;
-		}
-
-		return (aiProxy.used / aiProxy.limit) * 100;
-	}, [aiProxy]);
 
 	return (
 		<>
@@ -87,16 +74,8 @@ export default function AppSidebar() {
 									{state === "collapsed" && !isMobile ? (
 										<Tooltip>
 											<TooltipTrigger asChild>
-												<div>
-													<ProgressCircle
-														value={isLoading ? 0 : aiProxyUsagePercentage}
-														size={32}
-														strokeWidth={2}
-														indicatorClassName="text-primary"
-														trackClassName=""
-													>
-														<Sparkles className="h-4 w-4" />
-													</ProgressCircle>
+												<div className="flex aspect-square size-8 items-center justify-center rounded-md hover:bg-muted transition-colors duration-200">
+													<Sparkles className="h-4 w-4" />
 												</div>
 											</TooltipTrigger>
 											<TooltipContent
@@ -108,15 +87,9 @@ export default function AppSidebar() {
 											</TooltipContent>
 										</Tooltip>
 									) : (
-										<ProgressCircle
-											value={isLoading ? 0 : aiProxyUsagePercentage}
-											size={32}
-											strokeWidth={2}
-											indicatorClassName="text-primary"
-											trackClassName=""
-										>
+										<div className="flex aspect-square size-8 items-center justify-center rounded-md hover:bg-muted transition-colors duration-200">
 											<Sparkles className="h-4 w-4" />
-										</ProgressCircle>
+										</div>
 									)}
 								</div>
 							</PopoverTrigger>
@@ -135,37 +108,6 @@ export default function AppSidebar() {
 										</div>
 									) : cpu ? (
 										<div className="space-y-4">
-											{/* Free Quota Usage - Show at the top */}
-											{aiProxy && (
-												<div className="space-y-3 rounded-lg p-4 bg-background-tertiary">
-													<div className="flex justify-between items-center">
-														<div className="flex flex-col">
-															<span className="text-sm font-medium text-foreground">
-																Daily Free Usage
-															</span>
-															<span className="text-xs text-muted-foreground mt-0.5">
-																request counts
-															</span>
-														</div>
-														<div className="text-right">
-															<div className="text-lg font-semibold text-foreground">
-																{aiProxy.used.toFixed(0)}
-																<span className="text-sm text-muted-foreground">
-																	/{aiProxy.limit}
-																</span>
-															</div>
-														</div>
-													</div>
-													<Progress
-														value={aiProxyUsagePercentage}
-														className="h-2"
-													/>
-													<div className="text-xs text-muted-foreground text-center font-medium">
-														Resets every 24 hours
-													</div>
-												</div>
-											)}
-
 											{/* Account Balance - Show remaining balance / total balance */}
 											{balance && (
 												<div className="space-y-2 rounded-lg">

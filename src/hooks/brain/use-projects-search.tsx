@@ -1,41 +1,43 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
+import { useMemo, useState } from "react";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { createK8sContext } from "@/lib/auth/auth-utils";
+import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
 
 export default function useProjectSearch() {
-  const context = createK8sContext();
-  const [searchTerm, setSearchTerm] = useState("");
+	const context = createK8sContext();
+	const [searchTerm, setSearchTerm] = useState("");
 
-  const { project } = useTRPCClients();
+	const { project } = useTRPCClients();
 
-  const {
-    data: projects,
-    isLoading,
-    isError,
-  } = useQuery(project.list.queryOptions());
+	const {
+		data: projects,
+		isLoading,
+		isError,
+	} = useQuery(project.list.queryOptions("projects"));
 
-  // Memoize lowercase search term to avoid repeated calls
-  const lowerSearchTerm = useMemo(() => searchTerm.toLowerCase(), [searchTerm]);
+	console.log("projects", projects);
 
-  // Filter projects based on search term
-  const filteredProjects = useMemo(() => {
-    if (!projects?.length) return [];
+	// Memoize lowercase search term to avoid repeated calls
+	const lowerSearchTerm = useMemo(() => searchTerm.toLowerCase(), [searchTerm]);
 
-    return projects.filter((project) =>
-      project.displayName.toLowerCase().includes(lowerSearchTerm)
-    );
-  }, [projects, lowerSearchTerm]);
+	// Filter projects based on search term
+	const filteredProjects = useMemo(() => {
+		if (!projects?.length) return [];
 
-  return {
-    projects,
-    searchTerm,
-    setSearchTerm,
-    filteredProjects,
-    isLoading,
-    isError,
-  };
+		return projects.filter((project) =>
+			project.displayName.toLowerCase().includes(lowerSearchTerm),
+		);
+	}, [projects, lowerSearchTerm]);
+
+	return {
+		projects,
+		searchTerm,
+		setSearchTerm,
+		filteredProjects,
+		isLoading,
+		isError,
+	};
 }

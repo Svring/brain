@@ -22,13 +22,9 @@ import { HeaderActions } from "./header/header-actions";
 
 interface AiChatHeaderProps {
 	title?: string;
-	showResourceDetails?: boolean;
 }
 
-export function AiChatHeader({
-	title = "Chat",
-	showResourceDetails = false,
-}: AiChatHeaderProps) {
+export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
 	const { selectedResource, selectedProject } = useProjectState();
 	const { stage } = useLanggraphState();
 	const {
@@ -37,19 +33,31 @@ export function AiChatHeader({
 		activeView,
 	} = useNavigationState();
 	const { isLoading, resourceTarget } = useChatInstance();
-	const [isExpanded, setIsExpanded] = useState(false);
+	const [isExpanded, setIsExpanded] = useState(true);
 
+	// Auto-open popover when selectedResource changes
 	useEffect(() => {
-		if (showResourceDetails && selectedResource) {
+		if (selectedResource) {
 			setIsExpanded(true);
+		} else {
+			setIsExpanded(false);
 		}
-	}, [showResourceDetails, selectedResource]);
+	}, [selectedResource]);
 
+	// Close detail when chat instance is loading
 	useEffect(() => {
 		if (isLoading) {
 			setIsExpanded(false);
 		}
 	}, [isLoading]);
+
+	// Debug: Log navigation state in header
+	// console.log("Header - Navigation State:", {
+	//   currentPage,
+	//   navSelectedResource,
+	//   activeView,
+	//   projectSelectedResource: selectedResource,
+	// });
 
 	const getIconUrl = () =>
 		selectedResource
@@ -62,6 +70,7 @@ export function AiChatHeader({
 
 		const resourceType = selectedResource.resourceType?.toLowerCase() || "";
 
+		// Get the appropriate detail component based on resource type
 		let DetailComponent = null;
 
 		switch (resourceType) {
@@ -103,11 +112,6 @@ export function AiChatHeader({
 		);
 	};
 
-	const handleToggleClick = (e: React.MouseEvent) => {
-		e.stopPropagation();
-		setIsExpanded(!isExpanded);
-	};
-
 	return (
 		<div className="px-4 pt-2 shrink-0 bg-transparent">
 			<div className="flex items-center justify-between gap-2">
@@ -118,25 +122,26 @@ export function AiChatHeader({
 
 					<Separator
 						orientation="vertical"
-						className="h-4 w-px bg-border-primary shrink-0"
+						className="h-4! w-px! bg-border-primary! shrink-0"
 					/>
 
+					{/* Resource Status Row - merged inline */}
 					{(selectedResource || selectedProject) && (
 						<div className="flex items-center min-w-0 flex-1">
-							{showResourceDetails && selectedResource && resourceTarget ? (
-								<Popover open={isExpanded} onOpenChange={setIsExpanded}>
+							{selectedResource && resourceTarget ? (
+								<Popover open={isExpanded} onOpenChange={() => {}}>
 									<PopoverTrigger asChild>
 										<div
 											className={cn(
 												"flex items-center gap-2 px-2 py-1 rounded-md cursor-pointer hover:bg-muted/50 transition-colors select-none min-w-0 flex-1 border",
 											)}
-											onClick={handleToggleClick}
+											onClick={() => setIsExpanded(!isExpanded)}
 										>
 											<div className="flex items-center shrink-0">
 												<ChevronRightIcon
 													className={cn(
 														"h-3 w-3 text-muted-foreground transition-transform duration-200 ease-in-out",
-														isExpanded ? "rotate-90" : "rotate-0",
+														isExpanded ? "rotate-180" : "rotate-0",
 													)}
 												/>
 											</div>
@@ -157,14 +162,10 @@ export function AiChatHeader({
 										</div>
 									</PopoverTrigger>
 									<PopoverContent
-										className="p-0 rounded-2xl w-[26rem]"
-										align="end"
-										side="left"
-										sideOffset={80}
-										alignOffset={-255}
-										avoidCollisions={false}
-										onClick={(e) => e.stopPropagation()}
-										onMouseDown={(e) => e.stopPropagation()}
+										className="p-0 rounded-2xl mr-[max(35vw,29rem)] w-[26rem]"
+										align="start"
+										side="bottom"
+										sideOffset={5}
 									>
 										{renderDetailCard()}
 									</PopoverContent>
@@ -172,8 +173,7 @@ export function AiChatHeader({
 							) : (
 								<div className="flex items-center gap-2 py-1.5 min-w-0 flex-1">
 									<span className="text-sm text-muted-foreground truncate min-w-0">
-										{selectedProject ||
-											(selectedResource && selectedResource.name)}
+										{selectedProject}
 									</span>
 								</div>
 							)}
