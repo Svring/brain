@@ -4,7 +4,13 @@ import type { Message, Thread } from "@langchain/langgraph-sdk";
 import { createBrowserInspector } from "@statelyai/inspect";
 import { useMachine } from "@xstate/react";
 import { useQueryState } from "nuqs";
-import { createContext, type ReactNode, useContext, useEffect } from "react";
+import {
+	createContext,
+	type ReactNode,
+	useCallback,
+	useContext,
+	useEffect,
+} from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import {
 	type ChatSectionState,
@@ -132,11 +138,14 @@ export function useChatActions() {
 	const { clearSelectedResource } = useProjectActions();
 	const { selectedResource } = useProjectState();
 
-	return {
-		// Multi-instance chat management
-		openChat: (resourceTarget: ResourceTarget) =>
+	const openChat = useCallback(
+		(resourceTarget: ResourceTarget) =>
 			send({ type: "OPEN_CHAT", resourceTarget }),
-		closeChat: (resourceTarget: ResourceTarget) => {
+		[send],
+	);
+
+	const closeChat = useCallback(
+		(resourceTarget: ResourceTarget) => {
 			// Clear selectedResource when closing a resource chat
 			send({ type: "CLOSE_CHAT", resourceTarget });
 			// Only clear selectedResource if this is the currently selected resource
@@ -147,56 +156,116 @@ export function useChatActions() {
 				clearSelectedResource();
 			}
 		},
+		[send, selectedResource, clearSelectedResource],
+	);
 
-		// Per-instance state management
-		setChatThreadId: (
-			resourceTarget: ResourceTarget,
-			threadId: string | null,
-		) => send({ type: "SET_CHAT_THREAD_ID", resourceTarget, threadId }),
-		setChatThreads: (resourceTarget: ResourceTarget, threads: Thread[]) =>
+	const setChatThreadId = useCallback(
+		(resourceTarget: ResourceTarget, threadId: string | null) =>
+			send({ type: "SET_CHAT_THREAD_ID", resourceTarget, threadId }),
+		[send],
+	);
+
+	const setChatThreads = useCallback(
+		(resourceTarget: ResourceTarget, threads: Thread[]) =>
 			send({ type: "SET_CHAT_THREADS", resourceTarget, threads }),
-		setChatState: (
-			resourceTarget: ResourceTarget,
-			chatState: Partial<ChatSectionState>,
-		) => send({ type: "SET_CHAT_STATE", resourceTarget, state: chatState }),
+		[send],
+	);
 
-		// Project chat management
-		openProjectChat: (projectName: string) =>
-			send({ type: "OPEN_PROJECT_CHAT", projectName }),
-		closeProjectChat: (projectName: string) => {
+	const setChatState = useCallback(
+		(resourceTarget: ResourceTarget, chatState: Partial<ChatSectionState>) =>
+			send({ type: "SET_CHAT_STATE", resourceTarget, state: chatState }),
+		[send],
+	);
+
+	const openProjectChat = useCallback(
+		(projectName: string) => send({ type: "OPEN_PROJECT_CHAT", projectName }),
+		[send],
+	);
+
+	const closeProjectChat = useCallback(
+		(projectName: string) => {
 			// Clear selectedResource when closing a project chat
 			send({ type: "CLOSE_PROJECT_CHAT", projectName });
 			// Clear selectedResource when closing a project chat (always clear since project chat doesn't select a resource)
 			clearSelectedResource();
 		},
+		[send, clearSelectedResource],
+	);
+
+	const setProjectChatThreadId = useCallback(
+		(projectName: string, threadId: string | null) =>
+			send({ type: "SET_PROJECT_CHAT_THREAD_ID", projectName, threadId }),
+		[send],
+	);
+
+	const setProjectChatThreads = useCallback(
+		(projectName: string, threads: Thread[]) =>
+			send({ type: "SET_PROJECT_CHAT_THREADS", projectName, threads }),
+		[send],
+	);
+
+	const setProjectChatState = useCallback(
+		(projectName: string, chatState: Partial<ChatSectionState>) =>
+			send({ type: "SET_PROJECT_CHAT_STATE", projectName, state: chatState }),
+		[send],
+	);
+
+	const addPendingMessage = useCallback(
+		(resourceTarget: ResourceTarget | null, message: Message) =>
+			send({ type: "ADD_PENDING_MESSAGE", resourceTarget, message }),
+		[send],
+	);
+
+	const removePendingMessage = useCallback(
+		(resourceTarget: ResourceTarget | null, messageIndex: number) =>
+			send({ type: "REMOVE_PENDING_MESSAGE", resourceTarget, messageIndex }),
+		[send],
+	);
+
+	const clearPendingMessages = useCallback(
+		(resourceTarget: ResourceTarget | null) =>
+			send({ type: "CLEAR_PENDING_MESSAGES", resourceTarget }),
+		[send],
+	);
+
+	const triggerPendingMessages = useCallback(
+		(resourceTarget: ResourceTarget | null) =>
+			send({ type: "TRIGGER_PENDING_MESSAGES", resourceTarget }),
+		[send],
+	);
+
+	const clearTriggerPendingMessages = useCallback(
+		(resourceTarget: ResourceTarget | null) =>
+			send({ type: "CLEAR_TRIGGER_PENDING_MESSAGES", resourceTarget }),
+		[send],
+	);
+
+	return {
+		// Multi-instance chat management
+		openChat,
+		closeChat,
+
+		// Per-instance state management
+		setChatThreadId,
+		setChatThreads,
+		setChatState,
+
+		// Project chat management
+		openProjectChat,
+		closeProjectChat,
 
 		// Project chat state management
-		setProjectChatThreadId: (projectName: string, threadId: string | null) =>
-			send({ type: "SET_PROJECT_CHAT_THREAD_ID", projectName, threadId }),
-		setProjectChatThreads: (projectName: string, threads: Thread[]) =>
-			send({ type: "SET_PROJECT_CHAT_THREADS", projectName, threads }),
-		setProjectChatState: (
-			projectName: string,
-			chatState: Partial<ChatSectionState>,
-		) =>
-			send({ type: "SET_PROJECT_CHAT_STATE", projectName, state: chatState }),
+		setProjectChatThreadId,
+		setProjectChatThreads,
+		setProjectChatState,
 
 		// Pending message management
-		addPendingMessage: (
-			resourceTarget: ResourceTarget | null,
-			message: Message,
-		) => send({ type: "ADD_PENDING_MESSAGE", resourceTarget, message }),
-		removePendingMessage: (
-			resourceTarget: ResourceTarget | null,
-			messageIndex: number,
-		) => send({ type: "REMOVE_PENDING_MESSAGE", resourceTarget, messageIndex }),
-		clearPendingMessages: (resourceTarget: ResourceTarget | null) =>
-			send({ type: "CLEAR_PENDING_MESSAGES", resourceTarget }),
+		addPendingMessage,
+		removePendingMessage,
+		clearPendingMessages,
 
 		// Trigger pending message submission
-		triggerPendingMessages: (resourceTarget: ResourceTarget | null) =>
-			send({ type: "TRIGGER_PENDING_MESSAGES", resourceTarget }),
-		clearTriggerPendingMessages: (resourceTarget: ResourceTarget | null) =>
-			send({ type: "CLEAR_TRIGGER_PENDING_MESSAGES", resourceTarget }),
+		triggerPendingMessages,
+		clearTriggerPendingMessages,
 	};
 }

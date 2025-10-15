@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useChatInstance } from "@/components/provider/chat-instance-provider";
+import { Separator } from "@/components/ui/separator";
 import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
 import { cn } from "@/lib/utils";
 import { AiChatHeader } from "./header";
@@ -30,13 +31,6 @@ export default function AiChatbox() {
 		if (shouldTrigger) {
 			const pendingMessages = getPendingMessages(resourceTarget);
 			if (pendingMessages.length > 0) {
-				// console.log("AiChatbox - Pending messages for resource target:", {
-				//   resourceTarget,
-				//   pendingMessageCount: pendingMessages.length,
-				//   pendingMessages,
-				// });
-
-				// Submit the pending messages
 				try {
 					submit({
 						messages: pendingMessages,
@@ -51,7 +45,14 @@ export default function AiChatbox() {
 			}
 			clearTriggerPendingMessages(resourceTarget);
 		}
-	}, [shouldTriggerPendingMessages]);
+	}, [
+		shouldTriggerPendingMessages,
+		getPendingMessages,
+		submit,
+		clearPendingMessages,
+		clearTriggerPendingMessages,
+		resourceTarget,
+	]);
 
 	return (
 		<div
@@ -71,17 +72,17 @@ export default function AiChatbox() {
 				/>
 			</div>
 
-			{/* Show suggestions when there are no messages */}
-			{messages && messages.length === 0 && (
-				<div className="p-2 pb-0 shrink-0">
-					<div className="max-w-3xl mx-auto">
-						<SidebarSuggestions
-							submit={submit}
-							showResourceSuggestions={!!resourceTarget}
-						/>
-					</div>
+			{/* Always show suggestions */}
+			<div className="p-2 py-0 shrink-0">
+				<div className="max-w-3xl mx-auto">
+					<SidebarSuggestions
+						messages={messages}
+						submit={submit}
+						isLoading={isLoading}
+						showResourceSuggestions={!!resourceTarget}
+					/>
 				</div>
-			)}
+			</div>
 
 			<div className="p-2 pt-0 shrink-0 relative z-[9999]">
 				<div className="max-w-3xl mx-auto">

@@ -18,8 +18,6 @@ export default function useProjectSearch() {
 		isError,
 	} = useQuery(project.list.queryOptions("projects"));
 
-	console.log("projects", projects);
-
 	// Memoize lowercase search term to avoid repeated calls
 	const lowerSearchTerm = useMemo(() => searchTerm.toLowerCase(), [searchTerm]);
 

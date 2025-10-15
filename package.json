@@ -7,7 +7,10 @@
     "million-dev": "next dev",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "tag-image": "docker tag $IMAGEID puddlecat/sealos-brain-frontend:$VERSION",
+    "build-image": "docker build --platform linux/amd64 -t sealos-brain-frontend:$VERSION .",
+    "push-image": "docker push puddlecat/sealos-brain-frontend:$VERSION"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.864.0",
