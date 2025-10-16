@@ -72,8 +72,7 @@ export default function AiChatbox() {
 				/>
 			</div>
 
-			{/* Always show suggestions */}
-			<div className="p-2 py-0 shrink-0">
+			{/* <div className="p-2 py-0 shrink-0">
 				<div className="max-w-3xl mx-auto">
 					<SidebarSuggestions
 						messages={messages}
@@ -82,7 +81,7 @@ export default function AiChatbox() {
 						showResourceSuggestions={!!resourceTarget}
 					/>
 				</div>
-			</div>
+			</div> */}
 
 			<div className="p-2 pt-0 shrink-0 relative z-[9999]">
 				<div className="max-w-3xl mx-auto">

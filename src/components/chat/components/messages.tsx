@@ -83,8 +83,6 @@ export function AiMessages({
 		return { totalCpu, totalMemory, totalStorage, totalPorts };
 	};
 
-	// console.log("messages", messages);
-
 	// Parse interrupt value when it changes
 	useEffect(() => {
 		if (interrupt?.value) {

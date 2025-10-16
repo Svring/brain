@@ -33,7 +33,7 @@ function SuggestionItem({
 }: SuggestionItemProps) {
 	return (
 		<div className="flex items-center hover:bg-background-tertiary p-1 rounded-lg">
-			<span className="text-sm text-muted-foreground font-medium">
+			<span className="text-muted-foreground font-medium">
 				{index + 1}.
 			</span>
 			<button
@@ -152,22 +152,16 @@ export default function SidebarSuggestions({
 		>
 			<div className="w-full bg-transparent">
 				<div className="max-w-3xl mx-auto px-2">
-					{isFetchingSuggestions ? (
-						<div className="flex items-center justify-center py-4">
-							<Spinner variant="ellipsis" size={20} className="text-muted-foreground" />
-						</div>
-					) : (
-						<div className="flex flex-col gap-2">
-							{suggestions.map((suggestion, index) => (
-								<SuggestionItem
-									key={`suggestion-${suggestion}-${index}`}
-									suggestion={suggestion}
-									index={index}
-									onSuggestionClick={handleSuggestionClick}
-								/>
-							))}
-						</div>
-					)}
+					<div className="flex flex-col">
+						{suggestions.map((suggestion, index) => (
+							<SuggestionItem
+								key={`suggestion-${suggestion}-${index}`}
+								suggestion={suggestion}
+								index={index}
+								onSuggestionClick={handleSuggestionClick}
+							/>
+						))}
+					</div>
 				</div>
 			</div>
 		</motion.div>
