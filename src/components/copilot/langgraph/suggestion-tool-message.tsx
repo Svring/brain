@@ -43,7 +43,7 @@ const HomeSuggestionComponent: React.FC<{
 					const newMessages = [...prevMessages, userMessage];
 					return { ...prev, messages: newMessages };
 				},
-			}
+			},
 		);
 	};
 
@@ -88,6 +88,8 @@ const ProjectSuggestionComponent: React.FC<{
 		interrupt,
 	} = useChatInstance();
 
+	console.log("ProjectSuggestionComponent - Using useChatInstance");
+
 	const handleSuggestionClick = (suggestion: string) => {
 		const userMessage = {
 			type: "human" as const,
@@ -102,7 +104,7 @@ const ProjectSuggestionComponent: React.FC<{
 					const newMessages = [...prevMessages, userMessage];
 					return { ...prev, messages: newMessages };
 				},
-			}
+			},
 		);
 	};
 
