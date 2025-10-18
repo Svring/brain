@@ -6,11 +6,11 @@ import type {
   ListTemplateResponse,
   TemplateResource,
   TemplateApiContext,
-  TemplateSourceResponse,
+  TemplateResponseV1,
 } from "@/lib/sealos/resources/template/schemas/template-api-context-schemas";
 import {
   listTemplatesOptions,
-  getTemplateSourceOptions,
+  getTemplateOptions,
 } from "@/lib/sealos/resources/template/template-method/template-query";
 
 export function useTemplates(context: TemplateApiContext) {
@@ -32,19 +32,17 @@ export function useTemplates(context: TemplateApiContext) {
   );
 
   const {
-    data: templateSourceResponse,
-    isLoading: isTemplateSourceLoading,
-    error: templateSourceError,
+    data: templateResponse,
+    isLoading: isTemplateLoading,
+    error: templateError,
   } = useQuery({
-    ...getTemplateSourceOptions(context, selectedTemplateName || ""),
+    ...getTemplateOptions(context, selectedTemplateName || ""),
     enabled: !!selectedTemplateName && !!context.baseUrl,
   });
 
-  console.log("templateSourceResponse", templateSourceResponse);
-
-  const templateSource = useMemo(
-    () => templateSourceResponse as TemplateSourceResponse | undefined,
-    [templateSourceResponse]
+  const template = useMemo(
+    () => templateResponse as TemplateResponseV1 | undefined,
+    [templateResponse]
   );
 
   const handleViewDetails = (template: TemplateResource) => {
@@ -63,11 +61,11 @@ export function useTemplates(context: TemplateApiContext) {
   return {
     templates,
     selectedTemplate,
-    templateSource,
+    template,
     isLoading,
-    isTemplateSourceLoading,
+    isTemplateLoading,
     error,
-    templateSourceError,
+    templateError,
     handleViewDetails,
     handleBackToList,
     getTemplateSource,

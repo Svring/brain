@@ -23,7 +23,45 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-export const AuthProvider = ({
+// Trial mode component
+const TrialAuthProvider = ({ children }: { children: ReactNode }) => {
+	const dummyAuth: Auth = {
+		namespace: "trial-namespace",
+		kubeconfig: "trial-kubeconfig",
+		regionUrl: "trial.region.sealos.io",
+		appToken: "trial-app-token",
+		baseUrl: "https://trial.sealos.io",
+		apiKey: "trial-api-key",
+	};
+
+	const dummyState = {
+		context: {
+			auth: dummyAuth,
+			mode: "development" as const,
+			error: null,
+		},
+		matches: (state: string) => state === "authenticated",
+	} as unknown as StateFrom<typeof authMachine>;
+
+	const dummySend = () => {};
+	const dummyActorRef = {} as ActorRefFrom<typeof authMachine>;
+
+	return (
+		<AuthContext.Provider
+			value={{
+				auth: dummyAuth,
+				state: dummyState,
+				send: dummySend,
+				actorRef: dummyActorRef,
+			}}
+		>
+			{children}
+		</AuthContext.Provider>
+	);
+};
+
+// Normal authentication component
+const NormalAuthProvider = ({
 	children,
 	payloadUser,
 }: {
@@ -84,6 +122,26 @@ export const AuthProvider = ({
 		>
 			{children}
 		</AuthContext.Provider>
+	);
+};
+
+export const AuthProvider = ({
+	children,
+	payloadUser,
+	trial = false,
+}: {
+	children: ReactNode;
+	payloadUser: User | null;
+	trial?: boolean;
+}) => {
+	if (trial) {
+		return <TrialAuthProvider>{children}</TrialAuthProvider>;
+	}
+
+	return (
+		<NormalAuthProvider payloadUser={payloadUser}>
+			{children}
+		</NormalAuthProvider>
 	);
 };
 

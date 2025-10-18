@@ -6,10 +6,12 @@ import type {
   TemplateApiContext,
   ListTemplateResponse,
   TemplateSourceResponse,
+  TemplateResponseV1,
 } from "../schemas/template-api-context-schemas";
 import {
   ListTemplateResponseSchema,
   TemplateSourceResponseSchema,
+  TemplateResponseSchemaV1,
 } from "../schemas/template-api-context-schemas";
 import {
   type CreateInstanceRequest,
@@ -47,16 +49,14 @@ export const getTemplateSource = createParallelAction(
   async (
     context: TemplateApiContext,
     templateName: string
-  ): Promise<TemplateSourceResponse> => {
+  ): Promise<TemplateResponseV1> => {
     const api = createApi(context);
-    const response = await api.get(
-      `/getTemplateSource?templateName=${templateName}`
-    );
+    const response = await api.get(`/v1/template/${templateName}`);
     try {
-      return TemplateSourceResponseSchema.parse(response.data);
+      return TemplateResponseSchemaV1.parse(response.data);
     } catch (error) {
       console.error("Schema validation failed:", error);
-      return response.data as TemplateSourceResponse;
+      return response.data as TemplateResponseV1;
     }
   }
 );

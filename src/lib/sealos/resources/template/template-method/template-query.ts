@@ -5,7 +5,7 @@ import { runParallelAction } from "next-server-actions-parallel";
 import type {
   TemplateApiContext,
   ListTemplateResponse,
-  TemplateSourceResponse,
+  TemplateResponseV1,
 } from "../schemas/template-api-context-schemas";
 import {
   getTemplateSource,
@@ -23,10 +23,10 @@ export const listTemplatesOptions = (
     enabled: !!context.baseUrl,
   });
 
-export const getTemplateSourceOptions = (
+export const getTemplateOptions = (
   context: TemplateApiContext,
   templateName: string,
-  postprocess?: (data: TemplateSourceResponse) => unknown
+  postprocess?: (data: TemplateResponseV1) => unknown
 ) =>
   queryOptions({
     queryKey: ["template", templateName],

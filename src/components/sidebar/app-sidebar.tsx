@@ -30,8 +30,7 @@ import { MainSection } from "./sidebar-section";
 
 export default function AppSidebar() {
 	// Use quota provider for all quota-related data and logic
-	const { cpu, memory, storage, ports, balance, isLoading } =
-		useQuota();
+	const { cpu, memory, storage, ports, balance, isLoading } = useQuota();
 
 	// Get sidebar state for tooltip visibility
 	const { state, isMobile } = useSidebar();
@@ -116,7 +115,9 @@ export default function AppSidebar() {
 															Account Balance
 														</span>
 														<span className="text-foreground font-medium">
-															{balance.used.toFixed(2)} / {balance.limit.toFixed(2)} USD
+															{balance.used === balance.limit
+																? `${balance.limit.toFixed(2)} USD`
+																: `${balance.used.toFixed(2)} / ${balance.limit.toFixed(2)} USD`}
 														</span>
 													</div>
 												</div>

@@ -1,176 +1,177 @@
 "use client";
 
-import React, {
-  createContext,
-  useContext,
-  ReactNode,
-  useEffect,
-  useState,
-} from "react";
-import { Thread, type Message, type Interrupt } from "@langchain/langgraph-sdk";
+import { type Interrupt, type Message, Thread } from "@langchain/langgraph-sdk";
 import { useStream } from "@langchain/langgraph-sdk/react";
-import { useThreads } from "./thread-provider";
+import { useQueryState } from "nuqs";
+import React, {
+	createContext,
+	type ReactNode,
+	useContext,
+	useEffect,
+	useState,
+} from "react";
+import { useAuthState } from "@/contexts/auth/auth-context";
 import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
 import { useProjectState } from "@/contexts/project/project-context";
-import { useAuthState } from "@/contexts/auth/auth-context";
 import { useEnv } from "./env-provider";
+import { useThreads } from "./thread-provider";
 
 interface HomeChatContextType {
-  // Stream-related properties from useStream
-  isLoading: boolean;
-  stop: () => void;
-  interrupt: Interrupt | undefined;
-  messages: Message[];
+	// Stream-related properties from useStream
+	isLoading: boolean;
+	stop: () => void;
+	interrupt: Interrupt | undefined;
+	messages: Message[];
 
-  // Configuration properties
-  api_key: string | undefined;
-  base_url: string | undefined;
-  model_name: string | undefined;
-  region_url: string | undefined;
-  kubeconfig: string | undefined;
+	// Configuration properties
+	api_key: string | undefined;
+	base_url: string | undefined;
+	model_name: string | undefined;
+	region_url: string | undefined;
+	kubeconfig: string | undefined;
 
-  // Thread information
-  threadId: string | null;
+	// Thread information
+	threadId: string | null;
 
-  // Submit function
-  submit: (
-    data: { stage?: string; command?: any },
-    options?: { optimisticValues?: (prev: any) => any; command?: any }
-  ) => any;
+	// Submit function
+	submit: (
+		data: { stage?: string; command?: any },
+		options?: { optimisticValues?: (prev: any) => any; command?: any },
+	) => any;
 
-  // Create new chat function
-  createNewChat: () => void;
-  isCreatingNewChat: boolean;
+	// Create new chat function
+	createNewChat: () => void;
+	isCreatingNewChat: boolean;
 }
 
 const HomeChatContext = createContext<HomeChatContextType | undefined>(
-  undefined
+	undefined,
 );
 
 export function HomeChatProvider({ children }: { children: ReactNode }) {
-  const { auth } = useAuthState();
-  const { LANGGRAPH_DEPLOYMENT_URL, LANGGRAPH_GRAPH_ID } = useEnv();
-  const { baseUrl, apiKey, modelName, stage } = useLanggraphState();
-  const { createNewThread } = useThreads();
-  const [threadId, setThreadId] = useState<string | null>(null);
+	const { auth } = useAuthState();
+	const { LANGGRAPH_DEPLOYMENT_URL, LANGGRAPH_GRAPH_ID } = useEnv();
+	const { baseUrl, apiKey, modelName, stage } = useLanggraphState();
+	const { createNewThread } = useThreads();
+	const [threadId, setThreadId] = useQueryState("threadId");
 
-  // Use useStream for home page chat
-  const streamValue = useStream({
-    apiUrl: LANGGRAPH_DEPLOYMENT_URL,
-    assistantId: LANGGRAPH_GRAPH_ID,
-    threadId: threadId, // Use the stored thread ID
-    onThreadId: async (id: string) => {
-      // Thread ID will be set automatically by useStream
-      console.log("Home chat thread created:", id);
-    },
-  });
+	// Use useStream for home page chat
+	const streamValue = useStream({
+		apiUrl: LANGGRAPH_DEPLOYMENT_URL,
+		assistantId: LANGGRAPH_GRAPH_ID,
+		threadId: threadId, // Use the stored thread ID
+		onThreadId: async (id: string) => {
+			// Thread ID will be set automatically by useStream
+			console.log("Home chat thread created:", id);
+		},
+	});
 
-  // Submit function that uses the home page context
-  const submit = (
-    data: { stage?: string; command?: any },
-    options?: { optimisticValues?: (prev: any) => any; command?: any }
-  ) => {
-    if (!baseUrl || !modelName) {
-      console.warn("Missing required langgraph configuration");
-      return;
-    }
+	// Submit function that uses the home page context
+	const submit = (
+		data: { stage?: string; command?: any },
+		options?: { optimisticValues?: (prev: any) => any; command?: any },
+	) => {
+		if (!baseUrl || !modelName) {
+			console.warn("Missing required langgraph configuration");
+			return;
+		}
 
-    return streamValue.submit(
-      {
-        // Default values
-        api_key: apiKey,
-        base_url: baseUrl,
-        model_name: modelName,
-        region_url: auth?.regionUrl,
-        kubeconfig: auth?.kubeconfig,
-        stage: "propose_project",
-        ...data,
-      },
-      {
-        ...options,
-      }
-    );
-  };
+		return streamValue.submit(
+			{
+				// Default values
+				api_key: apiKey,
+				base_url: baseUrl,
+				model_name: modelName,
+				region_url: auth?.regionUrl,
+				kubeconfig: auth?.kubeconfig,
+				stage: "propose_project",
+				...data,
+			},
+			{
+				...options,
+			},
+		);
+	};
 
-  // Create new chat function
-  const createNewChat = () => {
-    if (!auth?.kubeconfig) {
-      console.warn("Cannot create new chat: missing kubeconfig");
-      return;
-    }
+	// Create new chat function
+	const createNewChat = () => {
+		if (!auth?.kubeconfig) {
+			console.warn("Cannot create new chat: missing kubeconfig");
+			return;
+		}
 
-    createNewThread.mutate(
-      {
-        metadata: {
-          kubeconfig: auth.kubeconfig,
-          isHomePage: true, // Mark this as a home page thread
-          graph_id: LANGGRAPH_GRAPH_ID, // Add the graph ID
-        },
-      },
-      {
-        onSuccess: (data: any) => {
-          if (data?.thread_id) {
-            console.log("New home chat thread created:", data.thread_id);
-            setThreadId(data.thread_id);
-          }
-        },
-        onError: (error: any) => {
-          console.error("Failed to create new home chat thread:", error);
-        },
-      }
-    );
-  };
+		createNewThread.mutate(
+			{
+				metadata: {
+					kubeconfig: auth.kubeconfig,
+					isHomePage: true, // Mark this as a home page thread
+					graph_id: LANGGRAPH_GRAPH_ID, // Add the graph ID
+				},
+			},
+			{
+				onSuccess: (data: any) => {
+					if (data?.thread_id) {
+						console.log("New home chat thread created:", data.thread_id);
+						setThreadId(data.thread_id);
+					}
+				},
+				onError: (error: any) => {
+					console.error("Failed to create new home chat thread:", error);
+				},
+			},
+		);
+	};
 
-  // Create a new thread when the component mounts
-  useEffect(() => {
-    const createHomeThread = async () => {
-      if (!auth?.kubeconfig || threadId) return;
+	// Create a new thread when the component mounts
+	useEffect(() => {
+		const createHomeThread = async () => {
+			if (!auth?.kubeconfig || threadId) return;
 
-      try {
-        console.log("Creating new thread for home page...");
-        const thread = await createNewThread.mutateAsync({
-          metadata: {
-            kubeconfig: auth.kubeconfig,
-            isHomePage: true, // Mark this as a home page thread
-            graph_id: LANGGRAPH_GRAPH_ID, // Add the graph ID
-          },
-        });
+			try {
+				console.log("Creating new thread for home page...");
+				const thread = await createNewThread.mutateAsync({
+					metadata: {
+						kubeconfig: auth.kubeconfig,
+						isHomePage: true, // Mark this as a home page thread
+						graph_id: LANGGRAPH_GRAPH_ID, // Add the graph ID
+					},
+				});
 
-        console.log("Home page thread created:", thread);
-        // Store the thread ID in state
-        setThreadId(thread.thread_id);
-      } catch (error) {
-        console.error("Failed to create home page thread:", error);
-      }
-    };
+				console.log("Home page thread created:", thread);
+				// Store the thread ID in state
+				setThreadId(thread.thread_id);
+			} catch (error) {
+				console.error("Failed to create home page thread:", error);
+			}
+		};
 
-    createHomeThread();
-  }, [auth?.kubeconfig]);
+		createHomeThread();
+	}, [auth?.kubeconfig]);
 
-  const value: HomeChatContextType = {
-    ...streamValue,
-    api_key: apiKey,
-    base_url: baseUrl,
-    model_name: modelName,
-    region_url: auth?.regionUrl,
-    kubeconfig: auth?.kubeconfig,
-    threadId,
-    submit,
-    createNewChat,
-    isCreatingNewChat: createNewThread.isPending,
-  };
+	const value: HomeChatContextType = {
+		...streamValue,
+		api_key: apiKey,
+		base_url: baseUrl,
+		model_name: modelName,
+		region_url: auth?.regionUrl,
+		kubeconfig: auth?.kubeconfig,
+		threadId,
+		submit,
+		createNewChat,
+		isCreatingNewChat: createNewThread.isPending,
+	};
 
-  return (
-    <HomeChatContext.Provider value={value}>
-      {children}
-    </HomeChatContext.Provider>
-  );
+	return (
+		<HomeChatContext.Provider value={value}>
+			{children}
+		</HomeChatContext.Provider>
+	);
 }
 
 export function useHomeChat() {
-  const context = useContext(HomeChatContext);
-  if (context === undefined) {
-    throw new Error("useHomeChat must be used within a HomeChatProvider");
-  }
-  return context;
+	const context = useContext(HomeChatContext);
+	if (context === undefined) {
+		throw new Error("useHomeChat must be used within a HomeChatProvider");
+	}
+	return context;
 }

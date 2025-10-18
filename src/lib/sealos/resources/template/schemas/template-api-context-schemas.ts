@@ -206,8 +206,53 @@ export const TemplateSourceResponseSchema = z.object({
 });
 
 // =============================
-// 4. Type Exports
+// 4. New Template Schemas (v1 API)
 // =============================
+
+// Template resource schema for requirements (v1 API)
+export const TemplateResourceSchemaV1 = z.object({
+	cpu: z.number(),
+	memory: z.number(),
+	storage: z.number(),
+	nodeport: z.number(),
+});
+
+// Template input schema for form fields (v1 API)
+export const TemplateInputSchemaV1 = z.object({
+	description: z.string(),
+	type: z.string(),
+	default: z.string(),
+	required: z.boolean(),
+});
+
+// Template object schema (v1 API - full template details)
+export const TemplateObjectSchemaV1 = z.object({
+	name: z.string(),
+	resourceType: z.literal("template"),
+	resource: TemplateResourceSchemaV1,
+	readme: z.string().url(),
+	icon: z.string().url(),
+	description: z.string(),
+	gitRepo: z.string().url(),
+	category: z.array(z.string()),
+	input: z.record(z.string(), TemplateInputSchemaV1),
+	deployCount: z.number(),
+});
+
+// Template item schema (v1 API - for list view)
+export const TemplateItemSchemaV1 = TemplateObjectSchemaV1.omit({ resource: true });
+
+// Template response schema (v1 API)
+export const TemplateResponseSchemaV1 = z.object({
+	code: z.number(),
+	message: z.string().optional(),
+	data: TemplateObjectSchemaV1,
+});
+
+// =============================
+// 5. Type Exports
+// =============================
+// Existing types
 export type TemplateResource = z.infer<typeof TemplateResourceSchema>;
 export type ListTemplateResponse = z.infer<typeof ListTemplateResponseSchema>;
 export type FormSourceInput = z.infer<typeof FormSourceInputSchema>;
@@ -220,3 +265,10 @@ export type TemplateSourceData = z.infer<typeof TemplateSourceDataSchema>;
 export type TemplateSourceResponse = z.infer<
   typeof TemplateSourceResponseSchema
 >;
+
+// New v1 API types
+export type TemplateResourceV1 = z.infer<typeof TemplateResourceSchemaV1>;
+export type TemplateInputV1 = z.infer<typeof TemplateInputSchemaV1>;
+export type TemplateObjectV1 = z.infer<typeof TemplateObjectSchemaV1>;
+export type TemplateItemV1 = z.infer<typeof TemplateItemSchemaV1>;
+export type TemplateResponseV1 = z.infer<typeof TemplateResponseSchemaV1>;

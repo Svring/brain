@@ -21,7 +21,13 @@ import { StreamProvider } from "./stream-provider";
 import { ThreadProvider } from "./thread-provider";
 
 // Inner component that uses langgraph state and actions
-function LanggraphConfigInner({ children }: { children: ReactNode }) {
+function LanggraphConfigInner({ 
+	children, 
+	trial = false 
+}: { 
+	children: ReactNode;
+	trial?: boolean;
+}) {
 	const { auth } = useAuthState();
 	const env = useEnv();
 	const aiProxyContext = useAiProxyContext();
@@ -119,7 +125,42 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
 				}
 			}
 		}
-	}, [isLoading, isProduction, brainToken, aiProxyTokens]);
+	}, [
+		isLoading,
+		isProduction,
+		brainToken,
+		env.AGENT_API_KEY,
+		env.AGENT_BASE_URL,
+		env.AGENT_MODEL_NAME,
+		setConfig,
+		setConfigFailed,
+		hasClickedCreate,
+		createTokenMutation.mutateAsync,
+		aiProxyContext.baseUrl,
+		auth?.apiKey,
+		auth?.baseUrl,
+		tokensLoading,
+	]);
+
+	// Handle trial mode - set dummy config and return children directly
+	useEffect(() => {
+		if (trial && isLoading) {
+			setConfig({
+				base_url: "https://trial-api.sealos.io/v1",
+				api_key: "trial-api-key",
+				model_name: "gpt-4-trial",
+			});
+		}
+	}, [trial, isLoading, setConfig]);
+
+	// If trial mode, return children directly
+	if (trial) {
+		return (
+			<ThreadProvider>
+				<StreamProvider>{children}</StreamProvider>
+			</ThreadProvider>
+		);
+	}
 
 	// Handle token creation
 	const handleCreateToken = () => {
@@ -223,12 +264,14 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
 
 export const LanggraphConfigWrapper = ({
 	children,
+	trial = false,
 }: {
 	children: ReactNode;
+	trial?: boolean;
 }) => {
 	return (
 		<LanggraphProvider config={{}}>
-			<LanggraphConfigInner>{children}</LanggraphConfigInner>
+			<LanggraphConfigInner trial={trial}>{children}</LanggraphConfigInner>
 		</LanggraphProvider>
 	);
 };

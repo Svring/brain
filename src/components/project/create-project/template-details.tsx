@@ -14,12 +14,23 @@ import { toast } from "sonner";
 import type { TemplateResource } from "@/lib/sealos/resources/template/schemas/template-api-context-schemas";
 import { useCreateInstanceMutation } from "@/lib/sealos/resources/template/template-method/template-mutation";
 import { TemplateInputDialog } from "./template-input-dialog";
-import { useSealosContext } from "@/lib/auth/auth-utils";
+import { useSealosContext, openCostCenterApp } from "@/lib/auth/auth-utils";
 import { useTemplates } from "@/hooks/template/use-templates";
 import { useResourceQuotaChecker } from "@/lib/validation/resource-quota-checker";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
+
+interface QuotaCheckResult {
+  passed: boolean;
+  exceededResources: Array<{
+    resource: "cpu" | "memory" | "storage" | "ports";
+    required: number;
+    available: number;
+    message: string;
+  }>;
+}
+
 import { useRouter } from "next/navigation";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -67,9 +78,9 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
 
   const {
     getTemplateSource,
-    templateSource,
-    isTemplateSourceLoading,
-    templateSourceError,
+    template: templateDetails,
+    isTemplateLoading,
+    templateError,
   } = useTemplates(apiContext);
 
   // Automatically fetch template source when component mounts
@@ -81,30 +92,31 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
   const { checkAndShowQuotaError, checkResourceQuota, quota } =
     useResourceQuotaChecker();
   const hasInputs =
+    templateDetails?.data?.input && Object.keys(templateDetails.data.input).length > 0 ||
     template.spec.inputs && Object.keys(template.spec.inputs).length > 0;
 
   // Check if quota requirements are met
-  const quotaCheckPassed = React.useMemo(() => {
-    if (!templateSource?.data?.requirements) {
-      return true; // No requirements means no quota check needed
+  const quotaCheckResult = React.useMemo(() => {
+    // Use templateDetails resource data if available, otherwise assume no requirements
+    const resourceData = templateDetails?.data?.resource;
+    if (!resourceData) {
+      return { passed: true, exceededResources: [] }; // No requirements means no quota check needed
     }
 
-    const requirementsData = templateSource.data.requirements;
-    const maxRequirements = {
-      cpu: (requirementsData.cpu?.max || 0) / 1000,
-      memory: (requirementsData.memory?.max || 0) / 1024,
-      storage: (requirementsData.storage?.max || 0) / 1024,
-      ports: requirementsData.nodeport || 0,
-    };
+    return checkResourceQuota({
+      cpu: resourceData.cpu,
+      memory: resourceData.memory,
+      storage: resourceData.storage,
+      ports: resourceData.nodeport,
+    });
+  }, [templateDetails, checkResourceQuota]);
 
-    const result = checkResourceQuota(maxRequirements);
-    return result.passed;
-  }, [templateSource, checkResourceQuota]);
+  const quotaCheckPassed = quotaCheckResult.passed;
 
   useEffect(() => {
-    if (template.spec.readme && template.spec.readme.startsWith("http")) {
+    if (templateDetails?.data?.readme) {
       setIsLoadingReadme(true);
-      fetch(template.spec.readme)
+      fetch(templateDetails.data.readme)
         .then((response) => {
           if (!response.ok) {
             throw new Error(`Failed to fetch README: ${response.status}`);
@@ -121,7 +133,7 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
           setIsLoadingReadme(false);
         });
     }
-  }, [template.spec.readme]);
+  }, [templateDetails?.data?.readme]);
 
   // Function to handle the deploy button click - determines whether to open input dialog or deploy directly
   const handleDeployClick = async () => {
@@ -188,12 +200,12 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
         <div className="mx-auto max-w-4xl space-y-6">
           <div className="flex items-start gap-4">
             <div className="flex size-16 items-center justify-center rounded-lg bg-muted p-3">
-              {template.spec.icon ? (
+              {templateDetails?.data?.icon || template.spec.icon ? (
                 <img
-                  alt={`${template.spec.title} icon`}
+                  alt={`${templateDetails?.data?.name || template.spec.title} icon`}
                   className="size-10"
                   height={40}
-                  src={template.spec.icon}
+                  src={templateDetails?.data?.icon || template.spec.icon}
                   width={40}
                 />
               ) : (
@@ -204,12 +216,12 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
               <div className="flex items-start justify-between">
                 <div className="space-y-2">
                   <h1 className="text-2xl font-semibold">
-                    {template.spec.title}
+                    {templateDetails?.data?.name || template.spec.title || template.metadata.name}
                   </h1>
-                  {template.spec.categories &&
-                    template.spec.categories.length > 0 && (
+                  {(templateDetails?.data?.category || template.spec.categories) &&
+                    ((templateDetails?.data?.category?.length ?? 0) > 0 || (template.spec.categories?.length ?? 0) > 0) && (
                       <div className="flex flex-wrap gap-2">
-                        {template.spec.categories.map((category) => (
+                        {(templateDetails?.data?.category || template.spec.categories)?.map((category) => (
                           <Badge
                             key={category}
                             variant="outline"
@@ -231,66 +243,64 @@ export function TemplateDetails({ template, onBack }: TemplateDetailsProps) {
                         variant="outline"
                         disabled={
                           createInstanceMutation.isPending ||
-                          isTemplateSourceLoading ||
                           !quotaCheckPassed
                         }
                       >
                         {createInstanceMutation.isPending
                           ? "Deploying..."
-                          : isTemplateSourceLoading
-                          ? "Loading..."
-                          : !quotaCheckPassed
-                          ? "Insufficient Quota"
                           : hasInputs
                           ? "Configure & Deploy"
                           : "Deploy"}
                       </Button>
                     </TooltipTrigger>
-                    {!quotaCheckPassed &&
-                      templateSource?.data?.requirements && (
-                        <TooltipContent>
-                          <p className="text-sm">
-                            Insufficient resources. Click to open Cost Center to
-                            upgrade your quota.
-                          </p>
-                          <button
-                            onClick={() => {
-                              if (templateSource?.data?.requirements) {
-                                const requirementsData =
-                                  templateSource.data.requirements;
-                                const maxRequirements = {
-                                  cpu: requirementsData.cpu?.max || 0,
-                                  memory:
-                                    (requirementsData.memory?.max || 0) / 1024,
-                                  storage:
-                                    (requirementsData.storage?.max || 0) / 1024,
-                                  ports: requirementsData.nodeport || 0,
-                                };
-                                checkAndShowQuotaError(maxRequirements);
-                              }
-                            }}
-                            className="mt-2 text-xs underline text-blue-400 hover:text-blue-300"
-                          >
-                            View Details
-                          </button>
-                        </TooltipContent>
-                      )}
                   </Tooltip>
                 </TooltipProvider>
               </div>
             </div>
           </div>
 
+          {/* Display exceeded quota information */}
+          {!quotaCheckPassed && quotaCheckResult.exceededResources.length > 0 && (
+            <div className="pb-4">
+              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <p className="text-sm font-medium text-destructive">
+                    Insufficient Quotas
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  {quotaCheckResult.exceededResources.map((exceeded, index) => (
+                    <div key={index} className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        {exceeded.resource.charAt(0).toUpperCase() + exceeded.resource.slice(1)}:
+                      </span>
+                      <span className="font-medium text-destructive">
+                        requires {exceeded.required.toFixed(2)} {exceeded.resource === 'cpu' ? 'cores' : exceeded.resource === 'memory' || exceeded.resource === 'storage' ? 'GB' : 'ports'},
+                        {exceeded.available.toFixed(2)} {exceeded.resource === 'cpu' ? 'cores' : exceeded.resource === 'memory' || exceeded.resource === 'storage' ? 'GB' : 'ports'} available
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={openCostCenterApp}
+                  className="mt-3 w-full py-1.5 bg-foreground text-sm text-background rounded-md hover:opacity-90 transition-opacity whitespace-nowrap"
+                >
+                  Open Cost Center
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="space-y-6">
-            {template.spec.description && (
+            {(templateDetails?.data?.description || template.spec.description) && (
               <div>
                 <p className="text-muted-foreground leading-relaxed">
-                  {template.spec.description}
+                  {templateDetails?.data?.description || template.spec.description}
                 </p>
               </div>
             )}
 
-            {template.spec.readme && (
+            {(templateDetails?.data?.readme || template.spec.readme) && (
               <div>
                 <h3 className="font-semibold text-lg mb-3">Documentation</h3>
                 <div className="markdown-body">

@@ -6,6 +6,20 @@ import { Badge } from "@/components/ui/badge";
 import { Package, Rocket, FileText, Hammer } from "lucide-react";
 import type { TemplateResource } from "@/lib/sealos/resources/template/schemas/template-api-context-schemas";
 import { Spinner } from "@/components/ui/spinner";
+import { useResourceQuotaChecker } from "@/lib/validation/resource-quota-checker";
+import { useTemplateObject } from "@/hooks/template/use-template-object";
+import { useSealosContext, openCostCenterApp } from "@/lib/auth/auth-utils";
+import { useMemo } from "react";
+
+interface QuotaCheckResult {
+  passed: boolean;
+  exceededResources: Array<{
+    resource: "cpu" | "memory" | "storage" | "ports";
+    required: number;
+    available: number;
+    message: string;
+  }>;
+}
 
 interface ProjectTemplateCardProps {
   template: TemplateResource;
@@ -20,6 +34,27 @@ export function ProjectTemplateCard({
   isDeploying = false,
   hasInputs = false,
 }: ProjectTemplateCardProps) {
+  const apiContext = useMemo(() => useSealosContext(), []);
+  const { checkResourceQuota } = useResourceQuotaChecker();
+  const { template: templateDetails } = useTemplateObject(apiContext, template.metadata.name);
+
+  // Check if quota requirements are met
+  const quotaCheckResult = useMemo(() => {
+    // Use templateDetails resource data if available, otherwise assume no requirements
+    const resourceData = templateDetails?.data?.resource;
+    if (!resourceData) {
+      return { passed: true, exceededResources: [] }; // No requirements means no quota check needed
+    }
+
+    return checkResourceQuota({
+      cpu: resourceData.cpu,
+      memory: resourceData.memory,
+      storage: resourceData.storage,
+      ports: resourceData.nodeport,
+    });
+  }, [templateDetails, checkResourceQuota]);
+
+  const quotaCheckPassed = quotaCheckResult.passed;
   return (
     <div className="w-full border p-2 rounded-xl">
       {/* Header with icon and text */}
@@ -79,7 +114,7 @@ export function ProjectTemplateCard({
       <div className="pt-2">
         <Button
           onClick={onDeploy}
-          disabled={isDeploying}
+          disabled={isDeploying || !quotaCheckPassed}
           className="w-full"
           // variant={"outline"}
         >
@@ -96,6 +131,38 @@ export function ProjectTemplateCard({
           )}
         </Button>
       </div>
+
+      {/* Display exceeded quota information */}
+      {!quotaCheckPassed && quotaCheckResult.exceededResources.length > 0 && (
+        <div className="pt-2">
+          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <p className="text-sm font-medium text-destructive">
+                Insufficient Quotas
+              </p>
+            </div>
+            <div className="space-y-1">
+              {quotaCheckResult.exceededResources.map((exceeded, index) => (
+                <div key={index} className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">
+                    {exceeded.resource.charAt(0).toUpperCase() + exceeded.resource.slice(1)}:
+                  </span>
+                  <span className="font-medium text-destructive">
+                    requires {exceeded.required.toFixed(2)} {exceeded.resource === 'cpu' ? 'cores' : exceeded.resource === 'memory' || exceeded.resource === 'storage' ? 'GB' : 'ports'},
+                    {exceeded.available.toFixed(2)} {exceeded.resource === 'cpu' ? 'cores' : exceeded.resource === 'memory' || exceeded.resource === 'storage' ? 'GB' : 'ports'} available
+                  </span>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={openCostCenterApp}
+              className="mt-2 w-full py-1.5 bg-foreground text-xs text-background rounded-md hover:opacity-90 transition-opacity whitespace-nowrap"
+            >
+              Open Cost Center
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

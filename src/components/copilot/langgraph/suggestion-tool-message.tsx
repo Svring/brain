@@ -150,7 +150,7 @@ export const SuggestionToolMessage: React.FC<SuggestionToolMessageProps> = ({
 	}
 
 	// Render different components based on route
-	if (pathname === "/home") {
+	if (pathname === "/home" || pathname === "/trial") {
 		return <HomeSuggestionComponent suggestions={suggestions} />;
 	}
 
