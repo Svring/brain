@@ -408,7 +408,7 @@ export function ResourceChatInstanceProvider({
               );
             }
           }
-        }, 500); // 2 second delay
+        }, 1000); // 2 second delay
 
         return () => clearTimeout(timeoutId);
       }

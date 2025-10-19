@@ -2,10 +2,9 @@
 
 import type { RunsInvokePayload } from "@langchain/langgraph-sdk";
 import { Client, type Metadata } from "@langchain/langgraph-sdk";
-import { createHash } from "crypto"; // Import the crypto module
 
 const createClient = () => {
-	const apiUrl = process.env["LANGGRAPH_DEPLOYMENT_URL"];
+	const apiUrl = process.env.LANGGRAPH_DEPLOYMENT_URL;
 	return new Client({
 		apiUrl,
 	});
@@ -24,19 +23,6 @@ export const createThread = async ({
 	}>;
 }) => {
 	const client = createClient();
-
-	// Process kubeconfig if present in metadata
-	if (metadata.kubeconfig) {
-		// URL decode the kubeconfig before hashing
-		const decodedKubeconfig = decodeURIComponent(metadata.kubeconfig);
-		const kubeconfigHash = createHash("sha256")
-			.update(decodedKubeconfig)
-			.digest("hex");
-
-		// Replace kubeconfig with kubeconfigHash
-		metadata.kubeconfigHash = kubeconfigHash;
-		delete metadata.kubeconfig;
-	}
 
 	// Ensure projectName is set to null if undefined
 	if (metadata.projectName === undefined) {
@@ -122,19 +108,10 @@ export const patchThread = async (threadId: string, metadata: Metadata) => {
 export const searchThreads = async (metadata: Record<string, any>) => {
 	const client = createClient();
 
-	// Convert kubeconfig to kubeconfigHash if present, after URL decoding
 	const searchMetadata: Record<string, any> = {
 		...metadata,
 		graph_id: metadata.graph_id,
 	};
-	if (searchMetadata.kubeconfig) {
-		const decodedKubeconfig = decodeURIComponent(searchMetadata.kubeconfig);
-		const kubeconfigHash = createHash("sha256")
-			.update(decodedKubeconfig)
-			.digest("hex");
-		searchMetadata.kubeconfigHash = kubeconfigHash;
-		delete searchMetadata.kubeconfig;
-	}
 
 	// Handle resourceTarget if present - stringify it for search
 	if (searchMetadata.resourceTarget !== undefined) {
@@ -197,9 +174,7 @@ export const threadRunStream = async (
 	});
 };
 
-export const statelessRunWait = async (
-	payload?: RunsInvokePayload,
-) => {
+export const statelessRunWait = async (payload?: RunsInvokePayload) => {
 	const client = createClient();
 	return await client.runs.wait(null, "orca", payload);
 };

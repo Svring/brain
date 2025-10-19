@@ -6,7 +6,6 @@ import { useEffect, useRef } from "react";
 import { AiMessages } from "@/components/chat/components/messages";
 import { Hero } from "@/components/ui/hero";
 import { useCopilotTrialAdapterContext } from "@/contexts/copilot/copilot-trial.adapter";
-import { InputBox } from "@/mvvm/copilot/vms/input-box.vm";
 
 const REGISTER_URL = "https://usw.sealos.io/?openapp=system-brain";
 
@@ -36,10 +35,6 @@ export default function Page() {
 			return () => clearTimeout(interval);
 		}
 	}, [query, threadId, submitWithContext]);
-
-	const handleSubmit = (message: string) => {};
-
-	const handleStop = () => {};
 
 	const handleRegisterClick = () => {
 		window.open(`${REGISTER_URL}?token=${token}`, "_blank");
@@ -83,45 +78,32 @@ export default function Page() {
 					</motion.div>
 				)}
 
-				{/* Chat Input - flows naturally in the column */}
+				{/* Register Button - always visible */}
 				<motion.div
 					layout
-					initial={!hasMessages ? { y: 0, opacity: 0 } : false}
+					initial={{ y: 0, opacity: 0 }}
 					animate={{ y: 0, opacity: 1 }}
 					transition={{
-						delay: hasMessages ? 0 : 0.2,
-						duration: hasMessages ? 0.4 : 0.4,
+						delay: 0.2,
+						duration: 0.4,
 						ease: [0.45, 0, 0.55, 1],
 					}}
-					className={`flex-shrink-0 ${hasMessages ? "pb-8" : "py-0"}`}
+					className="flex-shrink-0 pb-8"
 				>
 					<div className="container mx-auto relative max-w-3xl">
-						{hasMessages ? (
-							<button
-								onClick={handleRegisterClick}
-								onKeyDown={(e) => {
-									if (e.key === "Enter" || e.key === " ") {
-										e.preventDefault();
-										handleRegisterClick();
-									}
-								}}
-								className="rounded-lg border bg-background-secondary p-2 shadow-[0_8px_30px_rgba(0,0,0,0.24)] transition-all duration-150 flex items-center justify-center min-h-[100px] hover:bg-background-tertiary cursor-pointer w-full"
-								type="button"
-							>
-								<span className="text-lg">Register to proceed...</span>
-							</button>
-						) : (
-							<InputBox
-								className="max-w-3xl min-h-[140px]"
-								exhibition={!hasMessages}
-								onSend={handleSubmit}
-								onStop={handleStop}
-								isLoading={isLoading}
-								disableInput={true}
-								disableSend={true}
-								placeholder="Please register to proceed..."
-							/>
-						)}
+						<button
+							onClick={handleRegisterClick}
+							onKeyDown={(e) => {
+								if (e.key === "Enter" || e.key === " ") {
+									e.preventDefault();
+									handleRegisterClick();
+								}
+							}}
+							className="rounded-lg border bg-background-secondary p-2 shadow-[0_8px_30px_rgba(0,0,0,0.24)] transition-all duration-150 flex items-center justify-center min-h-[100px] hover:bg-background-tertiary cursor-pointer w-full"
+							type="button"
+						>
+							<span className="text-lg">Register to proceed...</span>
+						</button>
 					</div>
 				</motion.div>
 			</div>
