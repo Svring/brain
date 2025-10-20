@@ -26,6 +26,9 @@ export function useTemplates(context: TemplateApiContext) {
     error,
   } = useQuery(listTemplatesOptions(context));
 
+  console.log("templatesResponse", templatesResponse);
+  console.log("error", error);
+
   const templates = useMemo(
     () => (templatesResponse as ListTemplateResponse)?.data?.templates ?? [],
     [templatesResponse]

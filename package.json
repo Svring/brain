@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "tag-image": "docker tag $IMAGEID puddlecat/sealos-brain-frontend:$VERSION",
-    "build-image": "docker build --platform linux/amd64 -t sealos-brain-frontend:$VERSION .",
+    "build-image": "docker build --platform linux/amd64 -t puddlecat/sealos-brain-frontend:$VERSION .",
     "push-image": "docker push puddlecat/sealos-brain-frontend:$VERSION"
   },
   "dependencies": {

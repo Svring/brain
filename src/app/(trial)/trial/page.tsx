@@ -1,10 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { useQueryState } from "nuqs";
 import { useEffect, useRef } from "react";
 import { AiMessages } from "@/components/chat/components/messages";
-import { Hero } from "@/components/ui/hero";
 import { useCopilotTrialAdapterContext } from "@/contexts/copilot/copilot-trial.adapter";
 
 const REGISTER_URL = "https://usw.sealos.io/?openapp=system-brain";
@@ -42,100 +40,64 @@ export default function Page() {
 
 	return (
 		<div className="h-full w-full flex flex-col overflow-hidden relative">
-			<div className="flex-1 flex flex-col min-h-0 h-full">
-				{/* Hero overlays the content area and fades out when messages exist */}
-				{!hasMessages && (
-					<motion.div
-						initial={{ opacity: 0, y: 0 }}
-						animate={{ opacity: 1, y: 0 }}
-						exit={{ opacity: 0, y: -20 }}
-						transition={{ duration: 0.5, ease: "easeOut" }}
-						className="flex-shrink-0"
-					>
-						<Hero
-							heroTitle="Sealos Brain"
-							subtitle="Let development get back to basics - focus on writing code, and let the cloud handle the rest."
-							titleClassName="text-4xl md:text-5xl font-extrabold"
-							subtitleClassName="text-md md:text-lg max-w-[600px]"
-							actionsClassName="mt-2"
-						/>
-					</motion.div>
-				)}
-
-				{/* Messages area - only visible when there are messages */}
-				{hasMessages && (
-					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						transition={{ duration: 0.5 }}
-						className="flex-1 flex flex-col min-h-0"
-					>
+			{hasMessages && (
+				<>
+					{/* Messages area */}
+					<div className="flex-1 flex flex-col min-h-0">
 						<div className="flex-1 overflow-y-auto py-8">
 							<div className="max-w-3xl mx-auto w-full">
 								<AiMessages messages={messages} isLoading={isLoading} />
 							</div>
 						</div>
-					</motion.div>
-				)}
-
-				{/* Register Button - always visible */}
-				<motion.div
-					layout
-					initial={{ y: 0, opacity: 0 }}
-					animate={{ y: 0, opacity: 1 }}
-					transition={{
-						delay: 0.2,
-						duration: 0.4,
-						ease: [0.45, 0, 0.55, 1],
-					}}
-					className="flex-shrink-0 pb-8"
-				>
-					<div className="container mx-auto relative max-w-3xl">
-						<button
-							onClick={handleRegisterClick}
-							onKeyDown={(e) => {
-								if (e.key === "Enter" || e.key === " ") {
-									e.preventDefault();
-									handleRegisterClick();
-								}
-							}}
-							className="rounded-lg border bg-background-secondary p-2 shadow-[0_8px_30px_rgba(0,0,0,0.24)] transition-all duration-150 flex items-center justify-center min-h-[100px] hover:bg-background-tertiary cursor-pointer w-full"
-							type="button"
-						>
-							<span className="text-lg">Register to proceed...</span>
-						</button>
 					</div>
-				</motion.div>
-			</div>
 
-			{/* Transparent overlay to prevent interaction with all elements except the register block */}
-			<div className="absolute inset-0 z-50 pointer-events-none">
-				{hasMessages && (
-					<div className="absolute inset-0 pointer-events-auto">
-						{/* Invisible overlay that blocks all interactions */}
-						<div className="absolute inset-0 bg-transparent" />
+					{/* Register Button at bottom */}
+					<div className="flex-shrink-0 pb-8">
+						<div className="container mx-auto relative max-w-3xl">
+							<button
+								onClick={handleRegisterClick}
+								onKeyDown={(e) => {
+									if (e.key === "Enter" || e.key === " ") {
+										e.preventDefault();
+										handleRegisterClick();
+									}
+								}}
+								className="rounded-lg border bg-background-secondary p-2 shadow-[0_8px_30px_rgba(0,0,0,0.24)] transition-all duration-150 flex items-center justify-center min-h-[100px] hover:bg-background-tertiary cursor-pointer w-full"
+								type="button"
+							>
+								<span className="text-lg">Register to proceed...</span>
+							</button>
+						</div>
+					</div>
 
-						{/* Allow interactions only with the register block */}
-						<div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-full max-w-3xl pointer-events-none">
-							<div className="pointer-events-auto">
-								<button
-									onClick={handleRegisterClick}
-									onKeyDown={(e) => {
-										if (e.key === "Enter" || e.key === " ") {
-											e.preventDefault();
-											handleRegisterClick();
-										}
-									}}
-									className="rounded-lg border bg-background-secondary p-2 shadow-[0_8px_30px_rgba(0,0,0,0.24)] transition-all duration-150 flex items-center justify-center min-h-[100px] hover:bg-background-tertiary cursor-pointer w-full"
-									type="button"
-								>
-									<span className="text-lg">Register to proceed...</span>
-								</button>
+					{/* Transparent overlay to prevent interaction with all elements except the register block */}
+					<div className="absolute inset-0 z-50 pointer-events-none">
+						<div className="absolute inset-0 pointer-events-auto">
+							{/* Invisible overlay that blocks all interactions */}
+							<div className="absolute inset-0 bg-transparent" />
+
+							{/* Allow interactions only with the register block */}
+							<div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-full max-w-3xl pointer-events-none">
+								<div className="pointer-events-auto">
+									<button
+										onClick={handleRegisterClick}
+										onKeyDown={(e) => {
+											if (e.key === "Enter" || e.key === " ") {
+												e.preventDefault();
+												handleRegisterClick();
+											}
+										}}
+										className="rounded-lg border bg-background-secondary p-2 shadow-[0_8px_30px_rgba(0,0,0,0.24)] transition-all duration-150 flex items-center justify-center min-h-[100px] hover:bg-background-tertiary cursor-pointer w-full"
+										type="button"
+									>
+										<span className="text-lg">Register to proceed...</span>
+									</button>
+								</div>
 							</div>
 						</div>
 					</div>
-				)}
-			</div>
+				</>
+			)}
 		</div>
 	);
 }

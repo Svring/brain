@@ -28,7 +28,7 @@ const TrialAuthProvider = ({ children }: { children: ReactNode }) => {
 	const dummyAuth: Auth = {
 		namespace: "trial-namespace",
 		kubeconfig: "trial-kubeconfig",
-		regionUrl: "trial.region.sealos.io",
+		regionUrl: "usw.sealos.io",
 		appToken: "trial-app-token",
 		baseUrl: "https://trial.sealos.io",
 		apiKey: "trial-api-key",
