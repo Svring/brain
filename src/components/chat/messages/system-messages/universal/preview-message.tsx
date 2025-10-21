@@ -1,8 +1,10 @@
 import { useInterval } from "@reactuses/core";
 import { Check, CircleCheckBig, Copy } from "lucide-react";
+import Image from "next/image";
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
+import { TextShimmer } from "@/components/ui/text-shimmer";
 import { useFlowgraphState } from "@/contexts/flowgraph/flowgraph-context";
 import { useResourceObjects } from "@/hooks/sealos/resource/use-resource-objects";
 import { useCopy } from "@/hooks/use-copy";
@@ -21,7 +23,7 @@ interface PreviewMessageProps {
 	target?: CustomResourceTarget | BuiltinResourceTarget;
 }
 
-export const PreviewMessage: React.FC<PreviewMessageProps> = ({ target }) => {
+export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 	// Get all nodes from flowgraph state
 	const { nodes } = useFlowgraphState();
 
@@ -69,7 +71,7 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = ({ target }) => {
 
 	const { copyToClipboard, isCopied } = useCopy();
 	const [urlStatuses, setUrlStatuses] = useState<
-		Record<string, { isSuccess: boolean }>
+		Record<string, { isSuccess: boolean; isCorsRestricted?: boolean; checked?: boolean; embedAllowed?: boolean }>
 	>({});
 
 	const checkUrlStatus = async (url: string) => {
@@ -79,28 +81,46 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = ({ target }) => {
 			);
 			const data = await response.json();
 
-			setUrlStatuses((prev) => ({
-				...prev,
-				[url]: {
-					isSuccess: data.ok,
-				},
-			}));
+			setUrlStatuses((prev) => {
+				const embedAllowed: boolean | undefined = typeof data.embedAllowed === "boolean" ? data.embedAllowed : undefined;
+				const next = {
+					...prev,
+					[url]: {
+						...prev[url],
+						isSuccess: data.ok,
+						embedAllowed,
+						// If server told us about embedding, finalize the check immediately
+						...(data.ok && typeof embedAllowed === "boolean"
+							? {
+								checked: true,
+								isCorsRestricted: !embedAllowed,
+							}
+							: {}),
+					},
+				};
+				return next;
+			});
 		} catch (error) {
 			console.log(`URL check failed for ${url}, will retry...`, error);
 			setUrlStatuses((prev) => ({
 				...prev,
 				[url]: {
+					...prev[url],
 					isSuccess: false,
 				},
 			}));
 		}
 	};
 
-	// Check all URL statuses every 3 seconds
+	// Check all URL statuses every 3 seconds, but stop checking once marked as checked
 	useInterval(
 		() => {
 			websiteUrls.forEach((item) => {
-				checkUrlStatus(item.url);
+				const status = urlStatuses[item.url];
+				// Only check if not yet checked
+				if (!status?.checked) {
+					checkUrlStatus(item.url);
+				}
 			});
 		},
 		3000,
@@ -111,8 +131,75 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = ({ target }) => {
 		copyToClipboard(url, `preview-url-${url}`);
 	};
 
-	const handleUrlClick = (url: string) => {
+	const handleIframeClick = (url: string) => {
 		window.open(url, "_blank");
+	};
+
+	const canAccessIFrame = (iframe: HTMLIFrameElement) => {
+		try {
+			// Deal with older browsers
+			const doc = iframe.contentDocument || iframe.contentWindow?.document;
+			// If we can access the document object at all, it's not CORS restricted
+			// We just need to check if we can access any property without throwing an error
+			if (doc) {
+				// Try to access a property - if this doesn't throw, we have access
+				// Using 'body' property as the test - it exists even if innerHTML is empty
+				const testAccess = doc.body;
+				console.log("Can access iframe document:", !!testAccess, "for URL:", iframe.src);
+				return true;
+			}
+			console.log("No document found for iframe:", iframe.src);
+			return false;
+		} catch (error) {
+			// Exception thrown - this indicates CORS restriction
+			console.log("CORS restriction detected for iframe:", iframe.src, error);
+			return false;
+		}
+	};
+
+	const handleIframeLoad = (url: string, iframeRef: HTMLIFrameElement) => {
+		// Test if we can actually access the iframe content
+		// Use a timeout to ensure the iframe is fully loaded and DOM is ready
+		setTimeout(() => {
+			setUrlStatuses((prev) => {
+				// If server provided a definitive embedAllowed, prefer that and do nothing here
+				const serverEmbedAllowed = prev[url]?.embedAllowed;
+				if (typeof serverEmbedAllowed === "boolean") {
+					return {
+						...prev,
+						[url]: {
+							...prev[url],
+							checked: true,
+							isCorsRestricted: !serverEmbedAllowed,
+							isSuccess: true,
+						},
+					};
+				}
+
+				const accessAllowed = canAccessIFrame(iframeRef);
+				return {
+					...prev,
+					[url]: {
+						...prev[url],
+						isSuccess: true,
+						isCorsRestricted: !accessAllowed,
+						checked: true, // Mark as checked to prevent further status checks
+					},
+				};
+			});
+		}, 300);
+	};
+
+	const handleIframeError = (url: string) => {
+		// Iframe failed to load completely
+		setUrlStatuses((prev) => ({
+			...prev,
+			[url]: {
+				...prev[url],
+				isSuccess: false,
+				isCorsRestricted: false,
+			},
+		}));
 	};
 
 	// Get devbox objects for IDE functionality
@@ -155,75 +242,61 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = ({ target }) => {
 	// If no addresses available
 	if (websiteUrls.length === 0) {
 		return (
-			<div className="w-full border rounded-lg p-4">
-				<span className="text-muted-foreground">
-					No public domain available
-				</span>
+			<div className="w-full border rounded-lg p-1">
+				<div className="flex items-center justify-center">
+					<span className="text-muted-foreground">
+						No public domain available
+					</span>
+				</div>
 			</div>
 		);
 	}
 
-	// Calculate loading status
-	const totalUrls = websiteUrls.length;
-	const loadedUrls = Object.values(urlStatuses).filter(
-		(status) => status.isSuccess,
-	).length;
-	const allLoaded = totalUrls > 0 && loadedUrls === totalUrls;
-	const someLoaded = loadedUrls > 0;
-
 	return (
-		<div className="w-full border rounded-lg p-2">
-			{/* Status hint */}
-			<div>
-				<p className="text-sm text-muted-foreground">
-					{allLoaded
-						? "All previews ready"
-						: someLoaded
-							? `Previews are loading, please wait (${loadedUrls}/${totalUrls})`
-							: "Previews are loading, please wait"}
-				</p>
-			</div>
+		<div className="w-full space-y-4">
+			{websiteUrls.map((item) => {
+				const status = urlStatuses[item.url] || {
+					isSuccess: false,
+					isCorsRestricted: false,
+					checked: false,
+				};
+				const isSuccess = status.isSuccess;
+				const isCorsRestricted = status.isCorsRestricted;
+				const isChecked = status.checked;
 
-			<div>
-				{websiteUrls.map((item, index) => {
-					const status = urlStatuses[item.url] || {
-						isSuccess: false,
-					};
+				return (
+					<div
+						key={item.url}
+						className="w-full border rounded-lg p-1 bg-background-secondary"
+					>
+						<div className="flex items-center justify-between gap-2 pb-1">
+							<div className="flex items-center gap-2 flex-1 justify-center py-1">
+								<div className="flex items-center gap-1">
+									{isSuccess ? (
+										<CircleCheckBig className="h-4 w-4 text-theme-green" />
+									) : (
+										<Spinner
+											variant="ring"
+											size={16}
+											className="text-theme-yellow"
+										/>
+									)}
+								</div>
 
-					return (
-						<div key={item.url} className="flex items-center gap-3 py-2">
-							{/* Status Icon */}
-							<div className="flex-shrink-0">
-								{status.isSuccess ? (
-									<CircleCheckBig className="h-4 w-4 text-theme-green" />
-								) : (
-									<Spinner
-										variant="ring"
-										size={16}
-										className="text-theme-yellow"
-									/>
-								)}
-							</div>
-
-							{/* URL */}
-							<div className="flex-1 min-w-0">
 								<button
 									type="button"
-									onClick={() => handleUrlClick(item.url)}
-									className="text-left w-full"
+									className={`cursor-pointer hover:underline transition-all font-mono text-sm ${
+										isSuccess ? "text-foreground" : "text-muted-foreground"
+									}`}
+									onClick={() => handleIframeClick(item.url)}
 								>
-									<span className="font-mono text-sm text-foreground hover:underline transition-colors break-all cursor-pointer">
-										{item.url}
-									</span>
+									{item.url}
 								</button>
-							</div>
 
-							{/* Copy Button */}
-							<div className="flex-shrink-0">
 								<button
 									type="button"
 									onClick={() => handleCopyUrl(item.url)}
-									className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors cursor-pointer p-1"
+									className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
 								>
 									{isCopied(`preview-url-${item.url}`) ? (
 										<Check className="h-4 w-4 text-theme-green" />
@@ -233,9 +306,74 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = ({ target }) => {
 								</button>
 							</div>
 						</div>
-					);
-				})}
-			</div>
+
+						<button
+							type="button"
+							className="relative w-full cursor-pointer hover:opacity-90 transition-opacity"
+							style={{
+								aspectRatio:
+									isSuccess && isChecked && !isCorsRestricted ? "16/9" : undefined,
+								height: isSuccess && isChecked && !isCorsRestricted ? undefined : "100px",
+							}}
+							onClick={() => handleIframeClick(item.url)}
+						>
+							{isSuccess && isChecked && isCorsRestricted ? (
+								<div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-lg bg-muted/20 px-4">
+									<span className="text-center text-sm text-muted-foreground">
+										Application ready, preview blocked by CORS policy
+									</span>
+									<span className="text-center text-xs text-muted-foreground/70">
+										Click to open the application
+									</span>
+								</div>
+							) : isSuccess && isChecked && !isCorsRestricted ? (
+								<iframe
+									src={item.url}
+									className="w-full h-full rounded-lg pointer-events-none"
+									title="Resource Preview"
+									allowFullScreen
+									onLoad={(e) => handleIframeLoad(item.url, e.currentTarget)}
+									onError={() => handleIframeError(item.url)}
+								/>
+							) : isSuccess && !isChecked ? (
+								<>
+									{/* Hidden iframe for accessibility checking */}
+									<iframe
+										src={item.url}
+										className="w-full h-full rounded-lg pointer-events-none opacity-0 absolute inset-0"
+										title="Resource Preview"
+										allowFullScreen
+										onLoad={(e) => handleIframeLoad(item.url, e.currentTarget)}
+										onError={() => handleIframeError(item.url)}
+									/>
+									{/* Loading overlay */}
+									<div className="w-full h-full rounded-lg bg-muted/20 flex items-center justify-center relative z-10">
+										<TextShimmer
+											as="div"
+											className=""
+											duration={1.5}
+											spread={1.5}
+										>
+											Checking accessibility...
+										</TextShimmer>
+									</div>
+								</>
+							) : (
+								<div className="w-full h-full rounded-lg bg-muted/20 flex items-center justify-center">
+									<TextShimmer
+										as="div"
+										className=""
+										duration={1.5}
+										spread={1.5}
+									>
+										Initiating
+									</TextShimmer>
+								</div>
+							)}
+						</button>
+					</div>
+				);
+			})}
 
 			{/* Devbox message - appears below URLs */}
 			{hasDevboxResource && (
@@ -259,7 +397,7 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = ({ target }) => {
 								className="flex items-center gap-2 p-2 hover:bg-muted rounded-md border border-border-primary overflow-hidden cursor-pointer"
 								title={`Open ${ide}`}
 							>
-								<img
+								<Image
 									src={`https://devbox.${context.regionUrl}/images/ide/${ide}.svg`}
 									alt={`${ide} icon`}
 									width={20}

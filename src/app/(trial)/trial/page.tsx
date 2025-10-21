@@ -1,11 +1,14 @@
 "use client";
 
 import { useQueryState } from "nuqs";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AiMessages } from "@/components/chat/components/messages";
+import { Spinner } from "@/components/ui/spinner";
 import { useCopilotTrialAdapterContext } from "@/contexts/copilot/copilot-trial.adapter";
+import { InputBox } from "@/mvvm/copilot/vms/input-box.vm";
 
 const REGISTER_URL = "https://usw.sealos.io/?openapp=system-brain";
+const DEV_URL = "http://localhost:3000";
 
 export default function Page() {
 	// Get copilot trial adapter context
@@ -19,6 +22,7 @@ export default function Page() {
 	} = useCopilotTrialAdapterContext();
 	const [query] = useQueryState("query");
 	const hasSubmitted = useRef(false);
+	const [inputValue, setInputValue] = useState("");
 
 	// Submit query as message after 1 second delay (only once)
 	useEffect(() => {
@@ -35,68 +39,58 @@ export default function Page() {
 	}, [query, threadId, submitWithContext]);
 
 	const handleRegisterClick = () => {
-		window.open(`${REGISTER_URL}?token=${token}`, "_blank");
+		const url = new URL(REGISTER_URL);
+		url.searchParams.set("token", token);
+		if (inputValue.trim()) {
+			url.searchParams.set("followup", encodeURIComponent(inputValue.trim()));
+		}
+		window.open(url.toString(), "_blank");
+	};
+
+	const handleSend = () => {
+		handleRegisterClick();
+	};
+
+	const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+		setInputValue(e.target.value);
 	};
 
 	return (
 		<div className="h-full w-full flex flex-col overflow-hidden relative">
-			{hasMessages && (
+			{hasMessages ? (
 				<>
 					{/* Messages area */}
 					<div className="flex-1 flex flex-col min-h-0">
-						<div className="flex-1 overflow-y-auto py-8">
-							<div className="max-w-3xl mx-auto w-full">
+						<div
+							className="flex-1 overflow-y-auto py-8"
+							onClick={handleRegisterClick}
+						>
+							<div className="max-w-3xl mx-auto w-full pointer-events-none">
 								<AiMessages messages={messages} isLoading={isLoading} />
 							</div>
 						</div>
 					</div>
 
-					{/* Register Button at bottom */}
+					{/* Input box at bottom */}
 					<div className="flex-shrink-0 pb-8">
-						<div className="container mx-auto relative max-w-3xl">
-							<button
-								onClick={handleRegisterClick}
-								onKeyDown={(e) => {
-									if (e.key === "Enter" || e.key === " ") {
-										e.preventDefault();
-										handleRegisterClick();
-									}
-								}}
-								className="rounded-lg border bg-background-secondary p-2 shadow-[0_8px_30px_rgba(0,0,0,0.24)] transition-all duration-150 flex items-center justify-center min-h-[100px] hover:bg-background-tertiary cursor-pointer w-full"
-								type="button"
-							>
-								<span className="text-lg">Register to proceed...</span>
-							</button>
+						<div className="container mx-auto relative max-w-3xl px-4">
+							<InputBox
+								onSend={handleSend}
+								placeholder="Type your message here..."
+								autoFocus={false}
+								value={inputValue}
+								onInputChange={handleInputChange}
+							/>
 						</div>
 					</div>
 
-					{/* Transparent overlay to prevent interaction with all elements except the register block */}
-					<div className="absolute inset-0 z-50 pointer-events-none">
-						<div className="absolute inset-0 pointer-events-auto">
-							{/* Invisible overlay that blocks all interactions */}
-							<div className="absolute inset-0 bg-transparent" />
-
-							{/* Allow interactions only with the register block */}
-							<div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-full max-w-3xl pointer-events-none">
-								<div className="pointer-events-auto">
-									<button
-										onClick={handleRegisterClick}
-										onKeyDown={(e) => {
-											if (e.key === "Enter" || e.key === " ") {
-												e.preventDefault();
-												handleRegisterClick();
-											}
-										}}
-										className="rounded-lg border bg-background-secondary p-2 shadow-[0_8px_30px_rgba(0,0,0,0.24)] transition-all duration-150 flex items-center justify-center min-h-[100px] hover:bg-background-tertiary cursor-pointer w-full"
-										type="button"
-									>
-										<span className="text-lg">Register to proceed...</span>
-									</button>
-								</div>
-							</div>
-						</div>
-					</div>
+					{/* Removed overlay to allow scrolling while content ignores pointer events */}
 				</>
+			) : (
+				/* Loading spinner when no messages */
+				<div className="flex-1 flex items-center justify-center">
+					<Spinner className="h-8 w-8" />
+				</div>
 			)}
 		</div>
 	);

@@ -2,7 +2,8 @@
 
 import { motion } from "framer-motion";
 import { LayoutTemplate, Loader2, Plus } from "lucide-react";
-import { useRef } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef } from "react";
 import { AiChatInput } from "@/components/chat/components/input";
 import { AiMessages } from "@/components/chat/components/messages";
 import Suggestions from "@/components/chat/components/suggestions";
@@ -26,7 +27,6 @@ export default function HomePage() {
 		submit,
 		stop,
 		isLoading,
-		threadId,
 		createNewChat,
 		isCreatingNewChat,
 	} = useHomeChat();
@@ -40,6 +40,25 @@ export default function HomePage() {
 		useDeployTemplateDialog();
 	const { LaunchpadCreateDialog } = useLaunchpadCreateDialog();
 	const messagesScrollRef = useRef<HTMLDivElement>(null);
+
+	// Get followup parameter from URL and decode it
+	const router = useRouter();
+	const pathname = usePathname();
+	const searchParams = useSearchParams();
+	const followup = searchParams.get("followup");
+	const decodedFollowup = followup ? decodeURIComponent(followup) : undefined;
+
+	// Remove followup parameter from URL after it's been processed
+	useEffect(() => {
+		if (followup) {
+			const params = new URLSearchParams(searchParams.toString());
+			params.delete("followup");
+			const newUrl = params.toString()
+				? `${pathname}?${params.toString()}`
+				: pathname;
+			router.replace(newUrl);
+		}
+	}, [followup, pathname, router, searchParams]);
 
 	// const hasMessages = messages.length > 0;
 	const showMessages = messages.length > 0;
@@ -137,6 +156,7 @@ export default function HomePage() {
 							onStop={stop}
 							isLoading={isLoading}
 							disableTools={true}
+							placeholder={decodedFollowup}
 						/>
 						{!showMessages && (
 							<>

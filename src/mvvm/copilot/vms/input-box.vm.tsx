@@ -14,6 +14,8 @@ interface InputBoxVMProps {
 	disableInput?: boolean;
 	disableSend?: boolean;
 	exhibition?: boolean;
+	value?: string;
+	onInputChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
 }
 
 export const InputBox = React.forwardRef<HTMLDivElement, InputBoxVMProps>(
@@ -29,6 +31,8 @@ export const InputBox = React.forwardRef<HTMLDivElement, InputBoxVMProps>(
 			disableInput = false,
 			disableSend = false,
 			exhibition = false,
+			value,
+			onInputChange,
 		} = props;
 
 		const [input, setInput] = React.useState("");
@@ -37,6 +41,17 @@ export const InputBox = React.forwardRef<HTMLDivElement, InputBoxVMProps>(
 		const [isComposing, setIsComposing] = React.useState(false);
 		const internalTextareaRef = React.useRef<HTMLTextAreaElement>(null);
 		const prevLoading = React.useRef(isLoading);
+
+		// Use controlled input if value and onInputChange are provided
+		const isControlled = value !== undefined && onInputChange !== undefined;
+		const currentValue = isControlled ? value : input;
+
+		// Initialize input with placeholder if not controlled and no initial value
+		React.useEffect(() => {
+			if (!isControlled && !input && placeholder) {
+				setInput(placeholder);
+			}
+		}, [isControlled, input, placeholder]);
 
 		const exhibitionTexts = [
 			"Deploy n8n from app store.",
@@ -54,10 +69,10 @@ export const InputBox = React.forwardRef<HTMLDivElement, InputBoxVMProps>(
 		
 		// Sync textarea height when input changes from outside
 		React.useEffect(() => {
-			if (internalTextareaRef.current && input === "") {
+			if (internalTextareaRef.current && currentValue === "") {
 				internalTextareaRef.current.style.height = "auto";
 			}
-		}, [input]);
+		}, [currentValue]);
 
 		// Focus when loading finishes
 		React.useEffect(() => {
@@ -76,12 +91,12 @@ export const InputBox = React.forwardRef<HTMLDivElement, InputBoxVMProps>(
 
 		// Typewriter effect - only show if no placeholder is provided
 		React.useEffect(() => {
-			if (exhibition && !input.trim() && !isFocused && !placeholder) {
+			if (exhibition && !currentValue.trim() && !isFocused && !placeholder) {
 				const timer = setTimeout(() => setShowTypewriter(true), 1500);
 				return () => clearTimeout(timer);
 			}
 			setShowTypewriter(false);
-		}, [exhibition, input, isFocused, placeholder]);
+		}, [exhibition, currentValue, isFocused, placeholder]);
 
 		// Global keydown handler
 		React.useEffect(() => {
@@ -101,25 +116,35 @@ export const InputBox = React.forwardRef<HTMLDivElement, InputBoxVMProps>(
 				if (event.key.length !== 1) return;
 
 				internalTextareaRef.current?.focus();
-				setInput((prev) => `${prev}${event.key}`);
+				if (isControlled) {
+					// For controlled input, we need to simulate the change event
+					const syntheticEvent = {
+						target: { value: `${currentValue}${event.key}` }
+					} as React.ChangeEvent<HTMLTextAreaElement>;
+					onInputChange(syntheticEvent);
+				} else {
+					setInput((prev) => `${prev}${event.key}`);
+				}
 				event.preventDefault();
 			};
 
 			window.addEventListener("keydown", handleGlobalKeydown);
 			return () => window.removeEventListener("keydown", handleGlobalKeydown);
-		}, [disableInput]);
+		}, [disableInput, isControlled, currentValue, onInputChange]);
 
 		const handleSubmit = React.useCallback(() => {
-			const liveText = (internalTextareaRef.current?.value ?? input).trim();
+			const liveText = (internalTextareaRef.current?.value ?? currentValue).trim();
 			if (liveText && !disableSend) {
 				onSend(liveText);
-				setInput("");
+				if (!isControlled) {
+					setInput("");
+				}
 				if (internalTextareaRef.current) {
 					internalTextareaRef.current.value = "";
 					internalTextareaRef.current.style.height = "auto";
 				}
 			}
-		}, [input, onSend, disableSend]);
+		}, [currentValue, onSend, disableSend, isControlled]);
 
 		const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
 			if (e.key === "Enter" && !e.shiftKey && !isComposing) {
@@ -132,7 +157,11 @@ export const InputBox = React.forwardRef<HTMLDivElement, InputBoxVMProps>(
 		};
 
 		const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-			setInput(e.target.value);
+			if (isControlled) {
+				onInputChange(e);
+			} else {
+				setInput(e.target.value);
+			}
 		};
 
 		const handleFocus = () => setIsFocused(true);
@@ -147,7 +176,7 @@ export const InputBox = React.forwardRef<HTMLDivElement, InputBoxVMProps>(
 				(textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = node;
 		};
 
-		const hasContent = input.trim() !== "";
+		const hasContent = currentValue.trim() !== "";
 
 		return (
 			<InputBoxView
@@ -157,7 +186,7 @@ export const InputBox = React.forwardRef<HTMLDivElement, InputBoxVMProps>(
 				isLoading={isLoading}
 				showTypewriter={showTypewriter}
 				exhibitionTexts={placeholder ? [] : exhibitionTexts}
-				value={input}
+				value={currentValue}
 				hasContent={hasContent}
 				placeholder={placeholder}
 				onInputChange={handleInputChange}

@@ -67,10 +67,61 @@ export async function GET(request: NextRequest) {
 			// 5xx errors might indicate server issues, but the service is still "reachable"
 			const isHttpReachable = response.status >= 200 && response.status < 500;
 
+			// Parse headers for iframe embedding policy
+			// X-Frame-Options: DENY | SAMEORIGIN | ALLOW-FROM <uri>
+			const xfo = response.headers.get("x-frame-options");
+			// Content-Security-Policy: frame-ancestors 'none' | 'self' | https://example.com ...
+			const csp = response.headers.get("content-security-policy");
+
+			const computeEmbedAllowed = (): boolean => {
+				// If service is not reachable, embedding is not applicable
+				if (!isHttpReachable) return false;
+
+				// Check X-Frame-Options first (legacy but still widely used)
+				if (xfo) {
+					const val = xfo.trim().toUpperCase();
+					if (val.includes("DENY")) return false;
+					if (val.includes("SAMEORIGIN")) {
+						// SAMEORIGIN blocks embedding from different origins. Our app is a different origin for most cases.
+						return false;
+					}
+					// ALLOW-FROM is non-standard and deprecated; most browsers ignore it.
+					// We'll be conservative and treat it as blocked unless it matches our origin (which we don't know here).
+				}
+
+				// Check CSP frame-ancestors
+				if (csp) {
+					// Find frame-ancestors directive
+					const directive = csp
+						.split(";")
+						.map((d) => d.trim())
+						.find((d) => d.toLowerCase().startsWith("frame-ancestors"));
+					if (directive) {
+						const value = directive.substring("frame-ancestors".length).trim();
+						// If 'none' then never allowed
+						if (/['"]?none['"]?/i.test(value)) return false;
+						// If only 'self' or specific origins are present, and we are not that origin, treat as blocked.
+						// Without knowing our runtime origin here, be conservative and mark blocked when directive exists and is restrictive.
+						// Many sites specify explicit origins; to avoid false-negatives we treat presence of directive as potentially blocking.
+						return false;
+					}
+				}
+
+				// If neither header blocks embedding, assume allowed
+				return true;
+			};
+
+			const embedAllowed = computeEmbedAllowed();
+
 			return NextResponse.json({
 				ok: isHttpReachable,
 				status: response.status,
 				statusText: response.statusText,
+				embedAllowed,
+				headers: {
+					xFrameOptions: xfo,
+					contentSecurityPolicy: csp,
+				},
 			});
 		} catch (httpError) {
 			// If HTTP request fails, consider it not reachable

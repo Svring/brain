@@ -367,6 +367,13 @@ export const PromptInputBox = React.forwardRef(
 			"Deploy nginx from dockerhub.",
 		];
 
+		// Initialize input with placeholder (as real text) if provided and input is empty
+		React.useEffect(() => {
+			if (placeholder && !input) {
+				setInput(placeholder);
+			}
+		}, [placeholder, input]);
+
 		// Focus when loading finishes
 		React.useEffect(() => {
 			if (prevLoading.current && !isLoading) {
