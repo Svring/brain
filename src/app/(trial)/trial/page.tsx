@@ -39,12 +39,12 @@ export default function Page() {
 	}, [query, threadId, submitWithContext]);
 
 	const handleRegisterClick = () => {
-		const url = new URL(REGISTER_URL);
-		url.searchParams.set("token", token);
+		let queryString = `token=${token}`;
 		if (inputValue.trim()) {
-			url.searchParams.set("followup", encodeURIComponent(inputValue.trim()));
+			queryString += `&followup=${inputValue.trim()}`;
 		}
-		window.open(url.toString(), "_blank");
+		const url = `${REGISTER_URL}?${encodeURIComponent(queryString)}`;
+		window.open(url, "_blank");
 	};
 
 	const handleSend = () => {
@@ -62,7 +62,7 @@ export default function Page() {
 					{/* Messages area */}
 					<div className="flex-1 flex flex-col min-h-0">
 						<div
-							className="flex-1 overflow-y-auto py-8"
+							className="flex-1 overflow-y-auto py-8 cursor-pointer"
 							onClick={handleRegisterClick}
 						>
 							<div className="max-w-3xl mx-auto w-full pointer-events-none">
@@ -89,7 +89,7 @@ export default function Page() {
 			) : (
 				/* Loading spinner when no messages */
 				<div className="flex-1 flex items-center justify-center">
-					<Spinner className="h-8 w-8" />
+					<Spinner className="h-5 w-5" />
 				</div>
 			)}
 		</div>
