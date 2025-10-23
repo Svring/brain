@@ -332,6 +332,7 @@ interface PromptInputBoxProps {
 	autoFocus?: boolean;
 	disableInput?: boolean;
 	disableSend?: boolean;
+	initialValue?: string;
 	exhibition?: boolean;
 	toolCategory?: ToolCategoryKey;
 }
@@ -347,12 +348,13 @@ export const PromptInputBox = React.forwardRef(
 			autoFocus = false,
 			disableInput = false,
 			disableSend = false,
+			initialValue,
 			exhibition = false,
 			toolCategory,
 		} = props;
 
 		// const { openDialog, CreateProjectDialog } = useProjectCreateDialog();
-		const [input, setInput] = React.useState("");
+		const [input, setInput] = React.useState(initialValue || "");
 		const [isFocused, setIsFocused] = React.useState(false);
 		const [showTypewriter, setShowTypewriter] = React.useState(false);
 		const promptBoxRef = React.useRef<HTMLDivElement>(null);
@@ -367,12 +369,16 @@ export const PromptInputBox = React.forwardRef(
 			"Deploy nginx from dockerhub.",
 		];
 
-		// Initialize input with placeholder (as real text) if provided and input is empty
+		// Initialize input with initialValue or placeholder (as real text) if provided and input is empty
 		React.useEffect(() => {
-			if (placeholder && !input) {
-				setInput(placeholder);
+			if (!input) {
+				if (initialValue) {
+					setInput(initialValue);
+				} else if (placeholder) {
+					setInput(placeholder);
+				}
 			}
-		}, [placeholder, input]);
+		}, [initialValue, placeholder, input]);
 
 		// Focus when loading finishes
 		React.useEffect(() => {

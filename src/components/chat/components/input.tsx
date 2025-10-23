@@ -19,6 +19,7 @@ interface AiChatInputProps {
 	toolCategory?: ToolCategoryKey;
 	disableTools?: boolean;
 	placeholder?: string;
+	initialValue?: string;
 }
 
 export function AiChatInput({
@@ -32,6 +33,7 @@ export function AiChatInput({
 	toolCategory: propToolCategory,
 	disableTools = false,
 	placeholder,
+	initialValue,
 }: AiChatInputProps) {
 	const { selectedResource, selectedProject } = useProjectState();
 
@@ -123,6 +125,7 @@ export function AiChatInput({
 			isLoading={isLoading}
 			onSend={handleSendMessage}
 			placeholder={placeholder || ""}
+			initialValue={initialValue}
 			disableInput={isInterruptActive}
 			disableSend={isLoading || isInterruptActive}
 			onStop={handleStop}

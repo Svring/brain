@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { LayoutTemplate, Loader2, Plus } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryState } from "nuqs";
 import { useEffect, useRef } from "react";
 import { AiChatInput } from "@/components/chat/components/input";
@@ -41,12 +41,20 @@ export default function HomePage() {
 		useDeployTemplateDialog();
 	const { LaunchpadCreateDialog } = useLaunchpadCreateDialog();
 	const messagesScrollRef = useRef<HTMLDivElement>(null);
-	const [followup] = useQueryState("followup");
+	const [followup, setFollowup] = useQueryState("followup");
 	const decodedFollowup = followup ? decodeURIComponent(followup) : undefined;
 
 	// const hasMessages = messages.length > 0;
 	const showMessages = messages.length > 0;
 	const hasProjects = projects && projects.length > 0;
+
+	// Clear followup after it's been used once
+	useEffect(() => {
+		if (decodedFollowup) {
+			// Clear the followup from URL after component mounts
+			setFollowup(null);
+		}
+	}, [decodedFollowup, setFollowup]);
 
 	return (
 		<div className="h-screen w-full flex flex-col overflow-hidden">
@@ -140,7 +148,7 @@ export default function HomePage() {
 							onStop={stop}
 							isLoading={isLoading}
 							disableTools={true}
-							placeholder={decodedFollowup}
+							initialValue={decodedFollowup}
 						/>
 						{!showMessages && (
 							<>

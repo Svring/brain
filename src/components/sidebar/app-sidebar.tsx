@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
+import { HelpCircle, Sparkles } from "lucide-react";
 import { useQuota } from "@/components/provider/quota-provider";
 import { Button } from "@/components/ui/button";
 import {
@@ -111,9 +111,30 @@ export default function AppSidebar() {
 											{balance && (
 												<div className="space-y-2 rounded-lg">
 													<div className="flex justify-between text-xs">
-														<span className="text-muted-foreground">
-															Account Balance
-														</span>
+														<div className="flex items-center gap-1">
+															<span className="text-muted-foreground">
+																Account Balance
+															</span>
+															<Tooltip>
+																<TooltipTrigger asChild>
+																	<HelpCircle className="h-3 w-3 text-muted-foreground hover:text-foreground transition-colors" />
+																</TooltipTrigger>
+																<TooltipContent side="top" className="max-w-xs">
+																	<p className="text-sm">
+																		Sealos Brain requires an API key to
+																		function. Click to check{" "}
+																		<a
+																			href="https://sealos.io/docs/msa/terms-of-service"
+																			target="_blank"
+																			rel="noopener noreferrer"
+																			className="underline hover:text-primary"
+																		>
+																			Our Terms of Service
+																		</a>
+																	</p>
+																</TooltipContent>
+															</Tooltip>
+														</div>
 														<span className="text-foreground font-medium">
 															{balance.used === balance.limit
 																? `${balance.limit.toFixed(2)} USD`
