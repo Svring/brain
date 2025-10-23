@@ -15,7 +15,10 @@ import type {
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { CustomResourceTargetSchema } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import { DEVBOX_IDE } from "@/lib/sealos/resources/devbox/devbox-constant-a";
+import {
+	DEVBOX_IDE,
+	DEVBOX_IDE_ICON_MAP,
+} from "@/lib/sealos/resources/devbox/devbox-constant-a";
 import { getDevboxSshInfo } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
 import { composeSshConnectionUri } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
 
@@ -30,6 +33,15 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 	// Context for devbox functionality
 	const context = createK8sContext();
 	const devboxContext = useDevboxContext();
+
+	const getIdeIconUrl = (ide: string) => {
+		// Check if there's a custom icon mapping for this IDE
+		if (DEVBOX_IDE_ICON_MAP[ide]) {
+			return DEVBOX_IDE_ICON_MAP[ide];
+		}
+		// Fall back to the default devbox icon URL
+		return `https://devbox.${context.regionUrl}/images/ide/${ide}.svg`;
+	};
 
 	// Extract targets from network type nodes
 	const networkTargets = nodes
@@ -71,7 +83,15 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 
 	const { copyToClipboard, isCopied } = useCopy();
 	const [urlStatuses, setUrlStatuses] = useState<
-		Record<string, { isSuccess: boolean; isCorsRestricted?: boolean; checked?: boolean; embedAllowed?: boolean }>
+		Record<
+			string,
+			{
+				isSuccess: boolean;
+				isCorsRestricted?: boolean;
+				checked?: boolean;
+				embedAllowed?: boolean;
+			}
+		>
 	>({});
 
 	const checkUrlStatus = async (url: string) => {
@@ -82,7 +102,10 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 			const data = await response.json();
 
 			setUrlStatuses((prev) => {
-				const embedAllowed: boolean | undefined = typeof data.embedAllowed === "boolean" ? data.embedAllowed : undefined;
+				const embedAllowed: boolean | undefined =
+					typeof data.embedAllowed === "boolean"
+						? data.embedAllowed
+						: undefined;
 				const next = {
 					...prev,
 					[url]: {
@@ -92,9 +115,9 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 						// If server told us about embedding, finalize the check immediately
 						...(data.ok && typeof embedAllowed === "boolean"
 							? {
-								checked: true,
-								isCorsRestricted: !embedAllowed,
-							}
+									checked: true,
+									isCorsRestricted: !embedAllowed,
+								}
 							: {}),
 					},
 				};
@@ -145,7 +168,12 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 				// Try to access a property - if this doesn't throw, we have access
 				// Using 'body' property as the test - it exists even if innerHTML is empty
 				const testAccess = doc.body;
-				console.log("Can access iframe document:", !!testAccess, "for URL:", iframe.src);
+				console.log(
+					"Can access iframe document:",
+					!!testAccess,
+					"for URL:",
+					iframe.src,
+				);
 				return true;
 			}
 			console.log("No document found for iframe:", iframe.src);
@@ -312,8 +340,13 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 							className="relative w-full cursor-pointer hover:opacity-90 transition-opacity"
 							style={{
 								aspectRatio:
-									isSuccess && isChecked && !isCorsRestricted ? "16/9" : undefined,
-								height: isSuccess && isChecked && !isCorsRestricted ? undefined : "100px",
+									isSuccess && isChecked && !isCorsRestricted
+										? "16/9"
+										: undefined,
+								height:
+									isSuccess && isChecked && !isCorsRestricted
+										? undefined
+										: "100px",
 							}}
 							onClick={() => handleIframeClick(item.url)}
 						>
@@ -398,7 +431,7 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 								title={`Open ${ide}`}
 							>
 								<Image
-									src={`https://devbox.${context.regionUrl}/images/ide/${ide}.svg`}
+									src={getIdeIconUrl(ide)}
 									alt={`${ide} icon`}
 									width={20}
 									height={20}
