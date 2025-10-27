@@ -104,7 +104,7 @@ export const projectRouter = t.router({
 		}),
 
 	delete: t.procedure.input(z.string()).mutation(async ({ ctx, input }) => {
-		const result = await deleteProject(ctx, { name: input });
+		const result = await deleteProject(ctx, ctx.sealosContext, { name: input });
 		return result;
 	}),
 
