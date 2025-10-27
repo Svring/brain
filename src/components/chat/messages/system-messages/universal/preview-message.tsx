@@ -87,49 +87,57 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 			string,
 			{
 				isSuccess: boolean;
-				isCorsRestricted?: boolean;
 				checked?: boolean;
-				embedAllowed?: boolean;
 			}
 		>
 	>({});
 
 	const checkUrlStatus = async (url: string) => {
 		try {
-			const response = await fetch(
-				`/api/check-url?url=${encodeURIComponent(url)}`,
-			);
-			const data = await response.json();
+			// Try to fetch the URL directly with a HEAD request
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-			setUrlStatuses((prev) => {
-				const embedAllowed: boolean | undefined =
-					typeof data.embedAllowed === "boolean"
-						? data.embedAllowed
-						: undefined;
-				const next = {
+			try {
+				const response = await fetch(url, {
+					method: "HEAD",
+					signal: controller.signal,
+					mode: "no-cors", // This prevents CORS errors but limits response info
+				});
+
+				console.log("response", response);
+
+				clearTimeout(timeoutId);
+
+				// With no-cors mode, we can't read the response status or headers
+				// but if the fetch succeeds without error, the URL is likely reachable
+				setUrlStatuses((prev) => ({
 					...prev,
 					[url]: {
-						...prev[url],
-						isSuccess: data.ok,
-						embedAllowed,
-						// If server told us about embedding, finalize the check immediately
-						...(data.ok && typeof embedAllowed === "boolean"
-							? {
-									checked: true,
-									isCorsRestricted: !embedAllowed,
-								}
-							: {}),
+						isSuccess: true,
+						checked: true,
 					},
-				};
-				return next;
-			});
+				}));
+			} catch (fetchError) {
+				clearTimeout(timeoutId);
+
+				// If HEAD fails, mark as unsuccessful
+				console.log(`HEAD request failed for ${url}`, fetchError);
+				setUrlStatuses((prev) => ({
+					...prev,
+					[url]: {
+						isSuccess: false,
+						checked: true,
+					},
+				}));
+			}
 		} catch (error) {
 			console.log(`URL check failed for ${url}, will retry...`, error);
 			setUrlStatuses((prev) => ({
 				...prev,
 				[url]: {
-					...prev[url],
 					isSuccess: false,
+					checked: false,
 				},
 			}));
 		}
@@ -156,78 +164,6 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 
 	const handleIframeClick = (url: string) => {
 		window.open(url, "_blank");
-	};
-
-	const canAccessIFrame = (iframe: HTMLIFrameElement) => {
-		try {
-			// Deal with older browsers
-			const doc = iframe.contentDocument || iframe.contentWindow?.document;
-			// If we can access the document object at all, it's not CORS restricted
-			// We just need to check if we can access any property without throwing an error
-			if (doc) {
-				// Try to access a property - if this doesn't throw, we have access
-				// Using 'body' property as the test - it exists even if innerHTML is empty
-				const testAccess = doc.body;
-				console.log(
-					"Can access iframe document:",
-					!!testAccess,
-					"for URL:",
-					iframe.src,
-				);
-				return true;
-			}
-			console.log("No document found for iframe:", iframe.src);
-			return false;
-		} catch (error) {
-			// Exception thrown - this indicates CORS restriction
-			console.log("CORS restriction detected for iframe:", iframe.src, error);
-			return false;
-		}
-	};
-
-	const handleIframeLoad = (url: string, iframeRef: HTMLIFrameElement) => {
-		// Test if we can actually access the iframe content
-		// Use a timeout to ensure the iframe is fully loaded and DOM is ready
-		setTimeout(() => {
-			setUrlStatuses((prev) => {
-				// If server provided a definitive embedAllowed, prefer that and do nothing here
-				const serverEmbedAllowed = prev[url]?.embedAllowed;
-				if (typeof serverEmbedAllowed === "boolean") {
-					return {
-						...prev,
-						[url]: {
-							...prev[url],
-							checked: true,
-							isCorsRestricted: !serverEmbedAllowed,
-							isSuccess: true,
-						},
-					};
-				}
-
-				const accessAllowed = canAccessIFrame(iframeRef);
-				return {
-					...prev,
-					[url]: {
-						...prev[url],
-						isSuccess: true,
-						isCorsRestricted: !accessAllowed,
-						checked: true, // Mark as checked to prevent further status checks
-					},
-				};
-			});
-		}, 300);
-	};
-
-	const handleIframeError = (url: string) => {
-		// Iframe failed to load completely
-		setUrlStatuses((prev) => ({
-			...prev,
-			[url]: {
-				...prev[url],
-				isSuccess: false,
-				isCorsRestricted: false,
-			},
-		}));
 	};
 
 	// Get devbox objects for IDE functionality
@@ -285,11 +221,9 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 			{websiteUrls.map((item) => {
 				const status = urlStatuses[item.url] || {
 					isSuccess: false,
-					isCorsRestricted: false,
 					checked: false,
 				};
 				const isSuccess = status.isSuccess;
-				const isCorsRestricted = status.isCorsRestricted;
 				const isChecked = status.checked;
 
 				return (
@@ -339,58 +273,18 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 							type="button"
 							className="relative w-full cursor-pointer hover:opacity-90 transition-opacity"
 							style={{
-								aspectRatio:
-									isSuccess && isChecked && !isCorsRestricted
-										? "16/9"
-										: undefined,
-								height:
-									isSuccess && isChecked && !isCorsRestricted
-										? undefined
-										: "100px",
+								aspectRatio: isSuccess && isChecked ? "16/9" : undefined,
+								height: isSuccess && isChecked ? undefined : "100px",
 							}}
 							onClick={() => handleIframeClick(item.url)}
 						>
-							{isSuccess && isChecked && isCorsRestricted ? (
-								<div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-lg bg-muted/20 px-4">
-									<span className="text-center text-sm text-muted-foreground">
-										Application ready, preview blocked by CORS policy
-									</span>
-									<span className="text-center text-xs text-muted-foreground/70">
-										Click to open the application
-									</span>
-								</div>
-							) : isSuccess && isChecked && !isCorsRestricted ? (
+							{isSuccess && isChecked ? (
 								<iframe
 									src={item.url}
 									className="w-full h-full rounded-lg pointer-events-none"
 									title="Resource Preview"
 									allowFullScreen
-									onLoad={(e) => handleIframeLoad(item.url, e.currentTarget)}
-									onError={() => handleIframeError(item.url)}
 								/>
-							) : isSuccess && !isChecked ? (
-								<>
-									{/* Hidden iframe for accessibility checking */}
-									<iframe
-										src={item.url}
-										className="w-full h-full rounded-lg pointer-events-none opacity-0 absolute inset-0"
-										title="Resource Preview"
-										allowFullScreen
-										onLoad={(e) => handleIframeLoad(item.url, e.currentTarget)}
-										onError={() => handleIframeError(item.url)}
-									/>
-									{/* Loading overlay */}
-									<div className="w-full h-full rounded-lg bg-muted/20 flex items-center justify-center relative z-10">
-										<TextShimmer
-											as="div"
-											className=""
-											duration={1.5}
-											spread={1.5}
-										>
-											Checking accessibility...
-										</TextShimmer>
-									</div>
-								</>
 							) : (
 								<div className="w-full h-full rounded-lg bg-muted/20 flex items-center justify-center">
 									<TextShimmer
@@ -399,7 +293,7 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 										duration={1.5}
 										spread={1.5}
 									>
-										Initiating
+										{isChecked ? "Application unavailable" : "Checking..."}
 									</TextShimmer>
 								</div>
 							)}

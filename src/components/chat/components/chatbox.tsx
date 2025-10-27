@@ -2,13 +2,12 @@
 
 import { useEffect } from "react";
 import { useChatInstance } from "@/components/provider/chat-instance-provider";
-import { Separator } from "@/components/ui/separator";
+import { Spinner } from "@/components/ui/spinner";
 import { useChatActions, useChatState } from "@/contexts/chat/chat-context";
 import { cn } from "@/lib/utils";
 import { AiChatHeader } from "./header";
 import { AiChatInput } from "./input";
 import { AiMessages } from "./messages";
-import SidebarSuggestions from "./sidebar-suggestions";
 
 export default function AiChatbox() {
 	const {
@@ -19,11 +18,28 @@ export default function AiChatbox() {
 		isLoading,
 		messages,
 		interrupt,
+		threads,
+		threadId,
+		isLoadingThreads,
 	} = useChatInstance();
 
 	const { getPendingMessages, shouldTriggerPendingMessages } = useChatState();
 	const { clearPendingMessages, clearTriggerPendingMessages } =
 		useChatActions();
+
+	// Check if thread has messages but messages array is empty (loading state)
+	const isThreadMessagesLoading = () => {
+		if (!threadId || messages.length > 0) return false;
+		const thread = threads.find((t) => t.thread_id === threadId);
+		if (!thread?.values) return false;
+		const threadValues = thread.values as Record<string, unknown>;
+		const threadMessages = threadValues?.messages;
+		return (
+			threadMessages &&
+			Array.isArray(threadMessages) &&
+			threadMessages.length > 0
+		);
+	};
 
 	// Check if we should trigger pending messages and submit them
 	useEffect(() => {
@@ -64,12 +80,18 @@ export default function AiChatbox() {
 			<AiChatHeader />
 
 			<div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
-				<AiMessages
-					messages={messages}
-					isLoading={isLoading}
-					interrupt={interrupt}
-					submit={submit}
-				/>
+				{!threadId || isLoadingThreads || isThreadMessagesLoading() ? (
+					<div className="flex items-center justify-center h-full">
+						<Spinner variant="circle" size={20} />
+					</div>
+				) : (
+					<AiMessages
+						messages={messages}
+						isLoading={isLoading}
+						interrupt={interrupt}
+						submit={submit}
+					/>
+				)}
 			</div>
 
 			{/* <div className="p-2 py-0 shrink-0">

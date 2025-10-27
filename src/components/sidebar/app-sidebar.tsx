@@ -161,7 +161,8 @@ export default function AppSidebar() {
 												<div className="flex justify-between text-xs">
 													<span className="text-muted-foreground">Storage</span>
 													<span className="text-primary">
-														{storage?.used}/{storage?.limit}
+														{storage?.used.toFixed(1)}/
+														{storage?.limit.toFixed(1)}
 													</span>
 												</div>
 												<div className="flex justify-between text-xs">

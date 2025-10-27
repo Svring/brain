@@ -1,57 +1,58 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
 import {
-  Code,
-  Database,
-  CircleCheckBigIcon,
-  Rocket,
-  Server,
-  Hammer,
+	CircleCheckBigIcon,
+	Code,
+	Database,
+	Hammer,
+	Rocket,
+	Server,
 } from "lucide-react";
-import { Spinner } from "@/components/ui/spinner";
+import { useRouter } from "next/navigation";
+import type React from "react";
+import { useEffect, useMemo, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
+import { z } from "zod";
 import { ProjectProposalCard } from "@/components/chat/state-cards/project-proposal/project-proposal-card";
-import type { ProjectProposal } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
-import { useProjectCreate } from "@/hooks/brain/use-project-create";
-import { useResourceQuotaChecker } from "@/lib/validation/resource-quota-checker";
 import { useHomeChat } from "@/components/provider/home-chat-provider";
 import { useThreads } from "@/components/provider/thread-provider";
-import { useChatActions } from "@/contexts/chat/chat-context";
-import { useRouter } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import { useAuthState } from "@/contexts/auth/auth-context";
-import { v4 as uuidv4 } from "uuid";
+import { useChatActions } from "@/contexts/chat/chat-context";
+import { useProjectCreate } from "@/hooks/brain/use-project-create";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
-import { useQuery } from "@tanstack/react-query";
-import type { DevboxRuntime } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-runtimes";
-import { nanoid } from "@/lib/utils";
-import { z } from "zod";
-import { DEVBOX_RUNTIMES } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-runtimes";
+import type { ProjectProposal } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
 import { CLUSTER_TYPES } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-types";
+import type { DevboxRuntime } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-runtimes";
+import { DEVBOX_RUNTIMES } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-runtimes";
 import { deriveClusterEnvVariable } from "@/lib/sealos/services/env/cluster/cluster-env-utils";
-import { devboxCreateFormSchema } from "@/schemas/forms/devbox/devbox-create-form-schema";
+import { nanoid } from "@/lib/utils";
+import { useResourceQuotaChecker } from "@/lib/validation/resource-quota-checker";
 import { clusterCreateFormSchema } from "@/schemas/forms/cluster/cluster-create-form-schema";
+import { devboxCreateFormSchema } from "@/schemas/forms/devbox/devbox-create-form-schema";
 import { launchpadCreateFormSchema } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
 
 // Zod schemas for DevenvDeploymentCard args
 export const DeployDevBoxSchema = z.object({
-  name: z.string().min(1, "DevBox name is required"),
-  runtime: z.enum(DEVBOX_RUNTIMES),
-  ports: z.array(z.number().int().min(1).max(65535)).optional(),
-  reliance: z.array(z.string()).optional(),
+	name: z.string().min(1, "DevBox name is required"),
+	runtime: z.enum(DEVBOX_RUNTIMES),
+	ports: z.array(z.number().int().min(1).max(65535)).optional(),
+	reliance: z.array(z.string()).optional(),
 });
 
 export const DeployDatabaseSchema = z.object({
-  name: z.string().min(1, "Database name is required"),
-  type: z.enum([...CLUSTER_TYPES] as [string, ...string[]]),
+	name: z.string().min(1, "Database name is required"),
+	type: z.enum([...CLUSTER_TYPES] as [string, ...string[]]),
 });
 
 export const DevenvDeploymentArgsSchema = z.object({
-  project_name: z.string().min(1, "Project name is required"),
-  devbox: z.array(DeployDevBoxSchema).optional(),
-  database: z.array(DeployDatabaseSchema).optional(),
+	project_name: z.string().min(1, "Project name is required"),
+	devbox: z.array(DeployDevBoxSchema).optional(),
+	database: z.array(DeployDatabaseSchema).optional(),
 });
 
 export type DeployDevBox = z.infer<typeof DeployDevBoxSchema>;
@@ -59,487 +60,485 @@ export type DeployDatabase = z.infer<typeof DeployDatabaseSchema>;
 export type DevenvDeploymentArgs = z.infer<typeof DevenvDeploymentArgsSchema>;
 
 interface DevboxTemplate {
-  runtime: string;
-  config: {
-    appPorts: Array<{
-      name: string;
-      port: number;
-      protocol: string;
-    }>;
-    ports: Array<{
-      containerPort: number;
-      name: string;
-      protocol: string;
-    }>;
-    releaseArgs: string[];
-    releaseCommand: string[];
-    user: string;
-    workingDir: string;
-  };
+	runtime: string;
+	config: {
+		appPorts: Array<{
+			name: string;
+			port: number;
+			protocol: string;
+		}>;
+		ports: Array<{
+			containerPort: number;
+			name: string;
+			protocol: string;
+		}>;
+		releaseArgs: string[];
+		releaseCommand: string[];
+		user: string;
+		workingDir: string;
+	};
 }
 
 interface ProposeDevenvDeploymentMessageProps {
-  args: DevenvDeploymentArgs;
-  result?: any;
-  onSuccess?: (data: any) => void;
+	args: DevenvDeploymentArgs;
+	result?: any;
+	onSuccess?: (data: any) => void;
 }
 
 const DevenvDeploymentSuccessMessage = ({
-  args,
+	args,
 }: {
-  args: DevenvDeploymentArgs;
+	args: DevenvDeploymentArgs;
 }) => {
-  const hasDevbox = args.devbox && args.devbox.length > 0;
-  const hasDatabase = args.database && args.database.length > 0;
+	const hasDevbox = args.devbox && args.devbox.length > 0;
+	const hasDatabase = args.database && args.database.length > 0;
 
-  return (
-    <div className="w-full">
-      <div className="flex items-center justify-center p-2 border rounded-lg bg-background-secondary">
-        <div className="flex items-center gap-2">
-          <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
-          <p className="text-sm">
-            Development environment deployed successfully
-            {hasDevbox && ` (${args.devbox?.[0]?.name})`}
-            {hasDatabase && ` with ${args.database?.[0]?.name} database`}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
+	return (
+		<div className="w-full">
+			<div className="flex items-center justify-center p-2 border rounded-lg bg-background-secondary">
+				<div className="flex items-center gap-2">
+					<CircleCheckBigIcon className="h-4 w-4 text-green-600" />
+					<p className="text-sm">
+						Development environment deployed successfully
+						{hasDevbox && ` (${args.devbox?.[0]?.name})`}
+						{hasDatabase && ` with ${args.database?.[0]?.name} database`}
+					</p>
+				</div>
+			</div>
+		</div>
+	);
 };
 
 const DevenvDeploymentCard = ({
-  args,
-  onSuccess,
+	args,
+	onSuccess,
 }: {
-  args: DevenvDeploymentArgs;
-  onSuccess?: (data: any) => void;
+	args: DevenvDeploymentArgs;
+	onSuccess?: (data: any) => void;
 }) => {
-  const { createProject, isCreating } = useProjectCreate();
-  const { checkAndShowQuotaError } = useResourceQuotaChecker();
-  const { threadId, messages } = useHomeChat();
-  const { patchThread, updateThreadState } = useThreads();
-  const { openProjectChat } = useChatActions();
-  const router = useRouter();
-  const { auth } = useAuthState();
-  const { devbox } = useTRPCClients();
+	const { createProject, isCreating } = useProjectCreate();
+	const { checkAndShowQuotaError } = useResourceQuotaChecker();
+	const { threadId, messages } = useHomeChat();
+	const { patchThread, updateThreadState } = useThreads();
+	const { openProjectChat } = useChatActions();
+	const router = useRouter();
+	const { auth } = useAuthState();
+	const { devbox } = useTRPCClients();
 
-  // Fetch devbox templates
-  const { data: templates, isLoading: isLoadingTemplates } = useQuery(
-    devbox.templates.queryOptions()
-  );
+	// Fetch devbox templates
+	const { data: templates, isLoading: isLoadingTemplates } = useQuery(
+		devbox.templates.queryOptions(),
+	);
 
-  // Process args without nanoid suffixes
-  const processedArgs = useMemo(() => {
-    // Process databases without nanoid
-    const processedDatabases =
-      args.database?.map((db) => ({
-        name: db.name,
-        type: db.type as any,
-      })) || [];
+	// Process args without nanoid suffixes
+	const processedArgs = useMemo(() => {
+		// Process databases without nanoid
+		const processedDatabases =
+			args.database?.map((db) => ({
+				name: db.name,
+				type: db.type as any,
+			})) || [];
 
-    const processedDevboxes =
-      args.devbox?.map((devbox) => ({
-        ...devbox,
-        name: devbox.name,
-        // Reliance names remain the same since database names are unchanged
-        reliance: devbox.reliance || [],
-      })) || [];
+		const processedDevboxes =
+			args.devbox?.map((devbox) => ({
+				...devbox,
+				name: devbox.name,
+				// Reliance names remain the same since database names are unchanged
+				reliance: devbox.reliance || [],
+			})) || [];
 
-    return {
-      processedDevboxes,
-      processedDatabases,
-    };
-  }, [args.devbox, args.database]);
+		return {
+			processedDevboxes,
+			processedDatabases,
+		};
+	}, [args.devbox, args.database]);
 
-  // Create initial proposal using memoized processed args
-  const initialProposal = useMemo(() => {
-    const { processedDevboxes, processedDatabases } = processedArgs;
+	// Create initial proposal using memoized processed args
+	const initialProposal = useMemo(() => {
+		const { processedDevboxes, processedDatabases } = processedArgs;
 
-    const devboxes = processedDevboxes.map((devbox) => {
-      // Generate env variables from updated reliances
-      const envVars =
-        devbox.reliance?.flatMap((relianceName) =>
-          deriveClusterEnvVariable(relianceName)
-        ) || [];
+		const devboxes = processedDevboxes.map((devbox) => {
+			// Generate env variables from updated reliances
+			const envVars =
+				devbox.reliance?.flatMap((relianceName) =>
+					deriveClusterEnvVariable(relianceName),
+				) || [];
 
-      return {
-        name: devbox.name,
-        runtime: devbox.runtime as any,
-        ports: (devbox.ports || []).map((port: number) => ({
-          number: port,
-          publicAccess: true,
-        })),
-        env: envVars.map((envVar) => {
-          if (envVar.valueFrom?.secretKeyRef) {
-            return {
-              name: envVar.name,
-              valueFrom: {
-                secretKeyRef: {
-                  name: envVar.valueFrom.secretKeyRef.name,
-                  key: envVar.valueFrom.secretKeyRef.key,
-                },
-              },
-            };
-          } else {
-            return {
-              name: envVar.name,
-              value: envVar.value || "",
-            };
-          }
-        }),
-      };
-    });
+			return {
+				name: devbox.name,
+				runtime: devbox.runtime as any,
+				ports: (devbox.ports || []).map((port: number) => ({
+					number: port,
+					publicAccess: true,
+				})),
+				env: envVars.map((envVar) => {
+					if (envVar.valueFrom?.secretKeyRef) {
+						return {
+							name: envVar.name,
+							valueFrom: {
+								secretKeyRef: {
+									name: envVar.valueFrom.secretKeyRef.name,
+									key: envVar.valueFrom.secretKeyRef.key,
+								},
+							},
+						};
+					} else {
+						return {
+							name: envVar.name,
+							value: envVar.value || "",
+						};
+					}
+				}),
+			};
+		});
 
-    const databases = processedDatabases;
+		const databases = processedDatabases;
 
-    return {
-      name: args.project_name,
-      resources: {
-        devbox: devboxes,
-        database: databases,
-      },
-    };
-  }, [processedArgs]);
+		return {
+			name: args.project_name,
+			resources: {
+				devbox: devboxes,
+				database: databases,
+			},
+		};
+	}, [processedArgs]);
 
-  const [internalProposal, setInternalProposal] =
-    useState<ProjectProposal>(initialProposal);
+	const [internalProposal, setInternalProposal] =
+		useState<ProjectProposal>(initialProposal);
 
-  // Update internal proposal when initial proposal changes
-  useEffect(() => {
-    setInternalProposal(initialProposal);
-  }, [initialProposal]);
+	// Update internal proposal when initial proposal changes
+	useEffect(() => {
+		setInternalProposal(initialProposal);
+	}, [initialProposal]);
 
-  // Update proposal with template-based ports when templates are loaded
-  useEffect(() => {
-    if (
-      templates &&
-      Array.isArray(templates) &&
-      args.devbox &&
-      args.devbox.length > 0 &&
-      !isLoadingTemplates
-    ) {
-      const updatedDevboxes = args.devbox.map((devbox: DeployDevBox) => {
-        const devboxRuntime = devbox.runtime;
-        const template = templates.find(
-          (t: DevboxTemplate) => t.runtime === devboxRuntime
-        );
+	// Update proposal with template-based ports when templates are loaded
+	useEffect(() => {
+		if (
+			templates &&
+			Array.isArray(templates) &&
+			args.devbox &&
+			args.devbox.length > 0 &&
+			!isLoadingTemplates
+		) {
+			const updatedDevboxes = args.devbox.map((devbox: DeployDevBox) => {
+				const devboxRuntime = devbox.runtime;
+				const template = templates.find(
+					(t: DevboxTemplate) => t.runtime === devboxRuntime,
+				);
 
-        // Generate env variables from updated reliances
-        const envVars =
-          devbox.reliance?.flatMap((relianceName) =>
-            deriveClusterEnvVariable(relianceName)
-          ) || [];
+				// Generate env variables from updated reliances
+				const envVars =
+					devbox.reliance?.flatMap((relianceName) =>
+						deriveClusterEnvVariable(relianceName),
+					) || [];
 
-        if (template && template.config.appPorts) {
-          const templatePorts = template.config.appPorts.map(
-            (appPort: { port: number }) => ({
-              number: appPort.port,
-              publicAccess: true,
-            })
-          );
+				if (template && template.config.appPorts) {
+					const templatePorts = template.config.appPorts.map(
+						(appPort: { port: number }) => ({
+							number: appPort.port,
+							publicAccess: true,
+						}),
+					);
 
-          return {
-            name: devbox.name,
-            runtime: devbox.runtime as any,
-            ports: templatePorts,
-            env: envVars.map((envVar) => {
-              if (envVar.valueFrom?.secretKeyRef) {
-                return {
-                  name: envVar.name,
-                  valueFrom: {
-                    secretKeyRef: {
-                      name: envVar.valueFrom.secretKeyRef.name,
-                      key: envVar.valueFrom.secretKeyRef.key,
-                    },
-                  },
-                };
-              } else {
-                return {
-                  name: envVar.name,
-                  value: envVar.value || "",
-                };
-              }
-            }),
-          };
-        } else {
-          // Fallback to original ports if no template found
-          return {
-            name: devbox.name,
-            runtime: devbox.runtime as any,
-            ports: (devbox.ports || []).map((port: number) => ({
-              number: port,
-              publicAccess: true,
-            })),
-            env: envVars.map((envVar) => {
-              if (envVar.valueFrom?.secretKeyRef) {
-                return {
-                  name: envVar.name,
-                  valueFrom: {
-                    secretKeyRef: {
-                      name: envVar.valueFrom.secretKeyRef.name,
-                      key: envVar.valueFrom.secretKeyRef.key,
-                    },
-                  },
-                };
-              } else {
-                return {
-                  name: envVar.name,
-                  value: envVar.value || "",
-                };
-              }
-            }),
-          };
-        }
-      });
+					return {
+						name: devbox.name,
+						runtime: devbox.runtime as any,
+						ports: templatePorts,
+						env: envVars.map((envVar) => {
+							if (envVar.valueFrom?.secretKeyRef) {
+								return {
+									name: envVar.name,
+									valueFrom: {
+										secretKeyRef: {
+											name: envVar.valueFrom.secretKeyRef.name,
+											key: envVar.valueFrom.secretKeyRef.key,
+										},
+									},
+								};
+							} else {
+								return {
+									name: envVar.name,
+									value: envVar.value || "",
+								};
+							}
+						}),
+					};
+				} else {
+					// Fallback to original ports if no template found
+					return {
+						name: devbox.name,
+						runtime: devbox.runtime as any,
+						ports: (devbox.ports || []).map((port: number) => ({
+							number: port,
+							publicAccess: true,
+						})),
+						env: envVars.map((envVar) => {
+							if (envVar.valueFrom?.secretKeyRef) {
+								return {
+									name: envVar.name,
+									valueFrom: {
+										secretKeyRef: {
+											name: envVar.valueFrom.secretKeyRef.name,
+											key: envVar.valueFrom.secretKeyRef.key,
+										},
+									},
+								};
+							} else {
+								return {
+									name: envVar.name,
+									value: envVar.value || "",
+								};
+							}
+						}),
+					};
+				}
+			});
 
-      setInternalProposal((prev) => ({
-        ...prev,
-        resources: {
-          ...prev.resources,
-          devbox: updatedDevboxes,
-        },
-      }));
-    }
-  }, [templates, args.devbox, isLoadingTemplates]);
+			setInternalProposal((prev) => ({
+				...prev,
+				resources: {
+					...prev.resources,
+					devbox: updatedDevboxes,
+				},
+			}));
+		}
+	}, [templates, args.devbox, isLoadingTemplates]);
 
-  const handleDeploy = async () => {
-    try {
-      console.log("internalProposal", internalProposal);
+	const handleDeploy = async () => {
+		try {
+			// 计算项目总资源需求
+			let totalCpu = 0;
+			let totalMemory = 0;
+			let totalStorage = 0;
+			let totalPorts = 0;
 
-      // 计算项目总资源需求
-      let totalCpu = 0;
-      let totalMemory = 0;
-      let totalStorage = 0;
-      let totalPorts = 0;
+			// 获取schema默认值
+			const devboxDefaults = devboxCreateFormSchema.parse({});
+			const clusterDefaults = clusterCreateFormSchema.parse({});
+			const launchpadDefaults = launchpadCreateFormSchema.parse({});
 
-      // 获取schema默认值
-      const devboxDefaults = devboxCreateFormSchema.parse({});
-      const clusterDefaults = clusterCreateFormSchema.parse({});
-      const launchpadDefaults = launchpadCreateFormSchema.parse({});
+			// 计算DevBox资源
+			if (internalProposal.resources.devbox?.length) {
+				internalProposal.resources.devbox.forEach((devbox) => {
+					totalCpu += devboxDefaults.resource.cpu;
+					totalMemory += devboxDefaults.resource.memory;
+					totalPorts += devbox.ports?.length || 0;
+				});
+			}
 
-      // 计算DevBox资源
-      if (internalProposal.resources.devbox?.length) {
-        internalProposal.resources.devbox.forEach((devbox) => {
-          totalCpu += devboxDefaults.resource.cpu;
-          totalMemory += devboxDefaults.resource.memory;
-          totalPorts += devbox.ports?.length || 0;
-        });
-      }
+			// 计算Database资源
+			if (internalProposal.resources.database?.length) {
+				internalProposal.resources.database.forEach((database) => {
+					totalCpu += clusterDefaults.resource.cpu;
+					totalMemory += clusterDefaults.resource.memory;
+					totalStorage += clusterDefaults.resource.storage || 0;
+				});
+			}
 
-      // 计算Database资源
-      if (internalProposal.resources.database?.length) {
-        internalProposal.resources.database.forEach((database) => {
-          totalCpu += clusterDefaults.resource.cpu;
-          totalMemory += clusterDefaults.resource.memory;
-          totalStorage += clusterDefaults.resource.storage || 0;
-        });
-      }
+			// 计算App资源
+			if (internalProposal.resources.app?.length) {
+				internalProposal.resources.app.forEach((app) => {
+					totalCpu += launchpadDefaults.resource.cpu;
+					totalMemory += launchpadDefaults.resource.memory;
+					totalPorts += app.ports?.length || 0;
+				});
+			}
 
-      // 计算App资源
-      if (internalProposal.resources.app?.length) {
-        internalProposal.resources.app.forEach((app) => {
-          totalCpu += launchpadDefaults.resource.cpu;
-          totalMemory += launchpadDefaults.resource.memory;
-          totalPorts += app.ports?.length || 0;
-        });
-      }
+			// 检查资源配额
+			const quotaCheckPassed = checkAndShowQuotaError({
+				cpu: totalCpu,
+				memory: totalMemory,
+				storage: totalStorage,
+				ports: totalPorts,
+			});
 
-      // 检查资源配额
-      const quotaCheckPassed = checkAndShowQuotaError({
-        cpu: totalCpu,
-        memory: totalMemory,
-        storage: totalStorage,
-        ports: totalPorts,
-      });
+			if (!quotaCheckPassed) {
+				return;
+			}
+			// Create the project
+			const projectName = await createProject(internalProposal);
 
-      if (!quotaCheckPassed) {
-        return;
-      }
-      // Create the project
-      const projectName = await createProject(internalProposal);
+			// Update thread metadata with deployment information
+			if (threadId) {
+				await patchThread.mutate({
+					threadId,
+					metadata: {
+						kubeconfig: auth?.kubeconfig,
+						projectName: projectName,
+						resourceTarget: null,
+					},
+				});
 
-      // Update thread metadata with deployment information
-      if (threadId) {
-        await patchThread.mutate({
-          threadId,
-          metadata: {
-            kubeconfig: auth?.kubeconfig,
-            projectName: projectName,
-            resourceTarget: null,
-          },
-        });
+				// Update tool messages with result field
+				if (messages && messages.length > 0) {
+					// Find all tool messages with the specified names
+					const toolMessageNames = [
+						"propose_image_deployment",
+						"propose_devenv_deployment",
+						"propose_template_deployment",
+					];
 
-        // Update tool messages with result field
-        if (messages && messages.length > 0) {
-          // Find all tool messages with the specified names
-          const toolMessageNames = [
-            "propose_image_deployment",
-            "propose_devenv_deployment",
-            "propose_template_deployment",
-          ];
+					// Create a copy of messages to modify
+					const updatedMessages = messages.map((message: any) => {
+						if (
+							message.type === "tool" &&
+							toolMessageNames.includes(message.name)
+						) {
+							return {
+								...message,
+								additional_kwargs: {
+									...message.additional_kwargs,
+									result: "project proposal skipped",
+								},
+							};
+						}
+						return message;
+					});
 
-          // Create a copy of messages to modify
-          const updatedMessages = messages.map((message: any) => {
-            if (
-              message.type === "tool" &&
-              toolMessageNames.includes(message.name)
-            ) {
-              return {
-                ...message,
-                additional_kwargs: {
-                  ...message.additional_kwargs,
-                  result: "project proposal skipped",
-                },
-              };
-            }
-            return message;
-          });
+					// Find the last occurrence of these tool messages and mark it as successful
+					let lastToolMessageIndex = -1;
+					for (let i = updatedMessages.length - 1; i >= 0; i--) {
+						const message = updatedMessages[i];
+						if (
+							message.type === "tool" &&
+							toolMessageNames.includes(message.name)
+						) {
+							lastToolMessageIndex = i;
+							break;
+						}
+					}
 
-          // Find the last occurrence of these tool messages and mark it as successful
-          let lastToolMessageIndex = -1;
-          for (let i = updatedMessages.length - 1; i >= 0; i--) {
-            const message = updatedMessages[i];
-            if (
-              message.type === "tool" &&
-              toolMessageNames.includes(message.name)
-            ) {
-              lastToolMessageIndex = i;
-              break;
-            }
-          }
+					// Update the last tool message with success result
+					if (lastToolMessageIndex !== -1) {
+						updatedMessages[lastToolMessageIndex] = {
+							...updatedMessages[lastToolMessageIndex],
+							additional_kwargs: {
+								...updatedMessages[lastToolMessageIndex].additional_kwargs,
+								result: "project created successfully",
+							},
+						};
+					}
 
-          // Update the last tool message with success result
-          if (lastToolMessageIndex !== -1) {
-            updatedMessages[lastToolMessageIndex] = {
-              ...updatedMessages[lastToolMessageIndex],
-              additional_kwargs: {
-                ...updatedMessages[lastToolMessageIndex].additional_kwargs,
-                result: "project created successfully",
-              },
-            };
-          }
+					// Add success system message to updatedMessages
+					const successMessage = {
+						id: uuidv4(),
+						type: "system" as const,
+						content: JSON.stringify({
+							type: "universal.event",
+							target: null,
+							payload: {
+								message: "project created successfully.",
+								instruction:
+									"The project has been successfully created and deployed. Encourage the user to explore their new project—suggest they check the project details, review resource status, monitor performance, or make further configurations. Invite them to ask for help with any aspect of their project or additional setup.",
+								createdAt: new Date().toISOString(),
+							},
+						}),
+						created_at: new Date().toISOString(),
+						updated_at: new Date().toISOString(),
+					};
 
-          // Add success system message to updatedMessages
-          const successMessage = {
-            id: uuidv4(),
-            type: "system" as const,
-            content: JSON.stringify({
-              type: "universal.event",
-              target: null,
-              payload: {
-                message: "project created successfully.",
-                instruction:
-                  "The project has been successfully created and deployed. Encourage the user to explore their new project—suggest they check the project details, review resource status, monitor performance, or make further configurations. Invite them to ask for help with any aspect of their project or additional setup.",
-                createdAt: new Date().toISOString(),
-              },
-            }),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          };
+					// Add success message to the updated messages array
+					updatedMessages.push(successMessage);
 
-          // Add success message to the updated messages array
-          updatedMessages.push(successMessage);
+					// Add AI message
+					const aiMessage = {
+						id: uuidv4(),
+						type: "ai" as const,
+						content:
+							"Project is successfully deployed and all resources will launch automatically, it may take some time before all public domains are accessible.",
+						created_at: new Date().toISOString(),
+						updated_at: new Date().toISOString(),
+					};
 
-          // Add AI message
-          const aiMessage = {
-            id: uuidv4(),
-            type: "ai" as const,
-            content:
-              "Project is successfully deployed and all resources will launch automatically, it may take some time before all public domains are accessible.",
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          };
+					// Add AI message to the updated messages array
+					updatedMessages.push(aiMessage);
 
-          // Add AI message to the updated messages array
-          updatedMessages.push(aiMessage);
+					// Add preview system message
+					const previewMessage = {
+						id: uuidv4(),
+						type: "system" as const,
+						content: JSON.stringify({
+							type: "universal.preview",
+							target: null,
+							payload: null,
+						}),
+						created_at: new Date().toISOString(),
+						updated_at: new Date().toISOString(),
+					};
 
-          // Add preview system message
-          const previewMessage = {
-            id: uuidv4(),
-            type: "system" as const,
-            content: JSON.stringify({
-              type: "universal.preview",
-              target: null,
-              payload: null,
-            }),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          };
+					// Add preview message to the updated messages array
+					updatedMessages.push(previewMessage);
 
-          // Add preview message to the updated messages array
-          updatedMessages.push(previewMessage);
+					// Update thread state with modified messages
+					await updateThreadState.mutate({
+						threadId,
+						values: {
+							messages: updatedMessages,
+						},
+						asNode: "entry_node",
+					});
+				}
+			}
 
-          // Update thread state with modified messages
-          await updateThreadState.mutate({
-            threadId,
-            values: {
-              messages: updatedMessages,
-            },
-            asNode: "entry_node",
-          });
-        }
-      }
+			// Open project chat
+			openProjectChat(projectName as string);
 
-      // Open project chat
-      openProjectChat(projectName as string);
+			// Navigate to the created project
+			router.push(`/projects/${projectName}`);
 
-      // Navigate to the created project
-      router.push(`/projects/${projectName}`);
+			onSuccess?.(projectName);
+		} catch (error) {
+			console.error("Failed to deploy development environment:", error);
+		}
+	};
 
-      onSuccess?.(projectName);
-    } catch (error) {
-      console.error("Failed to deploy development environment:", error);
-    }
-  };
-
-  return (
-    <div className="w-full border p-2 rounded-xl">
-      {/* Header with icon and text */}
-      {/* <div className="flex items-center mb-3">
+	return (
+		<div className="w-full border p-2 rounded-xl">
+			{/* Header with icon and text */}
+			{/* <div className="flex items-center mb-3">
         <div className="flex text-sm text-muted-foreground">
           <Hammer size={20} className="mr-2" />
           <span>Deploy development environment</span>
         </div>
       </div> */}
 
-      <ProjectProposalCard
-        proposal={internalProposal}
-        onProposalUpdate={setInternalProposal}
-      />
+			<ProjectProposalCard
+				proposal={internalProposal}
+				onProposalUpdate={setInternalProposal}
+			/>
 
-      <div className="pt-2">
-        <Button
-          onClick={handleDeploy}
-          disabled={isCreating}
-          className="w-full"
-          // variant={"outline"}
-        >
-          {isCreating ? (
-            <>
-              <Spinner variant="circle" size={16} className="mr-2" />
-              Deploying...
-            </>
-          ) : (
-            <>
-              <Rocket className="h-4 w-4 mr-2" />
-              Deploy
-            </>
-          )}
-        </Button>
-      </div>
-    </div>
-  );
+			<div className="pt-2">
+				<Button
+					onClick={handleDeploy}
+					disabled={isCreating}
+					className="w-full"
+					// variant={"outline"}
+				>
+					{isCreating ? (
+						<>
+							<Spinner variant="circle" size={16} className="mr-2" />
+							Deploying...
+						</>
+					) : (
+						<>
+							<Rocket className="h-4 w-4 mr-2" />
+							Deploy
+						</>
+					)}
+				</Button>
+			</div>
+		</div>
+	);
 };
 
 export const ProposeDevenvDeploymentMessage: React.FC<
-  ProposeDevenvDeploymentMessageProps
+	ProposeDevenvDeploymentMessageProps
 > = ({ args, result, onSuccess }) => {
-  // Check result first and return success state if it exists
-  if (result) {
-    return <DevenvDeploymentSuccessMessage args={args} />;
-  }
+	// Check result first and return success state if it exists
+	if (result) {
+		return <DevenvDeploymentSuccessMessage args={args} />;
+	}
 
-  // Return the card component with args and logic
-  return <DevenvDeploymentCard args={args} onSuccess={onSuccess} />;
+	// Return the card component with args and logic
+	return <DevenvDeploymentCard args={args} onSuccess={onSuccess} />;
 };

@@ -45,6 +45,8 @@ export async function GET(request: NextRequest) {
 				},
 			});
 
+			console.log("response", response);
+
 			// If HEAD fails, try GET request
 			if (!response.ok) {
 				clearTimeout(timeoutId);
@@ -58,10 +60,15 @@ export async function GET(request: NextRequest) {
 						"User-Agent": "Mozilla/5.0 (compatible; URL-Checker/1.0)",
 					},
 				});
+
+				console.log("get response", response);
+
 				clearTimeout(getTimeoutId);
 			} else {
 				clearTimeout(timeoutId);
 			}
+
+			console.log("response", response);
 
 			// Consider it reachable if we get a meaningful HTTP response (2xx, 3xx, or 4xx)
 			// 5xx errors might indicate server issues, but the service is still "reachable"
