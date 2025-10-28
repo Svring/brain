@@ -94,45 +94,25 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 
 	const checkUrlStatus = async (url: string) => {
 		try {
-			// Try to fetch the URL directly with a HEAD request
-			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), 5000);
+			const regionUrl = context.regionUrl;
+			const params = new URLSearchParams({
+				url,
+				...(regionUrl && { regionUrl }),
+			});
+			const response = await fetch(`/api/check-url?${params.toString()}`);
+			const data = await response.json();
 
-			try {
-				const response = await fetch(url, {
-					method: "HEAD",
-					signal: controller.signal,
-					mode: "no-cors", // This prevents CORS errors but limits response info
-				});
+			const canEmbed = data.ok && data.embedAllowed;
 
-				console.log("response", response);
-
-				clearTimeout(timeoutId);
-
-				// With no-cors mode, we can't read the response status or headers
-				// but if the fetch succeeds without error, the URL is likely reachable
-				setUrlStatuses((prev) => ({
-					...prev,
-					[url]: {
-						isSuccess: true,
-						checked: true,
-					},
-				}));
-			} catch (fetchError) {
-				clearTimeout(timeoutId);
-
-				// If HEAD fails, mark as unsuccessful
-				console.log(`HEAD request failed for ${url}`, fetchError);
-				setUrlStatuses((prev) => ({
-					...prev,
-					[url]: {
-						isSuccess: false,
-						checked: true,
-					},
-				}));
-			}
+			setUrlStatuses((prev) => ({
+				...prev,
+				[url]: {
+					isSuccess: canEmbed,
+					checked: true,
+				},
+			}));
 		} catch (error) {
-			console.log(`URL check failed for ${url}, will retry...`, error);
+			console.log(`[Preview] ${url}: Check failed, will retry...`, error);
 			setUrlStatuses((prev) => ({
 				...prev,
 				[url]: {
@@ -271,7 +251,7 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 
 						<button
 							type="button"
-							className="relative w-full cursor-pointer hover:opacity-90 transition-opacity"
+							className="relative w-full cursor-pointer hover:opacity-90 transition-opacity overflow-hidden flex items-center justify-center"
 							style={{
 								aspectRatio: isSuccess && isChecked ? "16/9" : undefined,
 								height: isSuccess && isChecked ? undefined : "100px",
@@ -279,12 +259,27 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 							onClick={() => handleIframeClick(item.url)}
 						>
 							{isSuccess && isChecked ? (
-								<iframe
-									src={item.url}
-									className="w-full h-full rounded-lg pointer-events-none"
-									title="Resource Preview"
-									allowFullScreen
-								/>
+								<div
+									className="rounded-lg overflow-hidden w-full h-full"
+									style={{ width: "400px", height: "225px" }}
+								>
+									<iframe
+										src={item.url}
+										className="rounded-lg"
+										title="Resource Preview"
+										style={{
+											width: "1600px",
+											height: "900px",
+											transform: "scale(0.25)",
+											transformOrigin: "left top",
+											pointerEvents: "none",
+										}}
+										sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+										onLoad={() =>
+											console.log(`[Preview] Iframe loaded: ${item.url}`)
+										}
+									/>
+								</div>
 							) : (
 								<div className="w-full h-full rounded-lg bg-muted/20 flex items-center justify-center">
 									<TextShimmer
