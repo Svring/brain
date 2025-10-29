@@ -2,7 +2,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { type ReactNode, useEffect } from "react";
-import { toast } from "sonner";
 import { useEnv } from "@/components/provider/env-provider";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { useAuthState } from "@/contexts/auth/auth-context";
@@ -49,60 +48,44 @@ function LanggraphConfigInner({
 	// Handle initial config loading
 	useEffect(() => {
 		if (isLoading) {
-			// Check if environment variables are available first
-			if (env.AGENT_API_KEY && env.AGENT_BASE_URL && env.AGENT_MODEL_NAME) {
-				// Use environment variables as first priority
-				// console.log("env", env);
-				setConfig({
-					base_url: env.AGENT_BASE_URL,
-					api_key: env.AGENT_API_KEY,
-					model_name: env.AGENT_MODEL_NAME,
-				});
-			} else {
-				// Fall back to current logic if env vars are not complete
-				const config = isProduction
-					? {
-							apiKey: brainToken ? `sk-${brainToken.key}` : undefined,
-							baseUrl: `http://aiproxy.${aiProxyContext.baseUrl}/v1`,
-							modelName:
-								aiProxyContext.baseUrl?.endsWith("io") &&
-								!aiProxyContext.baseUrl?.endsWith("nip.io")
-									? "gpt-4.1"
-									: "kimi-k2-0711-preview",
-						}
-					: {
-							apiKey: auth?.apiKey,
-							baseUrl: aiProxyContext.baseUrl
-								? `http://aiproxy.${aiProxyContext.baseUrl}/v1`
-								: auth?.baseUrl,
-							modelName: "gpt-4.1",
-						};
-
-				// Check if config is complete
-				if (config.apiKey && config.baseUrl && config.modelName) {
-					setConfig({
-						base_url: config.baseUrl,
-						api_key: config.apiKey,
-						model_name: config.modelName,
-					});
-				} else if (isProduction && !tokensLoading) {
-					// No brain token found in production - automatically create one
-					if (!brainToken) {
-						createTokenMutation.mutateAsync(
-							{ name: "brain" },
-							{
-								onSuccess: () => {
-									window.location.reload();
-								},
-								onError: () => {
-									// If automatic creation fails, show error and reload
-									window.location.reload();
-								},
-							},
-						);
-					} else {
-						setConfigFailed();
+			const config = isProduction
+				? {
+						apiKey: brainToken ? `sk-${brainToken.key}` : undefined,
+						baseUrl: `http://aiproxy.${aiProxyContext.baseUrl}/v1`,
+						modelName: "gpt-4.1",
 					}
+				: {
+						apiKey: auth?.apiKey,
+						baseUrl: aiProxyContext.baseUrl
+							? `http://aiproxy.${aiProxyContext.baseUrl}/v1`
+							: auth?.baseUrl,
+						modelName: "gpt-4.1",
+					};
+
+			// Check if config is complete
+			if (config.apiKey && config.baseUrl && config.modelName) {
+				setConfig({
+					base_url: config.baseUrl,
+					api_key: config.apiKey,
+					model_name: config.modelName,
+				});
+			} else if (isProduction && !tokensLoading) {
+				// No brain token found in production - automatically create one
+				if (!brainToken) {
+					createTokenMutation.mutateAsync(
+						{ name: "brain" },
+						{
+							onSuccess: () => {
+								window.location.reload();
+							},
+							onError: () => {
+								// If automatic creation fails, show error and reload
+								window.location.reload();
+							},
+						},
+					);
+				} else {
+					setConfigFailed();
 				}
 			}
 		}
@@ -110,9 +93,6 @@ function LanggraphConfigInner({
 		isLoading,
 		isProduction,
 		brainToken,
-		env.AGENT_API_KEY,
-		env.AGENT_BASE_URL,
-		env.AGENT_MODEL_NAME,
 		setConfig,
 		setConfigFailed,
 		createTokenMutation.mutateAsync,

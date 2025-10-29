@@ -1,7 +1,9 @@
 "use server";
 
+import https from "node:https";
 import type { RunsInvokePayload } from "@langchain/langgraph-sdk";
 import { Client, type Metadata } from "@langchain/langgraph-sdk";
+import axios from "axios";
 
 const createClient = () => {
 	const apiUrl = process.env.LANGGRAPH_DEPLOYMENT_URL;
@@ -18,11 +20,16 @@ export const createThread = async ({
 	supersteps?: Array<{
 		updates: Array<{
 			values: Record<string, any>;
-			asNode: string;
+			as_node: string;
 		}>;
 	}>;
 }) => {
-	const client = createClient();
+	console.log("[createThread] Creating thread", { metadata, supersteps });
+
+	const apiUrl = process.env.LANGGRAPH_DEPLOYMENT_URL;
+	if (!apiUrl) {
+		throw new Error("LANGGRAPH_DEPLOYMENT_URL environment variable is not set");
+	}
 
 	// Ensure projectName is set to null if undefined
 	if (metadata.projectName === undefined) {
@@ -36,17 +43,41 @@ export const createThread = async ({
 		metadata.resourceTarget = null;
 	}
 
-	const createOptions: any = {
+	const payload: any = {
 		metadata,
-		graphId: process.env.LANGGRAPH_GRAPH_ID,
+		if_exists: "raise",
 	};
 
 	// Add supersteps if provided
 	if (supersteps) {
-		createOptions.supersteps = supersteps;
+		payload.supersteps = supersteps;
 	}
 
-	return await client.threads.create(createOptions);
+	try {
+		// Create HTTPS agent that rejects unauthorized certificates
+		const httpsAgent = new https.Agent({
+			rejectUnauthorized: false,
+		});
+
+		console.log("[createThread] Payload", payload);
+
+		const response = await axios.post(`${apiUrl}/threads`, payload, {
+			headers: {
+				"Content-Type": "application/json",
+			},
+			httpsAgent,
+		});
+
+		const thread = response.data;
+		console.log("[createThread] Thread created", thread);
+		return thread;
+	} catch (error) {
+		console.error(
+			"[createThread] Error creating thread",
+			JSON.stringify(error, null, 2),
+		);
+		throw error;
+	}
 };
 
 export const listThreads = async () => {

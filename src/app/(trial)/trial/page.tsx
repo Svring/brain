@@ -171,7 +171,7 @@ export default function Page() {
 							{humanMessageCount >= MESSAGE_LIMIT && (
 								<button
 									type="button"
-									className="absolute inset-0 bg-background/60 hover:bg-background/80 transition-colors cursor-pointer z-20 rounded-lg flex items-center justify-center border-none p-0"
+									className="absolute inset-0 bg-background/60 hover:bg-background/80 transition-colors cursor-pointer z-20 rounded-lg flex items-center justify-center border-none p-0 blur-sm"
 									onClick={() => {
 										const queryString = `sessionId=${sessionId}`;
 										requestLogin({
