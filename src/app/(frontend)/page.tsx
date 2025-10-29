@@ -6,34 +6,34 @@ import { useEffect } from "react";
 import { searchThreads } from "@/lib/langgraph/langgraph.api";
 
 export default function Page() {
-	const router = useRouter();
-	const [token] = useQueryState("token");
-	const [followup] = useQueryState("followup");
+    const router = useRouter();
+    const [sessionId] = useQueryState("sessionId");
+    const [args] = useQueryState("args");
 
-	// Handle token check and redirect
+	// Handle sessionId check and redirect
 	useEffect(() => {
 		const fetchData = async () => {
-			if (token) {
-				const data = await searchThreads({ token });
-				if (data.length > 0) {
-					const homeUrl = new URL("/home", window.location.origin);
-					homeUrl.searchParams.set("threadId", data[0]?.thread_id);
-					if (followup) {
-						homeUrl.searchParams.set("followup", followup);
-					}
-					router.push(homeUrl.pathname + homeUrl.search);
-					return;
-				}
-			}
-			// If no token or no threads found, redirect to home
-			const homeUrl = new URL("/home", window.location.origin);
-			if (followup) {
-				homeUrl.searchParams.set("followup", followup);
-			}
-			router.push(homeUrl.pathname + homeUrl.search);
-		};
-		fetchData();
-	}, [token, router, followup]);
+            if (sessionId) {
+                const data = await searchThreads({ sessionId });
+                if (data.length > 0) {
+                    const homeUrl = new URL("/home", window.location.origin);
+                    homeUrl.searchParams.set("threadId", data[0]?.thread_id);
+                    if (args) {
+                        homeUrl.searchParams.set("args", args);
+                    }
+                    router.push(homeUrl.pathname + homeUrl.search);
+                    return;
+                }
+            }
+            // If no sessionId or no threads found, redirect to home
+            const homeUrl = new URL("/home", window.location.origin);
+            if (args) {
+                homeUrl.searchParams.set("args", args);
+            }
+            router.push(homeUrl.pathname + homeUrl.search);
+        };
+        fetchData();
+    }, [sessionId, args]);
 
-	return <div></div>;
+    return <div></div>;
 }

@@ -2,9 +2,8 @@
 
 import { motion } from "framer-motion";
 import { LayoutTemplate, Loader2, Plus } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryState } from "nuqs";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AiChatInput } from "@/components/chat/components/input";
 import { AiMessages } from "@/components/chat/components/messages";
 import Suggestions from "@/components/chat/components/suggestions";
@@ -12,6 +11,7 @@ import RecentProjects from "@/components/project/recent-projects";
 import { useHomeChat } from "@/components/provider/home-chat-provider";
 import { Button } from "@/components/ui/button";
 import { Hero } from "@/components/ui/hero";
+import { Spinner } from "@/components/ui/spinner";
 import {
 	Tooltip,
 	TooltipContent,
@@ -21,8 +21,12 @@ import {
 import { useDeployTemplateDialog } from "@/hooks/brain/use-deploy-template-dialog";
 import { useLaunchpadCreateDialog } from "@/hooks/brain/use-launchpad-create-dialog";
 import useProjectSearch from "@/hooks/brain/use-projects-search";
+import { useDevenvDeployment } from "@/hooks/langgraph/use-devenv-deployment";
+import { useImageDeployment } from "@/hooks/langgraph/use-image-deployment";
+import { useTemplateDeployment } from "@/hooks/langgraph/use-template-deployment";
 
 export default function HomePage() {
+	const [isDeploying, setIsDeploying] = useState(false);
 	const {
 		messages,
 		submit,
@@ -30,6 +34,7 @@ export default function HomePage() {
 		isLoading,
 		createNewChat,
 		isCreatingNewChat,
+		threadId,
 	} = useHomeChat();
 	const {
 		projects,
@@ -41,20 +46,113 @@ export default function HomePage() {
 		useDeployTemplateDialog();
 	const { LaunchpadCreateDialog } = useLaunchpadCreateDialog();
 	const messagesScrollRef = useRef<HTMLDivElement>(null);
-	const [followup, setFollowup] = useQueryState("followup");
-	const decodedFollowup = followup ? decodeURIComponent(followup) : undefined;
+	const [argsParam] = useQueryState("args");
+
+	// Parse args from query (JSON string)
+	const parsedArgs = useMemo(() => {
+		if (!argsParam) return null;
+		try {
+			return JSON.parse(decodeURIComponent(argsParam));
+		} catch {
+			return null;
+		}
+	}, [argsParam]);
+
+	// Determine arg shape
+	const isTemplateArgs = useMemo(
+		() =>
+			Boolean(
+				parsedArgs &&
+					typeof parsedArgs === "object" &&
+					typeof parsedArgs.template_name === "string" &&
+					parsedArgs.template_name.length > 0,
+			),
+		[parsedArgs],
+	);
+	const isImageArgs = useMemo(
+		() =>
+			Boolean(
+				parsedArgs &&
+					typeof parsedArgs === "object" &&
+					typeof parsedArgs.image_name === "string" &&
+					parsedArgs.image_name.length > 0 &&
+					typeof parsedArgs.project_name === "string" &&
+					parsedArgs.project_name.length > 0 &&
+					typeof parsedArgs.name === "string" &&
+					parsedArgs.name.length > 0,
+			),
+		[parsedArgs],
+	);
+	const isDevenvArgs = useMemo(
+		() =>
+			Boolean(
+				parsedArgs &&
+					typeof parsedArgs === "object" &&
+					typeof parsedArgs.project_name === "string" &&
+					parsedArgs.project_name.length > 0 &&
+					(Array.isArray(parsedArgs.devbox) ||
+						Array.isArray(parsedArgs.database)),
+			),
+		[parsedArgs],
+	);
+
+	// Prepare args for hooks with safe defaults
+	const imageArgs = isImageArgs
+		? parsedArgs
+		: { image_name: "", project_name: "", name: "", ports: [] };
+	const devenvArgs = isDevenvArgs
+		? parsedArgs
+		: { project_name: "", devbox: [], database: [] };
+	const templateName = isTemplateArgs ? parsedArgs?.template_name : "";
+
+	// Initialize hooks (stable order)
+	const { deployImage } = useImageDeployment(imageArgs);
+	const { deployTemplate } = useTemplateDeployment(templateName);
+	const { deployDevenv } = useDevenvDeployment({
+		args: devenvArgs,
+	});
+
+	// Trigger deployment once when args are present
+	const hasDeployedRef = useRef(false);
+
+	useEffect(() => {
+		console.log("parsedArgs", parsedArgs);
+		if (!parsedArgs || hasDeployedRef.current) return;
+
+		const run = async () => {
+			try {
+				const willDeploy = isTemplateArgs || isImageArgs || isDevenvArgs;
+				if (willDeploy) setIsDeploying(true);
+
+				if (isTemplateArgs) {
+					// Prefer handleDeploy to respect input requirements
+					console.log("isTemplateArgs", isTemplateArgs);
+					await deployTemplate({
+						templateName,
+						templateForm: parsedArgs.template_form,
+					});
+				} else if (isImageArgs) {
+					// Prefer deployImage to respect input requirements
+					console.log("isImageArgs", isImageArgs);
+					await deployImage();
+				} else if (isDevenvArgs) {
+					// Prefer deployDevenv to respect input requirements
+					console.log("isDevenvArgs", isDevenvArgs);
+					await deployDevenv();
+				}
+			} catch (err) {
+				console.error("[HomePage] Auto-deploy failed:", err);
+			} finally {
+				setIsDeploying(false);
+				hasDeployedRef.current = true;
+			}
+		};
+		run();
+	}, [parsedArgs, isTemplateArgs, isImageArgs]);
 
 	// const hasMessages = messages.length > 0;
 	const showMessages = messages.length > 0;
 	const hasProjects = projects && projects.length > 0;
-
-	// Clear followup after it's been used once
-	useEffect(() => {
-		if (decodedFollowup) {
-			// Clear the followup from URL after component mounts
-			setFollowup(null);
-		}
-	}, [decodedFollowup, setFollowup]);
 
 	return (
 		<div className="h-screen w-full flex flex-col overflow-hidden">
@@ -148,7 +246,6 @@ export default function HomePage() {
 							onStop={stop}
 							isLoading={isLoading}
 							disableTools={true}
-							initialValue={decodedFollowup}
 						/>
 						{!showMessages && (
 							<>
@@ -189,6 +286,12 @@ export default function HomePage() {
 						<Suggestions onSubmit={submit} />
 					))}
 			</div>
+
+			{isDeploying && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm">
+					<Spinner variant="circle" size={20} />
+				</div>
+			)}
 		</div>
 	);
 }

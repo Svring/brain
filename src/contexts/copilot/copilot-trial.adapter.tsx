@@ -5,7 +5,6 @@ import { useStream } from "@langchain/langgraph-sdk/react";
 import { useMount } from "@reactuses/core";
 import type { ReactNode } from "react";
 import { createContext, use, useCallback, useState } from "react";
-import { v4 as uuid } from "uuid";
 import { createThread } from "@/lib/langgraph/langgraph.api";
 import { useEnvState } from "../env/env.context";
 
@@ -15,9 +14,10 @@ interface CopilotTrialAdapterContextValue {
 	stop: () => void;
 	messages: Message[];
 	hasMessages: boolean;
-	token: string;
+	sessionId: string | null;
 	threadId?: string;
 	createNewThread: () => void;
+	query: string | null;
 }
 
 export const copilotTrialAdapterContext = createContext<
@@ -26,19 +26,22 @@ export const copilotTrialAdapterContext = createContext<
 
 interface CopilotTrialAdapterProps {
 	children: ReactNode;
+	sessionId: string | null;
+	query: string | null;
 }
 
-export function CopilotTrialAdapter({ children }: CopilotTrialAdapterProps) {
+export function CopilotTrialAdapter({
+	children,
+	sessionId,
+	query,
+}: CopilotTrialAdapterProps) {
 	const { variables } = useEnvState();
-	const [token, setToken] = useState(() => uuid());
 	const [threadId, setThreadId] = useState<string | undefined>(undefined);
 
 	// Create new thread function
 	const createNewThread = async () => {
-		const newToken = uuid();
-		setToken(newToken);
 		try {
-			const data = await createThread({ metadata: { token: newToken } });
+			const data = await createThread({ metadata: { sessionId } });
 			setThreadId(data.thread_id);
 		} catch (error) {
 			console.error("Failed to create trial thread:", error);
@@ -88,9 +91,10 @@ export function CopilotTrialAdapter({ children }: CopilotTrialAdapterProps) {
 				stop,
 				messages,
 				hasMessages: messages && messages.length > 0,
-				token,
+				sessionId,
 				threadId: threadId ?? undefined,
 				createNewThread,
+				query,
 			}}
 		>
 			{children}

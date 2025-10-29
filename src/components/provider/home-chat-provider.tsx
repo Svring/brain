@@ -1,6 +1,6 @@
 "use client";
 
-import { type Interrupt, type Message, Thread } from "@langchain/langgraph-sdk";
+import type { Interrupt, Message } from "@langchain/langgraph-sdk";
 import { useStream } from "@langchain/langgraph-sdk/react";
 import { useQueryState } from "nuqs";
 import React, {
@@ -8,11 +8,9 @@ import React, {
 	type ReactNode,
 	useContext,
 	useEffect,
-	useState,
 } from "react";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
-import { useProjectState } from "@/contexts/project/project-context";
 import { useEnv } from "./env-provider";
 import { useThreads } from "./thread-provider";
 
@@ -33,6 +31,9 @@ interface HomeChatContextType {
 	// Thread information
 	threadId: string | null;
 
+	// Session information
+	sessionId: string | null;
+
 	// Submit function
 	submit: (
 		data: { stage?: string; command?: any },
@@ -48,10 +49,18 @@ const HomeChatContext = createContext<HomeChatContextType | undefined>(
 	undefined,
 );
 
-export function HomeChatProvider({ children }: { children: ReactNode }) {
+interface HomeChatProviderProps {
+	children: ReactNode;
+	sessionId?: string | null;
+}
+
+export function HomeChatProvider({
+	children,
+	sessionId,
+}: HomeChatProviderProps) {
 	const { auth } = useAuthState();
 	const { LANGGRAPH_DEPLOYMENT_URL, LANGGRAPH_GRAPH_ID } = useEnv();
-	const { baseUrl, apiKey, modelName, stage } = useLanggraphState();
+	const { baseUrl, apiKey, modelName } = useLanggraphState();
 	const { createNewThread } = useThreads();
 	const [threadId, setThreadId] = useQueryState("threadId");
 
@@ -103,8 +112,7 @@ export function HomeChatProvider({ children }: { children: ReactNode }) {
 		createNewThread.mutate(
 			{
 				metadata: {
-					kubeconfig: auth.kubeconfig,
-					isHomePage: true, // Mark this as a home page thread
+					sessionId,
 					graph_id: LANGGRAPH_GRAPH_ID, // Add the graph ID
 				},
 			},
@@ -131,8 +139,7 @@ export function HomeChatProvider({ children }: { children: ReactNode }) {
 				console.log("Creating new thread for home page...");
 				const thread = await createNewThread.mutateAsync({
 					metadata: {
-						kubeconfig: auth.kubeconfig,
-						isHomePage: true, // Mark this as a home page thread
+						sessionId,
 						graph_id: LANGGRAPH_GRAPH_ID, // Add the graph ID
 					},
 				});
@@ -146,7 +153,9 @@ export function HomeChatProvider({ children }: { children: ReactNode }) {
 		};
 
 		createHomeThread();
-	}, [auth?.kubeconfig]);
+	}, [
+		threadId,
+	]);
 
 	const value: HomeChatContextType = {
 		...streamValue,
@@ -156,6 +165,7 @@ export function HomeChatProvider({ children }: { children: ReactNode }) {
 		region_url: auth?.regionUrl,
 		kubeconfig: auth?.kubeconfig,
 		threadId,
+		sessionId: sessionId ?? null,
 		submit,
 		createNewChat,
 		isCreatingNewChat: createNewThread.isPending,

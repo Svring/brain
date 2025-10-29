@@ -69,6 +69,7 @@ export function AiChatInput({
 	};
 
 	const toolCategory = disableTools ? undefined : getToolCategory();
+
 	const handleSendMessage = async (message: string) => {
 		const userMessage: Message = {
 			type: "human",

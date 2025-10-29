@@ -251,7 +251,7 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 
 						<button
 							type="button"
-							className="relative w-full cursor-pointer hover:opacity-90 transition-opacity overflow-hidden flex items-center justify-center"
+							className="relative w-full cursor-pointer hover:opacity-90 transition-opacity overflow-hidden"
 							style={{
 								aspectRatio: isSuccess && isChecked ? "16/9" : undefined,
 								height: isSuccess && isChecked ? undefined : "100px",
@@ -259,10 +259,7 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 							onClick={() => handleIframeClick(item.url)}
 						>
 							{isSuccess && isChecked ? (
-								<div
-									className="rounded-lg overflow-hidden w-full h-full"
-									style={{ width: "400px", height: "225px" }}
-								>
+								<div className="rounded-lg overflow-hidden w-full h-full">
 									<iframe
 										src={item.url}
 										className="rounded-lg"
@@ -270,11 +267,11 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 										style={{
 											width: "1600px",
 											height: "900px",
-											transform: "scale(0.25)",
+											transform: "scale(0.3)",
 											transformOrigin: "left top",
 											pointerEvents: "none",
 										}}
-										sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+										sandbox="allow-scripts allow-same-origin"
 										onLoad={() =>
 											console.log(`[Preview] Iframe loaded: ${item.url}`)
 										}
@@ -282,14 +279,20 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 								</div>
 							) : (
 								<div className="w-full h-full rounded-lg bg-muted/20 flex items-center justify-center">
-									<TextShimmer
-										as="div"
-										className=""
-										duration={1.5}
-										spread={1.5}
-									>
-										{isChecked ? "Application unavailable" : "Checking..."}
-									</TextShimmer>
+									{isChecked ? (
+										<span className="text-sm text-muted-foreground">
+											Preview unavailable
+										</span>
+									) : (
+										<TextShimmer
+											as="div"
+											className=""
+											duration={1.5}
+											spread={1.5}
+										>
+											Checking...
+										</TextShimmer>
+									)}
 								</div>
 							)}
 						</button>

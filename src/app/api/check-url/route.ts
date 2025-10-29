@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 			rejectUnauthorized: false,
 		});
 
-		const refererUrl = "https://brain.usw.sealos.io";
+		const refererUrl = `https://brain.${regionUrl}`;
 
 		const result = await axios.get(url, {
 			method: "HEAD",

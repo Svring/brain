@@ -12,7 +12,6 @@ import {
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { LoadingScreen } from "@/components/ui/loading-screen";
 import { Spinner } from "@/components/ui/spinner";
 import { useAutoScroll } from "@/hooks/use-auto-scroll";
 import { useResourceQuotaChecker } from "@/lib/validation/resource-quota-checker";
@@ -126,21 +125,15 @@ export function AiMessages({
 							status={(message as any).status}
 						/>
 					)}
-					{/* {(message as any).type === "tool_call" && typeof (message as any).content === "string" && (
-            <ToolCallRenderer
-              content={(message as any).content}
-              result={(message as any).additional_kwargs?.result}
-              id={message.id}
-              tool_call_id={(message as any).tool_call_id}
-              status={(message as any).status}
-            />
-          )} */}
 				</div>
 			);
 		});
 
 		// Add "Thinking..." indicator when streaming
-		if (isLoading) {
+		if (
+			(isLoading && messages.at(-1)?.type === "human") ||
+			messages.at(-1)?.content === ""
+		) {
 			messageElements.push(
 				<div key="thinking-indicator" className="mb-2">
 					<div className="flex justify-start">
