@@ -64,14 +64,12 @@ const TemplateDeploymentCard = ({
 			const fullArgs = templateForm
 				? { ...args, template_form: templateForm }
 				: args;
-			const qp = encodeURIComponent(
-				new URLSearchParams({
-					sessionId: sessionId,
-					args: JSON.stringify(fullArgs),
-				}).toString(),
-			);
-			console.log("query params", qp);
-			requestLogin({ pathname: "/", query: qp });
+			const queryParams = {
+				sessionId: sessionId,
+				args: JSON.stringify(fullArgs),
+			};
+			console.log("query params", queryParams);
+			requestLogin({ pathname: "/", query: queryParams });
 			return;
 		}
 

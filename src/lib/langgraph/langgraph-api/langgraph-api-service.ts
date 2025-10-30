@@ -133,7 +133,7 @@ export const deleteThread = async (threadId: string) => {
 };
 
 export const patchThread = async (threadId: string, metadata: Metadata) => {
-	const apiUrl = process.env["LANGGRAPH_DEPLOYMENT_URL"];
+	const apiUrl = process.env.LANGGRAPH_DEPLOYMENT_URL;
 	if (!apiUrl) {
 		throw new Error("LANGGRAPH_DEPLOYMENT_URL environment variable is not set");
 	}
@@ -141,23 +141,26 @@ export const patchThread = async (threadId: string, metadata: Metadata) => {
 	// console.log("[patchThread] Patching thread", { threadId, metadata });
 
 	try {
-		const response = await fetch(`${apiUrl}/threads/${threadId}`, {
-			method: "PATCH",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-				metadata: metadata,
-			}),
+		// Create HTTPS agent that rejects unauthorized certificates
+		const httpsAgent = new https.Agent({
+			rejectUnauthorized: false,
 		});
 
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		}
+		const response = await axios.patch(
+			`${apiUrl}/threads/${threadId}`,
+			{
+				metadata: metadata,
+			},
+			{
+				headers: {
+					"Content-Type": "application/json",
+				},
+				httpsAgent,
+			},
+		);
 
-		const result = await response.json();
-		// console.log("[patchThread] Patch result", result);
-		return result;
+		// console.log("[patchThread] Patch result", response.data);
+		return response.data;
 	} catch (error) {
 		console.error("[patchThread] Error patching thread", error);
 		throw error;

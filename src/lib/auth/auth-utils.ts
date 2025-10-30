@@ -294,13 +294,14 @@ export const requestLogin = ({
 	query,
 }: {
 	pathname: string;
-	query: string;
+	query: Record<string, string>;
 }) => {
 	createSealosApp();
+	const queryString = new URLSearchParams(query).toString();
 	sealosApp.runEvents("requestLogin", {
 		appKey: "system-brain",
 		pathname: pathname,
-		query: query,
+		query: queryString,
 	});
 };
 

@@ -59,10 +59,13 @@ export default function Page() {
 	const handleSubmit = (data: { messages: Message[] }) => {
 		// If limit is reached, trigger login request
 		if (humanMessageCount >= MESSAGE_LIMIT) {
-			const queryString = `sessionId=${sessionId}`;
+			const queryParams = {
+				sessionId: sessionId || "",
+			};
+			console.log("query params", queryParams);
 			requestLogin({
 				pathname: "/",
-				query: queryString,
+				query: queryParams,
 			});
 			return;
 		}
@@ -173,10 +176,11 @@ export default function Page() {
 									type="button"
 									className="absolute inset-0 bg-background/60 hover:bg-background/80 transition-colors cursor-pointer z-20 rounded-lg flex items-center justify-center border-none p-0 blur-sm"
 									onClick={() => {
-										const queryString = `sessionId=${sessionId}`;
 										requestLogin({
 											pathname: "/",
-											query: queryString,
+											query: {
+												sessionId: sessionId || "",
+											},
 										});
 									}}
 								>
