@@ -64,11 +64,9 @@ export const getAiProxyTokens = createParallelAction(
 	): Promise<AiProxyTokenListResponse["data"]> => {
 		try {
 			const api = await createAiProxyApi(context);
-			console.log("api request: ", api);
 			const response = await api.get("/user/token", {
 				params: { page: 1, perPage: 10 },
 			});
-			console.log("AI Proxy Tokens Response:", JSON.stringify(response.data));
 			return response.data.data;
 		} catch (error) {
 			console.error("Error fetching AI Proxy Tokens:", JSON.stringify(error));

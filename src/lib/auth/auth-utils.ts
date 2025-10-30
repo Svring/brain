@@ -297,8 +297,8 @@ export const requestLogin = ({
 	query: string;
 }) => {
 	createSealosApp();
-	sealosApp.runEvents("request_login", {
-		appName: "system-brain",
+	sealosApp.runEvents("requestLogin", {
+		appKey: "system-brain",
 		pathname: pathname,
 		query: query,
 	});

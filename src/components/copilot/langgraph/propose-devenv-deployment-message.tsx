@@ -119,11 +119,16 @@ const DevenvDeploymentCard = ({
 	const handleDeploy = async () => {
 		// If sessionId is present, request login instead of creating project
 		if (sessionId) {
-			const queryString = `sessionId=${sessionId}&args=${encodeURIComponent(JSON.stringify(args))}`;
-			console.log(queryString);
+			const qp = encodeURIComponent(
+				new URLSearchParams({
+					sessionId: sessionId,
+					args: JSON.stringify(args),
+				}).toString(),
+			);
+			console.log("query params", qp);
 			requestLogin({
 				pathname: "/",
-				query: queryString,
+				query: qp,
 			});
 			return;
 		}

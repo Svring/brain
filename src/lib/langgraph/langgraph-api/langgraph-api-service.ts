@@ -41,6 +41,8 @@ export const createThread = async ({
 		metadata.resourceTarget = null;
 	}
 
+	metadata.graph_id = "orca";
+
 	const payload: any = {
 		metadata,
 		if_exists: "raise",
@@ -54,7 +56,7 @@ export const createThread = async ({
 	try {
 		// Create HTTPS agent that rejects unauthorized certificates
 		const httpsAgent = new https.Agent({
-			rejectUnauthorized: true,
+			rejectUnauthorized: false,
 		});
 
 		const response = await axios.post(`${apiUrl}/threads`, payload, {
@@ -87,8 +89,42 @@ export const updateThreadState = async (
 	values: any,
 	asNode: string,
 ) => {
-	const client = createClient();
-	return await client.threads.updateState(threadId, { values });
+	const apiUrl = process.env.LANGGRAPH_DEPLOYMENT_URL;
+	if (!apiUrl) {
+		throw new Error("LANGGRAPH_DEPLOYMENT_URL environment variable is not set");
+	}
+
+	const payload: any = {
+		values: values || [],
+	};
+
+	// Add as_node if provided
+	if (asNode) {
+		payload.as_node = asNode;
+	}
+
+	try {
+		// Create HTTPS agent that rejects unauthorized certificates
+		const httpsAgent = new https.Agent({
+			rejectUnauthorized: false,
+		});
+
+		const response = await axios.post(
+			`${apiUrl}/threads/${threadId}/state`,
+			payload,
+			{
+				headers: {
+					"Content-Type": "application/json",
+				},
+				httpsAgent,
+			},
+		);
+
+		return response.data;
+	} catch (error) {
+		console.error("[updateThreadState] Error updating thread state", error);
+		throw error;
+	}
 };
 
 export const deleteThread = async (threadId: string) => {
@@ -129,7 +165,10 @@ export const patchThread = async (threadId: string, metadata: Metadata) => {
 };
 
 export const searchThreads = async (metadata: Record<string, any>) => {
-	const client = createClient();
+	const apiUrl = process.env.LANGGRAPH_DEPLOYMENT_URL;
+	if (!apiUrl) {
+		throw new Error("LANGGRAPH_DEPLOYMENT_URL environment variable is not set");
+	}
 
 	const searchMetadata: Record<string, any> = {
 		...metadata,
@@ -148,22 +187,37 @@ export const searchThreads = async (metadata: Record<string, any>) => {
 		}
 	}
 
+	const payload: any = {
+		metadata: searchMetadata,
+		sort_by: "updated_at",
+		sort_order: "desc",
+		limit: 20,
+	};
+
 	// console.log("searchMetadata", searchMetadata);
 
-	const res = await client.threads
-		.search({
-			metadata: searchMetadata,
-			sortBy: "updated_at",
-			sortOrder: "desc",
-			limit: 20,
-		})
-		.then((res) => {
-			return res.filter((obj) => obj.values);
+	try {
+		// Create HTTPS agent that rejects unauthorized certificates
+		const httpsAgent = new https.Agent({
+			rejectUnauthorized: false,
 		});
 
-	// console.log("res", res);
+		const response = await axios.post(`${apiUrl}/threads/search`, payload, {
+			headers: {
+				"Content-Type": "application/json",
+			},
+			httpsAgent,
+		});
 
-	return res;
+		const res = response.data.filter((obj: any) => obj.values);
+
+		// console.log("res", res);
+
+		return res;
+	} catch (error) {
+		console.error("[searchThreads] Error searching threads", error);
+		throw error;
+	}
 };
 
 export const getThreadState = async (threadId: string) => {

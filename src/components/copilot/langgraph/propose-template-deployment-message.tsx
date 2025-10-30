@@ -1,8 +1,8 @@
 "use client";
 
 import { CircleCheckBigIcon } from "lucide-react";
-import type React from "react";
 import { usePathname } from "next/navigation";
+import type React from "react";
 import { ProjectTemplateCard } from "@/components/chat/state-cards/project-proposal/project-template-card";
 import { TemplateInputDialog } from "@/components/project/create-project/template-input-dialog";
 import { useHomeChat } from "@/components/provider/home-chat-provider";
@@ -61,15 +61,25 @@ const TemplateDeploymentCard = ({
 
 		// Handle login redirect when sessionId exists, include submitted inputs if present
 		if (sessionId) {
-			const fullArgs = templateForm ? { ...args, template_form: templateForm } : args;
-			const queryString = `sessionId=${sessionId}&args=${encodeURIComponent(JSON.stringify(fullArgs))}`;
-			console.log(queryString);
-			requestLogin({ pathname: "/", query: queryString });
+			const fullArgs = templateForm
+				? { ...args, template_form: templateForm }
+				: args;
+			const qp = encodeURIComponent(
+				new URLSearchParams({
+					sessionId: sessionId,
+					args: JSON.stringify(fullArgs),
+				}).toString(),
+			);
+			console.log("query params", qp);
+			requestLogin({ pathname: "/", query: qp });
 			return;
 		}
 
-    // Otherwise deploy directly with provided inputs (or none)
-    deployTemplate({ templateName: args.template_name, templateForm }, onSuccess);
+		// Otherwise deploy directly with provided inputs (or none)
+		deployTemplate(
+			{ templateName: args.template_name, templateForm },
+			onSuccess,
+		);
 	};
 
 	// Show loading state

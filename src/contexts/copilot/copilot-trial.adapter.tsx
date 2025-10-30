@@ -5,7 +5,7 @@ import { useStream } from "@langchain/langgraph-sdk/react";
 import { useMount } from "@reactuses/core";
 import type { ReactNode } from "react";
 import { createContext, use, useCallback, useState } from "react";
-import { createThread } from "@/lib/langgraph/langgraph.api";
+import { createThread } from "@/lib/langgraph/langgraph-api/langgraph-api-service";
 import { useEnvState } from "../env/env.context";
 
 interface CopilotTrialAdapterContextValue {
