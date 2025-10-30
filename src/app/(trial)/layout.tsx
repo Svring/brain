@@ -3,7 +3,7 @@ import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import type React from "react";
 import { EnvProvider as EnvProviderComponent } from "@/components/provider/env-provider";
-import { LanggraphConfigWrapper } from "@/components/provider/langgraph-provider";
+import { LanggraphTrialConfig } from "@/components/provider/langgraph-provider";
 import QueryProvider from "@/components/provider/query-provider";
 import { AuthProvider } from "@/contexts/auth/auth-context";
 import { ChatProvider } from "@/contexts/chat/chat-context";
@@ -47,9 +47,9 @@ export default function RootLayout({
 									<QueryProvider>
 										<ChatProvider>
 											<ProjectProvider>
-												<LanggraphConfigWrapper trial={true}>
+												<LanggraphTrialConfig>
 													<main className="h-screen w-full">{children}</main>
-												</LanggraphConfigWrapper>
+												</LanggraphTrialConfig>
 											</ProjectProvider>
 										</ChatProvider>
 									</QueryProvider>

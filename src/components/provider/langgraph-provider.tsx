@@ -16,14 +16,8 @@ import { listAiProxyTokensOptions } from "@/lib/sealos/resources/ai-proxy/ai-pro
 import { StreamProvider } from "./stream-provider";
 import { ThreadProvider } from "./thread-provider";
 
-// Inner component that uses langgraph state and actions
-function LanggraphConfigInner({
-	children,
-	trial = false,
-}: {
-	children: ReactNode;
-	trial?: boolean;
-}) {
+// Normal config component for production/development
+function LanggraphConfigInner({ children }: { children: ReactNode }) {
 	const { auth } = useAuthState();
 	const env = useEnv();
 	const aiProxyContext = useAiProxyContext();
@@ -37,8 +31,6 @@ function LanggraphConfigInner({
 		...listAiProxyTokensOptions(aiProxyContext),
 		enabled: isProduction && !isLoaded,
 	});
-
-	// console.log("aiProxyTokens", aiProxyTokens);
 
 	const brainToken = aiProxyTokens?.tokens?.find(
 		(token) => token.name === "brain",
@@ -102,26 +94,6 @@ function LanggraphConfigInner({
 		tokensLoading,
 	]);
 
-	// Handle trial mode - set dummy config and return children directly
-	useEffect(() => {
-		if (trial && isLoading) {
-			setConfig({
-				base_url: "https://trial-api.sealos.io/v1",
-				api_key: "trial-api-key",
-				model_name: "gpt-4-trial",
-			});
-		}
-	}, [trial, isLoading, setConfig]);
-
-	// If trial mode, return children directly
-	if (trial) {
-		return (
-			<ThreadProvider>
-				<StreamProvider>{children}</StreamProvider>
-			</ThreadProvider>
-		);
-	}
-
 	// Show loading state
 	if (
 		isLoading ||
@@ -149,16 +121,41 @@ function LanggraphConfigInner({
 	);
 }
 
-export const LanggraphConfigWrapper = ({
-	children,
-	trial = false,
-}: {
-	children: ReactNode;
-	trial?: boolean;
-}) => {
+// Trial config component with dummy config
+function LanggraphTrialConfigInner({ children }: { children: ReactNode }) {
+	const { isLoading } = useLanggraphState();
+	const { setConfig } = useLanggraphActions();
+
+	// Set dummy config in trial mode
+	useEffect(() => {
+		if (isLoading) {
+			setConfig({
+				base_url: "https://trial-api.sealos.io/v1",
+				api_key: "trial-api-key",
+				model_name: "gpt-4-trial",
+			});
+		}
+	}, [isLoading, setConfig]);
+
+	return (
+		<ThreadProvider>
+			<StreamProvider>{children}</StreamProvider>
+		</ThreadProvider>
+	);
+}
+
+export const LanggraphConfig = ({ children }: { children: ReactNode }) => {
 	return (
 		<LanggraphProvider config={{}}>
-			<LanggraphConfigInner trial={trial}>{children}</LanggraphConfigInner>
+			<LanggraphConfigInner>{children}</LanggraphConfigInner>
+		</LanggraphProvider>
+	);
+};
+
+export const LanggraphTrialConfig = ({ children }: { children: ReactNode }) => {
+	return (
+		<LanggraphProvider config={{}}>
+			<LanggraphTrialConfigInner>{children}</LanggraphTrialConfigInner>
 		</LanggraphProvider>
 	);
 };

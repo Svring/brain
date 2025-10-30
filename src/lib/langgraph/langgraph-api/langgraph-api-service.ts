@@ -24,8 +24,6 @@ export const createThread = async ({
 		}>;
 	}>;
 }) => {
-	console.log("[createThread] Creating thread", { metadata, supersteps });
-
 	const apiUrl = process.env.LANGGRAPH_DEPLOYMENT_URL;
 	if (!apiUrl) {
 		throw new Error("LANGGRAPH_DEPLOYMENT_URL environment variable is not set");
@@ -56,10 +54,8 @@ export const createThread = async ({
 	try {
 		// Create HTTPS agent that rejects unauthorized certificates
 		const httpsAgent = new https.Agent({
-			rejectUnauthorized: false,
+			rejectUnauthorized: true,
 		});
-
-		console.log("[createThread] Payload", payload);
 
 		const response = await axios.post(`${apiUrl}/threads`, payload, {
 			headers: {
@@ -69,13 +65,9 @@ export const createThread = async ({
 		});
 
 		const thread = response.data;
-		console.log("[createThread] Thread created", thread);
 		return thread;
 	} catch (error) {
-		console.error(
-			"[createThread] Error creating thread",
-			JSON.stringify(error, null, 2),
-		);
+		console.error("[createThread] Error creating thread", error);
 		throw error;
 	}
 };

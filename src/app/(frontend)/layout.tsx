@@ -5,7 +5,7 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 import type React from "react";
 import Login from "@/components/auth/login";
 import { EnvProvider } from "@/components/provider/env-provider";
-import { LanggraphConfigWrapper } from "@/components/provider/langgraph-provider";
+import { LanggraphConfig } from "@/components/provider/langgraph-provider";
 import QueryProvider from "@/components/provider/query-provider";
 import { QuotaProvider } from "@/components/provider/quota-provider";
 import { ReactScan } from "@/components/provider/react-scan-provider";
@@ -92,7 +92,7 @@ export default async function RootLayout({
 										<QuotaProvider>
 											<ChatProvider>
 												<ProjectProvider>
-													<LanggraphConfigWrapper>
+													<LanggraphConfig>
 														<ReactFlowProvider>
 															<FlowgraphProvider>
 																<OrchestratorProvider>
@@ -103,7 +103,7 @@ export default async function RootLayout({
 																</OrchestratorProvider>
 															</FlowgraphProvider>
 														</ReactFlowProvider>
-													</LanggraphConfigWrapper>
+													</LanggraphConfig>
 												</ProjectProvider>
 											</ChatProvider>
 										</QuotaProvider>

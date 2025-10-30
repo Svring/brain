@@ -110,11 +110,11 @@ export default function Page() {
 						transition={{ duration: 0.5 }}
 						className="flex-1 flex flex-col min-h-0"
 					>
-						<div className="flex-1 overflow-y-auto py-8">
-							<div
-								ref={messagesScrollRef}
-								className="max-w-3xl mx-auto w-full h-full"
-							>
+						<div
+							ref={messagesScrollRef}
+							className="flex-1 overflow-y-auto py-8"
+						>
+							<div className="max-w-3xl mx-auto w-full">
 								<AiMessages
 									scrollRef={messagesScrollRef}
 									messages={messages}
