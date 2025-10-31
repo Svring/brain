@@ -7,15 +7,26 @@ import { searchThreads } from "@/lib/langgraph/langgraph-api/langgraph-api-servi
 
 export default function Page() {
 	const router = useRouter();
+	const [query] = useQueryState("query");
 	const [sessionId] = useQueryState("sessionId");
 	const [args] = useQueryState("args");
 
+	console.log("query", query);
 	console.log("sessionId", sessionId);
 	console.log("args", args);
 
-	// Handle sessionId check and redirect
+	// Handle redirect logic
 	useEffect(() => {
 		const fetchData = async () => {
+			// Case 1: If query is present, navigate directly to home with query
+			if (query) {
+				const homeUrl = new URL("/home", window.location.origin);
+				homeUrl.searchParams.set("query", query);
+				router.push(homeUrl.pathname + homeUrl.search);
+				return;
+			}
+
+			// Case 2: Handle sessionId and args logic
 			if (sessionId) {
 				console.log("sessionId", sessionId);
 				const data = await searchThreads({ sessionId });
@@ -38,7 +49,7 @@ export default function Page() {
 			router.push(homeUrl.pathname + homeUrl.search);
 		};
 		fetchData();
-	}, [sessionId, args]);
+	}, [query, sessionId, args, router]);
 
 	return <div></div>;
 }

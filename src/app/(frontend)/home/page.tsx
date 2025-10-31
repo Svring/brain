@@ -47,6 +47,8 @@ export default function HomePage() {
 	const { LaunchpadCreateDialog } = useLaunchpadCreateDialog();
 	const messagesScrollRef = useRef<HTMLDivElement>(null);
 	const [argsParam] = useQueryState("args");
+	const [query] = useQueryState("query");
+	const hasAutoSubmitted = useRef(false);
 
 	// Parse args from query (JSON string)
 	const parsedArgs = useMemo(() => {
@@ -150,9 +152,46 @@ export default function HomePage() {
 		run();
 	}, [parsedArgs, isTemplateArgs, isImageArgs]);
 
-	// const hasMessages = messages.length > 0;
+	// Auto-submit query if present (only once)
+	useEffect(() => {
+		if (query?.trim() && threadId && !hasAutoSubmitted.current) {
+			const timeout = setTimeout(() => {
+				hasAutoSubmitted.current = true;
+				submit(
+					{
+						messages: [
+							{ type: "human", content: decodeURIComponent(query || "") },
+						],
+					} as any,
+					{
+						optimisticValues(prev: any) {
+							const prevMessages = prev.messages ?? [];
+							const newMessages = [
+								...prevMessages,
+								{ type: "human", content: decodeURIComponent(query || "") },
+							];
+							return { ...prev, messages: newMessages };
+						},
+					},
+				);
+			}, 1000);
+
+			return () => clearTimeout(timeout);
+		}
+	}, [query, threadId, submit]);
+
 	const showMessages = messages.length > 0;
+	const hasMessages = messages.length > 0;
 	const hasProjects = projects && projects.length > 0;
+
+	// If we have a query but no messages yet, show loading spinner
+	if (query?.trim() && !hasMessages) {
+		return (
+			<div className="h-screen w-full flex items-center justify-center">
+				<Spinner className="h-5 w-5" />
+			</div>
+		);
+	}
 
 	return (
 		<div className="h-screen w-full flex flex-col overflow-hidden">
