@@ -5,6 +5,7 @@ import type React from "react";
 import type { ToolActionResult } from "@/components/chat/messages/tool-messages/tool-result-message-types";
 import { useChatInstance } from "@/components/provider/chat-instance-provider";
 import { useHomeChat } from "@/components/provider/home-chat-provider";
+import { useCopilotTrialAdapterContext } from "@/contexts/copilot/copilot-trial.adapter";
 
 interface SuggestionToolMessageProps {
 	args?: {
@@ -35,16 +36,14 @@ const HomeSuggestionComponent: React.FC<{
 			content: suggestion,
 		};
 
-		submit(
-			{ messages: [userMessage] },
-			{
-				optimisticValues(prev: any) {
-					const prevMessages = prev.messages ?? [];
-					const newMessages = [...prevMessages, userMessage];
-					return { ...prev, messages: newMessages };
-				},
+		// Type assertion needed because submit type doesn't include messages, but implementation accepts it
+		submit({ messages: [userMessage] } as any, {
+			optimisticValues(prev: any) {
+				const prevMessages = prev.messages ?? [];
+				const newMessages = [...prevMessages, userMessage];
+				return { ...prev, messages: newMessages };
 			},
-		);
+		});
 	};
 
 	return (
@@ -53,6 +52,48 @@ const HomeSuggestionComponent: React.FC<{
 				<div className="flex flex-col gap-2">
 					{suggestions.map((suggestion: string, index: number) => (
 						<button
+							type="button"
+							key={suggestion}
+							onClick={() => handleSuggestionClick(suggestion)}
+							className="flex items-start gap-2 p-2 rounded-lg bg-background hover:bg-background-tertiary border text-left transition-colors"
+							disabled={isLoading}
+						>
+							<span className="text-sm text-muted-foreground font-medium mt-0.5">
+								{index + 1}.
+							</span>
+							<span className="text-sm text-foreground leading-relaxed">
+								{suggestion}
+							</span>
+						</button>
+					))}
+				</div>
+			</div>
+		</div>
+	);
+};
+
+// Component for /trial route using useCopilotTrialAdapterContext
+const TrialSuggestionComponent: React.FC<{
+	suggestions: string[];
+}> = ({ suggestions }) => {
+	const { submitWithContext, isLoading } = useCopilotTrialAdapterContext();
+
+	const handleSuggestionClick = (suggestion: string) => {
+		const userMessage = {
+			type: "human" as const,
+			content: suggestion,
+		};
+
+		submitWithContext({ newMessages: [userMessage] });
+	};
+
+	return (
+		<div className="w-full">
+			<div className="flex flex-col gap-3">
+				<div className="flex flex-col gap-2">
+					{suggestions.map((suggestion: string, index: number) => (
+						<button
+							type="button"
 							key={suggestion}
 							onClick={() => handleSuggestionClick(suggestion)}
 							className="flex items-start gap-2 p-2 rounded-lg bg-background hover:bg-background-tertiary border text-left transition-colors"
@@ -114,6 +155,7 @@ const ProjectSuggestionComponent: React.FC<{
 				<div className="flex flex-col gap-2">
 					{suggestions.map((suggestion: string, index: number) => (
 						<button
+							type="button"
 							key={suggestion}
 							onClick={() => handleSuggestionClick(suggestion)}
 							className="flex items-start gap-2 p-2 rounded-lg bg-background hover:bg-background-tertiary border text-left transition-colors"
@@ -150,7 +192,11 @@ export const SuggestionToolMessage: React.FC<SuggestionToolMessageProps> = ({
 	}
 
 	// Render different components based on route
-	if (pathname === "/home" || pathname === "/trial") {
+	if (pathname === "/trial") {
+		return <TrialSuggestionComponent suggestions={suggestions} />;
+	}
+
+	if (pathname === "/home") {
 		return <HomeSuggestionComponent suggestions={suggestions} />;
 	}
 

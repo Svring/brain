@@ -1,6 +1,5 @@
 "use client";
 
-import type { Message } from "@langchain/langgraph-sdk";
 import { motion } from "framer-motion";
 import { CircleHelp } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
@@ -15,13 +14,11 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useCopilotTrialAdapterContext } from "@/contexts/copilot/copilot-trial.adapter";
-import { requestLogin } from "@/lib/auth/auth-utils";
 
 const MESSAGE_LIMIT = 5;
 
 export default function Page() {
 	const {
-		sessionId,
 		submitWithContext,
 		messages,
 		isLoading,
@@ -46,7 +43,7 @@ export default function Page() {
 			const timeout = setTimeout(() => {
 				hasAutoSubmitted.current = true;
 				submitWithContext({
-					messages: [
+					newMessages: [
 						{ type: "human", content: decodeURIComponent(query || "") },
 					],
 				});
@@ -55,24 +52,6 @@ export default function Page() {
 			return () => clearTimeout(timeout);
 		}
 	}, [query, threadId, submitWithContext]);
-
-	const handleSubmit = (data: { messages: Message[] }) => {
-		// If limit is reached, trigger login request
-		if (humanMessageCount >= MESSAGE_LIMIT) {
-			const queryParams = {
-				sessionId: sessionId || "",
-			};
-			console.log("query params", queryParams);
-			requestLogin({
-				pathname: "/",
-				query: queryParams,
-			});
-			return;
-		}
-
-		// Otherwise, allow submission
-		submitWithContext(data);
-	};
 
 	// If we have a query but no messages yet, show loading spinner
 	if (query?.trim() && !hasMessages) {
@@ -145,7 +124,7 @@ export default function Page() {
 							<AiChatInput
 								className={`max-w-3xl${!showMessages ? " min-h-[140px]" : ""}`}
 								exhibition={!showMessages}
-								onSubmit={handleSubmit}
+								onSubmit={submitWithContext}
 								onStop={stop}
 								isLoading={isLoading}
 								disableTools={true}
@@ -174,13 +153,15 @@ export default function Page() {
 							{humanMessageCount >= MESSAGE_LIMIT && (
 								<button
 									type="button"
-									className="absolute inset-0 bg-background/60 hover:bg-background/80 transition-colors cursor-pointer z-20 rounded-lg flex items-center justify-center border-none p-0 blur-sm"
+									className="absolute inset-0 bg-background/60 hover:brightness-120 transition-colors cursor-pointer z-20 rounded-lg flex items-center justify-center border-none p-0"
 									onClick={() => {
-										requestLogin({
-											pathname: "/",
-											query: {
-												sessionId: sessionId || "",
-											},
+										submitWithContext({
+											newMessages: [
+												{
+													type: "human",
+													content: "",
+												},
+											],
 										});
 									}}
 								>

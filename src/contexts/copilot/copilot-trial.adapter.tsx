@@ -5,11 +5,14 @@ import { useStream } from "@langchain/langgraph-sdk/react";
 import { useMount } from "@reactuses/core";
 import type { ReactNode } from "react";
 import { createContext, use, useCallback, useState } from "react";
+import { requestLogin } from "@/lib/auth/auth-utils";
 import { createThread } from "@/lib/langgraph/langgraph-api/langgraph-api-service";
 import { useEnvState } from "../env/env.context";
 
+const MESSAGE_LIMIT = 5;
+
 interface CopilotTrialAdapterContextValue {
-	submitWithContext: (data: { messages: Message[] }) => void;
+	submitWithContext: (data: { newMessages: Message[] }) => void;
 	isLoading: boolean;
 	stop: () => void;
 	messages: Message[];
@@ -63,24 +66,43 @@ export function CopilotTrialAdapter({
 	});
 
 	const submitWithContext = useCallback(
-		(data: { messages: Message[] }) => {
+		(data: { newMessages: Message[] }) => {
+			// Count current human messages
+			const humanMessageCount = messages.filter(
+				(msg) => msg.type === "human",
+			).length;
+
+			// If limit is reached, trigger login request instead of submitting
+			if (humanMessageCount >= MESSAGE_LIMIT) {
+				const queryParams = {
+					sessionId: sessionId || "",
+				};
+				console.log("query params", queryParams);
+				requestLogin({
+					pathname: "/",
+					query: queryParams,
+				});
+				return;
+			}
+
+			// Otherwise, allow submission
 			return submit(
 				{
 					stage: "deploy_project",
 					trial: true,
-					messages: data.messages,
+					messages: data.newMessages,
 				},
 				{
 					optimisticValues(prev) {
 						const prevMessages = prev.messages ?? [];
 						// @ts-expect-error Suppress iterable type error for newMessages
-						const newMessages = [...prevMessages, ...data.messages];
+						const newMessages = [...prevMessages, ...data.newMessages];
 						return { ...prev, messages: newMessages };
 					},
 				},
 			);
 		},
-		[submit],
+		[submit, messages, sessionId],
 	);
 
 	return (

@@ -76,7 +76,7 @@ export function AiChatInput({
 			content: message.trim(),
 		};
 		onSubmit(
-			{ messages: [userMessage] },
+			{ newMessages: [userMessage] },
 			{
 				optimisticValues(prev: any) {
 					const prevMessages = prev.messages ?? [];

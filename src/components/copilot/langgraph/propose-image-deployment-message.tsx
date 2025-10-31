@@ -52,7 +52,7 @@ const ImageDeploymentCard = ({
 		if (sessionId) {
 			const queryParams = {
 				sessionId: sessionId,
-				args: JSON.stringify(args),
+				args: JSON.stringify(internalProposal),
 			};
 			console.log("query params", queryParams);
 			requestLogin({
