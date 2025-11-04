@@ -50,6 +50,7 @@ const ImageDeploymentCard = ({
 	const handleDeploy = async () => {
 		// If sessionId is present, request login instead of creating project
 		if (sessionId) {
+			// Pass internalProposal (which may have been modified by user) in ProjectProposal format
 			const queryParams = {
 				sessionId: sessionId,
 				args: JSON.stringify(internalProposal),

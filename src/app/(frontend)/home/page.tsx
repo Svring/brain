@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { LayoutTemplate, Loader2, Plus } from "lucide-react";
 import { useQueryState } from "nuqs";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AiChatInput } from "@/components/chat/components/input";
 import { AiMessages } from "@/components/chat/components/messages";
 import Suggestions from "@/components/chat/components/suggestions";
@@ -55,60 +55,131 @@ export default function HomePage() {
 
 	// Parse args from query (JSON string)
 	const parsedArgs = useMemo(() => {
+		console.log("[Args Detection] Raw argsParam:", argsParam);
 		if (!argsParam) return null;
 		try {
-			return JSON.parse(decodeURIComponent(argsParam));
-		} catch {
+			const parsed = JSON.parse(decodeURIComponent(argsParam));
+			console.log("[Args Detection] Parsed args:", parsed);
+			return parsed;
+		} catch (error) {
+			console.error("[Args Detection] Failed to parse args:", error);
 			return null;
 		}
 	}, [argsParam]);
 
 	// Determine arg shape
-	const isTemplateArgs = useMemo(
-		() =>
-			Boolean(
-				parsedArgs &&
-					typeof parsedArgs === "object" &&
-					typeof parsedArgs.template_name === "string" &&
-					parsedArgs.template_name.length > 0,
-			),
-		[parsedArgs],
-	);
-	const isImageArgs = useMemo(
-		() =>
-			Boolean(
-				parsedArgs &&
-					typeof parsedArgs === "object" &&
-					typeof parsedArgs.image_name === "string" &&
-					parsedArgs.image_name.length > 0 &&
-					typeof parsedArgs.project_name === "string" &&
-					parsedArgs.project_name.length > 0 &&
-					typeof parsedArgs.name === "string" &&
-					parsedArgs.name.length > 0,
-			),
-		[parsedArgs],
-	);
-	const isDevenvArgs = useMemo(
-		() =>
-			Boolean(
-				parsedArgs &&
-					typeof parsedArgs === "object" &&
-					typeof parsedArgs.project_name === "string" &&
-					parsedArgs.project_name.length > 0 &&
-					(Array.isArray(parsedArgs.devbox) ||
-						Array.isArray(parsedArgs.database)),
-			),
-		[parsedArgs],
-	);
+	const isTemplateArgs = useMemo(() => {
+		const result = Boolean(
+			parsedArgs &&
+				typeof parsedArgs === "object" &&
+				typeof parsedArgs.template_name === "string" &&
+				parsedArgs.template_name.length > 0,
+		);
+		console.log("[Args Detection] isTemplateArgs:", result);
+		return result;
+	}, [parsedArgs]);
+
+	const isImageArgs = useMemo(() => {
+		const hasOriginalFormat =
+			parsedArgs &&
+			typeof parsedArgs === "object" &&
+			typeof parsedArgs.image_name === "string" &&
+			parsedArgs.image_name.length > 0 &&
+			typeof parsedArgs.project_name === "string" &&
+			parsedArgs.project_name.length > 0 &&
+			typeof parsedArgs.name === "string" &&
+			parsedArgs.name.length > 0;
+
+		const hasProposalFormat =
+			parsedArgs &&
+			typeof parsedArgs === "object" &&
+			typeof parsedArgs.name === "string" &&
+			parsedArgs.name.length > 0 &&
+			parsedArgs.resources &&
+			typeof parsedArgs.resources === "object" &&
+			Array.isArray(parsedArgs.resources.app) &&
+			parsedArgs.resources.app.length > 0 &&
+			typeof parsedArgs.resources.app[0]?.image === "string" &&
+			parsedArgs.resources.app[0].image.length > 0;
+
+		const result = Boolean(hasOriginalFormat || hasProposalFormat);
+		console.log("[Args Detection] isImageArgs:", result, {
+			hasOriginalFormat,
+			hasProposalFormat,
+		});
+		return result;
+	}, [parsedArgs]);
+
+	const isDevenvArgs = useMemo(() => {
+		const hasOriginalFormat =
+			parsedArgs &&
+			typeof parsedArgs === "object" &&
+			typeof parsedArgs.project_name === "string" &&
+			parsedArgs.project_name.length > 0 &&
+			(Array.isArray(parsedArgs.devbox) || Array.isArray(parsedArgs.database));
+
+		const hasProposalFormat =
+			parsedArgs &&
+			typeof parsedArgs === "object" &&
+			typeof parsedArgs.name === "string" &&
+			parsedArgs.name.length > 0 &&
+			parsedArgs.resources &&
+			typeof parsedArgs.resources === "object" &&
+			(Array.isArray(parsedArgs.resources.devbox) ||
+				Array.isArray(parsedArgs.resources.database));
+
+		const result = Boolean(hasOriginalFormat || hasProposalFormat);
+		console.log("[Args Detection] isDevenvArgs:", result, {
+			hasOriginalFormat,
+			hasProposalFormat,
+		});
+		return result;
+	}, [parsedArgs]);
 
 	// Prepare args for hooks with safe defaults
 	const imageArgs = isImageArgs
-		? parsedArgs
+		? // Transform ProjectProposal format to expected args format if needed
+			parsedArgs.resources?.app &&
+			Array.isArray(parsedArgs.resources.app) &&
+			parsedArgs.resources.app.length > 0
+			? {
+					image_name: parsedArgs.resources.app[0].image,
+					project_name: parsedArgs.name,
+					name: parsedArgs.resources.app[0].name,
+					ports:
+						parsedArgs.resources.app[0].ports?.map(
+							(p: { number: number }) => p.number,
+						) || [],
+				}
+			: parsedArgs
 		: { image_name: "", project_name: "", name: "", ports: [] };
+
 	const devenvArgs = isDevenvArgs
-		? parsedArgs
+		? // Transform nested resources structure to flat structure if needed
+			parsedArgs.resources
+			? {
+					project_name: parsedArgs.name,
+					devbox:
+						parsedArgs.resources.devbox?.map((devbox: any) => ({
+							...devbox,
+							// Transform ports from { number, publicAccess } to just number[]
+							ports: Array.isArray(devbox.ports)
+								? devbox.ports.map((p: any) =>
+										typeof p === "number" ? p : p.number,
+									)
+								: devbox.ports,
+						})) || [],
+					database: parsedArgs.resources.database || [],
+				}
+			: parsedArgs
 		: { project_name: "", devbox: [], database: [] };
+
 	const templateName = isTemplateArgs ? parsedArgs?.template_name : "";
+
+	// Log transformed args
+	console.log("[Args Transformation] imageArgs:", imageArgs);
+	console.log("[Args Transformation] devenvArgs:", devenvArgs);
+	console.log("[Args Transformation] templateName:", templateName);
 
 	// Initialize hooks (stable order)
 	const { deployImage } = useImageDeployment(imageArgs);
@@ -116,6 +187,50 @@ export default function HomePage() {
 	const { deployDevenv } = useDevenvDeployment({
 		args: devenvArgs,
 	});
+
+	// Throttle deployment functions to prevent rapid triggers (max once per 10s)
+	// Use refs to track last execution time for manual throttling
+	const lastDeployTimeRef = useRef<{
+		template: number;
+		image: number;
+		devenv: number;
+	}>({ template: 0, image: 0, devenv: 0 });
+
+	const throttledDeployTemplate = useCallback(
+		async (params: {
+			templateName: string;
+			templateForm?: Record<string, string>;
+		}) => {
+			const now = Date.now();
+			if (now - lastDeployTimeRef.current.template < 10000) {
+				console.log("[Throttle] Skipping template deploy - too soon");
+				return;
+			}
+			lastDeployTimeRef.current.template = now;
+			return deployTemplate(params);
+		},
+		[deployTemplate],
+	);
+
+	const throttledDeployImage = useCallback(async () => {
+		const now = Date.now();
+		if (now - lastDeployTimeRef.current.image < 10000) {
+			console.log("[Throttle] Skipping image deploy - too soon");
+			return;
+		}
+		lastDeployTimeRef.current.image = now;
+		return deployImage();
+	}, [deployImage]);
+
+	const throttledDeployDevenv = useCallback(async () => {
+		const now = Date.now();
+		if (now - lastDeployTimeRef.current.devenv < 10000) {
+			console.log("[Throttle] Skipping devenv deploy - too soon");
+			return;
+		}
+		lastDeployTimeRef.current.devenv = now;
+		return deployDevenv();
+	}, [deployDevenv]);
 
 	// Trigger deployment once when args are present
 	const hasDeployedRef = useRef(false);
@@ -132,18 +247,18 @@ export default function HomePage() {
 				if (isTemplateArgs) {
 					// Prefer handleDeploy to respect input requirements
 					console.log("isTemplateArgs", isTemplateArgs);
-					await deployTemplate({
+					await throttledDeployTemplate({
 						templateName,
 						templateForm: parsedArgs.template_form,
 					});
 				} else if (isImageArgs) {
 					// Prefer deployImage to respect input requirements
 					console.log("isImageArgs", isImageArgs);
-					await deployImage();
+					await throttledDeployImage();
 				} else if (isDevenvArgs) {
 					// Prefer deployDevenv to respect input requirements
 					console.log("isDevenvArgs", isDevenvArgs);
-					await deployDevenv();
+					await throttledDeployDevenv();
 				}
 			} catch (err) {
 				console.error("[HomePage] Auto-deploy failed:", err);
@@ -153,7 +268,7 @@ export default function HomePage() {
 			}
 		};
 		run();
-	}, [parsedArgs, isTemplateArgs, isImageArgs]);
+	}, [parsedArgs]);
 
 	// Auto-submit query if present (only once)
 	useEffect(() => {

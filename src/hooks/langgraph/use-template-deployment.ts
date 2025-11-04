@@ -41,6 +41,12 @@ export const useTemplateDeployment = (templateName: string) => {
 			params: { templateName: string; templateForm?: Record<string, string> },
 			onSuccess?: (data: any) => void,
 		) => {
+			// Guard against undefined params
+			if (!params || !params.templateName) {
+				console.error("[useTemplateDeployment] Invalid params:", params);
+				return;
+			}
+
 			createInstanceMutation.mutate(
 				{
 					templateName: params.templateName,
@@ -81,17 +87,7 @@ export const useTemplateDeployment = (templateName: string) => {
 				},
 			);
 		},
-		[
-			templates,
-			createInstanceMutation,
-			threadId,
-			auth?.kubeconfig,
-			messages,
-			patchThread.mutate,
-			updateThreadState.mutate,
-			openProjectChat,
-			router.push,
-		],
+		[templates, createInstanceMutation, threadId, auth?.kubeconfig],
 	);
 
 	const handleDeploy = useCallback(() => {
