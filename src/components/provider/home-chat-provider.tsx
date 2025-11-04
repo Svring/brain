@@ -77,7 +77,7 @@ export function HomeChatProvider({
 
 	// Submit function that uses the home page context
 	const submit = (
-		data: { stage?: string; command?: any },
+		data: { stage?: string; command?: any; newMessages?: Message[] },
 		options?: { optimisticValues?: (prev: any) => any; command?: any },
 	) => {
 		if (!baseUrl || !modelName) {
@@ -94,6 +94,7 @@ export function HomeChatProvider({
 				region_url: auth?.regionUrl,
 				kubeconfig: auth?.kubeconfig,
 				stage: "propose_project",
+				messages: data.newMessages,
 				...data,
 			},
 			{
@@ -153,9 +154,7 @@ export function HomeChatProvider({
 		};
 
 		createHomeThread();
-	}, [
-		threadId,
-	]);
+	}, [threadId]);
 
 	const value: HomeChatContextType = {
 		...streamValue,

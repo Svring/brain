@@ -9,6 +9,9 @@ const createClient = () => {
 	const apiUrl = process.env.LANGGRAPH_DEPLOYMENT_URL;
 	return new Client({
 		apiUrl,
+		defaultHeaders: {
+			"x-secret": process.env.LANGGRAPH_SECRET || "",
+		},
 	});
 };
 
@@ -62,6 +65,7 @@ export const createThread = async ({
 		const response = await axios.post(`${apiUrl}/threads`, payload, {
 			headers: {
 				"Content-Type": "application/json",
+				"x-secret": process.env.LANGGRAPH_SECRET || "",
 			},
 			httpsAgent,
 		});
@@ -115,6 +119,7 @@ export const updateThreadState = async (
 			{
 				headers: {
 					"Content-Type": "application/json",
+					"x-secret": process.env.LANGGRAPH_SECRET || "",
 				},
 				httpsAgent,
 			},
@@ -154,6 +159,7 @@ export const patchThread = async (threadId: string, metadata: Metadata) => {
 			{
 				headers: {
 					"Content-Type": "application/json",
+					"x-secret": process.env.LANGGRAPH_SECRET || "",
 				},
 				httpsAgent,
 			},
@@ -208,6 +214,7 @@ export const searchThreads = async (metadata: Record<string, any>) => {
 		const response = await axios.post(`${apiUrl}/threads/search`, payload, {
 			headers: {
 				"Content-Type": "application/json",
+				"x-secret": process.env.LANGGRAPH_SECRET || "",
 			},
 			httpsAgent,
 		});

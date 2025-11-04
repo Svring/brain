@@ -1,7 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { type ReactNode, useEffect } from "react";
+import throttle from "lodash/throttle";
+import { type ReactNode, useEffect, useRef } from "react";
 import { useEnv } from "@/components/provider/env-provider";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { useAuthState } from "@/contexts/auth/auth-context";
@@ -37,6 +38,27 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
 	);
 	const createTokenMutation = useCreateAiProxyTokenMutation(aiProxyContext);
 
+	// Throttle createTokenMutation to fire at most once every 5 seconds
+	const throttledCreateToken = useRef(
+		throttle(
+			async () => {
+				return createTokenMutation.mutateAsync(
+					{ name: "brain" },
+					{
+						onSuccess: () => {
+							window.location.reload();
+						},
+						onError: () => {
+							// If automatic creation fails, show error and reload
+							window.location.reload();
+						},
+					},
+				);
+			},
+			5000, // 5000ms = 5 seconds
+		),
+	).current;
+
 	// Handle initial config loading
 	useEffect(() => {
 		if (isLoading) {
@@ -64,18 +86,7 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
 			} else if (isProduction && !tokensLoading) {
 				// No brain token found in production - automatically create one
 				if (!brainToken) {
-					createTokenMutation.mutateAsync(
-						{ name: "brain" },
-						{
-							onSuccess: () => {
-								window.location.reload();
-							},
-							onError: () => {
-								// If automatic creation fails, show error and reload
-								window.location.reload();
-							},
-						},
-					);
+					throttledCreateToken();
 				} else {
 					setConfigFailed();
 				}
@@ -87,7 +98,7 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
 		brainToken,
 		setConfig,
 		setConfigFailed,
-		createTokenMutation.mutateAsync,
+		throttledCreateToken,
 		aiProxyContext.baseUrl,
 		auth?.apiKey,
 		auth?.baseUrl,
@@ -100,17 +111,7 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
 		(isProduction && tokensLoading) ||
 		(isProduction && !brainToken && createTokenMutation.isPending)
 	) {
-		return (
-			<div className="flex flex-col items-center justify-center min-h-screen space-y-4">
-				<LoadingScreen
-					text={
-						createTokenMutation.isPending
-							? "Creating token..."
-							: "Checking token configuration..."
-					}
-				/>
-			</div>
-		);
+		return null;
 	}
 
 	// Render children when loaded with nested providers

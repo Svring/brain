@@ -42,6 +42,9 @@ export default function HomePage() {
 		isError: isProjectsError,
 	} = useProjectSearch();
 
+	console.log("messages", messages);
+	console.log("threadId", threadId);
+
 	const { DeployTemplateDialog: CreateProjectDialog, openDialog } =
 		useDeployTemplateDialog();
 	const { LaunchpadCreateDialog } = useLaunchpadCreateDialog();

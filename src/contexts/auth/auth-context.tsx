@@ -6,7 +6,6 @@ import { useMachine } from "@xstate/react";
 import { createContext, type ReactNode, use, useCallback } from "react";
 import type { ActorRefFrom, EventFrom, StateFrom } from "xstate";
 import { useEnv } from "@/components/provider/env-provider";
-import { LoadingScreen } from "@/components/ui/loading-screen";
 import type { Auth } from "@/contexts/auth/auth-machine";
 import { authMachine } from "@/contexts/auth/auth-machine";
 import { authenticateDev, authenticateProd } from "@/lib/auth/auth-utils";

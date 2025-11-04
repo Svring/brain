@@ -43,9 +43,6 @@ export default function Page() {
 			}
 			// If no sessionId or no threads found, redirect to home
 			const homeUrl = new URL("/home", window.location.origin);
-			if (args) {
-				homeUrl.searchParams.set("args", args);
-			}
 			router.push(homeUrl.pathname + homeUrl.search);
 		};
 		fetchData();
