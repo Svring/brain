@@ -1,5 +1,6 @@
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 import { useHomeChat } from "@/components/provider/home-chat-provider";
 import { useThreads } from "@/components/provider/thread-provider";
 import { useAuthState } from "@/contexts/auth/auth-context";
@@ -61,6 +62,7 @@ export const useImageDeployment = (args: {
 			});
 
 			if (!quotaCheckPassed) {
+				toast.error("Insufficient quota, please upgrade.");
 				return;
 			}
 

@@ -160,7 +160,7 @@ export function ProjectChatInstanceProvider({
 	// Submit function for project chat
 	const submit = (
 		data: {
-			messages: Message[];
+			newMessages: Message[];
 		},
 		options?: any,
 	) => {
@@ -182,6 +182,7 @@ export function ProjectChatInstanceProvider({
 					selectedProject,
 					selectedProjectResources,
 				},
+				messages: data.newMessages,
 				...data,
 			},
 			{
@@ -469,7 +470,7 @@ export function ResourceChatInstanceProvider({
 	// Submit function for resource chat
 	const submit = (
 		data: {
-			messages: Message[];
+			newMessages: Message[];
 		},
 		options?: any,
 	) => {
@@ -480,7 +481,7 @@ export function ResourceChatInstanceProvider({
 
 		// Add system message with resource context to messages
 		const messagesWithResourceContext = [
-			...data.messages,
+			...data.newMessages,
 			{
 				type: "system" as const,
 				content: `Below is the latest resource status\n\n${JSON.stringify(
@@ -506,8 +507,8 @@ export function ResourceChatInstanceProvider({
 					selectedResource: resourceTarget,
 					selectedResourceContext,
 				},
-				...data,
 				messages: messagesWithResourceContext,
+				...data,
 			},
 			{
 				...options,

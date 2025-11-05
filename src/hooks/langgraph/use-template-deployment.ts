@@ -79,9 +79,15 @@ export const useTemplateDeployment = (templateName: string) => {
 						}
 					},
 					onError: (error: Error) => {
-						toast.error(
-							error.message || "Failed to deploy template. Please try again.",
-						);
+						// Check if error is quota-related
+						const errorMessage =
+							error.message?.toLowerCase().includes("quota") ||
+							error.message?.toLowerCase().includes("insufficient")
+								? "Insufficient quota, please upgrade."
+								: error.message ||
+									"Failed to deploy template. Please try again.";
+
+						toast.error(errorMessage);
 						setShowInputDialog(false);
 					},
 				},

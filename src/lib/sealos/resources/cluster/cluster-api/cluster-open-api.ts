@@ -1,59 +1,62 @@
 "use server";
 
 import axios from "axios";
-import { createParallelAction } from "next-server-actions-parallel";
+import https from "https";
+import {
+	createParallelAction,
+	runParallelAction,
+} from "next-server-actions-parallel";
+import type { ClusterCreateFormData } from "@/schemas/forms/cluster/cluster-create-form-schema";
+import { clusterCreateFormSchema } from "@/schemas/forms/cluster/cluster-create-form-schema";
+import type { ClusterUpdateFormData } from "@/schemas/forms/cluster/cluster-update-form-schema";
+import { clusterUpdateFormSchema } from "@/schemas/forms/cluster/cluster-update-form-schema";
 import type {
-  ClusterApiContext,
-  CreateClusterRequest,
-  CreateClusterResponse,
-  GetClusterResponse,
-  UpdateClusterRequest,
-  UpdateClusterResponse,
-  DeleteClusterResponse,
-  StartClusterResponse,
-  PauseClusterResponse,
-  RestartClusterResponse,
-  GetLogsDataResponse,
-  GetLogsFilesResponse,
-  LogClusterType,
-  LogType,
-  ClusterForm,
-  ClusterVersionsResponse,
+	ClusterApiContext,
+	ClusterForm,
+	ClusterVersionsResponse,
+	CreateClusterRequest,
+	CreateClusterResponse,
+	DeleteClusterResponse,
+	GetClusterResponse,
+	GetLogsDataResponse,
+	GetLogsFilesResponse,
+	LogClusterType,
+	LogType,
+	PauseClusterResponse,
+	RestartClusterResponse,
+	StartClusterResponse,
+	UpdateClusterRequest,
+	UpdateClusterResponse,
 } from "./cluster-open-api-schemas";
 import {
-  CreateClusterRequestSchema,
-  CreateClusterResponseSchema,
-  GetClusterResponseSchema,
-  UpdateClusterRequestSchema,
-  UpdateClusterResponseSchema,
-  DeleteClusterResponseSchema,
-  StartClusterResponseSchema,
-  PauseClusterResponseSchema,
-  RestartClusterResponseSchema,
-  GetLogsDataResponseSchema,
-  GetLogsFilesResponseSchema,
+	CreateClusterRequestSchema,
+	CreateClusterResponseSchema,
+	DeleteClusterResponseSchema,
+	GetClusterResponseSchema,
+	GetLogsDataResponseSchema,
+	GetLogsFilesResponseSchema,
+	PauseClusterResponseSchema,
+	RestartClusterResponseSchema,
+	StartClusterResponseSchema,
+	UpdateClusterRequestSchema,
+	UpdateClusterResponseSchema,
 } from "./cluster-open-api-schemas";
-import { clusterCreateFormSchema } from "@/schemas/forms/cluster/cluster-create-form-schema";
-import type { ClusterCreateFormData } from "@/schemas/forms/cluster/cluster-create-form-schema";
-import { clusterUpdateFormSchema } from "@/schemas/forms/cluster/cluster-update-form-schema";
-import type { ClusterUpdateFormData } from "@/schemas/forms/cluster/cluster-update-form-schema";
-import https from "https";
 
 // Helper to create axios instance per request
 function createClusterApi(context: ClusterApiContext) {
-  const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
-  return axios.create({
-    baseURL: `http://dbprovider.${context.baseUrl}/api/v1`,
-    headers: {
-      "Content-Type": "application/json",
-      ...(context.authorization
-        ? { Authorization: context.authorization }
-        : {}),
-    },
-    httpsAgent: isDevelopment
-      ? new https.Agent({ rejectUnauthorized: false })
-      : undefined,
-  });
+	const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
+	return axios.create({
+		baseURL: `http://dbprovider.${context.baseUrl}/api/v1`,
+		headers: {
+			"Content-Type": "application/json",
+			...(context.authorization
+				? { Authorization: context.authorization }
+				: {}),
+		},
+		httpsAgent: isDevelopment
+			? new https.Agent({ rejectUnauthorized: false })
+			: undefined,
+	});
 }
 
 // Cluster Management Functions
@@ -87,26 +90,26 @@ function createClusterApi(context: ClusterApiContext) {
  * ```
  */
 export const createCluster = createParallelAction(
-  async (
-    request: ClusterCreateFormData,
-    context: ClusterApiContext
-  ): Promise<CreateClusterResponse> => {
-    // Parse with form schema to get defaults
-    const formData = clusterCreateFormSchema.parse(request);
-    const api = createClusterApi(context);
-    const response = await api.post("/database", formData);
+	async (
+		request: ClusterCreateFormData,
+		context: ClusterApiContext,
+	): Promise<CreateClusterResponse> => {
+		// Parse with form schema to get defaults
+		const formData = clusterCreateFormSchema.parse(request);
+		const api = createClusterApi(context);
+		const response = await api.post("/database", formData);
 
-    // Check if response code is not 200-299 range
-    if (response.data.code < 200 || response.data.code >= 300) {
-      throw new Error(
-        `Failed to create cluster: ${
-          response.data.message || `HTTP ${response.data.code}`
-        }`
-      );
-    }
+		// Check if response code is not 200-299 range
+		if (response.data.code < 200 || response.data.code >= 300) {
+			throw new Error(
+				`Failed to create cluster: ${
+					response.data.message || `HTTP ${response.data.code}`
+				}`,
+			);
+		}
 
-    return response.data;
-  }
+		return response.data;
+	},
 );
 
 /**
@@ -121,14 +124,14 @@ export const createCluster = createParallelAction(
  * ```
  */
 export const getCluster = createParallelAction(
-  async (
-    clusterName: string,
-    context: ClusterApiContext
-  ): Promise<GetClusterResponse> => {
-    const api = createClusterApi(context);
-    const response = await api.get(`/database/${clusterName}`);
-    return GetClusterResponseSchema.parse(response.data);
-  }
+	async (
+		clusterName: string,
+		context: ClusterApiContext,
+	): Promise<GetClusterResponse> => {
+		const api = createClusterApi(context);
+		const response = await api.get(`/database/${clusterName}`);
+		return response.data.data;
+	},
 );
 
 /**
@@ -160,32 +163,32 @@ export const getCluster = createParallelAction(
  * ```
  */
 export const updateCluster = createParallelAction(
-  async (
-    formData: ClusterUpdateFormData,
-    context: ClusterApiContext
-  ): Promise<UpdateClusterResponse> => {
-    // Parse with form schema to get defaults and validation
-    const validatedFormData = clusterUpdateFormSchema.parse(formData);
-    const { name, resource } = validatedFormData;
+	async (
+		formData: ClusterUpdateFormData,
+		context: ClusterApiContext,
+	): Promise<UpdateClusterResponse> => {
+		// Parse with form schema to get defaults and validation
+		const validatedFormData = clusterUpdateFormSchema.parse(formData);
+		const { name, resource } = validatedFormData;
 
-    if (!resource) {
-      throw new Error("Resource configuration is required for cluster update");
-    }
+		if (!resource) {
+			throw new Error("Resource configuration is required for cluster update");
+		}
 
-    const api = createClusterApi(context);
-    const response = await api.patch(`/database/${name}`, { resource });
+		const api = createClusterApi(context);
+		const response = await api.patch(`/database/${name}`, { resource });
 
-    // Check if response code is not 200-299 range
-    if (response.data.code < 200 || response.data.code >= 300) {
-      throw new Error(
-        `Failed to update cluster: ${
-          response.data.message || `HTTP ${response.data.code}`
-        }`
-      );
-    }
+		// Check if response code is not 200-299 range
+		if (response.data.code < 200 || response.data.code >= 300) {
+			throw new Error(
+				`Failed to update cluster: ${
+					response.data.message || `HTTP ${response.data.code}`
+				}`,
+			);
+		}
 
-    return response.data;
-  }
+		return response.data;
+	},
 );
 
 /**
@@ -203,24 +206,24 @@ export const updateCluster = createParallelAction(
  * ```
  */
 export const deleteCluster = createParallelAction(
-  async (
-    clusterName: string,
-    context: ClusterApiContext
-  ): Promise<DeleteClusterResponse> => {
-    const api = createClusterApi(context);
-    const response = await api.delete(`/database/${clusterName}`);
+	async (
+		clusterName: string,
+		context: ClusterApiContext,
+	): Promise<DeleteClusterResponse> => {
+		const api = createClusterApi(context);
+		const response = await api.delete(`/database/${clusterName}`);
 
-    // Check if response code is not 200-299 range
-    if (response.data.code < 200 || response.data.code >= 300) {
-      throw new Error(
-        `Failed to delete cluster: ${
-          response.data.message || `HTTP ${response.data.code}`
-        }`
-      );
-    }
+		// Check if response code is not 200-299 range
+		if (response.data.code < 200 || response.data.code >= 300) {
+			throw new Error(
+				`Failed to delete cluster: ${
+					response.data.message || `HTTP ${response.data.code}`
+				}`,
+			);
+		}
 
-    return DeleteClusterResponseSchema.parse(response.data);
-  }
+		return DeleteClusterResponseSchema.parse(response.data);
+	},
 );
 
 /**
@@ -240,24 +243,24 @@ export const deleteCluster = createParallelAction(
  * ```
  */
 export const startCluster = createParallelAction(
-  async (
-    clusterName: string,
-    context: ClusterApiContext
-  ): Promise<StartClusterResponse> => {
-    const api = createClusterApi(context);
-    const response = await api.post(`/database/${clusterName}/start`);
+	async (
+		clusterName: string,
+		context: ClusterApiContext,
+	): Promise<StartClusterResponse> => {
+		const api = createClusterApi(context);
+		const response = await api.post(`/database/${clusterName}/start`);
 
-    // Check if response code is not 200-299 range
-    if (response.data.code < 200 || response.data.code >= 300) {
-      throw new Error(
-        `Failed to start cluster: ${
-          response.data.message || `HTTP ${response.data.code}`
-        }`
-      );
-    }
+		// Check if response code is not 200-299 range
+		if (response.data.code < 200 || response.data.code >= 300) {
+			throw new Error(
+				`Failed to start cluster: ${
+					response.data.message || `HTTP ${response.data.code}`
+				}`,
+			);
+		}
 
-    return StartClusterResponseSchema.parse(response.data);
-  }
+		return StartClusterResponseSchema.parse(response.data);
+	},
 );
 
 /**
@@ -274,24 +277,24 @@ export const startCluster = createParallelAction(
  * ```
  */
 export const pauseCluster = createParallelAction(
-  async (
-    clusterName: string,
-    context: ClusterApiContext
-  ): Promise<PauseClusterResponse> => {
-    const api = createClusterApi(context);
-    const response = await api.post(`/database/${clusterName}/pause`);
+	async (
+		clusterName: string,
+		context: ClusterApiContext,
+	): Promise<PauseClusterResponse> => {
+		const api = createClusterApi(context);
+		const response = await api.post(`/database/${clusterName}/pause`);
 
-    // Check if response code is not 200-299 range
-    if (response.data.code < 200 || response.data.code >= 300) {
-      throw new Error(
-        `Failed to pause cluster: ${
-          response.data.message || `HTTP ${response.data.code}`
-        }`
-      );
-    }
+		// Check if response code is not 200-299 range
+		if (response.data.code < 200 || response.data.code >= 300) {
+			throw new Error(
+				`Failed to pause cluster: ${
+					response.data.message || `HTTP ${response.data.code}`
+				}`,
+			);
+		}
 
-    return PauseClusterResponseSchema.parse(response.data);
-  }
+		return PauseClusterResponseSchema.parse(response.data);
+	},
 );
 
 /**
@@ -311,24 +314,24 @@ export const pauseCluster = createParallelAction(
  * ```
  */
 export const restartCluster = createParallelAction(
-  async (
-    clusterName: string,
-    context: ClusterApiContext
-  ): Promise<RestartClusterResponse> => {
-    const api = createClusterApi(context);
-    const response = await api.post(`/database/${clusterName}/restart`);
+	async (
+		clusterName: string,
+		context: ClusterApiContext,
+	): Promise<RestartClusterResponse> => {
+		const api = createClusterApi(context);
+		const response = await api.post(`/database/${clusterName}/restart`);
 
-    // Check if response code is not 200-299 range
-    if (response.data.code < 200 || response.data.code >= 300) {
-      throw new Error(
-        `Failed to restart cluster: ${
-          response.data.message || `HTTP ${response.data.code}`
-        }`
-      );
-    }
+		// Check if response code is not 200-299 range
+		if (response.data.code < 200 || response.data.code >= 300) {
+			throw new Error(
+				`Failed to restart cluster: ${
+					response.data.message || `HTTP ${response.data.code}`
+				}`,
+			);
+		}
 
-    return RestartClusterResponseSchema.parse(response.data);
-  }
+		return RestartClusterResponseSchema.parse(response.data);
+	},
 );
 
 // Log Management Functions
@@ -358,21 +361,21 @@ export const restartCluster = createParallelAction(
  * ```
  */
 export const getLogsData = createParallelAction(
-  async (
-    params: {
-      podName: string;
-      dbType: LogClusterType;
-      logType: LogType;
-      logPath: string;
-      page?: number;
-      pageSize?: number;
-    },
-    context: ClusterApiContext
-  ): Promise<GetLogsDataResponse> => {
-    const api = createClusterApi(context);
-    const response = await api.get("/logs/data", { params });
-    return GetLogsDataResponseSchema.parse(response.data);
-  }
+	async (
+		params: {
+			podName: string;
+			dbType: LogClusterType;
+			logType: LogType;
+			logPath: string;
+			page?: number;
+			pageSize?: number;
+		},
+		context: ClusterApiContext,
+	): Promise<GetLogsDataResponse> => {
+		const api = createClusterApi(context);
+		const response = await api.get("/logs/data", { params });
+		return GetLogsDataResponseSchema.parse(response.data);
+	},
 );
 
 /**
@@ -406,18 +409,18 @@ export const getLogsData = createParallelAction(
  * ```
  */
 export const getLogsFiles = createParallelAction(
-  async (
-    params: {
-      podName: string;
-      dbType: LogClusterType;
-      logType: LogType;
-    },
-    context: ClusterApiContext
-  ): Promise<GetLogsFilesResponse> => {
-    const api = createClusterApi(context);
-    const response = await api.get("/logs/files", { params });
-    return GetLogsFilesResponseSchema.parse(response.data);
-  }
+	async (
+		params: {
+			podName: string;
+			dbType: LogClusterType;
+			logType: LogType;
+		},
+		context: ClusterApiContext,
+	): Promise<GetLogsFilesResponse> => {
+		const api = createClusterApi(context);
+		const response = await api.get("/logs/files", { params });
+		return GetLogsFilesResponseSchema.parse(response.data);
+	},
 );
 
 /**
@@ -435,11 +438,11 @@ export const getLogsFiles = createParallelAction(
  * ```
  */
 export const getClusterVersions = createParallelAction(
-  async (context: ClusterApiContext): Promise<ClusterVersionsResponse> => {
-    const api = createClusterApi(context);
-    const response = await api.get("/database/version/list");
-    return response.data;
-  }
+	async (context: ClusterApiContext): Promise<ClusterVersionsResponse> => {
+		const api = createClusterApi(context);
+		const response = await api.get("/database/version/list");
+		return response.data;
+	},
 );
 
 // TODO: Add more cluster management functions as needed:

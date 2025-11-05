@@ -281,6 +281,9 @@ importers:
       katex:
         specifier: ^0.16.22
         version: 0.16.22
+      langgraph-nextjs-api-passthrough:
+        specifier: ^0.1.4
+        version: 0.1.4(next@15.4.0(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.2)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(sass@1.77.4))
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -7622,6 +7625,11 @@ packages:
         optional: true
       typeorm:
         optional: true
+
+  langgraph-nextjs-api-passthrough@0.1.4:
+    resolution: {integrity: sha512-qGjHs8AnyP5XxxparmqkW4H6fHLjAgveCQnKzpBg0QhgyCc5wbGXmjCsh6eMgZ0meT+WS2oy31kNlt7OwPqSig==}
+    peerDependencies:
+      next: '*'
 
   langium@3.3.1:
     resolution: {integrity: sha512-QJv/h939gDpvT+9SiLVlY7tZC3xB2qK57v0J04Sh9wpMb6MP1q8gB21L3WIo8T5P1MSMg3Ep14L7KkDCFG3y4w==}
@@ -18493,6 +18501,10 @@ snapshots:
       - '@opentelemetry/sdk-trace-base'
       - openai
       - ws
+
+  langgraph-nextjs-api-passthrough@0.1.4(next@15.4.0(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.2)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(sass@1.77.4)):
+    dependencies:
+      next: 15.4.0(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.2)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(sass@1.77.4)
 
   langium@3.3.1:
     dependencies:

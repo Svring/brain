@@ -42,9 +42,6 @@ export default function HomePage() {
 		isError: isProjectsError,
 	} = useProjectSearch();
 
-	console.log("messages", messages);
-	console.log("threadId", threadId);
-
 	const { DeployTemplateDialog: CreateProjectDialog, openDialog } =
 		useDeployTemplateDialog();
 	const { LaunchpadCreateDialog } = useLaunchpadCreateDialog();
@@ -55,11 +52,9 @@ export default function HomePage() {
 
 	// Parse args from query (JSON string)
 	const parsedArgs = useMemo(() => {
-		console.log("[Args Detection] Raw argsParam:", argsParam);
 		if (!argsParam) return null;
 		try {
 			const parsed = JSON.parse(decodeURIComponent(argsParam));
-			console.log("[Args Detection] Parsed args:", parsed);
 			return parsed;
 		} catch (error) {
 			console.error("[Args Detection] Failed to parse args:", error);
@@ -75,7 +70,6 @@ export default function HomePage() {
 				typeof parsedArgs.template_name === "string" &&
 				parsedArgs.template_name.length > 0,
 		);
-		console.log("[Args Detection] isTemplateArgs:", result);
 		return result;
 	}, [parsedArgs]);
 
@@ -103,10 +97,6 @@ export default function HomePage() {
 			parsedArgs.resources.app[0].image.length > 0;
 
 		const result = Boolean(hasOriginalFormat || hasProposalFormat);
-		console.log("[Args Detection] isImageArgs:", result, {
-			hasOriginalFormat,
-			hasProposalFormat,
-		});
 		return result;
 	}, [parsedArgs]);
 
@@ -129,10 +119,6 @@ export default function HomePage() {
 				Array.isArray(parsedArgs.resources.database));
 
 		const result = Boolean(hasOriginalFormat || hasProposalFormat);
-		console.log("[Args Detection] isDevenvArgs:", result, {
-			hasOriginalFormat,
-			hasProposalFormat,
-		});
 		return result;
 	}, [parsedArgs]);
 
@@ -176,11 +162,6 @@ export default function HomePage() {
 
 	const templateName = isTemplateArgs ? parsedArgs?.template_name : "";
 
-	// Log transformed args
-	console.log("[Args Transformation] imageArgs:", imageArgs);
-	console.log("[Args Transformation] devenvArgs:", devenvArgs);
-	console.log("[Args Transformation] templateName:", templateName);
-
 	// Initialize hooks (stable order)
 	const { deployImage } = useImageDeployment(imageArgs);
 	const { deployTemplate } = useTemplateDeployment(templateName);
@@ -203,7 +184,6 @@ export default function HomePage() {
 		}) => {
 			const now = Date.now();
 			if (now - lastDeployTimeRef.current.template < 10000) {
-				console.log("[Throttle] Skipping template deploy - too soon");
 				return;
 			}
 			lastDeployTimeRef.current.template = now;
@@ -215,7 +195,6 @@ export default function HomePage() {
 	const throttledDeployImage = useCallback(async () => {
 		const now = Date.now();
 		if (now - lastDeployTimeRef.current.image < 10000) {
-			console.log("[Throttle] Skipping image deploy - too soon");
 			return;
 		}
 		lastDeployTimeRef.current.image = now;
@@ -225,7 +204,6 @@ export default function HomePage() {
 	const throttledDeployDevenv = useCallback(async () => {
 		const now = Date.now();
 		if (now - lastDeployTimeRef.current.devenv < 10000) {
-			console.log("[Throttle] Skipping devenv deploy - too soon");
 			return;
 		}
 		lastDeployTimeRef.current.devenv = now;
@@ -236,7 +214,6 @@ export default function HomePage() {
 	const hasDeployedRef = useRef(false);
 
 	useEffect(() => {
-		console.log("parsedArgs", parsedArgs);
 		if (!parsedArgs || hasDeployedRef.current) return;
 
 		const run = async () => {
@@ -246,18 +223,15 @@ export default function HomePage() {
 
 				if (isTemplateArgs) {
 					// Prefer handleDeploy to respect input requirements
-					console.log("isTemplateArgs", isTemplateArgs);
 					await throttledDeployTemplate({
 						templateName,
 						templateForm: parsedArgs.template_form,
 					});
 				} else if (isImageArgs) {
 					// Prefer deployImage to respect input requirements
-					console.log("isImageArgs", isImageArgs);
 					await throttledDeployImage();
 				} else if (isDevenvArgs) {
 					// Prefer deployDevenv to respect input requirements
-					console.log("isDevenvArgs", isDevenvArgs);
 					await throttledDeployDevenv();
 				}
 			} catch (err) {
