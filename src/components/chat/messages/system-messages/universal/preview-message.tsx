@@ -92,36 +92,95 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 		>
 	>({});
 
-	const checkUrlStatus = async (url: string) => {
-		try {
-			const regionUrl = context.regionUrl;
-			const params = new URLSearchParams({
-				url,
-				...(regionUrl && { regionUrl }),
-			});
-			const response = await fetch(`/api/check-url?${params.toString()}`);
-			const data = await response.json();
+	const checkUrlStatus = React.useCallback(
+		async (url: string) => {
+			try {
+				const regionUrl = context.regionUrl;
+				const params = new URLSearchParams({
+					url,
+					...(regionUrl && { regionUrl }),
+				});
+				const response = await fetch(`/api/check-url?${params.toString()}`, {
+					cache: "no-store",
+				});
 
-			const canEmbed = data.ok && data.embedAllowed;
+				console.log(
+					`[Preview] ${url}: Raw response status:`,
+					response.status,
+					response.ok,
+				);
 
-			setUrlStatuses((prev) => ({
-				...prev,
-				[url]: {
-					isSuccess: canEmbed,
-					checked: true,
-				},
-			}));
-		} catch (error) {
-			console.log(`[Preview] ${url}: Check failed, will retry...`, error);
-			setUrlStatuses((prev) => ({
-				...prev,
-				[url]: {
-					isSuccess: false,
-					checked: false,
-				},
-			}));
-		}
-	};
+				if (!response.ok) {
+					console.error(
+						`[Preview] ${url}: HTTP error:`,
+						response.status,
+						response.statusText,
+					);
+					throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+				}
+
+				const responseText = await response.text();
+				console.log(`[Preview] ${url}: Raw response text:`, responseText);
+
+				let data: {
+					ok: boolean;
+					embedAllowed?: boolean;
+					status?: number;
+					isUpstreamError?: boolean;
+				};
+				try {
+					data = JSON.parse(responseText) as typeof data;
+				} catch (parseError) {
+					console.error(
+						`[Preview] ${url}: JSON parse error:`,
+						parseError,
+						"Response text:",
+						responseText,
+					);
+					throw parseError;
+				}
+
+				console.log(`[Preview] ${url}: Parsed data:`, data);
+
+				const canEmbed = Boolean(data.ok && data.embedAllowed);
+				const timestamp = Date.now();
+
+				console.log(`[Preview] ${url} [${timestamp}]: API Response:`, {
+					ok: data.ok,
+					embedAllowed: data.embedAllowed,
+					canEmbed,
+					willSetState: { isSuccess: canEmbed, checked: canEmbed },
+				});
+
+				setUrlStatuses((prev) => {
+					const prevStatus = prev[url];
+					const newState = {
+						...prev,
+						[url]: {
+							isSuccess: canEmbed,
+							checked: canEmbed,
+						},
+					};
+					console.log(`[Preview] ${url} [${timestamp}]: State updated:`, {
+						previous: prevStatus,
+						new: newState[url],
+						allStatuses: Object.keys(prev).length,
+					});
+					return newState;
+				});
+			} catch (error) {
+				console.log(`[Preview] ${url}: Check failed, will retry...`, error);
+				setUrlStatuses((prev) => ({
+					...prev,
+					[url]: {
+						isSuccess: false,
+						checked: false,
+					},
+				}));
+			}
+		},
+		[context.regionUrl],
+	);
 
 	// Check all URL statuses every 3 seconds, but stop checking once marked as checked
 	useInterval(
@@ -205,6 +264,15 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 				};
 				const isSuccess = status.isSuccess;
 				const isChecked = status.checked;
+				const renderTimestamp = Date.now();
+
+				console.log(`[Preview] Rendering ${item.url} [${renderTimestamp}]:`, {
+					status,
+					isSuccess,
+					isChecked,
+					willShowIframe: isSuccess && isChecked,
+					allStatuses: Object.keys(urlStatuses).length,
+				});
 
 				return (
 					<div
