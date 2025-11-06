@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "NODE_OPTIONS=\"--use-system-ca\" next dev --turbopack",
+    "dev": "next dev --turbopack",
     "million-dev": "next dev",
     "build": "next build --turbopack",
     "start": "next start",

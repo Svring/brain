@@ -8,12 +8,14 @@ import {
 import { MarkerType } from "@xyflow/react";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { useAuthState } from "@/contexts/auth/auth-context";
 
 export const useNetworkStatus = (target: ResourceTarget) => {
   const { devbox, launchpad } = useTRPCClients();
   const { edges } = useFlowgraphState();
   const { updateEdge } = useFlowgraphActions();
   const { resource } = useResourceStatus(target);
+  const { auth } = useAuthState();
 
   const networkNodeId = `network-${resource?.name || target.name}`;
   const connectedEdges = useMemo(
@@ -30,16 +32,79 @@ export const useNetworkStatus = (target: ResourceTarget) => {
       ? devbox.networkStatus.queryOptions(resource?.name)
       : launchpad.networkStatus.queryOptions(resource?.name)),
     enabled: !!(resource?.name || target.name),
-    refetchInterval: 3000,
+    refetchInterval: 5000,
   });
 
-  const statusKey = useMemo(() => {
-    if (!Array.isArray(readyStatus) || !readyStatus.length) return "unknown";
-    const readyCount = readyStatus.filter((item: any) => item.ready).length;
-    if (readyCount === 0) return "allNotReady";
-    if (readyCount === readyStatus.length) return "allReady";
-    return "partial";
+  // Extract URLs from readyStatus for deeper checks
+  const urls: string[] = useMemo(() => {
+    if (!Array.isArray(readyStatus)) return [];
+    return readyStatus
+      .map((item: any) => item?.url)
+      .filter((u: any) => typeof u === "string" && u.startsWith("http"));
   }, [readyStatus]);
+
+  // Server-side URL checks to catch gateway 502 / upstream errors
+  const { data: urlChecks } = useQuery({
+    queryKey: ["urlChecks", networkNodeId, urls],
+    queryFn: async () => {
+      if (!urls.length || !auth?.regionUrl) return {} as Record<string, any>;
+      const results = await Promise.all(
+        urls.map(async (u) => {
+          try {
+            const res = await fetch(
+              `/api/check-url?url=${encodeURIComponent(u)}&regionUrl=${encodeURIComponent(
+                auth.regionUrl
+              )}`,
+              { method: "GET", cache: "no-store" }
+            );
+            const json = await res.json();
+            return [u, json] as const;
+          } catch {
+            return [u, { ok: false, status: 503 }] as const;
+          }
+        })
+      );
+      return Object.fromEntries(results);
+    },
+    enabled: urls.length > 0 && !!auth?.regionUrl,
+    refetchInterval: 10000,
+  });
+
+  // Combine original readyStatus with urlChecks: mark upstream errors as not ready
+  const combinedReadyStatus = useMemo(() => {
+    if (!Array.isArray(readyStatus)) return readyStatus;
+    if (!urlChecks) return readyStatus;
+    return readyStatus.map((item: any) => {
+      const check = urlChecks[item.url];
+      if (!check) return item;
+      const isUpstreamError = !!check.isUpstreamError || check.status === 502;
+      if (isUpstreamError) {
+        return {
+          ...item,
+          ready: false,
+          error: "Upstream service error - backend not responding",
+        };
+      }
+      // If server says not ok (non-2xx/3xx), treat as not ready
+      if (check.ok === false) {
+        return {
+          ...item, 
+          ready: false,
+          error: `HTTP ${check.status || "error"}`,
+        };
+      }
+      return item;
+    });
+  }, [readyStatus, urlChecks]);
+
+  const statusKey = useMemo(() => {
+    if (!Array.isArray(combinedReadyStatus) || !combinedReadyStatus.length)
+      return "unknown";
+    const readyCount = combinedReadyStatus.filter((item: any) => item.ready).length;
+    if (readyCount === 0) return "allNotReady";
+    if (readyCount === combinedReadyStatus.length) return "allReady";
+    return "partial";
+  }, [combinedReadyStatus]);
 
   const getBackgroundColor = () =>
     statusKey === "allNotReady" || statusKey === "partial"
@@ -80,5 +145,5 @@ export const useNetworkStatus = (target: ResourceTarget) => {
     });
   }, [statusKey, connectedEdges]);
 
-  return { readyStatus, getBackgroundColor };
+  return { readyStatus: combinedReadyStatus, getBackgroundColor };
 };

@@ -19,15 +19,22 @@ export async function GET(request: NextRequest) {
 
 		const refererUrl = `https://brain.${regionUrl}`;
 
-		const result = await axios.get(url, {
-			method: "HEAD",
+		// Do a GET request and accept any status without throwing
+		const result = await axios.request({
+			url: url!,
+			method: "GET",
 			httpsAgent,
 			timeout: 10000,
 			headers: {
 				Referer: refererUrl,
 			},
+			validateStatus: () => true,
+			// Return raw data as string if possible
+			transformResponse: (r) => r,
 		});
 
+		const status = result.status;
+		const bodyText = typeof result.data === "string" ? result.data : "";
 		const csp = result.headers["content-security-policy"];
 		let embedAllowed = false;
 
@@ -42,27 +49,29 @@ export async function GET(request: NextRequest) {
 					);
 				}
 			} catch (error) {
-				console.error("Failed to parse CSP:", error);
 			}
 		}
 
-		console.log("response", {
-			ok: result.status >= 200 && result.status < 400,
-			status: result.status,
-			embedAllowed,
-		});
+		const lower = bodyText.toLowerCase();
+		const isUpstreamError =
+			status === 502 ||
+			lower.includes("upstream connect error") ||
+			lower.includes("disconnect/reset");
+
+		const ok = status >= 200 && status < 400 && !isUpstreamError;
 
 		return NextResponse.json({
-			ok: result.status >= 200 && result.status < 400,
-			status: result.status,
+			ok,
+			status,
 			embedAllowed,
+			isUpstreamError,
 		});
 	} catch (error) {
-		console.error("Check URL error:", error);
 		return NextResponse.json({
 			ok: false,
 			status: 503,
 			error: "fetch failed",
+			isUpstreamError: false,
 		});
 	}
 }

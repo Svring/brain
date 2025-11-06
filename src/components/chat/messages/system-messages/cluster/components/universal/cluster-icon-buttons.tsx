@@ -46,9 +46,9 @@ export default function ClusterIconButtons({
                   <Power className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              {/* <TooltipContent side="bottom">
+              <TooltipContent side="bottom">
                 <p>Start</p>
-              </TooltipContent> */}
+              </TooltipContent>
             </Tooltip>
           )}
 
@@ -68,9 +68,9 @@ export default function ClusterIconButtons({
                   <Pause className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              {/* <TooltipContent side="bottom">
+              <TooltipContent side="bottom">
                 <p>Pause</p>
-              </TooltipContent> */}
+              </TooltipContent>
             </Tooltip>
           )}
 
@@ -89,9 +89,9 @@ export default function ClusterIconButtons({
                 <RotateCcw className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            {/* <TooltipContent side="bottom">
+            <TooltipContent side="bottom">
               <p>Restart</p>
-            </TooltipContent> */}
+            </TooltipContent>
           </Tooltip>
 
         </div>

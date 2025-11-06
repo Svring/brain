@@ -3,10 +3,12 @@
 import {
 	ChevronRight as ChevronRightIcon,
 	MousePointerClick,
+	Download,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SystemMessageType } from "@/components/chat/messages/system-messages/systemp-message-types";
 import { useChatInstance } from "@/components/provider/chat-instance-provider";
+import { ResourceCardCloseContext } from "@/components/chat/messages/system-messages/components/base-resource-message";
 import {
 	Popover,
 	PopoverContent,
@@ -18,6 +20,13 @@ import { useNavigationState } from "@/contexts/navigation/navigation-context";
 import { useProjectState } from "@/contexts/project/project-context";
 import { getResourceDefaultIcon } from "@/lib/sealos/sealos-utils";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { HeaderActions } from "./header/header-actions";
 
 interface AiChatHeaderProps {
@@ -32,7 +41,7 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
 		selectedResource: navSelectedResource,
 		activeView,
 	} = useNavigationState();
-	const { isLoading, resourceTarget } = useChatInstance();
+	const { isLoading, resourceTarget, messages } = useChatInstance();
 	const [isExpanded, setIsExpanded] = useState(true);
 
 	// Auto-open popover when selectedResource changes
@@ -108,8 +117,40 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
 		}
 
 		return (
-			<div className="max-h-[500px] overflow-y-auto">{DetailComponent}</div>
+			<div className="max-h-[500px] overflow-y-auto overflow-x-visible relative">{DetailComponent}</div>
 		);
+	};
+
+	const handleExportMessages = () => {
+		if (!messages || messages.length === 0) return;
+
+		// Filter messages with type "ai", "human", or "tool"
+		const filteredMessages = messages.filter(
+			(message) =>
+				message.type === "ai" ||
+				message.type === "human" ||
+				message.type === "tool",
+		);
+
+		if (filteredMessages.length === 0) return;
+
+		// Create JSON string
+		const jsonString = JSON.stringify(filteredMessages, null, 2);
+
+		// Create Blob and download to local
+		const blob = new Blob([jsonString], { type: "application/json" });
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement("a");
+		link.href = url;
+
+		// Generate filename with timestamp
+		const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+		link.download = `chat-messages-${timestamp}.json`;
+
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		URL.revokeObjectURL(url);
 	};
 
 	return (
@@ -162,12 +203,16 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
 										</div>
 									</PopoverTrigger>
 									<PopoverContent
-										className="p-0 rounded-2xl mr-[max(35vw,29rem)] w-[26rem]"
+										className="p-0 rounded-2xl mr-[max(35vw,29rem)] w-[26rem] overflow-visible border-0"
 										align="start"
 										side="bottom"
 										sideOffset={5}
 									>
-										{renderDetailCard()}
+										<ResourceCardCloseContext.Provider
+											value={() => setIsExpanded(false)}
+										>
+											{renderDetailCard()}
+										</ResourceCardCloseContext.Provider>
 									</PopoverContent>
 								</Popover>
 							) : (
@@ -181,7 +226,24 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
 					)}
 				</div>
 
-				<div className="shrink-0">
+				<div className="shrink-0 flex items-center gap-1">
+					<TooltipProvider>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<Button
+									variant="ghost"
+									size="icon"
+									onClick={handleExportMessages}
+									className="h-8 w-8"
+									disabled={!messages || messages.length === 0}
+									aria-label="Export messages"
+								>
+									<Download className="h-4 w-4" />
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent>Export Messages</TooltipContent>
+						</Tooltip>
+					</TooltipProvider>
 					<HeaderActions />
 				</div>
 			</div>

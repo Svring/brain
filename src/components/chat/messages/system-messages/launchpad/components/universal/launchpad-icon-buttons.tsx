@@ -8,7 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Pause, Power, RotateCcw } from "lucide-react";
+import { Pause, Play, RotateCcw } from "lucide-react";
 import { useLaunchpadLifecycle } from "@/hooks/sealos/launchpad/use-launchpad-lifecycle";
 
 interface LaunchpadObject {
@@ -47,12 +47,12 @@ export default function LaunchpadIconButtons({
                     isResourcePending ? "opacity-50" : ""
                   }`}
                 >
-                  <Power className="h-4 w-4" />
+                  <Play className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              {/* <TooltipContent side="bottom">
+              <TooltipContent side="bottom">
                 <p>Start</p>
-              </TooltipContent> */}
+              </TooltipContent>
             </Tooltip>
           )}
 
@@ -72,9 +72,9 @@ export default function LaunchpadIconButtons({
                   <Pause className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              {/* <TooltipContent side="bottom">
+              <TooltipContent side="bottom">
                 <p>Pause</p>
-              </TooltipContent> */}
+              </TooltipContent>
             </Tooltip>
           )}
 
@@ -93,9 +93,9 @@ export default function LaunchpadIconButtons({
                 <RotateCcw className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            {/* <TooltipContent side="bottom">
+            <TooltipContent side="bottom">
               <p>Restart</p>
-            </TooltipContent> */}
+            </TooltipContent>
           </Tooltip>
 
         </div>

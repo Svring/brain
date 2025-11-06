@@ -42,9 +42,9 @@ export default function DevboxIconButtons({
                   <Play className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              {/* <TooltipContent side="bottom">
+              <TooltipContent side="bottom">
                 <p>Start</p>
-              </TooltipContent> */}
+              </TooltipContent>
             </Tooltip>
           )}
 
@@ -64,9 +64,9 @@ export default function DevboxIconButtons({
                   <Pause className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              {/* <TooltipContent side="bottom">
+              <TooltipContent side="bottom">
                 <p>Pause</p>
-              </TooltipContent> */}
+              </TooltipContent>
             </Tooltip>
           )}
 
@@ -85,9 +85,9 @@ export default function DevboxIconButtons({
                 <RotateCcw className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            {/* <TooltipContent side="bottom">
+            <TooltipContent side="bottom">
               <p>Restart</p>
-            </TooltipContent> */}
+            </TooltipContent>
           </Tooltip>
 
         </div>

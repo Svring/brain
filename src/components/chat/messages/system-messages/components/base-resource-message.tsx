@@ -1,15 +1,23 @@
 "use client";
 
-import React from "react";
+import React, { createContext, useContext } from "react";
 import { cn } from "@/lib/utils";
 import MessageHeader from "./base-resourec-message-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { X } from "lucide-react";
 import {
   CustomResourceTarget,
   BuiltinResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+
+// Context for passing onClose callback
+export const ResourceCardCloseContext = createContext<(() => void) | undefined>(
+  undefined
+);
+
+export const useResourceCardClose = () => useContext(ResourceCardCloseContext);
 
 export interface MessageAction {
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
@@ -25,6 +33,7 @@ export interface BaseResourceMessageProps {
   headerSlot?: React.ReactNode;
   children?: React.ReactNode;
   prompt?: string;
+  onClose?: () => void;
 }
 
 export function BaseResourceMessage({
@@ -34,10 +43,30 @@ export function BaseResourceMessage({
   headerSlot,
   children,
   prompt,
+  onClose,
 }: BaseResourceMessageProps) {
+  // Use context if onClose is not provided directly
+  const contextOnClose = useResourceCardClose();
+  const handleClose = onClose || contextOnClose;
+
   return (
-    <div className="flex justify-start w-full">
-      <Card className="w-full bg-background-secondary border p-2 gap-2">
+    <div className="flex justify-start w-full p-2 gap-2">
+      <Card className="relative w-full bg-background-secondary border p-2 gap-2">
+        {/* Close Button */}
+        {handleClose && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClose();
+            }}
+            className="absolute -top-1.5 -left-1.5 h-4 w-4 rounded-full bg-transparent flex items-center justify-center opacity-70 hover:opacity-100 hover:bg-muted/50 focus:outline-hidden disabled:pointer-events-none shadow-sm z-50 cursor-pointer transition-colors"
+            aria-label="Close resource card"
+          >
+            <X className="h-4 w-4 text-white" />
+            <span className="sr-only">Close</span>
+          </button>
+        )}
+
         {/* Header Section */}
         {showHeader && target && (
           <MessageHeader target={target} headerSlot={headerSlot} />
