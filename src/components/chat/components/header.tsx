@@ -5,6 +5,7 @@ import {
 	MousePointerClick,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { ResourceCardCloseContext } from "@/components/chat/messages/system-messages/components/base-resource-message";
 import { SystemMessageType } from "@/components/chat/messages/system-messages/systemp-message-types";
 import { useChatInstance } from "@/components/provider/chat-instance-provider";
 import {
@@ -108,7 +109,9 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
 		}
 
 		return (
-			<div className="max-h-[500px] overflow-y-auto">{DetailComponent}</div>
+			<div className="max-h-[500px] overflow-y-auto overflow-x-visible relative">
+				{DetailComponent}
+			</div>
 		);
 	};
 
@@ -162,12 +165,16 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
 										</div>
 									</PopoverTrigger>
 									<PopoverContent
-										className="p-0 rounded-2xl mr-[max(35vw,29rem)] w-[26rem]"
+										className="p-0 rounded-2xl mr-[max(35vw,29rem)] w-[26rem] overflow-visible border-0"
 										align="start"
 										side="bottom"
 										sideOffset={5}
 									>
-										{renderDetailCard()}
+										<ResourceCardCloseContext.Provider
+											value={() => setIsExpanded(false)}
+										>
+											{renderDetailCard()}
+										</ResourceCardCloseContext.Provider>
 									</PopoverContent>
 								</Popover>
 							) : (
@@ -181,7 +188,7 @@ export function AiChatHeader({ title = "Chat" }: AiChatHeaderProps) {
 					)}
 				</div>
 
-				<div className="shrink-0">
+				<div className="shrink-0 flex items-center gap-1">
 					<HeaderActions />
 				</div>
 			</div>

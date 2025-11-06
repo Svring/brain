@@ -129,9 +129,14 @@ export function AiMessages({
 			);
 		});
 
+		console.log("messages", messages);
+		console.log("isLoading", isLoading);
+
 		// Add "Thinking..." indicator when streaming
 		if (
-			(isLoading && messages.at(-1)?.type === "human") ||
+			(isLoading &&
+				(messages.at(-1)?.type === "human" ||
+					messages.at(-1)?.type === "system")) ||
 			messages.at(-1)?.content === ""
 		) {
 			messageElements.push(

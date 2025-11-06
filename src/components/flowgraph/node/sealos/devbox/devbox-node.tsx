@@ -64,7 +64,7 @@ function DevboxNode({ data }: { data: DevboxObject }) {
 				<div className="flex items-center gap-2 mt-2">
 					<Package className="h-4 w-4 text-muted-foreground" />
 					<div className="text-md text-muted-foreground truncate flex-1">
-						Image: {transformDevboxImage(image)}
+						Runtime: {image}
 					</div>
 				</div>
 

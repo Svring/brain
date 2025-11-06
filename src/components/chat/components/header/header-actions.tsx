@@ -1,7 +1,14 @@
 "use client";
 
 import { useReactFlow } from "@xyflow/react";
-import { ChevronRight, Focus, History, Loader2, Plus } from "lucide-react";
+import {
+	ChevronRight,
+	Download,
+	Focus,
+	History,
+	Loader2,
+	Plus,
+} from "lucide-react";
 import { useChatInstance } from "@/components/provider/chat-instance-provider";
 import { useThreads } from "@/components/provider/thread-provider";
 import { Button } from "@/components/ui/button";
@@ -24,7 +31,7 @@ import { HistoryDropdown } from "./history-dropdown";
 export function HeaderActions() {
 	const { selectedProject, selectedResource } = useProjectState();
 	const { clearSelectedResource } = useProjectActions();
-	const { resourceTarget, state } = useChatInstance();
+	const { resourceTarget, state, messages } = useChatInstance();
 	const {
 		closeChat,
 		setChatState,
@@ -83,6 +90,44 @@ export function HeaderActions() {
 		);
 	};
 
+	const handleExportMessages = () => {
+		if (!messages || messages.length === 0) return;
+
+		// Filter and map messages to only include id, role, and content
+		const filteredMessages = messages
+			.filter(
+				(message) =>
+					message.type === "ai" ||
+					message.type === "human" ||
+					message.type === "tool",
+			)
+			.map((message) => ({
+				id: message.id,
+				role: message.type,
+				content: message.content,
+			}));
+
+		if (filteredMessages.length === 0) return;
+
+		// Create JSON string
+		const jsonString = JSON.stringify(filteredMessages, null, 2);
+
+		// Create Blob and download to local
+		const blob = new Blob([jsonString], { type: "application/json" });
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement("a");
+		link.href = url;
+
+		// Generate filename with timestamp
+		const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+		link.download = `chat-messages-${timestamp}.json`;
+
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		URL.revokeObjectURL(url);
+	};
+
 	return (
 		<TooltipProvider>
 			<div className="flex items-center gap-1">
@@ -108,6 +153,22 @@ export function HeaderActions() {
 				</Tooltip>
 
 				<HistoryDropdown />
+
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={handleExportMessages}
+							className="h-8 w-8"
+							disabled={!messages || messages.length === 0}
+							aria-label="Export messages"
+						>
+							<Download className="h-4 w-4" />
+						</Button>
+					</TooltipTrigger>
+					<TooltipContent>Export Messages</TooltipContent>
+				</Tooltip>
 
 				{/* Only show focus button when there's a selected resource */}
 				{selectedResource && (

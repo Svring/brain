@@ -124,73 +124,73 @@ export function HistoryDropdown() {
 
 	return (
 		<>
-			<Tooltip>
-				<TooltipTrigger asChild>
-					<DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+			<DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+				<Tooltip>
+					<TooltipTrigger asChild>
 						<DropdownMenuTrigger asChild>
 							<Button variant="ghost" size="icon" className="h-8 w-8">
 								<History className="h-4 w-4" />
 							</Button>
 						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end" className="max-w-xs">
-							{filteredAndLimitedThreads?.length ? (
-								<div className="max-h-80 overflow-y-auto space-y-1">
-									{filteredAndLimitedThreads.map((thread) => {
-										return (
-											<DropdownMenuItem
-												key={thread.thread_id}
-												onClick={() => handleThreadSelect(thread.thread_id)}
-												className={cn(
-													"p-2 cursor-pointer",
-													thread.thread_id === threadId &&
-														"bg-muted/50 border rounded-md",
-												)}
-											>
-												<div className="flex items-center justify-between w-full gap-2">
-													<div className="flex items-center gap-2 flex-1 min-w-0">
-														<div className="text-sm font-medium truncate flex-1 min-w-0">
-															{getThreadTitle(thread)}
-														</div>
-													</div>
-													<div className="flex items-center gap-2">
-														<div className="text-xs text-muted-foreground shrink-0 max-w-[60px]">
-															{thread.updated_at
-																? formatThreadDate(thread.updated_at)
-																: "Unknown"}
-														</div>
-														<Button
-															size="icon"
-															variant="ghost"
-															className="h-6 w-6 hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors"
-															onClick={(e) =>
-																handleDeleteThread(thread.thread_id, e)
-															}
-															disabled={deleteThread.isPending}
-														>
-															{deleteThread.isPending ? (
-																<Spinner variant="ellipsis" size={12} />
-															) : (
-																<Trash2 className="h-3 w-3" />
-															)}
-														</Button>
-													</div>
+					</TooltipTrigger>
+					<TooltipContent>History</TooltipContent>
+				</Tooltip>
+				<DropdownMenuContent align="end" className="max-w-xs">
+					{filteredAndLimitedThreads?.length ? (
+						<div className="max-h-80 overflow-y-auto space-y-1">
+							{filteredAndLimitedThreads.map((thread) => {
+								return (
+									<DropdownMenuItem
+										key={thread.thread_id}
+										onClick={() => handleThreadSelect(thread.thread_id)}
+										className={cn(
+											"p-2 cursor-pointer",
+											thread.thread_id === threadId &&
+												"bg-muted/50 border rounded-md",
+										)}
+									>
+										<div className="flex items-center justify-between w-full gap-2">
+											<div className="flex items-center gap-2 flex-1 min-w-0">
+												<div className="text-sm font-medium truncate flex-1 min-w-0">
+													{getThreadTitle(thread)}
 												</div>
-											</DropdownMenuItem>
-										);
-									})}
-								</div>
-							) : (
-								<div className="p-2 text-sm text-muted-foreground text-center">
-									{resourceTarget
-										? `No chat history for ${resourceTarget.name}`
-										: "No general chat history available"}
-								</div>
-							)}
-						</DropdownMenuContent>
-					</DropdownMenu>
-				</TooltipTrigger>
-				<TooltipContent>Chat History</TooltipContent>
-			</Tooltip>
+											</div>
+											<div className="flex items-center gap-2">
+												<div className="text-xs text-muted-foreground shrink-0 max-w-[60px]">
+													{thread.updated_at
+														? formatThreadDate(thread.updated_at)
+														: "Unknown"}
+												</div>
+												<Button
+													size="icon"
+													variant="ghost"
+													className="h-6 w-6 hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors"
+													onClick={(e) =>
+														handleDeleteThread(thread.thread_id, e)
+													}
+													disabled={deleteThread.isPending}
+												>
+													{deleteThread.isPending ? (
+														<Spinner variant="ellipsis" size={12} />
+													) : (
+														<Trash2 className="h-3 w-3" />
+													)}
+												</Button>
+											</div>
+										</div>
+									</DropdownMenuItem>
+								);
+							})}
+						</div>
+					) : (
+						<div className="p-2 text-sm text-muted-foreground text-center">
+							{resourceTarget
+								? `No chat history for ${resourceTarget.name}`
+								: "No general chat history available"}
+						</div>
+					)}
+				</DropdownMenuContent>
+			</DropdownMenu>
 
 			<DeleteThreadDialog
 				open={deleteDialogOpen}
