@@ -15,7 +15,7 @@
 # # Push to Docker Hub
 # docker push puddlecat/orca-app:latest
 # Stage 1: Build the Next.js app
-FROM node:22-alpine AS builder
+FROM node:22-slim AS builder
 WORKDIR /app
 # Install pnpm
 RUN npm install -g pnpm

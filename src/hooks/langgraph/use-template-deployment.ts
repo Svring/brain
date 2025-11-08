@@ -87,7 +87,7 @@ export const useTemplateDeployment = (templateName: string) => {
 								: error.message ||
 									"Failed to deploy template. Please try again.";
 
-						toast.error(errorMessage);
+						// toast.error(errorMessage);
 						setShowInputDialog(false);
 					},
 				},

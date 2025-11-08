@@ -24,12 +24,8 @@ export default function RootLayout({
 }) {
 	const env = {
 		MODE: process.env.MODE || "production",
-		LANGSMITH_API_KEY: process.env.LANGSMITH_API_KEY || "",
-		LANGGRAPH_DEPLOYMENT_URL: process.env.LANGGRAPH_DEPLOYMENT_URL || "",
+		LANGGRAPH_DEPLOYMENT_URL: "",
 		LANGGRAPH_GRAPH_ID: process.env.LANGGRAPH_GRAPH_ID || "",
-		AGENT_BASE_URL: process.env.AGENT_BASE_URL || "",
-		AGENT_API_KEY: process.env.AGENT_API_KEY || "",
-		AGENT_MODEL_NAME: process.env.AGENT_MODEL_NAME || "",
 	};
 	return (
 		<html lang="en" suppressHydrationWarning>

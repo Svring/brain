@@ -51,8 +51,8 @@ export function BaseResourceMessage({
 	const handleClose = onClose || contextOnClose;
 
 	return (
-		<div className="flex justify-start w-full p-2 gap-2">
-			<Card className="relative w-full bg-background-secondary border p-2 gap-2">
+		<div className="flex justify-start w-full gap-2">
+			<Card className="relative w-full bg-transparent border p-2 gap-2">
 				{/* Close Button */}
 				{handleClose && (
 					<button
@@ -60,10 +60,10 @@ export function BaseResourceMessage({
 							e.stopPropagation();
 							handleClose();
 						}}
-						className="absolute -top-1.5 -left-1.5 h-4 w-4 rounded-full bg-transparent flex items-center justify-center opacity-70 hover:opacity-100 hover:bg-muted/50 focus:outline-hidden disabled:pointer-events-none shadow-sm z-50 cursor-pointer transition-colors"
+						className="fixed -top-2.5 -left-2.5 h-6 w-6 rounded-full bg-transparent flex items-center justify-center opacity-70 hover:opacity-100 hover:bg-muted/50 focus:outline-hidden disabled:pointer-events-none shadow-sm z-50 cursor-pointer transition-colors"
 						aria-label="Close resource card"
 					>
-						<X className="h-4 w-4 text-white" />
+						<X className="h-4.5 w-4.5 text-white" />
 						<span className="sr-only">Close</span>
 					</button>
 				)}

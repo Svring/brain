@@ -1,6 +1,8 @@
 node_modules
 .next
 .env
+.env.development
 .note
 .DS_Store
 certificates
+.vscode

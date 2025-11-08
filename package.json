@@ -112,7 +112,6 @@
     "next": "15.4.0",
     "next-server-actions-parallel": "^1.2.2",
     "next-themes": "latest",
-    "node-ssh": "^13.2.1",
     "nookies": "^2.5.2",
     "nuqs": "^2.6.0",
     "payload": "3.41.0",

@@ -5,10 +5,6 @@ import {
 	DEVBOX_RUNTIME_ICONS,
 } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-icons";
 import type { SSHConfig } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-query-schema";
-import {
-	type EnvVarValue,
-	getOrCreateEnvFile,
-} from "@/lib/sealos/services/env/devbox/devbox-env-utils";
 
 /**
  * Generates a random string of lowercase alphabets
@@ -46,28 +42,6 @@ export const enrichSshWithRegionUrl = (
 		...ssh,
 		host: context.regionUrl,
 	};
-};
-
-/**
- * Fetches environment variables from the remote .env file via SSH
- * @param ssh - The SSH configuration object
- * @returns Array of environment variables in EnvVarValue format
- */
-export const enrichEnvWithSsh = async (
-	ssh: SSHConfig,
-): Promise<EnvVarValue[]> => {
-	try {
-		const envVars = await getOrCreateEnvFile(ssh);
-		return envVars;
-	} catch (error) {
-		// If SSH connection fails, return empty array
-		console.warn(
-			`Failed to fetch environment variables via SSH: ${
-				error instanceof Error ? error.message : "Unknown error"
-			}`,
-		);
-		return [];
-	}
 };
 
 /**
