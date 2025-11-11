@@ -107,7 +107,10 @@ export const useDevenvDeployment = ({
 
 									// Pass database type to deriveClusterEnvVariable
 									// It will use new format for mongodb/redis/kafka, old format for others
-									return deriveClusterEnvVariable(relianceName, database.type);
+									return deriveClusterEnvVariable(
+										relianceName,
+										database.type as string,
+									);
 								}) || [];
 
 							return {
@@ -217,7 +220,7 @@ export const useDevenvDeployment = ({
 			});
 
 			if (!quotaCheckPassed) {
-				// toast.error("Insufficient quota, please upgrade.");
+				toast.error("Insufficient quota, please upgrade.");
 				return;
 			}
 
