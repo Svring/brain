@@ -5,6 +5,7 @@ import { useStream } from "@langchain/langgraph-sdk/react";
 import { useMount } from "@reactuses/core";
 import type { ReactNode } from "react";
 import { createContext, use, useCallback, useState } from "react";
+import { useEnv } from "@/components/provider/env-provider";
 import { requestLogin } from "@/lib/auth/auth-utils";
 import { createThread } from "@/lib/langgraph/langgraph-api/langgraph-api-service";
 import { useEnvState } from "../env/env.context";
@@ -38,7 +39,7 @@ export function CopilotTrialAdapter({
 	sessionId,
 	query,
 }: CopilotTrialAdapterProps) {
-	const { variables } = useEnvState();
+	const { LANGGRAPH_DEPLOYMENT_URL, LANGGRAPH_GRAPH_ID } = useEnv();
 	const [threadId, setThreadId] = useState<string | undefined>(undefined);
 
 	// Create new thread function
@@ -58,8 +59,8 @@ export function CopilotTrialAdapter({
 
 	// Use stream hook directly
 	const { submit, isLoading, stop, messages } = useStream({
-		apiUrl: variables?.LANGGRAPH_DEPLOYMENT_URL || "",
-		assistantId: variables?.LANGGRAPH_GRAPH_ID || "",
+		apiUrl: LANGGRAPH_DEPLOYMENT_URL || "",
+		assistantId: LANGGRAPH_GRAPH_ID || "",
 		threadId: threadId || undefined,
 		messagesKey: "messages",
 		reconnectOnMount: true,
