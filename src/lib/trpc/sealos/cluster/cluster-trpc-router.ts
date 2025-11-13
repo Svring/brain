@@ -146,7 +146,7 @@ export const clusterRouter = t.router({
 		.input(ClusterDeleteRequestSchema)
 		.output(ClusterDeleteResponseSchema)
 		.mutation(async ({ input, ctx }) => {
-			return await deleteClusterService(input, ctx);
+			return await deleteClusterService(ctx, input);
 		}),
 
 	deleteBackup: t.procedure
