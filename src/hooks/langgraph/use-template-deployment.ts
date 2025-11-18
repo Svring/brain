@@ -1,4 +1,5 @@
 import { useRouter } from "next/navigation";
+import { runParallelAction } from "next-server-actions-parallel";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useHomeChat } from "@/components/provider/home-chat-provider";
@@ -8,13 +9,15 @@ import { useChatActions } from "@/contexts/chat/chat-context";
 import { useTemplates } from "@/hooks/template/use-templates";
 import { useSealosContext, useTemplateApiContext } from "@/lib/auth/auth-utils";
 import { finalizeDeploymentFlow } from "@/lib/langgraph/langgraph-method/langgraph-utils";
+import { getTemplateSource } from "@/lib/sealos/resources/template/template-api/template-old-api";
 import { useCreateInstanceMutation } from "@/lib/sealos/resources/template/template-method/template-mutation";
+import { useResourceQuotaChecker } from "@/lib/validation/resource-quota-checker";
 
 export const useTemplateDeployment = (templateName: string) => {
 	const router = useRouter();
 	const { auth } = useAuthState();
 	const { openProjectChat } = useChatActions();
-	const { submit, threadId, messages } = useHomeChat();
+	const { threadId, messages } = useHomeChat();
 	const { patchThread, updateThreadState } = useThreads();
 	const [showInputDialog, setShowInputDialog] = useState(false);
 
@@ -23,6 +26,7 @@ export const useTemplateDeployment = (templateName: string) => {
 	const { templates, isLoading, error } = useTemplates(templateApiContext);
 	const apiContext = useSealosContext();
 	const createInstanceMutation = useCreateInstanceMutation(apiContext);
+	const { checkAndShowQuotaError } = useResourceQuotaChecker();
 
 	// Find the template by name (for UI state, inputs, etc.)
 	const template = templates.find(
@@ -37,7 +41,7 @@ export const useTemplateDeployment = (templateName: string) => {
 	);
 
 	const deployTemplate = useCallback(
-		(
+		async (
 			params: { templateName: string; templateForm?: Record<string, string> },
 			onSuccess?: (data: any) => void,
 		) => {
@@ -47,53 +51,73 @@ export const useTemplateDeployment = (templateName: string) => {
 				return;
 			}
 
-			createInstanceMutation.mutate(
-				{
-					templateName: params.templateName,
-					templateForm: params.templateForm,
-				},
-				{
-					onSuccess: async (data) => {
-						toast.success(
-							`${template?.spec.title || params.templateName} has been deployed to your project.`,
-						);
-						setShowInputDialog(false);
-						onSuccess?.(data);
+			try {
+				// Fetch template details to get resource requirements
+				const templateDetails = await runParallelAction(
+					getTemplateSource(templateApiContext, params.templateName),
+				);
 
-						const instanceResource = data.data?.find(
-							(resource: any) => resource.kind === "Instance",
-						);
-						if (instanceResource?.metadata?.name) {
-							const instanceName = instanceResource.metadata.name;
+				// Check quota before deployment
+				const resourceData = templateDetails?.data?.resource;
+				if (resourceData) {
+					const quotaCheckPassed = checkAndShowQuotaError({
+						cpu: resourceData.cpu,
+						memory: resourceData.memory,
+						storage: resourceData.storage,
+						ports: resourceData.nodeport,
+					});
 
-							await finalizeDeploymentFlow({
-								threadId,
-								kubeconfig: auth?.kubeconfig,
-								projectName: instanceName as string,
-								messages,
-								patchThreadMutate: patchThread.mutate,
-								updateThreadStateMutate: updateThreadState.mutate,
-								openProjectChat,
-								routerPush: router.push,
-							});
-						}
+					if (!quotaCheckPassed) {
+						// Quota check failed, error toast is shown by checkAndShowQuotaError
+						return;
+					}
+				}
+
+				createInstanceMutation.mutate(
+					{
+						templateName: params.templateName,
+						templateForm: params.templateForm,
 					},
-					onError: (error: Error) => {
-						// Check if error is quota-related
-						const errorMessage =
-							error.message?.toLowerCase().includes("quota") ||
-							error.message?.toLowerCase().includes("insufficient")
-								? "Insufficient quota, please upgrade."
-								: error.message ||
-									"Failed to deploy template. Please try again.";
+					{
+						onSuccess: async (data) => {
+							toast.success(
+								`${template?.spec.title || params.templateName} has been deployed to your project.`,
+							);
+							setShowInputDialog(false);
+							onSuccess?.(data);
 
-						// toast.error(errorMessage);
-						setShowInputDialog(false);
+							const instanceResource = data.data?.find(
+								(resource: any) => resource.kind === "Instance",
+							);
+							if (instanceResource?.metadata?.name) {
+								const instanceName = instanceResource.metadata.name;
+
+								await finalizeDeploymentFlow({
+									threadId,
+									kubeconfig: auth?.kubeconfig,
+									projectName: instanceName as string,
+									messages,
+									patchThreadMutate: patchThread.mutate,
+									updateThreadStateMutate: updateThreadState.mutate,
+									openProjectChat,
+									routerPush: router.push,
+								});
+							}
+						},
+						onError: () => {
+							setShowInputDialog(false);
+						},
 					},
-				},
-			);
+				);
+			} catch (error) {
+				console.error(
+					"[useTemplateDeployment] Failed to fetch template:",
+					error,
+				);
+				toast.error("Failed to fetch template details. Please try again.");
+			}
 		},
-		[templates, createInstanceMutation, threadId, auth?.kubeconfig],
+		[templateApiContext, checkAndShowQuotaError, createInstanceMutation],
 	);
 
 	const handleDeploy = useCallback(() => {
