@@ -27,6 +27,7 @@ import {
 } from "./cluster-old-api";
 import {
 	createCluster,
+	getCluster as getClusterOpenApi,
 	getClusterVersions,
 	pauseCluster,
 	restartCluster,
@@ -86,10 +87,12 @@ function createClusterApi(context: SealosApiContext) {
 
 // Cluster Information
 export async function getCluster(
-	context: K8sApiContext,
+	context: SealosApiContext,
 	target: CustomResourceTarget,
 ) {
-	const clusterObject = await getClusterObject(context, target);
+	const clusterObject = await runParallelAction(
+		getClusterOpenApi(target.name!, context),
+	);
 	return clusterObject;
 }
 
@@ -127,7 +130,7 @@ export async function getClusterLogs(
 	clusterContext: SealosApiContext,
 	target: CustomResourceTarget,
 ) {
-	const clusterObject = await getCluster(k8sContext, target);
+	const clusterObject = await getCluster(clusterContext, target);
 	const { pods = [], type } = clusterObject;
 	const logTypes = CLUSTER_LOG_TYPES[type as keyof typeof CLUSTER_LOG_TYPES];
 
