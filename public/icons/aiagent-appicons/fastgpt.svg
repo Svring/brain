@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 16">
+  <path
+    fill="url(#a)"
+    d="M9.6 4.84c0-.64-.2-1.27-.57-1.8-.37-.54-.9-.95-1.52-1.2a3.5 3.5 0 0 0-3.69.7c-.47.46-.8 1.04-.92 1.67-.13.63-.07 1.29.19 1.88.26.6.69 1.1 1.25 1.46.55.36 1.2.55 1.87.55V4.84H9.6Z"
+  />
+  <path
+    fill="url(#b)"
+    d="M13.17 4.84a3.46 3.46 0 0 0-.9-2.3 2.85 2.85 0 0 0-4.29 0 3.28 3.28 0 0 0-.88 2.3h6.07Z"
+  />
+  <path
+    fill="url(#c)"
+    d="M12.61 10.06c0-.36-.06-.72-.18-1.06-.12-.33-.3-.64-.53-.9a2.42 2.42 0 0 0-.78-.6c-.29-.13-.6-.2-.92-.2v2.76h2.41Z"
+  />
+  <path
+    fill="url(#d)"
+    d="M6.21 9.06c-.44 0-.88.08-1.29.23-.41.15-.78.37-1.1.64-.31.28-.56.6-.73.96a2.65 2.65 0 0 0 0 2.27c.17.36.42.68.73.96a3.8 3.8 0 0 0 2.4.87V9.06Z"
+  />
+  <path fill="url(#e)" d="M6.21 4.72v7.27H2.83V4.72h3.38Z" />
+  <path fill="url(#f)" d="M10.24 4.84H6.18V1.6h4.06v3.25Z" />
+  <path fill="url(#g)" d="M10.24 10.06H7.99V7.3h2.25v2.76Z" />
+  <defs>
+    <linearGradient
+      id="a"
+      x1="8"
+      x2="8"
+      y1="1.59"
+      y2="14.99"
+      gradientUnits="userSpaceOnUse"
+    >
+      <stop stop-color="#326DFF" />
+      <stop offset="1" stop-color="#8EAEFF" />
+    </linearGradient>
+    <linearGradient
+      id="b"
+      x1="8"
+      x2="8"
+      y1="1.59"
+      y2="14.99"
+      gradientUnits="userSpaceOnUse"
+    >
+      <stop stop-color="#326DFF" />
+      <stop offset="1" stop-color="#8EAEFF" />
+    </linearGradient>
+    <linearGradient
+      id="c"
+      x1="8"
+      x2="8"
+      y1="1.59"
+      y2="14.99"
+      gradientUnits="userSpaceOnUse"
+    >
+      <stop stop-color="#326DFF" />
+      <stop offset="1" stop-color="#8EAEFF" />
+    </linearGradient>
+    <linearGradient
+      id="d"
+      x1="8"
+      x2="8"
+      y1="1.59"
+      y2="14.99"
+      gradientUnits="userSpaceOnUse"
+    >
+      <stop stop-color="#326DFF" />
+      <stop offset="1" stop-color="#8EAEFF" />
+    </linearGradient>
+    <linearGradient
+      id="e"
+      x1="8"
+      x2="8"
+      y1="1.59"
+      y2="14.99"
+      gradientUnits="userSpaceOnUse"
+    >
+      <stop stop-color="#326DFF" />
+      <stop offset="1" stop-color="#8EAEFF" />
+    </linearGradient>
+    <linearGradient
+      id="f"
+      x1="8"
+      x2="8"
+      y1="1.59"
+      y2="14.99"
+      gradientUnits="userSpaceOnUse"
+    >
+      <stop stop-color="#326DFF" />
+      <stop offset="1" stop-color="#8EAEFF" />
+    </linearGradient>
+    <linearGradient
+      id="g"
+      x1="8"
+      x2="8"
+      y1="1.59"
+      y2="14.99"
+      gradientUnits="userSpaceOnUse"
+    >
+      <stop stop-color="#326DFF" />
+      <stop offset="1" stop-color="#8EAEFF" />
+    </linearGradient>
+  </defs>
+</svg>

@@ -357,6 +357,9 @@ export const PromptInputBox = React.forwardRef(
 		const [input, setInput] = React.useState(initialValue || "");
 		const [isFocused, setIsFocused] = React.useState(false);
 		const [showTypewriter, setShowTypewriter] = React.useState(false);
+		const [completedSentence, setCompletedSentence] = React.useState("");
+		const [currentTypewriterSentence, setCurrentTypewriterSentence] = React.useState("");
+		const [isTypewriterDeleting, setIsTypewriterDeleting] = React.useState(false);
 		const promptBoxRef = React.useRef<HTMLDivElement>(null);
 		const internalTextareaRef = React.useRef<HTMLTextAreaElement>(null);
 		// For tracking previous loading state
@@ -379,6 +382,14 @@ export const PromptInputBox = React.forwardRef(
 				}
 			}
 		}, [initialValue, placeholder, input]);
+
+		// Clear typewriter states when user manually types content
+		React.useEffect(() => {
+			if (input.trim() && input !== currentTypewriterSentence) {
+				setCompletedSentence("");
+				setCurrentTypewriterSentence("");
+			}
+		}, [input, currentTypewriterSentence]);
 
 		// Focus when loading finishes
 		React.useEffect(() => {
@@ -452,6 +463,49 @@ export const PromptInputBox = React.forwardRef(
 		}, [input, onSend, disableSend]);
 
 		const hasContent = input.trim() !== "";
+		const hasCompletedSentence = completedSentence.trim() !== "";
+		const canSend = hasContent || hasCompletedSentence;
+
+		const handleSentenceComplete = React.useCallback((sentence: string) => {
+			setCompletedSentence(sentence);
+		}, []);
+
+		const handleTypewriterTextChange = React.useCallback((displayText: string, fullSentence: string, isDeleting: boolean) => {
+			setCurrentTypewriterSentence(fullSentence);
+			setIsTypewriterDeleting(isDeleting);
+		}, []);
+
+		const handleTypewriterDeleteStart = React.useCallback(() => {
+			setCompletedSentence("");
+		}, []);
+
+		const handleInputFocus = React.useCallback(() => {
+			setIsFocused(true);
+			// Only fill if typewriter is not deleting and there's a complete sentence available
+			if (
+				currentTypewriterSentence.trim() &&
+				!isTypewriterDeleting &&
+				(!input.trim() || input === placeholder)
+			) {
+				setInput(currentTypewriterSentence);
+				setCompletedSentence(currentTypewriterSentence);
+				setShowTypewriter(false);
+			}
+		}, [currentTypewriterSentence, isTypewriterDeleting, input, placeholder]);
+		const handleTypewriterSend = React.useCallback(() => {
+			if (completedSentence.trim()) {
+				onSend(completedSentence.trim());
+				// Clear sending
+				setInput("");
+				setCompletedSentence("");
+				setCurrentTypewriterSentence("");
+				setIsTypewriterDeleting(false);
+				if (internalTextareaRef.current) {
+					internalTextareaRef.current.value = "";
+					internalTextareaRef.current.style.height = "auto";
+				}
+			}
+		}, [completedSentence, onSend]);
 
 		// Get tools for the specified category
 		const tools = toolCategory ? TOOL_CATEGORY_MAP[toolCategory] : [];
@@ -474,7 +528,7 @@ export const PromptInputBox = React.forwardRef(
 						<PromptInputTextarea
 							placeholder={placeholder}
 							className="flex-1"
-							onFocus={() => setIsFocused(true)}
+							onFocus={handleInputFocus}
 							onBlur={() => setIsFocused(false)}
 							ref={(node) => {
 								internalTextareaRef.current = node;
@@ -494,6 +548,9 @@ export const PromptInputBox = React.forwardRef(
 									delay={2000}
 									loop={true}
 									className="text-gray-400"
+									onSentenceComplete={handleSentenceComplete}
+									onTextChange={handleTypewriterTextChange}
+									onDeleteStart={handleTypewriterDeleteStart}
 								/>
 							</div>
 						)}
@@ -529,20 +586,22 @@ export const PromptInputBox = React.forwardRef(
 								tooltip={
 									isLoading
 										? "Stop generation"
-										: hasContent
-											? "Send message"
-											: "Type a message to send"
+										: hasCompletedSentence
+											? "Send suggested message"
+											: hasContent
+												? "Send message"
+												: "Type a message to send"
 								}
 							>
 								<Button
 									className={cn(
 										"h-9 w-9 rounded-lg transition-all duration-100",
-										isLoading || hasContent
+										isLoading || canSend
 											? "bg-foreground! text-background-secondary hover:bg-foreground/80 cursor-pointer"
 											: "bg-transparent cursor-not-allowed text-foreground",
 									)}
-									disabled={disableSend || (!isLoading && !hasContent)}
-									onClick={isLoading ? onStop : handleSubmit}
+									disabled={disableSend || (!isLoading && !canSend)}
+									onClick={isLoading ? onStop : (hasCompletedSentence ? handleTypewriterSend : handleSubmit)}
 									size="icon"
 									variant="outline"
 								>

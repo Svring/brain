@@ -12,6 +12,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        shortcut: "#9F9FAA",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
