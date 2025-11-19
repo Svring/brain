@@ -6,6 +6,7 @@ import { useQueryState } from "nuqs";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AiChatInput } from "@/components/chat/components/input";
 import { AiMessages } from "@/components/chat/components/messages";
+// import { QuickShortcuts } from "@/components/chat/components/quick-shortcuts";
 import Suggestions from "@/components/chat/components/suggestions";
 import RecentProjects from "@/components/project/recent-projects";
 import { useHomeChat } from "@/components/provider/home-chat-provider";
@@ -46,6 +47,7 @@ export default function HomePage() {
 		useDeployTemplateDialog();
 	const { LaunchpadCreateDialog } = useLaunchpadCreateDialog();
 	const messagesScrollRef = useRef<HTMLDivElement>(null);
+	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const [argsParam] = useQueryState("args");
 	const [query] = useQueryState("query");
 	const hasAutoSubmitted = useRef(false);
@@ -369,17 +371,18 @@ export default function HomePage() {
 					}}
 					className={`flex-shrink-0 ${showMessages ? "pb-8" : "py-0"}`}
 				>
-					<div className="container mx-auto relative max-w-3xl">
-						<AiChatInput
-							className={`max-w-3xl${!showMessages ? " min-h-[140px]" : ""}`}
-							exhibition={!showMessages}
-							onSubmit={submit}
-							onStop={stop}
-							isLoading={isLoading}
-							disableTools={true}
-						/>
-						{!showMessages && (
-							<>
+					<div className="container mx-auto max-w-3xl">
+						<div className="relative">
+							<AiChatInput
+								className={`max-w-3xl${!showMessages ? " min-h-[140px]" : ""}`}
+								exhibition={!showMessages}
+								onSubmit={submit}
+								onStop={stop}
+								isLoading={isLoading}
+								disableTools={true}
+								textareaRef={textareaRef}
+							/>
+							{!showMessages && (
 								<div className="absolute bottom-2 left-2 right-2 flex gap-2 pointer-events-none">
 									<TooltipProvider>
 										<Tooltip>
@@ -399,11 +402,14 @@ export default function HomePage() {
 										</Tooltip>
 									</TooltipProvider>
 								</div>
-							</>
-						)}
+							)}
+						</div>
+						{/* Quick Shortcuts - below the input box */}
+						{/* {!showMessages && (
+							<QuickShortcuts textareaRef={textareaRef} />
+						)} */}
 					</div>
 				</motion.div>
-
 				{/* Recent Projects or Suggestions section - shown when no messages */}
 				{!showMessages &&
 					(hasProjects ? (

@@ -24,7 +24,6 @@ export function EnvProvider({ children, env }: EnvProviderProps) {
 		return null;
 	}
 	env.LANGGRAPH_DEPLOYMENT_URL = `${window.location.origin}/api/ai`;
-	console.log("LANGGRAPH_DEPLOYMENT_URL", env.LANGGRAPH_DEPLOYMENT_URL);
 	return <EnvContext.Provider value={env}>{children}</EnvContext.Provider>;
 }
 

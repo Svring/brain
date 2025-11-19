@@ -71,7 +71,6 @@ export function HomeChatProvider({
 		threadId: threadId, // Use the stored thread ID
 		onThreadId: async (id: string) => {
 			// Thread ID will be set automatically by useStream
-			console.log("Home chat thread created:", id);
 		},
 	});
 
@@ -120,7 +119,6 @@ export function HomeChatProvider({
 			{
 				onSuccess: (data: any) => {
 					if (data?.thread_id) {
-						console.log("New home chat thread created:", data.thread_id);
 						setThreadId(data.thread_id);
 					}
 				},
@@ -137,7 +135,6 @@ export function HomeChatProvider({
 			if (!auth?.kubeconfig || threadId) return;
 
 			try {
-				console.log("Creating new thread for home page...");
 				const thread = await createNewThread.mutateAsync({
 					metadata: {
 						sessionId,
@@ -145,7 +142,6 @@ export function HomeChatProvider({
 					},
 				});
 
-				console.log("Home page thread created:", thread);
 				// Store the thread ID in state
 				setThreadId(thread.thread_id);
 			} catch (error) {

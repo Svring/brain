@@ -1,6 +1,7 @@
 "use client";
 
 import type { Interrupt, Message } from "@langchain/langgraph-sdk";
+import type { Ref } from "react";
 import { useProjectState } from "@/contexts/project/project-context";
 import type { ToolCategoryKey } from "@/lib/langgraph/langgraph-constant/langgraph-constant-tools";
 import { PromptInputBox } from "./prompt-box";
@@ -20,6 +21,7 @@ interface AiChatInputProps {
 	disableTools?: boolean;
 	placeholder?: string;
 	initialValue?: string;
+	textareaRef?: Ref<HTMLTextAreaElement>;
 }
 
 export function AiChatInput({
@@ -34,6 +36,7 @@ export function AiChatInput({
 	disableTools = false,
 	placeholder,
 	initialValue,
+	textareaRef,
 }: AiChatInputProps) {
 	const { selectedResource, selectedProject } = useProjectState();
 
@@ -127,6 +130,7 @@ export function AiChatInput({
 			onSend={handleSendMessage}
 			placeholder={placeholder || ""}
 			initialValue={initialValue}
+			textareaRef={textareaRef}
 			disableInput={isInterruptActive}
 			disableSend={isLoading || isInterruptActive}
 			onStop={handleStop}

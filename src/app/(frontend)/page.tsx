@@ -11,10 +11,6 @@ export default function Page() {
 	const [sessionId] = useQueryState("sessionId");
 	const [args] = useQueryState("args");
 
-	console.log("query", query);
-	console.log("sessionId", sessionId);
-	console.log("args", args);
-
 	// Handle redirect logic
 	useEffect(() => {
 		const fetchData = async () => {
