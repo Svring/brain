@@ -411,7 +411,6 @@ export default function HomePage() {
 						)} */}
 					</div>
 				</motion.div>
-
 				{/* Recent Projects or Suggestions section - shown when no messages */}
 				{!showMessages &&
 					(hasProjects ? (
