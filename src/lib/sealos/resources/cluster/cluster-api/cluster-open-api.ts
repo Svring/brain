@@ -124,10 +124,7 @@ export const createCluster = createParallelAction(
  * ```
  */
 export const getCluster = createParallelAction(
-	async (
-		clusterName: string,
-		context: ClusterApiContext,
-	): Promise<GetClusterResponse> => {
+	async (clusterName: string, context: ClusterApiContext) => {
 		const api = createClusterApi(context);
 		const response = await api.get(`/database/${clusterName}`);
 		return response.data.data;
