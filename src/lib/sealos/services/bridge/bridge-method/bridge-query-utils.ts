@@ -1,22 +1,22 @@
-import { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
-import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
-import { flattenResourcesResult } from "@/lib/sealos/services/relevance/relevance-utils";
-import { getResource, listAllResources } from "@/lib/k8s/k8s-method/k8s-query";
-import {
-  ObjectQuery,
-  ObjectQuerySchema,
-  ObjectQueryOrArray,
-  ObjectQueryOrArraySchema,
-} from "../bridge-schemas/bridge-query-schema";
-import { getSchemaForResourceType } from "../bridge-constant";
-import {
-  CustomResourceTarget,
-  CustomResourceTargetSchema,
-  BuiltinResourceTarget,
-  BuiltinResourceTargetSchema,
-} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import _ from "lodash";
 import { z } from "zod";
+import type { K8sApiContext } from "@/lib/k8s/k8s-api/k8s-api-schemas/k8s-api-context-schemas";
+import {
+	type BuiltinResourceTarget,
+	BuiltinResourceTargetSchema,
+	type CustomResourceTarget,
+	CustomResourceTargetSchema,
+} from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { getResource, listAllResources } from "@/lib/k8s/k8s-method/k8s-query";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import { flattenResourcesResult } from "@/lib/sealos/services/relevance/relevance-utils";
+import { getSchemaForResourceType } from "../bridge-constant";
+import {
+	type ObjectQuery,
+	type ObjectQueryOrArray,
+	ObjectQueryOrArraySchema,
+	ObjectQuerySchema,
+} from "../bridge-schemas/bridge-query-schema";
 
 // ============================================================================
 // CORE UTILITY FUNCTIONS
@@ -28,7 +28,7 @@ import { z } from "zod";
  * @returns Parsed FieldDescription object (single or array)
  */
 export function parseFieldDescription(description: string): ObjectQueryOrArray {
-  return ObjectQueryOrArraySchema.parse(JSON.parse(description));
+	return ObjectQueryOrArraySchema.parse(JSON.parse(description));
 }
 
 /**
@@ -36,22 +36,22 @@ export function parseFieldDescription(description: string): ObjectQueryOrArray {
  * string (no regex meta) after replacing {{instanceName}}, return it. Otherwise null.
  */
 function deriveExactNameFromPattern(
-  rawNamePattern: string | undefined,
-  instanceName: string
+	rawNamePattern: string | undefined,
+	instanceName: string,
 ): string | null {
-  if (!rawNamePattern) return null;
-  const replaced = rawNamePattern.replace(
-    /\{\{instanceName\}\}/g,
-    instanceName
-  );
+	if (!rawNamePattern) return null;
+	const replaced = rawNamePattern.replace(
+		/\{\{instanceName\}\}/g,
+		instanceName,
+	);
 
-  // Support optional anchors ^...$
-  const anchored = replaced.match(/^\^(.*)\$$/);
-  const candidate = anchored ? anchored[1] : replaced;
+	// Support optional anchors ^...$
+	const anchored = replaced.match(/^\^(.*)\$$/);
+	const candidate = anchored ? anchored[1] : replaced;
 
-  // Contains regex meta? If so, not exact
-  if (/[.*+?^${}()|\[\]\\]/.test(candidate)) return null;
-  return candidate;
+	// Contains regex meta? If so, not exact
+	if (/[.*+?^${}()|[\]\\]/.test(candidate)) return null;
+	return candidate;
 }
 
 /**
@@ -61,45 +61,45 @@ function deriveExactNameFromPattern(
  * @returns The extracted data or null if path doesn't exist
  */
 export function extractDataFromObject(data: any, path: string[]): any {
-  if (!data || !path?.length) return null;
-  if (path.length === 1) {
-    // Handle empty string path to return the object directly
-    if (path[0] === "") return data;
-    return _.get(data, path[0], null);
-  }
+	if (!data || !path?.length) return null;
+	if (path.length === 1) {
+		// Handle empty string path to return the object directly
+		if (path[0] === "") return data;
+		return _.get(data, path[0], null);
+	}
 
-  return _.chain(path)
-    .reduce((current, segment, i) => {
-      if (current === null) return null;
-      const isLastSegment = i === path.length - 1;
+	return _.chain(path)
+		.reduce((current, segment, i) => {
+			if (current === null) return null;
+			const isLastSegment = i === path.length - 1;
 
-      if (Array.isArray(current)) {
-        return isLastSegment
-          ? _.filter(
-              _.map(current, (item) => _.get(item, segment, null)),
-              (item) => item !== null
-            )
-          : _.flatMap(
-              _.filter(
-                _.map(current, (item) => _.get(item, segment, null)),
-                (item) => item !== null
-              )
-            );
-      }
+			if (Array.isArray(current)) {
+				return isLastSegment
+					? _.filter(
+							_.map(current, (item) => _.get(item, segment, null)),
+							(item) => item !== null,
+						)
+					: _.flatMap(
+							_.filter(
+								_.map(current, (item) => _.get(item, segment, null)),
+								(item) => item !== null,
+							),
+						);
+			}
 
-      current = _.get(current, segment, null);
-      return current === null
-        ? null
-        : Array.isArray(current)
-        ? current
-        : [current];
-    }, data)
-    .thru((result) =>
-      Array.isArray(result) && result.length
-        ? _.filter(result, (item) => item !== null)
-        : null
-    )
-    .value();
+			current = _.get(current, segment, null);
+			return current === null
+				? null
+				: Array.isArray(current)
+					? current
+					: [current];
+		}, data)
+		.thru((result) =>
+			Array.isArray(result) && result.length
+				? _.filter(result, (item) => item !== null)
+				: null,
+		)
+		.value();
 }
 
 // ============================================================================
@@ -112,50 +112,50 @@ export function extractDataFromObject(data: any, path: string[]): any {
  * @returns Nested object structure preserving the original schema hierarchy
  */
 export function parseFieldDescriptions(schema: z.ZodObject<any>): any {
-  return _.chain(schema)
-    .thru((s) => (s instanceof z.ZodObject ? s.shape : {}))
-    .entries()
-    .reduce((result, [key, zodValue]) => {
-      const description = _.attempt(
-        () =>
-          _.get(zodValue, "_def.description") &&
-          parseFieldDescription(zodValue._def.description)
-      );
+	return _.chain(schema)
+		.thru((s) => (s instanceof z.ZodObject ? s.shape : {}))
+		.entries()
+		.reduce((result, [key, zodValue]) => {
+			const description = _.attempt(
+				() =>
+					_.get(zodValue, "_def.description") &&
+					parseFieldDescription(zodValue._def.description),
+			);
 
-      const nestedResult =
-        zodValue instanceof z.ZodObject
-          ? parseFieldDescriptions(zodValue)
-          : zodValue instanceof z.ZodArray &&
-            zodValue._def?.type instanceof z.ZodObject
-          ? {
-              _isArray: true,
-              ...parseFieldDescriptions(zodValue._def.type),
-            }
-          : {};
+			const nestedResult =
+				zodValue instanceof z.ZodObject
+					? parseFieldDescriptions(zodValue)
+					: zodValue instanceof z.ZodArray &&
+							zodValue._def?.type instanceof z.ZodObject
+						? {
+								_isArray: true,
+								...parseFieldDescriptions(zodValue._def.type),
+							}
+						: {};
 
-      // Handle array descriptions - expand them with indexed keys
-      if (!_.isError(description) && Array.isArray(description)) {
-        const expandedDescription: any = {};
-        description.forEach((desc, index) => {
-          expandedDescription[`${key}_${index}`] = desc;
-        });
+			// Handle array descriptions - expand them with indexed keys
+			if (!_.isError(description) && Array.isArray(description)) {
+				const expandedDescription: any = {};
+				description.forEach((desc, index) => {
+					expandedDescription[`${key}_${index}`] = desc;
+				});
 
-        return {
-          ...result,
-          ...expandedDescription,
-          ...(_.isEmpty(nestedResult) ? {} : { [key]: nestedResult }),
-        };
-      }
+				return {
+					...result,
+					...expandedDescription,
+					...(_.isEmpty(nestedResult) ? {} : { [key]: nestedResult }),
+				};
+			}
 
-      return {
-        ...result,
-        [key]: {
-          ...(_.isError(description) ? {} : description),
-          ...(_.isEmpty(nestedResult) ? {} : nestedResult),
-        },
-      };
-    }, {})
-    .value();
+			return {
+				...result,
+				[key]: {
+					...(_.isError(description) ? {} : description),
+					...(_.isEmpty(nestedResult) ? {} : nestedResult),
+				},
+			};
+		}, {})
+		.value();
 }
 
 /**
@@ -165,20 +165,20 @@ export function parseFieldDescriptions(schema: z.ZodObject<any>): any {
  * @returns Flattened record of field paths to schema descriptions
  */
 function flattenFieldDescriptions(
-  schemaDescriptions: any,
-  prefix: string = ""
+	schemaDescriptions: any,
+	prefix: string = "",
 ): Record<string, ObjectQuery> {
-  return _.chain(schemaDescriptions)
-    .entries()
-    .reduce((result, [key, value]) => {
-      const fullKey = prefix ? `${prefix}.${key}` : key;
-      return _.isObject(value) && !_.isArray(value)
-        ? _.has(value, "resourceType")
-          ? { ...result, [fullKey]: value }
-          : { ...result, ...flattenFieldDescriptions(value, fullKey) }
-        : result;
-    }, {})
-    .value();
+	return _.chain(schemaDescriptions)
+		.entries()
+		.reduce((result, [key, value]) => {
+			const fullKey = prefix ? `${prefix}.${key}` : key;
+			return _.isObject(value) && !_.isArray(value)
+				? _.has(value, "resourceType")
+					? { ...result, [fullKey]: value }
+					: { ...result, ...flattenFieldDescriptions(value, fullKey) }
+				: result;
+		}, {})
+		.value();
 }
 
 // ============================================================================
@@ -193,142 +193,142 @@ function flattenFieldDescriptions(
  * @returns Promise resolving to the fetched resource(s)
  */
 async function getResourceByFieldValue(
-  context: K8sApiContext,
-  fieldValue: ObjectQuery,
-  instanceName: string
+	context: K8sApiContext,
+	fieldValue: ObjectQuery,
+	instanceName: string,
 ) {
-  if (fieldValue.resourceType === "external") {
-    return null;
-  }
+	if (fieldValue.resourceType === "external") {
+		return null;
+	}
 
-  const baseTarget = convertResourceTypeToTarget(fieldValue.resourceType);
+	const baseTarget = convertResourceTypeToTarget(fieldValue.resourceType);
 
-  // Optimization: if name pattern resolves to an exact name, fetch directly
-  if (fieldValue.name) {
-    const exactName = deriveExactNameFromPattern(fieldValue.name, instanceName);
-    if (exactName) {
-      try {
-        return await getResource(context, { ...baseTarget, name: exactName });
-      } catch (error) {
-        // Proceed to other strategies if direct fetch fails
-      }
-    }
-  }
+	// Optimization: if name pattern resolves to an exact name, fetch directly
+	if (fieldValue.name) {
+		const exactName = deriveExactNameFromPattern(fieldValue.name, instanceName);
+		if (exactName) {
+			try {
+				return await getResource(context, { ...baseTarget, name: exactName });
+			} catch (error) {
+				// Proceed to other strategies if direct fetch fails
+			}
+		}
+	}
 
-  if (fieldValue.label) {
-    // Construct the complete label selector by combining label key with instance name
-    const labelSelector = `${fieldValue.label}=${instanceName}`;
+	if (fieldValue.label) {
+		// Construct the complete label selector by combining label key with instance name
+		const labelSelector = `${fieldValue.label}=${instanceName}`;
 
-    const labelSearchResult = await listAllResources(
-      context,
-      labelSelector,
-      baseTarget.type === "builtin" ? [fieldValue.resourceType] : undefined,
-      baseTarget.type === "custom" ? [fieldValue.resourceType] : undefined
-    );
+		const labelSearchResult = await listAllResources(
+			context,
+			labelSelector,
+			baseTarget.type === "builtin" ? [fieldValue.resourceType] : undefined,
+			baseTarget.type === "custom" ? [fieldValue.resourceType] : undefined,
+		);
 
-    const flattenedResources = flattenResourcesResult(labelSearchResult);
+		const flattenedResources = flattenResourcesResult(labelSearchResult);
 
-    const filteredResources = fieldValue.name
-      ? (() => {
-          const exactName = deriveExactNameFromPattern(
-            fieldValue.name!,
-            instanceName
-          );
-          if (exactName) {
-            return flattenedResources.filter(
-              (resource) => resource.metadata.name === exactName
-            );
-          }
-          const namePattern = fieldValue.name!.replace(
-            /\{\{instanceName\}\}/g,
-            instanceName
-          );
-          return flattenedResources.filter((resource) =>
-            new RegExp(namePattern).test(resource.metadata.name || "")
-          );
-        })()
-      : flattenedResources;
+		const filteredResources = fieldValue.name
+			? (() => {
+					const exactName = deriveExactNameFromPattern(
+						fieldValue.name!,
+						instanceName,
+					);
+					if (exactName) {
+						return flattenedResources.filter(
+							(resource) => resource.metadata.name === exactName,
+						);
+					}
+					const namePattern = fieldValue.name!.replace(
+						/\{\{instanceName\}\}/g,
+						instanceName,
+					);
+					return flattenedResources.filter((resource) =>
+						new RegExp(namePattern).test(resource.metadata.name || ""),
+					);
+				})()
+			: flattenedResources;
 
-    // If no path is specified, return the list of resources
-    if (
-      !fieldValue.path ||
-      (Array.isArray(fieldValue.path) && fieldValue.path.length === 0) ||
-      (Array.isArray(fieldValue.path) &&
-        fieldValue.path.length === 1 &&
-        fieldValue.path[0] === "")
-    ) {
-      return filteredResources;
-    }
+		// If no path is specified, return the list of resources
+		if (
+			!fieldValue.path ||
+			(Array.isArray(fieldValue.path) && fieldValue.path.length === 0) ||
+			(Array.isArray(fieldValue.path) &&
+				fieldValue.path.length === 1 &&
+				fieldValue.path[0] === "")
+		) {
+			return filteredResources;
+		}
 
-    if (filteredResources.length > 1) {
-      throw new Error(
-        `Multiple resources ${
-          fieldValue.name
-            ? `matched the pattern ${fieldValue.name}`
-            : `found for label ${fieldValue.label}`
-        }. Only one resource is allowed.`
-      );
-    }
+		if (filteredResources.length > 1) {
+			throw new Error(
+				`Multiple resources ${
+					fieldValue.name
+						? `matched the pattern ${fieldValue.name}`
+						: `found for label ${fieldValue.label}`
+				}. Only one resource is allowed.`,
+			);
+		}
 
-    return filteredResources[0] || null;
-  }
+		return filteredResources[0] || null;
+	}
 
-  // If no label is present but a name pattern is specified, list all resources and filter by name regex
-  if (fieldValue.name) {
-    const exactName = deriveExactNameFromPattern(fieldValue.name, instanceName);
-    if (exactName) {
-      try {
-        return await getResource(context, { ...baseTarget, name: exactName });
-      } catch (error) {
-        // Fall back to list
-      }
-    }
+	// If no label is present but a name pattern is specified, list all resources and filter by name regex
+	if (fieldValue.name) {
+		const exactName = deriveExactNameFromPattern(fieldValue.name, instanceName);
+		if (exactName) {
+			try {
+				return await getResource(context, { ...baseTarget, name: exactName });
+			} catch (error) {
+				// Fall back to list
+			}
+		}
 
-    const allResourcesResult = await listAllResources(
-      context,
-      undefined, // No label selector - list all resources
-      baseTarget.type === "builtin" ? [fieldValue.resourceType] : undefined,
-      baseTarget.type === "custom" ? [fieldValue.resourceType] : undefined
-    );
+		const allResourcesResult = await listAllResources(
+			context,
+			undefined, // No label selector - list all resources
+			baseTarget.type === "builtin" ? [fieldValue.resourceType] : undefined,
+			baseTarget.type === "custom" ? [fieldValue.resourceType] : undefined,
+		);
 
-    const flattenedResources = flattenResourcesResult(allResourcesResult);
+		const flattenedResources = flattenResourcesResult(allResourcesResult);
 
-    const namePattern = fieldValue.name.replace(
-      /\{\{instanceName\}\}/g,
-      instanceName
-    );
-    const filteredResources = flattenedResources.filter((resource) =>
-      new RegExp(namePattern).test(resource.metadata.name || "")
-    );
+		const namePattern = fieldValue.name.replace(
+			/\{\{instanceName\}\}/g,
+			instanceName,
+		);
+		const filteredResources = flattenedResources.filter((resource) =>
+			new RegExp(namePattern).test(resource.metadata.name || ""),
+		);
 
-    // If no path is specified, return the list of resources
-    if (
-      !fieldValue.path ||
-      (Array.isArray(fieldValue.path) && fieldValue.path.length === 0) ||
-      (Array.isArray(fieldValue.path) &&
-        fieldValue.path.length === 1 &&
-        fieldValue.path[0] === "")
-    ) {
-      return filteredResources;
-    }
+		// If no path is specified, return the list of resources
+		if (
+			!fieldValue.path ||
+			(Array.isArray(fieldValue.path) && fieldValue.path.length === 0) ||
+			(Array.isArray(fieldValue.path) &&
+				fieldValue.path.length === 1 &&
+				fieldValue.path[0] === "")
+		) {
+			return filteredResources;
+		}
 
-    if (filteredResources.length > 1) {
-      throw new Error(
-        `Multiple resources matched the pattern ${fieldValue.name}. Only one resource is allowed.`
-      );
-    }
+		if (filteredResources.length > 1) {
+			throw new Error(
+				`Multiple resources matched the pattern ${fieldValue.name}. Only one resource is allowed.`,
+			);
+		}
 
-    return filteredResources[0] || null;
-  }
+		return filteredResources[0] || null;
+	}
 
-  // Fall back to exact name match
-  const target = { ...baseTarget, name: instanceName };
+	// Fall back to exact name match
+	const target = { ...baseTarget, name: instanceName };
 
-  try {
-    return await getResource(context, target);
-  } catch (error) {
-    return null;
-  }
+	try {
+		return await getResource(context, target);
+	} catch (error) {
+		return null;
+	}
 }
 
 /**
@@ -338,36 +338,36 @@ async function getResourceByFieldValue(
  * @returns A unique string key for caching
  */
 function createResourceLocatorKey(
-  fieldValue: ObjectQuery,
-  instanceName: string
+	fieldValue: ObjectQuery,
+	instanceName: string,
 ): string {
-  if (fieldValue.resourceType === "external") {
-    return `external:${fieldValue.resourceType}`;
-  }
+	if (fieldValue.resourceType === "external") {
+		return `external:${fieldValue.resourceType}`;
+	}
 
-  const parts = [fieldValue.resourceType];
+	const parts = [fieldValue.resourceType];
 
-  if (fieldValue.label) {
-    parts.push(`label:${fieldValue.label}=${instanceName}`);
-  }
+	if (fieldValue.label) {
+		parts.push(`label:${fieldValue.label}=${instanceName}`);
+	}
 
-  if (fieldValue.name) {
-    const exactName = deriveExactNameFromPattern(fieldValue.name, instanceName);
-    if (exactName) {
-      parts.push(`exactName:${exactName}`);
-    } else {
-      const namePattern = fieldValue.name.replace(
-        /\{\{instanceName\}\}/g,
-        instanceName
-      );
-      parts.push(`name:${namePattern}`);
-    }
-  } else if (!fieldValue.label) {
-    // Fall back to exact name match
-    parts.push(`exact:${instanceName}`);
-  }
+	if (fieldValue.name) {
+		const exactName = deriveExactNameFromPattern(fieldValue.name, instanceName);
+		if (exactName) {
+			parts.push(`exactName:${exactName}`);
+		} else {
+			const namePattern = fieldValue.name.replace(
+				/\{\{instanceName\}\}/g,
+				instanceName,
+			);
+			parts.push(`name:${namePattern}`);
+		}
+	} else if (!fieldValue.label) {
+		// Fall back to exact name match
+		parts.push(`exact:${instanceName}`);
+	}
 
-  return parts.join("|");
+	return parts.join("|");
 }
 
 /**
@@ -378,54 +378,54 @@ function createResourceLocatorKey(
  * @returns Promise resolving to a record of field names to their corresponding resources
  */
 export async function getResourcesByFieldDescriptions(
-  context: K8sApiContext,
-  schemaDescriptions: Record<string, any>,
-  instanceName: string
+	context: K8sApiContext,
+	schemaDescriptions: Record<string, any>,
+	instanceName: string,
 ): Promise<Record<string, any>> {
-  const flattenedDescriptions = flattenFieldDescriptions(schemaDescriptions);
-  const entries = Object.entries(flattenedDescriptions);
+	const flattenedDescriptions = flattenFieldDescriptions(schemaDescriptions);
+	const entries = Object.entries(flattenedDescriptions);
 
-  // Cache to store fetched resources by their locator key
-  const resourceCache = new Map<string, any>();
+	// Cache to store fetched resources by their locator key
+	const resourceCache = new Map<string, any>();
 
-  // Group fields by their resource locator to identify duplicates
-  const fieldsByLocator = new Map<string, string[]>();
+	// Group fields by their resource locator to identify duplicates
+	const fieldsByLocator = new Map<string, string[]>();
 
-  for (const [fieldName, description] of entries) {
-    const locatorKey = createResourceLocatorKey(description, instanceName);
-    if (!fieldsByLocator.has(locatorKey)) {
-      fieldsByLocator.set(locatorKey, []);
-    }
-    fieldsByLocator.get(locatorKey)!.push(fieldName);
-  }
+	for (const [fieldName, description] of entries) {
+		const locatorKey = createResourceLocatorKey(description, instanceName);
+		if (!fieldsByLocator.has(locatorKey)) {
+			fieldsByLocator.set(locatorKey, []);
+		}
+		fieldsByLocator.get(locatorKey)!.push(fieldName);
+	}
 
-  // Fetch resources only once per unique locator
-  const uniqueLocators = Array.from(fieldsByLocator.keys());
-  const fetchPromises = uniqueLocators.map(async (locatorKey) => {
-    // Get the first field with this locator to extract the description
-    const firstFieldName = fieldsByLocator.get(locatorKey)![0];
-    const description = flattenedDescriptions[firstFieldName];
+	// Fetch resources only once per unique locator
+	const uniqueLocators = Array.from(fieldsByLocator.keys());
+	const fetchPromises = uniqueLocators.map(async (locatorKey) => {
+		// Get the first field with this locator to extract the description
+		const firstFieldName = fieldsByLocator.get(locatorKey)![0];
+		const description = flattenedDescriptions[firstFieldName];
 
-    const resource = await getResourceByFieldValue(
-      context,
-      description,
-      instanceName
-    );
+		const resource = await getResourceByFieldValue(
+			context,
+			description,
+			instanceName,
+		);
 
-    resourceCache.set(locatorKey, resource);
-    return [locatorKey, resource] as const;
-  });
+		resourceCache.set(locatorKey, resource);
+		return [locatorKey, resource] as const;
+	});
 
-  await Promise.all(fetchPromises);
+	await Promise.all(fetchPromises);
 
-  // Map each field to its corresponding cached resource
-  const results: Record<string, any> = {};
-  for (const [fieldName, description] of entries) {
-    const locatorKey = createResourceLocatorKey(description, instanceName);
-    results[fieldName] = resourceCache.get(locatorKey);
-  }
+	// Map each field to its corresponding cached resource
+	const results: Record<string, any> = {};
+	for (const [fieldName, description] of entries) {
+		const locatorKey = createResourceLocatorKey(description, instanceName);
+		results[fieldName] = resourceCache.get(locatorKey);
+	}
 
-  return results;
+	return results;
 }
 
 // ============================================================================
@@ -439,16 +439,16 @@ export async function getResourcesByFieldDescriptions(
  * @param value - Value to set
  */
 function setNestedValue(obj: any, path: string, value: any): void {
-  _.chain(path.split("."))
-    .reduce((current, key, i, keys) => {
-      if (i === keys.length - 1) {
-        current[key] = value;
-        return current;
-      }
-      return (current[key] =
-        _.isObject(current[key]) && current[key] !== null ? current[key] : {});
-    }, obj)
-    .value();
+	_.chain(path.split("."))
+		.reduce((current, key, i, keys) => {
+			if (i === keys.length - 1) {
+				current[key] = value;
+				return current;
+			}
+			return (current[key] =
+				_.isObject(current[key]) && current[key] !== null ? current[key] : {});
+		}, obj)
+		.value();
 }
 
 /**
@@ -458,44 +458,44 @@ function setNestedValue(obj: any, path: string, value: any): void {
  * @returns Object containing categorized array groups and regular fields
  */
 function categorizeResourceEntries(
-  resourceEntries: [string, any][],
-  flattenedDescriptions: Record<string, ObjectQuery>
+	resourceEntries: [string, any][],
+	flattenedDescriptions: Record<string, ObjectQuery>,
 ) {
-  const arrayGroups: Record<
-    string,
-    { fieldName: string; description: any; resource: any }[]
-  > = {};
-  const regularFields: {
-    fieldName: string;
-    description: any;
-    resource: any;
-  }[] = [];
+	const arrayGroups: Record<
+		string,
+		{ fieldName: string; description: any; resource: any }[]
+	> = {};
+	const regularFields: {
+		fieldName: string;
+		description: any;
+		resource: any;
+	}[] = [];
 
-  for (const [fieldName, resource] of resourceEntries) {
-    const description = flattenedDescriptions[fieldName];
+	for (const [fieldName, resource] of resourceEntries) {
+		const description = flattenedDescriptions[fieldName];
 
-    if (
-      description &&
-      description.path &&
-      Array.isArray(description.path) &&
-      description.path.length >= 2
-    ) {
-      const arrayBasePath = description.path.slice(0, -1).join(".");
-      const arrayKey = `${fieldName
-        .split(".")
-        .slice(0, -1)
-        .join(".")}_${arrayBasePath}`;
+		if (
+			description &&
+			description.path &&
+			Array.isArray(description.path) &&
+			description.path.length >= 2
+		) {
+			const arrayBasePath = description.path.slice(0, -1).join(".");
+			const arrayKey = `${fieldName
+				.split(".")
+				.slice(0, -1)
+				.join(".")}_${arrayBasePath}`;
 
-      if (!arrayGroups[arrayKey]) {
-        arrayGroups[arrayKey] = [];
-      }
-      arrayGroups[arrayKey].push({ fieldName, description, resource });
-    } else {
-      regularFields.push({ fieldName, description, resource });
-    }
-  }
+			if (!arrayGroups[arrayKey]) {
+				arrayGroups[arrayKey] = [];
+			}
+			arrayGroups[arrayKey].push({ fieldName, description, resource });
+		} else {
+			regularFields.push({ fieldName, description, resource });
+		}
+	}
 
-  return { arrayGroups, regularFields };
+	return { arrayGroups, regularFields };
 }
 
 /**
@@ -504,27 +504,27 @@ function categorizeResourceEntries(
  * @param results - Results object to modify
  */
 function processRegularFields(
-  regularFields: { fieldName: string; description: any; resource: any }[],
-  results: Record<string, any>
+	regularFields: { fieldName: string; description: any; resource: any }[],
+	results: Record<string, any>,
 ): void {
-  for (const { fieldName, description, resource } of regularFields) {
-    let extractedValue;
+	for (const { fieldName, description, resource } of regularFields) {
+		let extractedValue;
 
-    // If no path is specified or path is empty/[""], return the resource as-is (list of resources)
-    if (
-      !description?.path ||
-      (Array.isArray(description.path) && description.path.length === 0) ||
-      (Array.isArray(description.path) &&
-        description.path.length === 1 &&
-        description.path[0] === "")
-    ) {
-      extractedValue = resource;
-    } else {
-      extractedValue = extractDataFromObject(resource, description.path);
-    }
+		// If no path is specified or path is empty/[""], return the resource as-is (list of resources)
+		if (
+			!description?.path ||
+			(Array.isArray(description.path) && description.path.length === 0) ||
+			(Array.isArray(description.path) &&
+				description.path.length === 1 &&
+				description.path[0] === "")
+		) {
+			extractedValue = resource;
+		} else {
+			extractedValue = extractDataFromObject(resource, description.path);
+		}
 
-    setNestedValue(results, fieldName, extractedValue);
-  }
+		setNestedValue(results, fieldName, extractedValue);
+	}
 }
 
 /**
@@ -533,50 +533,50 @@ function processRegularFields(
  * @param results - Results object to modify
  */
 function processArrayGroups(
-  arrayGroups: Record<
-    string,
-    { fieldName: string; description: any; resource: any }[]
-  >,
-  results: Record<string, any>
+	arrayGroups: Record<
+		string,
+		{ fieldName: string; description: any; resource: any }[]
+	>,
+	results: Record<string, any>,
 ): void {
-  _.forEach(arrayGroups, (fields, arrayKey) => {
-    if (_.isEmpty(fields)) return;
+	_.forEach(arrayGroups, (fields, arrayKey) => {
+		if (_.isEmpty(fields)) return;
 
-    const firstField = _.head(fields);
-    if (!firstField || !_.get(firstField, "description.path")) return;
+		const firstField = _.head(fields);
+		if (!firstField || !_.get(firstField, "description.path")) return;
 
-    const arrayBasePath = firstField.description.path.slice(0, -1);
-    const arrayData = extractDataFromObject(firstField.resource, arrayBasePath);
+		const arrayBasePath = firstField.description.path.slice(0, -1);
+		const arrayData = extractDataFromObject(firstField.resource, arrayBasePath);
 
-    if (_.isArray(arrayData)) {
-      const combinedArray = _.map(arrayData, (item) =>
-        _.reduce(
-          fields,
-          (combinedItem, { fieldName, description }) => {
-            const propertyName: string | null | undefined = _.get(
-              description,
-              "path"
-            )
-              ? _.last(description.path)
-              : null;
-            if (!propertyName) return combinedItem;
-            const fieldKey = _.last(fieldName.split(".")) || fieldName;
-            return {
-              ...combinedItem,
-              [fieldKey]: item[propertyName as string],
-            };
-          },
-          {}
-        )
-      );
+		if (_.isArray(arrayData)) {
+			const combinedArray = _.map(arrayData, (item) =>
+				_.reduce(
+					fields,
+					(combinedItem, { fieldName, description }) => {
+						const propertyName: string | null | undefined = _.get(
+							description,
+							"path",
+						)
+							? _.last(description.path)
+							: null;
+						if (!propertyName) return combinedItem;
+						const fieldKey = _.last(fieldName.split(".")) || fieldName;
+						return {
+							...combinedItem,
+							[fieldKey]: item[propertyName as string],
+						};
+					},
+					{},
+				),
+			);
 
-      const parentFieldName = firstField.fieldName
-        .split(".")
-        .slice(0, -1)
-        .join(".");
-      if (parentFieldName) _.set(results, parentFieldName, combinedArray);
-    }
-  });
+			const parentFieldName = firstField.fieldName
+				.split(".")
+				.slice(0, -1)
+				.join(".");
+			if (parentFieldName) _.set(results, parentFieldName, combinedArray);
+		}
+	});
 }
 
 /**
@@ -586,132 +586,132 @@ function processArrayGroups(
  * @param results - Results object to modify
  */
 function processArrayFields(
-  resourceEntries: [string, any][],
-  schemaDescriptions: Record<string, any>,
-  results: Record<string, any>
+	resourceEntries: [string, any][],
+	schemaDescriptions: Record<string, any>,
+	results: Record<string, any>,
 ): void {
-  // Find array fields in the schema
-  _.forEach(schemaDescriptions, (fieldSchema, fieldName) => {
-    if (fieldSchema._isArray) {
-      // Get the resource for this field (should be the same for all sub-fields)
-      const resourceEntry = resourceEntries.find(([name]) =>
-        name.startsWith(fieldName)
-      );
-      if (!resourceEntry) return;
+	// Find array fields in the schema
+	_.forEach(schemaDescriptions, (fieldSchema, fieldName) => {
+		if (fieldSchema._isArray) {
+			// Get the resource for this field (should be the same for all sub-fields)
+			const resourceEntry = resourceEntries.find(([name]) =>
+				name.startsWith(fieldName),
+			);
+			if (!resourceEntry) return;
 
-      const [, resource] = resourceEntry;
-      if (!resource) return;
+			const [, resource] = resourceEntry;
+			if (!resource) return;
 
-      // Extract the array data from the first path segment
-      const subFields = _.omit(fieldSchema, ["_isArray"]);
-      const firstSubField = _.head(_.values(subFields));
+			// Extract the array data from the first path segment
+			const subFields = _.omit(fieldSchema, ["_isArray"]);
+			const firstSubField = _.head(_.values(subFields));
 
-      if (
-        firstSubField &&
-        firstSubField.path &&
-        firstSubField.path.length >= 2
-      ) {
-        const arrayBasePath = firstSubField.path.slice(0, -1);
-        const arrayData = extractDataFromObject(resource, arrayBasePath);
+			if (
+				firstSubField &&
+				firstSubField.path &&
+				firstSubField.path.length >= 2
+			) {
+				const arrayBasePath = firstSubField.path.slice(0, -1);
+				const arrayData = extractDataFromObject(resource, arrayBasePath);
 
-        if (_.isArray(arrayData)) {
-          const combinedArray = _.map(arrayData, (item) => {
-            const combinedItem: Record<string, any> = {};
+				if (_.isArray(arrayData)) {
+					const combinedArray = _.map(arrayData, (item) => {
+						const combinedItem: Record<string, any> = {};
 
-            _.forEach(subFields, (subFieldSchema, subFieldName) => {
-              if (subFieldSchema._isArray) {
-                // Handle nested arrays
-                const nestedSubFields = _.omit(subFieldSchema, ["_isArray"]);
-                const nestedFirstSubField = _.head(_.values(nestedSubFields));
+						_.forEach(subFields, (subFieldSchema, subFieldName) => {
+							if (subFieldSchema._isArray) {
+								// Handle nested arrays
+								const nestedSubFields = _.omit(subFieldSchema, ["_isArray"]);
+								const nestedFirstSubField = _.head(_.values(nestedSubFields));
 
-                if (
-                  nestedFirstSubField &&
-                  nestedFirstSubField.path &&
-                  nestedFirstSubField.path.length >= 2
-                ) {
-                  const nestedArrayBasePath = nestedFirstSubField.path.slice(
-                    0,
-                    -1
-                  );
-                  const nestedArrayData = extractDataFromObject(
-                    item,
-                    nestedArrayBasePath
-                  );
+								if (
+									nestedFirstSubField &&
+									nestedFirstSubField.path &&
+									nestedFirstSubField.path.length >= 2
+								) {
+									const nestedArrayBasePath = nestedFirstSubField.path.slice(
+										0,
+										-1,
+									);
+									const nestedArrayData = extractDataFromObject(
+										item,
+										nestedArrayBasePath,
+									);
 
-                  if (_.isArray(nestedArrayData)) {
-                    const nestedCombinedArray = _.map(
-                      nestedArrayData,
-                      (nestedItem) => {
-                        const nestedCombinedItem: Record<string, any> = {};
+									if (_.isArray(nestedArrayData)) {
+										const nestedCombinedArray = _.map(
+											nestedArrayData,
+											(nestedItem) => {
+												const nestedCombinedItem: Record<string, any> = {};
 
-                        _.forEach(
-                          nestedSubFields,
-                          (nestedSubFieldSchema, nestedSubFieldName) => {
-                            if (nestedSubFieldSchema.path) {
-                              const nestedPropertyName = _.last(
-                                nestedSubFieldSchema.path
-                              );
-                              if (
-                                nestedPropertyName &&
-                                typeof nestedPropertyName === "string"
-                              ) {
-                                nestedCombinedItem[nestedSubFieldName] = _.get(
-                                  nestedItem,
-                                  nestedPropertyName,
-                                  null
-                                );
-                              }
-                            }
-                          }
-                        );
+												_.forEach(
+													nestedSubFields,
+													(nestedSubFieldSchema, nestedSubFieldName) => {
+														if (nestedSubFieldSchema.path) {
+															const nestedPropertyName = _.last(
+																nestedSubFieldSchema.path,
+															);
+															if (
+																nestedPropertyName &&
+																typeof nestedPropertyName === "string"
+															) {
+																nestedCombinedItem[nestedSubFieldName] = _.get(
+																	nestedItem,
+																	nestedPropertyName,
+																	null,
+																);
+															}
+														}
+													},
+												);
 
-                        return nestedCombinedItem;
-                      }
-                    );
+												return nestedCombinedItem;
+											},
+										);
 
-                    combinedItem[subFieldName] = nestedCombinedArray;
-                  }
-                }
-              } else if (subFieldSchema.path) {
-                const propertyName = _.last(subFieldSchema.path);
-                if (propertyName && typeof propertyName === "string") {
-                  combinedItem[subFieldName] = _.get(item, propertyName, null);
-                }
-              } else {
-                // Handle nested objects that are not arrays
-                const nestedObject: Record<string, any> = {};
-                _.forEach(
-                  subFieldSchema,
-                  (nestedFieldSchema, nestedFieldName) => {
-                    if (nestedFieldSchema.path) {
-                      const nestedPropertyName = _.last(nestedFieldSchema.path);
-                      if (
-                        nestedPropertyName &&
-                        typeof nestedPropertyName === "string"
-                      ) {
-                        nestedObject[nestedFieldName] = _.get(
-                          item,
-                          nestedPropertyName,
-                          null
-                        );
-                      }
-                    }
-                  }
-                );
-                if (!_.isEmpty(nestedObject)) {
-                  combinedItem[subFieldName] = nestedObject;
-                }
-              }
-            });
+										combinedItem[subFieldName] = nestedCombinedArray;
+									}
+								}
+							} else if (subFieldSchema.path) {
+								const propertyName = _.last(subFieldSchema.path);
+								if (propertyName && typeof propertyName === "string") {
+									combinedItem[subFieldName] = _.get(item, propertyName, null);
+								}
+							} else {
+								// Handle nested objects that are not arrays
+								const nestedObject: Record<string, any> = {};
+								_.forEach(
+									subFieldSchema,
+									(nestedFieldSchema, nestedFieldName) => {
+										if (nestedFieldSchema.path) {
+											const nestedPropertyName = _.last(nestedFieldSchema.path);
+											if (
+												nestedPropertyName &&
+												typeof nestedPropertyName === "string"
+											) {
+												nestedObject[nestedFieldName] = _.get(
+													item,
+													nestedPropertyName,
+													null,
+												);
+											}
+										}
+									},
+								);
+								if (!_.isEmpty(nestedObject)) {
+									combinedItem[subFieldName] = nestedObject;
+								}
+							}
+						});
 
-            return combinedItem;
-          });
+						return combinedItem;
+					});
 
-          results[fieldName] = combinedArray;
-        }
-      }
-    }
-  });
+					results[fieldName] = combinedArray;
+				}
+			}
+		}
+	});
 }
 
 /**
@@ -721,22 +721,22 @@ function processArrayFields(
  * @returns Record with nested structure reconstructed from flattened field names
  */
 export function extractDataFromResources(
-  resourceEntries: [string, any][],
-  schemaDescriptions: Record<string, any>
+	resourceEntries: [string, any][],
+	schemaDescriptions: Record<string, any>,
 ): Record<string, any> {
-  const results: Record<string, any> = {};
-  const flattenedDescriptions = flattenFieldDescriptions(schemaDescriptions);
+	const results: Record<string, any> = {};
+	const flattenedDescriptions = flattenFieldDescriptions(schemaDescriptions);
 
-  const { arrayGroups, regularFields } = categorizeResourceEntries(
-    resourceEntries,
-    flattenedDescriptions
-  );
+	const { arrayGroups, regularFields } = categorizeResourceEntries(
+		resourceEntries,
+		flattenedDescriptions,
+	);
 
-  processRegularFields(regularFields, results);
-  processArrayGroups(arrayGroups, results);
-  processArrayFields(resourceEntries, schemaDescriptions, results);
+	processRegularFields(regularFields, results);
+	processArrayGroups(arrayGroups, results);
+	processArrayFields(resourceEntries, schemaDescriptions, results);
 
-  return results;
+	return results;
 }
 
 /**
@@ -745,41 +745,41 @@ export function extractDataFromResources(
  * @returns Results object with arrays reconstructed
  */
 function reconstructArrayResults(
-  results: Record<string, any>
+	results: Record<string, any>,
 ): Record<string, any> {
-  const reconstructed = { ...results };
-  const arrayGroups: Record<string, any[]> = {};
-  const fieldsToRemove: string[] = [];
+	const reconstructed = { ...results };
+	const arrayGroups: Record<string, any[]> = {};
+	const fieldsToRemove: string[] = [];
 
-  // Find indexed fields and group them
-  _.forEach(results, (value, key) => {
-    const match = key.match(/^(.+)_(\d+)$/);
-    if (match) {
-      const [, baseKey, indexStr] = match;
-      const index = parseInt(indexStr, 10);
+	// Find indexed fields and group them
+	_.forEach(results, (value, key) => {
+		const match = key.match(/^(.+)_(\d+)$/);
+		if (match) {
+			const [, baseKey, indexStr] = match;
+			const index = parseInt(indexStr, 10);
 
-      if (!arrayGroups[baseKey]) {
-        arrayGroups[baseKey] = [];
-      }
+			if (!arrayGroups[baseKey]) {
+				arrayGroups[baseKey] = [];
+			}
 
-      arrayGroups[baseKey][index] = value;
-      fieldsToRemove.push(key);
-    }
-  });
+			arrayGroups[baseKey][index] = value;
+			fieldsToRemove.push(key);
+		}
+	});
 
-  // Remove indexed fields
-  fieldsToRemove.forEach((key) => {
-    delete reconstructed[key];
-  });
+	// Remove indexed fields
+	fieldsToRemove.forEach((key) => {
+		delete reconstructed[key];
+	});
 
-  // Add reconstructed arrays
-  _.forEach(arrayGroups, (array, baseKey) => {
-    // Filter out undefined elements and ensure proper order
-    const cleanArray = array.filter((item) => item !== undefined);
-    reconstructed[baseKey] = cleanArray;
-  });
+	// Add reconstructed arrays
+	_.forEach(arrayGroups, (array, baseKey) => {
+		// Filter out undefined elements and ensure proper order
+		const cleanArray = array.filter((item) => item !== undefined);
+		reconstructed[baseKey] = cleanArray;
+	});
 
-  return reconstructed;
+	return reconstructed;
 }
 
 // ============================================================================
@@ -793,51 +793,47 @@ function reconstructArrayResults(
  * @returns Promise resolving to the composed object conforming to the target's schema
  */
 export async function composeObjectFromTarget(
-  context: K8sApiContext,
-  target: CustomResourceTarget | BuiltinResourceTarget
+	context: K8sApiContext,
+	target: CustomResourceTarget | BuiltinResourceTarget,
 ): Promise<any> {
-  const parsedTarget = _.find(
-    [CustomResourceTargetSchema, BuiltinResourceTargetSchema],
-    (schema) => schema.safeParse(target).success
-  )?.safeParse(target).data!;
+	const parsedTarget = _.find(
+		[CustomResourceTargetSchema, BuiltinResourceTargetSchema],
+		(schema) => schema.safeParse(target).success,
+	)?.safeParse(target).data!;
 
-  const schema = getSchemaForResourceType(parsedTarget.resourceType);
-  if (!schema) {
-    throw new Error(
-      `No schema found for resource type: ${parsedTarget.resourceType}`
-    );
-  }
+	const schema = getSchemaForResourceType(parsedTarget.resourceType);
+	if (!schema) {
+		throw new Error(
+			`No schema found for resource type: ${parsedTarget.resourceType}`,
+		);
+	}
 
-  if (!parsedTarget.name) {
-    throw new Error(
-      `Instance name is required in target: ${JSON.stringify(parsedTarget)}`
-    );
-  }
+	if (!parsedTarget.name) {
+		throw new Error(
+			`Instance name is required in target: ${JSON.stringify(parsedTarget)}`,
+		);
+	}
 
-  const schemaDescriptions = parseFieldDescriptions(schema);
+	const schemaDescriptions = parseFieldDescriptions(schema);
 
-  const resources = await getResourcesByFieldDescriptions(
-    context,
-    schemaDescriptions,
-    parsedTarget.name
-  );
+	const resources = await getResourcesByFieldDescriptions(
+		context,
+		schemaDescriptions,
+		parsedTarget.name,
+	);
 
-  const resourceEntries = Object.entries(resources);
+	const resourceEntries = Object.entries(resources);
 
-  const extractedData = extractDataFromResources(
-    resourceEntries,
-    schemaDescriptions
-  );
+	const extractedData = extractDataFromResources(
+		resourceEntries,
+		schemaDescriptions,
+	);
 
-  // Reconstruct array results from indexed fields
-  const reconstructedData = reconstructArrayResults(extractedData);
+	// Reconstruct array results from indexed fields
+	const reconstructedData = reconstructArrayResults(extractedData);
 
-  // Apply Zod schema parsing to handle transforms and validation
-  try {
-    const parsedData = schema.parse(reconstructedData);
-    return parsedData;
-  } catch (error) {
-    console.warn("Schema parsing failed, returning raw extracted data:", error);
-    return reconstructedData;
-  }
+	// Apply Zod schema parsing to handle transforms and validation using safeParse
+	const parseResult = schema.safeParse(reconstructedData);
+
+	return parseResult.success ? parseResult.data : reconstructedData;
 }

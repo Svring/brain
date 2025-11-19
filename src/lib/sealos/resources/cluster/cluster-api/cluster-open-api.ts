@@ -219,7 +219,7 @@ export const deleteCluster = createParallelAction(
 			);
 		}
 
-		return DeleteClusterResponseSchema.parse(response.data);
+		return response.data;
 	},
 );
 
@@ -256,7 +256,7 @@ export const startCluster = createParallelAction(
 			);
 		}
 
-		return StartClusterResponseSchema.parse(response.data);
+		return response.data;
 	},
 );
 
@@ -290,7 +290,7 @@ export const pauseCluster = createParallelAction(
 			);
 		}
 
-		return PauseClusterResponseSchema.parse(response.data);
+		return response.data;
 	},
 );
 
@@ -327,7 +327,7 @@ export const restartCluster = createParallelAction(
 			);
 		}
 
-		return RestartClusterResponseSchema.parse(response.data);
+		return response.data;
 	},
 );
 
