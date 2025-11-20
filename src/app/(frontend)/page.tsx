@@ -8,6 +8,7 @@ import { searchThreads } from "@/lib/langgraph/langgraph-api/langgraph-api-servi
 export default function Page() {
 	const router = useRouter();
 	const [query] = useQueryState("query");
+	const [trial] = useQueryState("trial");
 	const [sessionId] = useQueryState("sessionId");
 	const [args] = useQueryState("args");
 
@@ -18,6 +19,9 @@ export default function Page() {
 			if (query) {
 				const homeUrl = new URL("/home", window.location.origin);
 				homeUrl.searchParams.set("query", query);
+				if (trial) {
+					homeUrl.searchParams.set("trial", trial);
+				}
 				router.push(homeUrl.pathname + homeUrl.search);
 				return;
 			}
@@ -42,7 +46,7 @@ export default function Page() {
 			router.push(homeUrl.pathname + homeUrl.search);
 		};
 		fetchData();
-	}, [query, sessionId, args, router]);
+	}, [query, trial, sessionId, args, router]);
 
 	return <div></div>;
 }

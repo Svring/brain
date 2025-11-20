@@ -34,6 +34,9 @@ interface HomeChatContextType {
 	// Session information
 	sessionId: string | null;
 
+	// Trial information
+	trial: string | null;
+
 	// Submit function
 	submit: (
 		data: { stage?: string; command?: any },
@@ -52,11 +55,13 @@ const HomeChatContext = createContext<HomeChatContextType | undefined>(
 interface HomeChatProviderProps {
 	children: ReactNode;
 	sessionId?: string | null;
+	trial?: string | null;
 }
 
 export function HomeChatProvider({
 	children,
 	sessionId,
+	trial,
 }: HomeChatProviderProps) {
 	const { auth } = useAuthState();
 	const { LANGGRAPH_DEPLOYMENT_URL, LANGGRAPH_GRAPH_ID } = useEnv();
@@ -161,6 +166,7 @@ export function HomeChatProvider({
 		kubeconfig: auth?.kubeconfig,
 		threadId,
 		sessionId: sessionId ?? null,
+		trial: trial ?? null,
 		submit,
 		createNewChat,
 		isCreatingNewChat: createNewThread.isPending,
