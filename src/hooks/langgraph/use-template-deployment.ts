@@ -40,6 +40,40 @@ export const useTemplateDeployment = (templateName: string) => {
 		template?.spec.inputs && Object.keys(template.spec.inputs).length > 0,
 	);
 
+	// Check if template has any required fields
+	const hasRequired = Boolean(
+		template?.spec.inputs &&
+			Object.values(template.spec.inputs).some(
+				(input: any) => input?.required === true,
+			),
+	);
+
+	// Helper function to get default values from template inputs
+	const getDefaultValues = useCallback(() => {
+		const defaults: Record<string, string> = {};
+
+		if (template?.spec.inputs) {
+			Object.entries(template.spec.inputs).forEach(([key, input]) => {
+				const i: any = input as any;
+				if (!i) return;
+
+				switch (i.type) {
+					case "boolean":
+						defaults[key] =
+							i.default === "true" || i.default === true ? "true" : "false";
+						break;
+					case "number":
+						defaults[key] = i.default?.toString() || "";
+						break;
+					default:
+						defaults[key] = i.default?.toString() || "";
+				}
+			});
+		}
+
+		return defaults;
+	}, [template]);
+
 	const deployTemplate = useCallback(
 		async (
 			params: { templateName: string; templateForm?: Record<string, string> },
@@ -121,16 +155,23 @@ export const useTemplateDeployment = (templateName: string) => {
 	);
 
 	const handleDeploy = useCallback(() => {
-		if (hasInputs) {
+		if (hasRequired) {
+			// Only show input dialog if there are required fields
 			setShowInputDialog(true);
+		} else if (hasInputs) {
+			// If there are inputs but no required fields, use default values and deploy
+			const defaultValues = getDefaultValues();
+			deployTemplate({ templateName, templateForm: defaultValues });
 		} else {
+			// No inputs at all, deploy directly
 			deployTemplate({ templateName });
 		}
-	}, [hasInputs, deployTemplate, templateName]);
+	}, [hasRequired, hasInputs, getDefaultValues, deployTemplate, templateName]);
 
 	return {
 		template,
 		hasInputs,
+		hasRequired,
 		showInputDialog,
 		setShowInputDialog,
 		deployTemplate,

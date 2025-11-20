@@ -46,6 +46,7 @@ const TemplateDeploymentCard = ({
 		isLoading,
 		error,
 		hasInputs,
+		hasRequired,
 		showInputDialog,
 		setShowInputDialog,
 		deployTemplate,
@@ -54,8 +55,8 @@ const TemplateDeploymentCard = ({
 
 	// Unified handler for both initial deploy and dialog submit
 	const handleDeployOrSubmit = (templateForm?: any) => {
-		// If inputs are required and none were provided, open dialog first
-		if (hasInputs && !templateForm) {
+		// If required inputs exist and none were provided, open dialog first
+		if (hasRequired && !templateForm) {
 			setShowInputDialog(true);
 			return;
 		}
@@ -134,10 +135,11 @@ const TemplateDeploymentCard = ({
 				onDeploy={() => handleDeployOrSubmit()}
 				isDeploying={isDeploying}
 				hasInputs={hasInputs}
+				hasRequired={hasRequired}
 			/>
 
-			{/* Template Input Dialog */}
-			{template && hasInputs && (
+			{/* Template Input Dialog - only show if there are required fields */}
+			{template && hasRequired && (
 				<TemplateInputDialog
 					template={template}
 					isOpen={showInputDialog}
