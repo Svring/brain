@@ -486,8 +486,9 @@ export const PromptInputBox = React.forwardRef(
 
 		const handleInputFocus = React.useCallback(() => {
 			setIsFocused(true);
-			// Only fill if typewriter is not deleting and there's a complete sentence available
+			// Only fill if exhibition is enabled, typewriter is not deleting and there's a complete sentence available
 			if (
+				exhibition &&
 				currentTypewriterSentence.trim() &&
 				!isTypewriterDeleting &&
 				(!input.trim() || input === placeholder)
@@ -496,7 +497,13 @@ export const PromptInputBox = React.forwardRef(
 				setCompletedSentence(currentTypewriterSentence);
 				setShowTypewriter(false);
 			}
-		}, [currentTypewriterSentence, isTypewriterDeleting, input, placeholder]);
+		}, [
+			exhibition,
+			currentTypewriterSentence,
+			isTypewriterDeleting,
+			input,
+			placeholder,
+		]);
 		const handleTypewriterSend = React.useCallback(() => {
 			if (completedSentence.trim()) {
 				onSend(completedSentence.trim());
