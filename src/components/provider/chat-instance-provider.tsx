@@ -37,7 +37,12 @@ interface ChatInstanceContextType {
 	setChatThreads: (threads: Thread[]) => void;
 	setChatState: (state: Partial<ChatSectionState>) => void;
 	submit: (
-		data: { messages: Message[]; stage?: string; command?: any },
+		data: {
+			messages?: Message[];
+			newMessages?: Message[];
+			stage?: string;
+			command?: any;
+		},
 		options?: { optimisticValues?: (prev: any) => any; command?: any },
 	) => any;
 	// Stream properties from useStream
@@ -160,7 +165,10 @@ export function ProjectChatInstanceProvider({
 	// Submit function for project chat
 	const submit = (
 		data: {
-			newMessages: Message[];
+			messages?: Message[];
+			newMessages?: Message[];
+			stage?: string;
+			command?: any;
 		},
 		options?: any,
 	) => {
@@ -168,6 +176,9 @@ export function ProjectChatInstanceProvider({
 			console.warn("Missing required langgraph configuration");
 			return;
 		}
+
+		// Use messages if provided, otherwise fall back to newMessages
+		const messagesToSend = data.messages || data.newMessages || [];
 
 		return streamValue.submit(
 			{
@@ -182,7 +193,7 @@ export function ProjectChatInstanceProvider({
 					selectedProject,
 					selectedProjectResources,
 				},
-				messages: data.newMessages,
+				messages: messagesToSend,
 				...data,
 			},
 			{
@@ -470,7 +481,10 @@ export function ResourceChatInstanceProvider({
 	// Submit function for resource chat
 	const submit = (
 		data: {
-			newMessages: Message[];
+			messages?: Message[];
+			newMessages?: Message[];
+			stage?: string;
+			command?: any;
 		},
 		options?: any,
 	) => {
@@ -479,9 +493,16 @@ export function ResourceChatInstanceProvider({
 			return;
 		}
 
+		// Use messages if provided, otherwise fall back to newMessages
+		// If both exist, merge them (messages first, then newMessages)
+		const baseMessages =
+			data.messages && data.newMessages
+				? [...data.messages, ...data.newMessages]
+				: data.messages || data.newMessages || [];
+
 		// Add system message with resource context to messages
 		const messagesWithResourceContext = [
-			...data.newMessages,
+			...baseMessages,
 			{
 				type: "system" as const,
 				content: `Below is the latest resource status\n\n${JSON.stringify(
