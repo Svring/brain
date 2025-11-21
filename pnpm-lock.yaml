@@ -263,6 +263,9 @@ importers:
       harden-react-markdown:
         specifier: ^1.0.5
         version: 1.0.5(react-markdown@10.1.0(@types/react@19.1.9)(react@19.1.1))(react@19.1.1)
+      hono:
+        specifier: ^4.10.6
+        version: 4.10.6
       humps:
         specifier: ^2.0.1
         version: 2.0.1
@@ -7071,8 +7074,8 @@ packages:
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
 
-  hono@4.9.1:
-    resolution: {integrity: sha512-qfvdJ42t6CQE0N/iSCa8KsW8SQqYD67YB+TYbwPHlnALvX+s7ynh8otR1NEk5jXtUg73gpV/B82OSufDmwtX3w==}
+  hono@4.10.6:
+    resolution: {integrity: sha512-BIdolzGpDO9MQ4nu3AUuDwHZZ+KViNm+EZ75Ae55eMXMqLVhDFqEMXxtUe9Qh8hjL+pIna/frs2j6Y2yD5Ua/g==}
     engines: {node: '>=16.9.0'}
 
   hotkeys-js@3.13.15:
@@ -12181,9 +12184,9 @@ snapshots:
       react-dom: 19.1.1(react@19.1.1)
       use-sync-external-store: 1.5.0(react@19.1.1)
 
-  '@hono/node-server@1.18.2(hono@4.9.1)':
+  '@hono/node-server@1.18.2(hono@4.10.6)':
     dependencies:
-      hono: 4.9.1
+      hono: 4.10.6
 
   '@hookform/resolvers@3.10.0(react-hook-form@7.62.0(react@19.1.1))':
     dependencies:
@@ -12752,7 +12755,7 @@ snapshots:
       '@axiomhq/js': 1.0.0-rc.3
       '@babel/core': 7.26.0
       '@babel/types': 7.26.0
-      '@hono/node-server': 1.18.2(hono@4.9.1)
+      '@hono/node-server': 1.18.2(hono@4.10.6)
       '@million/install': 1.0.14
       '@rollup/pluginutils': 5.2.0
       '@rrweb/types': 2.0.0-alpha.16
@@ -12760,7 +12763,7 @@ snapshots:
       ci-info: 4.3.0
       esbuild: 0.20.2
       faster-babel-types: 0.1.0(@babel/types@7.26.0)
-      hono: 4.9.1
+      hono: 4.10.6
       isomorphic-fetch: 3.0.0
       nanoid: 5.1.5
       ohash: 1.1.6
@@ -17957,7 +17960,7 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hono@4.9.1: {}
+  hono@4.10.6: {}
 
   hotkeys-js@3.13.15: {}
 

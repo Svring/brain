@@ -98,6 +98,7 @@
     "framer-motion": "^12.23.12",
     "graphql": "^16.11.0",
     "harden-react-markdown": "^1.0.5",
+    "hono": "^4.10.6",
     "humps": "^2.0.1",
     "input-otp": "1.4.1",
     "is-port-reachable": "^4.0.0",

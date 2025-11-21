@@ -42,21 +42,6 @@ const nextConfig = {
 		}
 		return config;
 	},
-	async rewrites() {
-		const langgraphApiUrl = process.env.LANGGRAPH_DEPLOYMENT_URL;
-
-		const rewrites = [];
-
-		// Rewrite /api/langgraph to the actual LangGraph API URL
-		if (langgraphApiUrl) {
-			rewrites.push({
-				source: "/api/ai/:path*",
-				destination: `${langgraphApiUrl}/:path*`,
-			});
-		}
-
-		return rewrites;
-	},
 	experimental: {
 		// Forward browser logs to the terminal for easier debugging
 		// browserDebugInfoInTerminal: true,
