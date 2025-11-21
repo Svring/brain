@@ -88,6 +88,7 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 			{
 				isSuccess: boolean;
 				checked?: boolean;
+				reloadKey?: number;
 			}
 		>
 	>({});
@@ -144,6 +145,7 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 
 				const canEmbed = Boolean(data.ok && data.embedAllowed);
 				const timestamp = Date.now();
+				const reloadKey = timestamp;
 
 				console.log(`[Preview] ${url} [${timestamp}]: API Response:`, {
 					ok: data.ok,
@@ -159,6 +161,8 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 						[url]: {
 							isSuccess: canEmbed,
 							checked: canEmbed,
+							// Use reloadKey to force iframe remount and bust caches when URL first becomes available
+							reloadKey: canEmbed ? reloadKey : prevStatus?.reloadKey,
 						},
 					};
 					console.log(`[Preview] ${url} [${timestamp}]: State updated:`, {
@@ -264,6 +268,11 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 				};
 				const isSuccess = status.isSuccess;
 				const isChecked = status.checked;
+				const reloadKey = status.reloadKey;
+				const cacheBustingUrl =
+					isSuccess && isChecked && reloadKey
+						? `${item.url}${item.url.includes("?") ? "&" : "?"}preview_ts=${reloadKey}`
+						: item.url;
 				const renderTimestamp = Date.now();
 
 				console.log(`[Preview] Rendering ${item.url} [${renderTimestamp}]:`, {
@@ -329,14 +338,12 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
 							{isSuccess && isChecked ? (
 								<div className="rounded-lg overflow-hidden w-full h-full">
 									<iframe
-										src={item.url}
-										className="rounded-lg"
+										key={cacheBustingUrl}
+										src={cacheBustingUrl}
+										className="w-full h-full rounded-lg"
 										title="Resource Preview"
 										style={{
-											width: "1600px",
-											height: "900px",
-											transform: "scale(0.3)",
-											transformOrigin: "left top",
+											border: "none",
 											pointerEvents: "none",
 										}}
 										sandbox="allow-scripts allow-same-origin"
