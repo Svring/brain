@@ -3,6 +3,7 @@
 import { CircleCheckBigIcon, Container, Hammer, Rocket } from "lucide-react";
 import { usePathname } from "next/navigation";
 import type React from "react";
+import { useEffect } from "react";
 import { ProjectProposalCard } from "@/components/chat/state-cards/project-proposal/project-proposal-card";
 import { useHomeChat } from "@/components/provider/home-chat-provider";
 import { Button } from "@/components/ui/button";
@@ -43,7 +44,7 @@ const ImageDeploymentCard = ({
 	args: any;
 	onSuccess?: (data: any) => void;
 }) => {
-	const { sessionId } = useHomeChat();
+	const { sessionId, trial } = useHomeChat();
 	const { internalProposal, setInternalProposal, deployImage, isCreating } =
 		useImageDeployment(args);
 
@@ -75,6 +76,13 @@ const ImageDeploymentCard = ({
 			);
 		}
 	};
+
+	// Auto-trigger deploy if trial is present
+	useEffect(() => {
+		if (trial) {
+			handleDeploy();
+		}
+	}, [trial]);
 
 	return (
 		<div className="w-full border p-2 rounded-xl">

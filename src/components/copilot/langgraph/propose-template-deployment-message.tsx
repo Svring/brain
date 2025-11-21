@@ -3,6 +3,7 @@
 import { CircleCheckBigIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import type React from "react";
+import { useEffect } from "react";
 import { ProjectTemplateCard } from "@/components/chat/state-cards/project-proposal/project-template-card";
 import { TemplateInputDialog } from "@/components/project/create-project/template-input-dialog";
 import { useHomeChat } from "@/components/provider/home-chat-provider";
@@ -39,7 +40,7 @@ const TemplateDeploymentCard = ({
 	args: any;
 	onSuccess?: (data: any) => void;
 }) => {
-	const { sessionId } = useHomeChat();
+	const { sessionId, trial } = useHomeChat();
 	const {
 		template,
 		isLoading,
@@ -79,6 +80,13 @@ const TemplateDeploymentCard = ({
 			onSuccess,
 		);
 	};
+
+	// Auto-trigger deploy if trial is present
+	useEffect(() => {
+		if (trial && !isLoading && !error && template) {
+			handleDeployOrSubmit();
+		}
+	}, [trial, isLoading, error, template]);
 
 	// Show loading state
 	if (isLoading) {

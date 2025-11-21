@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import type React from "react";
+import { useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { ProjectProposalCard } from "@/components/chat/state-cards/project-proposal/project-proposal-card";
@@ -108,7 +109,7 @@ const DevenvDeploymentCard = ({
 	args: DevenvDeploymentArgs;
 	onSuccess?: (data: any) => void;
 }) => {
-	const { threadId, messages, sessionId } = useHomeChat();
+	const { threadId, messages, sessionId, trial } = useHomeChat();
 
 	const { internalProposal, setInternalProposal, isCreating, deployDevenv } =
 		useDevenvDeployment({
@@ -134,6 +135,13 @@ const DevenvDeploymentCard = ({
 
 		await deployDevenv();
 	};
+
+	// Auto-trigger deploy if trial is present
+	useEffect(() => {
+		if (trial) {
+			handleDeploy();
+		}
+	}, [trial]);
 
 	return (
 		<div className="w-full border p-2 rounded-xl">
