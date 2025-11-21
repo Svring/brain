@@ -19,10 +19,12 @@ export default function Page() {
 	// Handle redirect logic
 	useEffect(() => {
 		const fetchData = async () => {
-			// Case 1: If query is present, navigate directly to home with query
-			if (query) {
+			// Case 1: If query or trial is present, navigate directly to home with appropriate params
+			if (query || trial) {
 				const homeUrl = new URL("/home", window.location.origin);
-				homeUrl.searchParams.set("query", query);
+				if (query) {
+					homeUrl.searchParams.set("query", query);
+				}
 				if (trial) {
 					homeUrl.searchParams.set("trial", trial);
 				}
