@@ -1,21 +1,21 @@
 "use client";
 
-import React, { createContext, useContext, ReactNode, useMemo } from "react";
+import { Client, type Message } from "@langchain/langgraph-sdk";
 import { useStream } from "@langchain/langgraph-sdk/react";
-import { type Message } from "@langchain/langgraph-sdk";
-import { searchThreads } from "@/lib/langgraph/langgraph-api/langgraph-trpc-service";
+import { useMount } from "@reactuses/core";
+import { useQueryClient } from "@tanstack/react-query";
+import type React from "react";
+import { createContext, type ReactNode, useContext, useMemo } from "react";
+import { toast } from "sonner";
+import { v4 as uuidv4 } from "uuid";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
 import { useProjectState } from "@/contexts/project/project-context";
-import { useThreads } from "./thread-provider";
-import { useEnv } from "./env-provider";
-import { toast } from "sonner";
-import { useMount } from "@reactuses/core";
-import { useCreateThreadRunStreamMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { Client } from "@langchain/langgraph-sdk";
-import { v4 as uuidv4 } from "uuid";
-import { useQueryClient } from "@tanstack/react-query";
 import { getThreadState } from "@/lib/langgraph/langgraph-api/langgraph-api-service";
+import { searchThreads } from "@/lib/langgraph/langgraph-api/langgraph-trpc-service";
+import { useCreateThreadRunStreamMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
+import { useEnv } from "./env-provider";
+import { useThreads } from "./thread-provider";
 
 type StreamContextType = ReturnType<typeof useStream> & {
   submitWithContext: (data: {
@@ -69,6 +69,9 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
     assistantId: LANGGRAPH_GRAPH_ID,
     threadId: selectedThreadId || null,
     onThreadId: async (id) => {},
+    defaultHeaders: {
+      authorization: auth?.kubeconfig,
+    },
   });
 
   // Create a wrapper that automatically includes BrainState context
