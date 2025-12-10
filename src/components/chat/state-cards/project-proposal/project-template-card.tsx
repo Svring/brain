@@ -24,6 +24,7 @@ interface ProjectTemplateCardProps {
 	template: TemplateResource;
 	onDeploy?: () => void;
 	isDeploying?: boolean;
+	isLoading?: boolean;
 	hasInputs?: boolean;
 	hasRequired?: boolean;
 }
@@ -32,6 +33,7 @@ export function ProjectTemplateCard({
 	template,
 	onDeploy,
 	isDeploying = false,
+	isLoading = false,
 	hasInputs = false,
 	hasRequired = false,
 }: ProjectTemplateCardProps) {
@@ -128,11 +130,16 @@ export function ProjectTemplateCard({
 			<div className="pt-2">
 				<Button
 					onClick={onDeploy}
-					disabled={isDeploying || !quotaCheckPassed}
+					disabled={isDeploying || isLoading || !quotaCheckPassed}
 					className="w-full"
 					// variant={"outline"}
 				>
-					{isDeploying ? (
+					{isLoading ? (
+						<>
+							<Spinner variant="circle" size={16} className="mr-2" />
+							Responding
+						</>
+					) : isDeploying ? (
 						<>
 							<Spinner variant="circle" size={16} className="mr-2" />
 							Deploying...

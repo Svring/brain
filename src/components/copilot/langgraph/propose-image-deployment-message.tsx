@@ -3,7 +3,7 @@
 import { CircleCheckBigIcon, Container, Hammer, Rocket } from "lucide-react";
 import { usePathname } from "next/navigation";
 import type React from "react";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { ProjectProposalCard } from "@/components/chat/state-cards/project-proposal/project-proposal-card";
 import { useHomeChat } from "@/components/provider/home-chat-provider";
 import { Button } from "@/components/ui/button";
@@ -12,82 +12,82 @@ import { useImageDeployment } from "@/hooks/langgraph/use-image-deployment";
 import { requestLogin } from "@/lib/auth/auth-utils";
 
 interface ProposeImageDeploymentMessageProps {
-	args: {
-		image_name: string;
-		project_name: string;
-		name: string;
-		ports?: number[];
-	};
-	result?: any;
-	onSuccess?: (data: any) => void;
+  args: {
+    image_name: string;
+    project_name: string;
+    name: string;
+    ports?: number[];
+  };
+  result?: any;
+  onSuccess?: (data: any) => void;
 }
 
 const ImageDeploymentSuccessMessage = ({ args }: { args: any }) => {
-	return (
-		<div className="w-full">
-			<div className="flex items-center justify-center p-2 border rounded-lg">
-				<div className="flex items-center gap-2">
-					<CircleCheckBigIcon className="h-4 w-4 text-green-600" />
-					<p className="text-sm">
-						Image "{args.image_name}" deployed successfully
-					</p>
-				</div>
-			</div>
-		</div>
-	);
+  return (
+    <div className="w-full">
+      <div className="flex items-center justify-center p-2 border rounded-lg">
+        <div className="flex items-center gap-2">
+          <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
+          <p className="text-sm">
+            Image "{args.image_name}" deployed successfully
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const ImageDeploymentCard = ({
-	args,
-	onSuccess,
+  args,
+  onSuccess,
 }: {
-	args: any;
-	onSuccess?: (data: any) => void;
+  args: any;
+  onSuccess?: (data: any) => void;
 }) => {
-	const { sessionId, trial } = useHomeChat();
-	const { internalProposal, setInternalProposal, deployImage, isCreating } =
-		useImageDeployment(args);
+  const { sessionId, trial, isLoading } = useHomeChat();
+  const { internalProposal, setInternalProposal, deployImage, isCreating } =
+    useImageDeployment(args);
 
-	const handleDeploy = async () => {
-		// If sessionId is present, request login instead of creating project
-		if (sessionId) {
-			// Pass internalProposal (which may have been modified by user) in ProjectProposal format
-			const queryParams = {
-				sessionId: sessionId,
-				args: JSON.stringify(internalProposal),
-			};
-			console.log("query params", queryParams);
-			requestLogin({
-				pathname: "/",
-				query: queryParams,
-			});
-			return;
-		}
+  const handleDeploy = useCallback(async () => {
+    // If sessionId is present, request login instead of creating project
+    if (sessionId) {
+      // Pass internalProposal (which may have been modified by user) in ProjectProposal format
+      const queryParams = {
+        sessionId: sessionId,
+        args: JSON.stringify(internalProposal),
+      };
+      console.log("query params", queryParams);
+      requestLogin({
+        pathname: "/",
+        query: queryParams,
+      });
+      return;
+    }
 
-		try {
-			const projectName = await deployImage();
-			if (onSuccess) {
-				onSuccess(projectName);
-			}
-		} catch (error) {
-			console.error(
-				"[ProposeImageDeploymentMessage] Failed to deploy Docker image:",
-				error,
-			);
-		}
-	};
+    try {
+      const projectName = await deployImage();
+      if (onSuccess) {
+        onSuccess(projectName);
+      }
+    } catch (error) {
+      console.error(
+        "[ProposeImageDeploymentMessage] Failed to deploy Docker image:",
+        error
+      );
+    }
+  }, [sessionId, internalProposal, deployImage, onSuccess]);
 
-	// Auto-trigger deploy if trial is present
-	useEffect(() => {
-		if (trial) {
-			handleDeploy();
-		}
-	}, [trial]);
+  // Auto-trigger deploy if trial is present
+  useEffect(() => {
+    if (trial) {
+      handleDeploy();
+    }
+  }, [trial, handleDeploy]);
 
-	return (
-		<div className="w-full border p-2 rounded-xl">
-			{/* Header with icon and text */}
-			{/* <div className="flex items-center mb-3">
+  return (
+    <div className="w-full border p-2 rounded-xl">
+      {/* Header with icon and text */}
+      {/* <div className="flex items-center mb-3">
         <div className="flex text-sm text-muted-foreground">
           <Hammer size={20} className="mr-2" />
           <span>
@@ -96,49 +96,54 @@ const ImageDeploymentCard = ({
         </div>
       </div> */}
 
-			<ProjectProposalCard
-				proposal={internalProposal}
-				onProposalUpdate={setInternalProposal}
-			/>
+      <ProjectProposalCard
+        proposal={internalProposal}
+        onProposalUpdate={setInternalProposal}
+      />
 
-			<div className="pt-2">
-				<Button
-					onClick={handleDeploy}
-					disabled={isCreating}
-					className="w-full"
-					// variant={"outline"}
-				>
-					{isCreating ? (
-						<>
-							<Spinner variant="circle" size={16} className="mr-2" />
-							Deploying...
-						</>
-					) : (
-						<>
-							<Rocket className="h-4 w-4 mr-2" />
-							Deploy
-						</>
-					)}
-				</Button>
-			</div>
-		</div>
-	);
+      <div className="pt-2">
+        <Button
+          onClick={handleDeploy}
+          disabled={isCreating || isLoading}
+          className="w-full"
+          // variant={"outline"}
+        >
+          {isLoading ? (
+            <>
+              <Spinner variant="circle" size={16} className="mr-2" />
+              Responding
+            </>
+          ) : isCreating ? (
+            <>
+              <Spinner variant="circle" size={16} className="mr-2" />
+              Deploying...
+            </>
+          ) : (
+            <>
+              <Rocket className="h-4 w-4 mr-2" />
+              Deploy
+            </>
+          )}
+        </Button>
+      </div>
+    </div>
+  );
 };
 
 export const ProposeImageDeploymentMessage: React.FC<
-	ProposeImageDeploymentMessageProps
+  ProposeImageDeploymentMessageProps
 > = ({ args, result, onSuccess }) => {
-	const pathname = usePathname();
+  const pathname = usePathname();
 
-	// If we are on a project page, always show success message
-	if (pathname?.includes("/projects")) {
-		return <ImageDeploymentSuccessMessage args={args} />;
-	}
-	// Check result first and return success state if it exists
-	if (result) {
-		return <ImageDeploymentSuccessMessage args={args} />;
-	}
+  // If we are on a project page, always show success message
+  if (pathname?.includes("/projects")) {
+    return <ImageDeploymentSuccessMessage args={args} />;
+  }
+  // Check result first and return success state if it exists
+  if (result) {
+    return <ImageDeploymentSuccessMessage args={args} />;
+  }
 
-	// Return the card component with args and logic
-	return <ImageDeploymentCard args={args} onSuccess={onSuccess} />;
+  // Return the card component with args and logic
+  return <ImageDeploymentCard args={args} onSuccess={onSuccess} />;
 };

@@ -1,16 +1,16 @@
 "use client";
 
 import {
-	CircleCheckBigIcon,
-	Code,
-	Database,
-	Hammer,
-	Rocket,
-	Server,
+  CircleCheckBigIcon,
+  Code,
+  Database,
+  Hammer,
+  Rocket,
+  Server,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import type React from "react";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { ProjectProposalCard } from "@/components/chat/state-cards/project-proposal/project-proposal-card";
@@ -31,21 +31,21 @@ import { launchpadCreateFormSchema } from "@/schemas/forms/launchpad/launchpad-c
 
 // Zod schemas for DevenvDeploymentCard args
 export const DeployDevBoxSchema = z.object({
-	name: z.string().min(1, "DevBox name is required"),
-	runtime: z.enum(DEVBOX_RUNTIMES),
-	ports: z.array(z.number().int().min(1).max(65535)).optional(),
-	reliance: z.array(z.string()).optional(),
+  name: z.string().min(1, "DevBox name is required"),
+  runtime: z.enum(DEVBOX_RUNTIMES),
+  ports: z.array(z.number().int().min(1).max(65535)).optional(),
+  reliance: z.array(z.string()).optional(),
 });
 
 export const DeployDatabaseSchema = z.object({
-	name: z.string().min(1, "Database name is required"),
-	type: z.enum([...CLUSTER_TYPES] as [string, ...string[]]),
+  name: z.string().min(1, "Database name is required"),
+  type: z.enum([...CLUSTER_TYPES] as [string, ...string[]]),
 });
 
 export const DevenvDeploymentArgsSchema = z.object({
-	project_name: z.string().min(1, "Project name is required"),
-	devbox: z.array(DeployDevBoxSchema).optional(),
-	database: z.array(DeployDatabaseSchema).optional(),
+  project_name: z.string().min(1, "Project name is required"),
+  devbox: z.array(DeployDevBoxSchema).optional(),
+  database: z.array(DeployDatabaseSchema).optional(),
 });
 
 export type DeployDevBox = z.infer<typeof DeployDevBoxSchema>;
@@ -53,149 +53,154 @@ export type DeployDatabase = z.infer<typeof DeployDatabaseSchema>;
 export type DevenvDeploymentArgs = z.infer<typeof DevenvDeploymentArgsSchema>;
 
 interface DevboxTemplate {
-	runtime: string;
-	config: {
-		appPorts: Array<{
-			name: string;
-			port: number;
-			protocol: string;
-		}>;
-		ports: Array<{
-			containerPort: number;
-			name: string;
-			protocol: string;
-		}>;
-		releaseArgs: string[];
-		releaseCommand: string[];
-		user: string;
-		workingDir: string;
-	};
+  runtime: string;
+  config: {
+    appPorts: Array<{
+      name: string;
+      port: number;
+      protocol: string;
+    }>;
+    ports: Array<{
+      containerPort: number;
+      name: string;
+      protocol: string;
+    }>;
+    releaseArgs: string[];
+    releaseCommand: string[];
+    user: string;
+    workingDir: string;
+  };
 }
 
 interface ProposeDevenvDeploymentMessageProps {
-	args: DevenvDeploymentArgs;
-	result?: any;
-	onSuccess?: (data: any) => void;
+  args: DevenvDeploymentArgs;
+  result?: any;
+  onSuccess?: (data: any) => void;
 }
 
 const DevenvDeploymentSuccessMessage = ({
-	args,
+  args,
 }: {
-	args: DevenvDeploymentArgs;
+  args: DevenvDeploymentArgs;
 }) => {
-	const hasDevbox = args.devbox && args.devbox.length > 0;
-	const hasDatabase = args.database && args.database.length > 0;
+  const hasDevbox = args.devbox && args.devbox.length > 0;
+  const hasDatabase = args.database && args.database.length > 0;
 
-	return (
-		<div className="w-full">
-			<div className="flex items-center justify-center p-2 border rounded-lg bg-background-secondary">
-				<div className="flex items-center gap-2">
-					<CircleCheckBigIcon className="h-4 w-4 text-green-600" />
-					<p className="text-sm">
-						Development environment deployed successfully
-						{hasDevbox && ` (${args.devbox?.[0]?.name})`}
-						{hasDatabase && ` with ${args.database?.[0]?.name} database`}
-					</p>
-				</div>
-			</div>
-		</div>
-	);
+  return (
+    <div className="w-full">
+      <div className="flex items-center justify-center p-2 border rounded-lg bg-background-secondary">
+        <div className="flex items-center gap-2">
+          <CircleCheckBigIcon className="h-4 w-4 text-green-600" />
+          <p className="text-sm">
+            Development environment deployed successfully
+            {hasDevbox && ` (${args.devbox?.[0]?.name})`}
+            {hasDatabase && ` with ${args.database?.[0]?.name} database`}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const DevenvDeploymentCard = ({
-	args,
-	onSuccess,
+  args,
+  onSuccess,
 }: {
-	args: DevenvDeploymentArgs;
-	onSuccess?: (data: any) => void;
+  args: DevenvDeploymentArgs;
+  onSuccess?: (data: any) => void;
 }) => {
-	const { threadId, messages, sessionId, trial } = useHomeChat();
+  const { threadId, messages, sessionId, trial, isLoading } = useHomeChat();
 
-	const { internalProposal, setInternalProposal, isCreating, deployDevenv } =
-		useDevenvDeployment({
-			args,
-			onSuccess,
-		});
+  const { internalProposal, setInternalProposal, isCreating, deployDevenv } =
+    useDevenvDeployment({
+      args,
+      onSuccess,
+    });
 
-	const handleDeploy = async () => {
-		// If sessionId is present, request login instead of creating project
-		if (sessionId) {
-			// Pass internalProposal (which may have been modified by user) in ProjectProposal format
-			const queryParams = {
-				sessionId: sessionId,
-				args: JSON.stringify(internalProposal),
-			};
-			console.log("query params", queryParams);
-			requestLogin({
-				pathname: "/",
-				query: queryParams,
-			});
-			return;
-		}
+  const handleDeploy = useCallback(async () => {
+    // If sessionId is present, request login instead of creating project
+    if (sessionId) {
+      // Pass internalProposal (which may have been modified by user) in ProjectProposal format
+      const queryParams = {
+        sessionId: sessionId,
+        args: JSON.stringify(internalProposal),
+      };
+      console.log("query params", queryParams);
+      requestLogin({
+        pathname: "/",
+        query: queryParams,
+      });
+      return;
+    }
 
-		await deployDevenv();
-	};
+    await deployDevenv();
+  }, [sessionId, internalProposal, deployDevenv]);
 
-	// Auto-trigger deploy if trial is present
-	useEffect(() => {
-		if (trial) {
-			handleDeploy();
-		}
-	}, [trial]);
+  // Auto-trigger deploy if trial is present
+  useEffect(() => {
+    if (trial) {
+      handleDeploy();
+    }
+  }, [trial, handleDeploy]);
 
-	return (
-		<div className="w-full border p-2 rounded-xl">
-			{/* Header with icon and text */}
-			{/* <div className="flex items-center mb-3">
+  return (
+    <div className="w-full border p-2 rounded-xl">
+      {/* Header with icon and text */}
+      {/* <div className="flex items-center mb-3">
         <div className="flex text-sm text-muted-foreground">
           <Hammer size={20} className="mr-2" />
           <span>Deploy development environment</span>
         </div>
       </div> */}
 
-			<ProjectProposalCard
-				proposal={internalProposal}
-				onProposalUpdate={setInternalProposal}
-			/>
+      <ProjectProposalCard
+        proposal={internalProposal}
+        onProposalUpdate={setInternalProposal}
+      />
 
-			<div className="pt-2">
-				<Button
-					onClick={handleDeploy}
-					disabled={isCreating}
-					className="w-full"
-					// variant={"outline"}
-				>
-					{isCreating ? (
-						<>
-							<Spinner variant="circle" size={16} className="mr-2" />
-							Deploying...
-						</>
-					) : (
-						<>
-							<Rocket className="h-4 w-4 mr-2" />
-							Deploy
-						</>
-					)}
-				</Button>
-			</div>
-		</div>
-	);
+      <div className="pt-2">
+        <Button
+          onClick={handleDeploy}
+          disabled={isCreating || isLoading}
+          className="w-full"
+          // variant={"outline"}
+        >
+          {isLoading ? (
+            <>
+              <Spinner variant="circle" size={16} className="mr-2" />
+              Responding
+            </>
+          ) : isCreating ? (
+            <>
+              <Spinner variant="circle" size={16} className="mr-2" />
+              Deploying...
+            </>
+          ) : (
+            <>
+              <Rocket className="h-4 w-4 mr-2" />
+              Deploy
+            </>
+          )}
+        </Button>
+      </div>
+    </div>
+  );
 };
 
 export const ProposeDevenvDeploymentMessage: React.FC<
-	ProposeDevenvDeploymentMessageProps
+  ProposeDevenvDeploymentMessageProps
 > = ({ args, result, onSuccess }) => {
-	const pathname = usePathname();
+  const pathname = usePathname();
 
-	// If we are on a project page, always show success message
-	if (pathname?.includes("/projects")) {
-		return <DevenvDeploymentSuccessMessage args={args} />;
-	}
-	// Check result first and return success state if it exists
-	if (result) {
-		return <DevenvDeploymentSuccessMessage args={args} />;
-	}
+  // If we are on a project page, always show success message
+  if (pathname?.includes("/projects")) {
+    return <DevenvDeploymentSuccessMessage args={args} />;
+  }
+  // Check result first and return success state if it exists
+  if (result) {
+    return <DevenvDeploymentSuccessMessage args={args} />;
+  }
 
-	// Return the card component with args and logic
-	return <DevenvDeploymentCard args={args} onSuccess={onSuccess} />;
+  // Return the card component with args and logic
+  return <DevenvDeploymentCard args={args} onSuccess={onSuccess} />;
 };
