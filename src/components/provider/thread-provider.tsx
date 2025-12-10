@@ -1,14 +1,14 @@
 "use client";
 
-import { createContext, useContext, ReactNode, useCallback } from "react";
+import type { Thread } from "@langchain/langgraph-sdk";
+import { useMutation } from "@tanstack/react-query";
+import { createContext, type ReactNode, useCallback, useContext } from "react";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useProjectState } from "@/contexts/project/project-context";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import type { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import { searchThreads } from "@/lib/langgraph/langgraph-api/langgraph-api-service";
 import { useDeleteThreadMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
-import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
-import { useMutation } from "@tanstack/react-query";
-import { Thread } from "@langchain/langgraph-sdk";
-import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface ThreadContextType {
   // Universal thread management methods
@@ -32,11 +32,13 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
       if (!auth?.kubeconfig) return [];
 
       try {
-        const threads = await searchThreads({
-          kubeconfig: auth.kubeconfig,
-          projectName: selectedProject,
-          resourceTarget: resourceTarget || null,
-        });
+        const threads = await searchThreads(
+          {
+            projectName: selectedProject,
+            resourceTarget: resourceTarget || null,
+          },
+          auth.kubeconfig
+        );
         return threads;
       } catch (error) {
         console.error("Failed to fetch threads:", error);

@@ -12,8 +12,6 @@ import { useAuthState } from "@/contexts/auth/auth-context";
 import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
 import { useProjectState } from "@/contexts/project/project-context";
 import { getThreadState } from "@/lib/langgraph/langgraph-api/langgraph-api-service";
-import { searchThreads } from "@/lib/langgraph/langgraph-api/langgraph-trpc-service";
-import { useCreateThreadRunStreamMutation } from "@/lib/langgraph/langgraph-method/langgraph-mutation";
 import { useEnv } from "./env-provider";
 import { useThreads } from "./thread-provider";
 
@@ -135,6 +133,9 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
     // Create a client-side client and call the stream method directly
     const client = new Client({
       apiUrl: LANGGRAPH_DEPLOYMENT_URL,
+      defaultHeaders: {
+        authorization: auth?.kubeconfig,
+      },
     });
 
     const run = await client.runs.create(threadId, LANGGRAPH_GRAPH_ID, {
@@ -189,6 +190,9 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
 
     const client = new Client({
       apiUrl: LANGGRAPH_DEPLOYMENT_URL,
+      defaultHeaders: {
+        authorization: auth?.kubeconfig,
+      },
     });
     const stream = client.runs.stream(selectedThreadId, LANGGRAPH_GRAPH_ID, {
       ...payload,
@@ -263,7 +267,10 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
         setIsStreaming(false);
         if (selectedThreadId) {
           try {
-            const threadState = await getThreadState(selectedThreadId);
+            const threadState = await getThreadState(
+              selectedThreadId,
+              auth?.kubeconfig
+            );
             const threadMessages = (threadState.values as any)?.messages;
             if (Array.isArray(threadMessages)) {
               setMessages(threadMessages);
@@ -279,16 +286,16 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  useMount(() => {
-    checkGraphStatus(LANGGRAPH_DEPLOYMENT_URL).then((ok) => {
-      if (!ok) {
-        toast.error("Failed to connect to LangGraph server", {
-          description: `Please ensure your graph is running at ${LANGGRAPH_DEPLOYMENT_URL}`,
-          duration: 5000,
-        });
-      }
-    });
-  });
+  // useMount(() => {
+  //   checkGraphStatus(LANGGRAPH_DEPLOYMENT_URL).then((ok) => {
+  //     if (!ok) {
+  //       toast.error("Failed to connect to LangGraph server", {
+  //         description: `Please ensure your graph is running at ${LANGGRAPH_DEPLOYMENT_URL}`,
+  //         duration: 5000,
+  //       });
+  //     }
+  //   });
+  // });
 
   const contextValue = {
     ...streamValue,

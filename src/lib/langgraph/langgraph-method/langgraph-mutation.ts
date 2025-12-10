@@ -37,7 +37,7 @@ export const useCreateNewChatSessionMutation = () => {
 					updates: [
 						{
 							values: {},
-							asNode: "__input__",
+							as_node: "__input__",
 						},
 					],
 				},
@@ -51,6 +51,7 @@ export const useCreateNewChatSessionMutation = () => {
 					resourceTarget: selectedResource || null,
 				},
 				supersteps,
+				kubeconfig: auth?.kubeconfig,
 			});
 
 			console.log("[useCreateNewChatSessionMutation] Thread created:", thread);
@@ -121,6 +122,7 @@ export const useAppendSystemMessageMutation = () => {
  * Hook for updating thread state
  */
 export const useUpdateThreadStateMutation = () => {
+	const { auth } = useAuthState();
 	const queryClient = useQueryClient();
 
 	return {
@@ -134,7 +136,12 @@ export const useUpdateThreadStateMutation = () => {
 			asNode?: string;
 		}) => {
 			console.log("Updating thread state:", { threadId, values, asNode });
-			const result = await updateThreadState(threadId, values, asNode);
+			const result = await updateThreadState(
+				threadId,
+				values,
+				asNode,
+				auth?.kubeconfig,
+			);
 			return result;
 		},
 		onSuccess: (data: any, variables: any) => {
@@ -150,12 +157,13 @@ export const useUpdateThreadStateMutation = () => {
  * Hook for deleting a thread
  */
 export const useDeleteThreadMutation = () => {
+	const { auth } = useAuthState();
 	const queryClient = useQueryClient();
 	// Note: selectThread is now handled by ThreadProvider
 
 	return useMutation({
 		mutationFn: async (threadId: string) => {
-			return await deleteThread(threadId);
+			return await deleteThread(threadId, auth?.kubeconfig);
 		},
 		onSuccess: (data, variables) => {
 			// Invalidate and refetch thread-related queries
@@ -176,6 +184,7 @@ export const useDeleteThreadMutation = () => {
  * Hook for creating a run in an existing thread
  */
 export const useCreateThreadRunStreamMutation = () => {
+	const { auth } = useAuthState();
 	const queryClient = useQueryClient();
 
 	return useMutation({
@@ -189,7 +198,12 @@ export const useCreateThreadRunStreamMutation = () => {
 			payload?: RunsInvokePayload;
 		}) => {
 			console.log("Creating run:", { threadId, assistantId, payload });
-			const result = await threadRunStream(threadId, assistantId, payload);
+			const result = await threadRunStream(
+				threadId,
+				assistantId,
+				payload,
+				auth?.kubeconfig,
+			);
 			return result;
 		},
 		onSuccess: (data, variables) => {

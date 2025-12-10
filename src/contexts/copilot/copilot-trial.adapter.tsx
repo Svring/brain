@@ -47,7 +47,10 @@ export function CopilotTrialAdapter({
   // Create new thread function
   const createNewThread = async () => {
     try {
-      const data = await createThread({ metadata: { sessionId } });
+      const data = await createThread({
+        metadata: { sessionId },
+        kubeconfig: auth?.kubeconfig,
+      });
       setThreadId(data.thread_id);
     } catch (error) {
       console.error("Failed to create trial thread:", error);

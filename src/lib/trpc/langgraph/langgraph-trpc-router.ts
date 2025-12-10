@@ -17,16 +17,16 @@ export const langgraphRouter = t.router({
 	// ===== QUERY PROCEDURES =====
 
 	// Thread Information
-	list: t.procedure.query(async () => {
-		return await listThreads();
+	list: t.procedure.query(async ({ ctx }) => {
+		return await listThreads(ctx.kubeconfig);
 	}),
 
-	get: t.procedure.input(z.string()).query(async ({ input }) => {
-		return await getThread(input);
+	get: t.procedure.input(z.string()).query(async ({ input, ctx }) => {
+		return await getThread(input, ctx.kubeconfig);
 	}),
 
-	search: t.procedure.input(z.record(z.any())).query(async ({ input }) => {
-		const response = await searchThreads(input);
+	search: t.procedure.input(z.record(z.any())).query(async ({ input, ctx }) => {
+		const response = await searchThreads(input, ctx.kubeconfig);
 		// console.log("response", response);
 		return response;
 	}),
@@ -40,7 +40,7 @@ export const langgraphRouter = t.router({
 				metadata: z.record(z.any()).optional(),
 			}),
 		)
-		.mutation(async ({ input }) => {
+		.mutation(async ({ input, ctx }) => {
 			const { metadata } = input;
 
 			// Default supersteps
@@ -58,6 +58,7 @@ export const langgraphRouter = t.router({
 			return await createThread({
 				metadata: metadata || {},
 				supersteps,
+				kubeconfig: ctx.kubeconfig,
 			});
 		}),
 
@@ -70,14 +71,14 @@ export const langgraphRouter = t.router({
 				asNode: z.string(),
 			}),
 		)
-		.mutation(async ({ input }) => {
+		.mutation(async ({ input, ctx }) => {
 			const { threadId, values, asNode } = input;
-			return await updateThreadState(threadId, values, asNode);
+			return await updateThreadState(threadId, values, asNode, ctx.kubeconfig);
 		}),
 
 	// Delete thread
-	delete: t.procedure.input(z.string()).mutation(async ({ input }) => {
-		return await deleteThread(input);
+	delete: t.procedure.input(z.string()).mutation(async ({ input, ctx }) => {
+		return await deleteThread(input, ctx.kubeconfig);
 	}),
 
 	// Patch thread metadata
@@ -88,9 +89,9 @@ export const langgraphRouter = t.router({
 				metadata: z.record(z.any()),
 			}),
 		)
-		.mutation(async ({ input }) => {
+		.mutation(async ({ input, ctx }) => {
 			const { threadId, metadata } = input;
-			return await patchThread(threadId, metadata);
+			return await patchThread(threadId, metadata, ctx.kubeconfig);
 		}),
 });
 

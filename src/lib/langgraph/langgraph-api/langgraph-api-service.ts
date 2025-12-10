@@ -5,19 +5,22 @@ import type { RunsInvokePayload } from "@langchain/langgraph-sdk";
 import { Client, type Metadata } from "@langchain/langgraph-sdk";
 import axios from "axios";
 
-const createClient = () => {
+const createClient = (kubeconfig?: string) => {
 	const apiUrl = process.env.LANGGRAPH_DEPLOYMENT_URL;
+	const headers: Record<string, string> = {};
+	if (kubeconfig) {
+		headers.authorization = kubeconfig;
+	}
 	return new Client({
 		apiUrl,
-		defaultHeaders: {
-			"x-secret": process.env.LANGGRAPH_SECRET || "",
-		},
+		defaultHeaders: headers,
 	});
 };
 
 export const createThread = async ({
 	metadata,
 	supersteps,
+	kubeconfig,
 }: {
 	metadata: Record<string, any>;
 	supersteps?: Array<{
@@ -26,6 +29,7 @@ export const createThread = async ({
 			as_node: string;
 		}>;
 	}>;
+	kubeconfig?: string;
 }) => {
 	const apiUrl = process.env.LANGGRAPH_DEPLOYMENT_URL;
 	if (!apiUrl) {
@@ -62,11 +66,15 @@ export const createThread = async ({
 			rejectUnauthorized: false,
 		});
 
+		const headers: Record<string, string> = {
+			"Content-Type": "application/json",
+		};
+		if (kubeconfig) {
+			headers.authorization = kubeconfig;
+		}
+
 		const response = await axios.post(`${apiUrl}/threads`, payload, {
-			headers: {
-				"Content-Type": "application/json",
-				"x-secret": process.env.LANGGRAPH_SECRET || "",
-			},
+			headers,
 			httpsAgent,
 		});
 
@@ -78,13 +86,13 @@ export const createThread = async ({
 	}
 };
 
-export const listThreads = async () => {
-	const client = createClient();
+export const listThreads = async (kubeconfig?: string) => {
+	const client = createClient(kubeconfig);
 	return await client.threads.search({ limit: 10 });
 };
 
-export const getThread = async (threadId: string) => {
-	const client = createClient();
+export const getThread = async (threadId: string, kubeconfig?: string) => {
+	const client = createClient(kubeconfig);
 	return await client.threads.get(threadId);
 };
 
@@ -92,6 +100,7 @@ export const updateThreadState = async (
 	threadId: string,
 	values: any,
 	asNode: string,
+	kubeconfig?: string,
 ) => {
 	const apiUrl = process.env.LANGGRAPH_DEPLOYMENT_URL;
 	if (!apiUrl) {
@@ -113,14 +122,18 @@ export const updateThreadState = async (
 			rejectUnauthorized: false,
 		});
 
+		const headers: Record<string, string> = {
+			"Content-Type": "application/json",
+		};
+		if (kubeconfig) {
+			headers.authorization = kubeconfig;
+		}
+
 		const response = await axios.post(
 			`${apiUrl}/threads/${threadId}/state`,
 			payload,
 			{
-				headers: {
-					"Content-Type": "application/json",
-					"x-secret": process.env.LANGGRAPH_SECRET || "",
-				},
+				headers,
 				httpsAgent,
 			},
 		);
@@ -132,12 +145,16 @@ export const updateThreadState = async (
 	}
 };
 
-export const deleteThread = async (threadId: string) => {
-	const client = createClient();
+export const deleteThread = async (threadId: string, kubeconfig?: string) => {
+	const client = createClient(kubeconfig);
 	return await client.threads.delete(threadId);
 };
 
-export const patchThread = async (threadId: string, metadata: Metadata) => {
+export const patchThread = async (
+	threadId: string,
+	metadata: Metadata,
+	kubeconfig?: string,
+) => {
 	const apiUrl = process.env.LANGGRAPH_DEPLOYMENT_URL;
 	if (!apiUrl) {
 		throw new Error("LANGGRAPH_DEPLOYMENT_URL environment variable is not set");
@@ -151,16 +168,20 @@ export const patchThread = async (threadId: string, metadata: Metadata) => {
 			rejectUnauthorized: false,
 		});
 
+		const headers: Record<string, string> = {
+			"Content-Type": "application/json",
+		};
+		if (kubeconfig) {
+			headers.authorization = kubeconfig;
+		}
+
 		const response = await axios.patch(
 			`${apiUrl}/threads/${threadId}`,
 			{
 				metadata: metadata,
 			},
 			{
-				headers: {
-					"Content-Type": "application/json",
-					"x-secret": process.env.LANGGRAPH_SECRET || "",
-				},
+				headers,
 				httpsAgent,
 			},
 		);
@@ -173,7 +194,10 @@ export const patchThread = async (threadId: string, metadata: Metadata) => {
 	}
 };
 
-export const searchThreads = async (metadata: Record<string, any>) => {
+export const searchThreads = async (
+	metadata: Record<string, any>,
+	kubeconfig?: string,
+) => {
 	const apiUrl = process.env.LANGGRAPH_DEPLOYMENT_URL;
 	if (!apiUrl) {
 		throw new Error("LANGGRAPH_DEPLOYMENT_URL environment variable is not set");
@@ -211,11 +235,15 @@ export const searchThreads = async (metadata: Record<string, any>) => {
 			rejectUnauthorized: false,
 		});
 
+		const headers: Record<string, string> = {
+			"Content-Type": "application/json",
+		};
+		if (kubeconfig) {
+			headers.authorization = kubeconfig;
+		}
+
 		const response = await axios.post(`${apiUrl}/threads/search`, payload, {
-			headers: {
-				"Content-Type": "application/json",
-				"x-secret": process.env.LANGGRAPH_SECRET || "",
-			},
+			headers,
 			httpsAgent,
 		});
 
@@ -230,8 +258,8 @@ export const searchThreads = async (metadata: Record<string, any>) => {
 	}
 };
 
-export const getThreadState = async (threadId: string) => {
-	const client = createClient();
+export const getThreadState = async (threadId: string, kubeconfig?: string) => {
+	const client = createClient(kubeconfig);
 	return await client.threads.getState(threadId);
 };
 
@@ -239,8 +267,9 @@ export const getThreadStateAtCheckpoint = async (
 	threadId: string,
 	checkpointId: string,
 	subgraphs?: boolean,
+	kubeconfig?: string,
 ) => {
-	const client = createClient();
+	const client = createClient(kubeconfig);
 	const options: any = {};
 	if (subgraphs !== undefined) {
 		options.subgraphs = subgraphs;
@@ -252,8 +281,9 @@ export const threadRunStream = async (
 	threadId: string,
 	assistantId: string,
 	payload?: RunsInvokePayload,
+	kubeconfig?: string,
 ) => {
-	const client = createClient();
+	const client = createClient(kubeconfig);
 	return await client.runs.stream(threadId, assistantId, {
 		...payload,
 		streamMode: "updates",
@@ -261,7 +291,10 @@ export const threadRunStream = async (
 	});
 };
 
-export const statelessRunWait = async (payload?: RunsInvokePayload) => {
-	const client = createClient();
+export const statelessRunWait = async (
+	payload?: RunsInvokePayload,
+	kubeconfig?: string,
+) => {
+	const client = createClient(kubeconfig);
 	return await client.runs.wait(null, "orca", payload);
 };

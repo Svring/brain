@@ -1,19 +1,19 @@
 "use client";
 
-import { createTRPCContext } from "@trpc/tanstack-react-query";
+import type { QueryClient } from "@tanstack/react-query";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
-import type { DevboxRouter } from "@/lib/trpc/sealos/devbox/devbox-trpc-router";
-import type { ClusterRouter } from "@/lib/trpc/sealos/cluster/cluster-trpc-router";
-import type { LaunchpadRouter } from "@/lib/trpc/sealos/launchpad/launchpad-trpc-router";
-import type { ObjectStorageRouter } from "@/lib/trpc/sealos/objectstorage/objectstorage-trpc-router";
+import { createTRPCContext } from "@trpc/tanstack-react-query";
+import { useState } from "react";
+import { useAuthState } from "@/contexts/auth/auth-context";
 import type { ProjectRouter } from "@/lib/trpc/brain/project/project-trpc-router";
 import type { K8sRouter } from "@/lib/trpc/k8s/k8s-trpc-router";
 import type { LanggraphRouter } from "@/lib/trpc/langgraph/langgraph-trpc-router";
-import type { CostCenterRouter } from "@/lib/trpc/sealos/cost-center/cost-center-trpc-router";
 import type { AiProxyRouter } from "@/lib/trpc/sealos/ai-proxy/ai-proxy-trpc-router";
-import { useState } from "react";
-import { useAuthState } from "@/contexts/auth/auth-context";
-import { QueryClient } from "@tanstack/react-query";
+import type { ClusterRouter } from "@/lib/trpc/sealos/cluster/cluster-trpc-router";
+import type { CostCenterRouter } from "@/lib/trpc/sealos/cost-center/cost-center-trpc-router";
+import type { DevboxRouter } from "@/lib/trpc/sealos/devbox/devbox-trpc-router";
+import type { LaunchpadRouter } from "@/lib/trpc/sealos/launchpad/launchpad-trpc-router";
+import type { ObjectStorageRouter } from "@/lib/trpc/sealos/objectstorage/objectstorage-trpc-router";
 
 export const devboxClient = createTRPCContext<DevboxRouter>();
 export const clusterClient = createTRPCContext<ClusterRouter>();
@@ -171,6 +171,9 @@ export default function TRPCProvider({
         httpBatchLink({
           url: "/api/trpc/langgraph",
           maxURLLength: 6000,
+          headers: () => ({
+            kubeconfig: auth.kubeconfig,
+          }),
         }),
       ],
     })
