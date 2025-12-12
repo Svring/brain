@@ -26,7 +26,7 @@ RUN pnpm install
 # Copy the rest of the project files
 COPY . .
 # Build the Next.js app (skip linting for Docker build)
-RUN pnpm build --turbopack
+RUN pnpm build
 
 # Stage 2: Run the Next.js app
 FROM node:22-alpine
