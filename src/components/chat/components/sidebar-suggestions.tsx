@@ -65,9 +65,6 @@ export default function SidebarSuggestions({
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (prevIsLoadingRef.current === true && isLoading === false) {
-        console.log(
-          "SidebarSuggestions - Loading state changed from true to false"
-        );
         setIsFetchingSuggestions(true);
         try {
           const response = await statelessRunWait(

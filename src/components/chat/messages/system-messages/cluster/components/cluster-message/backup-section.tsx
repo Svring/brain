@@ -1,26 +1,27 @@
 "use client";
 
-import React, { useState } from "react";
 import {
-  DatabaseBackup,
-  Database,
-  Plus,
-  Trash2,
-  RotateCcw,
   Check,
+  Database,
+  DatabaseBackup,
+  Plus,
+  RotateCcw,
+  Trash2,
   X,
 } from "lucide-react";
-import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { useClusterBackup } from "@/hooks/sealos/cluster/use-cluster-backup";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type React from "react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
-import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
+import { useClusterBackup } from "@/hooks/sealos/cluster/use-cluster-backup";
+import type { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface BackupSectionProps {
   target: CustomResourceTarget;
@@ -44,8 +45,6 @@ export const BackupPopoverContent: React.FC<{
     handleDeleteBackup,
     handleRestoreBackup,
   } = useClusterBackup(target);
-
-  console.log("backups", backups);
 
   const formatShortDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {

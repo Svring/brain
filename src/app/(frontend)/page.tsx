@@ -32,9 +32,7 @@ export default function Page() {
 
       // Case 2: Handle sessionId and args logic
       if (sessionId) {
-        console.log("sessionId", sessionId);
         const data = await searchThreads({ sessionId }, auth?.kubeconfig);
-        console.log("data", data);
         if (data.length > 0) {
           const homeUrl = new URL("/home", window.location.origin);
           homeUrl.searchParams.set("threadId", data[0]?.thread_id);
