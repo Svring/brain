@@ -1,13 +1,14 @@
-import React, { useState, useMemo } from "react";
-import { FileText, ExternalLink, Loader2 } from "lucide-react";
+import { LazyLog } from "@melloware/react-logviewer";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { ExternalLink, FileText, Loader2 } from "lucide-react";
+import type React from "react";
+import { useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { LazyLog } from "@melloware/react-logviewer";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 interface LogChartProps {
   logsData: any;
@@ -19,8 +20,6 @@ export const LogChart: React.FC<LogChartProps> = ({
   isLoading = false,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  console.log("logsData", logsData);
 
   // Process logs data into display format
   const allLogs = useMemo(() => {
