@@ -377,10 +377,10 @@ export default function HomePage() {
             className="flex-shrink-0"
           >
             <Hero
-              heroTitle="Sealos Brain"
-              subtitle="Let development get back to basics - focus on writing code, and let the cloud handle the rest."
-              titleClassName="text-4xl md:text-5xl font-extrabold"
-              subtitleClassName="text-md md:text-lg max-w-[600px]"
+              heroTitle="Time to ship anything"
+              subtitle="No YAML. No Dockerfile. No CI/CD. Describe what you need in plain English and deploy to production in seconds—powered by Kubernetes, without the complexity."
+              titleClassName="text-5xl font-extrabold"
+              subtitleClassName="text-md md:text-lg max-w-[800px]"
               actionsClassName="mt-2"
             />
           </motion.div>
