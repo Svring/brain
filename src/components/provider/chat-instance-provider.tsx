@@ -351,7 +351,11 @@ export function ProjectChatInstanceProvider({
   };
 
   const value: ChatInstanceContextType = {
-    ...streamValue,
+    // Only spread the properties we need from streamValue
+    isLoading: streamValue.isLoading,
+    stop: streamValue.stop,
+    interrupt: streamValue.interrupt,
+    messages: streamValue.messages,
     resourceTarget: null,
     threadId: validThreadId,
     threads: chatInstance?.threads || [],
@@ -600,7 +604,11 @@ export function ResourceChatInstanceProvider({
   };
 
   const value: ChatInstanceContextType = {
-    ...streamValue,
+    // Only spread the properties we need from streamValue
+    isLoading: streamValue.isLoading,
+    stop: streamValue.stop,
+    interrupt: streamValue.interrupt,
+    messages: streamValue.messages,
     resourceTarget,
     threadId: validThreadId,
     threads: chatInstance?.threads || [],

@@ -131,10 +131,10 @@ export function AiMessages({
 
     // Add "Thinking..." indicator when streaming
     if (
-      (isLoading &&
-        (messages.at(-1)?.type === "human" ||
-          messages.at(-1)?.type === "system")) ||
-      messages.at(-1)?.content === ""
+      isLoading &&
+      (messages.at(-1)?.type === "human" ||
+        messages.at(-1)?.type === "system" ||
+        messages.at(-1)?.content === "")
     ) {
       messageElements.push(
         <div key="thinking-indicator" className="mb-2">
@@ -257,7 +257,7 @@ export function AiMessages({
     }
 
     return messageElements;
-  }, [messages, interruptData, isInterruptExpanded]);
+  }, [messages, interruptData, isInterruptExpanded, isLoading]);
 
   const contentHash = useMemo(() => {
     // Prevent error if messages is undefined or not an array

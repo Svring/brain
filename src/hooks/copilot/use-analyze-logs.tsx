@@ -2,14 +2,12 @@
 
 import { useCallback } from "react";
 import { toast } from "sonner";
-import { useResourceLogs } from "@/hooks/sealos/resource/use-resource-logs";
-import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
-import { useStreamContext } from "@/components/provider/stream-provider";
-import { useThreads } from "@/components/provider/thread-provider";
 import { useChatActions } from "@/contexts/chat/chat-context";
-import {
-  CustomResourceTarget,
+import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
+import { useResourceLogs } from "@/hooks/sealos/resource/use-resource-logs";
+import type {
   BuiltinResourceTarget,
+  CustomResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 const analyzeLogsPrompt = `
@@ -105,7 +103,9 @@ export function useAnalyzeLogs(
     const systemMessage3 = {
       id: `logs-system-3-${Date.now()}`,
       type: "system" as const,
-      content: `Below is all the data needed to be analyzed, you need to identify any problem and report back to the user and advice fix.\n\n${JSON.stringify(logsData)}`,
+      content: `Below is all the data needed to be analyzed, you need to identify any problem and report back to the user and advice fix.\n\n${JSON.stringify(
+        logsData
+      )}`,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };

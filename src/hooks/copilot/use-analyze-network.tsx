@@ -1,21 +1,19 @@
 "use client";
 
 import React, { useCallback } from "react";
-import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useChatActions } from "@/contexts/chat/chat-context";
+import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 import { useContainerStatus } from "@/hooks/sealos/network/use-container-status";
 import { useNetworkStatus } from "@/hooks/sealos/network/use-network-status";
-import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
-import { useStreamContext } from "@/components/provider/stream-provider";
-import { useThreads } from "@/components/provider/thread-provider";
-import { useChatActions } from "@/contexts/chat/chat-context";
-import {
-  extractContainerPorts,
-  ContainerPortsResult,
-} from "@/lib/sealos/services/ports/ports-utils";
-import {
-  CustomResourceTarget,
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import type {
   BuiltinResourceTarget,
+  CustomResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import {
+  type ContainerPortsResult,
+  extractContainerPorts,
+} from "@/lib/sealos/services/ports/ports-utils";
 
 const analyzeNetworkPrompt = `
 **Identity**
@@ -90,7 +88,6 @@ When analyzing **devbox resources** (not launchpad resources like 'deployment' o
 export function useDiagnoseNetwork(
   target: CustomResourceTarget | BuiltinResourceTarget
 ) {
-  const { submitWithContext } = useStreamContext();
   const { addPendingMessage, triggerPendingMessages } = useChatActions();
 
   // Get container ports data for network diagnosis

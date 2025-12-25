@@ -3,37 +3,36 @@
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { useDebounce } from "@reactuses/core";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUp, Hammer, SendHorizonal, Square } from "lucide-react";
+import { ArrowUp, Hammer, Pause, SendHorizonal, Square } from "lucide-react";
 import React from "react";
 // import { useProjectCreateDialog } from "@/hooks/brain/use-project-create-dialog";
-import { Spinner } from "@/components/ui/spinner";
 import { Typewriter } from "@/components/ui/typewriter-text";
 import {
-	TOOL_CATEGORY_MAP,
-	type ToolCategoryKey,
+  TOOL_CATEGORY_MAP,
+  type ToolCategoryKey,
 } from "@/lib/langgraph/langgraph-constant/langgraph-constant-tools";
 
 // Utility function for className merging
 const cn = (...classes: (string | undefined | null | false)[]) =>
-	classes.filter(Boolean).join(" ");
+  classes.filter(Boolean).join(" ");
 
 // Textarea Component
 interface TextareaProps
-	extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-	className?: string;
+  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  className?: string;
 }
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-	({ className, ...props }, ref) => (
-		<textarea
-			className={cn(
-				"flex min-h-[44px] w-full resize-none rounded-md border-none bg-transparent px-3 py-2.5 text-gray-100 placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
-				className,
-			)}
-			ref={ref}
-			rows={1}
-			{...props}
-		/>
-	),
+  ({ className, ...props }, ref) => (
+    <textarea
+      className={cn(
+        "flex min-h-[44px] w-full resize-none rounded-md border-none bg-transparent px-3 py-2.5 text-gray-100 placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
+        className
+      )}
+      ref={ref}
+      rows={1}
+      {...props}
+    />
+  )
 );
 Textarea.displayName = "Textarea";
 
@@ -42,619 +41,622 @@ const TooltipProvider = TooltipPrimitive.Provider;
 const Tooltip = TooltipPrimitive.Root;
 const TooltipTrigger = TooltipPrimitive.Trigger;
 const TooltipContent = React.forwardRef<
-	React.ElementRef<typeof TooltipPrimitive.Content>,
-	React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
+  React.ElementRef<typeof TooltipPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
 >(({ className, sideOffset = 4, ...props }, ref) => (
-	<TooltipPrimitive.Content
-		className={cn(
-			"fade-in-0 zoom-in-95 data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 animate-in overflow-hidden rounded-md border border-[#333333] bg-[#1F2023] px-3 py-1.5 text-sm text-white shadow-md data-[state=closed]:animate-out",
-			className,
-		)}
-		ref={ref}
-		sideOffset={sideOffset}
-		{...props}
-	/>
+  <TooltipPrimitive.Content
+    className={cn(
+      "fade-in-0 zoom-in-95 data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 animate-in overflow-hidden rounded-md border border-[#333333] bg-[#1F2023] px-3 py-1.5 text-sm text-white shadow-md data-[state=closed]:animate-out",
+      className
+    )}
+    ref={ref}
+    sideOffset={sideOffset}
+    {...props}
+  />
 ));
 TooltipContent.displayName = TooltipPrimitive.Content.displayName;
 
 // Button Component
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-	variant?: "default" | "outline" | "ghost";
-	size?: "default" | "sm" | "lg" | "icon";
+  variant?: "default" | "outline" | "ghost";
+  size?: "default" | "sm" | "lg" | "icon";
 }
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-	({ className, variant = "default", size = "default", ...props }, ref) => {
-		const variantClasses = {
-			default: "bg-white hover:bg-white/80 text-black",
-			outline: "border border-[#444444] bg-transparent hover:bg-[#3A3A40]",
-			ghost: "bg-transparent hover:bg-[#3A3A40]",
-		};
-		const sizeClasses = {
-			default: "h-10 px-4 py-2",
-			sm: "h-8 px-3 text-sm",
-			lg: "h-12 px-6",
-			icon: "h-8 w-8 rounded-full aspect-square",
-		};
-		return (
-			<button
-				className={cn(
-					"inline-flex items-center justify-center font-medium transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
-					variantClasses[variant],
-					sizeClasses[size],
-					className,
-				)}
-				ref={ref}
-				{...props}
-			/>
-		);
-	},
+  ({ className, variant = "default", size = "default", ...props }, ref) => {
+    const variantClasses = {
+      default: "bg-white hover:bg-white/80 text-black",
+      outline: "border border-[#444444] bg-transparent hover:bg-[#3A3A40]",
+      ghost: "bg-transparent hover:bg-[#3A3A40]",
+    };
+    const sizeClasses = {
+      default: "h-10 px-4 py-2",
+      sm: "h-8 px-3 text-sm",
+      lg: "h-12 px-6",
+      icon: "h-8 w-8 rounded-full aspect-square",
+    };
+    return (
+      <button
+        className={cn(
+          "inline-flex items-center justify-center font-medium transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
+          variantClasses[variant],
+          sizeClasses[size],
+          className
+        )}
+        ref={ref}
+        {...props}
+      />
+    );
+  }
 );
 Button.displayName = "Button";
 
 // PromptInput Context and Components
 interface PromptInputContextType {
-	isLoading: boolean;
-	value: string;
-	setValue: (value: string) => void;
-	maxHeight: number | string;
-	onSubmit?: () => void;
-	disabled?: boolean;
+  isLoading: boolean;
+  value: string;
+  setValue: (value: string) => void;
+  maxHeight: number | string;
+  onSubmit?: () => void;
+  disabled?: boolean;
 }
 const PromptInputContext = React.createContext<PromptInputContextType>({
-	isLoading: false,
-	value: "",
-	setValue: () => {},
-	maxHeight: 240,
-	onSubmit: undefined,
-	disabled: false,
+  isLoading: false,
+  value: "",
+  setValue: () => {},
+  maxHeight: 240,
+  onSubmit: undefined,
+  disabled: false,
 });
 function usePromptInput() {
-	const context = React.useContext(PromptInputContext);
-	if (!context)
-		throw new Error("usePromptInput must be used within a PromptInput");
-	return context;
+  const context = React.useContext(PromptInputContext);
+  if (!context)
+    throw new Error("usePromptInput must be used within a PromptInput");
+  return context;
 }
 
 interface PromptInputProps {
-	isLoading?: boolean;
-	value?: string;
-	onValueChange?: (value: string) => void;
-	maxHeight?: number | string;
-	onSubmit?: () => void;
-	children: React.ReactNode;
-	className?: string;
-	disabled?: boolean;
+  isLoading?: boolean;
+  value?: string;
+  onValueChange?: (value: string) => void;
+  maxHeight?: number | string;
+  onSubmit?: () => void;
+  children: React.ReactNode;
+  className?: string;
+  disabled?: boolean;
 }
 const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(
-	(
-		{
-			className,
-			isLoading = false,
-			maxHeight = 240,
-			value,
-			onValueChange,
-			onSubmit,
-			children,
-			disabled = false,
-		},
-		ref,
-	) => {
-		const [internalValue, setInternalValue] = React.useState(value || "");
-		const handleChange = (newValue: string) => {
-			setInternalValue(newValue);
-			onValueChange?.(newValue);
-		};
-		return (
-			<TooltipProvider>
-				<PromptInputContext.Provider
-					value={{
-						isLoading,
-						value: value ?? internalValue,
-						setValue: onValueChange ?? handleChange,
-						maxHeight,
-						onSubmit,
-						disabled,
-					}}
-				>
-					<div
-						className={cn(
-							"rounded-xl border border-[#444444] bg-background-secondary p-2 shadow-[0_8px_30px_rgba(0,0,0,0.24)] transition-all duration-300 focus-within:border-border-primary flex flex-col",
-							isLoading &&
-								"border border-border-primary animate-shimmer-border",
-							className,
-						)}
-						ref={ref}
-					>
-						{children}
-					</div>
-				</PromptInputContext.Provider>
-			</TooltipProvider>
-		);
-	},
+  (
+    {
+      className,
+      isLoading = false,
+      maxHeight = 240,
+      value,
+      onValueChange,
+      onSubmit,
+      children,
+      disabled = false,
+    },
+    ref
+  ) => {
+    const [internalValue, setInternalValue] = React.useState(value || "");
+    const handleChange = (newValue: string) => {
+      setInternalValue(newValue);
+      onValueChange?.(newValue);
+    };
+    return (
+      <TooltipProvider>
+        <PromptInputContext.Provider
+          value={{
+            isLoading,
+            value: value ?? internalValue,
+            setValue: onValueChange ?? handleChange,
+            maxHeight,
+            onSubmit,
+            disabled,
+          }}
+        >
+          <div
+            className={cn(
+              "rounded-xl border border-[#444444] bg-background-secondary p-2 shadow-[0_8px_30px_rgba(0,0,0,0.24)] transition-all duration-300 focus-within:border-border-primary flex flex-col",
+              isLoading &&
+                "border border-border-primary animate-shimmer-border",
+              className
+            )}
+            ref={ref}
+          >
+            {children}
+          </div>
+        </PromptInputContext.Provider>
+      </TooltipProvider>
+    );
+  }
 );
 PromptInput.displayName = "PromptInput";
 
 interface PromptInputTextareaProps {
-	disableAutosize?: boolean;
-	placeholder?: string;
+  disableAutosize?: boolean;
+  placeholder?: string;
 }
 const PromptInputTextarea = React.forwardRef<
-	HTMLTextAreaElement,
-	PromptInputTextareaProps & React.ComponentProps<typeof Textarea>
+  HTMLTextAreaElement,
+  PromptInputTextareaProps & React.ComponentProps<typeof Textarea>
 >(
-	(
-		{ className, onKeyDown, disableAutosize = false, placeholder, ...props },
-		ref,
-	) => {
-		const { value, setValue, maxHeight, onSubmit, disabled } = usePromptInput();
-		const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-		const [localValue, setLocalValue] = React.useState(value);
-		const [isComposing, setIsComposing] = React.useState(false);
-		const debouncedValue = useDebounce(localValue, 100);
+  (
+    { className, onKeyDown, disableAutosize = false, placeholder, ...props },
+    ref
+  ) => {
+    const { value, setValue, maxHeight, onSubmit, disabled } = usePromptInput();
+    const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+    const [localValue, setLocalValue] = React.useState(value);
+    const [isComposing, setIsComposing] = React.useState(false);
+    const debouncedValue = useDebounce(localValue, 100);
 
-		React.useEffect(() => {
-			if (disableAutosize || !textareaRef.current) return;
-			textareaRef.current.style.height = "auto";
-			textareaRef.current.style.height =
-				typeof maxHeight === "number"
-					? `${Math.min(textareaRef.current.scrollHeight, maxHeight)}px`
-					: `min(${textareaRef.current.scrollHeight}px, ${maxHeight})`;
-		}, [localValue, maxHeight, disableAutosize]);
+    React.useEffect(() => {
+      if (disableAutosize || !textareaRef.current) return;
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height =
+        typeof maxHeight === "number"
+          ? `${Math.min(textareaRef.current.scrollHeight, maxHeight)}px`
+          : `min(${textareaRef.current.scrollHeight}px, ${maxHeight})`;
+    }, [localValue, maxHeight, disableAutosize]);
 
-		// Sync debounced local input into the shared context to avoid re-renders on every keystroke
-		React.useEffect(() => {
-			if (debouncedValue !== value) {
-				setValue(debouncedValue);
-			}
-			// eslint-disable-next-line react-hooks/exhaustive-deps
-		}, [debouncedValue, setValue]);
+    // Sync debounced local input into the shared context to avoid re-renders on every keystroke
+    React.useEffect(() => {
+      if (debouncedValue !== value) {
+        setValue(debouncedValue);
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [debouncedValue, setValue]);
 
-		// When the external value changes (e.g., cleared after send), reflect it locally
-		React.useEffect(() => {
-			if (value !== localValue) {
-				setLocalValue(value);
-				// Also update the textarea ref directly for immediate visual feedback
-				if (textareaRef.current) {
-					textareaRef.current.value = value;
-					// Reset height when clearing
-					if (value === "") {
-						textareaRef.current.style.height = "auto";
-					}
-				}
-			}
-			// eslint-disable-next-line react-hooks/exhaustive-deps
-		}, [value]);
+    // When the external value changes (e.g., cleared after send), reflect it locally
+    React.useEffect(() => {
+      if (value !== localValue) {
+        setLocalValue(value);
+        // Also update the textarea ref directly for immediate visual feedback
+        if (textareaRef.current) {
+          textareaRef.current.value = value;
+          // Reset height when clearing
+          if (value === "") {
+            textareaRef.current.style.height = "auto";
+          }
+        }
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [value]);
 
-		// Add effect to sync when the textarea is manually cleared
-		React.useEffect(() => {
-			if (
-				textareaRef.current &&
-				textareaRef.current.value === "" &&
-				localValue !== ""
-			) {
-				setLocalValue("");
-			}
-		});
+    // Add effect to sync when the textarea is manually cleared
+    React.useEffect(() => {
+      if (
+        textareaRef.current &&
+        textareaRef.current.value === "" &&
+        localValue !== ""
+      ) {
+        setLocalValue("");
+      }
+    });
 
-		const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-			if (e.key === "Enter" && !e.shiftKey && !isComposing) {
-				e.preventDefault();
-				// Immediately sync the current local value before submitting
-				if (localValue !== value) {
-					setValue(localValue);
-				}
-				onSubmit?.();
-			}
-			if (e.key === "Escape") {
-				textareaRef.current?.blur();
-			}
-			onKeyDown?.(e);
-		};
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === "Enter" && !e.shiftKey && !isComposing) {
+        e.preventDefault();
+        // Immediately sync the current local value before submitting
+        if (localValue !== value) {
+          setValue(localValue);
+        }
+        onSubmit?.();
+      }
+      if (e.key === "Escape") {
+        textareaRef.current?.blur();
+      }
+      onKeyDown?.(e);
+    };
 
-		const handleCompositionStart = () => {
-			setIsComposing(true);
-		};
+    const handleCompositionStart = () => {
+      setIsComposing(true);
+    };
 
-		const handleCompositionEnd = () => {
-			setIsComposing(false);
-		};
+    const handleCompositionEnd = () => {
+      setIsComposing(false);
+    };
 
-		return (
-			<Textarea
-				className={cn("", className)}
-				disabled={disabled}
-				onChange={(e) => setLocalValue(e.target.value)}
-				onKeyDown={handleKeyDown}
-				onCompositionStart={handleCompositionStart}
-				onCompositionEnd={handleCompositionEnd}
-				placeholder={placeholder}
-				ref={(node) => {
-					textareaRef.current = node;
-					if (typeof ref === "function") ref(node);
-					else if (ref)
-						(
-							ref as React.MutableRefObject<HTMLTextAreaElement | null>
-						).current = node;
-				}}
-				value={localValue}
-				{...props}
-			/>
-		);
-	},
+    return (
+      <Textarea
+        className={cn("", className)}
+        disabled={disabled}
+        onChange={(e) => setLocalValue(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onCompositionStart={handleCompositionStart}
+        onCompositionEnd={handleCompositionEnd}
+        placeholder={placeholder}
+        ref={(node) => {
+          textareaRef.current = node;
+          if (typeof ref === "function") ref(node);
+          else if (ref)
+            (
+              ref as React.MutableRefObject<HTMLTextAreaElement | null>
+            ).current = node;
+        }}
+        value={localValue}
+        {...props}
+      />
+    );
+  }
 );
 PromptInputTextarea.displayName = "PromptInputTextarea";
 
 type PromptInputActionsProps = React.HTMLAttributes<HTMLDivElement>;
 const PromptInputActions: React.FC<PromptInputActionsProps> = ({
-	children,
-	className,
-	...props
+  children,
+  className,
+  ...props
 }) => (
-	<div className={cn("flex items-center gap-2", className)} {...props}>
-		{children}
-	</div>
+  <div className={cn("flex items-center gap-2", className)} {...props}>
+    {children}
+  </div>
 );
 
 interface PromptInputActionProps extends React.ComponentProps<typeof Tooltip> {
-	tooltip: React.ReactNode;
-	children: React.ReactNode;
-	side?: "top" | "bottom" | "left" | "right";
-	className?: string;
+  tooltip: React.ReactNode;
+  children: React.ReactNode;
+  side?: "top" | "bottom" | "left" | "right";
+  className?: string;
 }
 const PromptInputAction: React.FC<PromptInputActionProps> = ({
-	tooltip,
-	children,
-	className,
-	side = "bottom",
-	...props
+  tooltip,
+  children,
+  className,
+  side = "bottom",
+  ...props
 }) => {
-	const { disabled } = usePromptInput();
-	return (
-		<Tooltip {...props}>
-			<TooltipTrigger asChild disabled={disabled}>
-				{children}
-			</TooltipTrigger>
-			<TooltipContent className={className} side={side}>
-				{tooltip}
-			</TooltipContent>
-		</Tooltip>
-	);
+  const { disabled, isLoading } = usePromptInput();
+  // When loading, never disable the trigger to allow stop button clicks
+  // Only disable when not loading and explicitly disabled
+  const triggerProps = isLoading ? {} : { disabled: disabled };
+  return (
+    <Tooltip {...props}>
+      <TooltipTrigger asChild {...triggerProps}>
+        {children}
+      </TooltipTrigger>
+      <TooltipContent className={className} side={side}>
+        {tooltip}
+      </TooltipContent>
+    </Tooltip>
+  );
 };
 
 // Main PromptInputBox Component
 interface PromptInputBoxProps {
-	onSend?: (message: string) => void;
-	onStop?: () => void;
-	isLoading?: boolean;
-	placeholder?: string;
-	className?: string;
-	textareaRef?: React.Ref<HTMLTextAreaElement>;
-	autoFocus?: boolean;
-	disableInput?: boolean;
-	disableSend?: boolean;
-	initialValue?: string;
-	exhibition?: boolean;
-	toolCategory?: ToolCategoryKey;
+  onSend?: (message: string) => void;
+  onStop?: () => void;
+  isLoading?: boolean;
+  placeholder?: string;
+  className?: string;
+  textareaRef?: React.Ref<HTMLTextAreaElement>;
+  autoFocus?: boolean;
+  disableInput?: boolean;
+  disableSend?: boolean;
+  initialValue?: string;
+  exhibition?: boolean;
+  toolCategory?: ToolCategoryKey;
 }
 export const PromptInputBox = React.forwardRef(
-	(props: PromptInputBoxProps, ref: React.Ref<HTMLDivElement>) => {
-		const {
-			onSend = () => {},
-			onStop = () => {},
-			isLoading = false,
-			placeholder = "Type your message here...",
-			className,
-			textareaRef,
-			autoFocus = false,
-			disableInput = false,
-			disableSend = false,
-			initialValue,
-			exhibition = false,
-			toolCategory,
-		} = props;
+  (props: PromptInputBoxProps, ref: React.Ref<HTMLDivElement>) => {
+    const {
+      onSend = () => {},
+      onStop = () => {},
+      isLoading = false,
+      placeholder = "Type your message here...",
+      className,
+      textareaRef,
+      autoFocus = false,
+      disableInput = false,
+      disableSend = false,
+      initialValue,
+      exhibition = false,
+      toolCategory,
+    } = props;
 
-		// const { openDialog, CreateProjectDialog } = useProjectCreateDialog();
-		const [input, setInput] = React.useState(initialValue || "");
-		const [isFocused, setIsFocused] = React.useState(false);
-		const [showTypewriter, setShowTypewriter] = React.useState(false);
-		const [completedSentence, setCompletedSentence] = React.useState("");
-		const [currentTypewriterSentence, setCurrentTypewriterSentence] =
-			React.useState("");
-		const [isTypewriterDeleting, setIsTypewriterDeleting] =
-			React.useState(false);
-		const promptBoxRef = React.useRef<HTMLDivElement>(null);
-		const internalTextareaRef = React.useRef<HTMLTextAreaElement>(null);
-		// For tracking previous loading state
-		const prevLoading = React.useRef(isLoading);
+    // const { openDialog, CreateProjectDialog } = useProjectCreateDialog();
+    const [input, setInput] = React.useState(initialValue || "");
+    const [isFocused, setIsFocused] = React.useState(false);
+    const [showTypewriter, setShowTypewriter] = React.useState(false);
+    const [completedSentence, setCompletedSentence] = React.useState("");
+    const [currentTypewriterSentence, setCurrentTypewriterSentence] =
+      React.useState("");
+    const [isTypewriterDeleting, setIsTypewriterDeleting] =
+      React.useState(false);
+    const promptBoxRef = React.useRef<HTMLDivElement>(null);
+    const internalTextareaRef = React.useRef<HTMLTextAreaElement>(null);
+    // For tracking previous loading state
+    const prevLoading = React.useRef(isLoading);
 
-		// Exhibition texts for typewriter effect
-		const exhibitionTexts = [
-			"Deploy n8n from app store.",
-			"Set up a development environment for a next.js project.",
-			"Deploy nginx from dockerhub.",
-		];
+    // Exhibition texts for typewriter effect
+    const exhibitionTexts = [
+      "Deploy n8n from app store.",
+      "Set up a development environment for a next.js project.",
+      "Deploy nginx from dockerhub.",
+    ];
 
-		// Initialize input with initialValue or placeholder (as real text) if provided and input is empty
-		React.useEffect(() => {
-			if (!input) {
-				if (initialValue) {
-					setInput(initialValue);
-				} else if (placeholder) {
-					setInput(placeholder);
-				}
-			}
-		}, [initialValue, placeholder, input]);
+    // Initialize input with initialValue or placeholder (as real text) if provided and input is empty
+    React.useEffect(() => {
+      if (!input) {
+        if (initialValue) {
+          setInput(initialValue);
+        } else if (placeholder) {
+          setInput(placeholder);
+        }
+      }
+    }, [initialValue, placeholder, input]);
 
-		// Clear typewriter states when user manually types content
-		React.useEffect(() => {
-			if (input.trim() && input !== currentTypewriterSentence) {
-				setCompletedSentence("");
-				setCurrentTypewriterSentence("");
-			}
-		}, [input, currentTypewriterSentence]);
+    // Clear typewriter states when user manually types content
+    React.useEffect(() => {
+      if (input.trim() && input !== currentTypewriterSentence) {
+        setCompletedSentence("");
+        setCurrentTypewriterSentence("");
+      }
+    }, [input, currentTypewriterSentence]);
 
-		// Focus when loading finishes
-		React.useEffect(() => {
-			if (prevLoading.current && !isLoading) {
-				internalTextareaRef.current?.focus();
-			}
-			prevLoading.current = isLoading;
-		}, [isLoading]);
+    // Focus when loading finishes
+    React.useEffect(() => {
+      if (prevLoading.current && !isLoading) {
+        internalTextareaRef.current?.focus();
+      }
+      prevLoading.current = isLoading;
+    }, [isLoading]);
 
-		// Focus when autoFocus becomes true
-		React.useEffect(() => {
-			if (autoFocus) {
-				internalTextareaRef.current?.focus();
-			}
-		}, [autoFocus]);
+    // Focus when autoFocus becomes true
+    React.useEffect(() => {
+      if (autoFocus) {
+        internalTextareaRef.current?.focus();
+      }
+    }, [autoFocus]);
 
-		// Show typewriter with 1s delay when conditions are met
-		React.useEffect(() => {
-			if (exhibition && !input.trim() && !isFocused) {
-				const timer = setTimeout(() => {
-					setShowTypewriter(true);
-				}, 1500);
-				return () => clearTimeout(timer);
-			} else {
-				setShowTypewriter(false);
-			}
-		}, [exhibition, input, isFocused]);
+    // Show typewriter with 1s delay when conditions are met
+    React.useEffect(() => {
+      if (exhibition && !input.trim() && !isFocused) {
+        const timer = setTimeout(() => {
+          setShowTypewriter(true);
+        }, 1500);
+        return () => clearTimeout(timer);
+      } else {
+        setShowTypewriter(false);
+      }
+    }, [exhibition, input, isFocused]);
 
-		// Focus prompt and insert typed character when user starts typing anywhere
-		React.useEffect(() => {
-			const handleGlobalKeydown = (event: KeyboardEvent) => {
-				if (disableInput) return;
+    // Focus prompt and insert typed character when user starts typing anywhere
+    React.useEffect(() => {
+      const handleGlobalKeydown = (event: KeyboardEvent) => {
+        if (disableInput) return;
 
-				const target = event.target as HTMLElement | null;
-				if (target) {
-					const tagName = target.tagName;
-					const isEditable = (target as any).isContentEditable === true;
-					if (tagName === "INPUT" || tagName === "TEXTAREA" || isEditable) {
-						return;
-					}
-				}
+        const target = event.target as HTMLElement | null;
+        if (target) {
+          const tagName = target.tagName;
+          const isEditable = (target as any).isContentEditable === true;
+          if (tagName === "INPUT" || tagName === "TEXTAREA" || isEditable) {
+            return;
+          }
+        }
 
-				if (event.metaKey || event.ctrlKey || event.altKey) return;
-				if (event.key.length !== 1) return; // printable characters only
+        if (event.metaKey || event.ctrlKey || event.altKey) return;
+        if (event.key.length !== 1) return; // printable characters only
 
-				// Focus the textarea and append the pressed key
-				internalTextareaRef.current?.focus();
-				setInput((prev) => `${prev}${event.key}`);
-				event.preventDefault();
-			};
+        // Focus the textarea and append the pressed key
+        internalTextareaRef.current?.focus();
+        setInput((prev) => `${prev}${event.key}`);
+        event.preventDefault();
+      };
 
-			window.addEventListener("keydown", handleGlobalKeydown);
-			return () => window.removeEventListener("keydown", handleGlobalKeydown);
-		}, [disableInput]);
+      window.addEventListener("keydown", handleGlobalKeydown);
+      return () => window.removeEventListener("keydown", handleGlobalKeydown);
+    }, [disableInput]);
 
-		const handleSubmit = React.useCallback(() => {
-			const liveText = (internalTextareaRef.current?.value ?? input).trim();
-			if (liveText && !disableSend) {
-				// Send the message
-				onSend(liveText);
+    const handleSubmit = React.useCallback(() => {
+      const liveText = (internalTextareaRef.current?.value ?? input).trim();
+      if (liveText && !disableSend) {
+        // Send the message
+        onSend(liveText);
 
-				// Clear all state and force immediate UI clearing
-				setInput("");
+        // Clear all state and force immediate UI clearing
+        setInput("");
 
-				// Force immediate clearing of the textarea to prevent race conditions
-				if (internalTextareaRef.current) {
-					internalTextareaRef.current.value = "";
-					internalTextareaRef.current.style.height = "auto";
-				}
-			}
-		}, [input, onSend, disableSend]);
+        // Force immediate clearing of the textarea to prevent race conditions
+        if (internalTextareaRef.current) {
+          internalTextareaRef.current.value = "";
+          internalTextareaRef.current.style.height = "auto";
+        }
+      }
+    }, [input, onSend, disableSend]);
 
-		const hasContent = input.trim() !== "";
-		const hasCompletedSentence = completedSentence.trim() !== "";
-		const canSend = hasContent || hasCompletedSentence;
+    const hasContent = input.trim() !== "";
+    const hasCompletedSentence = completedSentence.trim() !== "";
+    const canSend = hasContent || hasCompletedSentence;
 
-		const handleSentenceComplete = React.useCallback((sentence: string) => {
-			setCompletedSentence(sentence);
-		}, []);
+    const handleSentenceComplete = React.useCallback((sentence: string) => {
+      setCompletedSentence(sentence);
+    }, []);
 
-		const handleTypewriterTextChange = React.useCallback(
-			(displayText: string, fullSentence: string, isDeleting: boolean) => {
-				setCurrentTypewriterSentence(fullSentence);
-				setIsTypewriterDeleting(isDeleting);
-			},
-			[],
-		);
+    const handleTypewriterTextChange = React.useCallback(
+      (displayText: string, fullSentence: string, isDeleting: boolean) => {
+        setCurrentTypewriterSentence(fullSentence);
+        setIsTypewriterDeleting(isDeleting);
+      },
+      []
+    );
 
-		const handleTypewriterDeleteStart = React.useCallback(() => {
-			setCompletedSentence("");
-		}, []);
+    const handleTypewriterDeleteStart = React.useCallback(() => {
+      setCompletedSentence("");
+    }, []);
 
-		const handleInputFocus = React.useCallback(() => {
-			setIsFocused(true);
-			// Only fill if exhibition is enabled, typewriter is not deleting and there's a complete sentence available
-			if (
-				exhibition &&
-				currentTypewriterSentence.trim() &&
-				!isTypewriterDeleting &&
-				(!input.trim() || input === placeholder)
-			) {
-				setInput(currentTypewriterSentence);
-				setCompletedSentence(currentTypewriterSentence);
-				setShowTypewriter(false);
-			}
-		}, [
-			exhibition,
-			currentTypewriterSentence,
-			isTypewriterDeleting,
-			input,
-			placeholder,
-		]);
-		const handleTypewriterSend = React.useCallback(() => {
-			if (completedSentence.trim()) {
-				onSend(completedSentence.trim());
-				// Clear sending
-				setInput("");
-				setCompletedSentence("");
-				setCurrentTypewriterSentence("");
-				setIsTypewriterDeleting(false);
-				if (internalTextareaRef.current) {
-					internalTextareaRef.current.value = "";
-					internalTextareaRef.current.style.height = "auto";
-				}
-			}
-		}, [completedSentence, onSend]);
+    const handleInputFocus = React.useCallback(() => {
+      setIsFocused(true);
+      // Only fill if exhibition is enabled, typewriter is not deleting and there's a complete sentence available
+      if (
+        exhibition &&
+        currentTypewriterSentence.trim() &&
+        !isTypewriterDeleting &&
+        (!input.trim() || input === placeholder)
+      ) {
+        setInput(currentTypewriterSentence);
+        setCompletedSentence(currentTypewriterSentence);
+        setShowTypewriter(false);
+      }
+    }, [
+      exhibition,
+      currentTypewriterSentence,
+      isTypewriterDeleting,
+      input,
+      placeholder,
+    ]);
+    const handleTypewriterSend = React.useCallback(() => {
+      if (completedSentence.trim()) {
+        onSend(completedSentence.trim());
+        // Clear sending
+        setInput("");
+        setCompletedSentence("");
+        setCurrentTypewriterSentence("");
+        setIsTypewriterDeleting(false);
+        if (internalTextareaRef.current) {
+          internalTextareaRef.current.value = "";
+          internalTextareaRef.current.style.height = "auto";
+        }
+      }
+    }, [completedSentence, onSend]);
 
-		// Get tools for the specified category
-		const tools = toolCategory ? TOOL_CATEGORY_MAP[toolCategory] : [];
+    // Get tools for the specified category
+    const tools = toolCategory ? TOOL_CATEGORY_MAP[toolCategory] : [];
 
-		return (
-			<>
-				<PromptInput
-					className={cn(
-						"w-full border-border shadow-[0_8px_30px_rgba(0,0,0,0.24)] transition-all duration-300 ease-in-out",
-						className,
-					)}
-					disabled={disableInput}
-					isLoading={isLoading}
-					onSubmit={handleSubmit}
-					onValueChange={setInput}
-					ref={ref || promptBoxRef}
-					value={input}
-				>
-					<div className="flex-1 relative">
-						<PromptInputTextarea
-							placeholder={placeholder}
-							className="flex-1"
-							onFocus={handleInputFocus}
-							onBlur={() => setIsFocused(false)}
-							ref={(node) => {
-								internalTextareaRef.current = node;
-								if (typeof textareaRef === "function") textareaRef(node);
-								else if (textareaRef)
-									(
-										textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>
-									).current = node;
-							}}
-						/>
-						{showTypewriter && (
-							<div className="absolute inset-0 pointer-events-none flex items-start px-3 py-2.5">
-								<Typewriter
-									text={exhibitionTexts}
-									speed={50}
-									deleteSpeed={50}
-									delay={2000}
-									loop={true}
-									className="text-gray-400"
-									onSentenceComplete={handleSentenceComplete}
-									onTextChange={handleTypewriterTextChange}
-									onDeleteStart={handleTypewriterDeleteStart}
-								/>
-							</div>
-						)}
-					</div>
+    return (
+      <>
+        <PromptInput
+          className={cn(
+            "w-full border-border shadow-[0_8px_30px_rgba(0,0,0,0.24)] transition-all duration-300 ease-in-out",
+            className
+          )}
+          disabled={disableInput}
+          isLoading={isLoading}
+          onSubmit={handleSubmit}
+          onValueChange={setInput}
+          ref={ref || promptBoxRef}
+          value={input}
+        >
+          <div className="flex-1 relative">
+            <PromptInputTextarea
+              placeholder={placeholder}
+              className="flex-1"
+              onFocus={handleInputFocus}
+              onBlur={() => setIsFocused(false)}
+              ref={(node) => {
+                internalTextareaRef.current = node;
+                if (typeof textareaRef === "function") textareaRef(node);
+                else if (textareaRef)
+                  (
+                    textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>
+                  ).current = node;
+              }}
+            />
+            {showTypewriter && (
+              <div className="absolute inset-0 pointer-events-none flex items-start px-3 py-2.5">
+                <Typewriter
+                  text={exhibitionTexts}
+                  speed={50}
+                  deleteSpeed={50}
+                  delay={2000}
+                  loop={true}
+                  className="text-gray-400"
+                  onSentenceComplete={handleSentenceComplete}
+                  onTextChange={handleTypewriterTextChange}
+                  onDeleteStart={handleTypewriterDeleteStart}
+                />
+              </div>
+            )}
+          </div>
 
-					<PromptInputActions className="flex items-end justify-between gap-2 p-0 mt-auto">
-						{/* Tool category indicator */}
-						<div className="flex items-center">
-							{toolCategory && (
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<span className="text-xs text-muted-foreground bg-background-secondary px-2 py-1 rounded flex items-center gap-1">
-											<Hammer className="h-3 w-3" />
-											{tools.length} tools loaded
-										</span>
-									</TooltipTrigger>
-									<TooltipContent side="top" align="start" className="max-w-xs">
-										<div className="space-y-1">
-											<div className="text-xs space-y-1">
-												{tools.map((tool, index) => (
-													<div key={index} className="font-mono">
-														{tool}
-													</div>
-												))}
-											</div>
-										</div>
-									</TooltipContent>
-								</Tooltip>
-							)}
-						</div>
-						<div className="flex items-center gap-2">
-							<PromptInputAction
-								tooltip={
-									isLoading
-										? "Stop generation"
-										: hasCompletedSentence
-											? "Send suggested message"
-											: hasContent
-												? "Send message"
-												: "Type a message to send"
-								}
-							>
-								<Button
-									className={cn(
-										"h-9 w-9 rounded-lg transition-all duration-100",
-										isLoading || canSend
-											? "bg-foreground! text-background-secondary hover:bg-foreground/80 cursor-pointer"
-											: "bg-transparent cursor-not-allowed text-foreground",
-									)}
-									disabled={disableSend || (!isLoading && !canSend)}
-									onClick={
-										isLoading
-											? onStop
-											: hasCompletedSentence
-												? handleTypewriterSend
-												: handleSubmit
-									}
-									size="icon"
-									variant="outline"
-								>
-									<AnimatePresence mode="wait">
-										{isLoading ? (
-											<motion.div
-												key="stop"
-												initial={{ scale: 0.8, opacity: 0 }}
-												animate={{ scale: 1, opacity: 1 }}
-												exit={{ scale: 0.8, opacity: 0 }}
-												transition={{ duration: 0.15 }}
-											>
-												<Spinner className="h-4 w-4" />
-											</motion.div>
-										) : (
-											<motion.div
-												key="send"
-												initial={{ scale: 0.8, opacity: 0 }}
-												animate={{ scale: 1, opacity: 1 }}
-												exit={{ scale: 0.8, opacity: 0 }}
-												transition={{ duration: 0.15 }}
-											>
-												<SendHorizonal className="h-4 w-4" />
-											</motion.div>
-										)}
-									</AnimatePresence>
-								</Button>
-							</PromptInputAction>
-						</div>
-					</PromptInputActions>
-				</PromptInput>
+          <PromptInputActions className="flex items-end justify-between gap-2 p-0 mt-auto">
+            {/* Tool category indicator */}
+            <div className="flex items-center">
+              {toolCategory && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-xs text-muted-foreground bg-background-secondary px-2 py-1 rounded flex items-center gap-1">
+                      <Hammer className="h-3 w-3" />
+                      {tools.length} tools loaded
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" align="start" className="max-w-xs">
+                    <div className="space-y-1">
+                      <div className="text-xs space-y-1">
+                        {tools.map((tool, index) => (
+                          <div key={index} className="font-mono">
+                            {tool}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <PromptInputAction
+                tooltip={
+                  isLoading
+                    ? "Stop generation"
+                    : hasCompletedSentence
+                    ? "Send suggested message"
+                    : hasContent
+                    ? "Send message"
+                    : "Type a message to send"
+                }
+              >
+                <Button
+                  className={cn(
+                    "h-9 w-9 rounded-lg transition-all duration-100",
+                    isLoading || canSend
+                      ? "bg-foreground! text-background-secondary hover:bg-foreground/80 cursor-pointer"
+                      : "bg-transparent cursor-not-allowed text-foreground"
+                  )}
+                  disabled={isLoading ? false : disableSend || !canSend}
+                  onClick={
+                    isLoading
+                      ? onStop
+                      : hasCompletedSentence
+                      ? handleTypewriterSend
+                      : handleSubmit
+                  }
+                  size="icon"
+                  variant="outline"
+                >
+                  <AnimatePresence mode="wait">
+                    {isLoading ? (
+                      <motion.div
+                        key="stop"
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.8, opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                      >
+                        <Pause className="h-4 w-4" />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="send"
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.8, opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                      >
+                        <SendHorizonal className="h-4 w-4" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </Button>
+              </PromptInputAction>
+            </div>
+          </PromptInputActions>
+        </PromptInput>
 
-				{/* <CreateProjectDialog /> */}
-			</>
-		);
-	},
+        {/* <CreateProjectDialog /> */}
+      </>
+    );
+  }
 );
 PromptInputBox.displayName = "PromptInputBox";

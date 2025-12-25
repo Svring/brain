@@ -161,7 +161,11 @@ export function HomeChatProvider({
   }, [threadId]);
 
   const value: HomeChatContextType = {
-    ...streamValue,
+    // Only spread the properties we need from streamValue
+    isLoading: streamValue.isLoading,
+    stop: streamValue.stop,
+    interrupt: streamValue.interrupt,
+    messages: streamValue.messages,
     api_key: apiKey,
     base_url: baseUrl,
     model_name: modelName,

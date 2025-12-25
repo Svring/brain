@@ -2,14 +2,12 @@
 
 import { useCallback } from "react";
 import { toast } from "sonner";
-import { useStreamContext } from "@/components/provider/stream-provider";
-import { useThreads } from "@/components/provider/thread-provider";
 import { useChatActions } from "@/contexts/chat/chat-context";
 import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
 import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
 import type {
-	BuiltinResourceTarget,
-	CustomResourceTarget,
+  BuiltinResourceTarget,
+  CustomResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 const analyzeMonitorPrompt = `
@@ -62,107 +60,107 @@ Your role is to analyze the provided monitoring data and provide a clear assessm
 `;
 
 export function useAnalyzeMonitor(
-	target: CustomResourceTarget | BuiltinResourceTarget,
+  target: CustomResourceTarget | BuiltinResourceTarget
 ) {
-	const { color, monitorData, isLoading } = useResourceMetricsStatus({
-		target,
-	});
-	const { addPendingMessage, triggerPendingMessages } = useChatActions();
+  const { color, monitorData, isLoading } = useResourceMetricsStatus({
+    target,
+  });
+  const { addPendingMessage, triggerPendingMessages } = useChatActions();
 
-	// Use node select to handle the selection and message appending
-	const { handleNodeSelect } = useNodeSelect({
-		target,
-	});
+  // Use node select to handle the selection and message appending
+  const { handleNodeSelect } = useNodeSelect({
+    target,
+  });
 
-	const diagnoseMonitor = useCallback(async () => {
-		// Check if monitor data is null or empty
-		if (
-			!monitorData ||
-			!Array.isArray(monitorData) ||
-			monitorData.length === 0
-		) {
-			toast.error("No monitor data available for analysis");
-			return;
-		}
+  const diagnoseMonitor = useCallback(async () => {
+    // Check if monitor data is null or empty
+    if (
+      !monitorData ||
+      !Array.isArray(monitorData) ||
+      monitorData.length === 0
+    ) {
+      toast.error("No monitor data available for analysis");
+      return;
+    }
 
-		// Use node select to handle the selection and message appending
-		await handleNodeSelect();
+    // Use node select to handle the selection and message appending
+    await handleNodeSelect();
 
-		// Add event message before analysis
-		const eventMessage = {
-			id: `monitor-event-${Date.now()}`,
-			type: "system" as const,
-			content: JSON.stringify({
-				type: "universal.event",
-				target: target,
-				payload: {
-					message: "Starting monitor analysis...",
-					createdAt: new Date().toISOString(),
-				},
-			}),
-			created_at: new Date().toISOString(),
-			updated_at: new Date().toISOString(),
-		};
+    // Add event message before analysis
+    const eventMessage = {
+      id: `monitor-event-${Date.now()}`,
+      type: "system" as const,
+      content: JSON.stringify({
+        type: "universal.event",
+        target: target,
+        payload: {
+          message: "Starting monitor analysis...",
+          createdAt: new Date().toISOString(),
+        },
+      }),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
 
-		// Add pending messages for this resource target
-		const systemMessage1 = {
-			id: `monitor-system-1-${Date.now()}`,
-			type: "system" as const,
-			content: JSON.stringify({
-				type: "universal.monitor",
-				target,
-				payload: monitorData,
-			}),
-			created_at: new Date().toISOString(),
-			updated_at: new Date().toISOString(),
-		};
+    // Add pending messages for this resource target
+    const systemMessage1 = {
+      id: `monitor-system-1-${Date.now()}`,
+      type: "system" as const,
+      content: JSON.stringify({
+        type: "universal.monitor",
+        target,
+        payload: monitorData,
+      }),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
 
-		const systemMessage2 = {
-			id: `monitor-system-2-${Date.now()}`,
-			type: "system" as const,
-			content: analyzeMonitorPrompt,
-			created_at: new Date().toISOString(),
-			updated_at: new Date().toISOString(),
-		};
+    const systemMessage2 = {
+      id: `monitor-system-2-${Date.now()}`,
+      type: "system" as const,
+      content: analyzeMonitorPrompt,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
 
-		const systemMessage3 = {
-			id: `monitor-system-3-${Date.now()}`,
-			type: "system" as const,
-			content: `Below is all the data needed to be analyzed, you need to identify any problem and report back to the user and advice fix.\n\n${JSON.stringify(
-				monitorData,
-			)}`,
-			created_at: new Date().toISOString(),
-			updated_at: new Date().toISOString(),
-		};
+    const systemMessage3 = {
+      id: `monitor-system-3-${Date.now()}`,
+      type: "system" as const,
+      content: `Below is all the data needed to be analyzed, you need to identify any problem and report back to the user and advice fix.\n\n${JSON.stringify(
+        monitorData
+      )}`,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
 
-		// Add pending messages for this resource target
-		addPendingMessage(target, eventMessage);
-		addPendingMessage(target, systemMessage1);
-		addPendingMessage(target, systemMessage2);
-		addPendingMessage(target, systemMessage3);
+    // Add pending messages for this resource target
+    addPendingMessage(target, eventMessage);
+    addPendingMessage(target, systemMessage1);
+    addPendingMessage(target, systemMessage2);
+    addPendingMessage(target, systemMessage3);
 
-		// Trigger pending message submission
-		triggerPendingMessages(target);
-	}, [
-		monitorData,
-		handleNodeSelect,
-		addPendingMessage,
-		triggerPendingMessages,
-		target,
-	]);
+    // Trigger pending message submission
+    triggerPendingMessages(target);
+  }, [
+    monitorData,
+    handleNodeSelect,
+    addPendingMessage,
+    triggerPendingMessages,
+    target,
+  ]);
 
-	// Check if monitor data is ready (not loading and has data)
-	const isMonitorReady =
-		!isLoading &&
-		monitorData &&
-		Array.isArray(monitorData) &&
-		monitorData.length > 0;
+  // Check if monitor data is ready (not loading and has data)
+  const isMonitorReady =
+    !isLoading &&
+    monitorData &&
+    Array.isArray(monitorData) &&
+    monitorData.length > 0;
 
-	return {
-		diagnoseMonitor,
-		color,
-		monitorData,
-		isLoading,
-		isMonitorReady,
-	};
+  return {
+    diagnoseMonitor,
+    color,
+    monitorData,
+    isLoading,
+    isMonitorReady,
+  };
 }

@@ -1,19 +1,17 @@
 "use client";
 
 import { Handle, Position } from "@xyflow/react";
+import _ from "lodash";
+import { toast } from "sonner";
 import { BaseNode } from "@/components/flowgraph/components/base-node";
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
-import { useProjectState } from "@/contexts/project/project-context";
-import { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
-import { useResourceDelete } from "@/hooks/sealos/resource/use-resource-delete";
-import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
-import { useStreamContext } from "@/components/provider/stream-provider";
-import { useThreads } from "@/components/provider/thread-provider";
-import { ResourceView } from "@/contexts/navigation/navigation-machine";
 import { useNavigationActions } from "@/contexts/navigation/navigation-context";
-import { toast } from "sonner";
-import _ from "lodash";
+import type { ResourceView } from "@/contexts/navigation/navigation-machine";
+import { useProjectState } from "@/contexts/project/project-context";
+import { useNodeSelect } from "@/hooks/flowgraph/use-node-select";
+import { useResourceDelete } from "@/hooks/sealos/resource/use-resource-delete";
+import { useResourceMetricsStatus } from "@/hooks/sealos/resource/use-resource-metrics-status";
+import type { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 
 interface BaseNodeProps {
   children: React.ReactNode;
