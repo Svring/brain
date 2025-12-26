@@ -25,10 +25,10 @@ export const DEVBOX_IDE_ICON_MAP: Record<string, string> = {
 
 export const DEVBOX_IDE = [
 	"cursor",
+	"antigravity",
 	"vscode",
 	"vscodeInsiders",
 	"windsurf",
 	"trae",
 	"kiro",
-	"antigravity",
 ];
