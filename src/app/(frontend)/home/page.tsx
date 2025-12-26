@@ -1,5 +1,6 @@
 "use client";
 
+import { createSealosApp, sealosApp } from "@zjy365/sealos-desktop-sdk/app";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -43,6 +44,7 @@ import { AVAILABLE_CLUSTER_TYPES } from "@/lib/sealos/resources/cluster/cluster-
 
 export default function HomePage() {
   const [isDeploying, setIsDeploying] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null);
   const {
     messages,
     submit,
@@ -66,6 +68,18 @@ export default function HomePage() {
   const [argsParam] = useQueryState("args");
   const [query] = useQueryState("query");
   const hasAutoSubmitted = useRef(false);
+
+  // Get and store user name from sessionData
+  useEffect(() => {
+    const getSessionData = async () => {
+      createSealosApp();
+      const sessionData = await sealosApp.getSession();
+      if (sessionData?.user?.name) {
+        setUserName(sessionData.user.name);
+      }
+    };
+    getSessionData();
+  }, []);
 
   // Parse args from query (JSON string)
   const parsedArgs = useMemo(() => {
@@ -377,7 +391,11 @@ export default function HomePage() {
             className="flex-shrink-0"
           >
             <Hero
-              heroTitle="Time to ship anything"
+              heroTitle={
+                userName
+                  ? `Time to ship anything, ${userName}`
+                  : "Time to ship anything"
+              }
               subtitle="No YAML. No Dockerfile. No CI/CD. Describe what you need in plain English and deploy to production in seconds—powered by Kubernetes, without the complexity."
               titleClassName="text-5xl font-extrabold"
               subtitleClassName="text-md md:text-lg max-w-[800px]"
