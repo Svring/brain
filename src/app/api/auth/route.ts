@@ -28,14 +28,20 @@ export async function POST(req: NextRequest) {
 			);
 		}
 
-		const k8sContext: K8sApiContext = {
-			kubeconfig,
-			namespace,
-			regionUrl,
-		};
+		// Validate region URL matches environment variable
+		const expectedRegionUrl = process.env.REGION_URL;
+		if (expectedRegionUrl && regionUrl !== expectedRegionUrl) {
+			return Response.json({ error: "Region URL mismatch" }, { status: 403 });
+		}
+
+		// const k8sContext: K8sApiContext = {
+		// 	kubeconfig,
+		// 	namespace,
+		// 	regionUrl,
+		// };
 
 		// Validate resource quota - if this succeeds, the quota is valid
-		await getResourceQuota(k8sContext);
+		// await getResourceQuota(k8sContext);
 
 		return Response.json(
 			{

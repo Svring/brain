@@ -48,8 +48,8 @@ export const langgraphRouter = t.router({
 				{
 					updates: [
 						{
-							values: {},
-							as_node: "__input__",
+							values: { kubeconfig: ctx.kubeconfig },
+							as_node: "entry_node",
 						},
 					],
 				},

@@ -12,7 +12,6 @@ import {
 	ResourceTarget,
 } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import {
-	createThread,
 	deleteThread,
 	threadRunStream,
 	updateThreadState,
@@ -21,48 +20,6 @@ import {
 // ============================================================================
 // MUTATION HOOKS
 // ============================================================================
-
-/**
- * Hook for creating a new chat session with copilot context management
- */
-export const useCreateNewChatSessionMutation = () => {
-	const { auth } = useAuthState();
-	const queryClient = useQueryClient();
-	const { selectedResource, selectedProject } = useProjectState();
-
-	return {
-		mutationFn: async () => {
-			const supersteps = [
-				{
-					updates: [
-						{
-							values: {},
-							as_node: "__input__",
-						},
-					],
-				},
-			];
-
-			const thread = await createThread({
-				metadata: {
-					graph_id: process.env.NEXT_PUBLIC_LANGGRAPH_GRAPH_ID || "orca",
-					kubeconfig: auth?.kubeconfig || "",
-					projectName: selectedProject || undefined,
-					resourceTarget: selectedResource || null,
-				},
-				supersteps,
-				kubeconfig: auth?.kubeconfig,
-			});
-
-			console.log("[useCreateNewChatSessionMutation] Thread created:", thread);
-
-			return thread;
-		},
-		onError: (error: any) => {
-			console.error("Failed to create chat session:", error);
-		},
-	};
-};
 
 /**
  * Hook for sending a single message to the chat and opening the sidebar
