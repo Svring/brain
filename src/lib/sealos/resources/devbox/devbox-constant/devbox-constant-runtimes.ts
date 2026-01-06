@@ -37,6 +37,7 @@ export const DEVBOX_RUNTIMES = [
 	"hugo",
 	"spring-boot",
 	"node.js",
+	"memu",
 ] as const;
 
 export type DevboxRuntime = (typeof DEVBOX_RUNTIMES)[number];

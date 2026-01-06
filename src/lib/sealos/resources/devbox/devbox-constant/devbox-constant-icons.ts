@@ -49,4 +49,5 @@ export const DEVBOX_RUNTIME_ICONS: Record<DevboxRuntime, string> = {
 	hugo: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/hugo/hugo-original.svg",
 	"spring-boot": "https://devbox.bja.sealos.run/images/runtime/spring-boot.svg",
 	"node.js": "https://devbox.bja.sealos.run/images/runtime/node.js.svg",
+	memu: "https://memu.pro/static/logo.png",
 };
